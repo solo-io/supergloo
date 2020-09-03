@@ -9,10 +9,11 @@ import (
 )
 
 const (
-	decoratorName          = "outlier-detection"
-	defaultConsecutiveErrs = 5
-	defaultInterval        = 10
-	defaultEjectionTime    = 30
+	decoratorName                   = "outlier-detection"
+	defaultConsecutiveErrs          = 5
+	defaultInterval                 = 10
+	defaultEjectionTime             = 30
+	defaultMaxEjectionPercent int32 = 100
 )
 
 func init() {
@@ -72,10 +73,15 @@ func (d *outlierDetectionDecorator) translateOutlierDetection(
 	if userEjectionTime := outlierDetection.GetBaseEjectionTime(); userEjectionTime != nil {
 		ejectionTime = userEjectionTime
 	}
+	maxEjectionPercent := defaultMaxEjectionPercent
+	if userMaxEjectionPercent := outlierDetection.GetMaxEjectionPercent(); userMaxEjectionPercent != 0 {
+		maxEjectionPercent = int32(userMaxEjectionPercent)
+	}
 
 	return &networkingv1alpha3spec.OutlierDetection{
 		Consecutive_5XxErrors: consecutiveErrs,
 		Interval:              interval,
 		BaseEjectionTime:      ejectionTime,
+		MaxEjectionPercent:    maxEjectionPercent,
 	}
 }
