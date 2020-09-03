@@ -26,7 +26,7 @@ var _ = Describe("OutlierDetectionDecorator", func() {
 		}
 	})
 
-	It("should set outlier detection", func() {
+	It("should set outlier detection with defaults", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
@@ -41,6 +41,7 @@ var _ = Describe("OutlierDetectionDecorator", func() {
 			Consecutive_5XxErrors: &types.UInt32Value{Value: 2},
 			Interval:              &types.Duration{Seconds: 10},
 			BaseEjectionTime:      &types.Duration{Seconds: 30},
+			MaxEjectionPercent:    100,
 		}
 		err := outlierDecorator.ApplyTrafficPolicyToDestinationRule(
 			appliedPolicy,

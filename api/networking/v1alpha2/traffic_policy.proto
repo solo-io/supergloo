@@ -396,6 +396,11 @@ message TrafficPolicySpec {
 
         // Minimum ejection duration. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 30s.
         google.protobuf.Duration base_ejection_time = 3;
+
+        // Maximum % of hosts in the load balancing pool for the upstream service that can be ejected,
+        // but will eject at least one host regardless of the value. MUST BE >= 0 and <= 100.
+        // Defaults to 100%, allowing all hosts to be ejected from the pool.
+        uint32 max_ejection_percent = 4;
     }
 }
 
