@@ -362,6 +362,8 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	}
 	snapshotMap["hTTPRouteGroups"] = hTTPRouteGroupSet.List()
 
+	snapshotMap["clusters"] = s.clusters
+
 	return json.Marshal(snapshotMap)
 }
 

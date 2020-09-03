@@ -14,8 +14,12 @@ func (in *TrafficPolicy) DeepCopyInto(out *TrafficPolicy) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+
+	// deepcopy spec
 	in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy status
 	in.Status.DeepCopyInto(&out.Status)
+
 	return
 }
 
@@ -71,8 +75,12 @@ func (in *AccessPolicy) DeepCopyInto(out *AccessPolicy) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+
+	// deepcopy spec
 	in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy status
 	in.Status.DeepCopyInto(&out.Status)
+
 	return
 }
 
@@ -128,8 +136,12 @@ func (in *VirtualMesh) DeepCopyInto(out *VirtualMesh) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+
+	// deepcopy spec
 	in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy status
 	in.Status.DeepCopyInto(&out.Status)
+
 	return
 }
 
@@ -185,8 +197,12 @@ func (in *FailoverService) DeepCopyInto(out *FailoverService) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+
+	// deepcopy spec
 	in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy status
 	in.Status.DeepCopyInto(&out.Status)
+
 	return
 }
 

@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/service-mesh-hub/codegen/io"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
+	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,7 +23,15 @@ var smhRbacRequirements = func() []rbacv1.PolicyRule {
 	return policyRules
 }()
 
-type Registrant struct {
+//go:generate mockgen -source ./registrant.go -destination ./mocks/mock_registrant.go
+
+type ClusterRegistrant interface {
+	RegisterCluster(ctx context.Context) error
+	RegisterProviderCluster(ctx context.Context, providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo) error
+	DeregisterCluster(ctx context.Context) error
+}
+
+type clusterRegistrant struct {
 	*RegistrantOptions
 }
 
@@ -32,8 +41,8 @@ type RegistrantOptions struct {
 	Verbose bool
 }
 
-func NewRegistrant(opts *RegistrantOptions) *Registrant {
-	registrant := &Registrant{opts}
+func NewRegistrant(opts *RegistrantOptions) ClusterRegistrant {
+	registrant := &clusterRegistrant{opts}
 	registrant.ClusterRoles = []*rbacv1.ClusterRole{
 		{
 			ObjectMeta: metav1.ObjectMeta{
@@ -55,7 +64,7 @@ type CertAgentInstallOptions struct {
 	ChartValues string
 }
 
-func (r *Registrant) RegisterCluster(ctx context.Context) error {
+func (r *clusterRegistrant) RegisterCluster(ctx context.Context) error {
 	// TODO(ilackarms): move verbose option to global flag at root level of meshctl
 	if r.Verbose {
 		logrus.SetLevel(logrus.DebugLevel)
@@ -64,10 +73,25 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 	if err := r.installCertAgent(ctx); err != nil {
 		return err
 	}
-	return r.registerCluster(ctx)
+	return r.registerCluster(ctx, nil)
 }
 
-func (r *Registrant) DeregisterCluster(ctx context.Context) error {
+func (r *clusterRegistrant) RegisterProviderCluster(
+	ctx context.Context,
+	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
+) error {
+	// TODO(ilackarms): move verbose option to global flag at root level of meshctl
+	if r.Verbose {
+		logrus.SetLevel(logrus.DebugLevel)
+	}
+
+	if err := r.installCertAgent(ctx); err != nil {
+		return err
+	}
+	return r.registerCluster(ctx, providerInfo)
+}
+
+func (r *clusterRegistrant) DeregisterCluster(ctx context.Context) error {
 	if r.Verbose {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
@@ -77,10 +101,13 @@ func (r *Registrant) DeregisterCluster(ctx context.Context) error {
 	return r.RegistrationOptions.DeregisterCluster(ctx)
 }
 
-func (r *Registrant) registerCluster(ctx context.Context) error {
+func (r *clusterRegistrant) registerCluster(
+	ctx context.Context,
+	providerInfo *v1alpha1.KubernetesClusterSpec_ProviderInfo,
+) error {
 	logrus.Debugf("registering cluster with opts %+v\n", r.RegistrationOptions)
 
-	if err := r.RegistrationOptions.RegisterCluster(ctx); err != nil {
+	if err := r.RegistrationOptions.RegisterProviderCluster(ctx, providerInfo); err != nil {
 		return err
 	}
 
@@ -88,7 +115,7 @@ func (r *Registrant) registerCluster(ctx context.Context) error {
 	return nil
 }
 
-func (r *Registrant) installCertAgent(ctx context.Context) error {
+func (r *clusterRegistrant) installCertAgent(ctx context.Context) error {
 	return smh.Installer{
 		HelmChartPath:  r.CertAgentInstallOptions.ChartPath,
 		HelmValuesPath: r.CertAgentInstallOptions.ChartValues,
@@ -100,7 +127,7 @@ func (r *Registrant) installCertAgent(ctx context.Context) error {
 	)
 }
 
-func (r *Registrant) uninstallCertAgent(ctx context.Context) error {
+func (r *clusterRegistrant) uninstallCertAgent(ctx context.Context) error {
 	return smh.Uninstaller{
 		KubeConfig: r.RemoteKubeCfg,
 		Namespace:  r.RemoteNamespace,

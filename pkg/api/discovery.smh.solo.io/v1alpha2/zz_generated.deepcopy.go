@@ -14,8 +14,12 @@ func (in *TrafficTarget) DeepCopyInto(out *TrafficTarget) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+
+	// deepcopy spec
 	in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy status
 	in.Status.DeepCopyInto(&out.Status)
+
 	return
 }
 
@@ -71,8 +75,12 @@ func (in *Workload) DeepCopyInto(out *Workload) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+
+	// deepcopy spec
 	in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy status
 	in.Status.DeepCopyInto(&out.Status)
+
 	return
 }
 
@@ -128,8 +136,12 @@ func (in *Mesh) DeepCopyInto(out *Mesh) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+
+	// deepcopy spec
 	in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy status
 	in.Status.DeepCopyInto(&out.Status)
+
 	return
 }
 

@@ -14,6 +14,9 @@ replace (
 
 	github.com/golang/protobuf => github.com/golang/protobuf v1.3.5
 
+	// TODO remove before merging
+	github.com/solo-io/skv2 => /Users/harvey/skv2
+
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
 
 	k8s.io/client-go => k8s.io/client-go v0.18.6
