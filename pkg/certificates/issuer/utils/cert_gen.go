@@ -25,7 +25,7 @@ const (
 )
 
 func GenCertForCSR(
-	csrPem, signingCert, privateKey []byte,
+	hosts []string, csrPem, signingCert, privateKey []byte,
 ) ([]byte, error) {
 	// TODO(ilackarms): allow configuring this TTL in the virtual mesh
 	ttl := time.Until(time.Now().AddDate(1, 0, 0))
@@ -50,7 +50,7 @@ func GenCertForCSR(
 		cert,
 		csr.PublicKey,
 		key,
-		nil,
+		hosts,
 		ttl,
 		true,
 	)
