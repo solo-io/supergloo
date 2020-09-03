@@ -30,8 +30,6 @@ type Snapshot interface {
 }
 
 type snapshot struct {
-    name string
-
 {{- range $resource := appmesh_resources }}
 {{- $lowercaseResource := lower_camel $resource }}
     {{ $lowercaseResource }}s    appmesh_aws_solo_io_v1alpha1_sets.{{ $resource }}Set
@@ -40,7 +38,6 @@ type snapshot struct {
 }
 
 func NewSnapshot(
-        name string,
 {{- range $resource := appmesh_resources }}
 {{- $lowercaseResource := lower_camel $resource }}
         {{ $lowercaseResource }}s appmesh_aws_solo_io_v1alpha1_sets.{{ $resource }}Set,
@@ -48,7 +45,6 @@ func NewSnapshot(
         meshes ...string, // the set of meshes to which to apply the snapshot
 ) Snapshot {
     return &snapshot{
-        name:            name,
 {{- range $resource := appmesh_resources }}
 {{- $lowercaseResource := lower_camel $resource }}
         {{ $lowercaseResource }}s:    {{ $lowercaseResource }}s,
@@ -70,21 +66,18 @@ func (s snapshot) Meshes() []string {
 }
 
 func (s snapshot) MarshalJSON() ([]byte, error) {
-    snapshotMap := map[string]interface{}{"name": s.name}
+    snapshotMap := map[string]interface{}{"meshes": s.meshes}
 
 {{- range $resource := appmesh_resources }}
 {{- $lowercaseResource := lower_camel $resource }}
     snapshotMap["{{ $lowercaseResource }}s"] = s.{{ $lowercaseResource }}s.List()
 {{- end }}
 
-    snapshotMap["meshes"] = s.meshes
-
     return json.Marshal(snapshotMap)
 }
 
 type builder struct {
     ctx    context.Context
-    name   string
     meshes []string
 
 {{- range $resource := appmesh_resources }}
@@ -93,10 +86,9 @@ type builder struct {
 {{- end }}
 }
 
-func NewBuilder(ctx context.Context, name string) *builder {
+func NewBuilder(ctx context.Context) *builder {
     return &builder{
         ctx:  ctx,
-        name: name,
 
 {{- range $resource := appmesh_resources }}
 {{- $lowercaseResource := lower_camel $resource }}
@@ -146,7 +138,6 @@ func (b *builder) Get{{ $resource }}s() appmesh_aws_solo_io_v1alpha1_sets.{{ $re
 
 func (b *builder) BuildSnapshot() Snapshot {
     return NewSnapshot(
-        b.name,
 {{- range $resource := appmesh_resources }}
 {{- $lowercaseResource := lower_camel $resource }}
         b.{{ $lowercaseResource }}s,

@@ -94,11 +94,11 @@ func (t *translator) Translate(
 		return
 	}
 
-	if virtualMesh == nil || virtualMesh.Spec.MtlsConfig == nil {
+	mtlsConfig := virtualMesh.Spec.MtlsConfig
+	if virtualMesh == nil || mtlsConfig == nil {
 		contextutils.LoggerFrom(t.ctx).Debugf("no translation for virtual mesh %v which has no mTLS configuration", sets.Key(mesh))
 		return
 	}
-	mtlsConfig := virtualMesh.Spec.MtlsConfig
 
 	// TODO(ilackarms): currently we assume a shared trust model
 	// we'll want to expand this to support limited trust in the future

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
+
 	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
 	"github.com/solo-io/skv2/pkg/predicate"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,7 +16,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/common/utils/errhandlers"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"

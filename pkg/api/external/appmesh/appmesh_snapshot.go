@@ -35,7 +35,6 @@ type Snapshot interface {
 }
 
 type snapshot struct {
-	name            string
 	virtualNodes    appmesh_aws_solo_io_v1alpha1_sets.VirtualNodeSet
 	virtualRouters  appmesh_aws_solo_io_v1alpha1_sets.VirtualRouterSet
 	routes          appmesh_aws_solo_io_v1alpha1_sets.RouteSet
@@ -44,7 +43,6 @@ type snapshot struct {
 }
 
 func NewSnapshot(
-	name string,
 	virtualNodes appmesh_aws_solo_io_v1alpha1_sets.VirtualNodeSet,
 	virtualRouters appmesh_aws_solo_io_v1alpha1_sets.VirtualRouterSet,
 	routes appmesh_aws_solo_io_v1alpha1_sets.RouteSet,
@@ -52,7 +50,6 @@ func NewSnapshot(
 	meshes ...string, // the set of meshes to which to apply the snapshot
 ) Snapshot {
 	return &snapshot{
-		name:            name,
 		virtualNodes:    virtualNodes,
 		virtualRouters:  virtualRouters,
 		routes:          routes,
@@ -82,20 +79,17 @@ func (s snapshot) Meshes() []string {
 }
 
 func (s snapshot) MarshalJSON() ([]byte, error) {
-	snapshotMap := map[string]interface{}{"name": s.name}
+	snapshotMap := map[string]interface{}{"meshes": s.meshes}
 	snapshotMap["virtualNodes"] = s.virtualNodes.List()
 	snapshotMap["virtualRouters"] = s.virtualRouters.List()
 	snapshotMap["routes"] = s.routes.List()
 	snapshotMap["virtualServices"] = s.virtualServices.List()
-
-	snapshotMap["meshes"] = s.meshes
 
 	return json.Marshal(snapshotMap)
 }
 
 type builder struct {
 	ctx             context.Context
-	name            string
 	meshes          []string
 	virtualNodes    appmesh_aws_solo_io_v1alpha1_sets.VirtualNodeSet
 	virtualRouters  appmesh_aws_solo_io_v1alpha1_sets.VirtualRouterSet
@@ -103,10 +97,9 @@ type builder struct {
 	virtualServices appmesh_aws_solo_io_v1alpha1_sets.VirtualServiceSet
 }
 
-func NewBuilder(ctx context.Context, name string) *builder {
+func NewBuilder(ctx context.Context) *builder {
 	return &builder{
 		ctx:             ctx,
-		name:            name,
 		virtualNodes:    appmesh_aws_solo_io_v1alpha1_sets.NewVirtualNodeSet(),
 		virtualRouters:  appmesh_aws_solo_io_v1alpha1_sets.NewVirtualRouterSet(),
 		routes:          appmesh_aws_solo_io_v1alpha1_sets.NewRouteSet(),
@@ -208,7 +201,6 @@ func (b *builder) GetVirtualServices() appmesh_aws_solo_io_v1alpha1_sets.Virtual
 
 func (b *builder) BuildSnapshot() Snapshot {
 	return NewSnapshot(
-		b.name,
 		b.virtualNodes,
 		b.virtualRouters,
 		b.routes,
