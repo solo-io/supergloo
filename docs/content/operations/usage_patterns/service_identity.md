@@ -48,9 +48,9 @@ Take for instance the workload `productpage` in the Bookstore sample application
 
 ```yaml
 sourceSelector:
-  labels:
-    app: bookstore
-    service: productpage
+  - labels:
+       app: bookstore
+       service: productpage
 ```
 
 Since we have not specified a namespace, the Traffic Policy will apply to all namespaces.
