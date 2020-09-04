@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	"github.com/solo-io/service-mesh-hub/pkg/common/registration"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/registration"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
