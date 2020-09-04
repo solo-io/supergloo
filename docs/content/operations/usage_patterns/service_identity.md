@@ -145,7 +145,7 @@ spec:
     kubeService:
       name: http-monitoring
       namespace: monitoring
-      cluster: cluster-one
+      clusterName: cluster-one
     port: 80
 ```
 
