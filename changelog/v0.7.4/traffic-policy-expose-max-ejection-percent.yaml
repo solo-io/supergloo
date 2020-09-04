@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Expose max_ejection_percent on TrafficPolicy's OutlierDetection config. Defaults to 100.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/948

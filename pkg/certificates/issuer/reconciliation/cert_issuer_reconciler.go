@@ -101,6 +101,7 @@ func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v
 
 	// generate the issued cert PEM encoded bytes
 	signedCert, err := utils.GenCertForCSR(
+		issuedCertificate.Spec.Hosts,
 		certificateRequest.Spec.CertificateSigningRequest,
 		signingCA.RootCert,
 		signingCA.PrivateKey,

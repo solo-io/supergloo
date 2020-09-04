@@ -49,6 +49,9 @@ type Options struct {
 
 	// enables verbose mode
 	VerboseMode bool
+
+	// ManagementContext if specified read the KubeConfig for the management cluster from this context. Only applies when running out of cluster.
+	ManagementContext string
 }
 
 // the mesh-discovery controller is the Kubernetes Controller/Operator
@@ -97,7 +100,7 @@ func Start(ctx context.Context, rootLogger string, start StartReconciler, opts O
 
 // get the manager for the local cluster; we will use this as our "master" cluster
 func makeMasterManager(opts Options) (manager.Manager, error) {
-	cfg, err := config.GetConfig()
+	cfg, err := config.GetConfigWithContext(opts.ManagementContext)
 	if err != nil {
 		return nil, err
 	}
