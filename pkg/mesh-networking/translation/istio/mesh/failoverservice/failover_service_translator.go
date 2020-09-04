@@ -347,7 +347,7 @@ func (t *translator) buildEnvoyAggregateClusterConfig(
 			var hostname string
 			if kubeService.Ref.ClusterName == failoverServiceClusterName {
 				// Local k8s DNS
-				hostname = t.clusterDomains.GetServiceLocalFQDN(trafficTarget)
+				hostname = t.clusterDomains.GetServiceLocalFQDN(kubeService.Ref)
 			} else {
 				// Multicluster global DNS
 				hostname = t.clusterDomains.GetServiceGlobalFQDN(kubeService.Ref)

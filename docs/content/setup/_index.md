@@ -249,6 +249,10 @@ Successfully set up CSR agent...
 Cluster remote-cluster is now registered in your Service Mesh Hub installation
 ```
 
+{{< notice note >}}
+If you are using Kind for your Kubernetes clusters, you will need to add the argument `--api-server-address` to the `meshctl register cluster` command. The value will depend on what operating system your are using. For macOS the value is `host.docker.internal`. For Linux, you can find the address by running the following: `docker exec "${cluster_name}-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')` and appending `:6443` for the port.
+{{< /notice >}}
+
 #### Register the management cluster
 
 You can automatically register the cluster on which you deploy Service Mesh Hub (for example, if you have a mesh running there as well) with the `--register` CLI flag when you're first installing with `meshctl`:
@@ -265,6 +269,10 @@ kubectl get kubernetescluster -n service-mesh-hub
 NAMESPACE          NAME               AGE
 service-mesh-hub   management-cluster   10s
 ```
+
+{{< notice note >}}
+If you are using Kind for your Kubernetes clusters, you will need to add the argument `--api-server-address` to the `meshctl install` command. The value will depend on what operating system your are using. For macOS the value is `host.docker.internal`. For Linux, you can find the address by running the following: `docker exec "${cluster_name}-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')` and appending `:6443` for the port.
+{{< /notice >}}
 
 ## What happened?
 

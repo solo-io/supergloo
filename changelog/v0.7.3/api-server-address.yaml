@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/935
+    description: Update setup doc to include api-server-address argument

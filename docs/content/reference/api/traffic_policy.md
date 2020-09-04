@@ -336,6 +336,7 @@ Configure outlier detection settings on targeted services. If set, source select
 | consecutiveErrors | [uint32](#uint32) |  | Number of errors before a host is ejected from the connection pool. Defaults to 5. |
 | interval | [google.protobuf.Duration](#google.protobuf.Duration) |  | Time interval between ejection sweep analysis. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 10s. |
 | baseEjectionTime | [google.protobuf.Duration](#google.protobuf.Duration) |  | Minimum ejection duration. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 30s. |
+| maxEjectionPercent | [uint32](#uint32) |  | Maximum % of hosts in the load balancing pool for the upstream service that can be ejected, but will eject at least one host regardless of the value. MUST BE >= 0 and <= 100. Defaults to 100%, allowing all hosts to be ejected from the pool. |
 
 
 
