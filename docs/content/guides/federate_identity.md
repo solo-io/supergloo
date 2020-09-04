@@ -13,9 +13,9 @@ In this guide, we'll explore the *shared trust* model between two Istio clusters
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Service Mesh Hub is [installed and running on the `management-cluster`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
-* Istio is [installed on both `management-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
-* Both `management-cluster` and `remote-cluster` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+* Service Mesh Hub is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
+* Istio is [installed on both `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
+* Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
 * The `bookinfo` app is [installed into both clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
@@ -25,7 +25,7 @@ Be sure to review the assumptions and satisfy the pre-requisites from the [Guide
 
 ## Verify identity in two clusters is different
 
-We can see the certificate chain used to establish mTLS between Istio services in `management-cluster-context` cluster and `remote-cluster-context` cluster and can compare them to be different. One way to see the certificates, is to use the `openssl s_client` tool with the `-showcerts` param when calling between two services. Let's try it on the `management-cluster-cluster`:
+We can see the certificate chain used to establish mTLS between Istio services in `mgmt-cluster` cluster and `remote-cluster` cluster and can compare them to be different. One way to see the certificates, is to use the `openssl s_client` tool with the `-showcerts` param when calling between two services. Let's try it on the `mgmt-cluster-cluster`:
 
 ```shell
 MGMT_CONTEXT=your_management_plane_context
@@ -82,7 +82,7 @@ s2rL2u8nTerM5bjlurn1Z58=
 -----END CERTIFICATE-----
 {{< /highlight >}}
 
-Run the same thing in the `remote-cluster-context` and explore the output and compare. For the `reviews` service running in the `remote-cluster-context` cluster, we have to use `deploy/reviews-v3` as `reviews-v1` which we used in the previous command doesn't exist on that cluster:
+Run the same thing in the `remote-cluster` and explore the output and compare. For the `reviews` service running in the `remote-cluster` cluster, we have to use `deploy/reviews-v3` as `reviews-v1` which we used in the previous command doesn't exist on that cluster:
 
 
 ```shell
@@ -110,7 +110,7 @@ spec:
         generated: null
   federation: {}
   meshes:
-  - name: istiod-istio-system-management-cluster 
+  - name: istiod-istio-system-mgmt-cluster 
     namespace: service-mesh-hub
   - name: istiod-istio-system-remote-cluster
     namespace: service-mesh-hub
@@ -137,7 +137,7 @@ See the section on [User Provided Certificates]({{% versioned_link_path fromRoot
 
 We also specify the federation mode to be `PERMISSIVE`. This means we'll make services available between meshes. You can control this later by specifying different global service properties. 
 
-Lastly, we are creating the VirtualMesh with two different service meshes: `istiod-istio-system-management-cluster` and `istiod-istio-system-remote-cluster`. We can have any meshes defined here that should be part of this virtual grouping and federation.
+Lastly, we are creating the VirtualMesh with two different service meshes: `istiod-istio-system-mgmt-cluster` and `istiod-istio-system-remote-cluster`. We can have any meshes defined here that should be part of this virtual grouping and federation.
 
 ##### User Provided Certificates
 
@@ -181,7 +181,7 @@ This is due to a limitation of Istio. The Istio control plane picks up the CA fo
 If you wish to perform this step manually, set `autoRestartPods: false` and run the following:
 
 ```shell
-meshctl mesh restart --mesh-name istiod-istio-system-management-cluster
+meshctl mesh restart --mesh-name istiod-istio-system-mgmt-cluster
 ```
 
 {{% notice note %}}
@@ -219,7 +219,7 @@ NAME                                 AGE
 istiod-istio-system-remote-cluster   3m15s
 ```
 
-If we do the same on the `management-cluster`, we should also see an `IssuedCertificates` entry there as well.
+If we do the same on the `mgmt-cluster`, we should also see an `IssuedCertificates` entry there as well.
 
 Lastly, let's verify the correct `cacerts` was created in the `istio-system` namespace that can be used for Istio's Citadel:
 
@@ -244,7 +244,7 @@ In the previous section, we bounced the Istio control plane to pick up these int
 
 Once trust has been established, Service Mesh Hub will start federating services so that they are accessible across clusters. Behind the scenes, Service Mesh Hub will handle the networking -- possibly through egress and ingress gateways, and possibly affected by user-defined traffic and access policies -- and ensure requests to the service will resolve and be routed to the right destination. Users can fine-tune which services are federated where by editing the virtual mesh. 
 
-For example, you can see what Istio `ServiceEntry` objects were created. On the `management-cluster` cluster you can see:
+For example, you can see what Istio `ServiceEntry` objects were created. On the `mgmt-cluster` cluster you can see:
 
 ```shell
 kubectl --context $MGMT_CONTEXT \
@@ -267,11 +267,11 @@ get serviceentry -n istio-system
 
 ```shell
 NAME                                                            HOSTS                                                             LOCATION        RESOLUTION   AGE
-details.bookinfo.svc.management-cluster.global                    [details.bookinfo.svc.management-cluster.global]                    MESH_INTERNAL   DNS          2m5s     
-istio-ingressgateway.istio-system.svc.management-cluster.global   [istio-ingressgateway.istio-system.svc.management-cluster.global]   MESH_INTERNAL   DNS          5m18s    
-productpage.bookinfo.svc.management-cluster.global                [productpage.bookinfo.svc.management-cluster.global]                MESH_INTERNAL   DNS          55s      
-ratings.bookinfo.svc.management-cluster.global                    [ratings.bookinfo.svc.management-cluster.global]                    MESH_INTERNAL   DNS          7m2s     
-reviews.bookinfo.svc.management-cluster.global                    [reviews.bookinfo.svc.management-cluster.global]                    MESH_INTERNAL   DNS          90s 
+details.bookinfo.svc.mgmt-cluster.global                    [details.bookinfo.svc.mgmt-cluster.global]                    MESH_INTERNAL   DNS          2m5s     
+istio-ingressgateway.istio-system.svc.mgmt-cluster.global   [istio-ingressgateway.istio-system.svc.mgmt-cluster.global]   MESH_INTERNAL   DNS          5m18s    
+productpage.bookinfo.svc.mgmt-cluster.global                [productpage.bookinfo.svc.mgmt-cluster.global]                MESH_INTERNAL   DNS          55s      
+ratings.bookinfo.svc.mgmt-cluster.global                    [ratings.bookinfo.svc.mgmt-cluster.global]                    MESH_INTERNAL   DNS          7m2s     
+reviews.bookinfo.svc.mgmt-cluster.global                    [reviews.bookinfo.svc.mgmt-cluster.global]                    MESH_INTERNAL   DNS          90s 
 ```
 
 ## See it in action

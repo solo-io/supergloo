@@ -45,21 +45,21 @@ To spin up two Kubernetes clusters with Kind, run:
 ```shell
 meshctl demo istio-multicluster init
 ```
-This will spin up two Kubernetes clusters in Docker with Istio installed on each. Additionally, this will install Service Mesh Hub on one of the clusters. Both clusters will be **registered** with Service Mesh Hub under the names `management-cluster` and `remote-cluster`, which will be used throughout the documentation.
+This will spin up two Kubernetes clusters in Docker with Istio installed on each. Additionally, this will install Service Mesh Hub on one of the clusters. Both clusters will be **registered** with Service Mesh Hub under the names `mgmt-cluster` and `remote-cluster`, which will be used throughout the documentation.
 
 ```shell
-Creating cluster management-cluster with ingress port 32001
-Creating cluster "management-cluster" ...
+Creating cluster mgmt-cluster with ingress port 32001
+Creating cluster "mgmt-cluster" ...
  ✓ Ensuring node image (kindest/node:v1.17.5) �
  ✓ Preparing nodes ��
  ✓ Writing configuration ��
  ✓ Starting control-plane 🕹
  ✓ Installing CNI ��
  ✓ Installing StorageClass ��
-Set kubectl context to "kind-management-cluster"
+Set kubectl context to "kind-mgmt-cluster"
 You can now use your cluster with:
 
-kubectl cluster-info --context kind-management-cluster
+kubectl cluster-info --context kind-mgmt-cluster
 
 ...
 
@@ -80,11 +80,11 @@ kubectl cluster-info --context kind-remote-cluster
 To connect to each of the clusters, run the following:
 
 ```shell
-export MGMT_PLANE_CTX=kind-management-cluster
+export MGMT_PLANE_CTX=kind-mgmt-cluster
 export REMOTE_CTX=kind-remote-cluster
 ```
 
-Then you can run the following to connect to the management-cluster cluster:
+Then you can run the following to connect to the mgmt-cluster cluster:
 
 ```shell
 kubectl --context $MGMT_PLANE_CTX get po -n service-mesh-hub
