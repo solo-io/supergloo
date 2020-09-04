@@ -15,14 +15,16 @@ var _ = Describe("CertGen workflow", func() {
 		privateKey, err := utils.GeneratePrivateKey()
 		Expect(err).NotTo(HaveOccurred())
 
+		hosts := []string{"spiffe://custom-domain/ns/istio-system/sa/istio-pilot-service-account"}
 		csr, err := utils.GenerateCertificateSigningRequest(
-			[]string{"spiffe://cluster.local/ns/istio-system/sa/istio-pilot-service-account"},
+			hosts,
 			"service-mesh-hub",
 			privateKey,
 		)
 		Expect(err).NotTo(HaveOccurred())
 
 		inetermediaryCert, err := GenCertForCSR(
+			hosts,
 			csr,
 			signingRoot,
 			signingKey,

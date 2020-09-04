@@ -68,7 +68,7 @@ osm namespace add bookthief
 osm namespace add bookwarehouse 
 osm namespace add bookbuyer
 
-kubectl apply -f https://github.com/solo-io/service-mesh-hub/blob/main/ci/osm-demo.yaml
+kubectl apply -f https://raw.githubusercontent.com/solo-io/service-mesh-hub/v0.7.2/ci/osm-demo.yaml
 
 kubectl rollout status deployment --timeout 300s -n bookstore bookstore-v1
 kubectl rollout status deployment --timeout 300s -n bookstore bookstore-v2
