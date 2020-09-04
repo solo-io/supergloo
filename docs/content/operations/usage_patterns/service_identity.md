@@ -65,7 +65,7 @@ The `ServiceSelector` spec defines two selection mechanisms, `KubeServiceMatcher
 kubeServiceRefs:
   - name: reviews
     namespace: bookinfo
-    cluster: cluster-one
+    clusterName: cluster-one
 ```
 
 The `KubeServiceMatcher` selector provides a higher degree of freedom when it comes to picking destinations. There are three fields included in the matcher: `labels`, `namespaces`, and `clusters`. All three fields are optional, which means that it would be simple to select a destination based on the labels applied to the service regardless of what namespace or cluster the service was running in. 
