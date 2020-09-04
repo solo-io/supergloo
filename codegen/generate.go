@@ -6,8 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/solo-io/service-mesh-hub/codegen/custom/appmesh"
-
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 
 	externalapis "github.com/solo-io/external-apis/codegen"
@@ -98,6 +96,7 @@ var (
 				io.IstioNetworkingOutputTypes,
 				io.SmiNetworkingOutputTypes,
 				io.LocalNetworkingOutputTypes,
+				io.AppMeshNetworkingOutputTypes,
 			},
 		},
 		// certificate issuer component
@@ -137,8 +136,6 @@ var (
 		for _, component := range topLevelComponents {
 			allTemplates = append(allTemplates, component.makeCodegenTemplates()...)
 		}
-
-		allTemplates = append(allTemplates, appmesh.MakeTemplates(appmeshResources))
 
 		return allTemplates
 	}()
