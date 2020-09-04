@@ -10,9 +10,9 @@ In the [previous guide]({{% versioned_link_path fromRoot="/guides/federate_ident
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Service Mesh Hub is [installed and running on the `management-cluster`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
-* Istio is [installed on both `management-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
-* Both `management-cluster` and `remote-cluster` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+* Service Mesh Hub is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
+* Istio is [installed on both `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
+* Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
 * The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
@@ -61,7 +61,7 @@ spec:
   federation: {}
   globalAccessPolicy: ENABLED
   meshes:
-  - name: istiod-istio-system-management-cluster
+  - name: istiod-istio-system-mgmt-cluster
     namespace: service-mesh-hub
   - name: istiod-istio-system-remote-cluster
     namespace: service-mesh-hub
@@ -82,7 +82,7 @@ spec:
   federation: {}
   globalAccessPolicy: ENABLED
   meshes:
-  - name: istiod-istio-system-management-cluster
+  - name: istiod-istio-system-mgmt-cluster
     namespace: service-mesh-hub
   - name: istiod-istio-system-remote-cluster
     namespace: service-mesh-hub
@@ -103,12 +103,12 @@ It may take a few moments for the access policy / authorizations propagate to th
 {{% /notice %}}
 
 With the `globalAccessPolicy` setting `ENABLED` and with no other `AccessControlPolicies`, we should see a `deny-all` access posture. 
+
 Try going back to [http://localhost:9080](http://localhost:9080) and refresh the bookinfo sample and you should see the `details` and `reviews` services blocked.
 
 For Istio, global access control is enforced using an AuthorizationPolicy with an empty spec, placed in Istio's root namespace (usually `istio-system`). More details can be found in the [Istio AuthorizationPolicy documentation](https://istio.io/latest/docs/reference/config/security/authorization-policy/#AuthorizationPolicy).
 
-Note that Service Mesh Hub will also create additional AuthorizationPolicies in order to allow all traffic through ingress gateways 
-so that federated traffic can continue working as expected.
+Note that Service Mesh Hub will also create additional AuthorizationPolicies in order to allow all traffic through ingress gateways so that federated traffic can continue working as expected.
 
 ## Using `AccessPolicy`
 
@@ -132,7 +132,7 @@ spec:
       serviceAccounts:
         - name: bookinfo-productpage
           namespace: bookinfo
-          clusterName: management-cluster
+          clusterName: mgmt-cluster
   destinationSelector:
   - kubeServiceMatcher:
       namespaces:
@@ -152,7 +152,7 @@ spec:
       serviceAccounts:
         - name: bookinfo-productpage
           namespace: bookinfo
-          clusterName: management-cluster
+          clusterName: mgmt-cluster
   destinationSelector:
   - kubeServiceMatcher:
       namespaces:
@@ -184,7 +184,7 @@ spec:
       serviceAccounts:
         - name: bookinfo-reviews
           namespace: bookinfo
-          clusterName: management-cluster
+          clusterName: mgmt-cluster
   destinationSelector:
   - kubeServiceMatcher:
       namespaces:
@@ -205,7 +205,7 @@ spec:
       serviceAccounts:
         - name: bookinfo-reviews
           namespace: bookinfo
-          clusterName: management-cluster
+          clusterName: mgmt-cluster
   destinationSelector:
   - kubeServiceMatcher:
       namespaces:

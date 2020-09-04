@@ -52,7 +52,7 @@ Next we will install Service Mesh Hub, as outlined in the Setup guide for Servic
 
 ```shell
 meshctl install
-meshctl cluster register --cluster-name management-cluster --remote-context management-cluster-context
+meshctl cluster register --cluster-name mgmt-cluster --remote-context mgmt-cluster-context
 ```
 
 Finally, we will deploy the sample application.

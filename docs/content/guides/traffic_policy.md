@@ -22,8 +22,8 @@ In this guide we will examine how Service Mesh Hub can configure Istio to apply 
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Service Mesh Hub is [installed and running on the `management-cluster`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
-* Istio is [installed on the `management-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
+* Service Mesh Hub is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
+* Istio is [installed on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
 * The management cluster is [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
 
 
@@ -97,9 +97,9 @@ kubectl get workloads -n service-mesh-hub
 
 ```shell
 NAME                                                              AGE
-istio-ingressgateway-istio-system-management-cluster-deployment   3h4m
+istio-ingressgateway-istio-system-mgmt-cluster-deployment   3h4m
 istio-ingressgateway-istio-system-remote-cluster-deployment       3h4m
-petstore-default-management-cluster-deployment                    3h4m
+petstore-default-mgmt-cluster-deployment                    3h4m
 ```
 
 If you've also deployed the Bookstore application, you may see entries for that as well. We can see the naming for the Pet Store application is the deployment name, followed by the namespace, and then the cluster name. We can also check for the *TrafficTarget*, which represents the service associated with the pods in the Workload resource.
@@ -110,12 +110,12 @@ kubectl get traffictarget -n service-mesh-hub
 
 ```shell
 NAME                                                   AGE
-istio-ingressgateway-istio-system-management-cluster   3h7m
+istio-ingressgateway-istio-system-mgmt-cluster   3h7m
 istio-ingressgateway-istio-system-remote-cluster       3h6m
-petstore-default-management-cluster                    3h7m
+petstore-default-mgmt-cluster                    3h7m
 ```
 
-We are going to create a TrafficPolicy that uses the `petstore-default-management-cluster` as a TrafficTarget. Within the TrafficPolicy, we are going to set a retry limit and timeout for the service. You can find more information about the options available for TrafficPolicy in the [API reference section]({{% versioned_link_path fromRoot="/reference/api/traffic_policy" %}}).
+We are going to create a TrafficPolicy that uses the `petstore-default-mgmt-cluster` as a TrafficTarget. Within the TrafficPolicy, we are going to set a retry limit and timeout for the service. You can find more information about the options available for TrafficPolicy in the [API reference section]({{% versioned_link_path fromRoot="/reference/api/traffic_policy" %}}).
 
 Here is the configuration we will apply:
 
@@ -130,7 +130,7 @@ spec:
   destinationSelector:
   - kubeServiceRefs:
       services:
-        - clusterName: management-cluster
+        - clusterName: mgmt-cluster
           name: petstore
           namespace: default
   requestTimeout: 100ms
@@ -158,7 +158,7 @@ metadata:
   creationTimestamp: "2020-08-25T15:12:56Z"
   generation: 1
   labels:
-    cluster.multicluster.solo.io: management-cluster
+    cluster.multicluster.solo.io: mgmt-cluster
     owner.networking.smh.solo.io: service-mesh-hub
   name: petstore
   namespace: default

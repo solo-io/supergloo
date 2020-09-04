@@ -32,10 +32,10 @@ For following some of the Service Mesh Hub guides, we assume two clusters with I
 
 We will install Istio with a suitable configuration for a multi-cluster demonstration by overriding some of the Istio Operator values.
 
-Let's install Istio into both the management plane **AND** the remote cluster. The configuration below assumes that you are using the Kind clusters created in the Setup guide. The contexts for those clusters should be `kind-management-cluster` and `kind-remote-cluster`. Both clusters are using a NodePort to expose the ingress gateway for Istio. If you are deploying Istio on different cluster setup, update your context and gateway settings accordingly.
+Let's install Istio into both the management plane **AND** the remote cluster. The configuration below assumes that you are using the Kind clusters created in the Setup guide. The contexts for those clusters should be `kind-mgmt-cluster` and `kind-remote-cluster`. Both clusters are using a NodePort to expose the ingress gateway for Istio. If you are deploying Istio on different cluster setup, update your context and gateway settings accordingly.
 
 ```shell
-cat << EOF | istioctl manifest apply --context kind-management-cluster -f -
+cat << EOF | istioctl manifest apply --context kind-mgmt-cluster -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -166,7 +166,7 @@ spec:
 EOF
 ```
 
-With Service Mesh Hub and Istio installed into the `management-cluster`, and Istio installed into `remote-cluster`, we have an architecture that looks like this:
+With Service Mesh Hub and Istio installed into the `mgmt-cluster`, and Istio installed into `remote-cluster`, we have an architecture that looks like this:
 
 ![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-2clusters.png" %}})
 
@@ -185,8 +185,8 @@ istiod-7795ccf9dc-vr4cq                 1/1     Running   0          5d22h
 We also have to enable Istio DNS for the `.global` stub domain for when we want to use multicluster communication. The following two blocks will enable Istio DNS for both clusters.
 
 ```shell
-ISTIO_COREDNS=$(kubectl --context kind-management-cluster -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
-kubectl --context kind-management-cluster apply -f - <<EOF
+ISTIO_COREDNS=$(kubectl --context kind-mgmt-cluster -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
+kubectl --context kind-mgmt-cluster apply -f - <<EOF
 apiVersion: v1
 kind: ConfigMap
 metadata:
