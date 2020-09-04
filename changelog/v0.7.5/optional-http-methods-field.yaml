@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Make AccessPolicySpec's http-methods field truly optional by wrapping it in a nillable wrapper.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/951

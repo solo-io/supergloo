@@ -30,6 +30,17 @@ func (this *AccessPolicySpec) UnmarshalJSON(b []byte) error {
 	return AccessPolicyUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for AccessPolicySpec_HttpMethods
+func (this *AccessPolicySpec_HttpMethods) MarshalJSON() ([]byte, error) {
+	str, err := AccessPolicyMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for AccessPolicySpec_HttpMethods
+func (this *AccessPolicySpec_HttpMethods) UnmarshalJSON(b []byte) error {
+	return AccessPolicyUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for AccessPolicyStatus
 func (this *AccessPolicyStatus) MarshalJSON() ([]byte, error) {
 	str, err := AccessPolicyMarshaler.MarshalToString(this)

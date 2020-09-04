@@ -54,8 +54,12 @@ message AccessPolicySpec {
         Optional. A list of HTTP methods to allow (e.g., "GET", "POST").
         It is ignored in gRPC case because the value is always "POST".
         If not specified, allows any method.
+        Wrapping it in a nillable message.
     */
-    repeated networking.smh.solo.io.HttpMethodValue allowed_methods = 5;
+    HttpMethods allowed_methods = 5;
+    message HttpMethods {
+        repeated networking.smh.solo.io.HttpMethodValue allowed_methods = 1;
+    }
 
     /*
         Optional. A list of ports which to allow.
