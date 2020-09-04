@@ -132,9 +132,9 @@ metadata:
   name: traffic-mirror
 spec:
   sourceSelector:
-    labels:
-      app: bookstore
-      service: productpage
+    - labels:
+        app: bookstore
+        service: productpage
   destinationSelector:
   - kubeServiceMatcher:
       labels:
