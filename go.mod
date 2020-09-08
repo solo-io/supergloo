@@ -65,7 +65,6 @@ require (
 	istio.io/istio v0.0.0-20200821180042-b0e61d10cbae
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.18.8
-	k8s.io/cli-runtime v0.18.8
 	k8s.io/client-go v8.0.0+incompatible
 	sigs.k8s.io/controller-runtime v0.6.2
 )
