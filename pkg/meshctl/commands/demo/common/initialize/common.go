@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"time"
 
 	"github.com/gobuffalo/packr"
 	"github.com/rotisserie/eris"
@@ -14,7 +13,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/registration"
-	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 )
 
@@ -53,11 +51,8 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 		return err
 	}
 
+	kubeConfig := ""
 	kubeContext := fmt.Sprintf("kind-%s", cluster)
-	kubeConfig, err := kubeconfig.NewKubeLoader(5*time.Second).GetClientConfigForContext("", kubeContext)
-	if err != nil {
-		return err
-	}
 
 	namespace := defaults.DefaultPodNamespace
 	verbose := true
@@ -67,7 +62,8 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 	err = smh.Installer{
 		HelmChartPath:  smhChartUri,
 		HelmValuesPath: "",
-		KubeConfig:     kubeConfig,
+		KubeConfig:     "",
+		KubeContext:    kubeContext,
 		Namespace:      namespace,
 		ReleaseName:    helm.Chart.Data.Name,
 		Verbose:        verbose,
@@ -80,26 +76,31 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 	}
 
 	registrantOpts := &registration.RegistrantOptions{
-		RegistrationOptions: register.RegistrationOptions{
+		KubeConfigPath: kubeConfig,
+		MgmtContext:    kubeContext,
+		RemoteContext:  kubeContext,
+		Registration: register.RegistrationOptions{
 			ClusterName:      cluster,
-			KubeCfg:          kubeConfig,
-			RemoteKubeCfg:    kubeConfig,
 			RemoteCtx:        kubeContext,
 			Namespace:        namespace,
 			RemoteNamespace:  namespace,
 			APIServerAddress: apiServerAddress,
 			ClusterDomain:    "",
 		},
-		CertAgentInstallOptions: registration.CertAgentInstallOptions{
+		CertAgent: registration.CertAgentInstallOptions{
 			ChartPath:   certAgentChartUri,
 			ChartValues: "",
 		},
 		Verbose: verbose,
 	}
 
-	err = registration.NewRegistrant(registrantOpts).RegisterCluster(ctx)
+	registrant, err := registration.NewRegistrant(registrantOpts)
 	if err != nil {
-		return eris.Wrapf(err, "Error registering cluster %s", cluster)
+		return eris.Wrapf(err, "initializing registrant for cluster %s", cluster)
+	}
+	err = registrant.RegisterCluster(ctx)
+	if err != nil {
+		return eris.Wrapf(err, "registering cluster %s", cluster)
 	}
 
 	script, err := box.FindString("post_install_smh.sh")
@@ -127,42 +128,39 @@ func registerCluster(ctx context.Context, mgmtCluster string, cluster string, bo
 		return err
 	}
 
-	kubeLoader := kubeconfig.NewKubeLoader(5 * time.Second)
-	kubeConfig, err := kubeLoader.GetClientConfigForContext("", fmt.Sprintf("kind-%s", mgmtCluster))
-	if err != nil {
-		return err
-	}
-
+	kubeConfig := ""
+	mgmtKubeContext := fmt.Sprintf("kind-%s", mgmtCluster)
 	remoteKubeContext := fmt.Sprintf("kind-%s", cluster)
-	remoteKubeConfig, err := kubeLoader.GetClientConfigForContext("", remoteKubeContext)
-	if err != nil {
-		return err
-	}
 
 	namespace := defaults.DefaultPodNamespace
 	certAgentChartUri := fmt.Sprintf(smh.CertAgentChartUriTemplate, version.Version)
 
 	registrantOpts := &registration.RegistrantOptions{
-		RegistrationOptions: register.RegistrationOptions{
+		KubeConfigPath: kubeConfig,
+		MgmtContext:    mgmtKubeContext,
+		RemoteContext:  remoteKubeContext,
+		Registration: register.RegistrationOptions{
 			ClusterName:      cluster,
-			KubeCfg:          kubeConfig,
-			RemoteKubeCfg:    remoteKubeConfig,
 			RemoteCtx:        remoteKubeContext,
 			Namespace:        namespace,
 			RemoteNamespace:  namespace,
 			APIServerAddress: apiServerAddress,
 			ClusterDomain:    "",
 		},
-		CertAgentInstallOptions: registration.CertAgentInstallOptions{
+		CertAgent: registration.CertAgentInstallOptions{
 			ChartPath:   certAgentChartUri,
 			ChartValues: "",
 		},
 		Verbose: true,
 	}
 
-	err = registration.NewRegistrant(registrantOpts).RegisterCluster(ctx)
+	registrant, err := registration.NewRegistrant(registrantOpts)
 	if err != nil {
-		return eris.Wrapf(err, "Error registering cluster %s", cluster)
+		return eris.Wrapf(err, "initializing registrant for cluster %s", cluster)
+	}
+	err = registrant.RegisterCluster(ctx)
+	if err != nil {
+		return eris.Wrapf(err, "registering cluster %s", cluster)
 	}
 
 	fmt.Printf("Successfully registered cluster %s\n", cluster)

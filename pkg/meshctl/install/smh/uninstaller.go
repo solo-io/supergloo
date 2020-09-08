@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/helm"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 type Uninstaller struct {
-	KubeConfig  clientcmd.ClientConfig
+	KubeConfig  string
+	KubeContext string
 	Namespace   string
 	ReleaseName string
 	Verbose     bool
@@ -37,6 +37,7 @@ func (i Uninstaller) uninstall(
 
 	return helm.Uninstaller{
 		KubeConfig:  i.KubeConfig,
+		KubeContext: i.KubeContext,
 		Namespace:   i.Namespace,
 		ReleaseName: releaseName,
 		Verbose:     i.Verbose,
