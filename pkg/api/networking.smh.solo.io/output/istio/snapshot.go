@@ -666,6 +666,8 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	}
 	snapshotMap["authorizationPolicies"] = authorizationPolicySet.List()
 
+	snapshotMap["clusters"] = s.clusters
+
 	return json.Marshal(snapshotMap)
 }
 
