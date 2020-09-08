@@ -3,6 +3,8 @@ package osm_test
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
@@ -67,9 +69,12 @@ var _ = Describe("OsmMeshDetector", func() {
 			ctx,
 		)
 
-		mesh, err := detector.DetectMesh(deployment)
+		in := input.NewInputSnapshotManualBuilder("")
+		in.AddDeployments([]*appsv1.Deployment{deployment})
+
+		meshes, err := detector.DetectMeshes(in.Build())
 		Expect(err).NotTo(HaveOccurred())
-		Expect(mesh).To(BeNil())
+		Expect(meshes).To(BeNil())
 	})
 
 	It("detects a mesh from a deployment named osm-controller", func() {
@@ -98,9 +103,14 @@ var _ = Describe("OsmMeshDetector", func() {
 				},
 			},
 		}
-		mesh, err := detector.DetectMesh(deployment)
+
+		in := input.NewInputSnapshotManualBuilder("")
+		in.AddDeployments([]*appsv1.Deployment{deployment})
+
+		meshes, err := detector.DetectMeshes(in.Build())
 		Expect(err).NotTo(HaveOccurred())
-		Expect(mesh).To(Equal(expected))
+		Expect(meshes).To(HaveLen(1))
+		Expect(meshes[0]).To(Equal(expected))
 	})
 
 })

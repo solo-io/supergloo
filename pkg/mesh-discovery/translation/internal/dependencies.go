@@ -3,6 +3,8 @@ package translation
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector/appmesh"
+
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh"
 	meshdetector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
@@ -25,7 +27,6 @@ import (
 type DependencyFactory interface {
 	MakeMeshTranslator(
 		ctx context.Context,
-		in input.Snapshot,
 	) mesh.Translator
 
 	MakeWorkloadTranslator(
@@ -38,22 +39,13 @@ type DependencyFactory interface {
 
 type DependencyFactoryImpl struct{}
 
-func (d DependencyFactoryImpl) MakeMeshTranslator(ctx context.Context, in input.Snapshot) mesh.Translator {
+func (d DependencyFactoryImpl) MakeMeshTranslator(
+	ctx context.Context,
+) mesh.Translator {
 
 	detectors := meshdetector.MeshDetectors{
-		// TODO(EItanya): Uncomment to re-enable consul discovery
-		// consul.NewMeshDetector(),
-		istio.NewMeshDetector(
-			ctx,
-			in.ConfigMaps(),
-			in.Services(),
-			in.Pods(),
-			in.Nodes(),
-		),
-		// TODO(EItanya): Uncomment to re-enable linkerd discovery
-		// linkerd.NewMeshDetector(
-		// 	in.ConfigMaps(),
-		// ),
+		istio.NewMeshDetector(ctx),
+		appmesh.NewMeshDetector(ctx),
 		osm.NewMeshDetector(ctx),
 	}
 
