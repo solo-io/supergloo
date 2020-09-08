@@ -19,6 +19,14 @@ var smhRbacRequirements = func() []rbacv1.PolicyRule {
 	policyRules = append(policyRules, io.SmiNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	policyRules = append(policyRules, io.CertificateIssuerInputTypes.RbacPoliciesWatch()...)
 	policyRules = append(policyRules, io.CertificateIssuerInputTypes.RbacPoliciesUpdateStatus()...)
+
+	// NOTE(ilackarms): this permission required to check for the presence of appmesh crds
+	policyRules = append(policyRules, rbacv1.PolicyRule{
+		Verbs:     []string{"get", "list", "watch"},
+		APIGroups: []string{"apiextensions.k8s.io"},
+		Resources: []string{"customresourcedefinitions"},
+	})
+
 	return policyRules
 }()
 

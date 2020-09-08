@@ -26,6 +26,7 @@ type discoveryReconciler struct {
 	translator   translation.Translator
 	masterClient client.Client
 	history      *stats.SnapshotHistory
+	verboseMode  bool
 }
 
 func Start(
@@ -35,6 +36,7 @@ func Start(
 	masterClient client.Client,
 	clusters multicluster.ClusterWatcher,
 	history *stats.SnapshotHistory,
+	verboseMode bool,
 ) {
 
 	r := &discoveryReconciler{
@@ -43,6 +45,7 @@ func Start(
 		translator:   translator,
 		masterClient: masterClient,
 		history:      history,
+		verboseMode:  verboseMode,
 	}
 
 	filterDiscoveryEvents := predicate.SimplePredicate{
@@ -55,7 +58,19 @@ func Start(
 func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, error) {
 	contextutils.LoggerFrom(r.ctx).Debugf("object triggered resync: %T<%v>", obj, sets.Key(obj))
 
-	inputSnap, err := r.builder.BuildSnapshot(r.ctx, "mesh-discovery", input.BuildOptions{})
+	crdCheck := input.CrdCheckOption_IgnoreIfNotPresent
+	if r.verboseMode {
+		crdCheck = input.CrdCheckOption_WarnIfNotPresent
+	}
+
+	inputSnap, err := r.builder.BuildSnapshot(r.ctx, "mesh-discovery", input.BuildOptions{
+		// ignore NoKindMatchError for AppMesh Mesh CRs
+		// (only clusters with AppMesh Controller installed will
+		// have this kind registered)
+		Meshes: input.MeshBuildOptions{
+			CrdCheck: crdCheck,
+		},
+	})
 	if err != nil {
 		// failed to read from cache; should never happen
 		return false, err

@@ -41,6 +41,7 @@ type networkingReconciler struct {
 	multiClusterClient multicluster.Client
 	history            *stats.SnapshotHistory
 	totalReconciles    int
+	verboseMode        bool
 }
 
 func Start(
@@ -52,6 +53,7 @@ func Start(
 	multiClusterClient multicluster.Client,
 	mgr manager.Manager,
 	history *stats.SnapshotHistory,
+	verboseMode bool,
 ) error {
 	d := &networkingReconciler{
 		ctx:                ctx,
@@ -62,6 +64,7 @@ func Start(
 		mgmtClient:         mgr.GetClient(),
 		multiClusterClient: multiClusterClient,
 		history:            history,
+		verboseMode:        verboseMode,
 	}
 
 	filterNetworkingEvents := predicate.SimplePredicate{
@@ -78,9 +81,12 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	r.totalReconciles++
 
 	ctx := contextutils.WithLogger(r.ctx, fmt.Sprintf("reconcile-%v", r.totalReconciles))
+
 	inputSnap, err := r.builder.BuildSnapshot(ctx, "mesh-networking", input.BuildOptions{
 		// only look at kube clusters in our own namespace
-		KubernetesClusters: []client.ListOption{client.InNamespace(defaults.GetPodNamespace())},
+		KubernetesClusters: input.KubernetesClusterBuildOptions{
+			ListOptions: []client.ListOption{client.InNamespace(defaults.GetPodNamespace())},
+		},
 	})
 	if err != nil {
 		// failed to read from cache; should never happen

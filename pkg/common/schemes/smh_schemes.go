@@ -1,6 +1,7 @@
 package schemes
 
 import (
+	appmeshv1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	linkerdconfig "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha2"
 	smiaccess1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
 	smispecsv1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
@@ -11,6 +12,7 @@ import (
 	skv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
+	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -31,7 +33,15 @@ var SchemeBuilder = runtime.SchemeBuilder{
 	smisplitv1alpha2.AddToScheme,
 	smispecsv1alpha3.AddToScheme,
 	smiaccess1alpha2.AddToScheme,
+	appmeshv1beta2.AddToScheme,
 
 	// sk types
 	skv1alpha1.AddToScheme,
+
+	// native k8s types
+	apiextensionsv1beta1.AddToScheme,
+}
+
+func AddToScheme(s *runtime.Scheme) error {
+	return SchemeBuilder.AddToScheme(s)
 }
