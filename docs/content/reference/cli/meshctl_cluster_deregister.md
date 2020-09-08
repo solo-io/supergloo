@@ -21,7 +21,7 @@ meshctl cluster deregister [flags]
       --cluster-name string           name of the cluster to deregister
       --federation-namespace string   namespace of the Service-Mesh-Hub control plane in which the secret for the deregistered cluster will be created (default "service-mesh-hub")
   -h, --help                          help for deregister
-      --kubeconfig string             path to the kubeconfig from which the deregistered cluster will be accessed
+      --kubeconfig string             path to the kubeconfig from which the registered cluster will be accessed
       --mgmt-context string           name of the kubeconfig context to use for the management cluster
       --remote-context string         name of the kubeconfig context to use for the remote cluster
       --remote-namespace string       namespace in the target cluster where a service account enabling remote access will be created. If the namespace does not exist it will be created. (default "service-mesh-hub")

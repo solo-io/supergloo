@@ -10,6 +10,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/registration"
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -53,9 +54,8 @@ type registrationOptions struct {
 }
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
+	utils.AddManagementKubeconfigFlags(&o.kubeCfgPath, &o.kubeContext, flags)
 	flags.BoolVarP(&o.dryRun, "dry-run", "d", false, "Output installation manifest")
-	flags.StringVar(&o.kubeCfgPath, "kubeconfig", "", "path to the kubeconfig from which the management cluster will be accessed")
-	flags.StringVar(&o.kubeContext, "kubecontext", "", "name of the kubeconfig context to use for the management cluster")
 	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace in which to install Service Mesh Hub")
 	flags.StringVar(&o.chartPath, "chart-file", "", "Path to a local Helm chart for installing Service Mesh Hub. If unset, this command will install Service Mesh Hub from the publicly released Helm chart.")
 	flags.StringVarP(&o.chartValuesFile, "chart-values-file", "", "", "File containing value overrides for the Service Mesh Hub Helm chart")
@@ -63,7 +63,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.version, "version", "", "Version to install, defaults to latest if omitted")
 
 	flags.BoolVarP(&o.register, "register", "r", false, "Register the cluster running Service Mesh Hub")
-	flags.StringVar(&o.clusterName, "cluster-name", "management-cluster",
+	flags.StringVar(&o.clusterName, "cluster-name", "mgmt-cluster",
 		"Name with which to register the cluster running Service Mesh Hub, only applies if --register is also set")
 	flags.StringVar(&o.apiServerAddress, "api-server-address", "", "Swap out the address of the remote cluster's k8s API server for the value of this flag. Set this flag when the address of the cluster domain used by the Service Mesh Hub is different than that specified in the local kubeconfig.")
 	flags.StringVar(&o.clusterDomain, "cluster-domain", "", "The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. Defaults to 'cluster.local'. Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/")
@@ -102,23 +102,28 @@ func install(ctx context.Context, opts *options) error {
 
 	if opts.register && !opts.dryRun {
 		registrantOpts := &registration.RegistrantOptions{
-			RegistrationOptions: register.RegistrationOptions{
-				ClusterName:       opts.clusterName,
-				KubeCfgPath:       opts.kubeCfgPath,
-				KubeContext:       opts.kubeContext,
-				RemoteKubeContext: opts.kubeContext,
-				Namespace:         opts.namespace,
-				RemoteNamespace:   opts.namespace,
-				APIServerAddress:  opts.apiServerAddress,
-				ClusterDomain:     opts.clusterDomain,
+			KubeConfigPath: opts.kubeCfgPath,
+			MgmtContext:    opts.kubeContext,
+			RemoteContext:  opts.kubeContext,
+			Registration: register.RegistrationOptions{
+				ClusterName:      opts.clusterName,
+				RemoteCtx:        opts.kubeContext,
+				Namespace:        opts.namespace,
+				RemoteNamespace:  opts.namespace,
+				APIServerAddress: opts.apiServerAddress,
+				ClusterDomain:    opts.clusterDomain,
 			},
-			CertAgentInstallOptions: registration.CertAgentInstallOptions{
+			CertAgent: registration.CertAgentInstallOptions{
 				ChartPath:   opts.certAgentChartPath,
 				ChartValues: opts.certAgentValuesPath,
 			},
 			Verbose: opts.verbose,
 		}
-		if err := registration.NewRegistrant(registrantOpts).RegisterCluster(ctx); err != nil {
+		registrant, err := registration.NewRegistrant(registrantOpts)
+		if err != nil {
+			return eris.Wrap(err, "initializing registrant")
+		}
+		if err := registrant.RegisterCluster(ctx); err != nil {
 			return eris.Wrap(err, "registering management-plane cluster")
 		}
 	}

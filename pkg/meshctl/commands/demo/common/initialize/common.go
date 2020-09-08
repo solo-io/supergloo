@@ -51,8 +51,9 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 		return err
 	}
 
+	kubeConfig := ""
 	kubeContext := fmt.Sprintf("kind-%s", cluster)
-	kubeConfigPath := ""
+
 	namespace := defaults.DefaultPodNamespace
 	verbose := true
 	smhChartUri := fmt.Sprintf(smh.ServiceMeshHubChartUriTemplate, version.Version)
@@ -61,7 +62,7 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 	err = smh.Installer{
 		HelmChartPath:  smhChartUri,
 		HelmValuesPath: "",
-		KubeConfig:     kubeConfigPath,
+		KubeConfig:     "",
 		KubeContext:    kubeContext,
 		Namespace:      namespace,
 		ReleaseName:    helm.Chart.Data.Name,
@@ -75,26 +76,31 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 	}
 
 	registrantOpts := &registration.RegistrantOptions{
-		RegistrationOptions: register.RegistrationOptions{
-			ClusterName:       cluster,
-			KubeCfgPath:       kubeConfigPath,
-			KubeContext:       kubeContext,
-			RemoteKubeContext: kubeContext,
-			Namespace:         namespace,
-			RemoteNamespace:   namespace,
-			APIServerAddress:  apiServerAddress,
-			ClusterDomain:     "",
+		KubeConfigPath: kubeConfig,
+		MgmtContext:    kubeContext,
+		RemoteContext:  kubeContext,
+		Registration: register.RegistrationOptions{
+			ClusterName:      cluster,
+			RemoteCtx:        kubeContext,
+			Namespace:        namespace,
+			RemoteNamespace:  namespace,
+			APIServerAddress: apiServerAddress,
+			ClusterDomain:    "",
 		},
-		CertAgentInstallOptions: registration.CertAgentInstallOptions{
+		CertAgent: registration.CertAgentInstallOptions{
 			ChartPath:   certAgentChartUri,
 			ChartValues: "",
 		},
 		Verbose: verbose,
 	}
 
-	err = registration.NewRegistrant(registrantOpts).RegisterCluster(ctx)
+	registrant, err := registration.NewRegistrant(registrantOpts)
 	if err != nil {
-		return eris.Wrapf(err, "Error registering cluster %s", cluster)
+		return eris.Wrapf(err, "initializing registrant for cluster %s", cluster)
+	}
+	err = registrant.RegisterCluster(ctx)
+	if err != nil {
+		return eris.Wrapf(err, "registering cluster %s", cluster)
 	}
 
 	script, err := box.FindString("post_install_smh.sh")
@@ -122,32 +128,39 @@ func registerCluster(ctx context.Context, mgmtCluster string, cluster string, bo
 		return err
 	}
 
-	kubeContext := fmt.Sprintf("kind-%s", mgmtCluster)
+	kubeConfig := ""
+	mgmtKubeContext := fmt.Sprintf("kind-%s", mgmtCluster)
 	remoteKubeContext := fmt.Sprintf("kind-%s", cluster)
+
 	namespace := defaults.DefaultPodNamespace
 	certAgentChartUri := fmt.Sprintf(smh.CertAgentChartUriTemplate, version.Version)
 
 	registrantOpts := &registration.RegistrantOptions{
-		RegistrationOptions: register.RegistrationOptions{
-			ClusterName:       cluster,
-			KubeCfgPath:       "",
-			KubeContext:       kubeContext,
-			RemoteKubeContext: remoteKubeContext,
-			Namespace:         namespace,
-			RemoteNamespace:   namespace,
-			APIServerAddress:  apiServerAddress,
-			ClusterDomain:     "",
+		KubeConfigPath: kubeConfig,
+		MgmtContext:    mgmtKubeContext,
+		RemoteContext:  remoteKubeContext,
+		Registration: register.RegistrationOptions{
+			ClusterName:      cluster,
+			RemoteCtx:        remoteKubeContext,
+			Namespace:        namespace,
+			RemoteNamespace:  namespace,
+			APIServerAddress: apiServerAddress,
+			ClusterDomain:    "",
 		},
-		CertAgentInstallOptions: registration.CertAgentInstallOptions{
+		CertAgent: registration.CertAgentInstallOptions{
 			ChartPath:   certAgentChartUri,
 			ChartValues: "",
 		},
 		Verbose: true,
 	}
 
-	err = registration.NewRegistrant(registrantOpts).RegisterCluster(ctx)
+	registrant, err := registration.NewRegistrant(registrantOpts)
 	if err != nil {
-		return eris.Wrapf(err, "Error registering cluster %s", cluster)
+		return eris.Wrapf(err, "initializing registrant for cluster %s", cluster)
+	}
+	err = registrant.RegisterCluster(ctx)
+	if err != nil {
+		return eris.Wrapf(err, "registering cluster %s", cluster)
 	}
 
 	fmt.Printf("Successfully registered cluster %s\n", cluster)

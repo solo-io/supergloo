@@ -13,6 +13,7 @@ replace (
 	github.com/envoyproxy/go-control-plane => github.com/envoyproxy/go-control-plane v0.9.5
 
 	github.com/golang/protobuf => github.com/golang/protobuf v1.3.5
+
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
 
 	k8s.io/client-go => k8s.io/client-go v0.18.6
@@ -23,7 +24,6 @@ require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/aws/aws-app-mesh-controller-for-k8s v1.1.1
-	github.com/aws/aws-sdk-go v1.33.11
 	github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.9.7-0.20200811182123-112a4904c4b0
@@ -35,7 +35,6 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2
-	github.com/google/go-cmp v0.5.1 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334

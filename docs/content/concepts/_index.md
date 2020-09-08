@@ -68,7 +68,7 @@ The components that comprise Service Mesh Hub can be categorized as `mesh-discov
 
 A cluster is registered using the CLI `meshctl cluster register` command. During registration, Service Mesh Hub authenticates to the target cluster using the user-provided kubeconfig credentials, creates a `ServiceAccount` on that cluster for Service Mesh Hub and builds a kubeconfig granting access to the target cluster which is stored as a `secret` on the management-plane cluster. This kubeconfig is then used by Service Mesh Hub for all communication to that target cluster. For instance, discovery uses this kubeconfig to connect to the target cluster and start discovery. 
 
-The discovery process is initiated by Service Mesh Hub running on the management-cluster, pulling and translating information from the registered target clusters. Discovery of a target cluster is performed when the cluster is first registered and then periodically to discover and translate any newly added meshes, workloads, and traffic targets.
+The discovery process is initiated by Service Mesh Hub running on the mgmt-cluster, pulling and translating information from the registered target clusters. Discovery of a target cluster is performed when the cluster is first registered and then periodically to discover and translate any newly added meshes, workloads, and traffic targets.
 
 The first task of discovery is to create an `Input Snapshot` and begin the tranlation of the service meshes and services on the cluster to create an `Output Snapshot` that creates custom resources to the management plane cluster. 
 

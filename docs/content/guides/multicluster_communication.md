@@ -9,9 +9,9 @@ In the [previous guides]({{% versioned_link_path fromRoot="/guides/federate_iden
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Service Mesh Hub is [installed and running on the `management-cluster`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
-* Istio is [installed on both the `management-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
-* Both `management-cluster` and `remote-cluster` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+* Service Mesh Hub is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
+* Istio is [installed on both the `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
+* Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
 * The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
@@ -21,7 +21,7 @@ Be sure to review the assumptions and satisfy the pre-requisites from the [Guide
 
 ## Controlling cross-cluster traffic
 
-We will now perform a *multi-cluster traffic split*, splitting traffic from the `productpage` service in the `management-cluster` cluster between `reviews-v1`, `reviews-v2`, and `reviews-v3` running in the `remote-cluster` cluster.
+We will now perform a *multi-cluster traffic split*, splitting traffic from the `productpage` service in the `mgmt-cluster` cluster between `reviews-v1`, `reviews-v2`, and `reviews-v3` running in the `remote-cluster` cluster.
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
@@ -34,25 +34,25 @@ spec:
   destinationSelector:
   - kubeServiceRefs:
       services:
-        - clusterName: management-cluster
+        - clusterName: mgmt-cluster
           name: reviews
           namespace: bookinfo
   trafficShift:
     destinations:
       - kubeService:
-          clusterName: new-remote-cluster
+          clusterName: remote-cluster
           name: reviews
           namespace: bookinfo
         weight: 75
       - kubeService:
-          clusterName: management-cluster
+          clusterName: mgmt-cluster
           name: reviews
           namespace: bookinfo
           subset:
             version: v1
         weight: 15
       - kubeService:
-          clusterName: management-cluster
+          clusterName: mgmt-cluster
           name: reviews
           namespace: bookinfo
           subset:
@@ -70,25 +70,25 @@ spec:
   destinationSelector:
   - kubeServiceRefs:
       services:
-        - clusterName: management-cluster
+        - clusterName: mgmt-cluster
           name: reviews
           namespace: bookinfo
   trafficShift:
     destinations:
       - kubeService:
-          clusterName: new-remote-cluster
+          clusterName: remote-cluster
           name: reviews
           namespace: bookinfo
         weight: 75
       - kubeService:
-          clusterName: management-cluster
+          clusterName: mgmt-cluster
           name: reviews
           namespace: bookinfo
           subset:
             version: v1
         weight: 15
       - kubeService:
-          clusterName: management-cluster
+          clusterName: mgmt-cluster
           name: reviews
           namespace: bookinfo
           subset:
@@ -98,7 +98,7 @@ EOF
 {{< /tab >}}
 {{< /tabs >}}
 
-Once you apply this resource to the `management-cluster` cluster, you should occasionally see traffic being routed to the reviews-v3 service, which will produce red-colored stars on the product page.
+Once you apply this resource to the `mgmt-cluster` cluster, you should occasionally see traffic being routed to the reviews-v3 service, which will produce red-colored stars on the product page.
 
 To go into slightly more detail here: The above TrafficPolicy says that:
 
