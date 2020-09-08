@@ -26,6 +26,12 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/solo-io/go-utils/contextutils"
+	"k8s.io/apimachinery/pkg/api/errors"
+
+	"github.com/rotisserie/eris"
+	apiextensions_k8s_io_v1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
@@ -316,44 +322,147 @@ type Builder interface {
 type BuildOptions struct {
 
 	// List options for composing a snapshot from TrafficTargets
-	TrafficTargets []client.ListOption
+	TrafficTargets TrafficTargetBuildOptions
 	// List options for composing a snapshot from Workloads
-	Workloads []client.ListOption
+	Workloads WorkloadBuildOptions
 	// List options for composing a snapshot from Meshes
-	Meshes []client.ListOption
+	Meshes MeshBuildOptions
 
 	// List options for composing a snapshot from TrafficPolicies
-	TrafficPolicies []client.ListOption
+	TrafficPolicies TrafficPolicyBuildOptions
 	// List options for composing a snapshot from AccessPolicies
-	AccessPolicies []client.ListOption
+	AccessPolicies AccessPolicyBuildOptions
 	// List options for composing a snapshot from VirtualMeshes
-	VirtualMeshes []client.ListOption
+	VirtualMeshes VirtualMeshBuildOptions
 	// List options for composing a snapshot from FailoverServices
-	FailoverServices []client.ListOption
+	FailoverServices FailoverServiceBuildOptions
 
 	// List options for composing a snapshot from Secrets
-	Secrets []client.ListOption
+	Secrets SecretBuildOptions
 
 	// List options for composing a snapshot from KubernetesClusters
-	KubernetesClusters []client.ListOption
+	KubernetesClusters KubernetesClusterBuildOptions
+}
+
+type CrdCheckOption int
+
+const (
+	// skip checking whether a crd exists for a kind before reading it from a cluster
+	CrdCheckOption_SkipCheck CrdCheckOption = iota
+
+	// return an error if the crd does not exist for a kind before reading it from the cluster
+	CrdCheckOption_ErrorIfNotPresent
+
+	// log an error (and continue) if the crd does not exist for a kind before reading it from the cluster
+	CrdCheckOption_WarnIfNotPresent
+
+	// ignore error (and continue) if the crd does not exist for a kind before reading it from the cluster
+	CrdCheckOption_IgnoreIfNotPresent
+)
+
+// Options for reading TrafficTargets
+type TrafficTargetBuildOptions struct {
+
+	// List options for composing a snapshot from TrafficTargets
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading TrafficTargets.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading Workloads
+type WorkloadBuildOptions struct {
+
+	// List options for composing a snapshot from Workloads
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading Workloads.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading Meshes
+type MeshBuildOptions struct {
+
+	// List options for composing a snapshot from Meshes
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading Meshes.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading TrafficPolicies
+type TrafficPolicyBuildOptions struct {
+
+	// List options for composing a snapshot from TrafficPolicies
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading TrafficPolicies.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading AccessPolicies
+type AccessPolicyBuildOptions struct {
+
+	// List options for composing a snapshot from AccessPolicies
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading AccessPolicies.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading VirtualMeshes
+type VirtualMeshBuildOptions struct {
+
+	// List options for composing a snapshot from VirtualMeshes
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading VirtualMeshes.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading FailoverServices
+type FailoverServiceBuildOptions struct {
+
+	// List options for composing a snapshot from FailoverServices
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading FailoverServices.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading Secrets
+type SecretBuildOptions struct {
+
+	// List options for composing a snapshot from Secrets
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading Secrets.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading KubernetesClusters
+type KubernetesClusterBuildOptions struct {
+
+	// List options for composing a snapshot from KubernetesClusters
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading KubernetesClusters.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
 }
 
 // build a snapshot from resources across multiple clusters
 type multiClusterBuilder struct {
 	clusters multicluster.ClusterSet
-
-	trafficTargets discovery_smh_solo_io_v1alpha2.MulticlusterTrafficTargetClient
-	workloads      discovery_smh_solo_io_v1alpha2.MulticlusterWorkloadClient
-	meshes         discovery_smh_solo_io_v1alpha2.MulticlusterMeshClient
-
-	trafficPolicies  networking_smh_solo_io_v1alpha2.MulticlusterTrafficPolicyClient
-	accessPolicies   networking_smh_solo_io_v1alpha2.MulticlusterAccessPolicyClient
-	virtualMeshes    networking_smh_solo_io_v1alpha2.MulticlusterVirtualMeshClient
-	failoverServices networking_smh_solo_io_v1alpha2.MulticlusterFailoverServiceClient
-
-	secrets v1.MulticlusterSecretClient
-
-	kubernetesClusters multicluster_solo_io_v1alpha1.MulticlusterKubernetesClusterClient
+	client   multicluster.Client
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
@@ -363,19 +472,7 @@ func NewMultiClusterBuilder(
 ) Builder {
 	return &multiClusterBuilder{
 		clusters: clusters,
-
-		trafficTargets: discovery_smh_solo_io_v1alpha2.NewMulticlusterTrafficTargetClient(client),
-		workloads:      discovery_smh_solo_io_v1alpha2.NewMulticlusterWorkloadClient(client),
-		meshes:         discovery_smh_solo_io_v1alpha2.NewMulticlusterMeshClient(client),
-
-		trafficPolicies:  networking_smh_solo_io_v1alpha2.NewMulticlusterTrafficPolicyClient(client),
-		accessPolicies:   networking_smh_solo_io_v1alpha2.NewMulticlusterAccessPolicyClient(client),
-		virtualMeshes:    networking_smh_solo_io_v1alpha2.NewMulticlusterVirtualMeshClient(client),
-		failoverServices: networking_smh_solo_io_v1alpha2.NewMulticlusterFailoverServiceClient(client),
-
-		secrets: v1.NewMulticlusterSecretClient(client),
-
-		kubernetesClusters: multicluster_solo_io_v1alpha1.NewMulticlusterKubernetesClusterClient(client),
+		client:   client,
 	}
 }
 
@@ -398,31 +495,31 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 
 	for _, cluster := range b.clusters.ListClusters() {
 
-		if err := b.insertTrafficTargetsFromCluster(ctx, cluster, trafficTargets, opts.TrafficTargets...); err != nil {
+		if err := b.insertTrafficTargetsFromCluster(ctx, cluster, trafficTargets, opts.TrafficTargets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertWorkloadsFromCluster(ctx, cluster, workloads, opts.Workloads...); err != nil {
+		if err := b.insertWorkloadsFromCluster(ctx, cluster, workloads, opts.Workloads); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertMeshesFromCluster(ctx, cluster, meshes, opts.Meshes...); err != nil {
+		if err := b.insertMeshesFromCluster(ctx, cluster, meshes, opts.Meshes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertTrafficPoliciesFromCluster(ctx, cluster, trafficPolicies, opts.TrafficPolicies...); err != nil {
+		if err := b.insertTrafficPoliciesFromCluster(ctx, cluster, trafficPolicies, opts.TrafficPolicies); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertAccessPoliciesFromCluster(ctx, cluster, accessPolicies, opts.AccessPolicies...); err != nil {
+		if err := b.insertAccessPoliciesFromCluster(ctx, cluster, accessPolicies, opts.AccessPolicies); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertVirtualMeshesFromCluster(ctx, cluster, virtualMeshes, opts.VirtualMeshes...); err != nil {
+		if err := b.insertVirtualMeshesFromCluster(ctx, cluster, virtualMeshes, opts.VirtualMeshes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertFailoverServicesFromCluster(ctx, cluster, failoverServices, opts.FailoverServices...); err != nil {
+		if err := b.insertFailoverServicesFromCluster(ctx, cluster, failoverServices, opts.FailoverServices); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets...); err != nil {
+		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertKubernetesClustersFromCluster(ctx, cluster, kubernetesClusters, opts.KubernetesClusters...); err != nil {
+		if err := b.insertKubernetesClustersFromCluster(ctx, cluster, kubernetesClusters, opts.KubernetesClusters); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 
@@ -445,13 +542,37 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	return outputSnap, errs
 }
 
-func (b *multiClusterBuilder) insertTrafficTargetsFromCluster(ctx context.Context, cluster string, trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet, opts ...client.ListOption) error {
-	trafficTargetClient, err := b.trafficTargets.Cluster(cluster)
+func (b *multiClusterBuilder) insertTrafficTargetsFromCluster(ctx context.Context, cluster string, trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet, opts TrafficTargetBuildOptions) error {
+	trafficTargetClient, err := discovery_smh_solo_io_v1alpha2.NewMulticlusterTrafficTargetClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	trafficTargetList, err := trafficTargetClient.ListTrafficTarget(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "traffictargets."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	trafficTargetList, err := trafficTargetClient.ListTrafficTarget(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -464,13 +585,37 @@ func (b *multiClusterBuilder) insertTrafficTargetsFromCluster(ctx context.Contex
 
 	return nil
 }
-func (b *multiClusterBuilder) insertWorkloadsFromCluster(ctx context.Context, cluster string, workloads discovery_smh_solo_io_v1alpha2_sets.WorkloadSet, opts ...client.ListOption) error {
-	workloadClient, err := b.workloads.Cluster(cluster)
+func (b *multiClusterBuilder) insertWorkloadsFromCluster(ctx context.Context, cluster string, workloads discovery_smh_solo_io_v1alpha2_sets.WorkloadSet, opts WorkloadBuildOptions) error {
+	workloadClient, err := discovery_smh_solo_io_v1alpha2.NewMulticlusterWorkloadClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	workloadList, err := workloadClient.ListWorkload(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "workloads."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	workloadList, err := workloadClient.ListWorkload(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -483,13 +628,37 @@ func (b *multiClusterBuilder) insertWorkloadsFromCluster(ctx context.Context, cl
 
 	return nil
 }
-func (b *multiClusterBuilder) insertMeshesFromCluster(ctx context.Context, cluster string, meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet, opts ...client.ListOption) error {
-	meshClient, err := b.meshes.Cluster(cluster)
+func (b *multiClusterBuilder) insertMeshesFromCluster(ctx context.Context, cluster string, meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet, opts MeshBuildOptions) error {
+	meshClient, err := discovery_smh_solo_io_v1alpha2.NewMulticlusterMeshClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	meshList, err := meshClient.ListMesh(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "meshes."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	meshList, err := meshClient.ListMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -503,13 +672,37 @@ func (b *multiClusterBuilder) insertMeshesFromCluster(ctx context.Context, clust
 	return nil
 }
 
-func (b *multiClusterBuilder) insertTrafficPoliciesFromCluster(ctx context.Context, cluster string, trafficPolicies networking_smh_solo_io_v1alpha2_sets.TrafficPolicySet, opts ...client.ListOption) error {
-	trafficPolicyClient, err := b.trafficPolicies.Cluster(cluster)
+func (b *multiClusterBuilder) insertTrafficPoliciesFromCluster(ctx context.Context, cluster string, trafficPolicies networking_smh_solo_io_v1alpha2_sets.TrafficPolicySet, opts TrafficPolicyBuildOptions) error {
+	trafficPolicyClient, err := networking_smh_solo_io_v1alpha2.NewMulticlusterTrafficPolicyClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	trafficPolicyList, err := trafficPolicyClient.ListTrafficPolicy(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "trafficpolicies."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	trafficPolicyList, err := trafficPolicyClient.ListTrafficPolicy(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -522,13 +715,37 @@ func (b *multiClusterBuilder) insertTrafficPoliciesFromCluster(ctx context.Conte
 
 	return nil
 }
-func (b *multiClusterBuilder) insertAccessPoliciesFromCluster(ctx context.Context, cluster string, accessPolicies networking_smh_solo_io_v1alpha2_sets.AccessPolicySet, opts ...client.ListOption) error {
-	accessPolicyClient, err := b.accessPolicies.Cluster(cluster)
+func (b *multiClusterBuilder) insertAccessPoliciesFromCluster(ctx context.Context, cluster string, accessPolicies networking_smh_solo_io_v1alpha2_sets.AccessPolicySet, opts AccessPolicyBuildOptions) error {
+	accessPolicyClient, err := networking_smh_solo_io_v1alpha2.NewMulticlusterAccessPolicyClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	accessPolicyList, err := accessPolicyClient.ListAccessPolicy(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "accesspolicies."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	accessPolicyList, err := accessPolicyClient.ListAccessPolicy(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -541,13 +758,37 @@ func (b *multiClusterBuilder) insertAccessPoliciesFromCluster(ctx context.Contex
 
 	return nil
 }
-func (b *multiClusterBuilder) insertVirtualMeshesFromCluster(ctx context.Context, cluster string, virtualMeshes networking_smh_solo_io_v1alpha2_sets.VirtualMeshSet, opts ...client.ListOption) error {
-	virtualMeshClient, err := b.virtualMeshes.Cluster(cluster)
+func (b *multiClusterBuilder) insertVirtualMeshesFromCluster(ctx context.Context, cluster string, virtualMeshes networking_smh_solo_io_v1alpha2_sets.VirtualMeshSet, opts VirtualMeshBuildOptions) error {
+	virtualMeshClient, err := networking_smh_solo_io_v1alpha2.NewMulticlusterVirtualMeshClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	virtualMeshList, err := virtualMeshClient.ListVirtualMesh(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "virtualmeshes."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	virtualMeshList, err := virtualMeshClient.ListVirtualMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -560,13 +801,37 @@ func (b *multiClusterBuilder) insertVirtualMeshesFromCluster(ctx context.Context
 
 	return nil
 }
-func (b *multiClusterBuilder) insertFailoverServicesFromCluster(ctx context.Context, cluster string, failoverServices networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet, opts ...client.ListOption) error {
-	failoverServiceClient, err := b.failoverServices.Cluster(cluster)
+func (b *multiClusterBuilder) insertFailoverServicesFromCluster(ctx context.Context, cluster string, failoverServices networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet, opts FailoverServiceBuildOptions) error {
+	failoverServiceClient, err := networking_smh_solo_io_v1alpha2.NewMulticlusterFailoverServiceClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	failoverServiceList, err := failoverServiceClient.ListFailoverService(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "failoverservices."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	failoverServiceList, err := failoverServiceClient.ListFailoverService(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -580,13 +845,37 @@ func (b *multiClusterBuilder) insertFailoverServicesFromCluster(ctx context.Cont
 	return nil
 }
 
-func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, cluster string, secrets v1_sets.SecretSet, opts ...client.ListOption) error {
-	secretClient, err := b.secrets.Cluster(cluster)
+func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, cluster string, secrets v1_sets.SecretSet, opts SecretBuildOptions) error {
+	secretClient, err := v1.NewMulticlusterSecretClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	secretList, err := secretClient.ListSecret(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "secrets."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	secretList, err := secretClient.ListSecret(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -600,13 +889,37 @@ func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, clus
 	return nil
 }
 
-func (b *multiClusterBuilder) insertKubernetesClustersFromCluster(ctx context.Context, cluster string, kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet, opts ...client.ListOption) error {
-	kubernetesClusterClient, err := b.kubernetesClusters.Cluster(cluster)
+func (b *multiClusterBuilder) insertKubernetesClustersFromCluster(ctx context.Context, cluster string, kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet, opts KubernetesClusterBuildOptions) error {
+	kubernetesClusterClient, err := multicluster_solo_io_v1alpha1.NewMulticlusterKubernetesClusterClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	kubernetesClusterList, err := kubernetesClusterClient.ListKubernetesCluster(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "kubernetesclusters."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	kubernetesClusterList, err := kubernetesClusterClient.ListKubernetesCluster(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -622,18 +935,7 @@ func (b *multiClusterBuilder) insertKubernetesClustersFromCluster(ctx context.Co
 
 // build a snapshot from resources in a single cluster
 type singleClusterBuilder struct {
-	trafficTargets discovery_smh_solo_io_v1alpha2.TrafficTargetClient
-	workloads      discovery_smh_solo_io_v1alpha2.WorkloadClient
-	meshes         discovery_smh_solo_io_v1alpha2.MeshClient
-
-	trafficPolicies  networking_smh_solo_io_v1alpha2.TrafficPolicyClient
-	accessPolicies   networking_smh_solo_io_v1alpha2.AccessPolicyClient
-	virtualMeshes    networking_smh_solo_io_v1alpha2.VirtualMeshClient
-	failoverServices networking_smh_solo_io_v1alpha2.FailoverServiceClient
-
-	secrets v1.SecretClient
-
-	kubernetesClusters multicluster_solo_io_v1alpha1.KubernetesClusterClient
+	client client.Client
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
@@ -641,19 +943,7 @@ func NewSingleClusterBuilder(
 	client client.Client,
 ) Builder {
 	return &singleClusterBuilder{
-
-		trafficTargets: discovery_smh_solo_io_v1alpha2.NewTrafficTargetClient(client),
-		workloads:      discovery_smh_solo_io_v1alpha2.NewWorkloadClient(client),
-		meshes:         discovery_smh_solo_io_v1alpha2.NewMeshClient(client),
-
-		trafficPolicies:  networking_smh_solo_io_v1alpha2.NewTrafficPolicyClient(client),
-		accessPolicies:   networking_smh_solo_io_v1alpha2.NewAccessPolicyClient(client),
-		virtualMeshes:    networking_smh_solo_io_v1alpha2.NewVirtualMeshClient(client),
-		failoverServices: networking_smh_solo_io_v1alpha2.NewFailoverServiceClient(client),
-
-		secrets: v1.NewSecretClient(client),
-
-		kubernetesClusters: multicluster_solo_io_v1alpha1.NewKubernetesClusterClient(client),
+		client: client,
 	}
 }
 
@@ -674,31 +964,31 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	var errs error
 
-	if err := b.insertTrafficTargets(ctx, trafficTargets, opts.TrafficTargets...); err != nil {
+	if err := b.insertTrafficTargets(ctx, trafficTargets, opts.TrafficTargets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertWorkloads(ctx, workloads, opts.Workloads...); err != nil {
+	if err := b.insertWorkloads(ctx, workloads, opts.Workloads); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertMeshes(ctx, meshes, opts.Meshes...); err != nil {
+	if err := b.insertMeshes(ctx, meshes, opts.Meshes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertTrafficPolicies(ctx, trafficPolicies, opts.TrafficPolicies...); err != nil {
+	if err := b.insertTrafficPolicies(ctx, trafficPolicies, opts.TrafficPolicies); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertAccessPolicies(ctx, accessPolicies, opts.AccessPolicies...); err != nil {
+	if err := b.insertAccessPolicies(ctx, accessPolicies, opts.AccessPolicies); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertVirtualMeshes(ctx, virtualMeshes, opts.VirtualMeshes...); err != nil {
+	if err := b.insertVirtualMeshes(ctx, virtualMeshes, opts.VirtualMeshes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertFailoverServices(ctx, failoverServices, opts.FailoverServices...); err != nil {
+	if err := b.insertFailoverServices(ctx, failoverServices, opts.FailoverServices); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertSecrets(ctx, secrets, opts.Secrets...); err != nil {
+	if err := b.insertSecrets(ctx, secrets, opts.Secrets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertKubernetesClusters(ctx, kubernetesClusters, opts.KubernetesClusters...); err != nil {
+	if err := b.insertKubernetesClusters(ctx, kubernetesClusters, opts.KubernetesClusters); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -719,8 +1009,29 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	return outputSnap, errs
 }
 
-func (b *singleClusterBuilder) insertTrafficTargets(ctx context.Context, trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet, opts ...client.ListOption) error {
-	trafficTargetList, err := b.trafficTargets.ListTrafficTarget(ctx, opts...)
+func (b *singleClusterBuilder) insertTrafficTargets(ctx context.Context, trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet, opts TrafficTargetBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "traffictargets."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	trafficTargetList, err := discovery_smh_solo_io_v1alpha2.NewTrafficTargetClient(b.client).ListTrafficTarget(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -732,8 +1043,29 @@ func (b *singleClusterBuilder) insertTrafficTargets(ctx context.Context, traffic
 
 	return nil
 }
-func (b *singleClusterBuilder) insertWorkloads(ctx context.Context, workloads discovery_smh_solo_io_v1alpha2_sets.WorkloadSet, opts ...client.ListOption) error {
-	workloadList, err := b.workloads.ListWorkload(ctx, opts...)
+func (b *singleClusterBuilder) insertWorkloads(ctx context.Context, workloads discovery_smh_solo_io_v1alpha2_sets.WorkloadSet, opts WorkloadBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "workloads."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	workloadList, err := discovery_smh_solo_io_v1alpha2.NewWorkloadClient(b.client).ListWorkload(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -745,8 +1077,29 @@ func (b *singleClusterBuilder) insertWorkloads(ctx context.Context, workloads di
 
 	return nil
 }
-func (b *singleClusterBuilder) insertMeshes(ctx context.Context, meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet, opts ...client.ListOption) error {
-	meshList, err := b.meshes.ListMesh(ctx, opts...)
+func (b *singleClusterBuilder) insertMeshes(ctx context.Context, meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet, opts MeshBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "meshes."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	meshList, err := discovery_smh_solo_io_v1alpha2.NewMeshClient(b.client).ListMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -759,8 +1112,29 @@ func (b *singleClusterBuilder) insertMeshes(ctx context.Context, meshes discover
 	return nil
 }
 
-func (b *singleClusterBuilder) insertTrafficPolicies(ctx context.Context, trafficPolicies networking_smh_solo_io_v1alpha2_sets.TrafficPolicySet, opts ...client.ListOption) error {
-	trafficPolicyList, err := b.trafficPolicies.ListTrafficPolicy(ctx, opts...)
+func (b *singleClusterBuilder) insertTrafficPolicies(ctx context.Context, trafficPolicies networking_smh_solo_io_v1alpha2_sets.TrafficPolicySet, opts TrafficPolicyBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "trafficpolicies."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	trafficPolicyList, err := networking_smh_solo_io_v1alpha2.NewTrafficPolicyClient(b.client).ListTrafficPolicy(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -772,8 +1146,29 @@ func (b *singleClusterBuilder) insertTrafficPolicies(ctx context.Context, traffi
 
 	return nil
 }
-func (b *singleClusterBuilder) insertAccessPolicies(ctx context.Context, accessPolicies networking_smh_solo_io_v1alpha2_sets.AccessPolicySet, opts ...client.ListOption) error {
-	accessPolicyList, err := b.accessPolicies.ListAccessPolicy(ctx, opts...)
+func (b *singleClusterBuilder) insertAccessPolicies(ctx context.Context, accessPolicies networking_smh_solo_io_v1alpha2_sets.AccessPolicySet, opts AccessPolicyBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "accesspolicies."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	accessPolicyList, err := networking_smh_solo_io_v1alpha2.NewAccessPolicyClient(b.client).ListAccessPolicy(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -785,8 +1180,29 @@ func (b *singleClusterBuilder) insertAccessPolicies(ctx context.Context, accessP
 
 	return nil
 }
-func (b *singleClusterBuilder) insertVirtualMeshes(ctx context.Context, virtualMeshes networking_smh_solo_io_v1alpha2_sets.VirtualMeshSet, opts ...client.ListOption) error {
-	virtualMeshList, err := b.virtualMeshes.ListVirtualMesh(ctx, opts...)
+func (b *singleClusterBuilder) insertVirtualMeshes(ctx context.Context, virtualMeshes networking_smh_solo_io_v1alpha2_sets.VirtualMeshSet, opts VirtualMeshBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "virtualmeshes."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	virtualMeshList, err := networking_smh_solo_io_v1alpha2.NewVirtualMeshClient(b.client).ListVirtualMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -798,8 +1214,29 @@ func (b *singleClusterBuilder) insertVirtualMeshes(ctx context.Context, virtualM
 
 	return nil
 }
-func (b *singleClusterBuilder) insertFailoverServices(ctx context.Context, failoverServices networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet, opts ...client.ListOption) error {
-	failoverServiceList, err := b.failoverServices.ListFailoverService(ctx, opts...)
+func (b *singleClusterBuilder) insertFailoverServices(ctx context.Context, failoverServices networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet, opts FailoverServiceBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "failoverservices."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	failoverServiceList, err := networking_smh_solo_io_v1alpha2.NewFailoverServiceClient(b.client).ListFailoverService(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -812,8 +1249,29 @@ func (b *singleClusterBuilder) insertFailoverServices(ctx context.Context, failo
 	return nil
 }
 
-func (b *singleClusterBuilder) insertSecrets(ctx context.Context, secrets v1_sets.SecretSet, opts ...client.ListOption) error {
-	secretList, err := b.secrets.ListSecret(ctx, opts...)
+func (b *singleClusterBuilder) insertSecrets(ctx context.Context, secrets v1_sets.SecretSet, opts SecretBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "secrets."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	secretList, err := v1.NewSecretClient(b.client).ListSecret(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -826,8 +1284,29 @@ func (b *singleClusterBuilder) insertSecrets(ctx context.Context, secrets v1_set
 	return nil
 }
 
-func (b *singleClusterBuilder) insertKubernetesClusters(ctx context.Context, kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet, opts ...client.ListOption) error {
-	kubernetesClusterList, err := b.kubernetesClusters.ListKubernetesCluster(ctx, opts...)
+func (b *singleClusterBuilder) insertKubernetesClusters(ctx context.Context, kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet, opts KubernetesClusterBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "kubernetesclusters."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	kubernetesClusterList, err := multicluster_solo_io_v1alpha1.NewKubernetesClusterClient(b.client).ListKubernetesCluster(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -838,4 +1317,18 @@ func (b *singleClusterBuilder) insertKubernetesClusters(ctx context.Context, kub
 	}
 
 	return nil
+}
+
+func verifyCrdExists(ctx context.Context, c client.Client, crdName, crdVersion string) (bool, error) {
+	var crd apiextensions_k8s_io_v1beta1.CustomResourceDefinition
+	if err := c.Get(ctx, client.ObjectKey{Name: crdName}, &crd); err != nil {
+		checkFailed := !errors.IsNotFound(err)
+		return checkFailed, err
+	}
+	for _, version := range crd.Spec.Versions {
+		if version.Name == crdVersion {
+			return false, nil
+		}
+	}
+	return false, eris.Errorf("version %v not found for crd %v", crdVersion, crdName)
 }

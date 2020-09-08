@@ -1157,6 +1157,9 @@ github.com/smartystreets/goconvey v1.6.4/go.mod h1:syvi0/a8iFYH4r/RixwvyeAJjdLS9
 github.com/soheilhy/cmux v0.1.4/go.mod h1:IM3LyeVVIOuxMH7sFAkER9+bJ4dT7Ms6E4xg4kGIyLM=
 github.com/solo-io/anyvendor v0.0.1 h1:csAXLNLkUQWlr/ll4tgmc+Id9kHw2ibncf35weg03mI=
 github.com/solo-io/anyvendor v0.0.1/go.mod h1:SLucIeU8qBOYI82BveNVn2LzZFcMWJSCf8Kd1S4Jcr4=
+github.com/solo-io/external-apis v0.1.0 h1:/jdBwQxmWlWHmOyGTKJms3iDsuH6hNYWxZS4te13txQ=
+github.com/solo-io/external-apis v0.1.1-0.20200828201727-bab69eb88bfd h1:uerVCERFbwBxpzJwalbcYryvXemRorLwOoQeKfYDzvw=
+github.com/solo-io/external-apis v0.1.1-0.20200828201727-bab69eb88bfd/go.mod h1:WguwYaI8GT7t8IecrxS4IOetP4Y73AbuMrbdpv3rDLo=
 github.com/solo-io/external-apis v0.1.1-0.20200902141920-5a1dc76781e8 h1:JfdLR2cNuk2/yZg3W9wvg16E8tuIzXJJRtiCaHO+xLc=
 github.com/solo-io/external-apis v0.1.1-0.20200902141920-5a1dc76781e8/go.mod h1:N+qMu9YjS/DB2qKlxfjK8KRCLgwOv7natz1LUR/5kio=
 github.com/solo-io/go-utils v0.17.0 h1:PNz+DgR1bwajhls/TX6JJCPMlaSAGAFwn5YZOYna63E=
@@ -1164,6 +1167,7 @@ github.com/solo-io/go-utils v0.17.0/go.mod h1:mGlBcOeSttKRVf4tiq0o8Ng/SRY851W8q0
 github.com/solo-io/protoc-gen-ext v0.0.7/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz4Cbw6tBcmaNsEk=
 github.com/solo-io/protoc-gen-ext v0.0.9 h1:dU9C8nSLNkjqLXd5QGJ2dvBcrNUvNUP92qlxMfe3t7A=
 github.com/solo-io/protoc-gen-ext v0.0.9/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz4Cbw6tBcmaNsEk=
+github.com/solo-io/skv2 v0.10.0/go.mod h1:L9hUWAtZ9brCtRCM/bBBJTKy3kKuCn/tuap7VAypwzA=
 github.com/solo-io/skv2 v0.10.1-0.20200902141428-e4b62ba3e6ee h1:QMvPargPbdMkAsSKClSHOmHTySJb4PS0htujlxY20/E=
 github.com/solo-io/skv2 v0.10.1-0.20200902141428-e4b62ba3e6ee/go.mod h1:L9hUWAtZ9brCtRCM/bBBJTKy3kKuCn/tuap7VAypwzA=
 github.com/solo-io/solo-kit v0.14.0 h1:5V5B93Vkt46KEQsco8S4GA3/U8ir2rpsPFJ2Dmk9Iwk=

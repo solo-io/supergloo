@@ -3,6 +3,7 @@
 //go:generate mockgen -source ./snapshot.go -destination mocks/snapshot.go
 
 // The Input Snapshot contains the set of all:
+// * Meshes
 // * ConfigMaps
 // * Services
 // * Pods
@@ -25,9 +26,18 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/solo-io/go-utils/contextutils"
+	"k8s.io/apimachinery/pkg/api/errors"
+
+	"github.com/rotisserie/eris"
+	apiextensions_k8s_io_v1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	appmesh_k8s_aws_v1beta2 "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2"
+	appmesh_k8s_aws_v1beta2_sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
 
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
@@ -38,6 +48,9 @@ import (
 
 // the snapshot of input resources consumed by translation
 type Snapshot interface {
+
+	// return the set of input Meshes
+	Meshes() appmesh_k8s_aws_v1beta2_sets.MeshSet
 
 	// return the set of input ConfigMaps
 	ConfigMaps() v1_sets.ConfigMapSet
@@ -63,6 +76,8 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
+	meshes appmesh_k8s_aws_v1beta2_sets.MeshSet
+
 	configMaps v1_sets.ConfigMapSet
 	services   v1_sets.ServiceSet
 	pods       v1_sets.PodSet
@@ -76,6 +91,8 @@ type snapshot struct {
 
 func NewSnapshot(
 	name string,
+
+	meshes appmesh_k8s_aws_v1beta2_sets.MeshSet,
 
 	configMaps v1_sets.ConfigMapSet,
 	services v1_sets.ServiceSet,
@@ -91,6 +108,7 @@ func NewSnapshot(
 	return &snapshot{
 		name: name,
 
+		meshes:       meshes,
 		configMaps:   configMaps,
 		services:     services,
 		pods:         pods,
@@ -100,6 +118,10 @@ func NewSnapshot(
 		daemonSets:   daemonSets,
 		statefulSets: statefulSets,
 	}
+}
+
+func (s snapshot) Meshes() appmesh_k8s_aws_v1beta2_sets.MeshSet {
+	return s.meshes
 }
 
 func (s snapshot) ConfigMaps() v1_sets.ConfigMapSet {
@@ -137,6 +159,7 @@ func (s snapshot) StatefulSets() apps_v1_sets.StatefulSetSet {
 func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
+	snapshotMap["meshes"] = s.meshes.List()
 	snapshotMap["configMaps"] = s.configMaps.List()
 	snapshotMap["services"] = s.services.List()
 	snapshotMap["pods"] = s.pods.List()
@@ -159,38 +182,147 @@ type Builder interface {
 // Options for building a snapshot
 type BuildOptions struct {
 
+	// List options for composing a snapshot from Meshes
+	Meshes MeshBuildOptions
+
 	// List options for composing a snapshot from ConfigMaps
-	ConfigMaps []client.ListOption
+	ConfigMaps ConfigMapBuildOptions
 	// List options for composing a snapshot from Services
-	Services []client.ListOption
+	Services ServiceBuildOptions
 	// List options for composing a snapshot from Pods
-	Pods []client.ListOption
+	Pods PodBuildOptions
 	// List options for composing a snapshot from Nodes
-	Nodes []client.ListOption
+	Nodes NodeBuildOptions
 
 	// List options for composing a snapshot from Deployments
-	Deployments []client.ListOption
+	Deployments DeploymentBuildOptions
 	// List options for composing a snapshot from ReplicaSets
-	ReplicaSets []client.ListOption
+	ReplicaSets ReplicaSetBuildOptions
 	// List options for composing a snapshot from DaemonSets
-	DaemonSets []client.ListOption
+	DaemonSets DaemonSetBuildOptions
 	// List options for composing a snapshot from StatefulSets
-	StatefulSets []client.ListOption
+	StatefulSets StatefulSetBuildOptions
+}
+
+type CrdCheckOption int
+
+const (
+	// skip checking whether a crd exists for a kind before reading it from a cluster
+	CrdCheckOption_SkipCheck CrdCheckOption = iota
+
+	// return an error if the crd does not exist for a kind before reading it from the cluster
+	CrdCheckOption_ErrorIfNotPresent
+
+	// log an error (and continue) if the crd does not exist for a kind before reading it from the cluster
+	CrdCheckOption_WarnIfNotPresent
+
+	// ignore error (and continue) if the crd does not exist for a kind before reading it from the cluster
+	CrdCheckOption_IgnoreIfNotPresent
+)
+
+// Options for reading Meshes
+type MeshBuildOptions struct {
+
+	// List options for composing a snapshot from Meshes
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading Meshes.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading ConfigMaps
+type ConfigMapBuildOptions struct {
+
+	// List options for composing a snapshot from ConfigMaps
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading ConfigMaps.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading Services
+type ServiceBuildOptions struct {
+
+	// List options for composing a snapshot from Services
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading Services.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading Pods
+type PodBuildOptions struct {
+
+	// List options for composing a snapshot from Pods
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading Pods.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading Nodes
+type NodeBuildOptions struct {
+
+	// List options for composing a snapshot from Nodes
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading Nodes.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading Deployments
+type DeploymentBuildOptions struct {
+
+	// List options for composing a snapshot from Deployments
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading Deployments.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading ReplicaSets
+type ReplicaSetBuildOptions struct {
+
+	// List options for composing a snapshot from ReplicaSets
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading ReplicaSets.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading DaemonSets
+type DaemonSetBuildOptions struct {
+
+	// List options for composing a snapshot from DaemonSets
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading DaemonSets.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading StatefulSets
+type StatefulSetBuildOptions struct {
+
+	// List options for composing a snapshot from StatefulSets
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading StatefulSets.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
 }
 
 // build a snapshot from resources across multiple clusters
 type multiClusterBuilder struct {
 	clusters multicluster.ClusterSet
-
-	configMaps v1.MulticlusterConfigMapClient
-	services   v1.MulticlusterServiceClient
-	pods       v1.MulticlusterPodClient
-	nodes      v1.MulticlusterNodeClient
-
-	deployments  apps_v1.MulticlusterDeploymentClient
-	replicaSets  apps_v1.MulticlusterReplicaSetClient
-	daemonSets   apps_v1.MulticlusterDaemonSetClient
-	statefulSets apps_v1.MulticlusterStatefulSetClient
+	client   multicluster.Client
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
@@ -200,20 +332,13 @@ func NewMultiClusterBuilder(
 ) Builder {
 	return &multiClusterBuilder{
 		clusters: clusters,
-
-		configMaps: v1.NewMulticlusterConfigMapClient(client),
-		services:   v1.NewMulticlusterServiceClient(client),
-		pods:       v1.NewMulticlusterPodClient(client),
-		nodes:      v1.NewMulticlusterNodeClient(client),
-
-		deployments:  apps_v1.NewMulticlusterDeploymentClient(client),
-		replicaSets:  apps_v1.NewMulticlusterReplicaSetClient(client),
-		daemonSets:   apps_v1.NewMulticlusterDaemonSetClient(client),
-		statefulSets: apps_v1.NewMulticlusterStatefulSetClient(client),
+		client:   client,
 	}
 }
 
 func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
+
+	meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
 
 	configMaps := v1_sets.NewConfigMapSet()
 	services := v1_sets.NewServiceSet()
@@ -229,28 +354,31 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 
 	for _, cluster := range b.clusters.ListClusters() {
 
-		if err := b.insertConfigMapsFromCluster(ctx, cluster, configMaps, opts.ConfigMaps...); err != nil {
+		if err := b.insertMeshesFromCluster(ctx, cluster, meshes, opts.Meshes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertServicesFromCluster(ctx, cluster, services, opts.Services...); err != nil {
+		if err := b.insertConfigMapsFromCluster(ctx, cluster, configMaps, opts.ConfigMaps); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertPodsFromCluster(ctx, cluster, pods, opts.Pods...); err != nil {
+		if err := b.insertServicesFromCluster(ctx, cluster, services, opts.Services); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertNodesFromCluster(ctx, cluster, nodes, opts.Nodes...); err != nil {
+		if err := b.insertPodsFromCluster(ctx, cluster, pods, opts.Pods); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertDeploymentsFromCluster(ctx, cluster, deployments, opts.Deployments...); err != nil {
+		if err := b.insertNodesFromCluster(ctx, cluster, nodes, opts.Nodes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertReplicaSetsFromCluster(ctx, cluster, replicaSets, opts.ReplicaSets...); err != nil {
+		if err := b.insertDeploymentsFromCluster(ctx, cluster, deployments, opts.Deployments); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertDaemonSetsFromCluster(ctx, cluster, daemonSets, opts.DaemonSets...); err != nil {
+		if err := b.insertReplicaSetsFromCluster(ctx, cluster, replicaSets, opts.ReplicaSets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertStatefulSetsFromCluster(ctx, cluster, statefulSets, opts.StatefulSets...); err != nil {
+		if err := b.insertDaemonSetsFromCluster(ctx, cluster, daemonSets, opts.DaemonSets); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertStatefulSetsFromCluster(ctx, cluster, statefulSets, opts.StatefulSets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 
@@ -259,6 +387,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	outputSnap := NewSnapshot(
 		name,
 
+		meshes,
 		configMaps,
 		services,
 		pods,
@@ -272,13 +401,81 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	return outputSnap, errs
 }
 
-func (b *multiClusterBuilder) insertConfigMapsFromCluster(ctx context.Context, cluster string, configMaps v1_sets.ConfigMapSet, opts ...client.ListOption) error {
-	configMapClient, err := b.configMaps.Cluster(cluster)
+func (b *multiClusterBuilder) insertMeshesFromCluster(ctx context.Context, cluster string, meshes appmesh_k8s_aws_v1beta2_sets.MeshSet, opts MeshBuildOptions) error {
+	meshClient, err := appmesh_k8s_aws_v1beta2.NewMulticlusterMeshClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	configMapList, err := configMapClient.ListConfigMap(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "meshes."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	meshList, err := meshClient.ListMesh(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range meshList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		meshes.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *multiClusterBuilder) insertConfigMapsFromCluster(ctx context.Context, cluster string, configMaps v1_sets.ConfigMapSet, opts ConfigMapBuildOptions) error {
+	configMapClient, err := v1.NewMulticlusterConfigMapClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "configmaps."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	configMapList, err := configMapClient.ListConfigMap(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -291,13 +488,37 @@ func (b *multiClusterBuilder) insertConfigMapsFromCluster(ctx context.Context, c
 
 	return nil
 }
-func (b *multiClusterBuilder) insertServicesFromCluster(ctx context.Context, cluster string, services v1_sets.ServiceSet, opts ...client.ListOption) error {
-	serviceClient, err := b.services.Cluster(cluster)
+func (b *multiClusterBuilder) insertServicesFromCluster(ctx context.Context, cluster string, services v1_sets.ServiceSet, opts ServiceBuildOptions) error {
+	serviceClient, err := v1.NewMulticlusterServiceClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	serviceList, err := serviceClient.ListService(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "services."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	serviceList, err := serviceClient.ListService(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -310,13 +531,37 @@ func (b *multiClusterBuilder) insertServicesFromCluster(ctx context.Context, clu
 
 	return nil
 }
-func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster string, pods v1_sets.PodSet, opts ...client.ListOption) error {
-	podClient, err := b.pods.Cluster(cluster)
+func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster string, pods v1_sets.PodSet, opts PodBuildOptions) error {
+	podClient, err := v1.NewMulticlusterPodClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	podList, err := podClient.ListPod(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "pods."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	podList, err := podClient.ListPod(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -329,13 +574,37 @@ func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster
 
 	return nil
 }
-func (b *multiClusterBuilder) insertNodesFromCluster(ctx context.Context, cluster string, nodes v1_sets.NodeSet, opts ...client.ListOption) error {
-	nodeClient, err := b.nodes.Cluster(cluster)
+func (b *multiClusterBuilder) insertNodesFromCluster(ctx context.Context, cluster string, nodes v1_sets.NodeSet, opts NodeBuildOptions) error {
+	nodeClient, err := v1.NewMulticlusterNodeClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	nodeList, err := nodeClient.ListNode(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "nodes."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	nodeList, err := nodeClient.ListNode(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -349,13 +618,37 @@ func (b *multiClusterBuilder) insertNodesFromCluster(ctx context.Context, cluste
 	return nil
 }
 
-func (b *multiClusterBuilder) insertDeploymentsFromCluster(ctx context.Context, cluster string, deployments apps_v1_sets.DeploymentSet, opts ...client.ListOption) error {
-	deploymentClient, err := b.deployments.Cluster(cluster)
+func (b *multiClusterBuilder) insertDeploymentsFromCluster(ctx context.Context, cluster string, deployments apps_v1_sets.DeploymentSet, opts DeploymentBuildOptions) error {
+	deploymentClient, err := apps_v1.NewMulticlusterDeploymentClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	deploymentList, err := deploymentClient.ListDeployment(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "deployments."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	deploymentList, err := deploymentClient.ListDeployment(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -368,13 +661,37 @@ func (b *multiClusterBuilder) insertDeploymentsFromCluster(ctx context.Context, 
 
 	return nil
 }
-func (b *multiClusterBuilder) insertReplicaSetsFromCluster(ctx context.Context, cluster string, replicaSets apps_v1_sets.ReplicaSetSet, opts ...client.ListOption) error {
-	replicaSetClient, err := b.replicaSets.Cluster(cluster)
+func (b *multiClusterBuilder) insertReplicaSetsFromCluster(ctx context.Context, cluster string, replicaSets apps_v1_sets.ReplicaSetSet, opts ReplicaSetBuildOptions) error {
+	replicaSetClient, err := apps_v1.NewMulticlusterReplicaSetClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	replicaSetList, err := replicaSetClient.ListReplicaSet(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "replicasets."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	replicaSetList, err := replicaSetClient.ListReplicaSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -387,13 +704,37 @@ func (b *multiClusterBuilder) insertReplicaSetsFromCluster(ctx context.Context, 
 
 	return nil
 }
-func (b *multiClusterBuilder) insertDaemonSetsFromCluster(ctx context.Context, cluster string, daemonSets apps_v1_sets.DaemonSetSet, opts ...client.ListOption) error {
-	daemonSetClient, err := b.daemonSets.Cluster(cluster)
+func (b *multiClusterBuilder) insertDaemonSetsFromCluster(ctx context.Context, cluster string, daemonSets apps_v1_sets.DaemonSetSet, opts DaemonSetBuildOptions) error {
+	daemonSetClient, err := apps_v1.NewMulticlusterDaemonSetClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	daemonSetList, err := daemonSetClient.ListDaemonSet(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "daemonsets."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	daemonSetList, err := daemonSetClient.ListDaemonSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -406,13 +747,37 @@ func (b *multiClusterBuilder) insertDaemonSetsFromCluster(ctx context.Context, c
 
 	return nil
 }
-func (b *multiClusterBuilder) insertStatefulSetsFromCluster(ctx context.Context, cluster string, statefulSets apps_v1_sets.StatefulSetSet, opts ...client.ListOption) error {
-	statefulSetClient, err := b.statefulSets.Cluster(cluster)
+func (b *multiClusterBuilder) insertStatefulSetsFromCluster(ctx context.Context, cluster string, statefulSets apps_v1_sets.StatefulSetSet, opts StatefulSetBuildOptions) error {
+	statefulSetClient, err := apps_v1.NewMulticlusterStatefulSetClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	statefulSetList, err := statefulSetClient.ListStatefulSet(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "statefulsets."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	statefulSetList, err := statefulSetClient.ListStatefulSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -428,15 +793,7 @@ func (b *multiClusterBuilder) insertStatefulSetsFromCluster(ctx context.Context,
 
 // build a snapshot from resources in a single cluster
 type singleClusterBuilder struct {
-	configMaps v1.ConfigMapClient
-	services   v1.ServiceClient
-	pods       v1.PodClient
-	nodes      v1.NodeClient
-
-	deployments  apps_v1.DeploymentClient
-	replicaSets  apps_v1.ReplicaSetClient
-	daemonSets   apps_v1.DaemonSetClient
-	statefulSets apps_v1.StatefulSetClient
+	client client.Client
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
@@ -444,20 +801,13 @@ func NewSingleClusterBuilder(
 	client client.Client,
 ) Builder {
 	return &singleClusterBuilder{
-
-		configMaps: v1.NewConfigMapClient(client),
-		services:   v1.NewServiceClient(client),
-		pods:       v1.NewPodClient(client),
-		nodes:      v1.NewNodeClient(client),
-
-		deployments:  apps_v1.NewDeploymentClient(client),
-		replicaSets:  apps_v1.NewReplicaSetClient(client),
-		daemonSets:   apps_v1.NewDaemonSetClient(client),
-		statefulSets: apps_v1.NewStatefulSetClient(client),
+		client: client,
 	}
 }
 
 func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
+
+	meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
 
 	configMaps := v1_sets.NewConfigMapSet()
 	services := v1_sets.NewServiceSet()
@@ -471,34 +821,38 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	var errs error
 
-	if err := b.insertConfigMaps(ctx, configMaps, opts.ConfigMaps...); err != nil {
+	if err := b.insertMeshes(ctx, meshes, opts.Meshes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertServices(ctx, services, opts.Services...); err != nil {
+	if err := b.insertConfigMaps(ctx, configMaps, opts.ConfigMaps); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertPods(ctx, pods, opts.Pods...); err != nil {
+	if err := b.insertServices(ctx, services, opts.Services); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertNodes(ctx, nodes, opts.Nodes...); err != nil {
+	if err := b.insertPods(ctx, pods, opts.Pods); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertDeployments(ctx, deployments, opts.Deployments...); err != nil {
+	if err := b.insertNodes(ctx, nodes, opts.Nodes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertReplicaSets(ctx, replicaSets, opts.ReplicaSets...); err != nil {
+	if err := b.insertDeployments(ctx, deployments, opts.Deployments); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertDaemonSets(ctx, daemonSets, opts.DaemonSets...); err != nil {
+	if err := b.insertReplicaSets(ctx, replicaSets, opts.ReplicaSets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertStatefulSets(ctx, statefulSets, opts.StatefulSets...); err != nil {
+	if err := b.insertDaemonSets(ctx, daemonSets, opts.DaemonSets); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertStatefulSets(ctx, statefulSets, opts.StatefulSets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
 	outputSnap := NewSnapshot(
 		name,
 
+		meshes,
 		configMaps,
 		services,
 		pods,
@@ -512,8 +866,64 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	return outputSnap, errs
 }
 
-func (b *singleClusterBuilder) insertConfigMaps(ctx context.Context, configMaps v1_sets.ConfigMapSet, opts ...client.ListOption) error {
-	configMapList, err := b.configMaps.ListConfigMap(ctx, opts...)
+func (b *singleClusterBuilder) insertMeshes(ctx context.Context, meshes appmesh_k8s_aws_v1beta2_sets.MeshSet, opts MeshBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "meshes."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	meshList, err := appmesh_k8s_aws_v1beta2.NewMeshClient(b.client).ListMesh(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range meshList.Items {
+		item := item // pike
+		meshes.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterBuilder) insertConfigMaps(ctx context.Context, configMaps v1_sets.ConfigMapSet, opts ConfigMapBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "configmaps."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	configMapList, err := v1.NewConfigMapClient(b.client).ListConfigMap(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -525,8 +935,29 @@ func (b *singleClusterBuilder) insertConfigMaps(ctx context.Context, configMaps 
 
 	return nil
 }
-func (b *singleClusterBuilder) insertServices(ctx context.Context, services v1_sets.ServiceSet, opts ...client.ListOption) error {
-	serviceList, err := b.services.ListService(ctx, opts...)
+func (b *singleClusterBuilder) insertServices(ctx context.Context, services v1_sets.ServiceSet, opts ServiceBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "services."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	serviceList, err := v1.NewServiceClient(b.client).ListService(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -538,8 +969,29 @@ func (b *singleClusterBuilder) insertServices(ctx context.Context, services v1_s
 
 	return nil
 }
-func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodSet, opts ...client.ListOption) error {
-	podList, err := b.pods.ListPod(ctx, opts...)
+func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodSet, opts PodBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "pods."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	podList, err := v1.NewPodClient(b.client).ListPod(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -551,8 +1003,29 @@ func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodS
 
 	return nil
 }
-func (b *singleClusterBuilder) insertNodes(ctx context.Context, nodes v1_sets.NodeSet, opts ...client.ListOption) error {
-	nodeList, err := b.nodes.ListNode(ctx, opts...)
+func (b *singleClusterBuilder) insertNodes(ctx context.Context, nodes v1_sets.NodeSet, opts NodeBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "nodes."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	nodeList, err := v1.NewNodeClient(b.client).ListNode(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -565,8 +1038,29 @@ func (b *singleClusterBuilder) insertNodes(ctx context.Context, nodes v1_sets.No
 	return nil
 }
 
-func (b *singleClusterBuilder) insertDeployments(ctx context.Context, deployments apps_v1_sets.DeploymentSet, opts ...client.ListOption) error {
-	deploymentList, err := b.deployments.ListDeployment(ctx, opts...)
+func (b *singleClusterBuilder) insertDeployments(ctx context.Context, deployments apps_v1_sets.DeploymentSet, opts DeploymentBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "deployments."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	deploymentList, err := apps_v1.NewDeploymentClient(b.client).ListDeployment(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -578,8 +1072,29 @@ func (b *singleClusterBuilder) insertDeployments(ctx context.Context, deployment
 
 	return nil
 }
-func (b *singleClusterBuilder) insertReplicaSets(ctx context.Context, replicaSets apps_v1_sets.ReplicaSetSet, opts ...client.ListOption) error {
-	replicaSetList, err := b.replicaSets.ListReplicaSet(ctx, opts...)
+func (b *singleClusterBuilder) insertReplicaSets(ctx context.Context, replicaSets apps_v1_sets.ReplicaSetSet, opts ReplicaSetBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "replicasets."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	replicaSetList, err := apps_v1.NewReplicaSetClient(b.client).ListReplicaSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -591,8 +1106,29 @@ func (b *singleClusterBuilder) insertReplicaSets(ctx context.Context, replicaSet
 
 	return nil
 }
-func (b *singleClusterBuilder) insertDaemonSets(ctx context.Context, daemonSets apps_v1_sets.DaemonSetSet, opts ...client.ListOption) error {
-	daemonSetList, err := b.daemonSets.ListDaemonSet(ctx, opts...)
+func (b *singleClusterBuilder) insertDaemonSets(ctx context.Context, daemonSets apps_v1_sets.DaemonSetSet, opts DaemonSetBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "daemonsets."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	daemonSetList, err := apps_v1.NewDaemonSetClient(b.client).ListDaemonSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -604,8 +1140,29 @@ func (b *singleClusterBuilder) insertDaemonSets(ctx context.Context, daemonSets 
 
 	return nil
 }
-func (b *singleClusterBuilder) insertStatefulSets(ctx context.Context, statefulSets apps_v1_sets.StatefulSetSet, opts ...client.ListOption) error {
-	statefulSetList, err := b.statefulSets.ListStatefulSet(ctx, opts...)
+func (b *singleClusterBuilder) insertStatefulSets(ctx context.Context, statefulSets apps_v1_sets.StatefulSetSet, opts StatefulSetBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "statefulsets."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	statefulSetList, err := apps_v1.NewStatefulSetClient(b.client).ListStatefulSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -616,4 +1173,18 @@ func (b *singleClusterBuilder) insertStatefulSets(ctx context.Context, statefulS
 	}
 
 	return nil
+}
+
+func verifyCrdExists(ctx context.Context, c client.Client, crdName, crdVersion string) (bool, error) {
+	var crd apiextensions_k8s_io_v1beta1.CustomResourceDefinition
+	if err := c.Get(ctx, client.ObjectKey{Name: crdName}, &crd); err != nil {
+		checkFailed := !errors.IsNotFound(err)
+		return checkFailed, err
+	}
+	for _, version := range crd.Spec.Versions {
+		if version.Name == crdVersion {
+			return false, nil
+		}
+	}
+	return false, eris.Errorf("version %v not found for crd %v", crdVersion, crdName)
 }

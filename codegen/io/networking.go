@@ -1,7 +1,7 @@
 package io
 
 import (
-	"github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
+	appmeshv1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	smiaccessv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
 	smispecsv1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
 	smislpitv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha2"
@@ -89,7 +89,7 @@ var (
 	AppMeshNetworkingOutputTypes = OutputSnapshot{
 		Name: "appmesh",
 		Snapshot: Snapshot{
-			v1beta2.GroupVersion: {
+			appmeshv1beta2.GroupVersion: {
 				"VirtualNode",
 				"VirtualRouter",
 				"Route",

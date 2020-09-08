@@ -4,6 +4,7 @@
 
 // The Input Reconciler calls a simple func() error whenever a
 // storage event is received for any of:
+// * Meshes
 // * ConfigMaps
 // * Services
 // * Pods
@@ -30,6 +31,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
+	appmesh_k8s_aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
+	appmesh_k8s_aws_v1beta2_controllers "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/controller"
+
 	v1_controllers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	v1 "k8s.io/api/core/v1"
 
@@ -39,6 +43,8 @@ import (
 
 // the multiClusterReconciler reconciles events for input resources across clusters
 type multiClusterReconciler interface {
+	appmesh_k8s_aws_v1beta2_controllers.MulticlusterMeshReconciler
+
 	v1_controllers.MulticlusterConfigMapReconciler
 	v1_controllers.MulticlusterServiceReconciler
 	v1_controllers.MulticlusterPodReconciler
@@ -79,6 +85,8 @@ func RegisterMultiClusterReconciler(
 
 	// initialize reconcile loops
 
+	appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterMeshReconcileLoop("Mesh", clusters).AddMulticlusterMeshReconciler(ctx, r, predicates...)
+
 	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters).AddMulticlusterConfigMapReconciler(ctx, r, predicates...)
 	v1_controllers.NewMulticlusterServiceReconcileLoop("Service", clusters).AddMulticlusterServiceReconciler(ctx, r, predicates...)
 	v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters).AddMulticlusterPodReconciler(ctx, r, predicates...)
@@ -89,6 +97,21 @@ func RegisterMultiClusterReconciler(
 	apps_v1_controllers.NewMulticlusterDaemonSetReconcileLoop("DaemonSet", clusters).AddMulticlusterDaemonSetReconciler(ctx, r, predicates...)
 	apps_v1_controllers.NewMulticlusterStatefulSetReconcileLoop("StatefulSet", clusters).AddMulticlusterStatefulSetReconciler(ctx, r, predicates...)
 
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileMesh(clusterName string, obj *appmesh_k8s_aws_v1beta2.Mesh) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileMeshDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileConfigMap(clusterName string, obj *v1.ConfigMap) (reconcile.Result, error) {
@@ -213,6 +236,8 @@ func (r *multiClusterReconcilerImpl) ReconcileStatefulSetDeletion(clusterName st
 
 // the singleClusterReconciler reconciles events for input resources across clusters
 type singleClusterReconciler interface {
+	appmesh_k8s_aws_v1beta2_controllers.MeshReconciler
+
 	v1_controllers.ConfigMapReconciler
 	v1_controllers.ServiceReconciler
 	v1_controllers.PodReconciler
@@ -253,6 +278,10 @@ func RegisterSingleClusterReconciler(
 
 	// initialize reconcile loops
 
+	if err := appmesh_k8s_aws_v1beta2_controllers.NewMeshReconcileLoop("Mesh", mgr, reconcile.Options{}).RunMeshReconciler(ctx, r, predicates...); err != nil {
+		return err
+	}
+
 	if err := v1_controllers.NewConfigMapReconcileLoop("ConfigMap", mgr, reconcile.Options{}).RunConfigMapReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
@@ -280,6 +309,19 @@ func RegisterSingleClusterReconciler(
 	}
 
 	return nil
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileMesh(obj *appmesh_k8s_aws_v1beta2.Mesh) (reconcile.Result, error) {
+	return r.base.ReconcileGeneric(obj)
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileMeshDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileConfigMap(obj *v1.ConfigMap) (reconcile.Result, error) {

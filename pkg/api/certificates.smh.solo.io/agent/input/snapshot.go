@@ -21,6 +21,12 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/solo-io/go-utils/contextutils"
+	"k8s.io/apimachinery/pkg/api/errors"
+
+	"github.com/rotisserie/eris"
+	apiextensions_k8s_io_v1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
@@ -163,25 +169,80 @@ type Builder interface {
 type BuildOptions struct {
 
 	// List options for composing a snapshot from IssuedCertificates
-	IssuedCertificates []client.ListOption
+	IssuedCertificates IssuedCertificateBuildOptions
 	// List options for composing a snapshot from CertificateRequests
-	CertificateRequests []client.ListOption
+	CertificateRequests CertificateRequestBuildOptions
 
 	// List options for composing a snapshot from Secrets
-	Secrets []client.ListOption
+	Secrets SecretBuildOptions
 	// List options for composing a snapshot from Pods
-	Pods []client.ListOption
+	Pods PodBuildOptions
+}
+
+type CrdCheckOption int
+
+const (
+	// skip checking whether a crd exists for a kind before reading it from a cluster
+	CrdCheckOption_SkipCheck CrdCheckOption = iota
+
+	// return an error if the crd does not exist for a kind before reading it from the cluster
+	CrdCheckOption_ErrorIfNotPresent
+
+	// log an error (and continue) if the crd does not exist for a kind before reading it from the cluster
+	CrdCheckOption_WarnIfNotPresent
+
+	// ignore error (and continue) if the crd does not exist for a kind before reading it from the cluster
+	CrdCheckOption_IgnoreIfNotPresent
+)
+
+// Options for reading IssuedCertificates
+type IssuedCertificateBuildOptions struct {
+
+	// List options for composing a snapshot from IssuedCertificates
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading IssuedCertificates.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading CertificateRequests
+type CertificateRequestBuildOptions struct {
+
+	// List options for composing a snapshot from CertificateRequests
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading CertificateRequests.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading Secrets
+type SecretBuildOptions struct {
+
+	// List options for composing a snapshot from Secrets
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading Secrets.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
+}
+
+// Options for reading Pods
+type PodBuildOptions struct {
+
+	// List options for composing a snapshot from Pods
+	ListOptions []client.ListOption
+
+	// Verify the existence of the corresponding CRD before reading Pods.
+	// Choose a CrdCheckOption that fits your use case.
+	CrdCheck CrdCheckOption
 }
 
 // build a snapshot from resources across multiple clusters
 type multiClusterBuilder struct {
 	clusters multicluster.ClusterSet
-
-	issuedCertificates  certificates_smh_solo_io_v1alpha2.MulticlusterIssuedCertificateClient
-	certificateRequests certificates_smh_solo_io_v1alpha2.MulticlusterCertificateRequestClient
-
-	secrets v1.MulticlusterSecretClient
-	pods    v1.MulticlusterPodClient
+	client   multicluster.Client
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
@@ -191,12 +252,7 @@ func NewMultiClusterBuilder(
 ) Builder {
 	return &multiClusterBuilder{
 		clusters: clusters,
-
-		issuedCertificates:  certificates_smh_solo_io_v1alpha2.NewMulticlusterIssuedCertificateClient(client),
-		certificateRequests: certificates_smh_solo_io_v1alpha2.NewMulticlusterCertificateRequestClient(client),
-
-		secrets: v1.NewMulticlusterSecretClient(client),
-		pods:    v1.NewMulticlusterPodClient(client),
+		client:   client,
 	}
 }
 
@@ -212,16 +268,16 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 
 	for _, cluster := range b.clusters.ListClusters() {
 
-		if err := b.insertIssuedCertificatesFromCluster(ctx, cluster, issuedCertificates, opts.IssuedCertificates...); err != nil {
+		if err := b.insertIssuedCertificatesFromCluster(ctx, cluster, issuedCertificates, opts.IssuedCertificates); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertCertificateRequestsFromCluster(ctx, cluster, certificateRequests, opts.CertificateRequests...); err != nil {
+		if err := b.insertCertificateRequestsFromCluster(ctx, cluster, certificateRequests, opts.CertificateRequests); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets...); err != nil {
+		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertPodsFromCluster(ctx, cluster, pods, opts.Pods...); err != nil {
+		if err := b.insertPodsFromCluster(ctx, cluster, pods, opts.Pods); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 
@@ -239,13 +295,37 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	return outputSnap, errs
 }
 
-func (b *multiClusterBuilder) insertIssuedCertificatesFromCluster(ctx context.Context, cluster string, issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ...client.ListOption) error {
-	issuedCertificateClient, err := b.issuedCertificates.Cluster(cluster)
+func (b *multiClusterBuilder) insertIssuedCertificatesFromCluster(ctx context.Context, cluster string, issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet, opts IssuedCertificateBuildOptions) error {
+	issuedCertificateClient, err := certificates_smh_solo_io_v1alpha2.NewMulticlusterIssuedCertificateClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	issuedCertificateList, err := issuedCertificateClient.ListIssuedCertificate(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "issuedcertificates."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	issuedCertificateList, err := issuedCertificateClient.ListIssuedCertificate(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -258,13 +338,37 @@ func (b *multiClusterBuilder) insertIssuedCertificatesFromCluster(ctx context.Co
 
 	return nil
 }
-func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.Context, cluster string, certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet, opts ...client.ListOption) error {
-	certificateRequestClient, err := b.certificateRequests.Cluster(cluster)
+func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.Context, cluster string, certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet, opts CertificateRequestBuildOptions) error {
+	certificateRequestClient, err := certificates_smh_solo_io_v1alpha2.NewMulticlusterCertificateRequestClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	certificateRequestList, err := certificateRequestClient.ListCertificateRequest(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "certificaterequests."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	certificateRequestList, err := certificateRequestClient.ListCertificateRequest(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -278,13 +382,37 @@ func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.C
 	return nil
 }
 
-func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, cluster string, secrets v1_sets.SecretSet, opts ...client.ListOption) error {
-	secretClient, err := b.secrets.Cluster(cluster)
+func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, cluster string, secrets v1_sets.SecretSet, opts SecretBuildOptions) error {
+	secretClient, err := v1.NewMulticlusterSecretClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	secretList, err := secretClient.ListSecret(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "secrets."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	secretList, err := secretClient.ListSecret(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -297,13 +425,37 @@ func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, clus
 
 	return nil
 }
-func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster string, pods v1_sets.PodSet, opts ...client.ListOption) error {
-	podClient, err := b.pods.Cluster(cluster)
+func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster string, pods v1_sets.PodSet, opts PodBuildOptions) error {
+	podClient, err := v1.NewMulticlusterPodClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	podList, err := podClient.ListPod(ctx, opts...)
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		cli, err := b.client.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+		crdName := "pods."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	podList, err := podClient.ListPod(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -319,11 +471,7 @@ func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster
 
 // build a snapshot from resources in a single cluster
 type singleClusterBuilder struct {
-	issuedCertificates  certificates_smh_solo_io_v1alpha2.IssuedCertificateClient
-	certificateRequests certificates_smh_solo_io_v1alpha2.CertificateRequestClient
-
-	secrets v1.SecretClient
-	pods    v1.PodClient
+	client client.Client
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
@@ -331,12 +479,7 @@ func NewSingleClusterBuilder(
 	client client.Client,
 ) Builder {
 	return &singleClusterBuilder{
-
-		issuedCertificates:  certificates_smh_solo_io_v1alpha2.NewIssuedCertificateClient(client),
-		certificateRequests: certificates_smh_solo_io_v1alpha2.NewCertificateRequestClient(client),
-
-		secrets: v1.NewSecretClient(client),
-		pods:    v1.NewPodClient(client),
+		client: client,
 	}
 }
 
@@ -350,16 +493,16 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	var errs error
 
-	if err := b.insertIssuedCertificates(ctx, issuedCertificates, opts.IssuedCertificates...); err != nil {
+	if err := b.insertIssuedCertificates(ctx, issuedCertificates, opts.IssuedCertificates); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertCertificateRequests(ctx, certificateRequests, opts.CertificateRequests...); err != nil {
+	if err := b.insertCertificateRequests(ctx, certificateRequests, opts.CertificateRequests); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertSecrets(ctx, secrets, opts.Secrets...); err != nil {
+	if err := b.insertSecrets(ctx, secrets, opts.Secrets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertPods(ctx, pods, opts.Pods...); err != nil {
+	if err := b.insertPods(ctx, pods, opts.Pods); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -375,8 +518,29 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	return outputSnap, errs
 }
 
-func (b *singleClusterBuilder) insertIssuedCertificates(ctx context.Context, issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ...client.ListOption) error {
-	issuedCertificateList, err := b.issuedCertificates.ListIssuedCertificate(ctx, opts...)
+func (b *singleClusterBuilder) insertIssuedCertificates(ctx context.Context, issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet, opts IssuedCertificateBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "issuedcertificates."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	issuedCertificateList, err := certificates_smh_solo_io_v1alpha2.NewIssuedCertificateClient(b.client).ListIssuedCertificate(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -388,8 +552,29 @@ func (b *singleClusterBuilder) insertIssuedCertificates(ctx context.Context, iss
 
 	return nil
 }
-func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet, opts ...client.ListOption) error {
-	certificateRequestList, err := b.certificateRequests.ListCertificateRequest(ctx, opts...)
+func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet, opts CertificateRequestBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "certificaterequests."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	certificateRequestList, err := certificates_smh_solo_io_v1alpha2.NewCertificateRequestClient(b.client).ListCertificateRequest(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -402,8 +587,29 @@ func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, ce
 	return nil
 }
 
-func (b *singleClusterBuilder) insertSecrets(ctx context.Context, secrets v1_sets.SecretSet, opts ...client.ListOption) error {
-	secretList, err := b.secrets.ListSecret(ctx, opts...)
+func (b *singleClusterBuilder) insertSecrets(ctx context.Context, secrets v1_sets.SecretSet, opts SecretBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "secrets."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	secretList, err := v1.NewSecretClient(b.client).ListSecret(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -415,8 +621,29 @@ func (b *singleClusterBuilder) insertSecrets(ctx context.Context, secrets v1_set
 
 	return nil
 }
-func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodSet, opts ...client.ListOption) error {
-	podList, err := b.pods.ListPod(ctx, opts...)
+func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodSet, opts PodBuildOptions) error {
+
+	if opts.CrdCheck != CrdCheckOption_SkipCheck {
+		// verify CRD is present for kind
+		crdName := "pods."
+		crdVersion := ""
+		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+			if checkFailed {
+				return eris.Wrap(err, "crd check failed")
+			}
+			switch opts.CrdCheck {
+			case CrdCheckOption_WarnIfNotPresent:
+				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				return nil
+			case CrdCheckOption_IgnoreIfNotPresent:
+				return nil
+			case CrdCheckOption_ErrorIfNotPresent:
+				return err
+			}
+		}
+	}
+
+	podList, err := v1.NewPodClient(b.client).ListPod(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -427,4 +654,18 @@ func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodS
 	}
 
 	return nil
+}
+
+func verifyCrdExists(ctx context.Context, c client.Client, crdName, crdVersion string) (bool, error) {
+	var crd apiextensions_k8s_io_v1beta1.CustomResourceDefinition
+	if err := c.Get(ctx, client.ObjectKey{Name: crdName}, &crd); err != nil {
+		checkFailed := !errors.IsNotFound(err)
+		return checkFailed, err
+	}
+	for _, version := range crd.Spec.Versions {
+		if version.Name == crdVersion {
+			return false, nil
+		}
+	}
+	return false, eris.Errorf("version %v not found for crd %v", crdVersion, crdName)
 }

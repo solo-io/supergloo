@@ -6,6 +6,9 @@
 package input
 
 import (
+	appmesh_k8s_aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
+	appmesh_k8s_aws_v1beta2_sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
+
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1 "k8s.io/api/core/v1"
 
@@ -15,6 +18,8 @@ import (
 
 type InputSnapshotManualBuilder struct {
 	name string
+
+	meshes appmesh_k8s_aws_v1beta2_sets.MeshSet
 
 	configMaps v1_sets.ConfigMapSet
 	services   v1_sets.ServiceSet
@@ -30,6 +35,8 @@ type InputSnapshotManualBuilder struct {
 func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 	return &InputSnapshotManualBuilder{
 		name: name,
+
+		meshes: appmesh_k8s_aws_v1beta2_sets.NewMeshSet(),
 
 		configMaps: v1_sets.NewConfigMapSet(),
 		services:   v1_sets.NewServiceSet(),
@@ -47,6 +54,8 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 	return NewSnapshot(
 		i.name,
 
+		i.meshes,
+
 		i.configMaps,
 		i.services,
 		i.pods,
@@ -57,6 +66,10 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 		i.daemonSets,
 		i.statefulSets,
 	)
+}
+func (i *InputSnapshotManualBuilder) AddMeshes(meshes []*appmesh_k8s_aws_v1beta2.Mesh) *InputSnapshotManualBuilder {
+	i.meshes.Insert(meshes...)
+	return i
 }
 func (i *InputSnapshotManualBuilder) AddConfigMaps(configMaps []*v1.ConfigMap) *InputSnapshotManualBuilder {
 	i.configMaps.Insert(configMaps...)
