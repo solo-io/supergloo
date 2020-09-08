@@ -24,8 +24,7 @@ type StartParameters struct {
 	Ctx             context.Context
 	MasterManager   manager.Manager
 	McClient        multicluster.Client
-	Clusters        multicluster.ClusterSet
-	ClusterWatcher  multicluster.ClusterWatcher
+	Clusters        multicluster.Interface
 	SnapshotHistory *stats.SnapshotHistory
 
 	// enable additional logging
@@ -85,7 +84,6 @@ func Start(ctx context.Context, rootLogger string, start StartReconciler, opts O
 		MasterManager:   mgr,
 		McClient:        mcClient,
 		Clusters:        clusterWatcher,
-		ClusterWatcher:  clusterWatcher,
 		SnapshotHistory: snapshotHistory,
 		VerboseMode:     opts.VerboseMode,
 	}

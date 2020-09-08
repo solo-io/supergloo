@@ -26,11 +26,14 @@ import (
 	"context"
 	"encoding/json"
 
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/rest"
 
 	"github.com/rotisserie/eris"
-	apiextensions_k8s_io_v1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/skv2/pkg/multicluster"
@@ -321,13 +324,13 @@ type StatefulSetBuildOptions struct {
 
 // build a snapshot from resources across multiple clusters
 type multiClusterBuilder struct {
-	clusters multicluster.ClusterSet
+	clusters multicluster.Interface
 	client   multicluster.Client
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
 func NewMultiClusterBuilder(
-	clusters multicluster.ClusterSet,
+	clusters multicluster.Interface,
 	client multicluster.Client,
 ) Builder {
 	return &multiClusterBuilder{
@@ -409,19 +412,23 @@ func (b *multiClusterBuilder) insertMeshesFromCluster(ctx context.Context, clust
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		cli, err := b.client.Cluster(cluster)
+		mgr, err := b.clusters.Cluster(cluster)
 		if err != nil {
 			return err
 		}
-		crdName := "meshes."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+
+		// verify CRD is present for kind
+		group := "appmesh.k8s.aws"
+		version := "v1beta2"
+		kind := "Mesh"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -453,19 +460,23 @@ func (b *multiClusterBuilder) insertConfigMapsFromCluster(ctx context.Context, c
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		cli, err := b.client.Cluster(cluster)
+		mgr, err := b.clusters.Cluster(cluster)
 		if err != nil {
 			return err
 		}
-		crdName := "configmaps."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+
+		// verify CRD is present for kind
+		group := ""
+		version := "v1"
+		kind := "ConfigMap"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -496,19 +507,23 @@ func (b *multiClusterBuilder) insertServicesFromCluster(ctx context.Context, clu
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		cli, err := b.client.Cluster(cluster)
+		mgr, err := b.clusters.Cluster(cluster)
 		if err != nil {
 			return err
 		}
-		crdName := "services."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+
+		// verify CRD is present for kind
+		group := ""
+		version := "v1"
+		kind := "Service"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -539,19 +554,23 @@ func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		cli, err := b.client.Cluster(cluster)
+		mgr, err := b.clusters.Cluster(cluster)
 		if err != nil {
 			return err
 		}
-		crdName := "pods."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+
+		// verify CRD is present for kind
+		group := ""
+		version := "v1"
+		kind := "Pod"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -582,19 +601,23 @@ func (b *multiClusterBuilder) insertNodesFromCluster(ctx context.Context, cluste
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		cli, err := b.client.Cluster(cluster)
+		mgr, err := b.clusters.Cluster(cluster)
 		if err != nil {
 			return err
 		}
-		crdName := "nodes."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+
+		// verify CRD is present for kind
+		group := ""
+		version := "v1"
+		kind := "Node"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -626,19 +649,23 @@ func (b *multiClusterBuilder) insertDeploymentsFromCluster(ctx context.Context, 
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		cli, err := b.client.Cluster(cluster)
+		mgr, err := b.clusters.Cluster(cluster)
 		if err != nil {
 			return err
 		}
-		crdName := "deployments."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+
+		// verify CRD is present for kind
+		group := "apps"
+		version := "v1"
+		kind := "Deployment"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -669,19 +696,23 @@ func (b *multiClusterBuilder) insertReplicaSetsFromCluster(ctx context.Context, 
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		cli, err := b.client.Cluster(cluster)
+		mgr, err := b.clusters.Cluster(cluster)
 		if err != nil {
 			return err
 		}
-		crdName := "replicasets."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+
+		// verify CRD is present for kind
+		group := "apps"
+		version := "v1"
+		kind := "ReplicaSet"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -712,19 +743,23 @@ func (b *multiClusterBuilder) insertDaemonSetsFromCluster(ctx context.Context, c
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		cli, err := b.client.Cluster(cluster)
+		mgr, err := b.clusters.Cluster(cluster)
 		if err != nil {
 			return err
 		}
-		crdName := "daemonsets."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+
+		// verify CRD is present for kind
+		group := "apps"
+		version := "v1"
+		kind := "DaemonSet"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -755,19 +790,23 @@ func (b *multiClusterBuilder) insertStatefulSetsFromCluster(ctx context.Context,
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		cli, err := b.client.Cluster(cluster)
+		mgr, err := b.clusters.Cluster(cluster)
 		if err != nil {
 			return err
 		}
-		crdName := "statefulsets."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, cli, crdName, crdVersion); err != nil {
+
+		// verify CRD is present for kind
+		group := "apps"
+		version := "v1"
+		kind := "StatefulSet"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -793,15 +832,15 @@ func (b *multiClusterBuilder) insertStatefulSetsFromCluster(ctx context.Context,
 
 // build a snapshot from resources in a single cluster
 type singleClusterBuilder struct {
-	client client.Client
+	mgr manager.Manager
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
 func NewSingleClusterBuilder(
-	client client.Client,
+	mgr manager.Manager,
 ) Builder {
 	return &singleClusterBuilder{
-		client: client,
+		mgr: mgr,
 	}
 }
 
@@ -870,15 +909,17 @@ func (b *singleClusterBuilder) insertMeshes(ctx context.Context, meshes appmesh_
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		crdName := "meshes."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+		group := "appmesh.k8s.aws"
+		version := "v1beta2"
+		kind := "Mesh"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, b.mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -888,7 +929,7 @@ func (b *singleClusterBuilder) insertMeshes(ctx context.Context, meshes appmesh_
 		}
 	}
 
-	meshList, err := appmesh_k8s_aws_v1beta2.NewMeshClient(b.client).ListMesh(ctx, opts.ListOptions...)
+	meshList, err := appmesh_k8s_aws_v1beta2.NewMeshClient(b.mgr.GetClient()).ListMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -905,15 +946,17 @@ func (b *singleClusterBuilder) insertConfigMaps(ctx context.Context, configMaps 
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		crdName := "configmaps."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+		group := ""
+		version := "v1"
+		kind := "ConfigMap"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, b.mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -923,7 +966,7 @@ func (b *singleClusterBuilder) insertConfigMaps(ctx context.Context, configMaps 
 		}
 	}
 
-	configMapList, err := v1.NewConfigMapClient(b.client).ListConfigMap(ctx, opts.ListOptions...)
+	configMapList, err := v1.NewConfigMapClient(b.mgr.GetClient()).ListConfigMap(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -939,15 +982,17 @@ func (b *singleClusterBuilder) insertServices(ctx context.Context, services v1_s
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		crdName := "services."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+		group := ""
+		version := "v1"
+		kind := "Service"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, b.mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -957,7 +1002,7 @@ func (b *singleClusterBuilder) insertServices(ctx context.Context, services v1_s
 		}
 	}
 
-	serviceList, err := v1.NewServiceClient(b.client).ListService(ctx, opts.ListOptions...)
+	serviceList, err := v1.NewServiceClient(b.mgr.GetClient()).ListService(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -973,15 +1018,17 @@ func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodS
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		crdName := "pods."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+		group := ""
+		version := "v1"
+		kind := "Pod"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, b.mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -991,7 +1038,7 @@ func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodS
 		}
 	}
 
-	podList, err := v1.NewPodClient(b.client).ListPod(ctx, opts.ListOptions...)
+	podList, err := v1.NewPodClient(b.mgr.GetClient()).ListPod(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -1007,15 +1054,17 @@ func (b *singleClusterBuilder) insertNodes(ctx context.Context, nodes v1_sets.No
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		crdName := "nodes."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+		group := ""
+		version := "v1"
+		kind := "Node"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, b.mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -1025,7 +1074,7 @@ func (b *singleClusterBuilder) insertNodes(ctx context.Context, nodes v1_sets.No
 		}
 	}
 
-	nodeList, err := v1.NewNodeClient(b.client).ListNode(ctx, opts.ListOptions...)
+	nodeList, err := v1.NewNodeClient(b.mgr.GetClient()).ListNode(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -1042,15 +1091,17 @@ func (b *singleClusterBuilder) insertDeployments(ctx context.Context, deployment
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		crdName := "deployments."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+		group := "apps"
+		version := "v1"
+		kind := "Deployment"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, b.mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -1060,7 +1111,7 @@ func (b *singleClusterBuilder) insertDeployments(ctx context.Context, deployment
 		}
 	}
 
-	deploymentList, err := apps_v1.NewDeploymentClient(b.client).ListDeployment(ctx, opts.ListOptions...)
+	deploymentList, err := apps_v1.NewDeploymentClient(b.mgr.GetClient()).ListDeployment(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -1076,15 +1127,17 @@ func (b *singleClusterBuilder) insertReplicaSets(ctx context.Context, replicaSet
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		crdName := "replicasets."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+		group := "apps"
+		version := "v1"
+		kind := "ReplicaSet"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, b.mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -1094,7 +1147,7 @@ func (b *singleClusterBuilder) insertReplicaSets(ctx context.Context, replicaSet
 		}
 	}
 
-	replicaSetList, err := apps_v1.NewReplicaSetClient(b.client).ListReplicaSet(ctx, opts.ListOptions...)
+	replicaSetList, err := apps_v1.NewReplicaSetClient(b.mgr.GetClient()).ListReplicaSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -1110,15 +1163,17 @@ func (b *singleClusterBuilder) insertDaemonSets(ctx context.Context, daemonSets 
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		crdName := "daemonsets."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+		group := "apps"
+		version := "v1"
+		kind := "DaemonSet"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, b.mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -1128,7 +1183,7 @@ func (b *singleClusterBuilder) insertDaemonSets(ctx context.Context, daemonSets 
 		}
 	}
 
-	daemonSetList, err := apps_v1.NewDaemonSetClient(b.client).ListDaemonSet(ctx, opts.ListOptions...)
+	daemonSetList, err := apps_v1.NewDaemonSetClient(b.mgr.GetClient()).ListDaemonSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -1144,15 +1199,17 @@ func (b *singleClusterBuilder) insertStatefulSets(ctx context.Context, statefulS
 
 	if opts.CrdCheck != CrdCheckOption_SkipCheck {
 		// verify CRD is present for kind
-		crdName := "statefulsets."
-		crdVersion := ""
-		if checkFailed, err := verifyCrdExists(ctx, b.client, crdName, crdVersion); err != nil {
+		group := "apps"
+		version := "v1"
+		kind := "StatefulSet"
+
+		if checkFailed, err := verifyCrdRegistered(ctx, b.mgr.GetConfig(), group, version, kind); err != nil {
 			if checkFailed {
 				return eris.Wrap(err, "crd check failed")
 			}
 			switch opts.CrdCheck {
 			case CrdCheckOption_WarnIfNotPresent:
-				contextutils.LoggerFrom(ctx).Warnf("crd %v not registered (fetch err: %v)", crdName, err)
+				contextutils.LoggerFrom(ctx).Warnf("%v/%v.%v not registered (fetch err: %v)", group, version, kind, err)
 				return nil
 			case CrdCheckOption_IgnoreIfNotPresent:
 				return nil
@@ -1162,7 +1219,7 @@ func (b *singleClusterBuilder) insertStatefulSets(ctx context.Context, statefulS
 		}
 	}
 
-	statefulSetList, err := apps_v1.NewStatefulSetClient(b.client).ListStatefulSet(ctx, opts.ListOptions...)
+	statefulSetList, err := apps_v1.NewStatefulSetClient(b.mgr.GetClient()).ListStatefulSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -1175,16 +1232,21 @@ func (b *singleClusterBuilder) insertStatefulSets(ctx context.Context, statefulS
 	return nil
 }
 
-func verifyCrdExists(ctx context.Context, c client.Client, crdName, crdVersion string) (bool, error) {
-	var crd apiextensions_k8s_io_v1beta1.CustomResourceDefinition
-	if err := c.Get(ctx, client.ObjectKey{Name: crdName}, &crd); err != nil {
+func verifyCrdRegistered(ctx context.Context, cfg *rest.Config, group, version, kind string) (bool, error) {
+	disc, err := discovery.NewDiscoveryClientForConfig(cfg)
+	if err != nil {
+		return true, err
+	}
+	rss, err := disc.ServerResourcesForGroupVersion(group + "/" + version)
+	if err != nil {
 		checkFailed := !errors.IsNotFound(err)
 		return checkFailed, err
 	}
-	for _, version := range crd.Spec.Versions {
-		if version.Name == crdVersion {
+	for _, resource := range rss.APIResources {
+		if resource.Kind == kind {
+			// success
 			return false, nil
 		}
 	}
-	return false, eris.Errorf("version %v not found for crd %v", crdVersion, crdName)
+	return false, eris.Errorf("kind %v not found for groupVersion %v/%v", kind, group, version)
 }

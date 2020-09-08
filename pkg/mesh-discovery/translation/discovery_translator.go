@@ -37,7 +37,7 @@ func (t translator) Translate(ctx context.Context, in input.Snapshot) (discovery
 
 	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator(ctx)
 
-	meshes := meshTranslator.TranslateMeshes(in.Deployments())
+	meshes := meshTranslator.TranslateMeshes(in)
 
 	workloads := workloadTranslator.TranslateWorkloads(
 		in.Deployments(),

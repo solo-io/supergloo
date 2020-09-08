@@ -30,7 +30,7 @@ func startReconciler(
 	parameters bootstrap.StartParameters,
 ) error {
 
-	snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager.GetClient())
+	snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager)
 	reporter := reporting.NewPanickingReporter(parameters.Ctx)
 	translator := translation.NewTranslator(
 		istio.NewIstioTranslator(),
@@ -43,7 +43,6 @@ func startReconciler(
 		parameters.MasterManager,
 		parameters.McClient,
 		parameters.Clusters,
-		parameters.ClusterWatcher,
 	)
 
 	return reconciliation.Start(
@@ -55,6 +54,7 @@ func startReconciler(
 		parameters.McClient,
 		parameters.MasterManager,
 		parameters.SnapshotHistory,
+		parameters.VerboseMode,
 	)
 }
 
@@ -62,8 +62,7 @@ func startCertIssuer(
 	ctx context.Context,
 	masterManager manager.Manager,
 	mcClient multicluster.Client,
-	clusters multicluster.ClusterSet,
-	clusterWatcher multicluster.ClusterWatcher,
+	clusters multicluster.Interface,
 ) {
 
 	builder := certissuerinput.NewMultiClusterBuilder(
@@ -75,7 +74,7 @@ func startCertIssuer(
 		ctx,
 		builder,
 		mcClient,
-		clusterWatcher,
+		clusters,
 		masterManager.GetClient(),
 	)
 }

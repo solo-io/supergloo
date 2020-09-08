@@ -25,6 +25,7 @@ type discoveryReconciler struct {
 	builder      input.Builder
 	translator   translation.Translator
 	masterClient client.Client
+	managers     multicluster.ManagerSet
 	history      *stats.SnapshotHistory
 	verboseMode  bool
 }

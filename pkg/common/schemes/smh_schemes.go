@@ -12,7 +12,6 @@ import (
 	skv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
-	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -37,9 +36,6 @@ var SchemeBuilder = runtime.SchemeBuilder{
 
 	// sk types
 	skv1alpha1.AddToScheme,
-
-	// native k8s types
-	apiextensionsv1beta1.AddToScheme,
 }
 
 func AddToScheme(s *runtime.Scheme) error {
