@@ -36,6 +36,38 @@ func NewApplier(
 	}
 }
 
+func listWorkloadsForTrafficPolicies(
+	input input.Snapshot) {
+	var matchingWorkloads []string
+	for _, trafficPolicy := range input.TrafficPolicies().List() {
+		if len(trafficPolicy.Spec.GetSourceSelector()) == 0 {
+			trafficPolicy.Status.Workloads = []string{"*"}
+			return
+		}
+		for _, workload := range input.Workloads().List() {
+			if selectorutils.SelectorMatchesWorkload(trafficPolicy.Spec.GetSourceSelector(), workload) {
+				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
+			}
+		}
+	}
+}
+
+func listWorkloadsForAccessPolicies(
+	input input.Snapshot) {
+	var matchingWorkloads []string
+	for _, accessPolicy := range input.AccessPolicies().List() {
+		if len(accessPolicy.Spec.GetSourceSelector()) == 0 {
+			accessPolicy.Status.Workloads = []string{"*"}
+			return
+		}
+		for _, workload := range input.Workloads().List() {
+			if selectorutils.IdentityMatchesWorkload(accessPolicy.Spec.GetSourceSelector(), workload) {
+				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
+			}
+		}
+	}
+}
+
 func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 	ctx = contextutils.WithLogger(ctx, "validation")
 	reporter := newApplyReporter()
@@ -47,6 +79,7 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 		trafficTarget.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), trafficTarget)
 		trafficTarget.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), trafficTarget)
 	}
+
 	for _, mesh := range input.Meshes().List() {
 		mesh.Status.AppliedVirtualMesh = getAppliedVirtualMesh(virtualMeshes, mesh)
 		mesh.Status.AppliedFailoverServices = getAppliedFailoverServices(input.FailoverServices().List(), mesh)
@@ -64,8 +97,10 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 			State:              networkingv1alpha2.ApprovalState_ACCEPTED,
 			ObservedGeneration: trafficPolicy.Generation,
 			TrafficTargets:     map[string]*networkingv1alpha2.ApprovalStatus{},
+			Workloads:          []string{},
 		}
 	}
+	listWorkloadsForTrafficPolicies(input)
 
 	// initialize access policy statuses
 	for _, accessPolicy := range input.AccessPolicies().List() {
@@ -73,8 +108,10 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 			State:              networkingv1alpha2.ApprovalState_ACCEPTED,
 			ObservedGeneration: accessPolicy.Generation,
 			TrafficTargets:     map[string]*networkingv1alpha2.ApprovalStatus{},
+			Workloads:          []string{},
 		}
 	}
+	listWorkloadsForAccessPolicies(input)
 
 	// initialize FailoverService statuses
 	for _, failoverService := range input.FailoverServices().List() {
