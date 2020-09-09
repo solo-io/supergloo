@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Update traffic policy status and access policy status to include selected workloads.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/942

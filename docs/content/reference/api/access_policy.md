@@ -56,6 +56,7 @@ Access control policies apply ALLOW policies to communication in a mesh. Access 
 | observedGeneration | [int64](#int64) |  | The most recent generation observed in the the AccessPolicy metadata. If the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
 | state | [ApprovalState](#networking.smh.solo.io.ApprovalState) |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all target meshes. |
 | trafficTargets | [][AccessPolicyStatus.TrafficTargetsEntry](#networking.smh.solo.io.AccessPolicyStatus.TrafficTargetsEntry) | repeated | The status of the AccessPolicy for each TrafficTarget to which it has been applied. An AccessPolicy may be Accepted for some TrafficTargets and rejected for others. |
+| workloads | [][string](#string) | repeated | The list of Workloads to which this policy has been applied. |
 
 
 

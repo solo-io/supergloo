@@ -33,6 +33,12 @@ var _ = Describe("Applier", func() {
 					Namespace: "ns",
 				},
 			}
+			workload = &discoveryv1alpha2.Workload{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "wkld1",
+					Namespace: "ns",
+				},
+			}
 			trafficPolicy1 = &v1alpha2.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "tp1",
@@ -58,7 +64,9 @@ var _ = Describe("Applier", func() {
 				discoveryv1alpha2sets.NewTrafficTargetSet(discoveryv1alpha2.TrafficTargetSlice{
 					trafficTarget,
 				}...),
-				discoveryv1alpha2sets.NewWorkloadSet(),
+				discoveryv1alpha2sets.NewWorkloadSet(discoveryv1alpha2.WorkloadSlice{
+					workload,
+				}...),
 				discoveryv1alpha2sets.NewMeshSet(),
 				v1alpha2sets.NewTrafficPolicySet(v1alpha2.TrafficPolicySlice{
 					trafficPolicy1,
@@ -86,11 +94,15 @@ var _ = Describe("Applier", func() {
 				AcceptanceOrder: 0,
 				State:           v1alpha2.ApprovalState_ACCEPTED,
 			}))
+			Expect(trafficPolicy1.Status.Workloads).To(HaveLen(1))
+			Expect(trafficPolicy1.Status.Workloads[0]).To(Equal(sets.Key(workload)))
 			Expect(trafficPolicy2.Status.TrafficTargets).To(HaveKey(sets.Key(trafficTarget)))
 			Expect(trafficPolicy2.Status.TrafficTargets[sets.Key(trafficTarget)]).To(Equal(&v1alpha2.ApprovalStatus{
 				AcceptanceOrder: 1,
 				State:           v1alpha2.ApprovalState_ACCEPTED,
 			}))
+			Expect(trafficPolicy2.Status.Workloads).To(HaveLen(1))
+			Expect(trafficPolicy2.Status.Workloads[0]).To(Equal(sets.Key(workload)))
 
 		})
 		It("updates status on input traffic target policies", func() {
