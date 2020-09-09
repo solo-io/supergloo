@@ -139,16 +139,21 @@ func (t *translator) translate(
 			continue
 		}
 
+		subsets := trafficshift.MakeDestinationRuleSubsetsForFailoverService(
+			failoverService,
+			allTrafficTargets,
+		)
+
 		var errsForMesh *multierror.Error
 		serviceEntry, err := t.translateServiceEntry(failoverService, mesh)
 		if err != nil {
 			errsForMesh = multierror.Append(errsForMesh, err)
 		}
-		destinationRule, err := t.translateDestinationRule(failoverService, allTrafficTargets)
+		destinationRule, err := t.translateDestinationRule(failoverService, subsets)
 		if err != nil {
 			errsForMesh = multierror.Append(errsForMesh, err)
 		}
-		envoyFilter, err := t.translateEnvoyFilter(failoverService, mesh, prioritizedTrafficTargets)
+		envoyFilter, err := t.translateEnvoyFilter(failoverService, mesh, prioritizedTrafficTargets, subsets)
 		if err != nil {
 			errsForMesh = multierror.Append(errsForMesh, err)
 		}
@@ -231,13 +236,8 @@ func (t *translator) translateServiceEntry(
 
 func (t *translator) translateDestinationRule(
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
-	allTrafficTargets v1alpha2sets.TrafficTargetSet,
+	subsets []*networkingv1alpha3spec.Subset,
 ) (*networkingv1alpha3.DestinationRule, error) {
-	subsets := trafficshift.MakeDestinationRuleSubsetsForFailoverService(
-		failoverService,
-		allTrafficTargets,
-	)
-
 	// No need to output a DestinationRule if there are no subsets.
 	if len(subsets) < 1 {
 		return nil, nil
@@ -272,8 +272,9 @@ func (t *translator) translateEnvoyFilter(
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
 	mesh *discoveryv1alpha2.Mesh,
 	prioritizedTrafficTargets []*discoveryv1alpha2.TrafficTarget,
+	subsets []*networkingv1alpha3spec.Subset,
 ) (*networkingv1alpha3.EnvoyFilter, error) {
-	patches, err := t.buildFailoverEnvoyPatches(failoverService, prioritizedTrafficTargets, mesh)
+	patches, err := t.buildFailoverEnvoyPatches(failoverService, prioritizedTrafficTargets, mesh, subsets)
 	if err != nil {
 		return nil, err
 	}
@@ -297,48 +298,65 @@ func (t *translator) buildFailoverEnvoyPatches(
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
 	prioritizedServices []*discoveryv1alpha2.TrafficTarget,
 	mesh *discoveryv1alpha2.Mesh,
+	subsets []*networkingv1alpha3spec.Subset,
 ) ([]*networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectPatch, error) {
 	var failoverAggregateClusterPatches []*networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectPatch
-	failoverServiceClusterName := buildIstioEnvoyClusterName(failoverService.Spec.GetPort().GetNumber(), failoverService.Spec.GetHostname())
-	envoyFailoverPatch, err := t.buildEnvoyFailoverPatch(
-		failoverServiceClusterName,
-		mesh.Spec.GetIstio().Installation.Cluster,
-		prioritizedServices,
-	)
-	if err != nil {
-		return nil, err
-	}
-	// EnvoyFilter patches representing the aggregate cluster for the failover service.
-	failoverAggregateClusterPatch := []*networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectPatch{
-		// Replace the default Envoy configuration for Istio ServiceEntry with custom Envoy failover config
-		{
-			ApplyTo: networkingv1alpha3spec.EnvoyFilter_CLUSTER,
-			Match: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch{
-				Context: networkingv1alpha3spec.EnvoyFilter_ANY,
-				ObjectTypes: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch_Cluster{
-					Cluster: &networkingv1alpha3spec.EnvoyFilter_ClusterMatch{
-						Name: failoverServiceClusterName,
+
+	// Append nil for no-subset case
+	subsets = append(subsets, nil)
+
+	for _, subset := range subsets {
+		subsetName := ""
+		if subset != nil {
+			subsetName = subset.Name
+		}
+		failoverServiceClusterName := buildIstioEnvoyClusterName(
+			failoverService.Spec.GetPort().GetNumber(),
+			subsetName,
+			failoverService.Spec.GetHostname(),
+		)
+		envoyFailoverPatch, err := t.buildEnvoyFailoverPatch(
+			failoverServiceClusterName,
+			mesh.Spec.GetIstio().Installation.Cluster,
+			prioritizedServices,
+			subsetName,
+		)
+		if err != nil {
+			return nil, err
+		}
+		// EnvoyFilter patches representing the aggregate cluster for the failover service.
+		failoverAggregateClusterPatch := []*networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectPatch{
+			// Replace the default Envoy configuration for Istio ServiceEntry with custom Envoy failover config
+			{
+				ApplyTo: networkingv1alpha3spec.EnvoyFilter_CLUSTER,
+				Match: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch{
+					Context: networkingv1alpha3spec.EnvoyFilter_ANY,
+					ObjectTypes: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch_Cluster{
+						Cluster: &networkingv1alpha3spec.EnvoyFilter_ClusterMatch{
+							Name: failoverServiceClusterName,
+						},
 					},
 				},
-			},
-			Patch: &networkingv1alpha3spec.EnvoyFilter_Patch{
-				Operation: networkingv1alpha3spec.EnvoyFilter_Patch_REMOVE,
-			},
-		},
-		{
-			ApplyTo: networkingv1alpha3spec.EnvoyFilter_CLUSTER,
-			Match: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch{
-				Context: networkingv1alpha3spec.EnvoyFilter_ANY,
-				ObjectTypes: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch_Cluster{
-					Cluster: &networkingv1alpha3spec.EnvoyFilter_ClusterMatch{
-						Name: failoverServiceClusterName,
-					},
+				Patch: &networkingv1alpha3spec.EnvoyFilter_Patch{
+					Operation: networkingv1alpha3spec.EnvoyFilter_Patch_REMOVE,
 				},
 			},
-			Patch: envoyFailoverPatch,
-		},
+			{
+				ApplyTo: networkingv1alpha3spec.EnvoyFilter_CLUSTER,
+				Match: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch{
+					Context: networkingv1alpha3spec.EnvoyFilter_ANY,
+					ObjectTypes: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch_Cluster{
+						Cluster: &networkingv1alpha3spec.EnvoyFilter_ClusterMatch{
+							Name: failoverServiceClusterName,
+						},
+					},
+				},
+				Patch: envoyFailoverPatch,
+			},
+		}
+		failoverAggregateClusterPatches = append(failoverAggregateClusterPatches, failoverAggregateClusterPatch...)
 	}
-	failoverAggregateClusterPatches = append(failoverAggregateClusterPatches, failoverAggregateClusterPatch...)
+
 	return failoverAggregateClusterPatches, nil
 }
 
@@ -346,8 +364,9 @@ func (t *translator) buildEnvoyFailoverPatch(
 	failoverServiceEnvoyClusterName string,
 	failoverServiceCluster string,
 	prioritizedServices []*discoveryv1alpha2.TrafficTarget,
+	subsetName string,
 ) (*networkingv1alpha3spec.EnvoyFilter_Patch, error) {
-	aggregateClusterConfig := t.buildEnvoyAggregateClusterConfig(prioritizedServices, failoverServiceCluster)
+	aggregateClusterConfig := t.buildEnvoyAggregateClusterConfig(prioritizedServices, failoverServiceCluster, subsetName)
 	aggregateClusterConfigStruct, err := conversion.MessageToStruct(aggregateClusterConfig)
 	if err != nil {
 		return nil, err
@@ -388,6 +407,7 @@ func (t *translator) buildEnvoyFailoverPatch(
 func (t *translator) buildEnvoyAggregateClusterConfig(
 	trafficTargets []*discoveryv1alpha2.TrafficTarget,
 	failoverServiceClusterName string,
+	subsetName string,
 ) *envoy_config_cluster_aggregate_v2alpha.ClusterConfig {
 	var orderedFailoverList []string
 	for _, trafficTarget := range trafficTargets {
@@ -401,7 +421,7 @@ func (t *translator) buildEnvoyAggregateClusterConfig(
 				// Multicluster global DNS
 				hostname = t.clusterDomains.GetServiceGlobalFQDN(kubeService.Ref)
 			}
-			failoverCluster := buildIstioEnvoyClusterName(port.GetPort(), hostname)
+			failoverCluster := buildIstioEnvoyClusterName(port.GetPort(), subsetName, hostname)
 			orderedFailoverList = append(orderedFailoverList, failoverCluster)
 		}
 	}
@@ -410,6 +430,6 @@ func (t *translator) buildEnvoyAggregateClusterConfig(
 	}
 }
 
-func buildIstioEnvoyClusterName(port uint32, hostname string) string {
-	return fmt.Sprintf("outbound|%d||%s", port, hostname)
+func buildIstioEnvoyClusterName(port uint32, subsetName string, hostname string) string {
+	return fmt.Sprintf("outbound|%d|%s|%s", port, subsetName, hostname)
 }
