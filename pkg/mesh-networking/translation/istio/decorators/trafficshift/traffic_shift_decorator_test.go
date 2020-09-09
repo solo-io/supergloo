@@ -344,6 +344,9 @@ var _ = Describe("TrafficShiftDecorator", func() {
 								FailoverService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination{
 									Name:      "fs-1",
 									Namespace: "fs-ns-1",
+									Subset: map[string]string{
+										"version": "v1",
+									},
 								},
 							},
 							Weight: 50,
@@ -368,6 +371,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 					Port: &v1alpha3.PortSelector{
 						Number: 9080,
 					},
+					Subset: "version-v1",
 				},
 				Weight: 50,
 			},

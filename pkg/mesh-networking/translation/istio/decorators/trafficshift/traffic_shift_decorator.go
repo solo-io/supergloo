@@ -189,12 +189,12 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 }
 
 func (d *trafficShiftDecorator) buildFailoverServiceDestination(
-	failoverServiceDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination,
+	failoverServiceDest *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination,
 	weight uint32,
 ) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
-	failoverService, err := d.failoverServices.Find(ezkube.MakeObjectRef(failoverServiceDestination))
+	failoverService, err := d.failoverServices.Find(ezkube.MakeObjectRef(failoverServiceDest))
 	if err != nil {
-		return nil, eris.Wrapf(err, "invalid traffic shift destination %s, FailoverService not found", sets.Key(failoverServiceDestination))
+		return nil, eris.Wrapf(err, "invalid traffic shift destination %s, FailoverService not found", sets.Key(failoverServiceDest))
 	}
 
 	httpRouteDestination := &networkingv1alpha3spec.HTTPRouteDestination{
@@ -205,6 +205,11 @@ func (d *trafficShiftDecorator) buildFailoverServiceDestination(
 			},
 		},
 		Weight: int32(weight),
+	}
+
+	if failoverServiceDest.Subset != nil {
+		// Use the canonical SMH unique name for this subset.
+		httpRouteDestination.Destination.Subset = subsetName(failoverServiceDest.Subset)
 	}
 
 	return httpRouteDestination, nil
