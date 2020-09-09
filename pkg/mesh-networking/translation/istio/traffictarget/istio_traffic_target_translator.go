@@ -5,9 +5,10 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/authorizationpolicy"
@@ -44,11 +45,12 @@ func NewTranslator(
 	ctx context.Context,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
-	trafficTargets v1alpha2sets.TrafficTargetSet,
+	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+	failoverServices v1alpha2sets.FailoverServiceSet,
 ) Translator {
 	return &translator{
 		ctx:                   ctx,
-		destinationRules:      destinationrule.NewTranslator(clusterDomains, decoratorFactory, trafficTargets),
+		destinationRules:      destinationrule.NewTranslator(clusterDomains, decoratorFactory, trafficTargets, failoverServices),
 		virtualServices:       virtualservice.NewTranslator(clusterDomains, decoratorFactory),
 		authorizationPolicies: authorizationpolicy.NewTranslator(),
 	}
@@ -78,7 +80,7 @@ func (t *translator) Translate(
 func (t *translator) isIstioTrafficTarget(
 	ctx context.Context,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
-	allMeshes v1alpha2sets.MeshSet,
+	allMeshes discoveryv1alpha2sets.MeshSet,
 ) bool {
 	meshRef := trafficTarget.Spec.Mesh
 	if meshRef == nil {

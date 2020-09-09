@@ -12,11 +12,13 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/failoverserviceutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/trafficpolicyutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/traffictargetutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -106,10 +108,10 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 			if err != nil {
 				return nil, err
 			}
-		case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceRef:
+		case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService:
 			var err error
 			trafficShiftDestination, err = d.buildFailoverServiceDestination(
-				destinationType.FailoverServiceRef,
+				destinationType.FailoverService,
 				destination.Weight,
 			)
 			if err != nil {
@@ -187,12 +189,12 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 }
 
 func (d *trafficShiftDecorator) buildFailoverServiceDestination(
-	failoverServiceRef *v1.ObjectRef,
+	failoverServiceDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination,
 	weight uint32,
 ) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
-	failoverService, err := d.failoverServices.Find(failoverServiceRef)
+	failoverService, err := d.failoverServices.Find(ezkube.MakeObjectRef(failoverServiceDestination))
 	if err != nil {
-		return nil, eris.Wrapf(err, "invalid traffic shift destination %s, FailoverService not found", sets.Key(failoverServiceRef))
+		return nil, eris.Wrapf(err, "invalid traffic shift destination %s, FailoverService not found", sets.Key(failoverServiceDestination))
 	}
 
 	httpRouteDestination := &networkingv1alpha3spec.HTTPRouteDestination{
@@ -213,6 +215,7 @@ func (d *trafficShiftDecorator) buildFailoverServiceDestination(
 func MakeDestinationRuleSubsets(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+	failoverServices v1alpha2sets.FailoverServiceSet,
 ) []*networkingv1alpha3spec.Subset {
 	var uniqueSubsets []map[string]string
 	appendUniqueSubset := func(subsetLabels map[string]string) {
@@ -236,7 +239,16 @@ func MakeDestinationRuleSubsets(
 					if traffictargetutils.IsTrafficTargetForKubeService(trafficTarget, destType.KubeService) {
 						appendUniqueSubset(destType.KubeService.Subset)
 					}
+				case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService:
+					failoverService, err := failoverServices.Find(destType.FailoverService)
+					if err != nil {
+						continue
+					}
+					if failoverserviceutils.ContainsTrafficTarget(failoverService, trafficTarget) {
+						appendUniqueSubset(destType.FailoverService.Subset)
+					}
 				}
+
 			}
 		}
 		return true
