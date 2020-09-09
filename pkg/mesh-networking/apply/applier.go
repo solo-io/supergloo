@@ -36,38 +36,6 @@ func NewApplier(
 	}
 }
 
-func listWorkloadsForTrafficPolicies(
-	input input.Snapshot) {
-	var matchingWorkloads []string
-	for _, trafficPolicy := range input.TrafficPolicies().List() {
-		if len(trafficPolicy.Spec.GetSourceSelector()) == 0 {
-			trafficPolicy.Status.Workloads = []string{"*"}
-			return
-		}
-		for _, workload := range input.Workloads().List() {
-			if selectorutils.SelectorMatchesWorkload(trafficPolicy.Spec.GetSourceSelector(), workload) {
-				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
-			}
-		}
-	}
-}
-
-func listWorkloadsForAccessPolicies(
-	input input.Snapshot) {
-	var matchingWorkloads []string
-	for _, accessPolicy := range input.AccessPolicies().List() {
-		if len(accessPolicy.Spec.GetSourceSelector()) == 0 {
-			accessPolicy.Status.Workloads = []string{"*"}
-			return
-		}
-		for _, workload := range input.Workloads().List() {
-			if selectorutils.IdentityMatchesWorkload(accessPolicy.Spec.GetSourceSelector(), workload) {
-				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
-			}
-		}
-	}
-}
-
 func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 	ctx = contextutils.WithLogger(ctx, "validation")
 	reporter := newApplyReporter()
@@ -100,7 +68,7 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 			Workloads:          []string{},
 		}
 	}
-	listWorkloadsForTrafficPolicies(input)
+	setWorkloadsForTrafficPolicies(input)
 
 	// initialize access policy statuses
 	for _, accessPolicy := range input.AccessPolicies().List() {
@@ -111,7 +79,7 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 			Workloads:          []string{},
 		}
 	}
-	listWorkloadsForAccessPolicies(input)
+	setWorkloadsForAccessPolicies(input)
 
 	// initialize FailoverService statuses
 	for _, failoverService := range input.FailoverServices().List() {
@@ -146,6 +114,38 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 	}
 
 	// TODO(ilackarms): validate workloads
+}
+
+func setWorkloadsForTrafficPolicies(
+	input input.Snapshot) {
+	for _, trafficPolicy := range input.TrafficPolicies().List() {
+		var matchingWorkloads []string
+		// TODO(awang) optimize if the returned workloads list gets too large
+		//if len(trafficPolicy.Spec.GetSourceSelector()) == 0 {
+		//	trafficPolicy.Status.Workloads = []string{"*"}
+		//	return
+		//}
+		for _, workload := range input.Workloads().List() {
+			if selectorutils.SelectorMatchesWorkload(trafficPolicy.Spec.GetSourceSelector(), workload) {
+				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
+			}
+		}
+		trafficPolicy.Status.Workloads = matchingWorkloads
+	}
+}
+
+func setWorkloadsForAccessPolicies(
+	input input.Snapshot) {
+	for _, accessPolicy := range input.AccessPolicies().List() {
+		var matchingWorkloads []string
+		// TODO(awang) optimize if the returned workloads list gets too large
+		for _, workload := range input.Workloads().List() {
+			if selectorutils.IdentityMatchesWorkload(accessPolicy.Spec.GetSourceSelector(), workload) {
+				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
+			}
+		}
+		accessPolicy.Status.Workloads = matchingWorkloads
+	}
 }
 
 // this function both validates the status of TrafficPolicies (sets error or accepted state)
