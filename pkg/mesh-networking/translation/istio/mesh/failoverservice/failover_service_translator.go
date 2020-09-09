@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 
 	udpa_type_v1 "github.com/cncf/udpa/go/udpa/type/v1"
@@ -87,12 +89,13 @@ func (t *translator) Translate(
 		reporter.ReportFailoverService(failoverService.Ref, validationErrors)
 	}
 
-	serviceEntries, envoyFilters, err := t.translate(failoverService, in.TrafficTargets().List(), in.Meshes(), reporter)
+	serviceEntries, destinationRules, envoyFilters, err := t.translate(failoverService, in.TrafficTargets(), in.Meshes(), reporter)
 	if err != nil {
 		reportErrorsToMeshes(failoverService, in.Meshes(), err, reporter)
 	} else {
-		outputs.AddEnvoyFilters(envoyFilters...)
 		outputs.AddServiceEntries(serviceEntries...)
+		outputs.AddDestinationRules(destinationRules...)
+		outputs.AddEnvoyFilters(envoyFilters...)
 	}
 }
 
@@ -114,19 +117,20 @@ func reportErrorsToMeshes(
 // Translate FailoverService into ServiceEntry and EnvoyFilter.
 func (t *translator) translate(
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
-	allTrafficTargets []*discoveryv1alpha2.TrafficTarget,
+	allTrafficTargets v1alpha2sets.TrafficTargetSet,
 	allMeshes v1alpha2sets.MeshSet,
 	reporter reporting.Reporter,
-) ([]*networkingv1alpha3.ServiceEntry, []*networkingv1alpha3.EnvoyFilter, error) {
+) (v1alpha3.ServiceEntrySlice, v1alpha3.DestinationRuleSlice, v1alpha3.EnvoyFilterSlice, error) {
 	var serviceEntries []*networkingv1alpha3.ServiceEntry
+	var destinationRules []*networkingv1alpha3.DestinationRule
 	var envoyFilters []*networkingv1alpha3.EnvoyFilter
-	prioritizedTrafficTargets, err := t.collectTrafficTargetsForFailoverService(failoverService.Spec, allTrafficTargets)
+	prioritizedTrafficTargets, err := t.collectTrafficTargetsForFailoverService(failoverService.Spec, allTrafficTargets.List())
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	var multierr *multierror.Error
 	if len(prioritizedTrafficTargets) < 1 {
-		return nil, nil, eris.New("FailoverService has fewer than one TrafficTarget.")
+		return nil, nil, nil, eris.New("FailoverService has fewer than one TrafficTarget.")
 	}
 	for _, meshRef := range failoverService.Spec.Meshes {
 		mesh, err := allMeshes.Find(meshRef)
@@ -136,11 +140,15 @@ func (t *translator) translate(
 		}
 
 		var errsForMesh *multierror.Error
-		serviceEntry, err := t.translateServiceEntries(failoverService, mesh)
+		serviceEntry, err := t.translateServiceEntry(failoverService, mesh)
 		if err != nil {
 			errsForMesh = multierror.Append(errsForMesh, err)
 		}
-		envoyFilter, err := t.translateEnvoyFilters(failoverService, mesh, prioritizedTrafficTargets)
+		destinationRule, err := t.translateDestinationRule(failoverService, allTrafficTargets)
+		if err != nil {
+			errsForMesh = multierror.Append(errsForMesh, err)
+		}
+		envoyFilter, err := t.translateEnvoyFilter(failoverService, mesh, prioritizedTrafficTargets)
 		if err != nil {
 			errsForMesh = multierror.Append(errsForMesh, err)
 		}
@@ -149,10 +157,12 @@ func (t *translator) translate(
 			reporter.ReportFailoverServiceToMesh(mesh, failoverService.Ref, errs)
 			continue
 		}
+
 		serviceEntries = append(serviceEntries, serviceEntry)
+		destinationRules = append(destinationRules, destinationRule)
 		envoyFilters = append(envoyFilters, envoyFilter)
 	}
-	return serviceEntries, envoyFilters, multierr.ErrorOrNil()
+	return serviceEntries, destinationRules, envoyFilters, multierr.ErrorOrNil()
 }
 
 /*
@@ -184,7 +194,7 @@ func (t *translator) collectTrafficTargetsForFailoverService(
 	return prioritizedTrafficTargets, nil
 }
 
-func (t *translator) translateServiceEntries(
+func (t *translator) translateServiceEntry(
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
 	mesh *discoveryv1alpha2.Mesh,
 ) (*networkingv1alpha3.ServiceEntry, error) {
@@ -219,7 +229,46 @@ func (t *translator) translateServiceEntries(
 	return serviceEntry, nil
 }
 
-func (t *translator) translateEnvoyFilters(
+func (t *translator) translateDestinationRule(
+	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
+	allTrafficTargets v1alpha2sets.TrafficTargetSet,
+) (*networkingv1alpha3.DestinationRule, error) {
+	subsets := trafficshift.MakeDestinationRuleSubsetsForFailoverService(
+		failoverService,
+		allTrafficTargets,
+	)
+
+	// No need to output a DestinationRule if there are no subsets.
+	if len(subsets) < 1 {
+		return nil, nil
+	}
+
+	meta := metautils.TranslatedObjectMeta(
+		&metav1.ObjectMeta{
+			Name:      failoverService.Ref.Name,
+			Namespace: failoverService.Ref.Namespace,
+		},
+		nil,
+	)
+
+	return &networkingv1alpha3.DestinationRule{
+		ObjectMeta: meta,
+		Spec: networkingv1alpha3spec.DestinationRule{
+			Host: failoverService.Spec.Hostname,
+			TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{
+				Tls: &networkingv1alpha3spec.ClientTLSSettings{
+					// TODO(ilackarms): currently we set all DRs to mTLS
+					// in the future we'll want to make this configurable
+					// https://github.com/solo-io/service-mesh-hub/issues/790
+					Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
+				},
+			},
+			Subsets: subsets,
+		},
+	}, nil
+}
+
+func (t *translator) translateEnvoyFilter(
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
 	mesh *discoveryv1alpha2.Mesh,
 	prioritizedTrafficTargets []*discoveryv1alpha2.TrafficTarget,

@@ -340,8 +340,8 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				TrafficShift: &v1alpha2.TrafficPolicySpec_MultiDestination{
 					Destinations: []*v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination{
 						{
-							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceRef{
-								FailoverServiceRef: &v1.ObjectRef{
+							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService{
+								FailoverService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination{
 									Name:      "fs-1",
 									Namespace: "fs-ns-1",
 								},

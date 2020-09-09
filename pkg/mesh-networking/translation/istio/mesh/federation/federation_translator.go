@@ -215,7 +215,7 @@ func (t *translator) Translate(
 			// NOTE(ilackarms): we make subsets here for the client-side destination rule
 			// which contain all the matching subset names for the remote destination rule.
 			// the labels for the subsets must match the labels on the ServiceEntry Endpoint(s).
-			federatedSubsets := trafficshift.MakeDestinationRuleSubsets(
+			federatedSubsets := trafficshift.MakeDestinationRuleSubsetsForTrafficTarget(
 				trafficTarget,
 				t.trafficTargets,
 				t.failoverServices,

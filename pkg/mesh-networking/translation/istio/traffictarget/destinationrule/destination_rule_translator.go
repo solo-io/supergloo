@@ -153,7 +153,7 @@ func (t *translator) initializeDestinationRule(trafficTarget *discoveryv1alpha2.
 					Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
 				},
 			},
-			Subsets: trafficshift.MakeDestinationRuleSubsets(
+			Subsets: trafficshift.MakeDestinationRuleSubsetsForTrafficTarget(
 				trafficTarget,
 				t.trafficTargets,
 				t.failoverServices,

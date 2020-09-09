@@ -210,12 +210,9 @@ func (d *trafficShiftDecorator) buildFailoverServiceDestination(
 	return httpRouteDestination, nil
 }
 
-// make all the necessary subsets for the destination rule for the given traffictarget.
-// traverses all the applied traffic policies to find subsets matching this meshervice
-func MakeDestinationRuleSubsets(
-	trafficTarget *discoveryv1alpha2.TrafficTarget,
+func makeDestinationRuleSubsets(
 	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
-	failoverServices v1alpha2sets.FailoverServiceSet,
+	destinationMatchFunc func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool,
 ) []*networkingv1alpha3spec.Subset {
 	var uniqueSubsets []map[string]string
 	appendUniqueSubset := func(subsetLabels map[string]string) {
@@ -234,21 +231,14 @@ func MakeDestinationRuleSubsets(
 		for _, policy := range service.Status.AppliedTrafficPolicies {
 			trafficShiftDestinations := policy.Spec.GetTrafficShift().GetDestinations()
 			for _, dest := range trafficShiftDestinations {
-				switch destType := dest.DestinationType.(type) {
-				case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService:
-					if traffictargetutils.IsTrafficTargetForKubeService(trafficTarget, destType.KubeService) {
+				if destinationMatchFunc(dest) {
+					switch destType := dest.DestinationType.(type) {
+					case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService:
 						appendUniqueSubset(destType.KubeService.Subset)
-					}
-				case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService:
-					failoverService, err := failoverServices.Find(destType.FailoverService)
-					if err != nil {
-						continue
-					}
-					if failoverserviceutils.ContainsTrafficTarget(failoverService, trafficTarget) {
+					case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService:
 						appendUniqueSubset(destType.FailoverService.Subset)
 					}
 				}
-
 			}
 		}
 		return true
@@ -263,6 +253,49 @@ func MakeDestinationRuleSubsets(
 	}
 
 	return subsets
+}
+
+// make all the necessary subsets for the destination rule for the given FailoverService.
+// traverses all the applied traffic policies to find subsets matching this FailoverService
+func MakeDestinationRuleSubsetsForFailoverService(
+	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
+	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+) []*networkingv1alpha3spec.Subset {
+	return makeDestinationRuleSubsets(
+		allTrafficTargets,
+		func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool {
+			switch destType := weightedDestination.DestinationType.(type) {
+			case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService:
+				return ezkube.RefsMatch(failoverService.Ref, destType.FailoverService)
+			}
+			return false
+		},
+	)
+}
+
+// make all the necessary subsets for the destination rule for the given traffictarget.
+// traverses all the applied traffic policies to find subsets matching this traffictarget
+func MakeDestinationRuleSubsetsForTrafficTarget(
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+	failoverServices v1alpha2sets.FailoverServiceSet,
+) []*networkingv1alpha3spec.Subset {
+	return makeDestinationRuleSubsets(
+		allTrafficTargets,
+		func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool {
+			switch destType := weightedDestination.DestinationType.(type) {
+			case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService:
+				return traffictargetutils.IsTrafficTargetForKubeService(trafficTarget, destType.KubeService)
+			case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService:
+				failoverService, err := failoverServices.Find(destType.FailoverService)
+				if err != nil {
+					return false
+				}
+				return failoverserviceutils.ContainsTrafficTarget(failoverService, trafficTarget)
+			}
+			return false
+		},
+	)
 }
 
 // used in DestinationRule translator as well
