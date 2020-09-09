@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Upgrade to the new skv2 v0.11.1 registration interface for handling in memory kubeconfigs.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/950

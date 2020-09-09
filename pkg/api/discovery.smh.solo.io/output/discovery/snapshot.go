@@ -350,6 +350,8 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	}
 	snapshotMap["meshes"] = meshSet.List()
 
+	snapshotMap["clusters"] = s.clusters
+
 	return json.Marshal(snapshotMap)
 }
 
