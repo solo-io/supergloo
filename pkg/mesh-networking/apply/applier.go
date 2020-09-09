@@ -4,6 +4,9 @@ import (
 	"context"
 	"sort"
 
+	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
+
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -65,10 +68,9 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 			State:              networkingv1alpha2.ApprovalState_ACCEPTED,
 			ObservedGeneration: trafficPolicy.Generation,
 			TrafficTargets:     map[string]*networkingv1alpha2.ApprovalStatus{},
-			Workloads:          []string{},
 		}
 	}
-	setWorkloadsForTrafficPolicies(input)
+	setWorkloadsForTrafficPolicies(input.TrafficPolicies(), input.Workloads())
 
 	// initialize access policy statuses
 	for _, accessPolicy := range input.AccessPolicies().List() {
@@ -76,10 +78,9 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 			State:              networkingv1alpha2.ApprovalState_ACCEPTED,
 			ObservedGeneration: accessPolicy.Generation,
 			TrafficTargets:     map[string]*networkingv1alpha2.ApprovalStatus{},
-			Workloads:          []string{},
 		}
 	}
-	setWorkloadsForAccessPolicies(input)
+	setWorkloadsForAccessPolicies(input.AccessPolicies(), input.Workloads())
 
 	// initialize FailoverService statuses
 	for _, failoverService := range input.FailoverServices().List() {
@@ -117,15 +118,16 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 }
 
 func setWorkloadsForTrafficPolicies(
-	input input.Snapshot) {
-	for _, trafficPolicy := range input.TrafficPolicies().List() {
+	trafficPolicies v1alpha2sets.TrafficPolicySet,
+	workloads discoveryv1alpha2sets.WorkloadSet) {
+	for _, trafficPolicy := range trafficPolicies.List() {
 		var matchingWorkloads []string
 		// TODO(awang) optimize if the returned workloads list gets too large
 		//if len(trafficPolicy.Spec.GetSourceSelector()) == 0 {
 		//	trafficPolicy.Status.Workloads = []string{"*"}
 		//	return
 		//}
-		for _, workload := range input.Workloads().List() {
+		for _, workload := range workloads.List() {
 			if selectorutils.SelectorMatchesWorkload(trafficPolicy.Spec.GetSourceSelector(), workload) {
 				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
 			}
@@ -135,11 +137,12 @@ func setWorkloadsForTrafficPolicies(
 }
 
 func setWorkloadsForAccessPolicies(
-	input input.Snapshot) {
-	for _, accessPolicy := range input.AccessPolicies().List() {
+	accessPolicies v1alpha2sets.AccessPolicySet,
+	workloads discoveryv1alpha2sets.WorkloadSet) {
+	for _, accessPolicy := range accessPolicies.List() {
 		var matchingWorkloads []string
 		// TODO(awang) optimize if the returned workloads list gets too large
-		for _, workload := range input.Workloads().List() {
+		for _, workload := range workloads.List() {
 			if selectorutils.IdentityMatchesWorkload(accessPolicy.Spec.GetSourceSelector(), workload) {
 				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
 			}
