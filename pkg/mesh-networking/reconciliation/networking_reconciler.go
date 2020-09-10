@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/solo-io/skv2/pkg/reconcile"
+
 	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
 
 	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
@@ -47,7 +49,7 @@ type networkingReconciler struct {
 func Start(
 	ctx context.Context,
 	builder input.Builder,
-	validator apply.Applier,
+	applier apply.Applier,
 	reporter reporting.Reporter,
 	translator translation.Translator,
 	multiClusterClient multicluster.Client,
@@ -58,7 +60,7 @@ func Start(
 	d := &networkingReconciler{
 		ctx:                ctx,
 		builder:            builder,
-		applier:            validator,
+		applier:            applier,
 		reporter:           reporter,
 		translator:         translator,
 		mgmtClient:         mgr.GetClient(),
@@ -71,7 +73,14 @@ func Start(
 		Filter: predicate.SimpleEventFilterFunc(isIgnoredSecret),
 	}
 
-	return input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2, filterNetworkingEvents)
+	return input.RegisterSingleClusterReconciler(
+		ctx,
+		mgr,
+		d.reconcile,
+		time.Second/2,
+		reconcile.Options{},
+		filterNetworkingEvents,
+	)
 }
 
 // reconcile global state
@@ -84,7 +93,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 
 	inputSnap, err := r.builder.BuildSnapshot(ctx, "mesh-networking", input.BuildOptions{
 		// only look at kube clusters in our own namespace
-		KubernetesClusters: input.KubernetesClusterBuildOptions{
+		KubernetesClusters: input.ResourceBuildOptions{
 			ListOptions: []client.ListOption{client.InNamespace(defaults.GetPodNamespace())},
 		},
 	})

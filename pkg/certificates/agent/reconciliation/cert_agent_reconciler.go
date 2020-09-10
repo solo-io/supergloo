@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/solo-io/skv2/pkg/reconcile"
+
 	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
 
 	"github.com/hashicorp/go-multierror"
@@ -58,7 +60,7 @@ func Start(
 		localClient: mgr.GetClient(),
 	}
 
-	return input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2)
+	return input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2, reconcile.Options{})
 }
 
 const (

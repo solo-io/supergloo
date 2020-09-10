@@ -23,7 +23,7 @@ func NewMeshDetector(
 	}
 }
 
-// returns a mesh for each deployment that contains the appmesh controller image
+// returns a mesh for each unique AppMesh Controller Mesh CRD in the snapshot
 func (d *meshDetector) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, error) {
 	var meshes v1alpha2.MeshSlice
 	var errs error

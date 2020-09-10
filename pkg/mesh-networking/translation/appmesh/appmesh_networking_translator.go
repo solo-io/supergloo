@@ -27,7 +27,7 @@ type appmeshTranslator struct {
 	totalTranslates int // TODO(ilackarms): metric
 }
 
-func NewappmeshTranslator() Translator {
+func NewAppmeshTranslator() Translator {
 	return &appmeshTranslator{}
 }
 

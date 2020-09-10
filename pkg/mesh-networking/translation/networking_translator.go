@@ -82,11 +82,13 @@ type translator struct {
 
 func NewTranslator(
 	istioTranslator istio.Translator,
+	appmeshTranslator appmesh.Translator,
 	osmTranslator osm.Translator,
 ) Translator {
 	return &translator{
-		istioTranslator: istioTranslator,
-		osmTranslator:   osmTranslator,
+		istioTranslator:   istioTranslator,
+		appmeshTranslator: appmeshTranslator,
+		osmTranslator:     osmTranslator,
 	}
 }
 
