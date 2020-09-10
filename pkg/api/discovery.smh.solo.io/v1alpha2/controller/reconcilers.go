@@ -74,7 +74,8 @@ type trafficTargetReconcileLoop struct {
 
 func NewTrafficTargetReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) TrafficTargetReconcileLoop {
 	return &trafficTargetReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &discovery_smh_solo_io_v1alpha2.TrafficTarget{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &discovery_smh_solo_io_v1alpha2.TrafficTarget{}, options),
 	}
 }
 
@@ -190,7 +191,8 @@ type workloadReconcileLoop struct {
 
 func NewWorkloadReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) WorkloadReconcileLoop {
 	return &workloadReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &discovery_smh_solo_io_v1alpha2.Workload{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &discovery_smh_solo_io_v1alpha2.Workload{}, options),
 	}
 }
 
@@ -306,7 +308,8 @@ type meshReconcileLoop struct {
 
 func NewMeshReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) MeshReconcileLoop {
 	return &meshReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &discovery_smh_solo_io_v1alpha2.Mesh{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &discovery_smh_solo_io_v1alpha2.Mesh{}, options),
 	}
 }
 

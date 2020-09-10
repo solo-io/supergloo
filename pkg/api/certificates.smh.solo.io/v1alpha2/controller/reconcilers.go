@@ -74,7 +74,8 @@ type issuedCertificateReconcileLoop struct {
 
 func NewIssuedCertificateReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) IssuedCertificateReconcileLoop {
 	return &issuedCertificateReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &certificates_smh_solo_io_v1alpha2.IssuedCertificate{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &certificates_smh_solo_io_v1alpha2.IssuedCertificate{}, options),
 	}
 }
 
@@ -190,7 +191,8 @@ type certificateRequestReconcileLoop struct {
 
 func NewCertificateRequestReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) CertificateRequestReconcileLoop {
 	return &certificateRequestReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &certificates_smh_solo_io_v1alpha2.CertificateRequest{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &certificates_smh_solo_io_v1alpha2.CertificateRequest{}, options),
 	}
 }
 

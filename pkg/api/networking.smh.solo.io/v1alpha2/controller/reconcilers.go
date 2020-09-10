@@ -74,7 +74,8 @@ type trafficPolicyReconcileLoop struct {
 
 func NewTrafficPolicyReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) TrafficPolicyReconcileLoop {
 	return &trafficPolicyReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &networking_smh_solo_io_v1alpha2.TrafficPolicy{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_smh_solo_io_v1alpha2.TrafficPolicy{}, options),
 	}
 }
 
@@ -190,7 +191,8 @@ type accessPolicyReconcileLoop struct {
 
 func NewAccessPolicyReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) AccessPolicyReconcileLoop {
 	return &accessPolicyReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &networking_smh_solo_io_v1alpha2.AccessPolicy{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_smh_solo_io_v1alpha2.AccessPolicy{}, options),
 	}
 }
 
@@ -306,7 +308,8 @@ type virtualMeshReconcileLoop struct {
 
 func NewVirtualMeshReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) VirtualMeshReconcileLoop {
 	return &virtualMeshReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &networking_smh_solo_io_v1alpha2.VirtualMesh{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_smh_solo_io_v1alpha2.VirtualMesh{}, options),
 	}
 }
 
@@ -422,7 +425,8 @@ type failoverServiceReconcileLoop struct {
 
 func NewFailoverServiceReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) FailoverServiceReconcileLoop {
 	return &failoverServiceReconcileLoop{
-		loop: reconcile.NewLoop(name, mgr, &networking_smh_solo_io_v1alpha2.FailoverService{}, options),
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_smh_solo_io_v1alpha2.FailoverService{}, options),
 	}
 }
 

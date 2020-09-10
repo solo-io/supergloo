@@ -48,6 +48,20 @@ type multiClusterReconcilerImpl struct {
 	base input.MultiClusterReconciler
 }
 
+// Options for reconcileing a snapshot
+type ReconcileOptions struct {
+
+	// Options for reconciling IssuedCertificates
+	IssuedCertificates reconcile.Options
+	// Options for reconciling CertificateRequests
+	CertificateRequests reconcile.Options
+
+	// Options for reconciling Secrets
+	Secrets reconcile.Options
+	// Options for reconciling Pods
+	Pods reconcile.Options
+}
+
 // register the reconcile func with the cluster watcher
 // the reconcileInterval, if greater than 0, will limit the number of reconciles
 // to one per interval.
@@ -56,6 +70,7 @@ func RegisterMultiClusterReconciler(
 	clusters multicluster.ClusterWatcher,
 	reconcileFunc input.MultiClusterReconcileFunc,
 	reconcileInterval time.Duration,
+	options ReconcileOptions,
 	predicates ...predicate.Predicate,
 ) {
 
@@ -71,11 +86,13 @@ func RegisterMultiClusterReconciler(
 
 	// initialize reconcile loops
 
-	certificates_smh_solo_io_v1alpha2_controllers.NewMulticlusterIssuedCertificateReconcileLoop("IssuedCertificate", clusters).AddMulticlusterIssuedCertificateReconciler(ctx, r, predicates...)
-	certificates_smh_solo_io_v1alpha2_controllers.NewMulticlusterCertificateRequestReconcileLoop("CertificateRequest", clusters).AddMulticlusterCertificateRequestReconciler(ctx, r, predicates...)
+	certificates_smh_solo_io_v1alpha2_controllers.NewMulticlusterIssuedCertificateReconcileLoop("IssuedCertificate", clusters, options.IssuedCertificates).AddMulticlusterIssuedCertificateReconciler(ctx, r, predicates...)
 
-	v1_controllers.NewMulticlusterSecretReconcileLoop("Secret", clusters).AddMulticlusterSecretReconciler(ctx, r, predicates...)
-	v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters).AddMulticlusterPodReconciler(ctx, r, predicates...)
+	certificates_smh_solo_io_v1alpha2_controllers.NewMulticlusterCertificateRequestReconcileLoop("CertificateRequest", clusters, options.CertificateRequests).AddMulticlusterCertificateRequestReconciler(ctx, r, predicates...)
+
+	v1_controllers.NewMulticlusterSecretReconcileLoop("Secret", clusters, options.Secrets).AddMulticlusterSecretReconciler(ctx, r, predicates...)
+
+	v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters, options.Pods).AddMulticlusterPodReconciler(ctx, r, predicates...)
 
 }
 
@@ -162,6 +179,7 @@ func RegisterSingleClusterReconciler(
 	mgr manager.Manager,
 	reconcileFunc input.SingleClusterReconcileFunc,
 	reconcileInterval time.Duration,
+	options reconcile.Options,
 	predicates ...predicate.Predicate,
 ) error {
 
@@ -177,17 +195,17 @@ func RegisterSingleClusterReconciler(
 
 	// initialize reconcile loops
 
-	if err := certificates_smh_solo_io_v1alpha2_controllers.NewIssuedCertificateReconcileLoop("IssuedCertificate", mgr, reconcile.Options{}).RunIssuedCertificateReconciler(ctx, r, predicates...); err != nil {
+	if err := certificates_smh_solo_io_v1alpha2_controllers.NewIssuedCertificateReconcileLoop("IssuedCertificate", mgr, options).RunIssuedCertificateReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
-	if err := certificates_smh_solo_io_v1alpha2_controllers.NewCertificateRequestReconcileLoop("CertificateRequest", mgr, reconcile.Options{}).RunCertificateRequestReconciler(ctx, r, predicates...); err != nil {
+	if err := certificates_smh_solo_io_v1alpha2_controllers.NewCertificateRequestReconcileLoop("CertificateRequest", mgr, options).RunCertificateRequestReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
 
-	if err := v1_controllers.NewSecretReconcileLoop("Secret", mgr, reconcile.Options{}).RunSecretReconciler(ctx, r, predicates...); err != nil {
+	if err := v1_controllers.NewSecretReconcileLoop("Secret", mgr, options).RunSecretReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
-	if err := v1_controllers.NewPodReconcileLoop("Pod", mgr, reconcile.Options{}).RunPodReconciler(ctx, r, predicates...); err != nil {
+	if err := v1_controllers.NewPodReconcileLoop("Pod", mgr, options).RunPodReconciler(ctx, r, predicates...); err != nil {
 		return err
 	}
 

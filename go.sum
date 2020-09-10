@@ -1159,6 +1159,10 @@ github.com/solo-io/anyvendor v0.0.1 h1:csAXLNLkUQWlr/ll4tgmc+Id9kHw2ibncf35weg03
 github.com/solo-io/anyvendor v0.0.1/go.mod h1:SLucIeU8qBOYI82BveNVn2LzZFcMWJSCf8Kd1S4Jcr4=
 github.com/solo-io/external-apis v0.1.1-0.20200828201727-bab69eb88bfd h1:uerVCERFbwBxpzJwalbcYryvXemRorLwOoQeKfYDzvw=
 github.com/solo-io/external-apis v0.1.1-0.20200828201727-bab69eb88bfd/go.mod h1:WguwYaI8GT7t8IecrxS4IOetP4Y73AbuMrbdpv3rDLo=
+github.com/solo-io/external-apis v0.1.1-0.20200910190121-f21d81f4b8f8 h1:6xxx/tvAWUjGCh36zmcoNd9GGs5ctJBwa0TL26tgZ6c=
+github.com/solo-io/external-apis v0.1.1-0.20200910190121-f21d81f4b8f8/go.mod h1:IGYdYqtvgOrFirPnofKw5/ku+ty1MP470k50d/u4Yjw=
+github.com/solo-io/external-apis v0.1.1-0.20200910190840-1dcad011ca90 h1:t/xq/Qg6Mg5yZWlNyhPrornRkguFTuT6bgg+IG3wBDc=
+github.com/solo-io/external-apis v0.1.1-0.20200910190840-1dcad011ca90/go.mod h1:Gd3yFn8fuXopX5wkX5Fe4bQRkTpmJMpR72Qsjf77xRo=
 github.com/solo-io/go-utils v0.17.0 h1:PNz+DgR1bwajhls/TX6JJCPMlaSAGAFwn5YZOYna63E=
 github.com/solo-io/go-utils v0.17.0/go.mod h1:mGlBcOeSttKRVf4tiq0o8Ng/SRY851W8q0BxkOwacZI=
 github.com/solo-io/protoc-gen-ext v0.0.7/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz4Cbw6tBcmaNsEk=
@@ -1167,6 +1171,10 @@ github.com/solo-io/protoc-gen-ext v0.0.9/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz
 github.com/solo-io/skv2 v0.10.0/go.mod h1:L9hUWAtZ9brCtRCM/bBBJTKy3kKuCn/tuap7VAypwzA=
 github.com/solo-io/skv2 v0.11.2-0.20200908184017-3fa0b0ce5ea8 h1:udCnQ3mxzhvuDxjeZe32pJil2gN+QU8z0OSn+SBP0jQ=
 github.com/solo-io/skv2 v0.11.2-0.20200908184017-3fa0b0ce5ea8/go.mod h1:L9hUWAtZ9brCtRCM/bBBJTKy3kKuCn/tuap7VAypwzA=
+github.com/solo-io/skv2 v0.11.2-0.20200910185948-36dad13fec4d h1:JbiIL3c+fR0XPjmKhp24mcu32YfjGrelbmwMx6R0Ubo=
+github.com/solo-io/skv2 v0.11.2-0.20200910185948-36dad13fec4d/go.mod h1:L9hUWAtZ9brCtRCM/bBBJTKy3kKuCn/tuap7VAypwzA=
+github.com/solo-io/skv2 v0.11.2-0.20200910190719-c1ba457baa21 h1:mRfrshpmEv1yd2TDX9XKF1xHrVndxhERxzl0Pu1Ybi8=
+github.com/solo-io/skv2 v0.11.2-0.20200910190719-c1ba457baa21/go.mod h1:L9hUWAtZ9brCtRCM/bBBJTKy3kKuCn/tuap7VAypwzA=
 github.com/solo-io/solo-kit v0.14.0 h1:5V5B93Vkt46KEQsco8S4GA3/U8ir2rpsPFJ2Dmk9Iwk=
 github.com/solo-io/solo-kit v0.14.0/go.mod h1:arV9Cw3lQHmW2XqXR6yHcp9CHVCUQdwTEFAnMMKbHyQ=
 github.com/sonatard/noctx v0.0.1 h1:VC1Qhl6Oxx9vvWo3UDgrGXYCeKCe3Wbw7qAWL6FrmTY=
