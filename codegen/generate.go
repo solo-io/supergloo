@@ -112,13 +112,6 @@ var (
 		},
 	}
 
-	appmeshResources = []string{
-		"VirtualNode",
-		"VirtualRouter",
-		"Route",
-		"VirtualService",
-	}
-
 	smhManifestRoot       = "install/helm/service-mesh-hub"
 	certAgentManifestRoot = "install/helm/cert-agent/"
 

@@ -6,17 +6,17 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 )
 
-// a deployment MeshDetector detects Mesh control plane instances (e.g. Pilot)
-// in a k8s Deployment.
+// a MeshDetector detects Mesh control plane instances (e.g. Pilot)
+// in a snapshot of discovery resources.
 // If detection fails, an error is returned
-// If no mesh is detected, nil is returned
+// If no mesh is detected, an empty list is returned
 // Separate Detectors are implemented for different Mesh types / versions.
 type MeshDetector interface {
 	DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, error)
 }
 
 // wrapper for multiple mesh detectors.
-// returns the first successfully detected mesh
+// returns all detected meshes
 type MeshDetectors []MeshDetector
 
 func (d MeshDetectors) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, error) {
