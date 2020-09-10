@@ -87,31 +87,13 @@ func (t *translator) Translate(
 	}, failoverService.Spec)
 	if validationErrors != nil {
 		reporter.ReportFailoverService(failoverService.Ref, validationErrors)
+		return
 	}
 
-	serviceEntries, destinationRules, envoyFilters, err := t.translate(failoverService, in.TrafficTargets(), in.Meshes(), reporter)
-	if err != nil {
-		reportErrorsToMeshes(failoverService, in.Meshes(), err, reporter)
-	} else {
-		outputs.AddServiceEntries(serviceEntries...)
-		outputs.AddDestinationRules(destinationRules...)
-		outputs.AddEnvoyFilters(envoyFilters...)
-	}
-}
-
-func reportErrorsToMeshes(
-	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
-	allMeshes v1alpha2sets.MeshSet,
-	reportedErr error,
-	reporter reporting.Reporter,
-) {
-	for _, meshRef := range failoverService.Spec.Meshes {
-		mesh, err := allMeshes.Find(meshRef)
-		if err != nil {
-			continue // Mesh reference not found
-		}
-		reporter.ReportFailoverServiceToMesh(mesh, failoverService.Ref, reportedErr)
-	}
+	serviceEntries, destinationRules, envoyFilters := t.translate(failoverService, in.TrafficTargets(), in.Meshes(), reporter)
+	outputs.AddServiceEntries(serviceEntries...)
+	outputs.AddDestinationRules(destinationRules...)
+	outputs.AddEnvoyFilters(envoyFilters...)
 }
 
 // Translate FailoverService into ServiceEntry and EnvoyFilter.
@@ -120,17 +102,18 @@ func (t *translator) translate(
 	allTrafficTargets v1alpha2sets.TrafficTargetSet,
 	allMeshes v1alpha2sets.MeshSet,
 	reporter reporting.Reporter,
-) (v1alpha3.ServiceEntrySlice, v1alpha3.DestinationRuleSlice, v1alpha3.EnvoyFilterSlice, error) {
+) (v1alpha3.ServiceEntrySlice, v1alpha3.DestinationRuleSlice, v1alpha3.EnvoyFilterSlice) {
 	var serviceEntries []*networkingv1alpha3.ServiceEntry
 	var destinationRules []*networkingv1alpha3.DestinationRule
 	var envoyFilters []*networkingv1alpha3.EnvoyFilter
 	prioritizedTrafficTargets, err := t.collectTrafficTargetsForFailoverService(failoverService.Spec, allTrafficTargets.List())
 	if err != nil {
-		return nil, nil, nil, err
+		reporter.ReportFailoverService(failoverService.Ref, []error{err})
+		return nil, nil, nil
 	}
-	var multierr *multierror.Error
 	if len(prioritizedTrafficTargets) < 1 {
-		return nil, nil, nil, eris.New("FailoverService has fewer than one TrafficTarget.")
+		reporter.ReportFailoverService(failoverService.Ref, []error{eris.New("FailoverService has fewer than one TrafficTarget.")})
+		return nil, nil, nil
 	}
 	for _, meshRef := range failoverService.Spec.Meshes {
 		mesh, err := allMeshes.Find(meshRef)
@@ -167,7 +150,7 @@ func (t *translator) translate(
 		destinationRules = append(destinationRules, destinationRule)
 		envoyFilters = append(envoyFilters, envoyFilter)
 	}
-	return serviceEntries, destinationRules, envoyFilters, multierr.ErrorOrNil()
+	return serviceEntries, destinationRules, envoyFilters
 }
 
 /*

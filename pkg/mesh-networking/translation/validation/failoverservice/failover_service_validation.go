@@ -142,18 +142,18 @@ func (f *failoverServiceValidator) validateServices(
 	meshes discoveryv1alpha2sets.MeshSet,
 ) []error {
 	var errs []error
-	componentServices := failoverService.GetBackingServices()
-	if len(componentServices) == 0 {
+	backingServices := failoverService.GetBackingServices()
+	if len(backingServices) == 0 {
 		return []error{MissingServices}
 	}
-	for _, typedServiceRef := range componentServices {
+	for _, typedServiceRef := range backingServices {
 		if typedServiceRef.GetKubeService() == nil {
 			errs = append(errs, UnsupportedServiceType(typedServiceRef.GetBackingServiceType()))
 			continue
 		}
 		serviceRef := typedServiceRef.GetKubeService()
-		trafficTarget, err := f.findTrafficTarget(serviceRef, allTrafficTargets)
-		if err != nil {
+		trafficTarget := f.findTrafficTarget(serviceRef, allTrafficTargets)
+		if trafficTarget == nil {
 			// Corresponding TrafficTarget not found.
 			errs = append(errs, BackingServiceNotFound(serviceRef))
 			continue
@@ -178,13 +178,13 @@ func (f *failoverServiceValidator) validateServices(
 func (f *failoverServiceValidator) findTrafficTarget(
 	serviceRef *skv2core.ClusterObjectRef,
 	allTrafficTargets []*discoveryv1alpha2.TrafficTarget,
-) (*discoveryv1alpha2.TrafficTarget, error) {
+) *discoveryv1alpha2.TrafficTarget {
 	for _, trafficTarget := range allTrafficTargets {
 		if ezkube.ClusterRefsMatch(serviceRef, trafficTarget.Spec.GetKubeService().GetRef()) {
-			return trafficTarget, nil
+			return trafficTarget
 		}
 	}
-	return nil, BackingServiceNotFound(serviceRef)
+	return nil
 }
 
 func (f *failoverServiceValidator) validateServiceOutlierDetection(trafficTarget *discoveryv1alpha2.TrafficTarget) error {
@@ -232,16 +232,16 @@ func (f *failoverServiceValidator) validateFederation(
 		}
 		referencedMeshes.Insert(mesh)
 	}
-	// Process declared services
+	// Process backing services
 	for _, typedServiceRef := range failoverService.GetBackingServices() {
 		if typedServiceRef.GetKubeService() == nil {
 			// Error already reported when validating component services.
 			continue
 		}
 		serviceRef := typedServiceRef.GetKubeService()
-		trafficTarget, err := f.findTrafficTarget(serviceRef, allTrafficTargets)
-		if err != nil {
-			errs = append(errs, err)
+		trafficTarget := f.findTrafficTarget(serviceRef, allTrafficTargets)
+		if trafficTarget == nil {
+			// Error already reported when validating backing services.
 			continue
 		}
 		mesh, err := allMeshes.Find(trafficTarget.Spec.Mesh)
