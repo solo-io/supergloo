@@ -17,6 +17,7 @@ replace (
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
 
 	k8s.io/client-go => k8s.io/client-go v0.18.6
+	github.com/solo-io/skv2 => /Users/harvey/skv2
 )
 
 require (
