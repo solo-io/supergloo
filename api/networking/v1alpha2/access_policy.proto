@@ -78,4 +78,7 @@ message AccessPolicyStatus {
     // The status of the AccessPolicy for each TrafficTarget to which it has been applied.
     // An AccessPolicy may be Accepted for some TrafficTargets and rejected for others.
     map<string, ApprovalStatus> traffic_targets = 3;
+
+    // The list of Workloads to which this policy has been applied.
+    repeated string workloads = 4;
 }
