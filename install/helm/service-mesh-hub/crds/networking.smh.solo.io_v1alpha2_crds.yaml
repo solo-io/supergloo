@@ -497,7 +497,8 @@ spec:
                 The most recent generation observed in the the TrafficPolicy metadata.
                 if the observedGeneration does not match generation, the controller has not received the most
                 recent version of this resource.
-              format: int64
+              maximum: 4294967295
+              minimum: 0
               type: integer
             state:
               description: |-
@@ -731,7 +732,8 @@ spec:
                 The most recent generation observed in the the AccessPolicy metadata.
                 If the observedGeneration does not match generation, the controller has not received the most
                 recent version of this resource.
-              format: int64
+              maximum: 4294967295
+              minimum: 0
               type: integer
             state:
               description: |-
@@ -979,7 +981,8 @@ spec:
                 The most recent generation observed in the the VirtualMesh metadata.
                 If the observedGeneration does not match generation, the controller has not received the most
                 recent version of this resource.
-              format: int64
+              maximum: 4294967295
+              minimum: 0
               type: integer
             state:
               description: |-
@@ -1133,7 +1136,8 @@ spec:
                 The most recent generation observed in the the FailoverService metadata.
                        If the observedGeneration does not match generation, the controller has not received the most
                        recent version of this resource.
-              format: int64
+              maximum: 4294967295
+              minimum: 0
               type: integer
             state:
               description: |-

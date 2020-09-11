@@ -35,7 +35,7 @@ func validateOneVirtualMeshPerMesh(virtualMeshes []*networkingv1alpha2.VirtualMe
 				acceptedIndex++
 			} else {
 				vMesh.Status = networkingv1alpha2.VirtualMeshStatus{
-					ObservedGeneration: vMesh.Generation,
+					ObservedGeneration: uint32(vMesh.Generation),
 					State:              networkingv1alpha2.ApprovalState_INVALID,
 					ValidationErrors: []string{fmt.Sprintf("Includes a Mesh (%s.%s) that already is grouped in a VirtualMesh (%s.%s)",
 						mesh.Name, mesh.Namespace,
@@ -56,7 +56,7 @@ func validateOneVirtualMeshPerMesh(virtualMeshes []*networkingv1alpha2.VirtualMe
 // Finally, vmeshes which are rejected and modified
 func sortVirtualMeshesByAcceptedDate(virtualMeshes networkingv1alpha2.VirtualMeshSlice) {
 	isUpToDate := func(vm *networkingv1alpha2.VirtualMesh) bool {
-		return vm.Status.ObservedGeneration == vm.Generation
+		return int64(vm.Status.ObservedGeneration) == vm.Generation
 	}
 
 	sort.SliceStable(virtualMeshes, func(i, j int) bool {
@@ -64,13 +64,6 @@ func sortVirtualMeshesByAcceptedDate(virtualMeshes networkingv1alpha2.VirtualMes
 
 		state1 := vMesh1.Status.State
 		state2 := vMesh2.Status.State
-
-		//// Accepted takes priority over Pending, which takes priority over Invalid
-		//if state1 == networkingv1alpha2.ApprovalState_PENDING {
-		//	return state2 != networkingv1alpha2.ApprovalState_ACCEPTED
-		//} else if state2 == networkingv1alpha2.ApprovalState_PENDING {
-		//	return state1 != networkingv1alpha2.ApprovalState_INVALID && state1 != networkingv1alpha2.ApprovalState_FAILED
-		//}
 
 		switch {
 		case state1 == networkingv1alpha2.ApprovalState_ACCEPTED:

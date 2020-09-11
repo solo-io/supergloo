@@ -87,7 +87,7 @@ The IssuedCertificate status is written by the CertificateRequesting agent.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| observedGeneration | [int64](#int64) |  | The most recent generation observed in the the IssuedCertificate metadata. If the observedGeneration does not match generation, the Certificate Requesting Agent has not processed the most recent version of this IssuedCertificate. |
+| observedGeneration | [uint32](#uint32) |  | The most recent generation observed in the the IssuedCertificate metadata. If the observedGeneration does not match generation, the Certificate Requesting Agent has not processed the most recent version of this IssuedCertificate. |
 | error | [string](#string) |  | Any error observed which prevented the CertificateRequest from being processed. If the error is empty, the request has been processed successfully. |
 | state | [IssuedCertificateStatus.State](#certificates.smh.solo.io.IssuedCertificateStatus.State) |  | The current state of the IssuedCertificate workflow, reported by the agent. |
 

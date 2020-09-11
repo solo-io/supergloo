@@ -33,7 +33,7 @@ message CertificateRequestStatus {
     // The most recent generation observed in the the CertificateRequest metadata.
     // If the observedGeneration does not match generation, the CA has not processed the most
     // recent version of this request.
-    int64 observed_generation = 1;
+    uint32 observed_generation = 1;
 
     // Any error observed which prevented the CertificateRequest from being processed.
     // If the error is empty, the request has been processed successfully

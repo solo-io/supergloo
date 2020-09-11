@@ -112,12 +112,12 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 	outputs certagent.Builder,
 ) error {
 	// if observed generation is out of sync, treat the issued certificate as Pending (spec has been modified)
-	if issuedCertificate.Status.ObservedGeneration != issuedCertificate.Generation {
+	if int64(issuedCertificate.Status.ObservedGeneration) != issuedCertificate.Generation {
 		issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_PENDING
 	}
 
 	// reset & update status
-	issuedCertificate.Status.ObservedGeneration = issuedCertificate.Generation
+	issuedCertificate.Status.ObservedGeneration = uint32(issuedCertificate.Generation)
 	issuedCertificate.Status.Error = ""
 
 	// state-machine style processor

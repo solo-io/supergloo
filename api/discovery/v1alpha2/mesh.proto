@@ -152,7 +152,7 @@ message MeshStatus {
     // The observed generation of the Mesh.
     // When this matches the Mesh's metadata.generation, it indicates that mesh-networking
     // has reconciled the latest version of the Mesh.
-    int64 observed_generation = 1;
+    uint32 observed_generation = 1;
 
     // The VirtualMesh, if any, which contains this mesh.
     AppliedVirtualMesh applied_virtual_mesh = 2;
@@ -167,7 +167,7 @@ message MeshStatus {
         .core.skv2.solo.io.ObjectRef ref = 1;
 
         // The observed generation of the accepted VirtualMesh.
-        int64 observedGeneration = 2;
+        uint32 observedGeneration = 2;
 
         // The last known valid spec of the VirtualMesh.
         .networking.smh.solo.io.VirtualMeshSpec spec = 3;
@@ -180,7 +180,7 @@ message MeshStatus {
         .core.skv2.solo.io.ObjectRef ref = 1;
 
         // The observed generation of the accepted FailoverService.
-        int64 observedGeneration = 2;
+        uint32 observedGeneration = 2;
 
         // The last known valid spec of the FailoverService.
         .networking.smh.solo.io.FailoverServiceSpec spec = 3;

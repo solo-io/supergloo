@@ -63,7 +63,7 @@ message FailoverServiceStatus {
         If the observedGeneration does not match generation, the controller has not received the most
         recent version of this resource.
     */
-    int64 observed_generation = 1;
+    uint32 observed_generation = 1;
 
     /*
         The state of the overall resource, will only show accepted if it has been successfully

@@ -99,7 +99,7 @@ func (c *networkingCrdCheck) checkFailoverServices(fsList *v1alpha2.FailoverServ
 
 // This struct captures metadata common to all networking CRD statuses
 type networkingCrdStatus interface {
-	GetObservedGeneration() int64
+	GetObservedGeneration() uint32
 	GetState() v1alpha2.ApprovalState
 }
 
@@ -109,7 +109,7 @@ func (c *networkingCrdCheck) checkStatus(kind string, id ezkube.ResourceId, gene
 	if status.GetState() != v1alpha2.ApprovalState_ACCEPTED {
 		errorStrings = append(errorStrings, fmt.Sprintf("approval state is %s", status.GetState().String()))
 	}
-	if status.GetObservedGeneration() != generation {
+	if int64(status.GetObservedGeneration()) != generation {
 		errorStrings = append(errorStrings, fmt.Sprintf("observed generation does not match generation"))
 	}
 	if len(errorStrings) > 0 {

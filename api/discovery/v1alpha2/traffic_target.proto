@@ -60,7 +60,7 @@ message TrafficTargetStatus {
     // The most recent generation observed in the the TrafficPolicy metadata.
     // if the observedGeneration does not match generation, the controller has not received the most
     // recent version of this resource.
-    int64 observed_generation = 1;
+    uint32 observed_generation = 1;
 
     // The set of Traffic Policies that have been applied to this TrafficTarget
     repeated AppliedTrafficPolicy applied_traffic_policies = 3;
@@ -75,7 +75,7 @@ message TrafficTargetStatus {
         .core.skv2.solo.io.ObjectRef ref = 1;
 
         // the observed generation of the accepted traffic policy
-        int64 observedGeneration = 2;
+        uint32 observedGeneration = 2;
 
         // the last known valid spec of the traffic policy
         .networking.smh.solo.io.TrafficPolicySpec spec = 3;
@@ -88,7 +88,7 @@ message TrafficTargetStatus {
         .core.skv2.solo.io.ObjectRef ref = 1;
 
         // the observed generation of the accepted access policy
-        int64 observedGeneration = 2;
+        uint32 observedGeneration = 2;
 
         // the last known valid spec of the access policy
         .networking.smh.solo.io.AccessPolicySpec spec = 3;
