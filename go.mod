@@ -17,7 +17,6 @@ replace (
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
 
 	k8s.io/client-go => k8s.io/client-go v0.18.6
-	github.com/solo-io/skv2 => /Users/harvey/skv2
 )
 
 require (
@@ -55,7 +54,7 @@ require (
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/external-apis v0.1.0
 	github.com/solo-io/go-utils v0.17.0
-	github.com/solo-io/skv2 v0.11.1
+	github.com/solo-io/skv2 v0.11.2-0.20200911161902-08d53f023ad1
 	github.com/solo-io/solo-kit v0.14.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5

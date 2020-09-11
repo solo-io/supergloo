@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/skv2/codegen/kuberesource"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/render"
 	"github.com/solo-io/skv2/codegen/util"
@@ -47,8 +48,8 @@ func (m Manifest) AppendResources(resources ...metav1.Object) error {
 	manifest, err := render.ManifestsRenderer{
 		AppName: "bookinfo-policies",
 		ResourceFuncs: map[render.OutFile]render.MakeResourceFunc{
-			render.OutFile{}: func(group render.Group) []metav1.Object {
-				return resources
+			render.OutFile{}: func(group render.Group, oapiSchemas kuberesource.OpenApiSchemas) ([]metav1.Object, error) {
+				return resources, nil
 			},
 		},
 	}.RenderManifests(model.Group{RenderManifests: true})

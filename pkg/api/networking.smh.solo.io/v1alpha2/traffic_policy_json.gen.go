@@ -87,17 +87,6 @@ func (this *TrafficPolicySpec_FaultInjection) UnmarshalJSON(b []byte) error {
 	return TrafficPolicyUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for TrafficPolicySpec_FaultInjection_Delay
-func (this *TrafficPolicySpec_FaultInjection_Delay) MarshalJSON() ([]byte, error) {
-	str, err := TrafficPolicyMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for TrafficPolicySpec_FaultInjection_Delay
-func (this *TrafficPolicySpec_FaultInjection_Delay) UnmarshalJSON(b []byte) error {
-	return TrafficPolicyUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
 // MarshalJSON is a custom marshaler for TrafficPolicySpec_FaultInjection_Abort
 func (this *TrafficPolicySpec_FaultInjection_Abort) MarshalJSON() ([]byte, error) {
 	str, err := TrafficPolicyMarshaler.MarshalToString(this)
