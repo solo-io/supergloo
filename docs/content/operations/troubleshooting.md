@@ -27,6 +27,82 @@ kubectl get virtualmesh -n service-mesh-hub -o jsonpath='{.items[].status}'
 
 NOTE: all of the Service Mesh Hub CRs have a `status` field that give you an indication of what has happened with its processing. Service Mesh Hub, like most operator-style controllers, implements a state machine and helps resources transition between states. All of the current state transitions are available on this `status` field of any of the Service Mesh Hub CRs.
 
+## CRD Statuses
+
+Service Mesh Hub's CRD statuses reflect the system's state to facilitate diagnosing configuration issues.
+
+The following discussion will use **TrafficPolicy** as an example, but the concepts are applicable to all CRD statuses.
+We encourage users to read the [API documentation]({{% versioned_link_path fromRoot="/reference/api" %}}) to familiarize
+themselves with the status semantics for the various Service Mesh Hub objects, as they are generally useful for understanding
+the state of the system.
+
+Consider the following TrafficPolicy resource:
+
+```yaml
+apiVersion: networking.smh.solo.io/v1alpha2
+kind: TrafficPolicy
+metadata:
+  generation: 1
+  name: mgmt-reviews-outlier
+  namespace: service-mesh-hub
+spec:
+  destinationSelector:
+    - kubeServiceRefs:
+        services:
+        - clusterName: mgmt-cluster
+          name: reviews
+          namespace: bookinfo
+        - clusterName: remote-cluster
+          name: reviews
+          namespace: bookinfo
+status:
+  observedGeneration: 1
+  state: ACCEPTED
+  trafficTargets:
+    reviews-bookinfo-mgmt-cluster.service-mesh-hub.:
+      state: ACCEPTED
+    reviews-bookinfo-remote-cluster.service-mesh-hub.:
+      state: ACCEPTED
+  workloads:
+  - istio-ingressgateway-istio-system-mgmt-cluster-deployment.service-mesh-hub.
+  - istio-ingressgateway-istio-system-remote-cluster-deployment.service-mesh-hub.
+  - productpage-v1-bookinfo-mgmt-cluster-deployment.service-mesh-hub.
+  - ratings-v1-bookinfo-mgmt-cluster-deployment.service-mesh-hub.
+  - ratings-v1-bookinfo-remote-cluster-deployment.service-mesh-hub.
+  - reviews-v1-bookinfo-mgmt-cluster-deployment.service-mesh-hub.
+  - reviews-v2-bookinfo-mgmt-cluster-deployment.service-mesh-hub.
+  - reviews-v3-bookinfo-remote-cluster-deployment.service-mesh-hub.
+```
+
+**Observed generation:** 
+
+When diagnosing why networking configuration is not being applied as expected, checking the relevant resource's `observedGeneration` field
+is a good first step. An object's `metadata.generation` field is incremented by the Kubernetes server whenever the object's spec changes.
+ If the `status.ObservedGeneration` equals `metadata.generation`, this means that Service Mesh Hub has successfully processed the latest version
+of that configuration resource. If this is not the case, it's usually a sign that an unexpected system error occurred, in which case the next debugging step
+should be to check the logs of Service Mesh Hub pods (detailed below).
+
+**State:**
+
+The `status.state` field reports the overall state of the resource. The exact semantics of this field depend on the CRD in question, 
+so check the protobuf documentation for details.
+
+**TrafficTargets:**
+
+Networking configuration CRDs operate on traffic targets, which are discovered by Service Mesh Hub's discovery comoponent.
+The TrafficPolicy CRD *selects* traffic destinations (`spec.destinationSelector`) to configure.
+Configuration can successfully apply to some traffic targets but not others. This per-target state is reflected in the `status.trafficTargets` 
+field.
+
+If a traffic target does not appear in this list, it can mean either that the traffic target was not
+selected properly (see the [proto documentation for ServiceSelector]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.smh.solo.io.ServiceSelector" %}}) for detailed semantics),
+or that the traffic target has not been discovered. You can examine discovered traffic targets by using `meshctl describe traffictarget`
+(this command will also show all networking configuration applied to each traffic target).
+
+**Workloads:**
+
+This field shows all workloads, i.e. traffic origins, that the policy applies to.
+
 ## Logging
 
 Knowing how to get logs from the Service Mesh Hub components is crucial for getting feedback about what's happening. Service Mesh Hub has three core components:
@@ -38,7 +114,7 @@ Knowing how to get logs from the Service Mesh Hub components is crucial for gett
 When troubleshooting various parts of the Service Mesh Hub functionality, you will likely want to see the logs for some of these components. For example, when creating a new `VirtualMesh` and you see something like `PROCESSING_ERROR` in the `federation` status, check the logs for the `mesh-networking` component like this:
 
 ```shell
-kubectl logs -f deploy/mesh-networking -n service-mesh-hub
+kubectl logs -f deploy/networking -n service-mesh-hub
 ```
 
 This will give you valuable insight into the control loop that manages the state of a `VirtualMesh`

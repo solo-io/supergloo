@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add section to troubleshooting doc on how to read and interpret CRD statuses for diagnostic purposes.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/946
