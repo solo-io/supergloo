@@ -77,7 +77,7 @@ status:
 **Observed generation:** 
 
 When diagnosing why networking configuration is not being applied as expected, checking the relevant resource's `observedGeneration` field
-is a good first step. An object's `metadata.generation` field is incremented by the k8s server whenever the object's spec changes.
+is a good first step. An object's `metadata.generation` field is incremented by the Kubernetes server whenever the object's spec changes.
  If the `status.ObservedGeneration` equals `metadata.generation`, this means that Service Mesh Hub has successfully processed the latest version
 of that configuration resource. If this is not the case, it's usually a sign that an unexpected system error occurred, in which case the next debugging step
 should be to check the logs of Service Mesh Hub pods (detailed below).
