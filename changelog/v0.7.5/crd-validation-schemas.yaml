@@ -1,4 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    description: Update CRDs with validation schemas.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/512
