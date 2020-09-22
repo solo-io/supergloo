@@ -5,7 +5,7 @@
   {{ if eq $versionNum $.Site.Data.Solo.LatestVersion }}
       {{ $version = "latest" }}
   {{ end }}
-  <option value="/service-mesh-hub/{{ $version }}{{ $.RelPermalink}}" {{if eq (trim $.Site.Data.Solo.DocsVersion "/service-mesh-hub/") $version }} selected{{end}}>
+  <option value="/service-mesh-hub/{{ $version }}{{ $.RelPermalink}}" {{if eq (strings.TrimPrefix "/service-mesh-hub/" $.Site.Data.Solo.DocsVersion) $version }} selected{{end}}>
       {{ $versionNum }}
       {{ if eq $versionNum $.Site.Data.Solo.LatestVersion }}
         (latest)
