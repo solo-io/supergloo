@@ -215,6 +215,49 @@ func (d *trafficShiftDecorator) buildFailoverServiceDestination(
 	return httpRouteDestination, nil
 }
 
+// make all the necessary subsets for the destination rule for the given FailoverService.
+// traverses all the applied traffic policies to find subsets matching this FailoverService
+func MakeDestinationRuleSubsetsForFailoverService(
+	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
+	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+) []*networkingv1alpha3spec.Subset {
+	return makeDestinationRuleSubsets(
+		allTrafficTargets,
+		func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool {
+			failoverDestination := weightedDestination.GetFailoverService()
+			if failoverDestination == nil {
+				return false
+			}
+			return ezkube.RefsMatch(failoverService.Ref, failoverDestination)
+		},
+	)
+}
+
+// make all the necessary subsets for the destination rule for the given traffictarget.
+// traverses all the applied traffic policies to find subsets matching this traffictarget
+func MakeDestinationRuleSubsetsForTrafficTarget(
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+	failoverServices v1alpha2sets.FailoverServiceSet,
+) []*networkingv1alpha3spec.Subset {
+	return makeDestinationRuleSubsets(
+		allTrafficTargets,
+		func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool {
+			switch destType := weightedDestination.DestinationType.(type) {
+			case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService:
+				return traffictargetutils.IsTrafficTargetForKubeService(trafficTarget, destType.KubeService)
+			case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService:
+				failoverService, err := failoverServices.Find(destType.FailoverService)
+				if err != nil {
+					return false
+				}
+				return failoverserviceutils.ContainsTrafficTarget(failoverService, trafficTarget)
+			}
+			return false
+		},
+	)
+}
+
 func makeDestinationRuleSubsets(
 	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	destinationMatchFunc func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool,
@@ -258,49 +301,6 @@ func makeDestinationRuleSubsets(
 	}
 
 	return subsets
-}
-
-// make all the necessary subsets for the destination rule for the given FailoverService.
-// traverses all the applied traffic policies to find subsets matching this FailoverService
-func MakeDestinationRuleSubsetsForFailoverService(
-	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
-	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
-) []*networkingv1alpha3spec.Subset {
-	return makeDestinationRuleSubsets(
-		allTrafficTargets,
-		func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool {
-			switch destType := weightedDestination.DestinationType.(type) {
-			case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService:
-				return ezkube.RefsMatch(failoverService.Ref, destType.FailoverService)
-			}
-			return false
-		},
-	)
-}
-
-// make all the necessary subsets for the destination rule for the given traffictarget.
-// traverses all the applied traffic policies to find subsets matching this traffictarget
-func MakeDestinationRuleSubsetsForTrafficTarget(
-	trafficTarget *discoveryv1alpha2.TrafficTarget,
-	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
-	failoverServices v1alpha2sets.FailoverServiceSet,
-) []*networkingv1alpha3spec.Subset {
-	return makeDestinationRuleSubsets(
-		allTrafficTargets,
-		func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool {
-			switch destType := weightedDestination.DestinationType.(type) {
-			case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService:
-				return traffictargetutils.IsTrafficTargetForKubeService(trafficTarget, destType.KubeService)
-			case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService:
-				failoverService, err := failoverServices.Find(destType.FailoverService)
-				if err != nil {
-					return false
-				}
-				return failoverserviceutils.ContainsTrafficTarget(failoverService, trafficTarget)
-			}
-			return false
-		},
-	)
 }
 
 // used in DestinationRule translator as well
