@@ -157,7 +157,7 @@ var _ = Describe("FederationTranslator", func() {
 			skv1alpha1sets.NewKubernetesClusterSet(kubeCluster),
 		)
 
-		t := NewTranslator(ctx, clusterDomains, in.TrafficTargets())
+		t := NewTranslator(ctx, clusterDomains, in.TrafficTargets(), in.FailoverServices())
 		outputs := istio.NewBuilder(context.TODO(), "")
 		t.Translate(
 			in,
