@@ -27,14 +27,14 @@ This command will bootstrap 2 clusters, one of which will run the Service Mesh H
 management-plane as well as Istio, and the other will just run Istio.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return initIsitoCmd(ctx, mgmtCluster, remoteCluster)
+			return initIstioCmd(ctx, mgmtCluster, remoteCluster)
 		},
 	}
 	cmd.SilenceUsage = true
 	return cmd
 }
 
-func initIsitoCmd(ctx context.Context, mgmtCluster, remoteCluster string) error {
+func initIstioCmd(ctx context.Context, mgmtCluster, remoteCluster string) error {
 	box := packr.NewBox("./scripts")
 
 	// management cluster
