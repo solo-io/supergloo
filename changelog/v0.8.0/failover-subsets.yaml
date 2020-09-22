@@ -1,0 +1,4 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: Add ability to specify subsets when referencing a FailoverService as a traffic shift destination in TrafficPolicies.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/953

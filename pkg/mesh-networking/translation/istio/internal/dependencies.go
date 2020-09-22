@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
@@ -30,6 +31,7 @@ type DependencyFactory interface {
 		ctx context.Context,
 		clusters skv1alpha1sets.KubernetesClusterSet,
 		trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+		failoverServices v1alpha2sets.FailoverServiceSet,
 	) traffictarget.Translator
 	MakeMeshTranslator(
 		ctx context.Context,
@@ -37,6 +39,7 @@ type DependencyFactory interface {
 		secrets corev1sets.SecretSet,
 		workloads discoveryv1alpha2sets.WorkloadSet,
 		trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+		failoverServices v1alpha2sets.FailoverServiceSet,
 	) mesh.Translator
 }
 
@@ -50,11 +53,12 @@ func (d dependencyFactoryImpl) MakeTrafficTargetTranslator(
 	ctx context.Context,
 	clusters skv1alpha1sets.KubernetesClusterSet,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+	failoverServices v1alpha2sets.FailoverServiceSet,
 ) traffictarget.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
 	decoratorFactory := decorators.NewFactory()
 
-	return traffictarget.NewTranslator(ctx, clusterDomains, decoratorFactory, trafficTargets)
+	return traffictarget.NewTranslator(ctx, clusterDomains, decoratorFactory, trafficTargets, failoverServices)
 }
 
 func (d dependencyFactoryImpl) MakeMeshTranslator(
@@ -63,9 +67,10 @@ func (d dependencyFactoryImpl) MakeMeshTranslator(
 	secrets corev1sets.SecretSet,
 	workloads discoveryv1alpha2sets.WorkloadSet,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+	failoverServices v1alpha2sets.FailoverServiceSet,
 ) mesh.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
-	federationTranslator := federation.NewTranslator(ctx, clusterDomains, trafficTargets)
+	federationTranslator := federation.NewTranslator(ctx, clusterDomains, trafficTargets, failoverServices)
 	mtlsTranslator := mtls.NewTranslator(ctx, secrets, workloads)
 	accessTranslator := access.NewTranslator()
 	failoverServiceTranslator := failoverservice.NewTranslator(ctx, clusterDomains)
