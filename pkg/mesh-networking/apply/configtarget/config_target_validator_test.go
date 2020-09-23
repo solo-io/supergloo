@@ -38,9 +38,19 @@ var _ = Describe("ConfigTargetValidator", func() {
 		trafficTargets := discoveryv1alpha2sets.NewTrafficTargetSet(
 			&discoveryv1alpha2.TrafficTarget{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:        "foo",
-					Namespace:   "bar",
-					ClusterName: "cluster",
+					Name:      "traffictarget",
+					Namespace: "namespace",
+				},
+				Spec: discoveryv1alpha2.TrafficTargetSpec{
+					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+							Ref: &v1.ClusterObjectRef{
+								Name:        "foo",
+								Namespace:   "bar",
+								ClusterName: "cluster",
+							},
+						},
+					},
 				},
 			})
 

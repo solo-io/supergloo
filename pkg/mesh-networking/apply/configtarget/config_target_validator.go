@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/rotisserie/eris"
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
 /*
@@ -136,12 +138,25 @@ func (c *configTargetValidator) validateTrafficTargetReferences(serviceSelectors
 			continue
 		}
 		for _, ref := range kubeServiceRefs.Services {
-			if _, err := c.trafficTargets.Find(ref); err != nil {
-				errs = append(errs, err)
+			if !c.kubeServiceExists(ref) {
+				errs = append(errs, eris.Errorf("TrafficTarget %s not found", sets.Key(ref)))
 			}
 		}
 	}
 	return errs
+}
+
+func (c *configTargetValidator) kubeServiceExists(ref *v1.ClusterObjectRef) bool {
+	for _, trafficTarget := range c.trafficTargets.List() {
+		kubeService := trafficTarget.Spec.GetKubeService()
+		if kubeService == nil {
+			continue
+		}
+		if ezkube.ClusterRefsMatch(ref, kubeService.Ref) {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *configTargetValidator) validateVirtualMesh(virtualMesh *v1alpha2.VirtualMesh) []error {
