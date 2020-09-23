@@ -74,6 +74,6 @@ message FailoverServiceStatus {
     // The status of the FailoverService for each Mesh to which it has been applied.
     map<string, ApprovalStatus> meshes = 3;
 
-    // Any errors observed which prevented the resource from being Accepted.
-    repeated string validation_errors = 4;
+    // A list of errors pertaining to the configuration targets of this resource (e.g. referencing a mesh that does not exist).
+    repeated string config_target_errors = 4;
 }

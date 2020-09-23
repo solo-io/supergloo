@@ -151,7 +151,7 @@ Configuration for generating a self-signed root certificate. Uses the X.509 form
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | [int64](#int64) |  | The most recent generation observed in the the VirtualMesh metadata. If the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
 | state | [ApprovalState](#networking.smh.solo.io.ApprovalState) |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all target meshes. |
-| validationErrors | [][string](#string) | repeated | Any mesh-independent errors observed which prevented the resource from being Accepted. |
+| configTargetErrors | [][string](#string) | repeated | A list of errors pertaining to the configuration targets of this resource (e.g. referencing a mesh that does not exist). |
 | meshes | [][VirtualMeshStatus.MeshesEntry](#networking.smh.solo.io.VirtualMeshStatus.MeshesEntry) | repeated | The status of the VirtualMesh for each Mesh to which it has been applied. A VirtualMesh may be Accepted for some Meshes and rejected for others. |
 
 

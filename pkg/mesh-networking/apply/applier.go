@@ -4,9 +4,7 @@ import (
 	"context"
 	"sort"
 
-	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
-
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply/configtarget"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -43,18 +41,11 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 	ctx = contextutils.WithLogger(ctx, "validation")
 	reporter := newApplyReporter()
 
-	virtualMeshes := input.VirtualMeshes().List()
-	validateOneVirtualMeshPerMesh(virtualMeshes)
+	initializePolicyStatuses(input)
 
-	for _, trafficTarget := range input.TrafficTargets().List() {
-		trafficTarget.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), trafficTarget)
-		trafficTarget.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), trafficTarget)
-	}
+	validateConfigTargetReferences(input)
 
-	for _, mesh := range input.Meshes().List() {
-		mesh.Status.AppliedVirtualMesh = getAppliedVirtualMesh(virtualMeshes, mesh)
-		mesh.Status.AppliedFailoverServices = getAppliedFailoverServices(input.FailoverServices().List(), mesh)
-	}
+	applyPoliciesToTargets(input)
 
 	_, err := v.translator.Translate(ctx, input, reporter)
 	if err != nil {
@@ -62,46 +53,82 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 		contextutils.LoggerFrom(ctx).DPanicf("internal error: failed to run translator: %v", err)
 	}
 
+	reportTranslationErrors(ctx, reporter, input)
+
+	// TODO(ilackarms): validate workloads
+}
+
+// Optimistically initialize policy statuses to accepted, which may be set to invalid or failed pending subsequent validation.
+// Also append any non-translation related metadata.
+func initializePolicyStatuses(input input.Snapshot) {
+
+	trafficPolicies := input.TrafficPolicies().List()
+	accessPolicies := input.AccessPolicies().List()
+	failoverServices := input.FailoverServices().List()
+	virtualMeshes := input.VirtualMeshes().List()
+	workloads := input.Workloads().List()
+
 	// initialize traffic policy statuses
-	for _, trafficPolicy := range input.TrafficPolicies().List() {
+	for _, trafficPolicy := range trafficPolicies {
 		trafficPolicy.Status = networkingv1alpha2.TrafficPolicyStatus{
 			State:              networkingv1alpha2.ApprovalState_ACCEPTED,
 			ObservedGeneration: trafficPolicy.Generation,
 			TrafficTargets:     map[string]*networkingv1alpha2.ApprovalStatus{},
 		}
 	}
-	setWorkloadsForTrafficPolicies(input.TrafficPolicies(), input.Workloads())
+	setWorkloadsForTrafficPolicies(trafficPolicies, workloads)
 
 	// initialize access policy statuses
-	for _, accessPolicy := range input.AccessPolicies().List() {
+	for _, accessPolicy := range accessPolicies {
 		accessPolicy.Status = networkingv1alpha2.AccessPolicyStatus{
 			State:              networkingv1alpha2.ApprovalState_ACCEPTED,
 			ObservedGeneration: accessPolicy.Generation,
 			TrafficTargets:     map[string]*networkingv1alpha2.ApprovalStatus{},
 		}
 	}
-	setWorkloadsForAccessPolicies(input.AccessPolicies(), input.Workloads())
+	setWorkloadsForAccessPolicies(accessPolicies, workloads)
 
-	// initialize FailoverService statuses
-	for _, failoverService := range input.FailoverServices().List() {
-		failoverService.Status = networkingv1alpha2.FailoverServiceStatus{
-			State:              networkingv1alpha2.ApprovalState_ACCEPTED,
-			ObservedGeneration: failoverService.Generation,
-			Meshes:             map[string]*networkingv1alpha2.ApprovalStatus{},
+	// By this point, FailoverServices have already undergone pre-translation validation.
+	for _, failoverService := range failoverServices {
+		if failoverService.Status.State != networkingv1alpha2.ApprovalState_ACCEPTED {
+			continue
 		}
+		failoverService.Status.Meshes = map[string]*networkingv1alpha2.ApprovalStatus{}
 	}
 
 	// By this point, VirtualMeshes have already undergone pre-translation validation.
-	// If VirtualMesh is accepted by previous validation, reset its status so it can be populated by translation.
 	for _, virtualMesh := range virtualMeshes {
 		if virtualMesh.Status.State != networkingv1alpha2.ApprovalState_ACCEPTED {
 			continue
 		}
-		virtualMesh.Status.ObservedGeneration = virtualMesh.Generation
 		virtualMesh.Status.Meshes = map[string]*networkingv1alpha2.ApprovalStatus{}
 	}
+}
 
-	// update traffictarget, trafficpolicy, and accesspolicy statuses
+// Validate that configuration target references.
+func validateConfigTargetReferences(input input.Snapshot) {
+	configTargetValidator := configtarget.NewConfigTargetValidator(input.Meshes(), input.TrafficTargets())
+	configTargetValidator.ValidateAccessPolicies(input.AccessPolicies().List())
+	configTargetValidator.ValidateFailoverServices(input.FailoverServices().List())
+	configTargetValidator.ValidateTrafficPolicies(input.TrafficPolicies().List())
+	configTargetValidator.ValidateVirtualMeshes(input.VirtualMeshes().List())
+}
+
+// Apply networking configuration policies to relevant discovery entities.
+func applyPoliciesToTargets(input input.Snapshot) {
+	for _, trafficTarget := range input.TrafficTargets().List() {
+		trafficTarget.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), trafficTarget)
+		trafficTarget.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), trafficTarget)
+	}
+
+	for _, mesh := range input.Meshes().List() {
+		mesh.Status.AppliedVirtualMesh = getAppliedVirtualMesh(input.VirtualMeshes().List(), mesh)
+		mesh.Status.AppliedFailoverServices = getAppliedFailoverServices(input.FailoverServices().List(), mesh)
+	}
+}
+
+// Update networking configuration statuses with any translation errors.
+func reportTranslationErrors(ctx context.Context, reporter *applyReporter, input input.Snapshot) {
 	for _, trafficTarget := range input.TrafficTargets().List() {
 		trafficTarget.Status.ObservedGeneration = trafficTarget.Generation
 		trafficTarget.Status.AppliedTrafficPolicies = validateAndReturnApprovedTrafficPolicies(ctx, input, reporter, trafficTarget)
@@ -113,21 +140,19 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 		mesh.Status.AppliedFailoverServices = validateAndReturnApprovedFailoverServices(ctx, input, reporter, mesh)
 		mesh.Status.AppliedVirtualMesh = validateAndReturnVirtualMesh(ctx, input, reporter, mesh)
 	}
-
-	// TODO(ilackarms): validate workloads
 }
 
 func setWorkloadsForTrafficPolicies(
-	trafficPolicies v1alpha2sets.TrafficPolicySet,
-	workloads discoveryv1alpha2sets.WorkloadSet) {
-	for _, trafficPolicy := range trafficPolicies.List() {
+	trafficPolicies networkingv1alpha2.TrafficPolicySlice,
+	workloads discoveryv1alpha2.WorkloadSlice) {
+	for _, trafficPolicy := range trafficPolicies {
 		var matchingWorkloads []string
 		// TODO(awang) optimize if the returned workloads list gets too large
 		//if len(trafficPolicy.Spec.GetSourceSelector()) == 0 {
 		//	trafficPolicy.Status.Workloads = []string{"*"}
 		//	return
 		//}
-		for _, workload := range workloads.List() {
+		for _, workload := range workloads {
 			if selectorutils.SelectorMatchesWorkload(trafficPolicy.Spec.GetSourceSelector(), workload) {
 				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
 			}
@@ -137,12 +162,12 @@ func setWorkloadsForTrafficPolicies(
 }
 
 func setWorkloadsForAccessPolicies(
-	accessPolicies v1alpha2sets.AccessPolicySet,
-	workloads discoveryv1alpha2sets.WorkloadSet) {
-	for _, accessPolicy := range accessPolicies.List() {
+	accessPolicies networkingv1alpha2.AccessPolicySlice,
+	workloads discoveryv1alpha2.WorkloadSlice) {
+	for _, accessPolicy := range accessPolicies {
 		var matchingWorkloads []string
 		// TODO(awang) optimize if the returned workloads list gets too large
-		for _, workload := range workloads.List() {
+		for _, workload := range workloads {
 			if selectorutils.IdentityMatchesWorkload(accessPolicy.Spec.GetSourceSelector(), workload) {
 				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
 			}
@@ -461,6 +486,9 @@ func getAppliedTrafficPolicies(
 ) []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy {
 	var matchingTrafficPolicies networkingv1alpha2.TrafficPolicySlice
 	for _, policy := range trafficPolicies {
+		if policy.Status.State != networkingv1alpha2.ApprovalState_ACCEPTED {
+			continue
+		}
 		if selectorutils.SelectorMatchesService(policy.Spec.DestinationSelector, trafficTarget) {
 			matchingTrafficPolicies = append(matchingTrafficPolicies, policy)
 		}
@@ -538,6 +566,9 @@ func getAppliedAccessPolicies(
 	var appliedPolicies []*discoveryv1alpha2.TrafficTargetStatus_AppliedAccessPolicy
 	for _, policy := range accessPolicies {
 		policy := policy // pike
+		if policy.Status.State != networkingv1alpha2.ApprovalState_ACCEPTED {
+			continue
+		}
 		if !selectorutils.SelectorMatchesService(policy.Spec.DestinationSelector, trafficTarget) {
 			continue
 		}
@@ -581,6 +612,9 @@ func getAppliedFailoverServices(
 	var appliedFailoverServices []*discoveryv1alpha2.MeshStatus_AppliedFailoverService
 	for _, failoverService := range failoverServices {
 		failoverService := failoverService // pike
+		if failoverService.Status.State != networkingv1alpha2.ApprovalState_ACCEPTED {
+			continue
+		}
 		for _, meshRef := range failoverService.Spec.Meshes {
 			if !ezkube.RefsMatch(meshRef, mesh) {
 				continue
