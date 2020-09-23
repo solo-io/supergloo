@@ -5,7 +5,15 @@ port=$1
 
 K="kubectl --context=kind-${cluster}"
 
-cat << EOF | istioctl manifest apply --context "kind-${cluster}" -f -
+# Operator spec for istio 1.5.x and 1.6.x
+function install_istio_1_5() {
+  cluster=$1
+  port=$2
+  K="kubectl --context=kind-${cluster}"
+
+  echo "installing istio to ${cluster}..."
+
+  cat << EOF | istioctl manifest apply --context "kind-${cluster}" -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -68,6 +76,75 @@ spec:
       podDNSSearchNamespaces:
       - global
 EOF
+}
+
+# Operator spec for istio 1.7.x
+function install_istio_1_7() {
+  cluster=$1
+  port=$2
+  K="kubectl --context=kind-${cluster}"
+
+  echo "installing istio to ${cluster}..."
+
+  cat << EOF | istioctl manifest install --context "kind-${cluster}" -f -
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: example-istiooperator
+  namespace: istio-system
+spec:
+  profile: minimal
+  addonComponents:
+    istiocoredns:
+      enabled: true
+  components:
+    # Istio Gateway feature
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        env:
+          - name: ISTIO_META_ROUTER_MODE
+            value: "sni-dnat"
+        service:
+          ports:
+            - port: 80
+              targetPort: 8080
+              name: http2
+            - port: 443
+              targetPort: 8443
+              name: https
+            - port: 15443
+              targetPort: 15443
+              name: tls
+              nodePort: ${port}
+  meshConfig:
+    enableAutoMtls: true
+  values:
+    prometheus:
+      enabled: false
+    gateways:
+      istio-ingressgateway:
+        type: NodePort
+        ports:
+          - targetPort: 15443
+            name: tls
+            nodePort: ${port}
+            port: 15443
+    global:
+      pilotCertProvider: kubernetes
+      controlPlaneSecurityEnabled: true
+      podDNSSearchNamespaces:
+      - global
+EOF
+}
+
+if istioctl version | grep 1.7
+then
+  install_istio_1_7 $cluster $port
+else
+  install_istio_1_5 $cluster $port
+fi
 
 # enable istio dns for .global stub domain:
 ISTIO_COREDNS=$(${K} get svc -n istio-system istiocoredns -o jsonpath={.spec.clusterIP})
