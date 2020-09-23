@@ -237,4 +237,125 @@ var _ = Describe("ConfigTargetValidator", func() {
 		Expect(trafficPolicies[1].Status.State).To(Equal(v1alpha2.ApprovalState_INVALID))
 		Expect(virtualMeshes[1].Status.State).To(Equal(v1alpha2.ApprovalState_INVALID))
 	})
+
+	It("should validate one virtual mesh per mesh", func() {
+		meshes := discoveryv1alpha2sets.NewMeshSet(
+			&discoveryv1alpha2.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mesh1",
+					Namespace: "namespace1",
+				},
+			},
+			&discoveryv1alpha2.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mesh2",
+					Namespace: "namespace1",
+				},
+			},
+			&discoveryv1alpha2.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mesh3",
+					Namespace: "namespace1",
+				},
+			},
+		)
+
+		validator = configtarget.NewConfigTargetValidator(meshes, nil)
+
+		vm1 := &v1alpha2.VirtualMesh{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "vm1",
+				Namespace: "namespace1",
+			},
+			Spec: v1alpha2.VirtualMeshSpec{
+				Meshes: []*v1.ObjectRef{
+					{
+						Name:      "mesh1",
+						Namespace: "namespace1",
+					},
+				},
+			},
+			Status: v1alpha2.VirtualMeshStatus{
+				State: v1alpha2.ApprovalState_ACCEPTED,
+			},
+		}
+		vm2 := &v1alpha2.VirtualMesh{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "vm2",
+				Namespace: "namespace1",
+			},
+			Spec: v1alpha2.VirtualMeshSpec{
+				Meshes: []*v1.ObjectRef{
+					{
+						Name:      "mesh1",
+						Namespace: "namespace1",
+					},
+					{
+						Name:      "mesh2",
+						Namespace: "namespace1",
+					},
+				},
+			},
+			Status: v1alpha2.VirtualMeshStatus{
+				State: v1alpha2.ApprovalState_ACCEPTED,
+			},
+		}
+		vm3 := &v1alpha2.VirtualMesh{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "vm3",
+				Namespace: "namespace1",
+			},
+			Spec: v1alpha2.VirtualMeshSpec{
+				Meshes: []*v1.ObjectRef{
+					{
+						Name:      "mesh2",
+						Namespace: "namespace1",
+					},
+				},
+			},
+			Status: v1alpha2.VirtualMeshStatus{
+				State: v1alpha2.ApprovalState_ACCEPTED,
+			},
+		}
+		vm4 := &v1alpha2.VirtualMesh{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "vm4",
+				Namespace: "namespace1",
+			},
+			Spec: v1alpha2.VirtualMeshSpec{
+				Meshes: []*v1.ObjectRef{
+					{
+						Name:      "mesh2",
+						Namespace: "namespace1",
+					},
+				},
+			},
+			Status: v1alpha2.VirtualMeshStatus{
+				State: v1alpha2.ApprovalState_ACCEPTED,
+			},
+		}
+		vm5 := &v1alpha2.VirtualMesh{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "vm5",
+				Namespace: "namespace1",
+			},
+			Spec: v1alpha2.VirtualMeshSpec{
+				Meshes: []*v1.ObjectRef{
+					{
+						Name:      "mesh3",
+						Namespace: "namespace1",
+					},
+				},
+			},
+			Status: v1alpha2.VirtualMeshStatus{
+				State: v1alpha2.ApprovalState_ACCEPTED,
+			},
+		}
+
+		validator.ValidateVirtualMeshes(v1alpha2.VirtualMeshSlice{vm5, vm4, vm3, vm2, vm1})
+
+		Expect(vm2.Status.State).To(Equal(v1alpha2.ApprovalState_INVALID))
+		Expect(vm3.Status.State).To(Equal(v1alpha2.ApprovalState_ACCEPTED))
+		Expect(vm5.Status.State).To(Equal(v1alpha2.ApprovalState_ACCEPTED))
+	})
 })
