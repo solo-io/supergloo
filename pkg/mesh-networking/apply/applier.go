@@ -90,18 +90,20 @@ func initializePolicyStatuses(input input.Snapshot) {
 
 	// By this point, FailoverServices have already undergone pre-translation validation.
 	for _, failoverService := range failoverServices {
-		if failoverService.Status.State != networkingv1alpha2.ApprovalState_ACCEPTED {
-			continue
+		failoverService.Status = networkingv1alpha2.FailoverServiceStatus{
+			State:              networkingv1alpha2.ApprovalState_ACCEPTED,
+			ObservedGeneration: failoverService.Generation,
+			Meshes:             map[string]*networkingv1alpha2.ApprovalStatus{},
 		}
-		failoverService.Status.Meshes = map[string]*networkingv1alpha2.ApprovalStatus{}
 	}
 
 	// By this point, VirtualMeshes have already undergone pre-translation validation.
 	for _, virtualMesh := range virtualMeshes {
-		if virtualMesh.Status.State != networkingv1alpha2.ApprovalState_ACCEPTED {
-			continue
+		virtualMesh.Status = networkingv1alpha2.VirtualMeshStatus{
+			State:              networkingv1alpha2.ApprovalState_ACCEPTED,
+			ObservedGeneration: virtualMesh.Generation,
+			Meshes:             map[string]*networkingv1alpha2.ApprovalStatus{},
 		}
-		virtualMesh.Status.Meshes = map[string]*networkingv1alpha2.ApprovalStatus{}
 	}
 }
 
