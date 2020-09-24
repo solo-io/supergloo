@@ -7,6 +7,7 @@ import (
 	"github.com/Masterminds/semver"
 	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 
 	envoy_api_v2_listener "github.com/envoyproxy/go-control-plane/envoy/api/v2/listener"
@@ -60,13 +61,24 @@ type Translator interface {
 }
 
 type translator struct {
-	ctx            context.Context
-	clusterDomains hostutils.ClusterDomainRegistry
-	trafficTargets discoveryv1alpha2sets.TrafficTargetSet
+	ctx              context.Context
+	clusterDomains   hostutils.ClusterDomainRegistry
+	trafficTargets   discoveryv1alpha2sets.TrafficTargetSet
+	failoverServices v1alpha2sets.FailoverServiceSet
 }
 
-func NewTranslator(ctx context.Context, clusterDomains hostutils.ClusterDomainRegistry, trafficTargets discoveryv1alpha2sets.TrafficTargetSet) Translator {
-	return &translator{ctx: ctx, clusterDomains: clusterDomains, trafficTargets: trafficTargets}
+func NewTranslator(
+	ctx context.Context,
+	clusterDomains hostutils.ClusterDomainRegistry,
+	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+	failoverServices v1alpha2sets.FailoverServiceSet,
+) Translator {
+	return &translator{
+		ctx:              ctx,
+		clusterDomains:   clusterDomains,
+		trafficTargets:   trafficTargets,
+		failoverServices: failoverServices,
+	}
 }
 
 // translate the appropriate resources for the given Mesh.
@@ -203,9 +215,10 @@ func (t *translator) Translate(
 			// NOTE(ilackarms): we make subsets here for the client-side destination rule
 			// which contain all the matching subset names for the remote destination rule.
 			// the labels for the subsets must match the labels on the ServiceEntry Endpoint(s).
-			federatedSubsets := trafficshift.MakeDestinationRuleSubsets(
+			federatedSubsets := trafficshift.MakeDestinationRuleSubsetsForTrafficTarget(
 				trafficTarget,
 				t.trafficTargets,
+				t.failoverServices,
 			)
 			for _, subset := range federatedSubsets {
 				// only the name of the subset matters here.

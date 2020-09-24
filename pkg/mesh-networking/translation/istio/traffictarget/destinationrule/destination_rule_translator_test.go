@@ -8,6 +8,7 @@ import (
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	v1alpha2sets2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	mock_decorators "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/mocks"
@@ -27,6 +28,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		mockClusterDomainRegistry *mock_hostutils.MockClusterDomainRegistry
 		mockDecoratorFactory      *mock_decorators.MockFactory
 		trafficTargets            v1alpha2sets.TrafficTargetSet
+		failoverServices          v1alpha2sets2.FailoverServiceSet
 		mockReporter              *mock_reporting.MockReporter
 		mockDecorator             *mock_trafficpolicy.MockTrafficPolicyDestinationRuleDecorator
 		destinationRuleTranslator destinationrule.Translator
@@ -38,12 +40,14 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		mockClusterDomainRegistry = mock_hostutils.NewMockClusterDomainRegistry(ctrl)
 		mockDecoratorFactory = mock_decorators.NewMockFactory(ctrl)
 		trafficTargets = v1alpha2sets.NewTrafficTargetSet()
+		failoverServices = v1alpha2sets2.NewFailoverServiceSet()
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockDecorator = mock_trafficpolicy.NewMockTrafficPolicyDestinationRuleDecorator(ctrl)
 		destinationRuleTranslator = destinationrule.NewTranslator(
 			mockClusterDomainRegistry,
 			mockDecoratorFactory,
 			trafficTargets,
+			failoverServices,
 		)
 		in = input.NewInputSnapshotManualBuilder("").Build()
 	})
@@ -121,7 +125,36 @@ var _ = Describe("DestinationRuleTranslator", func() {
 											Subset: map[string]string{"foo": "bar"},
 										}},
 									},
+									{
+										DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService{
+											FailoverService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination{
+												// original service
+												Name:      "fs1",
+												Namespace: "fs1-ns",
+												Subset:    map[string]string{"boo": "baz"},
+											}},
+									},
 								},
+							},
+						},
+					},
+				},
+			},
+		})
+
+		failoverServices.Insert(&v1alpha2.FailoverService{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "fs1",
+				Namespace: "fs1-ns",
+			},
+			Spec: v1alpha2.FailoverServiceSpec{
+				BackingServices: []*v1alpha2.FailoverServiceSpec_BackingService{
+					{
+						BackingServiceType: &v1alpha2.FailoverServiceSpec_BackingService_KubeService{
+							KubeService: &v1.ClusterObjectRef{
+								Name:        "mesh-service",
+								Namespace:   "mesh-service-namespace",
+								ClusterName: "mesh-service-cluster",
 							},
 						},
 					},
@@ -158,6 +191,10 @@ var _ = Describe("DestinationRuleTranslator", func() {
 					{
 						Name:   "foo-bar",
 						Labels: map[string]string{"foo": "bar"},
+					},
+					{
+						Name:   "boo-baz",
+						Labels: map[string]string{"boo": "baz"},
 					},
 				},
 			},
