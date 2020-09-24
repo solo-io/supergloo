@@ -1,10 +1,10 @@
-# Working with SMH APIs
+# Working with SMH Discovery APIs
 
-If you want to work with SMH created objects like `workloads`, `traffictargets` etc, you can use the SMH APIs to do so.
+If you want to write a custom Kubernetes controller for SMH created objects like `workloads`, `traffictargets` etc, you can use the SMH APIs to do so.
 
 ## Creating necessary K8S RBAC permissions
 
-For your application to use SMH APIs, you need to create a service account and bind it to a cluster role as shown below:
+For your application to use SMH discovery APIs, you need to create a service account and bind it to a cluster role as shown below:
 
     cat <<EOF | kubectl apply -f -
     apiVersion: v1
@@ -59,7 +59,7 @@ For more information on what the RBAC objects actually do, refer the documentati
 
 If you want to create a new deployment level abstraction (i.e., workloads) or a service level abstraction (i.e. traffictargets) manually and don't want SMH to garbage collect it during the reconciliation loop, you need to exclude the `owner.discovery.smh.solo.io: service-mesh-hub` label from the metadata when creating the resources.
 
-The label `owner.discovery.smh.solo.io: service-mesh-hub` signals to discovery component of SMH that it should manage that resource. 
+The label `owner.discovery.smh.solo.io: service-mesh-hub` signals to the discovery component of SMH that it should manage that resource.
 
  The only metadata information which you should provide in your CRD manifest is the following:
  
