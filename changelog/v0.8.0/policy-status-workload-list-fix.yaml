@@ -1,0 +1,6 @@
+changelog:
+  - type: FIX
+    description: >
+      Select workloads associated with a policy based on its ServiceAccounts, while checking that the
+      workload belongs to the correct namespace and cluster.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/967
