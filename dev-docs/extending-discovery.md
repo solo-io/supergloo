@@ -2,6 +2,8 @@
 
 If you want to write a custom Kubernetes controller for SMH created objects like `workloads`, `traffictargets` etc, you can use the SMH APIs to do so.
 
+We also welcome PRs for extending the built-in SMH discovery controller from the community.
+
 ## Creating necessary K8S RBAC permissions
 
 For your application to use SMH discovery APIs, you need to create a service account and bind it to a cluster role as shown below:
