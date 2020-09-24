@@ -76,6 +76,17 @@ func (this *TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestinati
 	return TrafficPolicyUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination
+func (this *TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination) MarshalJSON() ([]byte, error) {
+	str, err := TrafficPolicyMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination
+func (this *TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination) UnmarshalJSON(b []byte) error {
+	return TrafficPolicyUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for TrafficPolicySpec_FaultInjection
 func (this *TrafficPolicySpec_FaultInjection) MarshalJSON() ([]byte, error) {
 	str, err := TrafficPolicyMarshaler.MarshalToString(this)

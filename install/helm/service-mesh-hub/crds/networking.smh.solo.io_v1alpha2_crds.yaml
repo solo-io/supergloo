@@ -442,21 +442,26 @@ spec:
                         - required:
                           - kubeService
                         - required:
-                          - failoverServiceRef
+                          - failoverService
                     - required:
                       - kubeService
                     - required:
-                      - failoverServiceRef
+                      - failoverService
                     properties:
-                      failoverServiceRef:
+                      failoverService:
                         description: A traffic shift destination targeting a FailoverService.
                         properties:
                           name:
-                            description: name of the resource being referenced
+                            description: The name of the FailoverService.
                             type: string
                           namespace:
-                            description: namespace of the resource being referenced
+                            description: The namespace of the FailoverService.
                             type: string
+                          subset:
+                            additionalProperties:
+                              type: string
+                            description: Subset routing is currently only supported for Istio backing services.
+                            type: object
                         type: object
                       kubeService:
                         description: The use kubeService to shift traffic a Kubernetes Service/subset.

@@ -89,7 +89,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 
 		mockDependencyFactory.
 			EXPECT().
-			MakeTrafficTargetTranslator(gomock.Any(), in.KubernetesClusters(), in.TrafficTargets()).
+			MakeTrafficTargetTranslator(gomock.Any(), in.KubernetesClusters(), in.TrafficTargets(), in.FailoverServices()).
 			Return(mockTrafficTargetTranslator)
 		for i := range in.TrafficTargets().List() {
 			mockTrafficTargetTranslator.
@@ -99,7 +99,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 
 		mockDependencyFactory.
 			EXPECT().
-			MakeMeshTranslator(ctxWithValue, in.KubernetesClusters(), in.Secrets(), in.Workloads(), in.TrafficTargets()).
+			MakeMeshTranslator(ctxWithValue, in.KubernetesClusters(), in.Secrets(), in.Workloads(), in.TrafficTargets(), in.FailoverServices()).
 			Return(mockMeshTranslator)
 		for i := range in.Meshes().List() {
 			mockMeshTranslator.

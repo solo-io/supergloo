@@ -29,6 +29,8 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.Mirror](#networking.smh.solo.io.TrafficPolicySpec.Mirror)
   - [TrafficPolicySpec.MultiDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination)
   - [TrafficPolicySpec.MultiDestination.WeightedDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination)
+  - [TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination)
+  - [TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry)
   - [TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination)
   - [TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry)
   - [TrafficPolicySpec.OutlierDetection](#networking.smh.solo.io.TrafficPolicySpec.OutlierDetection)
@@ -266,8 +268,41 @@ Express an optional HttpMethod by wrapping it in a nillable message.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | kubeService | [TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination) |  | The use kubeService to shift traffic a Kubernetes Service/subset. |
-| failoverServiceRef | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | A traffic shift destination targeting a FailoverService. |
+| failoverService | [TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination) |  | A traffic shift destination targeting a FailoverService. |
 | weight | [uint32](#uint32) |  | Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100. |
+
+
+
+
+
+
+<a name="networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination"></a>
+
+### TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination
+A traffic shift destination that references a FailoverService.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | [string](#string) |  | The name of the FailoverService. |
+| namespace | [string](#string) |  | The namespace of the FailoverService. |
+| subset | [][TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry) | repeated | Subset routing is currently only supported for Istio backing services. |
+
+
+
+
+
+
+<a name="networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry"></a>
+
+### TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [string](#string) |  |  |
+| value | [string](#string) |  |  |
 
 
 

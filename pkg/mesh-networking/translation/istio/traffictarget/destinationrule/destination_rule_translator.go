@@ -4,6 +4,7 @@ import (
 	"reflect"
 
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 
 	"github.com/rotisserie/eris"
@@ -42,17 +43,24 @@ type translator struct {
 	clusterDomains   hostutils.ClusterDomainRegistry
 	decoratorFactory decorators.Factory
 	trafficTargets   discoveryv1alpha2sets.TrafficTargetSet
+	failoverServices v1alpha2sets.FailoverServiceSet
 }
 
 func NewTranslator(
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+	failoverServices v1alpha2sets.FailoverServiceSet,
 ) Translator {
-	return &translator{clusterDomains: clusterDomains, decoratorFactory: decoratorFactory, trafficTargets: trafficTargets}
+	return &translator{
+		clusterDomains:   clusterDomains,
+		decoratorFactory: decoratorFactory,
+		trafficTargets:   trafficTargets,
+		failoverServices: failoverServices,
+	}
 }
 
-// translate the appropriate DestinationRUle for the given TrafficTarget.
+// translate the appropriate DestinationRule for the given TrafficTarget.
 // returns nil if no DestinationRule is required for the TrafficTarget (i.e. if no DestinationRule features are required, such as subsets).
 // The input snapshot TrafficTargetSet contains n the
 func (t *translator) Translate(
@@ -145,9 +153,10 @@ func (t *translator) initializeDestinationRule(trafficTarget *discoveryv1alpha2.
 					Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
 				},
 			},
-			Subsets: trafficshift.MakeDestinationRuleSubsets(
+			Subsets: trafficshift.MakeDestinationRuleSubsetsForTrafficTarget(
 				trafficTarget,
 				t.trafficTargets,
+				t.failoverServices,
 			),
 		},
 	}

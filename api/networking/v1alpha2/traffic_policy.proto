@@ -123,13 +123,25 @@ message TrafficPolicySpec {
                 uint32 port = 5;
             }
 
+            // A traffic shift destination that references a FailoverService.
+            message FailoverServiceDestination {
+                // The name of the FailoverService.
+                string name = 1;
+
+                // The namespace of the FailoverService.
+                string namespace = 2;
+
+                // Subset routing is currently only supported for Istio backing services.
+                map<string, string> subset = 3;
+            }
+
             // The different destination types can be selected for a traffic shift.
             oneof destination_type {
                 // The use kubeService to shift traffic a Kubernetes Service/subset.
                 KubeDestination kube_service = 1;
 
                 // A traffic shift destination targeting a FailoverService.
-                .core.skv2.solo.io.ObjectRef failover_service_ref = 3;
+                FailoverServiceDestination failover_service = 3;
             }
 
             // Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100.
