@@ -37,7 +37,7 @@ func IdentityMatchesWorkload(selectors []*v1alpha2.IdentitySelector, workload *d
 	for _, selector := range selectors {
 		kubeWorkload := workload.Spec.GetKubernetes()
 		if kubeWorkload != nil {
-			if kubeWorkloadIdentityMatcher := selector.GetKubeIdentityMatcher(); kubeWorkloadIdentityMatcher != nil {
+			if kubeWorkloadIdentityMatcher := selector.KubeIdentityMatcher; kubeWorkloadIdentityMatcher != nil {
 				namespaces := kubeWorkloadIdentityMatcher.GetNamespaces()
 				clusters := kubeWorkloadIdentityMatcher.GetClusters()
 				if len(namespaces) > 0 && !stringutils.ContainsString(kubeWorkload.GetController().GetNamespace(), namespaces) {
@@ -48,7 +48,7 @@ func IdentityMatchesWorkload(selectors []*v1alpha2.IdentitySelector, workload *d
 				}
 				return true
 			}
-			if kubeWorkloadRefs := selector.GetKubeServiceAccountRefs(); kubeWorkloadRefs != nil {
+			if kubeWorkloadRefs := selector.KubeServiceAccountRefs; kubeWorkloadRefs != nil {
 				for _, ref := range kubeWorkloadRefs.GetServiceAccounts() {
 					if ref.GetName() == kubeWorkload.GetServiceAccountName() &&
 						ref.GetNamespace() == kubeWorkload.GetController().GetNamespace() &&
