@@ -103,6 +103,7 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 
 	// update traffictarget, workload, trafficpolicy, and accesspolicy statuses
 	for _, workload := range input.Workloads().List() {
+		// TODO(ilackarms): validate workloads when additional config is introduced
 		workload.Status.ObservedGeneration = workload.Generation
 	}
 
