@@ -19,10 +19,10 @@ title: "selectors.proto"
   - [IdentitySelector](#networking.smh.solo.io.IdentitySelector)
   - [IdentitySelector.KubeIdentityMatcher](#networking.smh.solo.io.IdentitySelector.KubeIdentityMatcher)
   - [IdentitySelector.KubeServiceAccountRefs](#networking.smh.solo.io.IdentitySelector.KubeServiceAccountRefs)
-  - [ServiceSelector](#networking.smh.solo.io.ServiceSelector)
-  - [ServiceSelector.KubeServiceMatcher](#networking.smh.solo.io.ServiceSelector.KubeServiceMatcher)
-  - [ServiceSelector.KubeServiceMatcher.LabelsEntry](#networking.smh.solo.io.ServiceSelector.KubeServiceMatcher.LabelsEntry)
-  - [ServiceSelector.KubeServiceRefs](#networking.smh.solo.io.ServiceSelector.KubeServiceRefs)
+  - [TrafficTargetSelector](#networking.smh.solo.io.TrafficTargetSelector)
+  - [TrafficTargetSelector.KubeServiceMatcher](#networking.smh.solo.io.TrafficTargetSelector.KubeServiceMatcher)
+  - [TrafficTargetSelector.KubeServiceMatcher.LabelsEntry](#networking.smh.solo.io.TrafficTargetSelector.KubeServiceMatcher.LabelsEntry)
+  - [TrafficTargetSelector.KubeServiceRefs](#networking.smh.solo.io.TrafficTargetSelector.KubeServiceRefs)
   - [WorkloadSelector](#networking.smh.solo.io.WorkloadSelector)
   - [WorkloadSelector.LabelsEntry](#networking.smh.solo.io.WorkloadSelector.LabelsEntry)
 
@@ -79,31 +79,31 @@ Selector capable of selecting specific service identities. Useful for binding po
 
 
 
-<a name="networking.smh.solo.io.ServiceSelector"></a>
+<a name="networking.smh.solo.io.TrafficTargetSelector"></a>
 
-### ServiceSelector
+### TrafficTargetSelector
 Select Kubernetes services.<br>Only one of (labels + namespaces + cluster) or (resource refs) may be provided. If all four are provided, it will be considered an error, and the Status of the top level resource will be updated to reflect an IllegalSelection.<br>Valid: 1. selector: matcher: labels: foo: bar hello: world namespaces: - default cluster: "cluster-name" 2. selector: matcher: refs: - name: foo namespace: bar<br>Invalid: 1. selector: matcher: labels: foo: bar hello: world namespaces: - default cluster: "cluster-name" refs: - name: foo namespace: bar<br>By default labels will select across all namespaces, unless a list of namespaces is provided, in which case it will only select from those. An empty list is equal to AllNamespaces.<br>If no labels are given, and only namespaces, all resources from the namespaces will be selected.<br>The following selector will select all resources with the following labels in every namespace, in the local cluster:<br>selector: matcher: labels: foo: bar hello: world<br>Whereas the next selector will only select from the specified namespaces (foo, bar), in the local cluster:<br>selector: matcher: labels: foo: bar hello: world namespaces - foo - bar<br>This final selector will select all resources of a given type in the target namespace (foo), in the local cluster:<br>selector matcher: namespaces - foo - bar labels: hello: world
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeServiceMatcher | [ServiceSelector.KubeServiceMatcher](#networking.smh.solo.io.ServiceSelector.KubeServiceMatcher) |  | A KubeServiceMatcher matches kubernetes services by the namespaces and clusters they belong to, as well as the provided labels. |
-| kubeServiceRefs | [ServiceSelector.KubeServiceRefs](#networking.smh.solo.io.ServiceSelector.KubeServiceRefs) |  | Match individual k8s Services by direct reference. |
+| kubeServiceMatcher | [TrafficTargetSelector.KubeServiceMatcher](#networking.smh.solo.io.TrafficTargetSelector.KubeServiceMatcher) |  | A KubeServiceMatcher matches kubernetes services by the namespaces and clusters they belong to, as well as the provided labels. |
+| kubeServiceRefs | [TrafficTargetSelector.KubeServiceRefs](#networking.smh.solo.io.TrafficTargetSelector.KubeServiceRefs) |  | Match individual k8s Services by direct reference. |
 
 
 
 
 
 
-<a name="networking.smh.solo.io.ServiceSelector.KubeServiceMatcher"></a>
+<a name="networking.smh.solo.io.TrafficTargetSelector.KubeServiceMatcher"></a>
 
-### ServiceSelector.KubeServiceMatcher
+### TrafficTargetSelector.KubeServiceMatcher
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| labels | [][ServiceSelector.KubeServiceMatcher.LabelsEntry](#networking.smh.solo.io.ServiceSelector.KubeServiceMatcher.LabelsEntry) | repeated | If specified, all labels must exist on k8s Service, else match on any labels. |
+| labels | [][TrafficTargetSelector.KubeServiceMatcher.LabelsEntry](#networking.smh.solo.io.TrafficTargetSelector.KubeServiceMatcher.LabelsEntry) | repeated | If specified, all labels must exist on k8s Service, else match on any labels. |
 | namespaces | [][string](#string) | repeated | If specified, match k8s Services if they exist in one of the specified namespaces. If not specified, match on any namespace. |
 | clusters | [][string](#string) | repeated | If specified, match k8s Services if they exist in one of the specified clusters. If not specified, match on any cluster. |
 
@@ -112,9 +112,9 @@ Select Kubernetes services.<br>Only one of (labels + namespaces + cluster) or (r
 
 
 
-<a name="networking.smh.solo.io.ServiceSelector.KubeServiceMatcher.LabelsEntry"></a>
+<a name="networking.smh.solo.io.TrafficTargetSelector.KubeServiceMatcher.LabelsEntry"></a>
 
-### ServiceSelector.KubeServiceMatcher.LabelsEntry
+### TrafficTargetSelector.KubeServiceMatcher.LabelsEntry
 
 
 
@@ -128,9 +128,9 @@ Select Kubernetes services.<br>Only one of (labels + namespaces + cluster) or (r
 
 
 
-<a name="networking.smh.solo.io.ServiceSelector.KubeServiceRefs"></a>
+<a name="networking.smh.solo.io.TrafficTargetSelector.KubeServiceRefs"></a>
 
-### ServiceSelector.KubeServiceRefs
+### TrafficTargetSelector.KubeServiceRefs
 
 
 

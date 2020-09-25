@@ -131,7 +131,7 @@ var _ = Describe("WorkloadDetector", func() {
 			ObjectMeta: outputMeta,
 			Spec: v1alpha2.WorkloadSpec{
 				WorkloadType: &v1alpha2.WorkloadSpec_Kubernetes{
-					Kubernetes: &v1alpha2.WorkloadSpec_KubernertesWorkload{
+					Kubernetes: &v1alpha2.WorkloadSpec_KubernetesWorkload{
 						Controller:         ezkube.MakeClusterObjectRef(deployment),
 						PodLabels:          podLabels,
 						ServiceAccountName: serviceAccountName,

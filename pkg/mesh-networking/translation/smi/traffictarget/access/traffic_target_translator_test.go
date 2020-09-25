@@ -84,7 +84,7 @@ var _ = Describe("TrafficTargetTranslator", func() {
 					},
 					Spec: discoveryv1alpha2.WorkloadSpec{
 						WorkloadType: &discoveryv1alpha2.WorkloadSpec_Kubernetes{
-							Kubernetes: &discoveryv1alpha2.WorkloadSpec_KubernertesWorkload{
+							Kubernetes: &discoveryv1alpha2.WorkloadSpec_KubernetesWorkload{
 								Controller: &v1.ClusterObjectRef{
 									Namespace: ns,
 								},
@@ -100,7 +100,7 @@ var _ = Describe("TrafficTargetTranslator", func() {
 					},
 					Spec: discoveryv1alpha2.WorkloadSpec{
 						WorkloadType: &discoveryv1alpha2.WorkloadSpec_Kubernetes{
-							Kubernetes: &discoveryv1alpha2.WorkloadSpec_KubernertesWorkload{
+							Kubernetes: &discoveryv1alpha2.WorkloadSpec_KubernetesWorkload{
 								Controller: &v1.ClusterObjectRef{
 									Namespace: ns,
 								},
@@ -161,7 +161,7 @@ var _ = Describe("TrafficTargetTranslator", func() {
 					},
 					Spec: discoveryv1alpha2.WorkloadSpec{
 						WorkloadType: &discoveryv1alpha2.WorkloadSpec_Kubernetes{
-							Kubernetes: &discoveryv1alpha2.WorkloadSpec_KubernertesWorkload{
+							Kubernetes: &discoveryv1alpha2.WorkloadSpec_KubernetesWorkload{
 								Controller: &v1.ClusterObjectRef{
 									Namespace: ns,
 								},

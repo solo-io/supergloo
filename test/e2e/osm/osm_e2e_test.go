@@ -50,9 +50,9 @@ var _ = Describe("OsmE2e", func() {
 				APIVersion: v1alpha2.SchemeGroupVersion.String(),
 			},
 			Spec: v1alpha2.TrafficPolicySpec{
-				DestinationSelector: []*v1alpha2.ServiceSelector{
+				DestinationSelector: []*v1alpha2.TrafficTargetSelector{
 					{
-						KubeServiceRefs: &v1alpha2.ServiceSelector_KubeServiceRefs{
+						KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
 							Services: []*v1.ClusterObjectRef{
 								{
 									Name:        bookStore,
@@ -111,9 +111,9 @@ var _ = Describe("OsmE2e", func() {
 						},
 					},
 				},
-				DestinationSelector: []*v1alpha2.ServiceSelector{
+				DestinationSelector: []*v1alpha2.TrafficTargetSelector{
 					{
-						KubeServiceRefs: &v1alpha2.ServiceSelector_KubeServiceRefs{
+						KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
 							Services: []*v1.ClusterObjectRef{
 								{
 									Name:        fmt.Sprintf("%s-v1", bookStore),
