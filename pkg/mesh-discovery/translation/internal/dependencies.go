@@ -14,6 +14,7 @@ import (
 	traffictargetdetector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/traffictarget/detector"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload"
 	workloaddetector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector"
+	appmeshsidecar "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector/appmesh"
 	istiosidecar "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector/istio"
 	osmsidecar "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector/osm"
 )
@@ -58,6 +59,7 @@ func (d DependencyFactoryImpl) MakeWorkloadTranslator(
 ) workload.Translator {
 	sidecarDetectors := workloaddetector.SidecarDetectors{
 		istiosidecar.NewSidecarDetector(ctx),
+		appmeshsidecar.NewSidecarDetector(ctx),
 		// TODO(EItanya): Uncomment to re-enable linkerd discovery
 		// linkerdsidecar.NewSidecarDetector(ctx),
 		osmsidecar.NewSidecarDetector(ctx),
