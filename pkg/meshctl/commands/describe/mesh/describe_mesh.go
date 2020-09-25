@@ -76,8 +76,7 @@ func (m meshMetadata) string() string {
 	s.WriteString(printing.FormattedField("Cluster", m.Cluster))
 	s.WriteString(printing.FormattedField("Clusters", strings.Join(m.Clusters, ", ")))
 	s.WriteString(printing.FormattedField("Type", m.Type))
-	s.WriteString(printing.FormattedField("Region", m.Region))
-	s.WriteString(printing.FormattedField("AwsAccountId", m.AwsAccountId))
+	s.WriteString(printing.FormattedField("ARN", m.Arn))
 	s.WriteString(printing.FormattedField("Version", m.Version))
 	return s.String()
 }
@@ -89,14 +88,13 @@ type meshDescription struct {
 }
 
 type meshMetadata struct {
-	Name         string
-	Namespace    string
-	Cluster      string
-	Clusters     []string
-	Type         string
-	Region       string
-	AwsAccountId string
-	Version      string
+	Name      string
+	Namespace string
+	Cluster   string
+	Clusters  []string
+	Type      string
+	Arn       string
+	Version   string
 }
 
 func describeMesh(mesh *discoveryv1alpha2.Mesh) meshDescription {
@@ -119,11 +117,10 @@ func getMeshMetadata(mesh *discoveryv1alpha2.Mesh) meshMetadata {
 	if mesh.Spec.GetAwsAppMesh() != nil {
 		appmesh := mesh.Spec.GetAwsAppMesh()
 		return meshMetadata{
-			Type:         "appmesh",
-			Name:         appmesh.Name,
-			Region:       appmesh.Region,
-			AwsAccountId: appmesh.AwsAccountId,
-			Clusters:     appmesh.Clusters,
+			Type:     "appmesh",
+			Name:     appmesh.AwsName,
+			Arn:      appmesh.Arn,
+			Clusters: appmesh.Clusters,
 		}
 	}
 	var meshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation
