@@ -3,12 +3,12 @@ package appmesh
 import (
 	"context"
 
+	"github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	"github.com/hashicorp/go-multierror"
-
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
-	appsv1 "k8s.io/api/apps/v1"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
 )
 
 type meshDetector struct {
@@ -27,8 +27,9 @@ func NewMeshDetector(
 func (d *meshDetector) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, error) {
 	var meshes v1alpha2.MeshSlice
 	var errs error
-	for _, deployment := range in.Deployments().List() {
-		mesh, err := d.detectMesh(deployment)
+
+	for _, awsMesh := range in.Meshes().List() {
+		mesh, err := d.detectMesh(awsMesh)
 		if err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -37,11 +38,22 @@ func (d *meshDetector) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, erro
 		}
 		meshes = append(meshes, mesh)
 	}
+
 	return meshes, errs
 }
 
-func (d *meshDetector) detectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh, error) {
-	// TODO: implement
-
-	return nil, nil
+func (d *meshDetector) detectMesh(mesh *v1beta2.Mesh) (*v1alpha2.Mesh, error) {
+	return &v1alpha2.Mesh{
+		ObjectMeta: utils.DiscoveredObjectMeta(mesh),
+		Spec: v1alpha2.MeshSpec{
+			MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
+				AwsAppMesh: &v1alpha2.MeshSpec_AwsAppMesh{
+					AwsName: *mesh.Spec.AWSName,
+					Arn:     *mesh.Status.MeshARN,
+					// TODO -- look at pods, APPMESH_VIRTUALNODE_NAME will contain mesh name
+					Clusters: []string{mesh.ClusterName},
+				},
+			},
+		},
+	}, nil
 }

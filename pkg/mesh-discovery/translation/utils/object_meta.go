@@ -22,5 +22,10 @@ func DiscoveredObjectMeta(sourceResource metav1.Object) metav1.ObjectMeta {
 
 // util for conventionally naming discovered resources
 func DiscoveredResourceName(sourceResource ezkube.ClusterResourceId) string {
+	if sourceResource.GetNamespace() == "" {
+		// Do not include namespace for cluster-scoped resources to avoid names like "name--cluster".
+		return kubeutils.SanitizeNameV2(fmt.Sprintf("%v-%v", sourceResource.GetName(), sourceResource.GetClusterName()))
+	}
+
 	return kubeutils.SanitizeNameV2(fmt.Sprintf("%v-%v-%v", sourceResource.GetName(), sourceResource.GetNamespace(), sourceResource.GetClusterName()))
 }
