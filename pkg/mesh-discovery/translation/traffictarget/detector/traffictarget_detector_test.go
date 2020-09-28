@@ -52,7 +52,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 			},
 			Spec: v1alpha2.WorkloadSpec{
 				WorkloadType: &v1alpha2.WorkloadSpec_Kubernetes{
-					Kubernetes: &v1alpha2.WorkloadSpec_KubernertesWorkload{
+					Kubernetes: &v1alpha2.WorkloadSpec_KubernetesWorkload{
 						Controller:         deployment,
 						PodLabels:          labels,
 						ServiceAccountName: "any",

@@ -64,7 +64,7 @@ func IdentityMatchesWorkload(selectors []*v1alpha2.IdentitySelector, workload *d
 	return false
 }
 
-func SelectorMatchesService(selectors []*v1alpha2.ServiceSelector, service *discoveryv1alpha2.TrafficTarget) bool {
+func SelectorMatchesService(selectors []*v1alpha2.TrafficTargetSelector, service *discoveryv1alpha2.TrafficTarget) bool {
 	if len(selectors) == 0 {
 		return true
 	}
@@ -103,7 +103,7 @@ func SelectorMatchesService(selectors []*v1alpha2.ServiceSelector, service *disc
 func kubeWorkloadMatches(
 	labels map[string]string,
 	namespaces []string,
-	kubeWorkload *discoveryv1alpha2.WorkloadSpec_KubernertesWorkload,
+	kubeWorkload *discoveryv1alpha2.WorkloadSpec_KubernetesWorkload,
 ) bool {
 	if len(namespaces) > 0 && !stringutils.ContainsString(kubeWorkload.GetController().GetNamespace(), namespaces) {
 		return false
