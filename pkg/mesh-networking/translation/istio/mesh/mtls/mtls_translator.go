@@ -3,9 +3,10 @@ package mtls
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
-	"time"
 
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/local"
@@ -173,13 +174,14 @@ func (t *translator) configureSharedTrust(
 		return nil
 	}
 
-	issuedCertificate := t.constructIssuedCertificate(
+	issuedCertificate, podBounceDirective := t.constructIssuedCertificate(
 		mesh,
 		rootCaSecret,
 		agentInfo.AgentNamespace,
 		autoRestartPods,
 	)
 	istioOutputs.AddIssuedCertificates(issuedCertificate)
+	istioOutputs.AddPodBounceDirectives(podBounceDirective)
 	return nil
 }
 
@@ -239,7 +241,7 @@ func (t *translator) constructIssuedCertificate(
 	rootCaSecret *v1.ObjectRef,
 	agentNamespace string,
 	autoRestartPods bool,
-) *certificatesv1alpha2.IssuedCertificate {
+) (*certificatesv1alpha2.IssuedCertificate, *certificatesv1alpha2.PodBounceDirective) {
 	istioMesh := mesh.Spec.GetIstio()
 
 	trustDomain := istioMesh.GetCitadelInfo().GetTrustDomain()
@@ -262,27 +264,42 @@ func (t *translator) constructIssuedCertificate(
 		Namespace: istioNamespace,
 	}
 
+	issuedCertificateMeta := metav1.ObjectMeta{
+		Name: mesh.Name,
+		// write to the agent namespace
+		Namespace: agentNamespace,
+		// write to the mesh cluster
+		ClusterName: istioMesh.GetInstallation().GetCluster(),
+		Labels:      metautils.TranslatedObjectLabels(),
+	}
+
 	// get the pods that need to be bounced for this mesh
 	podsToBounce := getPodsToBounce(mesh, t.workloads, autoRestartPods)
+	var (
+		podBounceDirective *certificatesv1alpha2.PodBounceDirective
+		podBounceRef       *v1.ObjectRef
+	)
+	if len(podsToBounce) > 0 {
+		podBounceDirective = &certificatesv1alpha2.PodBounceDirective{
+			ObjectMeta: issuedCertificateMeta,
+			Spec: certificatesv1alpha2.PodBounceDirectiveSpec{
+				PodsToBounce: podsToBounce,
+			},
+		}
+		podBounceRef = ezkube.MakeObjectRef(podBounceDirective)
+	}
 
 	// issue a certificate to the mesh agent
 	return &certificatesv1alpha2.IssuedCertificate{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: mesh.Name,
-			// write to the agent namespace
-			Namespace: agentNamespace,
-			// write to the mesh cluster
-			ClusterName: istioMesh.GetInstallation().GetCluster(),
-			Labels:      metautils.TranslatedObjectLabels(),
-		},
+		ObjectMeta: issuedCertificateMeta,
 		Spec: certificatesv1alpha2.IssuedCertificateSpec{
 			Hosts:                    []string{buildSpiffeURI(trustDomain, istioNamespace, citadelServiceAccount)},
 			Org:                      defaultIstioOrg,
 			SigningCertificateSecret: rootCaSecret,
 			IssuedCertificateSecret:  istioCaCerts,
-			PodsToBounce:             podsToBounce,
+			PodBounceDirective:       podBounceRef,
 		},
-	}
+	}, podBounceDirective
 }
 
 const (
@@ -331,7 +348,7 @@ func buildSpiffeURI(trustDomain, namespace, serviceAccount string) string {
 }
 
 // get selectors for all the pods in a mesh; they need to be bounced (including the mesh control plane itself)
-func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha2sets.WorkloadSet, autoRestartPods bool) []*certificatesv1alpha2.IssuedCertificateSpec_PodSelector {
+func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha2sets.WorkloadSet, autoRestartPods bool) []*certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector {
 	// if autoRestartPods is false, we rely on the user to manually restart their pods
 	if !autoRestartPods {
 		return nil
@@ -340,7 +357,7 @@ func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha
 	istioInstall := istioMesh.GetInstallation()
 
 	// bounce the control plane pod
-	podsToBounce := []*certificatesv1alpha2.IssuedCertificateSpec_PodSelector{
+	podsToBounce := []*certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector{
 		{
 			Namespace: istioInstall.Namespace,
 			Labels:    istioInstall.PodLabels,
@@ -349,7 +366,7 @@ func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha
 
 	// bounce the ingress gateway pods
 	for _, gateway := range istioMesh.IngressGateways {
-		podsToBounce = append(podsToBounce, &certificatesv1alpha2.IssuedCertificateSpec_PodSelector{
+		podsToBounce = append(podsToBounce, &certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector{
 			Namespace: istioInstall.Namespace,
 			Labels:    gateway.WorkloadLabels,
 		})
@@ -360,7 +377,7 @@ func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha
 		kubeWorkload := workload.Spec.GetKubernetes()
 
 		if kubeWorkload != nil && ezkube.RefsMatch(workload.Spec.Mesh, mesh) {
-			podsToBounce = append(podsToBounce, &certificatesv1alpha2.IssuedCertificateSpec_PodSelector{
+			podsToBounce = append(podsToBounce, &certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector{
 				Namespace: kubeWorkload.Controller.GetNamespace(),
 				Labels:    kubeWorkload.PodLabels,
 			})

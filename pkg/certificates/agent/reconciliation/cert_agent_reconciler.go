@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	corev1client "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
@@ -243,7 +245,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		}
 
 		// now we must bounce all the pods
-		if err := r.bouncePods(issuedCertificate.Spec.PodsToBounce, inputPods); err != nil {
+		if err := r.bouncePods(issuedCertificate.Spec.PodBounceDirective, inputPods); err != nil {
 			return eris.Wrap(err, "bouncing pods")
 		}
 
@@ -257,9 +259,17 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 }
 
 // bounce (delete) the listed pods
-func (r *certAgentReconciler) bouncePods(podSelectors []*v1alpha2.IssuedCertificateSpec_PodSelector, allPods corev1sets.PodSet) error {
+func (r *certAgentReconciler) bouncePods(podBounceDirectiveRef *v1.ObjectRef, allPods corev1sets.PodSet) error {
+	if podBounceDirectiveRef == nil {
+		return nil
+	}
+	podBounceDirective, err := v1alpha2.NewPodBounceDirectiveClient(r.localClient).GetPodBounceDirective(r.ctx, ezkube.MakeClientObjectKey(podBounceDirectiveRef))
+	if err != nil {
+		return eris.Wrap(err, "failed to find specified pod bounce directive")
+	}
+
 	podsToDelete := allPods.List(func(pod *corev1.Pod) bool {
-		for _, selector := range podSelectors {
+		for _, selector := range podBounceDirective.Spec.PodsToBounce {
 			if selector.Namespace == pod.Namespace &&
 				labels.SelectorFromSet(selector.Labels).Matches(labels.Set(pod.Labels)) {
 				return false

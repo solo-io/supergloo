@@ -405,3 +405,199 @@ func (mr *MockCertificateRequestSetMockRecorder) Length() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockCertificateRequestSet)(nil).Length))
 }
+
+// MockPodBounceDirectiveSet is a mock of PodBounceDirectiveSet interface
+type MockPodBounceDirectiveSet struct {
+	ctrl     *gomock.Controller
+	recorder *MockPodBounceDirectiveSetMockRecorder
+}
+
+// MockPodBounceDirectiveSetMockRecorder is the mock recorder for MockPodBounceDirectiveSet
+type MockPodBounceDirectiveSetMockRecorder struct {
+	mock *MockPodBounceDirectiveSet
+}
+
+// NewMockPodBounceDirectiveSet creates a new mock instance
+func NewMockPodBounceDirectiveSet(ctrl *gomock.Controller) *MockPodBounceDirectiveSet {
+	mock := &MockPodBounceDirectiveSet{ctrl: ctrl}
+	mock.recorder = &MockPodBounceDirectiveSetMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockPodBounceDirectiveSet) EXPECT() *MockPodBounceDirectiveSetMockRecorder {
+	return m.recorder
+}
+
+// Keys mocks base method
+func (m *MockPodBounceDirectiveSet) Keys() sets.String {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Keys")
+	ret0, _ := ret[0].(sets.String)
+	return ret0
+}
+
+// Keys indicates an expected call of Keys
+func (mr *MockPodBounceDirectiveSetMockRecorder) Keys() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockPodBounceDirectiveSet)(nil).Keys))
+}
+
+// List mocks base method
+func (m *MockPodBounceDirectiveSet) List(filterResource ...func(*v1alpha2.PodBounceDirective) bool) []*v1alpha2.PodBounceDirective {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
+	ret0, _ := ret[0].([]*v1alpha2.PodBounceDirective)
+	return ret0
+}
+
+// List indicates an expected call of List
+func (mr *MockPodBounceDirectiveSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockPodBounceDirectiveSet)(nil).List), filterResource...)
+}
+
+// Map mocks base method
+func (m *MockPodBounceDirectiveSet) Map() map[string]*v1alpha2.PodBounceDirective {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Map")
+	ret0, _ := ret[0].(map[string]*v1alpha2.PodBounceDirective)
+	return ret0
+}
+
+// Map indicates an expected call of Map
+func (mr *MockPodBounceDirectiveSetMockRecorder) Map() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockPodBounceDirectiveSet)(nil).Map))
+}
+
+// Insert mocks base method
+func (m *MockPodBounceDirectiveSet) Insert(podBounceDirective ...*v1alpha2.PodBounceDirective) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range podBounceDirective {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Insert", varargs...)
+}
+
+// Insert indicates an expected call of Insert
+func (mr *MockPodBounceDirectiveSetMockRecorder) Insert(podBounceDirective ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockPodBounceDirectiveSet)(nil).Insert), podBounceDirective...)
+}
+
+// Equal mocks base method
+func (m *MockPodBounceDirectiveSet) Equal(podBounceDirectiveSet v1alpha2sets.PodBounceDirectiveSet) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Equal", podBounceDirectiveSet)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Equal indicates an expected call of Equal
+func (mr *MockPodBounceDirectiveSetMockRecorder) Equal(podBounceDirectiveSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockPodBounceDirectiveSet)(nil).Equal), podBounceDirectiveSet)
+}
+
+// Has mocks base method
+func (m *MockPodBounceDirectiveSet) Has(podBounceDirective ezkube.ResourceId) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Has", podBounceDirective)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Has indicates an expected call of Has
+func (mr *MockPodBounceDirectiveSetMockRecorder) Has(podBounceDirective interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockPodBounceDirectiveSet)(nil).Has), podBounceDirective)
+}
+
+// Delete mocks base method
+func (m *MockPodBounceDirectiveSet) Delete(podBounceDirective ezkube.ResourceId) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Delete", podBounceDirective)
+}
+
+// Delete indicates an expected call of Delete
+func (mr *MockPodBounceDirectiveSetMockRecorder) Delete(podBounceDirective interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockPodBounceDirectiveSet)(nil).Delete), podBounceDirective)
+}
+
+// Union mocks base method
+func (m *MockPodBounceDirectiveSet) Union(set v1alpha2sets.PodBounceDirectiveSet) v1alpha2sets.PodBounceDirectiveSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Union", set)
+	ret0, _ := ret[0].(v1alpha2sets.PodBounceDirectiveSet)
+	return ret0
+}
+
+// Union indicates an expected call of Union
+func (mr *MockPodBounceDirectiveSetMockRecorder) Union(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockPodBounceDirectiveSet)(nil).Union), set)
+}
+
+// Difference mocks base method
+func (m *MockPodBounceDirectiveSet) Difference(set v1alpha2sets.PodBounceDirectiveSet) v1alpha2sets.PodBounceDirectiveSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Difference", set)
+	ret0, _ := ret[0].(v1alpha2sets.PodBounceDirectiveSet)
+	return ret0
+}
+
+// Difference indicates an expected call of Difference
+func (mr *MockPodBounceDirectiveSetMockRecorder) Difference(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockPodBounceDirectiveSet)(nil).Difference), set)
+}
+
+// Intersection mocks base method
+func (m *MockPodBounceDirectiveSet) Intersection(set v1alpha2sets.PodBounceDirectiveSet) v1alpha2sets.PodBounceDirectiveSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Intersection", set)
+	ret0, _ := ret[0].(v1alpha2sets.PodBounceDirectiveSet)
+	return ret0
+}
+
+// Intersection indicates an expected call of Intersection
+func (mr *MockPodBounceDirectiveSetMockRecorder) Intersection(set interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockPodBounceDirectiveSet)(nil).Intersection), set)
+}
+
+// Find mocks base method
+func (m *MockPodBounceDirectiveSet) Find(id ezkube.ResourceId) (*v1alpha2.PodBounceDirective, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", id)
+	ret0, _ := ret[0].(*v1alpha2.PodBounceDirective)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find
+func (mr *MockPodBounceDirectiveSetMockRecorder) Find(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockPodBounceDirectiveSet)(nil).Find), id)
+}
+
+// Length mocks base method
+func (m *MockPodBounceDirectiveSet) Length() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Length")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Length indicates an expected call of Length
+func (mr *MockPodBounceDirectiveSetMockRecorder) Length() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockPodBounceDirectiveSet)(nil).Length))
+}
