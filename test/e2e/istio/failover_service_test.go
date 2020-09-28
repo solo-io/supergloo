@@ -55,9 +55,9 @@ var _ = Describe("FailoverService", func() {
 					Namespace: BookinfoNamespace,
 				},
 				Spec: networkingv1alpha2.TrafficPolicySpec{
-					DestinationSelector: []*networkingv1alpha2.ServiceSelector{
+					DestinationSelector: []*networkingv1alpha2.TrafficTargetSelector{
 						{
-							KubeServiceRefs: &networkingv1alpha2.ServiceSelector_KubeServiceRefs{
+							KubeServiceRefs: &networkingv1alpha2.TrafficTargetSelector_KubeServiceRefs{
 								Services: []*v1.ClusterObjectRef{
 									{
 										Name:        "reviews",
@@ -150,9 +150,9 @@ var _ = Describe("FailoverService", func() {
 					Namespace: BookinfoNamespace,
 				},
 				Spec: networkingv1alpha2.TrafficPolicySpec{
-					DestinationSelector: []*networkingv1alpha2.ServiceSelector{
+					DestinationSelector: []*networkingv1alpha2.TrafficTargetSelector{
 						{
-							KubeServiceRefs: &networkingv1alpha2.ServiceSelector_KubeServiceRefs{
+							KubeServiceRefs: &networkingv1alpha2.TrafficTargetSelector_KubeServiceRefs{
 								Services: []*v1.ClusterObjectRef{
 									{
 										Name:        "reviews",
