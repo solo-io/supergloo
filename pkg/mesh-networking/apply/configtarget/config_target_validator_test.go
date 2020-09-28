@@ -63,9 +63,9 @@ var _ = Describe("ConfigTargetValidator", func() {
 					Namespace: namespace,
 				},
 				Spec: v1alpha2.AccessPolicySpec{
-					DestinationSelector: []*v1alpha2.ServiceSelector{
+					DestinationSelector: []*v1alpha2.TrafficTargetSelector{
 						{
-							KubeServiceRefs: &v1alpha2.ServiceSelector_KubeServiceRefs{
+							KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
 								Services: []*v1.ClusterObjectRef{
 									{
 										Name:        "foo",
@@ -87,9 +87,9 @@ var _ = Describe("ConfigTargetValidator", func() {
 					Namespace: namespace,
 				},
 				Spec: v1alpha2.AccessPolicySpec{
-					DestinationSelector: []*v1alpha2.ServiceSelector{
+					DestinationSelector: []*v1alpha2.TrafficTargetSelector{
 						{
-							KubeServiceRefs: &v1alpha2.ServiceSelector_KubeServiceRefs{
+							KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
 								Services: []*v1.ClusterObjectRef{
 									{
 										Name:        "nonexistent",
@@ -151,9 +151,9 @@ var _ = Describe("ConfigTargetValidator", func() {
 					Namespace: namespace,
 				},
 				Spec: v1alpha2.TrafficPolicySpec{
-					DestinationSelector: []*v1alpha2.ServiceSelector{
+					DestinationSelector: []*v1alpha2.TrafficTargetSelector{
 						{
-							KubeServiceRefs: &v1alpha2.ServiceSelector_KubeServiceRefs{
+							KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
 								Services: []*v1.ClusterObjectRef{
 									{
 										Name:        "foo",
@@ -175,9 +175,9 @@ var _ = Describe("ConfigTargetValidator", func() {
 					Namespace: namespace,
 				},
 				Spec: v1alpha2.TrafficPolicySpec{
-					DestinationSelector: []*v1alpha2.ServiceSelector{
+					DestinationSelector: []*v1alpha2.TrafficTargetSelector{
 						{
-							KubeServiceRefs: &v1alpha2.ServiceSelector_KubeServiceRefs{
+							KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
 								Services: []*v1.ClusterObjectRef{
 									{
 										Name:        "nonexistent",

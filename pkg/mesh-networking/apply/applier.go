@@ -54,8 +54,6 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 	}
 
 	reportTranslationErrors(ctx, reporter, input)
-
-	// TODO(ilackarms): validate workloads
 }
 
 // Optimistically initialize policy statuses to accepted, which may be set to invalid or failed pending subsequent validation.
@@ -129,8 +127,14 @@ func applyPoliciesToTargets(input input.Snapshot) {
 	}
 }
 
-// Update networking configuration statuses with any translation errors.
+// For all discovery entities, update status with any translation errors.
+// Also update observed generation to indicate that it's been processed.
 func reportTranslationErrors(ctx context.Context, reporter *applyReporter, input input.Snapshot) {
+	for _, workload := range input.Workloads().List() {
+		// TODO: validate config applied to workloads when introduced
+		workload.Status.ObservedGeneration = workload.Generation
+	}
+
 	for _, trafficTarget := range input.TrafficTargets().List() {
 		trafficTarget.Status.ObservedGeneration = trafficTarget.Generation
 		trafficTarget.Status.AppliedTrafficPolicies = validateAndReturnApprovedTrafficPolicies(ctx, input, reporter, trafficTarget)

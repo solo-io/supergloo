@@ -129,7 +129,7 @@ func (c *configTargetValidator) validateMeshReferences(meshRefs []*v1.ObjectRef)
 	return errs
 }
 
-func (c *configTargetValidator) validateTrafficTargetReferences(serviceSelectors []*v1alpha2.ServiceSelector) []error {
+func (c *configTargetValidator) validateTrafficTargetReferences(serviceSelectors []*v1alpha2.TrafficTargetSelector) []error {
 	var errs []error
 	for _, destinationSelector := range serviceSelectors {
 		kubeServiceRefs := destinationSelector.GetKubeServiceRefs()

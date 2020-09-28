@@ -76,7 +76,7 @@ func (d workloadDetector) DetectWorkload(workload types.Workload, meshes v1alpha
 		ObjectMeta: outputMeta,
 		Spec: v1alpha2.WorkloadSpec{
 			WorkloadType: &v1alpha2.WorkloadSpec_Kubernetes{
-				Kubernetes: &v1alpha2.WorkloadSpec_KubernertesWorkload{
+				Kubernetes: &v1alpha2.WorkloadSpec_KubernetesWorkload{
 					Controller:         controllerRef,
 					PodLabels:          labels,
 					ServiceAccountName: serviceAccount,
