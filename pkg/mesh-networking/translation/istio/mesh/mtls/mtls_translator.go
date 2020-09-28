@@ -3,6 +3,8 @@ package mtls
 import (
 	"context"
 	"fmt"
+	"github.com/rotisserie/eris"
+	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 	"time"
 
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
@@ -44,6 +46,17 @@ const (
 
 var (
 	signingCertSecretType = corev1.SecretType(fmt.Sprintf("%s/generated_signing_cert", certificatesv1alpha2.SchemeGroupVersion.Group))
+
+	// used when the user provides a nil root cert
+	defaultSelfSignedRootCa = &v1alpha2.VirtualMeshSpec_RootCertificateAuthority{
+		CaSource: &v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Generated{
+			Generated: &v1alpha2.VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert{
+				TtlDays:         defaultRootCertTTLDays,
+				RsaKeySizeBytes: defaultRootCertRsaKeySize,
+				OrgName:         defaultOrgName,
+			},
+		},
+	}
 )
 
 // used by networking reconciler to filter ignored secrets
@@ -94,26 +107,97 @@ func (t *translator) Translate(
 		return
 	}
 
-	if virtualMesh == nil || virtualMesh.Spec.MtlsConfig == nil {
-		contextutils.LoggerFrom(t.ctx).Debugf("no translation for virtual mesh %v which has no mTLS configuration", sets.Key(mesh))
-		return
+	if err := t.updateMtlsOutputs(mesh, virtualMesh, istioOutputs, localOutputs); err != nil {
+		reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, err)
 	}
-	mtlsConfig := virtualMesh.Spec.MtlsConfig
+}
 
-	// TODO(ilackarms): currently we assume a shared trust model
-	// we'll want to expand this to support limited trust in the future
-	sharedTrust := mtlsConfig.GetShared()
+func (t *translator) updateMtlsOutputs(
+	mesh *discoveryv1alpha2.Mesh,
+	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
+	istioOutputs istio.Builder,
+	localOutputs local.Builder,
+) error {
+	mtlsConfig := virtualMesh.Spec.MtlsConfig
+	if mtlsConfig == nil {
+		// nothing to do
+		contextutils.LoggerFrom(t.ctx).Debugf("no translation for virtual mesh %v which has no mTLS configuration", sets.Key(mesh))
+		return nil
+	}
+
+	if mtlsConfig.TrustModel == nil {
+		return eris.Errorf("must specify trust model to use for issuing certificates")
+	}
+
+	switch trustModel := mtlsConfig.TrustModel.(type) {
+	case *v1alpha2.VirtualMeshSpec_MTLSConfig_Shared:
+		return t.configureSharedTrust(
+			mesh,
+			trustModel.Shared,
+			virtualMesh.Ref,
+			istioOutputs,
+			localOutputs,
+			mtlsConfig.AutoRestartPods,
+		)
+	case *v1alpha2.VirtualMeshSpec_MTLSConfig_Limited:
+		return eris.Errorf("limited trust not supportedin version %v of service mesh hub", version.Version)
+	}
+
+	return nil
+}
+
+// will create the secret if it is self-signed,
+// otherwise will return the user-provided secret ref in the mtls config
+func (t *translator) configureSharedTrust(
+	mesh *discoveryv1alpha2.Mesh,
+	sharedTrust *v1alpha2.VirtualMeshSpec_MTLSConfig_SharedTrust,
+	virtualMeshRef *v1.ObjectRef,
+	istioOutputs istio.Builder,
+	localOutputs local.Builder,
+	autoRestartPods bool,
+) error {
 	rootCA := sharedTrust.GetRootCertificateAuthority()
+
+	rootCaSecret, err := t.getOrCreateRootCaSecret(
+		rootCA,
+		virtualMeshRef,
+		localOutputs,
+	)
+	if err != nil {
+		return err
+	}
+
 	agentInfo := mesh.Spec.AgentInfo
 	if agentInfo == nil {
 		contextutils.LoggerFrom(t.ctx).Debugf("cannot configure root certificates for mesh %v which has no cert-agent", sets.Key(mesh))
-		return
+		return nil
+	}
+
+	issuedCertificate := t.constructIssuedCertificate(
+		mesh,
+		rootCaSecret,
+		agentInfo.AgentNamespace,
+		autoRestartPods,
+	)
+	istioOutputs.AddIssuedCertificates(issuedCertificate)
+	return nil
+}
+
+// will create the secret if it is self-signed,
+// otherwise will return the user-provided secret ref in the mtls config
+func (t *translator) getOrCreateRootCaSecret(
+	rootCA *v1alpha2.VirtualMeshSpec_RootCertificateAuthority,
+	virtualMeshRef *v1.ObjectRef,
+	localOutputs local.Builder,
+) (*v1.ObjectRef, error) {
+	if rootCA == nil || rootCA.CaSource == nil {
+		rootCA = defaultSelfSignedRootCa
 	}
 
 	var rootCaSecret *v1.ObjectRef
 	switch caType := rootCA.CaSource.(type) {
 	case *v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Generated:
-		generatedSecretName := virtualMesh.Ref.Name + "." + virtualMesh.Ref.Namespace
+		generatedSecretName := virtualMeshRef.Name + "." + virtualMeshRef.Namespace
 		// write the signing secret to the smh namespace
 		generatedSecretNamespace := defaults.GetPodNamespace()
 		// use the existing secret if it exists
@@ -126,8 +210,7 @@ func (t *translator) Translate(
 			selfSignedCert, err := generateSelfSignedCert(caType.Generated)
 			if err != nil {
 				// should never happen
-				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, err)
-				return
+				return nil, err
 			}
 			// the self signed cert goes to the master/local cluster
 			selfSignedCertSecret = &corev1.Secret{
@@ -147,6 +230,17 @@ func (t *translator) Translate(
 	case *v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Secret:
 		rootCaSecret = caType.Secret
 	}
+
+	return rootCaSecret, nil
+}
+
+func (t *translator) constructIssuedCertificate(
+	mesh *discoveryv1alpha2.Mesh,
+	rootCaSecret *v1.ObjectRef,
+	agentNamespace string,
+	autoRestartPods bool,
+) *certificatesv1alpha2.IssuedCertificate {
+	istioMesh := mesh.Spec.GetIstio()
 
 	trustDomain := istioMesh.GetCitadelInfo().GetTrustDomain()
 	if trustDomain == "" {
@@ -169,14 +263,14 @@ func (t *translator) Translate(
 	}
 
 	// get the pods that need to be bounced for this mesh
-	podsToBounce := getPodsToBounce(mesh, t.workloads, mtlsConfig.AutoRestartPods)
+	podsToBounce := getPodsToBounce(mesh, t.workloads, autoRestartPods)
 
 	// issue a certificate to the mesh agent
-	issuedCertificate := &certificatesv1alpha2.IssuedCertificate{
+	return &certificatesv1alpha2.IssuedCertificate{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: mesh.Name,
 			// write to the agent namespace
-			Namespace: agentInfo.AgentNamespace,
+			Namespace: agentNamespace,
 			// write to the mesh cluster
 			ClusterName: istioMesh.GetInstallation().GetCluster(),
 			Labels:      metautils.TranslatedObjectLabels(),
@@ -189,7 +283,6 @@ func (t *translator) Translate(
 			PodsToBounce:             podsToBounce,
 		},
 	}
-	istioOutputs.AddIssuedCertificates(issuedCertificate)
 }
 
 const (
