@@ -25,7 +25,7 @@ func FindBackingWorkloads(
 
 func isBackingKubeWorkload(
 	service *v1alpha2.TrafficTargetSpec_KubeService,
-	kubeWorkload *v1alpha2.WorkloadSpec_KubernertesWorkload,
+	kubeWorkload *v1alpha2.WorkloadSpec_KubernetesWorkload,
 ) bool {
 	if kubeWorkload == nil {
 		return false
