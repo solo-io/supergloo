@@ -30,14 +30,14 @@ func (this *WorkloadSpec) UnmarshalJSON(b []byte) error {
 	return WorkloadUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for WorkloadSpec_KubernertesWorkload
-func (this *WorkloadSpec_KubernertesWorkload) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for WorkloadSpec_KubernetesWorkload
+func (this *WorkloadSpec_KubernetesWorkload) MarshalJSON() ([]byte, error) {
 	str, err := WorkloadMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for WorkloadSpec_KubernertesWorkload
-func (this *WorkloadSpec_KubernertesWorkload) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for WorkloadSpec_KubernetesWorkload
+func (this *WorkloadSpec_KubernetesWorkload) UnmarshalJSON(b []byte) error {
 	return WorkloadUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

@@ -1,0 +1,7 @@
+changelog:
+  - type: FIX
+    description: Rename "KubernertesWorkload" to "KubernetesWorkload".
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/971
+  - type: FIX
+    description: Rename "ServiceSelector" to "TrafficTargetSelector"
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/965
