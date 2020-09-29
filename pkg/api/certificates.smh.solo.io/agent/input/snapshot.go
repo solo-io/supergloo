@@ -5,6 +5,7 @@
 // The Input Snapshot contains the set of all:
 // * IssuedCertificates
 // * CertificateRequests
+// * PodBounceDirectives
 // * Secrets
 // * Pods
 // read from a given cluster or set of clusters, across all namespaces.
@@ -40,6 +41,8 @@ type Snapshot interface {
 	IssuedCertificates() certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet
 	// return the set of input CertificateRequests
 	CertificateRequests() certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet
+	// return the set of input PodBounceDirectives
+	PodBounceDirectives() certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 
 	// return the set of input Secrets
 	Secrets() v1_sets.SecretSet
@@ -61,6 +64,7 @@ type snapshot struct {
 
 	issuedCertificates  certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet
 	certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet
+	podBounceDirectives certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 
 	secrets v1_sets.SecretSet
 	pods    v1_sets.PodSet
@@ -71,6 +75,7 @@ func NewSnapshot(
 
 	issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet,
 	certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet,
+	podBounceDirectives certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
 
 	secrets v1_sets.SecretSet,
 	pods v1_sets.PodSet,
@@ -81,6 +86,7 @@ func NewSnapshot(
 
 		issuedCertificates:  issuedCertificates,
 		certificateRequests: certificateRequests,
+		podBounceDirectives: podBounceDirectives,
 		secrets:             secrets,
 		pods:                pods,
 	}
@@ -92,6 +98,10 @@ func (s snapshot) IssuedCertificates() certificates_smh_solo_io_v1alpha2_sets.Is
 
 func (s snapshot) CertificateRequests() certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet {
 	return s.certificateRequests
+}
+
+func (s snapshot) PodBounceDirectives() certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet {
+	return s.podBounceDirectives
 }
 
 func (s snapshot) Secrets() v1_sets.SecretSet {
@@ -146,6 +156,7 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 
 	snapshotMap["issuedCertificates"] = s.issuedCertificates.List()
 	snapshotMap["certificateRequests"] = s.certificateRequests.List()
+	snapshotMap["podBounceDirectives"] = s.podBounceDirectives.List()
 	snapshotMap["secrets"] = s.secrets.List()
 	snapshotMap["pods"] = s.pods.List()
 	return json.Marshal(snapshotMap)
@@ -166,6 +177,8 @@ type BuildOptions struct {
 	IssuedCertificates []client.ListOption
 	// List options for composing a snapshot from CertificateRequests
 	CertificateRequests []client.ListOption
+	// List options for composing a snapshot from PodBounceDirectives
+	PodBounceDirectives []client.ListOption
 
 	// List options for composing a snapshot from Secrets
 	Secrets []client.ListOption
@@ -179,6 +192,7 @@ type multiClusterBuilder struct {
 
 	issuedCertificates  certificates_smh_solo_io_v1alpha2.MulticlusterIssuedCertificateClient
 	certificateRequests certificates_smh_solo_io_v1alpha2.MulticlusterCertificateRequestClient
+	podBounceDirectives certificates_smh_solo_io_v1alpha2.MulticlusterPodBounceDirectiveClient
 
 	secrets v1.MulticlusterSecretClient
 	pods    v1.MulticlusterPodClient
@@ -194,6 +208,7 @@ func NewMultiClusterBuilder(
 
 		issuedCertificates:  certificates_smh_solo_io_v1alpha2.NewMulticlusterIssuedCertificateClient(client),
 		certificateRequests: certificates_smh_solo_io_v1alpha2.NewMulticlusterCertificateRequestClient(client),
+		podBounceDirectives: certificates_smh_solo_io_v1alpha2.NewMulticlusterPodBounceDirectiveClient(client),
 
 		secrets: v1.NewMulticlusterSecretClient(client),
 		pods:    v1.NewMulticlusterPodClient(client),
@@ -204,6 +219,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 
 	issuedCertificates := certificates_smh_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
 	certificateRequests := certificates_smh_solo_io_v1alpha2_sets.NewCertificateRequestSet()
+	podBounceDirectives := certificates_smh_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
 
 	secrets := v1_sets.NewSecretSet()
 	pods := v1_sets.NewPodSet()
@@ -216,6 +232,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertCertificateRequestsFromCluster(ctx, cluster, certificateRequests, opts.CertificateRequests...); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertPodBounceDirectivesFromCluster(ctx, cluster, podBounceDirectives, opts.PodBounceDirectives...); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets...); err != nil {
@@ -232,6 +251,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 
 		issuedCertificates,
 		certificateRequests,
+		podBounceDirectives,
 		secrets,
 		pods,
 	)
@@ -273,6 +293,25 @@ func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.C
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
 		certificateRequests.Insert(&item)
+	}
+
+	return nil
+}
+func (b *multiClusterBuilder) insertPodBounceDirectivesFromCluster(ctx context.Context, cluster string, podBounceDirectives certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet, opts ...client.ListOption) error {
+	podBounceDirectiveClient, err := b.podBounceDirectives.Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	podBounceDirectiveList, err := podBounceDirectiveClient.ListPodBounceDirective(ctx, opts...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range podBounceDirectiveList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		podBounceDirectives.Insert(&item)
 	}
 
 	return nil
@@ -321,6 +360,7 @@ func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster
 type singleClusterBuilder struct {
 	issuedCertificates  certificates_smh_solo_io_v1alpha2.IssuedCertificateClient
 	certificateRequests certificates_smh_solo_io_v1alpha2.CertificateRequestClient
+	podBounceDirectives certificates_smh_solo_io_v1alpha2.PodBounceDirectiveClient
 
 	secrets v1.SecretClient
 	pods    v1.PodClient
@@ -334,6 +374,7 @@ func NewSingleClusterBuilder(
 
 		issuedCertificates:  certificates_smh_solo_io_v1alpha2.NewIssuedCertificateClient(client),
 		certificateRequests: certificates_smh_solo_io_v1alpha2.NewCertificateRequestClient(client),
+		podBounceDirectives: certificates_smh_solo_io_v1alpha2.NewPodBounceDirectiveClient(client),
 
 		secrets: v1.NewSecretClient(client),
 		pods:    v1.NewPodClient(client),
@@ -344,6 +385,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	issuedCertificates := certificates_smh_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
 	certificateRequests := certificates_smh_solo_io_v1alpha2_sets.NewCertificateRequestSet()
+	podBounceDirectives := certificates_smh_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
 
 	secrets := v1_sets.NewSecretSet()
 	pods := v1_sets.NewPodSet()
@@ -354,6 +396,9 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertCertificateRequests(ctx, certificateRequests, opts.CertificateRequests...); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertPodBounceDirectives(ctx, podBounceDirectives, opts.PodBounceDirectives...); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertSecrets(ctx, secrets, opts.Secrets...); err != nil {
@@ -368,6 +413,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 		issuedCertificates,
 		certificateRequests,
+		podBounceDirectives,
 		secrets,
 		pods,
 	)
@@ -397,6 +443,19 @@ func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, ce
 	for _, item := range certificateRequestList.Items {
 		item := item // pike
 		certificateRequests.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterBuilder) insertPodBounceDirectives(ctx context.Context, podBounceDirectives certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet, opts ...client.ListOption) error {
+	podBounceDirectiveList, err := b.podBounceDirectives.ListPodBounceDirective(ctx, opts...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range podBounceDirectiveList.Items {
+		item := item // pike
+		podBounceDirectives.Insert(&item)
 	}
 
 	return nil

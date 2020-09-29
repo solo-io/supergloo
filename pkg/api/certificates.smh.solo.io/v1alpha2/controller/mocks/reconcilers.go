@@ -380,3 +380,186 @@ func (mr *MockCertificateRequestReconcileLoopMockRecorder) RunCertificateRequest
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunCertificateRequestReconciler", reflect.TypeOf((*MockCertificateRequestReconcileLoop)(nil).RunCertificateRequestReconciler), varargs...)
 }
+
+// MockPodBounceDirectiveReconciler is a mock of PodBounceDirectiveReconciler interface
+type MockPodBounceDirectiveReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockPodBounceDirectiveReconcilerMockRecorder
+}
+
+// MockPodBounceDirectiveReconcilerMockRecorder is the mock recorder for MockPodBounceDirectiveReconciler
+type MockPodBounceDirectiveReconcilerMockRecorder struct {
+	mock *MockPodBounceDirectiveReconciler
+}
+
+// NewMockPodBounceDirectiveReconciler creates a new mock instance
+func NewMockPodBounceDirectiveReconciler(ctrl *gomock.Controller) *MockPodBounceDirectiveReconciler {
+	mock := &MockPodBounceDirectiveReconciler{ctrl: ctrl}
+	mock.recorder = &MockPodBounceDirectiveReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockPodBounceDirectiveReconciler) EXPECT() *MockPodBounceDirectiveReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcilePodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveReconciler) ReconcilePodBounceDirective(obj *v1alpha2.PodBounceDirective) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcilePodBounceDirective", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcilePodBounceDirective indicates an expected call of ReconcilePodBounceDirective
+func (mr *MockPodBounceDirectiveReconcilerMockRecorder) ReconcilePodBounceDirective(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcilePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveReconciler)(nil).ReconcilePodBounceDirective), obj)
+}
+
+// MockPodBounceDirectiveDeletionReconciler is a mock of PodBounceDirectiveDeletionReconciler interface
+type MockPodBounceDirectiveDeletionReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockPodBounceDirectiveDeletionReconcilerMockRecorder
+}
+
+// MockPodBounceDirectiveDeletionReconcilerMockRecorder is the mock recorder for MockPodBounceDirectiveDeletionReconciler
+type MockPodBounceDirectiveDeletionReconcilerMockRecorder struct {
+	mock *MockPodBounceDirectiveDeletionReconciler
+}
+
+// NewMockPodBounceDirectiveDeletionReconciler creates a new mock instance
+func NewMockPodBounceDirectiveDeletionReconciler(ctrl *gomock.Controller) *MockPodBounceDirectiveDeletionReconciler {
+	mock := &MockPodBounceDirectiveDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockPodBounceDirectiveDeletionReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockPodBounceDirectiveDeletionReconciler) EXPECT() *MockPodBounceDirectiveDeletionReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcilePodBounceDirectiveDeletion mocks base method
+func (m *MockPodBounceDirectiveDeletionReconciler) ReconcilePodBounceDirectiveDeletion(req reconcile.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcilePodBounceDirectiveDeletion", req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcilePodBounceDirectiveDeletion indicates an expected call of ReconcilePodBounceDirectiveDeletion
+func (mr *MockPodBounceDirectiveDeletionReconcilerMockRecorder) ReconcilePodBounceDirectiveDeletion(req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcilePodBounceDirectiveDeletion", reflect.TypeOf((*MockPodBounceDirectiveDeletionReconciler)(nil).ReconcilePodBounceDirectiveDeletion), req)
+}
+
+// MockPodBounceDirectiveFinalizer is a mock of PodBounceDirectiveFinalizer interface
+type MockPodBounceDirectiveFinalizer struct {
+	ctrl     *gomock.Controller
+	recorder *MockPodBounceDirectiveFinalizerMockRecorder
+}
+
+// MockPodBounceDirectiveFinalizerMockRecorder is the mock recorder for MockPodBounceDirectiveFinalizer
+type MockPodBounceDirectiveFinalizerMockRecorder struct {
+	mock *MockPodBounceDirectiveFinalizer
+}
+
+// NewMockPodBounceDirectiveFinalizer creates a new mock instance
+func NewMockPodBounceDirectiveFinalizer(ctrl *gomock.Controller) *MockPodBounceDirectiveFinalizer {
+	mock := &MockPodBounceDirectiveFinalizer{ctrl: ctrl}
+	mock.recorder = &MockPodBounceDirectiveFinalizerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockPodBounceDirectiveFinalizer) EXPECT() *MockPodBounceDirectiveFinalizerMockRecorder {
+	return m.recorder
+}
+
+// ReconcilePodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveFinalizer) ReconcilePodBounceDirective(obj *v1alpha2.PodBounceDirective) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcilePodBounceDirective", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcilePodBounceDirective indicates an expected call of ReconcilePodBounceDirective
+func (mr *MockPodBounceDirectiveFinalizerMockRecorder) ReconcilePodBounceDirective(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcilePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveFinalizer)(nil).ReconcilePodBounceDirective), obj)
+}
+
+// PodBounceDirectiveFinalizerName mocks base method
+func (m *MockPodBounceDirectiveFinalizer) PodBounceDirectiveFinalizerName() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PodBounceDirectiveFinalizerName")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// PodBounceDirectiveFinalizerName indicates an expected call of PodBounceDirectiveFinalizerName
+func (mr *MockPodBounceDirectiveFinalizerMockRecorder) PodBounceDirectiveFinalizerName() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PodBounceDirectiveFinalizerName", reflect.TypeOf((*MockPodBounceDirectiveFinalizer)(nil).PodBounceDirectiveFinalizerName))
+}
+
+// FinalizePodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveFinalizer) FinalizePodBounceDirective(obj *v1alpha2.PodBounceDirective) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FinalizePodBounceDirective", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FinalizePodBounceDirective indicates an expected call of FinalizePodBounceDirective
+func (mr *MockPodBounceDirectiveFinalizerMockRecorder) FinalizePodBounceDirective(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveFinalizer)(nil).FinalizePodBounceDirective), obj)
+}
+
+// MockPodBounceDirectiveReconcileLoop is a mock of PodBounceDirectiveReconcileLoop interface
+type MockPodBounceDirectiveReconcileLoop struct {
+	ctrl     *gomock.Controller
+	recorder *MockPodBounceDirectiveReconcileLoopMockRecorder
+}
+
+// MockPodBounceDirectiveReconcileLoopMockRecorder is the mock recorder for MockPodBounceDirectiveReconcileLoop
+type MockPodBounceDirectiveReconcileLoopMockRecorder struct {
+	mock *MockPodBounceDirectiveReconcileLoop
+}
+
+// NewMockPodBounceDirectiveReconcileLoop creates a new mock instance
+func NewMockPodBounceDirectiveReconcileLoop(ctrl *gomock.Controller) *MockPodBounceDirectiveReconcileLoop {
+	mock := &MockPodBounceDirectiveReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockPodBounceDirectiveReconcileLoopMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockPodBounceDirectiveReconcileLoop) EXPECT() *MockPodBounceDirectiveReconcileLoopMockRecorder {
+	return m.recorder
+}
+
+// RunPodBounceDirectiveReconciler mocks base method
+func (m *MockPodBounceDirectiveReconcileLoop) RunPodBounceDirectiveReconciler(ctx context.Context, rec controller.PodBounceDirectiveReconciler, predicates ...predicate.Predicate) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, rec}
+	for _, a := range predicates {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RunPodBounceDirectiveReconciler", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RunPodBounceDirectiveReconciler indicates an expected call of RunPodBounceDirectiveReconciler
+func (mr *MockPodBounceDirectiveReconcileLoopMockRecorder) RunPodBounceDirectiveReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, rec}, predicates...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunPodBounceDirectiveReconciler", reflect.TypeOf((*MockPodBounceDirectiveReconcileLoop)(nil).RunPodBounceDirectiveReconciler), varargs...)
+}

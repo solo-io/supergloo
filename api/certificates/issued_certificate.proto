@@ -45,20 +45,12 @@ message IssuedCertificateSpec {
     // The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Certificate Agent's cluster).
     .core.skv2.solo.io.ObjectRef issued_certificate_secret = 4;
 
-    // A list of k8s pods to bounce (delete and cause a restart)
-    // when the certificate is issued.
+    // A ref to a PodBounceDirective specifying a list of k8s pods to bounce
+    // (delete and cause a restart) when the certificate is issued.
     // This will include the control plane pods as well as any pods
     // which share a data plane with the target mesh.
-    repeated PodSelector pods_to_bounce = 5;
+    .core.skv2.solo.io.ObjectRef pod_bounce_directive = 5;
 
-    // Pods that will be restarted.
-    message PodSelector {
-        // The namespace in which the pods live.
-        string namespace = 1;
-
-        // Any labels shared by the pods.
-        map<string, string> labels = 2;
-    }
 }
 
 // The IssuedCertificate status is written by the CertificateRequesting agent.

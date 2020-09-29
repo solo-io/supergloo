@@ -248,3 +248,119 @@ func (r genericCertificateRequestFinalizer) Finalize(object ezkube.Object) error
 	}
 	return r.finalizingReconciler.FinalizeCertificateRequest(obj)
 }
+
+// Reconcile Upsert events for the PodBounceDirective Resource.
+// implemented by the user
+type PodBounceDirectiveReconciler interface {
+	ReconcilePodBounceDirective(obj *certificates_smh_solo_io_v1alpha2.PodBounceDirective) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the PodBounceDirective Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type PodBounceDirectiveDeletionReconciler interface {
+	ReconcilePodBounceDirectiveDeletion(req reconcile.Request) error
+}
+
+type PodBounceDirectiveReconcilerFuncs struct {
+	OnReconcilePodBounceDirective         func(obj *certificates_smh_solo_io_v1alpha2.PodBounceDirective) (reconcile.Result, error)
+	OnReconcilePodBounceDirectiveDeletion func(req reconcile.Request) error
+}
+
+func (f *PodBounceDirectiveReconcilerFuncs) ReconcilePodBounceDirective(obj *certificates_smh_solo_io_v1alpha2.PodBounceDirective) (reconcile.Result, error) {
+	if f.OnReconcilePodBounceDirective == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcilePodBounceDirective(obj)
+}
+
+func (f *PodBounceDirectiveReconcilerFuncs) ReconcilePodBounceDirectiveDeletion(req reconcile.Request) error {
+	if f.OnReconcilePodBounceDirectiveDeletion == nil {
+		return nil
+	}
+	return f.OnReconcilePodBounceDirectiveDeletion(req)
+}
+
+// Reconcile and finalize the PodBounceDirective Resource
+// implemented by the user
+type PodBounceDirectiveFinalizer interface {
+	PodBounceDirectiveReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	PodBounceDirectiveFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizePodBounceDirective(obj *certificates_smh_solo_io_v1alpha2.PodBounceDirective) error
+}
+
+type PodBounceDirectiveReconcileLoop interface {
+	RunPodBounceDirectiveReconciler(ctx context.Context, rec PodBounceDirectiveReconciler, predicates ...predicate.Predicate) error
+}
+
+type podBounceDirectiveReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewPodBounceDirectiveReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) PodBounceDirectiveReconcileLoop {
+	return &podBounceDirectiveReconcileLoop{
+		loop: reconcile.NewLoop(name, mgr, &certificates_smh_solo_io_v1alpha2.PodBounceDirective{}, options),
+	}
+}
+
+func (c *podBounceDirectiveReconcileLoop) RunPodBounceDirectiveReconciler(ctx context.Context, reconciler PodBounceDirectiveReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericPodBounceDirectiveReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(PodBounceDirectiveFinalizer); ok {
+		reconcilerWrapper = genericPodBounceDirectiveFinalizer{
+			genericPodBounceDirectiveReconciler: genericReconciler,
+			finalizingReconciler:                finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericPodBounceDirectiveHandler implements a generic reconcile.Reconciler
+type genericPodBounceDirectiveReconciler struct {
+	reconciler PodBounceDirectiveReconciler
+}
+
+func (r genericPodBounceDirectiveReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*certificates_smh_solo_io_v1alpha2.PodBounceDirective)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: PodBounceDirective handler received event for %T", object)
+	}
+	return r.reconciler.ReconcilePodBounceDirective(obj)
+}
+
+func (r genericPodBounceDirectiveReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(PodBounceDirectiveDeletionReconciler); ok {
+		return deletionReconciler.ReconcilePodBounceDirectiveDeletion(request)
+	}
+	return nil
+}
+
+// genericPodBounceDirectiveFinalizer implements a generic reconcile.FinalizingReconciler
+type genericPodBounceDirectiveFinalizer struct {
+	genericPodBounceDirectiveReconciler
+	finalizingReconciler PodBounceDirectiveFinalizer
+}
+
+func (r genericPodBounceDirectiveFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.PodBounceDirectiveFinalizerName()
+}
+
+func (r genericPodBounceDirectiveFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*certificates_smh_solo_io_v1alpha2.PodBounceDirective)
+	if !ok {
+		return errors.Errorf("internal error: PodBounceDirective handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizePodBounceDirective(obj)
+}
