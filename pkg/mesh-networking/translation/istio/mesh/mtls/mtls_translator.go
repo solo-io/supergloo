@@ -141,7 +141,7 @@ func (t *translator) updateMtlsOutputs(
 			mtlsConfig.AutoRestartPods,
 		)
 	case *v1alpha2.VirtualMeshSpec_MTLSConfig_Limited:
-		return eris.Errorf("limited trust not supportedin version %v of service mesh hub", version.Version)
+		return eris.Errorf("limited trust not supported in version %v of service mesh hub", version.Version)
 	}
 
 	return nil
