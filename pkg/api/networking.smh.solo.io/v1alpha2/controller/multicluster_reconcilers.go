@@ -66,8 +66,8 @@ func (m *multiclusterTrafficPolicyReconcileLoop) AddMulticlusterTrafficPolicyRec
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterTrafficPolicyReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterTrafficPolicyReconcileLoop {
-	return &multiclusterTrafficPolicyReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_smh_solo_io_v1alpha2.TrafficPolicy{})}
+func NewMulticlusterTrafficPolicyReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterTrafficPolicyReconcileLoop {
+	return &multiclusterTrafficPolicyReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_smh_solo_io_v1alpha2.TrafficPolicy{}, options)}
 }
 
 type genericTrafficPolicyMulticlusterReconciler struct {
@@ -137,8 +137,8 @@ func (m *multiclusterAccessPolicyReconcileLoop) AddMulticlusterAccessPolicyRecon
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterAccessPolicyReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterAccessPolicyReconcileLoop {
-	return &multiclusterAccessPolicyReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_smh_solo_io_v1alpha2.AccessPolicy{})}
+func NewMulticlusterAccessPolicyReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterAccessPolicyReconcileLoop {
+	return &multiclusterAccessPolicyReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_smh_solo_io_v1alpha2.AccessPolicy{}, options)}
 }
 
 type genericAccessPolicyMulticlusterReconciler struct {
@@ -208,8 +208,8 @@ func (m *multiclusterVirtualMeshReconcileLoop) AddMulticlusterVirtualMeshReconci
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterVirtualMeshReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterVirtualMeshReconcileLoop {
-	return &multiclusterVirtualMeshReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_smh_solo_io_v1alpha2.VirtualMesh{})}
+func NewMulticlusterVirtualMeshReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterVirtualMeshReconcileLoop {
+	return &multiclusterVirtualMeshReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_smh_solo_io_v1alpha2.VirtualMesh{}, options)}
 }
 
 type genericVirtualMeshMulticlusterReconciler struct {
@@ -279,8 +279,8 @@ func (m *multiclusterFailoverServiceReconcileLoop) AddMulticlusterFailoverServic
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterFailoverServiceReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterFailoverServiceReconcileLoop {
-	return &multiclusterFailoverServiceReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_smh_solo_io_v1alpha2.FailoverService{})}
+func NewMulticlusterFailoverServiceReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterFailoverServiceReconcileLoop {
+	return &multiclusterFailoverServiceReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_smh_solo_io_v1alpha2.FailoverService{}, options)}
 }
 
 type genericFailoverServiceMulticlusterReconciler struct {

@@ -1166,8 +1166,8 @@ github.com/solo-io/protoc-gen-ext v0.0.7/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz
 github.com/solo-io/protoc-gen-ext v0.0.9 h1:dU9C8nSLNkjqLXd5QGJ2dvBcrNUvNUP92qlxMfe3t7A=
 github.com/solo-io/protoc-gen-ext v0.0.9/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz4Cbw6tBcmaNsEk=
 github.com/solo-io/skv2 v0.10.0/go.mod h1:L9hUWAtZ9brCtRCM/bBBJTKy3kKuCn/tuap7VAypwzA=
-github.com/solo-io/skv2 v0.11.2-0.20200911161902-08d53f023ad1 h1:TKCZfL2Gjp6RVTaSbj7t1EovGCSThEdgrJs4COyOaSA=
-github.com/solo-io/skv2 v0.11.2-0.20200911161902-08d53f023ad1/go.mod h1:/q2fsiBLPngFCbPq/NSh6+r432A1RYEmlzO5pvVRAAY=
+github.com/solo-io/skv2 v0.12.4-0.20200929154641-e6549f8a3ac7 h1:TnIa2IRnYHieI+4EUD5+3r4FfNH3D44DGGXMqOCOyHA=
+github.com/solo-io/skv2 v0.12.4-0.20200929154641-e6549f8a3ac7/go.mod h1:a5lWPMUEQl2+OIalLgEXmhIPGqhTAHLHlCt4Wv/DUHc=
 github.com/solo-io/solo-kit v0.14.0 h1:5V5B93Vkt46KEQsco8S4GA3/U8ir2rpsPFJ2Dmk9Iwk=
 github.com/solo-io/solo-kit v0.14.0/go.mod h1:arV9Cw3lQHmW2XqXR6yHcp9CHVCUQdwTEFAnMMKbHyQ=
 github.com/sonatard/noctx v0.0.1 h1:VC1Qhl6Oxx9vvWo3UDgrGXYCeKCe3Wbw7qAWL6FrmTY=

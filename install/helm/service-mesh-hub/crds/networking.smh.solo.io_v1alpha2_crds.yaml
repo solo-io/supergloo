@@ -413,7 +413,7 @@ spec:
                        applied to pods in a Linkerd mesh. TrafficPolicies will apply to
                        all selected destinations in Linkerd, regardless of the source.
 
-                       Note: If using the ServiceSelector.Matcher, specifying clusters is currently not supported in Istio.
+                       Note: If using the TrafficTargetSelector.Matcher, specifying clusters is currently not supported in Istio.
               items:
                 properties:
                   labels:

@@ -23,8 +23,8 @@ func LocalTrafficShiftPolicy(
 		},
 		Spec: v1alpha2.TrafficPolicySpec{
 			SourceSelector: nil,
-			DestinationSelector: []*v1alpha2.ServiceSelector{{
-				KubeServiceRefs: &v1alpha2.ServiceSelector_KubeServiceRefs{
+			DestinationSelector: []*v1alpha2.TrafficTargetSelector{{
+				KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
 					Services: []*v1.ClusterObjectRef{destinationService},
 				},
 			}},
@@ -63,8 +63,8 @@ func RemoteTrafficShiftPolicy(
 		},
 		Spec: v1alpha2.TrafficPolicySpec{
 			SourceSelector: nil,
-			DestinationSelector: []*v1alpha2.ServiceSelector{{
-				KubeServiceRefs: &v1alpha2.ServiceSelector_KubeServiceRefs{
+			DestinationSelector: []*v1alpha2.TrafficTargetSelector{{
+				KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
 					Services: []*v1.ClusterObjectRef{destinationService},
 				},
 			}},
