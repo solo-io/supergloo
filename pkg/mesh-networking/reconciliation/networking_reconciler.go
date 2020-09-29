@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
 	"github.com/solo-io/skv2/pkg/predicate"
+	"github.com/solo-io/skv2/pkg/reconcile"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
@@ -18,7 +20,6 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
@@ -67,7 +68,8 @@ func Start(
 		Filter: predicate.SimpleEventFilterFunc(isIgnoredSecret),
 	}
 
-	return input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2, filterNetworkingEvents)
+	_, err := input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2, reconcile.Options{}, filterNetworkingEvents)
+	return err
 }
 
 // reconcile global state
@@ -79,7 +81,9 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	ctx := contextutils.WithLogger(r.ctx, fmt.Sprintf("reconcile-%v", r.totalReconciles))
 	inputSnap, err := r.builder.BuildSnapshot(ctx, "mesh-networking", input.BuildOptions{
 		// only look at kube clusters in our own namespace
-		KubernetesClusters: []client.ListOption{client.InNamespace(defaults.GetPodNamespace())},
+		KubernetesClusters: input.ResourceBuildOptions{
+			ListOptions: []client.ListOption{client.InNamespace(defaults.GetPodNamespace())},
+		},
 	})
 	if err != nil {
 		// failed to read from cache; should never happen
