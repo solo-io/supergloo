@@ -82,6 +82,8 @@ Mesh object representing AWS AppMesh.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | awsName | [string](#string) |  | AWS name for the AppMesh instance, must be unique across the AWS account. |
+| region | [string](#string) |  | The AWS region the AWS App Mesh control plane resources exist in. |
+| awsAccountId | [string](#string) |  | The AWS Account ID associated with the Mesh. Populated at REST API registration time. |
 | arn | [string](#string) |  | The Amazon Resource Name uniquely identifying the mesh. |
 | clusters | [][string](#string) | repeated | The k8s clusters on which sidecars for this AppMesh instance have been discovered. |
 
