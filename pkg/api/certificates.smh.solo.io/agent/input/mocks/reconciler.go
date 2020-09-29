@@ -66,6 +66,21 @@ func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileCertificateRequest(cl
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileCertificateRequest", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileCertificateRequest), clusterName, obj)
 }
 
+// ReconcilePodBounceDirective mocks base method
+func (m *MockmultiClusterReconciler) ReconcilePodBounceDirective(clusterName string, obj *v1alpha2.PodBounceDirective) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcilePodBounceDirective", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcilePodBounceDirective indicates an expected call of ReconcilePodBounceDirective
+func (mr *MockmultiClusterReconcilerMockRecorder) ReconcilePodBounceDirective(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcilePodBounceDirective", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcilePodBounceDirective), clusterName, obj)
+}
+
 // ReconcileSecret mocks base method
 func (m *MockmultiClusterReconciler) ReconcileSecret(clusterName string, obj *v1.Secret) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
@@ -147,6 +162,21 @@ func (m *MocksingleClusterReconciler) ReconcileCertificateRequest(obj *v1alpha2.
 func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileCertificateRequest(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileCertificateRequest", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileCertificateRequest), obj)
+}
+
+// ReconcilePodBounceDirective mocks base method
+func (m *MocksingleClusterReconciler) ReconcilePodBounceDirective(obj *v1alpha2.PodBounceDirective) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcilePodBounceDirective", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcilePodBounceDirective indicates an expected call of ReconcilePodBounceDirective
+func (mr *MocksingleClusterReconcilerMockRecorder) ReconcilePodBounceDirective(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcilePodBounceDirective", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcilePodBounceDirective), obj)
 }
 
 // ReconcileSecret mocks base method

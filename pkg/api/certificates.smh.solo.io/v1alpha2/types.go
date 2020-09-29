@@ -53,7 +53,30 @@ type CertificateRequestList struct {
 	Items           []CertificateRequest `json:"items"`
 }
 
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+// +genclient:noStatus
+
+// PodBounceDirective is the Schema for the podBounceDirective API
+type PodBounceDirective struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec PodBounceDirectiveSpec `json:"spec,omitempty"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// PodBounceDirectiveList contains a list of PodBounceDirective
+type PodBounceDirectiveList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []PodBounceDirective `json:"items"`
+}
+
 func init() {
 	SchemeBuilder.Register(&IssuedCertificate{}, &IssuedCertificateList{})
 	SchemeBuilder.Register(&CertificateRequest{}, &CertificateRequestList{})
+	SchemeBuilder.Register(&PodBounceDirective{}, &PodBounceDirectiveList{})
 }

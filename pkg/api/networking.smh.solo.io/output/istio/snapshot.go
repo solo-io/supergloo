@@ -40,6 +40,8 @@ type Snapshot interface {
 
 	// return the set of IssuedCertificates with a given set of labels
 	IssuedCertificates() []LabeledIssuedCertificateSet
+	// return the set of PodBounceDirectives with a given set of labels
+	PodBounceDirectives() []LabeledPodBounceDirectiveSet
 	// return the set of DestinationRules with a given set of labels
 	DestinationRules() []LabeledDestinationRuleSet
 	// return the set of EnvoyFilters with a given set of labels
@@ -67,6 +69,7 @@ type snapshot struct {
 	name string
 
 	issuedCertificates    []LabeledIssuedCertificateSet
+	podBounceDirectives   []LabeledPodBounceDirectiveSet
 	destinationRules      []LabeledDestinationRuleSet
 	envoyFilters          []LabeledEnvoyFilterSet
 	gateways              []LabeledGatewaySet
@@ -80,6 +83,7 @@ func NewSnapshot(
 	name string,
 
 	issuedCertificates []LabeledIssuedCertificateSet,
+	podBounceDirectives []LabeledPodBounceDirectiveSet,
 	destinationRules []LabeledDestinationRuleSet,
 	envoyFilters []LabeledEnvoyFilterSet,
 	gateways []LabeledGatewaySet,
@@ -92,6 +96,7 @@ func NewSnapshot(
 		name: name,
 
 		issuedCertificates:    issuedCertificates,
+		podBounceDirectives:   podBounceDirectives,
 		destinationRules:      destinationRules,
 		envoyFilters:          envoyFilters,
 		gateways:              gateways,
@@ -109,6 +114,7 @@ func NewLabelPartitionedSnapshot(
 	labelKey string, // the key by which to partition the resources
 
 	issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet,
+	podBounceDirectives certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
 
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
 	envoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
@@ -121,6 +127,10 @@ func NewLabelPartitionedSnapshot(
 ) (Snapshot, error) {
 
 	partitionedIssuedCertificates, err := partitionIssuedCertificatesByLabel(labelKey, issuedCertificates)
+	if err != nil {
+		return nil, err
+	}
+	partitionedPodBounceDirectives, err := partitionPodBounceDirectivesByLabel(labelKey, podBounceDirectives)
 	if err != nil {
 		return nil, err
 	}
@@ -153,6 +163,7 @@ func NewLabelPartitionedSnapshot(
 		name,
 
 		partitionedIssuedCertificates,
+		partitionedPodBounceDirectives,
 		partitionedDestinationRules,
 		partitionedEnvoyFilters,
 		partitionedGateways,
@@ -170,6 +181,7 @@ func NewSinglePartitionedSnapshot(
 	snapshotLabels map[string]string, // a single set of labels shared by all resources
 
 	issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet,
+	podBounceDirectives certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
 
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
 	envoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
@@ -182,6 +194,10 @@ func NewSinglePartitionedSnapshot(
 ) (Snapshot, error) {
 
 	labeledIssuedCertificates, err := NewLabeledIssuedCertificateSet(issuedCertificates, snapshotLabels)
+	if err != nil {
+		return nil, err
+	}
+	labeledPodBounceDirectives, err := NewLabeledPodBounceDirectiveSet(podBounceDirectives, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
@@ -214,6 +230,7 @@ func NewSinglePartitionedSnapshot(
 		name,
 
 		[]LabeledIssuedCertificateSet{labeledIssuedCertificates},
+		[]LabeledPodBounceDirectiveSet{labeledPodBounceDirectives},
 		[]LabeledDestinationRuleSet{labeledDestinationRules},
 		[]LabeledEnvoyFilterSet{labeledEnvoyFilters},
 		[]LabeledGatewaySet{labeledGateways},
@@ -229,6 +246,9 @@ func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, err
 	var genericLists []output.ResourceList
 
 	for _, outputSet := range s.issuedCertificates {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.podBounceDirectives {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.destinationRules {
@@ -261,6 +281,9 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 	var genericLists []output.ResourceList
 
 	for _, outputSet := range s.issuedCertificates {
+		genericLists = append(genericLists, outputSet.Generic())
+	}
+	for _, outputSet := range s.podBounceDirectives {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.destinationRules {
@@ -331,6 +354,50 @@ func partitionIssuedCertificatesByLabel(labelKey string, set certificates_smh_so
 	})
 
 	return partitionedIssuedCertificates, nil
+}
+
+func partitionPodBounceDirectivesByLabel(labelKey string, set certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet) ([]LabeledPodBounceDirectiveSet, error) {
+	setsByLabel := map[string]certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet{}
+
+	for _, obj := range set.List() {
+		if obj.Labels == nil {
+			return nil, MissingRequiredLabelError(labelKey, "PodBounceDirective", obj)
+		}
+		labelValue := obj.Labels[labelKey]
+		if labelValue == "" {
+			return nil, MissingRequiredLabelError(labelKey, "PodBounceDirective", obj)
+		}
+
+		setForValue, ok := setsByLabel[labelValue]
+		if !ok {
+			setForValue = certificates_smh_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+			setsByLabel[labelValue] = setForValue
+		}
+		setForValue.Insert(obj)
+	}
+
+	// partition by label key
+	var partitionedPodBounceDirectives []LabeledPodBounceDirectiveSet
+
+	for labelValue, setForValue := range setsByLabel {
+		labels := map[string]string{labelKey: labelValue}
+
+		partitionedSet, err := NewLabeledPodBounceDirectiveSet(setForValue, labels)
+		if err != nil {
+			return nil, err
+		}
+
+		partitionedPodBounceDirectives = append(partitionedPodBounceDirectives, partitionedSet)
+	}
+
+	// sort for idempotency
+	sort.SliceStable(partitionedPodBounceDirectives, func(i, j int) bool {
+		leftLabelValue := partitionedPodBounceDirectives[i].Labels()[labelKey]
+		rightLabelValue := partitionedPodBounceDirectives[j].Labels()[labelKey]
+		return leftLabelValue < rightLabelValue
+	})
+
+	return partitionedPodBounceDirectives, nil
 }
 
 func partitionDestinationRulesByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.DestinationRuleSet) ([]LabeledDestinationRuleSet, error) {
@@ -601,6 +668,10 @@ func (s snapshot) IssuedCertificates() []LabeledIssuedCertificateSet {
 	return s.issuedCertificates
 }
 
+func (s snapshot) PodBounceDirectives() []LabeledPodBounceDirectiveSet {
+	return s.podBounceDirectives
+}
+
 func (s snapshot) DestinationRules() []LabeledDestinationRuleSet {
 	return s.destinationRules
 }
@@ -633,6 +704,11 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 		issuedCertificateSet = issuedCertificateSet.Union(set.Set())
 	}
 	snapshotMap["issuedCertificates"] = issuedCertificateSet.List()
+	podBounceDirectiveSet := certificates_smh_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+	for _, set := range s.podBounceDirectives {
+		podBounceDirectiveSet = podBounceDirectiveSet.Union(set.Set())
+	}
+	snapshotMap["podBounceDirectives"] = podBounceDirectiveSet.List()
 
 	destinationRuleSet := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
 	for _, set := range s.destinationRules {
@@ -736,6 +812,74 @@ func (l labeledIssuedCertificateSet) Generic() output.ResourceList {
 		Resources:    desiredResources,
 		ListFunc:     listFunc,
 		ResourceKind: "IssuedCertificate",
+	}
+}
+
+// LabeledPodBounceDirectiveSet represents a set of podBounceDirectives
+// which share a common set of labels.
+// These labels are used to find diffs between PodBounceDirectiveSets.
+type LabeledPodBounceDirectiveSet interface {
+	// returns the set of Labels shared by this PodBounceDirectiveSet
+	Labels() map[string]string
+
+	// returns the set of PodBounceDirectivees with the given labels
+	Set() certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+
+	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
+	Generic() output.ResourceList
+}
+
+type labeledPodBounceDirectiveSet struct {
+	set    certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+	labels map[string]string
+}
+
+func NewLabeledPodBounceDirectiveSet(set certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet, labels map[string]string) (LabeledPodBounceDirectiveSet, error) {
+	// validate that each PodBounceDirective contains the labels, else this is not a valid LabeledPodBounceDirectiveSet
+	for _, item := range set.List() {
+		for k, v := range labels {
+			// k=v must be present in the item
+			if item.Labels[k] != v {
+				return nil, eris.Errorf("internal error: %v=%v missing on PodBounceDirective %v", k, v, item.Name)
+			}
+		}
+	}
+
+	return &labeledPodBounceDirectiveSet{set: set, labels: labels}, nil
+}
+
+func (l *labeledPodBounceDirectiveSet) Labels() map[string]string {
+	return l.labels
+}
+
+func (l *labeledPodBounceDirectiveSet) Set() certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet {
+	return l.set
+}
+
+func (l labeledPodBounceDirectiveSet) Generic() output.ResourceList {
+	var desiredResources []ezkube.Object
+	for _, desired := range l.set.List() {
+		desiredResources = append(desiredResources, desired)
+	}
+
+	// enable list func for garbage collection
+	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
+		var list certificates_smh_solo_io_v1alpha2.PodBounceDirectiveList
+		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
+			return nil, err
+		}
+		var items []ezkube.Object
+		for _, item := range list.Items {
+			item := item // pike
+			items = append(items, &item)
+		}
+		return items, nil
+	}
+
+	return output.ResourceList{
+		Resources:    desiredResources,
+		ListFunc:     listFunc,
+		ResourceKind: "PodBounceDirective",
 	}
 }
 
@@ -1152,7 +1296,8 @@ type builder struct {
 	name     string
 	clusters []string
 
-	issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet
+	issuedCertificates  certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet
+	podBounceDirectives certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet
 	envoyFilters     networking_istio_io_v1alpha3_sets.EnvoyFilterSet
@@ -1168,7 +1313,8 @@ func NewBuilder(ctx context.Context, name string) *builder {
 		ctx:  ctx,
 		name: name,
 
-		issuedCertificates: certificates_smh_solo_io_v1alpha2_sets.NewIssuedCertificateSet(),
+		issuedCertificates:  certificates_smh_solo_io_v1alpha2_sets.NewIssuedCertificateSet(),
+		podBounceDirectives: certificates_smh_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet(),
 
 		destinationRules: networking_istio_io_v1alpha3_sets.NewDestinationRuleSet(),
 		envoyFilters:     networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet(),
@@ -1189,6 +1335,12 @@ type Builder interface {
 
 	// get the collected IssuedCertificates
 	GetIssuedCertificates() certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet
+
+	// add PodBounceDirectives to the collected outputs
+	AddPodBounceDirectives(podBounceDirectives ...*certificates_smh_solo_io_v1alpha2.PodBounceDirective)
+
+	// get the collected PodBounceDirectives
+	GetPodBounceDirectives() certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 
 	// add DestinationRules to the collected outputs
 	AddDestinationRules(destinationRules ...*networking_istio_io_v1alpha3.DestinationRule)
@@ -1244,6 +1396,15 @@ func (b *builder) AddIssuedCertificates(issuedCertificates ...*certificates_smh_
 		}
 		contextutils.LoggerFrom(b.ctx).Debugf("added output IssuedCertificate %v", sets.Key(obj))
 		b.issuedCertificates.Insert(obj)
+	}
+}
+func (b *builder) AddPodBounceDirectives(podBounceDirectives ...*certificates_smh_solo_io_v1alpha2.PodBounceDirective) {
+	for _, obj := range podBounceDirectives {
+		if obj == nil {
+			continue
+		}
+		contextutils.LoggerFrom(b.ctx).Debugf("added output PodBounceDirective %v", sets.Key(obj))
+		b.podBounceDirectives.Insert(obj)
 	}
 }
 func (b *builder) AddDestinationRules(destinationRules ...*networking_istio_io_v1alpha3.DestinationRule) {
@@ -1304,6 +1465,9 @@ func (b *builder) AddAuthorizationPolicies(authorizationPolicies ...*security_is
 func (b *builder) GetIssuedCertificates() certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet {
 	return b.issuedCertificates
 }
+func (b *builder) GetPodBounceDirectives() certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet {
+	return b.podBounceDirectives
+}
 
 func (b *builder) GetDestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet {
 	return b.destinationRules
@@ -1331,6 +1495,7 @@ func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
 		labelKey,
 
 		b.issuedCertificates,
+		b.podBounceDirectives,
 
 		b.destinationRules,
 		b.envoyFilters,
@@ -1349,6 +1514,7 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 		snapshotLabels,
 
 		b.issuedCertificates,
+		b.podBounceDirectives,
 
 		b.destinationRules,
 		b.envoyFilters,

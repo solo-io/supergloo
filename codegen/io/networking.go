@@ -57,6 +57,7 @@ var (
 				Version: "v1alpha2",
 			}: {
 				"IssuedCertificate",
+				"PodBounceDirective",
 			},
 		},
 	}

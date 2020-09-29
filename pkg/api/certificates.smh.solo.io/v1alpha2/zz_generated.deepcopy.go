@@ -129,3 +129,62 @@ func (in *CertificateRequestList) DeepCopyObject() runtime.Object {
 	}
 	return nil
 }
+
+// Generated Deepcopy methods for PodBounceDirective
+
+func (in *PodBounceDirective) DeepCopyInto(out *PodBounceDirective) {
+	*out = *in
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+
+	// deepcopy spec
+	in.Spec.DeepCopyInto(&out.Spec)
+
+	return
+}
+
+func (in *PodBounceDirective) DeepCopy() *PodBounceDirective {
+	if in == nil {
+		return nil
+	}
+	out := new(PodBounceDirective)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *PodBounceDirective) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
+}
+
+func (in *PodBounceDirectiveList) DeepCopyInto(out *PodBounceDirectiveList) {
+	*out = *in
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]PodBounceDirective, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	return
+}
+
+func (in *PodBounceDirectiveList) DeepCopy() *PodBounceDirectiveList {
+	if in == nil {
+		return nil
+	}
+	out := new(PodBounceDirectiveList)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *PodBounceDirectiveList) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
+}

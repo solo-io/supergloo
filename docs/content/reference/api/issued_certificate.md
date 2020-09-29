@@ -17,8 +17,6 @@ title: "issued_certificate.proto"
 
 ## Table of Contents
   - [IssuedCertificateSpec](#certificates.smh.solo.io.IssuedCertificateSpec)
-  - [IssuedCertificateSpec.PodSelector](#certificates.smh.solo.io.IssuedCertificateSpec.PodSelector)
-  - [IssuedCertificateSpec.PodSelector.LabelsEntry](#certificates.smh.solo.io.IssuedCertificateSpec.PodSelector.LabelsEntry)
   - [IssuedCertificateStatus](#certificates.smh.solo.io.IssuedCertificateStatus)
 
   - [IssuedCertificateStatus.State](#certificates.smh.solo.io.IssuedCertificateStatus.State)
@@ -40,39 +38,7 @@ IssuedCertificates are used to issue SSL certificates to remote Kubernetes clust
 | org | [string](#string) |  | The organization for this certificate. |
 | signingCertificateSecret | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the Certificate Issuer's cluster). |
 | issuedCertificateSecret | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Certificate Agent's cluster). |
-| podsToBounce | [][IssuedCertificateSpec.PodSelector](#certificates.smh.solo.io.IssuedCertificateSpec.PodSelector) | repeated | A list of k8s pods to bounce (delete and cause a restart) when the certificate is issued. This will include the control plane pods as well as any pods which share a data plane with the target mesh. |
-
-
-
-
-
-
-<a name="certificates.smh.solo.io.IssuedCertificateSpec.PodSelector"></a>
-
-### IssuedCertificateSpec.PodSelector
-Pods that will be restarted.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| namespace | [string](#string) |  | The namespace in which the pods live. |
-| labels | [][IssuedCertificateSpec.PodSelector.LabelsEntry](#certificates.smh.solo.io.IssuedCertificateSpec.PodSelector.LabelsEntry) | repeated | Any labels shared by the pods. |
-
-
-
-
-
-
-<a name="certificates.smh.solo.io.IssuedCertificateSpec.PodSelector.LabelsEntry"></a>
-
-### IssuedCertificateSpec.PodSelector.LabelsEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | [string](#string) |  |  |
-| value | [string](#string) |  |  |
+| podBounceDirective | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | A ref to a PodBounceDirective specifying a list of k8s pods to bounce (delete and cause a restart) when the certificate is issued. This will include the control plane pods as well as any pods which share a data plane with the target mesh. |
 
 
 

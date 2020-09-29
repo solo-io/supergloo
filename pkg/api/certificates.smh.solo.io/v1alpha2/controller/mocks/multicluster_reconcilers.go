@@ -244,3 +244,118 @@ func (mr *MockMulticlusterCertificateRequestReconcileLoopMockRecorder) AddMultic
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterCertificateRequestReconciler", reflect.TypeOf((*MockMulticlusterCertificateRequestReconcileLoop)(nil).AddMulticlusterCertificateRequestReconciler), varargs...)
 }
+
+// MockMulticlusterPodBounceDirectiveReconciler is a mock of MulticlusterPodBounceDirectiveReconciler interface
+type MockMulticlusterPodBounceDirectiveReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterPodBounceDirectiveReconcilerMockRecorder
+}
+
+// MockMulticlusterPodBounceDirectiveReconcilerMockRecorder is the mock recorder for MockMulticlusterPodBounceDirectiveReconciler
+type MockMulticlusterPodBounceDirectiveReconcilerMockRecorder struct {
+	mock *MockMulticlusterPodBounceDirectiveReconciler
+}
+
+// NewMockMulticlusterPodBounceDirectiveReconciler creates a new mock instance
+func NewMockMulticlusterPodBounceDirectiveReconciler(ctrl *gomock.Controller) *MockMulticlusterPodBounceDirectiveReconciler {
+	mock := &MockMulticlusterPodBounceDirectiveReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterPodBounceDirectiveReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockMulticlusterPodBounceDirectiveReconciler) EXPECT() *MockMulticlusterPodBounceDirectiveReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcilePodBounceDirective mocks base method
+func (m *MockMulticlusterPodBounceDirectiveReconciler) ReconcilePodBounceDirective(clusterName string, obj *v1alpha2.PodBounceDirective) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcilePodBounceDirective", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcilePodBounceDirective indicates an expected call of ReconcilePodBounceDirective
+func (mr *MockMulticlusterPodBounceDirectiveReconcilerMockRecorder) ReconcilePodBounceDirective(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcilePodBounceDirective", reflect.TypeOf((*MockMulticlusterPodBounceDirectiveReconciler)(nil).ReconcilePodBounceDirective), clusterName, obj)
+}
+
+// MockMulticlusterPodBounceDirectiveDeletionReconciler is a mock of MulticlusterPodBounceDirectiveDeletionReconciler interface
+type MockMulticlusterPodBounceDirectiveDeletionReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterPodBounceDirectiveDeletionReconcilerMockRecorder
+}
+
+// MockMulticlusterPodBounceDirectiveDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterPodBounceDirectiveDeletionReconciler
+type MockMulticlusterPodBounceDirectiveDeletionReconcilerMockRecorder struct {
+	mock *MockMulticlusterPodBounceDirectiveDeletionReconciler
+}
+
+// NewMockMulticlusterPodBounceDirectiveDeletionReconciler creates a new mock instance
+func NewMockMulticlusterPodBounceDirectiveDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterPodBounceDirectiveDeletionReconciler {
+	mock := &MockMulticlusterPodBounceDirectiveDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterPodBounceDirectiveDeletionReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockMulticlusterPodBounceDirectiveDeletionReconciler) EXPECT() *MockMulticlusterPodBounceDirectiveDeletionReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcilePodBounceDirectiveDeletion mocks base method
+func (m *MockMulticlusterPodBounceDirectiveDeletionReconciler) ReconcilePodBounceDirectiveDeletion(clusterName string, req reconcile.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcilePodBounceDirectiveDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcilePodBounceDirectiveDeletion indicates an expected call of ReconcilePodBounceDirectiveDeletion
+func (mr *MockMulticlusterPodBounceDirectiveDeletionReconcilerMockRecorder) ReconcilePodBounceDirectiveDeletion(clusterName, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcilePodBounceDirectiveDeletion", reflect.TypeOf((*MockMulticlusterPodBounceDirectiveDeletionReconciler)(nil).ReconcilePodBounceDirectiveDeletion), clusterName, req)
+}
+
+// MockMulticlusterPodBounceDirectiveReconcileLoop is a mock of MulticlusterPodBounceDirectiveReconcileLoop interface
+type MockMulticlusterPodBounceDirectiveReconcileLoop struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterPodBounceDirectiveReconcileLoopMockRecorder
+}
+
+// MockMulticlusterPodBounceDirectiveReconcileLoopMockRecorder is the mock recorder for MockMulticlusterPodBounceDirectiveReconcileLoop
+type MockMulticlusterPodBounceDirectiveReconcileLoopMockRecorder struct {
+	mock *MockMulticlusterPodBounceDirectiveReconcileLoop
+}
+
+// NewMockMulticlusterPodBounceDirectiveReconcileLoop creates a new mock instance
+func NewMockMulticlusterPodBounceDirectiveReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterPodBounceDirectiveReconcileLoop {
+	mock := &MockMulticlusterPodBounceDirectiveReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterPodBounceDirectiveReconcileLoopMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockMulticlusterPodBounceDirectiveReconcileLoop) EXPECT() *MockMulticlusterPodBounceDirectiveReconcileLoopMockRecorder {
+	return m.recorder
+}
+
+// AddMulticlusterPodBounceDirectiveReconciler mocks base method
+func (m *MockMulticlusterPodBounceDirectiveReconcileLoop) AddMulticlusterPodBounceDirectiveReconciler(ctx context.Context, rec controller.MulticlusterPodBounceDirectiveReconciler, predicates ...predicate.Predicate) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, rec}
+	for _, a := range predicates {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "AddMulticlusterPodBounceDirectiveReconciler", varargs...)
+}
+
+// AddMulticlusterPodBounceDirectiveReconciler indicates an expected call of AddMulticlusterPodBounceDirectiveReconciler
+func (mr *MockMulticlusterPodBounceDirectiveReconcileLoopMockRecorder) AddMulticlusterPodBounceDirectiveReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, rec}, predicates...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterPodBounceDirectiveReconciler", reflect.TypeOf((*MockMulticlusterPodBounceDirectiveReconcileLoop)(nil).AddMulticlusterPodBounceDirectiveReconciler), varargs...)
+}

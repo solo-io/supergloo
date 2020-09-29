@@ -1,0 +1,33 @@
+syntax = "proto3";
+package certificates.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2";
+
+import "skv2/api/core/v1/core.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+/*
+    When certificates are issued, pods may need to be bounced (restarted) to ensure they pick up the
+    new certificates. If so, the certificate Issuer will create a PodBounceDirective containing the namespaces and labels
+    of the pods that need to be bounced in order to pick up the new certs.
+*/
+message PodBounceDirectiveSpec {
+
+    // A list of k8s pods to bounce (delete and cause a restart)
+    // when the certificate is issued.
+    // This will include the control plane pods as well as any pods
+    // which share a data plane with the target mesh.
+    repeated PodSelector pods_to_bounce = 6;
+
+    // Pods that will be restarted.
+    message PodSelector {
+        // The namespace in which the pods live.
+        string namespace = 1;
+
+        // Any labels shared by the pods.
+        map<string, string> labels = 2;
+    }
+}
