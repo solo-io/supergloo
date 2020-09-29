@@ -69,6 +69,6 @@ message WorkloadStatus {
     // The observed generation of the Workload.
     // When this matches the Workload's metadata.generation it indicates that mesh-networking
     // has reconciled the latest version of the Workload.
-    uint32 observed_generation = 1;
+    int64 observed_generation = 1;
 
 }

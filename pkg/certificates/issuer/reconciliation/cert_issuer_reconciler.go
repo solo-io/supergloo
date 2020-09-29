@@ -62,12 +62,12 @@ func (r *certIssuerReconciler) reconcile(_ ezkube.ClusterResourceId) (bool, erro
 
 func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v1alpha2.CertificateRequest, issuedCertificates v1alpha2sets.IssuedCertificateSet) error {
 	// if observed generation is out of sync, treat the issued certificate as Pending (spec has been modified)
-	if int64(certificateRequest.Status.ObservedGeneration) != certificateRequest.Generation {
+	if certificateRequest.Status.ObservedGeneration != certificateRequest.Generation {
 		certificateRequest.Status.State = v1alpha2.CertificateRequestStatus_PENDING
 	}
 
 	// reset & update status
-	certificateRequest.Status.ObservedGeneration = uint32(certificateRequest.Generation)
+	certificateRequest.Status.ObservedGeneration = certificateRequest.Generation
 	certificateRequest.Status.Error = ""
 
 	switch certificateRequest.Status.State {
@@ -111,7 +111,7 @@ func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v
 	}
 
 	certificateRequest.Status = v1alpha2.CertificateRequestStatus{
-		ObservedGeneration: uint32(certificateRequest.Generation),
+		ObservedGeneration: certificateRequest.Generation,
 		State:              v1alpha2.CertificateRequestStatus_FINISHED,
 		SignedCertificate:  signedCert,
 		SigningRootCa:      signingCA.RootCert,

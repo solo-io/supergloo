@@ -157,7 +157,7 @@ Subsets for routing, based on labels.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| observedGeneration | [uint32](#uint32) |  | The most recent generation observed in the the TrafficPolicy metadata. if the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
+| observedGeneration | [int64](#int64) |  | The most recent generation observed in the the TrafficPolicy metadata. if the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
 | appliedTrafficPolicies | [][TrafficTargetStatus.AppliedTrafficPolicy](#discovery.smh.solo.io.TrafficTargetStatus.AppliedTrafficPolicy) | repeated | The set of Traffic Policies that have been applied to this TrafficTarget |
 | appliedAccessPolicies | [][TrafficTargetStatus.AppliedAccessPolicy](#discovery.smh.solo.io.TrafficTargetStatus.AppliedAccessPolicy) | repeated | The set of Access Policies that have been applied to this TrafficTarget |
 
@@ -175,7 +175,7 @@ AppliedAccessPolicy represents a access policy that has been applied to the Traf
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | ref | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | reference to the access policy |
-| observedGeneration | [uint32](#uint32) |  | the observed generation of the accepted access policy |
+| observedGeneration | [int64](#int64) |  | the observed generation of the accepted access policy |
 | spec | [networking.smh.solo.io.AccessPolicySpec](#networking.smh.solo.io.AccessPolicySpec) |  | the last known valid spec of the access policy |
 
 
@@ -208,7 +208,7 @@ AppliedTrafficPolicy represents a traffic policy that has been applied to the Tr
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | ref | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | reference to the traffic policy |
-| observedGeneration | [uint32](#uint32) |  | the observed generation of the accepted traffic policy |
+| observedGeneration | [int64](#int64) |  | the observed generation of the accepted traffic policy |
 | spec | [networking.smh.solo.io.TrafficPolicySpec](#networking.smh.solo.io.TrafficPolicySpec) |  | the last known valid spec of the traffic policy |
 
 

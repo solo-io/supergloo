@@ -99,8 +99,7 @@ spec:
                 The most recent generation observed in the the IssuedCertificate metadata.
                 If the observedGeneration does not match generation, the Certificate Requesting Agent has not processed the most
                 recent version of this IssuedCertificate.
-              maximum: 4294967295
-              minimum: 0
+              format: int64
               type: integer
             state:
               description: The current state of the IssuedCertificate workflow, reported by the agent.
@@ -172,8 +171,7 @@ spec:
                 The most recent generation observed in the the CertificateRequest metadata.
                 If the observedGeneration does not match generation, the CA has not processed the most
                 recent version of this request.
-              maximum: 4294967295
-              minimum: 0
+              format: int64
               type: integer
             signedCertificate:
               description: The signed intermediate certificate issued by the CA.

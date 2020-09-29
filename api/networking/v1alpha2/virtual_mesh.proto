@@ -147,7 +147,7 @@ message VirtualMeshStatus {
     // The most recent generation observed in the the VirtualMesh metadata.
     // If the observedGeneration does not match generation, the controller has not received the most
     // recent version of this resource.
-    uint32 observed_generation = 1;
+    int64 observed_generation = 1;
 
     // The state of the overall resource. It will only show accepted if it has been successfully
     // applied to all target meshes.

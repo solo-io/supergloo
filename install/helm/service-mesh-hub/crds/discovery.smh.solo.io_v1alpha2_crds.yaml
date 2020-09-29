@@ -103,8 +103,7 @@ spec:
                 properties:
                   observedGeneration:
                     description: the observed generation of the accepted access policy
-                    maximum: 4294967295
-                    minimum: 0
+                    format: int64
                     type: integer
                   ref:
                     description: reference to the access policy
@@ -265,8 +264,7 @@ spec:
                 properties:
                   observedGeneration:
                     description: the observed generation of the accepted traffic policy
-                    maximum: 4294967295
-                    minimum: 0
+                    format: int64
                     type: integer
                   ref:
                     description: reference to the traffic policy
@@ -752,8 +750,7 @@ spec:
                 The most recent generation observed in the the TrafficPolicy metadata.
                 if the observedGeneration does not match generation, the controller has not received the most
                 recent version of this resource.
-              maximum: 4294967295
-              minimum: 0
+              format: int64
               type: integer
           type: object
       type: object
@@ -863,8 +860,7 @@ spec:
                 The observed generation of the Workload.
                 When this matches the Workload's metadata.generation it indicates that mesh-networking
                 has reconciled the latest version of the Workload.
-              maximum: 4294967295
-              minimum: 0
+              format: int64
               type: integer
           type: object
       type: object
@@ -1104,8 +1100,7 @@ spec:
                 properties:
                   observedGeneration:
                     description: The observed generation of the accepted FailoverService.
-                    maximum: 4294967295
-                    minimum: 0
+                    format: int64
                     type: integer
                   ref:
                     description: Reference to the FailoverService.
@@ -1186,8 +1181,7 @@ spec:
               properties:
                 observedGeneration:
                   description: The observed generation of the accepted VirtualMesh.
-                  maximum: 4294967295
-                  minimum: 0
+                  format: int64
                   type: integer
                 ref:
                   description: Reference to the VirtualMesh.
@@ -1325,8 +1319,7 @@ spec:
                 The observed generation of the Mesh.
                 When this matches the Mesh's metadata.generation, it indicates that mesh-networking
                 has reconciled the latest version of the Mesh.
-              maximum: 4294967295
-              minimum: 0
+              format: int64
               type: integer
           type: object
       type: object

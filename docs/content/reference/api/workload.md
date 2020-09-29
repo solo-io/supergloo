@@ -119,7 +119,7 @@ Information describing a Kubernetes-based workload (e.g. a Deployment or DaemonS
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| observedGeneration | [uint32](#uint32) |  | The observed generation of the Workload. When this matches the Workload's metadata.generation it indicates that mesh-networking has reconciled the latest version of the Workload. |
+| observedGeneration | [int64](#int64) |  | The observed generation of the Workload. When this matches the Workload's metadata.generation it indicates that mesh-networking has reconciled the latest version of the Workload. |
 
 
 

@@ -246,7 +246,7 @@ https://github.com/openservicemesh/osm
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| observedGeneration | [uint32](#uint32) |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that mesh-networking has reconciled the latest version of the Mesh. |
+| observedGeneration | [int64](#int64) |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that mesh-networking has reconciled the latest version of the Mesh. |
 | appliedVirtualMesh | [MeshStatus.AppliedVirtualMesh](#discovery.smh.solo.io.MeshStatus.AppliedVirtualMesh) |  | The VirtualMesh, if any, which contains this mesh. |
 | appliedFailoverServices | [][MeshStatus.AppliedFailoverService](#discovery.smh.solo.io.MeshStatus.AppliedFailoverService) | repeated | The FailoverServices, if any, which applies to this mesh. |
 
@@ -264,7 +264,7 @@ AppliedFailoverService represents a FailoverService that has been applied to thi
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | ref | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | Reference to the FailoverService. |
-| observedGeneration | [uint32](#uint32) |  | The observed generation of the accepted FailoverService. |
+| observedGeneration | [int64](#int64) |  | The observed generation of the accepted FailoverService. |
 | spec | [networking.smh.solo.io.FailoverServiceSpec](#networking.smh.solo.io.FailoverServiceSpec) |  | The last known valid spec of the FailoverService. |
 
 
@@ -281,7 +281,7 @@ AppliedVirtualMesh represents a VirtualMesh that has been applied to this Mesh. 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | ref | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | Reference to the VirtualMesh. |
-| observedGeneration | [uint32](#uint32) |  | The observed generation of the accepted VirtualMesh. |
+| observedGeneration | [int64](#int64) |  | The observed generation of the accepted VirtualMesh. |
 | spec | [networking.smh.solo.io.VirtualMeshSpec](#networking.smh.solo.io.VirtualMeshSpec) |  | The last known valid spec of the VirtualMesh. |
 
 

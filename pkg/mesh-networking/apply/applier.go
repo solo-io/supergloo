@@ -66,7 +66,7 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 	for _, trafficPolicy := range input.TrafficPolicies().List() {
 		trafficPolicy.Status = networkingv1alpha2.TrafficPolicyStatus{
 			State:              networkingv1alpha2.ApprovalState_ACCEPTED,
-			ObservedGeneration: uint32(trafficPolicy.Generation),
+			ObservedGeneration: trafficPolicy.Generation,
 			TrafficTargets:     map[string]*networkingv1alpha2.ApprovalStatus{},
 		}
 	}
@@ -76,7 +76,7 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 	for _, accessPolicy := range input.AccessPolicies().List() {
 		accessPolicy.Status = networkingv1alpha2.AccessPolicyStatus{
 			State:              networkingv1alpha2.ApprovalState_ACCEPTED,
-			ObservedGeneration: uint32(accessPolicy.Generation),
+			ObservedGeneration: accessPolicy.Generation,
 			TrafficTargets:     map[string]*networkingv1alpha2.ApprovalStatus{},
 		}
 	}
@@ -86,7 +86,7 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 	for _, failoverService := range input.FailoverServices().List() {
 		failoverService.Status = networkingv1alpha2.FailoverServiceStatus{
 			State:              networkingv1alpha2.ApprovalState_ACCEPTED,
-			ObservedGeneration: uint32(failoverService.Generation),
+			ObservedGeneration: failoverService.Generation,
 			Meshes:             map[string]*networkingv1alpha2.ApprovalStatus{},
 		}
 	}
@@ -97,24 +97,24 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 		if virtualMesh.Status.State != networkingv1alpha2.ApprovalState_ACCEPTED {
 			continue
 		}
-		virtualMesh.Status.ObservedGeneration = uint32(virtualMesh.Generation)
+		virtualMesh.Status.ObservedGeneration = virtualMesh.Generation
 		virtualMesh.Status.Meshes = map[string]*networkingv1alpha2.ApprovalStatus{}
 	}
 
 	// update traffictarget, workload, trafficpolicy, and accesspolicy statuses
 	for _, workload := range input.Workloads().List() {
 		// TODO(ilackarms): validate workloads when additional config is introduced
-		workload.Status.ObservedGeneration = uint32(workload.Generation)
+		workload.Status.ObservedGeneration = workload.Generation
 	}
 
 	for _, trafficTarget := range input.TrafficTargets().List() {
-		trafficTarget.Status.ObservedGeneration = uint32(trafficTarget.Generation)
+		trafficTarget.Status.ObservedGeneration = trafficTarget.Generation
 		trafficTarget.Status.AppliedTrafficPolicies = validateAndReturnApprovedTrafficPolicies(ctx, input, reporter, trafficTarget)
 		trafficTarget.Status.AppliedAccessPolicies = validateAndReturnApprovedAccessPolicies(ctx, input, reporter, trafficTarget)
 	}
 
 	for _, mesh := range input.Meshes().List() {
-		mesh.Status.ObservedGeneration = uint32(mesh.Generation)
+		mesh.Status.ObservedGeneration = mesh.Generation
 		mesh.Status.AppliedFailoverServices = validateAndReturnApprovedFailoverServices(ctx, input, reporter, mesh)
 		mesh.Status.AppliedVirtualMesh = validateAndReturnVirtualMesh(ctx, input, reporter, mesh)
 	}
@@ -477,7 +477,7 @@ func getAppliedTrafficPolicies(
 		appliedPolicies = append(appliedPolicies, &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Ref:                ezkube.MakeObjectRef(policy),
 			Spec:               &policy.Spec,
-			ObservedGeneration: uint32(policy.Generation),
+			ObservedGeneration: policy.Generation,
 		})
 	}
 	return appliedPolicies
@@ -491,7 +491,7 @@ func getAppliedTrafficPolicies(
 // Finally, policies which are rejected and modified
 func sortTrafficPoliciesByAcceptedDate(trafficTarget *discoveryv1alpha2.TrafficTarget, trafficPolicies networkingv1alpha2.TrafficPolicySlice) {
 	isUpToDate := func(tp *networkingv1alpha2.TrafficPolicy) bool {
-		return int64(tp.Status.ObservedGeneration) == tp.Generation
+		return tp.Status.ObservedGeneration == tp.Generation
 	}
 
 	sort.SliceStable(trafficPolicies, func(i, j int) bool {
@@ -547,7 +547,7 @@ func getAppliedAccessPolicies(
 		appliedPolicies = append(appliedPolicies, &discoveryv1alpha2.TrafficTargetStatus_AppliedAccessPolicy{
 			Ref:                ezkube.MakeObjectRef(policy),
 			Spec:               &policy.Spec,
-			ObservedGeneration: uint32(policy.Generation),
+			ObservedGeneration: policy.Generation,
 		})
 	}
 
@@ -568,7 +568,7 @@ func getAppliedVirtualMesh(
 				return &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
 					Ref:                ezkube.MakeObjectRef(vMesh),
 					Spec:               &vMesh.Spec,
-					ObservedGeneration: uint32(vMesh.Generation),
+					ObservedGeneration: vMesh.Generation,
 				}
 			}
 		}
@@ -591,7 +591,7 @@ func getAppliedFailoverServices(
 			appliedFailoverServices = append(appliedFailoverServices, &discoveryv1alpha2.MeshStatus_AppliedFailoverService{
 				Ref:                ezkube.MakeObjectRef(failoverService),
 				Spec:               &failoverService.Spec,
-				ObservedGeneration: uint32(failoverService.Generation),
+				ObservedGeneration: failoverService.Generation,
 			})
 		}
 	}
