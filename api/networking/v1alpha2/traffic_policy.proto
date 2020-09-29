@@ -435,6 +435,6 @@ message TrafficPolicyStatus {
     // The list of Workloads to which this policy has been applied.
     repeated string workloads = 4;
 
-    // A list of errors pertaining to the configuration targets of this resource (e.g. referencing a traffic target that does not exist).
-    repeated string config_target_errors = 5;
+    // Any errors found while processing this generation of the resource.
+    repeated string errors = 5;
 }

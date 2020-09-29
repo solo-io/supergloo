@@ -57,7 +57,7 @@ Access control policies apply ALLOW policies to communication in a mesh. Access 
 | state | [ApprovalState](#networking.smh.solo.io.ApprovalState) |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all target meshes. |
 | trafficTargets | [][AccessPolicyStatus.TrafficTargetsEntry](#networking.smh.solo.io.AccessPolicyStatus.TrafficTargetsEntry) | repeated | The status of the AccessPolicy for each TrafficTarget to which it has been applied. An AccessPolicy may be Accepted for some TrafficTargets and rejected for others. |
 | workloads | [][string](#string) | repeated | The list of Workloads to which this policy has been applied. |
-| configTargetErrors | [][string](#string) | repeated | A list of errors pertaining to the configuration targets of this resource (e.g. referencing a traffic target that does not exist). |
+| errors | [][string](#string) | repeated | Any errors found while processing this generation of the resource. |
 
 
 

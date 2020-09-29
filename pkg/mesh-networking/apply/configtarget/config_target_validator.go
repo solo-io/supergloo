@@ -65,7 +65,7 @@ func (c *configTargetValidator) ValidateFailoverServices(failoverServices v1alph
 		}
 		if errStrings != nil {
 			failoverService.Status.State = v1alpha2.ApprovalState_INVALID
-			failoverService.Status.ConfigTargetErrors = errStrings
+			failoverService.Status.Errors = errStrings
 		}
 	}
 }
@@ -80,7 +80,7 @@ func (c *configTargetValidator) ValidateVirtualMeshes(virtualMeshes v1alpha2.Vir
 		}
 		if errStrings != nil {
 			virtualMesh.Status.State = v1alpha2.ApprovalState_INVALID
-			virtualMesh.Status.ConfigTargetErrors = errStrings
+			virtualMesh.Status.Errors = errStrings
 		}
 	}
 	validateOneVirtualMeshPerMesh(virtualMeshes)
@@ -96,7 +96,7 @@ func (c *configTargetValidator) ValidateTrafficPolicies(trafficPolicies v1alpha2
 		}
 		if errStrings != nil {
 			trafficPolicy.Status.State = v1alpha2.ApprovalState_INVALID
-			trafficPolicy.Status.ConfigTargetErrors = errStrings
+			trafficPolicy.Status.Errors = errStrings
 		}
 	}
 }
@@ -113,7 +113,7 @@ func (c *configTargetValidator) ValidateAccessPolicies(accessPolicies v1alpha2.A
 			accessPolicy.Status = v1alpha2.AccessPolicyStatus{
 				ObservedGeneration: accessPolicy.Generation,
 				State:              v1alpha2.ApprovalState_INVALID,
-				ConfigTargetErrors: errStrings,
+				Errors:             errStrings,
 			}
 		}
 	}
@@ -197,7 +197,7 @@ func validateOneVirtualMeshPerMesh(virtualMeshes []*v1alpha2.VirtualMesh) {
 				acceptedIndex++
 			} else {
 				vMesh.Status.State = v1alpha2.ApprovalState_INVALID
-				vMesh.Status.ConfigTargetErrors = []string{
+				vMesh.Status.Errors = []string{
 					fmt.Sprintf("Includes a Mesh (%s.%s) that already is grouped in a VirtualMesh (%s.%s)",
 						mesh.Name, mesh.Namespace,
 						existingVirtualMesh.Name, existingVirtualMesh.Namespace,
