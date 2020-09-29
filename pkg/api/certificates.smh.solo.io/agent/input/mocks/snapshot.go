@@ -67,6 +67,20 @@ func (mr *MockSnapshotMockRecorder) CertificateRequests() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificateRequests", reflect.TypeOf((*MockSnapshot)(nil).CertificateRequests))
 }
 
+// PodBounceDirectives mocks base method
+func (m *MockSnapshot) PodBounceDirectives() v1alpha2sets.PodBounceDirectiveSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PodBounceDirectives")
+	ret0, _ := ret[0].(v1alpha2sets.PodBounceDirectiveSet)
+	return ret0
+}
+
+// PodBounceDirectives indicates an expected call of PodBounceDirectives
+func (mr *MockSnapshotMockRecorder) PodBounceDirectives() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PodBounceDirectives", reflect.TypeOf((*MockSnapshot)(nil).PodBounceDirectives))
+}
+
 // Secrets mocks base method
 func (m *MockSnapshot) Secrets() v1sets.SecretSet {
 	m.ctrl.T.Helper()

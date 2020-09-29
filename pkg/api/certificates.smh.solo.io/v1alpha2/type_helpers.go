@@ -8,3 +8,6 @@ type IssuedCertificateSlice []*IssuedCertificate
 
 // CertificateRequestSlice represents a slice of *CertificateRequest
 type CertificateRequestSlice []*CertificateRequest
+
+// PodBounceDirectiveSlice represents a slice of *PodBounceDirective
+type PodBounceDirectiveSlice []*PodBounceDirective

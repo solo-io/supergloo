@@ -72,3 +72,31 @@ func CertificateRequestClientFromConfigFactoryProvider() CertificateRequestClien
 		return clients.CertificateRequests(), nil
 	}
 }
+
+// Provider for PodBounceDirectiveClient from Clientset
+func PodBounceDirectiveClientFromClientsetProvider(clients certificates_smh_solo_io_v1alpha2.Clientset) certificates_smh_solo_io_v1alpha2.PodBounceDirectiveClient {
+	return clients.PodBounceDirectives()
+}
+
+// Provider for PodBounceDirective Client from Client
+func PodBounceDirectiveClientProvider(client client.Client) certificates_smh_solo_io_v1alpha2.PodBounceDirectiveClient {
+	return certificates_smh_solo_io_v1alpha2.NewPodBounceDirectiveClient(client)
+}
+
+type PodBounceDirectiveClientFactory func(client client.Client) certificates_smh_solo_io_v1alpha2.PodBounceDirectiveClient
+
+func PodBounceDirectiveClientFactoryProvider() PodBounceDirectiveClientFactory {
+	return PodBounceDirectiveClientProvider
+}
+
+type PodBounceDirectiveClientFromConfigFactory func(cfg *rest.Config) (certificates_smh_solo_io_v1alpha2.PodBounceDirectiveClient, error)
+
+func PodBounceDirectiveClientFromConfigFactoryProvider() PodBounceDirectiveClientFromConfigFactory {
+	return func(cfg *rest.Config) (certificates_smh_solo_io_v1alpha2.PodBounceDirectiveClient, error) {
+		clients, err := certificates_smh_solo_io_v1alpha2.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.PodBounceDirectives(), nil
+	}
+}

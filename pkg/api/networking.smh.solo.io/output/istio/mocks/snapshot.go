@@ -58,6 +58,20 @@ func (mr *MockSnapshotMockRecorder) IssuedCertificates() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IssuedCertificates", reflect.TypeOf((*MockSnapshot)(nil).IssuedCertificates))
 }
 
+// PodBounceDirectives mocks base method
+func (m *MockSnapshot) PodBounceDirectives() []istio.LabeledPodBounceDirectiveSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PodBounceDirectives")
+	ret0, _ := ret[0].([]istio.LabeledPodBounceDirectiveSet)
+	return ret0
+}
+
+// PodBounceDirectives indicates an expected call of PodBounceDirectives
+func (mr *MockSnapshotMockRecorder) PodBounceDirectives() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PodBounceDirectives", reflect.TypeOf((*MockSnapshot)(nil).PodBounceDirectives))
+}
+
 // DestinationRules mocks base method
 func (m *MockSnapshot) DestinationRules() []istio.LabeledDestinationRuleSet {
 	m.ctrl.T.Helper()
@@ -244,6 +258,71 @@ func (m *MockLabeledIssuedCertificateSet) Generic() output.ResourceList {
 func (mr *MockLabeledIssuedCertificateSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledIssuedCertificateSet)(nil).Generic))
+}
+
+// MockLabeledPodBounceDirectiveSet is a mock of LabeledPodBounceDirectiveSet interface
+type MockLabeledPodBounceDirectiveSet struct {
+	ctrl     *gomock.Controller
+	recorder *MockLabeledPodBounceDirectiveSetMockRecorder
+}
+
+// MockLabeledPodBounceDirectiveSetMockRecorder is the mock recorder for MockLabeledPodBounceDirectiveSet
+type MockLabeledPodBounceDirectiveSetMockRecorder struct {
+	mock *MockLabeledPodBounceDirectiveSet
+}
+
+// NewMockLabeledPodBounceDirectiveSet creates a new mock instance
+func NewMockLabeledPodBounceDirectiveSet(ctrl *gomock.Controller) *MockLabeledPodBounceDirectiveSet {
+	mock := &MockLabeledPodBounceDirectiveSet{ctrl: ctrl}
+	mock.recorder = &MockLabeledPodBounceDirectiveSetMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockLabeledPodBounceDirectiveSet) EXPECT() *MockLabeledPodBounceDirectiveSetMockRecorder {
+	return m.recorder
+}
+
+// Labels mocks base method
+func (m *MockLabeledPodBounceDirectiveSet) Labels() map[string]string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Labels")
+	ret0, _ := ret[0].(map[string]string)
+	return ret0
+}
+
+// Labels indicates an expected call of Labels
+func (mr *MockLabeledPodBounceDirectiveSetMockRecorder) Labels() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledPodBounceDirectiveSet)(nil).Labels))
+}
+
+// Set mocks base method
+func (m *MockLabeledPodBounceDirectiveSet) Set() v1alpha2sets.PodBounceDirectiveSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Set")
+	ret0, _ := ret[0].(v1alpha2sets.PodBounceDirectiveSet)
+	return ret0
+}
+
+// Set indicates an expected call of Set
+func (mr *MockLabeledPodBounceDirectiveSetMockRecorder) Set() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledPodBounceDirectiveSet)(nil).Set))
+}
+
+// Generic mocks base method
+func (m *MockLabeledPodBounceDirectiveSet) Generic() output.ResourceList {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(output.ResourceList)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic
+func (mr *MockLabeledPodBounceDirectiveSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledPodBounceDirectiveSet)(nil).Generic))
 }
 
 // MockLabeledDestinationRuleSet is a mock of LabeledDestinationRuleSet interface
@@ -687,6 +766,36 @@ func (m *MockBuilder) GetIssuedCertificates() v1alpha2sets.IssuedCertificateSet 
 func (mr *MockBuilderMockRecorder) GetIssuedCertificates() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIssuedCertificates", reflect.TypeOf((*MockBuilder)(nil).GetIssuedCertificates))
+}
+
+// AddPodBounceDirectives mocks base method
+func (m *MockBuilder) AddPodBounceDirectives(podBounceDirectives ...*v1alpha2.PodBounceDirective) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range podBounceDirectives {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "AddPodBounceDirectives", varargs...)
+}
+
+// AddPodBounceDirectives indicates an expected call of AddPodBounceDirectives
+func (mr *MockBuilderMockRecorder) AddPodBounceDirectives(podBounceDirectives ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddPodBounceDirectives", reflect.TypeOf((*MockBuilder)(nil).AddPodBounceDirectives), podBounceDirectives...)
+}
+
+// GetPodBounceDirectives mocks base method
+func (m *MockBuilder) GetPodBounceDirectives() v1alpha2sets.PodBounceDirectiveSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPodBounceDirectives")
+	ret0, _ := ret[0].(v1alpha2sets.PodBounceDirectiveSet)
+	return ret0
+}
+
+// GetPodBounceDirectives indicates an expected call of GetPodBounceDirectives
+func (mr *MockBuilderMockRecorder) GetPodBounceDirectives() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodBounceDirectives", reflect.TypeOf((*MockBuilder)(nil).GetPodBounceDirectives))
 }
 
 // AddDestinationRules mocks base method

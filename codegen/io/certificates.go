@@ -24,6 +24,7 @@ var (
 		}: {
 			"IssuedCertificate",
 			"CertificateRequest",
+			"PodBounceDirective",
 		},
 		corev1.SchemeGroupVersion: {
 			"Secret",

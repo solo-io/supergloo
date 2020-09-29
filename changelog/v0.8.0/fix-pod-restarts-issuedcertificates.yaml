@@ -1,0 +1,5 @@
+changelog:
+- type: FIX
+  description: Fix unnecessary pod restart caused by IssuedCertificate.
+  issueLink: https://github.com/solo-io/service-mesh-hub/issues/975
+  

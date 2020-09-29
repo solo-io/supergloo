@@ -230,3 +230,110 @@ func (h genericCertificateRequestHandler) Generic(object runtime.Object) error {
 	}
 	return h.handler.GenericCertificateRequest(obj)
 }
+
+// Handle events for the PodBounceDirective Resource
+// DEPRECATED: Prefer reconciler pattern.
+type PodBounceDirectiveEventHandler interface {
+	CreatePodBounceDirective(obj *certificates_smh_solo_io_v1alpha2.PodBounceDirective) error
+	UpdatePodBounceDirective(old, new *certificates_smh_solo_io_v1alpha2.PodBounceDirective) error
+	DeletePodBounceDirective(obj *certificates_smh_solo_io_v1alpha2.PodBounceDirective) error
+	GenericPodBounceDirective(obj *certificates_smh_solo_io_v1alpha2.PodBounceDirective) error
+}
+
+type PodBounceDirectiveEventHandlerFuncs struct {
+	OnCreate  func(obj *certificates_smh_solo_io_v1alpha2.PodBounceDirective) error
+	OnUpdate  func(old, new *certificates_smh_solo_io_v1alpha2.PodBounceDirective) error
+	OnDelete  func(obj *certificates_smh_solo_io_v1alpha2.PodBounceDirective) error
+	OnGeneric func(obj *certificates_smh_solo_io_v1alpha2.PodBounceDirective) error
+}
+
+func (f *PodBounceDirectiveEventHandlerFuncs) CreatePodBounceDirective(obj *certificates_smh_solo_io_v1alpha2.PodBounceDirective) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *PodBounceDirectiveEventHandlerFuncs) DeletePodBounceDirective(obj *certificates_smh_solo_io_v1alpha2.PodBounceDirective) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *PodBounceDirectiveEventHandlerFuncs) UpdatePodBounceDirective(objOld, objNew *certificates_smh_solo_io_v1alpha2.PodBounceDirective) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *PodBounceDirectiveEventHandlerFuncs) GenericPodBounceDirective(obj *certificates_smh_solo_io_v1alpha2.PodBounceDirective) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type PodBounceDirectiveEventWatcher interface {
+	AddEventHandler(ctx context.Context, h PodBounceDirectiveEventHandler, predicates ...predicate.Predicate) error
+}
+
+type podBounceDirectiveEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewPodBounceDirectiveEventWatcher(name string, mgr manager.Manager) PodBounceDirectiveEventWatcher {
+	return &podBounceDirectiveEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &certificates_smh_solo_io_v1alpha2.PodBounceDirective{}),
+	}
+}
+
+func (c *podBounceDirectiveEventWatcher) AddEventHandler(ctx context.Context, h PodBounceDirectiveEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericPodBounceDirectiveHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericPodBounceDirectiveHandler implements a generic events.EventHandler
+type genericPodBounceDirectiveHandler struct {
+	handler PodBounceDirectiveEventHandler
+}
+
+func (h genericPodBounceDirectiveHandler) Create(object runtime.Object) error {
+	obj, ok := object.(*certificates_smh_solo_io_v1alpha2.PodBounceDirective)
+	if !ok {
+		return errors.Errorf("internal error: PodBounceDirective handler received event for %T", object)
+	}
+	return h.handler.CreatePodBounceDirective(obj)
+}
+
+func (h genericPodBounceDirectiveHandler) Delete(object runtime.Object) error {
+	obj, ok := object.(*certificates_smh_solo_io_v1alpha2.PodBounceDirective)
+	if !ok {
+		return errors.Errorf("internal error: PodBounceDirective handler received event for %T", object)
+	}
+	return h.handler.DeletePodBounceDirective(obj)
+}
+
+func (h genericPodBounceDirectiveHandler) Update(old, new runtime.Object) error {
+	objOld, ok := old.(*certificates_smh_solo_io_v1alpha2.PodBounceDirective)
+	if !ok {
+		return errors.Errorf("internal error: PodBounceDirective handler received event for %T", old)
+	}
+	objNew, ok := new.(*certificates_smh_solo_io_v1alpha2.PodBounceDirective)
+	if !ok {
+		return errors.Errorf("internal error: PodBounceDirective handler received event for %T", new)
+	}
+	return h.handler.UpdatePodBounceDirective(objOld, objNew)
+}
+
+func (h genericPodBounceDirectiveHandler) Generic(object runtime.Object) error {
+	obj, ok := object.(*certificates_smh_solo_io_v1alpha2.PodBounceDirective)
+	if !ok {
+		return errors.Errorf("internal error: PodBounceDirective handler received event for %T", object)
+	}
+	return h.handler.GenericPodBounceDirective(obj)
+}
