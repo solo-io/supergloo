@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix for potential panic when translating traffic policies into virtual services.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/979
