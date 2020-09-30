@@ -14,6 +14,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+var (
+	// Used to infer parent AppMesh Mesh name
+	AppMeshVirtualNodeEnvVarName = "APPMESH_VIRTUAL_NODE_NAME"
+)
+
 // detects an appmesh sidecar
 type sidecarDetector struct {
 	ctx context.Context
@@ -25,9 +30,12 @@ func NewSidecarDetector(ctx context.Context) *sidecarDetector {
 }
 
 func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
-	if !containsSidecarContainer(pod.Spec.Containers) {
+	hasSidecar, sidecarContainer := containsSidecarContainer(pod.Spec.Containers)
+	if !hasSidecar {
 		return nil
 	}
+
+	meshName := sidecarContainer.Name
 
 	for _, mesh := range meshes.List() {
 		appmesh := mesh.Spec.GetAwsAppMesh()
@@ -46,13 +54,13 @@ func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.
 	return nil
 }
 
-func containsSidecarContainer(containers []corev1.Container) bool {
+func containsSidecarContainer(containers []corev1.Container) (bool, corev1.Container) {
 	for _, container := range containers {
 		if isSidecarImage(container.Image) {
-			return true
+			return true, container
 		}
 	}
-	return false
+	return false, corev1.Container{}
 }
 
 func isSidecarImage(imageName string) bool {
