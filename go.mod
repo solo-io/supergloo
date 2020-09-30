@@ -60,7 +60,6 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.15.0
-	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
 	helm.sh/helm/v3 v3.2.4
 	istio.io/api v0.0.0-20200819225923-c78f387f78a2
 	istio.io/client-go v0.0.0-20200812230733-f5504d568313
