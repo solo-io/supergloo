@@ -64,7 +64,6 @@ func initializePolicyStatuses(input input.Snapshot) {
 	accessPolicies := input.AccessPolicies().List()
 	failoverServices := input.FailoverServices().List()
 	virtualMeshes := input.VirtualMeshes().List()
-	workloads := input.Workloads().List()
 
 	// initialize traffic policy statuses
 	for _, trafficPolicy := range trafficPolicies {
@@ -74,7 +73,6 @@ func initializePolicyStatuses(input input.Snapshot) {
 			TrafficTargets:     map[string]*networkingv1alpha2.ApprovalStatus{},
 		}
 	}
-	setWorkloadsForTrafficPolicies(trafficPolicies, workloads)
 
 	// initialize access policy statuses
 	for _, accessPolicy := range accessPolicies {
@@ -84,7 +82,6 @@ func initializePolicyStatuses(input input.Snapshot) {
 			TrafficTargets:     map[string]*networkingv1alpha2.ApprovalStatus{},
 		}
 	}
-	setWorkloadsForAccessPolicies(accessPolicies, workloads)
 
 	// By this point, FailoverServices have already undergone pre-translation validation.
 	for _, failoverService := range failoverServices {
@@ -146,6 +143,9 @@ func reportTranslationErrors(ctx context.Context, reporter *applyReporter, input
 		mesh.Status.AppliedFailoverServices = validateAndReturnApprovedFailoverServices(ctx, input, reporter, mesh)
 		mesh.Status.AppliedVirtualMesh = validateAndReturnVirtualMesh(ctx, input, reporter, mesh)
 	}
+
+	setWorkloadsForTrafficPolicies(input.TrafficPolicies().List(), input.Workloads().List())
+	setWorkloadsForAccessPolicies(input.AccessPolicies().List(), input.Workloads().List())
 }
 
 func setWorkloadsForTrafficPolicies(
