@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/go-utils/stringutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 
@@ -30,12 +29,27 @@ func NewSidecarDetector(ctx context.Context) *sidecarDetector {
 }
 
 func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
-	hasSidecar, sidecarContainer := containsSidecarContainer(pod.Spec.Containers)
+	hasSidecar, sidecarContainer := getSidecar(pod.Spec.Containers)
 	if !hasSidecar {
 		return nil
 	}
 
-	meshName := sidecarContainer.Name
+	var sidecarMeshName string
+	for _, envVar := range sidecarContainer.Env {
+		if envVar.Name != AppMeshVirtualNodeEnvVarName {
+			continue
+		}
+
+		// Value takes format "mesh/<appmesh-mesh-name>/virtualNode/<virtual-node-name>"
+		// VirtualNodeName value has significance for AppMesh functionality, reference:
+		// https://docs.aws.amazon.com/eks/latest/userguide/mesh-k8s-integration.html
+		split := strings.Split(envVar.Value, "/")
+		if len(split) != 4 {
+			contextutils.LoggerFrom(d.ctx).Warnw("warning: unexpected virtual node name format", "pod", sets.Key(pod), "virtualNode", envVar.Value)
+			return nil
+		}
+		sidecarMeshName = split[1]
+	}
 
 	for _, mesh := range meshes.List() {
 		appmesh := mesh.Spec.GetAwsAppMesh()
@@ -43,18 +57,17 @@ func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.
 			continue
 		}
 
-		// TODO joekelley this assumes that each cluster is managed by only one mesh; instead use virtual node name env var?
-		if stringutils.ContainsString(pod.ClusterName, appmesh.Clusters) {
+		// TODO joekelley this does not deduplicate across disparate accounts, which are not referenced on sidecars.
+		if appmesh.AwsName == sidecarMeshName {
 			return mesh
 		}
 	}
 
 	contextutils.LoggerFrom(d.ctx).Warnw("warning: no mesh found corresponding to pod with appmesh sidecar", "pod", sets.Key(pod))
-
 	return nil
 }
 
-func containsSidecarContainer(containers []corev1.Container) (bool, corev1.Container) {
+func getSidecar(containers []corev1.Container) (bool, corev1.Container) {
 	for _, container := range containers {
 		if isSidecarImage(container.Image) {
 			return true, container
