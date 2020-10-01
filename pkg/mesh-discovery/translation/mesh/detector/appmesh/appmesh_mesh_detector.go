@@ -4,13 +4,19 @@ import (
 	"context"
 	"strings"
 
-	"github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
+	aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
+)
+
+var (
+	UnexpectedMeshARNError = func(arn string) error {
+		return eris.Errorf("Unexpected mesh ARN %s", arn)
+	}
 )
 
 type meshDetector struct {
@@ -44,7 +50,8 @@ func (d *meshDetector) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, erro
 	return meshes, errs
 }
 
-func (d *meshDetector) detectMesh(mesh *v1beta2.Mesh) (*v1alpha2.Mesh, error) {
+func (d *meshDetector) detectMesh(mesh *aws_v1beta2.Mesh) (*v1alpha2.Mesh, error) {
+	// Meshes that lack an ARN or name have not been processed by the App Mesh controller
 	if mesh.Status.MeshARN == nil || mesh.Spec.AWSName == nil {
 		return nil, nil
 	}
@@ -63,7 +70,7 @@ func (d *meshDetector) detectMesh(mesh *v1beta2.Mesh) (*v1alpha2.Mesh, error) {
 					Region:       region,
 					AwsAccountId: accountId,
 					Arn:          *mesh.Status.MeshARN,
-					// TODO -- look at pods, APPMESH_VIRTUALNODE_NAME will contain mesh name
+					// TODO investigate multicluster app mesh
 					Clusters: []string{mesh.ClusterName},
 				},
 			},
@@ -76,11 +83,11 @@ func parseArn(arn string) (region string, accountId string, meshName string, err
 	// Value takes format "arn:aws:appmesh:<region>:<account ID>:mesh/<mesh name>"
 	colonSplit := strings.Split(arn, ":")
 	if len(colonSplit) != 6 {
-		return "", "", "", eris.Errorf("Unexpected mesh ARN %s", arn)
+		return "", "", "", UnexpectedMeshARNError(arn)
 	}
 	slashSplit := strings.Split(arn, "/")
 	if len(slashSplit) != 2 {
-		return "", "", "", eris.Errorf("Unexpected mesh ARN %s", arn)
+		return "", "", "", UnexpectedMeshARNError(arn)
 	}
 
 	region = colonSplit[3]
