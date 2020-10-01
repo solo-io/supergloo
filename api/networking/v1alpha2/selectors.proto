@@ -81,7 +81,7 @@ option (gogoproto.equal_all) = true;
 
 
 */
-message TrafficTargetSelector {
+message ServiceSelector {
 
     // A KubeServiceMatcher matches kubernetes services by the namespaces and clusters they belong to, as well
     // as the provided labels.

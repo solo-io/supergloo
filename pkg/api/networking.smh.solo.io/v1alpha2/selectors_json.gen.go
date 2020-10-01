@@ -20,36 +20,36 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-// MarshalJSON is a custom marshaler for TrafficTargetSelector
-func (this *TrafficTargetSelector) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for ServiceSelector
+func (this *ServiceSelector) MarshalJSON() ([]byte, error) {
 	str, err := SelectorsMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for TrafficTargetSelector
-func (this *TrafficTargetSelector) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for ServiceSelector
+func (this *ServiceSelector) UnmarshalJSON(b []byte) error {
 	return SelectorsUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for TrafficTargetSelector_KubeServiceMatcher
-func (this *TrafficTargetSelector_KubeServiceMatcher) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for ServiceSelector_KubeServiceMatcher
+func (this *ServiceSelector_KubeServiceMatcher) MarshalJSON() ([]byte, error) {
 	str, err := SelectorsMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for TrafficTargetSelector_KubeServiceMatcher
-func (this *TrafficTargetSelector_KubeServiceMatcher) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for ServiceSelector_KubeServiceMatcher
+func (this *ServiceSelector_KubeServiceMatcher) UnmarshalJSON(b []byte) error {
 	return SelectorsUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for TrafficTargetSelector_KubeServiceRefs
-func (this *TrafficTargetSelector_KubeServiceRefs) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for ServiceSelector_KubeServiceRefs
+func (this *ServiceSelector_KubeServiceRefs) MarshalJSON() ([]byte, error) {
 	str, err := SelectorsMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for TrafficTargetSelector_KubeServiceRefs
-func (this *TrafficTargetSelector_KubeServiceRefs) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for ServiceSelector_KubeServiceRefs
+func (this *ServiceSelector_KubeServiceRefs) UnmarshalJSON(b []byte) error {
 	return SelectorsUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

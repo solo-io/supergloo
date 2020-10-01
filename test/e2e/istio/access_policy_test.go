@@ -58,9 +58,9 @@ var _ = Describe("AccessPolicy", func() {
 							},
 						},
 					},
-					DestinationSelector: []*networkingv1alpha2.TrafficTargetSelector{
+					DestinationSelector: []*networkingv1alpha2.ServiceSelector{
 						{
-							KubeServiceRefs: &networkingv1alpha2.TrafficTargetSelector_KubeServiceRefs{
+							KubeServiceRefs: &networkingv1alpha2.ServiceSelector_KubeServiceRefs{
 								Services: []*skv2core.ClusterObjectRef{
 									{
 										Name:        "reviews",

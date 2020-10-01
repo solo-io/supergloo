@@ -16,7 +16,7 @@ message WorkloadSpec {
     // Specifies the underlying type of workload that this Workload is abstracting.
     oneof workload_type {
         // Information describing workloads backed by Kubernetes Pods.
-        KubernetesWorkload kubernetes = 1;
+        KubernertesWorkload kubernetes = 1;
     }
 
     // The mesh with which this workload is associated.
@@ -26,7 +26,7 @@ message WorkloadSpec {
     AppMesh app_mesh = 5;
 
     // Information describing a Kubernetes-based workload (e.g. a Deployment or DaemonSet).
-    message KubernetesWorkload {
+    message KubernertesWorkload {
         /**
            Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads.
            It has the generic name controller as it can represent a deployment, daemonset, or statefulset.

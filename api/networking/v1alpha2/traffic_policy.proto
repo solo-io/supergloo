@@ -34,7 +34,7 @@ message TrafficPolicySpec {
         applied to pods in a Linkerd mesh. TrafficPolicies will apply to
         all selected destinations in Linkerd, regardless of the source.
 
-        Note: If using the TrafficTargetSelector.Matcher, specifying clusters is currently not supported in Istio.
+        Note: If using the ServiceSelector.Matcher, specifying clusters is currently not supported in Istio.
     */
     repeated WorkloadSelector source_selector = 1;
 
@@ -42,7 +42,7 @@ message TrafficPolicySpec {
         Requests destined for these k8s services will have the rule applied.
         Leave empty to apply to all destination k8s services in the mesh.
     */
-    repeated TrafficTargetSelector destination_selector = 2;
+    repeated ServiceSelector destination_selector = 2;
 
     /*
         If specified, this rule will only apply to http requests matching these conditions.
