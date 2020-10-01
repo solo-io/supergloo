@@ -45,7 +45,7 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 
 	validateConfigTargetReferences(input)
 
-	applyPoliciesToTargets(input)
+	applyPoliciesToConfigTargets(input)
 
 	_, err := v.translator.Translate(ctx, input, reporter)
 	if err != nil {
@@ -115,7 +115,7 @@ func validateConfigTargetReferences(input input.Snapshot) {
 }
 
 // Apply networking configuration policies to relevant discovery entities.
-func applyPoliciesToTargets(input input.Snapshot) {
+func applyPoliciesToConfigTargets(input input.Snapshot) {
 	for _, trafficTarget := range input.TrafficTargets().List() {
 		trafficTarget.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), trafficTarget)
 		trafficTarget.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), trafficTarget)

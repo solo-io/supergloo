@@ -57,65 +57,47 @@ func NewConfigTargetValidator(
 
 func (c *configTargetValidator) ValidateFailoverServices(failoverServices v1alpha2.FailoverServiceSlice) {
 	for _, failoverService := range failoverServices {
-		failoverService := failoverService // pike
 		errs := c.validateMeshReferences(failoverService.Spec.Meshes)
-		var errStrings []string
-		for _, err := range errs {
-			errStrings = append(errStrings, err.Error())
+		if len(errs) == 0 {
+			continue
 		}
-		if errStrings != nil {
-			failoverService.Status.State = v1alpha2.ApprovalState_INVALID
-			failoverService.Status.Errors = errStrings
-		}
+		failoverService.Status.State = v1alpha2.ApprovalState_INVALID
+		failoverService.Status.Errors = getErrStrings(errs)
 	}
 }
 
 func (c *configTargetValidator) ValidateVirtualMeshes(virtualMeshes v1alpha2.VirtualMeshSlice) {
 	for _, virtualMesh := range virtualMeshes {
-		virtualMesh := virtualMesh // pike
 		errs := c.validateVirtualMesh(virtualMesh)
-		var errStrings []string
-		for _, err := range errs {
-			errStrings = append(errStrings, err.Error())
+		if len(errs) == 0 {
+			continue
 		}
-		if errStrings != nil {
-			virtualMesh.Status.State = v1alpha2.ApprovalState_INVALID
-			virtualMesh.Status.Errors = errStrings
-		}
+		virtualMesh.Status.State = v1alpha2.ApprovalState_INVALID
+		virtualMesh.Status.Errors = getErrStrings(errs)
 	}
+
 	validateOneVirtualMeshPerMesh(virtualMeshes)
 }
 
 func (c *configTargetValidator) ValidateTrafficPolicies(trafficPolicies v1alpha2.TrafficPolicySlice) {
 	for _, trafficPolicy := range trafficPolicies {
-		trafficPolicy := trafficPolicy // pike
 		errs := c.validateTrafficTargetReferences(trafficPolicy.Spec.DestinationSelector)
-		var errStrings []string
-		for _, err := range errs {
-			errStrings = append(errStrings, err.Error())
+		if len(errs) == 0 {
+			continue
 		}
-		if errStrings != nil {
-			trafficPolicy.Status.State = v1alpha2.ApprovalState_INVALID
-			trafficPolicy.Status.Errors = errStrings
-		}
+		trafficPolicy.Status.State = v1alpha2.ApprovalState_INVALID
+		trafficPolicy.Status.Errors = getErrStrings(errs)
 	}
 }
 
 func (c *configTargetValidator) ValidateAccessPolicies(accessPolicies v1alpha2.AccessPolicySlice) {
 	for _, accessPolicy := range accessPolicies {
-		accessPolicy := accessPolicy // pike
 		errs := c.validateTrafficTargetReferences(accessPolicy.Spec.DestinationSelector)
-		var errStrings []string
-		for _, err := range errs {
-			errStrings = append(errStrings, err.Error())
+		if len(errs) == 0 {
+			continue
 		}
-		if errStrings != nil {
-			accessPolicy.Status = v1alpha2.AccessPolicyStatus{
-				ObservedGeneration: accessPolicy.Generation,
-				State:              v1alpha2.ApprovalState_INVALID,
-				Errors:             errStrings,
-			}
-		}
+		accessPolicy.Status.State = v1alpha2.ApprovalState_INVALID
+		accessPolicy.Status.Errors = getErrStrings(errs)
 	}
 }
 
@@ -168,6 +150,14 @@ func (c *configTargetValidator) validateVirtualMesh(virtualMesh *v1alpha2.Virtua
 	return errs
 }
 
+func getErrStrings(errs []error) []string {
+	var errStrings []string
+	for _, err := range errs {
+		errStrings = append(errStrings, err.Error())
+	}
+	return errStrings
+}
+
 // For each VirtualMesh, sort them by accepted date, then invalidate if it applies to a Mesh that
 // is already grouped into a VirtualMesh.
 func validateOneVirtualMeshPerMesh(virtualMeshes []*v1alpha2.VirtualMesh) {
@@ -197,11 +187,13 @@ func validateOneVirtualMeshPerMesh(virtualMeshes []*v1alpha2.VirtualMesh) {
 				acceptedIndex++
 			} else {
 				vMesh.Status.State = v1alpha2.ApprovalState_INVALID
-				vMesh.Status.Errors = []string{
+				vMesh.Status.Errors = append(
+					vMesh.Status.Errors,
 					fmt.Sprintf("Includes a Mesh (%s.%s) that already is grouped in a VirtualMesh (%s.%s)",
 						mesh.Name, mesh.Namespace,
 						existingVirtualMesh.Name, existingVirtualMesh.Namespace,
-					)}
+					),
+				)
 			}
 			invalidVirtualMeshes.Insert(vMesh)
 		}
