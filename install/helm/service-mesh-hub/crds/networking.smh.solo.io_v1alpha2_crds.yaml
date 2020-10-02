@@ -497,6 +497,11 @@ spec:
           type: object
         status:
           properties:
+            errors:
+              description: Any errors found while processing this generation of the resource.
+              items:
+                type: string
+              type: array
             observedGeneration:
               description: |-
                 The most recent generation observed in the the TrafficPolicy metadata.
@@ -731,6 +736,11 @@ spec:
           type: object
         status:
           properties:
+            errors:
+              description: Any errors found while processing this generation of the resource.
+              items:
+                type: string
+              type: array
             observedGeneration:
               description: |-
                 The most recent generation observed in the the AccessPolicy metadata.
@@ -945,6 +955,11 @@ spec:
           type: object
         status:
           properties:
+            errors:
+              description: Any errors found while processing this generation of the resource.
+              items:
+                type: string
+              type: array
             meshes:
               additionalProperties:
                 properties:
@@ -996,11 +1011,6 @@ spec:
               - INVALID
               - FAILED
               type: string
-            validationErrors:
-              description: Any mesh-independent errors observed which prevented the resource from being Accepted.
-              items:
-                type: string
-              type: array
           type: object
       type: object
   versions:
@@ -1101,6 +1111,11 @@ spec:
           type: object
         status:
           properties:
+            errors:
+              description: Any errors found while processing this generation of the resource.
+              items:
+                type: string
+              type: array
             meshes:
               additionalProperties:
                 properties:
@@ -1150,11 +1165,6 @@ spec:
               - INVALID
               - FAILED
               type: string
-            validationErrors:
-              description: Any errors observed which prevented the resource from being Accepted.
-              items:
-                type: string
-              type: array
           type: object
       type: object
   versions:

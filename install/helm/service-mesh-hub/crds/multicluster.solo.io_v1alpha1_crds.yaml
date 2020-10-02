@@ -120,8 +120,7 @@ spec:
                     description: |-
                       The most recently observed generation of the resource. This value corresponds to the `metadata.generation` of
                       a kubernetes resource
-                    maximum: 4294967295
-                    minimum: 0
+                    format: int64
                     type: integer
                   owner:
                     description: |-

@@ -4,18 +4,16 @@ import (
 	"context"
 	"errors"
 
-	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
-	corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -164,116 +162,6 @@ var _ = Describe("Applier", func() {
 		})
 		It("does not add the policy to the traffic target status", func() {
 			Expect(trafficTarget.Status.AppliedTrafficPolicies).To(HaveLen(0))
-		})
-	})
-
-	Context("validate one VirtualMesh per mesh", func() {
-		var (
-			vm1 = &v1alpha2.VirtualMesh{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "vm1",
-					Namespace: "namespace1",
-				},
-				Spec: v1alpha2.VirtualMeshSpec{
-					Meshes: []*corev1.ObjectRef{
-						{
-							Name:      "mesh1",
-							Namespace: "namespace1",
-						},
-					},
-				},
-				Status: v1alpha2.VirtualMeshStatus{
-					ObservedGeneration: 0,
-					State:              v1alpha2.ApprovalState_ACCEPTED,
-				},
-			}
-			vm2 = &v1alpha2.VirtualMesh{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "vm2",
-					Namespace: "namespace1",
-				},
-				Spec: v1alpha2.VirtualMeshSpec{
-					Meshes: []*corev1.ObjectRef{
-						{
-							Name:      "mesh1",
-							Namespace: "namespace1",
-						},
-						{
-							Name:      "mesh2",
-							Namespace: "namespace1",
-						},
-					},
-				},
-			}
-			vm3 = &v1alpha2.VirtualMesh{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "vm3",
-					Namespace: "namespace1",
-				},
-				Spec: v1alpha2.VirtualMeshSpec{
-					Meshes: []*corev1.ObjectRef{
-						{
-							Name:      "mesh2",
-							Namespace: "namespace1",
-						},
-					},
-				},
-			}
-			vm4 = &v1alpha2.VirtualMesh{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "vm4",
-					Namespace: "namespace1",
-				},
-				Spec: v1alpha2.VirtualMeshSpec{
-					Meshes: []*corev1.ObjectRef{
-						{
-							Name:      "mesh2",
-							Namespace: "namespace1",
-						},
-					},
-				},
-			}
-			vm5 = &v1alpha2.VirtualMesh{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "vm5",
-					Namespace: "namespace1",
-				},
-				Spec: v1alpha2.VirtualMeshSpec{
-					Meshes: []*corev1.ObjectRef{
-						{
-							Name:      "mesh3",
-							Namespace: "namespace1",
-						},
-					},
-				},
-			}
-			snap = input.NewSnapshot("",
-				discoveryv1alpha2sets.NewTrafficTargetSet(),
-				discoveryv1alpha2sets.NewWorkloadSet(),
-				discoveryv1alpha2sets.NewMeshSet(),
-				v1alpha2sets.NewTrafficPolicySet(),
-				v1alpha2sets.NewAccessPolicySet(),
-				v1alpha2sets.NewVirtualMeshSet(
-					vm1, vm2, vm3, vm4, vm5,
-				),
-				v1alpha2sets.NewFailoverServiceSet(),
-				corev1sets.NewSecretSet(),
-				skv1alpha1sets.NewKubernetesClusterSet(),
-			)
-		)
-		BeforeEach(func() {
-			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
-				return
-			}}
-			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap)
-		})
-		It("vm1 should render vm2 invalid, which should permit vm3", func() {
-			Expect(vm2.Status.State).To(Equal(v1alpha2.ApprovalState_INVALID))
-			Expect(vm3.Status.State).To(Equal(v1alpha2.ApprovalState_ACCEPTED))
-		})
-		It("vm5 should be permitted given that vm4 is invalid", func() {
-			Expect(vm5.Status.State).To(Equal(v1alpha2.ApprovalState_ACCEPTED))
 		})
 	})
 })
