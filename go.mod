@@ -20,6 +20,7 @@ replace (
 )
 
 require (
+	cloud.google.com/go v0.66.0 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.8.3 // indirect
 	github.com/Masterminds/semver v1.5.0
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
@@ -59,11 +60,11 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.15.0
+	golang.org/x/tools v0.0.0-20200928201943-a0ef9b62deab // indirect
 	helm.sh/helm/v3 v3.2.4
 	istio.io/api v0.0.0-20200819225923-c78f387f78a2
 	istio.io/client-go v0.0.0-20200812230733-f5504d568313
 	istio.io/istio v0.0.0-20200821180042-b0e61d10cbae
-	istio.io/tools v0.0.0-20201001212041-ebd2ac076aac // indirect
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v8.0.0+incompatible
