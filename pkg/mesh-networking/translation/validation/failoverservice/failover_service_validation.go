@@ -128,6 +128,7 @@ func (f *failoverServiceValidator) validateMeshes(
 		mesh, err := meshes.Find(meshRef)
 		if err != nil {
 			errs = append(errs, err)
+			continue
 		}
 		if err := f.validateMesh(mesh); err != nil {
 			errs = append(errs, err)

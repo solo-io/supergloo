@@ -153,8 +153,8 @@ message VirtualMeshStatus {
     // applied to all target meshes.
     ApprovalState state = 2;
 
-    // Any mesh-independent errors observed which prevented the resource from being Accepted.
-    repeated string validation_errors = 3;
+    // Any errors found while processing this generation of the resource.
+    repeated string errors = 3;
 
     // The status of the VirtualMesh for each Mesh to which it has been applied.
     // A VirtualMesh may be Accepted for some Meshes and rejected for others.
