@@ -2,21 +2,14 @@ package appmesh
 
 import (
 	"context"
-	"strings"
 
 	aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
+	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/hashicorp/go-multierror"
-	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
-)
-
-var (
-	UnexpectedMeshARNError = func(arn string) error {
-		return eris.Errorf("Unexpected mesh ARN %s", arn)
-	}
 )
 
 type meshDetector struct {
@@ -56,7 +49,7 @@ func (d *meshDetector) detectMesh(mesh *aws_v1beta2.Mesh) (*v1alpha2.Mesh, error
 		return nil, nil
 	}
 
-	region, accountId, _, err := parseArn(*mesh.Status.MeshARN)
+	parsedArn, err := arn.Parse(*mesh.Status.MeshARN)
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +60,8 @@ func (d *meshDetector) detectMesh(mesh *aws_v1beta2.Mesh) (*v1alpha2.Mesh, error
 			MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
 				AwsAppMesh: &v1alpha2.MeshSpec_AwsAppMesh{
 					AwsName:      *mesh.Spec.AWSName,
-					Region:       region,
-					AwsAccountId: accountId,
+					Region:       parsedArn.Region,
+					AwsAccountId: parsedArn.AccountID,
 					Arn:          *mesh.Status.MeshARN,
 					// TODO investigate multicluster app mesh
 					Clusters: []string{mesh.ClusterName},
@@ -76,22 +69,4 @@ func (d *meshDetector) detectMesh(mesh *aws_v1beta2.Mesh) (*v1alpha2.Mesh, error
 			},
 		},
 	}, nil
-}
-
-// parseArn extracts mesh name, region, and account ID from a mesh ARN.
-func parseArn(arn string) (region string, accountId string, meshName string, err error) {
-	// Value takes format "arn:aws:appmesh:<region>:<account ID>:mesh/<mesh name>"
-	colonSplit := strings.Split(arn, ":")
-	if len(colonSplit) != 6 {
-		return "", "", "", UnexpectedMeshARNError(arn)
-	}
-	slashSplit := strings.Split(arn, "/")
-	if len(slashSplit) != 2 {
-		return "", "", "", UnexpectedMeshARNError(arn)
-	}
-
-	region = colonSplit[3]
-	accountId = colonSplit[4]
-	meshName = slashSplit[1]
-	return
 }

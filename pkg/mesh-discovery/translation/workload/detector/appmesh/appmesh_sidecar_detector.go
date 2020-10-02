@@ -29,8 +29,8 @@ func NewSidecarDetector(ctx context.Context) *sidecarDetector {
 }
 
 func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
-	hasSidecar, sidecarContainer := getSidecar(pod.Spec.Containers)
-	if !hasSidecar {
+	sidecarContainer := getSidecar(pod.Spec.Containers)
+	if sidecarContainer == nil {
 		return nil
 	}
 
@@ -67,13 +67,13 @@ func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.
 	return nil
 }
 
-func getSidecar(containers []corev1.Container) (bool, corev1.Container) {
+func getSidecar(containers []corev1.Container) *corev1.Container {
 	for _, container := range containers {
 		if isSidecarImage(container.Image) {
-			return true, container
+			return &container
 		}
 	}
-	return false, corev1.Container{}
+	return nil
 }
 
 func isSidecarImage(imageName string) bool {

@@ -7,7 +7,6 @@ import (
 	aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/solo-io/go-utils/testutils"
 	input "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	detector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
@@ -150,7 +149,6 @@ var _ = Describe("AppMesh MeshDetector", func() {
 
 		_, err := meshDetector.DetectMeshes(builder.Build())
 		Expect(err).To(HaveOccurred())
-		Expect(err).To(HaveInErrorChain(appmesh.UnexpectedMeshARNError(badArn)))
 	})
 
 })
