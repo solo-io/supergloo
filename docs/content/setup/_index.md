@@ -176,7 +176,8 @@ meshctl install --dry-run | kubectl delete -f -
 The Helm charts for Service Mesh Hub support Helm 3. To install with Helm:
 
 ```shell
-helm repo add smh https://storage.googleapis.com/service-mesh-hub/management-plane
+helm repo add service-mesh-hub https://storage.googleapis.com/service-mesh-hub/service-mesh-hub
+helm repo add cert-agent https://storage.googleapis.com/service-mesh-hub/cert-agent
 helm repo update
 ```
 
@@ -188,7 +189,8 @@ Then install Service Mesh Hub into the `service-mesh-hub` namespace:
 
 ```shell
 kubectl create ns service-mesh-hub
-helm install smh smh/service-mesh-hub --namespace service-mesh-hub
+helm install service-mesh-hub service-mesh-hub/service-mesh-hub --namespace service-mesh-hub
+helm install cert-agent cert-agent/cert-agent --namespace service-mesh-hub
 ```
 
 ### Verify install
