@@ -14,6 +14,9 @@ replace (
 
 	github.com/golang/protobuf => github.com/golang/protobuf v1.3.5
 
+	// https://github.com/ory/dockertest/issues/208#issuecomment-686820414
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6
+
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
 
 	k8s.io/client-go => k8s.io/client-go v0.18.6
