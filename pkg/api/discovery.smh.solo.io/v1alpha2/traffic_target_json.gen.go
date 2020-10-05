@@ -110,5 +110,5 @@ func (this *TrafficTargetStatus_AppliedFederation) UnmarshalJSON(b []byte) error
 
 var (
 	TrafficTargetMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
-	TrafficTargetUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}
+	TrafficTargetUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{AllowUnknownFields: true}
 )

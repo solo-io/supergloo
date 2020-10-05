@@ -32,5 +32,5 @@ func (this *ApprovalStatus) UnmarshalJSON(b []byte) error {
 
 var (
 	ValidationStateMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
-	ValidationStateUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}
+	ValidationStateUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{AllowUnknownFields: true}
 )

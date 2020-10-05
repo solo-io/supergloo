@@ -44,5 +44,5 @@ func (this *PodBounceDirectiveSpec_PodSelector) UnmarshalJSON(b []byte) error {
 
 var (
 	PodBounceDirectiveMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
-	PodBounceDirectiveUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}
+	PodBounceDirectiveUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{AllowUnknownFields: true}
 )

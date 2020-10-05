@@ -76,5 +76,5 @@ func (this *WorkloadStatus) UnmarshalJSON(b []byte) error {
 
 var (
 	WorkloadMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
-	WorkloadUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}
+	WorkloadUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{AllowUnknownFields: true}
 )
