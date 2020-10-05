@@ -276,7 +276,7 @@ function install_osm() {
   ROLLOUT="${K} rollout status deployment --timeout 300s"
 
   # install in permissive mode for testing
-  osm install --enable-metrics-stack=false --deploy-zipkin=false
+  osm install --deploy-zipkin=false
 
   ${ROLLOUT} -n osm-system osm-controller
 

@@ -4,12 +4,15 @@ set -x
 
 # generate names: $1 allows to make several envs in parallel 
 mgmtCluster=mgmt-cluster
-remoteCluster=remote-cluster
+#remoteCluster=remote-cluster
 
 kubectl --context kind-$mgmtCluster get pod -A
-kubectl --context kind-$remoteCluster get pod -A
+#kubectl --context kind-$remoteCluster get pod -A
+kubectl --context kind-$mgmtCluster get ns -A
+kubectl --context kind-$mgmtCluster get pods -A
 kubectl --context kind-$mgmtCluster describe pod -A
-kubectl --context kind-$remoteCluster describe pod -A
+#kubectl --context kind-$remoteCluster describe pod -A
+kubectl --context kind-$mgmtCluster get deployment -A
 kubectl --context kind-$mgmtCluster get mesh -A
 kubectl --context kind-$mgmtCluster get workloads -A
 kubectl --context kind-$mgmtCluster get traffictargets -A
