@@ -43,5 +43,5 @@ func (this *AccessPolicyStatus) UnmarshalJSON(b []byte) error {
 
 var (
 	AccessPolicyMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
-	AccessPolicyUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}
+	AccessPolicyUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{AllowUnknownFields: true}
 )

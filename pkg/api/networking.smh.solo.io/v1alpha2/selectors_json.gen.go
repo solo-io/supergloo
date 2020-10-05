@@ -99,5 +99,5 @@ func (this *IdentitySelector_KubeServiceAccountRefs) UnmarshalJSON(b []byte) err
 
 var (
 	SelectorsMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
-	SelectorsUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}
+	SelectorsUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{AllowUnknownFields: true}
 )

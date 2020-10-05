@@ -166,5 +166,5 @@ func (this *MeshStatus_AppliedFailoverService) UnmarshalJSON(b []byte) error {
 
 var (
 	MeshMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
-	MeshUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}
+	MeshUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{AllowUnknownFields: true}
 )

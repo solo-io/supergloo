@@ -110,5 +110,5 @@ func (this *VirtualMeshStatus) UnmarshalJSON(b []byte) error {
 
 var (
 	VirtualMeshMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
-	VirtualMeshUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}
+	VirtualMeshUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{AllowUnknownFields: true}
 )

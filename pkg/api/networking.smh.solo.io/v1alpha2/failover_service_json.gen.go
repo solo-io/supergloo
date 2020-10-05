@@ -65,5 +65,5 @@ func (this *FailoverServiceStatus) UnmarshalJSON(b []byte) error {
 
 var (
 	FailoverServiceMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
-	FailoverServiceUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}
+	FailoverServiceUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{AllowUnknownFields: true}
 )
