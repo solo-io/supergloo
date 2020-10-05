@@ -1,4 +1,4 @@
-package appmesh_test
+package appmesh
 
 import (
 	"context"
@@ -12,7 +12,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector/appmesh"
 )
 
 var _ = Describe("AppMesh SidecarDetector", func() {
@@ -48,7 +47,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 								Value: "bar",
 							},
 							{
-								Name:  appmesh.AppMeshVirtualNodeEnvVarName,
+								Name:  appmesh.appMeshVirtualNodeEnvVarName,
 								Value: virtualNodeName,
 							},
 						},
@@ -133,7 +132,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 								Value: "bar",
 							},
 							{
-								Name:  appmesh.AppMeshVirtualNodeEnvVarName,
+								Name:  appmesh.appMeshVirtualNodeEnvVarName,
 								Value: virtualNodeName,
 							},
 						},
@@ -179,7 +178,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 								Value: "bar",
 							},
 							{
-								Name:  appmesh.AppMeshVirtualNodeEnvVarName,
+								Name:  appmesh.appMeshVirtualNodeEnvVarName,
 								Value: virtualNodeName,
 							},
 						},

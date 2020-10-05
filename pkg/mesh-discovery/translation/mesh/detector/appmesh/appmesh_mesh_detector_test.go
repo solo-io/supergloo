@@ -78,30 +78,6 @@ var _ = Describe("AppMesh MeshDetector", func() {
 		Expect(actual).To(Equal(expected))
 	})
 
-	It("does not detect meshes that haven't been assigned a name", func() {
-		awsMesh := aws_v1beta2.Mesh{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:        meshName,
-				ClusterName: clusterName,
-			},
-			Spec: aws_v1beta2.MeshSpec{
-				NamespaceSelector: &metav1.LabelSelector{
-					MatchLabels: map[string]string{"mesh": meshName},
-				},
-			},
-			Status: aws_v1beta2.MeshStatus{
-				MeshARN: &meshArn,
-			},
-		}
-
-		builder := input.NewInputSnapshotManualBuilder("app mesh test")
-		builder.AddMeshes([]*aws_v1beta2.Mesh{&awsMesh})
-
-		actual, err := meshDetector.DetectMeshes(builder.Build())
-		Expect(err).NotTo(HaveOccurred())
-		Expect(actual).To(BeNil())
-	})
-
 	It("does not detect meshes that haven't been assigned an ARN", func() {
 		awsMesh := aws_v1beta2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
@@ -122,7 +98,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 
 		actual, err := meshDetector.DetectMeshes(builder.Build())
 		Expect(err).NotTo(HaveOccurred())
-		Expect(actual).To(BeNil())
+		Expect(actual).To(HaveLen(0))
 	})
 
 	It("errors when an ARN is malformed", func() {

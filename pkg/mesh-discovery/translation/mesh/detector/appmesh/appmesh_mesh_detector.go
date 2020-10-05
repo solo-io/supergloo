@@ -2,6 +2,7 @@ package appmesh
 
 import (
 	"context"
+	"sort"
 
 	aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	"github.com/aws/aws-sdk-go/aws/arn"
@@ -26,45 +27,66 @@ func NewMeshDetector(
 
 // returns a mesh for each unique AppMesh Controller Mesh CRD in the snapshot
 func (d *meshDetector) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, error) {
-	var meshes v1alpha2.MeshSlice
-	var errs error
-
-	for _, awsMesh := range in.Meshes().List() {
-		mesh, err := d.detectMesh(awsMesh)
-		if err != nil {
-			errs = multierror.Append(errs, err)
-		}
-		if mesh == nil {
-			continue
-		}
-		meshes = append(meshes, mesh)
-	}
-
-	return meshes, errs
+	return d.detectMeshes(in.Meshes().List())
 }
 
-func (d *meshDetector) detectMesh(mesh *aws_v1beta2.Mesh) (*v1alpha2.Mesh, error) {
-	// Meshes that lack an ARN or name have not been processed by the App Mesh controller
-	if mesh.Status.MeshARN == nil || mesh.Spec.AWSName == nil {
-		return nil, nil
+func (d *meshDetector) detectMeshes(meshList []*aws_v1beta2.Mesh) (v1alpha2.MeshSlice, error) {
+	var errs error
+
+	// Meshes that have the same ARN will be treated as identical.
+	discoveredMeshByARN := make(map[string]*v1alpha2.Mesh)
+	for _, awsMesh := range meshList {
+		if awsMesh.Status.MeshARN == nil {
+			// Meshes that lack an ARN have not been processed by the App Mesh controller; ignore for now.
+			continue
+		}
+		if mesh, found := discoveredMeshByARN[*awsMesh.Status.MeshARN]; found {
+			// We have seen a mesh with this ARN. Record the awsMesh's cluster to our corresponding mesh record.
+			mesh.Spec.GetAwsAppMesh().Clusters = append(mesh.Spec.GetAwsAppMesh().Clusters, awsMesh.ClusterName)
+		} else {
+			// We have not seen a mesh with this ARN, create a new mesh record.
+			discoveredMesh, err := d.discoverNewMesh(awsMesh)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+			} else {
+				discoveredMeshByARN[*awsMesh.Status.MeshARN] = discoveredMesh
+			}
+		}
 	}
 
-	parsedArn, err := arn.Parse(*mesh.Status.MeshARN)
+	// Sort the cluster lists on each mesh resource for idempotence.
+	output := make(v1alpha2.MeshSlice, 0, len(discoveredMeshByARN))
+	for _, discoveredMesh := range discoveredMeshByARN {
+		discoveredMesh := discoveredMesh
+		sort.Strings(discoveredMesh.Spec.GetAwsAppMesh().Clusters)
+		output = append(output, discoveredMesh)
+	}
+	return output, errs
+}
+
+func (d *meshDetector) discoverNewMesh(awsMesh *aws_v1beta2.Mesh) (*v1alpha2.Mesh, error) {
+	parsedArn, err := arn.Parse(*awsMesh.Status.MeshARN)
 	if err != nil {
 		return nil, err
 	}
 
+	var meshName string
+	if awsMesh.Spec.AWSName != nil {
+		meshName = *awsMesh.Spec.AWSName
+	} else {
+		meshName = awsMesh.Name
+	}
+
 	return &v1alpha2.Mesh{
-		ObjectMeta: utils.DiscoveredObjectMeta(mesh),
+		ObjectMeta: utils.DiscoveredObjectMeta(awsMesh),
 		Spec: v1alpha2.MeshSpec{
 			MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
 				AwsAppMesh: &v1alpha2.MeshSpec_AwsAppMesh{
-					AwsName:      *mesh.Spec.AWSName,
+					AwsName:      meshName,
 					Region:       parsedArn.Region,
 					AwsAccountId: parsedArn.AccountID,
-					Arn:          *mesh.Status.MeshARN,
-					// TODO investigate multicluster app mesh
-					Clusters: []string{mesh.ClusterName},
+					Arn:          *awsMesh.Status.MeshARN,
+					Clusters:     []string{awsMesh.ClusterName},
 				},
 			},
 		},

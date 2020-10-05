@@ -13,9 +13,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-var (
+const (
 	// Used to infer parent AppMesh Mesh name
-	AppMeshVirtualNodeEnvVarName = "APPMESH_VIRTUAL_NODE_NAME"
+	appMeshVirtualNodeEnvVarName = "APPMESH_VIRTUAL_NODE_NAME"
 )
 
 // detects an appmesh sidecar
@@ -36,7 +36,7 @@ func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.
 
 	var sidecarMeshName string
 	for _, envVar := range sidecarContainer.Env {
-		if envVar.Name != AppMeshVirtualNodeEnvVarName {
+		if envVar.Name != appMeshVirtualNodeEnvVarName {
 			continue
 		}
 
