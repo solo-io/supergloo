@@ -44,5 +44,5 @@ func (this *CertificateRequestStatus) UnmarshalJSON(b []byte) error {
 
 var (
 	CertificateRequestMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
-	CertificateRequestUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{}
+	CertificateRequestUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{AllowUnknownFields: true}
 )

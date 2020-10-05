@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Prior to translation of networking configuration, validate that referenced config targets exist.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/962
+  - type: NEW_FEATURE
+    description: As part of validation referenced config targets, report non-existent TrafficTargets to TrafficPolicy status
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/963

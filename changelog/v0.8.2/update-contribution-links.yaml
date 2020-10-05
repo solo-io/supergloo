@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/984
+    description: Fix for contribution guide links in the readme and docs home page.

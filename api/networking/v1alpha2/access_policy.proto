@@ -81,4 +81,7 @@ message AccessPolicyStatus {
 
     // The list of Workloads to which this policy has been applied.
     repeated string workloads = 4;
+
+    // Any errors found while processing this generation of the resource.
+    repeated string errors = 5;
 }
