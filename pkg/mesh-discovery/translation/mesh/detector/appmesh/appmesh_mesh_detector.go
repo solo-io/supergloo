@@ -31,20 +31,22 @@ func (d *meshDetector) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, erro
 }
 
 func (d *meshDetector) detectMeshes(meshList []*aws_v1beta2.Mesh) (v1alpha2.MeshSlice, error) {
-	var errs error
-
-	// Meshes that have the same ARN will be treated as identical.
+	// Meshes that have the same ARN refer to the same entity in AWS.
 	discoveredMeshByARN := make(map[string]*v1alpha2.Mesh)
+	var errs error
 	for _, awsMesh := range meshList {
 		if awsMesh.Status.MeshARN == nil {
-			// Meshes that lack an ARN have not been processed by the App Mesh controller; ignore for now.
+			// Meshes that lack an ARN have not been processed by the App Mesh controller; ignore.
 			continue
 		}
+
 		if mesh, found := discoveredMeshByARN[*awsMesh.Status.MeshARN]; found {
-			// We have seen a mesh with this ARN. Record the awsMesh's cluster to our corresponding mesh record.
+			// We have seen a mesh with this ARN.
+			// Add this awsMesh's cluster to the list of clusters the mesh configures.
 			mesh.Spec.GetAwsAppMesh().Clusters = append(mesh.Spec.GetAwsAppMesh().Clusters, awsMesh.ClusterName)
 		} else {
-			// We have not seen a mesh with this ARN, create a new mesh record.
+			// We have not seen a mesh with this ARN.
+			// Create a new mesh record.
 			discoveredMesh, err := d.discoverNewMesh(awsMesh)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -71,6 +73,7 @@ func (d *meshDetector) discoverNewMesh(awsMesh *aws_v1beta2.Mesh) (*v1alpha2.Mes
 	}
 
 	var meshName string
+	// If AWSName is not set, fallback to metadata.Name per https://github.com/aws/aws-app-mesh-controller-for-k8s/blob/v1.1.1/apis/appmesh/v1beta2/mesh_types.go#L66
 	if awsMesh.Spec.AWSName != nil {
 		meshName = *awsMesh.Spec.AWSName
 	} else {
