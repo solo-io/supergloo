@@ -57,7 +57,7 @@ spec:
     autoRestartPods: true
     shared:
       rootCertificateAuthority:
-        generated: null
+        generated: {}
   federation: {}
   globalAccessPolicy: ENABLED
   meshes:
@@ -78,7 +78,7 @@ spec:
     autoRestartPods: true
     shared:
       rootCertificateAuthority:
-        generated: null
+        generated: {}
   federation: {}
   globalAccessPolicy: ENABLED
   meshes:

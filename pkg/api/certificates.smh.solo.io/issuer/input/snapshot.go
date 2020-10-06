@@ -19,6 +19,10 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/solo-io/skv2/pkg/verifier"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
@@ -133,29 +137,35 @@ type Builder interface {
 type BuildOptions struct {
 
 	// List options for composing a snapshot from IssuedCertificates
-	IssuedCertificates []client.ListOption
+	IssuedCertificates ResourceBuildOptions
 	// List options for composing a snapshot from CertificateRequests
-	CertificateRequests []client.ListOption
+	CertificateRequests ResourceBuildOptions
+}
+
+// Options for reading resources of a given type
+type ResourceBuildOptions struct {
+
+	// List options for composing a snapshot from a resource type
+	ListOptions []client.ListOption
+
+	// If provided, ensure the resource has been verified before adding it to snapshots
+	Verifier verifier.ServerResourceVerifier
 }
 
 // build a snapshot from resources across multiple clusters
 type multiClusterBuilder struct {
-	clusters multicluster.ClusterSet
-
-	issuedCertificates  certificates_smh_solo_io_v1alpha2.MulticlusterIssuedCertificateClient
-	certificateRequests certificates_smh_solo_io_v1alpha2.MulticlusterCertificateRequestClient
+	clusters multicluster.Interface
+	client   multicluster.Client
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
 func NewMultiClusterBuilder(
-	clusters multicluster.ClusterSet,
+	clusters multicluster.Interface,
 	client multicluster.Client,
 ) Builder {
 	return &multiClusterBuilder{
 		clusters: clusters,
-
-		issuedCertificates:  certificates_smh_solo_io_v1alpha2.NewMulticlusterIssuedCertificateClient(client),
-		certificateRequests: certificates_smh_solo_io_v1alpha2.NewMulticlusterCertificateRequestClient(client),
+		client:   client,
 	}
 }
 
@@ -168,10 +178,10 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 
 	for _, cluster := range b.clusters.ListClusters() {
 
-		if err := b.insertIssuedCertificatesFromCluster(ctx, cluster, issuedCertificates, opts.IssuedCertificates...); err != nil {
+		if err := b.insertIssuedCertificatesFromCluster(ctx, cluster, issuedCertificates, opts.IssuedCertificates); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertCertificateRequestsFromCluster(ctx, cluster, certificateRequests, opts.CertificateRequests...); err != nil {
+		if err := b.insertCertificateRequestsFromCluster(ctx, cluster, certificateRequests, opts.CertificateRequests); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 
@@ -187,13 +197,36 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	return outputSnap, errs
 }
 
-func (b *multiClusterBuilder) insertIssuedCertificatesFromCluster(ctx context.Context, cluster string, issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ...client.ListOption) error {
-	issuedCertificateClient, err := b.issuedCertificates.Cluster(cluster)
+func (b *multiClusterBuilder) insertIssuedCertificatesFromCluster(ctx context.Context, cluster string, issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ResourceBuildOptions) error {
+	issuedCertificateClient, err := certificates_smh_solo_io_v1alpha2.NewMulticlusterIssuedCertificateClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	issuedCertificateList, err := issuedCertificateClient.ListIssuedCertificate(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "certificates.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "IssuedCertificate",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	issuedCertificateList, err := issuedCertificateClient.ListIssuedCertificate(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -206,13 +239,36 @@ func (b *multiClusterBuilder) insertIssuedCertificatesFromCluster(ctx context.Co
 
 	return nil
 }
-func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.Context, cluster string, certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet, opts ...client.ListOption) error {
-	certificateRequestClient, err := b.certificateRequests.Cluster(cluster)
+func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.Context, cluster string, certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet, opts ResourceBuildOptions) error {
+	certificateRequestClient, err := certificates_smh_solo_io_v1alpha2.NewMulticlusterCertificateRequestClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	certificateRequestList, err := certificateRequestClient.ListCertificateRequest(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "certificates.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "CertificateRequest",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	certificateRequestList, err := certificateRequestClient.ListCertificateRequest(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -228,18 +284,15 @@ func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.C
 
 // build a snapshot from resources in a single cluster
 type singleClusterBuilder struct {
-	issuedCertificates  certificates_smh_solo_io_v1alpha2.IssuedCertificateClient
-	certificateRequests certificates_smh_solo_io_v1alpha2.CertificateRequestClient
+	mgr manager.Manager
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
 func NewSingleClusterBuilder(
-	client client.Client,
+	mgr manager.Manager,
 ) Builder {
 	return &singleClusterBuilder{
-
-		issuedCertificates:  certificates_smh_solo_io_v1alpha2.NewIssuedCertificateClient(client),
-		certificateRequests: certificates_smh_solo_io_v1alpha2.NewCertificateRequestClient(client),
+		mgr: mgr,
 	}
 }
 
@@ -250,10 +303,10 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	var errs error
 
-	if err := b.insertIssuedCertificates(ctx, issuedCertificates, opts.IssuedCertificates...); err != nil {
+	if err := b.insertIssuedCertificates(ctx, issuedCertificates, opts.IssuedCertificates); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertCertificateRequests(ctx, certificateRequests, opts.CertificateRequests...); err != nil {
+	if err := b.insertCertificateRequests(ctx, certificateRequests, opts.CertificateRequests); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -267,8 +320,27 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	return outputSnap, errs
 }
 
-func (b *singleClusterBuilder) insertIssuedCertificates(ctx context.Context, issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ...client.ListOption) error {
-	issuedCertificateList, err := b.issuedCertificates.ListIssuedCertificate(ctx, opts...)
+func (b *singleClusterBuilder) insertIssuedCertificates(ctx context.Context, issuedCertificates certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "certificates.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "IssuedCertificate",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	issuedCertificateList, err := certificates_smh_solo_io_v1alpha2.NewIssuedCertificateClient(b.mgr.GetClient()).ListIssuedCertificate(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -280,8 +352,27 @@ func (b *singleClusterBuilder) insertIssuedCertificates(ctx context.Context, iss
 
 	return nil
 }
-func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet, opts ...client.ListOption) error {
-	certificateRequestList, err := b.certificateRequests.ListCertificateRequest(ctx, opts...)
+func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "certificates.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "CertificateRequest",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	certificateRequestList, err := certificates_smh_solo_io_v1alpha2.NewCertificateRequestClient(b.mgr.GetClient()).ListCertificateRequest(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
