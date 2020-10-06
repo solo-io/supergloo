@@ -276,7 +276,7 @@ function install_osm() {
   ROLLOUT="${K} rollout status deployment --timeout 300s"
 
   # install in permissive mode for testing
-  osm install
+  osm install --enable-permissive-traffic-policy
 
   ${ROLLOUT} -n osm-system osm-controller
 
