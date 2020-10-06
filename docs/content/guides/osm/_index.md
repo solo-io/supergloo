@@ -63,10 +63,10 @@ kubectl create ns bookthief
 kubectl create ns bookwarehouse 
 kubectl create ns bookbuyer
 
-osm namespace add bookstore
-osm namespace add bookthief 
-osm namespace add bookwarehouse 
-osm namespace add bookbuyer
+osm namespace add bookstore --enable-sidecar-injection
+osm namespace add bookthief --enable-sidecar-injection
+osm namespace add bookwarehouse --enable-sidecar-injection
+osm namespace add bookbuyer --enable-sidecar-injection
 
 kubectl apply -f https://raw.githubusercontent.com/solo-io/service-mesh-hub/v0.7.2/ci/osm-demo.yaml
 
@@ -76,6 +76,16 @@ kubectl rollout status deployment --timeout 300s -n bookthief bookthief
 kubectl rollout status deployment --timeout 300s -n bookwarehouse bookwarehouse
 kubectl rollout status deployment --timeout 300s -n bookbuyer bookbuyer
 ```
+
+{{% notice note %}}
+For osm version v0.3.0, the flag --enable-sidecar-injection doesn't exist, so you will want to use:
+```
+osm namespace add bookstore
+osm namespace add bookthief
+osm namespace add bookwarehouse
+osm namespace add bookbuyer
+```
+{{% /notice %}}
 
 ## OSM Basics
 
