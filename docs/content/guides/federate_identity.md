@@ -107,7 +107,7 @@ spec:
     autoRestartPods: true
     shared:
       rootCertificateAuthority:
-        generated: null
+        generated: {}
   federation: {}
   meshes:
   - name: istiod-istio-system-mgmt-cluster 

@@ -22,6 +22,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/utils/errhandlers"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"github.com/solo-io/skv2/pkg/reconcile"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -59,7 +60,8 @@ func Start(
 		localClient: mgr.GetClient(),
 	}
 
-	return input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2)
+	_, err := input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2, reconcile.Options{})
+	return err
 }
 
 const (

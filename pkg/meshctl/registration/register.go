@@ -2,7 +2,6 @@ package registration
 
 import (
 	"context"
-	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/service-mesh-hub/codegen/io"
@@ -40,12 +39,11 @@ type RegistrantOptions struct {
 
 // Initialize a ClientConfig for the management and remote clusters from the options.
 func (m *RegistrantOptions) ConstructClientConfigs() (mgmtKubeCfg clientcmd.ClientConfig, remoteKubeCfg clientcmd.ClientConfig, err error) {
-	loader := kubeconfig.NewKubeLoader(5 * time.Second)
-	mgmtKubeCfg, err = loader.GetClientConfigForContext(m.KubeConfigPath, m.MgmtContext)
+	mgmtKubeCfg, err = kubeconfig.GetClientConfigWithContext(m.KubeConfigPath, m.MgmtContext)
 	if err != nil {
 		return nil, nil, err
 	}
-	remoteKubeCfg, err = loader.GetClientConfigForContext(m.KubeConfigPath, m.RemoteContext)
+	remoteKubeCfg, err = kubeconfig.GetClientConfigWithContext(m.KubeConfigPath, m.RemoteContext)
 	if err != nil {
 		return nil, nil, err
 	}

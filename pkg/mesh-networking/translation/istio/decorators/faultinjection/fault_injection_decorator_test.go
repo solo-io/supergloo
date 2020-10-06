@@ -33,7 +33,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
 					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_Abort_{
 						Abort: &v1alpha2.TrafficPolicySpec_FaultInjection_Abort{
-							ErrorType: &v1alpha2.TrafficPolicySpec_FaultInjection_Abort_HttpStatus{HttpStatus: 404},
+							HttpStatus: 404,
 						},
 					},
 					Percentage: 50,
@@ -63,12 +63,8 @@ var _ = Describe("FaultInjectionDecorator", func() {
 		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
-					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_Delay_{
-						Delay: &v1alpha2.TrafficPolicySpec_FaultInjection_Delay{
-							HttpDelayType: &v1alpha2.TrafficPolicySpec_FaultInjection_Delay_FixedDelay{
-								FixedDelay: &types.Duration{Seconds: 2},
-							},
-						},
+					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_FixedDelay{
+						FixedDelay: &types.Duration{Seconds: 2},
 					},
 					Percentage: 50,
 				},
@@ -97,12 +93,8 @@ var _ = Describe("FaultInjectionDecorator", func() {
 		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
-					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_Delay_{
-						Delay: &v1alpha2.TrafficPolicySpec_FaultInjection_Delay{
-							HttpDelayType: &v1alpha2.TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay{
-								ExponentialDelay: &types.Duration{Seconds: 2},
-							},
-						},
+					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_ExponentialDelay{
+						ExponentialDelay: &types.Duration{Seconds: 2},
 					},
 					Percentage: 50,
 				},
@@ -132,12 +124,8 @@ var _ = Describe("FaultInjectionDecorator", func() {
 		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
-					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_Delay_{
-						Delay: &v1alpha2.TrafficPolicySpec_FaultInjection_Delay{
-							HttpDelayType: &v1alpha2.TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay{
-								ExponentialDelay: &types.Duration{Seconds: 2},
-							},
-						},
+					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_ExponentialDelay{
+						ExponentialDelay: &types.Duration{Seconds: 2},
 					},
 				},
 			},
