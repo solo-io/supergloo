@@ -66,8 +66,8 @@ func (m *multiclusterTrafficTargetReconcileLoop) AddMulticlusterTrafficTargetRec
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterTrafficTargetReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterTrafficTargetReconcileLoop {
-	return &multiclusterTrafficTargetReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &discovery_smh_solo_io_v1alpha2.TrafficTarget{})}
+func NewMulticlusterTrafficTargetReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterTrafficTargetReconcileLoop {
+	return &multiclusterTrafficTargetReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &discovery_smh_solo_io_v1alpha2.TrafficTarget{}, options)}
 }
 
 type genericTrafficTargetMulticlusterReconciler struct {
@@ -137,8 +137,8 @@ func (m *multiclusterWorkloadReconcileLoop) AddMulticlusterWorkloadReconciler(ct
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterWorkloadReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterWorkloadReconcileLoop {
-	return &multiclusterWorkloadReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &discovery_smh_solo_io_v1alpha2.Workload{})}
+func NewMulticlusterWorkloadReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterWorkloadReconcileLoop {
+	return &multiclusterWorkloadReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &discovery_smh_solo_io_v1alpha2.Workload{}, options)}
 }
 
 type genericWorkloadMulticlusterReconciler struct {
@@ -208,8 +208,8 @@ func (m *multiclusterMeshReconcileLoop) AddMulticlusterMeshReconciler(ctx contex
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterMeshReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterMeshReconcileLoop {
-	return &multiclusterMeshReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &discovery_smh_solo_io_v1alpha2.Mesh{})}
+func NewMulticlusterMeshReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterMeshReconcileLoop {
+	return &multiclusterMeshReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &discovery_smh_solo_io_v1alpha2.Mesh{}, options)}
 }
 
 type genericMeshMulticlusterReconciler struct {

@@ -21,7 +21,9 @@ func SelfSignedVirtualMesh(name, namespace string, meshes []*v1.ObjectRef) *v1al
 			MtlsConfig: &v1alpha2.VirtualMeshSpec_MTLSConfig{
 				TrustModel: &v1alpha2.VirtualMeshSpec_MTLSConfig_Shared{Shared: &v1alpha2.VirtualMeshSpec_MTLSConfig_SharedTrust{
 					RootCertificateAuthority: &v1alpha2.VirtualMeshSpec_RootCertificateAuthority{
-						CaSource: &v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Generated{},
+						CaSource: &v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Generated{
+							Generated: &v1alpha2.VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert{},
+						},
 					},
 				}},
 				AutoRestartPods: true,

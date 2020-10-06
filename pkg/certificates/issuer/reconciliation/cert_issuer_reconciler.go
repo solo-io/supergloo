@@ -39,7 +39,7 @@ func Start(
 		masterSecrets: corev1.NewSecretClient(masterClient),
 	}
 
-	input.RegisterMultiClusterReconciler(ctx, clusters, r.reconcile, time.Second/2)
+	input.RegisterMultiClusterReconciler(ctx, clusters, r.reconcile, time.Second/2, input.ReconcileOptions{})
 }
 
 // reconcile global state

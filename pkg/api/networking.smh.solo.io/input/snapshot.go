@@ -26,6 +26,10 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/solo-io/skv2/pkg/verifier"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
@@ -316,66 +320,52 @@ type Builder interface {
 type BuildOptions struct {
 
 	// List options for composing a snapshot from TrafficTargets
-	TrafficTargets []client.ListOption
+	TrafficTargets ResourceBuildOptions
 	// List options for composing a snapshot from Workloads
-	Workloads []client.ListOption
+	Workloads ResourceBuildOptions
 	// List options for composing a snapshot from Meshes
-	Meshes []client.ListOption
+	Meshes ResourceBuildOptions
 
 	// List options for composing a snapshot from TrafficPolicies
-	TrafficPolicies []client.ListOption
+	TrafficPolicies ResourceBuildOptions
 	// List options for composing a snapshot from AccessPolicies
-	AccessPolicies []client.ListOption
+	AccessPolicies ResourceBuildOptions
 	// List options for composing a snapshot from VirtualMeshes
-	VirtualMeshes []client.ListOption
+	VirtualMeshes ResourceBuildOptions
 	// List options for composing a snapshot from FailoverServices
-	FailoverServices []client.ListOption
+	FailoverServices ResourceBuildOptions
 
 	// List options for composing a snapshot from Secrets
-	Secrets []client.ListOption
+	Secrets ResourceBuildOptions
 
 	// List options for composing a snapshot from KubernetesClusters
-	KubernetesClusters []client.ListOption
+	KubernetesClusters ResourceBuildOptions
+}
+
+// Options for reading resources of a given type
+type ResourceBuildOptions struct {
+
+	// List options for composing a snapshot from a resource type
+	ListOptions []client.ListOption
+
+	// If provided, ensure the resource has been verified before adding it to snapshots
+	Verifier verifier.ServerResourceVerifier
 }
 
 // build a snapshot from resources across multiple clusters
 type multiClusterBuilder struct {
-	clusters multicluster.ClusterSet
-
-	trafficTargets discovery_smh_solo_io_v1alpha2.MulticlusterTrafficTargetClient
-	workloads      discovery_smh_solo_io_v1alpha2.MulticlusterWorkloadClient
-	meshes         discovery_smh_solo_io_v1alpha2.MulticlusterMeshClient
-
-	trafficPolicies  networking_smh_solo_io_v1alpha2.MulticlusterTrafficPolicyClient
-	accessPolicies   networking_smh_solo_io_v1alpha2.MulticlusterAccessPolicyClient
-	virtualMeshes    networking_smh_solo_io_v1alpha2.MulticlusterVirtualMeshClient
-	failoverServices networking_smh_solo_io_v1alpha2.MulticlusterFailoverServiceClient
-
-	secrets v1.MulticlusterSecretClient
-
-	kubernetesClusters multicluster_solo_io_v1alpha1.MulticlusterKubernetesClusterClient
+	clusters multicluster.Interface
+	client   multicluster.Client
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
 func NewMultiClusterBuilder(
-	clusters multicluster.ClusterSet,
+	clusters multicluster.Interface,
 	client multicluster.Client,
 ) Builder {
 	return &multiClusterBuilder{
 		clusters: clusters,
-
-		trafficTargets: discovery_smh_solo_io_v1alpha2.NewMulticlusterTrafficTargetClient(client),
-		workloads:      discovery_smh_solo_io_v1alpha2.NewMulticlusterWorkloadClient(client),
-		meshes:         discovery_smh_solo_io_v1alpha2.NewMulticlusterMeshClient(client),
-
-		trafficPolicies:  networking_smh_solo_io_v1alpha2.NewMulticlusterTrafficPolicyClient(client),
-		accessPolicies:   networking_smh_solo_io_v1alpha2.NewMulticlusterAccessPolicyClient(client),
-		virtualMeshes:    networking_smh_solo_io_v1alpha2.NewMulticlusterVirtualMeshClient(client),
-		failoverServices: networking_smh_solo_io_v1alpha2.NewMulticlusterFailoverServiceClient(client),
-
-		secrets: v1.NewMulticlusterSecretClient(client),
-
-		kubernetesClusters: multicluster_solo_io_v1alpha1.NewMulticlusterKubernetesClusterClient(client),
+		client:   client,
 	}
 }
 
@@ -398,31 +388,31 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 
 	for _, cluster := range b.clusters.ListClusters() {
 
-		if err := b.insertTrafficTargetsFromCluster(ctx, cluster, trafficTargets, opts.TrafficTargets...); err != nil {
+		if err := b.insertTrafficTargetsFromCluster(ctx, cluster, trafficTargets, opts.TrafficTargets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertWorkloadsFromCluster(ctx, cluster, workloads, opts.Workloads...); err != nil {
+		if err := b.insertWorkloadsFromCluster(ctx, cluster, workloads, opts.Workloads); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertMeshesFromCluster(ctx, cluster, meshes, opts.Meshes...); err != nil {
+		if err := b.insertMeshesFromCluster(ctx, cluster, meshes, opts.Meshes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertTrafficPoliciesFromCluster(ctx, cluster, trafficPolicies, opts.TrafficPolicies...); err != nil {
+		if err := b.insertTrafficPoliciesFromCluster(ctx, cluster, trafficPolicies, opts.TrafficPolicies); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertAccessPoliciesFromCluster(ctx, cluster, accessPolicies, opts.AccessPolicies...); err != nil {
+		if err := b.insertAccessPoliciesFromCluster(ctx, cluster, accessPolicies, opts.AccessPolicies); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertVirtualMeshesFromCluster(ctx, cluster, virtualMeshes, opts.VirtualMeshes...); err != nil {
+		if err := b.insertVirtualMeshesFromCluster(ctx, cluster, virtualMeshes, opts.VirtualMeshes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertFailoverServicesFromCluster(ctx, cluster, failoverServices, opts.FailoverServices...); err != nil {
+		if err := b.insertFailoverServicesFromCluster(ctx, cluster, failoverServices, opts.FailoverServices); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets...); err != nil {
+		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertKubernetesClustersFromCluster(ctx, cluster, kubernetesClusters, opts.KubernetesClusters...); err != nil {
+		if err := b.insertKubernetesClustersFromCluster(ctx, cluster, kubernetesClusters, opts.KubernetesClusters); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 
@@ -445,13 +435,36 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	return outputSnap, errs
 }
 
-func (b *multiClusterBuilder) insertTrafficTargetsFromCluster(ctx context.Context, cluster string, trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet, opts ...client.ListOption) error {
-	trafficTargetClient, err := b.trafficTargets.Cluster(cluster)
+func (b *multiClusterBuilder) insertTrafficTargetsFromCluster(ctx context.Context, cluster string, trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet, opts ResourceBuildOptions) error {
+	trafficTargetClient, err := discovery_smh_solo_io_v1alpha2.NewMulticlusterTrafficTargetClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	trafficTargetList, err := trafficTargetClient.ListTrafficTarget(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "discovery.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "TrafficTarget",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	trafficTargetList, err := trafficTargetClient.ListTrafficTarget(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -464,13 +477,36 @@ func (b *multiClusterBuilder) insertTrafficTargetsFromCluster(ctx context.Contex
 
 	return nil
 }
-func (b *multiClusterBuilder) insertWorkloadsFromCluster(ctx context.Context, cluster string, workloads discovery_smh_solo_io_v1alpha2_sets.WorkloadSet, opts ...client.ListOption) error {
-	workloadClient, err := b.workloads.Cluster(cluster)
+func (b *multiClusterBuilder) insertWorkloadsFromCluster(ctx context.Context, cluster string, workloads discovery_smh_solo_io_v1alpha2_sets.WorkloadSet, opts ResourceBuildOptions) error {
+	workloadClient, err := discovery_smh_solo_io_v1alpha2.NewMulticlusterWorkloadClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	workloadList, err := workloadClient.ListWorkload(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "discovery.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Workload",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	workloadList, err := workloadClient.ListWorkload(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -483,13 +519,36 @@ func (b *multiClusterBuilder) insertWorkloadsFromCluster(ctx context.Context, cl
 
 	return nil
 }
-func (b *multiClusterBuilder) insertMeshesFromCluster(ctx context.Context, cluster string, meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet, opts ...client.ListOption) error {
-	meshClient, err := b.meshes.Cluster(cluster)
+func (b *multiClusterBuilder) insertMeshesFromCluster(ctx context.Context, cluster string, meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet, opts ResourceBuildOptions) error {
+	meshClient, err := discovery_smh_solo_io_v1alpha2.NewMulticlusterMeshClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	meshList, err := meshClient.ListMesh(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "discovery.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Mesh",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	meshList, err := meshClient.ListMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -503,13 +562,36 @@ func (b *multiClusterBuilder) insertMeshesFromCluster(ctx context.Context, clust
 	return nil
 }
 
-func (b *multiClusterBuilder) insertTrafficPoliciesFromCluster(ctx context.Context, cluster string, trafficPolicies networking_smh_solo_io_v1alpha2_sets.TrafficPolicySet, opts ...client.ListOption) error {
-	trafficPolicyClient, err := b.trafficPolicies.Cluster(cluster)
+func (b *multiClusterBuilder) insertTrafficPoliciesFromCluster(ctx context.Context, cluster string, trafficPolicies networking_smh_solo_io_v1alpha2_sets.TrafficPolicySet, opts ResourceBuildOptions) error {
+	trafficPolicyClient, err := networking_smh_solo_io_v1alpha2.NewMulticlusterTrafficPolicyClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	trafficPolicyList, err := trafficPolicyClient.ListTrafficPolicy(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "TrafficPolicy",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	trafficPolicyList, err := trafficPolicyClient.ListTrafficPolicy(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -522,13 +604,36 @@ func (b *multiClusterBuilder) insertTrafficPoliciesFromCluster(ctx context.Conte
 
 	return nil
 }
-func (b *multiClusterBuilder) insertAccessPoliciesFromCluster(ctx context.Context, cluster string, accessPolicies networking_smh_solo_io_v1alpha2_sets.AccessPolicySet, opts ...client.ListOption) error {
-	accessPolicyClient, err := b.accessPolicies.Cluster(cluster)
+func (b *multiClusterBuilder) insertAccessPoliciesFromCluster(ctx context.Context, cluster string, accessPolicies networking_smh_solo_io_v1alpha2_sets.AccessPolicySet, opts ResourceBuildOptions) error {
+	accessPolicyClient, err := networking_smh_solo_io_v1alpha2.NewMulticlusterAccessPolicyClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	accessPolicyList, err := accessPolicyClient.ListAccessPolicy(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "AccessPolicy",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	accessPolicyList, err := accessPolicyClient.ListAccessPolicy(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -541,13 +646,36 @@ func (b *multiClusterBuilder) insertAccessPoliciesFromCluster(ctx context.Contex
 
 	return nil
 }
-func (b *multiClusterBuilder) insertVirtualMeshesFromCluster(ctx context.Context, cluster string, virtualMeshes networking_smh_solo_io_v1alpha2_sets.VirtualMeshSet, opts ...client.ListOption) error {
-	virtualMeshClient, err := b.virtualMeshes.Cluster(cluster)
+func (b *multiClusterBuilder) insertVirtualMeshesFromCluster(ctx context.Context, cluster string, virtualMeshes networking_smh_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceBuildOptions) error {
+	virtualMeshClient, err := networking_smh_solo_io_v1alpha2.NewMulticlusterVirtualMeshClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	virtualMeshList, err := virtualMeshClient.ListVirtualMesh(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "VirtualMesh",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	virtualMeshList, err := virtualMeshClient.ListVirtualMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -560,13 +688,36 @@ func (b *multiClusterBuilder) insertVirtualMeshesFromCluster(ctx context.Context
 
 	return nil
 }
-func (b *multiClusterBuilder) insertFailoverServicesFromCluster(ctx context.Context, cluster string, failoverServices networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet, opts ...client.ListOption) error {
-	failoverServiceClient, err := b.failoverServices.Cluster(cluster)
+func (b *multiClusterBuilder) insertFailoverServicesFromCluster(ctx context.Context, cluster string, failoverServices networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet, opts ResourceBuildOptions) error {
+	failoverServiceClient, err := networking_smh_solo_io_v1alpha2.NewMulticlusterFailoverServiceClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	failoverServiceList, err := failoverServiceClient.ListFailoverService(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "FailoverService",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	failoverServiceList, err := failoverServiceClient.ListFailoverService(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -580,13 +731,36 @@ func (b *multiClusterBuilder) insertFailoverServicesFromCluster(ctx context.Cont
 	return nil
 }
 
-func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, cluster string, secrets v1_sets.SecretSet, opts ...client.ListOption) error {
-	secretClient, err := b.secrets.Cluster(cluster)
+func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, cluster string, secrets v1_sets.SecretSet, opts ResourceBuildOptions) error {
+	secretClient, err := v1.NewMulticlusterSecretClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	secretList, err := secretClient.ListSecret(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Secret",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	secretList, err := secretClient.ListSecret(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -600,13 +774,36 @@ func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, clus
 	return nil
 }
 
-func (b *multiClusterBuilder) insertKubernetesClustersFromCluster(ctx context.Context, cluster string, kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet, opts ...client.ListOption) error {
-	kubernetesClusterClient, err := b.kubernetesClusters.Cluster(cluster)
+func (b *multiClusterBuilder) insertKubernetesClustersFromCluster(ctx context.Context, cluster string, kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet, opts ResourceBuildOptions) error {
+	kubernetesClusterClient, err := multicluster_solo_io_v1alpha1.NewMulticlusterKubernetesClusterClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	kubernetesClusterList, err := kubernetesClusterClient.ListKubernetesCluster(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "multicluster.solo.io",
+			Version: "v1alpha1",
+			Kind:    "KubernetesCluster",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	kubernetesClusterList, err := kubernetesClusterClient.ListKubernetesCluster(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -622,38 +819,15 @@ func (b *multiClusterBuilder) insertKubernetesClustersFromCluster(ctx context.Co
 
 // build a snapshot from resources in a single cluster
 type singleClusterBuilder struct {
-	trafficTargets discovery_smh_solo_io_v1alpha2.TrafficTargetClient
-	workloads      discovery_smh_solo_io_v1alpha2.WorkloadClient
-	meshes         discovery_smh_solo_io_v1alpha2.MeshClient
-
-	trafficPolicies  networking_smh_solo_io_v1alpha2.TrafficPolicyClient
-	accessPolicies   networking_smh_solo_io_v1alpha2.AccessPolicyClient
-	virtualMeshes    networking_smh_solo_io_v1alpha2.VirtualMeshClient
-	failoverServices networking_smh_solo_io_v1alpha2.FailoverServiceClient
-
-	secrets v1.SecretClient
-
-	kubernetesClusters multicluster_solo_io_v1alpha1.KubernetesClusterClient
+	mgr manager.Manager
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
 func NewSingleClusterBuilder(
-	client client.Client,
+	mgr manager.Manager,
 ) Builder {
 	return &singleClusterBuilder{
-
-		trafficTargets: discovery_smh_solo_io_v1alpha2.NewTrafficTargetClient(client),
-		workloads:      discovery_smh_solo_io_v1alpha2.NewWorkloadClient(client),
-		meshes:         discovery_smh_solo_io_v1alpha2.NewMeshClient(client),
-
-		trafficPolicies:  networking_smh_solo_io_v1alpha2.NewTrafficPolicyClient(client),
-		accessPolicies:   networking_smh_solo_io_v1alpha2.NewAccessPolicyClient(client),
-		virtualMeshes:    networking_smh_solo_io_v1alpha2.NewVirtualMeshClient(client),
-		failoverServices: networking_smh_solo_io_v1alpha2.NewFailoverServiceClient(client),
-
-		secrets: v1.NewSecretClient(client),
-
-		kubernetesClusters: multicluster_solo_io_v1alpha1.NewKubernetesClusterClient(client),
+		mgr: mgr,
 	}
 }
 
@@ -674,31 +848,31 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	var errs error
 
-	if err := b.insertTrafficTargets(ctx, trafficTargets, opts.TrafficTargets...); err != nil {
+	if err := b.insertTrafficTargets(ctx, trafficTargets, opts.TrafficTargets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertWorkloads(ctx, workloads, opts.Workloads...); err != nil {
+	if err := b.insertWorkloads(ctx, workloads, opts.Workloads); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertMeshes(ctx, meshes, opts.Meshes...); err != nil {
+	if err := b.insertMeshes(ctx, meshes, opts.Meshes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertTrafficPolicies(ctx, trafficPolicies, opts.TrafficPolicies...); err != nil {
+	if err := b.insertTrafficPolicies(ctx, trafficPolicies, opts.TrafficPolicies); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertAccessPolicies(ctx, accessPolicies, opts.AccessPolicies...); err != nil {
+	if err := b.insertAccessPolicies(ctx, accessPolicies, opts.AccessPolicies); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertVirtualMeshes(ctx, virtualMeshes, opts.VirtualMeshes...); err != nil {
+	if err := b.insertVirtualMeshes(ctx, virtualMeshes, opts.VirtualMeshes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertFailoverServices(ctx, failoverServices, opts.FailoverServices...); err != nil {
+	if err := b.insertFailoverServices(ctx, failoverServices, opts.FailoverServices); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertSecrets(ctx, secrets, opts.Secrets...); err != nil {
+	if err := b.insertSecrets(ctx, secrets, opts.Secrets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertKubernetesClusters(ctx, kubernetesClusters, opts.KubernetesClusters...); err != nil {
+	if err := b.insertKubernetesClusters(ctx, kubernetesClusters, opts.KubernetesClusters); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -719,8 +893,27 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	return outputSnap, errs
 }
 
-func (b *singleClusterBuilder) insertTrafficTargets(ctx context.Context, trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet, opts ...client.ListOption) error {
-	trafficTargetList, err := b.trafficTargets.ListTrafficTarget(ctx, opts...)
+func (b *singleClusterBuilder) insertTrafficTargets(ctx context.Context, trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "discovery.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "TrafficTarget",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	trafficTargetList, err := discovery_smh_solo_io_v1alpha2.NewTrafficTargetClient(b.mgr.GetClient()).ListTrafficTarget(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -732,8 +925,27 @@ func (b *singleClusterBuilder) insertTrafficTargets(ctx context.Context, traffic
 
 	return nil
 }
-func (b *singleClusterBuilder) insertWorkloads(ctx context.Context, workloads discovery_smh_solo_io_v1alpha2_sets.WorkloadSet, opts ...client.ListOption) error {
-	workloadList, err := b.workloads.ListWorkload(ctx, opts...)
+func (b *singleClusterBuilder) insertWorkloads(ctx context.Context, workloads discovery_smh_solo_io_v1alpha2_sets.WorkloadSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "discovery.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Workload",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	workloadList, err := discovery_smh_solo_io_v1alpha2.NewWorkloadClient(b.mgr.GetClient()).ListWorkload(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -745,8 +957,27 @@ func (b *singleClusterBuilder) insertWorkloads(ctx context.Context, workloads di
 
 	return nil
 }
-func (b *singleClusterBuilder) insertMeshes(ctx context.Context, meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet, opts ...client.ListOption) error {
-	meshList, err := b.meshes.ListMesh(ctx, opts...)
+func (b *singleClusterBuilder) insertMeshes(ctx context.Context, meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "discovery.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Mesh",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	meshList, err := discovery_smh_solo_io_v1alpha2.NewMeshClient(b.mgr.GetClient()).ListMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -759,8 +990,27 @@ func (b *singleClusterBuilder) insertMeshes(ctx context.Context, meshes discover
 	return nil
 }
 
-func (b *singleClusterBuilder) insertTrafficPolicies(ctx context.Context, trafficPolicies networking_smh_solo_io_v1alpha2_sets.TrafficPolicySet, opts ...client.ListOption) error {
-	trafficPolicyList, err := b.trafficPolicies.ListTrafficPolicy(ctx, opts...)
+func (b *singleClusterBuilder) insertTrafficPolicies(ctx context.Context, trafficPolicies networking_smh_solo_io_v1alpha2_sets.TrafficPolicySet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "TrafficPolicy",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	trafficPolicyList, err := networking_smh_solo_io_v1alpha2.NewTrafficPolicyClient(b.mgr.GetClient()).ListTrafficPolicy(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -772,8 +1022,27 @@ func (b *singleClusterBuilder) insertTrafficPolicies(ctx context.Context, traffi
 
 	return nil
 }
-func (b *singleClusterBuilder) insertAccessPolicies(ctx context.Context, accessPolicies networking_smh_solo_io_v1alpha2_sets.AccessPolicySet, opts ...client.ListOption) error {
-	accessPolicyList, err := b.accessPolicies.ListAccessPolicy(ctx, opts...)
+func (b *singleClusterBuilder) insertAccessPolicies(ctx context.Context, accessPolicies networking_smh_solo_io_v1alpha2_sets.AccessPolicySet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "AccessPolicy",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	accessPolicyList, err := networking_smh_solo_io_v1alpha2.NewAccessPolicyClient(b.mgr.GetClient()).ListAccessPolicy(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -785,8 +1054,27 @@ func (b *singleClusterBuilder) insertAccessPolicies(ctx context.Context, accessP
 
 	return nil
 }
-func (b *singleClusterBuilder) insertVirtualMeshes(ctx context.Context, virtualMeshes networking_smh_solo_io_v1alpha2_sets.VirtualMeshSet, opts ...client.ListOption) error {
-	virtualMeshList, err := b.virtualMeshes.ListVirtualMesh(ctx, opts...)
+func (b *singleClusterBuilder) insertVirtualMeshes(ctx context.Context, virtualMeshes networking_smh_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "VirtualMesh",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	virtualMeshList, err := networking_smh_solo_io_v1alpha2.NewVirtualMeshClient(b.mgr.GetClient()).ListVirtualMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -798,8 +1086,27 @@ func (b *singleClusterBuilder) insertVirtualMeshes(ctx context.Context, virtualM
 
 	return nil
 }
-func (b *singleClusterBuilder) insertFailoverServices(ctx context.Context, failoverServices networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet, opts ...client.ListOption) error {
-	failoverServiceList, err := b.failoverServices.ListFailoverService(ctx, opts...)
+func (b *singleClusterBuilder) insertFailoverServices(ctx context.Context, failoverServices networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "FailoverService",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	failoverServiceList, err := networking_smh_solo_io_v1alpha2.NewFailoverServiceClient(b.mgr.GetClient()).ListFailoverService(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -812,8 +1119,27 @@ func (b *singleClusterBuilder) insertFailoverServices(ctx context.Context, failo
 	return nil
 }
 
-func (b *singleClusterBuilder) insertSecrets(ctx context.Context, secrets v1_sets.SecretSet, opts ...client.ListOption) error {
-	secretList, err := b.secrets.ListSecret(ctx, opts...)
+func (b *singleClusterBuilder) insertSecrets(ctx context.Context, secrets v1_sets.SecretSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Secret",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	secretList, err := v1.NewSecretClient(b.mgr.GetClient()).ListSecret(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -826,8 +1152,27 @@ func (b *singleClusterBuilder) insertSecrets(ctx context.Context, secrets v1_set
 	return nil
 }
 
-func (b *singleClusterBuilder) insertKubernetesClusters(ctx context.Context, kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet, opts ...client.ListOption) error {
-	kubernetesClusterList, err := b.kubernetesClusters.ListKubernetesCluster(ctx, opts...)
+func (b *singleClusterBuilder) insertKubernetesClusters(ctx context.Context, kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "multicluster.solo.io",
+			Version: "v1alpha1",
+			Kind:    "KubernetesCluster",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	kubernetesClusterList, err := multicluster_solo_io_v1alpha1.NewKubernetesClusterClient(b.mgr.GetClient()).ListKubernetesCluster(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}

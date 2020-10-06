@@ -66,8 +66,8 @@ func (m *multiclusterIssuedCertificateReconcileLoop) AddMulticlusterIssuedCertif
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterIssuedCertificateReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterIssuedCertificateReconcileLoop {
-	return &multiclusterIssuedCertificateReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &certificates_smh_solo_io_v1alpha2.IssuedCertificate{})}
+func NewMulticlusterIssuedCertificateReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterIssuedCertificateReconcileLoop {
+	return &multiclusterIssuedCertificateReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &certificates_smh_solo_io_v1alpha2.IssuedCertificate{}, options)}
 }
 
 type genericIssuedCertificateMulticlusterReconciler struct {
@@ -137,8 +137,8 @@ func (m *multiclusterCertificateRequestReconcileLoop) AddMulticlusterCertificate
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterCertificateRequestReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterCertificateRequestReconcileLoop {
-	return &multiclusterCertificateRequestReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &certificates_smh_solo_io_v1alpha2.CertificateRequest{})}
+func NewMulticlusterCertificateRequestReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterCertificateRequestReconcileLoop {
+	return &multiclusterCertificateRequestReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &certificates_smh_solo_io_v1alpha2.CertificateRequest{}, options)}
 }
 
 type genericCertificateRequestMulticlusterReconciler struct {
@@ -208,8 +208,8 @@ func (m *multiclusterPodBounceDirectiveReconcileLoop) AddMulticlusterPodBounceDi
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterPodBounceDirectiveReconcileLoop(name string, cw multicluster.ClusterWatcher) MulticlusterPodBounceDirectiveReconcileLoop {
-	return &multiclusterPodBounceDirectiveReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &certificates_smh_solo_io_v1alpha2.PodBounceDirective{})}
+func NewMulticlusterPodBounceDirectiveReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterPodBounceDirectiveReconcileLoop {
+	return &multiclusterPodBounceDirectiveReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &certificates_smh_solo_io_v1alpha2.PodBounceDirective{}, options)}
 }
 
 type genericPodBounceDirectiveMulticlusterReconciler struct {

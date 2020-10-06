@@ -21,7 +21,7 @@ func startReconciler(
 	parameters bootstrap.StartParameters,
 ) error {
 
-	snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager.GetClient())
+	snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager)
 
 	return reconciliation.Start(
 		parameters.Ctx,

@@ -49,7 +49,7 @@ func Start(
 		Filter: predicate.SimpleEventFilterFunc(isLeaderElectionObject),
 	}
 
-	input.RegisterMultiClusterReconciler(ctx, clusters, r.reconcile, time.Second/2, filterDiscoveryEvents)
+	input.RegisterMultiClusterReconciler(ctx, clusters, r.reconcile, time.Second/2, input.ReconcileOptions{}, filterDiscoveryEvents)
 }
 
 func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, error) {
