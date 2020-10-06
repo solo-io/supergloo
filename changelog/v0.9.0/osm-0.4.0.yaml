@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add end to end tests for OSM v0.4.0.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/987
