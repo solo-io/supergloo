@@ -20,7 +20,6 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.CorsPolicy](#networking.smh.solo.io.TrafficPolicySpec.CorsPolicy)
   - [TrafficPolicySpec.FaultInjection](#networking.smh.solo.io.TrafficPolicySpec.FaultInjection)
   - [TrafficPolicySpec.FaultInjection.Abort](#networking.smh.solo.io.TrafficPolicySpec.FaultInjection.Abort)
-  - [TrafficPolicySpec.FaultInjection.Delay](#networking.smh.solo.io.TrafficPolicySpec.FaultInjection.Delay)
   - [TrafficPolicySpec.HeaderManipulation](#networking.smh.solo.io.TrafficPolicySpec.HeaderManipulation)
   - [TrafficPolicySpec.HeaderManipulation.AppendRequestHeadersEntry](#networking.smh.solo.io.TrafficPolicySpec.HeaderManipulation.AppendRequestHeadersEntry)
   - [TrafficPolicySpec.HeaderManipulation.AppendResponseHeadersEntry](#networking.smh.solo.io.TrafficPolicySpec.HeaderManipulation.AppendResponseHeadersEntry)
@@ -55,8 +54,8 @@ A Traffic Policy applies some L7 routing features to an existing mesh. Traffic P
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sourceSelector | [][WorkloadSelector](#networking.smh.solo.io.WorkloadSelector) | repeated | Requests originating from these workloads will have the rule applied. Leave empty to have all workloads in the mesh apply these rules.<br>Note: Source Selectors are ignored when TrafficPolicies are applied to pods in a Linkerd mesh. TrafficPolicies will apply to all selected destinations in Linkerd, regardless of the source.<br>Note: If using the ServiceSelector.Matcher, specifying clusters is currently not supported in Istio. |
-| destinationSelector | [][ServiceSelector](#networking.smh.solo.io.ServiceSelector) | repeated | Requests destined for these k8s services will have the rule applied. Leave empty to apply to all destination k8s services in the mesh. |
+| sourceSelector | [][WorkloadSelector](#networking.smh.solo.io.WorkloadSelector) | repeated | Requests originating from these workloads will have the rule applied. Leave empty to have all workloads in the mesh apply these rules.<br>Note: Source Selectors are ignored when TrafficPolicies are applied to pods in a Linkerd mesh. TrafficPolicies will apply to all selected destinations in Linkerd, regardless of the source.<br>Note: If using the TrafficTargetSelector.Matcher, specifying clusters is currently not supported in Istio. |
+| destinationSelector | [][TrafficTargetSelector](#networking.smh.solo.io.TrafficTargetSelector) | repeated | Requests destined for these k8s services will have the rule applied. Leave empty to apply to all destination k8s services in the mesh. |
 | httpRequestMatchers | [][TrafficPolicySpec.HttpMatcher](#networking.smh.solo.io.TrafficPolicySpec.HttpMatcher) | repeated | If specified, this rule will only apply to http requests matching these conditions. Within a single matcher, all conditions must be satisfied for a match to occur. Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply. NB: Linkerd only supports matching on Request Path and Method. |
 | trafficShift | [TrafficPolicySpec.MultiDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination) |  | Enables traffic shifting, i.e. to reroute requests to a different service, to a subset of pods based on their label, and/or split traffic between multiple services. |
 | faultInjection | [TrafficPolicySpec.FaultInjection](#networking.smh.solo.io.TrafficPolicySpec.FaultInjection) |  | Enable fault injection on requests. |
@@ -100,7 +99,8 @@ FaultInjection can be used to specify one or more faults to inject while forward
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| delay | [TrafficPolicySpec.FaultInjection.Delay](#networking.smh.solo.io.TrafficPolicySpec.FaultInjection.Delay) |  | Delay requests before forwarding, emulating various failures such as network issues, overloaded upstream service, etc. |
+| fixedDelay | [google.protobuf.Duration](#google.protobuf.Duration) |  | Add a fixed delay before forwarding the request. Format: 1h/1m/1s/1ms. MUST be >=1ms. |
+| exponentialDelay | [google.protobuf.Duration](#google.protobuf.Duration) |  | $hide_from_docs |
 | abort | [TrafficPolicySpec.FaultInjection.Abort](#networking.smh.solo.io.TrafficPolicySpec.FaultInjection.Abort) |  | Abort Http request attempts and return error codes back to downstream service, giving the impression that the upstream service is faulty. |
 | percentage | [double](#double) |  | Percentage of requests to be faulted with the error code provided. Values range between 0 and 100 |
 
@@ -118,22 +118,6 @@ The _httpStatus_ field is used to indicate the HTTP status code to return to the
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | httpStatus | [int32](#int32) |  | REQUIRED. HTTP status code to use to abort the Http request. |
-
-
-
-
-
-
-<a name="networking.smh.solo.io.TrafficPolicySpec.FaultInjection.Delay"></a>
-
-### TrafficPolicySpec.FaultInjection.Delay
-The _fixedDelay_ field is used to indicate the amount of delay in seconds. The optional _percentage_ field can be used to only delay a certain percentage of requests. If left unspecified, all request will be delayed.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| fixedDelay | [google.protobuf.Duration](#google.protobuf.Duration) |  | Add a fixed delay before forwarding the request. Format: 1h/1m/1s/1ms. MUST be >=1ms. |
-| exponentialDelay | [google.protobuf.Duration](#google.protobuf.Duration) |  | $hide_from_docs |
 
 
 
@@ -440,6 +424,7 @@ Describes how to match a given string in HTTP headers. Match is case-sensitive.
 | state | [ApprovalState](#networking.smh.solo.io.ApprovalState) |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all target meshes. |
 | trafficTargets | [][TrafficPolicyStatus.TrafficTargetsEntry](#networking.smh.solo.io.TrafficPolicyStatus.TrafficTargetsEntry) | repeated | The status of the TrafficPolicy for each TrafficTarget to which it has been applied. A TrafficPolicy may be Accepted for some TrafficTargets and rejected for others. |
 | workloads | [][string](#string) | repeated | The list of Workloads to which this policy has been applied. |
+| errors | [][string](#string) | repeated | Any errors found while processing this generation of the resource. |
 
 
 

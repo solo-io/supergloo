@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Validate workloads by updating the observed generation.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/973

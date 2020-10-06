@@ -36,7 +36,7 @@ message AccessPolicySpec {
         Requests destined for these pods will have the rule applied.
         Leave empty to apply to all destination pods in the mesh.
     */
-    repeated ServiceSelector destination_selector = 3;
+    repeated TrafficTargetSelector destination_selector = 3;
 
     /*
         Optional. A list of HTTP paths or gRPC methods to allow.
@@ -81,4 +81,7 @@ message AccessPolicyStatus {
 
     // The list of Workloads to which this policy has been applied.
     repeated string workloads = 4;
+
+    // Any errors found while processing this generation of the resource.
+    repeated string errors = 5;
 }

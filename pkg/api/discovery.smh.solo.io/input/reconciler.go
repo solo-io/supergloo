@@ -42,6 +42,7 @@ import (
 )
 
 // the multiClusterReconciler reconciles events for input resources across clusters
+// this private interface is used to ensure that the generated struct implements the intended functions
 type multiClusterReconciler interface {
 	appmesh_k8s_aws_v1beta2_controllers.MulticlusterMeshReconciler
 
@@ -97,7 +98,7 @@ func RegisterMultiClusterReconciler(
 	reconcileInterval time.Duration,
 	options ReconcileOptions,
 	predicates ...predicate.Predicate,
-) {
+) input.MultiClusterReconciler {
 
 	base := input.NewMultiClusterReconcilerImpl(
 		ctx,
@@ -128,7 +129,7 @@ func RegisterMultiClusterReconciler(
 	apps_v1_controllers.NewMulticlusterDaemonSetReconcileLoop("DaemonSet", clusters, options.DaemonSets).AddMulticlusterDaemonSetReconciler(ctx, r, predicates...)
 
 	apps_v1_controllers.NewMulticlusterStatefulSetReconcileLoop("StatefulSet", clusters, options.StatefulSets).AddMulticlusterStatefulSetReconciler(ctx, r, predicates...)
-
+	return r.base
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileMesh(clusterName string, obj *appmesh_k8s_aws_v1beta2.Mesh) (reconcile.Result, error) {
@@ -267,6 +268,7 @@ func (r *multiClusterReconcilerImpl) ReconcileStatefulSetDeletion(clusterName st
 }
 
 // the singleClusterReconciler reconciles events for input resources across clusters
+// this private interface is used to ensure that the generated struct implements the intended functions
 type singleClusterReconciler interface {
 	appmesh_k8s_aws_v1beta2_controllers.MeshReconciler
 
@@ -297,7 +299,7 @@ func RegisterSingleClusterReconciler(
 	reconcileInterval time.Duration,
 	options reconcile.Options,
 	predicates ...predicate.Predicate,
-) error {
+) (input.SingleClusterReconciler, error) {
 
 	base := input.NewSingleClusterReconciler(
 		ctx,
@@ -312,36 +314,36 @@ func RegisterSingleClusterReconciler(
 	// initialize reconcile loops
 
 	if err := appmesh_k8s_aws_v1beta2_controllers.NewMeshReconcileLoop("Mesh", mgr, options).RunMeshReconciler(ctx, r, predicates...); err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := v1_controllers.NewConfigMapReconcileLoop("ConfigMap", mgr, options).RunConfigMapReconciler(ctx, r, predicates...); err != nil {
-		return err
+		return nil, err
 	}
 	if err := v1_controllers.NewServiceReconcileLoop("Service", mgr, options).RunServiceReconciler(ctx, r, predicates...); err != nil {
-		return err
+		return nil, err
 	}
 	if err := v1_controllers.NewPodReconcileLoop("Pod", mgr, options).RunPodReconciler(ctx, r, predicates...); err != nil {
-		return err
+		return nil, err
 	}
 	if err := v1_controllers.NewNodeReconcileLoop("Node", mgr, options).RunNodeReconciler(ctx, r, predicates...); err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := apps_v1_controllers.NewDeploymentReconcileLoop("Deployment", mgr, options).RunDeploymentReconciler(ctx, r, predicates...); err != nil {
-		return err
+		return nil, err
 	}
 	if err := apps_v1_controllers.NewReplicaSetReconcileLoop("ReplicaSet", mgr, options).RunReplicaSetReconciler(ctx, r, predicates...); err != nil {
-		return err
+		return nil, err
 	}
 	if err := apps_v1_controllers.NewDaemonSetReconcileLoop("DaemonSet", mgr, options).RunDaemonSetReconciler(ctx, r, predicates...); err != nil {
-		return err
+		return nil, err
 	}
 	if err := apps_v1_controllers.NewStatefulSetReconcileLoop("StatefulSet", mgr, options).RunStatefulSetReconciler(ctx, r, predicates...); err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return r.base, nil
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileMesh(obj *appmesh_k8s_aws_v1beta2.Mesh) (reconcile.Result, error) {

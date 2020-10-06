@@ -43,6 +43,8 @@ type Clientset interface {
 	IssuedCertificates() IssuedCertificateClient
 	// clienset for the certificates.smh.solo.io/v1alpha2/v1alpha2 APIs
 	CertificateRequests() CertificateRequestClient
+	// clienset for the certificates.smh.solo.io/v1alpha2/v1alpha2 APIs
+	PodBounceDirectives() PodBounceDirectiveClient
 }
 
 type clientSet struct {
@@ -75,6 +77,11 @@ func (c *clientSet) IssuedCertificates() IssuedCertificateClient {
 // clienset for the certificates.smh.solo.io/v1alpha2/v1alpha2 APIs
 func (c *clientSet) CertificateRequests() CertificateRequestClient {
 	return NewCertificateRequestClient(c.client)
+}
+
+// clienset for the certificates.smh.solo.io/v1alpha2/v1alpha2 APIs
+func (c *clientSet) PodBounceDirectives() PodBounceDirectiveClient {
+	return NewPodBounceDirectiveClient(c.client)
 }
 
 // Reader knows how to read and list IssuedCertificates.
@@ -359,4 +366,146 @@ func (m *multiclusterCertificateRequestClient) Cluster(cluster string) (Certific
 		return nil, err
 	}
 	return NewCertificateRequestClient(client), nil
+}
+
+// Reader knows how to read and list PodBounceDirectives.
+type PodBounceDirectiveReader interface {
+	// Get retrieves a PodBounceDirective for the given object key
+	GetPodBounceDirective(ctx context.Context, key client.ObjectKey) (*PodBounceDirective, error)
+
+	// List retrieves list of PodBounceDirectives for a given namespace and list options.
+	ListPodBounceDirective(ctx context.Context, opts ...client.ListOption) (*PodBounceDirectiveList, error)
+}
+
+// PodBounceDirectiveTransitionFunction instructs the PodBounceDirectiveWriter how to transition between an existing
+// PodBounceDirective object and a desired on an Upsert
+type PodBounceDirectiveTransitionFunction func(existing, desired *PodBounceDirective) error
+
+// Writer knows how to create, delete, and update PodBounceDirectives.
+type PodBounceDirectiveWriter interface {
+	// Create saves the PodBounceDirective object.
+	CreatePodBounceDirective(ctx context.Context, obj *PodBounceDirective, opts ...client.CreateOption) error
+
+	// Delete deletes the PodBounceDirective object.
+	DeletePodBounceDirective(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+	// Update updates the given PodBounceDirective object.
+	UpdatePodBounceDirective(ctx context.Context, obj *PodBounceDirective, opts ...client.UpdateOption) error
+
+	// Patch patches the given PodBounceDirective object.
+	PatchPodBounceDirective(ctx context.Context, obj *PodBounceDirective, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all PodBounceDirective objects matching the given options.
+	DeleteAllOfPodBounceDirective(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the PodBounceDirective object.
+	UpsertPodBounceDirective(ctx context.Context, obj *PodBounceDirective, transitionFuncs ...PodBounceDirectiveTransitionFunction) error
+}
+
+// StatusWriter knows how to update status subresource of a PodBounceDirective object.
+type PodBounceDirectiveStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given PodBounceDirective object.
+	UpdatePodBounceDirectiveStatus(ctx context.Context, obj *PodBounceDirective, opts ...client.UpdateOption) error
+
+	// Patch patches the given PodBounceDirective object's subresource.
+	PatchPodBounceDirectiveStatus(ctx context.Context, obj *PodBounceDirective, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on PodBounceDirectives.
+type PodBounceDirectiveClient interface {
+	PodBounceDirectiveReader
+	PodBounceDirectiveWriter
+	PodBounceDirectiveStatusWriter
+}
+
+type podBounceDirectiveClient struct {
+	client client.Client
+}
+
+func NewPodBounceDirectiveClient(client client.Client) *podBounceDirectiveClient {
+	return &podBounceDirectiveClient{client: client}
+}
+
+func (c *podBounceDirectiveClient) GetPodBounceDirective(ctx context.Context, key client.ObjectKey) (*PodBounceDirective, error) {
+	obj := &PodBounceDirective{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *podBounceDirectiveClient) ListPodBounceDirective(ctx context.Context, opts ...client.ListOption) (*PodBounceDirectiveList, error) {
+	list := &PodBounceDirectiveList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *podBounceDirectiveClient) CreatePodBounceDirective(ctx context.Context, obj *PodBounceDirective, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *podBounceDirectiveClient) DeletePodBounceDirective(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &PodBounceDirective{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *podBounceDirectiveClient) UpdatePodBounceDirective(ctx context.Context, obj *PodBounceDirective, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *podBounceDirectiveClient) PatchPodBounceDirective(ctx context.Context, obj *PodBounceDirective, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *podBounceDirectiveClient) DeleteAllOfPodBounceDirective(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &PodBounceDirective{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *podBounceDirectiveClient) UpsertPodBounceDirective(ctx context.Context, obj *PodBounceDirective, transitionFuncs ...PodBounceDirectiveTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*PodBounceDirective), desired.(*PodBounceDirective)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
+func (c *podBounceDirectiveClient) UpdatePodBounceDirectiveStatus(ctx context.Context, obj *PodBounceDirective, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *podBounceDirectiveClient) PatchPodBounceDirectiveStatus(ctx context.Context, obj *PodBounceDirective, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides PodBounceDirectiveClients for multiple clusters.
+type MulticlusterPodBounceDirectiveClient interface {
+	// Cluster returns a PodBounceDirectiveClient for the given cluster
+	Cluster(cluster string) (PodBounceDirectiveClient, error)
+}
+
+type multiclusterPodBounceDirectiveClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterPodBounceDirectiveClient(client multicluster.Client) MulticlusterPodBounceDirectiveClient {
+	return &multiclusterPodBounceDirectiveClient{client: client}
+}
+
+func (m *multiclusterPodBounceDirectiveClient) Cluster(cluster string) (PodBounceDirectiveClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewPodBounceDirectiveClient(client), nil
 }

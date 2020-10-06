@@ -29,6 +29,7 @@ import (
 )
 
 // the multiClusterReconciler reconciles events for input resources across clusters
+// this private interface is used to ensure that the generated struct implements the intended functions
 type multiClusterReconciler interface {
 	certificates_smh_solo_io_v1alpha2_controllers.MulticlusterIssuedCertificateReconciler
 	certificates_smh_solo_io_v1alpha2_controllers.MulticlusterCertificateRequestReconciler
@@ -59,7 +60,7 @@ func RegisterMultiClusterReconciler(
 	reconcileInterval time.Duration,
 	options ReconcileOptions,
 	predicates ...predicate.Predicate,
-) {
+) input.MultiClusterReconciler {
 
 	base := input.NewMultiClusterReconcilerImpl(
 		ctx,
@@ -76,7 +77,7 @@ func RegisterMultiClusterReconciler(
 	certificates_smh_solo_io_v1alpha2_controllers.NewMulticlusterIssuedCertificateReconcileLoop("IssuedCertificate", clusters, options.IssuedCertificates).AddMulticlusterIssuedCertificateReconciler(ctx, r, predicates...)
 
 	certificates_smh_solo_io_v1alpha2_controllers.NewMulticlusterCertificateRequestReconcileLoop("CertificateRequest", clusters, options.CertificateRequests).AddMulticlusterCertificateRequestReconciler(ctx, r, predicates...)
-
+	return r.base
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileIssuedCertificate(clusterName string, obj *certificates_smh_solo_io_v1alpha2.IssuedCertificate) (reconcile.Result, error) {
@@ -110,6 +111,7 @@ func (r *multiClusterReconcilerImpl) ReconcileCertificateRequestDeletion(cluster
 }
 
 // the singleClusterReconciler reconciles events for input resources across clusters
+// this private interface is used to ensure that the generated struct implements the intended functions
 type singleClusterReconciler interface {
 	certificates_smh_solo_io_v1alpha2_controllers.IssuedCertificateReconciler
 	certificates_smh_solo_io_v1alpha2_controllers.CertificateRequestReconciler
@@ -131,7 +133,7 @@ func RegisterSingleClusterReconciler(
 	reconcileInterval time.Duration,
 	options reconcile.Options,
 	predicates ...predicate.Predicate,
-) error {
+) (input.SingleClusterReconciler, error) {
 
 	base := input.NewSingleClusterReconciler(
 		ctx,
@@ -146,13 +148,13 @@ func RegisterSingleClusterReconciler(
 	// initialize reconcile loops
 
 	if err := certificates_smh_solo_io_v1alpha2_controllers.NewIssuedCertificateReconcileLoop("IssuedCertificate", mgr, options).RunIssuedCertificateReconciler(ctx, r, predicates...); err != nil {
-		return err
+		return nil, err
 	}
 	if err := certificates_smh_solo_io_v1alpha2_controllers.NewCertificateRequestReconcileLoop("CertificateRequest", mgr, options).RunCertificateRequestReconciler(ctx, r, predicates...); err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return r.base, nil
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileIssuedCertificate(obj *certificates_smh_solo_io_v1alpha2.IssuedCertificate) (reconcile.Result, error) {

@@ -18,6 +18,7 @@ type InputSnapshotManualBuilder struct {
 
 	issuedCertificates  certificates_smh_solo_io_v1alpha2_sets.IssuedCertificateSet
 	certificateRequests certificates_smh_solo_io_v1alpha2_sets.CertificateRequestSet
+	podBounceDirectives certificates_smh_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 
 	secrets v1_sets.SecretSet
 	pods    v1_sets.PodSet
@@ -29,6 +30,7 @@ func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 
 		issuedCertificates:  certificates_smh_solo_io_v1alpha2_sets.NewIssuedCertificateSet(),
 		certificateRequests: certificates_smh_solo_io_v1alpha2_sets.NewCertificateRequestSet(),
+		podBounceDirectives: certificates_smh_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet(),
 
 		secrets: v1_sets.NewSecretSet(),
 		pods:    v1_sets.NewPodSet(),
@@ -41,6 +43,7 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 
 		i.issuedCertificates,
 		i.certificateRequests,
+		i.podBounceDirectives,
 
 		i.secrets,
 		i.pods,
@@ -52,6 +55,10 @@ func (i *InputSnapshotManualBuilder) AddIssuedCertificates(issuedCertificates []
 }
 func (i *InputSnapshotManualBuilder) AddCertificateRequests(certificateRequests []*certificates_smh_solo_io_v1alpha2.CertificateRequest) *InputSnapshotManualBuilder {
 	i.certificateRequests.Insert(certificateRequests...)
+	return i
+}
+func (i *InputSnapshotManualBuilder) AddPodBounceDirectives(podBounceDirectives []*certificates_smh_solo_io_v1alpha2.PodBounceDirective) *InputSnapshotManualBuilder {
+	i.podBounceDirectives.Insert(podBounceDirectives...)
 	return i
 }
 func (i *InputSnapshotManualBuilder) AddSecrets(secrets []*v1.Secret) *InputSnapshotManualBuilder {

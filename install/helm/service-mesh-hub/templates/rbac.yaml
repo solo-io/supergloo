@@ -160,6 +160,7 @@ rules:
   - certificates.smh.solo.io
   resources:
   - issuedcertificates
+  - podbouncedirectives
   verbs:
   - '*'
 - apiGroups:

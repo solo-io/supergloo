@@ -46,6 +46,7 @@ func startReconciler(
 		parameters.MasterManager,
 		parameters.McClient,
 		parameters.Clusters,
+		parameters.Clusters,
 	)
 
 	return reconciliation.Start(
@@ -66,6 +67,7 @@ func startCertIssuer(
 	masterManager manager.Manager,
 	mcClient multicluster.Client,
 	clusters multicluster.Interface,
+	clusterWatcher multicluster.ClusterWatcher,
 ) {
 
 	builder := certissuerinput.NewMultiClusterBuilder(
@@ -77,7 +79,7 @@ func startCertIssuer(
 		ctx,
 		builder,
 		mcClient,
-		clusters,
+		clusterWatcher,
 		masterManager.GetClient(),
 	)
 }

@@ -350,3 +350,172 @@ func (s *certificateRequestSet) Length() int {
 	}
 	return s.set.Length()
 }
+
+type PodBounceDirectiveSet interface {
+	// Get the set stored keys
+	Keys() sets.String
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*certificates_smh_solo_io_v1alpha2.PodBounceDirective) bool) []*certificates_smh_solo_io_v1alpha2.PodBounceDirective
+	// Return the Set as a map of key to resource.
+	Map() map[string]*certificates_smh_solo_io_v1alpha2.PodBounceDirective
+	// Insert a resource into the set.
+	Insert(podBounceDirective ...*certificates_smh_solo_io_v1alpha2.PodBounceDirective)
+	// Compare the equality of the keys in two sets (not the resources themselves)
+	Equal(podBounceDirectiveSet PodBounceDirectiveSet) bool
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(podBounceDirective ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(podBounceDirective ezkube.ResourceId)
+	// Return the union with the provided set
+	Union(set PodBounceDirectiveSet) PodBounceDirectiveSet
+	// Return the difference with the provided set
+	Difference(set PodBounceDirectiveSet) PodBounceDirectiveSet
+	// Return the intersection with the provided set
+	Intersection(set PodBounceDirectiveSet) PodBounceDirectiveSet
+	// Find the resource with the given ID
+	Find(id ezkube.ResourceId) (*certificates_smh_solo_io_v1alpha2.PodBounceDirective, error)
+	// Get the length of the set
+	Length() int
+}
+
+func makeGenericPodBounceDirectiveSet(podBounceDirectiveList []*certificates_smh_solo_io_v1alpha2.PodBounceDirective) sksets.ResourceSet {
+	var genericResources []ezkube.ResourceId
+	for _, obj := range podBounceDirectiveList {
+		genericResources = append(genericResources, obj)
+	}
+	return sksets.NewResourceSet(genericResources...)
+}
+
+type podBounceDirectiveSet struct {
+	set sksets.ResourceSet
+}
+
+func NewPodBounceDirectiveSet(podBounceDirectiveList ...*certificates_smh_solo_io_v1alpha2.PodBounceDirective) PodBounceDirectiveSet {
+	return &podBounceDirectiveSet{set: makeGenericPodBounceDirectiveSet(podBounceDirectiveList)}
+}
+
+func NewPodBounceDirectiveSetFromList(podBounceDirectiveList *certificates_smh_solo_io_v1alpha2.PodBounceDirectiveList) PodBounceDirectiveSet {
+	list := make([]*certificates_smh_solo_io_v1alpha2.PodBounceDirective, 0, len(podBounceDirectiveList.Items))
+	for idx := range podBounceDirectiveList.Items {
+		list = append(list, &podBounceDirectiveList.Items[idx])
+	}
+	return &podBounceDirectiveSet{set: makeGenericPodBounceDirectiveSet(list)}
+}
+
+func (s *podBounceDirectiveSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
+	return s.set.Keys()
+}
+
+func (s *podBounceDirectiveSet) List(filterResource ...func(*certificates_smh_solo_io_v1alpha2.PodBounceDirective) bool) []*certificates_smh_solo_io_v1alpha2.PodBounceDirective {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*certificates_smh_solo_io_v1alpha2.PodBounceDirective))
+		})
+	}
+
+	var podBounceDirectiveList []*certificates_smh_solo_io_v1alpha2.PodBounceDirective
+	for _, obj := range s.set.List(genericFilters...) {
+		podBounceDirectiveList = append(podBounceDirectiveList, obj.(*certificates_smh_solo_io_v1alpha2.PodBounceDirective))
+	}
+	return podBounceDirectiveList
+}
+
+func (s *podBounceDirectiveSet) Map() map[string]*certificates_smh_solo_io_v1alpha2.PodBounceDirective {
+	if s == nil {
+		return nil
+	}
+
+	newMap := map[string]*certificates_smh_solo_io_v1alpha2.PodBounceDirective{}
+	for k, v := range s.set.Map() {
+		newMap[k] = v.(*certificates_smh_solo_io_v1alpha2.PodBounceDirective)
+	}
+	return newMap
+}
+
+func (s *podBounceDirectiveSet) Insert(
+	podBounceDirectiveList ...*certificates_smh_solo_io_v1alpha2.PodBounceDirective,
+) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
+	for _, obj := range podBounceDirectiveList {
+		s.set.Insert(obj)
+	}
+}
+
+func (s *podBounceDirectiveSet) Has(podBounceDirective ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
+	return s.set.Has(podBounceDirective)
+}
+
+func (s *podBounceDirectiveSet) Equal(
+	podBounceDirectiveSet PodBounceDirectiveSet,
+) bool {
+	if s == nil {
+		return podBounceDirectiveSet == nil
+	}
+	return s.set.Equal(makeGenericPodBounceDirectiveSet(podBounceDirectiveSet.List()))
+}
+
+func (s *podBounceDirectiveSet) Delete(PodBounceDirective ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
+	s.set.Delete(PodBounceDirective)
+}
+
+func (s *podBounceDirectiveSet) Union(set PodBounceDirectiveSet) PodBounceDirectiveSet {
+	if s == nil {
+		return set
+	}
+	return NewPodBounceDirectiveSet(append(s.List(), set.List()...)...)
+}
+
+func (s *podBounceDirectiveSet) Difference(set PodBounceDirectiveSet) PodBounceDirectiveSet {
+	if s == nil {
+		return set
+	}
+	newSet := s.set.Difference(makeGenericPodBounceDirectiveSet(set.List()))
+	return &podBounceDirectiveSet{set: newSet}
+}
+
+func (s *podBounceDirectiveSet) Intersection(set PodBounceDirectiveSet) PodBounceDirectiveSet {
+	if s == nil {
+		return nil
+	}
+	newSet := s.set.Intersection(makeGenericPodBounceDirectiveSet(set.List()))
+	var podBounceDirectiveList []*certificates_smh_solo_io_v1alpha2.PodBounceDirective
+	for _, obj := range newSet.List() {
+		podBounceDirectiveList = append(podBounceDirectiveList, obj.(*certificates_smh_solo_io_v1alpha2.PodBounceDirective))
+	}
+	return NewPodBounceDirectiveSet(podBounceDirectiveList...)
+}
+
+func (s *podBounceDirectiveSet) Find(id ezkube.ResourceId) (*certificates_smh_solo_io_v1alpha2.PodBounceDirective, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find PodBounceDirective %v", sksets.Key(id))
+	}
+	obj, err := s.set.Find(&certificates_smh_solo_io_v1alpha2.PodBounceDirective{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*certificates_smh_solo_io_v1alpha2.PodBounceDirective), nil
+}
+
+func (s *podBounceDirectiveSet) Length() int {
+	if s == nil {
+		return 0
+	}
+	return s.set.Length()
+}

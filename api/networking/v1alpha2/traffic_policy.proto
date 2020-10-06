@@ -34,7 +34,7 @@ message TrafficPolicySpec {
         applied to pods in a Linkerd mesh. TrafficPolicies will apply to
         all selected destinations in Linkerd, regardless of the source.
 
-        Note: If using the ServiceSelector.Matcher, specifying clusters is currently not supported in Istio.
+        Note: If using the TrafficTargetSelector.Matcher, specifying clusters is currently not supported in Istio.
     */
     repeated WorkloadSelector source_selector = 1;
 
@@ -42,7 +42,7 @@ message TrafficPolicySpec {
         Requests destined for these k8s services will have the rule applied.
         Leave empty to apply to all destination k8s services in the mesh.
     */
-    repeated ServiceSelector destination_selector = 2;
+    repeated TrafficTargetSelector destination_selector = 2;
 
     /*
         If specified, this rule will only apply to http requests matching these conditions.
@@ -161,36 +161,26 @@ message TrafficPolicySpec {
     */
     message FaultInjection {
 
-        oneof fault_injection_type {
-            /*
-                Delay requests before forwarding, emulating various failures such as
-                network issues, overloaded upstream service, etc.
-            */
-            Delay delay = 1;
-
-            /*
-                Abort Http request attempts and return error codes back to downstream
-                service, giving the impression that the upstream service is faulty.
-            */
-            Abort abort = 2;
-        }
-
         /*
             The _fixedDelay_ field is used to indicate the amount of delay in seconds.
             The optional _percentage_ field can be used to only delay a certain
             percentage of requests. If left unspecified, all request will be delayed.
         */
-        message Delay {
-            oneof http_delay_type {
-                /*
+        oneof fault_injection_type {
+            /*
                     Add a fixed delay before forwarding the request. Format:
                     1h/1m/1s/1ms. MUST be >=1ms.
                 */
-                google.protobuf.Duration fixed_delay = 2;
+            google.protobuf.Duration fixed_delay = 1;
 
-                // $hide_from_docs
-                google.protobuf.Duration exponential_delay = 3;
-            }
+            // $hide_from_docs
+            google.protobuf.Duration exponential_delay = 2;
+
+            /*
+                Abort Http request attempts and return error codes back to downstream
+                service, giving the impression that the upstream service is faulty.
+            */
+            Abort abort = 3;
         }
 
         /*
@@ -200,11 +190,8 @@ message TrafficPolicySpec {
             aborted.
         */
         message Abort {
-
-            oneof error_type {
-                // REQUIRED. HTTP status code to use to abort the Http request.
-                int32 http_status = 4;
-            }
+            // REQUIRED. HTTP status code to use to abort the Http request.
+            int32 http_status = 4;
         }
 
         // Percentage of requests to be faulted with the error code provided. Values range between 0 and 100
@@ -434,4 +421,7 @@ message TrafficPolicyStatus {
 
     // The list of Workloads to which this policy has been applied.
     repeated string workloads = 4;
+
+    // Any errors found while processing this generation of the resource.
+    repeated string errors = 5;
 }

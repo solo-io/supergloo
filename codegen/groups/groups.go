@@ -35,6 +35,7 @@ var CertAgentGroups = []model.Group{
 	makeGroup("certificates", v1alpha2Version, []resourceToGenerate{
 		{kind: "IssuedCertificate"},
 		{kind: "CertificateRequest"},
+		{kind: "PodBounceDirective", noStatus: true},
 	}),
 }
 
@@ -67,14 +68,15 @@ func makeGroup(groupPrefix, version string, resourcesToGenerate []resourceToGene
 			Group:   groupPrefix + "." + constants.ServiceMeshHubApiGroupSuffix,
 			Version: version,
 		},
-		Module:           smhModule,
-		Resources:        resources,
-		RenderManifests:  true,
-		RenderTypes:      true,
-		RenderClients:    true,
-		RenderController: true,
-		MockgenDirective: true,
-		CustomTemplates:  contrib.AllGroupCustomTemplates,
-		ApiRoot:          apiRoot,
+		Module:                  smhModule,
+		Resources:               resources,
+		RenderManifests:         true,
+		RenderValidationSchemas: true,
+		RenderTypes:             true,
+		RenderClients:           true,
+		RenderController:        true,
+		MockgenDirective:        true,
+		CustomTemplates:         contrib.AllGroupCustomTemplates,
+		ApiRoot:                 apiRoot,
 	}
 }

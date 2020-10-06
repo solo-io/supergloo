@@ -69,6 +69,7 @@ func Start(
 		Filter: predicate.SimpleEventFilterFunc(isLeaderElectionObject),
 	}
 
+	input.RegisterMultiClusterReconciler(ctx, clusters, r.reconcile, time.Second/2, input.ReconcileOptions{}, filterDiscoveryEvents)
 	input.RegisterMultiClusterReconciler(
 		ctx,
 		clusters,

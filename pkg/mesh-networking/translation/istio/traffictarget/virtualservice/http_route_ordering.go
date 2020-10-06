@@ -38,6 +38,9 @@ func isHttpRouteMatcherMoreSpecific(httpRouteA, httpRouteB *networkingv1alpha3sp
 	if httpRouteA.Match == nil {
 		return httpRouteB.Match == nil
 	}
+	if httpRouteB.Match == nil {
+		return httpRouteA.Match == nil
+	}
 	// each HttpRoute is guaranteed to only have a single HttpMatchRequest, see
 	// https://github.com/solo-io/service-mesh-hub/blob/f05b08c4fec934eb7d492f414808789613f2e7f8/pkg/mesh-networking/translation/istio/meshservice/virtualservice/virtual_service_translator.go#L99
 	a := httpRouteA.GetMatch()[0]
