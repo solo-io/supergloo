@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 
 	"github.com/hashicorp/go-multierror"
@@ -19,7 +20,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/certificates/agent/utils"
 	"github.com/solo-io/service-mesh-hub/pkg/certificates/common/secrets"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/reconcile"
