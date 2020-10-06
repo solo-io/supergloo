@@ -25,6 +25,10 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/solo-io/skv2/pkg/verifier"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -160,56 +164,48 @@ type Builder interface {
 type BuildOptions struct {
 
 	// List options for composing a snapshot from ConfigMaps
-	ConfigMaps []client.ListOption
+	ConfigMaps ResourceBuildOptions
 	// List options for composing a snapshot from Services
-	Services []client.ListOption
+	Services ResourceBuildOptions
 	// List options for composing a snapshot from Pods
-	Pods []client.ListOption
+	Pods ResourceBuildOptions
 	// List options for composing a snapshot from Nodes
-	Nodes []client.ListOption
+	Nodes ResourceBuildOptions
 
 	// List options for composing a snapshot from Deployments
-	Deployments []client.ListOption
+	Deployments ResourceBuildOptions
 	// List options for composing a snapshot from ReplicaSets
-	ReplicaSets []client.ListOption
+	ReplicaSets ResourceBuildOptions
 	// List options for composing a snapshot from DaemonSets
-	DaemonSets []client.ListOption
+	DaemonSets ResourceBuildOptions
 	// List options for composing a snapshot from StatefulSets
-	StatefulSets []client.ListOption
+	StatefulSets ResourceBuildOptions
+}
+
+// Options for reading resources of a given type
+type ResourceBuildOptions struct {
+
+	// List options for composing a snapshot from a resource type
+	ListOptions []client.ListOption
+
+	// If provided, ensure the resource has been verified before adding it to snapshots
+	Verifier verifier.ServerResourceVerifier
 }
 
 // build a snapshot from resources across multiple clusters
 type multiClusterBuilder struct {
-	clusters multicluster.ClusterSet
-
-	configMaps v1.MulticlusterConfigMapClient
-	services   v1.MulticlusterServiceClient
-	pods       v1.MulticlusterPodClient
-	nodes      v1.MulticlusterNodeClient
-
-	deployments  apps_v1.MulticlusterDeploymentClient
-	replicaSets  apps_v1.MulticlusterReplicaSetClient
-	daemonSets   apps_v1.MulticlusterDaemonSetClient
-	statefulSets apps_v1.MulticlusterStatefulSetClient
+	clusters multicluster.Interface
+	client   multicluster.Client
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
 func NewMultiClusterBuilder(
-	clusters multicluster.ClusterSet,
+	clusters multicluster.Interface,
 	client multicluster.Client,
 ) Builder {
 	return &multiClusterBuilder{
 		clusters: clusters,
-
-		configMaps: v1.NewMulticlusterConfigMapClient(client),
-		services:   v1.NewMulticlusterServiceClient(client),
-		pods:       v1.NewMulticlusterPodClient(client),
-		nodes:      v1.NewMulticlusterNodeClient(client),
-
-		deployments:  apps_v1.NewMulticlusterDeploymentClient(client),
-		replicaSets:  apps_v1.NewMulticlusterReplicaSetClient(client),
-		daemonSets:   apps_v1.NewMulticlusterDaemonSetClient(client),
-		statefulSets: apps_v1.NewMulticlusterStatefulSetClient(client),
+		client:   client,
 	}
 }
 
@@ -229,28 +225,28 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 
 	for _, cluster := range b.clusters.ListClusters() {
 
-		if err := b.insertConfigMapsFromCluster(ctx, cluster, configMaps, opts.ConfigMaps...); err != nil {
+		if err := b.insertConfigMapsFromCluster(ctx, cluster, configMaps, opts.ConfigMaps); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertServicesFromCluster(ctx, cluster, services, opts.Services...); err != nil {
+		if err := b.insertServicesFromCluster(ctx, cluster, services, opts.Services); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertPodsFromCluster(ctx, cluster, pods, opts.Pods...); err != nil {
+		if err := b.insertPodsFromCluster(ctx, cluster, pods, opts.Pods); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertNodesFromCluster(ctx, cluster, nodes, opts.Nodes...); err != nil {
+		if err := b.insertNodesFromCluster(ctx, cluster, nodes, opts.Nodes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertDeploymentsFromCluster(ctx, cluster, deployments, opts.Deployments...); err != nil {
+		if err := b.insertDeploymentsFromCluster(ctx, cluster, deployments, opts.Deployments); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertReplicaSetsFromCluster(ctx, cluster, replicaSets, opts.ReplicaSets...); err != nil {
+		if err := b.insertReplicaSetsFromCluster(ctx, cluster, replicaSets, opts.ReplicaSets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertDaemonSetsFromCluster(ctx, cluster, daemonSets, opts.DaemonSets...); err != nil {
+		if err := b.insertDaemonSetsFromCluster(ctx, cluster, daemonSets, opts.DaemonSets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertStatefulSetsFromCluster(ctx, cluster, statefulSets, opts.StatefulSets...); err != nil {
+		if err := b.insertStatefulSetsFromCluster(ctx, cluster, statefulSets, opts.StatefulSets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 
@@ -272,13 +268,36 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	return outputSnap, errs
 }
 
-func (b *multiClusterBuilder) insertConfigMapsFromCluster(ctx context.Context, cluster string, configMaps v1_sets.ConfigMapSet, opts ...client.ListOption) error {
-	configMapClient, err := b.configMaps.Cluster(cluster)
+func (b *multiClusterBuilder) insertConfigMapsFromCluster(ctx context.Context, cluster string, configMaps v1_sets.ConfigMapSet, opts ResourceBuildOptions) error {
+	configMapClient, err := v1.NewMulticlusterConfigMapClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	configMapList, err := configMapClient.ListConfigMap(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "ConfigMap",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	configMapList, err := configMapClient.ListConfigMap(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -291,13 +310,36 @@ func (b *multiClusterBuilder) insertConfigMapsFromCluster(ctx context.Context, c
 
 	return nil
 }
-func (b *multiClusterBuilder) insertServicesFromCluster(ctx context.Context, cluster string, services v1_sets.ServiceSet, opts ...client.ListOption) error {
-	serviceClient, err := b.services.Cluster(cluster)
+func (b *multiClusterBuilder) insertServicesFromCluster(ctx context.Context, cluster string, services v1_sets.ServiceSet, opts ResourceBuildOptions) error {
+	serviceClient, err := v1.NewMulticlusterServiceClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	serviceList, err := serviceClient.ListService(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Service",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	serviceList, err := serviceClient.ListService(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -310,13 +352,36 @@ func (b *multiClusterBuilder) insertServicesFromCluster(ctx context.Context, clu
 
 	return nil
 }
-func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster string, pods v1_sets.PodSet, opts ...client.ListOption) error {
-	podClient, err := b.pods.Cluster(cluster)
+func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster string, pods v1_sets.PodSet, opts ResourceBuildOptions) error {
+	podClient, err := v1.NewMulticlusterPodClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	podList, err := podClient.ListPod(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Pod",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	podList, err := podClient.ListPod(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -329,13 +394,36 @@ func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster
 
 	return nil
 }
-func (b *multiClusterBuilder) insertNodesFromCluster(ctx context.Context, cluster string, nodes v1_sets.NodeSet, opts ...client.ListOption) error {
-	nodeClient, err := b.nodes.Cluster(cluster)
+func (b *multiClusterBuilder) insertNodesFromCluster(ctx context.Context, cluster string, nodes v1_sets.NodeSet, opts ResourceBuildOptions) error {
+	nodeClient, err := v1.NewMulticlusterNodeClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	nodeList, err := nodeClient.ListNode(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Node",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	nodeList, err := nodeClient.ListNode(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -349,13 +437,36 @@ func (b *multiClusterBuilder) insertNodesFromCluster(ctx context.Context, cluste
 	return nil
 }
 
-func (b *multiClusterBuilder) insertDeploymentsFromCluster(ctx context.Context, cluster string, deployments apps_v1_sets.DeploymentSet, opts ...client.ListOption) error {
-	deploymentClient, err := b.deployments.Cluster(cluster)
+func (b *multiClusterBuilder) insertDeploymentsFromCluster(ctx context.Context, cluster string, deployments apps_v1_sets.DeploymentSet, opts ResourceBuildOptions) error {
+	deploymentClient, err := apps_v1.NewMulticlusterDeploymentClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	deploymentList, err := deploymentClient.ListDeployment(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "apps",
+			Version: "v1",
+			Kind:    "Deployment",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	deploymentList, err := deploymentClient.ListDeployment(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -368,13 +479,36 @@ func (b *multiClusterBuilder) insertDeploymentsFromCluster(ctx context.Context, 
 
 	return nil
 }
-func (b *multiClusterBuilder) insertReplicaSetsFromCluster(ctx context.Context, cluster string, replicaSets apps_v1_sets.ReplicaSetSet, opts ...client.ListOption) error {
-	replicaSetClient, err := b.replicaSets.Cluster(cluster)
+func (b *multiClusterBuilder) insertReplicaSetsFromCluster(ctx context.Context, cluster string, replicaSets apps_v1_sets.ReplicaSetSet, opts ResourceBuildOptions) error {
+	replicaSetClient, err := apps_v1.NewMulticlusterReplicaSetClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	replicaSetList, err := replicaSetClient.ListReplicaSet(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "apps",
+			Version: "v1",
+			Kind:    "ReplicaSet",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	replicaSetList, err := replicaSetClient.ListReplicaSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -387,13 +521,36 @@ func (b *multiClusterBuilder) insertReplicaSetsFromCluster(ctx context.Context, 
 
 	return nil
 }
-func (b *multiClusterBuilder) insertDaemonSetsFromCluster(ctx context.Context, cluster string, daemonSets apps_v1_sets.DaemonSetSet, opts ...client.ListOption) error {
-	daemonSetClient, err := b.daemonSets.Cluster(cluster)
+func (b *multiClusterBuilder) insertDaemonSetsFromCluster(ctx context.Context, cluster string, daemonSets apps_v1_sets.DaemonSetSet, opts ResourceBuildOptions) error {
+	daemonSetClient, err := apps_v1.NewMulticlusterDaemonSetClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	daemonSetList, err := daemonSetClient.ListDaemonSet(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "apps",
+			Version: "v1",
+			Kind:    "DaemonSet",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	daemonSetList, err := daemonSetClient.ListDaemonSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -406,13 +563,36 @@ func (b *multiClusterBuilder) insertDaemonSetsFromCluster(ctx context.Context, c
 
 	return nil
 }
-func (b *multiClusterBuilder) insertStatefulSetsFromCluster(ctx context.Context, cluster string, statefulSets apps_v1_sets.StatefulSetSet, opts ...client.ListOption) error {
-	statefulSetClient, err := b.statefulSets.Cluster(cluster)
+func (b *multiClusterBuilder) insertStatefulSetsFromCluster(ctx context.Context, cluster string, statefulSets apps_v1_sets.StatefulSetSet, opts ResourceBuildOptions) error {
+	statefulSetClient, err := apps_v1.NewMulticlusterStatefulSetClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	statefulSetList, err := statefulSetClient.ListStatefulSet(ctx, opts...)
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "apps",
+			Version: "v1",
+			Kind:    "StatefulSet",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	statefulSetList, err := statefulSetClient.ListStatefulSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -428,32 +608,15 @@ func (b *multiClusterBuilder) insertStatefulSetsFromCluster(ctx context.Context,
 
 // build a snapshot from resources in a single cluster
 type singleClusterBuilder struct {
-	configMaps v1.ConfigMapClient
-	services   v1.ServiceClient
-	pods       v1.PodClient
-	nodes      v1.NodeClient
-
-	deployments  apps_v1.DeploymentClient
-	replicaSets  apps_v1.ReplicaSetClient
-	daemonSets   apps_v1.DaemonSetClient
-	statefulSets apps_v1.StatefulSetClient
+	mgr manager.Manager
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
 func NewSingleClusterBuilder(
-	client client.Client,
+	mgr manager.Manager,
 ) Builder {
 	return &singleClusterBuilder{
-
-		configMaps: v1.NewConfigMapClient(client),
-		services:   v1.NewServiceClient(client),
-		pods:       v1.NewPodClient(client),
-		nodes:      v1.NewNodeClient(client),
-
-		deployments:  apps_v1.NewDeploymentClient(client),
-		replicaSets:  apps_v1.NewReplicaSetClient(client),
-		daemonSets:   apps_v1.NewDaemonSetClient(client),
-		statefulSets: apps_v1.NewStatefulSetClient(client),
+		mgr: mgr,
 	}
 }
 
@@ -471,28 +634,28 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	var errs error
 
-	if err := b.insertConfigMaps(ctx, configMaps, opts.ConfigMaps...); err != nil {
+	if err := b.insertConfigMaps(ctx, configMaps, opts.ConfigMaps); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertServices(ctx, services, opts.Services...); err != nil {
+	if err := b.insertServices(ctx, services, opts.Services); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertPods(ctx, pods, opts.Pods...); err != nil {
+	if err := b.insertPods(ctx, pods, opts.Pods); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertNodes(ctx, nodes, opts.Nodes...); err != nil {
+	if err := b.insertNodes(ctx, nodes, opts.Nodes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertDeployments(ctx, deployments, opts.Deployments...); err != nil {
+	if err := b.insertDeployments(ctx, deployments, opts.Deployments); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertReplicaSets(ctx, replicaSets, opts.ReplicaSets...); err != nil {
+	if err := b.insertReplicaSets(ctx, replicaSets, opts.ReplicaSets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertDaemonSets(ctx, daemonSets, opts.DaemonSets...); err != nil {
+	if err := b.insertDaemonSets(ctx, daemonSets, opts.DaemonSets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertStatefulSets(ctx, statefulSets, opts.StatefulSets...); err != nil {
+	if err := b.insertStatefulSets(ctx, statefulSets, opts.StatefulSets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -512,8 +675,27 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	return outputSnap, errs
 }
 
-func (b *singleClusterBuilder) insertConfigMaps(ctx context.Context, configMaps v1_sets.ConfigMapSet, opts ...client.ListOption) error {
-	configMapList, err := b.configMaps.ListConfigMap(ctx, opts...)
+func (b *singleClusterBuilder) insertConfigMaps(ctx context.Context, configMaps v1_sets.ConfigMapSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "ConfigMap",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	configMapList, err := v1.NewConfigMapClient(b.mgr.GetClient()).ListConfigMap(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -525,8 +707,27 @@ func (b *singleClusterBuilder) insertConfigMaps(ctx context.Context, configMaps 
 
 	return nil
 }
-func (b *singleClusterBuilder) insertServices(ctx context.Context, services v1_sets.ServiceSet, opts ...client.ListOption) error {
-	serviceList, err := b.services.ListService(ctx, opts...)
+func (b *singleClusterBuilder) insertServices(ctx context.Context, services v1_sets.ServiceSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Service",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	serviceList, err := v1.NewServiceClient(b.mgr.GetClient()).ListService(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -538,8 +739,27 @@ func (b *singleClusterBuilder) insertServices(ctx context.Context, services v1_s
 
 	return nil
 }
-func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodSet, opts ...client.ListOption) error {
-	podList, err := b.pods.ListPod(ctx, opts...)
+func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Pod",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	podList, err := v1.NewPodClient(b.mgr.GetClient()).ListPod(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -551,8 +771,27 @@ func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodS
 
 	return nil
 }
-func (b *singleClusterBuilder) insertNodes(ctx context.Context, nodes v1_sets.NodeSet, opts ...client.ListOption) error {
-	nodeList, err := b.nodes.ListNode(ctx, opts...)
+func (b *singleClusterBuilder) insertNodes(ctx context.Context, nodes v1_sets.NodeSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Node",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	nodeList, err := v1.NewNodeClient(b.mgr.GetClient()).ListNode(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -565,8 +804,27 @@ func (b *singleClusterBuilder) insertNodes(ctx context.Context, nodes v1_sets.No
 	return nil
 }
 
-func (b *singleClusterBuilder) insertDeployments(ctx context.Context, deployments apps_v1_sets.DeploymentSet, opts ...client.ListOption) error {
-	deploymentList, err := b.deployments.ListDeployment(ctx, opts...)
+func (b *singleClusterBuilder) insertDeployments(ctx context.Context, deployments apps_v1_sets.DeploymentSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "apps",
+			Version: "v1",
+			Kind:    "Deployment",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	deploymentList, err := apps_v1.NewDeploymentClient(b.mgr.GetClient()).ListDeployment(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -578,8 +836,27 @@ func (b *singleClusterBuilder) insertDeployments(ctx context.Context, deployment
 
 	return nil
 }
-func (b *singleClusterBuilder) insertReplicaSets(ctx context.Context, replicaSets apps_v1_sets.ReplicaSetSet, opts ...client.ListOption) error {
-	replicaSetList, err := b.replicaSets.ListReplicaSet(ctx, opts...)
+func (b *singleClusterBuilder) insertReplicaSets(ctx context.Context, replicaSets apps_v1_sets.ReplicaSetSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "apps",
+			Version: "v1",
+			Kind:    "ReplicaSet",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	replicaSetList, err := apps_v1.NewReplicaSetClient(b.mgr.GetClient()).ListReplicaSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -591,8 +868,27 @@ func (b *singleClusterBuilder) insertReplicaSets(ctx context.Context, replicaSet
 
 	return nil
 }
-func (b *singleClusterBuilder) insertDaemonSets(ctx context.Context, daemonSets apps_v1_sets.DaemonSetSet, opts ...client.ListOption) error {
-	daemonSetList, err := b.daemonSets.ListDaemonSet(ctx, opts...)
+func (b *singleClusterBuilder) insertDaemonSets(ctx context.Context, daemonSets apps_v1_sets.DaemonSetSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "apps",
+			Version: "v1",
+			Kind:    "DaemonSet",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	daemonSetList, err := apps_v1.NewDaemonSetClient(b.mgr.GetClient()).ListDaemonSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -604,8 +900,27 @@ func (b *singleClusterBuilder) insertDaemonSets(ctx context.Context, daemonSets 
 
 	return nil
 }
-func (b *singleClusterBuilder) insertStatefulSets(ctx context.Context, statefulSets apps_v1_sets.StatefulSetSet, opts ...client.ListOption) error {
-	statefulSetList, err := b.statefulSets.ListStatefulSet(ctx, opts...)
+func (b *singleClusterBuilder) insertStatefulSets(ctx context.Context, statefulSets apps_v1_sets.StatefulSetSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "apps",
+			Version: "v1",
+			Kind:    "StatefulSet",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	statefulSetList, err := apps_v1.NewStatefulSetClient(b.mgr.GetClient()).ListStatefulSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
