@@ -275,14 +275,26 @@ function install_osm() {
   echo "installing osm to ${cluster}..."
   ROLLOUT="${K} rollout status deployment --timeout 300s"
 
+  VERSION=$(osm version)
+  V3='v0.3.0'
   # install in permissive mode for testing
-  osm install
+  if [[ "$VERSION" == *"$V3"* ]]; then
+    osm install --enable-metrics-stack=false --deploy-zipkin=false
+  else
+    osm install
+  fi
+
 
   ${ROLLOUT} -n osm-system osm-controller
 
   for i in bookstore bookthief bookwarehouse bookbuyer; do ${K} create ns $i; done
 
-  for i in bookstore bookthief bookwarehouse bookbuyer; do osm namespace add $i; done
+  if [[ "$VERSION" == *"$V3"* ]]; then
+    for i in bookstore bookthief bookwarehouse bookbuyer; do osm namespace add $i; done
+  else
+    for i in bookstore bookthief bookwarehouse bookbuyer; do osm namespace add $i --enable-sidecar-injection; done
+  fi
+
 
   ${K} apply -f ${PROJECT_ROOT}/ci/osm-demo.yaml
 
