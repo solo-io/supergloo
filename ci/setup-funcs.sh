@@ -276,13 +276,13 @@ function install_osm() {
   ROLLOUT="${K} rollout status deployment --timeout 300s"
 
   # install in permissive mode for testing
-  osm install --enable-permissive-traffic-policy
+  osm install
 
   ${ROLLOUT} -n osm-system osm-controller
 
   for i in bookstore bookthief bookwarehouse bookbuyer; do ${K} create ns $i; done
 
-  for i in bookstore bookthief bookwarehouse bookbuyer; do osm namespace add $i; done
+  for i in bookstore bookthief bookwarehouse bookbuyer; do osm namespace add $i --enable-sidecar-injection; done
 
   ${K} apply -f ${PROJECT_ROOT}/ci/osm-demo.yaml
 
