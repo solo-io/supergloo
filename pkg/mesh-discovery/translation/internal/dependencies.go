@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector/appmesh"
+	appmeshsidecar "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector/appmesh"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh"
@@ -58,8 +59,7 @@ func (d DependencyFactoryImpl) MakeWorkloadTranslator(
 ) workload.Translator {
 	sidecarDetectors := workloaddetector.SidecarDetectors{
 		istiosidecar.NewSidecarDetector(ctx),
-		// TODO(EItanya): Uncomment to re-enable linkerd discovery
-		// linkerdsidecar.NewSidecarDetector(ctx),
+		appmeshsidecar.NewSidecarDetector(ctx),
 		osmsidecar.NewSidecarDetector(ctx),
 	}
 
