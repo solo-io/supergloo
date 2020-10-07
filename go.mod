@@ -28,6 +28,7 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.8.3 // indirect
 	github.com/Masterminds/semver v1.5.0
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
+	github.com/aws/aws-app-mesh-controller-for-k8s v1.1.1
 	github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.9.7-0.20200811182123-112a4904c4b0

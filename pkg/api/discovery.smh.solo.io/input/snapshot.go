@@ -3,6 +3,7 @@
 //go:generate mockgen -source ./snapshot.go -destination mocks/snapshot.go
 
 // The Input Snapshot contains the set of all:
+// * Meshes
 // * ConfigMaps
 // * Services
 // * Pods
@@ -33,6 +34,9 @@ import (
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	appmesh_k8s_aws_v1beta2 "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2"
+	appmesh_k8s_aws_v1beta2_sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
+
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 
@@ -42,6 +46,9 @@ import (
 
 // the snapshot of input resources consumed by translation
 type Snapshot interface {
+
+	// return the set of input Meshes
+	Meshes() appmesh_k8s_aws_v1beta2_sets.MeshSet
 
 	// return the set of input ConfigMaps
 	ConfigMaps() v1_sets.ConfigMapSet
@@ -67,6 +74,8 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
+	meshes appmesh_k8s_aws_v1beta2_sets.MeshSet
+
 	configMaps v1_sets.ConfigMapSet
 	services   v1_sets.ServiceSet
 	pods       v1_sets.PodSet
@@ -80,6 +89,8 @@ type snapshot struct {
 
 func NewSnapshot(
 	name string,
+
+	meshes appmesh_k8s_aws_v1beta2_sets.MeshSet,
 
 	configMaps v1_sets.ConfigMapSet,
 	services v1_sets.ServiceSet,
@@ -95,6 +106,7 @@ func NewSnapshot(
 	return &snapshot{
 		name: name,
 
+		meshes:       meshes,
 		configMaps:   configMaps,
 		services:     services,
 		pods:         pods,
@@ -104,6 +116,10 @@ func NewSnapshot(
 		daemonSets:   daemonSets,
 		statefulSets: statefulSets,
 	}
+}
+
+func (s snapshot) Meshes() appmesh_k8s_aws_v1beta2_sets.MeshSet {
+	return s.meshes
 }
 
 func (s snapshot) ConfigMaps() v1_sets.ConfigMapSet {
@@ -141,6 +157,7 @@ func (s snapshot) StatefulSets() apps_v1_sets.StatefulSetSet {
 func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
+	snapshotMap["meshes"] = s.meshes.List()
 	snapshotMap["configMaps"] = s.configMaps.List()
 	snapshotMap["services"] = s.services.List()
 	snapshotMap["pods"] = s.pods.List()
@@ -162,6 +179,9 @@ type Builder interface {
 
 // Options for building a snapshot
 type BuildOptions struct {
+
+	// List options for composing a snapshot from Meshes
+	Meshes ResourceBuildOptions
 
 	// List options for composing a snapshot from ConfigMaps
 	ConfigMaps ResourceBuildOptions
@@ -211,6 +231,8 @@ func NewMultiClusterBuilder(
 
 func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
+	meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
+
 	configMaps := v1_sets.NewConfigMapSet()
 	services := v1_sets.NewServiceSet()
 	pods := v1_sets.NewPodSet()
@@ -225,6 +247,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 
 	for _, cluster := range b.clusters.ListClusters() {
 
+		if err := b.insertMeshesFromCluster(ctx, cluster, meshes, opts.Meshes); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertConfigMapsFromCluster(ctx, cluster, configMaps, opts.ConfigMaps); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -255,6 +280,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	outputSnap := NewSnapshot(
 		name,
 
+		meshes,
 		configMaps,
 		services,
 		pods,
@@ -266,6 +292,49 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	)
 
 	return outputSnap, errs
+}
+
+func (b *multiClusterBuilder) insertMeshesFromCluster(ctx context.Context, cluster string, meshes appmesh_k8s_aws_v1beta2_sets.MeshSet, opts ResourceBuildOptions) error {
+	meshClient, err := appmesh_k8s_aws_v1beta2.NewMulticlusterMeshClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "appmesh.k8s.aws",
+			Version: "v1beta2",
+			Kind:    "Mesh",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	meshList, err := meshClient.ListMesh(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range meshList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		meshes.Insert(&item)
+	}
+
+	return nil
 }
 
 func (b *multiClusterBuilder) insertConfigMapsFromCluster(ctx context.Context, cluster string, configMaps v1_sets.ConfigMapSet, opts ResourceBuildOptions) error {
@@ -622,6 +691,8 @@ func NewSingleClusterBuilder(
 
 func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
+	meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
+
 	configMaps := v1_sets.NewConfigMapSet()
 	services := v1_sets.NewServiceSet()
 	pods := v1_sets.NewPodSet()
@@ -634,6 +705,9 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	var errs error
 
+	if err := b.insertMeshes(ctx, meshes, opts.Meshes); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertConfigMaps(ctx, configMaps, opts.ConfigMaps); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -662,6 +736,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	outputSnap := NewSnapshot(
 		name,
 
+		meshes,
 		configMaps,
 		services,
 		pods,
@@ -673,6 +748,39 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	)
 
 	return outputSnap, errs
+}
+
+func (b *singleClusterBuilder) insertMeshes(ctx context.Context, meshes appmesh_k8s_aws_v1beta2_sets.MeshSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "appmesh.k8s.aws",
+			Version: "v1beta2",
+			Kind:    "Mesh",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	meshList, err := appmesh_k8s_aws_v1beta2.NewMeshClient(b.mgr.GetClient()).ListMesh(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range meshList.Items {
+		item := item // pike
+		meshes.Insert(&item)
+	}
+
+	return nil
 }
 
 func (b *singleClusterBuilder) insertConfigMaps(ctx context.Context, configMaps v1_sets.ConfigMapSet, opts ResourceBuildOptions) error {

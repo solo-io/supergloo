@@ -31,13 +31,13 @@ func NewTranslator(dependencyFactory internal.DependencyFactory) Translator {
 
 func (t translator) Translate(ctx context.Context, in input.Snapshot) (discovery.Snapshot, error) {
 
-	meshTranslator := t.dependencies.MakeMeshTranslator(ctx, in)
+	meshTranslator := t.dependencies.MakeMeshTranslator(ctx)
 
 	workloadTranslator := t.dependencies.MakeWorkloadTranslator(ctx, in)
 
 	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator(ctx)
 
-	meshes := meshTranslator.TranslateMeshes(in.Deployments())
+	meshes := meshTranslator.TranslateMeshes(in)
 
 	workloads := workloadTranslator.TranslateWorkloads(
 		in.Deployments(),

@@ -29,6 +29,7 @@ func startReconciler(
 		parameters.MasterManager.GetClient(),
 		parameters.Clusters,
 		parameters.SnapshotHistory,
+		parameters.VerboseMode,
 	)
 	return nil
 }

@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	v1beta2sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	v1sets0 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	input "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
@@ -35,6 +36,20 @@ func NewMockSnapshot(ctrl *gomock.Controller) *MockSnapshot {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockSnapshot) EXPECT() *MockSnapshotMockRecorder {
 	return m.recorder
+}
+
+// Meshes mocks base method
+func (m *MockSnapshot) Meshes() v1beta2sets.MeshSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Meshes")
+	ret0, _ := ret[0].(v1beta2sets.MeshSet)
+	return ret0
+}
+
+// Meshes indicates an expected call of Meshes
+func (mr *MockSnapshotMockRecorder) Meshes() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Meshes", reflect.TypeOf((*MockSnapshot)(nil).Meshes))
 }
 
 // ConfigMaps mocks base method

@@ -12,11 +12,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
+	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/common/utils/errhandlers"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
@@ -41,27 +41,30 @@ type networkingReconciler struct {
 	multiClusterClient multicluster.Client
 	history            *stats.SnapshotHistory
 	totalReconciles    int
+	verboseMode        bool
 }
 
 func Start(
 	ctx context.Context,
 	builder input.Builder,
-	validator apply.Applier,
+	applier apply.Applier,
 	reporter reporting.Reporter,
 	translator translation.Translator,
 	multiClusterClient multicluster.Client,
 	mgr manager.Manager,
 	history *stats.SnapshotHistory,
+	verboseMode bool,
 ) error {
 	d := &networkingReconciler{
 		ctx:                ctx,
 		builder:            builder,
-		applier:            validator,
+		applier:            applier,
 		reporter:           reporter,
 		translator:         translator,
 		mgmtClient:         mgr.GetClient(),
 		multiClusterClient: multiClusterClient,
 		history:            history,
+		verboseMode:        verboseMode,
 	}
 
 	filterNetworkingEvents := predicate.SimplePredicate{
@@ -79,6 +82,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	r.totalReconciles++
 
 	ctx := contextutils.WithLogger(r.ctx, fmt.Sprintf("reconcile-%v", r.totalReconciles))
+
 	inputSnap, err := r.builder.BuildSnapshot(ctx, "mesh-networking", input.BuildOptions{
 		// only look at kube clusters in our own namespace
 		KubernetesClusters: input.ResourceBuildOptions{

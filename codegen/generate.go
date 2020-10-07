@@ -95,6 +95,7 @@ var (
 				io.IstioNetworkingOutputTypes,
 				io.SmiNetworkingOutputTypes,
 				io.LocalNetworkingOutputTypes,
+				io.AppMeshNetworkingOutputTypes,
 			},
 		},
 		// certificate issuer component
@@ -127,6 +128,7 @@ var (
 		for _, component := range topLevelComponents {
 			allTemplates = append(allTemplates, component.makeCodegenTemplates()...)
 		}
+
 		return allTemplates
 	}()
 

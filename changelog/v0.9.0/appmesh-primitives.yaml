@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Add primitives and base structure for integrating SMH with AppMesh.

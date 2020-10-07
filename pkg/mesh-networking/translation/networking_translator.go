@@ -5,8 +5,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/appmesh"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
+	appmeshoutput "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/appmesh"
 	istiooutput "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	localoutput "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/local"
 	smioutput "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/smi"
@@ -20,13 +23,18 @@ import (
 )
 
 type OutputSnapshots struct {
-	istio istiooutput.Snapshot
-	smi   smioutput.Snapshot
-	local localoutput.Snapshot
+	istio   istiooutput.Snapshot
+	appmesh appmeshoutput.Snapshot
+	smi     smioutput.Snapshot
+	local   localoutput.Snapshot
 }
 
 func (t OutputSnapshots) MarshalJSON() ([]byte, error) {
 	istioByt, err := t.istio.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	appmeshByt, err := t.appmesh.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +46,7 @@ func (t OutputSnapshots) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return bytes.Join([][]byte{istioByt, smiByt, localByt}, []byte("\n")), nil
+	return bytes.Join([][]byte{istioByt, appmeshByt, smiByt, localByt}, []byte("\n")), nil
 }
 
 func (t OutputSnapshots) Apply(
@@ -47,8 +55,9 @@ func (t OutputSnapshots) Apply(
 	multiClusterClient multicluster.Client,
 	errHandler output.ErrorHandler,
 ) {
-	// Apply istio and smi resources to registered clusters
+	// Apply mesh resources to registered clusters
 	t.istio.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
+	t.appmesh.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
 	t.smi.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
 	// Apply local resources only to management cluster
 	t.local.ApplyLocalCluster(ctx, clusterClient, errHandler)
@@ -65,18 +74,21 @@ type Translator interface {
 }
 
 type translator struct {
-	totalTranslates int // TODO(ilackarms): metric
-	istioTranslator istio.Translator
-	osmTranslator   osm.Translator
+	totalTranslates   int // TODO(ilackarms): metric
+	istioTranslator   istio.Translator
+	appmeshTranslator appmesh.Translator
+	osmTranslator     osm.Translator
 }
 
 func NewTranslator(
 	istioTranslator istio.Translator,
+	appmeshTranslator appmesh.Translator,
 	osmTranslator osm.Translator,
 ) Translator {
 	return &translator{
-		istioTranslator: istioTranslator,
-		osmTranslator:   osmTranslator,
+		istioTranslator:   istioTranslator,
+		appmeshTranslator: appmeshTranslator,
+		osmTranslator:     osmTranslator,
 	}
 }
 
@@ -89,14 +101,22 @@ func (t *translator) Translate(
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("translation-%v", t.totalTranslates))
 
 	istioOutputs := istiooutput.NewBuilder(ctx, fmt.Sprintf("networking-istio-%v", t.totalTranslates))
+	appmeshOutputs := appmeshoutput.NewBuilder(ctx, fmt.Sprintf("networking-appmesh-%v", t.totalTranslates))
 	smiOutputs := smioutput.NewBuilder(ctx, fmt.Sprintf("networking-smi-%v", t.totalTranslates))
 	localOutputs := localoutput.NewBuilder(ctx, fmt.Sprintf("networking-local-%v", t.totalTranslates))
 
 	t.istioTranslator.Translate(ctx, in, istioOutputs, localOutputs, reporter)
 
+	t.appmeshTranslator.Translate(ctx, in, appmeshOutputs, reporter)
+
 	t.osmTranslator.Translate(ctx, in, smiOutputs, reporter)
 
 	istioSnapshot, err := istioOutputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
+	if err != nil {
+		return OutputSnapshots{}, err
+	}
+
+	appmeshSnapshot, err := appmeshOutputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
 	if err != nil {
 		return OutputSnapshots{}, err
 	}
@@ -112,8 +132,9 @@ func (t *translator) Translate(
 	}
 
 	return OutputSnapshots{
-		istio: istioSnapshot,
-		smi:   smiSnapshot,
-		local: localSnapshot,
+		istio:   istioSnapshot,
+		appmesh: appmeshSnapshot,
+		smi:     smiSnapshot,
+		local:   localSnapshot,
 	}, nil
 }

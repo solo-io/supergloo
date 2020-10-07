@@ -21,7 +21,7 @@ func BuildClient(kubeconfig, kubecontext string) (client.Client, error) {
 	}
 
 	scheme := scheme.Scheme
-	if err := schemes.SchemeBuilder.AddToScheme(scheme); err != nil {
+	if err := schemes.AddToScheme(scheme); err != nil {
 		return nil, err
 	}
 
