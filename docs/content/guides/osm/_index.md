@@ -168,6 +168,9 @@ spec:
         namespace: bookstore
 EOF
 ```
+{{% notice note %}}
+For osm version v0.3.0, the namespace will have to be changed to `default`.
+{{% /notice %}}
 
 The first resource above is a Service Mesh Hub `AccessPolicy`. This is the resource which governs access between different services of the application. In this case we are taking advantage of the ability to specify multiple sources and destinations on a rule to allow communication from the bookthief to both bookstore instances. The configuration settings will manifest as `HTTPRouteGroup` and `TrafficTarget` custom resources for OSM.
 
