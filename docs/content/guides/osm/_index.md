@@ -122,7 +122,7 @@ apiVersion: networking.smh.solo.io/v1alpha2
 kind: AccessPolicy
 metadata:
   name: my-policy
-  namespace: default
+  namespace: service-mesh-hub
 spec:
   destination_selector:
   - kube_service_refs:
@@ -146,7 +146,7 @@ apiVersion: networking.smh.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
   name: my-policy
-  namespace: default
+  namespace: service-mesh-hub
 spec:
   traffic_shift:
     destinations:
