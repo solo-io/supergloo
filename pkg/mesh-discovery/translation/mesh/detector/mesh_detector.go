@@ -1,30 +1,33 @@
 package detector
 
 import (
+	"github.com/hashicorp/go-multierror"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	appsv1 "k8s.io/api/apps/v1"
 )
 
-// a deployment MeshDetector detects Mesh control plane instance (e.g. Pilot)
-// in a k8s Deployment.
+// a MeshDetector detects Mesh control plane instances (e.g. Pilot)
+// in a snapshot of discovery resources.
 // If detection fails, an error is returned
-// If no mesh is detected, nil is returned
+// If no mesh is detected, an empty list is returned
 // Separate Detectors are implemented for different Mesh types / versions.
 type MeshDetector interface {
-	DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh, error)
+	DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, error)
 }
 
 // wrapper for multiple mesh detectors.
-// returns the first successfully detected mesh
+// returns all detected meshes
 type MeshDetectors []MeshDetector
 
-func (d MeshDetectors) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh, error) {
+func (d MeshDetectors) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, error) {
+	var allMeshes v1alpha2.MeshSlice
+	var errs error
 	for _, detector := range d {
-		if mesh, err := detector.DetectMesh(deployment); err != nil {
-			return nil, err
-		} else if mesh != nil {
-			return mesh, nil
+		meshes, err := detector.DetectMeshes(in)
+		if err != nil {
+			errs = multierror.Append(errs, err)
 		}
+		allMeshes = append(allMeshes, meshes...)
 	}
-	return nil, nil
+	return allMeshes, errs
 }

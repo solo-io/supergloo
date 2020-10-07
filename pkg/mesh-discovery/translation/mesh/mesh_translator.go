@@ -3,7 +3,8 @@ package mesh
 import (
 	"context"
 
-	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
+
 	"github.com/solo-io/go-utils/contextutils"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
@@ -14,7 +15,7 @@ import (
 
 // the mesh translator converts deployments with control plane images into Mesh CRs
 type Translator interface {
-	TranslateMeshes(deployments appsv1sets.DeploymentSet) v1alpha2sets.MeshSet
+	TranslateMeshes(in input.Snapshot) v1alpha2sets.MeshSet
 }
 
 type translator struct {
@@ -30,17 +31,14 @@ func NewTranslator(
 	return &translator{ctx: ctx, meshDetector: meshDetector}
 }
 
-func (t *translator) TranslateMeshes(deployments appsv1sets.DeploymentSet) v1alpha2sets.MeshSet {
+func (t *translator) TranslateMeshes(in input.Snapshot) v1alpha2sets.MeshSet {
 	meshSet := v1alpha2sets.NewMeshSet()
-	for _, deployment := range deployments.List() {
-		mesh, err := t.meshDetector.DetectMesh(deployment)
-		if err != nil {
-			contextutils.LoggerFrom(t.ctx).Warnw("failed to discover mesh for deployment ", "deployment", sets.Key(deployment))
-		}
-		if mesh == nil {
-			continue
-		}
-		contextutils.LoggerFrom(t.ctx).Debugf("detected traffic target %v", sets.Key(mesh))
+	meshes, err := t.meshDetector.DetectMeshes(in)
+	if err != nil {
+		contextutils.LoggerFrom(t.ctx).Warnw("ecnountered error discovering meshes", "err", err)
+	}
+	for _, mesh := range meshes {
+		contextutils.LoggerFrom(t.ctx).Debugf("detected mesh %v", sets.Key(mesh))
 		meshSet.Insert(mesh)
 	}
 	return meshSet

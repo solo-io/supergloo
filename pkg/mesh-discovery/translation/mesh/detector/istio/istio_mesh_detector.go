@@ -4,6 +4,9 @@ import (
 	"context"
 	"strings"
 
+	"github.com/hashicorp/go-multierror"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
+
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/dockerutils"
 
@@ -43,31 +46,35 @@ var (
 
 // detects Istio if a deployment contains the istiod container.
 type meshDetector struct {
-	ctx        context.Context
-	configMaps corev1sets.ConfigMapSet
-	services   corev1sets.ServiceSet
-	pods       corev1sets.PodSet
-	nodes      corev1sets.NodeSet
+	ctx context.Context
 }
 
 func NewMeshDetector(
 	ctx context.Context,
-	configMaps corev1sets.ConfigMapSet,
-	services corev1sets.ServiceSet,
-	pods corev1sets.PodSet,
-	nodes corev1sets.NodeSet,
 ) detector.MeshDetector {
 	return &meshDetector{
-		ctx:        contextutils.WithLogger(ctx, "detector"),
-		configMaps: configMaps,
-		services:   services,
-		pods:       pods,
-		nodes:      nodes,
+		ctx: contextutils.WithLogger(ctx, "detector"),
 	}
 }
 
-// returns nil, nil of the deployment does not contain the istiod image
-func (d *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh, error) {
+// returns a mesh for each deployment that contains the istiod image
+func (d *meshDetector) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, error) {
+	var meshes v1alpha2.MeshSlice
+	var errs error
+	for _, deployment := range in.Deployments().List() {
+		mesh, err := d.detectMesh(deployment, in)
+		if err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if mesh == nil {
+			continue
+		}
+		meshes = append(meshes, mesh)
+	}
+	return meshes, errs
+}
+
+func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Snapshot) (*v1alpha2.Mesh, error) {
 	version, err := d.getIstiodVersion(deployment)
 	if err != nil {
 		return nil, err
@@ -77,7 +84,7 @@ func (d *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh
 		return nil, nil
 	}
 
-	trustDomain, err := getTrustDomain(d.configMaps, deployment.ClusterName, deployment.Namespace)
+	trustDomain, err := getTrustDomain(in.ConfigMaps(), deployment.ClusterName, deployment.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -88,14 +95,14 @@ func (d *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh
 		deployment.Namespace,
 		deployment.ClusterName,
 		defaults.DefaultGatewayWorkloadLabels,
-		d.services,
-		d.pods,
-		d.nodes,
+		in.Services(),
+		in.Pods(),
+		in.Nodes(),
 	)
 
 	agent := getAgent(
 		deployment.ClusterName,
-		d.pods,
+		in.Pods(),
 	)
 
 	mesh := &v1alpha2.Mesh{

@@ -26,6 +26,9 @@ type StartParameters struct {
 	McClient        multicluster.Client
 	Clusters        multicluster.Interface
 	SnapshotHistory *stats.SnapshotHistory
+
+	// enable additional logging
+	VerboseMode bool
 }
 
 type StartReconciler func(
@@ -82,6 +85,7 @@ func Start(ctx context.Context, rootLogger string, start StartReconciler, opts O
 		McClient:        mcClient,
 		Clusters:        clusterWatcher,
 		SnapshotHistory: snapshotHistory,
+		VerboseMode:     opts.VerboseMode,
 	}
 
 	if err := start(params); err != nil {
@@ -111,7 +115,7 @@ func makeMasterManager(opts Options) (manager.Manager, error) {
 		return nil, err
 	}
 
-	if err := schemes.SchemeBuilder.AddToScheme(mgr.GetScheme()); err != nil {
+	if err := schemes.AddToScheme(mgr.GetScheme()); err != nil {
 		return nil, err
 	}
 	return mgr, nil

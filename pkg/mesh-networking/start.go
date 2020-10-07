@@ -3,6 +3,8 @@ package mesh_networking
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/appmesh"
+
 	certissuerinput "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/issuer/input"
 	certissuerreconciliation "github.com/solo-io/service-mesh-hub/pkg/certificates/issuer/reconciliation"
 	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
@@ -34,27 +36,28 @@ func startReconciler(
 	reporter := reporting.NewPanickingReporter(parameters.Ctx)
 	translator := translation.NewTranslator(
 		istio.NewIstioTranslator(),
+		appmesh.NewAppmeshTranslator(),
 		osm.NewOSMTranslator(),
 	)
-	validator := apply.NewApplier(translator)
+	applier := apply.NewApplier(translator)
 
 	startCertIssuer(
 		parameters.Ctx,
 		parameters.MasterManager,
 		parameters.McClient,
 		parameters.Clusters,
-		parameters.Clusters,
 	)
 
 	return reconciliation.Start(
 		parameters.Ctx,
 		snapshotBuilder,
-		validator,
+		applier,
 		reporter,
 		translator,
 		parameters.McClient,
 		parameters.MasterManager,
 		parameters.SnapshotHistory,
+		parameters.VerboseMode,
 	)
 }
 
@@ -63,7 +66,6 @@ func startCertIssuer(
 	masterManager manager.Manager,
 	mcClient multicluster.Client,
 	clusters multicluster.Interface,
-	clusterWatcher multicluster.ClusterWatcher,
 ) {
 
 	builder := certissuerinput.NewMultiClusterBuilder(
@@ -75,7 +77,7 @@ func startCertIssuer(
 		ctx,
 		builder,
 		mcClient,
-		clusterWatcher,
+		clusters,
 		masterManager.GetClient(),
 	)
 }

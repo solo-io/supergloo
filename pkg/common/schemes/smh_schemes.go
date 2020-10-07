@@ -1,6 +1,7 @@
 package schemes
 
 import (
+	appmeshv1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	linkerdconfig "github.com/linkerd/linkerd2/controller/gen/apis/serviceprofile/v1alpha2"
 	smiaccess1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
 	smispecsv1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
@@ -31,7 +32,12 @@ var SchemeBuilder = runtime.SchemeBuilder{
 	smisplitv1alpha2.AddToScheme,
 	smispecsv1alpha3.AddToScheme,
 	smiaccess1alpha2.AddToScheme,
+	appmeshv1beta2.AddToScheme,
 
 	// sk types
 	skv1alpha1.AddToScheme,
+}
+
+func AddToScheme(s *runtime.Scheme) error {
+	return SchemeBuilder.AddToScheme(s)
 }

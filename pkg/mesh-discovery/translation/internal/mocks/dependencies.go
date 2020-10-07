@@ -39,17 +39,17 @@ func (m *MockDependencyFactory) EXPECT() *MockDependencyFactoryMockRecorder {
 }
 
 // MakeMeshTranslator mocks base method
-func (m *MockDependencyFactory) MakeMeshTranslator(ctx context.Context, in input.Snapshot) mesh.Translator {
+func (m *MockDependencyFactory) MakeMeshTranslator(ctx context.Context) mesh.Translator {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MakeMeshTranslator", ctx, in)
+	ret := m.ctrl.Call(m, "MakeMeshTranslator", ctx)
 	ret0, _ := ret[0].(mesh.Translator)
 	return ret0
 }
 
 // MakeMeshTranslator indicates an expected call of MakeMeshTranslator
-func (mr *MockDependencyFactoryMockRecorder) MakeMeshTranslator(ctx, in interface{}) *gomock.Call {
+func (mr *MockDependencyFactoryMockRecorder) MakeMeshTranslator(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeMeshTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeMeshTranslator), ctx, in)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeMeshTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeMeshTranslator), ctx)
 }
 
 // MakeWorkloadTranslator mocks base method

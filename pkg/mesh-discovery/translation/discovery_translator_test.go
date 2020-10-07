@@ -3,6 +3,9 @@ package translation_test
 import (
 	"context"
 
+	"github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
+	v1beta2sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -50,6 +53,7 @@ var _ = Describe("Translator", func() {
 	It("translates", func() {
 		t := NewTranslator(mockDependencyFactory)
 
+		appMeshes := v1beta2sets.NewMeshSet(&v1beta2.Mesh{})
 		configMaps := corev1sets.NewConfigMapSet(&corev1.ConfigMap{})
 		services := corev1sets.NewServiceSet(&corev1.Service{})
 		pods := corev1sets.NewPodSet(&corev1.Pod{})
@@ -61,6 +65,7 @@ var _ = Describe("Translator", func() {
 
 		in := input.NewSnapshot(
 			"mesh-discovery",
+			appMeshes,
 			configMaps,
 			services,
 			pods,
@@ -71,7 +76,7 @@ var _ = Describe("Translator", func() {
 			statefulSets,
 		)
 
-		mockDependencyFactory.EXPECT().MakeMeshTranslator(ctx, in).Return(mockMeshTranslator)
+		mockDependencyFactory.EXPECT().MakeMeshTranslator(ctx).Return(mockMeshTranslator)
 		mockDependencyFactory.EXPECT().MakeWorkloadTranslator(ctx, in).Return(mockWorkloadTranslator)
 		mockDependencyFactory.EXPECT().MakeTrafficTargetTranslator(ctx).Return(mockTrafficTargetTranslator)
 
@@ -81,7 +86,7 @@ var _ = Describe("Translator", func() {
 		workloads := v1alpha2sets.NewWorkloadSet(&v1alpha2.Workload{ObjectMeta: labeledMeta})
 		trafficTargets := v1alpha2sets.NewTrafficTargetSet(&v1alpha2.TrafficTarget{ObjectMeta: labeledMeta})
 
-		mockMeshTranslator.EXPECT().TranslateMeshes(deployments).Return(meshes)
+		mockMeshTranslator.EXPECT().TranslateMeshes(in).Return(meshes)
 		mockWorkloadTranslator.EXPECT().TranslateWorkloads(deployments, daemonSets, statefulSets, meshes).Return(workloads)
 		mockTrafficTargetTranslator.EXPECT().TranslateTrafficTargets(services, workloads, meshes).Return(trafficTargets)
 

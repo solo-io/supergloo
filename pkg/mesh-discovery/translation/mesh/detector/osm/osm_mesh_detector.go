@@ -4,6 +4,9 @@ import (
 	"context"
 	"strings"
 
+	"github.com/hashicorp/go-multierror"
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
+
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
@@ -29,8 +32,25 @@ func NewMeshDetector(
 	}
 }
 
-func (m *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh, error) {
-	version, err := m.getOsmControllerVersion(deployment)
+// returns a mesh for each deployment that contains the osm controller image
+func (d *meshDetector) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, error) {
+	var meshes v1alpha2.MeshSlice
+	var errs error
+	for _, deployment := range in.Deployments().List() {
+		mesh, err := d.detectMesh(deployment)
+		if err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if mesh == nil {
+			continue
+		}
+		meshes = append(meshes, mesh)
+	}
+	return meshes, errs
+}
+
+func (d *meshDetector) detectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh, error) {
+	version, err := getOsmControllerVersion(deployment)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +74,7 @@ func (m *meshDetector) DetectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh
 	}, nil
 }
 
-func (m *meshDetector) getOsmControllerVersion(deployment *appsv1.Deployment) (string, error) {
+func getOsmControllerVersion(deployment *appsv1.Deployment) (string, error) {
 	for _, container := range deployment.Spec.Template.Spec.Containers {
 		if isOsmController(deployment, &container) {
 			parsedImage, err := dockerutils.ParseImageName(container.Image)

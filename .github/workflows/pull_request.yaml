@@ -141,6 +141,7 @@ jobs:
         uses: solo-io/setup-protoc@master
         with:
           version: '3.6.1'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: azure/setup-kubectl@v1
         with:
           version: 'v1.18.0'

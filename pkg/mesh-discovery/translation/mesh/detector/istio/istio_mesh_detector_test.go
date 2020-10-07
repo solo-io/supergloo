@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
@@ -81,43 +83,34 @@ var _ = Describe("IstioMeshDetector", func() {
 			},
 		}
 
-		configMaps := corev1sets.NewConfigMapSet()
-		services := corev1sets.NewServiceSet()
-		pods := corev1sets.NewPodSet()
-		nodes := corev1sets.NewNodeSet()
-
 		detector := NewMeshDetector(
 			ctx,
-			configMaps,
-			services,
-			pods,
-			nodes,
 		)
 
-		mesh, err := detector.DetectMesh(deployment)
+		in := input.NewInputSnapshotManualBuilder("")
+		in.AddDeployments([]*appsv1.Deployment{deployment})
+
+		meshes, err := detector.DetectMeshes(in.Build())
 		Expect(err).NotTo(HaveOccurred())
-		Expect(mesh).To(BeNil())
+		Expect(meshes).To(HaveLen(0))
 	})
 
 	It("detects a mesh from a deployment named istio-pilot", func() {
 		configMaps := istioConfigMap()
-
-		services := corev1sets.NewServiceSet()
-		pods := corev1sets.NewPodSet()
-		nodes := corev1sets.NewNodeSet()
+		deployment := istioDeployment(pilotDeploymentName)
 
 		detector := NewMeshDetector(
 			ctx,
-			configMaps,
-			services,
-			pods,
-			nodes,
 		)
 
-		deployment := istioDeployment(pilotDeploymentName)
-		mesh, err := detector.DetectMesh(deployment)
+		in := input.NewInputSnapshotManualBuilder("")
+		in.AddDeployments([]*appsv1.Deployment{deployment})
+		in.AddConfigMaps(configMaps.List())
+
+		meshes, err := detector.DetectMeshes(in.Build())
 		Expect(err).NotTo(HaveOccurred())
-		Expect(mesh).To(Equal(&v1alpha2.Mesh{
+		Expect(meshes).To(HaveLen(1))
+		Expect(meshes[0]).To(Equal(&v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "istio-pilot-namespace-cluster",
 				Namespace: defaults.GetPodNamespace(),
@@ -142,23 +135,20 @@ var _ = Describe("IstioMeshDetector", func() {
 
 	It("detects a mesh from a deployment named istiod", func() {
 		configMaps := istioConfigMap()
+		deployment := istioDeployment(istiodDeploymentName)
 
-		services := corev1sets.NewServiceSet()
-		pods := corev1sets.NewPodSet()
-		nodes := corev1sets.NewNodeSet()
+		in := input.NewInputSnapshotManualBuilder("")
+		in.AddDeployments([]*appsv1.Deployment{deployment})
+		in.AddConfigMaps(configMaps.List())
 
 		detector := NewMeshDetector(
 			ctx,
-			configMaps,
-			services,
-			pods,
-			nodes,
 		)
 
-		deployment := istioDeployment(istiodDeploymentName)
-		mesh, err := detector.DetectMesh(deployment)
+		meshes, err := detector.DetectMeshes(in.Build())
 		Expect(err).NotTo(HaveOccurred())
-		Expect(mesh).To(Equal(&v1alpha2.Mesh{
+		Expect(meshes).To(HaveLen(1))
+		Expect(meshes[0]).To(Equal(&v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "istiod-namespace-cluster",
 				Namespace: defaults.GetPodNamespace(),
@@ -238,14 +228,18 @@ var _ = Describe("IstioMeshDetector", func() {
 
 		detector := NewMeshDetector(
 			ctx,
-			configMaps,
-			services,
-			pods,
-			nodes,
 		)
 
 		deployment := istioDeployment(istiodDeploymentName)
-		mesh, err := detector.DetectMesh(deployment)
+
+		in := input.NewInputSnapshotManualBuilder("")
+		in.AddDeployments([]*appsv1.Deployment{deployment})
+		in.AddConfigMaps(configMaps.List())
+		in.AddServices(services.List())
+		in.AddPods(pods.List())
+		in.AddNodes(nodes.List())
+
+		meshes, err := detector.DetectMeshes(in.Build())
 		Expect(err).NotTo(HaveOccurred())
 
 		expectedMesh := &v1alpha2.Mesh{
@@ -276,7 +270,8 @@ var _ = Describe("IstioMeshDetector", func() {
 			},
 		}
 
-		Expect(mesh).To(Equal(expectedMesh))
+		Expect(meshes).To(HaveLen(1))
+		Expect(meshes[0]).To(Equal(expectedMesh))
 	})
 
 })

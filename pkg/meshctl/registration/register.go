@@ -21,6 +21,7 @@ var smhRbacRequirements = func() []rbacv1.PolicyRule {
 	policyRules = append(policyRules, io.SmiNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	policyRules = append(policyRules, io.CertificateIssuerInputTypes.RbacPoliciesWatch()...)
 	policyRules = append(policyRules, io.CertificateIssuerInputTypes.RbacPoliciesUpdateStatus()...)
+
 	return policyRules
 }()
 
