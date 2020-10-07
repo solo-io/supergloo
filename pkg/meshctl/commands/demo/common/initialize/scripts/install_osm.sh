@@ -14,7 +14,14 @@ ${ROLLOUT} -n osm-system osm-controller
 
 for i in bookstore bookthief bookwarehouse bookbuyer; do ${K} create ns $i; done
 
-for i in bookstore bookthief bookwarehouse bookbuyer; do osm namespace add $i; done
+VERSION=$(osm version)
+V3='v0.3.0'
+if [[ "$VERSION" == *"$V3"* ]]; then
+  for i in bookstore bookthief bookwarehouse bookbuyer; do osm namespace add $i; done
+else
+# for OSM versions >= v0.4.0
+  for i in bookstore bookthief bookwarehouse bookbuyer; do osm namespace add $i --enable-sidecar-injection; done
+fi
 
 ${K} apply -f - <<EOF
 ##################################################################################################

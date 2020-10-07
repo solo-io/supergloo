@@ -22,6 +22,10 @@ To illustrate these concepts, we will assume that you have the following:
 
 OSM can be installed multiple different ways. The easiest method is using `meshctl`, but it can also be installed directly using the `osm` binary, along with an existing Kubernetes cluster.
 
+{{% notice note %}}
+In this guide, we will assume that you are using OSM v0.4.0.
+{{% /notice %}}
+
 ### Install using `meshctl`
 
 To get up and running with OSM simply run:
@@ -63,10 +67,10 @@ kubectl create ns bookthief
 kubectl create ns bookwarehouse 
 kubectl create ns bookbuyer
 
-osm namespace add bookstore
-osm namespace add bookthief 
-osm namespace add bookwarehouse 
-osm namespace add bookbuyer
+osm namespace add bookstore --enable-sidecar-injection
+osm namespace add bookthief --enable-sidecar-injection
+osm namespace add bookwarehouse --enable-sidecar-injection
+osm namespace add bookbuyer --enable-sidecar-injection
 
 kubectl apply -f https://raw.githubusercontent.com/solo-io/service-mesh-hub/v0.7.2/ci/osm-demo.yaml
 
@@ -76,6 +80,16 @@ kubectl rollout status deployment --timeout 300s -n bookthief bookthief
 kubectl rollout status deployment --timeout 300s -n bookwarehouse bookwarehouse
 kubectl rollout status deployment --timeout 300s -n bookbuyer bookbuyer
 ```
+
+{{% notice note %}}
+For osm version v0.3.0, the flag --enable-sidecar-injection doesn't exist, so you will want to use:
+```
+osm namespace add bookstore
+osm namespace add bookthief
+osm namespace add bookwarehouse
+osm namespace add bookbuyer
+```
+{{% /notice %}}
 
 ## OSM Basics
 
@@ -112,7 +126,7 @@ apiVersion: networking.smh.solo.io/v1alpha2
 kind: AccessPolicy
 metadata:
   name: my-policy
-  namespace: default
+  namespace: service-mesh-hub
 spec:
   destination_selector:
   - kube_service_refs:
@@ -136,7 +150,7 @@ apiVersion: networking.smh.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
   name: my-policy
-  namespace: default
+  namespace: service-mesh-hub
 spec:
   traffic_shift:
     destinations:
@@ -158,6 +172,9 @@ spec:
         namespace: bookstore
 EOF
 ```
+{{% notice note %}}
+For osm version v0.3.0, the namespace will have to be changed to `default`.
+{{% /notice %}}
 
 The first resource above is a Service Mesh Hub `AccessPolicy`. This is the resource which governs access between different services of the application. In this case we are taking advantage of the ability to specify multiple sources and destinations on a rule to allow communication from the bookthief to both bookstore instances. The configuration settings will manifest as `HTTPRouteGroup` and `TrafficTarget` custom resources for OSM.
 

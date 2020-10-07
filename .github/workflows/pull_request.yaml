@@ -123,6 +123,7 @@ jobs:
       matrix:
         osm-binary: [
           'https://github.com/openservicemesh/osm/releases/download/v0.3.0/osm-v0.3.0-linux-amd64.tar.gz',
+          'https://github.com/openservicemesh/osm/releases/download/v0.4.0/osm-v0.4.0-linux-amd64.tar.gz',
         ]
     steps:
       - uses: actions/checkout@v2
