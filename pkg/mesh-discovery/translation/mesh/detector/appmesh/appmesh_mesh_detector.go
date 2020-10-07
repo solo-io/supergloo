@@ -2,15 +2,24 @@ package appmesh
 
 import (
 	"context"
+	"fmt"
 	"sort"
+	"strings"
 
 	aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/labelutils"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+const (
+	// The prefix for the mesh resource type in an ARN.
+	meshResourcePrefix = "mesh/"
 )
 
 type meshDetector struct {
@@ -27,71 +36,78 @@ func NewMeshDetector(
 
 // returns a mesh for each unique AppMesh Controller Mesh CRD in the snapshot
 func (d *meshDetector) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, error) {
-	return d.detectMeshes(in.Meshes().List())
-}
+	var errors error
 
-func (d *meshDetector) detectMeshes(meshList []*aws_v1beta2.Mesh) (v1alpha2.MeshSlice, error) {
-	// Meshes that have the same ARN refer to the same entity in AWS.
-	discoveredMeshByARN := make(map[string]*v1alpha2.Mesh)
-	var errs error
-	for _, awsMesh := range meshList {
+	// Group meshes by ARN because meshes that share an ARN are backed by the same AWS resources.
+	awsMeshByArn := make(map[string][]*aws_v1beta2.Mesh)
+	for _, awsMesh := range in.Meshes().List() {
 		if awsMesh.Status.MeshARN == nil {
 			// Meshes that lack an ARN have not been processed by the App Mesh controller; ignore.
 			continue
 		}
 
-		if mesh, found := discoveredMeshByARN[*awsMesh.Status.MeshARN]; found {
-			// We have seen a mesh with this ARN.
-			// Add this awsMesh's cluster to the list of clusters the mesh configures.
-			mesh.Spec.GetAwsAppMesh().Clusters = append(mesh.Spec.GetAwsAppMesh().Clusters, awsMesh.ClusterName)
-		} else {
-			// We have not seen a mesh with this ARN.
-			// Create a new mesh record.
-			discoveredMesh, err := d.discoverNewMesh(awsMesh)
-			if err != nil {
-				errs = multierror.Append(errs, err)
-			} else {
-				discoveredMeshByARN[*awsMesh.Status.MeshARN] = discoveredMesh
-			}
-		}
+		awsMeshByArn[*awsMesh.Status.MeshARN] = append(awsMeshByArn[*awsMesh.Status.MeshARN], awsMesh)
 	}
 
-	// Sort the cluster lists on each mesh resource for idempotence.
-	output := make(v1alpha2.MeshSlice, 0, len(discoveredMeshByARN))
-	for _, discoveredMesh := range discoveredMeshByARN {
-		discoveredMesh := discoveredMesh
-		sort.Strings(discoveredMesh.Spec.GetAwsAppMesh().Clusters)
+	// Produce a sorted ARN list to ensure map iteration is consistent across reconciles.
+	var arnList []string
+	for meshArn := range awsMeshByArn {
+		arnList = append(arnList, meshArn)
+	}
+	sort.Strings(arnList)
+
+	// Create one discovery artifact for each ARN's mesh list.
+	var output v1alpha2.MeshSlice
+	for _, meshArn := range arnList {
+		discoveredMesh, err := d.discoverMesh(meshArn, awsMeshByArn[meshArn])
+		if err != nil {
+			errors = multierror.Append(errors, err)
+			continue
+		}
 		output = append(output, discoveredMesh)
 	}
-	return output, errs
+
+	return output, errors
 }
 
-func (d *meshDetector) discoverNewMesh(awsMesh *aws_v1beta2.Mesh) (*v1alpha2.Mesh, error) {
-	parsedArn, err := arn.Parse(*awsMesh.Status.MeshARN)
+func (d *meshDetector) discoverMesh(meshArn string, awsMeshList []*aws_v1beta2.Mesh) (*v1alpha2.Mesh, error) {
+	parsedArn, err := arn.Parse(meshArn)
 	if err != nil {
 		return nil, err
 	}
 
-	var meshName string
-	// If AWSName is not set, fallback to metadata.Name per https://github.com/aws/aws-app-mesh-controller-for-k8s/blob/v1.1.1/apis/appmesh/v1beta2/mesh_types.go#L66
-	if awsMesh.Spec.AWSName != nil {
-		meshName = *awsMesh.Spec.AWSName
-	} else {
-		meshName = awsMesh.Name
-	}
+	meshName := strings.TrimPrefix(parsedArn.Resource, meshResourcePrefix)
 
-	return &v1alpha2.Mesh{
-		ObjectMeta: utils.DiscoveredObjectMeta(awsMesh),
+	clusters := make([]string, 0, len(awsMeshList))
+	for _, awsMesh := range awsMeshList {
+		clusters = append(clusters, awsMesh.ClusterName)
+	}
+	sort.Strings(clusters)
+
+	mesh := &v1alpha2.Mesh{
+		ObjectMeta: discoveredMeshObjectMeta(meshName, parsedArn.Region, parsedArn.AccountID),
 		Spec: v1alpha2.MeshSpec{
 			MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
 				AwsAppMesh: &v1alpha2.MeshSpec_AwsAppMesh{
 					AwsName:      meshName,
 					Region:       parsedArn.Region,
 					AwsAccountId: parsedArn.AccountID,
-					Arn:          *awsMesh.Status.MeshARN,
-					Clusters:     []string{awsMesh.ClusterName},
+					Arn:          meshArn,
+					Clusters:     clusters,
 				},
 			},
 		},
-	}, nil
+	}
+	return mesh, nil
+}
+
+// discoveredMeshObjectMeta returns ObjectMeta for a discovered AWS App Mesh instance.
+// This differs from utils.DiscoveredObjectMeta because App Mesh mesh resources have no namespace
+// and can appear on any number of Kubernetes clusters.
+func discoveredMeshObjectMeta(meshName, region, accountID string) v1.ObjectMeta {
+	return v1.ObjectMeta{
+		Namespace: defaults.GetPodNamespace(),
+		Name:      fmt.Sprintf("%s-%s-%s", meshName, region, accountID),
+		Labels:    labelutils.OwnershipLabels(),
+	}
 }

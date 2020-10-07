@@ -18,7 +18,9 @@ var _ = Describe("AppMesh MeshDetector", func() {
 	var (
 		cluster1  = "cluster1"
 		meshName1 = "mesh1"
-		meshArn1  = "arn:aws:appmesh:us-east-2:1234:mesh/mesh1"
+		region    = "us-east-2"
+		accountID = "1234"
+		meshArn1  = fmt.Sprintf("arn:aws:appmesh:%s:%s:mesh/%s", region, accountID, meshName1)
 
 		meshDetector detector.MeshDetector
 	)
@@ -63,11 +65,10 @@ var _ = Describe("AppMesh MeshDetector", func() {
 
 		expected := v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      fmt.Sprintf("%s-%s", meshName1, cluster1),
+				Name:      fmt.Sprintf("%s-%s-%s", meshName1, "us-east-2", "1234"),
 				Namespace: "service-mesh-hub",
 				Labels: map[string]string{
-					"owner.discovery.smh.solo.io":   "service-mesh-hub",
-					"cluster.discovery.smh.solo.io": cluster1,
+					"owner.discovery.smh.solo.io": "service-mesh-hub",
 				},
 			},
 			Spec: v1alpha2.MeshSpec{
@@ -110,7 +111,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 		}
 
 		meshName2 := "mesh2"
-		meshArn2 := "arn:aws:appmesh:us-east-2:1234:mesh/mesh2"
+		meshArn2 := fmt.Sprintf("arn:aws:appmesh:%s:%s:mesh/%s", region, accountID, meshName2)
 		awsMesh2 := aws_v1beta2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        meshName2,
@@ -129,11 +130,10 @@ var _ = Describe("AppMesh MeshDetector", func() {
 
 		expected1 := v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      fmt.Sprintf("%s-%s", meshName1, cluster1),
+				Name:      fmt.Sprintf("%s-%s-%s", meshName1, "us-east-2", "1234"),
 				Namespace: "service-mesh-hub",
 				Labels: map[string]string{
-					"owner.discovery.smh.solo.io":   "service-mesh-hub",
-					"cluster.discovery.smh.solo.io": cluster1,
+					"owner.discovery.smh.solo.io": "service-mesh-hub",
 				},
 			},
 			Spec: v1alpha2.MeshSpec{
@@ -150,11 +150,10 @@ var _ = Describe("AppMesh MeshDetector", func() {
 		}
 		expected2 := v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      fmt.Sprintf("%s-%s", meshName2, cluster1),
+				Name:      fmt.Sprintf("%s-%s-%s", meshName2, "us-east-2", "1234"),
 				Namespace: "service-mesh-hub",
 				Labels: map[string]string{
-					"owner.discovery.smh.solo.io":   "service-mesh-hub",
-					"cluster.discovery.smh.solo.io": cluster1,
+					"owner.discovery.smh.solo.io": "service-mesh-hub",
 				},
 			},
 			Spec: v1alpha2.MeshSpec{
