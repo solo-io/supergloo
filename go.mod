@@ -12,7 +12,11 @@ replace (
 
 	github.com/envoyproxy/go-control-plane => github.com/envoyproxy/go-control-plane v0.9.5
 
+	// Required for proper serialization of CRDs
 	github.com/golang/protobuf => github.com/golang/protobuf v1.3.5
+
+	// https://github.com/ory/dockertest/issues/208#issuecomment-686820414
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6
 
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
 
@@ -20,6 +24,7 @@ replace (
 )
 
 require (
+	cloud.google.com/go v0.66.0 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.8.3 // indirect
 	github.com/Masterminds/semver v1.5.0
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
@@ -56,11 +61,12 @@ require (
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/external-apis v0.1.1
 	github.com/solo-io/go-utils v0.17.0
-	github.com/solo-io/skv2 v0.12.0
+	github.com/solo-io/skv2 v0.12.4
 	github.com/solo-io/solo-kit v0.14.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.15.0
+	golang.org/x/tools v0.0.0-20200928201943-a0ef9b62deab // indirect
 	helm.sh/helm/v3 v3.2.4
 	istio.io/api v0.0.0-20200819225923-c78f387f78a2
 	istio.io/client-go v0.0.0-20200812230733-f5504d568313

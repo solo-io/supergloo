@@ -17,6 +17,101 @@ spec:
   scope: Namespaced
   subresources:
     status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          description: |-
+            IssuedCertificates are used to issue SSL certificates
+               to remote Kubernetes clusters from a central (out-of-cluster) Certificate Authority.
+
+               When an IssuedCertificate is created, a certificate is issued to a remote cluster by a central Certificate Authority via
+               the following workflow:
+               - The Certificate Issuer creates the IssuedCertificate resource on the remote cluster
+               - The Certificate Signature Requesting Agent installed to the remote cluster generates
+                 a Certificate Signing Request and writes it to the status of the IssuedCertificate
+               - Finally, the Certificate Issuer generates signed a certificate for the CSR and writes
+                 it back as Secret in the remote cluster.
+
+               Shared trust can therefore be established across clusters without requiring
+               private keys to ever leave the node.
+          properties:
+            hosts:
+              description: |-
+                A list of hostnames and IPs to generate a certificate for.
+                        This can also be set to the identity running the workload,
+                        e.g. a Kubernetes service account.
+
+                        Generally for an Istio CA this will take the form `spiffe://cluster.local/ns/istio-system/sa/citadel`.
+
+                        "cluster.local" may be replaced by the root of trust domain for the mesh.
+              items:
+                type: string
+              type: array
+            issuedCertificateSecret:
+              description: The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Certificate Agent's cluster).
+              properties:
+                name:
+                  description: name of the resource being referenced
+                  type: string
+                namespace:
+                  description: namespace of the resource being referenced
+                  type: string
+              type: object
+            org:
+              description: The organization for this certificate.
+              type: string
+            podBounceDirective:
+              description: |-
+                A ref to a PodBounceDirective specifying a list of k8s pods to bounce
+                (delete and cause a restart) when the certificate is issued.
+                This will include the control plane pods as well as any pods
+                which share a data plane with the target mesh.
+              properties:
+                name:
+                  description: name of the resource being referenced
+                  type: string
+                namespace:
+                  description: namespace of the resource being referenced
+                  type: string
+              type: object
+            signingCertificateSecret:
+              description: The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the Certificate Issuer's cluster).
+              properties:
+                name:
+                  description: name of the resource being referenced
+                  type: string
+                namespace:
+                  description: namespace of the resource being referenced
+                  type: string
+              type: object
+          type: object
+        status:
+          description: The IssuedCertificate status is written by the CertificateRequesting agent.
+          properties:
+            error:
+              description: |-
+                Any error observed which prevented the CertificateRequest from being processed.
+                If the error is empty, the request has been processed successfully.
+              type: string
+            observedGeneration:
+              description: |-
+                The most recent generation observed in the the IssuedCertificate metadata.
+                If the observedGeneration does not match generation, the Certificate Requesting Agent has not processed the most
+                recent version of this IssuedCertificate.
+              format: int64
+              type: integer
+            state:
+              description: The current state of the IssuedCertificate workflow, reported by the agent.
+              enum:
+              - PENDING
+              - REQUESTED
+              - ISSUED
+              - FINISHED
+              - FAILED
+              type: string
+          type: object
+      type: object
   versions:
   - name: v1alpha2
     served: true
@@ -40,6 +135,112 @@ spec:
   scope: Namespaced
   subresources:
     status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          description: |-
+            CertificateRequests are generated by the CertificateRequesting Agent installed on managed clusters.
+               They are used to request a signed certificate from Service Mesh Hub based on a private key
+               generated by the Agent (which never leaves the managed cluster).
+
+               When Service Mesh Hub creates an IssuedCertificate on a managed cluster, the local CertificateRequesting Agent
+               will generate a CertificateRequest corresponding to it.
+
+               Service Mesh Hub will then process the Certificate Signing Request contained in the
+               CertificateRequestSpec and write the signed SSL certificate back as a secret in the managed cluster,
+               and update the CertificateRequest Status to point to that secret.
+          properties:
+            certificateSigningRequest:
+              description: |-
+                Base64-encoded data for the PKCS#10 Certificate Signing Request issued
+                by the CertificateRequesting Agent deployed in the managed cluster, corresponding
+                to the IssuedRequest received by the CertificateRequesting Agent.
+              format: binary
+              type: string
+          type: object
+        status:
+          properties:
+            error:
+              description: |-
+                Any error observed which prevented the CertificateRequest from being processed.
+                If the error is empty, the request has been processed successfully
+              type: string
+            observedGeneration:
+              description: |-
+                The most recent generation observed in the the CertificateRequest metadata.
+                If the observedGeneration does not match generation, the CA has not processed the most
+                recent version of this request.
+              format: int64
+              type: integer
+            signedCertificate:
+              description: The signed intermediate certificate issued by the CA.
+              format: binary
+              type: string
+            signingRootCa:
+              description: The root CA used by the CA to sign the certificate.
+              format: binary
+              type: string
+            state:
+              description: The current state of the CertificateRequest workflow reported by the Issuer.
+              enum:
+              - PENDING
+              - FINISHED
+              - FAILED
+              type: string
+          type: object
+      type: object
+  versions:
+  - name: v1alpha2
+    served: true
+    storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  labels:
+    app: service-mesh-hub
+    app.kubernetes.io/name: service-mesh-hub
+  name: podbouncedirectives.certificates.smh.solo.io
+spec:
+  group: certificates.smh.solo.io
+  names:
+    kind: PodBounceDirective
+    listKind: PodBounceDirectiveList
+    plural: podbouncedirectives
+    singular: podbouncedirective
+  scope: Namespaced
+  subresources: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          description: |-
+            When certificates are issued, pods may need to be bounced (restarted) to ensure they pick up the
+               new certificates. If so, the certificate Issuer will create a PodBounceDirective containing the namespaces and labels
+               of the pods that need to be bounced in order to pick up the new certs.
+          properties:
+            podsToBounce:
+              description: |-
+                A list of k8s pods to bounce (delete and cause a restart)
+                when the certificate is issued.
+                This will include the control plane pods as well as any pods
+                which share a data plane with the target mesh.
+              items:
+                properties:
+                  labels:
+                    additionalProperties:
+                      type: string
+                    description: Any labels shared by the pods.
+                    type: object
+                  namespace:
+                    description: The namespace in which the pods live.
+                    type: string
+                type: object
+              type: array
+          type: object
+      type: object
   versions:
   - name: v1alpha2
     served: true

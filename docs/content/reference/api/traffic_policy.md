@@ -20,7 +20,6 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.CorsPolicy](#networking.smh.solo.io.TrafficPolicySpec.CorsPolicy)
   - [TrafficPolicySpec.FaultInjection](#networking.smh.solo.io.TrafficPolicySpec.FaultInjection)
   - [TrafficPolicySpec.FaultInjection.Abort](#networking.smh.solo.io.TrafficPolicySpec.FaultInjection.Abort)
-  - [TrafficPolicySpec.FaultInjection.Delay](#networking.smh.solo.io.TrafficPolicySpec.FaultInjection.Delay)
   - [TrafficPolicySpec.HeaderManipulation](#networking.smh.solo.io.TrafficPolicySpec.HeaderManipulation)
   - [TrafficPolicySpec.HeaderManipulation.AppendRequestHeadersEntry](#networking.smh.solo.io.TrafficPolicySpec.HeaderManipulation.AppendRequestHeadersEntry)
   - [TrafficPolicySpec.HeaderManipulation.AppendResponseHeadersEntry](#networking.smh.solo.io.TrafficPolicySpec.HeaderManipulation.AppendResponseHeadersEntry)
@@ -100,7 +99,8 @@ FaultInjection can be used to specify one or more faults to inject while forward
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| delay | [TrafficPolicySpec.FaultInjection.Delay](#networking.smh.solo.io.TrafficPolicySpec.FaultInjection.Delay) |  | Delay requests before forwarding, emulating various failures such as network issues, overloaded upstream service, etc. |
+| fixedDelay | [google.protobuf.Duration](#google.protobuf.Duration) |  | Add a fixed delay before forwarding the request. Format: 1h/1m/1s/1ms. MUST be >=1ms. |
+| exponentialDelay | [google.protobuf.Duration](#google.protobuf.Duration) |  | $hide_from_docs |
 | abort | [TrafficPolicySpec.FaultInjection.Abort](#networking.smh.solo.io.TrafficPolicySpec.FaultInjection.Abort) |  | Abort Http request attempts and return error codes back to downstream service, giving the impression that the upstream service is faulty. |
 | percentage | [double](#double) |  | Percentage of requests to be faulted with the error code provided. Values range between 0 and 100 |
 
@@ -118,22 +118,6 @@ The _httpStatus_ field is used to indicate the HTTP status code to return to the
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | httpStatus | [int32](#int32) |  | REQUIRED. HTTP status code to use to abort the Http request. |
-
-
-
-
-
-
-<a name="networking.smh.solo.io.TrafficPolicySpec.FaultInjection.Delay"></a>
-
-### TrafficPolicySpec.FaultInjection.Delay
-The _fixedDelay_ field is used to indicate the amount of delay in seconds. The optional _percentage_ field can be used to only delay a certain percentage of requests. If left unspecified, all request will be delayed.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| fixedDelay | [google.protobuf.Duration](#google.protobuf.Duration) |  | Add a fixed delay before forwarding the request. Format: 1h/1m/1s/1ms. MUST be >=1ms. |
-| exponentialDelay | [google.protobuf.Duration](#google.protobuf.Duration) |  | $hide_from_docs |
 
 
 
@@ -440,6 +424,7 @@ Describes how to match a given string in HTTP headers. Match is case-sensitive.
 | state | [ApprovalState](#networking.smh.solo.io.ApprovalState) |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all target meshes. |
 | trafficTargets | [][TrafficPolicyStatus.TrafficTargetsEntry](#networking.smh.solo.io.TrafficPolicyStatus.TrafficTargetsEntry) | repeated | The status of the TrafficPolicy for each TrafficTarget to which it has been applied. A TrafficPolicy may be Accepted for some TrafficTargets and rejected for others. |
 | workloads | [][string](#string) | repeated | The list of Workloads to which this policy has been applied. |
+| errors | [][string](#string) | repeated | Any errors found while processing this generation of the resource. |
 
 
 

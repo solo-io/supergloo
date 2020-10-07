@@ -88,7 +88,7 @@ The port on which the FailoverService listens.
 | observedGeneration | [int64](#int64) |  | The most recent generation observed in the the FailoverService metadata. If the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
 | state | [ApprovalState](#networking.smh.solo.io.ApprovalState) |  | The state of the overall resource, will only show accepted if it has been successfully applied to all target meshes. |
 | meshes | [][FailoverServiceStatus.MeshesEntry](#networking.smh.solo.io.FailoverServiceStatus.MeshesEntry) | repeated | The status of the FailoverService for each Mesh to which it has been applied. |
-| validationErrors | [][string](#string) | repeated | Any errors observed which prevented the resource from being Accepted. |
+| errors | [][string](#string) | repeated | Any errors found while processing this generation of the resource. |
 
 
 

@@ -26,6 +26,7 @@ rules:
   resources:
   - issuedcertificates
   - certificaterequests
+  - podbouncedirectives
   verbs:
   - get
   - list
@@ -43,6 +44,7 @@ rules:
   resources:
   - issuedcertificates/status
   - certificaterequests/status
+  - podbouncedirectives/status
   verbs:
   - get
   - update

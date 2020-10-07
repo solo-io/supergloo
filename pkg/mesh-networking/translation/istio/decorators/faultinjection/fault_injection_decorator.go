@@ -63,34 +63,27 @@ func translateFaultInjection(validatedPolicy *v1alpha2.TrafficPolicySpec) (*netw
 	var translatedFaultInjection *networkingv1alpha3spec.HTTPFaultInjection
 	switch injectionType := faultInjection.GetFaultInjectionType().(type) {
 	case *v1alpha2.TrafficPolicySpec_FaultInjection_Abort_:
-		abort := faultInjection.GetAbort()
-		switch abortType := abort.GetErrorType().(type) {
-		case *v1alpha2.TrafficPolicySpec_FaultInjection_Abort_HttpStatus:
-			translatedFaultInjection = &networkingv1alpha3spec.HTTPFaultInjection{
-				Abort: &networkingv1alpha3spec.HTTPFaultInjection_Abort{
-					ErrorType:  &networkingv1alpha3spec.HTTPFaultInjection_Abort_HttpStatus{HttpStatus: abort.GetHttpStatus()},
-					Percentage: &networkingv1alpha3spec.Percent{Value: faultInjection.GetPercentage()},
-				}}
-		default:
-			return nil, eris.Errorf("Abort.ErrorType has unexpected type %T", abortType)
+		translatedFaultInjection = &networkingv1alpha3spec.HTTPFaultInjection{
+			Abort: &networkingv1alpha3spec.HTTPFaultInjection_Abort{
+				ErrorType: &networkingv1alpha3spec.HTTPFaultInjection_Abort_HttpStatus{
+					HttpStatus: faultInjection.GetAbort().GetHttpStatus(),
+				},
+				Percentage: &networkingv1alpha3spec.Percent{Value: faultInjection.GetPercentage()},
+			},
 		}
-	case *v1alpha2.TrafficPolicySpec_FaultInjection_Delay_:
-		delay := faultInjection.GetDelay()
-		switch delayType := delay.GetHttpDelayType().(type) {
-		case *v1alpha2.TrafficPolicySpec_FaultInjection_Delay_FixedDelay:
-			translatedFaultInjection = &networkingv1alpha3spec.HTTPFaultInjection{
-				Delay: &networkingv1alpha3spec.HTTPFaultInjection_Delay{
-					HttpDelayType: &networkingv1alpha3spec.HTTPFaultInjection_Delay_FixedDelay{FixedDelay: delay.GetFixedDelay()},
-					Percentage:    &networkingv1alpha3spec.Percent{Value: faultInjection.GetPercentage()},
-				}}
-		case *v1alpha2.TrafficPolicySpec_FaultInjection_Delay_ExponentialDelay:
-			translatedFaultInjection = &networkingv1alpha3spec.HTTPFaultInjection{
-				Delay: &networkingv1alpha3spec.HTTPFaultInjection_Delay{
-					HttpDelayType: &networkingv1alpha3spec.HTTPFaultInjection_Delay_ExponentialDelay{ExponentialDelay: delay.GetExponentialDelay()},
-					Percentage:    &networkingv1alpha3spec.Percent{Value: faultInjection.GetPercentage()},
-				}}
-		default:
-			return nil, eris.Errorf("Delay.HTTPDelayType has unexpected type %T", delayType)
+	case *v1alpha2.TrafficPolicySpec_FaultInjection_FixedDelay:
+		translatedFaultInjection = &networkingv1alpha3spec.HTTPFaultInjection{
+			Delay: &networkingv1alpha3spec.HTTPFaultInjection_Delay{
+				HttpDelayType: &networkingv1alpha3spec.HTTPFaultInjection_Delay_FixedDelay{FixedDelay: faultInjection.GetFixedDelay()},
+				Percentage:    &networkingv1alpha3spec.Percent{Value: faultInjection.GetPercentage()},
+			},
+		}
+	case *v1alpha2.TrafficPolicySpec_FaultInjection_ExponentialDelay:
+		translatedFaultInjection = &networkingv1alpha3spec.HTTPFaultInjection{
+			Delay: &networkingv1alpha3spec.HTTPFaultInjection_Delay{
+				HttpDelayType: &networkingv1alpha3spec.HTTPFaultInjection_Delay_ExponentialDelay{ExponentialDelay: faultInjection.GetExponentialDelay()},
+				Percentage:    &networkingv1alpha3spec.Percent{Value: faultInjection.GetPercentage()},
+			},
 		}
 	default:
 		return nil, eris.Errorf("FaultInjection.FaultInjectionType has unexpected type %T", injectionType)

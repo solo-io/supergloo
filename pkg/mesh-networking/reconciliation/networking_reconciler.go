@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/solo-io/skv2/pkg/reconcile"
-
-	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
-
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
 	"github.com/solo-io/skv2/pkg/predicate"
+	"github.com/solo-io/skv2/pkg/reconcile"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
+	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	corev1 "k8s.io/api/core/v1"
 
@@ -21,7 +20,6 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
@@ -73,14 +71,8 @@ func Start(
 		Filter: predicate.SimpleEventFilterFunc(isIgnoredSecret),
 	}
 
-	return input.RegisterSingleClusterReconciler(
-		ctx,
-		mgr,
-		d.reconcile,
-		time.Second/2,
-		reconcile.Options{},
-		filterNetworkingEvents,
-	)
+	_, err := input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2, reconcile.Options{}, filterNetworkingEvents)
+	return err
 }
 
 // reconcile global state

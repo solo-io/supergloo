@@ -35,7 +35,7 @@ We've put together [a handful of videos](https://www.youtube.com/watch?v=4sWikVE
 
 ## Contribution
 There are many ways to get involved in an open source community and contribute to the project. Watch [this talk](https://www.youtube.com/watch?v=VE-igex6Lz4) to learn more about the architecture and how it works. 
-- **Code:** If you're looking to hack on service mesh, check out the code and the contribution guide [here](CONTRIBUTING.md) and look for the *good first issue* and *help wanted* labels in the GitHub issues. 
+- **Code:** If you're looking to hack on service mesh, check out the code and the contribution guide [here](https://docs.solo.io/service-mesh-hub/latest/contributing/) and look for the *good first issue* and *help wanted* labels in the GitHub issues. 
  - **Docs:** Contribute to the [Docs](docs/) or file issues for any docs bugs or requests [here](https://github.com/solo-io/service-mesh-hub/issues). 
  - **Talks and Blogs:** If you are interested in writing or speaking about Service Mesh Hub and would like access to content, images or help, [DM us here](https://solo-io.slack.com/archives/DHQ9J939V). Share your demos, tutorials and content back to the community. 
 

@@ -102,6 +102,20 @@ func (mr *MockClientsetMockRecorder) CertificateRequests() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificateRequests", reflect.TypeOf((*MockClientset)(nil).CertificateRequests))
 }
 
+// PodBounceDirectives mocks base method
+func (m *MockClientset) PodBounceDirectives() v1alpha2.PodBounceDirectiveClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PodBounceDirectives")
+	ret0, _ := ret[0].(v1alpha2.PodBounceDirectiveClient)
+	return ret0
+}
+
+// PodBounceDirectives indicates an expected call of PodBounceDirectives
+func (mr *MockClientsetMockRecorder) PodBounceDirectives() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PodBounceDirectives", reflect.TypeOf((*MockClientset)(nil).PodBounceDirectives))
+}
+
 // MockIssuedCertificateReader is a mock of IssuedCertificateReader interface
 type MockIssuedCertificateReader struct {
 	ctrl     *gomock.Controller
@@ -1108,4 +1122,508 @@ func (m *MockMulticlusterCertificateRequestClient) Cluster(cluster string) (v1al
 func (mr *MockMulticlusterCertificateRequestClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterCertificateRequestClient)(nil).Cluster), cluster)
+}
+
+// MockPodBounceDirectiveReader is a mock of PodBounceDirectiveReader interface
+type MockPodBounceDirectiveReader struct {
+	ctrl     *gomock.Controller
+	recorder *MockPodBounceDirectiveReaderMockRecorder
+}
+
+// MockPodBounceDirectiveReaderMockRecorder is the mock recorder for MockPodBounceDirectiveReader
+type MockPodBounceDirectiveReaderMockRecorder struct {
+	mock *MockPodBounceDirectiveReader
+}
+
+// NewMockPodBounceDirectiveReader creates a new mock instance
+func NewMockPodBounceDirectiveReader(ctrl *gomock.Controller) *MockPodBounceDirectiveReader {
+	mock := &MockPodBounceDirectiveReader{ctrl: ctrl}
+	mock.recorder = &MockPodBounceDirectiveReaderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockPodBounceDirectiveReader) EXPECT() *MockPodBounceDirectiveReaderMockRecorder {
+	return m.recorder
+}
+
+// GetPodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveReader) GetPodBounceDirective(ctx context.Context, key client.ObjectKey) (*v1alpha2.PodBounceDirective, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPodBounceDirective", ctx, key)
+	ret0, _ := ret[0].(*v1alpha2.PodBounceDirective)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPodBounceDirective indicates an expected call of GetPodBounceDirective
+func (mr *MockPodBounceDirectiveReaderMockRecorder) GetPodBounceDirective(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveReader)(nil).GetPodBounceDirective), ctx, key)
+}
+
+// ListPodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveReader) ListPodBounceDirective(ctx context.Context, opts ...client.ListOption) (*v1alpha2.PodBounceDirectiveList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListPodBounceDirective", varargs...)
+	ret0, _ := ret[0].(*v1alpha2.PodBounceDirectiveList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListPodBounceDirective indicates an expected call of ListPodBounceDirective
+func (mr *MockPodBounceDirectiveReaderMockRecorder) ListPodBounceDirective(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveReader)(nil).ListPodBounceDirective), varargs...)
+}
+
+// MockPodBounceDirectiveWriter is a mock of PodBounceDirectiveWriter interface
+type MockPodBounceDirectiveWriter struct {
+	ctrl     *gomock.Controller
+	recorder *MockPodBounceDirectiveWriterMockRecorder
+}
+
+// MockPodBounceDirectiveWriterMockRecorder is the mock recorder for MockPodBounceDirectiveWriter
+type MockPodBounceDirectiveWriterMockRecorder struct {
+	mock *MockPodBounceDirectiveWriter
+}
+
+// NewMockPodBounceDirectiveWriter creates a new mock instance
+func NewMockPodBounceDirectiveWriter(ctrl *gomock.Controller) *MockPodBounceDirectiveWriter {
+	mock := &MockPodBounceDirectiveWriter{ctrl: ctrl}
+	mock.recorder = &MockPodBounceDirectiveWriterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockPodBounceDirectiveWriter) EXPECT() *MockPodBounceDirectiveWriterMockRecorder {
+	return m.recorder
+}
+
+// CreatePodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveWriter) CreatePodBounceDirective(ctx context.Context, obj *v1alpha2.PodBounceDirective, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreatePodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreatePodBounceDirective indicates an expected call of CreatePodBounceDirective
+func (mr *MockPodBounceDirectiveWriterMockRecorder) CreatePodBounceDirective(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveWriter)(nil).CreatePodBounceDirective), varargs...)
+}
+
+// DeletePodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveWriter) DeletePodBounceDirective(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeletePodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeletePodBounceDirective indicates an expected call of DeletePodBounceDirective
+func (mr *MockPodBounceDirectiveWriterMockRecorder) DeletePodBounceDirective(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveWriter)(nil).DeletePodBounceDirective), varargs...)
+}
+
+// UpdatePodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveWriter) UpdatePodBounceDirective(ctx context.Context, obj *v1alpha2.PodBounceDirective, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdatePodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePodBounceDirective indicates an expected call of UpdatePodBounceDirective
+func (mr *MockPodBounceDirectiveWriterMockRecorder) UpdatePodBounceDirective(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveWriter)(nil).UpdatePodBounceDirective), varargs...)
+}
+
+// PatchPodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveWriter) PatchPodBounceDirective(ctx context.Context, obj *v1alpha2.PodBounceDirective, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchPodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchPodBounceDirective indicates an expected call of PatchPodBounceDirective
+func (mr *MockPodBounceDirectiveWriterMockRecorder) PatchPodBounceDirective(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveWriter)(nil).PatchPodBounceDirective), varargs...)
+}
+
+// DeleteAllOfPodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveWriter) DeleteAllOfPodBounceDirective(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfPodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfPodBounceDirective indicates an expected call of DeleteAllOfPodBounceDirective
+func (mr *MockPodBounceDirectiveWriterMockRecorder) DeleteAllOfPodBounceDirective(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveWriter)(nil).DeleteAllOfPodBounceDirective), varargs...)
+}
+
+// UpsertPodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveWriter) UpsertPodBounceDirective(ctx context.Context, obj *v1alpha2.PodBounceDirective, transitionFuncs ...v1alpha2.PodBounceDirectiveTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range transitionFuncs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertPodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertPodBounceDirective indicates an expected call of UpsertPodBounceDirective
+func (mr *MockPodBounceDirectiveWriterMockRecorder) UpsertPodBounceDirective(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveWriter)(nil).UpsertPodBounceDirective), varargs...)
+}
+
+// MockPodBounceDirectiveStatusWriter is a mock of PodBounceDirectiveStatusWriter interface
+type MockPodBounceDirectiveStatusWriter struct {
+	ctrl     *gomock.Controller
+	recorder *MockPodBounceDirectiveStatusWriterMockRecorder
+}
+
+// MockPodBounceDirectiveStatusWriterMockRecorder is the mock recorder for MockPodBounceDirectiveStatusWriter
+type MockPodBounceDirectiveStatusWriterMockRecorder struct {
+	mock *MockPodBounceDirectiveStatusWriter
+}
+
+// NewMockPodBounceDirectiveStatusWriter creates a new mock instance
+func NewMockPodBounceDirectiveStatusWriter(ctrl *gomock.Controller) *MockPodBounceDirectiveStatusWriter {
+	mock := &MockPodBounceDirectiveStatusWriter{ctrl: ctrl}
+	mock.recorder = &MockPodBounceDirectiveStatusWriterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockPodBounceDirectiveStatusWriter) EXPECT() *MockPodBounceDirectiveStatusWriterMockRecorder {
+	return m.recorder
+}
+
+// UpdatePodBounceDirectiveStatus mocks base method
+func (m *MockPodBounceDirectiveStatusWriter) UpdatePodBounceDirectiveStatus(ctx context.Context, obj *v1alpha2.PodBounceDirective, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdatePodBounceDirectiveStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePodBounceDirectiveStatus indicates an expected call of UpdatePodBounceDirectiveStatus
+func (mr *MockPodBounceDirectiveStatusWriterMockRecorder) UpdatePodBounceDirectiveStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePodBounceDirectiveStatus", reflect.TypeOf((*MockPodBounceDirectiveStatusWriter)(nil).UpdatePodBounceDirectiveStatus), varargs...)
+}
+
+// PatchPodBounceDirectiveStatus mocks base method
+func (m *MockPodBounceDirectiveStatusWriter) PatchPodBounceDirectiveStatus(ctx context.Context, obj *v1alpha2.PodBounceDirective, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchPodBounceDirectiveStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchPodBounceDirectiveStatus indicates an expected call of PatchPodBounceDirectiveStatus
+func (mr *MockPodBounceDirectiveStatusWriterMockRecorder) PatchPodBounceDirectiveStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodBounceDirectiveStatus", reflect.TypeOf((*MockPodBounceDirectiveStatusWriter)(nil).PatchPodBounceDirectiveStatus), varargs...)
+}
+
+// MockPodBounceDirectiveClient is a mock of PodBounceDirectiveClient interface
+type MockPodBounceDirectiveClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockPodBounceDirectiveClientMockRecorder
+}
+
+// MockPodBounceDirectiveClientMockRecorder is the mock recorder for MockPodBounceDirectiveClient
+type MockPodBounceDirectiveClientMockRecorder struct {
+	mock *MockPodBounceDirectiveClient
+}
+
+// NewMockPodBounceDirectiveClient creates a new mock instance
+func NewMockPodBounceDirectiveClient(ctrl *gomock.Controller) *MockPodBounceDirectiveClient {
+	mock := &MockPodBounceDirectiveClient{ctrl: ctrl}
+	mock.recorder = &MockPodBounceDirectiveClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockPodBounceDirectiveClient) EXPECT() *MockPodBounceDirectiveClientMockRecorder {
+	return m.recorder
+}
+
+// GetPodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveClient) GetPodBounceDirective(ctx context.Context, key client.ObjectKey) (*v1alpha2.PodBounceDirective, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPodBounceDirective", ctx, key)
+	ret0, _ := ret[0].(*v1alpha2.PodBounceDirective)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPodBounceDirective indicates an expected call of GetPodBounceDirective
+func (mr *MockPodBounceDirectiveClientMockRecorder) GetPodBounceDirective(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).GetPodBounceDirective), ctx, key)
+}
+
+// ListPodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveClient) ListPodBounceDirective(ctx context.Context, opts ...client.ListOption) (*v1alpha2.PodBounceDirectiveList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListPodBounceDirective", varargs...)
+	ret0, _ := ret[0].(*v1alpha2.PodBounceDirectiveList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListPodBounceDirective indicates an expected call of ListPodBounceDirective
+func (mr *MockPodBounceDirectiveClientMockRecorder) ListPodBounceDirective(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).ListPodBounceDirective), varargs...)
+}
+
+// CreatePodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveClient) CreatePodBounceDirective(ctx context.Context, obj *v1alpha2.PodBounceDirective, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreatePodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreatePodBounceDirective indicates an expected call of CreatePodBounceDirective
+func (mr *MockPodBounceDirectiveClientMockRecorder) CreatePodBounceDirective(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).CreatePodBounceDirective), varargs...)
+}
+
+// DeletePodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveClient) DeletePodBounceDirective(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeletePodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeletePodBounceDirective indicates an expected call of DeletePodBounceDirective
+func (mr *MockPodBounceDirectiveClientMockRecorder) DeletePodBounceDirective(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).DeletePodBounceDirective), varargs...)
+}
+
+// UpdatePodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveClient) UpdatePodBounceDirective(ctx context.Context, obj *v1alpha2.PodBounceDirective, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdatePodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePodBounceDirective indicates an expected call of UpdatePodBounceDirective
+func (mr *MockPodBounceDirectiveClientMockRecorder) UpdatePodBounceDirective(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).UpdatePodBounceDirective), varargs...)
+}
+
+// PatchPodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveClient) PatchPodBounceDirective(ctx context.Context, obj *v1alpha2.PodBounceDirective, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchPodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchPodBounceDirective indicates an expected call of PatchPodBounceDirective
+func (mr *MockPodBounceDirectiveClientMockRecorder) PatchPodBounceDirective(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).PatchPodBounceDirective), varargs...)
+}
+
+// DeleteAllOfPodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveClient) DeleteAllOfPodBounceDirective(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfPodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfPodBounceDirective indicates an expected call of DeleteAllOfPodBounceDirective
+func (mr *MockPodBounceDirectiveClientMockRecorder) DeleteAllOfPodBounceDirective(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).DeleteAllOfPodBounceDirective), varargs...)
+}
+
+// UpsertPodBounceDirective mocks base method
+func (m *MockPodBounceDirectiveClient) UpsertPodBounceDirective(ctx context.Context, obj *v1alpha2.PodBounceDirective, transitionFuncs ...v1alpha2.PodBounceDirectiveTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range transitionFuncs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertPodBounceDirective", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertPodBounceDirective indicates an expected call of UpsertPodBounceDirective
+func (mr *MockPodBounceDirectiveClientMockRecorder) UpsertPodBounceDirective(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertPodBounceDirective", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).UpsertPodBounceDirective), varargs...)
+}
+
+// UpdatePodBounceDirectiveStatus mocks base method
+func (m *MockPodBounceDirectiveClient) UpdatePodBounceDirectiveStatus(ctx context.Context, obj *v1alpha2.PodBounceDirective, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdatePodBounceDirectiveStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePodBounceDirectiveStatus indicates an expected call of UpdatePodBounceDirectiveStatus
+func (mr *MockPodBounceDirectiveClientMockRecorder) UpdatePodBounceDirectiveStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePodBounceDirectiveStatus", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).UpdatePodBounceDirectiveStatus), varargs...)
+}
+
+// PatchPodBounceDirectiveStatus mocks base method
+func (m *MockPodBounceDirectiveClient) PatchPodBounceDirectiveStatus(ctx context.Context, obj *v1alpha2.PodBounceDirective, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchPodBounceDirectiveStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchPodBounceDirectiveStatus indicates an expected call of PatchPodBounceDirectiveStatus
+func (mr *MockPodBounceDirectiveClientMockRecorder) PatchPodBounceDirectiveStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchPodBounceDirectiveStatus", reflect.TypeOf((*MockPodBounceDirectiveClient)(nil).PatchPodBounceDirectiveStatus), varargs...)
+}
+
+// MockMulticlusterPodBounceDirectiveClient is a mock of MulticlusterPodBounceDirectiveClient interface
+type MockMulticlusterPodBounceDirectiveClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterPodBounceDirectiveClientMockRecorder
+}
+
+// MockMulticlusterPodBounceDirectiveClientMockRecorder is the mock recorder for MockMulticlusterPodBounceDirectiveClient
+type MockMulticlusterPodBounceDirectiveClientMockRecorder struct {
+	mock *MockMulticlusterPodBounceDirectiveClient
+}
+
+// NewMockMulticlusterPodBounceDirectiveClient creates a new mock instance
+func NewMockMulticlusterPodBounceDirectiveClient(ctrl *gomock.Controller) *MockMulticlusterPodBounceDirectiveClient {
+	mock := &MockMulticlusterPodBounceDirectiveClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterPodBounceDirectiveClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockMulticlusterPodBounceDirectiveClient) EXPECT() *MockMulticlusterPodBounceDirectiveClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method
+func (m *MockMulticlusterPodBounceDirectiveClient) Cluster(cluster string) (v1alpha2.PodBounceDirectiveClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1alpha2.PodBounceDirectiveClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster
+func (mr *MockMulticlusterPodBounceDirectiveClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterPodBounceDirectiveClient)(nil).Cluster), cluster)
 }
