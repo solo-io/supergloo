@@ -22,6 +22,10 @@ To illustrate these concepts, we will assume that you have the following:
 
 OSM can be installed multiple different ways. The easiest method is using `meshctl`, but it can also be installed directly using the `osm` binary, along with an existing Kubernetes cluster.
 
+{{% notice note %}}
+In this guide, we will assume that you are using OSM v0.4.0.
+{{% /notice %}}
+
 ### Install using `meshctl`
 
 To get up and running with OSM simply run:
