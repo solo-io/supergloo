@@ -61,7 +61,8 @@ require (
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/external-apis v0.1.1
 	github.com/solo-io/go-utils v0.17.0
-	github.com/solo-io/skv2 v0.12.4
+	// TODO depend on released version once available
+	github.com/solo-io/skv2 v0.12.5-0.20201008151855-6340cbf1700d
 	github.com/solo-io/solo-kit v0.14.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
