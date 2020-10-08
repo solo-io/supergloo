@@ -2,9 +2,9 @@ package utils
 
 import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
+	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 )
 
 func BuildClient(kubeConfigPath, kubeContext string) (client.Client, error) {
