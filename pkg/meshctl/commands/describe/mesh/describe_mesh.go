@@ -120,7 +120,7 @@ func getMeshMetadata(mesh *discoveryv1alpha2.Mesh) meshMetadata {
 		appmesh := mesh.Spec.GetAwsAppMesh()
 		return meshMetadata{
 			Type:         "appmesh",
-			Name:         appmesh.Name,
+			Name:         appmesh.AwsName,
 			Region:       appmesh.Region,
 			AwsAccountId: appmesh.AwsAccountId,
 			Clusters:     appmesh.Clusters,

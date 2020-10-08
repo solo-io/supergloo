@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/994
+    description: Implement mesh, workload, and traffic target discovery for AWS App Mesh.

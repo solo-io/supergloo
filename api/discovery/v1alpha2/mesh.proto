@@ -85,13 +85,15 @@ message MeshSpec {
     // Mesh object representing AWS AppMesh.
     message AwsAppMesh {
         // AWS name for the AppMesh instance, must be unique across the AWS account.
-        string name = 1;
+        string aws_name = 1;
         // The AWS region the AWS App Mesh control plane resources exist in.
         string region = 2;
         // The AWS Account ID associated with the Mesh. Populated at REST API registration time.
         string aws_account_id = 3;
+        // The unique AWS ARN associated with the Mesh.
+        string arn = 4;
         // The k8s clusters on which sidecars for this AppMesh instance have been discovered.
-        repeated string clusters = 4;
+        repeated string clusters = 5;
     }
 
     // Mesh object representing an installed Linkerd control plane.
