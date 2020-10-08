@@ -28,7 +28,8 @@ var (
 	// built-in skv2 templates we don't need
 	filterTemplates = func(outPath string) bool {
 		return outPath == "templates/namespace.yaml" ||
-			outPath == "templates/chart.yaml"
+			outPath == "templates/chart.yaml" ||
+			outPath == "templates/configmap.yaml"
 	}
 )
 
