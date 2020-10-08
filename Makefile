@@ -135,6 +135,10 @@ ifeq ($(RELEASE),"true")
 	docker push $(SMH_IMAGE):$(VERSION)
 endif
 
+.PHONY: service-mesh-hub-image-load
+service-mesh-hub-image-load: service-mesh-hub-image
+    kind load docker-image --name mgmt-cluster $(SMH_IMAGE):$(VERSION)
+
 #----------------------------------------------------------------------------------
 # Build cert-agent + image
 #----------------------------------------------------------------------------------
@@ -163,6 +167,11 @@ cert-agent-image-push: cert-agent-image
 ifeq ($(RELEASE),"true")
 	docker push $(CA_IMAGE):$(VERSION)
 endif
+
+.PHONY: cert-agent-image-load
+cert-agent-image-load: cert-agent-image
+    kind load docker-image --name mgmt-cluster $(CA_IMAGE):$(VERSION)
+
 
 #----------------------------------------------------------------------------------
 # Build service-mesh-hub cli (meshctl)
