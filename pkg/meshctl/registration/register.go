@@ -40,11 +40,11 @@ type RegistrantOptions struct {
 
 // Initialize a ClientConfig for the management and remote clusters from the options.
 func (m *RegistrantOptions) ConstructClientConfigs() (mgmtKubeCfg clientcmd.ClientConfig, remoteKubeCfg clientcmd.ClientConfig, err error) {
-	mgmtKubeCfg, err = kubeconfig.GetClientConfigWithContext(m.KubeConfigPath, m.MgmtContext)
+	mgmtKubeCfg, err = kubeconfig.GetClientConfigWithContext(m.KubeConfigPath, m.MgmtContext, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	remoteKubeCfg, err = kubeconfig.GetClientConfigWithContext(m.KubeConfigPath, m.RemoteContext)
+	remoteKubeCfg, err = kubeconfig.GetClientConfigWithContext(m.KubeConfigPath, m.RemoteContext, "")
 	if err != nil {
 		return nil, nil, err
 	}

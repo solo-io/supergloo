@@ -2,20 +2,13 @@ package utils
 
 import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
+	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func BuildClient(kubeconfig, kubecontext string) (client.Client, error) {
-	if kubeconfig == "" {
-		kubeconfig = clientcmd.RecommendedHomeFile
-	}
-	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	loadingRules.ExplicitPath = kubeconfig
-	configOverrides := &clientcmd.ConfigOverrides{CurrentContext: kubecontext}
-
-	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides).ClientConfig()
+func BuildClient(kubeConfigPath, kubeContext string) (client.Client, error) {
+	cfg, err := kubeconfig.GetRestConfigWithContext(kubeConfigPath, kubeContext, "")
 	if err != nil {
 		return nil, err
 	}
