@@ -43,13 +43,20 @@ func (d *outlierDetectionDecorator) ApplyTrafficPolicyToDestinationRule(
 	output *networkingv1alpha3spec.DestinationRule,
 	registerField decorators.RegisterField,
 ) error {
-	outlierDetection := d.translateOutlierDetection(appliedPolicy.Spec)
-	if outlierDetection != nil {
+	if outlierDetection := d.translateOutlierDetection(appliedPolicy.Spec); outlierDetection != nil {
 		if err := registerField(&output.TrafficPolicy.OutlierDetection, outlierDetection); err != nil {
 			return err
 		}
 		output.TrafficPolicy.OutlierDetection = outlierDetection
 	}
+
+	if tlsSettings := d.translateTlsSettings(appliedPolicy.Spec); tlsSettings != nil {
+		if err := registerField(&output.TrafficPolicy.Tls, tlsSettings); err != nil {
+			return err
+		}
+		output.TrafficPolicy.Tls = tlsSettings
+	}
+
 	return nil
 }
 
@@ -84,4 +91,21 @@ func (d *outlierDetectionDecorator) translateOutlierDetection(
 		BaseEjectionTime:      ejectionTime,
 		MaxEjectionPercent:    maxEjectionPercent,
 	}
+}
+
+func (d *outlierDetectionDecorator) translateTlsSettings(
+	trafficPolicy *v1alpha2.TrafficPolicySpec,
+
+) *networkingv1alpha3spec.ClientTLSSettings {
+	// If TrafficPolicy doesn't specify mTLS configuration, use global default populated upstream during initialization.
+	if trafficPolicy.Mtls == nil {
+		return nil
+	}
+	tlsSettings := &networkingv1alpha3spec.ClientTLSSettings{}
+	if trafficPolicy.Mtls.Enabled {
+		tlsSettings.Mode = networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL
+	} else {
+		tlsSettings.Mode = networkingv1alpha3spec.ClientTLSSettings_DISABLE
+	}
+	return tlsSettings
 }
