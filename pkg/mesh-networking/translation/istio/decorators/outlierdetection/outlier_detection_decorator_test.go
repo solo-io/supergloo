@@ -73,47 +73,4 @@ var _ = Describe("OutlierDetectionDecorator", func() {
 		)
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 	})
-
-	It("should set mTLS settings if specified", func() {
-		registerField := func(fieldPtr, val interface{}) error {
-			return nil
-		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
-			Spec: &v1alpha2.TrafficPolicySpec{
-				Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
-					Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
-						TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_DISABLE,
-					},
-				},
-			},
-		}
-		expectedClientTlsSettings := &v1alpha3.ClientTLSSettings{
-			Mode: v1alpha3.ClientTLSSettings_DISABLE,
-		}
-		err := outlierDecorator.ApplyTrafficPolicyToDestinationRule(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(output.TrafficPolicy.Tls).To(Equal(expectedClientTlsSettings))
-	})
-
-	It("should return nil if mTLS settings not specified", func() {
-		registerField := func(fieldPtr, val interface{}) error {
-			return nil
-		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
-			Spec: &v1alpha2.TrafficPolicySpec{},
-		}
-		err := outlierDecorator.ApplyTrafficPolicyToDestinationRule(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(output.TrafficPolicy.Tls).To(BeNil())
-	})
 })
