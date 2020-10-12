@@ -365,6 +365,12 @@ spec:
                   minimum: 0
                   type: integer
               type: object
+            mtls:
+              description: Configure mTLS settings. If specified will override global default defined in Settings.
+              properties:
+                enabled:
+                  type: boolean
+              type: object
             outlierDetection:
               description: |-
                 Configure outlier detection on the targeted services.

@@ -26,6 +26,7 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.HeaderMatcher](#networking.smh.solo.io.TrafficPolicySpec.HeaderMatcher)
   - [TrafficPolicySpec.HttpMatcher](#networking.smh.solo.io.TrafficPolicySpec.HttpMatcher)
   - [TrafficPolicySpec.HttpMethod](#networking.smh.solo.io.TrafficPolicySpec.HttpMethod)
+  - [TrafficPolicySpec.MTLS](#networking.smh.solo.io.TrafficPolicySpec.MTLS)
   - [TrafficPolicySpec.Mirror](#networking.smh.solo.io.TrafficPolicySpec.Mirror)
   - [TrafficPolicySpec.MultiDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination)
   - [TrafficPolicySpec.MultiDestination.WeightedDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination)
@@ -65,6 +66,7 @@ A Traffic Policy applies some L7 routing features to an existing mesh. Traffic P
 | mirror | [TrafficPolicySpec.Mirror](#networking.smh.solo.io.TrafficPolicySpec.Mirror) |  | Mirror HTTP traffic to a another destination. Traffic will still be sent to its original destination as normal. |
 | headerManipulation | [TrafficPolicySpec.HeaderManipulation](#networking.smh.solo.io.TrafficPolicySpec.HeaderManipulation) |  | Manipulate request and response headers. |
 | outlierDetection | [TrafficPolicySpec.OutlierDetection](#networking.smh.solo.io.TrafficPolicySpec.OutlierDetection) |  | Configure outlier detection on the targeted services. Setting this field requires an empty source_selector because it must apply to all traffic. |
+| mtls | [TrafficPolicySpec.MTLS](#networking.smh.solo.io.TrafficPolicySpec.MTLS) |  | Configure mTLS settings. If specified will override global default defined in Settings. |
 
 
 
@@ -221,6 +223,21 @@ Express an optional HttpMethod by wrapping it in a nillable message.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | method | [HttpMethodValue](#networking.smh.solo.io.HttpMethodValue) |  |  |
+
+
+
+
+
+
+<a name="networking.smh.solo.io.TrafficPolicySpec.MTLS"></a>
+
+### TrafficPolicySpec.MTLS
+Configure mTLS settings on traffic targets. If specified this overrides the global default defined in Settings.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| enabled | [bool](#bool) |  |  |
 
 
 

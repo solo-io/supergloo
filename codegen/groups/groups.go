@@ -14,10 +14,9 @@ var (
 )
 
 var SMHGroups = []model.Group{
-	//TODO(ilackarms): we may need to restore settings at some point, so this is left commented
-	//makeGroup("core", v1alpha2Version, []resourceToGenerate{
-	//	{kind: "Settings", noStatus: true},
-	//}),
+	makeGroup("settings", v1alpha2Version, []resourceToGenerate{
+		{kind: "Settings"},
+	}),
 	makeGroup("discovery", v1alpha2Version, []resourceToGenerate{
 		{kind: "TrafficTarget"},
 		{kind: "Workload"},

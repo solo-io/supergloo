@@ -13,6 +13,7 @@ import (
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	v1alpha2sets0 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
+	v1alpha2sets1 "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2/sets"
 	v1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
@@ -39,6 +40,20 @@ func NewMockSnapshot(ctrl *gomock.Controller) *MockSnapshot {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockSnapshot) EXPECT() *MockSnapshotMockRecorder {
 	return m.recorder
+}
+
+// Settings mocks base method
+func (m *MockSnapshot) Settings() v1alpha2sets1.SettingsSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Settings")
+	ret0, _ := ret[0].(v1alpha2sets1.SettingsSet)
+	return ret0
+}
+
+// Settings indicates an expected call of Settings
+func (mr *MockSnapshotMockRecorder) Settings() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Settings", reflect.TypeOf((*MockSnapshot)(nil).Settings))
 }
 
 // TrafficTargets mocks base method

@@ -86,6 +86,9 @@ message TrafficPolicySpec {
     */
     OutlierDetection outlier_detection = 11;
 
+    // Configure mTLS settings. If specified will override global default defined in Settings.
+    MTLS mtls = 12;
+
     /*
         RetryPolicy contains mesh-specific retry configuration.
         Different meshes support different Retry features.
@@ -400,6 +403,13 @@ message TrafficPolicySpec {
         // but will eject at least one host regardless of the value. MUST BE >= 0 and <= 100.
         // Defaults to 100%, allowing all hosts to be ejected from the pool.
         uint32 max_ejection_percent = 4;
+    }
+
+    /*
+        Configure mTLS settings on traffic targets. If specified this overrides the global default defined in Settings.
+    */
+    message MTLS {
+        bool enabled = 1;
     }
 }
 

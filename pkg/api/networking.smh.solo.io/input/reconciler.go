@@ -4,6 +4,7 @@
 
 // The Input Reconciler calls a simple func() error whenever a
 // storage event is received for any of:
+// * Settings
 // * TrafficTargets
 // * Workloads
 // * Meshes
@@ -31,6 +32,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
+	settings_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
+	settings_smh_solo_io_v1alpha2_controllers "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2/controller"
+
 	discovery_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discovery_smh_solo_io_v1alpha2_controllers "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/controller"
 
@@ -47,6 +51,8 @@ import (
 // the multiClusterReconciler reconciles events for input resources across clusters
 // this private interface is used to ensure that the generated struct implements the intended functions
 type multiClusterReconciler interface {
+	settings_smh_solo_io_v1alpha2_controllers.MulticlusterSettingsReconciler
+
 	discovery_smh_solo_io_v1alpha2_controllers.MulticlusterTrafficTargetReconciler
 	discovery_smh_solo_io_v1alpha2_controllers.MulticlusterWorkloadReconciler
 	discovery_smh_solo_io_v1alpha2_controllers.MulticlusterMeshReconciler
@@ -69,6 +75,9 @@ type multiClusterReconcilerImpl struct {
 
 // Options for reconcileing a snapshot
 type ReconcileOptions struct {
+
+	// Options for reconciling Settings
+	Settings reconcile.Options
 
 	// Options for reconciling TrafficTargets
 	TrafficTargets reconcile.Options
@@ -117,6 +126,8 @@ func RegisterMultiClusterReconciler(
 
 	// initialize reconcile loops
 
+	settings_smh_solo_io_v1alpha2_controllers.NewMulticlusterSettingsReconcileLoop("Settings", clusters, options.Settings).AddMulticlusterSettingsReconciler(ctx, r, predicates...)
+
 	discovery_smh_solo_io_v1alpha2_controllers.NewMulticlusterTrafficTargetReconcileLoop("TrafficTarget", clusters, options.TrafficTargets).AddMulticlusterTrafficTargetReconciler(ctx, r, predicates...)
 
 	discovery_smh_solo_io_v1alpha2_controllers.NewMulticlusterWorkloadReconcileLoop("Workload", clusters, options.Workloads).AddMulticlusterWorkloadReconciler(ctx, r, predicates...)
@@ -135,6 +146,21 @@ func RegisterMultiClusterReconciler(
 
 	multicluster_solo_io_v1alpha1_controllers.NewMulticlusterKubernetesClusterReconcileLoop("KubernetesCluster", clusters, options.KubernetesClusters).AddMulticlusterKubernetesClusterReconciler(ctx, r, predicates...)
 	return r.base
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileSettings(clusterName string, obj *settings_smh_solo_io_v1alpha2.Settings) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileSettingsDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileTrafficTarget(clusterName string, obj *discovery_smh_solo_io_v1alpha2.TrafficTarget) (reconcile.Result, error) {
@@ -275,6 +301,8 @@ func (r *multiClusterReconcilerImpl) ReconcileKubernetesClusterDeletion(clusterN
 // the singleClusterReconciler reconciles events for input resources across clusters
 // this private interface is used to ensure that the generated struct implements the intended functions
 type singleClusterReconciler interface {
+	settings_smh_solo_io_v1alpha2_controllers.SettingsReconciler
+
 	discovery_smh_solo_io_v1alpha2_controllers.TrafficTargetReconciler
 	discovery_smh_solo_io_v1alpha2_controllers.WorkloadReconciler
 	discovery_smh_solo_io_v1alpha2_controllers.MeshReconciler
@@ -319,6 +347,10 @@ func RegisterSingleClusterReconciler(
 
 	// initialize reconcile loops
 
+	if err := settings_smh_solo_io_v1alpha2_controllers.NewSettingsReconcileLoop("Settings", mgr, options).RunSettingsReconciler(ctx, r, predicates...); err != nil {
+		return nil, err
+	}
+
 	if err := discovery_smh_solo_io_v1alpha2_controllers.NewTrafficTargetReconcileLoop("TrafficTarget", mgr, options).RunTrafficTargetReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
 	}
@@ -351,6 +383,19 @@ func RegisterSingleClusterReconciler(
 	}
 
 	return r.base, nil
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileSettings(obj *settings_smh_solo_io_v1alpha2.Settings) (reconcile.Result, error) {
+	return r.base.ReconcileGeneric(obj)
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileSettingsDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileTrafficTarget(obj *discovery_smh_solo_io_v1alpha2.TrafficTarget) (reconcile.Result, error) {
