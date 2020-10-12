@@ -9,6 +9,7 @@ import (
 	certificates "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2"
 	smhdiscovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	smhnetworking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	smhsettings "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
 	skv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
@@ -24,6 +25,7 @@ var SchemeBuilder = runtime.SchemeBuilder{
 	smhdiscovery.AddToScheme,
 	smhnetworking.AddToScheme,
 	certificates.AddToScheme,
+	smhsettings.AddToScheme,
 
 	// external types
 	istiosecurityv1beta1.AddToScheme,

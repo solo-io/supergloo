@@ -5,11 +5,15 @@ import (
 	"fmt"
 	"time"
 
+	settingsv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/solo-io/service-mesh-hub/pkg/common/settings"
 	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/predicate"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
 	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
@@ -42,6 +46,7 @@ type networkingReconciler struct {
 	history            *stats.SnapshotHistory
 	totalReconciles    int
 	verboseMode        bool
+	settingsRef        v1.ObjectRef
 }
 
 func Start(
@@ -54,6 +59,7 @@ func Start(
 	mgr manager.Manager,
 	history *stats.SnapshotHistory,
 	verboseMode bool,
+	settingsRef v1.ObjectRef,
 ) error {
 	d := &networkingReconciler{
 		ctx:                ctx,
@@ -65,10 +71,20 @@ func Start(
 		multiClusterClient: multiClusterClient,
 		history:            history,
 		verboseMode:        verboseMode,
+		settingsRef:        settingsRef,
 	}
 
 	filterNetworkingEvents := predicate.SimplePredicate{
 		Filter: predicate.SimpleEventFilterFunc(isIgnoredSecret),
+	}
+
+	// TODO extend skv2 snapshots with singleton object utilities
+	// Needed in order to use field selector on metadata.name for Settings CRD.
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &settingsv1alpha2.Settings{}, "metadata.name", func(object runtime.Object) []string {
+		settings := object.(*settingsv1alpha2.Settings)
+		return []string{settings.Name}
+	}); err != nil {
+		return err
 	}
 
 	_, err := input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2, reconcile.Options{}, filterNetworkingEvents)
@@ -88,9 +104,23 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 		KubernetesClusters: input.ResourceBuildOptions{
 			ListOptions: []client.ListOption{client.InNamespace(defaults.GetPodNamespace())},
 		},
+		Settings: input.ResourceBuildOptions{
+			// Ensure that only declared Settings object exists in snapshot.
+			ListOptions: []client.ListOption{
+				client.InNamespace(r.settingsRef.Namespace),
+				client.MatchingFields(map[string]string{
+					"metadata.name": r.settingsRef.Name,
+				}),
+			},
+		},
 	})
 	if err != nil {
 		// failed to read from cache; should never happen
+		return false, err
+	}
+
+	// Validate that the reference Settings object exists and has all required fields specified.
+	if err := settings.Validate(ctx, inputSnap); err != nil {
 		return false, err
 	}
 
