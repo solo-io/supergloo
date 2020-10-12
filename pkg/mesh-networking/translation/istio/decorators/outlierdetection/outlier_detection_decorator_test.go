@@ -81,7 +81,9 @@ var _ = Describe("OutlierDetectionDecorator", func() {
 		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
-					Enabled: false,
+					Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
+						TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_DISABLE,
+					},
 				},
 			},
 		}

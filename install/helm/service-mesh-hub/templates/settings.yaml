@@ -8,4 +8,5 @@ metadata:
   namespace: {{ $.Release.Namespace }}
 spec:
   mtls:
-    defaultMtls: {{ $settings.defaultMtls }}
+    istio:
+      tls_mode: {{ $settings.mtls.istio.tls_mode }}

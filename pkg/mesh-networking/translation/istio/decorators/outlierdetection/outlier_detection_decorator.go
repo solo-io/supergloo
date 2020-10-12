@@ -95,17 +95,23 @@ func (d *outlierDetectionDecorator) translateOutlierDetection(
 
 func (d *outlierDetectionDecorator) translateTlsSettings(
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
-
 ) *networkingv1alpha3spec.ClientTLSSettings {
 	// If TrafficPolicy doesn't specify mTLS configuration, use global default populated upstream during initialization.
 	if trafficPolicy.Mtls == nil {
 		return nil
 	}
-	tlsSettings := &networkingv1alpha3spec.ClientTLSSettings{}
-	if trafficPolicy.Mtls.Enabled {
-		tlsSettings.Mode = networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL
-	} else {
-		tlsSettings.Mode = networkingv1alpha3spec.ClientTLSSettings_DISABLE
+	return &networkingv1alpha3spec.ClientTLSSettings{
+		Mode: MapIstioTlsMode(trafficPolicy.Mtls.Istio.TlsMode),
 	}
-	return tlsSettings
+}
+
+func MapIstioTlsMode(tlsMode v1alpha2.TrafficPolicySpec_MTLS_Istio_TLSmode) networkingv1alpha3spec.ClientTLSSettings_TLSmode {
+	switch tlsMode {
+	case v1alpha2.TrafficPolicySpec_MTLS_Istio_SIMPLE:
+		return networkingv1alpha3spec.ClientTLSSettings_SIMPLE
+	case v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL:
+		return networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL
+	default:
+		return networkingv1alpha3spec.ClientTLSSettings_DISABLE
+	}
 }

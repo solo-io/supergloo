@@ -17,7 +17,6 @@ title: "settings.proto"
 
 ## Table of Contents
   - [SettingsSpec](#settings.smh.solo.io.SettingsSpec)
-  - [SettingsSpec.MTLS](#settings.smh.solo.io.SettingsSpec.MTLS)
   - [SettingsStatus](#settings.smh.solo.io.SettingsStatus)
 
 
@@ -34,22 +33,7 @@ Configure global settings and defaults.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| mtls | [SettingsSpec.MTLS](#settings.smh.solo.io.SettingsSpec.MTLS) |  | Configure mTLS settings for TrafficTargets. |
-
-
-
-
-
-
-<a name="settings.smh.solo.io.SettingsSpec.MTLS"></a>
-
-### SettingsSpec.MTLS
-mTLS settings.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| defaultMtls | [bool](#bool) |  | If true, by default enable mTLS for all TrafficTargets unless explicitly disabled by TrafficPolicies. |
+| mtls | [networking.smh.solo.io.TrafficPolicySpec.MTLS](#networking.smh.solo.io.TrafficPolicySpec.MTLS) |  | Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence) |
 
 
 

@@ -6,19 +6,13 @@ import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
 import "service-mesh-hub/api/networking/v1alpha2/validation_state.proto";
+import "service-mesh-hub/api/networking/v1alpha2/traffic_policy.proto";
 
 // Configure global settings and defaults.
 message SettingsSpec {
 
-    // Configure mTLS settings for TrafficTargets.
-    MTLS mtls = 1;
-
-    // mTLS settings.
-    message MTLS {
-
-        // If true, by default enable mTLS for all TrafficTargets unless explicitly disabled by TrafficPolicies.
-        bool default_mtls = 1;
-    }
+    // Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence)
+    .networking.smh.solo.io.TrafficPolicySpec.MTLS mtls = 1;
 }
 
 message SettingsStatus {

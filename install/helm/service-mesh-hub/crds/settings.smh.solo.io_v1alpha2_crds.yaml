@@ -24,11 +24,19 @@ spec:
           description: Configure global settings and defaults.
           properties:
             mtls:
-              description: Configure mTLS settings for TrafficTargets.
+              description: Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence)
               properties:
-                defaultMtls:
-                  description: If true, by default enable mTLS for all TrafficTargets unless explicitly disabled by TrafficPolicies.
-                  type: boolean
+                istio:
+                  description: Istio TLS settings
+                  properties:
+                    tlsMode:
+                      description: TLS connection mode
+                      enum:
+                      - DISABLE
+                      - SIMPLE
+                      - ISTIO_MUTUAL
+                      type: string
+                  type: object
               type: object
           type: object
         status:

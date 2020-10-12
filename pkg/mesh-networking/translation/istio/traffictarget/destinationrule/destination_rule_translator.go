@@ -6,7 +6,7 @@ import (
 
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
-	settingsv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/outlierdetection"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/snapshotutils"
 
@@ -148,7 +148,7 @@ func registerFieldFunc(
 
 func (t *translator) initializeDestinationRule(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
-	mtlsDefault *settingsv1alpha2.SettingsSpec_MTLS,
+	mtlsDefault *v1alpha2.TrafficPolicySpec_MTLS,
 ) *networkingv1alpha3.DestinationRule {
 	meta := metautils.TranslatedObjectMeta(
 		trafficTarget.Spec.GetKubeService().Ref,
@@ -169,11 +169,9 @@ func (t *translator) initializeDestinationRule(
 		},
 	}
 
-	// If mTLS default is set to true, set mTLS on all DestinationRules.
-	if mtlsDefault.DefaultMtls {
-		destinationRule.Spec.TrafficPolicy.Tls = &networkingv1alpha3spec.ClientTLSSettings{
-			Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
-		}
+	// Initialize Istio TLS mode with default declared in Settings
+	destinationRule.Spec.TrafficPolicy.Tls = &networkingv1alpha3spec.ClientTLSSettings{
+		Mode: outlierdetection.MapIstioTlsMode(mtlsDefault.Istio.TlsMode),
 	}
 
 	return destinationRule

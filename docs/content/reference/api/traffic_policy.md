@@ -27,6 +27,7 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.HttpMatcher](#networking.smh.solo.io.TrafficPolicySpec.HttpMatcher)
   - [TrafficPolicySpec.HttpMethod](#networking.smh.solo.io.TrafficPolicySpec.HttpMethod)
   - [TrafficPolicySpec.MTLS](#networking.smh.solo.io.TrafficPolicySpec.MTLS)
+  - [TrafficPolicySpec.MTLS.Istio](#networking.smh.solo.io.TrafficPolicySpec.MTLS.Istio)
   - [TrafficPolicySpec.Mirror](#networking.smh.solo.io.TrafficPolicySpec.Mirror)
   - [TrafficPolicySpec.MultiDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination)
   - [TrafficPolicySpec.MultiDestination.WeightedDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination)
@@ -41,6 +42,7 @@ title: "traffic_policy.proto"
   - [TrafficPolicyStatus](#networking.smh.solo.io.TrafficPolicyStatus)
   - [TrafficPolicyStatus.TrafficTargetsEntry](#networking.smh.solo.io.TrafficPolicyStatus.TrafficTargetsEntry)
 
+  - [TrafficPolicySpec.MTLS.Istio.TLSmode](#networking.smh.solo.io.TrafficPolicySpec.MTLS.Istio.TLSmode)
 
 
 
@@ -237,7 +239,22 @@ Configure mTLS settings on traffic targets. If specified this overrides the glob
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| enabled | [bool](#bool) |  |  |
+| istio | [TrafficPolicySpec.MTLS.Istio](#networking.smh.solo.io.TrafficPolicySpec.MTLS.Istio) |  | Istio TLS settings |
+
+
+
+
+
+
+<a name="networking.smh.solo.io.TrafficPolicySpec.MTLS.Istio"></a>
+
+### TrafficPolicySpec.MTLS.Istio
+Istio TLS settings Map onto the enums defined here https://github.com/istio/api/blob/00636152b9d9254b614828a65723840282a177d3/networking/v1beta1/destination_rule.proto#L886
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| tlsMode | [TrafficPolicySpec.MTLS.Istio.TLSmode](#networking.smh.solo.io.TrafficPolicySpec.MTLS.Istio.TLSmode) |  | TLS connection mode |
 
 
 
@@ -464,6 +481,19 @@ Describes how to match a given string in HTTP headers. Match is case-sensitive.
 
 
  <!-- end messages -->
+
+
+<a name="networking.smh.solo.io.TrafficPolicySpec.MTLS.Istio.TLSmode"></a>
+
+### TrafficPolicySpec.MTLS.Istio.TLSmode
+TLS connection mode
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| DISABLE | 0 | Do not setup a TLS connection to the upstream endpoint. |
+| SIMPLE | 1 | Originate a TLS connection to the upstream endpoint. |
+| ISTIO_MUTUAL | 2 | Secure connections to the upstream using mutual TLS by presenting client certificates for authentication. This mode uses certificates generated automatically by Istio for mTLS authentication. When this mode is used, all other fields in `ClientTLSSettings` should be empty. |
+
 
  <!-- end enums -->
 

@@ -60,7 +60,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		ctrl.Finish()
 	})
 
-	It("should translate when mTLS Settings defaults to true", func() {
+	It("should translate respecting default mTLS Settings", func() {
 		in = input.NewInputSnapshotManualBuilder("").
 			AddSettings(settingsv1alpha2.SettingsSlice{
 				{
@@ -69,8 +69,10 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						Namespace: defaults.DefaultPodNamespace,
 					},
 					Spec: settingsv1alpha2.SettingsSpec{
-						Mtls: &settingsv1alpha2.SettingsSpec_MTLS{
-							DefaultMtls: true,
+						Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
+							Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
+								TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
+							},
 						},
 					},
 				},
@@ -252,8 +254,10 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						Namespace: defaults.DefaultPodNamespace,
 					},
 					Spec: settingsv1alpha2.SettingsSpec{
-						Mtls: &settingsv1alpha2.SettingsSpec_MTLS{
-							DefaultMtls: false,
+						Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
+							Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
+								TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_DISABLE,
+							},
 						},
 					},
 				},
@@ -306,8 +310,12 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				trafficTarget.Annotations,
 			),
 			Spec: networkingv1alpha3spec.DestinationRule{
-				Host:          "local-hostname",
-				TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{},
+				Host: "local-hostname",
+				TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{
+					Tls: &networkingv1alpha3spec.ClientTLSSettings{
+						Mode: networkingv1alpha3spec.ClientTLSSettings_DISABLE,
+					},
+				},
 			},
 		}
 
