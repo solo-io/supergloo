@@ -8,6 +8,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/appmesh/traffictarget"
 )
 
 // the appmesh translator translates an input networking snapshot to an output snapshot of appmesh resources
@@ -24,11 +25,15 @@ type Translator interface {
 }
 
 type appmeshTranslator struct {
+	trafficTargetTranslator traffictarget.Translator
+
 	totalTranslates int // TODO(ilackarms): metric
 }
 
-func NewAppmeshTranslator() Translator {
-	return &appmeshTranslator{}
+func NewAppmeshTranslator(trafficTargetTranslator traffictarget.Translator) Translator {
+	return &appmeshTranslator{
+		trafficTargetTranslator: trafficTargetTranslator,
+	}
 }
 
 func (t *appmeshTranslator) Translate(
@@ -40,6 +45,12 @@ func (t *appmeshTranslator) Translate(
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("appmesh-translator-%v", t.totalTranslates))
 
 	//TODO: implement AppMesh translation
+
+	for _, trafficTarget := range in.TrafficTargets().List() {
+		trafficTarget := trafficTarget
+
+		t.trafficTargetTranslator.Translate(ctx, in, trafficTarget, appmeshOutputs, reporter)
+	}
 
 	t.totalTranslates++
 }
