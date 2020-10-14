@@ -47,7 +47,7 @@ func Command(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "snapshot",
 		Short: "Input and Output snapshots for the discovery and networking pod",
-		Long: "The output can be piped into a command like jq. For example: \n" +
+		Long: "The output can be piped into a command like jq. For example:\n" +
 			"meshctl debug snapshot discovery input | jq 'to_entries | .[] | {kind: (.key), value: .value[]?} | {kind, name: .value.metadata?.name?, namespace: .value.metadata?.namespace?, cluster: .value.metadata?.clusterName?}'",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return debugSnapshot(ctx, opts, []string{discovery, networking}, []string{input, output})
