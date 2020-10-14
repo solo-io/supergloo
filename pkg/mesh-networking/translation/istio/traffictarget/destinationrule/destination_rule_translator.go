@@ -1,11 +1,15 @@
 package destinationrule
 
 import (
+	"context"
 	"reflect"
 
+	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/tls"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/snapshotutils"
 
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
@@ -33,6 +37,7 @@ type Translator interface {
 	//
 	// Note that the input snapshot TrafficTargetSet contains the given TrafficTarget.
 	Translate(
+		ctx context.Context,
 		in input.Snapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		reporter reporting.Reporter,
@@ -64,6 +69,7 @@ func NewTranslator(
 // returns nil if no DestinationRule is required for the TrafficTarget (i.e. if no DestinationRule features are required, such as subsets).
 // The input snapshot TrafficTargetSet contains n the
 func (t *translator) Translate(
+	ctx context.Context,
 	in input.Snapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	reporter reporting.Reporter,
@@ -75,7 +81,17 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	destinationRule := t.initializeDestinationRule(trafficTarget)
+	settings, err := snapshotutils.GetSingletonSettings(ctx, in)
+	if err != nil {
+		return nil
+	}
+
+	destinationRule, err := t.initializeDestinationRule(trafficTarget, settings.Spec.Mtls)
+	if err != nil {
+		contextutils.LoggerFrom(ctx).Error(err)
+		return nil
+	}
+
 	// register the owners of the destinationrule fields
 	destinationRuleFields := fieldutils.NewOwnershipRegistry()
 	drDecorators := t.decoratorFactory.MakeDecorators(decorators.Parameters{
@@ -101,7 +117,9 @@ func (t *translator) Translate(
 		}
 	}
 
-	if len(destinationRule.Spec.Subsets) == 0 && destinationRule.Spec.TrafficPolicy == nil {
+	// TODO need a more robust implementation of determining whether a DestinationRule has any effect
+	if len(destinationRule.Spec.Subsets) == 0 &&
+		destinationRule.Spec.GetTrafficPolicy().GetTls().GetMode() == networkingv1alpha3spec.ClientTLSSettings_DISABLE {
 		// no need to create this DestinationRule as it has no effect
 		return nil
 	}
@@ -134,25 +152,21 @@ func registerFieldFunc(
 	}
 }
 
-func (t *translator) initializeDestinationRule(trafficTarget *discoveryv1alpha2.TrafficTarget) *networkingv1alpha3.DestinationRule {
+func (t *translator) initializeDestinationRule(
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	mtlsDefault *v1alpha2.TrafficPolicySpec_MTLS,
+) (*networkingv1alpha3.DestinationRule, error) {
 	meta := metautils.TranslatedObjectMeta(
 		trafficTarget.Spec.GetKubeService().Ref,
 		trafficTarget.Annotations,
 	)
 	hostname := t.clusterDomains.GetServiceLocalFQDN(trafficTarget.Spec.GetKubeService().Ref)
 
-	return &networkingv1alpha3.DestinationRule{
+	destinationRule := &networkingv1alpha3.DestinationRule{
 		ObjectMeta: meta,
 		Spec: networkingv1alpha3spec.DestinationRule{
-			Host: hostname,
-			TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{
-				Tls: &networkingv1alpha3spec.ClientTLSSettings{
-					// TODO(ilackarms): currently we set all DRs to mTLS
-					// in the future we'll want to make this configurable
-					// https://github.com/solo-io/service-mesh-hub/issues/790
-					Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
-				},
-			},
+			Host:          hostname,
+			TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{},
 			Subsets: trafficshift.MakeDestinationRuleSubsetsForTrafficTarget(
 				trafficTarget,
 				t.trafficTargets,
@@ -160,4 +174,15 @@ func (t *translator) initializeDestinationRule(trafficTarget *discoveryv1alpha2.
 			),
 		},
 	}
+
+	// Initialize Istio TLS mode with default declared in Settings
+	istioTlsMode, err := tls.MapIstioTlsMode(mtlsDefault.Istio.TlsMode)
+	if err != nil {
+		return nil, err
+	}
+	destinationRule.Spec.TrafficPolicy.Tls = &networkingv1alpha3spec.ClientTLSSettings{
+		Mode: istioTlsMode,
+	}
+
+	return destinationRule, nil
 }

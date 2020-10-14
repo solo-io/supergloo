@@ -69,7 +69,7 @@ func (t *translator) Translate(
 	}
 
 	vs := t.virtualServices.Translate(in, trafficTarget, reporter)
-	dr := t.destinationRules.Translate(in, trafficTarget, reporter)
+	dr := t.destinationRules.Translate(t.ctx, in, trafficTarget, reporter)
 	ap := t.authorizationPolicies.Translate(in, trafficTarget, reporter)
 
 	outputs.AddVirtualServices(vs)

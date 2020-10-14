@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 	mesh_discovery "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery"
 	mesh_networking "github.com/solo-io/service-mesh-hub/pkg/mesh-networking"
@@ -33,6 +34,8 @@ func (opts *bootstrapOpts) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&opts.MasterNamespace, "namespace", "n", metav1.NamespaceAll, "if specified restricts the master manager's cache to watch objects in the desired namespace.")
 	flags.Uint32Var(&opts.MetricsBindPort, "metrics-port", 9091, "port on which to serve Prometheus metrics. set to 0 to disable")
 	flags.BoolVar(&opts.VerboseMode, "verbose", true, "enables verbose/debug logging")
+	flags.StringVar(&opts.SettingsName, "settings-name", defaults.DefaultSettingsName, "The name of the Settings object this controller should use.")
+	flags.StringVar(&opts.SettingsNamespace, "settings-namespace", defaults.DefaultPodNamespace, "The namespace of the Settings object this controller should use.")
 }
 
 func rootCommand(ctx context.Context) *cobra.Command {

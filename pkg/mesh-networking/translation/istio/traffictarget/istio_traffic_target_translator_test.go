@@ -1,6 +1,8 @@
 package traffictarget
 
 import (
+	"context"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
@@ -25,6 +27,7 @@ var _ = Describe("IstioTrafficTargetTranslator", func() {
 		mockOutputs                       *mock_output.MockBuilder
 		mockReporter                      *mock_reporting.MockReporter
 		istioTrafficTargetTranslator      Translator
+		ctx                               = context.TODO()
 	)
 
 	BeforeEach(func() {
@@ -35,6 +38,7 @@ var _ = Describe("IstioTrafficTargetTranslator", func() {
 		mockOutputs = mock_output.NewMockBuilder(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		istioTrafficTargetTranslator = &translator{
+			ctx:                   ctx,
 			destinationRules:      mockDestinationRuleTranslator,
 			virtualServices:       mockVirtualServiceTranslator,
 			authorizationPolicies: mockAuthorizationPolicyTranslator,
@@ -77,7 +81,7 @@ var _ = Describe("IstioTrafficTargetTranslator", func() {
 
 		mockDestinationRuleTranslator.
 			EXPECT().
-			Translate(in, trafficTarget, mockReporter).
+			Translate(ctx, in, trafficTarget, mockReporter).
 			Return(dr)
 		mockVirtualServiceTranslator.
 			EXPECT().

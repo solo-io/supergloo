@@ -6,16 +6,12 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -58,24 +54,11 @@ var _ = Describe("Applier", func() {
 				},
 			}
 
-			snap = input.NewSnapshot("",
-				discoveryv1alpha2sets.NewTrafficTargetSet(discoveryv1alpha2.TrafficTargetSlice{
-					trafficTarget,
-				}...),
-				discoveryv1alpha2sets.NewWorkloadSet(discoveryv1alpha2.WorkloadSlice{
-					workload,
-				}...),
-				discoveryv1alpha2sets.NewMeshSet(),
-				v1alpha2sets.NewTrafficPolicySet(v1alpha2.TrafficPolicySlice{
-					trafficPolicy1,
-					trafficPolicy2,
-				}...),
-				v1alpha2sets.NewAccessPolicySet(),
-				v1alpha2sets.NewVirtualMeshSet(),
-				v1alpha2sets.NewFailoverServiceSet(),
-				corev1sets.NewSecretSet(),
-				skv1alpha1sets.NewKubernetesClusterSet(),
-			)
+			snap = input.NewInputSnapshotManualBuilder("").
+				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
+				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy1, trafficPolicy2}).
+				AddWorkloads(discoveryv1alpha2.WorkloadSlice{workload}).
+				Build()
 		)
 
 		BeforeEach(func() {
@@ -126,21 +109,10 @@ var _ = Describe("Applier", func() {
 				},
 			}
 
-			snap = input.NewSnapshot("",
-				discoveryv1alpha2sets.NewTrafficTargetSet(discoveryv1alpha2.TrafficTargetSlice{
-					trafficTarget,
-				}...),
-				discoveryv1alpha2sets.NewWorkloadSet(),
-				discoveryv1alpha2sets.NewMeshSet(),
-				v1alpha2sets.NewTrafficPolicySet(v1alpha2.TrafficPolicySlice{
-					trafficPolicy,
-				}...),
-				v1alpha2sets.NewAccessPolicySet(),
-				v1alpha2sets.NewVirtualMeshSet(),
-				v1alpha2sets.NewFailoverServiceSet(),
-				corev1sets.NewSecretSet(),
-				skv1alpha1sets.NewKubernetesClusterSet(),
-			)
+			snap = input.NewInputSnapshotManualBuilder("").
+				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
+				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy}).
+				Build()
 		)
 
 		BeforeEach(func() {

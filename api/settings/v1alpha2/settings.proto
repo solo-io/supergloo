@@ -1,0 +1,30 @@
+syntax = "proto3";
+package settings.smh.solo.io;
+option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2";
+
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
+
+import "service-mesh-hub/api/networking/v1alpha2/validation_state.proto";
+import "service-mesh-hub/api/networking/v1alpha2/traffic_policy.proto";
+
+// Configure global settings and defaults.
+message SettingsSpec {
+
+    // Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence)
+    .networking.smh.solo.io.TrafficPolicySpec.MTLS mtls = 1;
+}
+
+message SettingsStatus {
+    // The most recent generation observed in the the Settings metadata.
+    // If the observedGeneration does not match generation, the controller has not processed the most
+    // recent version of this resource.
+    int64 observed_generation = 1;
+
+    // The state of the overall resource.
+    // It will only show accepted if no processing errors encountered.
+    .networking.smh.solo.io.ApprovalState state = 2;
+
+    // Any errors encountered while processing Settings object.
+    repeated string errors = 3;
+}

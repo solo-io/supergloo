@@ -86,6 +86,9 @@ message TrafficPolicySpec {
     */
     OutlierDetection outlier_detection = 11;
 
+    // Configure mTLS settings. If specified will override global default defined in Settings.
+    MTLS mtls = 12;
+
     /*
         RetryPolicy contains mesh-specific retry configuration.
         Different meshes support different Retry features.
@@ -400,6 +403,39 @@ message TrafficPolicySpec {
         // but will eject at least one host regardless of the value. MUST BE >= 0 and <= 100.
         // Defaults to 100%, allowing all hosts to be ejected from the pool.
         uint32 max_ejection_percent = 4;
+    }
+
+    /*
+        Configure mTLS settings on traffic targets. If specified this overrides the global default defined in Settings.
+    */
+    message MTLS {
+
+        // Istio TLS settings
+        Istio istio = 1;
+
+        // Istio TLS settings
+        // Map onto the enums defined here https://github.com/istio/api/blob/00636152b9d9254b614828a65723840282a177d3/networking/v1beta1/destination_rule.proto#L886
+        message Istio {
+
+            // TLS connection mode
+            TLSmode tls_mode = 1;
+
+            // TLS connection mode
+            enum TLSmode {
+                // Do not setup a TLS connection to the upstream endpoint.
+                DISABLE = 0;
+
+                // Originate a TLS connection to the upstream endpoint.
+                SIMPLE = 1;
+
+                // Secure connections to the upstream using mutual TLS by presenting
+                // client certificates for authentication.
+                // This mode uses certificates generated
+                // automatically by Istio for mTLS authentication. When this mode is
+                // used, all other fields in `ClientTLSSettings` should be empty.
+                ISTIO_MUTUAL = 2;
+            };
+        }
     }
 }
 

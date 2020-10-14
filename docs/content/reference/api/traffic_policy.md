@@ -26,6 +26,8 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.HeaderMatcher](#networking.smh.solo.io.TrafficPolicySpec.HeaderMatcher)
   - [TrafficPolicySpec.HttpMatcher](#networking.smh.solo.io.TrafficPolicySpec.HttpMatcher)
   - [TrafficPolicySpec.HttpMethod](#networking.smh.solo.io.TrafficPolicySpec.HttpMethod)
+  - [TrafficPolicySpec.MTLS](#networking.smh.solo.io.TrafficPolicySpec.MTLS)
+  - [TrafficPolicySpec.MTLS.Istio](#networking.smh.solo.io.TrafficPolicySpec.MTLS.Istio)
   - [TrafficPolicySpec.Mirror](#networking.smh.solo.io.TrafficPolicySpec.Mirror)
   - [TrafficPolicySpec.MultiDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination)
   - [TrafficPolicySpec.MultiDestination.WeightedDestination](#networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination)
@@ -40,6 +42,7 @@ title: "traffic_policy.proto"
   - [TrafficPolicyStatus](#networking.smh.solo.io.TrafficPolicyStatus)
   - [TrafficPolicyStatus.TrafficTargetsEntry](#networking.smh.solo.io.TrafficPolicyStatus.TrafficTargetsEntry)
 
+  - [TrafficPolicySpec.MTLS.Istio.TLSmode](#networking.smh.solo.io.TrafficPolicySpec.MTLS.Istio.TLSmode)
 
 
 
@@ -65,6 +68,7 @@ A Traffic Policy applies some L7 routing features to an existing mesh. Traffic P
 | mirror | [TrafficPolicySpec.Mirror](#networking.smh.solo.io.TrafficPolicySpec.Mirror) |  | Mirror HTTP traffic to a another destination. Traffic will still be sent to its original destination as normal. |
 | headerManipulation | [TrafficPolicySpec.HeaderManipulation](#networking.smh.solo.io.TrafficPolicySpec.HeaderManipulation) |  | Manipulate request and response headers. |
 | outlierDetection | [TrafficPolicySpec.OutlierDetection](#networking.smh.solo.io.TrafficPolicySpec.OutlierDetection) |  | Configure outlier detection on the targeted services. Setting this field requires an empty source_selector because it must apply to all traffic. |
+| mtls | [TrafficPolicySpec.MTLS](#networking.smh.solo.io.TrafficPolicySpec.MTLS) |  | Configure mTLS settings. If specified will override global default defined in Settings. |
 
 
 
@@ -221,6 +225,36 @@ Express an optional HttpMethod by wrapping it in a nillable message.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | method | [HttpMethodValue](#networking.smh.solo.io.HttpMethodValue) |  |  |
+
+
+
+
+
+
+<a name="networking.smh.solo.io.TrafficPolicySpec.MTLS"></a>
+
+### TrafficPolicySpec.MTLS
+Configure mTLS settings on traffic targets. If specified this overrides the global default defined in Settings.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| istio | [TrafficPolicySpec.MTLS.Istio](#networking.smh.solo.io.TrafficPolicySpec.MTLS.Istio) |  | Istio TLS settings |
+
+
+
+
+
+
+<a name="networking.smh.solo.io.TrafficPolicySpec.MTLS.Istio"></a>
+
+### TrafficPolicySpec.MTLS.Istio
+Istio TLS settings Map onto the enums defined here https://github.com/istio/api/blob/00636152b9d9254b614828a65723840282a177d3/networking/v1beta1/destination_rule.proto#L886
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| tlsMode | [TrafficPolicySpec.MTLS.Istio.TLSmode](#networking.smh.solo.io.TrafficPolicySpec.MTLS.Istio.TLSmode) |  | TLS connection mode |
 
 
 
@@ -447,6 +481,19 @@ Describes how to match a given string in HTTP headers. Match is case-sensitive.
 
 
  <!-- end messages -->
+
+
+<a name="networking.smh.solo.io.TrafficPolicySpec.MTLS.Istio.TLSmode"></a>
+
+### TrafficPolicySpec.MTLS.Istio.TLSmode
+TLS connection mode
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| DISABLE | 0 | Do not setup a TLS connection to the upstream endpoint. |
+| SIMPLE | 1 | Originate a TLS connection to the upstream endpoint. |
+| ISTIO_MUTUAL | 2 | Secure connections to the upstream using mutual TLS by presenting client certificates for authentication. This mode uses certificates generated automatically by Istio for mTLS authentication. When this mode is used, all other fields in `ClientTLSSettings` should be empty. |
+
 
  <!-- end enums -->
 
