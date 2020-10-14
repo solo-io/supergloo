@@ -10,6 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha20 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	v1alpha21 "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
 	v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	reconcile "github.com/solo-io/skv2/pkg/reconcile"
 	v1 "k8s.io/api/core/v1"
@@ -36,6 +37,21 @@ func NewMockmultiClusterReconciler(ctrl *gomock.Controller) *MockmultiClusterRec
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockmultiClusterReconciler) EXPECT() *MockmultiClusterReconcilerMockRecorder {
 	return m.recorder
+}
+
+// ReconcileSettings mocks base method
+func (m *MockmultiClusterReconciler) ReconcileSettings(clusterName string, obj *v1alpha21.Settings) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileSettings", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileSettings indicates an expected call of ReconcileSettings
+func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileSettings(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSettings", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileSettings), clusterName, obj)
 }
 
 // ReconcileTrafficTarget mocks base method
@@ -194,6 +210,21 @@ func NewMocksingleClusterReconciler(ctrl *gomock.Controller) *MocksingleClusterR
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MocksingleClusterReconciler) EXPECT() *MocksingleClusterReconcilerMockRecorder {
 	return m.recorder
+}
+
+// ReconcileSettings mocks base method
+func (m *MocksingleClusterReconciler) ReconcileSettings(obj *v1alpha21.Settings) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileSettings", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileSettings indicates an expected call of ReconcileSettings
+func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileSettings(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSettings", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileSettings), obj)
 }
 
 // ReconcileTrafficTarget mocks base method

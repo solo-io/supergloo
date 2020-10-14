@@ -58,6 +58,7 @@ func startReconciler(
 		parameters.MasterManager,
 		parameters.SnapshotHistory,
 		parameters.VerboseMode,
+		parameters.SettingsRef,
 	)
 }
 

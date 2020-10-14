@@ -365,6 +365,21 @@ spec:
                   minimum: 0
                   type: integer
               type: object
+            mtls:
+              description: Configure mTLS settings. If specified will override global default defined in Settings.
+              properties:
+                istio:
+                  description: Istio TLS settings
+                  properties:
+                    tlsMode:
+                      description: TLS connection mode
+                      enum:
+                      - DISABLE
+                      - SIMPLE
+                      - ISTIO_MUTUAL
+                      type: string
+                  type: object
+              type: object
             outlierDetection:
               description: |-
                 Configure outlier detection on the targeted services.

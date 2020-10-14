@@ -32,6 +32,12 @@ var (
 			"VirtualMesh",
 			"FailoverService",
 		},
+		schema.GroupVersion{
+			Group:   "settings." + constants.ServiceMeshHubApiGroupSuffix,
+			Version: "v1alpha2",
+		}: {
+			"Settings",
+		},
 		skv1alpha1.SchemeGroupVersion: {
 			"KubernetesCluster",
 		},

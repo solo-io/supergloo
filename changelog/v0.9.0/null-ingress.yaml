@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix to prevent writing "null" ingress gateways on Istio mesh resources.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1008

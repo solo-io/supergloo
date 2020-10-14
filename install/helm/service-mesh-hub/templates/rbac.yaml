@@ -118,6 +118,14 @@ rules:
   - list
   - watch
 - apiGroups:
+  - settings.smh.solo.io
+  resources:
+  - settings
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - ""
   resources:
   - secrets/status
@@ -147,6 +155,13 @@ rules:
   - accesspolicies/status
   - virtualmeshes/status
   - failoverservices/status
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - settings.smh.solo.io
+  resources:
+  - settings/status
   verbs:
   - get
   - update

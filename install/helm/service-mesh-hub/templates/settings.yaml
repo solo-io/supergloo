@@ -1,0 +1,12 @@
+# Settings CRD
+{{- $settings := $.Values.settings}}
+
+kind: Settings
+apiVersion: settings.smh.solo.io/v1alpha2
+metadata:
+  name: settings
+  namespace: {{ $.Release.Namespace }}
+spec:
+  mtls:
+    istio:
+      tls_mode: {{ $settings.mtls.istio.tls_mode }}

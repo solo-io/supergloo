@@ -7,6 +7,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
 	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/multicluster/watch"
 	"go.uber.org/zap"
@@ -26,7 +27,8 @@ type StartParameters struct {
 	McClient        multicluster.Client
 	Clusters        multicluster.Interface
 	SnapshotHistory *stats.SnapshotHistory
-
+	// Reference to Settings object this controller uses.
+	SettingsRef v1.ObjectRef
 	// enable additional logging
 	VerboseMode bool
 }
@@ -36,7 +38,6 @@ type StartReconciler func(
 ) error
 
 // bootstrap options for starting discovery
-// TODO: wire these up to Settings CR
 type Options struct {
 	// MetricsBindPort is the TCP port that the controller should bind to
 	// for serving prometheus metrics.
@@ -54,6 +55,10 @@ type Options struct {
 
 	// ManagementContext if specified read the KubeConfig for the management cluster from this context. Only applies when running out of cluster.
 	ManagementContext string
+
+	// Reference to the Settings object that the controller should use.
+	SettingsName      string
+	SettingsNamespace string
 }
 
 // the mesh-discovery controller is the Kubernetes Controller/Operator
@@ -86,6 +91,10 @@ func Start(ctx context.Context, rootLogger string, start StartReconciler, opts O
 		Clusters:        clusterWatcher,
 		SnapshotHistory: snapshotHistory,
 		VerboseMode:     opts.VerboseMode,
+		SettingsRef: v1.ObjectRef{
+			Name:      opts.SettingsName,
+			Namespace: opts.SettingsNamespace,
+		},
 	}
 
 	if err := start(params); err != nil {
