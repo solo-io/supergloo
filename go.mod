@@ -62,6 +62,7 @@ require (
 	github.com/solo-io/go-utils v0.18.1-0.20201009181730-b75feb59f162
 	github.com/solo-io/skv2 v0.13.0
 	github.com/solo-io/solo-kit v0.14.0
+	github.com/spf13/afero v1.3.4
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.15.0
