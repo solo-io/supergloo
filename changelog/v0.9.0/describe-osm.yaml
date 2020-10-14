@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1011
+    description: Fix for panic in meshctl when calling "describe mesh" against a cluster where OSM was discovered.
