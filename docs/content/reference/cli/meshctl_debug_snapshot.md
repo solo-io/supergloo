@@ -9,7 +9,7 @@ Input and Output snapshots for the discovery and networking pod
 ### Synopsis
 
 The output can be piped into a command like jq. For example:
-meshctl debug snapshot discovery input | jq 'to_entries | .[] | {kind: (.key), value: .value[]?} | {kind, name: .value.metadata?.name?, namespace: .value.metadata?.namespace?, cluster: .value.metadata?.clusterName?}'
+meshctl debug snapshot discovery input | jq '.'
 
 ```
 meshctl debug snapshot [flags]
@@ -18,15 +18,16 @@ meshctl debug snapshot [flags]
 ### Options
 
 ```
-  -f, --file string   file to be read or written to
+  -f, --file string   file to write output to
   -h, --help          help for snapshot
-      --json          display the entire json snapshot (best used when piping the output into another command like jq)
-      --zip           zip file output
+      --json          display the entire json snapshot The output can be piped into a command like jq. For example:
+                       meshctl debug snapshot discovery input | jq '.'
+      --zip string    zip file output
 ```
 
 ### SEE ALSO
 
 * [meshctl debug](../meshctl_debug)	 - Debug Service Mesh Hub resources
-* [meshctl debug snapshot discovery](../meshctl_debug_snapshot_discovery)	 - for the discovery pod only
-* [meshctl debug snapshot networking](../meshctl_debug_snapshot_networking)	 - for the networking pod only
+* [meshctl debug snapshot discovery](../meshctl_debug_snapshot_discovery)	 - for the discovery pod
+* [meshctl debug snapshot networking](../meshctl_debug_snapshot_networking)	 - for the networking pod
 

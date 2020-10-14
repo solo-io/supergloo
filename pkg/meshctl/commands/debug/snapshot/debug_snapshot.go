@@ -19,7 +19,6 @@ import (
 )
 
 const (
-	Filename        = "/tmp/smh-snapshots.tgz"
 	filePermissions = 0644
 	kubePort        = "9091"
 
@@ -33,13 +32,13 @@ const (
 type DebugSnapshotOpts struct {
 	json bool
 	file string
-	zip  bool
+	zip  string
 }
 
 func AddDebugSnapshotFlags(flags *pflag.FlagSet, opts *DebugSnapshotOpts) {
-	flags.BoolVar(&opts.json, "json", false, "display the entire json snapshot (best used when piping the output into another command like jq)")
-	flags.StringVarP(&opts.file, "file", "f", "", "file to be read or written to")
-	flags.BoolVar(&opts.zip, "zip", false, "zip file output")
+	flags.BoolVar(&opts.json, "json", false, "display the entire json snapshot The output can be piped into a command like jq. For example:\n meshctl debug snapshot discovery input | jq '.'")
+	flags.StringVarP(&opts.file, "file", "f", "", "file to write output to")
+	flags.StringVar(&opts.zip, "zip", "", "zip file output")
 }
 
 func Command(ctx context.Context) *cobra.Command {
@@ -48,7 +47,7 @@ func Command(ctx context.Context) *cobra.Command {
 		Use:   "snapshot",
 		Short: "Input and Output snapshots for the discovery and networking pod",
 		Long: "The output can be piped into a command like jq. For example:\n" +
-			"meshctl debug snapshot discovery input | jq 'to_entries | .[] | {kind: (.key), value: .value[]?} | {kind, name: .value.metadata?.name?, namespace: .value.metadata?.namespace?, cluster: .value.metadata?.clusterName?}'",
+			"meshctl debug snapshot discovery input | jq '.'",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return debugSnapshot(ctx, opts, []string{discovery, networking}, []string{input, output})
 		},
@@ -65,10 +64,7 @@ func Networking(ctx context.Context, opts *DebugSnapshotOpts) *cobra.Command {
 	pods := []string{networking}
 	cmd := &cobra.Command{
 		Use:   "networking",
-		Short: "for the networking pod only",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return debugSnapshot(ctx, opts, pods, []string{input, output})
-		},
+		Short: "for the networking pod",
 	}
 	cmd.AddCommand(
 		Input(ctx, opts, pods),
@@ -81,10 +77,7 @@ func Discovery(ctx context.Context, opts *DebugSnapshotOpts) *cobra.Command {
 	pods := []string{discovery}
 	cmd := &cobra.Command{
 		Use:   "discovery",
-		Short: "for the discovery pod only",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return debugSnapshot(ctx, opts, pods, []string{input, output})
-		},
+		Short: "for the discovery pod",
 	}
 	cmd.AddCommand(
 		Input(ctx, opts, pods),
@@ -96,7 +89,7 @@ func Discovery(ctx context.Context, opts *DebugSnapshotOpts) *cobra.Command {
 func Input(ctx context.Context, opts *DebugSnapshotOpts, pods []string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "input",
-		Short: "input snapshot only",
+		Short: "input snapshot",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return debugSnapshot(ctx, opts, pods, []string{input})
 		},
@@ -107,7 +100,7 @@ func Input(ctx context.Context, opts *DebugSnapshotOpts, pods []string) *cobra.C
 func Output(ctx context.Context, opts *DebugSnapshotOpts, pods []string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "output",
-		Short: "output snapshot only",
+		Short: "output snapshot",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return debugSnapshot(ctx, opts, pods, []string{output})
 		},
@@ -145,7 +138,6 @@ func debugSnapshot(ctx context.Context, opts *DebugSnapshotOpts, pods, types []s
 				if err != nil {
 					return err
 				}
-				fmt.Printf("%s %s snapshot:\n", podName, snapshotType)
 				pipedCmd := "cat " + fileName + " | jq 'to_entries | .[] | {kind: (.key), value: .value[]?} | {kind, name: .value.metadata?.name?, namespace: .value.metadata?.namespace?, cluster: .value.metadata?.clusterName?}'"
 				cmdOut, err := exec.Command("bash", "-c", pipedCmd).Output()
 				if err != nil {
@@ -157,7 +149,13 @@ func debugSnapshot(ctx context.Context, opts *DebugSnapshotOpts, pods, types []s
 					return err
 				}
 			}
-			if opts.zip {
+			if opts.file != "" {
+				_, err = f.WriteString(snapshotStr)
+				if err != nil {
+					fmt.Println(err.Error())
+					return err
+				}
+			} else if opts.zip != "" {
 				err = storageClient.Save(dir, &debugutils.StorageObject{
 					Resource: strings.NewReader(snapshotStr),
 					Name:     fileName,
@@ -165,21 +163,13 @@ func debugSnapshot(ctx context.Context, opts *DebugSnapshotOpts, pods, types []s
 				if err != nil {
 					return err
 				}
-			} else if opts.file != "" {
-				header := fmt.Sprintf("%s %s snapshot:\n", podName, snapshotType)
-				_, err = f.WriteString(header + snapshotStr + "\n")
-				if err != nil {
-					fmt.Println(err.Error())
-					return err
-				}
+			} else {
+				fmt.Print(snapshotStr)
 			}
 		}
 	}
-	if opts.zip {
-		if opts.file == "" {
-			opts.file = Filename
-		}
-		err = zip(fs, dir, opts.file)
+	if opts.zip != "" {
+		err = zip(fs, dir, opts.zip)
 	}
 	return nil
 }

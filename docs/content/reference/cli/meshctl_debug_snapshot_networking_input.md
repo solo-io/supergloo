@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl debug snapshot networking input
 
-input snapshot only
+input snapshot
 
 ### Synopsis
 
-input snapshot only
+input snapshot
 
 ```
 meshctl debug snapshot networking input [flags]
@@ -23,12 +23,13 @@ meshctl debug snapshot networking input [flags]
 ### Options inherited from parent commands
 
 ```
-  -f, --file string   file to be read or written to
-      --json          display the entire json snapshot (best used when piping the output into another command like jq)
-      --zip           zip file output
+  -f, --file string   file to write output to
+      --json          display the entire json snapshot The output can be piped into a command like jq. For example:
+                       meshctl debug snapshot discovery input | jq '.'
+      --zip string    zip file output
 ```
 
 ### SEE ALSO
 
-* [meshctl debug snapshot networking](../meshctl_debug_snapshot_networking)	 - for the networking pod only
+* [meshctl debug snapshot networking](../meshctl_debug_snapshot_networking)	 - for the networking pod
 
