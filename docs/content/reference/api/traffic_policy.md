@@ -49,7 +49,7 @@ title: "traffic_policy.proto"
 <a name="networking.smh.solo.io.TrafficPolicySpec"></a>
 
 ### TrafficPolicySpec
-A Traffic Policy applies some L7 routing features to an existing mesh. Traffic Policies specify the following for all requests: - originating from from **source workload** - sent to **destination targets** - matching one or more **request matcher**<br>NB: If any additional TrafficPolicy action fields (i.e. non selection related fields) are added, the TrafficPolicy Merger's "AreTrafficPolicyActionsEqual" method must be updated to reflect the new field.
+A Traffic Policy applies some L7 routing features to an existing mesh. Traffic Policies specify the following for all requests: - originating from from **source workload** - sent to **destination targets** - matching one or more **request matcher**
 
 
 | Field | Type | Label | Description |
