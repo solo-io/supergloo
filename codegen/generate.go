@@ -166,7 +166,7 @@ func run() error {
 func makeSmhCommand(chartOnly bool) codegen.Command {
 
 	anyvendorImports.External["github.com/solo-io/skv2"] = []string{
-		"solo-kit/api/v1/ref.proto",
+		"api/core/v1/*.proto",
 		"crds/multicluster.solo.io_v1alpha1_crds.yaml",
 	}
 
