@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add the command `meshctl debug snapshot`.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/992
