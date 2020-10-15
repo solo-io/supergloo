@@ -27,6 +27,9 @@ const (
 	discovery  = "discovery"
 	input      = "input"
 	output     = "output"
+
+	// jq query
+	query = "to_entries | .[] | select(.key != \"clusters\") | select(.key != \"name\") | {kind: .key, value : [.value[]? | {name: .metadata.name, namespace: .metadata.namespace, cluster: .metadata.clusterName}]}"
 )
 
 type DebugSnapshotOpts struct {
@@ -138,7 +141,7 @@ func debugSnapshot(ctx context.Context, opts *DebugSnapshotOpts, pods, types []s
 				if err != nil {
 					return err
 				}
-				pipedCmd := "cat " + fileName + " | jq 'to_entries | .[] | {kind: (.key), value: .value[]?} | {kind, name: .value.metadata?.name?, namespace: .value.metadata?.namespace?, cluster: .value.metadata?.clusterName?}'"
+				pipedCmd := "cat " + fileName + " | jq '" + query + "'"
 				cmdOut, err := exec.Command("bash", "-c", pipedCmd).Output()
 				if err != nil {
 					return err
