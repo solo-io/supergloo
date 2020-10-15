@@ -59,7 +59,7 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/external-apis v0.1.1
-	github.com/solo-io/go-utils v0.18.1-0.20201009181730-b75feb59f162
+	github.com/solo-io/go-utils v0.18.1
 	github.com/solo-io/skv2 v0.13.0
 	github.com/solo-io/solo-kit v0.14.0
 	github.com/spf13/afero v1.3.4

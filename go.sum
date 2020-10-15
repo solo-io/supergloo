@@ -1202,8 +1202,8 @@ github.com/solo-io/external-apis v0.1.1 h1:QEq7OWR6KEwECXyakgX3skWl3YCg1ZcpviCQX
 github.com/solo-io/external-apis v0.1.1/go.mod h1:1rwOxotZzR94AtuSA1MTTDG8gaY4ms+KhlH4/+XeLhM=
 github.com/solo-io/go-utils v0.17.0 h1:PNz+DgR1bwajhls/TX6JJCPMlaSAGAFwn5YZOYna63E=
 github.com/solo-io/go-utils v0.17.0/go.mod h1:mGlBcOeSttKRVf4tiq0o8Ng/SRY851W8q0BxkOwacZI=
-github.com/solo-io/go-utils v0.18.1-0.20201009181730-b75feb59f162 h1:+arTK0E8S/AmdxLzlwZhM9KO2she+1BO3LVFJPNaFyo=
-github.com/solo-io/go-utils v0.18.1-0.20201009181730-b75feb59f162/go.mod h1:If8NiehXROCFU65PGeDTrrZCNA5gJXvbcVoXI8Fqjko=
+github.com/solo-io/go-utils v0.18.1 h1:OSFqgOn7jCP7U+PrsE05fExDSQwi0J0Q4xo64LquRA4=
+github.com/solo-io/go-utils v0.18.1/go.mod h1:If8NiehXROCFU65PGeDTrrZCNA5gJXvbcVoXI8Fqjko=
 github.com/solo-io/protoc-gen-ext v0.0.7/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz4Cbw6tBcmaNsEk=
 github.com/solo-io/protoc-gen-ext v0.0.9 h1:dU9C8nSLNkjqLXd5QGJ2dvBcrNUvNUP92qlxMfe3t7A=
 github.com/solo-io/protoc-gen-ext v0.0.9/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz4Cbw6tBcmaNsEk=
