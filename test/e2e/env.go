@@ -15,9 +15,10 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	istionetworkingv1alpha3 "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
 	kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
-	smh_discovery "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	smh_networking "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -60,13 +61,14 @@ func newSingleClusterEnv(mgmt string) SingleClusterEnv {
 }
 
 type KubeContext struct {
-	Context             string
-	Config              *rest.Config
-	Clientset           *kubernetes.Clientset
-	TrafficPolicyClient smh_networking.TrafficPolicyClient
-	MeshClient          smh_discovery.MeshClient
-	SecretClient        kubernetes_core.SecretClient
-	VirtualMeshClient   smh_networking.VirtualMeshClient
+	Context               string
+	Config                *rest.Config
+	Clientset             *kubernetes.Clientset
+	TrafficPolicyClient   networkingv1alpha2.TrafficPolicyClient
+	MeshClient            discoveryv1alpha2.MeshClient
+	SecretClient          kubernetes_core.SecretClient
+	VirtualMeshClient     networkingv1alpha2.VirtualMeshClient
+	DestinationRuleClient istionetworkingv1alpha3.DestinationRuleClient
 }
 
 // If kubecontext is empty string, use current context.
@@ -84,20 +86,24 @@ func NewKubeContext(kubecontext string) KubeContext {
 	kubeCoreClientset, err := kubernetes_core.NewClientsetFromConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
-	networkingClientset, err := smh_networking.NewClientsetFromConfig(restcfg)
+	networkingClientset, err := networkingv1alpha2.NewClientsetFromConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
-	discoveryClientset, err := smh_discovery.NewClientsetFromConfig(restcfg)
+	discoveryClientset, err := discoveryv1alpha2.NewClientsetFromConfig(restcfg)
+	Expect(err).NotTo(HaveOccurred())
+
+	istioNetworkingClientset, err := istionetworkingv1alpha3.NewClientsetFromConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
 	return KubeContext{
-		Context:             kubecontext,
-		Config:              restcfg,
-		Clientset:           clientset,
-		TrafficPolicyClient: networkingClientset.TrafficPolicies(),
-		VirtualMeshClient:   networkingClientset.VirtualMeshes(),
-		MeshClient:          discoveryClientset.Meshes(),
-		SecretClient:        kubeCoreClientset.Secrets(),
+		Context:               kubecontext,
+		Config:                restcfg,
+		Clientset:             clientset,
+		TrafficPolicyClient:   networkingClientset.TrafficPolicies(),
+		VirtualMeshClient:     networkingClientset.VirtualMeshes(),
+		MeshClient:            discoveryClientset.Meshes(),
+		SecretClient:          kubeCoreClientset.Secrets(),
+		DestinationRuleClient: istioNetworkingClientset.DestinationRules(),
 	}
 }
 
