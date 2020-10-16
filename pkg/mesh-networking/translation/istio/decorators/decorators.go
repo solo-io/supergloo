@@ -74,8 +74,8 @@ type VirtualMeshDestinationRuleDecorator interface {
 	) error
 }
 
-// a VirtualTrafficTargetEntryDecorator modifies the ServiceEntry based on a VirtualMesh which applies to the TrafficTarget.
-type VirtualTrafficTargetEntryDecorator interface {
+// a VirtualMeshServiceEntryDecorator modifies the ServiceEntry based on a VirtualMesh which applies to the TrafficTarget.
+type VirtualMeshServiceEntryDecorator interface {
 	Decorator
 
 	ApplyVirtualMeshToServiceEntry(

@@ -28,7 +28,8 @@ var (
 	// built-in skv2 templates we don't need
 	filterTemplates = func(outPath string) bool {
 		return outPath == "templates/namespace.yaml" ||
-			outPath == "templates/chart.yaml"
+			outPath == "templates/chart.yaml" ||
+			outPath == "templates/configmap.yaml"
 	}
 )
 
@@ -96,6 +97,8 @@ func discoveryOperator() model.Operator {
 		Args: []string{
 			"discovery",
 			"--metrics-port={{ $.Values.discovery.ports.metrics }}",
+			"--settings-name={{ $.Values.smhOperatorArgs.settingsRef.name }}",
+			"--settings-namespace={{ $.Values.smhOperatorArgs.settingsRef.namespace }}",
 			"--verbose",
 		},
 		Env: []v1.EnvVar{
@@ -148,6 +151,8 @@ func networkingOperator() model.Operator {
 		Args: []string{
 			"networking",
 			"--metrics-port={{ $.Values.networking.ports.metrics }}",
+			"--settings-name={{ $.Values.smhOperatorArgs.settingsRef.name }}",
+			"--settings-namespace={{ $.Values.smhOperatorArgs.settingsRef.namespace }}",
 			"--verbose",
 		},
 		Env: []v1.EnvVar{

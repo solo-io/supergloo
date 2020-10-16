@@ -137,6 +137,9 @@ func getMeshMetadata(mesh *discoveryv1alpha2.Mesh) meshMetadata {
 	case *discoveryv1alpha2.MeshSpec_ConsulConnect:
 		meshType = "consulconnect"
 		meshInstallation = mesh.Spec.GetConsulConnect().Installation
+	case *discoveryv1alpha2.MeshSpec_Osm:
+		meshType = "osm"
+		meshInstallation = mesh.Spec.GetOsm().Installation
 	}
 	return meshMetadata{
 		Type:      meshType,

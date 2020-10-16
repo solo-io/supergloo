@@ -3,6 +3,7 @@
 //go:generate mockgen -source ./snapshot.go -destination mocks/snapshot.go
 
 // The Input Snapshot contains the set of all:
+// * Settings
 // * TrafficTargets
 // * Workloads
 // * Meshes
@@ -35,6 +36,9 @@ import (
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	settings_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
+	settings_smh_solo_io_v1alpha2_sets "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2/sets"
+
 	discovery_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discovery_smh_solo_io_v1alpha2_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 
@@ -50,6 +54,9 @@ import (
 
 // the snapshot of input resources consumed by translation
 type Snapshot interface {
+
+	// return the set of input Settings
+	Settings() settings_smh_solo_io_v1alpha2_sets.SettingsSet
 
 	// return the set of input TrafficTargets
 	TrafficTargets() discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet
@@ -86,6 +93,8 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
+	settings settings_smh_solo_io_v1alpha2_sets.SettingsSet
+
 	trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet
 	workloads      discovery_smh_solo_io_v1alpha2_sets.WorkloadSet
 	meshes         discovery_smh_solo_io_v1alpha2_sets.MeshSet
@@ -102,6 +111,8 @@ type snapshot struct {
 
 func NewSnapshot(
 	name string,
+
+	settings settings_smh_solo_io_v1alpha2_sets.SettingsSet,
 
 	trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet,
 	workloads discovery_smh_solo_io_v1alpha2_sets.WorkloadSet,
@@ -120,6 +131,7 @@ func NewSnapshot(
 	return &snapshot{
 		name: name,
 
+		settings:           settings,
 		trafficTargets:     trafficTargets,
 		workloads:          workloads,
 		meshes:             meshes,
@@ -130,6 +142,10 @@ func NewSnapshot(
 		secrets:            secrets,
 		kubernetesClusters: kubernetesClusters,
 	}
+}
+
+func (s snapshot) Settings() settings_smh_solo_io_v1alpha2_sets.SettingsSet {
+	return s.settings
 }
 
 func (s snapshot) TrafficTargets() discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet {
@@ -168,6 +184,12 @@ func (s snapshot) KubernetesClusters() multicluster_solo_io_v1alpha1_sets.Kubern
 	return s.kubernetesClusters
 }
 func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
+
+	for _, obj := range s.Settings().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
+		}
+	}
 
 	for _, obj := range s.TrafficTargets().List() {
 		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
@@ -215,6 +237,16 @@ func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
 }
 
 func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
+
+	for _, obj := range s.Settings().List() {
+		clusterClient, err := mcClient.Cluster(obj.ClusterName)
+		if err != nil {
+			return err
+		}
+		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			return err
+		}
+	}
 
 	for _, obj := range s.TrafficTargets().List() {
 		clusterClient, err := mcClient.Cluster(obj.ClusterName)
@@ -296,6 +328,7 @@ func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicl
 func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
+	snapshotMap["settings"] = s.settings.List()
 	snapshotMap["trafficTargets"] = s.trafficTargets.List()
 	snapshotMap["workloads"] = s.workloads.List()
 	snapshotMap["meshes"] = s.meshes.List()
@@ -318,6 +351,9 @@ type Builder interface {
 
 // Options for building a snapshot
 type BuildOptions struct {
+
+	// List options for composing a snapshot from Settings
+	Settings ResourceBuildOptions
 
 	// List options for composing a snapshot from TrafficTargets
 	TrafficTargets ResourceBuildOptions
@@ -371,6 +407,8 @@ func NewMultiClusterBuilder(
 
 func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
+	settings := settings_smh_solo_io_v1alpha2_sets.NewSettingsSet()
+
 	trafficTargets := discovery_smh_solo_io_v1alpha2_sets.NewTrafficTargetSet()
 	workloads := discovery_smh_solo_io_v1alpha2_sets.NewWorkloadSet()
 	meshes := discovery_smh_solo_io_v1alpha2_sets.NewMeshSet()
@@ -388,6 +426,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 
 	for _, cluster := range b.clusters.ListClusters() {
 
+		if err := b.insertSettingsFromCluster(ctx, cluster, settings, opts.Settings); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertTrafficTargetsFromCluster(ctx, cluster, trafficTargets, opts.TrafficTargets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -421,6 +462,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	outputSnap := NewSnapshot(
 		name,
 
+		settings,
 		trafficTargets,
 		workloads,
 		meshes,
@@ -433,6 +475,49 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	)
 
 	return outputSnap, errs
+}
+
+func (b *multiClusterBuilder) insertSettingsFromCluster(ctx context.Context, cluster string, settings settings_smh_solo_io_v1alpha2_sets.SettingsSet, opts ResourceBuildOptions) error {
+	settingsClient, err := settings_smh_solo_io_v1alpha2.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "settings.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Settings",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	settingsList, err := settingsClient.ListSettings(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range settingsList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		settings.Insert(&item)
+	}
+
+	return nil
 }
 
 func (b *multiClusterBuilder) insertTrafficTargetsFromCluster(ctx context.Context, cluster string, trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet, opts ResourceBuildOptions) error {
@@ -833,6 +918,8 @@ func NewSingleClusterBuilder(
 
 func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
+	settings := settings_smh_solo_io_v1alpha2_sets.NewSettingsSet()
+
 	trafficTargets := discovery_smh_solo_io_v1alpha2_sets.NewTrafficTargetSet()
 	workloads := discovery_smh_solo_io_v1alpha2_sets.NewWorkloadSet()
 	meshes := discovery_smh_solo_io_v1alpha2_sets.NewMeshSet()
@@ -848,6 +935,9 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	var errs error
 
+	if err := b.insertSettings(ctx, settings, opts.Settings); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertTrafficTargets(ctx, trafficTargets, opts.TrafficTargets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -879,6 +969,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	outputSnap := NewSnapshot(
 		name,
 
+		settings,
 		trafficTargets,
 		workloads,
 		meshes,
@@ -891,6 +982,39 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	)
 
 	return outputSnap, errs
+}
+
+func (b *singleClusterBuilder) insertSettings(ctx context.Context, settings settings_smh_solo_io_v1alpha2_sets.SettingsSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "settings.smh.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Settings",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	settingsList, err := settings_smh_solo_io_v1alpha2.NewSettingsClient(b.mgr.GetClient()).ListSettings(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range settingsList.Items {
+		item := item // pike
+		settings.Insert(&item)
+	}
+
+	return nil
 }
 
 func (b *singleClusterBuilder) insertTrafficTargets(ctx context.Context, trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet, opts ResourceBuildOptions) error {

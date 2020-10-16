@@ -6,6 +6,9 @@
 package input
 
 import (
+	settings_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
+	settings_smh_solo_io_v1alpha2_sets "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2/sets"
+
 	discovery_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	discovery_smh_solo_io_v1alpha2_sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 
@@ -21,6 +24,8 @@ import (
 
 type InputSnapshotManualBuilder struct {
 	name string
+
+	settings settings_smh_solo_io_v1alpha2_sets.SettingsSet
 
 	trafficTargets discovery_smh_solo_io_v1alpha2_sets.TrafficTargetSet
 	workloads      discovery_smh_solo_io_v1alpha2_sets.WorkloadSet
@@ -39,6 +44,8 @@ type InputSnapshotManualBuilder struct {
 func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 	return &InputSnapshotManualBuilder{
 		name: name,
+
+		settings: settings_smh_solo_io_v1alpha2_sets.NewSettingsSet(),
 
 		trafficTargets: discovery_smh_solo_io_v1alpha2_sets.NewTrafficTargetSet(),
 		workloads:      discovery_smh_solo_io_v1alpha2_sets.NewWorkloadSet(),
@@ -59,6 +66,8 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 	return NewSnapshot(
 		i.name,
 
+		i.settings,
+
 		i.trafficTargets,
 		i.workloads,
 		i.meshes,
@@ -72,6 +81,10 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 
 		i.kubernetesClusters,
 	)
+}
+func (i *InputSnapshotManualBuilder) AddSettings(settings []*settings_smh_solo_io_v1alpha2.Settings) *InputSnapshotManualBuilder {
+	i.settings.Insert(settings...)
+	return i
 }
 func (i *InputSnapshotManualBuilder) AddTrafficTargets(trafficTargets []*discovery_smh_solo_io_v1alpha2.TrafficTarget) *InputSnapshotManualBuilder {
 	i.trafficTargets.Insert(trafficTargets...)
