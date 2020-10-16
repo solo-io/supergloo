@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl debug snapshot networking input
 
-input snapshot
+input snapshot for the networking pod
 
 ### Synopsis
 
-input snapshot
+input snapshot for the networking pod
 
 ```
 meshctl debug snapshot networking input [flags]
@@ -24,8 +24,9 @@ meshctl debug snapshot networking input [flags]
 
 ```
   -f, --file string   file to write output to
-      --json          display the entire json snapshot The output can be piped into a command like jq. For example:
+      --json          display the entire json snapshot. The output can be piped into a command like jq (https://stedolan.github.io/jq/tutorial/). For example:
                        meshctl debug snapshot discovery input | jq '.'
+      --verbose       enables verbose/debug logging
       --zip string    zip file output
 ```
 

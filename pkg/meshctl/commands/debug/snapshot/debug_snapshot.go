@@ -13,6 +13,7 @@ import (
 	"github.com/solo-io/go-utils/cliutils"
 	"github.com/solo-io/go-utils/debugutils"
 	"github.com/solo-io/go-utils/tarutils"
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -20,7 +21,6 @@ import (
 
 const (
 	filePermissions = 0644
-	kubePort        = "9091"
 
 	// filters for snapshots
 	networking = "networking"
@@ -29,19 +29,27 @@ const (
 	output     = "output"
 
 	// jq query
-	query = "to_entries | .[] | select(.key != \"clusters\") | select(.key != \"name\") | {kind: .key, value : [.value[]? | {name: .metadata.name, namespace: .metadata.namespace, cluster: .metadata.clusterName}]}"
+	query = "to_entries | .[] | select(.key != \"clusters\") | select(.key != \"name\") | {kind: .key, list : [.value[]? | {name: .metadata.name, namespace: .metadata.namespace, cluster: .metadata.clusterName}]}"
 )
 
 type DebugSnapshotOpts struct {
-	json bool
-	file string
-	zip  string
+	json    bool
+	file    string
+	zip     string
+	verbose bool
+
+	// hidden optional values
+	metricsBindPort uint32
+	namespace       string
 }
 
 func AddDebugSnapshotFlags(flags *pflag.FlagSet, opts *DebugSnapshotOpts) {
-	flags.BoolVar(&opts.json, "json", false, "display the entire json snapshot The output can be piped into a command like jq. For example:\n meshctl debug snapshot discovery input | jq '.'")
+	flags.BoolVar(&opts.json, "json", false, "display the entire json snapshot. The output can be piped into a command like jq (https://stedolan.github.io/jq/tutorial/). For example:\n meshctl debug snapshot discovery input | jq '.'")
 	flags.StringVarP(&opts.file, "file", "f", "", "file to write output to")
 	flags.StringVar(&opts.zip, "zip", "", "zip file output")
+	flags.BoolVar(&opts.verbose, "verbose", false, "enables verbose/debug logging")
+	flags.Uint32Var(&opts.metricsBindPort, "port", defaults.MetricsPort, "metrics port")
+	flags.StringVarP(&opts.namespace, "namespace", "n", defaults.GetPodNamespace(), "service-mesh-hub namespace")
 }
 
 func Command(ctx context.Context) *cobra.Command {
@@ -49,8 +57,6 @@ func Command(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "snapshot",
 		Short: "Input and Output snapshots for the discovery and networking pod",
-		Long: "The output can be piped into a command like jq. For example:\n" +
-			"meshctl debug snapshot discovery input | jq '.'",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return debugSnapshot(ctx, opts, []string{discovery, networking}, []string{input, output})
 		},
@@ -60,52 +66,58 @@ func Command(ctx context.Context) *cobra.Command {
 		Discovery(ctx, opts),
 	)
 	AddDebugSnapshotFlags(cmd.PersistentFlags(), opts)
+	cmd.PersistentFlags().Lookup("namespace").Hidden = true
+	cmd.PersistentFlags().Lookup("port").Hidden = true
 	return cmd
 }
 
 func Networking(ctx context.Context, opts *DebugSnapshotOpts) *cobra.Command {
-	pods := []string{networking}
 	cmd := &cobra.Command{
 		Use:   "networking",
 		Short: "Input and output snapshots for the networking pod",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return debugSnapshot(ctx, opts, []string{networking}, []string{input, output})
+		},
 	}
 	cmd.AddCommand(
-		Input(ctx, opts, pods),
-		Output(ctx, opts, pods),
+		Input(ctx, opts, networking),
+		Output(ctx, opts, networking),
 	)
 	return cmd
 }
 
 func Discovery(ctx context.Context, opts *DebugSnapshotOpts) *cobra.Command {
-	pods := []string{discovery}
 	cmd := &cobra.Command{
 		Use:   "discovery",
 		Short: "Input and output snapshots for the discovery pod",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return debugSnapshot(ctx, opts, []string{discovery}, []string{input, output})
+		},
 	}
 	cmd.AddCommand(
-		Input(ctx, opts, pods),
-		Output(ctx, opts, pods),
+		Input(ctx, opts, discovery),
+		Output(ctx, opts, discovery),
 	)
 	return cmd
 }
 
-func Input(ctx context.Context, opts *DebugSnapshotOpts, pods []string) *cobra.Command {
+func Input(ctx context.Context, opts *DebugSnapshotOpts, pod string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "input",
-		Short: "input snapshot",
+		Short: fmt.Sprintf("input snapshot for the %s pod", pod),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return debugSnapshot(ctx, opts, pods, []string{input})
+			return debugSnapshot(ctx, opts, []string{pod}, []string{input})
 		},
 	}
 	return cmd
 }
 
-func Output(ctx context.Context, opts *DebugSnapshotOpts, pods []string) *cobra.Command {
+func Output(ctx context.Context, opts *DebugSnapshotOpts, pod string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "output",
-		Short: "output snapshot",
+		Short: fmt.Sprintf("output snapshot for the %s pod", pod),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return debugSnapshot(ctx, opts, pods, []string{output})
+			return debugSnapshot(ctx, opts, []string{pod}, []string{output})
 		},
 	}
 	return cmd
@@ -131,7 +143,7 @@ func debugSnapshot(ctx context.Context, opts *DebugSnapshotOpts, pods, types []s
 	storageClient := debugutils.NewFileStorageClient(fs)
 	for _, podName := range pods {
 		for _, snapshotType := range types {
-			snapshot := getSnapshot(ctx, localPort, podName, snapshotType)
+			snapshot := getSnapshot(ctx, opts, localPort, podName, snapshotType)
 			fileName := fmt.Sprintf("%s-%s-snapshot.json", podName, snapshotType)
 			var snapshotStr string
 			if opts.json {
@@ -177,10 +189,9 @@ func debugSnapshot(ctx context.Context, opts *DebugSnapshotOpts, pods, types []s
 	return nil
 }
 
-func getSnapshot(ctx context.Context, localPort, podName, snapshotType string) string {
-	snapshot, portFwdCmd, err := cliutils.PortForwardGet(ctx,
-		"service-mesh-hub", "deploy/"+podName,
-		localPort, kubePort, false, "/snapshots/"+snapshotType)
+func getSnapshot(ctx context.Context, opts *DebugSnapshotOpts, localPort, podName, snapshotType string) string {
+	snapshot, portFwdCmd, err := cliutils.PortForwardGet(ctx, opts.namespace, "deploy/"+podName,
+		localPort, strconv.Itoa(int(opts.metricsBindPort)), opts.verbose, "/snapshots/"+snapshotType)
 	if err != nil {
 		fmt.Println(err.Error())
 		return ""
