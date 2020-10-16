@@ -67,7 +67,7 @@ func Networking(ctx context.Context, opts *DebugSnapshotOpts) *cobra.Command {
 	pods := []string{networking}
 	cmd := &cobra.Command{
 		Use:   "networking",
-		Short: "for the networking pod",
+		Short: "Input and output snapshots for the networking pod",
 	}
 	cmd.AddCommand(
 		Input(ctx, opts, pods),
