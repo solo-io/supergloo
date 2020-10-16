@@ -31,5 +31,5 @@ meshctl debug snapshot networking output [flags]
 
 ### SEE ALSO
 
-* [meshctl debug snapshot networking](../meshctl_debug_snapshot_networking)	 - for the networking pod
+* [meshctl debug snapshot networking](../meshctl_debug_snapshot_networking)	 - Input and output snapshots for the networking pod
 

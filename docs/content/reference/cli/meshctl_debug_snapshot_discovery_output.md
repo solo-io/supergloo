@@ -31,5 +31,5 @@ meshctl debug snapshot discovery output [flags]
 
 ### SEE ALSO
 
-* [meshctl debug snapshot discovery](../meshctl_debug_snapshot_discovery)	 - for the discovery pod
+* [meshctl debug snapshot discovery](../meshctl_debug_snapshot_discovery)	 - Input and output snapshots for the discovery pod
 

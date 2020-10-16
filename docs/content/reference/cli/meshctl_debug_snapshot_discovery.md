@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl debug snapshot discovery
 
-for the discovery pod
+Input and output snapshots for the discovery pod
 
 ### Synopsis
 
-for the discovery pod
+Input and output snapshots for the discovery pod
 
 ### Options
 

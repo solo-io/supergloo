@@ -28,6 +28,6 @@ meshctl debug snapshot [flags]
 ### SEE ALSO
 
 * [meshctl debug](../meshctl_debug)	 - Debug Service Mesh Hub resources
-* [meshctl debug snapshot discovery](../meshctl_debug_snapshot_discovery)	 - for the discovery pod
-* [meshctl debug snapshot networking](../meshctl_debug_snapshot_networking)	 - for the networking pod
+* [meshctl debug snapshot discovery](../meshctl_debug_snapshot_discovery)	 - Input and output snapshots for the discovery pod
+* [meshctl debug snapshot networking](../meshctl_debug_snapshot_networking)	 - Input and output snapshots for the networking pod
 
