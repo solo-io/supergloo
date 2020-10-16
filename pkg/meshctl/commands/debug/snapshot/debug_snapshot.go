@@ -80,7 +80,7 @@ func Discovery(ctx context.Context, opts *DebugSnapshotOpts) *cobra.Command {
 	pods := []string{discovery}
 	cmd := &cobra.Command{
 		Use:   "discovery",
-		Short: "for the discovery pod",
+		Short: "Input and output snapshots for the discovery pod",
 	}
 	cmd.AddCommand(
 		Input(ctx, opts, pods),
