@@ -55,7 +55,7 @@ message AccessPolicySpec {
         It is ignored in gRPC case because the value is always "POST".
         If not specified, allows any method.
     */
-    repeated networking.smh.solo.io.HttpMethodValue allowed_methods = 5;
+    repeated HttpMethodValue allowed_methods = 5;
 
     /*
         Optional. A list of ports which to allow.
