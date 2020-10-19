@@ -104,7 +104,7 @@ func Discovery(ctx context.Context, opts *DebugSnapshotOpts) *cobra.Command {
 func Input(ctx context.Context, opts *DebugSnapshotOpts, pod string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "input",
-		Short: fmt.Sprintf("input snapshot for the %s pod", pod),
+		Short: fmt.Sprintf("Input snapshot for the %s pod", pod),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return debugSnapshot(ctx, opts, []string{pod}, []string{input})
 		},
@@ -115,7 +115,7 @@ func Input(ctx context.Context, opts *DebugSnapshotOpts, pod string) *cobra.Comm
 func Output(ctx context.Context, opts *DebugSnapshotOpts, pod string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "output",
-		Short: fmt.Sprintf("output snapshot for the %s pod", pod),
+		Short: fmt.Sprintf("Output snapshot for the %s pod", pod),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return debugSnapshot(ctx, opts, []string{pod}, []string{output})
 		},

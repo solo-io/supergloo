@@ -1,3 +1,3 @@
 package defaults
 
-var MetricsPort uint32 = 9091
+const MetricsPort uint32 = 9091
