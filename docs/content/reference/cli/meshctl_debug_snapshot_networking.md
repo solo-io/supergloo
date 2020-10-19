@@ -32,7 +32,7 @@ meshctl debug snapshot networking [flags]
 
 ### SEE ALSO
 
-* [meshctl debug snapshot](../meshctl_debug_snapshot)	 - Input and Output snapshots for the discovery and networking pod
+* [meshctl debug snapshot](../meshctl_debug_snapshot)	 - Input and Output snapshots for the discovery and networking pod. Requires jq to be installed if the --json flag is not being used.
 * [meshctl debug snapshot networking input](../meshctl_debug_snapshot_networking_input)	 - input snapshot for the networking pod
 * [meshctl debug snapshot networking output](../meshctl_debug_snapshot_networking_output)	 - output snapshot for the networking pod
 

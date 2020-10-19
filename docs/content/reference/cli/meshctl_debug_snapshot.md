@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl debug snapshot
 
-Input and Output snapshots for the discovery and networking pod
+Input and Output snapshots for the discovery and networking pod. Requires jq to be installed if the --json flag is not being used.
 
 ### Synopsis
 
-Input and Output snapshots for the discovery and networking pod
+Input and Output snapshots for the discovery and networking pod. Requires jq to be installed if the --json flag is not being used.
 
 ```
 meshctl debug snapshot [flags]
