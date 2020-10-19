@@ -56,7 +56,7 @@ func Command(ctx context.Context) *cobra.Command {
 	opts := &DebugSnapshotOpts{}
 	cmd := &cobra.Command{
 		Use:   "snapshot",
-		Short: "Input and Output snapshots for the discovery and networking pod",
+		Short: "Input and Output snapshots for the discovery and networking pod. Requires jq to be installed if the --json flag is not being used.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return debugSnapshot(ctx, opts, []string{discovery, networking}, []string{input, output})
 		},
@@ -124,6 +124,13 @@ func Output(ctx context.Context, opts *DebugSnapshotOpts, pod string) *cobra.Com
 }
 
 func debugSnapshot(ctx context.Context, opts *DebugSnapshotOpts, pods, types []string) error {
+	// Check prerequisite jq is installed
+	_, err := exec.Command("which", "jq").Output()
+	if err != nil {
+		fmt.Printf("Error: Could not find jq! Please install it from https://stedolan.github.io/jq/download/\n")
+		return err
+	}
+
 	freePort, err := cliutils.GetFreePort()
 	if err != nil {
 		fmt.Println(err.Error())
