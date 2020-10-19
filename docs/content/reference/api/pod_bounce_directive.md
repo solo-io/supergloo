@@ -34,7 +34,7 @@ When certificates are issued, pods may need to be bounced (restarted) to ensure 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| podsToBounce | [][PodBounceDirectiveSpec.PodSelector](#certificates.smh.solo.io.PodBounceDirectiveSpec.PodSelector) | repeated | A list of k8s pods to bounce (delete and cause a restart) when the certificate is issued. This will include the control plane pods as well as any pods which share a data plane with the target mesh. |
+| podsToBounce | []certificates.smh.solo.io.PodBounceDirectiveSpec.PodSelector | repeated | A list of k8s pods to bounce (delete and cause a restart) when the certificate is issued. This will include the control plane pods as well as any pods which share a data plane with the target mesh. |
 
 
 
@@ -49,8 +49,8 @@ Pods that will be restarted.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| namespace | [string](#string) |  | The namespace in which the pods live. |
-| labels | [][PodBounceDirectiveSpec.PodSelector.LabelsEntry](#certificates.smh.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry) | repeated | Any labels shared by the pods. |
+| namespace | string |  | The namespace in which the pods live. |
+| labels | []certificates.smh.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry | repeated | Any labels shared by the pods. |
 
 
 
@@ -65,8 +65,8 @@ Pods that will be restarted.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| key | [string](#string) |  |  |
-| value | [string](#string) |  |  |
+| key | string |  |  |
+| value | string |  |  |
 
 
 

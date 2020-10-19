@@ -40,8 +40,8 @@ Selector capable of selecting specific service identities. Useful for binding po
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeIdentityMatcher | [IdentitySelector.KubeIdentityMatcher](#networking.smh.solo.io.IdentitySelector.KubeIdentityMatcher) |  | A KubeIdentityMatcher matches request identities based on the k8s namespace and cluster. |
-| kubeServiceAccountRefs | [IdentitySelector.KubeServiceAccountRefs](#networking.smh.solo.io.IdentitySelector.KubeServiceAccountRefs) |  | KubeServiceAccountRefs matches request identities based on the k8s service account of request. |
+| kubeIdentityMatcher | networking.smh.solo.io.IdentitySelector.KubeIdentityMatcher |  | A KubeIdentityMatcher matches request identities based on the k8s namespace and cluster. |
+| kubeServiceAccountRefs | networking.smh.solo.io.IdentitySelector.KubeServiceAccountRefs |  | KubeServiceAccountRefs matches request identities based on the k8s service account of request. |
 
 
 
@@ -56,8 +56,8 @@ Selector capable of selecting specific service identities. Useful for binding po
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| namespaces | [][string](#string) | repeated | Namespaces to allow. If not set, any namespace is allowed. |
-| clusters | [][string](#string) | repeated | Cluster to allow. If not set, any cluster is allowed. |
+| namespaces | []string | repeated | Namespaces to allow. If not set, any namespace is allowed. |
+| clusters | []string | repeated | Cluster to allow. If not set, any cluster is allowed. |
 
 
 
@@ -72,7 +72,7 @@ Selector capable of selecting specific service identities. Useful for binding po
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| serviceAccounts | [][core.skv2.solo.io.ClusterObjectRef](#core.skv2.solo.io.ClusterObjectRef) | repeated | List of ServiceAccounts to allow. If not set, any ServiceAccount is allowed. |
+| serviceAccounts | []core.skv2.solo.io.ClusterObjectRef | repeated | List of ServiceAccounts to allow. If not set, any ServiceAccount is allowed. |
 
 
 
@@ -87,8 +87,8 @@ Select Kubernetes services.<br>Only one of (labels + namespaces + cluster) or (r
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeServiceMatcher | [TrafficTargetSelector.KubeServiceMatcher](#networking.smh.solo.io.TrafficTargetSelector.KubeServiceMatcher) |  | A KubeServiceMatcher matches kubernetes services by the namespaces and clusters they belong to, as well as the provided labels. |
-| kubeServiceRefs | [TrafficTargetSelector.KubeServiceRefs](#networking.smh.solo.io.TrafficTargetSelector.KubeServiceRefs) |  | Match individual k8s Services by direct reference. |
+| kubeServiceMatcher | networking.smh.solo.io.TrafficTargetSelector.KubeServiceMatcher |  | A KubeServiceMatcher matches kubernetes services by the namespaces and clusters they belong to, as well as the provided labels. |
+| kubeServiceRefs | networking.smh.solo.io.TrafficTargetSelector.KubeServiceRefs |  | Match individual k8s Services by direct reference. |
 
 
 
@@ -103,9 +103,9 @@ Select Kubernetes services.<br>Only one of (labels + namespaces + cluster) or (r
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| labels | [][TrafficTargetSelector.KubeServiceMatcher.LabelsEntry](#networking.smh.solo.io.TrafficTargetSelector.KubeServiceMatcher.LabelsEntry) | repeated | If specified, all labels must exist on k8s Service, else match on any labels. |
-| namespaces | [][string](#string) | repeated | If specified, match k8s Services if they exist in one of the specified namespaces. If not specified, match on any namespace. |
-| clusters | [][string](#string) | repeated | If specified, match k8s Services if they exist in one of the specified clusters. If not specified, match on any cluster. |
+| labels | []networking.smh.solo.io.TrafficTargetSelector.KubeServiceMatcher.LabelsEntry | repeated | If specified, all labels must exist on k8s Service, else match on any labels. |
+| namespaces | []string | repeated | If specified, match k8s Services if they exist in one of the specified namespaces. If not specified, match on any namespace. |
+| clusters | []string | repeated | If specified, match k8s Services if they exist in one of the specified clusters. If not specified, match on any cluster. |
 
 
 
@@ -120,8 +120,8 @@ Select Kubernetes services.<br>Only one of (labels + namespaces + cluster) or (r
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| key | [string](#string) |  |  |
-| value | [string](#string) |  |  |
+| key | string |  |  |
+| value | string |  |  |
 
 
 
@@ -136,7 +136,7 @@ Select Kubernetes services.<br>Only one of (labels + namespaces + cluster) or (r
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| services | [][core.skv2.solo.io.ClusterObjectRef](#core.skv2.solo.io.ClusterObjectRef) | repeated | Match k8s Services by direct reference. |
+| services | []core.skv2.solo.io.ClusterObjectRef | repeated | Match k8s Services by direct reference. |
 
 
 
@@ -151,8 +151,8 @@ Select Kubernetes workloads directly using label and/or namespace criteria. See 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| labels | [][WorkloadSelector.LabelsEntry](#networking.smh.solo.io.WorkloadSelector.LabelsEntry) | repeated | If specified, all labels must exist on workloads, else match on any labels. |
-| namespaces | [][string](#string) | repeated | If specified, match workloads if they exist in one of the specified namespaces. If not specified, match on any namespace. |
+| labels | []networking.smh.solo.io.WorkloadSelector.LabelsEntry | repeated | If specified, all labels must exist on workloads, else match on any labels. |
+| namespaces | []string | repeated | If specified, match workloads if they exist in one of the specified namespaces. If not specified, match on any namespace. |
 
 
 
@@ -167,8 +167,8 @@ Select Kubernetes workloads directly using label and/or namespace criteria. See 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| key | [string](#string) |  |  |
-| value | [string](#string) |  |  |
+| key | string |  |  |
+| value | string |  |  |
 
 
 

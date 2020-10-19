@@ -34,11 +34,11 @@ IssuedCertificates are used to issue SSL certificates to remote Kubernetes clust
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| hosts | [][string](#string) | repeated | A list of hostnames and IPs to generate a certificate for. This can also be set to the identity running the workload, e.g. a Kubernetes service account.<br>Generally for an Istio CA this will take the form `spiffe://cluster.local/ns/istio-system/sa/citadel`.<br>"cluster.local" may be replaced by the root of trust domain for the mesh. |
-| org | [string](#string) |  | The organization for this certificate. |
-| signingCertificateSecret | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the Certificate Issuer's cluster). |
-| issuedCertificateSecret | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Certificate Agent's cluster). |
-| podBounceDirective | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | A ref to a PodBounceDirective specifying a list of k8s pods to bounce (delete and cause a restart) when the certificate is issued. This will include the control plane pods as well as any pods which share a data plane with the target mesh. |
+| hosts | []string | repeated | A list of hostnames and IPs to generate a certificate for. This can also be set to the identity running the workload, e.g. a Kubernetes service account.<br>Generally for an Istio CA this will take the form `spiffe://cluster.local/ns/istio-system/sa/citadel`.<br>"cluster.local" may be replaced by the root of trust domain for the mesh. |
+| org | string |  | The organization for this certificate. |
+| signingCertificateSecret | core.skv2.solo.io.ObjectRef |  | The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the Certificate Issuer's cluster). |
+| issuedCertificateSecret | core.skv2.solo.io.ObjectRef |  | The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Certificate Agent's cluster). |
+| podBounceDirective | core.skv2.solo.io.ObjectRef |  | A ref to a PodBounceDirective specifying a list of k8s pods to bounce (delete and cause a restart) when the certificate is issued. This will include the control plane pods as well as any pods which share a data plane with the target mesh. |
 
 
 
@@ -53,9 +53,9 @@ The IssuedCertificate status is written by the CertificateRequesting agent.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| observedGeneration | [int64](#int64) |  | The most recent generation observed in the the IssuedCertificate metadata. If the observedGeneration does not match generation, the Certificate Requesting Agent has not processed the most recent version of this IssuedCertificate. |
-| error | [string](#string) |  | Any error observed which prevented the CertificateRequest from being processed. If the error is empty, the request has been processed successfully. |
-| state | [IssuedCertificateStatus.State](#certificates.smh.solo.io.IssuedCertificateStatus.State) |  | The current state of the IssuedCertificate workflow, reported by the agent. |
+| observedGeneration | int64 |  | The most recent generation observed in the the IssuedCertificate metadata. If the observedGeneration does not match generation, the Certificate Requesting Agent has not processed the most recent version of this IssuedCertificate. |
+| error | string |  | Any error observed which prevented the CertificateRequest from being processed. If the error is empty, the request has been processed successfully. |
+| state | certificates.smh.solo.io.IssuedCertificateStatus.State |  | The current state of the IssuedCertificate workflow, reported by the agent. |
 
 
 
