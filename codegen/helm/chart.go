@@ -89,7 +89,7 @@ func discoveryOperator() model.Operator {
 			Ports: []model.ServicePort{
 				{
 					Name:        "metrics",
-					DefaultPort: 9091,
+					DefaultPort: int32(defaults.MetricsPort),
 				},
 			},
 		},
@@ -143,7 +143,7 @@ func networkingOperator() model.Operator {
 			Ports: []model.ServicePort{
 				{
 					Name:        "metrics",
-					DefaultPort: 9091,
+					DefaultPort: int32(defaults.MetricsPort),
 				},
 			},
 		},
@@ -198,7 +198,7 @@ func certAgentOperator() model.Operator {
 			Ports: []model.ServicePort{
 				{
 					Name:        "metrics",
-					DefaultPort: 9091,
+					DefaultPort: int32(defaults.MetricsPort),
 				},
 			},
 		},

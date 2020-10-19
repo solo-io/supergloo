@@ -20,6 +20,7 @@ The Command Line Interface for managing Service Mesh Hub.
 
 * [meshctl check](../meshctl_check)	 - Perform health checks on the Service Mesh Hub system
 * [meshctl cluster](../meshctl_cluster)	 - Interacting with remote Kubernetes clusters registered to Service Mesh Hub
+* [meshctl debug](../meshctl_debug)	 - Debug Service Mesh Hub resources
 * [meshctl demo](../meshctl_demo)	 - Bootstrap environments for various demos demonstrating Service Mesh Hub functionality.
 * [meshctl describe](../meshctl_describe)	 - Human readable description of discovered resources and applicable configuration
 * [meshctl install](../meshctl_install)	 - Install Service Mesh Hub

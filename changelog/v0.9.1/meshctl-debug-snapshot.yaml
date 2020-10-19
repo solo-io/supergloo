@@ -1,0 +1,9 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add the command `meshctl debug snapshot`.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/992
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: solo-io
+    dependencyRepo: go-utils
+    dependencyTag: v0.18.1
+    description: Update go-utils to version 0.18.1

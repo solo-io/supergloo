@@ -7,6 +7,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/certificates/agent"
 	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -30,7 +31,7 @@ func (opts bootstrapOpts) getBootstrap() bootstrap.Options {
 
 func (opts *bootstrapOpts) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&opts.MasterNamespace, "namespace", "n", metav1.NamespaceAll, "if specified restricts the master manager's cache to watch objects in the desired namespace.")
-	flags.Uint32Var(&opts.MetricsBindPort, "metrics-port", 9091, "port on which to serve Prometheus metrics. set to 0 to disable")
+	flags.Uint32Var(&opts.MetricsBindPort, "metrics-port", defaults.MetricsPort, "port on which to serve Prometheus metrics. set to 0 to disable")
 	flags.BoolVar(&opts.VerboseMode, "verbose", true, "enables verbose/debug logging")
 	flags.StringVarP(&opts.ManagementContext, "context", "c", metav1.NamespaceAll, "if specified read the KubeConfig for the management cluster from this context. Only applies when running out of cluster")
 }
