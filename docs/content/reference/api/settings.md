@@ -33,7 +33,7 @@ Configure global settings and defaults.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| mtls | [networking.smh.solo.io.TrafficPolicySpec.MTLS](#networking.smh.solo.io.TrafficPolicySpec.MTLS) |  | Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence) |
+| mtls | networking.smh.solo.io.TrafficPolicySpec.MTLS |  | Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence) |
 
 
 
@@ -48,9 +48,9 @@ Configure global settings and defaults.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| observedGeneration | [int64](#int64) |  | The most recent generation observed in the the Settings metadata. If the observedGeneration does not match generation, the controller has not processed the most recent version of this resource. |
-| state | [networking.smh.solo.io.ApprovalState](#networking.smh.solo.io.ApprovalState) |  | The state of the overall resource. It will only show accepted if no processing errors encountered. |
-| errors | [][string](#string) | repeated | Any errors encountered while processing Settings object. |
+| observedGeneration | int64 |  | The most recent generation observed in the the Settings metadata. If the observedGeneration does not match generation, the controller has not processed the most recent version of this resource. |
+| state | networking.smh.solo.io.ApprovalState |  | The state of the overall resource. It will only show accepted if no processing errors encountered. |
+| errors | []string | repeated | Any errors encountered while processing Settings object. |
 
 
 
