@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl debug snapshot networking input
 
-input snapshot for the networking pod
+Input snapshot for the networking pod
 
 ### Synopsis
 
-input snapshot for the networking pod
+Input snapshot for the networking pod
 
 ```
 meshctl debug snapshot networking input [flags]

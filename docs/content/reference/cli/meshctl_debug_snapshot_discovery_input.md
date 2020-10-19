@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl debug snapshot discovery input
 
-input snapshot for the discovery pod
+Input snapshot for the discovery pod
 
 ### Synopsis
 
-input snapshot for the discovery pod
+Input snapshot for the discovery pod
 
 ```
 meshctl debug snapshot discovery input [flags]
