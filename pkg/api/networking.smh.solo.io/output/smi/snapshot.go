@@ -627,6 +627,12 @@ type Builder interface {
 	// add a cluster to the collected clusters.
 	// this can be used to collect clusters for use with MultiCluster snapshots.
 	AddCluster(cluster string)
+
+	// merge all the resources from anotehr Builder into this one
+	Merge(other Builder)
+
+	// create a clone of this builder (deepcopying all resources)
+	Clone() Builder
 }
 
 func (b *builder) AddTrafficSplits(trafficSplits ...*split_smi_spec_io_v1alpha2.TrafficSplit) {
@@ -699,4 +705,36 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 
 func (b *builder) AddCluster(cluster string) {
 	b.clusters = append(b.clusters, cluster)
+}
+
+func (b *builder) Merge(other Builder) {
+	if other == nil {
+		return
+	}
+
+	b.AddTrafficSplits(other.GetTrafficSplits().List()...)
+
+	b.AddTrafficTargets(other.GetTrafficTargets().List()...)
+
+	b.AddHTTPRouteGroups(other.GetHTTPRouteGroups().List()...)
+}
+
+func (b *builder) Clone() Builder {
+	if b == nil {
+		return nil
+	}
+	clone := NewBuilder(b.ctx, b.name)
+
+	for _, trafficSplit := range b.GetTrafficSplits().List() {
+		clone.AddTrafficSplits(trafficSplit.DeepCopy())
+	}
+
+	for _, trafficTarget := range b.GetTrafficTargets().List() {
+		clone.AddTrafficTargets(trafficTarget.DeepCopy())
+	}
+
+	for _, hTTPRouteGroup := range b.GetHTTPRouteGroups().List() {
+		clone.AddHTTPRouteGroups(hTTPRouteGroup.DeepCopy())
+	}
+	return clone
 }

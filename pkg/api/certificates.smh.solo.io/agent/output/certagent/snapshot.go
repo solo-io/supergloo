@@ -467,6 +467,12 @@ type Builder interface {
 	// add a cluster to the collected clusters.
 	// this can be used to collect clusters for use with MultiCluster snapshots.
 	AddCluster(cluster string)
+
+	// merge all the resources from anotehr Builder into this one
+	Merge(other Builder)
+
+	// create a clone of this builder (deepcopying all resources)
+	Clone() Builder
 }
 
 func (b *builder) AddCertificateRequests(certificateRequests ...*certificates_smh_solo_io_v1alpha2.CertificateRequest) {
@@ -522,4 +528,30 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 
 func (b *builder) AddCluster(cluster string) {
 	b.clusters = append(b.clusters, cluster)
+}
+
+func (b *builder) Merge(other Builder) {
+	if other == nil {
+		return
+	}
+
+	b.AddCertificateRequests(other.GetCertificateRequests().List()...)
+
+	b.AddSecrets(other.GetSecrets().List()...)
+}
+
+func (b *builder) Clone() Builder {
+	if b == nil {
+		return nil
+	}
+	clone := NewBuilder(b.ctx, b.name)
+
+	for _, certificateRequest := range b.GetCertificateRequests().List() {
+		clone.AddCertificateRequests(certificateRequest.DeepCopy())
+	}
+
+	for _, secret := range b.GetSecrets().List() {
+		clone.AddSecrets(secret.DeepCopy())
+	}
+	return clone
 }

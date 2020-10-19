@@ -611,6 +611,12 @@ type Builder interface {
 	// add a cluster to the collected clusters.
 	// this can be used to collect clusters for use with MultiCluster snapshots.
 	AddCluster(cluster string)
+
+	// merge all the resources from anotehr Builder into this one
+	Merge(other Builder)
+
+	// create a clone of this builder (deepcopying all resources)
+	Clone() Builder
 }
 
 func (b *builder) AddTrafficTargets(trafficTargets ...*discovery_smh_solo_io_v1alpha2.TrafficTarget) {
@@ -677,4 +683,32 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 
 func (b *builder) AddCluster(cluster string) {
 	b.clusters = append(b.clusters, cluster)
+}
+
+func (b *builder) Merge(other Builder) {
+	if other == nil {
+		return
+	}
+
+	b.AddTrafficTargets(other.GetTrafficTargets().List()...)
+	b.AddWorkloads(other.GetWorkloads().List()...)
+	b.AddMeshes(other.GetMeshes().List()...)
+}
+
+func (b *builder) Clone() Builder {
+	if b == nil {
+		return nil
+	}
+	clone := NewBuilder(b.ctx, b.name)
+
+	for _, trafficTarget := range b.GetTrafficTargets().List() {
+		clone.AddTrafficTargets(trafficTarget.DeepCopy())
+	}
+	for _, workload := range b.GetWorkloads().List() {
+		clone.AddWorkloads(workload.DeepCopy())
+	}
+	for _, mesh := range b.GetMeshes().List() {
+		clone.AddMeshes(mesh.DeepCopy())
+	}
+	return clone
 }

@@ -167,7 +167,7 @@ func makeSmhCommand(chartOnly bool) codegen.Command {
 
 	anyvendorImports.External["github.com/solo-io/skv2"] = []string{
 		"api/core/v1/*.proto",
-			"crds/multicluster.solo.io_v1alpha1_crds.yaml",
+		"crds/multicluster.solo.io_v1alpha1_crds.yaml",
 	}
 
 	anyvendorImports.External["istio.io/api"] = []string{

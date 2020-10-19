@@ -611,6 +611,12 @@ type Builder interface {
 	// add a cluster to the collected clusters.
 	// this can be used to collect clusters for use with MultiCluster snapshots.
 	AddCluster(cluster string)
+
+	// merge all the resources from anotehr Builder into this one
+	Merge(other Builder)
+
+	// create a clone of this builder (deepcopying all resources)
+	Clone() Builder
 }
 
 func (b *builder) AddVirtualServices(virtualServices ...*appmesh_k8s_aws_v1beta2.VirtualService) {
@@ -677,4 +683,32 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 
 func (b *builder) AddCluster(cluster string) {
 	b.clusters = append(b.clusters, cluster)
+}
+
+func (b *builder) Merge(other Builder) {
+	if other == nil {
+		return
+	}
+
+	b.AddVirtualServices(other.GetVirtualServices().List()...)
+	b.AddVirtualNodes(other.GetVirtualNodes().List()...)
+	b.AddVirtualRouters(other.GetVirtualRouters().List()...)
+}
+
+func (b *builder) Clone() Builder {
+	if b == nil {
+		return nil
+	}
+	clone := NewBuilder(b.ctx, b.name)
+
+	for _, virtualService := range b.GetVirtualServices().List() {
+		clone.AddVirtualServices(virtualService.DeepCopy())
+	}
+	for _, virtualNode := range b.GetVirtualNodes().List() {
+		clone.AddVirtualNodes(virtualNode.DeepCopy())
+	}
+	for _, virtualRouter := range b.GetVirtualRouters().List() {
+		clone.AddVirtualRouters(virtualRouter.DeepCopy())
+	}
+	return clone
 }
