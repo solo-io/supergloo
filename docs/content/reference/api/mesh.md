@@ -46,12 +46,12 @@ Meshes represent a currently registered service mesh.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| istio | MeshSpec.Istio |  |  |
-| awsAppMesh | MeshSpec.AwsAppMesh |  |  |
-| linkerd | MeshSpec.LinkerdMesh |  |  |
-| consulConnect | MeshSpec.ConsulConnectMesh |  |  |
-| osm | MeshSpec.OSM |  |  |
-| agentInfo | MeshSpec.AgentInfo |  | Information about the SMH certificate agent if it has been installed to the remote cluster. |
+| istio | discovery.smh.solo.io.MeshSpec.Istio |  |  |
+| awsAppMesh | discovery.smh.solo.io.MeshSpec.AwsAppMesh |  |  |
+| linkerd | discovery.smh.solo.io.MeshSpec.LinkerdMesh |  |  |
+| consulConnect | discovery.smh.solo.io.MeshSpec.ConsulConnectMesh |  |  |
+| osm | discovery.smh.solo.io.MeshSpec.OSM |  |  |
+| agentInfo | discovery.smh.solo.io.MeshSpec.AgentInfo |  | Information about the SMH certificate agent if it has been installed to the remote cluster. |
 
 
 
@@ -100,7 +100,7 @@ Mesh object representing an installed ConsulConnect control plane.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | MeshSpec.MeshInstallation |  |  |
+| installation | discovery.smh.solo.io.MeshSpec.MeshInstallation |  |  |
 
 
 
@@ -115,9 +115,9 @@ Mesh object representing an installed Istio control plane
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | MeshSpec.MeshInstallation |  | Configuration metadata about the istio control plane installation. |
-| citadelInfo | MeshSpec.Istio.CitadelInfo |  | Configuration metadata for Istio Citadel (Istio's security component). |
-| ingressGateways | []MeshSpec.Istio.IngressGatewayInfo | repeated | Configuration metadata for Istio IngressGateway (the Istio Ingress). |
+| installation | discovery.smh.solo.io.MeshSpec.MeshInstallation |  | Configuration metadata about the istio control plane installation. |
+| citadelInfo | discovery.smh.solo.io.MeshSpec.Istio.CitadelInfo |  | Configuration metadata for Istio Citadel (Istio's security component). |
+| ingressGateways | []discovery.smh.solo.io.MeshSpec.Istio.IngressGatewayInfo | repeated | Configuration metadata for Istio IngressGateway (the Istio Ingress). |
 
 
 
@@ -148,7 +148,7 @@ Configuration metadata for Istio Citadel (Istio's security component).
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| workloadLabels | []MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry | repeated | Labels matching the workload which backs the gateway, defaults to `{"istio": "ingressgateway"}`. |
+| workloadLabels | []discovery.smh.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry | repeated | Labels matching the workload which backs the gateway, defaults to `{"istio": "ingressgateway"}`. |
 | externalAddress | string |  | The externally-reachable address on which the gateway is listening for TLS connections. This will be the address used for cross-cluster connectivity. Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes Service (depending on its type). |
 | externalTlsPort | uint32 |  | The externally-reachable port on which the gateway is listening for TLS connections. This will be the port used for cross-cluster connectivity. List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio. Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type). |
 | tlsContainerPort | uint32 |  | Container port on which the gateway is listening for TLS connections. Defaults to 15443. |
@@ -182,7 +182,7 @@ Mesh object representing an installed Linkerd control plane.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | MeshSpec.MeshInstallation |  |  |
+| installation | discovery.smh.solo.io.MeshSpec.MeshInstallation |  |  |
 | clusterDomain | string |  | The cluster domain suffix this Linkerd mesh is configured with. See https://linkerd.io/2/tasks/using-custom-domain/ for info. |
 
 
@@ -200,7 +200,7 @@ The cluster on which the control plane for this mesh is deployed. Not all MeshTy
 | ----- | ---- | ----- | ----------- |
 | namespace | string |  | Namespace in which the control plane has been installed. |
 | cluster | string |  | Cluster in which the control plane has been installed. |
-| podLabels | []MeshSpec.MeshInstallation.PodLabelsEntry | repeated | the labels on the control plane pods (read from the deployment) |
+| podLabels | []discovery.smh.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry | repeated | the labels on the control plane pods (read from the deployment) |
 | version | string |  | Version of the Mesh that has been installed. Determined using the image tag on the Mesh's primary control plane image (e.g. the istio-pilot image tag). |
 
 
@@ -232,7 +232,7 @@ https://github.com/openservicemesh/osm
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | MeshSpec.MeshInstallation |  | Information about where OSM is installed in a managed Kubernetes Cluster. |
+| installation | discovery.smh.solo.io.MeshSpec.MeshInstallation |  | Information about where OSM is installed in a managed Kubernetes Cluster. |
 
 
 
@@ -248,8 +248,8 @@ https://github.com/openservicemesh/osm
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that mesh-networking has reconciled the latest version of the Mesh. |
-| appliedVirtualMesh | MeshStatus.AppliedVirtualMesh |  | The VirtualMesh, if any, which contains this mesh. |
-| appliedFailoverServices | []MeshStatus.AppliedFailoverService | repeated | The FailoverServices, if any, which applies to this mesh. |
+| appliedVirtualMesh | discovery.smh.solo.io.MeshStatus.AppliedVirtualMesh |  | The VirtualMesh, if any, which contains this mesh. |
+| appliedFailoverServices | []discovery.smh.solo.io.MeshStatus.AppliedFailoverService | repeated | The FailoverServices, if any, which applies to this mesh. |
 
 
 

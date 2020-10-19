@@ -37,9 +37,9 @@ The Workload is an abstraction for a workload/client which mesh-discovery has di
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubernetes | WorkloadSpec.KubernetesWorkload |  | Information describing workloads backed by Kubernetes Pods. |
+| kubernetes | discovery.smh.solo.io.WorkloadSpec.KubernetesWorkload |  | Information describing workloads backed by Kubernetes Pods. |
 | mesh | core.skv2.solo.io.ObjectRef |  | The mesh with which this workload is associated. |
-| appMesh | WorkloadSpec.AppMesh |  | Appmesh specific metadata. |
+| appMesh | discovery.smh.solo.io.WorkloadSpec.AppMesh |  | Appmesh specific metadata. |
 
 
 
@@ -55,7 +55,7 @@ Information relevant to AppMesh-injected workloads.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | virtualNodeName | string |  | The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container. |
-| ports | []WorkloadSpec.AppMesh.ContainerPort | repeated | Needed for declaring Appmesh VirtualNode listeners. |
+| ports | []discovery.smh.solo.io.WorkloadSpec.AppMesh.ContainerPort | repeated | Needed for declaring Appmesh VirtualNode listeners. |
 
 
 
@@ -87,7 +87,7 @@ Information describing a Kubernetes-based workload (e.g. a Deployment or DaemonS
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | controller | core.skv2.solo.io.ClusterObjectRef |  | Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads. It has the generic name controller as it can represent a deployment, daemonset, or statefulset. |
-| podLabels | []WorkloadSpec.KubernetesWorkload.PodLabelsEntry | repeated | These are the labels directly from the pods that this controller owns. NB: these labels are read directly from the pod template metadata.labels defined in the workload spec. We need these to determine which services are backed by this workload. |
+| podLabels | []discovery.smh.solo.io.WorkloadSpec.KubernetesWorkload.PodLabelsEntry | repeated | These are the labels directly from the pods that this controller owns. NB: these labels are read directly from the pod template metadata.labels defined in the workload spec. We need these to determine which services are backed by this workload. |
 | serviceAccountName | string |  | Service account attached to the pods owned by this controller. |
 
 

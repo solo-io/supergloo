@@ -37,9 +37,9 @@ A FailoverService creates a new hostname to which services can send requests. Re
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | hostname | string |  | The DNS name of the FailoverService. Must be unique within the service mesh instance since it is used as the hostname with which clients communicate. |
-| port | FailoverServiceSpec.Port |  | The port on which the FailoverService listens. |
+| port | networking.smh.solo.io.FailoverServiceSpec.Port |  | The port on which the FailoverService listens. |
 | meshes | []core.skv2.solo.io.ObjectRef | repeated | The meshes that this FailoverService will be visible to. |
-| backingServices | []FailoverServiceSpec.BackingService | repeated | The list of services backing the FailoverService, ordered by decreasing priority. All services must be backed by either the same service mesh instance or backed by service meshes that are grouped under a common VirtualMesh. |
+| backingServices | []networking.smh.solo.io.FailoverServiceSpec.BackingService | repeated | The list of services backing the FailoverService, ordered by decreasing priority. All services must be backed by either the same service mesh instance or backed by service meshes that are grouped under a common VirtualMesh. |
 
 
 
@@ -86,8 +86,8 @@ The port on which the FailoverService listens.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the FailoverService metadata. If the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
-| state | ApprovalState |  | The state of the overall resource, will only show accepted if it has been successfully applied to all target meshes. |
-| meshes | []FailoverServiceStatus.MeshesEntry | repeated | The status of the FailoverService for each Mesh to which it has been applied. |
+| state | networking.smh.solo.io.ApprovalState |  | The state of the overall resource, will only show accepted if it has been successfully applied to all target meshes. |
+| meshes | []networking.smh.solo.io.FailoverServiceStatus.MeshesEntry | repeated | The status of the FailoverService for each Mesh to which it has been applied. |
 | errors | []string | repeated | Any errors found while processing this generation of the resource. |
 
 
@@ -104,7 +104,7 @@ The port on which the FailoverService listens.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
-| value | ApprovalStatus |  |  |
+| value | networking.smh.solo.io.ApprovalStatus |  |  |
 
 
 

@@ -42,7 +42,7 @@ The TrafficTarget is an abstraction for a traffic target which we have discovere
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeService | TrafficTargetSpec.KubeService |  | Metadata about the kube-native traffic target backing this TrafficTarget. |
+| kubeService | discovery.smh.solo.io.TrafficTargetSpec.KubeService |  | Metadata about the kube-native traffic target backing this TrafficTarget. |
 | mesh | core.skv2.solo.io.ObjectRef |  | The mesh with which this traffic target is associated. |
 
 
@@ -59,10 +59,10 @@ The TrafficTarget is an abstraction for a traffic target which we have discovere
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | ref | core.skv2.solo.io.ClusterObjectRef |  | A reference to the kube-native traffic target that this TrafficTarget represents. |
-| workloadSelectorLabels | []TrafficTargetSpec.KubeService.WorkloadSelectorLabelsEntry | repeated | Selectors for the set of pods targeted by the k8s Service. |
-| labels | []TrafficTargetSpec.KubeService.LabelsEntry | repeated | Labels on the underlying k8s Service itself. |
-| ports | []TrafficTargetSpec.KubeService.KubeServicePort | repeated | The ports exposed by the underlying service. |
-| subsets | []TrafficTargetSpec.KubeService.SubsetsEntry | repeated | Subsets for routing, based on labels. |
+| workloadSelectorLabels | []discovery.smh.solo.io.TrafficTargetSpec.KubeService.WorkloadSelectorLabelsEntry | repeated | Selectors for the set of pods targeted by the k8s Service. |
+| labels | []discovery.smh.solo.io.TrafficTargetSpec.KubeService.LabelsEntry | repeated | Labels on the underlying k8s Service itself. |
+| ports | []discovery.smh.solo.io.TrafficTargetSpec.KubeService.KubeServicePort | repeated | The ports exposed by the underlying service. |
+| subsets | []discovery.smh.solo.io.TrafficTargetSpec.KubeService.SubsetsEntry | repeated | Subsets for routing, based on labels. |
 
 
 
@@ -126,7 +126,7 @@ Subsets for routing, based on labels.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
-| value | TrafficTargetSpec.KubeService.Subset |  |  |
+| value | discovery.smh.solo.io.TrafficTargetSpec.KubeService.Subset |  |  |
 
 
 
@@ -158,8 +158,8 @@ Subsets for routing, based on labels.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the TrafficPolicy metadata. if the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
-| appliedTrafficPolicies | []TrafficTargetStatus.AppliedTrafficPolicy | repeated | The set of Traffic Policies that have been applied to this TrafficTarget |
-| appliedAccessPolicies | []TrafficTargetStatus.AppliedAccessPolicy | repeated | The set of Access Policies that have been applied to this TrafficTarget |
+| appliedTrafficPolicies | []discovery.smh.solo.io.TrafficTargetStatus.AppliedTrafficPolicy | repeated | The set of Traffic Policies that have been applied to this TrafficTarget |
+| appliedAccessPolicies | []discovery.smh.solo.io.TrafficTargetStatus.AppliedAccessPolicy | repeated | The set of Access Policies that have been applied to this TrafficTarget |
 
 
 

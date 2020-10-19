@@ -57,18 +57,18 @@ A Traffic Policy applies some L7 routing features to an existing mesh. Traffic P
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sourceSelector | []WorkloadSelector | repeated | Requests originating from these workloads will have the rule applied. Leave empty to have all workloads in the mesh apply these rules.<br>Note: Source Selectors are ignored when TrafficPolicies are applied to pods in a Linkerd mesh. TrafficPolicies will apply to all selected destinations in Linkerd, regardless of the source.<br>Note: If using the TrafficTargetSelector.Matcher, specifying clusters is currently not supported in Istio. |
-| destinationSelector | []TrafficTargetSelector | repeated | Requests destined for these k8s services will have the rule applied. Leave empty to apply to all destination k8s services in the mesh. |
-| httpRequestMatchers | []TrafficPolicySpec.HttpMatcher | repeated | If specified, this rule will only apply to http requests matching these conditions. Within a single matcher, all conditions must be satisfied for a match to occur. Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply. NB: Linkerd only supports matching on Request Path and Method. |
-| trafficShift | TrafficPolicySpec.MultiDestination |  | Enables traffic shifting, i.e. to reroute requests to a different service, to a subset of pods based on their label, and/or split traffic between multiple services. |
-| faultInjection | TrafficPolicySpec.FaultInjection |  | Enable fault injection on requests. |
+| sourceSelector | []networking.smh.solo.io.WorkloadSelector | repeated | Requests originating from these workloads will have the rule applied. Leave empty to have all workloads in the mesh apply these rules.<br>Note: Source Selectors are ignored when TrafficPolicies are applied to pods in a Linkerd mesh. TrafficPolicies will apply to all selected destinations in Linkerd, regardless of the source.<br>Note: If using the TrafficTargetSelector.Matcher, specifying clusters is currently not supported in Istio. |
+| destinationSelector | []networking.smh.solo.io.TrafficTargetSelector | repeated | Requests destined for these k8s services will have the rule applied. Leave empty to apply to all destination k8s services in the mesh. |
+| httpRequestMatchers | []networking.smh.solo.io.TrafficPolicySpec.HttpMatcher | repeated | If specified, this rule will only apply to http requests matching these conditions. Within a single matcher, all conditions must be satisfied for a match to occur. Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply. NB: Linkerd only supports matching on Request Path and Method. |
+| trafficShift | networking.smh.solo.io.TrafficPolicySpec.MultiDestination |  | Enables traffic shifting, i.e. to reroute requests to a different service, to a subset of pods based on their label, and/or split traffic between multiple services. |
+| faultInjection | networking.smh.solo.io.TrafficPolicySpec.FaultInjection |  | Enable fault injection on requests. |
 | requestTimeout | google.protobuf.Duration |  | Set a timeout on requests. |
-| retries | TrafficPolicySpec.RetryPolicy |  | Set a retry policy on requests. |
-| corsPolicy | TrafficPolicySpec.CorsPolicy |  | Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS for further details about cross origin resource sharing. |
-| mirror | TrafficPolicySpec.Mirror |  | Mirror HTTP traffic to a another destination. Traffic will still be sent to its original destination as normal. |
-| headerManipulation | TrafficPolicySpec.HeaderManipulation |  | Manipulate request and response headers. |
-| outlierDetection | TrafficPolicySpec.OutlierDetection |  | Configure outlier detection on the targeted services. Setting this field requires an empty source_selector because it must apply to all traffic. |
-| mtls | TrafficPolicySpec.MTLS |  | Configure mTLS settings. If specified will override global default defined in Settings. |
+| retries | networking.smh.solo.io.TrafficPolicySpec.RetryPolicy |  | Set a retry policy on requests. |
+| corsPolicy | networking.smh.solo.io.TrafficPolicySpec.CorsPolicy |  | Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS for further details about cross origin resource sharing. |
+| mirror | networking.smh.solo.io.TrafficPolicySpec.Mirror |  | Mirror HTTP traffic to a another destination. Traffic will still be sent to its original destination as normal. |
+| headerManipulation | networking.smh.solo.io.TrafficPolicySpec.HeaderManipulation |  | Manipulate request and response headers. |
+| outlierDetection | networking.smh.solo.io.TrafficPolicySpec.OutlierDetection |  | Configure outlier detection on the targeted services. Setting this field requires an empty source_selector because it must apply to all traffic. |
+| mtls | networking.smh.solo.io.TrafficPolicySpec.MTLS |  | Configure mTLS settings. If specified will override global default defined in Settings. |
 
 
 
@@ -83,7 +83,7 @@ A Traffic Policy applies some L7 routing features to an existing mesh. Traffic P
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| allowOrigins | []TrafficPolicySpec.StringMatch | repeated | String patterns that match allowed origins. An origin is allowed if any of the string matchers match. If a match is found, then the outgoing Access-Control-Allow-Origin would be set to the origin as provided by the client. |
+| allowOrigins | []networking.smh.solo.io.TrafficPolicySpec.StringMatch | repeated | String patterns that match allowed origins. An origin is allowed if any of the string matchers match. If a match is found, then the outgoing Access-Control-Allow-Origin would be set to the origin as provided by the client. |
 | allowMethods | []string | repeated | List of HTTP methods allowed to access the resource. The content will be serialized into the Access-Control-Allow-Methods header. |
 | allowHeaders | []string | repeated | List of HTTP headers that can be used when requesting the resource. Serialized to Access-Control-Allow-Headers header. |
 | exposeHeaders | []string | repeated | A white list of HTTP headers that the browsers are allowed to access. Serialized into Access-Control-Expose-Headers header. |
@@ -105,7 +105,7 @@ FaultInjection can be used to specify one or more faults to inject while forward
 | ----- | ---- | ----- | ----------- |
 | fixedDelay | google.protobuf.Duration |  | Add a fixed delay before forwarding the request. Format: 1h/1m/1s/1ms. MUST be >=1ms. |
 | exponentialDelay | google.protobuf.Duration |  | $hide_from_docs |
-| abort | TrafficPolicySpec.FaultInjection.Abort |  | Abort Http request attempts and return error codes back to downstream service, giving the impression that the upstream service is faulty. |
+| abort | networking.smh.solo.io.TrafficPolicySpec.FaultInjection.Abort |  | Abort Http request attempts and return error codes back to downstream service, giving the impression that the upstream service is faulty. |
 | percentage | double |  | Percentage of requests to be faulted with the error code provided. Values range between 0 and 100 |
 
 
@@ -137,9 +137,9 @@ Manipulate request and response headers.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | removeResponseHeaders | []string | repeated | HTTP headers to remove before returning a response to the caller. |
-| appendResponseHeaders | []TrafficPolicySpec.HeaderManipulation.AppendResponseHeadersEntry | repeated | Additional HTTP headers to add before returning a response to the caller. |
+| appendResponseHeaders | []networking.smh.solo.io.TrafficPolicySpec.HeaderManipulation.AppendResponseHeadersEntry | repeated | Additional HTTP headers to add before returning a response to the caller. |
 | removeRequestHeaders | []string | repeated | HTTP headers to remove before forwarding a request to the destination service. |
-| appendRequestHeaders | []TrafficPolicySpec.HeaderManipulation.AppendRequestHeadersEntry | repeated | Additional HTTP headers to add before forwarding a request to the destination service. |
+| appendRequestHeaders | []networking.smh.solo.io.TrafficPolicySpec.HeaderManipulation.AppendRequestHeadersEntry | repeated | Additional HTTP headers to add before forwarding a request to the destination service. |
 
 
 
@@ -207,9 +207,9 @@ Parameters for matching routes. All specified conditions must be satisfied for a
 | prefix | string |  | If specified, the route is a prefix rule meaning that the prefix must match the beginning of the *:path* header. |
 | exact | string |  | If specified, the route is an exact path rule meaning that the path must exactly match the *:path* header once the query string is removed. |
 | regex | string |  | If specified, the route is a regular expression rule meaning that the regex must match the *:path* header once the query string is removed. The entire path (without the query string) must match the regex. The rule will not match if only a sub-sequence of the *:path* header matches the regex. The regex grammar is defined `here <http://en.cppreference.com/w/cpp/regex/ecmascript>`_. |
-| headers | []TrafficPolicySpec.HeaderMatcher | repeated | Specifies a set of headers which requests must match in entirety (all headers must match). |
-| queryParameters | []TrafficPolicySpec.QueryParameterMatcher | repeated | Specifies a set of URL query parameters which requests must match in entirety (all query params must match). The router will check the query string from the *path* header against all the specified query parameters |
-| method | TrafficPolicySpec.HttpMethod |  | HTTP Method/Verb to match on. If none specified, the matcher will ignore the HTTP Method |
+| headers | []networking.smh.solo.io.TrafficPolicySpec.HeaderMatcher | repeated | Specifies a set of headers which requests must match in entirety (all headers must match). |
+| queryParameters | []networking.smh.solo.io.TrafficPolicySpec.QueryParameterMatcher | repeated | Specifies a set of URL query parameters which requests must match in entirety (all query params must match). The router will check the query string from the *path* header against all the specified query parameters |
+| method | networking.smh.solo.io.TrafficPolicySpec.HttpMethod |  | HTTP Method/Verb to match on. If none specified, the matcher will ignore the HTTP Method |
 
 
 
@@ -224,7 +224,7 @@ Express an optional HttpMethod by wrapping it in a nillable message.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| method | HttpMethodValue |  |  |
+| method | networking.smh.solo.io.HttpMethodValue |  |  |
 
 
 
@@ -239,7 +239,7 @@ Configure mTLS settings on traffic targets. If specified this overrides the glob
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| istio | TrafficPolicySpec.MTLS.Istio |  | Istio TLS settings |
+| istio | networking.smh.solo.io.TrafficPolicySpec.MTLS.Istio |  | Istio TLS settings |
 
 
 
@@ -254,7 +254,7 @@ Istio TLS settings Map onto the enums defined here https://github.com/istio/api/
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| tlsMode | TrafficPolicySpec.MTLS.Istio.TLSmode |  | TLS connection mode |
+| tlsMode | networking.smh.solo.io.TrafficPolicySpec.MTLS.Istio.TLSmode |  | TLS connection mode |
 
 
 
@@ -286,7 +286,7 @@ Istio TLS settings Map onto the enums defined here https://github.com/istio/api/
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| destinations | []TrafficPolicySpec.MultiDestination.WeightedDestination | repeated | A traffic shift destination. |
+| destinations | []networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination | repeated | A traffic shift destination. |
 
 
 
@@ -301,8 +301,8 @@ Istio TLS settings Map onto the enums defined here https://github.com/istio/api/
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeService | TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination |  | The use kubeService to shift traffic a Kubernetes Service/subset. |
-| failoverService | TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination |  | A traffic shift destination targeting a FailoverService. |
+| kubeService | networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination |  | The use kubeService to shift traffic a Kubernetes Service/subset. |
+| failoverService | networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination |  | A traffic shift destination targeting a FailoverService. |
 | weight | uint32 |  | Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100. |
 
 
@@ -320,7 +320,7 @@ A traffic shift destination that references a FailoverService.
 | ----- | ---- | ----- | ----------- |
 | name | string |  | The name of the FailoverService. |
 | namespace | string |  | The namespace of the FailoverService. |
-| subset | []TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry | repeated | Subset routing is currently only supported for Istio backing services. |
+| subset | []networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry | repeated | Subset routing is currently only supported for Istio backing services. |
 
 
 
@@ -354,7 +354,7 @@ A traffic shift destination which lives in kubernetes.
 | name | string |  | The name of the destination service. |
 | namespace | string |  | The namespace of the destination service. |
 | clusterName | string |  | The cluster of the destination k8s service (as it is registered with Service Mesh Hub). |
-| subset | []TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry | repeated | Subset routing is currently only supported on Istio. |
+| subset | []networking.smh.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry | repeated | Subset routing is currently only supported on Istio. |
 | port | uint32 |  | Port on the destination k8s service to receive traffic. Required if the service exposes more than one port. |
 
 
@@ -455,8 +455,8 @@ Describes how to match a given string in HTTP headers. Match is case-sensitive.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the TrafficPolicy metadata. if the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
-| state | ApprovalState |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all target meshes. |
-| trafficTargets | []TrafficPolicyStatus.TrafficTargetsEntry | repeated | The status of the TrafficPolicy for each TrafficTarget to which it has been applied. A TrafficPolicy may be Accepted for some TrafficTargets and rejected for others. |
+| state | networking.smh.solo.io.ApprovalState |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all target meshes. |
+| trafficTargets | []networking.smh.solo.io.TrafficPolicyStatus.TrafficTargetsEntry | repeated | The status of the TrafficPolicy for each TrafficTarget to which it has been applied. A TrafficPolicy may be Accepted for some TrafficTargets and rejected for others. |
 | workloads | []string | repeated | The list of Workloads to which this policy has been applied. |
 | errors | []string | repeated | Any errors found while processing this generation of the resource. |
 
@@ -474,7 +474,7 @@ Describes how to match a given string in HTTP headers. Match is case-sensitive.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
-| value | ApprovalStatus |  |  |
+| value | networking.smh.solo.io.ApprovalStatus |  |  |
 
 
 
