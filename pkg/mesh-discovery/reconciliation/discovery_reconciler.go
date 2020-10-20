@@ -53,7 +53,7 @@ func Start(
 			Group:   appmeshv1beta2.GroupVersion.Group,
 			Version: appmeshv1beta2.GroupVersion.Version,
 			Kind:    "Mesh",
-		}: verifier.ServerVerifyOption_WarnIfNotPresent,
+		}: verifier.ServerVerifyOption_LogDebugIfNotPresent,
 	})
 	r := &discoveryReconciler{
 		ctx:          ctx,
