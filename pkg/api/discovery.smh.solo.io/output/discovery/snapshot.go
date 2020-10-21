@@ -11,12 +11,12 @@ import (
 	"sort"
 
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/skv2/pkg/multicluster"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	discovery_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
@@ -612,7 +612,7 @@ type Builder interface {
 	// this can be used to collect clusters for use with MultiCluster snapshots.
 	AddCluster(cluster string)
 
-	// merge all the resources from anotehr Builder into this one
+	// merge all the resources from another Builder into this one
 	Merge(other Builder)
 
 	// create a clone of this builder (deepcopying all resources)

@@ -40,7 +40,9 @@ spec:
                   type: object
               type: object
             networkingExtensionServers:
-              description: Configure SMH Networking to communicate with one or more external gRPC NetworkingExtensions servers.
+              description: |-
+                Configure SMH Networking to communicate with one or more external gRPC NetworkingExtensions servers.
+                Note that the Networking pod should be restarted if this field is modified, as changes are only processed at boot time.
               items:
                 properties:
                   address:

@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix invalid values being generated for Settings in the SMH Helm Chart.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1031

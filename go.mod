@@ -14,6 +14,7 @@ replace (
 
 	// Required for proper serialization of CRDs
 	github.com/golang/protobuf => github.com/golang/protobuf v1.3.5
+	github.com/solo-io/skv2 => ../skv2
 
 	// https://github.com/ory/dockertest/issues/208#issuecomment-686820414
 	golang.org/x/sys => golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6
@@ -41,7 +42,6 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2
-	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
@@ -61,9 +61,10 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/external-apis v0.1.1
-	github.com/solo-io/go-utils v0.17.0
+	github.com/solo-io/go-utils v0.18.1
 	github.com/solo-io/skv2 v0.13.1
 	github.com/solo-io/solo-kit v0.14.0
+	github.com/spf13/afero v1.3.4
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.15.0

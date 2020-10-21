@@ -13,31 +13,31 @@ import (
 	istio "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 )
 
-// MockIstioExtensions is a mock of IstioExtensions interface
-type MockIstioExtensions struct {
+// MockIstioExtender is a mock of IstioExtender interface
+type MockIstioExtender struct {
 	ctrl     *gomock.Controller
-	recorder *MockIstioExtensionsMockRecorder
+	recorder *MockIstioExtenderMockRecorder
 }
 
-// MockIstioExtensionsMockRecorder is the mock recorder for MockIstioExtensions
-type MockIstioExtensionsMockRecorder struct {
-	mock *MockIstioExtensions
+// MockIstioExtenderMockRecorder is the mock recorder for MockIstioExtender
+type MockIstioExtenderMockRecorder struct {
+	mock *MockIstioExtender
 }
 
-// NewMockIstioExtensions creates a new mock instance
-func NewMockIstioExtensions(ctrl *gomock.Controller) *MockIstioExtensions {
-	mock := &MockIstioExtensions{ctrl: ctrl}
-	mock.recorder = &MockIstioExtensionsMockRecorder{mock}
+// NewMockIstioExtender creates a new mock instance
+func NewMockIstioExtender(ctrl *gomock.Controller) *MockIstioExtender {
+	mock := &MockIstioExtender{ctrl: ctrl}
+	mock.recorder = &MockIstioExtenderMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockIstioExtensions) EXPECT() *MockIstioExtensionsMockRecorder {
+func (m *MockIstioExtender) EXPECT() *MockIstioExtenderMockRecorder {
 	return m.recorder
 }
 
 // PatchTrafficTargetOutputs mocks base method
-func (m *MockIstioExtensions) PatchTrafficTargetOutputs(ctx context.Context, trafficTarget *v1alpha2.TrafficTarget, trafficTargetOutputs istio.Builder) error {
+func (m *MockIstioExtender) PatchTrafficTargetOutputs(ctx context.Context, trafficTarget *v1alpha2.TrafficTarget, trafficTargetOutputs istio.Builder) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PatchTrafficTargetOutputs", ctx, trafficTarget, trafficTargetOutputs)
 	ret0, _ := ret[0].(error)
@@ -45,13 +45,13 @@ func (m *MockIstioExtensions) PatchTrafficTargetOutputs(ctx context.Context, tra
 }
 
 // PatchTrafficTargetOutputs indicates an expected call of PatchTrafficTargetOutputs
-func (mr *MockIstioExtensionsMockRecorder) PatchTrafficTargetOutputs(ctx, trafficTarget, trafficTargetOutputs interface{}) *gomock.Call {
+func (mr *MockIstioExtenderMockRecorder) PatchTrafficTargetOutputs(ctx, trafficTarget, trafficTargetOutputs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchTrafficTargetOutputs", reflect.TypeOf((*MockIstioExtensions)(nil).PatchTrafficTargetOutputs), ctx, trafficTarget, trafficTargetOutputs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchTrafficTargetOutputs", reflect.TypeOf((*MockIstioExtender)(nil).PatchTrafficTargetOutputs), ctx, trafficTarget, trafficTargetOutputs)
 }
 
 // PatchWorkloadOutputs mocks base method
-func (m *MockIstioExtensions) PatchWorkloadOutputs(ctx context.Context, workload *v1alpha2.Workload, workloadOutputs istio.Builder) error {
+func (m *MockIstioExtender) PatchWorkloadOutputs(ctx context.Context, workload *v1alpha2.Workload, workloadOutputs istio.Builder) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PatchWorkloadOutputs", ctx, workload, workloadOutputs)
 	ret0, _ := ret[0].(error)
@@ -59,13 +59,13 @@ func (m *MockIstioExtensions) PatchWorkloadOutputs(ctx context.Context, workload
 }
 
 // PatchWorkloadOutputs indicates an expected call of PatchWorkloadOutputs
-func (mr *MockIstioExtensionsMockRecorder) PatchWorkloadOutputs(ctx, workload, workloadOutputs interface{}) *gomock.Call {
+func (mr *MockIstioExtenderMockRecorder) PatchWorkloadOutputs(ctx, workload, workloadOutputs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchWorkloadOutputs", reflect.TypeOf((*MockIstioExtensions)(nil).PatchWorkloadOutputs), ctx, workload, workloadOutputs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchWorkloadOutputs", reflect.TypeOf((*MockIstioExtender)(nil).PatchWorkloadOutputs), ctx, workload, workloadOutputs)
 }
 
 // PatchMeshOutputs mocks base method
-func (m *MockIstioExtensions) PatchMeshOutputs(ctx context.Context, mesh *v1alpha2.Mesh, meshOutputs istio.Builder) error {
+func (m *MockIstioExtender) PatchMeshOutputs(ctx context.Context, mesh *v1alpha2.Mesh, meshOutputs istio.Builder) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PatchMeshOutputs", ctx, mesh, meshOutputs)
 	ret0, _ := ret[0].(error)
@@ -73,21 +73,7 @@ func (m *MockIstioExtensions) PatchMeshOutputs(ctx context.Context, mesh *v1alph
 }
 
 // PatchMeshOutputs indicates an expected call of PatchMeshOutputs
-func (mr *MockIstioExtensionsMockRecorder) PatchMeshOutputs(ctx, mesh, meshOutputs interface{}) *gomock.Call {
+func (mr *MockIstioExtenderMockRecorder) PatchMeshOutputs(ctx, mesh, meshOutputs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchMeshOutputs", reflect.TypeOf((*MockIstioExtensions)(nil).PatchMeshOutputs), ctx, mesh, meshOutputs)
-}
-
-// WatchPushNotifications mocks base method
-func (m *MockIstioExtensions) WatchPushNotifications(ctx context.Context, pushFn func()) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WatchPushNotifications", ctx, pushFn)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// WatchPushNotifications indicates an expected call of WatchPushNotifications
-func (mr *MockIstioExtensionsMockRecorder) WatchPushNotifications(ctx, pushFn interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WatchPushNotifications", reflect.TypeOf((*MockIstioExtensions)(nil).WatchPushNotifications), ctx, pushFn)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchMeshOutputs", reflect.TypeOf((*MockIstioExtender)(nil).PatchMeshOutputs), ctx, mesh, meshOutputs)
 }

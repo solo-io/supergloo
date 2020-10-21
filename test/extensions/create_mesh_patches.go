@@ -2,6 +2,7 @@ package extensions
 
 import (
 	"context"
+
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
@@ -15,7 +16,7 @@ import (
 const (
 	EchoServerPort     = uint32(1234)
 	EchoServerHostname = "echo.example.com"
-	DockerHostAddress = "host.docker.internal"
+	DockerHostAddress  = "host.docker.internal"
 )
 
 // testExtensionsServer is an e2e implementation of a grpc extensions service for Networking
@@ -79,11 +80,11 @@ func createMeshPatches(ctx context.Context, mesh *v1alpha2.MeshSpec) (istio.Buil
 			Http: []*networkingv1alpha3spec.HTTPRoute{{
 				Name: "echo-server-route",
 				Match: []*networkingv1alpha3spec.HTTPMatchRequest{{
-					Uri:                  &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Prefix{Prefix: "/"}},
+					Uri: &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Prefix{Prefix: "/"}},
 				}},
 				Route: []*networkingv1alpha3spec.HTTPRouteDestination{{
-					Destination:          &networkingv1alpha3spec.Destination{
-						Host:                 EchoServerHostname,
+					Destination: &networkingv1alpha3spec.Destination{
+						Host: EchoServerHostname,
 					},
 				}},
 			}},

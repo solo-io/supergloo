@@ -2,6 +2,7 @@ package istio_test
 
 import (
 	"fmt"
+
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
