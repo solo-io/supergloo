@@ -29,7 +29,7 @@ var _ = FDescribe("Istio Networking Extensions", func() {
 		manifest, err = utils.NewManifest("extension-settings.yaml")
 		Expect(err).NotTo(HaveOccurred())
 
-		By("with federation enabled, TrafficShifts can be used for subsets across meshes ", func() {
+		By("with extensions enabled, additional configs can be added to SMH outputs", func() {
 			// run extensions server
 			go func() {
 				defer GinkgoRecover()
