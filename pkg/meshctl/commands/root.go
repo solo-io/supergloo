@@ -3,6 +3,8 @@ package commands
 import (
 	"context"
 
+	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/debug"
+
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/check"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/cluster"
@@ -31,6 +33,7 @@ func RootCommand(ctx context.Context) *cobra.Command {
 	cmd.AddCommand(
 		cluster.Command(ctx),
 		demo.Command(ctx),
+		debug.Command(ctx),
 		describe.Command(ctx),
 		mesh.Command(ctx),
 		install.Command(ctx),

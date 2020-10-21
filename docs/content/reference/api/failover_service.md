@@ -36,10 +36,10 @@ A FailoverService creates a new hostname to which services can send requests. Re
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| hostname | [string](#string) |  | The DNS name of the FailoverService. Must be unique within the service mesh instance since it is used as the hostname with which clients communicate. |
-| port | [FailoverServiceSpec.Port](#networking.smh.solo.io.FailoverServiceSpec.Port) |  | The port on which the FailoverService listens. |
-| meshes | [][core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) | repeated | The meshes that this FailoverService will be visible to. |
-| backingServices | [][FailoverServiceSpec.BackingService](#networking.smh.solo.io.FailoverServiceSpec.BackingService) | repeated | The list of services backing the FailoverService, ordered by decreasing priority. All services must be backed by either the same service mesh instance or backed by service meshes that are grouped under a common VirtualMesh. |
+| hostname | string |  | The DNS name of the FailoverService. Must be unique within the service mesh instance since it is used as the hostname with which clients communicate. |
+| port | networking.smh.solo.io.FailoverServiceSpec.Port |  | The port on which the FailoverService listens. |
+| meshes | []core.skv2.solo.io.ObjectRef | repeated | The meshes that this FailoverService will be visible to. |
+| backingServices | []networking.smh.solo.io.FailoverServiceSpec.BackingService | repeated | The list of services backing the FailoverService, ordered by decreasing priority. All services must be backed by either the same service mesh instance or backed by service meshes that are grouped under a common VirtualMesh. |
 
 
 
@@ -54,7 +54,7 @@ The traffic targets that comprise the FailoverService.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeService | [core.skv2.solo.io.ClusterObjectRef](#core.skv2.solo.io.ClusterObjectRef) |  | Name/namespace/cluster of a kubernetes service. |
+| kubeService | core.skv2.solo.io.ClusterObjectRef |  | Name/namespace/cluster of a kubernetes service. |
 
 
 
@@ -69,8 +69,8 @@ The port on which the FailoverService listens.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| number | [uint32](#uint32) |  | Port number. |
-| protocol | [string](#string) |  | Protocol of the requests sent to the FailoverService, must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS. |
+| number | uint32 |  | Port number. |
+| protocol | string |  | Protocol of the requests sent to the FailoverService, must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS. |
 
 
 
@@ -85,10 +85,10 @@ The port on which the FailoverService listens.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| observedGeneration | [int64](#int64) |  | The most recent generation observed in the the FailoverService metadata. If the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
-| state | [ApprovalState](#networking.smh.solo.io.ApprovalState) |  | The state of the overall resource, will only show accepted if it has been successfully applied to all target meshes. |
-| meshes | [][FailoverServiceStatus.MeshesEntry](#networking.smh.solo.io.FailoverServiceStatus.MeshesEntry) | repeated | The status of the FailoverService for each Mesh to which it has been applied. |
-| errors | [][string](#string) | repeated | Any errors found while processing this generation of the resource. |
+| observedGeneration | int64 |  | The most recent generation observed in the the FailoverService metadata. If the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
+| state | networking.smh.solo.io.ApprovalState |  | The state of the overall resource, will only show accepted if it has been successfully applied to all target meshes. |
+| meshes | []networking.smh.solo.io.FailoverServiceStatus.MeshesEntry | repeated | The status of the FailoverService for each Mesh to which it has been applied. |
+| errors | []string | repeated | Any errors found while processing this generation of the resource. |
 
 
 
@@ -103,8 +103,8 @@ The port on which the FailoverService listens.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| key | [string](#string) |  |  |
-| value | [ApprovalStatus](#networking.smh.solo.io.ApprovalStatus) |  |  |
+| key | string |  |  |
+| value | networking.smh.solo.io.ApprovalStatus |  |  |
 
 
 
