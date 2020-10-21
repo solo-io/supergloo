@@ -94,6 +94,9 @@ func (i *istioExtensions) PatchMeshOutputs(ctx context.Context, mesh *v1alpha2.M
 // convert istio.Builder to [generated resources]
 // exposed as it is imported in extensions servers
 func MakeGeneratedResources(outputs istio.Builder) []*v1alpha1.GeneratedResource {
+	if outputs == nil {
+		return nil
+	}
 	var generatedResources []*v1alpha1.GeneratedResource
 
 	for _, resource := range outputs.GetDestinationRules().List() {

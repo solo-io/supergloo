@@ -75,6 +75,7 @@ func startReconciler(
 		parameters.SnapshotHistory,
 		parameters.VerboseMode,
 		parameters.SettingsRef,
+		extensionClients,
 	)
 }
 

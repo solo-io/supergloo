@@ -1,47 +1,75 @@
 package istio_test
 
 import (
-	"github.com/solo-io/service-mesh-hub/test/data"
+	"fmt"
+	"github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/solo-io/service-mesh-hub/test/extensions"
 	"github.com/solo-io/service-mesh-hub/test/utils"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Istio Networking Extensions", func() {
+var _ = FDescribe("Istio Networking Extensions", func() {
 	var (
-		err      error
-		manifest utils.Manifest
+		err          error
+		manifest     utils.Manifest
+		smhNamespace = defaults.GetPodNamespace()
 	)
 
 	AfterEach(func() {
-		manifest.Cleanup(BookinfoNamespace)
+		manifest.Cleanup(smhNamespace)
 	})
 
 	It("enables communication across clusters using global dns names", func() {
-		Expect(err).NotTo(HaveOccurred())
-		manifest, err = utils.NewManifest("federation-trafficpolicies.yaml")
+		manifest, err = utils.NewManifest("extension-settings.yaml")
 		Expect(err).NotTo(HaveOccurred())
 
 		By("with federation enabled, TrafficShifts can be used for subsets across meshes ", func() {
-			// create cross cluster traffic shift
-			trafficShiftReviewsV3 := data.RemoteTrafficShiftPolicy("bookinfo-policy", BookinfoNamespace, &v1.ClusterObjectRef{
-				Name:        "reviews",
-				Namespace:   BookinfoNamespace,
-				ClusterName: mgmtClusterName,
-			}, remoteClusterName, map[string]string{"version": "v3"}, 9080)
+			// run extensions server
+			go func() {
+				defer GinkgoRecover()
+				err := extensions.RunExtensionsServer()
+				Expect(err).NotTo(HaveOccurred())
+			}()
+			// run echo server
+			go func() {
+				defer GinkgoRecover()
+				err := extensions.RunEchoSerer()
+				Expect(err).NotTo(HaveOccurred())
+			}()
 
-			err = manifest.AppendResources(trafficShiftReviewsV3)
+			// update settings to connect our extensions server
+			err = manifest.AppendResources(&v1alpha2.Settings{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "Settings",
+					APIVersion: v1alpha2.SchemeGroupVersion.String(),
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: smhNamespace,
+					Name:      "settings", // the default/expected name
+				},
+				Spec: v1alpha2.SettingsSpec{
+					NetworkingExtensionServers: []*v1alpha2.NetworkingExtensionsServer{{
+						Address:                    fmt.Sprintf("%v:%v", extensions.DockerHostAddress, extensions.ExtensionsServerPort),
+						Insecure:                   true,
+						ReconnectOnNetworkFailures: true,
+					}},
+				},
+			})
 			Expect(err).NotTo(HaveOccurred())
-			err = manifest.KubeApply(BookinfoNamespace)
+			err = manifest.KubeApply(smhNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
-			// ensure status is updated
-			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
+			// restart the networking pod to pick up the settings
+			err = testutils.Kubectl("delete", "pod", "-l", "app=networking", "-n", smhNamespace)
+			Expect(err).NotTo(HaveOccurred())
 
-			// check we can eventually hit the v3 subset
-			Eventually(curlReviews, "30s", "1s").Should(ContainSubstring(`"color": "red"`))
+			// check we can eventually hit the echo server via the gateway
+			Eventually(curlGateway(extensions.EchoServerHostname, "/", "echo-this-back-to-me"), "30s", "1s").Should(ContainSubstring("echo-this-back-to-me"))
 		})
 	})
 })

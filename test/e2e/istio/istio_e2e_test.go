@@ -3,11 +3,13 @@ package istio_test
 import (
 	"context"
 	"fmt"
+	"os/exec"
 	"time"
 
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 
 	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/solo-io/service-mesh-hub/test/e2e"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -51,5 +53,14 @@ var (
 		out := env.Management.GetPod(ctx, BookinfoNamespace, "productpage").Curl(ctx, url, "-v")
 		GinkgoWriter.Write([]byte(out))
 		return out
+	}
+
+	curlGateway = func(hostname, path, body string) string {
+		out, err := exec.Command("curl", "--connect-timeout", "1", "--max-time", "5", "-H", hostname, "http://localhost:32000"+path, "-v", "-d", body).CombinedOutput()
+		Expect(err).NotTo(HaveOccurred())
+
+		GinkgoWriter.Write(out)
+
+		return string(out)
 	}
 )
