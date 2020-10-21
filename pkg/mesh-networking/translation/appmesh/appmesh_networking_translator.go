@@ -30,9 +30,9 @@ type appmeshTranslator struct {
 	totalTranslates int // TODO(ilackarms): metric
 }
 
-func NewAppmeshTranslator(trafficTargetTranslator traffictarget.Translator) Translator {
+func NewAppmeshTranslator() Translator {
 	return &appmeshTranslator{
-		trafficTargetTranslator: trafficTargetTranslator,
+		trafficTargetTranslator: traffictarget.NewTranslator(),
 	}
 }
 
