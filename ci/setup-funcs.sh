@@ -222,11 +222,11 @@ function install_istio() {
   port=$2
   K="kubectl --context=kind-${cluster}"
 
-  if istioctl version | grep 1.7
+  if istioctl version | grep 1.5
   then
-    install_istio_1_7 $cluster $port
-  else
     install_istio_1_5 $cluster $port
+  else
+    install_istio_1_7 $cluster $port
   fi
 
   # enable istio dns for .global stub domain:
