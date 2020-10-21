@@ -9,4 +9,4 @@ metadata:
 spec:
   mtls:
     istio:
-      tls_mode: {{ $settings.mtls.istio.tls_mode }}
+      tlsMode: {{ $settings.mtls.istio.tlsMode }}
