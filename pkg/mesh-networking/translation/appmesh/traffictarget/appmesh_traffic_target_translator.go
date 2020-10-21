@@ -117,7 +117,7 @@ func getRoutes(trafficTarget *discoveryv1alpha2.TrafficTarget) []v1beta2.Route {
 	var routes []v1beta2.Route
 	for _, tp := range trafficTarget.Status.GetAppliedTrafficPolicies() {
 
-		routes = append(routes, getRoute(tp.Ref, tp.Spec))
+		routes = append(routes, getTrafficPolicyRoutes(tp.Ref, tp.Spec)...)
 	}
 
 	return routes
@@ -172,7 +172,7 @@ func convertMethod(in *v1alpha2.TrafficPolicySpec_HttpMethod) *string {
 	return &str
 }
 
-func getRoute(trafficPolicyRef *v1.ObjectRef, trafficPolicy *v1alpha2.TrafficPolicySpec) v1beta2.Route {
+func getTrafficPolicyRoutes(trafficPolicyRef *v1.ObjectRef, trafficPolicy *v1alpha2.TrafficPolicySpec) []v1beta2.Route {
 	getMatches := func(networkingMatchers []*v1alpha2.TrafficPolicySpec_HttpMatcher) []v1beta2.HTTPRouteMatch {
 		var httpRouteMatches []v1beta2.HTTPRouteMatch
 
@@ -214,19 +214,55 @@ func getRoute(trafficPolicyRef *v1.ObjectRef, trafficPolicy *v1alpha2.TrafficPol
 		}
 	}
 
-	return v1beta2.Route{
-		Name: fmt.Sprintf("%s-%s", trafficPolicyRef.Namespace, trafficPolicyRef.Name),
-		// TODO joekelley implement the other route types
-		HTTPRoute: &v1beta2.HTTPRoute{
-			// TODO joekelley implement matching
-			Match: v1beta2.HTTPRouteMatch{
-				Prefix: "/",
-			},
-			Action:      getRouteAction(),
-			RetryPolicy: nil,
-			Timeout:     nil,
-		},
+	getRetryPolicy := func() *v1beta2.HTTPRetryPolicy {
+		if trafficPolicy.Retries == nil {
+			return nil
+		}
+
+		var perRetryTimeout v1beta2.Duration
+		if trafficPolicy.Retries.PerTryTimeout != nil {
+			perRetryTimeout.Value = trafficPolicy.Retries.PerTryTimeout.Seconds
+			perRetryTimeout.Unit = v1beta2.DurationUnitS
+		}
+
+		return &v1beta2.HTTPRetryPolicy{
+			HTTPRetryEvents: []v1beta2.HTTPRetryPolicyEvent{"server-error", "gateway-error", "client-error", "stream-error"},
+			// TODO joekelley TCPRetryEvents are currently unsupported
+			TCPRetryEvents:  nil,
+			MaxRetries:      int64(trafficPolicy.Retries.Attempts),
+			PerRetryTimeout: perRetryTimeout,
+		}
 	}
+
+	getTimeoutPolicy := func() *v1beta2.HTTPTimeout {
+		if trafficPolicy.RequestTimeout == nil {
+			return nil
+		}
+
+		return &v1beta2.HTTPTimeout{
+			PerRequest: &v1beta2.Duration{
+				Unit:  v1beta2.DurationUnitS,
+				Value: trafficPolicy.RequestTimeout.Seconds,
+			},
+		}
+	}
+
+	var output []v1beta2.Route
+
+	for i, routeMatch := range getMatches(trafficPolicy.HttpRequestMatchers) {
+		output = append(output, v1beta2.Route{
+			Name: fmt.Sprintf("%s-%s-%d", trafficPolicyRef.Namespace, trafficPolicyRef.Name, i),
+			// TODO joekelley implement the other route types
+			HTTPRoute: &v1beta2.HTTPRoute{
+				Match:       routeMatch,
+				Action:      getRouteAction(),
+				RetryPolicy: getRetryPolicy(),
+				Timeout:     getTimeoutPolicy(),
+			},
+		})
+	}
+
+	return output
 }
 
 func isAppmeshTrafficTarget(
@@ -252,7 +288,7 @@ func report(
 	tp *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	reporter reporting.Reporter,
-) bool {
+) {
 	getMessage := func(feature string) string {
 		return fmt.Sprintf("Service Mesh Hub does not support %s for AppMesh", feature)
 	}
