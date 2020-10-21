@@ -39,6 +39,21 @@ spec:
                       type: string
                   type: object
               type: object
+            networkingExtensionServers:
+              description: Configure SMH Networking to communicate with one or more external gRPC NetworkingExtensions servers.
+              items:
+                properties:
+                  address:
+                    description: TCP address of the Networking Extensions Server (including port)
+                    type: string
+                  insecure:
+                    description: Communicate over HTTP rather than HTTPS
+                    type: boolean
+                  reconnectOnNetworkFailures:
+                    description: Instruct SMH to automatically reconnect to the server on network failures
+                    type: boolean
+                type: object
+              type: array
           type: object
         status:
           properties:

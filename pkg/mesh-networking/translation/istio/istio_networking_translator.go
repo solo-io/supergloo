@@ -4,6 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
+
+	istioextensions "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/extensions"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
@@ -29,11 +34,13 @@ type Translator interface {
 type istioTranslator struct {
 	totalTranslates int // TODO(ilackarms): metric
 	dependencies    internal.DependencyFactory
+	extensions      istioextensions.IstioExtender
 }
 
-func NewIstioTranslator() Translator {
+func NewIstioTranslator(extensionClients extensions.Clients) Translator {
 	return &istioTranslator{
 		dependencies: internal.NewDependencyFactory(),
+		extensions:   istioextensions.NewIstioExtensions(extensionClients),
 	}
 }
 
@@ -54,9 +61,27 @@ func (t *istioTranslator) Translate(
 	)
 
 	for _, trafficTarget := range in.TrafficTargets().List() {
-		trafficTarget := trafficTarget // pike
+		trafficTargetOutputs := istio.NewBuilder(ctx, sets.Key(trafficTarget))
+		trafficTargetTranslator.Translate(in, trafficTarget, trafficTargetOutputs, reporter)
 
-		trafficTargetTranslator.Translate(in, trafficTarget, istioOutputs, reporter)
+		if err := t.extensions.PatchTrafficTargetOutputs(ctx, trafficTarget, trafficTargetOutputs); err != nil {
+			contextutils.LoggerFrom(ctx).Errorf("failed to apply extension patches for traffic target %v", sets.Key(trafficTarget))
+		}
+
+		istioOutputs.Merge(trafficTargetOutputs)
+	}
+
+	for _, workload := range in.Workloads().List() {
+		workloadOutputs := istio.NewBuilder(ctx, sets.Key(workload))
+
+		// TODO(ilackarms): add translation for workloads when a feature requires us to do so
+		//workloadTranslator.Translate(in, workload, workloadOutputs, reporter)
+
+		if err := t.extensions.PatchWorkloadOutputs(ctx, workload, workloadOutputs); err != nil {
+			contextutils.LoggerFrom(ctx).Errorf("failed to apply extension patches for traffic target %v", sets.Key(workload))
+		}
+
+		istioOutputs.Merge(workloadOutputs)
 	}
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(
@@ -69,7 +94,14 @@ func (t *istioTranslator) Translate(
 	)
 
 	for _, mesh := range in.Meshes().List() {
-		meshTranslator.Translate(in, mesh, istioOutputs, localOutputs, reporter)
+		meshOutputs := istio.NewBuilder(ctx, sets.Key(mesh))
+		meshTranslator.Translate(in, mesh, meshOutputs, localOutputs, reporter)
+
+		if err := t.extensions.PatchMeshOutputs(ctx, mesh, meshOutputs); err != nil {
+			contextutils.LoggerFrom(ctx).Errorf("failed to apply extension patches for traffic target %v", sets.Key(mesh))
+		}
+
+		istioOutputs.Merge(meshOutputs)
 	}
 
 	t.totalTranslates++

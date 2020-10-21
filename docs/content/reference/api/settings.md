@@ -16,9 +16,20 @@ title: "settings.proto"
 
 
 ## Table of Contents
+  - [NetworkingExtensionsServer](#settings.smh.solo.io.NetworkingExtensionsServer)
   - [SettingsSpec](#settings.smh.solo.io.SettingsSpec)
   - [SettingsStatus](#settings.smh.solo.io.SettingsStatus)
 
+
+
+
+
+
+
+<a name="settings.smh.solo.io.NetworkingExtensionsServer"></a>
+
+### NetworkingExtensionsServer
+Options for connecting to an external gRPC NetworkingExternsions server
 
 
 
@@ -34,6 +45,7 @@ Configure global settings and defaults.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | mtls | [networking.smh.solo.io.TrafficPolicySpec.MTLS](#networking.smh.solo.io.TrafficPolicySpec.MTLS) |  | Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence) |
+| networkingExtensionServers | [][NetworkingExtensionsServer](#settings.smh.solo.io.NetworkingExtensionsServer) | repeated | Configure SMH Networking to communicate with one or more external gRPC NetworkingExtensions servers. |
 
 
 

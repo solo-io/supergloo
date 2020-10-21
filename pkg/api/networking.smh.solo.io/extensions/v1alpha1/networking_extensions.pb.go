@@ -353,7 +353,7 @@ func (m *MeshResource) GetStatus() *v1alpha2.MeshStatus {
 }
 
 // a generated resource can be of any output type supported by SMH.
-// the content of the spec field should be used to determine
+// the content of the type field should be used to determine
 // the type of the output resource.
 // TODO(ilackarms): consider parameterizing SMH to allow excluding GeneratedResources from patch requests in the case where an implementer only performs additions (no updates required).
 type GeneratedResource struct {

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
+
 	settingsv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/common/settings"
@@ -49,6 +51,11 @@ type networkingReconciler struct {
 	settingsRef        v1.ObjectRef
 }
 
+// pushNotificationId is a special identifier for a reconcile event triggered by an extension server pushing a notification
+var pushNotificationId = &v1.ObjectRef{
+	Name: "push-notification-event",
+}
+
 func Start(
 	ctx context.Context,
 	builder input.Builder,
@@ -60,6 +67,7 @@ func Start(
 	history *stats.SnapshotHistory,
 	verboseMode bool,
 	settingsRef v1.ObjectRef,
+	extensionClients extensions.Clients,
 ) error {
 	d := &networkingReconciler{
 		ctx:                ctx,
@@ -87,8 +95,22 @@ func Start(
 		return err
 	}
 
-	_, err := input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2, reconcile.Options{}, filterNetworkingEvents)
-	return err
+	reconciler, err := input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2, reconcile.Options{}, filterNetworkingEvents)
+	if err != nil {
+		return err
+	}
+
+	// start watch on extension notification endpoints
+	if err := extensionClients.WatchPushNotifications(ctx, func() {
+		_, err := reconciler.ReconcileGeneric(pushNotificationId)
+		if err != nil {
+			contextutils.LoggerFrom(ctx).Errorf("failed to reconcile push notification")
+		}
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // reconcile global state
