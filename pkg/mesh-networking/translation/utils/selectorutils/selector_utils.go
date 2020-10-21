@@ -4,64 +4,73 @@ import (
 	"github.com/solo-io/go-utils/stringutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
-func SelectorMatchesWorkload(selectors []*v1alpha2.WorkloadSelector, workload *discoveryv1alpha2.Workload) bool {
-	if len(selectors) == 0 {
-		return true
-	}
+func SelectorMatchesWorkload(selectors []*v1alpha2.WorkloadSelector, workload *discoveryv1alpha2.Workload,
+	matchingMeshes map[string]bool, matchingVirtualMeshes map[string]bool, meshToVirtualMesh map[string]string) bool {
 
-	for _, selector := range selectors {
-		kubeWorkload := workload.Spec.GetKubernetes()
-		if kubeWorkload != nil {
-			if kubeWorkloadMatches(
-				selector.GetLabels(),
-				selector.GetNamespaces(),
-				kubeWorkload,
-			) {
-				return true
+	var selectorMatches bool
+	if len(selectors) == 0 {
+		selectorMatches = true
+	} else {
+		for _, selector := range selectors {
+			kubeWorkload := workload.Spec.GetKubernetes()
+			if kubeWorkload != nil {
+				if kubeWorkloadMatches(
+					selector.GetLabels(),
+					selector.GetNamespaces(),
+					kubeWorkload,
+				) {
+					selectorMatches = true
+					break
+				}
 			}
 		}
 	}
 
-	return false
+	return selectorMatches && meshMatches(workload.Spec.GetMesh(), matchingMeshes, matchingVirtualMeshes, meshToVirtualMesh)
 }
 
-func IdentityMatchesWorkload(selectors []*v1alpha2.IdentitySelector, workload *discoveryv1alpha2.Workload) bool {
-	if len(selectors) == 0 {
-		return true
-	}
+func IdentityMatchesWorkload(selectors []*v1alpha2.IdentitySelector, workload *discoveryv1alpha2.Workload,
+	matchingMeshes map[string]bool, matchingVirtualMeshes map[string]bool, meshToVirtualMesh map[string]string) bool {
 
-	for _, selector := range selectors {
-		kubeWorkload := workload.Spec.GetKubernetes()
-		if kubeWorkload != nil {
-			if kubeWorkloadIdentityMatcher := selector.GetKubeIdentityMatcher(); kubeWorkloadIdentityMatcher != nil {
-				namespaces := kubeWorkloadIdentityMatcher.GetNamespaces()
-				clusters := kubeWorkloadIdentityMatcher.GetClusters()
-				if len(namespaces) > 0 && !stringutils.ContainsString(kubeWorkload.GetController().GetNamespace(), namespaces) {
-					return false
-				}
-				if len(clusters) > 0 && !stringutils.ContainsString(kubeWorkload.GetController().GetClusterName(), clusters) {
-					return false
-				}
-				return true
-			}
-			if kubeWorkloadRefs := selector.GetKubeServiceAccountRefs(); kubeWorkloadRefs != nil {
-				for _, ref := range kubeWorkloadRefs.GetServiceAccounts() {
-					if ref.GetName() == kubeWorkload.GetServiceAccountName() &&
-						ref.GetNamespace() == kubeWorkload.GetController().GetNamespace() &&
-						ref.GetClusterName() == kubeWorkload.GetController().GetClusterName() {
-						return true
+	var selectorMatches bool
+	if len(selectors) == 0 {
+		selectorMatches = true
+	} else {
+		for _, selector := range selectors {
+			kubeWorkload := workload.Spec.GetKubernetes()
+			if kubeWorkload != nil {
+				if kubeWorkloadIdentityMatcher := selector.GetKubeIdentityMatcher(); kubeWorkloadIdentityMatcher != nil {
+					namespaces := kubeWorkloadIdentityMatcher.GetNamespaces()
+					clusters := kubeWorkloadIdentityMatcher.GetClusters()
+					if len(namespaces) > 0 && !stringutils.ContainsString(kubeWorkload.GetController().GetNamespace(), namespaces) {
+						return false
 					}
+					if len(clusters) > 0 && !stringutils.ContainsString(kubeWorkload.GetController().GetClusterName(), clusters) {
+						return false
+					}
+					selectorMatches = true
+					break
 				}
-				return false
+				if kubeWorkloadRefs := selector.GetKubeServiceAccountRefs(); kubeWorkloadRefs != nil {
+					for _, ref := range kubeWorkloadRefs.GetServiceAccounts() {
+						if ref.GetName() == kubeWorkload.GetServiceAccountName() &&
+							ref.GetNamespace() == kubeWorkload.GetController().GetNamespace() &&
+							ref.GetClusterName() == kubeWorkload.GetController().GetClusterName() {
+							return true
+						}
+					}
+					return false
+				}
 			}
 		}
 	}
 
-	return false
+	return selectorMatches && meshMatches(workload.Spec.GetMesh(), matchingMeshes, matchingVirtualMeshes, meshToVirtualMesh)
 }
 
 func SelectorMatchesService(selectors []*v1alpha2.TrafficTargetSelector, service *discoveryv1alpha2.TrafficTarget) bool {
@@ -141,6 +150,20 @@ func kubeServiceMatches(
 		return false
 	}
 	return true
+}
+
+// Returns true if the given mesh either matches one of the given matchingMeshes, or it is in a virtual mesh that
+// matches one of the given matchingVirtualMeshes
+func meshMatches(meshRef *v1.ObjectRef, matchingMeshes map[string]bool, matchingVirtualMeshes map[string]bool,
+	meshToVirtualMesh map[string]string) bool {
+	meshKey := sets.Key(meshRef)
+	if matchingMeshes[meshKey] {
+		return true
+	}
+	if virtualMeshRefKey, ok := meshToVirtualMesh[meshKey]; ok {
+		return matchingVirtualMeshes[virtualMeshRefKey]
+	}
+	return false
 }
 
 func refsContain(refs []*v1.ClusterObjectRef, targetRef *v1.ClusterObjectRef) bool {

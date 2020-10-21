@@ -4,13 +4,13 @@ import (
 	"context"
 	"sort"
 
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply/configtarget"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
-
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply/configtarget"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -144,14 +144,28 @@ func reportTranslationErrors(ctx context.Context, reporter *applyReporter, input
 		mesh.Status.AppliedVirtualMesh = validateAndReturnVirtualMesh(ctx, input, reporter, mesh)
 	}
 
-	setWorkloadsForTrafficPolicies(input.TrafficPolicies().List(), input.Workloads().List())
-	setWorkloadsForAccessPolicies(input.AccessPolicies().List(), input.Workloads().List())
+	setWorkloadsForTrafficPolicies(ctx, input.TrafficPolicies().List(), input.Workloads().List(), input.TrafficTargets(), input.Meshes())
+	setWorkloadsForAccessPolicies(ctx, input.AccessPolicies().List(), input.Workloads().List(), input.TrafficTargets(), input.Meshes())
 }
 
 func setWorkloadsForTrafficPolicies(
+	ctx context.Context,
 	trafficPolicies networkingv1alpha2.TrafficPolicySlice,
-	workloads discoveryv1alpha2.WorkloadSlice) {
+	workloads discoveryv1alpha2.WorkloadSlice,
+	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+	meshes discoveryv1alpha2sets.MeshSet) {
+
+	// create a map of mesh to virtual mesh for lookup
+	meshToVirtualMesh := makeMeshToVirtualMeshMap(meshes.List())
+
 	for _, trafficPolicy := range trafficPolicies {
+		// get the selected traffic targets on the policy
+		matchingTrafficTargets := trafficTargets.List(func(trafficTarget *discoveryv1alpha2.TrafficTarget) bool {
+			return trafficPolicy.Status.GetTrafficTargets()[sets.Key(trafficTarget.GetObjectMeta())] != nil
+		})
+		// get all the mesh and virtual mesh refs from those traffic targets
+		meshMap, virtualMeshMap := getMeshesFromTrafficTargets(ctx, matchingTrafficTargets, meshes)
+
 		var matchingWorkloads []string
 		// TODO(awang) optimize if the returned workloads list gets too large
 		//if len(trafficPolicy.Spec.GetSourceSelector()) == 0 {
@@ -159,7 +173,8 @@ func setWorkloadsForTrafficPolicies(
 		//	return
 		//}
 		for _, workload := range workloads {
-			if selectorutils.SelectorMatchesWorkload(trafficPolicy.Spec.GetSourceSelector(), workload) {
+			if selectorutils.SelectorMatchesWorkload(trafficPolicy.Spec.GetSourceSelector(), workload, meshMap,
+				virtualMeshMap, meshToVirtualMesh) {
 				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
 			}
 		}
@@ -168,13 +183,28 @@ func setWorkloadsForTrafficPolicies(
 }
 
 func setWorkloadsForAccessPolicies(
+	ctx context.Context,
 	accessPolicies networkingv1alpha2.AccessPolicySlice,
-	workloads discoveryv1alpha2.WorkloadSlice) {
+	workloads discoveryv1alpha2.WorkloadSlice,
+	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+	meshes discoveryv1alpha2sets.MeshSet) {
+
+	// create a map of mesh to virtual mesh for lookup
+	meshToVirtualMesh := makeMeshToVirtualMeshMap(meshes.List())
+
 	for _, accessPolicy := range accessPolicies {
+		// get the selected traffic targets on the policy
+		matchingTrafficTargets := trafficTargets.List(func(trafficTarget *discoveryv1alpha2.TrafficTarget) bool {
+			return accessPolicy.Status.GetTrafficTargets()[sets.Key(trafficTarget.GetObjectMeta())] != nil
+		})
+		// get all the mesh and virtual mesh refs from those traffic targets
+		meshMap, virtualMeshMap := getMeshesFromTrafficTargets(ctx, matchingTrafficTargets, meshes)
+
 		var matchingWorkloads []string
 		// TODO(awang) optimize if the returned workloads list gets too large
 		for _, workload := range workloads {
-			if selectorutils.IdentityMatchesWorkload(accessPolicy.Spec.GetSourceSelector(), workload) {
+			if selectorutils.IdentityMatchesWorkload(accessPolicy.Spec.GetSourceSelector(), workload, meshMap,
+				virtualMeshMap, meshToVirtualMesh) {
 				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
 			}
 		}
@@ -633,4 +663,44 @@ func getAppliedFailoverServices(
 		}
 	}
 	return appliedFailoverServices
+}
+
+// Get all the meshes and corresponding virtual meshes of the given traffic targets.
+// Results are returned as maps keyed by mesh ObjectRef keys and virtual mesh ObjectRef keys
+func getMeshesFromTrafficTargets(ctx context.Context, trafficTargets []*discoveryv1alpha2.TrafficTarget,
+	meshes discoveryv1alpha2sets.MeshSet) (map[string]bool, map[string]bool) {
+
+	meshMap := make(map[string]bool)
+	virtualMeshMap := make(map[string]bool)
+	for _, trafficTarget := range trafficTargets {
+		meshRef := trafficTarget.Spec.GetMesh()
+		meshKey := sets.Key(meshRef)
+		if !meshMap[meshKey] {
+			meshMap[meshKey] = true
+
+			// get the full mesh object to get the virtual mesh
+			mesh, err := meshes.Find(meshRef)
+			if err != nil {
+				// should never happen
+				contextutils.LoggerFrom(ctx).Errorf("internal error: failed to look up mesh %v: %v", meshRef, err)
+				continue
+			}
+			if virtualMeshRef := mesh.Status.GetAppliedVirtualMesh().GetRef(); virtualMeshRef != nil {
+				virtualMeshMap[sets.Key(virtualMeshRef)] = true
+			}
+		}
+	}
+	return meshMap, virtualMeshMap
+}
+
+// Map each mesh ref to its virtual mesh ref (if any).
+// The keys in the returned map are mesh ref keys, and the values are virtual mesh ref keys.
+func makeMeshToVirtualMeshMap(meshes discoveryv1alpha2.MeshSlice) map[string]string {
+	meshToVirtualMesh := make(map[string]string)
+	for _, mesh := range meshes {
+		if virtualMeshRef := mesh.Status.GetAppliedVirtualMesh().GetRef(); virtualMeshRef != nil {
+			meshToVirtualMesh[sets.Key(mesh)] = sets.Key(virtualMeshRef)
+		}
+	}
+	return meshToVirtualMesh
 }
