@@ -18,10 +18,10 @@ var (
 )
 
 // Validate that the reference Settings object exists and that all required fields are specified.
-func Validate(ctx context.Context, in input.Snapshot) error {
+func Validate(ctx context.Context, in input.Snapshot) (*v1alpha2.Settings, error) {
 	settings, err := snapshotutils.GetSingletonSettings(ctx, in)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	settings.Status = v1alpha2.SettingsStatus{
@@ -35,9 +35,9 @@ func Validate(ctx context.Context, in input.Snapshot) error {
 		}
 		settings.Status.Errors = errStrings
 		settings.Status.State = v1alpha22.ApprovalState_INVALID
-		return eris.New("Errors found while validating Settings. See Settings status for details.")
+		return nil, eris.Errorf("invalid Settings: %v", errStrings)
 	}
-	return nil
+	return settings, nil
 }
 
 // Validate that required fields are set.

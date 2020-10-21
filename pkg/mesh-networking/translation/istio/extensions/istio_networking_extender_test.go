@@ -2,8 +2,8 @@ package extensions_test
 
 import (
 	"context"
-
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
+	mock_extensions "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions/mocks"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -11,7 +11,7 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/extensions/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
-	mock_extensions "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/extensions/mocks"
+	mock_istio_extensions "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/extensions/mocks"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -20,21 +20,23 @@ import (
 	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/extensions"
 )
 
-//go:generate mockgen -destination mocks/mock_extensions_client.go -package mock_extensions github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/extensions/v1alpha1 NetworkingExtensionsClient,NetworkingExtensions_WatchPushNotificationsClient
+//go:generate mockgen -destination mocks/mock_extensions_client.go -package mock_extensions github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/extensions/v1alpha1 NetworkingExtensionsClient
 
 var _ = Describe("IstioNetworkingExtender", func() {
 	var (
-		ctl                *gomock.Controller
-		client             *mock_extensions.MockNetworkingExtensionsClient
-		notificationStream *mock_extensions.MockNetworkingExtensions_WatchPushNotificationsClient
-		ctx                = context.TODO()
-		exts               IstioExtender
+		ctl         *gomock.Controller
+		client      *mock_istio_extensions.MockNetworkingExtensionsClient
+		mockClients extensions.Clients
+		clientset   *mock_extensions.MockClientset
+		ctx         = context.TODO()
+		exts        IstioExtender
 	)
 	BeforeEach(func() {
 		ctl = gomock.NewController(GinkgoT())
-		client = mock_extensions.NewMockNetworkingExtensionsClient(ctl)
-		notificationStream = mock_extensions.NewMockNetworkingExtensions_WatchPushNotificationsClient(ctl)
-		exts = NewIstioExtensions(extensions.Clients{client})
+		client = mock_istio_extensions.NewMockNetworkingExtensionsClient(ctl)
+		clientset = mock_extensions.NewMockClientset(ctl)
+		exts = NewIstioExtensions(clientset)
+		mockClients = extensions.Clients{client}
 	})
 	AfterEach(func() {
 		ctl.Finish()
@@ -85,6 +87,7 @@ var _ = Describe("IstioNetworkingExtender", func() {
 			},
 		})
 
+		clientset.EXPECT().GetClients().Return(mockClients)
 		client.EXPECT().GetTrafficTargetPatches(ctx, &v1alpha1.TrafficTargetPatchRequest{
 			TrafficTarget: &v1alpha1.TrafficTargetResource{
 				Metadata: &tt.ObjectMeta,
@@ -140,6 +143,7 @@ var _ = Describe("IstioNetworkingExtender", func() {
 			},
 		})
 
+		clientset.EXPECT().GetClients().Return(mockClients)
 		client.EXPECT().GetWorkloadPatches(ctx, &v1alpha1.WorkloadPatchRequest{
 			Workload: &v1alpha1.WorkloadResource{
 				Metadata: &tt.ObjectMeta,
@@ -195,6 +199,7 @@ var _ = Describe("IstioNetworkingExtender", func() {
 			},
 		})
 
+		clientset.EXPECT().GetClients().Return(mockClients)
 		client.EXPECT().GetMeshPatches(ctx, &v1alpha1.MeshPatchRequest{
 			Mesh: &v1alpha1.MeshResource{
 				Metadata: &tt.ObjectMeta,

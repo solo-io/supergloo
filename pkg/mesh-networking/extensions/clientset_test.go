@@ -13,7 +13,7 @@ import (
 	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
 )
 
-var _ = Describe("Clients", func() {
+var _ = Describe("Clientset", func() {
 	var (
 		ctl                *gomock.Controller
 		client             *mock_extensions.MockNetworkingExtensionsClient
@@ -36,7 +36,7 @@ var _ = Describe("Clients", func() {
 		notificationStream.EXPECT().Recv().Return(&v1alpha1.PushNotification{}, nil).AnyTimes()
 
 		var counter int
-		err := Clients{client}.WatchPushNotifications(ctx, func() {
+		err := Clients{client}.WatchPushNotifications(ctx, func(*v1alpha1.PushNotification) {
 			counter++
 		})
 		Expect(err).NotTo(HaveOccurred())

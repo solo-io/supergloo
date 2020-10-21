@@ -3,7 +3,6 @@ package istio_test
 import (
 	"fmt"
 
-	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/test/extensions"
@@ -63,10 +62,6 @@ var _ = FDescribe("Istio Networking Extensions", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 			err = manifest.KubeApply(smhNamespace)
-			Expect(err).NotTo(HaveOccurred())
-
-			// restart the networking pod to pick up the settings
-			err = testutils.Kubectl("delete", "pod", "-l", "app=networking", "-n", smhNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
 			// check we can eventually hit the echo server via the gateway

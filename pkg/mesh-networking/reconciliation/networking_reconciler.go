@@ -3,6 +3,8 @@ package reconciliation
 import (
 	"context"
 	"fmt"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/extensions/v1alpha1"
+	skinput "github.com/solo-io/skv2/contrib/pkg/input"
 	"time"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
@@ -49,6 +51,8 @@ type networkingReconciler struct {
 	totalReconciles    int
 	verboseMode        bool
 	settingsRef        v1.ObjectRef
+	extensionClients   extensions.Clientset
+	reconciler         skinput.SingleClusterReconciler
 }
 
 // pushNotificationId is a special identifier for a reconcile event triggered by an extension server pushing a notification
@@ -67,9 +71,9 @@ func Start(
 	history *stats.SnapshotHistory,
 	verboseMode bool,
 	settingsRef v1.ObjectRef,
-	extensionClients extensions.Clients,
+	extensionClients extensions.Clientset,
 ) error {
-	d := &networkingReconciler{
+	r := &networkingReconciler{
 		ctx:                ctx,
 		builder:            builder,
 		applier:            applier,
@@ -80,6 +84,7 @@ func Start(
 		history:            history,
 		verboseMode:        verboseMode,
 		settingsRef:        settingsRef,
+		extensionClients:   extensionClients,
 	}
 
 	filterNetworkingEvents := predicate.SimplePredicate{
@@ -95,20 +100,12 @@ func Start(
 		return err
 	}
 
-	reconciler, err := input.RegisterSingleClusterReconciler(ctx, mgr, d.reconcile, time.Second/2, reconcile.Options{}, filterNetworkingEvents)
+	reconciler, err := input.RegisterSingleClusterReconciler(ctx, mgr, r.reconcile, time.Second/2, reconcile.Options{}, filterNetworkingEvents)
 	if err != nil {
 		return err
 	}
 
-	// start watch on extension notification endpoints
-	if err := extensionClients.WatchPushNotifications(ctx, func() {
-		_, err := reconciler.ReconcileGeneric(pushNotificationId)
-		if err != nil {
-			contextutils.LoggerFrom(ctx).Errorf("failed to reconcile push notification")
-		}
-	}); err != nil {
-		return err
-	}
+	r.reconciler = reconciler
 
 	return nil
 }
@@ -142,8 +139,23 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	}
 
 	// Validate that the reference Settings object exists and has all required fields specified.
-	if err := settings.Validate(ctx, inputSnap); err != nil {
+	settings, err := settings.Validate(ctx, inputSnap)
+	if err != nil {
 		return false, err
+	}
+
+	extensionsUpdated, err := r.extensionClients.ConfigureServers(settings.Spec.NetworkingExtensionServers)
+	if err != nil {
+		return false, err
+	}
+	if extensionsUpdated {
+		// start watching push notifications for new set of extensions
+		if err := r.extensionClients.WatchPushNotifications(func(_ *v1alpha1.PushNotification) {
+			// ignore error because underlying impl should never error here
+			_, _ = r.reconciler.ReconcileGeneric(pushNotificationId)
+		}); err != nil {
+			return false, err
+		}
 	}
 
 	r.applier.Apply(ctx, inputSnap)

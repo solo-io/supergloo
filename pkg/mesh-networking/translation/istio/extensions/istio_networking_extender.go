@@ -30,15 +30,15 @@ type IstioExtender interface {
 type istioExtensions struct {
 	// the user should provide an optional list of connection info for extension servers.
 	// we create a client for each server and apply them in the order they were specified
-	clients extensions.Clients
+	clientset extensions.Clientset
 }
 
-func NewIstioExtensions(clients extensions.Clients) *istioExtensions {
-	return &istioExtensions{clients: clients}
+func NewIstioExtensions(clientset extensions.Clientset) *istioExtensions {
+	return &istioExtensions{clientset: clientset}
 }
 
 func (i *istioExtensions) PatchTrafficTargetOutputs(ctx context.Context, trafficTarget *v1alpha2.TrafficTarget, trafficTargetOutputs istio.Builder) error {
-	for _, exClient := range i.clients {
+	for _, exClient := range i.clientset.GetClients() {
 		patches, err := exClient.GetTrafficTargetPatches(ctx, &v1alpha1.TrafficTargetPatchRequest{
 			TrafficTarget: &v1alpha1.TrafficTargetResource{
 				Metadata: &trafficTarget.ObjectMeta,
@@ -56,7 +56,7 @@ func (i *istioExtensions) PatchTrafficTargetOutputs(ctx context.Context, traffic
 }
 
 func (i *istioExtensions) PatchWorkloadOutputs(ctx context.Context, workload *v1alpha2.Workload, workloadOutputs istio.Builder) error {
-	for _, exClient := range i.clients {
+	for _, exClient := range i.clientset.GetClients() {
 		patches, err := exClient.GetWorkloadPatches(ctx, &v1alpha1.WorkloadPatchRequest{
 			Workload: &v1alpha1.WorkloadResource{
 				Metadata: &workload.ObjectMeta,
@@ -74,7 +74,7 @@ func (i *istioExtensions) PatchWorkloadOutputs(ctx context.Context, workload *v1
 }
 
 func (i *istioExtensions) PatchMeshOutputs(ctx context.Context, mesh *v1alpha2.Mesh, meshOutputs istio.Builder) error {
-	for _, exClient := range i.clients {
+	for _, exClient := range i.clientset.GetClients() {
 		patches, err := exClient.GetMeshPatches(ctx, &v1alpha1.MeshPatchRequest{
 			Mesh: &v1alpha1.MeshResource{
 				Metadata: &mesh.ObjectMeta,

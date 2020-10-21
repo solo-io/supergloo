@@ -4,7 +4,6 @@ import (
 	"context"
 
 	certissuerinput "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/issuer/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
 	certissuerreconciliation "github.com/solo-io/service-mesh-hub/pkg/certificates/issuer/reconciliation"
 	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply"
@@ -14,7 +13,6 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/osm"
-	"github.com/solo-io/skv2/pkg/ezkube"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
@@ -33,25 +31,13 @@ func Start(ctx context.Context, opts bootstrap.Options) error {
 func startReconciler(
 	parameters bootstrap.StartParameters,
 ) error {
-	settings, err := v1alpha2.NewSettingsClient(parameters.MasterManager.GetClient()).GetSettings(
-		parameters.Ctx,
-		ezkube.MakeClientObjectKey(&parameters.SettingsRef),
-	)
-	if err != nil {
-		return err
-	}
-	extensionClients, err := extensions.NewClientsFromSettings(
-		parameters.Ctx,
-		settings.Spec.NetworkingExtensionServers,
-	)
-	if err != nil {
-		return err
-	}
+
+	extensionClientset := extensions.NewClientset(parameters.Ctx)
 
 	snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager)
 	reporter := reporting.NewPanickingReporter(parameters.Ctx)
 	translator := translation.NewTranslator(
-		istio.NewIstioTranslator(extensionClients),
+		istio.NewIstioTranslator(extensionClientset),
 		appmesh.NewAppmeshTranslator(),
 		osm.NewOSMTranslator(),
 	)
@@ -75,7 +61,7 @@ func startReconciler(
 		parameters.SnapshotHistory,
 		parameters.VerboseMode,
 		parameters.SettingsRef,
-		extensionClients,
+		extensionClientset,
 	)
 }
 
