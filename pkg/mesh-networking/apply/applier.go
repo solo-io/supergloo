@@ -161,7 +161,7 @@ func setWorkloadsForTrafficPolicies(
 	for _, trafficPolicy := range trafficPolicies {
 		// get the selected traffic targets on the policy
 		matchingTrafficTargets := trafficTargets.List(func(trafficTarget *discoveryv1alpha2.TrafficTarget) bool {
-			return trafficPolicy.Status.GetTrafficTargets()[sets.Key(trafficTarget.GetObjectMeta())] != nil
+			return trafficPolicy.Status.GetTrafficTargets()[sets.Key(trafficTarget.GetObjectMeta())] == nil
 		})
 		// get all the mesh and virtual mesh refs from those traffic targets
 		meshMap, virtualMeshMap := getMeshesFromTrafficTargets(ctx, matchingTrafficTargets, meshes)
@@ -195,7 +195,7 @@ func setWorkloadsForAccessPolicies(
 	for _, accessPolicy := range accessPolicies {
 		// get the selected traffic targets on the policy
 		matchingTrafficTargets := trafficTargets.List(func(trafficTarget *discoveryv1alpha2.TrafficTarget) bool {
-			return accessPolicy.Status.GetTrafficTargets()[sets.Key(trafficTarget.GetObjectMeta())] != nil
+			return accessPolicy.Status.GetTrafficTargets()[sets.Key(trafficTarget.GetObjectMeta())] == nil
 		})
 		// get all the mesh and virtual mesh refs from those traffic targets
 		meshMap, virtualMeshMap := getMeshesFromTrafficTargets(ctx, matchingTrafficTargets, meshes)
@@ -674,6 +674,9 @@ func getMeshesFromTrafficTargets(ctx context.Context, trafficTargets []*discover
 	virtualMeshMap := make(map[string]bool)
 	for _, trafficTarget := range trafficTargets {
 		meshRef := trafficTarget.Spec.GetMesh()
+		if meshRef == nil {
+			continue
+		}
 		meshKey := sets.Key(meshRef)
 		if !meshMap[meshKey] {
 			meshMap[meshKey] = true
