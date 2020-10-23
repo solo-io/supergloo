@@ -61,7 +61,7 @@ require (
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/external-apis v0.1.1
 	github.com/solo-io/go-utils v0.18.1
-	github.com/solo-io/skv2 v0.13.3-0.20201023160911-e8b336b806c1
+	github.com/solo-io/skv2 v0.13.3
 	github.com/solo-io/solo-kit v0.14.0
 	github.com/spf13/afero v1.3.4
 	github.com/spf13/cobra v1.0.0
