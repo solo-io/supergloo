@@ -41,7 +41,7 @@ jobs:
     - name: Deploy to Firebase
       uses: w9jds/firebase-action@master
       with:
-        args: deploy --only hosting:service-mesh-hub
+        args: deploy --only hosting
       env:
         PROJECT_ID: solo-corp
         PROJECT_PATH: ./ci/docs-site/
