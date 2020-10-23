@@ -44,13 +44,13 @@ func (t *appmeshTranslator) Translate(
 ) {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("appmesh-translator-%v", t.totalTranslates))
 
-	//TODO: implement AppMesh translation
-
 	for _, trafficTarget := range in.TrafficTargets().List() {
 		trafficTarget := trafficTarget
 
 		t.trafficTargetTranslator.Translate(ctx, in, trafficTarget, appmeshOutputs, reporter)
 	}
+
+	// TODO implement mesh translation (compile relevant clusters : )))) )
 
 	t.totalTranslates++
 }

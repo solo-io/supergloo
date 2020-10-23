@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
+	v1beta2sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
@@ -17,6 +18,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 //go:generate mockgen -source ./appmesh_traffic_target_translator.go -destination mocks/appmesh_traffic_target_translator.go
@@ -63,10 +65,18 @@ func (t *translator) Translate(
 	for _, tp := range trafficTarget.Status.GetAppliedTrafficPolicies() {
 		report(tp, trafficTarget, reporter)
 
+		// TODO joekelley
+		_ := getVirtualNodeForTrafficTarget(trafficTarget, nil)
+
 		virtualService, virtualRouter := translate(trafficTarget)
 		outputs.AddVirtualServices(virtualService)
 		outputs.AddVirtualRouters(virtualRouter)
 	}
+}
+
+func getVirtualNodeForTrafficTarget(trafficTarget *discoveryv1alpha2.TrafficTarget, virtualNodes v1beta2sets.VirtualNodeSet) *v1beta2.VirtualNode {
+	// TODO joekelley
+	return nil
 }
 
 func translate(trafficTarget *discoveryv1alpha2.TrafficTarget) (*v1beta2.VirtualService, *v1beta2.VirtualRouter) {
@@ -74,6 +84,8 @@ func translate(trafficTarget *discoveryv1alpha2.TrafficTarget) (*v1beta2.Virtual
 		trafficTarget.Spec.GetKubeService().Ref,
 		trafficTarget.Annotations,
 	)
+
+	vr := getVirtualRouter(meta, trafficTarget)
 
 	vs := &v1beta2.VirtualService{
 		ObjectMeta: meta,
@@ -88,15 +100,56 @@ func translate(trafficTarget *discoveryv1alpha2.TrafficTarget) (*v1beta2.Virtual
 		},
 	}
 
-	vr := &v1beta2.VirtualRouter{
+	return vs, vr
+}
+
+func getVirtualService(meta metav1.ObjectMeta, trafficTarget *discoveryv1alpha2.TrafficTarget, virtualRouter *v1beta2.VirtualRouter) *v1beta2.VirtualService {
+	var provider *v1beta2.VirtualServiceProvider
+	if virtualRouter != nil {
+		provider = &v1beta2.VirtualServiceProvider{
+			VirtualRouter: &v1beta2.VirtualRouterServiceProvider{
+				VirtualRouterRef: &v1beta2.VirtualRouterReference{
+					Namespace: &meta.Namespace,
+					Name:      meta.Name,
+				},
+			},
+		}
+	} else {
+		provider = &v1beta2.VirtualServiceProvider{
+			VirtualRouter: &v1beta2.VirtualRouterServiceProvider{
+				VirtualRouterRef: &v1beta2.VirtualRouterReference{
+					Namespace: &meta.Namespace,
+					Name:      meta.Name,
+				},
+			},
+		}
+	}
+
+	// TODO we need to provide a deterministic, globally unique AWS Name.
+	awsName := fmt.Sprintf("%s.%s", meta.Name, meta.Namespace)
+	return &v1beta2.VirtualService{
+		ObjectMeta: meta,
+		Spec: v1beta2.VirtualServiceSpec{
+			AWSName:  &awsName,
+			Provider: provider,
+		},
+	}
+}
+
+func getVirtualRouter(meta metav1.ObjectMeta, trafficTarget *discoveryv1alpha2.TrafficTarget) *v1beta2.VirtualRouter {
+	routes := getRoutes(trafficTarget)
+	if len(routes) == 0 {
+		// There are no routes, so we don't need to create a virtual router
+		return nil
+	}
+
+	return &v1beta2.VirtualRouter{
 		ObjectMeta: meta,
 		Spec: v1beta2.VirtualRouterSpec{
 			Listeners: getVirtualRouterListeners(trafficTarget),
-			Routes:    getRoutes(trafficTarget),
+			Routes:    routes,
 		},
 	}
-
-	return vs, vr
 }
 
 func getVirtualRouterListeners(trafficTarget *discoveryv1alpha2.TrafficTarget) []v1beta2.VirtualRouterListener {
@@ -200,6 +253,7 @@ func getTrafficPolicyRoutes(trafficPolicyRef *v1.ObjectRef, trafficPolicy *v1alp
 
 		var weightedTargets []v1beta2.WeightedTarget
 		for _, destination := range trafficPolicy.GetTrafficShift().GetDestinations() {
+			// TODO joekelley determine weighted target destinations here; should we use the nodes, or virtual services?
 			weightedTargets = append(weightedTargets, v1beta2.WeightedTarget{
 				VirtualNodeRef: &v1beta2.VirtualNodeReference{
 					Namespace: nil,
@@ -225,10 +279,11 @@ func getTrafficPolicyRoutes(trafficPolicyRef *v1.ObjectRef, trafficPolicy *v1alp
 			perRetryTimeout.Unit = v1beta2.DurationUnitS
 		}
 
+		// Use all supported HTTP and TCP retry events.
+		// TODO joekelley extract constants or find them in aws codebase
 		return &v1beta2.HTTPRetryPolicy{
 			HTTPRetryEvents: []v1beta2.HTTPRetryPolicyEvent{"server-error", "gateway-error", "client-error", "stream-error"},
-			// TODO joekelley TCPRetryEvents are currently unsupported
-			TCPRetryEvents:  nil,
+			TCPRetryEvents:  []v1beta2.TCPRetryPolicyEvent{"connection-error"},
 			MaxRetries:      int64(trafficPolicy.Retries.Attempts),
 			PerRetryTimeout: perRetryTimeout,
 		}
@@ -293,6 +348,7 @@ func report(
 		return fmt.Sprintf("Service Mesh Hub does not support %s for AppMesh", feature)
 	}
 
+	// TODO joekelley add mTLS here
 	if tp.GetSpec().GetCorsPolicy() != nil {
 		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, tp.GetRef(), errors.NewUnsupportedFeatureError(
 			tp.GetRef(),
@@ -321,13 +377,6 @@ func report(
 			getMessage("Mirror"),
 		))
 	}
-	if tp.GetSpec().GetRetries() != nil {
-		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, tp.GetRef(), errors.NewUnsupportedFeatureError(
-			tp.GetRef(),
-			"Retries",
-			getMessage("Retries"),
-		))
-	}
 	if tp.GetSpec().GetRequestTimeout() != nil {
 		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, tp.GetRef(), errors.NewUnsupportedFeatureError(
 			tp.GetRef(),
@@ -335,6 +384,7 @@ func report(
 			getMessage("RequestTimeout"),
 		))
 	}
+	// TODO joekelley is this true
 	if tp.GetSpec().GetSourceSelector() != nil {
 		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, tp.GetRef(), errors.NewUnsupportedFeatureError(
 			tp.GetRef(),
