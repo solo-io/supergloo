@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Add the local and (if applicable) remote fully qualified domain names to the traffic target status.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1035

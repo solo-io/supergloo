@@ -4,13 +4,13 @@ import (
 	"context"
 	"sort"
 
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply/configtarget"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
-
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply/configtarget"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -113,9 +113,23 @@ func validateConfigTargetReferences(input input.Snapshot) {
 
 // Apply networking configuration policies to relevant discovery entities.
 func applyPoliciesToConfigTargets(input input.Snapshot) {
-	for _, trafficTarget := range input.TrafficTargets().List() {
-		trafficTarget.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), trafficTarget)
-		trafficTarget.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), trafficTarget)
+	trafficTargetList := input.TrafficTargets().List()
+	if len(trafficTargetList) > 0 {
+		meshToVirtualMesh := map[string]string{}
+		for _, vMesh := range input.VirtualMeshes().List() {
+			if vMesh.Spec.GetFederation().GetPermissive() != nil {
+				for _, mesh := range vMesh.Spec.GetMeshes() {
+					meshToVirtualMesh[sets.Key(mesh)] = sets.Key(vMesh)
+				}
+			}
+		}
+		clusterDomains := hostutils.NewClusterDomainRegistry(input.KubernetesClusters())
+
+		for _, trafficTarget := range trafficTargetList {
+			trafficTarget.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), trafficTarget)
+			trafficTarget.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), trafficTarget)
+			trafficTarget.Status.Fqdns = getFqdns(trafficTarget, clusterDomains, meshToVirtualMesh)
+		}
 	}
 
 	for _, mesh := range input.Meshes().List() {
@@ -633,4 +647,12 @@ func getAppliedFailoverServices(
 		}
 	}
 	return appliedFailoverServices
+}
+
+func getFqdns(target *discoveryv1alpha2.TrafficTarget, clusterDomains hostutils.ClusterDomainRegistry, meshesToVirtualMeshes map[string]string) []string {
+	hosts := []string{clusterDomains.GetServiceLocalFQDN(target.Spec.GetKubeService().GetRef())}
+	if _, ok := meshesToVirtualMeshes[sets.Key(target.Spec.GetMesh())]; ok{
+		hosts = append(hosts, clusterDomains.GetServiceGlobalFQDN(target.Spec.GetKubeService().GetRef()))
+	}
+	return hosts
 }

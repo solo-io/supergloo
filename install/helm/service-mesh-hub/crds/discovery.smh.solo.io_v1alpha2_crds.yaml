@@ -760,6 +760,11 @@ spec:
                     type: object
                 type: object
               type: array
+            fqdns:
+              description: the local and (if applicable) remote fully qualified domain names
+              items:
+                type: string
+              type: array
             observedGeneration:
               description: |-
                 The most recent generation observed in the the TrafficPolicy metadata.
