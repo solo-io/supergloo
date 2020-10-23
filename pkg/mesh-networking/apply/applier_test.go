@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
@@ -25,6 +27,16 @@ var _ = Describe("Applier", func() {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "ms1",
 					Namespace: "ns",
+				},
+				Spec: discoveryv1alpha2.TrafficTargetSpec{
+					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+							Ref: &v1.ClusterObjectRef{
+								Name:      "svc-name",
+								Namespace: "svc-namespace",
+							},
+						},
+					},
 				},
 			}
 			workload = &discoveryv1alpha2.Workload{
@@ -92,6 +104,7 @@ var _ = Describe("Applier", func() {
 			Expect(trafficTarget.Status.AppliedTrafficPolicies[0].Spec).To(Equal(&trafficPolicy1.Spec))
 			Expect(trafficTarget.Status.AppliedTrafficPolicies[1].Ref).To(Equal(ezkube.MakeObjectRef(trafficPolicy2)))
 			Expect(trafficTarget.Status.AppliedTrafficPolicies[1].Spec).To(Equal(&trafficPolicy2.Spec))
+			Expect(trafficTarget.Status.Fqdns).To(Equal([]string{"svc-name.svc-namespace.svc.cluster.local"}))
 		})
 	})
 	Context("invalid traffic policies", func() {

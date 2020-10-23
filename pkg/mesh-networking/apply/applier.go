@@ -650,9 +650,12 @@ func getAppliedFailoverServices(
 }
 
 func getFqdns(target *discoveryv1alpha2.TrafficTarget, clusterDomains hostutils.ClusterDomainRegistry, meshesToVirtualMeshes map[string]string) []string {
-	hosts := []string{clusterDomains.GetServiceLocalFQDN(target.Spec.GetKubeService().GetRef())}
-	if _, ok := meshesToVirtualMeshes[sets.Key(target.Spec.GetMesh())]; ok{
-		hosts = append(hosts, clusterDomains.GetServiceGlobalFQDN(target.Spec.GetKubeService().GetRef()))
+	if target.Spec.GetKubeService() != nil {
+		hosts := []string{clusterDomains.GetServiceLocalFQDN(target.Spec.GetKubeService().GetRef())}
+		if _, ok := meshesToVirtualMeshes[sets.Key(target.Spec.GetMesh())]; ok {
+			hosts = append(hosts, clusterDomains.GetServiceGlobalFQDN(target.Spec.GetKubeService().GetRef()))
+		}
+		return hosts
 	}
-	return hosts
+	return []string{}
 }
