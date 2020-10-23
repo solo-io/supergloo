@@ -235,6 +235,7 @@ run-tests:
 		-ldflags=$(LDFLAGS) \
 		-gcflags=$(GCFLAGS) \
 		-progress \
+		-race \
 		-compilers=4 \
 		-skipPackage=$(SKIP_PACKAGES) $(TEST_PKG)
 

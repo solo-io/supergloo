@@ -3,6 +3,7 @@ package grpc_test
 import (
 	"context"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/hashicorp/go-multierror"
@@ -16,6 +17,7 @@ import (
 //go:generate protoc -I=. --go_out=plugins=grpc:. test.proto
 
 var req = &test_api.Request{}
+var lock = sync.Mutex{} // used to prevent race during test
 
 // the purpose of this test is to verify that gRPC options can handle
 // reconnecting the client to a disconnected server
@@ -51,7 +53,9 @@ var _ = Describe("Dial Integration Test", func() {
 		}()
 
 		// expect client to retry and succeed
+		lock.Lock()
 		_, err = cli.Invoke(ctx, req)
+		lock.Unlock()
 		Expect(err).NotTo(HaveOccurred())
 
 	})
@@ -102,7 +106,9 @@ func (s *serverImpl) GoListen(ctx context.Context, addr string) error {
 		if err != nil {
 			return err
 		}
+		lock.Lock()
 		_, err = cli.Invoke(ctx, req)
+		lock.Unlock()
 		return err
 	}
 

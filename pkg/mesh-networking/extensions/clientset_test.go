@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"go.uber.org/atomic"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -35,24 +37,24 @@ var _ = Describe("Clientset", func() {
 
 		notificationStream.EXPECT().Recv().Return(&v1alpha1.PushNotification{}, nil).AnyTimes()
 
-		var counter int
+		counter := atomic.Int32{}
 		err := Clients{client}.WatchPushNotifications(ctx, func(*v1alpha1.PushNotification) {
-			counter++
+			counter.Inc()
 		})
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(func() int {
-			return counter
+			return int(counter.Load())
 		}).Should(BeNumerically(">", 50))
 
 		// expect cancelled context to stop calling push func
 		cancel()
 		time.Sleep(time.Millisecond)
 
-		lastVal := counter
+		lastVal := int(counter.Load())
 
 		Consistently(func() int {
-			return counter
+			return int(counter.Load())
 		}).Should(Equal(lastVal))
 	})
 })

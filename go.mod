@@ -66,6 +66,7 @@ require (
 	github.com/spf13/afero v1.3.4
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
+	go.uber.org/atomic v1.6.0
 	go.uber.org/zap v1.15.0
 	golang.org/x/tools v0.0.0-20200928201943-a0ef9b62deab // indirect
 	google.golang.org/grpc v1.31.1
