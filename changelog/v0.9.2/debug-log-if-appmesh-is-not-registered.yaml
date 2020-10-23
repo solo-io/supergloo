@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1024
+    description: Only write debug logs if App Mesh CRDs are not registered, rather than warn.
