@@ -14,6 +14,7 @@ spec:
     listKind: TrafficPolicyList
     plural: trafficpolicies
     singular: trafficpolicy
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
@@ -596,6 +597,7 @@ spec:
     listKind: AccessPolicyList
     plural: accesspolicies
     singular: accesspolicy
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
@@ -835,6 +837,7 @@ spec:
     listKind: VirtualMeshList
     plural: virtualmeshes
     singular: virtualmesh
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
@@ -1048,6 +1051,7 @@ spec:
     listKind: FailoverServiceList
     plural: failoverservices
     singular: failoverservice
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}

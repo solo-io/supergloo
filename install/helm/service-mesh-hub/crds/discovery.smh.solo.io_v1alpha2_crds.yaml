@@ -14,6 +14,7 @@ spec:
     listKind: TrafficTargetList
     plural: traffictargets
     singular: traffictarget
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
@@ -789,6 +790,7 @@ spec:
     listKind: WorkloadList
     plural: workloads
     singular: workload
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
@@ -899,6 +901,7 @@ spec:
     listKind: MeshList
     plural: meshes
     singular: mesh
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
