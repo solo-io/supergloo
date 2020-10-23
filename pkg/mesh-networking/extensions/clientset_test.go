@@ -31,7 +31,7 @@ var _ = Describe("Clientset", func() {
 	It("watches notifications and calls a push function on receipt of notification", func() {
 		ctx, cancel := context.WithCancel(ctx)
 
-		client.EXPECT().WatchPushNotifications(ctx, &v1alpha1.WatchPushNotificationsRequest{}).Return(notificationStream, nil)
+		client.EXPECT().WatchPushNotifications(ctx, &v1alpha1.WatchPushNotificationsRequest{}).Return(notificationStream, nil).AnyTimes()
 
 		notificationStream.EXPECT().Recv().Return(&v1alpha1.PushNotification{}, nil).AnyTimes()
 

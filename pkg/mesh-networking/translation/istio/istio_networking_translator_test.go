@@ -26,7 +26,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		ctrl                        *gomock.Controller
 		ctx                         context.Context
 		ctxWithValue                context.Context
-		mockIstioExtensions         *mock_extensions.MockIstioExtensions
+		mockIstioExtender           *mock_extensions.MockIstioExtender
 		mockReporter                *mock_reporting.MockReporter
 		mockIstioOutputs            *mock_istio_output.MockBuilder
 		mockLocalOutputs            *mock_local_output.MockBuilder
@@ -40,14 +40,14 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		ctxWithValue = contextutils.WithLogger(context.TODO(), "istio-translator-0")
-		mockIstioExtensions = mock_extensions.NewMockIstioExtensions(ctrl)
+		mockIstioExtender = mock_extensions.NewMockIstioExtender(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockTrafficTargetTranslator = mock_traffictarget.NewMockTranslator(ctrl)
 		mockMeshTranslator = mock_mesh.NewMockTranslator(ctrl)
 		mockDependencyFactory = mock_istio.NewMockDependencyFactory(ctrl)
 		mockIstioOutputs = mock_istio_output.NewMockBuilder(ctrl)
 		mockLocalOutputs = mock_local_output.NewMockBuilder(ctrl)
-		translator = &istioTranslator{dependencies: mockDependencyFactory, extensions: mockIstioExtensions}
+		translator = &istioTranslator{dependencies: mockDependencyFactory, extensions: mockIstioExtender}
 	})
 
 	AfterEach(func() {
@@ -117,12 +117,12 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 			mockTrafficTargetTranslator.
 				EXPECT().
 				Translate(in, trafficTarget, istioOutputsMatcher, mockReporter)
-			mockIstioExtensions.EXPECT().PatchTrafficTargetOutputs(contextMatcher, trafficTarget, istioOutputsMatcher)
+			mockIstioExtender.EXPECT().PatchTrafficTargetOutputs(contextMatcher, trafficTarget, istioOutputsMatcher)
 			mockIstioOutputs.EXPECT().Merge(istioOutputsMatcher)
 		}
 
 		for _, workload := range in.Workloads().List() {
-			mockIstioExtensions.EXPECT().PatchWorkloadOutputs(contextMatcher, workload, istioOutputsMatcher)
+			mockIstioExtender.EXPECT().PatchWorkloadOutputs(contextMatcher, workload, istioOutputsMatcher)
 			mockIstioOutputs.EXPECT().Merge(istioOutputsMatcher)
 		}
 
@@ -134,7 +134,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 			mockMeshTranslator.
 				EXPECT().
 				Translate(in, mesh, istioOutputsMatcher, mockLocalOutputs, mockReporter)
-			mockIstioExtensions.EXPECT().PatchMeshOutputs(contextMatcher, mesh, istioOutputsMatcher)
+			mockIstioExtender.EXPECT().PatchMeshOutputs(contextMatcher, mesh, istioOutputsMatcher)
 			mockIstioOutputs.EXPECT().Merge(istioOutputsMatcher)
 		}
 

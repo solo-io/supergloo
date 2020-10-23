@@ -21,7 +21,7 @@ import (
 	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/extensions"
 )
 
-//go:generate mockgen -destination mocks/mock_extensions_client.go -package mock_extensions github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/extensions/v1alpha1 NetworkingExtensionsClient
+//go:generate mockgen -destination mocks/mock_extensions_client.go -package mock_extensions github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/extensions/v1alpha1 NetworkingExtensionsClient,NetworkingExtensions_WatchPushNotificationsClient
 
 var _ = Describe("IstioNetworkingExtender", func() {
 	var (
@@ -91,7 +91,7 @@ var _ = Describe("IstioNetworkingExtender", func() {
 		clientset.EXPECT().GetClients().Return(mockClients)
 		client.EXPECT().GetTrafficTargetPatches(ctx, &v1alpha1.TrafficTargetPatchRequest{
 			TrafficTarget: &v1alpha1.TrafficTargetResource{
-				Metadata: &tt.ObjectMeta,
+				Metadata: extensions.ObjectMetaToProto(tt.ObjectMeta),
 				Spec:     &tt.Spec,
 				Status:   &tt.Status,
 			},
@@ -147,7 +147,7 @@ var _ = Describe("IstioNetworkingExtender", func() {
 		clientset.EXPECT().GetClients().Return(mockClients)
 		client.EXPECT().GetWorkloadPatches(ctx, &v1alpha1.WorkloadPatchRequest{
 			Workload: &v1alpha1.WorkloadResource{
-				Metadata: &tt.ObjectMeta,
+				Metadata: extensions.ObjectMetaToProto(tt.ObjectMeta),
 				Spec:     &tt.Spec,
 				Status:   &tt.Status,
 			},
@@ -203,7 +203,7 @@ var _ = Describe("IstioNetworkingExtender", func() {
 		clientset.EXPECT().GetClients().Return(mockClients)
 		client.EXPECT().GetMeshPatches(ctx, &v1alpha1.MeshPatchRequest{
 			Mesh: &v1alpha1.MeshResource{
-				Metadata: &tt.ObjectMeta,
+				Metadata: extensions.ObjectMetaToProto(tt.ObjectMeta),
 				Spec:     &tt.Spec,
 				Status:   &tt.Status,
 			},
