@@ -475,6 +475,20 @@ func (mr *MockBuilderMockRecorder) AddCluster(cluster interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCluster", reflect.TypeOf((*MockBuilder)(nil).AddCluster), cluster)
 }
 
+// Clusters mocks base method
+func (m *MockBuilder) Clusters() []string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Clusters")
+	ret0, _ := ret[0].([]string)
+	return ret0
+}
+
+// Clusters indicates an expected call of Clusters
+func (mr *MockBuilderMockRecorder) Clusters() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clusters", reflect.TypeOf((*MockBuilder)(nil).Clusters))
+}
+
 // Merge mocks base method
 func (m *MockBuilder) Merge(other smi.Builder) {
 	m.ctrl.T.Helper()

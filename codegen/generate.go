@@ -175,12 +175,6 @@ func makeSmhCommand(chartOnly bool) codegen.Command {
 		"common-protos/google/api/field_behavior.proto",
 	}
 
-	anyvendorImports.External["k8s.io/apimachinery"] = []string{
-		"pkg/apis/meta/v1/generated.proto",
-		"pkg/runtime/generated.proto",
-		"pkg/runtime/schema/generated.proto",
-	}
-
 	if chartOnly {
 		return codegen.Command{
 			AppName:      appName,

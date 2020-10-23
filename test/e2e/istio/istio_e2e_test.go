@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/solo-io/service-mesh-hub/test/extensions"
+
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 
 	. "github.com/onsi/ginkgo"
@@ -36,6 +38,10 @@ var (
 
 	curlReviews = func() string {
 		return curlFromProductpage("http://reviews:9080/reviews/1")
+	}
+
+	curlHelloServer = func() string {
+		return curlFromProductpage(fmt.Sprintf("http://%v:%v/", extensions.HelloServerHostname, extensions.HelloServerPort))
 	}
 
 	curlRemoteReviews = func() string {

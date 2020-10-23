@@ -52,7 +52,7 @@ Configure global settings and defaults.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | mtls | networking.smh.solo.io.TrafficPolicySpec.MTLS |  | Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence) |
-| networkingExtensionServers | []settings.smh.solo.io.NetworkingExtensionsServer | repeated | Configure SMH Networking to communicate with one or more external gRPC NetworkingExtensions servers. Note that the Networking pod should be restarted if this field is modified, as changes are only processed at boot time. |
+| networkingExtensionServers | []settings.smh.solo.io.NetworkingExtensionsServer | repeated | Configure SMH Networking to communicate with one or more external gRPC NetworkingExtensions servers. |
 
 
 

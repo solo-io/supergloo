@@ -41,7 +41,7 @@ func (i *istioExtensions) PatchTrafficTargetOutputs(ctx context.Context, traffic
 	for _, exClient := range i.clientset.GetClients() {
 		patches, err := exClient.GetTrafficTargetPatches(ctx, &v1alpha1.TrafficTargetPatchRequest{
 			TrafficTarget: &v1alpha1.TrafficTargetResource{
-				Metadata: &trafficTarget.ObjectMeta,
+				Metadata: extensions.ObjectMetaToProto(trafficTarget.ObjectMeta),
 				Spec:     &trafficTarget.Spec,
 				Status:   &trafficTarget.Status,
 			},
@@ -59,7 +59,7 @@ func (i *istioExtensions) PatchWorkloadOutputs(ctx context.Context, workload *v1
 	for _, exClient := range i.clientset.GetClients() {
 		patches, err := exClient.GetWorkloadPatches(ctx, &v1alpha1.WorkloadPatchRequest{
 			Workload: &v1alpha1.WorkloadResource{
-				Metadata: &workload.ObjectMeta,
+				Metadata: extensions.ObjectMetaToProto(workload.ObjectMeta),
 				Spec:     &workload.Spec,
 				Status:   &workload.Status,
 			},
@@ -77,7 +77,7 @@ func (i *istioExtensions) PatchMeshOutputs(ctx context.Context, mesh *v1alpha2.M
 	for _, exClient := range i.clientset.GetClients() {
 		patches, err := exClient.GetMeshPatches(ctx, &v1alpha1.MeshPatchRequest{
 			Mesh: &v1alpha1.MeshResource{
-				Metadata: &mesh.ObjectMeta,
+				Metadata: extensions.ObjectMetaToProto(mesh.ObjectMeta),
 				Spec:     &mesh.Spec,
 				Status:   &mesh.Status,
 			},
@@ -102,7 +102,7 @@ func MakeGeneratedResources(outputs istio.Builder) []*v1alpha1.GeneratedResource
 	for _, resource := range outputs.GetDestinationRules().List() {
 		resource := resource // pike
 		generatedResources = append(generatedResources, &v1alpha1.GeneratedResource{
-			Metadata: &resource.ObjectMeta,
+			Metadata: extensions.ObjectMetaToProto(resource.ObjectMeta),
 			Type:     &v1alpha1.GeneratedResource_DestinationRule{DestinationRule: &resource.Spec},
 		})
 	}
@@ -110,7 +110,7 @@ func MakeGeneratedResources(outputs istio.Builder) []*v1alpha1.GeneratedResource
 	for _, resource := range outputs.GetEnvoyFilters().List() {
 		resource := resource // pike
 		generatedResources = append(generatedResources, &v1alpha1.GeneratedResource{
-			Metadata: &resource.ObjectMeta,
+			Metadata: extensions.ObjectMetaToProto(resource.ObjectMeta),
 			Type:     &v1alpha1.GeneratedResource_EnvoyFilter{EnvoyFilter: &resource.Spec},
 		})
 	}
@@ -118,7 +118,7 @@ func MakeGeneratedResources(outputs istio.Builder) []*v1alpha1.GeneratedResource
 	for _, resource := range outputs.GetServiceEntries().List() {
 		resource := resource // pike
 		generatedResources = append(generatedResources, &v1alpha1.GeneratedResource{
-			Metadata: &resource.ObjectMeta,
+			Metadata: extensions.ObjectMetaToProto(resource.ObjectMeta),
 			Type:     &v1alpha1.GeneratedResource_ServiceEntry{ServiceEntry: &resource.Spec},
 		})
 	}
@@ -126,7 +126,7 @@ func MakeGeneratedResources(outputs istio.Builder) []*v1alpha1.GeneratedResource
 	for _, resource := range outputs.GetVirtualServices().List() {
 		resource := resource // pike
 		generatedResources = append(generatedResources, &v1alpha1.GeneratedResource{
-			Metadata: &resource.ObjectMeta,
+			Metadata: extensions.ObjectMetaToProto(resource.ObjectMeta),
 			Type:     &v1alpha1.GeneratedResource_VirtualService{VirtualService: &resource.Spec},
 		})
 	}
@@ -142,22 +142,22 @@ func MakeOutputs(ctx context.Context, name string, generated []*v1alpha1.Generat
 		switch resourceType := resource.Type.(type) {
 		case *v1alpha1.GeneratedResource_DestinationRule:
 			outputs.AddDestinationRules(&istionetworkingv1alpha3.DestinationRule{
-				ObjectMeta: *resource.Metadata,
+				ObjectMeta: extensions.ObjectMetaFromProto(resource.Metadata),
 				Spec:       *resourceType.DestinationRule,
 			})
 		case *v1alpha1.GeneratedResource_EnvoyFilter:
 			outputs.AddEnvoyFilters(&istionetworkingv1alpha3.EnvoyFilter{
-				ObjectMeta: *resource.Metadata,
+				ObjectMeta: extensions.ObjectMetaFromProto(resource.Metadata),
 				Spec:       *resourceType.EnvoyFilter,
 			})
 		case *v1alpha1.GeneratedResource_ServiceEntry:
 			outputs.AddServiceEntries(&istionetworkingv1alpha3.ServiceEntry{
-				ObjectMeta: *resource.Metadata,
+				ObjectMeta: extensions.ObjectMetaFromProto(resource.Metadata),
 				Spec:       *resourceType.ServiceEntry,
 			})
 		case *v1alpha1.GeneratedResource_VirtualService:
 			outputs.AddVirtualServices(&istionetworkingv1alpha3.VirtualService{
-				ObjectMeta: *resource.Metadata,
+				ObjectMeta: extensions.ObjectMetaFromProto(resource.Metadata),
 				Spec:       *resourceType.VirtualService,
 			})
 		default:
@@ -175,22 +175,22 @@ func applyPatches(outputs istio.Builder, patches *v1alpha1.PatchList) {
 		switch resourceType := patchedResource.Type.(type) {
 		case *v1alpha1.GeneratedResource_DestinationRule:
 			outputs.AddDestinationRules(&istionetworkingv1alpha3.DestinationRule{
-				ObjectMeta: *patchedResource.Metadata,
+				ObjectMeta: extensions.ObjectMetaFromProto(patchedResource.Metadata),
 				Spec:       *resourceType.DestinationRule,
 			})
 		case *v1alpha1.GeneratedResource_EnvoyFilter:
 			outputs.AddEnvoyFilters(&istionetworkingv1alpha3.EnvoyFilter{
-				ObjectMeta: *patchedResource.Metadata,
+				ObjectMeta: extensions.ObjectMetaFromProto(patchedResource.Metadata),
 				Spec:       *resourceType.EnvoyFilter,
 			})
 		case *v1alpha1.GeneratedResource_ServiceEntry:
 			outputs.AddServiceEntries(&istionetworkingv1alpha3.ServiceEntry{
-				ObjectMeta: *patchedResource.Metadata,
+				ObjectMeta: extensions.ObjectMetaFromProto(patchedResource.Metadata),
 				Spec:       *resourceType.ServiceEntry,
 			})
 		case *v1alpha1.GeneratedResource_VirtualService:
 			outputs.AddVirtualServices(&istionetworkingv1alpha3.VirtualService{
-				ObjectMeta: *patchedResource.Metadata,
+				ObjectMeta: extensions.ObjectMetaFromProto(patchedResource.Metadata),
 				Spec:       *resourceType.VirtualService,
 			})
 		}

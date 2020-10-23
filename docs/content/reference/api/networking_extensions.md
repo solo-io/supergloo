@@ -19,6 +19,9 @@ title: "networking_extensions.proto"
   - [GeneratedResource](#extensions.networking.smh.solo.io.GeneratedResource)
   - [MeshPatchRequest](#extensions.networking.smh.solo.io.MeshPatchRequest)
   - [MeshResource](#extensions.networking.smh.solo.io.MeshResource)
+  - [ObjectMeta](#extensions.networking.smh.solo.io.ObjectMeta)
+  - [ObjectMeta.AnnotationsEntry](#extensions.networking.smh.solo.io.ObjectMeta.AnnotationsEntry)
+  - [ObjectMeta.LabelsEntry](#extensions.networking.smh.solo.io.ObjectMeta.LabelsEntry)
   - [PatchList](#extensions.networking.smh.solo.io.PatchList)
   - [PushNotification](#extensions.networking.smh.solo.io.PushNotification)
   - [TrafficTargetPatchRequest](#extensions.networking.smh.solo.io.TrafficTargetPatchRequest)
@@ -42,7 +45,7 @@ a generated resource can be of any output type supported by SMH. the content of 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| metadata | k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta |  | metadata of the resource |
+| metadata | extensions.networking.smh.solo.io.ObjectMeta |  | metadata of the resource |
 | destinationRule | istio.networking.v1alpha3.DestinationRule |  |  |
 | envoyFilter | istio.networking.v1alpha3.EnvoyFilter |  |  |
 | serviceEntry | istio.networking.v1alpha3.ServiceEntry |  |  |
@@ -77,9 +80,60 @@ a proto-serializable representation of a Mesh object
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| metadata | k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta |  | metadata of the resource |
+| metadata | extensions.networking.smh.solo.io.ObjectMeta |  | metadata of the resource |
 | spec | discovery.smh.solo.io.MeshSpec |  | the spec of the object |
 | status | discovery.smh.solo.io.MeshStatus |  | the status of the object |
+
+
+
+
+
+
+<a name="extensions.networking.smh.solo.io.ObjectMeta"></a>
+
+### ObjectMeta
+ObjectMeta is a simplified clone of the kubernetes ObjectMeta used to represent object metadata for K8s objects passed as messages in the NetworkingExtensions API.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | string |  | the kubernetes name of the object |
+| namespace | string |  | the kubernetes namespace of the object |
+| clusterName | string |  | the kubernetes clusterName of the object (used internally by Service Mesh Hub) |
+| labels | []extensions.networking.smh.solo.io.ObjectMeta.LabelsEntry | repeated | the kubernetes labels on the object |
+| annotations | []extensions.networking.smh.solo.io.ObjectMeta.AnnotationsEntry | repeated | the kubernetes annotations on the object |
+
+
+
+
+
+
+<a name="extensions.networking.smh.solo.io.ObjectMeta.AnnotationsEntry"></a>
+
+### ObjectMeta.AnnotationsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+| value | string |  |  |
+
+
+
+
+
+
+<a name="extensions.networking.smh.solo.io.ObjectMeta.LabelsEntry"></a>
+
+### ObjectMeta.LabelsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+| value | string |  |  |
 
 
 
@@ -135,7 +189,7 @@ a proto-serializable representation of a TrafficTarget object
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| metadata | k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta |  | metadata of the resource |
+| metadata | extensions.networking.smh.solo.io.ObjectMeta |  | metadata of the resource |
 | spec | discovery.smh.solo.io.TrafficTargetSpec |  | the spec of the object |
 | status | discovery.smh.solo.io.TrafficTargetStatus |  | the status of the object |
 
@@ -178,7 +232,7 @@ a proto-serializable representation of a Workload object
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| metadata | k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta |  | metadata of the resource |
+| metadata | extensions.networking.smh.solo.io.ObjectMeta |  | metadata of the resource |
 | spec | discovery.smh.solo.io.WorkloadSpec |  | the spec of the object |
 | status | discovery.smh.solo.io.WorkloadStatus |  | the status of the object |
 

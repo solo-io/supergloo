@@ -612,6 +612,9 @@ type Builder interface {
 	// this can be used to collect clusters for use with MultiCluster snapshots.
 	AddCluster(cluster string)
 
+	// returns the set of clusters currently stored in this builder
+	Clusters() []string
+
 	// merge all the resources from another Builder into this one
 	Merge(other Builder)
 
@@ -685,6 +688,10 @@ func (b *builder) AddCluster(cluster string) {
 	b.clusters = append(b.clusters, cluster)
 }
 
+func (b *builder) Clusters() []string {
+	return b.clusters
+}
+
 func (b *builder) Merge(other Builder) {
 	if other == nil {
 		return
@@ -693,6 +700,9 @@ func (b *builder) Merge(other Builder) {
 	b.AddVirtualServices(other.GetVirtualServices().List()...)
 	b.AddVirtualNodes(other.GetVirtualNodes().List()...)
 	b.AddVirtualRouters(other.GetVirtualRouters().List()...)
+	for _, cluster := range other.Clusters() {
+		b.AddCluster(cluster)
+	}
 }
 
 func (b *builder) Clone() Builder {
@@ -709,6 +719,9 @@ func (b *builder) Clone() Builder {
 	}
 	for _, virtualRouter := range b.GetVirtualRouters().List() {
 		clone.AddVirtualRouters(virtualRouter.DeepCopy())
+	}
+	for _, cluster := range b.Clusters() {
+		clone.AddCluster(cluster)
 	}
 	return clone
 }

@@ -2,8 +2,10 @@ package extensions
 
 import (
 	"context"
-	"github.com/solo-io/go-utils/hashutils"
 	"sync"
+	"time"
+
+	"github.com/solo-io/go-utils/hashutils"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
@@ -45,18 +47,28 @@ func NewClientsFromSettings(ctx context.Context, extensionsServerOptions []*v1al
 // Will call pushFn() when a notification is received.
 func (c Clients) WatchPushNotifications(ctx context.Context, pushFn PushFunc) error {
 	for _, exClient := range c {
-		exClient := exClient // pike
-		go func() {
-			if err := handlePushesForever(ctx, exClient, pushFn); err != nil {
-				contextutils.LoggerFrom(ctx).DPanicf("failed to start push notification watch with client %+v", exClient)
-			}
-		}()
+		exClient := exClient // shadow for goroutine
+		go handlePushesForever(ctx, exClient, pushFn)
 	}
 	return nil
 }
 
 // handles push notifications for an individual connection stream
-func handlePushesForever(ctx context.Context, exClient v1alpha1.NetworkingExtensionsClient, pushFn PushFunc) error {
+func handlePushesForever(ctx context.Context, exClient v1alpha1.NetworkingExtensionsClient, pushFn PushFunc) {
+	for {
+		if err := startNotificationWatch(ctx, exClient, pushFn); err != nil {
+			contextutils.LoggerFrom(ctx).Errorf("failed to start push notification watch with client %+v", exClient)
+			// retry after 5 sec
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(time.Second * 5):
+			}
+		}
+	}
+}
+
+func startNotificationWatch(ctx context.Context, exClient v1alpha1.NetworkingExtensionsClient, pushFn PushFunc) (err error) {
 	notifications, err := exClient.WatchPushNotifications(ctx, &v1alpha1.WatchPushNotificationsRequest{})
 	if err != nil {
 		return err
@@ -69,8 +81,7 @@ func handlePushesForever(ctx context.Context, exClient v1alpha1.NetworkingExtens
 		}
 		notification, err := notifications.Recv()
 		if err != nil {
-			// attempt to restart the notification stream
-			return handlePushesForever(ctx, exClient, pushFn)
+			return err
 		}
 		pushFn(notification)
 	}

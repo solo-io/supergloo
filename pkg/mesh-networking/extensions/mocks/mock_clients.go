@@ -5,10 +5,11 @@
 package mock_extensions
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
 	extensions "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
-	reflect "reflect"
 )
 
 // MockClientset is a mock of Clientset interface
@@ -35,11 +36,12 @@ func (m *MockClientset) EXPECT() *MockClientsetMockRecorder {
 }
 
 // ConfigureServers mocks base method
-func (m *MockClientset) ConfigureServers(extensionsServerOptions []*v1alpha2.NetworkingExtensionsServer) error {
+func (m *MockClientset) ConfigureServers(extensionsServerOptions []*v1alpha2.NetworkingExtensionsServer) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConfigureServers", extensionsServerOptions)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ConfigureServers indicates an expected call of ConfigureServers

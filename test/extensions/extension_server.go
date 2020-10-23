@@ -16,7 +16,7 @@ import (
 const ExtensionsServerPort = 2345
 
 // Runs an e2e implementation of a grpc extensions service for Networking
-// that azdds a route to an echo server running on the local machine (reachable via `host.docker.internal` from inside KinD)
+// that adds a route to a simple "HelloWorld" server running on the local machine (reachable via `host.docker.internal` from inside KinD)
 func RunExtensionsServer() error {
 	l, err := net.Listen("tcp", fmt.Sprintf(":%v", ExtensionsServerPort))
 	if err != nil {
@@ -32,7 +32,7 @@ type testExtensionsServer struct {
 }
 
 func newTestExtensionsServer() *testExtensionsServer {
-	return &testExtensionsServer{createMeshPatches: createMeshPatches}
+	return &testExtensionsServer{createMeshPatches: getCreateMeshPatchesFunc()}
 }
 
 func (t *testExtensionsServer) GetMeshPatches(ctx context.Context, request *v1alpha1.MeshPatchRequest) (*v1alpha1.PatchList, error) {
@@ -47,13 +47,23 @@ func (t *testExtensionsServer) GetMeshPatches(ctx context.Context, request *v1al
 }
 
 func (t *testExtensionsServer) GetTrafficTargetPatches(ctx context.Context, request *v1alpha1.TrafficTargetPatchRequest) (*v1alpha1.PatchList, error) {
-	return nil, nil
+	return &v1alpha1.PatchList{}, nil
 }
 
 func (t *testExtensionsServer) GetWorkloadPatches(ctx context.Context, request *v1alpha1.WorkloadPatchRequest) (*v1alpha1.PatchList, error) {
-	return nil, nil
+	return &v1alpha1.PatchList{}, nil
 }
 
 func (t *testExtensionsServer) WatchPushNotifications(request *v1alpha1.WatchPushNotificationsRequest, server v1alpha1.NetworkingExtensions_WatchPushNotificationsServer) error {
-	return nil
+
+	// one to start
+	if err := server.Send(&v1alpha1.PushNotification{}); err != nil {
+		return err
+	}
+
+	// sleep forever
+	select {
+	case <-server.Context().Done():
+		return nil
+	}
 }

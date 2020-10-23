@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = FDescribe("Istio Networking Extensions", func() {
+var _ = Describe("Istio Networking Extensions", func() {
 	var (
 		err          error
 		manifest     utils.Manifest
@@ -29,16 +29,19 @@ var _ = FDescribe("Istio Networking Extensions", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("with extensions enabled, additional configs can be added to SMH outputs", func() {
+
+			helloMsg := "hello from a 3rd party"
+
 			// run extensions server
 			go func() {
 				defer GinkgoRecover()
 				err := extensions.RunExtensionsServer()
 				Expect(err).NotTo(HaveOccurred())
 			}()
-			// run echo server
+			// run hello server
 			go func() {
 				defer GinkgoRecover()
-				err := extensions.RunEchoSerer()
+				err := extensions.RunHelloServer(helloMsg)
 				Expect(err).NotTo(HaveOccurred())
 			}()
 
@@ -65,7 +68,7 @@ var _ = FDescribe("Istio Networking Extensions", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// check we can eventually hit the echo server via the gateway
-			Eventually(curlGateway(extensions.EchoServerHostname, "/", "echo-this-back-to-me"), "30s", "1s").Should(ContainSubstring("echo-this-back-to-me"))
+			Eventually(curlHelloServer, "30s", "1s").Should(ContainSubstring(helloMsg))
 		})
 	})
 })

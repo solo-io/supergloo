@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/solo-io/go-utils/contextutils"
+
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"google.golang.org/grpc"
@@ -24,6 +26,7 @@ type DialOpts struct {
 }
 
 func (o DialOpts) Dial(ctx context.Context) (*grpc.ClientConn, error) {
+	contextutils.LoggerFrom(ctx).Debugw("dialing grpc server", "opts", o)
 	opts := []grpc.DialOption{grpc.WithBlock()}
 	if o.Insecure {
 		opts = append(opts, grpc.WithInsecure())

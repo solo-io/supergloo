@@ -8,8 +8,6 @@ import "service-mesh-hub/api/discovery/v1alpha2/mesh.proto";
 import "service-mesh-hub/api/discovery/v1alpha2/traffic_target.proto";
 import "service-mesh-hub/api/discovery/v1alpha2/workload.proto";
 
-import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
-
 import "networking/v1alpha3/destination_rule.proto";
 import "networking/v1alpha3/envoy_filter.proto";
 import "networking/v1alpha3/gateway.proto";
@@ -58,7 +56,7 @@ message TrafficTargetPatchRequest {
 // a proto-serializable representation of a TrafficTarget object
 message TrafficTargetResource {
     // metadata of the resource
-    .k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
+    ObjectMeta metadata = 1;
     // the spec of the object
     .discovery.smh.solo.io.TrafficTargetSpec spec = 2;
     // the status of the object
@@ -77,7 +75,7 @@ message WorkloadPatchRequest {
 // a proto-serializable representation of a Workload object
 message WorkloadResource {
     // metadata of the resource
-    .k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
+    ObjectMeta metadata = 1;
     // the spec of the object
     .discovery.smh.solo.io.WorkloadSpec spec = 2;
     // the status of the object
@@ -96,7 +94,7 @@ message MeshPatchRequest {
 // a proto-serializable representation of a Mesh object
 message MeshResource {
     // metadata of the resource
-    .k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
+    ObjectMeta metadata = 1;
     // the spec of the object
     .discovery.smh.solo.io.MeshSpec spec = 2;
     // the status of the object
@@ -109,7 +107,7 @@ message MeshResource {
 // TODO(ilackarms): consider parameterizing SMH to allow excluding GeneratedResources from patch requests in the case where an implementer only performs additions (no updates required).
 message GeneratedResource {
     // metadata of the resource
-    .k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
+    ObjectMeta metadata = 1;
     // type of the object.
     oneof type {
         .istio.networking.v1alpha3.DestinationRule destination_rule = 2;
@@ -134,4 +132,23 @@ message WatchPushNotificationsRequest {
 // triggers a resync of SMH resources
 message PushNotification {
 
+}
+
+// ObjectMeta is a simplified clone of the kubernetes ObjectMeta used to represent object metadata
+// for K8s objects passed as messages in the NetworkingExtensions API.
+message ObjectMeta {
+    // the kubernetes name of the object
+    string name = 1;
+
+    // the kubernetes namespace of the object
+    string namespace = 2;
+
+    // the kubernetes clusterName of the object (used internally by Service Mesh Hub)
+    string cluster_name = 3;
+
+    // the kubernetes labels on the object
+    map<string,string> labels = 4;
+
+    // the kubernetes annotations on the object
+    map<string,string> annotations = 5;
 }

@@ -2,6 +2,7 @@ package extensions_test
 
 import (
 	"context"
+
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
 	mock_extensions "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions/mocks"
 

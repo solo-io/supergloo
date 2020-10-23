@@ -35,8 +35,8 @@ type istioTranslator struct {
 	totalTranslates int // TODO(ilackarms): metric
 
 	// note: these interfaces are set directly in unit tests, but not exposed in the Translator's constructor
-	dependencies    internal.DependencyFactory
-	extensions      istioextensions.IstioExtender
+	dependencies internal.DependencyFactory
+	extensions   istioextensions.IstioExtender
 }
 
 func NewIstioTranslator(extensionClients extensions.Clientset) Translator {
