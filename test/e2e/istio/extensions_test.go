@@ -21,7 +21,10 @@ var _ = Describe("Istio Networking Extensions", func() {
 	)
 
 	AfterEach(func() {
-		manifest.Cleanup(smhNamespace)
+		manifest, err = utils.NewManifest("default-settings.yaml")
+		Expect(err).NotTo(HaveOccurred())
+		err = manifest.KubeApply(smhNamespace)
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("enables communication across clusters using global dns names", func() {
