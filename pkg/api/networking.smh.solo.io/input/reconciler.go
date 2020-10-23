@@ -11,6 +11,8 @@
 // * AccessPolicies
 // * VirtualMeshes
 // * FailoverServices
+// * VirtualServices
+// * VirtualNodes
 // * Secrets
 // * KubernetesClusters
 // for a given cluster or set of clusters.
@@ -37,6 +39,9 @@ import (
 	networking_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	networking_smh_solo_io_v1alpha2_controllers "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/controller"
 
+	appmesh_k8s_aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
+	appmesh_k8s_aws_v1beta2_controllers "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/controller"
+
 	v1_controllers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	v1 "k8s.io/api/core/v1"
 
@@ -55,6 +60,9 @@ type multiClusterReconciler interface {
 	networking_smh_solo_io_v1alpha2_controllers.MulticlusterAccessPolicyReconciler
 	networking_smh_solo_io_v1alpha2_controllers.MulticlusterVirtualMeshReconciler
 	networking_smh_solo_io_v1alpha2_controllers.MulticlusterFailoverServiceReconciler
+
+	appmesh_k8s_aws_v1beta2_controllers.MulticlusterVirtualServiceReconciler
+	appmesh_k8s_aws_v1beta2_controllers.MulticlusterVirtualNodeReconciler
 
 	v1_controllers.MulticlusterSecretReconciler
 
@@ -85,6 +93,11 @@ type ReconcileOptions struct {
 	VirtualMeshes reconcile.Options
 	// Options for reconciling FailoverServices
 	FailoverServices reconcile.Options
+
+	// Options for reconciling VirtualServices
+	VirtualServices reconcile.Options
+	// Options for reconciling VirtualNodes
+	VirtualNodes reconcile.Options
 
 	// Options for reconciling Secrets
 	Secrets reconcile.Options
@@ -130,6 +143,10 @@ func RegisterMultiClusterReconciler(
 	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterVirtualMeshReconcileLoop("VirtualMesh", clusters, options.VirtualMeshes).AddMulticlusterVirtualMeshReconciler(ctx, r, predicates...)
 
 	networking_smh_solo_io_v1alpha2_controllers.NewMulticlusterFailoverServiceReconcileLoop("FailoverService", clusters, options.FailoverServices).AddMulticlusterFailoverServiceReconciler(ctx, r, predicates...)
+
+	appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterVirtualServiceReconcileLoop("VirtualService", clusters, options.VirtualServices).AddMulticlusterVirtualServiceReconciler(ctx, r, predicates...)
+
+	appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterVirtualNodeReconcileLoop("VirtualNode", clusters, options.VirtualNodes).AddMulticlusterVirtualNodeReconciler(ctx, r, predicates...)
 
 	v1_controllers.NewMulticlusterSecretReconcileLoop("Secret", clusters, options.Secrets).AddMulticlusterSecretReconciler(ctx, r, predicates...)
 
@@ -242,6 +259,36 @@ func (r *multiClusterReconcilerImpl) ReconcileFailoverServiceDeletion(clusterNam
 	return err
 }
 
+func (r *multiClusterReconcilerImpl) ReconcileVirtualService(clusterName string, obj *appmesh_k8s_aws_v1beta2.VirtualService) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileVirtualServiceDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileVirtualNode(clusterName string, obj *appmesh_k8s_aws_v1beta2.VirtualNode) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileVirtualNodeDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
+}
+
 func (r *multiClusterReconcilerImpl) ReconcileSecret(clusterName string, obj *v1.Secret) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileClusterGeneric(obj)
@@ -283,6 +330,9 @@ type singleClusterReconciler interface {
 	networking_smh_solo_io_v1alpha2_controllers.AccessPolicyReconciler
 	networking_smh_solo_io_v1alpha2_controllers.VirtualMeshReconciler
 	networking_smh_solo_io_v1alpha2_controllers.FailoverServiceReconciler
+
+	appmesh_k8s_aws_v1beta2_controllers.VirtualServiceReconciler
+	appmesh_k8s_aws_v1beta2_controllers.VirtualNodeReconciler
 
 	v1_controllers.SecretReconciler
 
@@ -339,6 +389,13 @@ func RegisterSingleClusterReconciler(
 		return nil, err
 	}
 	if err := networking_smh_solo_io_v1alpha2_controllers.NewFailoverServiceReconcileLoop("FailoverService", mgr, options).RunFailoverServiceReconciler(ctx, r, predicates...); err != nil {
+		return nil, err
+	}
+
+	if err := appmesh_k8s_aws_v1beta2_controllers.NewVirtualServiceReconcileLoop("VirtualService", mgr, options).RunVirtualServiceReconciler(ctx, r, predicates...); err != nil {
+		return nil, err
+	}
+	if err := appmesh_k8s_aws_v1beta2_controllers.NewVirtualNodeReconcileLoop("VirtualNode", mgr, options).RunVirtualNodeReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
 	}
 
@@ -436,6 +493,32 @@ func (r *singleClusterReconcilerImpl) ReconcileFailoverService(obj *networking_s
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileFailoverServiceDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileVirtualService(obj *appmesh_k8s_aws_v1beta2.VirtualService) (reconcile.Result, error) {
+	return r.base.ReconcileGeneric(obj)
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileVirtualServiceDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileVirtualNode(obj *appmesh_k8s_aws_v1beta2.VirtualNode) (reconcile.Result, error) {
+	return r.base.ReconcileGeneric(obj)
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileVirtualNodeDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

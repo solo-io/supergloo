@@ -38,6 +38,10 @@ var (
 		corev1.SchemeGroupVersion: {
 			"Secret",
 		},
+		appmeshv1beta2.GroupVersion: {
+			"VirtualNode",
+			"VirtualService",
+		},
 	}
 
 	IstioNetworkingOutputTypes = OutputSnapshot{
@@ -93,7 +97,6 @@ var (
 			appmeshv1beta2.GroupVersion: {
 				"VirtualNode",
 				"VirtualRouter",
-				"Route",
 				"VirtualService",
 			},
 		},

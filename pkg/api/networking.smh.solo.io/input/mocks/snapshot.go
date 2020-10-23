@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	v1beta2sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
@@ -137,6 +138,34 @@ func (m *MockSnapshot) FailoverServices() v1alpha2sets0.FailoverServiceSet {
 func (mr *MockSnapshotMockRecorder) FailoverServices() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FailoverServices", reflect.TypeOf((*MockSnapshot)(nil).FailoverServices))
+}
+
+// VirtualServices mocks base method
+func (m *MockSnapshot) VirtualServices() v1beta2sets.VirtualServiceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VirtualServices")
+	ret0, _ := ret[0].(v1beta2sets.VirtualServiceSet)
+	return ret0
+}
+
+// VirtualServices indicates an expected call of VirtualServices
+func (mr *MockSnapshotMockRecorder) VirtualServices() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualServices", reflect.TypeOf((*MockSnapshot)(nil).VirtualServices))
+}
+
+// VirtualNodes mocks base method
+func (m *MockSnapshot) VirtualNodes() v1beta2sets.VirtualNodeSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VirtualNodes")
+	ret0, _ := ret[0].(v1beta2sets.VirtualNodeSet)
+	return ret0
+}
+
+// VirtualNodes indicates an expected call of VirtualNodes
+func (mr *MockSnapshotMockRecorder) VirtualNodes() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualNodes", reflect.TypeOf((*MockSnapshot)(nil).VirtualNodes))
 }
 
 // Secrets mocks base method

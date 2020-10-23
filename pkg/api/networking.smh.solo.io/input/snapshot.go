@@ -10,6 +10,8 @@
 // * AccessPolicies
 // * VirtualMeshes
 // * FailoverServices
+// * VirtualServices
+// * VirtualNodes
 // * Secrets
 // * KubernetesClusters
 // read from a given cluster or set of clusters, across all namespaces.
@@ -41,6 +43,9 @@ import (
 	networking_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	networking_smh_solo_io_v1alpha2_sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 
+	appmesh_k8s_aws_v1beta2 "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2"
+	appmesh_k8s_aws_v1beta2_sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
+
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 
@@ -66,6 +71,11 @@ type Snapshot interface {
 	VirtualMeshes() networking_smh_solo_io_v1alpha2_sets.VirtualMeshSet
 	// return the set of input FailoverServices
 	FailoverServices() networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet
+
+	// return the set of input VirtualServices
+	VirtualServices() appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet
+	// return the set of input VirtualNodes
+	VirtualNodes() appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
 
 	// return the set of input Secrets
 	Secrets() v1_sets.SecretSet
@@ -95,6 +105,9 @@ type snapshot struct {
 	virtualMeshes    networking_smh_solo_io_v1alpha2_sets.VirtualMeshSet
 	failoverServices networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet
 
+	virtualServices appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet
+	virtualNodes    appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
+
 	secrets v1_sets.SecretSet
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
@@ -112,6 +125,9 @@ func NewSnapshot(
 	virtualMeshes networking_smh_solo_io_v1alpha2_sets.VirtualMeshSet,
 	failoverServices networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet,
 
+	virtualServices appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet,
+	virtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet,
+
 	secrets v1_sets.SecretSet,
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet,
@@ -127,6 +143,8 @@ func NewSnapshot(
 		accessPolicies:     accessPolicies,
 		virtualMeshes:      virtualMeshes,
 		failoverServices:   failoverServices,
+		virtualServices:    virtualServices,
+		virtualNodes:       virtualNodes,
 		secrets:            secrets,
 		kubernetesClusters: kubernetesClusters,
 	}
@@ -158,6 +176,14 @@ func (s snapshot) VirtualMeshes() networking_smh_solo_io_v1alpha2_sets.VirtualMe
 
 func (s snapshot) FailoverServices() networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet {
 	return s.failoverServices
+}
+
+func (s snapshot) VirtualServices() appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet {
+	return s.virtualServices
+}
+
+func (s snapshot) VirtualNodes() appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet {
+	return s.virtualNodes
 }
 
 func (s snapshot) Secrets() v1_sets.SecretSet {
@@ -303,6 +329,8 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap["accessPolicies"] = s.accessPolicies.List()
 	snapshotMap["virtualMeshes"] = s.virtualMeshes.List()
 	snapshotMap["failoverServices"] = s.failoverServices.List()
+	snapshotMap["virtualServices"] = s.virtualServices.List()
+	snapshotMap["virtualNodes"] = s.virtualNodes.List()
 	snapshotMap["secrets"] = s.secrets.List()
 	snapshotMap["kubernetesClusters"] = s.kubernetesClusters.List()
 	return json.Marshal(snapshotMap)
@@ -334,6 +362,11 @@ type BuildOptions struct {
 	VirtualMeshes ResourceBuildOptions
 	// List options for composing a snapshot from FailoverServices
 	FailoverServices ResourceBuildOptions
+
+	// List options for composing a snapshot from VirtualServices
+	VirtualServices ResourceBuildOptions
+	// List options for composing a snapshot from VirtualNodes
+	VirtualNodes ResourceBuildOptions
 
 	// List options for composing a snapshot from Secrets
 	Secrets ResourceBuildOptions
@@ -380,6 +413,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	virtualMeshes := networking_smh_solo_io_v1alpha2_sets.NewVirtualMeshSet()
 	failoverServices := networking_smh_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
+	virtualServices := appmesh_k8s_aws_v1beta2_sets.NewVirtualServiceSet()
+	virtualNodes := appmesh_k8s_aws_v1beta2_sets.NewVirtualNodeSet()
+
 	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
@@ -409,6 +445,12 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		if err := b.insertFailoverServicesFromCluster(ctx, cluster, failoverServices, opts.FailoverServices); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertVirtualServicesFromCluster(ctx, cluster, virtualServices, opts.VirtualServices); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertVirtualNodesFromCluster(ctx, cluster, virtualNodes, opts.VirtualNodes); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -428,6 +470,8 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		accessPolicies,
 		virtualMeshes,
 		failoverServices,
+		virtualServices,
+		virtualNodes,
 		secrets,
 		kubernetesClusters,
 	)
@@ -731,6 +775,91 @@ func (b *multiClusterBuilder) insertFailoverServicesFromCluster(ctx context.Cont
 	return nil
 }
 
+func (b *multiClusterBuilder) insertVirtualServicesFromCluster(ctx context.Context, cluster string, virtualServices appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet, opts ResourceBuildOptions) error {
+	virtualServiceClient, err := appmesh_k8s_aws_v1beta2.NewMulticlusterVirtualServiceClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "appmesh.k8s.aws",
+			Version: "v1beta2",
+			Kind:    "VirtualService",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	virtualServiceList, err := virtualServiceClient.ListVirtualService(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range virtualServiceList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		virtualServices.Insert(&item)
+	}
+
+	return nil
+}
+func (b *multiClusterBuilder) insertVirtualNodesFromCluster(ctx context.Context, cluster string, virtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet, opts ResourceBuildOptions) error {
+	virtualNodeClient, err := appmesh_k8s_aws_v1beta2.NewMulticlusterVirtualNodeClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "appmesh.k8s.aws",
+			Version: "v1beta2",
+			Kind:    "VirtualNode",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	virtualNodeList, err := virtualNodeClient.ListVirtualNode(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range virtualNodeList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		virtualNodes.Insert(&item)
+	}
+
+	return nil
+}
+
 func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, cluster string, secrets v1_sets.SecretSet, opts ResourceBuildOptions) error {
 	secretClient, err := v1.NewMulticlusterSecretClient(b.client).Cluster(cluster)
 	if err != nil {
@@ -842,6 +971,9 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	virtualMeshes := networking_smh_solo_io_v1alpha2_sets.NewVirtualMeshSet()
 	failoverServices := networking_smh_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
+	virtualServices := appmesh_k8s_aws_v1beta2_sets.NewVirtualServiceSet()
+	virtualNodes := appmesh_k8s_aws_v1beta2_sets.NewVirtualNodeSet()
+
 	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
@@ -869,6 +1001,12 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	if err := b.insertFailoverServices(ctx, failoverServices, opts.FailoverServices); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertVirtualServices(ctx, virtualServices, opts.VirtualServices); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertVirtualNodes(ctx, virtualNodes, opts.VirtualNodes); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertSecrets(ctx, secrets, opts.Secrets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -886,6 +1024,8 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 		accessPolicies,
 		virtualMeshes,
 		failoverServices,
+		virtualServices,
+		virtualNodes,
 		secrets,
 		kubernetesClusters,
 	)
@@ -1114,6 +1254,71 @@ func (b *singleClusterBuilder) insertFailoverServices(ctx context.Context, failo
 	for _, item := range failoverServiceList.Items {
 		item := item // pike
 		failoverServices.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterBuilder) insertVirtualServices(ctx context.Context, virtualServices appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "appmesh.k8s.aws",
+			Version: "v1beta2",
+			Kind:    "VirtualService",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	virtualServiceList, err := appmesh_k8s_aws_v1beta2.NewVirtualServiceClient(b.mgr.GetClient()).ListVirtualService(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range virtualServiceList.Items {
+		item := item // pike
+		virtualServices.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterBuilder) insertVirtualNodes(ctx context.Context, virtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "appmesh.k8s.aws",
+			Version: "v1beta2",
+			Kind:    "VirtualNode",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	virtualNodeList, err := appmesh_k8s_aws_v1beta2.NewVirtualNodeClient(b.mgr.GetClient()).ListVirtualNode(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range virtualNodeList.Items {
+		item := item // pike
+		virtualNodes.Insert(&item)
 	}
 
 	return nil

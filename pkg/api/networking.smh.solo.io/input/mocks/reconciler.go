@@ -7,6 +7,7 @@ package mock_input
 import (
 	reflect "reflect"
 
+	v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha20 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
@@ -141,6 +142,36 @@ func (m *MockmultiClusterReconciler) ReconcileFailoverService(clusterName string
 func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileFailoverService(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileFailoverService", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileFailoverService), clusterName, obj)
+}
+
+// ReconcileVirtualService mocks base method
+func (m *MockmultiClusterReconciler) ReconcileVirtualService(clusterName string, obj *v1beta2.VirtualService) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileVirtualService", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileVirtualService indicates an expected call of ReconcileVirtualService
+func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileVirtualService(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualService", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileVirtualService), clusterName, obj)
+}
+
+// ReconcileVirtualNode mocks base method
+func (m *MockmultiClusterReconciler) ReconcileVirtualNode(clusterName string, obj *v1beta2.VirtualNode) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileVirtualNode", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileVirtualNode indicates an expected call of ReconcileVirtualNode
+func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileVirtualNode(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualNode", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileVirtualNode), clusterName, obj)
 }
 
 // ReconcileSecret mocks base method
@@ -299,6 +330,36 @@ func (m *MocksingleClusterReconciler) ReconcileFailoverService(obj *v1alpha20.Fa
 func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileFailoverService(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileFailoverService", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileFailoverService), obj)
+}
+
+// ReconcileVirtualService mocks base method
+func (m *MocksingleClusterReconciler) ReconcileVirtualService(obj *v1beta2.VirtualService) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileVirtualService", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileVirtualService indicates an expected call of ReconcileVirtualService
+func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileVirtualService(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualService", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileVirtualService), obj)
+}
+
+// ReconcileVirtualNode mocks base method
+func (m *MocksingleClusterReconciler) ReconcileVirtualNode(obj *v1beta2.VirtualNode) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileVirtualNode", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileVirtualNode indicates an expected call of ReconcileVirtualNode
+func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileVirtualNode(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualNode", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileVirtualNode), obj)
 }
 
 // ReconcileSecret mocks base method

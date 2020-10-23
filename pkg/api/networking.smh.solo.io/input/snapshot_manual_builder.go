@@ -12,6 +12,9 @@ import (
 	networking_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	networking_smh_solo_io_v1alpha2_sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 
+	appmesh_k8s_aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
+	appmesh_k8s_aws_v1beta2_sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
+
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1 "k8s.io/api/core/v1"
 
@@ -31,6 +34,9 @@ type InputSnapshotManualBuilder struct {
 	virtualMeshes    networking_smh_solo_io_v1alpha2_sets.VirtualMeshSet
 	failoverServices networking_smh_solo_io_v1alpha2_sets.FailoverServiceSet
 
+	virtualServices appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet
+	virtualNodes    appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
+
 	secrets v1_sets.SecretSet
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
@@ -48,6 +54,9 @@ func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 		accessPolicies:   networking_smh_solo_io_v1alpha2_sets.NewAccessPolicySet(),
 		virtualMeshes:    networking_smh_solo_io_v1alpha2_sets.NewVirtualMeshSet(),
 		failoverServices: networking_smh_solo_io_v1alpha2_sets.NewFailoverServiceSet(),
+
+		virtualServices: appmesh_k8s_aws_v1beta2_sets.NewVirtualServiceSet(),
+		virtualNodes:    appmesh_k8s_aws_v1beta2_sets.NewVirtualNodeSet(),
 
 		secrets: v1_sets.NewSecretSet(),
 
@@ -67,6 +76,9 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 		i.accessPolicies,
 		i.virtualMeshes,
 		i.failoverServices,
+
+		i.virtualServices,
+		i.virtualNodes,
 
 		i.secrets,
 
@@ -99,6 +111,14 @@ func (i *InputSnapshotManualBuilder) AddVirtualMeshes(virtualMeshes []*networkin
 }
 func (i *InputSnapshotManualBuilder) AddFailoverServices(failoverServices []*networking_smh_solo_io_v1alpha2.FailoverService) *InputSnapshotManualBuilder {
 	i.failoverServices.Insert(failoverServices...)
+	return i
+}
+func (i *InputSnapshotManualBuilder) AddVirtualServices(virtualServices []*appmesh_k8s_aws_v1beta2.VirtualService) *InputSnapshotManualBuilder {
+	i.virtualServices.Insert(virtualServices...)
+	return i
+}
+func (i *InputSnapshotManualBuilder) AddVirtualNodes(virtualNodes []*appmesh_k8s_aws_v1beta2.VirtualNode) *InputSnapshotManualBuilder {
+	i.virtualNodes.Insert(virtualNodes...)
 	return i
 }
 func (i *InputSnapshotManualBuilder) AddSecrets(secrets []*v1.Secret) *InputSnapshotManualBuilder {

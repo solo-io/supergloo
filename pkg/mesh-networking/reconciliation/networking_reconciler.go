@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"time"
 
+	appmeshv1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
 	"github.com/solo-io/skv2/pkg/predicate"
 	"github.com/solo-io/skv2/pkg/reconcile"
+	"github.com/solo-io/skv2/pkg/verifier"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
 	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
@@ -40,6 +43,7 @@ type networkingReconciler struct {
 	mgmtClient         client.Client
 	multiClusterClient multicluster.Client
 	history            *stats.SnapshotHistory
+	verifier           verifier.ServerResourceVerifier
 	totalReconciles    int
 	verboseMode        bool
 }
@@ -55,6 +59,20 @@ func Start(
 	history *stats.SnapshotHistory,
 	verboseMode bool,
 ) error {
+	verifier := verifier.NewVerifier(ctx, map[schema.GroupVersionKind]verifier.ServerVerifyOption{
+		// only warn (avoids error) if appmesh VirtualNode resource is not available on cluster
+		schema.GroupVersionKind{
+			Group:   appmeshv1beta2.GroupVersion.Group,
+			Version: appmeshv1beta2.GroupVersion.Version,
+			Kind:    "VirtualNode",
+		}: verifier.ServerVerifyOption_WarnIfNotPresent,
+		// only warn (avoids error) if appmesh VirtualMesh resource is not available on cluster
+		schema.GroupVersionKind{
+			Group:   appmeshv1beta2.GroupVersion.Group,
+			Version: appmeshv1beta2.GroupVersion.Version,
+			Kind:    "VirtualService",
+		}: verifier.ServerVerifyOption_WarnIfNotPresent,
+	})
 	d := &networkingReconciler{
 		ctx:                ctx,
 		builder:            builder,
@@ -65,6 +83,7 @@ func Start(
 		multiClusterClient: multiClusterClient,
 		history:            history,
 		verboseMode:        verboseMode,
+		verifier:           verifier,
 	}
 
 	filterNetworkingEvents := predicate.SimplePredicate{
@@ -87,6 +106,15 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 		// only look at kube clusters in our own namespace
 		KubernetesClusters: input.ResourceBuildOptions{
 			ListOptions: []client.ListOption{client.InNamespace(defaults.GetPodNamespace())},
+		},
+		// ignore NoKindMatchError for AppMesh Mesh CRs
+		// (only clusters with AppMesh Controller installed will
+		// have these kinds registered)
+		VirtualNodes: input.ResourceBuildOptions{
+			Verifier: r.verifier,
+		},
+		VirtualMeshes: input.ResourceBuildOptions{
+			Verifier: r.verifier,
 		},
 	})
 	if err != nil {
