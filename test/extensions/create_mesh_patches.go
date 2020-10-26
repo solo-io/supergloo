@@ -2,6 +2,10 @@ package extensions
 
 import (
 	"context"
+	"log"
+	"os/exec"
+	"runtime"
+	"strings"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
@@ -16,7 +20,21 @@ import (
 const (
 	HelloServerPort     = uint32(1234)
 	HelloServerHostname = "hello.global"
-	DockerHostAddress   = "host.docker.internal"
+)
+
+var (
+	DockerHostAddress = func() string {
+		if runtime.GOOS == "darwin" {
+			// docker for mac
+			return "host.docker.internal"
+		}
+		// linux we need to use docker gateway ip
+		ipAddr, err := exec.Command("bash", "-c", "ifconfig docker0 | grep 'inet' | cut -d: -f4 | awk '{print $2}' | head -n 1").CombinedOutput()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		return strings.TrimSpace(string(ipAddr))
+	}()
 )
 
 // testExtensionsServer is an e2e implementation of a grpc extensions service for Networking

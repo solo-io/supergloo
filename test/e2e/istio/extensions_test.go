@@ -2,6 +2,7 @@ package istio_test
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
@@ -47,10 +48,12 @@ var _ = Describe("Istio Networking Extensions", func() {
 
 			helloMsg := "hello from a 3rd party"
 
+			srv := extensions.NewTestExtensionsServer()
+
 			// run extensions server
 			go func() {
 				defer GinkgoRecover()
-				err := extensions.RunExtensionsServer()
+				err := srv.Run()
 				Expect(err).NotTo(HaveOccurred())
 			}()
 			// run hello server
@@ -72,6 +75,7 @@ var _ = Describe("Istio Networking Extensions", func() {
 				},
 				Spec: v1alpha2.SettingsSpec{
 					NetworkingExtensionServers: []*v1alpha2.NetworkingExtensionsServer{{
+						// use the machine's docker host address
 						Address:                    fmt.Sprintf("%v:%v", extensions.DockerHostAddress, extensions.ExtensionsServerPort),
 						Insecure:                   true,
 						ReconnectOnNetworkFailures: true,
@@ -82,7 +86,11 @@ var _ = Describe("Istio Networking Extensions", func() {
 			err = manifest.KubeApply(smhNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
-			// check we can eventually hit the echo server via the gateway
+			// ensure the server eventually connects to us
+			Eventually(srv.HasConnected, time.Minute*2).Should(BeTrue())
+
+			// check we can eventually hit the echo server via the gateway.
+			// This request verifies that Envoy has config provided by Service Entries from our test extensions server.
 			Eventually(curlHelloServer, "30s", "1s").Should(ContainSubstring(helloMsg))
 		})
 	})

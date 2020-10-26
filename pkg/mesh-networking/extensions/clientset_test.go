@@ -49,7 +49,7 @@ var _ = Describe("Clientset", func() {
 
 		// expect cancelled context to stop calling push func
 		cancel()
-		time.Sleep(time.Millisecond)
+		time.Sleep(time.Millisecond * 100)
 
 		lastVal := int(counter.Load())
 

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net"
 
+	"go.uber.org/atomic"
+
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/extensions"
@@ -15,24 +17,25 @@ import (
 
 const ExtensionsServerPort = 2345
 
+type testExtensionsServer struct {
+	createMeshPatches func(ctx context.Context, mesh *v1alpha2.MeshSpec) (istio.Builder, error)
+	hasConnected      *atomic.Bool
+}
+
+func NewTestExtensionsServer() *testExtensionsServer {
+	return &testExtensionsServer{createMeshPatches: getCreateMeshPatchesFunc(), hasConnected: &atomic.Bool{}}
+}
+
 // Runs an e2e implementation of a grpc extensions service for Networking
 // that adds a route to a simple "HelloWorld" server running on the local machine (reachable via `host.docker.internal` from inside KinD)
-func RunExtensionsServer() error {
+func (t *testExtensionsServer) Run() error {
 	l, err := net.Listen("tcp", fmt.Sprintf(":%v", ExtensionsServerPort))
 	if err != nil {
 		return err
 	}
 	grpcSrv := grpc.NewServer()
-	v1alpha1.RegisterNetworkingExtensionsServer(grpcSrv, newTestExtensionsServer())
+	v1alpha1.RegisterNetworkingExtensionsServer(grpcSrv, t)
 	return grpcSrv.Serve(l)
-}
-
-type testExtensionsServer struct {
-	createMeshPatches func(ctx context.Context, mesh *v1alpha2.MeshSpec) (istio.Builder, error)
-}
-
-func newTestExtensionsServer() *testExtensionsServer {
-	return &testExtensionsServer{createMeshPatches: getCreateMeshPatchesFunc()}
 }
 
 func (t *testExtensionsServer) GetMeshPatches(ctx context.Context, request *v1alpha1.MeshPatchRequest) (*v1alpha1.PatchList, error) {
@@ -61,9 +64,17 @@ func (t *testExtensionsServer) WatchPushNotifications(request *v1alpha1.WatchPus
 		return err
 	}
 
+	// client has connected
+	t.hasConnected.Store(true)
+
 	// sleep forever
 	select {
 	case <-server.Context().Done():
 		return nil
 	}
+}
+
+// returns true if a client has connected to this server
+func (t *testExtensionsServer) HasConnected() bool {
+	return t.hasConnected.Load()
 }

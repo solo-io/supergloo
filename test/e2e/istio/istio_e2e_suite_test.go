@@ -33,6 +33,7 @@ func TestIstio(t *testing.T) {
 		return
 	}
 	RegisterFailHandler(func(message string, callerSkip ...int) {
+		utils.RunShell("./ci/print-kind-info.sh")
 		Fail(message, callerSkip...)
 	})
 	RunSpecs(t, "E2e Suite")
