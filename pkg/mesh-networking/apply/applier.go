@@ -43,6 +43,8 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 
 	initializePolicyStatuses(input)
 
+	setDiscoveryStatusMetadata(input)
+
 	validateConfigTargetReferences(input)
 
 	applyPoliciesToConfigTargets(input)
@@ -57,7 +59,6 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 }
 
 // Optimistically initialize policy statuses to accepted, which may be set to invalid or failed pending subsequent validation.
-// Also append any non-translation related metadata.
 func initializePolicyStatuses(input input.Snapshot) {
 
 	trafficPolicies := input.TrafficPolicies().List()
@@ -102,6 +103,18 @@ func initializePolicyStatuses(input input.Snapshot) {
 	}
 }
 
+// Append status metadata to relevant discovery resources.
+func setDiscoveryStatusMetadata(input input.Snapshot) {
+	clusterDomains := hostutils.NewClusterDomainRegistry(input.KubernetesClusters())
+	for _, trafficTarget := range input.TrafficTargets().List() {
+		if trafficTarget.Spec.GetKubeService() != nil {
+			ref := trafficTarget.Spec.GetKubeService().GetRef()
+			trafficTarget.Status.LocalFqdn = clusterDomains.GetServiceLocalFQDN(ref)
+			trafficTarget.Status.RemoteFqdn = clusterDomains.GetServiceGlobalFQDN(ref)
+		}
+	}
+}
+
 // Validate that configuration target references.
 func validateConfigTargetReferences(input input.Snapshot) {
 	configTargetValidator := configtarget.NewConfigTargetValidator(input.Meshes(), input.TrafficTargets())
@@ -115,12 +128,9 @@ func validateConfigTargetReferences(input input.Snapshot) {
 func applyPoliciesToConfigTargets(input input.Snapshot) {
 	trafficTargetList := input.TrafficTargets().List()
 	if len(trafficTargetList) > 0 {
-		clusterDomains := hostutils.NewClusterDomainRegistry(input.KubernetesClusters())
-
 		for _, trafficTarget := range trafficTargetList {
 			trafficTarget.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), trafficTarget)
 			trafficTarget.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), trafficTarget)
-			setStatusMetadata(trafficTarget, clusterDomains)
 		}
 	}
 
@@ -639,12 +649,4 @@ func getAppliedFailoverServices(
 		}
 	}
 	return appliedFailoverServices
-}
-
-func setStatusMetadata(target *discoveryv1alpha2.TrafficTarget, clusterDomains hostutils.ClusterDomainRegistry) {
-	if target.Spec.GetKubeService() != nil {
-		ref := target.Spec.GetKubeService().GetRef()
-		target.Status.LocalFqdn = clusterDomains.GetServiceLocalFQDN(ref)
-		target.Status.RemoteFqdn = clusterDomains.GetServiceGlobalFQDN(ref)
-	}
 }
