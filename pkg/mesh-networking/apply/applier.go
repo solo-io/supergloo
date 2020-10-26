@@ -126,12 +126,9 @@ func validateConfigTargetReferences(input input.Snapshot) {
 
 // Apply networking configuration policies to relevant discovery entities.
 func applyPoliciesToConfigTargets(input input.Snapshot) {
-	trafficTargetList := input.TrafficTargets().List()
-	if len(trafficTargetList) > 0 {
-		for _, trafficTarget := range trafficTargetList {
-			trafficTarget.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), trafficTarget)
-			trafficTarget.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), trafficTarget)
-		}
+	for _, trafficTarget := range input.TrafficTargets().List() {
+		trafficTarget.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), trafficTarget)
+		trafficTarget.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), trafficTarget)
 	}
 
 	for _, mesh := range input.Meshes().List() {
