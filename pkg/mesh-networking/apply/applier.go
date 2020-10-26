@@ -120,7 +120,7 @@ func applyPoliciesToConfigTargets(input input.Snapshot) {
 		for _, trafficTarget := range trafficTargetList {
 			trafficTarget.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), trafficTarget)
 			trafficTarget.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), trafficTarget)
-			trafficTarget.Status.LocalFqdn, trafficTarget.Status.RemoteFqdn = getFqdns(trafficTarget, clusterDomains)
+			setStatusMetadata(trafficTarget, clusterDomains)
 		}
 	}
 
@@ -641,10 +641,10 @@ func getAppliedFailoverServices(
 	return appliedFailoverServices
 }
 
-func getFqdns(target *discoveryv1alpha2.TrafficTarget, clusterDomains hostutils.ClusterDomainRegistry) (string, string) {
+func setStatusMetadata(target *discoveryv1alpha2.TrafficTarget, clusterDomains hostutils.ClusterDomainRegistry) {
 	if target.Spec.GetKubeService() != nil {
 		ref := target.Spec.GetKubeService().GetRef()
-		return clusterDomains.GetServiceLocalFQDN(ref), clusterDomains.GetServiceGlobalFQDN(ref)
+		target.Status.LocalFqdn =  clusterDomains.GetServiceLocalFQDN(ref)
+		target.Status.RemoteFqdn = clusterDomains.GetServiceGlobalFQDN(ref)
 	}
-	return "", ""
 }
