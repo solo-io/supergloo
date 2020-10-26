@@ -14,6 +14,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
@@ -187,8 +188,8 @@ func setWorkloadsForTrafficPolicies(
 		//	return
 		//}
 		for _, workload := range workloads {
-			if selectorutils.SelectorMatchesWorkload(trafficPolicy.Spec.GetSourceSelector(), workload, meshMap,
-				virtualMeshMap, meshToVirtualMesh) {
+			if selectorutils.SelectorMatchesWorkload(trafficPolicy.Spec.GetSourceSelector(), workload) &&
+				meshMatches(workload.Spec.GetMesh(), meshMap, virtualMeshMap, meshToVirtualMesh) {
 				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
 			}
 		}
@@ -217,8 +218,8 @@ func setWorkloadsForAccessPolicies(
 		var matchingWorkloads []string
 		// TODO(awang) optimize if the returned workloads list gets too large
 		for _, workload := range workloads {
-			if selectorutils.IdentityMatchesWorkload(accessPolicy.Spec.GetSourceSelector(), workload, meshMap,
-				virtualMeshMap, meshToVirtualMesh) {
+			if selectorutils.IdentityMatchesWorkload(accessPolicy.Spec.GetSourceSelector(), workload) &&
+				meshMatches(workload.Spec.GetMesh(), meshMap, virtualMeshMap, meshToVirtualMesh) {
 				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
 			}
 		}
@@ -720,4 +721,18 @@ func makeMeshToVirtualMeshMap(meshes discoveryv1alpha2.MeshSlice) map[string]str
 		}
 	}
 	return meshToVirtualMesh
+}
+
+// Returns true if the given mesh either matches one of the given matchingMeshes, or it is in a virtual mesh that
+// matches one of the given matchingVirtualMeshes
+func meshMatches(meshRef *v1.ObjectRef, matchingMeshes map[string]bool, matchingVirtualMeshes map[string]bool,
+	meshToVirtualMesh map[string]string) bool {
+	meshKey := sets.Key(meshRef)
+	if matchingMeshes[meshKey] {
+		return true
+	}
+	if virtualMeshRefKey, ok := meshToVirtualMesh[meshKey]; ok {
+		return matchingVirtualMeshes[virtualMeshRefKey]
+	}
+	return false
 }
