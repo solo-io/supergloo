@@ -66,16 +66,20 @@ func (t *translator) Translate(
 		report(tp, trafficTarget, reporter)
 
 		// TODO joekelley
-		_ := getVirtualNodeForTrafficTarget(trafficTarget, nil)
+		virtualNode := getVirtualNodeForTrafficTarget(trafficTarget, in.VirtualNodes())
 
-		virtualService, virtualRouter := translate(trafficTarget)
+		virtualService, virtualRouter := translate(trafficTarget, virtualNode)
 		outputs.AddVirtualServices(virtualService)
 		outputs.AddVirtualRouters(virtualRouter)
 	}
 }
 
 func getVirtualNodeForTrafficTarget(trafficTarget *discoveryv1alpha2.TrafficTarget, virtualNodes v1beta2sets.VirtualNodeSet) *v1beta2.VirtualNode {
-	// TODO joekelley
+	// TODO(ilackarms): non kube services currently unsupported
+	_ := trafficTarget.Spec.GetKubeService()
+
+	// TODO joekelley update workload discovery to implement app mesh fields
+
 	return nil
 }
 
