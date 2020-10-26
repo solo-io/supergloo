@@ -51,6 +51,8 @@ func (o DialOpts) Dial(ctx context.Context) (*grpc.ClientConn, error) {
 			)),
 		)
 	}
+	ctx, cancel := context.WithTimeout(ctx, time.Minute)
+	defer cancel()
 	cc, err := grpc.DialContext(ctx, o.Address, opts...)
 	if err != nil {
 		return nil, err

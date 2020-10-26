@@ -23,6 +23,18 @@ var _ = Describe("Istio Networking Extensions", func() {
 	AfterEach(func() {
 		manifest, err = utils.NewManifest("default-settings.yaml")
 		Expect(err).NotTo(HaveOccurred())
+		// update settings to remove our extensions server
+		err = manifest.AppendResources(&v1alpha2.Settings{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Settings",
+				APIVersion: v1alpha2.SchemeGroupVersion.String(),
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: smhNamespace,
+				Name:      "settings", // the default/expected name
+			},
+		})
+		Expect(err).NotTo(HaveOccurred())
 		err = manifest.KubeApply(smhNamespace)
 		Expect(err).NotTo(HaveOccurred())
 	})

@@ -43,8 +43,6 @@ func Validate(ctx context.Context, in input.Snapshot) (*v1alpha2.Settings, error
 // Validate that required fields are set.
 func validateRequiredFields(settings *v1alpha2.Settings) []error {
 	var errs []error
-	if settings.Spec.Mtls == nil {
-		errs = append(errs, MissingRequiredField(settings, "Mtls"))
-	}
+
 	return errs
 }

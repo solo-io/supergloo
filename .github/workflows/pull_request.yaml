@@ -115,6 +115,11 @@ jobs:
           istioctl version
 
           make run-tests TEST_PKG=test/e2e/istio RUN_E2E=1 GINKGOFLAGS=-v
+      - name: Failure Debug Info
+        if: ${{ failure() }}
+        run: |
+          # see what's in the cluster if we failed
+          ./ci/print-kind-info.sh
   e2e-osm:
     name: end-to-end-osm
     runs-on: ubuntu-18.04
@@ -170,3 +175,9 @@ jobs:
           osm version
 
           make run-tests TEST_PKG=test/e2e/osm RUN_E2E=1 GINKGOFLAGS=-v
+
+      - name: Failure Debug Info
+        if: ${{ failure() }}
+        run: |
+          # see what's in the cluster if we failed
+          ./ci/print-kind-info.sh
