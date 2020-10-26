@@ -164,6 +164,8 @@ func reportTranslationErrors(ctx context.Context, reporter *applyReporter, input
 	setWorkloadsForAccessPolicies(ctx, input.AccessPolicies().List(), input.Workloads().List(), input.TrafficTargets(), input.Meshes())
 }
 
+// A workload is associated with a traffic policy if the workload matches the policy's workload selector
+// AND the workload is in the same mesh or VirtualMesh as any of the policy's selected traffic targets
 func setWorkloadsForTrafficPolicies(
 	ctx context.Context,
 	trafficPolicies networkingv1alpha2.TrafficPolicySlice,
@@ -198,6 +200,8 @@ func setWorkloadsForTrafficPolicies(
 	}
 }
 
+// A workload is associated with an access policy if the workload matches the policy's identity selector
+// AND the workload is in the same mesh or VirtualMesh as any of the policy's selected traffic targets
 func setWorkloadsForAccessPolicies(
 	ctx context.Context,
 	accessPolicies networkingv1alpha2.AccessPolicySlice,
