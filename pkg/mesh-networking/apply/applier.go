@@ -4,13 +4,13 @@ import (
 	"context"
 	"sort"
 
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply/configtarget"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
-
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply/configtarget"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -43,6 +43,8 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 
 	initializePolicyStatuses(input)
 
+	setDiscoveryStatusMetadata(input)
+
 	validateConfigTargetReferences(input)
 
 	applyPoliciesToConfigTargets(input)
@@ -57,7 +59,6 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 }
 
 // Optimistically initialize policy statuses to accepted, which may be set to invalid or failed pending subsequent validation.
-// Also append any non-translation related metadata.
 func initializePolicyStatuses(input input.Snapshot) {
 
 	trafficPolicies := input.TrafficPolicies().List()
@@ -98,6 +99,18 @@ func initializePolicyStatuses(input input.Snapshot) {
 			State:              networkingv1alpha2.ApprovalState_ACCEPTED,
 			ObservedGeneration: virtualMesh.Generation,
 			Meshes:             map[string]*networkingv1alpha2.ApprovalStatus{},
+		}
+	}
+}
+
+// Append status metadata to relevant discovery resources.
+func setDiscoveryStatusMetadata(input input.Snapshot) {
+	clusterDomains := hostutils.NewClusterDomainRegistry(input.KubernetesClusters())
+	for _, trafficTarget := range input.TrafficTargets().List() {
+		if trafficTarget.Spec.GetKubeService() != nil {
+			ref := trafficTarget.Spec.GetKubeService().GetRef()
+			trafficTarget.Status.LocalFqdn = clusterDomains.GetServiceLocalFQDN(ref)
+			trafficTarget.Status.RemoteFqdn = clusterDomains.GetServiceGlobalFQDN(ref)
 		}
 	}
 }
