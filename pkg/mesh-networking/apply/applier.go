@@ -644,7 +644,7 @@ func getAppliedFailoverServices(
 func setStatusMetadata(target *discoveryv1alpha2.TrafficTarget, clusterDomains hostutils.ClusterDomainRegistry) {
 	if target.Spec.GetKubeService() != nil {
 		ref := target.Spec.GetKubeService().GetRef()
-		target.Status.LocalFqdn =  clusterDomains.GetServiceLocalFQDN(ref)
+		target.Status.LocalFqdn = clusterDomains.GetServiceLocalFQDN(ref)
 		target.Status.RemoteFqdn = clusterDomains.GetServiceGlobalFQDN(ref)
 	}
 }
