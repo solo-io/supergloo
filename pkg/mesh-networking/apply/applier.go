@@ -115,20 +115,12 @@ func validateConfigTargetReferences(input input.Snapshot) {
 func applyPoliciesToConfigTargets(input input.Snapshot) {
 	trafficTargetList := input.TrafficTargets().List()
 	if len(trafficTargetList) > 0 {
-		meshToVirtualMesh := map[string]string{}
-		for _, vMesh := range input.VirtualMeshes().List() {
-			if vMesh.Spec.GetFederation().GetPermissive() != nil {
-				for _, mesh := range vMesh.Spec.GetMeshes() {
-					meshToVirtualMesh[sets.Key(mesh)] = sets.Key(vMesh)
-				}
-			}
-		}
 		clusterDomains := hostutils.NewClusterDomainRegistry(input.KubernetesClusters())
 
 		for _, trafficTarget := range trafficTargetList {
 			trafficTarget.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), trafficTarget)
 			trafficTarget.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), trafficTarget)
-			trafficTarget.Status.Fqdns = getFqdns(trafficTarget, clusterDomains, meshToVirtualMesh)
+			trafficTarget.Status.LocalFqdn, trafficTarget.Status.RemoteFqdn = getFqdns(trafficTarget, clusterDomains)
 		}
 	}
 
@@ -649,13 +641,10 @@ func getAppliedFailoverServices(
 	return appliedFailoverServices
 }
 
-func getFqdns(target *discoveryv1alpha2.TrafficTarget, clusterDomains hostutils.ClusterDomainRegistry, meshesToVirtualMeshes map[string]string) []string {
+func getFqdns(target *discoveryv1alpha2.TrafficTarget, clusterDomains hostutils.ClusterDomainRegistry) (string, string) {
 	if target.Spec.GetKubeService() != nil {
-		hosts := []string{clusterDomains.GetServiceLocalFQDN(target.Spec.GetKubeService().GetRef())}
-		if _, ok := meshesToVirtualMeshes[sets.Key(target.Spec.GetMesh())]; ok {
-			hosts = append(hosts, clusterDomains.GetServiceGlobalFQDN(target.Spec.GetKubeService().GetRef()))
-		}
-		return hosts
+		ref := target.Spec.GetKubeService().GetRef()
+		return clusterDomains.GetServiceLocalFQDN(ref), clusterDomains.GetServiceGlobalFQDN(ref)
 	}
-	return []string{}
+	return "", ""
 }

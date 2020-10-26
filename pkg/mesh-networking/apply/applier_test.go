@@ -32,8 +32,9 @@ var _ = Describe("Applier", func() {
 					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
 						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 							Ref: &v1.ClusterObjectRef{
-								Name:      "svc-name",
-								Namespace: "svc-namespace",
+								Name:        "svc-name",
+								Namespace:   "svc-namespace",
+								ClusterName: "svc-cluster",
 							},
 						},
 					},
@@ -104,7 +105,8 @@ var _ = Describe("Applier", func() {
 			Expect(trafficTarget.Status.AppliedTrafficPolicies[0].Spec).To(Equal(&trafficPolicy1.Spec))
 			Expect(trafficTarget.Status.AppliedTrafficPolicies[1].Ref).To(Equal(ezkube.MakeObjectRef(trafficPolicy2)))
 			Expect(trafficTarget.Status.AppliedTrafficPolicies[1].Spec).To(Equal(&trafficPolicy2.Spec))
-			Expect(trafficTarget.Status.Fqdns).To(Equal([]string{"svc-name.svc-namespace.svc.cluster.local"}))
+			Expect(trafficTarget.Status.LocalFqdn).To(Equal("svc-name.svc-namespace.svc.cluster.local"))
+			Expect(trafficTarget.Status.RemoteFqdn).To(Equal("svc-name.svc-namespace.svc.svc-cluster.global"))
 		})
 	})
 	Context("invalid traffic policies", func() {
