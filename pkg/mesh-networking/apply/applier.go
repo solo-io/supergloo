@@ -16,6 +16,7 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	utilsets "k8s.io/apimachinery/pkg/util/sets"
 )
 
 // the Applier validates user-applied configuration
@@ -179,7 +180,7 @@ func setWorkloadsForTrafficPolicies(
 			return trafficPolicy.Status.GetTrafficTargets()[sets.Key(trafficTarget.GetObjectMeta())] == nil
 		})
 		// get all the mesh and virtual mesh refs from those traffic targets
-		meshMap, virtualMeshMap := getMeshesFromTrafficTargets(ctx, matchingTrafficTargets, meshes)
+		matchingMeshes, matchingVirtualMeshes := getMeshesFromTrafficTargets(ctx, matchingTrafficTargets, meshes)
 
 		var matchingWorkloads []string
 		// TODO(awang) optimize if the returned workloads list gets too large
@@ -189,7 +190,7 @@ func setWorkloadsForTrafficPolicies(
 		//}
 		for _, workload := range workloads {
 			if selectorutils.SelectorMatchesWorkload(trafficPolicy.Spec.GetSourceSelector(), workload) &&
-				meshMatches(workload.Spec.GetMesh(), meshMap, virtualMeshMap, meshToVirtualMesh) {
+				meshMatches(workload.Spec.GetMesh(), matchingMeshes, matchingVirtualMeshes, meshToVirtualMesh) {
 				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
 			}
 		}
@@ -213,13 +214,13 @@ func setWorkloadsForAccessPolicies(
 			return accessPolicy.Status.GetTrafficTargets()[sets.Key(trafficTarget.GetObjectMeta())] == nil
 		})
 		// get all the mesh and virtual mesh refs from those traffic targets
-		meshMap, virtualMeshMap := getMeshesFromTrafficTargets(ctx, matchingTrafficTargets, meshes)
+		matchingMeshes, matchingVirtualMeshes := getMeshesFromTrafficTargets(ctx, matchingTrafficTargets, meshes)
 
 		var matchingWorkloads []string
 		// TODO(awang) optimize if the returned workloads list gets too large
 		for _, workload := range workloads {
 			if selectorutils.IdentityMatchesWorkload(accessPolicy.Spec.GetSourceSelector(), workload) &&
-				meshMatches(workload.Spec.GetMesh(), meshMap, virtualMeshMap, meshToVirtualMesh) {
+				meshMatches(workload.Spec.GetMesh(), matchingMeshes, matchingVirtualMeshes, meshToVirtualMesh) {
 				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
 			}
 		}
@@ -683,32 +684,32 @@ func getAppliedFailoverServices(
 // Get all the meshes and corresponding virtual meshes of the given traffic targets.
 // Results are returned as maps keyed by mesh ObjectRef keys and virtual mesh ObjectRef keys
 func getMeshesFromTrafficTargets(ctx context.Context, trafficTargets []*discoveryv1alpha2.TrafficTarget,
-	meshes discoveryv1alpha2sets.MeshSet) (map[string]bool, map[string]bool) {
+	allMeshes discoveryv1alpha2sets.MeshSet) (utilsets.String, utilsets.String) {
 
-	meshMap := make(map[string]bool)
-	virtualMeshMap := make(map[string]bool)
+	meshes := utilsets.NewString()
+	virtualMeshes := utilsets.NewString()
 	for _, trafficTarget := range trafficTargets {
 		meshRef := trafficTarget.Spec.GetMesh()
 		if meshRef == nil {
 			continue
 		}
 		meshKey := sets.Key(meshRef)
-		if !meshMap[meshKey] {
-			meshMap[meshKey] = true
+		if !meshes.Has(meshKey) {
+			meshes.Insert(meshKey)
 
 			// get the full mesh object to get the virtual mesh
-			mesh, err := meshes.Find(meshRef)
+			mesh, err := allMeshes.Find(meshRef)
 			if err != nil {
 				// should never happen
 				contextutils.LoggerFrom(ctx).Errorf("internal error: failed to look up mesh %v: %v", meshRef, err)
 				continue
 			}
 			if virtualMeshRef := mesh.Status.GetAppliedVirtualMesh().GetRef(); virtualMeshRef != nil {
-				virtualMeshMap[sets.Key(virtualMeshRef)] = true
+				virtualMeshes.Insert(sets.Key(virtualMeshRef))
 			}
 		}
 	}
-	return meshMap, virtualMeshMap
+	return meshes, virtualMeshes
 }
 
 // Map each mesh ref to its virtual mesh ref (if any).
@@ -725,14 +726,14 @@ func makeMeshToVirtualMeshMap(meshes discoveryv1alpha2.MeshSlice) map[string]str
 
 // Returns true if the given mesh either matches one of the given matchingMeshes, or it is in a virtual mesh that
 // matches one of the given matchingVirtualMeshes
-func meshMatches(meshRef *v1.ObjectRef, matchingMeshes map[string]bool, matchingVirtualMeshes map[string]bool,
+func meshMatches(meshRef *v1.ObjectRef, matchingMeshes utilsets.String, matchingVirtualMeshes utilsets.String,
 	meshToVirtualMesh map[string]string) bool {
 	meshKey := sets.Key(meshRef)
-	if matchingMeshes[meshKey] {
+	if matchingMeshes.Has(meshKey) {
 		return true
 	}
 	if virtualMeshRefKey, ok := meshToVirtualMesh[meshKey]; ok {
-		return matchingVirtualMeshes[virtualMeshRefKey]
+		return matchingVirtualMeshes.Has(virtualMeshRefKey)
 	}
 	return false
 }
