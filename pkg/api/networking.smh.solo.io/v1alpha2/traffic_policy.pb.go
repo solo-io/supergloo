@@ -68,9 +68,6 @@ func (TrafficPolicySpec_MTLS_Istio_TLSmode) EnumDescriptor() ([]byte, []int) {
 //- originating from from **source workload**
 //- sent to **destination targets**
 //- matching one or more **request matcher**
-//
-//NB: If any additional TrafficPolicy action fields (i.e. non selection related fields) are added,
-//the TrafficPolicy Merger's "AreTrafficPolicyActionsEqual" method must be updated to reflect the new field.
 type TrafficPolicySpec struct {
 	//
 	//Requests originating from these workloads will have the rule applied.
