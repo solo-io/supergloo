@@ -80,6 +80,7 @@ The TrafficTarget is an abstraction for a traffic target which we have discovere
 | port | uint32 |  | External-facing port for this k8s service (NOT the service's target port on the backing pods). |
 | name | string |  |  |
 | protocol | string |  |  |
+| appProtocol | string |  | Available in k8s 1.18+, specifies the application protocol. |
 
 
 

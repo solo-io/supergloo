@@ -45,6 +45,9 @@ spec:
                   description: The ports exposed by the underlying service.
                   items:
                     properties:
+                      appProtocol:
+                        description: Available in k8s 1.18+, specifies the application protocol.
+                        type: string
                       name:
                         type: string
                       port:

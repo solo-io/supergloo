@@ -13,6 +13,7 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/utils/pointer"
 )
 
 const (
@@ -53,7 +54,6 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 	meshWorkloads v1alpha2sets.WorkloadSet,
 	meshes v1alpha2sets.MeshSet,
 ) *v1alpha2.TrafficTarget {
-
 	kubeService := &v1alpha2.TrafficTargetSpec_KubeService{
 		Ref:                    ezkube.MakeClusterObjectRef(service),
 		WorkloadSelectorLabels: service.Spec.Selector,
@@ -159,9 +159,10 @@ func findSubsets(backingWorkloads v1alpha2.WorkloadSlice) map[string]*v1alpha2.T
 func convertPorts(service *corev1.Service) (ports []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort) {
 	for _, kubePort := range service.Spec.Ports {
 		ports = append(ports, &v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
-			Port:     uint32(kubePort.Port),
-			Name:     kubePort.Name,
-			Protocol: string(kubePort.Protocol),
+			Port:        uint32(kubePort.Port),
+			Name:        kubePort.Name,
+			Protocol:    string(kubePort.Protocol),
+			AppProtocol: pointer.StringPtrDerefOr(kubePort.AppProtocol, ""),
 		})
 	}
 	return ports
