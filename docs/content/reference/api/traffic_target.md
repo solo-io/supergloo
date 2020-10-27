@@ -160,6 +160,8 @@ Subsets for routing, based on labels.
 | observedGeneration | int64 |  | The most recent generation observed in the the TrafficPolicy metadata. if the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
 | appliedTrafficPolicies | []discovery.smh.solo.io.TrafficTargetStatus.AppliedTrafficPolicy | repeated | The set of Traffic Policies that have been applied to this TrafficTarget |
 | appliedAccessPolicies | []discovery.smh.solo.io.TrafficTargetStatus.AppliedAccessPolicy | repeated | The set of Access Policies that have been applied to this TrafficTarget |
+| localFqdn | string |  | The local fully qualified domain |
+| remoteFqdn | string |  | The remote fully qualified domain |
 
 
 

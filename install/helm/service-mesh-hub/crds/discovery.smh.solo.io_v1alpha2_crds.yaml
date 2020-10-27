@@ -761,6 +761,9 @@ spec:
                     type: object
                 type: object
               type: array
+            localFqdn:
+              description: The local fully qualified domain
+              type: string
             observedGeneration:
               description: |-
                 The most recent generation observed in the the TrafficPolicy metadata.
@@ -768,6 +771,9 @@ spec:
                 recent version of this resource.
               format: int64
               type: integer
+            remoteFqdn:
+              description: The remote fully qualified domain
+              type: string
           type: object
       type: object
   versions:
