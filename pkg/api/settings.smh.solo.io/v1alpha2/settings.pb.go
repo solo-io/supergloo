@@ -29,6 +29,8 @@ type SettingsSpec struct {
 	// Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence)
 	Mtls *v1alpha2.TrafficPolicySpec_MTLS `protobuf:"bytes,1,opt,name=mtls,proto3" json:"mtls,omitempty"`
 	// Configure SMH Networking to communicate with one or more external gRPC NetworkingExtensions servers.
+	// Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence).
+	// Note: Extension Servers have full write access to the output objects written by Service Mesh Hub.
 	NetworkingExtensionServers []*NetworkingExtensionsServer `protobuf:"bytes,2,rep,name=networking_extension_servers,json=networkingExtensionServers,proto3" json:"networking_extension_servers,omitempty"`
 	XXX_NoUnkeyedLiteral       struct{}                      `json:"-"`
 	XXX_unrecognized           []byte                        `json:"-"`

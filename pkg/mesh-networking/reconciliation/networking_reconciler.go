@@ -145,6 +145,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 		return false, err
 	}
 
+	// update configured NetworkExtensionServers for the extension clients which are called inside the translator.
 	extensionsUpdated, err := r.extensionClients.ConfigureServers(settings.Spec.NetworkingExtensionServers)
 	if err != nil {
 		return false, err

@@ -23,6 +23,7 @@ const (
 )
 
 var (
+	// This is the address from which pods can talk to our host machine
 	DockerHostAddress = func() string {
 		if runtime.GOOS == "darwin" {
 			// docker for mac

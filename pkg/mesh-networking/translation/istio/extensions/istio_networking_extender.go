@@ -27,17 +27,17 @@ type IstioExtender interface {
 	PatchMeshOutputs(ctx context.Context, mesh *v1alpha2.Mesh, meshOutputs istio.Builder) error
 }
 
-type istioExtensions struct {
+type istioExtender struct {
 	// the user should provide an optional list of connection info for extension servers.
 	// we create a client for each server and apply them in the order they were specified
 	clientset extensions.Clientset
 }
 
-func NewIstioExtensions(clientset extensions.Clientset) *istioExtensions {
-	return &istioExtensions{clientset: clientset}
+func NewIstioExtender(clientset extensions.Clientset) *istioExtender {
+	return &istioExtender{clientset: clientset}
 }
 
-func (i *istioExtensions) PatchTrafficTargetOutputs(ctx context.Context, trafficTarget *v1alpha2.TrafficTarget, trafficTargetOutputs istio.Builder) error {
+func (i *istioExtender) PatchTrafficTargetOutputs(ctx context.Context, trafficTarget *v1alpha2.TrafficTarget, trafficTargetOutputs istio.Builder) error {
 	for _, exClient := range i.clientset.GetClients() {
 		patches, err := exClient.GetTrafficTargetPatches(ctx, &v1alpha1.TrafficTargetPatchRequest{
 			TrafficTarget: &v1alpha1.TrafficTargetResource{
@@ -55,7 +55,7 @@ func (i *istioExtensions) PatchTrafficTargetOutputs(ctx context.Context, traffic
 	return nil
 }
 
-func (i *istioExtensions) PatchWorkloadOutputs(ctx context.Context, workload *v1alpha2.Workload, workloadOutputs istio.Builder) error {
+func (i *istioExtender) PatchWorkloadOutputs(ctx context.Context, workload *v1alpha2.Workload, workloadOutputs istio.Builder) error {
 	for _, exClient := range i.clientset.GetClients() {
 		patches, err := exClient.GetWorkloadPatches(ctx, &v1alpha1.WorkloadPatchRequest{
 			Workload: &v1alpha1.WorkloadResource{
@@ -73,7 +73,7 @@ func (i *istioExtensions) PatchWorkloadOutputs(ctx context.Context, workload *v1
 	return nil
 }
 
-func (i *istioExtensions) PatchMeshOutputs(ctx context.Context, mesh *v1alpha2.Mesh, meshOutputs istio.Builder) error {
+func (i *istioExtender) PatchMeshOutputs(ctx context.Context, mesh *v1alpha2.Mesh, meshOutputs istio.Builder) error {
 	for _, exClient := range i.clientset.GetClients() {
 		patches, err := exClient.GetMeshPatches(ctx, &v1alpha1.MeshPatchRequest{
 			Mesh: &v1alpha1.MeshResource{
@@ -93,6 +93,8 @@ func (i *istioExtensions) PatchMeshOutputs(ctx context.Context, mesh *v1alpha2.M
 
 // convert istio.Builder to [generated resources]
 // exposed as it is imported in extensions servers
+// NOTE: If we add more supported types of v1alpha1.GeneratedResources, we need to
+// update this function to convert them.
 func MakeGeneratedResources(outputs istio.Builder) []*v1alpha1.GeneratedResource {
 	if outputs == nil {
 		return nil
@@ -136,6 +138,8 @@ func MakeGeneratedResources(outputs istio.Builder) []*v1alpha1.GeneratedResource
 
 // convert [generated resources] to istio.Builder
 // exposed here for use in Server implementations.
+// NOTE: If we add more supported types of v1alpha1.GeneratedResources, we need to
+// update this function to convert them.
 func MakeOutputs(ctx context.Context, name string, generated []*v1alpha1.GeneratedResource) istio.Builder {
 	outputs := istio.NewBuilder(ctx, name)
 	for _, resource := range generated {
@@ -167,6 +171,8 @@ func MakeOutputs(ctx context.Context, name string, generated []*v1alpha1.Generat
 	return outputs
 }
 
+// NOTE: If we add more supported types of v1alpha1.GeneratedResources, we need to
+// update this function to convert them.
 func applyPatches(outputs istio.Builder, patches *v1alpha1.PatchList) {
 	if patches == nil {
 		return

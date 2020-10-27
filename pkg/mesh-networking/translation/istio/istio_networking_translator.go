@@ -42,7 +42,7 @@ type istioTranslator struct {
 func NewIstioTranslator(extensionClients extensions.Clientset) Translator {
 	return &istioTranslator{
 		dependencies: internal.NewDependencyFactory(),
-		extensions:   istioextensions.NewIstioExtensions(extensionClients),
+		extensions:   istioextensions.NewIstioExtender(extensionClients),
 	}
 }
 

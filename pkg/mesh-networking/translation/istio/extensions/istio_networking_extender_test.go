@@ -36,7 +36,7 @@ var _ = Describe("IstioNetworkingExtender", func() {
 		ctl = gomock.NewController(GinkgoT())
 		client = mock_istio_extensions.NewMockNetworkingExtensionsClient(ctl)
 		clientset = mock_extensions.NewMockClientset(ctl)
-		exts = NewIstioExtensions(clientset)
+		exts = NewIstioExtender(clientset)
 		mockClients = extensions.Clients{client}
 	})
 	AfterEach(func() {

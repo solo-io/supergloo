@@ -15,6 +15,8 @@ message SettingsSpec {
     .networking.smh.solo.io.TrafficPolicySpec.MTLS mtls = 1;
 
     // Configure SMH Networking to communicate with one or more external gRPC NetworkingExtensions servers.
+    // Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence).
+    // Note: Extension Servers have full write access to the output objects written by Service Mesh Hub.
     repeated NetworkingExtensionsServer networking_extension_servers = 2;
 }
 
