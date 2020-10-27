@@ -661,7 +661,7 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type NetworkingExtensionsClient interface {
-	// GetTrafficTargetPatches retrieves desired patches to the set of output Mesh config resources
+	// GetTrafficTargetPatches retrieves desired patches to the set of output service mesh config resources
 	// generated for a given SMH TrafficTarget
 	GetTrafficTargetPatches(ctx context.Context, in *TrafficTargetPatchRequest, opts ...grpc.CallOption) (*PatchList, error)
 	// GetWorkloadPatches retrieves desired patches to the set of output Mesh config resources
@@ -746,7 +746,7 @@ func (x *networkingExtensionsWatchPushNotificationsClient) Recv() (*PushNotifica
 
 // NetworkingExtensionsServer is the server API for NetworkingExtensions service.
 type NetworkingExtensionsServer interface {
-	// GetTrafficTargetPatches retrieves desired patches to the set of output Mesh config resources
+	// GetTrafficTargetPatches retrieves desired patches to the set of output service mesh config resources
 	// generated for a given SMH TrafficTarget
 	GetTrafficTargetPatches(context.Context, *TrafficTargetPatchRequest) (*PatchList, error)
 	// GetWorkloadPatches retrieves desired patches to the set of output Mesh config resources
