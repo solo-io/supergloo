@@ -69,7 +69,27 @@ func (d *trafficShiftDecorator) ApplyTrafficPolicyToVirtualService(
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	trafficShiftDestinations, err := d.translateTrafficShift(service, appliedPolicy.Spec)
+	trafficShiftDestinations, err := d.translateTrafficShift(service, appliedPolicy.Spec, "")
+	if err != nil {
+		return err
+	}
+	if trafficShiftDestinations != nil {
+		if err := registerField(&output.Route, trafficShiftDestinations); err != nil {
+			return err
+		}
+		output.Route = trafficShiftDestinations
+	}
+	return nil
+}
+
+func (d *trafficShiftDecorator) ApplyTrafficPolicyToFederatedVirtualService(
+	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+	service *discoveryv1alpha2.TrafficTarget,
+	output *networkingv1alpha3spec.HTTPRoute,
+	registerField decorators.RegisterField,
+	federatedClusterName string,
+) error {
+	trafficShiftDestinations, err := d.translateTrafficShift(service, appliedPolicy.Spec, federatedClusterName)
 	if err != nil {
 		return err
 	}
@@ -85,6 +105,7 @@ func (d *trafficShiftDecorator) ApplyTrafficPolicyToVirtualService(
 func (d *trafficShiftDecorator) translateTrafficShift(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
+	federatedClusterName string,
 ) ([]*networkingv1alpha3spec.HTTPRouteDestination, error) {
 	trafficShift := trafficPolicy.GetTrafficShift()
 	if trafficShift == nil {
@@ -104,6 +125,7 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 				destinationType.KubeService,
 				trafficTarget,
 				destination.Weight,
+				federatedClusterName,
 			)
 			if err != nil {
 				return nil, err
@@ -127,10 +149,12 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 	return shiftedDestinations, nil
 }
 
+// If federatedClusterName is non-empty, it indicates translation for a federated VirtualService, so use it as the source cluster name.
 func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	kubeDest *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination,
 	originalService *discoveryv1alpha2.TrafficTarget,
 	weight uint32,
+	federatedClusterName string,
 ) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
 	originalKubeService := originalService.Spec.GetKubeService()
 
@@ -154,7 +178,12 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	}
 	trafficShiftKubeService := trafficShiftService.Spec.GetKubeService()
 
-	sourceCluster := originalKubeService.Ref.ClusterName
+	var sourceCluster string
+	if federatedClusterName != "" {
+		sourceCluster = federatedClusterName
+	} else {
+		sourceCluster = originalKubeService.Ref.ClusterName
+	}
 	destinationHost := d.clusterDomains.GetDestinationServiceFQDN(sourceCluster, svcRef)
 
 	var destinationPort *networkingv1alpha3spec.PortSelector

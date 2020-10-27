@@ -70,7 +70,7 @@ func (d dependencyFactoryImpl) MakeMeshTranslator(
 	failoverServices v1alpha2sets.FailoverServiceSet,
 ) mesh.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
-	federationTranslator := federation.NewTranslator(ctx, clusterDomains, trafficTargets, failoverServices)
+	federationTranslator := federation.NewTranslator(ctx, clusterDomains, decorators.NewFactory(), trafficTargets, failoverServices)
 	mtlsTranslator := mtls.NewTranslator(ctx, secrets, workloads)
 	accessTranslator := access.NewTranslator()
 	failoverServiceTranslator := failoverservice.NewTranslator(ctx, clusterDomains)

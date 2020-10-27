@@ -114,3 +114,17 @@ type TrafficPolicyVirtualServiceDecorator interface {
 		registerField RegisterField,
 	) error
 }
+
+// Same as TrafficPolicyVirtualServiceDecorator but decorates a VirtualService for a federated TrafficTarget, which will set
+// hostnames depending on whether the host is colocated with the cluster of the federated TrafficTarget.
+type TrafficPolicyFederatedVirtualServiceDecorator interface {
+	Decorator
+
+	ApplyTrafficPolicyToFederatedVirtualService(
+		appliedPolicy *v1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+		service *v1alpha2.TrafficTarget,
+		output *networkingv1alpha3spec.HTTPRoute,
+		registerField RegisterField,
+		federatedClusterName string,
+	) error
+}

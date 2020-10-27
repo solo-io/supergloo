@@ -35,6 +35,14 @@ type Translator interface {
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		reporter reporting.Reporter,
 	) *networkingv1alpha3.VirtualService
+
+	// TranslateFederated translates a VirtualService for a federated traffic target on the specified cluster, using global FQDNs for hostnames.
+	TranslateFederated(
+		in input.Snapshot,
+		trafficTarget *discoveryv1alpha2.TrafficTarget,
+		clusterName string,
+		reporter reporting.Reporter,
+	) *networkingv1alpha3.VirtualService
 }
 
 type translator struct {
@@ -46,12 +54,33 @@ func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFact
 	return &translator{clusterDomains: clusterDomains, decoratorFactory: decoratorFactory}
 }
 
-// translate the appropriate VirtualService for the given TrafficTarget.
-// returns nil if no VirtualService is required for the TrafficTarget (i.e. if no VirtualService features are required, such as subsets).
-// The input snapshot TrafficTargetSet contains n the
+// Translate a VirtualService colocated with the TrafficTarget.
 func (t *translator) Translate(
 	in input.Snapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	reporter reporting.Reporter,
+) *networkingv1alpha3.VirtualService {
+	return t.translate(in, trafficTarget, "", reporter)
+}
+
+// Translate a VirtualService for a TrafficTarget federated to the cluster indicated by federatedClusterName.
+func (t *translator) TranslateFederated(
+	in input.Snapshot,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	federatedClusterName string,
+	reporter reporting.Reporter,
+) *networkingv1alpha3.VirtualService {
+	return t.translate(in, trafficTarget, federatedClusterName, reporter)
+}
+
+// translate the appropriate VirtualService for the given TrafficTarget.
+// If federatedClusterName is empty, assume that translation is for non-federated, local traffic target.
+// returns nil if no VirtualService is required for the TrafficTarget (i.e. if no VirtualService features are required, such as subsets).
+// The input snapshot TrafficTargetSet contains n the
+func (t *translator) translate(
+	in input.Snapshot,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	federatedClusterName string,
 	reporter reporting.Reporter,
 ) *networkingv1alpha3.VirtualService {
 	kubeService := trafficTarget.Spec.GetKubeService()
@@ -61,7 +90,7 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	virtualService := t.initializeVirtualService(trafficTarget)
+	virtualService := t.initializeVirtualService(trafficTarget, federatedClusterName)
 	// register the owners of the virtualservice fields
 	virtualServiceFields := fieldutils.NewOwnershipRegistry()
 	vsDecorators := t.decoratorFactory.MakeDecorators(decorators.Parameters{
@@ -73,13 +102,29 @@ func (t *translator) Translate(
 		baseRoute := initializeBaseRoute(policy.Spec)
 		registerField := registerFieldFunc(virtualServiceFields, virtualService, policy.Ref)
 		for _, decorator := range vsDecorators {
+			trafficPolicyDecorator, isDecorator := decorator.(decorators.TrafficPolicyVirtualServiceDecorator)
+			federatedTrafficPolicyDecorator, isFederatedDecorator := decorator.(decorators.TrafficPolicyFederatedVirtualServiceDecorator)
 
-			if trafficPolicyDecorator, ok := decorator.(decorators.TrafficPolicyVirtualServiceDecorator); ok {
+			// Don't apply decorator if translating for a federated traffic target and the decorator is a federated decorator
+			// to avoid field conflicts
+			if isDecorator && (federatedClusterName == "" || !isFederatedDecorator) {
 				if err := trafficPolicyDecorator.ApplyTrafficPolicyToVirtualService(
 					policy,
 					trafficTarget,
 					baseRoute,
 					registerField,
+				); err != nil {
+					reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
+				}
+			}
+
+			if isFederatedDecorator {
+				if err := federatedTrafficPolicyDecorator.ApplyTrafficPolicyToFederatedVirtualService(
+					policy,
+					trafficTarget,
+					baseRoute,
+					registerField,
+					federatedClusterName,
 				); err != nil {
 					reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
 				}
@@ -93,7 +138,7 @@ func (t *translator) Translate(
 
 		// set a default destination for the route (to the target traffictarget)
 		// if a decorator has not already set it
-		t.setDefaultDestination(baseRoute, trafficTarget)
+		t.setDefaultDestination(baseRoute, trafficTarget, federatedClusterName)
 
 		// construct a copy of a route for each service port
 		// required because Istio needs the destination port for every route
@@ -144,13 +189,21 @@ func registerFieldFunc(
 	}
 }
 
-func (t *translator) initializeVirtualService(trafficTarget *discoveryv1alpha2.TrafficTarget) *networkingv1alpha3.VirtualService {
+func (t *translator) initializeVirtualService(
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	federatedClusterName string,
+) *networkingv1alpha3.VirtualService {
 	meta := metautils.TranslatedObjectMeta(
 		trafficTarget.Spec.GetKubeService().Ref,
 		trafficTarget.Annotations,
 	)
 
-	hosts := []string{t.clusterDomains.GetServiceLocalFQDN(trafficTarget.Spec.GetKubeService().Ref)}
+	// Ensure that VirtualService is output to federated cluster when translating for federated TrafficTargets.
+	if federatedClusterName != "" {
+		meta.ClusterName = federatedClusterName
+	}
+
+	hosts := []string{t.clusterDomains.GetDestinationServiceFQDN(federatedClusterName, trafficTarget.Spec.GetKubeService().Ref)}
 
 	return &networkingv1alpha3.VirtualService{
 		ObjectMeta: meta,
@@ -166,7 +219,11 @@ func initializeBaseRoute(trafficPolicy *v1alpha2.TrafficPolicySpec) *networkingv
 	}
 }
 
-func (t *translator) setDefaultDestination(baseRoute *networkingv1alpha3spec.HTTPRoute, trafficTarget *discoveryv1alpha2.TrafficTarget) {
+func (t *translator) setDefaultDestination(
+	baseRoute *networkingv1alpha3spec.HTTPRoute,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	federatedClusterName string,
+) {
 	// if a route destination is already set, we don't need to modify the route
 	if baseRoute.Route != nil {
 		return
@@ -174,7 +231,7 @@ func (t *translator) setDefaultDestination(baseRoute *networkingv1alpha3spec.HTT
 
 	baseRoute.Route = []*networkingv1alpha3spec.HTTPRouteDestination{{
 		Destination: &networkingv1alpha3spec.Destination{
-			Host: t.clusterDomains.GetServiceLocalFQDN(trafficTarget.Spec.GetKubeService().GetRef()),
+			Host: t.clusterDomains.GetDestinationServiceFQDN(federatedClusterName, trafficTarget.Spec.GetKubeService().GetRef()),
 		},
 	}}
 }
