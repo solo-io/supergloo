@@ -1,0 +1,6 @@
+changelog:
+  - type: FIX
+    description: >
+      TrafficPolicy and AccessPolicy status workloads now only include workloads in the
+      same mesh or virtual mesh of the policy's selected traffic targets.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1003

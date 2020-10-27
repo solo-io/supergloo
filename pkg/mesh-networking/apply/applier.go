@@ -6,6 +6,7 @@ import (
 
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply/configtarget"
@@ -13,7 +14,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	utilsets "k8s.io/apimachinery/pkg/util/sets"
 )
 
 // the Applier validates user-applied configuration
@@ -157,14 +160,30 @@ func reportTranslationErrors(ctx context.Context, reporter *applyReporter, input
 		mesh.Status.AppliedVirtualMesh = validateAndReturnVirtualMesh(ctx, input, reporter, mesh)
 	}
 
-	setWorkloadsForTrafficPolicies(input.TrafficPolicies().List(), input.Workloads().List())
-	setWorkloadsForAccessPolicies(input.AccessPolicies().List(), input.Workloads().List())
+	setWorkloadsForTrafficPolicies(ctx, input.TrafficPolicies().List(), input.Workloads().List(), input.TrafficTargets(), input.Meshes())
+	setWorkloadsForAccessPolicies(ctx, input.AccessPolicies().List(), input.Workloads().List(), input.TrafficTargets(), input.Meshes())
 }
 
+// A workload is associated with a traffic policy if the workload matches the policy's workload selector
+// AND the workload is in the same mesh or VirtualMesh as any of the policy's selected traffic targets
 func setWorkloadsForTrafficPolicies(
+	ctx context.Context,
 	trafficPolicies networkingv1alpha2.TrafficPolicySlice,
-	workloads discoveryv1alpha2.WorkloadSlice) {
+	workloads discoveryv1alpha2.WorkloadSlice,
+	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+	meshes discoveryv1alpha2sets.MeshSet) {
+
+	// create a map of mesh to virtual mesh for lookup
+	meshToVirtualMesh := makeMeshToVirtualMeshMap(meshes.List())
+
 	for _, trafficPolicy := range trafficPolicies {
+		// get the selected traffic targets on the policy
+		matchingTrafficTargets := trafficTargets.List(func(trafficTarget *discoveryv1alpha2.TrafficTarget) bool {
+			return trafficPolicy.Status.GetTrafficTargets()[sets.Key(trafficTarget.GetObjectMeta())] == nil
+		})
+		// get all the mesh and virtual mesh refs from those traffic targets
+		matchingMeshes, matchingVirtualMeshes := getMeshesFromTrafficTargets(ctx, matchingTrafficTargets, meshes)
+
 		var matchingWorkloads []string
 		// TODO(awang) optimize if the returned workloads list gets too large
 		//if len(trafficPolicy.Spec.GetSourceSelector()) == 0 {
@@ -172,7 +191,8 @@ func setWorkloadsForTrafficPolicies(
 		//	return
 		//}
 		for _, workload := range workloads {
-			if selectorutils.SelectorMatchesWorkload(trafficPolicy.Spec.GetSourceSelector(), workload) {
+			if selectorutils.SelectorMatchesWorkload(trafficPolicy.Spec.GetSourceSelector(), workload) &&
+				meshMatches(workload.Spec.GetMesh(), matchingMeshes, matchingVirtualMeshes, meshToVirtualMesh) {
 				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
 			}
 		}
@@ -180,14 +200,31 @@ func setWorkloadsForTrafficPolicies(
 	}
 }
 
+// A workload is associated with an access policy if the workload matches the policy's identity selector
+// AND the workload is in the same mesh or VirtualMesh as any of the policy's selected traffic targets
 func setWorkloadsForAccessPolicies(
+	ctx context.Context,
 	accessPolicies networkingv1alpha2.AccessPolicySlice,
-	workloads discoveryv1alpha2.WorkloadSlice) {
+	workloads discoveryv1alpha2.WorkloadSlice,
+	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+	meshes discoveryv1alpha2sets.MeshSet) {
+
+	// create a map of mesh to virtual mesh for lookup
+	meshToVirtualMesh := makeMeshToVirtualMeshMap(meshes.List())
+
 	for _, accessPolicy := range accessPolicies {
+		// get the selected traffic targets on the policy
+		matchingTrafficTargets := trafficTargets.List(func(trafficTarget *discoveryv1alpha2.TrafficTarget) bool {
+			return accessPolicy.Status.GetTrafficTargets()[sets.Key(trafficTarget.GetObjectMeta())] == nil
+		})
+		// get all the mesh and virtual mesh refs from those traffic targets
+		matchingMeshes, matchingVirtualMeshes := getMeshesFromTrafficTargets(ctx, matchingTrafficTargets, meshes)
+
 		var matchingWorkloads []string
 		// TODO(awang) optimize if the returned workloads list gets too large
 		for _, workload := range workloads {
-			if selectorutils.IdentityMatchesWorkload(accessPolicy.Spec.GetSourceSelector(), workload) {
+			if selectorutils.IdentityMatchesWorkload(accessPolicy.Spec.GetSourceSelector(), workload) &&
+				meshMatches(workload.Spec.GetMesh(), matchingMeshes, matchingVirtualMeshes, meshToVirtualMesh) {
 				matchingWorkloads = append(matchingWorkloads, sets.Key(workload))
 			}
 		}
@@ -646,4 +683,61 @@ func getAppliedFailoverServices(
 		}
 	}
 	return appliedFailoverServices
+}
+
+// Get all the meshes and corresponding virtual meshes of the given traffic targets.
+// Results are returned as maps keyed by mesh ObjectRef keys and virtual mesh ObjectRef keys
+func getMeshesFromTrafficTargets(ctx context.Context, trafficTargets []*discoveryv1alpha2.TrafficTarget,
+	allMeshes discoveryv1alpha2sets.MeshSet) (utilsets.String, utilsets.String) {
+
+	meshes := utilsets.NewString()
+	virtualMeshes := utilsets.NewString()
+	for _, trafficTarget := range trafficTargets {
+		meshRef := trafficTarget.Spec.GetMesh()
+		if meshRef == nil {
+			continue
+		}
+		meshKey := sets.Key(meshRef)
+		if !meshes.Has(meshKey) {
+			meshes.Insert(meshKey)
+
+			// get the full mesh object to get the virtual mesh
+			mesh, err := allMeshes.Find(meshRef)
+			if err != nil {
+				// should never happen
+				contextutils.LoggerFrom(ctx).Errorf("internal error: failed to look up mesh %v: %v", meshRef, err)
+				continue
+			}
+			if virtualMeshRef := mesh.Status.GetAppliedVirtualMesh().GetRef(); virtualMeshRef != nil {
+				virtualMeshes.Insert(sets.Key(virtualMeshRef))
+			}
+		}
+	}
+	return meshes, virtualMeshes
+}
+
+// Map each mesh ref to its virtual mesh ref (if any).
+// The keys in the returned map are mesh ref keys, and the values are virtual mesh ref keys.
+func makeMeshToVirtualMeshMap(meshes discoveryv1alpha2.MeshSlice) map[string]string {
+	meshToVirtualMesh := make(map[string]string)
+	for _, mesh := range meshes {
+		if virtualMeshRef := mesh.Status.GetAppliedVirtualMesh().GetRef(); virtualMeshRef != nil {
+			meshToVirtualMesh[sets.Key(mesh)] = sets.Key(virtualMeshRef)
+		}
+	}
+	return meshToVirtualMesh
+}
+
+// Returns true if the given mesh either matches one of the given matchingMeshes, or it is in a virtual mesh that
+// matches one of the given matchingVirtualMeshes
+func meshMatches(meshRef *v1.ObjectRef, matchingMeshes utilsets.String, matchingVirtualMeshes utilsets.String,
+	meshToVirtualMesh map[string]string) bool {
+	meshKey := sets.Key(meshRef)
+	if matchingMeshes.Has(meshKey) {
+		return true
+	}
+	if virtualMeshRefKey, ok := meshToVirtualMesh[meshKey]; ok {
+		return matchingVirtualMeshes.Has(virtualMeshRefKey)
+	}
+	return false
 }
