@@ -5,6 +5,7 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	"github.com/solo-io/service-mesh-hub/test/data"
+	"istio.io/istio/pkg/config/protocol"
 
 	"github.com/gogo/protobuf/types"
 	. "github.com/onsi/ginkgo"
@@ -307,12 +308,12 @@ var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1a
 		Ports: []*networkingv1alpha3spec.Port{
 			{
 				Number:   1234,
-				Protocol: "TCP",
+				Protocol: string(protocol.HTTP),
 				Name:     "http",
 			},
 			{
 				Number:   5678,
-				Protocol: "TCP",
+				Protocol: string(protocol.GRPC),
 				Name:     "grpc",
 			},
 		},
