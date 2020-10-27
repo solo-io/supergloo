@@ -23,7 +23,7 @@ import "networking/v1alpha3/workload_entry.proto";
 // NetworkingExtensions server.
 // The server can return a set of patches which SMH will apply before writing configuration to the cluster.
 service NetworkingExtensions {
-    // GetTrafficTargetPatches retrieves desired patches to the set of output Mesh config resources
+    // GetTrafficTargetPatches retrieves desired patches to the set of output service mesh config resources
     // generated for a given SMH TrafficTarget
     rpc GetTrafficTargetPatches (TrafficTargetPatchRequest) returns (PatchList) {
     }
