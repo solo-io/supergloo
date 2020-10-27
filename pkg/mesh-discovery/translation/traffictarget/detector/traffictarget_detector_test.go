@@ -14,6 +14,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/pointer"
 
 	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/traffictarget/detector"
 )
@@ -80,7 +81,8 @@ var _ = Describe("TrafficTargetDetector", func() {
 							Type:   intstr.String,
 							StrVal: "http",
 						},
-						Protocol: "TCP",
+						Protocol:    "TCP",
+						AppProtocol: pointer.StringPtr("HTTP"),
 					},
 					{
 						Name: "port2",
@@ -123,9 +125,10 @@ var _ = Describe("TrafficTargetDetector", func() {
 						Labels:                 svc.Labels,
 						Ports: []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 							{
-								Port:     1234,
-								Name:     "port1",
-								Protocol: "TCP",
+								Port:        1234,
+								Name:        "port1",
+								Protocol:    "TCP",
+								AppProtocol: "HTTP",
 							},
 							{
 								Port:     2345,
@@ -181,9 +184,10 @@ var _ = Describe("TrafficTargetDetector", func() {
 						Labels:                 svc.Labels,
 						Ports: []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 							{
-								Port:     1234,
-								Name:     "port1",
-								Protocol: "TCP",
+								Port:        1234,
+								Name:        "port1",
+								Protocol:    "TCP",
+								AppProtocol: "HTTP",
 							},
 							{
 								Port:     2345,
