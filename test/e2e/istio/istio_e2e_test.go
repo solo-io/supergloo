@@ -61,8 +61,8 @@ var (
 		return out
 	}
 
-	curlGateway = func(hostname, path, body string) string {
-		out, err := exec.Command("curl", "--connect-timeout", "1", "--max-time", "5", "-H", hostname, "http://localhost:32000"+path, "-v", "-d", body).CombinedOutput()
+	curlGateway = func(hostname, path, body, method string) string {
+		out, err := exec.Command("curl", "--connect-timeout", "1", "--max-time", "5", "-H", hostname, "http://localhost:32000"+path, "-v", "-d", body, "-X", method).CombinedOutput()
 		Expect(err).NotTo(HaveOccurred())
 
 		GinkgoWriter.Write(out)
