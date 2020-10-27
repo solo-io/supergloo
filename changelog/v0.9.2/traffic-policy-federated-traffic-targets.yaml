@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Update TrafficPolicy translation to output VirtualServices for federated services.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1002
