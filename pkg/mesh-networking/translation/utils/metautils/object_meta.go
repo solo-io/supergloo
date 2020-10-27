@@ -3,6 +3,7 @@ package metautils
 import (
 	"fmt"
 
+	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -19,6 +20,21 @@ func TranslatedObjectMeta(sourceObj ezkube.ClusterResourceId, annotations map[st
 		Name:        sourceObj.GetName(),
 		Namespace:   sourceObj.GetNamespace(),
 		ClusterName: sourceObj.GetClusterName(),
+		Labels:      TranslatedObjectLabels(),
+		Annotations: annotations,
+	}
+}
+
+// construct an ObjectMeta for a resource for a federated source object
+func FederatedObjectMeta(
+	sourceObj ezkube.ClusterResourceId,
+	meshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	annotations map[string]string,
+) metav1.ObjectMeta {
+	return metav1.ObjectMeta{
+		Name:        sourceObj.GetName(),
+		Namespace:   meshInstallation.Namespace,
+		ClusterName: meshInstallation.Cluster,
 		Labels:      TranslatedObjectLabels(),
 		Annotations: annotations,
 	}

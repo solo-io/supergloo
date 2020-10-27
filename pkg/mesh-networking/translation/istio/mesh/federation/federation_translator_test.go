@@ -3,7 +3,9 @@ package federation_test
 import (
 	"context"
 
+	"github.com/golang/mock/gomock"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
+	mock_virtualservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/virtualservice/mocks"
 	"github.com/solo-io/service-mesh-hub/test/data"
 	"istio.io/istio/pkg/config/protocol"
 
@@ -29,7 +31,9 @@ import (
 
 var _ = Describe("FederationTranslator", func() {
 	ctx := context.TODO()
+	ctrl := gomock.NewController(GinkgoT())
 	clusterDomains := hostutils.NewClusterDomainRegistry(skv1alpha1sets.NewKubernetesClusterSet())
+	mockVirtualServiceTranslator := mock_virtualservice.NewMockTranslator(ctrl)
 
 	It("translates federation resources for a virtual mesh", func() {
 
@@ -149,7 +153,13 @@ var _ = Describe("FederationTranslator", func() {
 			AddKubernetesClusters(skv1alpha1.KubernetesClusterSlice{kubeCluster}).
 			Build()
 
-		t := NewTranslator(ctx, clusterDomains, in.TrafficTargets(), in.FailoverServices())
+		expectedVS := &networkingv1alpha3.VirtualService{}
+		mockVirtualServiceTranslator.
+			EXPECT().
+			TranslateFederated(in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
+			Return(expectedVS)
+
+		t := NewTranslator(ctx, clusterDomains, in.TrafficTargets(), in.FailoverServices(), mockVirtualServiceTranslator)
 		outputs := istio.NewBuilder(context.TODO(), "")
 		t.Translate(
 			in,
@@ -165,7 +175,7 @@ var _ = Describe("FederationTranslator", func() {
 		Expect(outputs.GetEnvoyFilters().List()[0]).To(Equal(expectedEnvoyFilter))
 		Expect(outputs.GetDestinationRules()).To(Equal(expectedDestinationRules))
 		Expect(outputs.GetServiceEntries()).To(Equal(expectedServiceEntries))
-
+		Expect(outputs.GetVirtualServices().List()[0]).To(Equal(expectedVS))
 	})
 })
 

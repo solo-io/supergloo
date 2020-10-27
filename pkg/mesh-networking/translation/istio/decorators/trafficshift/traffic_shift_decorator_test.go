@@ -127,6 +127,104 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		Expect(output.Route).To(Equal(expectedHTTPDestinations))
 	})
 
+	It("should decorate mirror for federated TrafficTarget with selected port", func() {
+		trafficTargets := v1alpha2sets.NewTrafficTargetSet(
+			&discoveryv1alpha2.TrafficTarget{
+				Spec: discoveryv1alpha2.TrafficTargetSpec{
+					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+							Ref: &v1.ClusterObjectRef{
+								Name:        "traffic-shift",
+								Namespace:   "namespace",
+								ClusterName: "cluster",
+							},
+							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+								{
+									Port:     9080,
+									Name:     "http1",
+									Protocol: "http",
+								},
+								{
+									Port:     9081,
+									Name:     "http2",
+									Protocol: "http",
+								},
+							},
+						},
+					},
+				},
+			})
+		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets, nil)
+		originalService := &discoveryv1alpha2.TrafficTarget{
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+						Ref: &v1.ClusterObjectRef{
+							ClusterName: "local-cluster",
+						},
+					},
+				},
+			},
+		}
+		registerField := func(fieldPtr, val interface{}) error {
+			return nil
+		}
+		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+			Spec: &v1alpha2.TrafficPolicySpec{
+				TrafficShift: &v1alpha2.TrafficPolicySpec_MultiDestination{
+					Destinations: []*v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination{
+						{
+							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
+								KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
+									Name:        "traffic-shift",
+									Namespace:   "namespace",
+									ClusterName: "cluster",
+									Port:        9080,
+								},
+							},
+							Weight: 50,
+						},
+					},
+				},
+			},
+		}
+
+		federatedClusterName := "federated-cluster-name"
+		globalTrafficShiftHostname := "name.namespace.svc.local-cluster.global"
+		mockClusterDomainRegistry.
+			EXPECT().
+			GetDestinationServiceFQDN(
+				federatedClusterName,
+				&v1.ClusterObjectRef{
+					Name:        appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Name,
+					Namespace:   appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Namespace,
+					ClusterName: appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().ClusterName,
+				}).
+			Return(globalTrafficShiftHostname)
+
+		expectedHTTPDestinations := []*v1alpha3.HTTPRouteDestination{
+			{
+				Destination: &v1alpha3.Destination{
+					Host: globalTrafficShiftHostname,
+					Port: &v1alpha3.PortSelector{
+						Number: 9080,
+					},
+				},
+				Weight: 50,
+			},
+		}
+		err := trafficShiftDecorator.(decorators.TrafficPolicyFederatedVirtualServiceDecorator).ApplyTrafficPolicyToFederatedVirtualService(
+			appliedPolicy,
+			originalService,
+			output,
+			registerField,
+			federatedClusterName,
+		)
+
+		Expect(err).ToNot(HaveOccurred())
+		Expect(output.Route).To(Equal(expectedHTTPDestinations))
+	})
+
 	It("should throw error if traffic shift destination has multiple ports but traffic policy does not specify which port", func() {
 		trafficTargets := v1alpha2sets.NewTrafficTargetSet(
 			&discoveryv1alpha2.TrafficTarget{

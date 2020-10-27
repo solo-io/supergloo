@@ -50,3 +50,17 @@ func (mr *MockTranslatorMockRecorder) Translate(in, trafficTarget, reporter inte
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), in, trafficTarget, reporter)
 }
+
+// TranslateFederated mocks base method
+func (m *MockTranslator) TranslateFederated(in input.Snapshot, trafficTarget *v1alpha2.TrafficTarget, federatedMeshInstallation *v1alpha2.MeshSpec_MeshInstallation, reporter reporting.Reporter) *v1alpha3.VirtualService {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TranslateFederated", in, trafficTarget, federatedMeshInstallation, reporter)
+	ret0, _ := ret[0].(*v1alpha3.VirtualService)
+	return ret0
+}
+
+// TranslateFederated indicates an expected call of TranslateFederated
+func (mr *MockTranslatorMockRecorder) TranslateFederated(in, trafficTarget, federatedMeshInstallation, reporter interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateFederated", reflect.TypeOf((*MockTranslator)(nil).TranslateFederated), in, trafficTarget, federatedMeshInstallation, reporter)
+}

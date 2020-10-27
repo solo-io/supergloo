@@ -118,7 +118,7 @@ type TrafficPolicyVirtualServiceDecorator interface {
 // Same as TrafficPolicyVirtualServiceDecorator but decorates a VirtualService for a federated TrafficTarget, which will set
 // hostnames depending on whether the host is colocated with the cluster of the federated TrafficTarget.
 type TrafficPolicyFederatedVirtualServiceDecorator interface {
-	Decorator
+	TrafficPolicyVirtualServiceDecorator
 
 	ApplyTrafficPolicyToFederatedVirtualService(
 		appliedPolicy *v1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,

@@ -17,7 +17,6 @@ import (
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
@@ -75,16 +74,16 @@ type translator struct {
 func NewTranslator(
 	ctx context.Context,
 	clusterDomains hostutils.ClusterDomainRegistry,
-	decoratorFactory decorators.Factory,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
+	virtualServiceTranslator virtualservice.Translator,
 ) Translator {
 	return &translator{
 		ctx:                      ctx,
 		clusterDomains:           clusterDomains,
 		trafficTargets:           trafficTargets,
 		failoverServices:         failoverServices,
-		virtualServiceTranslator: virtualservice.NewTranslator(clusterDomains, decoratorFactory),
+		virtualServiceTranslator: virtualServiceTranslator,
 	}
 }
 
@@ -255,9 +254,8 @@ func (t *translator) Translate(
 				},
 			}
 
-			// TODO replace with federation reporter
-			panickingReporter := reporting.NewPanickingReporter(t.ctx)
-			vs := t.virtualServiceTranslator.TranslateFederated(in, trafficTarget, clientIstio.Installation.Cluster, panickingReporter)
+			// Translate VirtualServices for federated TrafficTargets
+			vs := t.virtualServiceTranslator.TranslateFederated(in, trafficTarget, clientIstio.Installation, reporter)
 
 			outputs.AddServiceEntries(se)
 			outputs.AddDestinationRules(dr)
