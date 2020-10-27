@@ -2,4 +2,4 @@ changelog:
   - type: NON_USER_FACING
     issueLink: https://github.com/solo-io/service-mesh-hub/issues/1018
     description: Define (gRPC) API of Networking-Extensions service.
-    resovlesIssue: false
+    resolvesIssue: false
