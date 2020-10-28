@@ -5,9 +5,9 @@ import (
 	"log"
 
 	"github.com/solo-io/anyvendor/pkg/manager"
+	"github.com/solo-io/service-mesh-hub/codegen/anyvendor"
 	"github.com/solo-io/service-mesh-hub/docs/docsgen"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands"
-	"github.com/solo-io/solo-kit/pkg/code-generator/sk_anyvendor"
 )
 
 //go:generate go run docsgen.go
@@ -15,19 +15,15 @@ import (
 func main() {
 	log.Printf("Started docs generation\n")
 
-	protoImports := sk_anyvendor.CreateDefaultMatchOptions([]string{
-		"api/**/*.proto",
-	})
-	protoImports.External["github.com/solo-io/skv2"] = []string{
-		"api/**/*.proto",
-	}
 	ctx := context.TODO()
 	mgr, err := manager.NewManager(ctx, "")
 	if err != nil {
 		log.Fatal("failed to initialize vendor_any manager")
 	}
 
-	if err = mgr.Ensure(ctx, protoImports.ToAnyvendorConfig()); err != nil {
+	anyvendorImports := anyvendor.AnyVendorImports()
+
+	if err = mgr.Ensure(ctx, anyvendorImports.ToAnyvendorConfig()); err != nil {
 		log.Fatal("failed to import protos")
 	}
 	// generate docs
