@@ -11,12 +11,12 @@ import (
 	"sort"
 
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/skv2/pkg/multicluster"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	discovery_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
@@ -611,6 +611,15 @@ type Builder interface {
 	// add a cluster to the collected clusters.
 	// this can be used to collect clusters for use with MultiCluster snapshots.
 	AddCluster(cluster string)
+
+	// returns the set of clusters currently stored in this builder
+	Clusters() []string
+
+	// merge all the resources from another Builder into this one
+	Merge(other Builder)
+
+	// create a clone of this builder (deepcopying all resources)
+	Clone() Builder
 }
 
 func (b *builder) AddTrafficTargets(trafficTargets ...*discovery_smh_solo_io_v1alpha2.TrafficTarget) {
@@ -677,4 +686,42 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 
 func (b *builder) AddCluster(cluster string) {
 	b.clusters = append(b.clusters, cluster)
+}
+
+func (b *builder) Clusters() []string {
+	return b.clusters
+}
+
+func (b *builder) Merge(other Builder) {
+	if other == nil {
+		return
+	}
+
+	b.AddTrafficTargets(other.GetTrafficTargets().List()...)
+	b.AddWorkloads(other.GetWorkloads().List()...)
+	b.AddMeshes(other.GetMeshes().List()...)
+	for _, cluster := range other.Clusters() {
+		b.AddCluster(cluster)
+	}
+}
+
+func (b *builder) Clone() Builder {
+	if b == nil {
+		return nil
+	}
+	clone := NewBuilder(b.ctx, b.name)
+
+	for _, trafficTarget := range b.GetTrafficTargets().List() {
+		clone.AddTrafficTargets(trafficTarget.DeepCopy())
+	}
+	for _, workload := range b.GetWorkloads().List() {
+		clone.AddWorkloads(workload.DeepCopy())
+	}
+	for _, mesh := range b.GetMeshes().List() {
+		clone.AddMeshes(mesh.DeepCopy())
+	}
+	for _, cluster := range b.Clusters() {
+		clone.AddCluster(cluster)
+	}
+	return clone
 }

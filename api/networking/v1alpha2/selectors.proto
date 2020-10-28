@@ -106,7 +106,7 @@ message TrafficTargetSelector {
 }
 
 /*
-    Select Kubernetes workloads directly using label and/or namespace criteria. See comments on the fields for
+    Select Kubernetes workloads directly using label namespace and/or cluster criteria. See comments on the fields for
     detailed semantics.
 */
 message WorkloadSelector {
@@ -115,6 +115,9 @@ message WorkloadSelector {
 
     // If specified, match workloads if they exist in one of the specified namespaces. If not specified, match on any namespace.
     repeated string namespaces = 2;
+
+    // If specified, match workloads if they exist in one of the specified clusters. If not specified, match on any cluster.
+    repeated string clusters = 3;
 }
 
 /*

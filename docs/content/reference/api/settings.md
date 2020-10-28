@@ -16,9 +16,27 @@ title: "settings.proto"
 
 
 ## Table of Contents
+  - [NetworkingExtensionsServer](#settings.smh.solo.io.NetworkingExtensionsServer)
   - [SettingsSpec](#settings.smh.solo.io.SettingsSpec)
   - [SettingsStatus](#settings.smh.solo.io.SettingsStatus)
 
+
+
+
+
+
+
+<a name="settings.smh.solo.io.NetworkingExtensionsServer"></a>
+
+### NetworkingExtensionsServer
+Options for connecting to an external gRPC NetworkingExternsions server
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| address | string |  | TCP address of the Networking Extensions Server (including port) |
+| insecure | bool |  | Communicate over HTTP rather than HTTPS |
+| reconnectOnNetworkFailures | bool |  | Instruct SMH to automatically reconnect to the server on network failures |
 
 
 
@@ -34,6 +52,7 @@ Configure global settings and defaults.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | mtls | networking.smh.solo.io.TrafficPolicySpec.MTLS |  | Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence) |
+| networkingExtensionServers | []settings.smh.solo.io.NetworkingExtensionsServer | repeated | Configure SMH Networking to communicate with one or more external gRPC NetworkingExtensions servers. Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence). Note: Extension Servers have full write access to the output objects written by Service Mesh Hub. |
 
 
 

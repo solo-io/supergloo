@@ -3,14 +3,14 @@ package mesh_networking
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/appmesh"
-
 	certissuerinput "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/issuer/input"
 	certissuerreconciliation "github.com/solo-io/service-mesh-hub/pkg/certificates/issuer/reconciliation"
 	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/osm"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -32,10 +32,12 @@ func startReconciler(
 	parameters bootstrap.StartParameters,
 ) error {
 
+	extensionClientset := extensions.NewClientset(parameters.Ctx)
+
 	snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager)
 	reporter := reporting.NewPanickingReporter(parameters.Ctx)
 	translator := translation.NewTranslator(
-		istio.NewIstioTranslator(),
+		istio.NewIstioTranslator(extensionClientset),
 		appmesh.NewAppmeshTranslator(),
 		osm.NewOSMTranslator(),
 	)
@@ -59,6 +61,7 @@ func startReconciler(
 		parameters.SnapshotHistory,
 		parameters.VerboseMode,
 		parameters.SettingsRef,
+		extensionClientset,
 	)
 }
 

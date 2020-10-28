@@ -146,13 +146,14 @@ Select Kubernetes services.<br>Only one of (labels + namespaces + cluster) or (r
 <a name="networking.smh.solo.io.WorkloadSelector"></a>
 
 ### WorkloadSelector
-Select Kubernetes workloads directly using label and/or namespace criteria. See comments on the fields for detailed semantics.
+Select Kubernetes workloads directly using label namespace and/or cluster criteria. See comments on the fields for detailed semantics.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | labels | []networking.smh.solo.io.WorkloadSelector.LabelsEntry | repeated | If specified, all labels must exist on workloads, else match on any labels. |
 | namespaces | []string | repeated | If specified, match workloads if they exist in one of the specified namespaces. If not specified, match on any namespace. |
+| clusters | []string | repeated | If specified, match workloads if they exist in one of the specified clusters. If not specified, match on any cluster. |
 
 
 

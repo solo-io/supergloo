@@ -17,10 +17,5 @@ func AnyVendorImports() *skv2_anyvendor.Imports {
 		"common-protos/google/api/field_behavior.proto",
 	}
 
-	anyVendorImports.External["k8s.io/apimachinery"] = []string{
-		"pkg/apis/meta/v1/generated.proto",
-		"pkg/runtime/generated.proto",
-		"pkg/runtime/schema/generated.proto",
-	}
 	return anyVendorImports
 }

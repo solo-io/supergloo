@@ -1,8 +1,11 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/onsi/ginkgo"
 
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/skv2/codegen/model"
@@ -60,10 +63,14 @@ func (m Manifest) AppendResources(resources ...metav1.Object) error {
 	if err != nil {
 		return err
 	}
-	_, err = f.Write([]byte(manifest[0].Content + "\n---\n"))
+
+	content := []byte(manifest[0].Content + "\n---\n")
+
+	_, err = f.Write(content)
 	if err != nil {
 		return err
 	}
+	fmt.Fprintf(ginkgo.GinkgoWriter, "appending to manifest: %s", content)
 
 	return nil
 }

@@ -11,12 +11,12 @@ import (
 	"sort"
 
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/skv2/pkg/multicluster"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	certificates_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2"
@@ -467,6 +467,15 @@ type Builder interface {
 	// add a cluster to the collected clusters.
 	// this can be used to collect clusters for use with MultiCluster snapshots.
 	AddCluster(cluster string)
+
+	// returns the set of clusters currently stored in this builder
+	Clusters() []string
+
+	// merge all the resources from another Builder into this one
+	Merge(other Builder)
+
+	// create a clone of this builder (deepcopying all resources)
+	Clone() Builder
 }
 
 func (b *builder) AddCertificateRequests(certificateRequests ...*certificates_smh_solo_io_v1alpha2.CertificateRequest) {
@@ -522,4 +531,40 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 
 func (b *builder) AddCluster(cluster string) {
 	b.clusters = append(b.clusters, cluster)
+}
+
+func (b *builder) Clusters() []string {
+	return b.clusters
+}
+
+func (b *builder) Merge(other Builder) {
+	if other == nil {
+		return
+	}
+
+	b.AddCertificateRequests(other.GetCertificateRequests().List()...)
+
+	b.AddSecrets(other.GetSecrets().List()...)
+	for _, cluster := range other.Clusters() {
+		b.AddCluster(cluster)
+	}
+}
+
+func (b *builder) Clone() Builder {
+	if b == nil {
+		return nil
+	}
+	clone := NewBuilder(b.ctx, b.name)
+
+	for _, certificateRequest := range b.GetCertificateRequests().List() {
+		clone.AddCertificateRequests(certificateRequest.DeepCopy())
+	}
+
+	for _, secret := range b.GetSecrets().List() {
+		clone.AddSecrets(secret.DeepCopy())
+	}
+	for _, cluster := range b.Clusters() {
+		clone.AddCluster(cluster)
+	}
+	return clone
 }
