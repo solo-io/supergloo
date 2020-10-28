@@ -5,39 +5,37 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/extensions/v1alpha1"
-	skinput "github.com/solo-io/skv2/contrib/pkg/input"
-
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
-
-	settingsv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	"github.com/solo-io/service-mesh-hub/pkg/common/settings"
-	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
-	"github.com/solo-io/skv2/pkg/predicate"
-	"github.com/solo-io/skv2/pkg/reconcile"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
-	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
-	"github.com/solo-io/skv2/contrib/pkg/sets"
-	corev1 "k8s.io/api/core/v1"
-
+	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/go-utils/contextutils"
 
-	"github.com/hashicorp/go-multierror"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/extensions/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
+	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	settingsv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/snapshotutils"
+
+	skinput "github.com/solo-io/skv2/contrib/pkg/input"
+	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
-
-	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"github.com/solo-io/skv2/pkg/predicate"
+	"github.com/solo-io/skv2/pkg/reconcile"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type networkingReconciler struct {
@@ -119,6 +117,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 
 	ctx := contextutils.WithLogger(r.ctx, fmt.Sprintf("reconcile-%v", r.totalReconciles))
 
+	// build the input snapshot from the caches
 	inputSnap, err := r.builder.BuildSnapshot(ctx, "mesh-networking", input.BuildOptions{
 		// only look at kube clusters in our own namespace
 		KubernetesClusters: input.ResourceBuildOptions{
@@ -139,35 +138,18 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 		return false, err
 	}
 
-	// Validate that the reference Settings object exists and has all required fields specified.
-	settings, err := settings.Validate(ctx, inputSnap)
-	if err != nil {
-		return false, err
-	}
-
-	// update configured NetworkExtensionServers for the extension clients which are called inside the translator.
-	extensionsUpdated, err := r.extensionClients.ConfigureServers(settings.Spec.NetworkingExtensionServers)
-	if err != nil {
-		return false, err
-	}
-	if extensionsUpdated {
-		// start watching push notifications for new set of extensions
-		if err := r.extensionClients.WatchPushNotifications(func(_ *v1alpha1.PushNotification) {
-			// ignore error because underlying impl should never error here
-			_, _ = r.reconciler.ReconcileGeneric(pushNotificationId)
-		}); err != nil {
-			return false, err
-		}
-	}
-
+	// apply policies to the discovery resources they target
 	r.applier.Apply(ctx, inputSnap)
 
+	// append errors as we still want to sync statuses if applying translation fails
 	var errs error
 
+	// translate and apply outputs
 	if err := r.applyTranslation(ctx, inputSnap); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
+	// update statuses of input objects
 	if err := inputSnap.SyncStatuses(ctx, r.mgmtClient); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -176,6 +158,11 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 }
 
 func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Snapshot) error {
+	if err := r.syncSettings(ctx, in); err != nil {
+		// fail early if settings failed to sync
+		return err
+	}
+
 	outputSnap, err := r.translator.Translate(ctx, in, r.reporter)
 	if err != nil {
 		// internal translator errors should never happen
@@ -190,6 +177,44 @@ func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Sn
 	r.history.SetOutput(outputSnap)
 
 	return errHandler.Errors()
+}
+
+// validate and process the settings stored in the input snapshot.
+// exactly one should be present.
+// processing/validation errors will be reported to the settings status
+func (r *networkingReconciler) syncSettings(ctx context.Context, in input.Snapshot) error {
+	settings, err := snapshotutils.GetSingletonSettings(ctx, in)
+	if err != nil {
+		return err
+	}
+
+	settings.Status = settingsv1alpha2.SettingsStatus{
+		ObservedGeneration: settings.Generation,
+		State:              networkingv1alpha2.ApprovalState_ACCEPTED,
+	}
+
+	// update configured NetworkExtensionServers for the extension clients which are called inside the translator.
+	extensionsUpdated, err := r.extensionClients.ConfigureServers(settings.Spec.NetworkingExtensionServers)
+	if err != nil {
+		settings.Status.State = networkingv1alpha2.ApprovalState_INVALID
+		settings.Status.Errors = []string{err.Error()}
+		return err
+	}
+	if !extensionsUpdated {
+		return nil
+	}
+
+	// start watching push notifications for new set of extensions
+	if err := r.extensionClients.WatchPushNotifications(func(_ *v1alpha1.PushNotification) {
+		// ignore error because underlying impl should never error here
+		_, _ = r.reconciler.ReconcileGeneric(pushNotificationId)
+	}); err != nil {
+		settings.Status.State = networkingv1alpha2.ApprovalState_FAILED
+		settings.Status.Errors = []string{err.Error()}
+		return err
+	}
+
+	return nil
 }
 
 // returns true if the passed object is a secret which is of a type that is ignored by SMH

@@ -42,11 +42,9 @@ func (o DialOpts) Dial(ctx context.Context) (*grpc.ClientConn, error) {
 		opts = append(opts,
 			grpc.WithConnectParams(grpc.ConnectParams{Backoff: connectionBackoff}),
 			grpc.WithStreamInterceptor(grpc_middleware.ChainStreamClient(
-				//WithResetConnectionBackoffStream(),
 				grpc_retry.StreamClientInterceptor(retryOpts...),
 			)),
 			grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(
-				//WithResetConnectionBackoffUnary(),
 				grpc_retry.UnaryClientInterceptor(retryOpts...),
 			)),
 		)
