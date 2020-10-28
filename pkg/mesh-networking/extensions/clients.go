@@ -87,7 +87,7 @@ func startNotificationWatch(ctx context.Context, exClient v1alpha1.NetworkingExt
 	}
 }
 
-// Clientset provides a handle to fetching a set of cahced gRPC clients
+// Clientset provides a handle to fetching a set of cached gRPC clients
 type Clientset interface {
 	// ConfigureServers updates the set of servers this Clientset is configured with.
 	// Returns true if servers were updated, false if options have not changed
