@@ -176,7 +176,7 @@ func (t *translator) initializeDestinationRule(
 	}
 
 	// Initialize Istio TLS mode with default declared in Settings
-	istioTlsMode, err := tls.MapIstioTlsMode(mtlsDefault.Istio.TlsMode)
+	istioTlsMode, err := tls.MapIstioTlsMode(mtlsDefault.GetIstio().GetTlsMode())
 	if err != nil {
 		return nil, err
 	}

@@ -14,6 +14,7 @@ spec:
     listKind: TrafficPolicyList
     plural: trafficpolicies
     singular: trafficpolicy
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
@@ -428,6 +429,11 @@ spec:
                        Note: If using the TrafficTargetSelector.Matcher, specifying clusters is currently not supported in Istio.
               items:
                 properties:
+                  clusters:
+                    description: If specified, match workloads if they exist in one of the specified clusters. If not specified, match on any cluster.
+                    items:
+                      type: string
+                    type: array
                   labels:
                     additionalProperties:
                       type: string
@@ -593,6 +599,7 @@ spec:
     listKind: AccessPolicyList
     plural: accesspolicies
     singular: accesspolicy
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
@@ -832,6 +839,7 @@ spec:
     listKind: VirtualMeshList
     plural: virtualmeshes
     singular: virtualmesh
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
@@ -1045,6 +1053,7 @@ spec:
     listKind: FailoverServiceList
     plural: failoverservices
     singular: failoverservice
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}

@@ -45,7 +45,7 @@ jobs:
           name: e2e istio 1.5 tests
           no_output_timeout: 30m
           command: |
-            make print-version install-go-tools manifest-gen
+            make print-version manifest-gen
 
             go install github.com/onsi/ginkgo/ginkgo
 

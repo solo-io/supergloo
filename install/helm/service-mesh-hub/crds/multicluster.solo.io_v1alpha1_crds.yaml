@@ -14,6 +14,7 @@ spec:
     listKind: KubernetesClusterList
     plural: kubernetesclusters
     singular: kubernetescluster
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
