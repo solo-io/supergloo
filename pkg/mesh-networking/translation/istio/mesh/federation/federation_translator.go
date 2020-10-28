@@ -255,7 +255,7 @@ func (t *translator) Translate(
 			}
 
 			// Translate VirtualServices for federated TrafficTargets
-			vs := t.virtualServiceTranslator.TranslateFederated(in, trafficTarget, clientIstio.Installation, reporter)
+			vs := t.virtualServiceTranslator.Translate(in, trafficTarget, clientIstio.Installation, reporter)
 
 			outputs.AddServiceEntries(se)
 			outputs.AddDestinationRules(dr)

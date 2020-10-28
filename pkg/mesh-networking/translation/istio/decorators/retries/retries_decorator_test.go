@@ -40,12 +40,7 @@ var _ = Describe("RetriesDecorator", func() {
 			Attempts:      5,
 			PerTryTimeout: &types.Duration{Seconds: 2},
 		}
-		err := retriesDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
+		err := retriesDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(output.Retries).To(Equal(expectedRetries))
 	})
@@ -63,12 +58,7 @@ var _ = Describe("RetriesDecorator", func() {
 				},
 			},
 		}
-		err := retriesDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
+		err := retriesDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 	})
 })

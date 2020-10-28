@@ -25,23 +25,22 @@ import (
 
 // the VirtualService translator translates a TrafficTarget into a VirtualService.
 type Translator interface {
-	// Translate translates the appropriate VirtualService for the given TrafficTarget.
-	// returns nil if no VirtualService is required for the TrafficTarget (i.e. if no VirtualService features are required, such as subsets).
-	//
-	// Errors caused by invalid user config will be reported using the Reporter.
-	//
-	// Note that the input snapshot TrafficTargetSet contains the given TrafficTarget.
+	/*
+		Translate translates the appropriate VirtualService for the given TrafficTarget.
+		returns nil if no VirtualService is required for the TrafficTarget (i.e. if no VirtualService features are required, such as subsets).
+
+		If sourceMeshInstallation is specified, hostnames in the translated VirtualService will use global FQDNs if the trafficTarget
+		exists in a different cluster from the specified mesh (i.e. is a federated traffic target). Otherwise, assume translation
+		for cluster that the trafficTarget exists in and use local FQDNs.
+
+		Errors caused by invalid user config will be reported using the Reporter.
+
+		Note that the input snapshot TrafficTargetSet contains the given TrafficTarget.
+	*/
 	Translate(
 		in input.Snapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
-		reporter reporting.Reporter,
-	) *networkingv1alpha3.VirtualService
-
-	// TranslateFederated translates a VirtualService for a federated traffic target on the specified cluster, using global FQDNs for hostnames.
-	TranslateFederated(
-		in input.Snapshot,
-		trafficTarget *discoveryv1alpha2.TrafficTarget,
-		federatedMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+		sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 		reporter reporting.Reporter,
 	) *networkingv1alpha3.VirtualService
 }
@@ -55,33 +54,12 @@ func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFact
 	return &translator{clusterDomains: clusterDomains, decoratorFactory: decoratorFactory}
 }
 
-// Translate a VirtualService colocated with the TrafficTarget.
+// Translate a VirtualService for the TrafficTarget.
+// If sourceMeshInstallation is nil, assume that VirtualService is colocated to the trafficTarget and use local FQDNs.
 func (t *translator) Translate(
 	in input.Snapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
-	reporter reporting.Reporter,
-) *networkingv1alpha3.VirtualService {
-	return t.translate(in, trafficTarget, nil, reporter)
-}
-
-// Translate a VirtualService for a TrafficTarget federated to the cluster indicated by federatedClusterName.
-func (t *translator) TranslateFederated(
-	in input.Snapshot,
-	trafficTarget *discoveryv1alpha2.TrafficTarget,
-	federatedMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
-	reporter reporting.Reporter,
-) *networkingv1alpha3.VirtualService {
-	return t.translate(in, trafficTarget, federatedMeshInstallation, reporter)
-}
-
-// translate the appropriate VirtualService for the given TrafficTarget.
-// If federatedClusterName is empty, assume that translation is for non-federated, local traffic target.
-// returns nil if no VirtualService is required for the TrafficTarget (i.e. if no VirtualService features are required, such as subsets).
-// The input snapshot TrafficTargetSet contains n the
-func (t *translator) translate(
-	in input.Snapshot,
-	trafficTarget *discoveryv1alpha2.TrafficTarget,
-	federatedMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	reporter reporting.Reporter,
 ) *networkingv1alpha3.VirtualService {
 	kubeService := trafficTarget.Spec.GetKubeService()
@@ -92,11 +70,11 @@ func (t *translator) translate(
 	}
 
 	sourceCluster := kubeService.Ref.ClusterName
-	if federatedMeshInstallation != nil {
-		sourceCluster = federatedMeshInstallation.Cluster
+	if sourceMeshInstallation != nil {
+		sourceCluster = sourceMeshInstallation.Cluster
 	}
 
-	virtualService := t.initializeVirtualService(trafficTarget, federatedMeshInstallation)
+	virtualService := t.initializeVirtualService(trafficTarget, sourceMeshInstallation)
 	// register the owners of the virtualservice fields
 	virtualServiceFields := fieldutils.NewOwnershipRegistry()
 	vsDecorators := t.decoratorFactory.MakeDecorators(decorators.Parameters{
@@ -110,29 +88,14 @@ func (t *translator) translate(
 		for _, decorator := range vsDecorators {
 
 			if trafficPolicyDecorator, ok := decorator.(decorators.TrafficPolicyVirtualServiceDecorator); ok {
-
-				// If translating for a federated TrafficTarget, use TrafficPolicyFederatedVirtualServiceDecorator if decorator implements it
-				federatedTrafficPolicyDecorator, isFederatedDecorator := decorator.(decorators.TrafficPolicyFederatedVirtualServiceDecorator)
-
-				if isFederatedDecorator && federatedMeshInstallation != nil {
-					if err := federatedTrafficPolicyDecorator.ApplyTrafficPolicyToFederatedVirtualService(
-						policy,
-						trafficTarget,
-						baseRoute,
-						registerField,
-						sourceCluster,
-					); err != nil {
-						reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
-					}
-				} else {
-					if err := trafficPolicyDecorator.ApplyTrafficPolicyToVirtualService(
-						policy,
-						trafficTarget,
-						baseRoute,
-						registerField,
-					); err != nil {
-						reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
-					}
+				if err := trafficPolicyDecorator.ApplyTrafficPolicyToVirtualService(
+					policy,
+					trafficTarget,
+					sourceMeshInstallation,
+					baseRoute,
+					registerField,
+				); err != nil {
+					reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
 				}
 			}
 		}

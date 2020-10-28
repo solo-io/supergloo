@@ -227,80 +227,15 @@ func (mr *MockTrafficPolicyVirtualServiceDecoratorMockRecorder) DecoratorName() 
 }
 
 // ApplyTrafficPolicyToVirtualService mocks base method
-func (m *MockTrafficPolicyVirtualServiceDecorator) ApplyTrafficPolicyToVirtualService(appliedPolicy *v1alpha2.TrafficTargetStatus_AppliedTrafficPolicy, service *v1alpha2.TrafficTarget, output *v1alpha3.HTTPRoute, registerField decorators.RegisterField) error {
+func (m *MockTrafficPolicyVirtualServiceDecorator) ApplyTrafficPolicyToVirtualService(appliedPolicy *v1alpha2.TrafficTargetStatus_AppliedTrafficPolicy, trafficTarget *v1alpha2.TrafficTarget, sourceMeshInstallation *v1alpha2.MeshSpec_MeshInstallation, output *v1alpha3.HTTPRoute, registerField decorators.RegisterField) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ApplyTrafficPolicyToVirtualService", appliedPolicy, service, output, registerField)
+	ret := m.ctrl.Call(m, "ApplyTrafficPolicyToVirtualService", appliedPolicy, trafficTarget, sourceMeshInstallation, output, registerField)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ApplyTrafficPolicyToVirtualService indicates an expected call of ApplyTrafficPolicyToVirtualService
-func (mr *MockTrafficPolicyVirtualServiceDecoratorMockRecorder) ApplyTrafficPolicyToVirtualService(appliedPolicy, service, output, registerField interface{}) *gomock.Call {
+func (mr *MockTrafficPolicyVirtualServiceDecoratorMockRecorder) ApplyTrafficPolicyToVirtualService(appliedPolicy, trafficTarget, sourceMeshInstallation, output, registerField interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyTrafficPolicyToVirtualService", reflect.TypeOf((*MockTrafficPolicyVirtualServiceDecorator)(nil).ApplyTrafficPolicyToVirtualService), appliedPolicy, service, output, registerField)
-}
-
-// MockTrafficPolicyFederatedVirtualServiceDecorator is a mock of TrafficPolicyFederatedVirtualServiceDecorator interface
-type MockTrafficPolicyFederatedVirtualServiceDecorator struct {
-	ctrl     *gomock.Controller
-	recorder *MockTrafficPolicyFederatedVirtualServiceDecoratorMockRecorder
-}
-
-// MockTrafficPolicyFederatedVirtualServiceDecoratorMockRecorder is the mock recorder for MockTrafficPolicyFederatedVirtualServiceDecorator
-type MockTrafficPolicyFederatedVirtualServiceDecoratorMockRecorder struct {
-	mock *MockTrafficPolicyFederatedVirtualServiceDecorator
-}
-
-// NewMockTrafficPolicyFederatedVirtualServiceDecorator creates a new mock instance
-func NewMockTrafficPolicyFederatedVirtualServiceDecorator(ctrl *gomock.Controller) *MockTrafficPolicyFederatedVirtualServiceDecorator {
-	mock := &MockTrafficPolicyFederatedVirtualServiceDecorator{ctrl: ctrl}
-	mock.recorder = &MockTrafficPolicyFederatedVirtualServiceDecoratorMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockTrafficPolicyFederatedVirtualServiceDecorator) EXPECT() *MockTrafficPolicyFederatedVirtualServiceDecoratorMockRecorder {
-	return m.recorder
-}
-
-// DecoratorName mocks base method
-func (m *MockTrafficPolicyFederatedVirtualServiceDecorator) DecoratorName() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DecoratorName")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// DecoratorName indicates an expected call of DecoratorName
-func (mr *MockTrafficPolicyFederatedVirtualServiceDecoratorMockRecorder) DecoratorName() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DecoratorName", reflect.TypeOf((*MockTrafficPolicyFederatedVirtualServiceDecorator)(nil).DecoratorName))
-}
-
-// ApplyTrafficPolicyToVirtualService mocks base method
-func (m *MockTrafficPolicyFederatedVirtualServiceDecorator) ApplyTrafficPolicyToVirtualService(appliedPolicy *v1alpha2.TrafficTargetStatus_AppliedTrafficPolicy, service *v1alpha2.TrafficTarget, output *v1alpha3.HTTPRoute, registerField decorators.RegisterField) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ApplyTrafficPolicyToVirtualService", appliedPolicy, service, output, registerField)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ApplyTrafficPolicyToVirtualService indicates an expected call of ApplyTrafficPolicyToVirtualService
-func (mr *MockTrafficPolicyFederatedVirtualServiceDecoratorMockRecorder) ApplyTrafficPolicyToVirtualService(appliedPolicy, service, output, registerField interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyTrafficPolicyToVirtualService", reflect.TypeOf((*MockTrafficPolicyFederatedVirtualServiceDecorator)(nil).ApplyTrafficPolicyToVirtualService), appliedPolicy, service, output, registerField)
-}
-
-// ApplyTrafficPolicyToFederatedVirtualService mocks base method
-func (m *MockTrafficPolicyFederatedVirtualServiceDecorator) ApplyTrafficPolicyToFederatedVirtualService(appliedPolicy *v1alpha2.TrafficTargetStatus_AppliedTrafficPolicy, service *v1alpha2.TrafficTarget, output *v1alpha3.HTTPRoute, registerField decorators.RegisterField, federatedClusterName string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ApplyTrafficPolicyToFederatedVirtualService", appliedPolicy, service, output, registerField, federatedClusterName)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ApplyTrafficPolicyToFederatedVirtualService indicates an expected call of ApplyTrafficPolicyToFederatedVirtualService
-func (mr *MockTrafficPolicyFederatedVirtualServiceDecoratorMockRecorder) ApplyTrafficPolicyToFederatedVirtualService(appliedPolicy, service, output, registerField, federatedClusterName interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyTrafficPolicyToFederatedVirtualService", reflect.TypeOf((*MockTrafficPolicyFederatedVirtualServiceDecorator)(nil).ApplyTrafficPolicyToFederatedVirtualService), appliedPolicy, service, output, registerField, federatedClusterName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyTrafficPolicyToVirtualService", reflect.TypeOf((*MockTrafficPolicyVirtualServiceDecorator)(nil).ApplyTrafficPolicyToVirtualService), appliedPolicy, trafficTarget, sourceMeshInstallation, output, registerField)
 }

@@ -46,12 +46,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 				Percentage: &v1alpha3.Percent{Value: 50},
 			},
 		}
-		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
+		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(output.Fault).To(Equal(expectedFaultInjection))
 	})
@@ -76,12 +71,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 				Percentage:    &v1alpha3.Percent{Value: 50},
 			},
 		}
-		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
+		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(output.Fault).To(Equal(expectedFaultInjection))
 	})
@@ -106,12 +96,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 				Percentage:    &v1alpha3.Percent{Value: 50},
 			},
 		}
-		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
+		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(output.Fault).To(Equal(expectedFaultInjection))
 	})
@@ -130,12 +115,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 				},
 			},
 		}
-		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
+		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 		Expect(output.Fault).To(BeNil())
 	})
@@ -151,12 +131,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 				},
 			},
 		}
-		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
+		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
 		Expect(err.Error()).To(ContainSubstring("FaultInjection type must be specified"))
 		Expect(output.Fault).To(BeNil())
 	})

@@ -68,7 +68,8 @@ func (t *translator) Translate(
 		return
 	}
 
-	vs := t.virtualServices.Translate(in, trafficTarget, reporter)
+	// Pass nil sourceMeshInstallation to translate VirtualService local to trafficTarget
+	vs := t.virtualServices.Translate(in, trafficTarget, nil, reporter)
 	dr := t.destinationRules.Translate(t.ctx, in, trafficTarget, reporter)
 	ap := t.authorizationPolicies.Translate(in, trafficTarget, reporter)
 

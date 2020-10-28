@@ -95,12 +95,7 @@ var _ = Describe("MirrorDecorator", func() {
 		expectedMirrorPercentage := &v1alpha3.Percent{
 			Value: appliedPolicy.Spec.Mirror.Percentage,
 		}
-		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			originalService,
-			output,
-			registerField,
-		)
+		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, originalService, nil, output, registerField)
 
 		Expect(err).ToNot(HaveOccurred())
 		Expect(output.Mirror).To(Equal(expectedMirror))
@@ -160,11 +155,13 @@ var _ = Describe("MirrorDecorator", func() {
 			},
 		}
 
-		federatedClusterName := "federated-cluster-name"
+		sourceMeshInstallation := &discoveryv1alpha2.MeshSpec_MeshInstallation{
+			Cluster: "federated-cluster-name",
+		}
 		globalHostname := "name.namespace.svc.local-cluster.global"
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(federatedClusterName, appliedPolicy.Spec.Mirror.GetKubeService()).
+			GetDestinationServiceFQDN(sourceMeshInstallation.GetCluster(), appliedPolicy.Spec.Mirror.GetKubeService()).
 			Return(globalHostname)
 
 		expectedMirror := &v1alpha3.Destination{
@@ -173,12 +170,12 @@ var _ = Describe("MirrorDecorator", func() {
 		expectedMirrorPercentage := &v1alpha3.Percent{
 			Value: appliedPolicy.Spec.Mirror.Percentage,
 		}
-		err := mirrorDecorator.(decorators.TrafficPolicyFederatedVirtualServiceDecorator).ApplyTrafficPolicyToFederatedVirtualService(
+		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			originalService,
+			sourceMeshInstallation,
 			output,
 			registerField,
-			federatedClusterName,
 		)
 
 		Expect(err).ToNot(HaveOccurred())
@@ -266,20 +263,10 @@ var _ = Describe("MirrorDecorator", func() {
 			Return(localHostname).
 			Times(2)
 
-		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicyMissingPort,
-			originalService,
-			output,
-			registerField,
-		)
+		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicyMissingPort, originalService, nil, output, registerField)
 		Expect(err.Error()).To(ContainSubstring("must provide port for mirror destination service"))
 
-		err = mirrorDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicyNonexistentPort,
-			originalService,
-			output,
-			registerField,
-		)
+		err = mirrorDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicyNonexistentPort, originalService, nil, output, registerField)
 		Expect(err.Error()).To(ContainSubstring("does not exist for mirror destination service"))
 	})
 
@@ -343,12 +330,7 @@ var _ = Describe("MirrorDecorator", func() {
 			GetDestinationServiceFQDN(originalService.Spec.GetKubeService().Ref.ClusterName, appliedPolicy.Spec.Mirror.GetKubeService()).
 			Return(localHostname)
 
-		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			originalService,
-			output,
-			registerField,
-		)
+		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, originalService, nil, output, registerField)
 
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 		Expect(output.Fault).To(BeNil())

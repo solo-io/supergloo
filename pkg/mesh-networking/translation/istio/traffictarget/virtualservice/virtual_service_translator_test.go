@@ -27,7 +27,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockClusterDomainRegistry *mock_hostutils.MockClusterDomainRegistry
 		mockDecoratorFactory      *mock_decorators.MockFactory
 		mockReporter              *mock_reporting.MockReporter
-		mockFederatedDecorator    *mock_trafficpolicy.MockTrafficPolicyFederatedVirtualServiceDecorator
+		mockDecorator             *mock_trafficpolicy.MockTrafficPolicyVirtualServiceDecorator
 		virtualServiceTranslator  virtualservice.Translator
 		in                        input.Snapshot
 	)
@@ -37,7 +37,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockClusterDomainRegistry = mock_hostutils.NewMockClusterDomainRegistry(ctrl)
 		mockDecoratorFactory = mock_decorators.NewMockFactory(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
-		mockFederatedDecorator = mock_trafficpolicy.NewMockTrafficPolicyFederatedVirtualServiceDecorator(ctrl)
+		mockDecorator = mock_trafficpolicy.NewMockTrafficPolicyVirtualServiceDecorator(ctrl)
 		virtualServiceTranslator = virtualservice.NewTranslator(mockClusterDomainRegistry, mockDecoratorFactory)
 		in = input.NewInputSnapshotManualBuilder("").Build()
 	})
@@ -131,7 +131,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				ClusterDomains: mockClusterDomainRegistry,
 				Snapshot:       in,
 			}).
-			Return([]decorators.Decorator{mockFederatedDecorator})
+			Return([]decorators.Decorator{mockDecorator})
 
 		initializedMatchRequests := []*networkingv1alpha3spec.HTTPMatchRequest{
 			{
@@ -350,11 +350,12 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			},
 		}
 
-		mockFederatedDecorator.
+		mockDecorator.
 			EXPECT().
 			ApplyTrafficPolicyToVirtualService(
 				trafficTarget.Status.AppliedTrafficPolicies[0],
 				trafficTarget,
+				nil,
 				&networkingv1alpha3spec.HTTPRoute{
 					Match: initializedMatchRequests,
 				},
@@ -363,6 +364,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			func(
 				appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
 				service *discoveryv1alpha2.TrafficTarget,
+				sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
@@ -371,7 +373,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			}).
 			Return(nil)
 
-		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, mockReporter)
+		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, nil, mockReporter)
 		Expect(virtualService).To(Equal(expectedVirtualService))
 	})
 
@@ -465,7 +467,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				ClusterDomains: mockClusterDomainRegistry,
 				Snapshot:       in,
 			}).
-			Return([]decorators.Decorator{mockFederatedDecorator})
+			Return([]decorators.Decorator{mockDecorator})
 
 		initializedMatchRequests := []*networkingv1alpha3spec.HTTPMatchRequest{
 			{
@@ -685,30 +687,30 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			},
 		}
 
-		mockFederatedDecorator.
+		mockDecorator.
 			EXPECT().
-			ApplyTrafficPolicyToFederatedVirtualService(
+			ApplyTrafficPolicyToVirtualService(
 				trafficTarget.Status.AppliedTrafficPolicies[0],
 				trafficTarget,
+				meshInstallation,
 				&networkingv1alpha3spec.HTTPRoute{
 					Match: initializedMatchRequests,
 				},
 				gomock.Any(),
-				meshInstallation.Cluster,
 			).DoAndReturn(
 			func(
 				appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
 				service *discoveryv1alpha2.TrafficTarget,
+				sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
-				federatedClusterName string,
 			) error {
 				output.Retries = httpRetry
 				return nil
 			}).
 			Return(nil)
 
-		virtualService := virtualServiceTranslator.TranslateFederated(
+		virtualService := virtualServiceTranslator.Translate(
 			in,
 			trafficTarget,
 			meshInstallation,
@@ -768,19 +770,20 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				ClusterDomains: mockClusterDomainRegistry,
 				Snapshot:       in,
 			}).
-			Return([]decorators.Decorator{mockFederatedDecorator})
+			Return([]decorators.Decorator{mockDecorator})
 
-		mockFederatedDecorator.
+		mockDecorator.
 			EXPECT().
 			ApplyTrafficPolicyToVirtualService(
 				trafficTarget.Status.AppliedTrafficPolicies[0],
 				trafficTarget,
+				nil,
 				&networkingv1alpha3spec.HTTPRoute{},
 				gomock.Any(),
 			).
 			Return(nil)
 
-		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, mockReporter)
+		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, nil, mockReporter)
 		Expect(virtualService).To(BeNil())
 	})
 })

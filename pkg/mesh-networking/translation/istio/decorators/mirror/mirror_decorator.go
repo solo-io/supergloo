@@ -49,32 +49,12 @@ func (d *mirrorDecorator) DecoratorName() string {
 
 func (d *mirrorDecorator) ApplyTrafficPolicyToVirtualService(
 	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
-	service *discoveryv1alpha2.TrafficTarget,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	mirror, percentage, err := d.translateMirror(service, appliedPolicy.Spec, "")
-	if err != nil {
-		return err
-	}
-	if mirror != nil {
-		if err := registerField(&output.Mirror, mirror); err != nil {
-			return err
-		}
-		output.Mirror = mirror
-		output.MirrorPercentage = percentage
-	}
-	return nil
-}
-
-func (d *mirrorDecorator) ApplyTrafficPolicyToFederatedVirtualService(
-	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
-	service *discoveryv1alpha2.TrafficTarget,
-	output *networkingv1alpha3spec.HTTPRoute,
-	registerField decorators.RegisterField,
-	federatedClusterName string,
-) error {
-	mirror, percentage, err := d.translateMirror(service, appliedPolicy.Spec, federatedClusterName)
+	mirror, percentage, err := d.translateMirror(trafficTarget, appliedPolicy.Spec, sourceMeshInstallation.GetCluster())
 	if err != nil {
 		return err
 	}
@@ -127,8 +107,8 @@ func (d *mirrorDecorator) translateMirror(
 func (d *mirrorDecorator) makeKubeDestinationMirror(
 	destination *v1alpha2.TrafficPolicySpec_Mirror_KubeService,
 	port uint32,
-	originalService *discoveryv1alpha2.TrafficTarget,
-	federatedClusterName string,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	sourceClusterName string,
 ) (*networkingv1alpha3spec.Destination, error) {
 	destinationRef := destination.KubeService
 	mirrorService, err := traffictargetutils.FindTrafficTargetForKubeService(d.trafficTargets.List(), destinationRef)
@@ -139,14 +119,13 @@ func (d *mirrorDecorator) makeKubeDestinationMirror(
 
 	// TODO(ilackarms): support other types of TrafficTarget destinations, e.g. via ServiceEntries
 
-	var sourceCluster string
-	if federatedClusterName != "" {
-		sourceCluster = federatedClusterName
-	} else {
-		sourceCluster = originalService.Spec.GetKubeService().GetRef().GetClusterName()
+	// An empty sourceClusterName indicates translation for VirtualService local to trafficTarget
+	if sourceClusterName == "" {
+		sourceClusterName = trafficTarget.Spec.GetKubeService().GetRef().GetClusterName()
 	}
+
 	destinationHostname := d.clusterDomains.GetDestinationServiceFQDN(
-		sourceCluster,
+		sourceClusterName,
 		destinationRef,
 	)
 
