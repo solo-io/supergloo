@@ -12,7 +12,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/extensions/v1alpha1"
 	mock_extensions "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/extensions/mocks"
 
-	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
+	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/extensions"
 )
 
 var _ = Describe("Clientset", func() {

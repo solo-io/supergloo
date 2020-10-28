@@ -45,7 +45,7 @@ func (t *testExtensionsServer) GetMeshPatches(ctx context.Context, request *v1al
 	}
 
 	return &v1alpha1.PatchList{
-		PatchedResources: extensions.MakeGeneratedResources(outputs),
+		PatchedResources: extensions.OutputsToProto(outputs),
 	}, nil
 }
 

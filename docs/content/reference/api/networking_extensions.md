@@ -16,19 +16,18 @@ title: "networking_extensions.proto"
 
 
 ## Table of Contents
-  - [GeneratedResource](#extensions.networking.smh.solo.io.GeneratedResource)
-  - [MeshPatchRequest](#extensions.networking.smh.solo.io.MeshPatchRequest)
-  - [MeshResource](#extensions.networking.smh.solo.io.MeshResource)
+  - [DiscoverySnapshot](#extensions.networking.smh.solo.io.DiscoverySnapshot)
+  - [ExtensionPatchRequest](#extensions.networking.smh.solo.io.ExtensionPatchRequest)
+  - [ExtensionPatchResponse](#extensions.networking.smh.solo.io.ExtensionPatchResponse)
+  - [GeneratedObject](#extensions.networking.smh.solo.io.GeneratedObject)
+  - [MeshObject](#extensions.networking.smh.solo.io.MeshObject)
   - [ObjectMeta](#extensions.networking.smh.solo.io.ObjectMeta)
   - [ObjectMeta.AnnotationsEntry](#extensions.networking.smh.solo.io.ObjectMeta.AnnotationsEntry)
   - [ObjectMeta.LabelsEntry](#extensions.networking.smh.solo.io.ObjectMeta.LabelsEntry)
-  - [PatchList](#extensions.networking.smh.solo.io.PatchList)
   - [PushNotification](#extensions.networking.smh.solo.io.PushNotification)
-  - [TrafficTargetPatchRequest](#extensions.networking.smh.solo.io.TrafficTargetPatchRequest)
-  - [TrafficTargetResource](#extensions.networking.smh.solo.io.TrafficTargetResource)
+  - [TrafficTargetObject](#extensions.networking.smh.solo.io.TrafficTargetObject)
   - [WatchPushNotificationsRequest](#extensions.networking.smh.solo.io.WatchPushNotificationsRequest)
-  - [WorkloadPatchRequest](#extensions.networking.smh.solo.io.WorkloadPatchRequest)
-  - [WorkloadResource](#extensions.networking.smh.solo.io.WorkloadResource)
+  - [WorkloadObject](#extensions.networking.smh.solo.io.WorkloadObject)
 
 
 
@@ -37,15 +36,63 @@ title: "networking_extensions.proto"
 
 
 
-<a name="extensions.networking.smh.solo.io.GeneratedResource"></a>
+<a name="extensions.networking.smh.solo.io.DiscoverySnapshot"></a>
 
-### GeneratedResource
-a generated resource can be of any output type supported by SMH. the content of the type field should be used to determine the type of the output resource. TODO(ilackarms): consider parameterizing SMH to allow excluding GeneratedResources from patch requests in the case where an implementer only performs additions (no updates required).
+### DiscoverySnapshot
+a Protobuf representation of the set of Discovery objects used to produce the Networking outputs.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| metadata | extensions.networking.smh.solo.io.ObjectMeta |  | metadata of the resource |
+| meshes | []extensions.networking.smh.solo.io.MeshObject | repeated | all meshes in the discovery snapshot |
+| trafficTargets | []extensions.networking.smh.solo.io.TrafficTargetObject | repeated | all traffic targets in the discovery snapshot |
+| workloads | []extensions.networking.smh.solo.io.WorkloadObject | repeated | all workloads in the discovery snapshot |
+
+
+
+
+
+
+<a name="extensions.networking.smh.solo.io.ExtensionPatchRequest"></a>
+
+### ExtensionPatchRequest
+the parameters provided to the Extensions server when requesting patches
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| inputs | extensions.networking.smh.solo.io.DiscoverySnapshot |  | the set of discovery objects provided as inputs for the SMH translation |
+| outputs | []extensions.networking.smh.solo.io.GeneratedObject | repeated | the base set of output objects translated by SMH. these may have been operated upon by a previous Extension server if multiple servers have been configured. |
+
+
+
+
+
+
+<a name="extensions.networking.smh.solo.io.ExtensionPatchResponse"></a>
+
+### ExtensionPatchResponse
+the set of patches the server wishes to apply to the SMH Networking outputs. Any objects provided here will be inserted into the final SMH snapshot. If multiple extensions servers are configured, this response may be operated upon by Extension patches provided by subsequent servers.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| patchedOutputs | []extensions.networking.smh.solo.io.GeneratedObject | repeated | the set of modified/added output objects desired by the Extension server. |
+
+
+
+
+
+
+<a name="extensions.networking.smh.solo.io.GeneratedObject"></a>
+
+### GeneratedObject
+a generated object can be of any output type supported by SMH. the content of the type field should be used to determine the type of the output object. TODO(ilackarms): consider parameterizing SMH to allow excluding GeneratedObjects from patch requests in the case where an implementer only performs additions (no updates required).
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| metadata | extensions.networking.smh.solo.io.ObjectMeta |  | metadata of the object |
 | destinationRule | istio.networking.v1alpha3.DestinationRule |  |  |
 | envoyFilter | istio.networking.v1alpha3.EnvoyFilter |  |  |
 | serviceEntry | istio.networking.v1alpha3.ServiceEntry |  |  |
@@ -56,31 +103,15 @@ a generated resource can be of any output type supported by SMH. the content of 
 
 
 
-<a name="extensions.networking.smh.solo.io.MeshPatchRequest"></a>
+<a name="extensions.networking.smh.solo.io.MeshObject"></a>
 
-### MeshPatchRequest
-Request patches to the resources created for a Mesh
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| mesh | extensions.networking.smh.solo.io.MeshResource |  | the object for which we are requesting patches |
-| generatedResources | []extensions.networking.smh.solo.io.GeneratedResource | repeated | the pre-patch resources generated by SMH for this object for a given discovery resource. provided to the server to perform modifications. |
-
-
-
-
-
-
-<a name="extensions.networking.smh.solo.io.MeshResource"></a>
-
-### MeshResource
+### MeshObject
 a proto-serializable representation of a Mesh object
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| metadata | extensions.networking.smh.solo.io.ObjectMeta |  | metadata of the resource |
+| metadata | extensions.networking.smh.solo.io.ObjectMeta |  | metadata of the object |
 | spec | discovery.smh.solo.io.MeshSpec |  | the spec of the object |
 | status | discovery.smh.solo.io.MeshStatus |  | the status of the object |
 
@@ -140,56 +171,25 @@ ObjectMeta is a simplified clone of the kubernetes ObjectMeta used to represent 
 
 
 
-<a name="extensions.networking.smh.solo.io.PatchList"></a>
-
-### PatchList
-a list of patches to be returned for modifying & adding to the output SMH snapshot
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| patchedResources | []extensions.networking.smh.solo.io.GeneratedResource | repeated | a list of generated resources to be inserted into to the snapshot. |
-
-
-
-
-
-
 <a name="extensions.networking.smh.solo.io.PushNotification"></a>
 
 ### PushNotification
-triggers a resync of SMH resources
+triggers a resync of SMH objects
 
 
 
 
 
 
-<a name="extensions.networking.smh.solo.io.TrafficTargetPatchRequest"></a>
+<a name="extensions.networking.smh.solo.io.TrafficTargetObject"></a>
 
-### TrafficTargetPatchRequest
-Request patches to the resources created for a TrafficTarget
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| trafficTarget | extensions.networking.smh.solo.io.TrafficTargetResource |  | the object for which we are requesting patches |
-| generatedResources | []extensions.networking.smh.solo.io.GeneratedResource | repeated | the pre-patch resources generated by SMH for this object for a given discovery resource. provided to the server to perform modifications. |
-
-
-
-
-
-
-<a name="extensions.networking.smh.solo.io.TrafficTargetResource"></a>
-
-### TrafficTargetResource
+### TrafficTargetObject
 a proto-serializable representation of a TrafficTarget object
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| metadata | extensions.networking.smh.solo.io.ObjectMeta |  | metadata of the resource |
+| metadata | extensions.networking.smh.solo.io.ObjectMeta |  | metadata of the object |
 | spec | discovery.smh.solo.io.TrafficTargetSpec |  | the spec of the object |
 | status | discovery.smh.solo.io.TrafficTargetStatus |  | the status of the object |
 
@@ -208,31 +208,15 @@ request to initiate push notifications
 
 
 
-<a name="extensions.networking.smh.solo.io.WorkloadPatchRequest"></a>
+<a name="extensions.networking.smh.solo.io.WorkloadObject"></a>
 
-### WorkloadPatchRequest
-Request patches to the resources created for a Workload
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| workload | extensions.networking.smh.solo.io.WorkloadResource |  | the object for which we are requesting patches |
-| generatedResources | []extensions.networking.smh.solo.io.GeneratedResource | repeated | the pre-patch resources generated by SMH for this object for a given discovery resource. provided to the server to perform modifications. |
-
-
-
-
-
-
-<a name="extensions.networking.smh.solo.io.WorkloadResource"></a>
-
-### WorkloadResource
+### WorkloadObject
 a proto-serializable representation of a Workload object
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| metadata | extensions.networking.smh.solo.io.ObjectMeta |  | metadata of the resource |
+| metadata | extensions.networking.smh.solo.io.ObjectMeta |  | metadata of the object |
 | spec | discovery.smh.solo.io.WorkloadSpec |  | the spec of the object |
 | status | discovery.smh.solo.io.WorkloadStatus |  | the status of the object |
 
@@ -254,10 +238,8 @@ NetworkingExtensions provides customizeable patches to Service Mesh Hub-generate
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| GetTrafficTargetPatches | [TrafficTargetPatchRequest](#extensions.networking.smh.solo.io.TrafficTargetPatchRequest) | [PatchList](#extensions.networking.smh.solo.io.PatchList) | GetTrafficTargetPatches retrieves desired patches to the set of output service mesh config resources generated for a given SMH TrafficTarget |
-| GetWorkloadPatches | [WorkloadPatchRequest](#extensions.networking.smh.solo.io.WorkloadPatchRequest) | [PatchList](#extensions.networking.smh.solo.io.PatchList) | GetWorkloadPatches retrieves desired patches to the set of output Mesh config resources generated for a given SMH Workload |
-| GetMeshPatches | [MeshPatchRequest](#extensions.networking.smh.solo.io.MeshPatchRequest) | [PatchList](#extensions.networking.smh.solo.io.PatchList) | GetMeshPatches retrieves desired patches to the set of output Mesh config resources generated for a given SMH Mesh |
-| WatchPushNotifications | [WatchPushNotificationsRequest](#extensions.networking.smh.solo.io.WatchPushNotificationsRequest) | [PushNotification](#extensions.networking.smh.solo.io.PushNotification) stream | WatchPushNotifications initiates a streaming connection which allows the NetworkingExtensions server to push notifications to Service Mesh Hub telling it to resync its configuration. This allows a NetworkingExtensions server to trigger SMH to resync its state for events triggered by resources not watched by SMH. |
+| GetExtensionPatches | [ExtensionPatchRequest](#extensions.networking.smh.solo.io.ExtensionPatchRequest) | [ExtensionPatchResponse](#extensions.networking.smh.solo.io.ExtensionPatchResponse) | GetExtensionPatches fetches a set of patches to the output configuration from the Extensions server. The current discovery snapshot and translated outputs are provided in the ExtensionPatchRequest |
+| WatchPushNotifications | [WatchPushNotificationsRequest](#extensions.networking.smh.solo.io.WatchPushNotificationsRequest) | [PushNotification](#extensions.networking.smh.solo.io.PushNotification) stream | WatchPushNotifications initiates a streaming connection which allows the NetworkingExtensions server to push notifications to Service Mesh Hub telling it to resync its configuration. This allows a NetworkingExtensions server to trigger SMH to resync its state for events triggered by objects not watched by SMH. |
 
  <!-- end services -->
 

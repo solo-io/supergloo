@@ -9,7 +9,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
-	extensions "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
+	extensions "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/extensions"
 )
 
 // MockClientset is a mock of Clientset interface
