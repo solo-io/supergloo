@@ -2,6 +2,9 @@ package bootstrap
 
 import (
 	"context"
+	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/spf13/pflag"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/go-logr/zapr"
 	"github.com/solo-io/go-utils/contextutils"
@@ -59,6 +62,15 @@ type Options struct {
 	// Reference to the Settings object that the controller should use.
 	SettingsName      string
 	SettingsNamespace string
+}
+
+// convenience function for setting these options via spf13 flags
+func (opts *Options) AddToFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&opts.MasterNamespace, "namespace", "n", metav1.NamespaceAll, "if specified restricts the master manager's cache to watch objects in the desired namespace.")
+	flags.Uint32Var(&opts.MetricsBindPort, "metrics-port", defaults.MetricsPort, "port on which to serve Prometheus metrics. set to 0 to disable")
+	flags.BoolVar(&opts.VerboseMode, "verbose", true, "enables verbose/debug logging")
+	flags.StringVar(&opts.SettingsName, "settings-name", defaults.DefaultSettingsName, "The name of the Settings object this controller should use.")
+	flags.StringVar(&opts.SettingsNamespace, "settings-namespace", defaults.DefaultPodNamespace, "The namespace of the Settings object this controller should use.")
 }
 
 // the mesh-discovery controller is the Kubernetes Controller/Operator
