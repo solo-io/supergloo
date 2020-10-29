@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -83,7 +84,12 @@ func (t *translator) Translate(
 	})
 
 	for _, policy := range trafficTarget.Status.AppliedTrafficPolicies {
-		baseRoute := initializeBaseRoute(policy.Spec)
+		baseRoute := initializeBaseRoute(policy.Spec, sourceCluster)
+		// nil baseRoute indicates that this cluster is not selected by the WorkloadSelector and thus should not be translated
+		if baseRoute == nil {
+			continue
+		}
+
 		registerField := registerFieldFunc(virtualServiceFields, virtualService, policy.Ref)
 		for _, decorator := range vsDecorators {
 
@@ -101,7 +107,7 @@ func (t *translator) Translate(
 		}
 
 		// Avoid appending an HttpRoute that will have no affect, which occurs if no decorators mutate the baseRoute with any non-match config.
-		if equalityutils.Equals(initializeBaseRoute(policy.Spec), baseRoute) {
+		if equalityutils.Equals(initializeBaseRoute(policy.Spec, sourceCluster), baseRoute) {
 			continue
 		}
 
@@ -186,7 +192,11 @@ func (t *translator) initializeVirtualService(
 	}
 }
 
-func initializeBaseRoute(trafficPolicy *v1alpha2.TrafficPolicySpec) *networkingv1alpha3spec.HTTPRoute {
+// Returns nil to prevent translating the trafficPolicy if the sourceClusterName is not selected by the WorkloadSelector
+func initializeBaseRoute(trafficPolicy *v1alpha2.TrafficPolicySpec, sourceClusterName string) *networkingv1alpha3spec.HTTPRoute {
+	if !selectorutils.WorkloadSelectorContainsCluster(trafficPolicy.SourceSelector, sourceClusterName) {
+		return nil
+	}
 	return &networkingv1alpha3spec.HTTPRoute{
 		Match: translateRequestMatchers(trafficPolicy),
 	}

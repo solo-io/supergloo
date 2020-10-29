@@ -786,4 +786,66 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, nil, mockReporter)
 		Expect(virtualService).To(BeNil())
 	})
+
+	It("should not output an HttpRoute if TrafficPolicy's WorkloadSelector does not select source cluster", func() {
+		trafficTarget := &discoveryv1alpha2.TrafficTarget{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "mesh-service",
+			},
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+						Ref: &v1.ClusterObjectRef{
+							Name:        "mesh-service",
+							Namespace:   "mesh-service-namespace",
+							ClusterName: "mesh-service-cluster",
+						},
+						Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+							{
+								Port:     8080,
+								Name:     "http1",
+								Protocol: "http",
+							},
+						},
+					},
+				},
+			},
+			Status: discoveryv1alpha2.TrafficTargetStatus{
+				AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+					{
+						Ref: &v1.ObjectRef{
+							Name:      "tp-1",
+							Namespace: "tp-namespace-1",
+						},
+						Spec: &networkingv1alpha2.TrafficPolicySpec{
+							SourceSelector: []*networkingv1alpha2.WorkloadSelector{
+								{
+									Clusters: []string{"foobar"},
+								},
+							},
+							OutlierDetection: &networkingv1alpha2.TrafficPolicySpec_OutlierDetection{
+								ConsecutiveErrors: 5,
+							},
+						},
+					},
+				},
+			},
+		}
+
+		mockClusterDomainRegistry.
+			EXPECT().
+			GetDestinationServiceFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
+			Return("local-hostname")
+
+		mockDecoratorFactory.
+			EXPECT().
+			MakeDecorators(decorators.Parameters{
+				ClusterDomains: mockClusterDomainRegistry,
+				Snapshot:       in,
+			}).
+			Return([]decorators.Decorator{mockDecorator})
+
+		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, nil, mockReporter)
+		Expect(virtualService).To(BeNil())
+	})
 })

@@ -2,3 +2,6 @@ changelog:
   - type: FIX
     description: Update TrafficPolicy translation to output VirtualServices for federated services.
     issueLink: https://github.com/solo-io/service-mesh-hub/issues/1002
+  - type: FIX
+    description: Update the Istio TrafficPolicy translator to respect the WorkloadSelector's specified clusters.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1045
