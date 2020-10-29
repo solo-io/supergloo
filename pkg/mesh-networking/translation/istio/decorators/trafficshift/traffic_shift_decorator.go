@@ -248,7 +248,6 @@ func MakeDestinationRuleSubsetsForTrafficTarget(
 	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
 	sourceClusterName string,
-	clusterLabels map[string]string,
 ) []*networkingv1alpha3spec.Subset {
 	subsets := makeDestinationRuleSubsets(
 		allTrafficTargets,
@@ -275,7 +274,7 @@ func MakeDestinationRuleSubsetsForTrafficTarget(
 		for _, subset := range subsets {
 			// only the name of the subset matters here.
 			// the labels must match those on the ServiceEntry's endpoints.
-			subset.Labels = clusterLabels
+			subset.Labels = MakeFederatedSubsetLabel(trafficTarget.Spec.GetKubeService().Ref.ClusterName)
 			// we also remove the traffic policy, leaving
 			// it to the server-side DestinationRule to enforce.
 			subset.TrafficPolicy = nil
@@ -283,6 +282,19 @@ func MakeDestinationRuleSubsetsForTrafficTarget(
 	}
 
 	return subsets
+}
+
+// clusterName corresponds to the cluster name for the federated traffic target.
+//
+// NOTE(ilackarms): we use these labels to support federated subsets.
+// the values don't actually matter; but the subset names should
+// match those on the DestinationRule for the TrafficTarget in the
+// remote cluster.
+// based on: https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
+func MakeFederatedSubsetLabel(clusterName string) map[string]string {
+	return map[string]string{
+		"cluster": clusterName,
+	}
 }
 
 func makeDestinationRuleSubsets(

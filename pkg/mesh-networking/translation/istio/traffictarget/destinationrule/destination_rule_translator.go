@@ -43,7 +43,6 @@ type Translator interface {
 		in input.Snapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
-		federatedSubsetClusterLabels map[string]string,
 		reporter reporting.Reporter,
 	) *networkingv1alpha3.DestinationRule
 }
@@ -77,7 +76,6 @@ func (t *translator) Translate(
 	in input.Snapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
-	federatedSubsetClusterLabels map[string]string,
 	reporter reporting.Reporter,
 ) *networkingv1alpha3.DestinationRule {
 	kubeService := trafficTarget.Spec.GetKubeService()
@@ -97,7 +95,7 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	destinationRule, err := t.initializeDestinationRule(trafficTarget, settings.Spec.Mtls, sourceMeshInstallation, federatedSubsetClusterLabels)
+	destinationRule, err := t.initializeDestinationRule(trafficTarget, settings.Spec.Mtls, sourceMeshInstallation)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Error(err)
 		return nil
@@ -173,7 +171,6 @@ func (t *translator) initializeDestinationRule(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	mtlsDefault *v1alpha2.TrafficPolicySpec_MTLS,
 	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
-	federatedSubsetClusterLabels map[string]string,
 ) (*networkingv1alpha3.DestinationRule, error) {
 	var meta metav1.ObjectMeta
 	if sourceMeshInstallation != nil {
@@ -200,7 +197,6 @@ func (t *translator) initializeDestinationRule(
 				t.trafficTargets,
 				t.failoverServices,
 				sourceMeshInstallation.GetCluster(),
-				federatedSubsetClusterLabels,
 			),
 		},
 	}

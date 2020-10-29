@@ -164,7 +164,7 @@ var _ = Describe("FederationTranslator", func() {
 		expectedDR := &networkingv1alpha3.DestinationRule{}
 		mockDestinationRuleTranslator.
 			EXPECT().
-			Translate(ctx, in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, map[string]string{"cluster": mesh.Spec.GetIstio().Installation.Cluster}, nil).
+			Translate(ctx, in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
 			Return(expectedDR)
 
 		t := NewTranslator(

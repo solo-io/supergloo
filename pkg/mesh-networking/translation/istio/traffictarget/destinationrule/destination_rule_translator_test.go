@@ -17,6 +17,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
 	mock_decorators "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/mocks"
 	mock_trafficpolicy "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
 	mock_hostutils "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils/mocks"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
@@ -243,7 +244,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			).
 			Return(nil)
 
-		destinationRule := destinationRuleTranslator.Translate(ctx, in, trafficTarget, nil, nil, mockReporter)
+		destinationRule := destinationRuleTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
 		Expect(destinationRule).To(Equal(initializedDestinatonRule))
 	})
 
@@ -351,7 +352,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			).
 			Return(nil)
 
-		destinationRule := destinationRuleTranslator.Translate(ctx, in, trafficTarget, nil, nil, mockReporter)
+		destinationRule := destinationRuleTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
 		Expect(destinationRule).To(BeNil())
 	})
 
@@ -435,9 +436,6 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		sourceMeshInstallation := &discoveryv1alpha2.MeshSpec_MeshInstallation{
 			Cluster: "source-cluster",
 		}
-		federatedClusterLabels := map[string]string{
-			"cluster": "source-cluster",
-		}
 
 		in = input.NewInputSnapshotManualBuilder("").
 			AddSettings(settingsv1alpha2.SettingsSlice{
@@ -492,6 +490,8 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			},
 		}
 
+		federatedClusterLabels := trafficshift.MakeFederatedSubsetLabel(trafficTarget.Spec.GetKubeService().Ref.ClusterName)
+
 		mockDecoratorFactory.
 			EXPECT().
 			MakeDecorators(decorators.Parameters{
@@ -541,7 +541,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			).
 			Return(nil)
 
-		destinationRule := destinationRuleTranslator.Translate(ctx, in, trafficTarget, sourceMeshInstallation, federatedClusterLabels, mockReporter)
+		destinationRule := destinationRuleTranslator.Translate(ctx, in, trafficTarget, sourceMeshInstallation, mockReporter)
 		Expect(destinationRule).To(Equal(expectedDestinatonRule))
 	})
 })

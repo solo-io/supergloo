@@ -17,6 +17,7 @@ import (
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
@@ -178,9 +179,7 @@ func (t *translator) Translate(
 		// match those on the DestinationRule for the TrafficTarget in the
 		// remote cluster.
 		// based on: https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
-		clusterLabels := map[string]string{
-			"cluster": istioCluster,
-		}
+		clusterLabels := trafficshift.MakeFederatedSubsetLabel(istioCluster)
 
 		endpoints := []*networkingv1alpha3spec.WorkloadEntry{{
 			Address: ingressGateway.ExternalAddress,
@@ -224,7 +223,7 @@ func (t *translator) Translate(
 			// Translate VirtualServices for federated TrafficTargets
 			vs := t.virtualServiceTranslator.Translate(in, trafficTarget, clientIstio.Installation, reporter)
 			// Translate DestinationRules for federated TrafficTargets
-			dr := t.destinationRuleTranslator.Translate(t.ctx, in, trafficTarget, clientIstio.Installation, clusterLabels, reporter)
+			dr := t.destinationRuleTranslator.Translate(t.ctx, in, trafficTarget, clientIstio.Installation, reporter)
 
 			outputs.AddServiceEntries(se)
 			outputs.AddDestinationRules(dr)
