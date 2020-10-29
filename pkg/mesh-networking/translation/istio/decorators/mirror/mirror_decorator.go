@@ -72,7 +72,7 @@ func (d *mirrorDecorator) ApplyTrafficPolicyToVirtualService(
 func (d *mirrorDecorator) translateMirror(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
-	federatedClusterName string,
+	sourceClusterName string,
 ) (*networkingv1alpha3spec.Destination, *networkingv1alpha3spec.Percent, error) {
 	mirror := trafficPolicy.Mirror
 	if mirror == nil {
@@ -90,7 +90,7 @@ func (d *mirrorDecorator) translateMirror(
 			destinationType,
 			mirror.Port,
 			trafficTarget,
-			federatedClusterName,
+			sourceClusterName,
 		)
 		if err != nil {
 			return nil, nil, err

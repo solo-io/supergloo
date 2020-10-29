@@ -166,13 +166,13 @@ func registerFieldFunc(
 
 func (t *translator) initializeVirtualService(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
-	federatedMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 ) *networkingv1alpha3.VirtualService {
 	var meta metav1.ObjectMeta
-	if federatedMeshInstallation != nil {
+	if sourceMeshInstallation != nil {
 		meta = metautils.FederatedObjectMeta(
 			trafficTarget.Spec.GetKubeService().Ref,
-			federatedMeshInstallation,
+			sourceMeshInstallation,
 			trafficTarget.Annotations,
 		)
 	} else {
@@ -205,7 +205,7 @@ func initializeBaseRoute(trafficPolicy *v1alpha2.TrafficPolicySpec, sourceCluste
 func (t *translator) setDefaultDestination(
 	baseRoute *networkingv1alpha3spec.HTTPRoute,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
-	federatedClusterName string,
+	sourceClusterName string,
 ) {
 	// if a route destination is already set, we don't need to modify the route
 	if baseRoute.Route != nil {
@@ -214,7 +214,7 @@ func (t *translator) setDefaultDestination(
 
 	baseRoute.Route = []*networkingv1alpha3spec.HTTPRouteDestination{{
 		Destination: &networkingv1alpha3spec.Destination{
-			Host: t.clusterDomains.GetDestinationServiceFQDN(federatedClusterName, trafficTarget.Spec.GetKubeService().GetRef()),
+			Host: t.clusterDomains.GetDestinationServiceFQDN(sourceClusterName, trafficTarget.Spec.GetKubeService().GetRef()),
 		},
 	}}
 }

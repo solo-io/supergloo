@@ -5,6 +5,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
+	mock_destinationrule "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/destinationrule/mocks"
 	mock_virtualservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/virtualservice/mocks"
 	"github.com/solo-io/service-mesh-hub/test/data"
 	"istio.io/istio/pkg/config/protocol"
@@ -34,6 +35,7 @@ var _ = Describe("FederationTranslator", func() {
 	ctrl := gomock.NewController(GinkgoT())
 	clusterDomains := hostutils.NewClusterDomainRegistry(skv1alpha1sets.NewKubernetesClusterSet())
 	mockVirtualServiceTranslator := mock_virtualservice.NewMockTranslator(ctrl)
+	mockDestinationRuleTranslator := mock_destinationrule.NewMockTranslator(ctrl)
 
 	It("translates federation resources for a virtual mesh", func() {
 
@@ -159,7 +161,21 @@ var _ = Describe("FederationTranslator", func() {
 			Translate(in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
 			Return(expectedVS)
 
-		t := NewTranslator(ctx, clusterDomains, in.TrafficTargets(), in.FailoverServices(), mockVirtualServiceTranslator)
+		expectedDR := &networkingv1alpha3.DestinationRule{}
+		mockDestinationRuleTranslator.
+			EXPECT().
+			Translate(ctx, in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, map[string]string{"cluster": mesh.Spec.GetIstio().Installation.Cluster}, nil).
+			Return(expectedDR)
+
+		t := NewTranslator(
+			ctx,
+			clusterDomains,
+			in.TrafficTargets(),
+			in.FailoverServices(),
+			mockVirtualServiceTranslator,
+			mockDestinationRuleTranslator,
+		)
+
 		outputs := istio.NewBuilder(context.TODO(), "")
 		t.Translate(
 			in,
@@ -173,9 +189,9 @@ var _ = Describe("FederationTranslator", func() {
 		Expect(outputs.GetGateways().List()[0]).To(Equal(expectedGateway))
 		Expect(outputs.GetEnvoyFilters().Length()).To(Equal(1))
 		Expect(outputs.GetEnvoyFilters().List()[0]).To(Equal(expectedEnvoyFilter))
-		Expect(outputs.GetDestinationRules()).To(Equal(expectedDestinationRules))
+		Expect(outputs.GetDestinationRules()).To(Equal(istiov1alpha3sets.NewDestinationRuleSet(expectedDR)))
 		Expect(outputs.GetServiceEntries()).To(Equal(expectedServiceEntries))
-		Expect(outputs.GetVirtualServices().List()[0]).To(Equal(expectedVS))
+		Expect(outputs.GetVirtualServices()).To(Equal(istiov1alpha3sets.NewVirtualServiceSet(expectedVS)))
 	})
 })
 
@@ -271,36 +287,6 @@ var expectedEnvoyFilter = &networkingv1alpha3.EnvoyFilter{
 		},
 	},
 }
-var expectedDestinationRules = istiov1alpha3sets.NewDestinationRuleSet(&networkingv1alpha3.DestinationRule{
-	ObjectMeta: metav1.ObjectMeta{
-		Name:        "some-svc.some-ns.svc.cluster.global",
-		Namespace:   "remote-namespace",
-		ClusterName: "remote-cluster",
-		Labels:      metautils.TranslatedObjectLabels(),
-	},
-	Spec: networkingv1alpha3spec.DestinationRule{
-		Host: "some-svc.some-ns.svc.cluster.global",
-		TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{
-			Tls: &networkingv1alpha3spec.ClientTLSSettings{
-				Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
-			},
-		},
-		Subsets: []*networkingv1alpha3spec.Subset{
-			{
-				Name:   "foo-bar",
-				Labels: map[string]string{"cluster": "cluster"},
-			},
-			{
-				Name:   "foo-baz",
-				Labels: map[string]string{"cluster": "cluster"},
-			},
-			{
-				Name:   "bar-qux",
-				Labels: map[string]string{"cluster": "cluster"},
-			},
-		},
-	},
-})
 var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1alpha3.ServiceEntry{
 	ObjectMeta: metav1.ObjectMeta{
 		Name:        "some-svc.some-ns.svc.cluster.global",

@@ -9,7 +9,9 @@ import (
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/tls"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/snapshotutils"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
@@ -40,6 +42,8 @@ type Translator interface {
 		ctx context.Context,
 		in input.Snapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
+		sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+		federatedSubsetClusterLabels map[string]string,
 		reporter reporting.Reporter,
 	) *networkingv1alpha3.DestinationRule
 }
@@ -72,6 +76,8 @@ func (t *translator) Translate(
 	ctx context.Context,
 	in input.Snapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	federatedSubsetClusterLabels map[string]string,
 	reporter reporting.Reporter,
 ) *networkingv1alpha3.DestinationRule {
 	kubeService := trafficTarget.Spec.GetKubeService()
@@ -81,12 +87,17 @@ func (t *translator) Translate(
 		return nil
 	}
 
+	sourceClusterName := kubeService.Ref.ClusterName
+	if sourceMeshInstallation != nil {
+		sourceClusterName = sourceMeshInstallation.Cluster
+	}
+
 	settings, err := snapshotutils.GetSingletonSettings(ctx, in)
 	if err != nil {
 		return nil
 	}
 
-	destinationRule, err := t.initializeDestinationRule(trafficTarget, settings.Spec.Mtls)
+	destinationRule, err := t.initializeDestinationRule(trafficTarget, settings.Spec.Mtls, sourceMeshInstallation, federatedSubsetClusterLabels)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Error(err)
 		return nil
@@ -101,6 +112,12 @@ func (t *translator) Translate(
 
 	// Apply decorators which map a single applicable TrafficPolicy to a field on the DestinationRule.
 	for _, policy := range trafficTarget.Status.AppliedTrafficPolicies {
+
+		// Don't translate the trafficPolicy if the sourceClusterName is not selected by the SourceSelectors
+		if !selectorutils.WorkloadSelectorContainsCluster(policy.Spec.SourceSelector, sourceClusterName) {
+			continue
+		}
+
 		registerField := registerFieldFunc(destinationRuleFields, destinationRule, policy.Ref)
 		for _, decorator := range drDecorators {
 
@@ -155,12 +172,23 @@ func registerFieldFunc(
 func (t *translator) initializeDestinationRule(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	mtlsDefault *v1alpha2.TrafficPolicySpec_MTLS,
+	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	federatedSubsetClusterLabels map[string]string,
 ) (*networkingv1alpha3.DestinationRule, error) {
-	meta := metautils.TranslatedObjectMeta(
-		trafficTarget.Spec.GetKubeService().Ref,
-		trafficTarget.Annotations,
-	)
-	hostname := t.clusterDomains.GetServiceLocalFQDN(trafficTarget.Spec.GetKubeService().Ref)
+	var meta metav1.ObjectMeta
+	if sourceMeshInstallation != nil {
+		meta = metautils.FederatedObjectMeta(
+			trafficTarget.Spec.GetKubeService().Ref,
+			sourceMeshInstallation,
+			trafficTarget.Annotations,
+		)
+	} else {
+		meta = metautils.TranslatedObjectMeta(
+			trafficTarget.Spec.GetKubeService().Ref,
+			trafficTarget.Annotations,
+		)
+	}
+	hostname := t.clusterDomains.GetDestinationServiceFQDN(meta.ClusterName, trafficTarget.Spec.GetKubeService().Ref)
 
 	destinationRule := &networkingv1alpha3.DestinationRule{
 		ObjectMeta: meta,
@@ -171,6 +199,8 @@ func (t *translator) initializeDestinationRule(
 				trafficTarget,
 				t.trafficTargets,
 				t.failoverServices,
+				sourceMeshInstallation.GetCluster(),
+				federatedSubsetClusterLabels,
 			),
 		},
 	}

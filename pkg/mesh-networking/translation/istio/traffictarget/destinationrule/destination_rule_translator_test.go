@@ -101,12 +101,14 @@ var _ = Describe("DestinationRuleTranslator", func() {
 							Name:      "tp-1",
 							Namespace: "tp-namespace-1",
 						},
+						Spec: &v1alpha2.TrafficPolicySpec{},
 					},
 					{
 						Ref: &v1.ObjectRef{
 							Name:      "tp-2",
 							Namespace: "tp-namespace-2",
 						},
+						Spec: &v1alpha2.TrafficPolicySpec{},
 					},
 				},
 			},
@@ -194,7 +196,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetServiceLocalFQDN(trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationServiceFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
 			Return("local-hostname")
 
 		initializedDestinatonRule := &networkingv1alpha3.DestinationRule{
@@ -241,7 +243,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			).
 			Return(nil)
 
-		destinationRule := destinationRuleTranslator.Translate(ctx, in, trafficTarget, mockReporter)
+		destinationRule := destinationRuleTranslator.Translate(ctx, in, trafficTarget, nil, nil, mockReporter)
 		Expect(destinationRule).To(Equal(initializedDestinatonRule))
 	})
 
@@ -286,6 +288,26 @@ var _ = Describe("DestinationRuleTranslator", func() {
 							Name:      "tp-1",
 							Namespace: "tp-namespace-1",
 						},
+						Spec: &v1alpha2.TrafficPolicySpec{
+							SourceSelector: []*v1alpha2.WorkloadSelector{
+								{
+									Clusters: []string{"mesh-service-cluster"},
+								},
+							},
+						},
+					},
+					{
+						Ref: &v1.ObjectRef{
+							Name:      "tp-1",
+							Namespace: "tp-namespace-1",
+						},
+						Spec: &v1alpha2.TrafficPolicySpec{
+							SourceSelector: []*v1alpha2.WorkloadSelector{
+								{
+									Clusters: []string{"different-cluster"},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -301,7 +323,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetServiceLocalFQDN(trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationServiceFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
 			Return("local-hostname")
 
 		initializedDestinatonRule := &networkingv1alpha3.DestinationRule{
@@ -329,7 +351,197 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			).
 			Return(nil)
 
-		destinationRule := destinationRuleTranslator.Translate(ctx, in, trafficTarget, mockReporter)
+		destinationRule := destinationRuleTranslator.Translate(ctx, in, trafficTarget, nil, nil, mockReporter)
 		Expect(destinationRule).To(BeNil())
+	})
+
+	It("should output DestinationRule for federated TrafficTarget", func() {
+		trafficTargets = v1alpha2sets.NewTrafficTargetSet(
+			&discoveryv1alpha2.TrafficTarget{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "target-1",
+					Namespace: "ns",
+				},
+				Status: discoveryv1alpha2.TrafficTargetStatus{
+					AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+						{
+							Ref: &v1.ObjectRef{
+								Name:      "tp-1",
+								Namespace: "tp-namespace-1",
+							},
+							Spec: &v1alpha2.TrafficPolicySpec{
+								TrafficShift: &v1alpha2.TrafficPolicySpec_MultiDestination{
+									Destinations: []*v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination{
+										{
+											DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
+												KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
+													Name:        "mesh-service",
+													Namespace:   "mesh-service-namespace",
+													ClusterName: "mesh-service-clustername",
+													Subset:      map[string]string{"k1": "v1"},
+													Port:        9080,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			&discoveryv1alpha2.TrafficTarget{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "target-2",
+					Namespace: "ns",
+				},
+				Status: discoveryv1alpha2.TrafficTargetStatus{
+					AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+						{
+							Ref: &v1.ObjectRef{
+								Name:      "tp-2",
+								Namespace: "tp-namespace-2",
+							},
+							Spec: &v1alpha2.TrafficPolicySpec{
+								TrafficShift: &v1alpha2.TrafficPolicySpec_MultiDestination{
+									Destinations: []*v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination{
+										{
+											DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
+												KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
+													Name:        "mesh-service",
+													Namespace:   "mesh-service-namespace",
+													ClusterName: "mesh-service-clustername",
+													Subset:      map[string]string{"k2": "v2"},
+													Port:        9080,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		)
+
+		destinationRuleTranslator = destinationrule.NewTranslator(
+			mockClusterDomainRegistry,
+			mockDecoratorFactory,
+			trafficTargets,
+			failoverServices,
+		)
+
+		sourceMeshInstallation := &discoveryv1alpha2.MeshSpec_MeshInstallation{
+			Cluster: "source-cluster",
+		}
+		federatedClusterLabels := map[string]string{
+			"cluster": "source-cluster",
+		}
+
+		in = input.NewInputSnapshotManualBuilder("").
+			AddSettings(settingsv1alpha2.SettingsSlice{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      defaults.DefaultSettingsName,
+						Namespace: defaults.DefaultPodNamespace,
+					},
+					Spec: settingsv1alpha2.SettingsSpec{
+						Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
+							Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
+								TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
+							},
+						},
+					},
+				},
+			}).
+			Build()
+
+		trafficTarget := &discoveryv1alpha2.TrafficTarget{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "mesh-service",
+				Namespace: "service-mesh-hub",
+			},
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+						Ref: &v1.ClusterObjectRef{
+							Name:        "mesh-service",
+							Namespace:   "mesh-service-namespace",
+							ClusterName: "mesh-service-clustername",
+						},
+					},
+				},
+			},
+			Status: discoveryv1alpha2.TrafficTargetStatus{
+				AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+					{
+						Ref: &v1.ObjectRef{
+							Name:      "tp-1",
+							Namespace: "tp-namespace-1",
+						},
+						Spec: &v1alpha2.TrafficPolicySpec{
+							SourceSelector: []*v1alpha2.WorkloadSelector{
+								{
+									Clusters: []string{sourceMeshInstallation.Cluster},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		mockDecoratorFactory.
+			EXPECT().
+			MakeDecorators(decorators.Parameters{
+				ClusterDomains: mockClusterDomainRegistry,
+				Snapshot:       in,
+			}).
+			Return([]decorators.Decorator{mockDecorator})
+
+		mockClusterDomainRegistry.
+			EXPECT().
+			GetDestinationServiceFQDN(sourceMeshInstallation.Cluster, trafficTarget.Spec.GetKubeService().Ref).
+			Return("global-hostname")
+
+		expectedDestinatonRule := &networkingv1alpha3.DestinationRule{
+			ObjectMeta: metautils.FederatedObjectMeta(
+				trafficTarget.Spec.GetKubeService().Ref,
+				sourceMeshInstallation,
+				trafficTarget.Annotations,
+			),
+			Spec: networkingv1alpha3spec.DestinationRule{
+				Host: "global-hostname",
+				TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{
+					Tls: &networkingv1alpha3spec.ClientTLSSettings{
+						Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
+					},
+				},
+				Subsets: []*networkingv1alpha3spec.Subset{
+					{
+						Name:   "k1-v1",
+						Labels: federatedClusterLabels,
+					},
+					{
+						Name:   "k2-v2",
+						Labels: federatedClusterLabels,
+					},
+				},
+			},
+		}
+
+		mockDecorator.
+			EXPECT().
+			ApplyTrafficPolicyToDestinationRule(
+				trafficTarget.Status.AppliedTrafficPolicies[0],
+				trafficTarget,
+				&expectedDestinatonRule.Spec,
+				gomock.Any(),
+			).
+			Return(nil)
+
+		destinationRule := destinationRuleTranslator.Translate(ctx, in, trafficTarget, sourceMeshInstallation, federatedClusterLabels, mockReporter)
+		Expect(destinationRule).To(Equal(expectedDestinatonRule))
 	})
 })

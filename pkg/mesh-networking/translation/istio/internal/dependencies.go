@@ -5,6 +5,7 @@ import (
 
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
 
 	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
@@ -77,6 +78,7 @@ func (d dependencyFactoryImpl) MakeMeshTranslator(
 		trafficTargets,
 		failoverServices,
 		virtualservice.NewTranslator(clusterDomains, decorators.NewFactory()),
+		destinationrule.NewTranslator(clusterDomains, decorators.NewFactory(), trafficTargets, failoverServices),
 	)
 	mtlsTranslator := mtls.NewTranslator(ctx, secrets, workloads)
 	accessTranslator := access.NewTranslator()

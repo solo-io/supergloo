@@ -247,8 +247,10 @@ func MakeDestinationRuleSubsetsForTrafficTarget(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
+	sourceClusterName string,
+	clusterLabels map[string]string,
 ) []*networkingv1alpha3spec.Subset {
-	return makeDestinationRuleSubsets(
+	subsets := makeDestinationRuleSubsets(
 		allTrafficTargets,
 		func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool {
 			switch destType := weightedDestination.DestinationType.(type) {
@@ -264,6 +266,23 @@ func MakeDestinationRuleSubsetsForTrafficTarget(
 			return false
 		},
 	)
+
+	// NOTE(ilackarms): we make subsets here for the client-side destination rule for a federated traffic target,
+	// which contain all the matching subset names for the remote destination rule.
+	// the labels for the subsets must match the labels on the ServiceEntry Endpoint(s).
+	// Based on https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
+	if sourceClusterName != "" && sourceClusterName != trafficTarget.ClusterName {
+		for _, subset := range subsets {
+			// only the name of the subset matters here.
+			// the labels must match those on the ServiceEntry's endpoints.
+			subset.Labels = clusterLabels
+			// we also remove the traffic policy, leaving
+			// it to the server-side DestinationRule to enforce.
+			subset.TrafficPolicy = nil
+		}
+	}
+
+	return subsets
 }
 
 func makeDestinationRuleSubsets(
