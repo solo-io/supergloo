@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	v1alpha22 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/service-mesh-hub/test/data"
@@ -178,11 +179,15 @@ var _ = Describe("Federation", func() {
 			var getFederatedVirtualService = func() (*istionetworkingv1alpha3.VirtualService, error) {
 				env := e2e.GetEnv()
 				vsClient := env.Management.VirtualServiceClient
-				meta := metautils.TranslatedObjectMeta(
-					&v1.ClusterObjectRef{
-						Name:        "reviews-" + remoteClusterName,
-						Namespace:   "istio-system",
-						ClusterName: mgmtClusterName,
+				meta := metautils.FederatedObjectMeta(
+					&metav1.ObjectMeta{
+						Name:        "reviews",
+						Namespace:   BookinfoNamespace,
+						ClusterName: remoteClusterName,
+					},
+					&v1alpha22.MeshSpec_MeshInstallation{
+						Namespace: "istio-system",
+						Cluster:   mgmtClusterName,
 					},
 					nil,
 				)
