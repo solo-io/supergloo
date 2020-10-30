@@ -26,80 +26,9 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 //
-//Select Kubernetes services.
-//
-//Only one of (labels + namespaces + cluster) or (resource refs) may be provided. If all four are provided, it will be
-//considered an error, and the Status of the top level resource will be updated to reflect an IllegalSelection.
-//
-//Valid:
-//1.
-//selector:
-//matcher:
-//labels:
-//foo: bar
-//hello: world
-//namespaces:
-//- default
-//cluster: "cluster-name"
-//2.
-//selector:
-//matcher:
-//refs:
-//- name: foo
-//namespace: bar
-//
-//Invalid:
-//1.
-//selector:
-//matcher:
-//labels:
-//foo: bar
-//hello: world
-//namespaces:
-//- default
-//cluster: "cluster-name"
-//refs:
-//- name: foo
-//namespace: bar
-//
-//By default labels will select across all namespaces, unless a list of namespaces is provided, in which case
-//it will only select from those. An empty list is equal to AllNamespaces.
-//
-//If no labels are given, and only namespaces, all resources from the namespaces will be selected.
-//
-//The following selector will select all resources with the following labels in every namespace, in the local cluster:
-//
-//selector:
-//matcher:
-//labels:
-//foo: bar
-//hello: world
-//
-//Whereas the next selector will only select from the specified namespaces (foo, bar), in the local cluster:
-//
-//selector:
-//matcher:
-//labels:
-//foo: bar
-//hello: world
-//namespaces
-//- foo
-//- bar
-//
-//This final selector will select all resources of a given type in the target namespace (foo), in the local cluster:
-//
-//selector
-//matcher:
-//namespaces
-//- foo
-//- bar
-//labels:
-//hello: world
-//
-//
+//Select TrafficTargets using one or more platform-specific selection objects.
 type TrafficTargetSelector struct {
-	// A KubeServiceMatcher matches kubernetes services by the namespaces and clusters they belong to, as well
-	// as the provided labels.
+	// A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters.
 	KubeServiceMatcher *TrafficTargetSelector_KubeServiceMatcher `protobuf:"bytes,1,opt,name=kube_service_matcher,json=kubeServiceMatcher,proto3" json:"kube_service_matcher,omitempty"`
 	// Match individual k8s Services by direct reference.
 	KubeServiceRefs      *TrafficTargetSelector_KubeServiceRefs `protobuf:"bytes,2,opt,name=kube_service_refs,json=kubeServiceRefs,proto3" json:"kube_service_refs,omitempty"`
@@ -147,11 +76,20 @@ func (m *TrafficTargetSelector) GetKubeServiceRefs() *TrafficTargetSelector_Kube
 }
 
 type TrafficTargetSelector_KubeServiceMatcher struct {
-	// If specified, all labels must exist on k8s Service, else match on any labels.
+	//
+	//If specified, all labels must exist on k8s Service.
+	//When used in a networking policy, omission matches any labels.
+	//When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
 	Labels map[string]string `protobuf:"bytes,1,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// If specified, match k8s Services if they exist in one of the specified namespaces. If not specified, match on any namespace.
+	//
+	//If specified, match k8s Services if they exist in one of the specified namespaces. If not specified, match on any namespace.
+	//When used in a networking policy, omission matches any namespace.
+	//When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
 	Namespaces []string `protobuf:"bytes,2,rep,name=namespaces,proto3" json:"namespaces,omitempty"`
-	// If specified, match k8s Services if they exist in one of the specified clusters. If not specified, match on any cluster.
+	//
+	//If specified, match k8s Services if they exist in one of the specified clusters. If not specified, match on any cluster.
+	//When used in a networking policy, omission matches any cluster.
+	//When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
 	Clusters             []string `protobuf:"bytes,3,rep,name=clusters,proto3" json:"clusters,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -206,7 +144,10 @@ func (m *TrafficTargetSelector_KubeServiceMatcher) GetClusters() []string {
 }
 
 type TrafficTargetSelector_KubeServiceRefs struct {
-	// Match k8s Services by direct reference.
+	//
+	//Match k8s Services by direct reference.
+	//When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
+	//When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
 	Services             []*v1.ClusterObjectRef `protobuf:"bytes,1,rep,name=services,proto3" json:"services,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
 	XXX_unrecognized     []byte                 `json:"-"`
@@ -248,11 +189,20 @@ func (m *TrafficTargetSelector_KubeServiceRefs) GetServices() []*v1.ClusterObjec
 //Select Kubernetes workloads directly using label namespace and/or cluster criteria. See comments on the fields for
 //detailed semantics.
 type WorkloadSelector struct {
-	// If specified, all labels must exist on workloads, else match on any labels.
+	//
+	//If specified, all labels must exist on k8s workload.
+	//When used in a networking policy, omission matches any labels.
+	//When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
 	Labels map[string]string `protobuf:"bytes,1,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// If specified, match workloads if they exist in one of the specified namespaces. If not specified, match on any namespace.
+	//
+	//If specified, match k8s workloads if they exist in one of the specified namespaces. If not specified, match on any namespace.
+	//When used in a networking policy, omission matches any namespace.
+	//When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
 	Namespaces []string `protobuf:"bytes,2,rep,name=namespaces,proto3" json:"namespaces,omitempty"`
-	// If specified, match workloads if they exist in one of the specified clusters. If not specified, match on any cluster.
+	//
+	//If specified, match k8s workloads if they exist in one of the specified clusters. If not specified, match on any cluster.
+	//When used in a networking policy, omission matches any cluster.
+	//When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
 	Clusters             []string `protobuf:"bytes,3,rep,name=clusters,proto3" json:"clusters,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -357,9 +307,15 @@ func (m *IdentitySelector) GetKubeServiceAccountRefs() *IdentitySelector_KubeSer
 }
 
 type IdentitySelector_KubeIdentityMatcher struct {
-	// Namespaces to allow. If not set, any namespace is allowed.
+	//
+	//If specified, match k8s identity if it exists in one of the specified namespaces. If not specified, match on any namespace.
+	//When used in a networking policy, omission matches any namespace.
+	//When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
 	Namespaces []string `protobuf:"bytes,1,rep,name=namespaces,proto3" json:"namespaces,omitempty"`
-	// Cluster to allow. If not set, any cluster is allowed.
+	//
+	//If specified, match k8s identity if it exists in one of the specified clusters. If not specified, match on any cluster.
+	//When used in a networking policy, omission matches any cluster.
+	//When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
 	Clusters             []string `protobuf:"bytes,2,rep,name=clusters,proto3" json:"clusters,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -405,7 +361,10 @@ func (m *IdentitySelector_KubeIdentityMatcher) GetClusters() []string {
 }
 
 type IdentitySelector_KubeServiceAccountRefs struct {
-	// List of ServiceAccounts to allow. If not set, any ServiceAccount is allowed.
+	//
+	//Match k8s ServiceAccounts by direct reference.
+	//When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
+	//When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
 	ServiceAccounts      []*v1.ClusterObjectRef `protobuf:"bytes,1,rep,name=service_accounts,json=serviceAccounts,proto3" json:"service_accounts,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
 	XXX_unrecognized     []byte                 `json:"-"`

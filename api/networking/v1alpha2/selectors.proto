@@ -9,98 +9,45 @@ import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
 
 /*
-    Select Kubernetes services.
-
-    Only one of (labels + namespaces + cluster) or (resource refs) may be provided. If all four are provided, it will be
-    considered an error, and the Status of the top level resource will be updated to reflect an IllegalSelection.
-
-    Valid:
-        1.
-            selector:
-              matcher:
-                labels:
-                    foo: bar
-                    hello: world
-                namespaces:
-                - default
-                cluster: "cluster-name"
-        2.
-            selector:
-              matcher:
-                refs:
-                - name: foo
-                  namespace: bar
-
-    Invalid:
-        1.
-            selector:
-              matcher:
-                labels:
-                    foo: bar
-                    hello: world
-                namespaces:
-                - default
-                cluster: "cluster-name"
-                refs:
-                - name: foo
-                  namespace: bar
-
-    By default labels will select across all namespaces, unless a list of namespaces is provided, in which case
-    it will only select from those. An empty list is equal to AllNamespaces.
-
-    If no labels are given, and only namespaces, all resources from the namespaces will be selected.
-
-    The following selector will select all resources with the following labels in every namespace, in the local cluster:
-
-    selector:
-      matcher:
-        labels:
-          foo: bar
-          hello: world
-
-    Whereas the next selector will only select from the specified namespaces (foo, bar), in the local cluster:
-
-    selector:
-      matcher:
-        labels:
-          foo: bar
-          hello: world
-        namespaces
-        - foo
-        - bar
-
-    This final selector will select all resources of a given type in the target namespace (foo), in the local cluster:
-
-    selector
-      matcher:
-        namespaces
-        - foo
-        - bar
-        labels:
-          hello: world
-
-
+    Select TrafficTargets using one or more platform-specific selection objects.
 */
 message TrafficTargetSelector {
 
-    // A KubeServiceMatcher matches kubernetes services by the namespaces and clusters they belong to, as well
-    // as the provided labels.
+    // A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters.
     KubeServiceMatcher kube_service_matcher = 1;
 
     // Match individual k8s Services by direct reference.
     KubeServiceRefs kube_service_refs = 2;
 
     message KubeServiceMatcher {
-        // If specified, all labels must exist on k8s Service, else match on any labels.
+        /*
+            If specified, all labels must exist on k8s Service.
+            When used in a networking policy, omission matches any labels.
+            When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+        */
         map<string, string> labels = 1;
-        // If specified, match k8s Services if they exist in one of the specified namespaces. If not specified, match on any namespace.
+
+        /*
+            If specified, match k8s Services if they exist in one of the specified namespaces. If not specified, match on any namespace.
+            When used in a networking policy, omission matches any namespace.
+            When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+        */
         repeated string namespaces = 2;
-        // If specified, match k8s Services if they exist in one of the specified clusters. If not specified, match on any cluster.
+
+        /*
+            If specified, match k8s Services if they exist in one of the specified clusters. If not specified, match on any cluster.
+            When used in a networking policy, omission matches any cluster.
+            When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+        */
         repeated string clusters = 3;
     }
 
     message KubeServiceRefs {
-        // Match k8s Services by direct reference.
+        /*
+            Match k8s Services by direct reference.
+            When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
+            When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
+        */
         repeated .core.skv2.solo.io.ClusterObjectRef services = 1;
     }
 }
@@ -110,13 +57,25 @@ message TrafficTargetSelector {
     detailed semantics.
 */
 message WorkloadSelector {
-    // If specified, all labels must exist on workloads, else match on any labels.
+    /*
+        If specified, all labels must exist on k8s workload.
+        When used in a networking policy, omission matches any labels.
+        When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+    */
     map<string, string> labels = 1;
 
-    // If specified, match workloads if they exist in one of the specified namespaces. If not specified, match on any namespace.
+    /*
+        If specified, match k8s workloads if they exist in one of the specified namespaces. If not specified, match on any namespace.
+        When used in a networking policy, omission matches any namespace.
+        When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+    */
     repeated string namespaces = 2;
 
-    // If specified, match workloads if they exist in one of the specified clusters. If not specified, match on any cluster.
+    /*
+        If specified, match k8s workloads if they exist in one of the specified clusters. If not specified, match on any cluster.
+        When used in a networking policy, omission matches any cluster.
+        When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+    */
     repeated string clusters = 3;
 }
 
@@ -134,13 +93,28 @@ message IdentitySelector {
     KubeServiceAccountRefs kube_service_account_refs = 2;
 
     message KubeIdentityMatcher {
-        // Namespaces to allow. If not set, any namespace is allowed.
+
+        /*
+            If specified, match k8s identity if it exists in one of the specified namespaces. If not specified, match on any namespace.
+            When used in a networking policy, omission matches any namespace.
+            When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+        */
         repeated string namespaces = 1;
-        // Cluster to allow. If not set, any cluster is allowed.
+
+        /*
+            If specified, match k8s identity if it exists in one of the specified clusters. If not specified, match on any cluster.
+            When used in a networking policy, omission matches any cluster.
+            When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+        */
         repeated string clusters = 2;
     }
+
     message KubeServiceAccountRefs {
-        // List of ServiceAccounts to allow. If not set, any ServiceAccount is allowed.
+        /*
+            Match k8s ServiceAccounts by direct reference.
+            When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
+            When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
+        */
         repeated .core.skv2.solo.io.ClusterObjectRef service_accounts = 1;
     }
 }
