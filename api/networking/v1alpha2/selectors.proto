@@ -28,14 +28,14 @@ message TrafficTargetSelector {
         map<string, string> labels = 1;
 
         /*
-            If specified, match k8s Services if they exist in one of the specified namespaces. If not specified, match on any namespace.
+            If specified, match k8s Services if they exist in one of the specified namespaces.
             When used in a networking policy, omission matches any namespace.
             When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
         */
         repeated string namespaces = 2;
 
         /*
-            If specified, match k8s Services if they exist in one of the specified clusters. If not specified, match on any cluster.
+            If specified, match k8s Services if they exist in one of the specified clusters.
             When used in a networking policy, omission matches any cluster.
             When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
         */
@@ -65,14 +65,14 @@ message WorkloadSelector {
     map<string, string> labels = 1;
 
     /*
-        If specified, match k8s workloads if they exist in one of the specified namespaces. If not specified, match on any namespace.
+        If specified, match k8s workloads if they exist in one of the specified namespaces.
         When used in a networking policy, omission matches any namespace.
         When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
     */
     repeated string namespaces = 2;
 
     /*
-        If specified, match k8s workloads if they exist in one of the specified clusters. If not specified, match on any cluster.
+        If specified, match k8s workloads if they exist in one of the specified clusters.
         When used in a networking policy, omission matches any cluster.
         When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
     */
@@ -95,14 +95,14 @@ message IdentitySelector {
     message KubeIdentityMatcher {
 
         /*
-            If specified, match k8s identity if it exists in one of the specified namespaces. If not specified, match on any namespace.
+            If specified, match k8s identity if it exists in one of the specified namespaces.
             When used in a networking policy, omission matches any namespace.
             When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
         */
         repeated string namespaces = 1;
 
         /*
-            If specified, match k8s identity if it exists in one of the specified clusters. If not specified, match on any cluster.
+            If specified, match k8s identity if it exists in one of the specified clusters.
             When used in a networking policy, omission matches any cluster.
             When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
         */

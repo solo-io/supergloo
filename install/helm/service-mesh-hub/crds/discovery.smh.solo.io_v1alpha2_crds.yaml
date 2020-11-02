@@ -173,7 +173,7 @@ spec:
                               properties:
                                 clusters:
                                   description: |-
-                                    If specified, match k8s Services if they exist in one of the specified clusters. If not specified, match on any cluster.
+                                    If specified, match k8s Services if they exist in one of the specified clusters.
                                                When used in a networking policy, omission matches any cluster.
                                                When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
                                   items:
@@ -189,7 +189,7 @@ spec:
                                   type: object
                                 namespaces:
                                   description: |-
-                                    If specified, match k8s Services if they exist in one of the specified namespaces. If not specified, match on any namespace.
+                                    If specified, match k8s Services if they exist in one of the specified namespaces.
                                                When used in a networking policy, omission matches any namespace.
                                                When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
                                   items:
@@ -239,7 +239,7 @@ spec:
                               properties:
                                 clusters:
                                   description: |-
-                                    If specified, match k8s identity if it exists in one of the specified clusters. If not specified, match on any cluster.
+                                    If specified, match k8s identity if it exists in one of the specified clusters.
                                                When used in a networking policy, omission matches any cluster.
                                                When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
                                   items:
@@ -247,7 +247,7 @@ spec:
                                   type: array
                                 namespaces:
                                   description: |-
-                                    If specified, match k8s identity if it exists in one of the specified namespaces. If not specified, match on any namespace.
+                                    If specified, match k8s identity if it exists in one of the specified namespaces.
                                                When used in a networking policy, omission matches any namespace.
                                                When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
                                   items:
@@ -386,7 +386,7 @@ spec:
                               properties:
                                 clusters:
                                   description: |-
-                                    If specified, match k8s Services if they exist in one of the specified clusters. If not specified, match on any cluster.
+                                    If specified, match k8s Services if they exist in one of the specified clusters.
                                                When used in a networking policy, omission matches any cluster.
                                                When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
                                   items:
@@ -402,7 +402,7 @@ spec:
                                   type: object
                                 namespaces:
                                   description: |-
-                                    If specified, match k8s Services if they exist in one of the specified namespaces. If not specified, match on any namespace.
+                                    If specified, match k8s Services if they exist in one of the specified namespaces.
                                                When used in a networking policy, omission matches any namespace.
                                                When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
                                   items:
@@ -714,7 +714,7 @@ spec:
                           properties:
                             clusters:
                               description: |-
-                                If specified, match k8s workloads if they exist in one of the specified clusters. If not specified, match on any cluster.
+                                If specified, match k8s workloads if they exist in one of the specified clusters.
                                        When used in a networking policy, omission matches any cluster.
                                        When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
                               items:
@@ -730,7 +730,7 @@ spec:
                               type: object
                             namespaces:
                               description: |-
-                                If specified, match k8s workloads if they exist in one of the specified namespaces. If not specified, match on any namespace.
+                                If specified, match k8s workloads if they exist in one of the specified namespaces.
                                        When used in a networking policy, omission matches any namespace.
                                        When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
                               items:

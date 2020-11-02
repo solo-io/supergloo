@@ -56,8 +56,8 @@ Selector capable of selecting specific service identities. Useful for binding po
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| namespaces | []string | repeated | If specified, match k8s identity if it exists in one of the specified namespaces. If not specified, match on any namespace. When used in a networking policy, omission matches any namespace. When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace. |
-| clusters | []string | repeated | If specified, match k8s identity if it exists in one of the specified clusters. If not specified, match on any cluster. When used in a networking policy, omission matches any cluster. When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster. |
+| namespaces | []string | repeated | If specified, match k8s identity if it exists in one of the specified namespaces. When used in a networking policy, omission matches any namespace. When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace. |
+| clusters | []string | repeated | If specified, match k8s identity if it exists in one of the specified clusters. When used in a networking policy, omission matches any cluster. When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster. |
 
 
 
@@ -104,8 +104,8 @@ Select TrafficTargets using one or more platform-specific selection objects.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | labels | []networking.smh.solo.io.TrafficTargetSelector.KubeServiceMatcher.LabelsEntry | repeated | If specified, all labels must exist on k8s Service. When used in a networking policy, omission matches any labels. When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value. |
-| namespaces | []string | repeated | If specified, match k8s Services if they exist in one of the specified namespaces. If not specified, match on any namespace. When used in a networking policy, omission matches any namespace. When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace. |
-| clusters | []string | repeated | If specified, match k8s Services if they exist in one of the specified clusters. If not specified, match on any cluster. When used in a networking policy, omission matches any cluster. When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster. |
+| namespaces | []string | repeated | If specified, match k8s Services if they exist in one of the specified namespaces. When used in a networking policy, omission matches any namespace. When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace. |
+| clusters | []string | repeated | If specified, match k8s Services if they exist in one of the specified clusters. When used in a networking policy, omission matches any cluster. When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster. |
 
 
 
@@ -152,8 +152,8 @@ Select Kubernetes workloads directly using label namespace and/or cluster criter
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | labels | []networking.smh.solo.io.WorkloadSelector.LabelsEntry | repeated | If specified, all labels must exist on k8s workload. When used in a networking policy, omission matches any labels. When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value. |
-| namespaces | []string | repeated | If specified, match k8s workloads if they exist in one of the specified namespaces. If not specified, match on any namespace. When used in a networking policy, omission matches any namespace. When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace. |
-| clusters | []string | repeated | If specified, match k8s workloads if they exist in one of the specified clusters. If not specified, match on any cluster. When used in a networking policy, omission matches any cluster. When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster. |
+| namespaces | []string | repeated | If specified, match k8s workloads if they exist in one of the specified namespaces. When used in a networking policy, omission matches any namespace. When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace. |
+| clusters | []string | repeated | If specified, match k8s workloads if they exist in one of the specified clusters. When used in a networking policy, omission matches any cluster. When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster. |
 
 
 
