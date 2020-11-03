@@ -807,6 +807,9 @@ spec:
                         type: string
                     type: object
                   type: array
+                virtualNodeArn:
+                  description: The fully qualified Amazon Resource Name for this virtual node.
+                  type: string
                 virtualNodeName:
                   description: The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container.
                   type: string

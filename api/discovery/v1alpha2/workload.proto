@@ -54,6 +54,9 @@ message WorkloadSpec {
         // Needed for declaring Appmesh VirtualNode listeners.
         repeated ContainerPort ports = 2;
 
+        // The fully qualified Amazon Resource Name for this virtual node.
+        string virtual_node_arn = 3;
+
         // k8s application container ports.
         message ContainerPort {
             uint32 port = 1;
