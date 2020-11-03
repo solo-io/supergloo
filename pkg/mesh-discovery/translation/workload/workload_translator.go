@@ -23,7 +23,10 @@ type translator struct {
 	workloadDetector detector.WorkloadDetector
 }
 
-func NewTranslator(ctx context.Context, workloadDetector detector.WorkloadDetector) Translator {
+func NewTranslator(
+	ctx context.Context,
+	workloadDetector detector.WorkloadDetector,
+) Translator {
 	return &translator{ctx: ctx, workloadDetector: workloadDetector}
 }
 
@@ -42,12 +45,12 @@ func (t *translator) TranslateWorkloads(deployments appsv1sets.DeploymentSet, da
 	workloadSet := v1alpha2sets.NewWorkloadSet()
 
 	for _, workload := range workloads {
-		workload := t.workloadDetector.DetectWorkload(workload, meshes)
-		if workload == nil {
+		discoveredWorkload := t.workloadDetector.DetectWorkload(workload, meshes)
+		if discoveredWorkload == nil {
 			continue
 		}
-		contextutils.LoggerFrom(t.ctx).Debugf("detected workload %v", sets.Key(workload))
-		workloadSet.Insert(workload)
+		contextutils.LoggerFrom(t.ctx).Debugf("detected workload %v", sets.Key(discoveredWorkload))
+		workloadSet.Insert(discoveredWorkload)
 	}
 	return workloadSet
 }

@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	input "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
+	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	mesh "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh"
 	traffictarget "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/traffictarget"
 	workload "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload"
@@ -53,17 +54,17 @@ func (mr *MockDependencyFactoryMockRecorder) MakeMeshTranslator(ctx interface{})
 }
 
 // MakeWorkloadTranslator mocks base method
-func (m *MockDependencyFactory) MakeWorkloadTranslator(ctx context.Context, in input.Snapshot) workload.Translator {
+func (m *MockDependencyFactory) MakeWorkloadTranslator(ctx context.Context, in input.Snapshot, meshes v1alpha2sets.MeshSet) workload.Translator {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MakeWorkloadTranslator", ctx, in)
+	ret := m.ctrl.Call(m, "MakeWorkloadTranslator", ctx, in, meshes)
 	ret0, _ := ret[0].(workload.Translator)
 	return ret0
 }
 
 // MakeWorkloadTranslator indicates an expected call of MakeWorkloadTranslator
-func (mr *MockDependencyFactoryMockRecorder) MakeWorkloadTranslator(ctx, in interface{}) *gomock.Call {
+func (mr *MockDependencyFactoryMockRecorder) MakeWorkloadTranslator(ctx, in, meshes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeWorkloadTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeWorkloadTranslator), ctx, in)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeWorkloadTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeWorkloadTranslator), ctx, in, meshes)
 }
 
 // MakeTrafficTargetTranslator mocks base method

@@ -52,6 +52,21 @@ func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileMesh(clusterName, obj
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileMesh", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileMesh), clusterName, obj)
 }
 
+// ReconcileVirtualNode mocks base method
+func (m *MockmultiClusterReconciler) ReconcileVirtualNode(clusterName string, obj *v1beta2.VirtualNode) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileVirtualNode", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileVirtualNode indicates an expected call of ReconcileVirtualNode
+func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileVirtualNode(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualNode", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileVirtualNode), clusterName, obj)
+}
+
 // ReconcileConfigMap mocks base method
 func (m *MockmultiClusterReconciler) ReconcileConfigMap(clusterName string, obj *v10.ConfigMap) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
@@ -208,6 +223,21 @@ func (m *MocksingleClusterReconciler) ReconcileMesh(obj *v1beta2.Mesh) (reconcil
 func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileMesh(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileMesh", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileMesh), obj)
+}
+
+// ReconcileVirtualNode mocks base method
+func (m *MocksingleClusterReconciler) ReconcileVirtualNode(obj *v1beta2.VirtualNode) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileVirtualNode", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileVirtualNode indicates an expected call of ReconcileVirtualNode
+func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileVirtualNode(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualNode", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileVirtualNode), obj)
 }
 
 // ReconcileConfigMap mocks base method

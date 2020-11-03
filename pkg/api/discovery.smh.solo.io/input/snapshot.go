@@ -4,6 +4,7 @@
 
 // The Input Snapshot contains the set of all:
 // * Meshes
+// * VirtualNodes
 // * ConfigMaps
 // * Services
 // * Pods
@@ -49,6 +50,8 @@ type Snapshot interface {
 
 	// return the set of input Meshes
 	Meshes() appmesh_k8s_aws_v1beta2_sets.MeshSet
+	// return the set of input VirtualNodes
+	VirtualNodes() appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
 
 	// return the set of input ConfigMaps
 	ConfigMaps() v1_sets.ConfigMapSet
@@ -74,7 +77,8 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
-	meshes appmesh_k8s_aws_v1beta2_sets.MeshSet
+	meshes       appmesh_k8s_aws_v1beta2_sets.MeshSet
+	virtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
 
 	configMaps v1_sets.ConfigMapSet
 	services   v1_sets.ServiceSet
@@ -91,6 +95,7 @@ func NewSnapshot(
 	name string,
 
 	meshes appmesh_k8s_aws_v1beta2_sets.MeshSet,
+	virtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet,
 
 	configMaps v1_sets.ConfigMapSet,
 	services v1_sets.ServiceSet,
@@ -107,6 +112,7 @@ func NewSnapshot(
 		name: name,
 
 		meshes:       meshes,
+		virtualNodes: virtualNodes,
 		configMaps:   configMaps,
 		services:     services,
 		pods:         pods,
@@ -120,6 +126,10 @@ func NewSnapshot(
 
 func (s snapshot) Meshes() appmesh_k8s_aws_v1beta2_sets.MeshSet {
 	return s.meshes
+}
+
+func (s snapshot) VirtualNodes() appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet {
+	return s.virtualNodes
 }
 
 func (s snapshot) ConfigMaps() v1_sets.ConfigMapSet {
@@ -158,6 +168,7 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
 	snapshotMap["meshes"] = s.meshes.List()
+	snapshotMap["virtualNodes"] = s.virtualNodes.List()
 	snapshotMap["configMaps"] = s.configMaps.List()
 	snapshotMap["services"] = s.services.List()
 	snapshotMap["pods"] = s.pods.List()
@@ -182,6 +193,8 @@ type BuildOptions struct {
 
 	// List options for composing a snapshot from Meshes
 	Meshes ResourceBuildOptions
+	// List options for composing a snapshot from VirtualNodes
+	VirtualNodes ResourceBuildOptions
 
 	// List options for composing a snapshot from ConfigMaps
 	ConfigMaps ResourceBuildOptions
@@ -232,6 +245,7 @@ func NewMultiClusterBuilder(
 func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
 	meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
+	virtualNodes := appmesh_k8s_aws_v1beta2_sets.NewVirtualNodeSet()
 
 	configMaps := v1_sets.NewConfigMapSet()
 	services := v1_sets.NewServiceSet()
@@ -248,6 +262,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	for _, cluster := range b.clusters.ListClusters() {
 
 		if err := b.insertMeshesFromCluster(ctx, cluster, meshes, opts.Meshes); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertVirtualNodesFromCluster(ctx, cluster, virtualNodes, opts.VirtualNodes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertConfigMapsFromCluster(ctx, cluster, configMaps, opts.ConfigMaps); err != nil {
@@ -281,6 +298,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		name,
 
 		meshes,
+		virtualNodes,
 		configMaps,
 		services,
 		pods,
@@ -332,6 +350,48 @@ func (b *multiClusterBuilder) insertMeshesFromCluster(ctx context.Context, clust
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
 		meshes.Insert(&item)
+	}
+
+	return nil
+}
+func (b *multiClusterBuilder) insertVirtualNodesFromCluster(ctx context.Context, cluster string, virtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet, opts ResourceBuildOptions) error {
+	virtualNodeClient, err := appmesh_k8s_aws_v1beta2.NewMulticlusterVirtualNodeClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "appmesh.k8s.aws",
+			Version: "v1beta2",
+			Kind:    "VirtualNode",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	virtualNodeList, err := virtualNodeClient.ListVirtualNode(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range virtualNodeList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		virtualNodes.Insert(&item)
 	}
 
 	return nil
@@ -692,6 +752,7 @@ func NewSingleClusterBuilder(
 func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
 	meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
+	virtualNodes := appmesh_k8s_aws_v1beta2_sets.NewVirtualNodeSet()
 
 	configMaps := v1_sets.NewConfigMapSet()
 	services := v1_sets.NewServiceSet()
@@ -706,6 +767,9 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	var errs error
 
 	if err := b.insertMeshes(ctx, meshes, opts.Meshes); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertVirtualNodes(ctx, virtualNodes, opts.VirtualNodes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertConfigMaps(ctx, configMaps, opts.ConfigMaps); err != nil {
@@ -737,6 +801,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 		name,
 
 		meshes,
+		virtualNodes,
 		configMaps,
 		services,
 		pods,
@@ -778,6 +843,38 @@ func (b *singleClusterBuilder) insertMeshes(ctx context.Context, meshes appmesh_
 	for _, item := range meshList.Items {
 		item := item // pike
 		meshes.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterBuilder) insertVirtualNodes(ctx context.Context, virtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "appmesh.k8s.aws",
+			Version: "v1beta2",
+			Kind:    "VirtualNode",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	virtualNodeList, err := appmesh_k8s_aws_v1beta2.NewVirtualNodeClient(b.mgr.GetClient()).ListVirtualNode(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range virtualNodeList.Items {
+		item := item // pike
+		virtualNodes.Insert(&item)
 	}
 
 	return nil

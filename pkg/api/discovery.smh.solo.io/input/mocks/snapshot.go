@@ -52,6 +52,20 @@ func (mr *MockSnapshotMockRecorder) Meshes() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Meshes", reflect.TypeOf((*MockSnapshot)(nil).Meshes))
 }
 
+// VirtualNodes mocks base method
+func (m *MockSnapshot) VirtualNodes() v1beta2sets.VirtualNodeSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VirtualNodes")
+	ret0, _ := ret[0].(v1beta2sets.VirtualNodeSet)
+	return ret0
+}
+
+// VirtualNodes indicates an expected call of VirtualNodes
+func (mr *MockSnapshotMockRecorder) VirtualNodes() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualNodes", reflect.TypeOf((*MockSnapshot)(nil).VirtualNodes))
+}
+
 // ConfigMaps mocks base method
 func (m *MockSnapshot) ConfigMaps() v1sets0.ConfigMapSet {
 	m.ctrl.T.Helper()

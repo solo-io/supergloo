@@ -24,6 +24,7 @@ var (
 		},
 		appmeshv1beta2.GroupVersion: {
 			"Mesh",
+			"VirtualNode",
 		},
 	}
 

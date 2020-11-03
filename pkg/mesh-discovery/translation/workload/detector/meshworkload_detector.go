@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/decorator"
 	"github.com/solo-io/skv2/pkg/ezkube"
 
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
@@ -37,6 +38,7 @@ type workloadDetector struct {
 	pods        corev1sets.PodSet
 	replicaSets appsv1sets.ReplicaSetSet
 	detector    SidecarDetector
+	decorator   decorator.WorkloadDecorator
 }
 
 func NewWorkloadDetector(
@@ -44,6 +46,7 @@ func NewWorkloadDetector(
 	pods corev1sets.PodSet,
 	replicaSets appsv1sets.ReplicaSetSet,
 	detector SidecarDetector,
+	decorator decorator.WorkloadDecorator,
 ) WorkloadDetector {
 	ctx = contextutils.WithLogger(ctx, "mesh-workload-detector")
 	return &workloadDetector{
@@ -51,6 +54,7 @@ func NewWorkloadDetector(
 		pods:        pods,
 		replicaSets: replicaSets,
 		detector:    detector,
+		decorator:   decorator,
 	}
 }
 
@@ -72,7 +76,7 @@ func (d workloadDetector) DetectWorkload(workload types.Workload, meshes v1alpha
 	// append workload kind for uniqueness
 	outputMeta.Name += "-" + strings.ToLower(workload.Kind())
 
-	return &v1alpha2.Workload{
+	discoveredWorkload := &v1alpha2.Workload{
 		ObjectMeta: outputMeta,
 		Spec: v1alpha2.WorkloadSpec{
 			WorkloadType: &v1alpha2.WorkloadSpec_Kubernetes{
@@ -85,6 +89,9 @@ func (d workloadDetector) DetectWorkload(workload types.Workload, meshes v1alpha
 			Mesh: meshRef,
 		},
 	}
+
+	d.decorator.DecorateWorkload(discoveredWorkload, workload, mesh, podsForWorkload)
+	return discoveredWorkload
 }
 
 func (d workloadDetector) getMeshForPods(pods corev1sets.PodSet, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {

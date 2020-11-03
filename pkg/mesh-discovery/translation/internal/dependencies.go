@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector/appmesh"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/decorator"
+	appmesh2 "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/decorator/appmesh"
 	appmeshsidecar "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector/appmesh"
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
@@ -63,12 +65,18 @@ func (d DependencyFactoryImpl) MakeWorkloadTranslator(
 		osmsidecar.NewSidecarDetector(ctx),
 	}
 
+	workloadDecorators := decorator.WorkloadDecorators{
+		appmesh2.NewAppMeshWorkloadDecorator(ctx, in.VirtualNodes()),
+	}
+
 	workloadDetector := workloaddetector.NewWorkloadDetector(
 		ctx,
 		in.Pods(),
 		in.ReplicaSets(),
 		sidecarDetectors,
+		workloadDecorators,
 	)
+
 	return workload.NewTranslator(ctx, workloadDetector)
 }
 

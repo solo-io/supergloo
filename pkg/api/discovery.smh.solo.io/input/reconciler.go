@@ -5,6 +5,7 @@
 // The Input Reconciler calls a simple func() error whenever a
 // storage event is received for any of:
 // * Meshes
+// * VirtualNodes
 // * ConfigMaps
 // * Services
 // * Pods
@@ -45,6 +46,7 @@ import (
 // this private interface is used to ensure that the generated struct implements the intended functions
 type multiClusterReconciler interface {
 	appmesh_k8s_aws_v1beta2_controllers.MulticlusterMeshReconciler
+	appmesh_k8s_aws_v1beta2_controllers.MulticlusterVirtualNodeReconciler
 
 	v1_controllers.MulticlusterConfigMapReconciler
 	v1_controllers.MulticlusterServiceReconciler
@@ -68,6 +70,8 @@ type ReconcileOptions struct {
 
 	// Options for reconciling Meshes
 	Meshes reconcile.Options
+	// Options for reconciling VirtualNodes
+	VirtualNodes reconcile.Options
 
 	// Options for reconciling ConfigMaps
 	ConfigMaps reconcile.Options
@@ -114,6 +118,8 @@ func RegisterMultiClusterReconciler(
 
 	appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterMeshReconcileLoop("Mesh", clusters, options.Meshes).AddMulticlusterMeshReconciler(ctx, r, predicates...)
 
+	appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterVirtualNodeReconcileLoop("VirtualNode", clusters, options.VirtualNodes).AddMulticlusterVirtualNodeReconciler(ctx, r, predicates...)
+
 	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters, options.ConfigMaps).AddMulticlusterConfigMapReconciler(ctx, r, predicates...)
 
 	v1_controllers.NewMulticlusterServiceReconcileLoop("Service", clusters, options.Services).AddMulticlusterServiceReconciler(ctx, r, predicates...)
@@ -138,6 +144,21 @@ func (r *multiClusterReconcilerImpl) ReconcileMesh(clusterName string, obj *appm
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileMeshDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileVirtualNode(clusterName string, obj *appmesh_k8s_aws_v1beta2.VirtualNode) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileVirtualNodeDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -271,6 +292,7 @@ func (r *multiClusterReconcilerImpl) ReconcileStatefulSetDeletion(clusterName st
 // this private interface is used to ensure that the generated struct implements the intended functions
 type singleClusterReconciler interface {
 	appmesh_k8s_aws_v1beta2_controllers.MeshReconciler
+	appmesh_k8s_aws_v1beta2_controllers.VirtualNodeReconciler
 
 	v1_controllers.ConfigMapReconciler
 	v1_controllers.ServiceReconciler
@@ -316,6 +338,9 @@ func RegisterSingleClusterReconciler(
 	if err := appmesh_k8s_aws_v1beta2_controllers.NewMeshReconcileLoop("Mesh", mgr, options).RunMeshReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
 	}
+	if err := appmesh_k8s_aws_v1beta2_controllers.NewVirtualNodeReconcileLoop("VirtualNode", mgr, options).RunVirtualNodeReconciler(ctx, r, predicates...); err != nil {
+		return nil, err
+	}
 
 	if err := v1_controllers.NewConfigMapReconcileLoop("ConfigMap", mgr, options).RunConfigMapReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
@@ -351,6 +376,19 @@ func (r *singleClusterReconcilerImpl) ReconcileMesh(obj *appmesh_k8s_aws_v1beta2
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileMeshDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileVirtualNode(obj *appmesh_k8s_aws_v1beta2.VirtualNode) (reconcile.Result, error) {
+	return r.base.ReconcileGeneric(obj)
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileVirtualNodeDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

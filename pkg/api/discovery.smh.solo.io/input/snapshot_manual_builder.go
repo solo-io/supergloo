@@ -19,7 +19,8 @@ import (
 type InputSnapshotManualBuilder struct {
 	name string
 
-	meshes appmesh_k8s_aws_v1beta2_sets.MeshSet
+	meshes       appmesh_k8s_aws_v1beta2_sets.MeshSet
+	virtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
 
 	configMaps v1_sets.ConfigMapSet
 	services   v1_sets.ServiceSet
@@ -36,7 +37,8 @@ func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 	return &InputSnapshotManualBuilder{
 		name: name,
 
-		meshes: appmesh_k8s_aws_v1beta2_sets.NewMeshSet(),
+		meshes:       appmesh_k8s_aws_v1beta2_sets.NewMeshSet(),
+		virtualNodes: appmesh_k8s_aws_v1beta2_sets.NewVirtualNodeSet(),
 
 		configMaps: v1_sets.NewConfigMapSet(),
 		services:   v1_sets.NewServiceSet(),
@@ -55,6 +57,7 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 		i.name,
 
 		i.meshes,
+		i.virtualNodes,
 
 		i.configMaps,
 		i.services,
@@ -69,6 +72,10 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 }
 func (i *InputSnapshotManualBuilder) AddMeshes(meshes []*appmesh_k8s_aws_v1beta2.Mesh) *InputSnapshotManualBuilder {
 	i.meshes.Insert(meshes...)
+	return i
+}
+func (i *InputSnapshotManualBuilder) AddVirtualNodes(virtualNodes []*appmesh_k8s_aws_v1beta2.VirtualNode) *InputSnapshotManualBuilder {
+	i.virtualNodes.Insert(virtualNodes...)
 	return i
 }
 func (i *InputSnapshotManualBuilder) AddConfigMaps(configMaps []*v1.ConfigMap) *InputSnapshotManualBuilder {
