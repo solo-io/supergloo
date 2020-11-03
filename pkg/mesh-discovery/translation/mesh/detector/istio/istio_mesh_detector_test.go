@@ -184,12 +184,19 @@ var _ = Describe("IstioMeshDetector", func() {
 				ClusterName: clusterName,
 			},
 			Spec: corev1.ServiceSpec{
-				Ports: []corev1.ServicePort{{
-					Name:     "tls",
-					Protocol: "TCP",
-					Port:     1234,
-					NodePort: 5678,
-				}},
+				Ports: []corev1.ServicePort{
+					{
+						Name:     "tls",
+						Protocol: "TCP",
+						Port:     1234,
+						NodePort: 5678,
+					},
+					{
+						Name:     "https",
+						Protocol: "HTTPS",
+						Port:     2345,
+						NodePort: 6789,
+					}},
 				Selector: workloadLabels,
 				Type:     corev1.ServiceTypeNodePort,
 			},
@@ -261,10 +268,189 @@ var _ = Describe("IstioMeshDetector", func() {
 						CitadelServiceAccount: serviceAccountName,
 					},
 					IngressGateways: []*v1alpha2.MeshSpec_Istio_IngressGatewayInfo{{
-						WorkloadLabels:   workloadLabels,
-						ExternalAddress:  "external.domain",
-						ExternalTlsPort:  5678,
-						TlsContainerPort: 1234,
+						WorkloadLabels:    workloadLabels,
+						ExternalAddress:   "external.domain",
+						ExternalTlsPort:   5678,
+						TlsContainerPort:  1234,
+						ExternalHttpsPort: 6789,
+						HttpsPort:         2345,
+					}},
+				}},
+			},
+		}
+
+		Expect(meshes).To(HaveLen(1))
+		Expect(meshes[0]).To(Equal(expectedMesh))
+	})
+
+	It("detects a egress gateway", func() {
+		configMaps := istioConfigMap()
+
+		istioNamespace := defaults.GetPodNamespace()
+
+		ingressLabels := map[string]string{"istio": "ingressgateway"}
+		ingressService := &corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "ingress-svc",
+				Namespace:   meshNs,
+				ClusterName: clusterName,
+			},
+			Spec: corev1.ServiceSpec{
+				Ports: []corev1.ServicePort{
+					{
+						Name:     "tls",
+						Protocol: "TCP",
+						Port:     1234,
+						NodePort: 5678,
+					},
+					{
+						Name:     "https",
+						Protocol: "HTTPS",
+						Port:     2345,
+						NodePort: 6789,
+					}},
+				Selector: ingressLabels,
+				Type:     corev1.ServiceTypeNodePort,
+			},
+		}
+
+		egressLabels := map[string]string{"istio": "egressgateway"}
+		egressService := &corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "egress-svc",
+				Namespace:   meshNs,
+				ClusterName: clusterName,
+			},
+			Spec: corev1.ServiceSpec{
+				Ports: []corev1.ServicePort{
+					{
+						Name:     "tls",
+						Protocol: "TCP",
+						Port:     1234,
+					},
+					{
+						Name:     "https",
+						Protocol: "HTTPS",
+						Port:     2345,
+					}},
+				Selector: egressLabels,
+				Type:     corev1.ServiceTypeClusterIP,
+			},
+		}
+		services := corev1sets.NewServiceSet(ingressService, egressService)
+
+		ingressNodeName := "ingress-node"
+		egressNodeName := "egress-node"
+		pods := corev1sets.NewPodSet(
+			&corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        "ingress-pod",
+					Namespace:   meshNs,
+					ClusterName: clusterName,
+					Labels:      ingressLabels,
+				},
+				Spec: corev1.PodSpec{
+					NodeName: ingressNodeName,
+				},
+			},
+			&corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        "egress-pod",
+					Namespace:   meshNs,
+					ClusterName: clusterName,
+					Labels:      egressLabels,
+				},
+				Spec: corev1.PodSpec{
+					NodeName: egressNodeName,
+				},
+			},
+		)
+		nodes := corev1sets.NewNodeSet(
+			&corev1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        ingressNodeName,
+					ClusterName: clusterName,
+				},
+				Status: corev1.NodeStatus{
+					Addresses: []corev1.NodeAddress{
+						{
+							Type:    corev1.NodeInternalDNS,
+							Address: "internal.domain",
+						},
+						{
+							Type:    corev1.NodeExternalDNS,
+							Address: "external.domain",
+						},
+					},
+				},
+			},
+			&corev1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        egressNodeName,
+					ClusterName: clusterName,
+				},
+				Status: corev1.NodeStatus{
+					Addresses: []corev1.NodeAddress{
+						{
+							Type:    corev1.NodeInternalDNS,
+							Address: "internal.domain",
+						},
+						{
+							Type:    corev1.NodeExternalDNS,
+							Address: "external.domain",
+						},
+					},
+				},
+			},
+		)
+
+		detector := NewMeshDetector(
+			ctx,
+		)
+
+		deployment := istioDeployment(istiodDeploymentName)
+
+		in := input.NewInputSnapshotManualBuilder("")
+		in.AddDeployments([]*appsv1.Deployment{deployment})
+		in.AddConfigMaps(configMaps.List())
+		in.AddServices(services.List())
+		in.AddPods(pods.List())
+		in.AddNodes(nodes.List())
+
+		meshes, err := detector.DetectMeshes(in.Build())
+		Expect(err).NotTo(HaveOccurred())
+
+		expectedMesh := &v1alpha2.Mesh{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "istiod-namespace-cluster",
+				Namespace: istioNamespace,
+				Labels:    labelutils.ClusterLabels(clusterName),
+			},
+			Spec: v1alpha2.MeshSpec{
+				MeshType: &v1alpha2.MeshSpec_Istio_{Istio: &v1alpha2.MeshSpec_Istio{
+					Installation: &v1alpha2.MeshSpec_MeshInstallation{
+						Namespace: meshNs,
+						Cluster:   clusterName,
+						Version:   "latest",
+						PodLabels: map[string]string{"app": "istiod"},
+					},
+					CitadelInfo: &v1alpha2.MeshSpec_Istio_CitadelInfo{
+						TrustDomain:           trustDomain,
+						CitadelServiceAccount: serviceAccountName,
+					},
+					IngressGateways: []*v1alpha2.MeshSpec_Istio_IngressGatewayInfo{{
+						WorkloadLabels:    ingressLabels,
+						ExternalAddress:   "external.domain",
+						ExternalTlsPort:   5678,
+						TlsContainerPort:  1234,
+						ExternalHttpsPort: 6789,
+						HttpsPort:         2345,
+					}},
+					EgressGateways: []*v1alpha2.MeshSpec_Istio_EgressGatewayInfo{{
+						Name:           "egress-svc",
+						WorkloadLabels: egressLabels,
+						TlsPort:        1234,
+						HttpsPort:      2345,
 					}},
 				}},
 			},

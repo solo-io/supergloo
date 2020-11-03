@@ -17,6 +17,7 @@ title: "issued_certificate.proto"
 
 ## Table of Contents
   - [IssuedCertificateSpec](#certificates.smh.solo.io.IssuedCertificateSpec)
+  - [IssuedCertificateSpec.LimitedTrust](#certificates.smh.solo.io.IssuedCertificateSpec.LimitedTrust)
   - [IssuedCertificateStatus](#certificates.smh.solo.io.IssuedCertificateStatus)
 
   - [IssuedCertificateStatus.State](#certificates.smh.solo.io.IssuedCertificateStatus.State)
@@ -39,6 +40,23 @@ IssuedCertificates are used to issue SSL certificates to remote Kubernetes clust
 | signingCertificateSecret | core.skv2.solo.io.ObjectRef |  | The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the Certificate Issuer's cluster). |
 | issuedCertificateSecret | core.skv2.solo.io.ObjectRef |  | The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Certificate Agent's cluster). |
 | podBounceDirective | core.skv2.solo.io.ObjectRef |  | A ref to a PodBounceDirective specifying a list of k8s pods to bounce (delete and cause a restart) when the certificate is issued. This will include the control plane pods as well as any pods which share a data plane with the target mesh. |
+| limitedTrust | certificates.smh.solo.io.IssuedCertificateSpec.LimitedTrust |  | Limited trust specific configuration |
+
+
+
+
+
+
+<a name="certificates.smh.solo.io.IssuedCertificateSpec.LimitedTrust"></a>
+
+### IssuedCertificateSpec.LimitedTrust
+LimitedTrust defines parameters for limited trust configuration
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| gatewayCertificateSecret | core.skv2.solo.io.ObjectRef |  | The secret containing gateway mutual TLS credential information |
+| gatewaySni | string |  | SNI name for generated tls certificates |
 
 
 

@@ -40,6 +40,9 @@ message MeshSpec {
         // Configuration metadata for Istio IngressGateway (the Istio Ingress).
         repeated IngressGatewayInfo ingress_gateways = 3;
 
+        // Configuration metadata for Istio EgressGateway (the Istio Egress).
+        repeated EgressGatewayInfo egress_gateways = 4;
+
         // Configuration metadata for Istio Citadel (Istio's security component).
         message CitadelInfo {
             /*
@@ -75,9 +78,35 @@ message MeshSpec {
             // Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type).
             uint32 external_tls_port = 3;
 
+            uint32 external_https_port = 4;
+
             // Container port on which the gateway is listening for TLS connections.
             // Defaults to 15443.
-            uint32 tls_container_port = 4;
+            uint32 tls_container_port = 5;
+
+            // Service HTTPS port.
+            // Defaults to 443
+            uint32 https_port = 6;
+
+        }
+
+        message EgressGatewayInfo {
+
+            // Name of the service providing the egressgateway
+            // defaults to `istio-egressgateway`
+            string name = 1;
+
+            // Labels matching the workload which backs the gateway,
+            // defaults to `{"istio": "egressgateway"}`.
+            map<string, string> workload_labels = 2;
+
+            // Container port on which the gateway is listening for TLS connections.
+            // Defaults to 15443.
+            uint32 tls_port = 3;
+
+            // Service HTTPS port.
+            // Defaults to 443
+            uint32 https_port = 4;
 
         }
     }

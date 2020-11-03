@@ -58,6 +58,23 @@ spec:
                   description: namespace of the resource being referenced
                   type: string
               type: object
+            limitedTrust:
+              description: Limited trust specific configuration
+              properties:
+                gatewayCertificateSecret:
+                  description: The secret containing gateway mutual TLS credential information
+                  properties:
+                    name:
+                      description: name of the resource being referenced
+                      type: string
+                    namespace:
+                      description: namespace of the resource being referenced
+                      type: string
+                  type: object
+                gatewaySni:
+                  description: SNI name for generated tls certificates
+                  type: string
+              type: object
             org:
               description: The organization for this certificate.
               type: string

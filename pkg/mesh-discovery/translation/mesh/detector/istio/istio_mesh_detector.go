@@ -35,7 +35,8 @@ const (
 	istioConfigMapMeshDataKey = "mesh"
 
 	// https://istio.io/docs/ops/deployment/requirements/#ports-used-by-istio
-	defaultGatewayPortName = "tls"
+	defaultGatewayPortName      = "tls"
+	defaultHTTPSGatewayPortName = "https"
 )
 
 var (
@@ -94,10 +95,18 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Snapsh
 		d.ctx,
 		deployment.Namespace,
 		deployment.ClusterName,
-		defaults.DefaultGatewayWorkloadLabels,
+		defaults.DefaultIngressGatewayWorkloadLabels,
 		in.Services(),
 		in.Pods(),
 		in.Nodes(),
+	)
+
+	egressGateways := getEgressGateways(
+		d.ctx,
+		deployment.Namespace,
+		deployment.ClusterName,
+		defaults.DefaultEgressGatewayWorkloadLabels,
+		in.Services(),
 	)
 
 	agent := getAgent(
@@ -122,6 +131,7 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Snapsh
 						CitadelServiceAccount: deployment.Spec.Template.Spec.ServiceAccountName,
 					},
 					IngressGateways: ingressGateways,
+					EgressGateways:  egressGateways,
 				},
 			},
 			AgentInfo: agent,
@@ -129,6 +139,27 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Snapsh
 	}
 
 	return mesh, nil
+}
+
+func getEgressGateways(
+	ctx context.Context,
+	namespace string,
+	clusterName string,
+	workloadLabels map[string]string,
+	allServices corev1sets.ServiceSet,
+) []*v1alpha2.MeshSpec_Istio_EgressGatewayInfo {
+	egressSvc := getServicesForLabels(allServices, namespace, clusterName, workloadLabels)
+	var egressGateways []*v1alpha2.MeshSpec_Istio_EgressGatewayInfo
+	for _, svc := range egressSvc {
+		gateway, err := getEgressGateway(svc, workloadLabels)
+		if err != nil {
+			contextutils.LoggerFrom(ctx).Warnw("detection failed for mathcing istio egress service", "error", err, "service", sets.Key(svc))
+			continue
+		}
+		egressGateways = append(egressGateways, gateway)
+
+	}
+	return egressGateways
 }
 
 func getIngressGateways(
@@ -140,7 +171,7 @@ func getIngressGateways(
 	allPods corev1sets.PodSet,
 	allNodes corev1sets.NodeSet,
 ) []*v1alpha2.MeshSpec_Istio_IngressGatewayInfo {
-	ingressSvcs := getIngressServices(allServices, namespace, clusterName, workloadLabels)
+	ingressSvcs := getServicesForLabels(allServices, namespace, clusterName, workloadLabels)
 	var ingressGateways []*v1alpha2.MeshSpec_Istio_IngressGatewayInfo
 	for _, svc := range ingressSvcs {
 		gateway, err := getIngressGateway(svc, workloadLabels, allPods, allNodes)
@@ -159,26 +190,23 @@ func getIngressGateway(
 	allPods corev1sets.PodSet,
 	allNodes corev1sets.NodeSet,
 ) (*v1alpha2.MeshSpec_Istio_IngressGatewayInfo, error) {
-	var (
-		tlsPort *corev1.ServicePort
-	)
-	for _, port := range svc.Spec.Ports {
-		port := port // pike
-		if port.Name == defaultGatewayPortName {
-			tlsPort = &port
-			break
-		}
-	}
+
+	tlsPort := getSvcPortByName(defaultGatewayPortName, svc)
 	if tlsPort == nil {
 		return nil, eris.Errorf("no TLS port found on ingress gateway")
+	}
+	httpsPort := getSvcPortByName(defaultHTTPSGatewayPortName, svc)
+	if httpsPort == nil {
+		return nil, eris.Errorf("no HTTPS port found on ingress gateway")
 	}
 
 	var (
 		// TODO(ilackarms): currently we only use one address to connect to the gateway.
 		// We can support multiple addresses per gateway for load balancing purposes in the future
 
-		externalAddress string
-		externalPort    uint32
+		externalAddress   string
+		externalPort      uint32
+		externalHTTPSPort uint32
 	)
 	switch svc.Spec.Type {
 	case corev1.ServiceTypeNodePort:
@@ -194,6 +222,7 @@ func getIngressGateway(
 		}
 		externalAddress = addr
 		externalPort = uint32(tlsPort.NodePort)
+		externalHTTPSPort = uint32(httpsPort.NodePort)
 
 	case corev1.ServiceTypeLoadBalancer:
 		ingress := svc.Status.LoadBalancer.Ingress
@@ -206,12 +235,13 @@ func getIngressGateway(
 			externalAddress = ingress[0].IP
 		}
 		externalPort = uint32(tlsPort.Port)
+		externalHTTPSPort = uint32(httpsPort.Port)
 
 	default:
 		return nil, eris.Errorf("unsupported service type %v for ingress gateway", svc.Spec.Type)
 	}
 
-	if tlsPort.TargetPort.StrVal != "" {
+	if tlsPort.TargetPort.StrVal != "" || httpsPort.TargetPort.StrVal != "" {
 		// TODO(ilackarms): for the sake of simplicity, we only support number target ports
 		// if we come across the need to support named ports, we can add the lookup on the pod container itself here
 		return nil, eris.Errorf("named target ports are not currently supported on ingress gateway")
@@ -222,14 +252,42 @@ func getIngressGateway(
 	}
 
 	return &v1alpha2.MeshSpec_Istio_IngressGatewayInfo{
-		WorkloadLabels:   workloadLabels,
-		ExternalAddress:  externalAddress,
-		ExternalTlsPort:  externalPort,
-		TlsContainerPort: uint32(containerPort),
+		WorkloadLabels:    workloadLabels,
+		ExternalAddress:   externalAddress,
+		ExternalTlsPort:   externalPort,
+		ExternalHttpsPort: externalHTTPSPort,
+		TlsContainerPort:  uint32(containerPort),
+		HttpsPort:         uint32(httpsPort.Port),
 	}, nil
 }
 
-func getIngressServices(
+func getEgressGateway(
+	svc *corev1.Service,
+	workloadLabels map[string]string,
+) (*v1alpha2.MeshSpec_Istio_EgressGatewayInfo, error) {
+
+	tlsPort := getSvcPortByName(defaultGatewayPortName, svc)
+	if tlsPort == nil {
+		return nil, eris.Errorf("no TLS port found on egress gateway")
+	}
+	httpsPort := getSvcPortByName(defaultHTTPSGatewayPortName, svc)
+	if httpsPort == nil {
+		return nil, eris.Errorf("no HTTPS port found on egress gateway")
+	}
+
+	containerPort := tlsPort.Port
+
+	httpsContainerPort := httpsPort.Port
+
+	return &v1alpha2.MeshSpec_Istio_EgressGatewayInfo{
+		Name:           svc.Name,
+		WorkloadLabels: workloadLabels,
+		TlsPort:        uint32(containerPort),
+		HttpsPort:      uint32(httpsContainerPort),
+	}, nil
+}
+
+func getServicesForLabels(
 	allServices corev1sets.ServiceSet,
 	namespace string,
 	clusterName string,
@@ -364,4 +422,14 @@ func getAgent(
 	return &v1alpha2.MeshSpec_AgentInfo{
 		AgentNamespace: agentNamespace,
 	}
+}
+
+func getSvcPortByName(portName string, svc *corev1.Service) *corev1.ServicePort {
+	for _, port := range svc.Spec.Ports {
+		port := port // pike
+		if port.Name == portName {
+			return &port
+		}
+	}
+	return nil
 }

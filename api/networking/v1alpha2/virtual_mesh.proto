@@ -81,6 +81,11 @@ message VirtualMeshSpec {
             addition of additional clusters into a virtual mesh.
         */
         message LimitedTrust {
+            // Configure a Root Certificate Authority which will be shared by the
+            // members of the virtual mesh.
+            // If this is not provided, a self-signed certificate will be used
+            // by Service Mesh Hub to establish shared trust for the purposes of failover and federation.
+            RootCertificateAuthority root_certificate_authority = 1;
         }
 
     }

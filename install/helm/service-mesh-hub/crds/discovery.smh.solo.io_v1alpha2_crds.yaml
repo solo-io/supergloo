@@ -1000,6 +1000,38 @@ spec:
                                        If empty will default to "cluster.local".
                       type: string
                   type: object
+                egressGateways:
+                  description: Configuration metadata for Istio EgressGateway (the Istio Egress).
+                  items:
+                    properties:
+                      httpsPort:
+                        description: |-
+                          Service HTTPS port.
+                          Defaults to 443
+                        maximum: 4294967295
+                        minimum: 0
+                        type: integer
+                      name:
+                        description: |-
+                          Name of the service providing the egressgateway
+                          defaults to `istio-egressgateway`
+                        type: string
+                      tlsPort:
+                        description: |-
+                          Container port on which the gateway is listening for TLS connections.
+                          Defaults to 15443.
+                        maximum: 4294967295
+                        minimum: 0
+                        type: integer
+                      workloadLabels:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          Labels matching the workload which backs the gateway,
+                          defaults to `{"istio": "egressgateway"}`.
+                        type: object
+                    type: object
+                  type: array
                 ingressGateways:
                   description: Configuration metadata for Istio IngressGateway (the Istio Ingress).
                   items:
@@ -1010,12 +1042,23 @@ spec:
                           This will be the address used for cross-cluster connectivity.
                           Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes Service (depending on its type).
                         type: string
+                      externalHttpsPort:
+                        maximum: 4294967295
+                        minimum: 0
+                        type: integer
                       externalTlsPort:
                         description: |-
                           The externally-reachable port on which the gateway is listening for TLS connections.
                           This will be the port used for cross-cluster connectivity.
                           List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio.
                           Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type).
+                        maximum: 4294967295
+                        minimum: 0
+                        type: integer
+                      httpsPort:
+                        description: |-
+                          Service HTTPS port.
+                          Defaults to 443
                         maximum: 4294967295
                         minimum: 0
                         type: integer
@@ -1276,6 +1319,55 @@ spec:
                           type: boolean
                         limited:
                           description: Limited trust (selectively allow communication between workloads and traffic targets in the grouped Meshes).
+                          properties:
+                            rootCertificateAuthority:
+                              description: |-
+                                Configure a Root Certificate Authority which will be shared by the
+                                members of the virtual mesh.
+                                If this is not provided, a self-signed certificate will be used
+                                by Service Mesh Hub to establish shared trust for the purposes of failover and federation.
+                              oneOf:
+                              - not:
+                                  anyOf:
+                                  - required:
+                                    - generated
+                                  - required:
+                                    - secret
+                              - required:
+                                - generated
+                              - required:
+                                - secret
+                              properties:
+                                generated:
+                                  description: Generate a self-signed root certificate with the given options.
+                                  properties:
+                                    orgName:
+                                      description: Root cert organization name. Defaults to "service-mesh-hub".
+                                      type: string
+                                    rsaKeySizeBytes:
+                                      description: Size in bytes of the root cert's private key. Defaults to 4096.
+                                      maximum: 4294967295
+                                      minimum: 0
+                                      type: integer
+                                    ttlDays:
+                                      description: Number of days before root cert expires. Defaults to 365.
+                                      maximum: 4294967295
+                                      minimum: 0
+                                      type: integer
+                                  type: object
+                                secret:
+                                  description: |-
+                                    Use a root certificate provided in a Kubernetes Secret.
+                                    [Secrets provided in this way must follow a specified format, documented here.]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}})
+                                  properties:
+                                    name:
+                                      description: name of the resource being referenced
+                                      type: string
+                                    namespace:
+                                      description: namespace of the resource being referenced
+                                      type: string
+                                  type: object
+                              type: object
                           type: object
                         shared:
                           description: Shared trust (allow communication between any workloads and traffic targets in the grouped Meshes).

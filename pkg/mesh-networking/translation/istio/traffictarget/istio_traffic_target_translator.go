@@ -68,6 +68,10 @@ func (t *translator) Translate(
 		return
 	}
 
+	if t.isIstioInternalTarget(t.ctx, trafficTarget) {
+		return
+	}
+
 	vs := t.virtualServices.Translate(in, trafficTarget, reporter)
 	dr := t.destinationRules.Translate(t.ctx, in, trafficTarget, reporter)
 	ap := t.authorizationPolicies.Translate(in, trafficTarget, reporter)
@@ -93,4 +97,12 @@ func (t *translator) isIstioTrafficTarget(
 		return false
 	}
 	return mesh.Spec.GetIstio() != nil
+}
+
+func (t *translator) isIstioInternalTarget(ctx context.Context, target *discoveryv1alpha2.TrafficTarget) bool {
+	_, ok := target.Spec.GetKubeService().GetLabels()["istio"]
+	if ok {
+		contextutils.LoggerFrom(ctx).Debugf("skipping istio internal services %v", target.Name)
+	}
+	return ok
 }

@@ -913,6 +913,55 @@ spec:
                   type: boolean
                 limited:
                   description: Limited trust (selectively allow communication between workloads and traffic targets in the grouped Meshes).
+                  properties:
+                    rootCertificateAuthority:
+                      description: |-
+                        Configure a Root Certificate Authority which will be shared by the
+                        members of the virtual mesh.
+                        If this is not provided, a self-signed certificate will be used
+                        by Service Mesh Hub to establish shared trust for the purposes of failover and federation.
+                      oneOf:
+                      - not:
+                          anyOf:
+                          - required:
+                            - generated
+                          - required:
+                            - secret
+                      - required:
+                        - generated
+                      - required:
+                        - secret
+                      properties:
+                        generated:
+                          description: Generate a self-signed root certificate with the given options.
+                          properties:
+                            orgName:
+                              description: Root cert organization name. Defaults to "service-mesh-hub".
+                              type: string
+                            rsaKeySizeBytes:
+                              description: Size in bytes of the root cert's private key. Defaults to 4096.
+                              maximum: 4294967295
+                              minimum: 0
+                              type: integer
+                            ttlDays:
+                              description: Number of days before root cert expires. Defaults to 365.
+                              maximum: 4294967295
+                              minimum: 0
+                              type: integer
+                          type: object
+                        secret:
+                          description: |-
+                            Use a root certificate provided in a Kubernetes Secret.
+                            [Secrets provided in this way must follow a specified format, documented here.]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}})
+                          properties:
+                            name:
+                              description: name of the resource being referenced
+                              type: string
+                            namespace:
+                              description: namespace of the resource being referenced
+                              type: string
+                          type: object
+                      type: object
                   type: object
                 shared:
                   description: Shared trust (allow communication between any workloads and traffic targets in the grouped Meshes).

@@ -89,6 +89,11 @@ Mutual TLS Config for a Virtual Mesh. This includes options for configuring Mutu
 Limited trust is a virtual mesh trust model which does not require all meshes sharing the same root certificate or identity model. But rather, the limited trust creates trust between meshes running on different clusters by connecting their ingress/egress gateways with a common cert/identity. In this model all requests between different have the following request path when communicating between clusters<br>cluster 1 MTLS               shared MTLS                  cluster 2 MTLS client/workload <-----------> egress gateway <----------> ingress gateway <--------------> server<br>This approach has the downside of not maintaining identity from client to server, but allows for ad-hoc addition of additional clusters into a virtual mesh.
 
 
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| rootCertificateAuthority | networking.smh.solo.io.VirtualMeshSpec.RootCertificateAuthority |  | Configure a Root Certificate Authority which will be shared by the members of the virtual mesh. If this is not provided, a self-signed certificate will be used by Service Mesh Hub to establish shared trust for the purposes of failover and federation. |
+
+
 
 
 

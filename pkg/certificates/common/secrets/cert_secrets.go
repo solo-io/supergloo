@@ -15,6 +15,12 @@ const (
 	RootPrivateKeyID = "key.pem"
 	// RootCertID is the ID/name for the CA root certificate file.
 	RootCertID = "root-cert.pem"
+	// TLS certificate file for istio gateway credential
+	GatewayCertID = "cert"
+	// TLS key file for istio gateway credential
+	GatewayKeyID = "key"
+	// CA certificate file for  gateway credential
+	GatewayCaCertID = "cacert"
 )
 
 // The root CA from the perspective of the MeshGroup
@@ -69,5 +75,28 @@ func IntermediateCADataFromSecretData(data map[string][]byte) IntermediateCAData
 		CertChain:    certChain,
 		CaCert:       caCert,
 		CaPrivateKey: caKey,
+	}
+}
+
+// Credential for gateways of type mutual
+type GatewayMTLSCredentialData struct {
+	CaCert []byte
+	Cert   []byte
+	Key    []byte
+}
+
+func (d GatewayMTLSCredentialData) ToSecretData() map[string][]byte {
+	return map[string][]byte{
+		GatewayCaCertID: d.CaCert,
+		GatewayCertID:   d.Cert,
+		GatewayKeyID:    d.Key,
+	}
+}
+
+func GatewayMTLSCredentialDataFromSecretData(data map[string][]byte) GatewayMTLSCredentialData {
+	return GatewayMTLSCredentialData{
+		CaCert: data[GatewayCaCertID],
+		Cert:   data[GatewayCertID],
+		Key:    data[GatewayKeyID],
 	}
 }

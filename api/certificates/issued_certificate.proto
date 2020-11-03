@@ -51,6 +51,18 @@ message IssuedCertificateSpec {
     // which share a data plane with the target mesh.
     .core.skv2.solo.io.ObjectRef pod_bounce_directive = 5;
 
+    // LimitedTrust defines parameters for limited trust configuration
+    message LimitedTrust {
+
+        // The secret containing gateway mutual TLS credential information
+        .core.skv2.solo.io.ObjectRef gateway_certificate_secret = 7;
+
+        // SNI name for generated tls certificates
+        string gateway_sni = 8;
+    }
+
+    // Limited trust specific configuration
+    LimitedTrust limited_trust = 6;
 }
 
 // The IssuedCertificate status is written by the CertificateRequesting agent.
