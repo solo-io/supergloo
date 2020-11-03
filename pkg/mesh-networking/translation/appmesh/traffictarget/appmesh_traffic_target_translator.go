@@ -66,9 +66,12 @@ func (t *translator) Translate(
 		report(tp, trafficTarget, reporter)
 
 		// TODO joekelley
-		virtualNode := getVirtualNodeForTrafficTarget(trafficTarget, in.VirtualNodes())
+		//virtualNode := getVirtualNodeForTrafficTarget(trafficTarget, in.VirtualNodes())
 
-		virtualService, virtualRouter := translate(trafficTarget, virtualNode)
+		virtualService, virtualRouter := translate(trafficTarget)
+		if virtualService != nil {
+
+		}
 		outputs.AddVirtualServices(virtualService)
 		outputs.AddVirtualRouters(virtualRouter)
 	}
@@ -76,7 +79,7 @@ func (t *translator) Translate(
 
 func getVirtualNodeForTrafficTarget(trafficTarget *discoveryv1alpha2.TrafficTarget, virtualNodes v1beta2sets.VirtualNodeSet) *v1beta2.VirtualNode {
 	// TODO(ilackarms): non kube services currently unsupported
-	_ := trafficTarget.Spec.GetKubeService()
+	trafficTarget.Spec.GetKubeService()
 
 	// TODO joekelley update workload discovery to implement app mesh fields
 
@@ -91,23 +94,18 @@ func translate(trafficTarget *discoveryv1alpha2.TrafficTarget) (*v1beta2.Virtual
 
 	vr := getVirtualRouter(meta, trafficTarget)
 
-	vs := &v1beta2.VirtualService{
-		ObjectMeta: meta,
-		Spec: v1beta2.VirtualServiceSpec{
-			Provider: &v1beta2.VirtualServiceProvider{
-				VirtualRouter: &v1beta2.VirtualRouterServiceProvider{
-					VirtualRouterRef: &v1beta2.VirtualRouterReference{
-						Name: meta.Name,
-					},
-				},
-			},
-		},
-	}
+	// TODO joekelley get this and pass it through; maybe even just node ARN?
+	var workload *discoveryv1alpha2.Workload
+	vs := getVirtualService(meta, vr, workload)
 
 	return vs, vr
 }
 
-func getVirtualService(meta metav1.ObjectMeta, trafficTarget *discoveryv1alpha2.TrafficTarget, virtualRouter *v1beta2.VirtualRouter) *v1beta2.VirtualService {
+func getVirtualService(
+	meta metav1.ObjectMeta,
+	virtualRouter *v1beta2.VirtualRouter,
+	workload *discoveryv1alpha2.Workload,
+) *v1beta2.VirtualService {
 	var provider *v1beta2.VirtualServiceProvider
 	if virtualRouter != nil {
 		provider = &v1beta2.VirtualServiceProvider{
@@ -119,17 +117,17 @@ func getVirtualService(meta metav1.ObjectMeta, trafficTarget *discoveryv1alpha2.
 			},
 		}
 	} else {
+		// TODO joekelley implement discovery such that we get node ARN from workload
 		provider = &v1beta2.VirtualServiceProvider{
-			VirtualRouter: &v1beta2.VirtualRouterServiceProvider{
-				VirtualRouterRef: &v1beta2.VirtualRouterReference{
-					Namespace: &meta.Namespace,
-					Name:      meta.Name,
-				},
+			VirtualNode: &v1beta2.VirtualNodeServiceProvider{
+				VirtualNodeARN: &workload.Spec.AppMesh.VirtualNodeName, // TODO ARN
 			},
 		}
 	}
 
-	// TODO we need to provide a deterministic, globally unique AWS Name.
+	// This is the default name from the AWS controller.
+	// We must provide it explicitly, else the App Mesh controller's
+	// validating admission webhook will reject our changes on update.
 	awsName := fmt.Sprintf("%s.%s", meta.Name, meta.Namespace)
 	return &v1beta2.VirtualService{
 		ObjectMeta: meta,
@@ -173,10 +171,8 @@ func getVirtualRouterListeners(trafficTarget *discoveryv1alpha2.TrafficTarget) [
 func getRoutes(trafficTarget *discoveryv1alpha2.TrafficTarget) []v1beta2.Route {
 	var routes []v1beta2.Route
 	for _, tp := range trafficTarget.Status.GetAppliedTrafficPolicies() {
-
 		routes = append(routes, getTrafficPolicyRoutes(tp.Ref, tp.Spec)...)
 	}
-
 	return routes
 }
 
@@ -251,13 +247,24 @@ func getTrafficPolicyRoutes(trafficPolicyRef *v1.ObjectRef, trafficPolicy *v1alp
 	}
 
 	getRouteAction := func() v1beta2.HTTPRouteAction {
+		// If this is not a traffic shift, route all traffic to the virtual node backing this traffic target.
 		if trafficPolicy.GetTrafficShift() == nil {
-			return v1beta2.HTTPRouteAction{}
+			var virtualNodeArn string
+			return v1beta2.HTTPRouteAction{
+				WeightedTargets: []v1beta2.WeightedTarget{{
+					VirtualNodeARN: &virtualNodeArn,
+					Weight:         1,
+				}},
+			}
 		}
 
 		var weightedTargets []v1beta2.WeightedTarget
 		for _, destination := range trafficPolicy.GetTrafficShift().GetDestinations() {
-			// TODO joekelley determine weighted target destinations here; should we use the nodes, or virtual services?
+			// TODO joekelley get virtual node info for each backing service
+			// kubeservice -> workloads -> aws info
+			// kubeservice -> traffic target -> mesh
+			// compose workload from ARN Name and mesh
+
 			weightedTargets = append(weightedTargets, v1beta2.WeightedTarget{
 				VirtualNodeRef: &v1beta2.VirtualNodeReference{
 					Namespace: nil,
@@ -284,7 +291,6 @@ func getTrafficPolicyRoutes(trafficPolicyRef *v1.ObjectRef, trafficPolicy *v1alp
 		}
 
 		// Use all supported HTTP and TCP retry events.
-		// TODO joekelley extract constants or find them in aws codebase
 		return &v1beta2.HTTPRetryPolicy{
 			HTTPRetryEvents: []v1beta2.HTTPRetryPolicyEvent{"server-error", "gateway-error", "client-error", "stream-error"},
 			TCPRetryEvents:  []v1beta2.TCPRetryPolicyEvent{"connection-error"},
@@ -306,12 +312,11 @@ func getTrafficPolicyRoutes(trafficPolicyRef *v1.ObjectRef, trafficPolicy *v1alp
 		}
 	}
 
-	var output []v1beta2.Route
-
+	var routes []v1beta2.Route
 	for i, routeMatch := range getMatches(trafficPolicy.HttpRequestMatchers) {
-		output = append(output, v1beta2.Route{
+		routes = append(routes, v1beta2.Route{
 			Name: fmt.Sprintf("%s-%s-%d", trafficPolicyRef.Namespace, trafficPolicyRef.Name, i),
-			// TODO joekelley implement the other route types
+			// TODO implement the other route types
 			HTTPRoute: &v1beta2.HTTPRoute{
 				Match:       routeMatch,
 				Action:      getRouteAction(),
@@ -321,7 +326,7 @@ func getTrafficPolicyRoutes(trafficPolicyRef *v1.ObjectRef, trafficPolicy *v1alp
 		})
 	}
 
-	return output
+	return routes
 }
 
 func isAppmeshTrafficTarget(
@@ -353,6 +358,7 @@ func report(
 	}
 
 	// TODO joekelley add mTLS here
+
 	if tp.GetSpec().GetCorsPolicy() != nil {
 		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, tp.GetRef(), errors.NewUnsupportedFeatureError(
 			tp.GetRef(),
@@ -388,7 +394,6 @@ func report(
 			getMessage("RequestTimeout"),
 		))
 	}
-	// TODO joekelley is this true
 	if tp.GetSpec().GetSourceSelector() != nil {
 		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, tp.GetRef(), errors.NewUnsupportedFeatureError(
 			tp.GetRef(),
