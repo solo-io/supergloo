@@ -29,6 +29,8 @@ message TrafficTargetSpec {
             uint32 port = 1;
             string name = 2;
             string protocol = 3;
+            // Available in k8s 1.18+, specifies the application protocol.
+            string app_protocol = 4;
         }
 
         // A reference to the kube-native traffic target that this TrafficTarget represents.
@@ -67,6 +69,12 @@ message TrafficTargetStatus {
 
     // The set of Access Policies that have been applied to this TrafficTarget
     repeated AppliedAccessPolicy applied_access_policies = 4;
+
+    // The local fully qualified domain
+    string local_fqdn = 5;
+
+    // The remote fully qualified domain
+    string remote_fqdn = 6;
 
     // AppliedTrafficPolicy represents a traffic policy that has been applied to the TrafficTarget.
     // if an existing Traffic Policy becomes invalid, the last applied policy will be used

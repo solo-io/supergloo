@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Store the appProtocol of a k8s Service if it exists on the Service.
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1039

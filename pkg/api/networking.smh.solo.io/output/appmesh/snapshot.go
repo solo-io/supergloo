@@ -11,12 +11,12 @@ import (
 	"sort"
 
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/skv2/pkg/multicluster"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	appmesh_k8s_aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
@@ -611,6 +611,15 @@ type Builder interface {
 	// add a cluster to the collected clusters.
 	// this can be used to collect clusters for use with MultiCluster snapshots.
 	AddCluster(cluster string)
+
+	// returns the set of clusters currently stored in this builder
+	Clusters() []string
+
+	// merge all the resources from another Builder into this one
+	Merge(other Builder)
+
+	// create a clone of this builder (deepcopying all resources)
+	Clone() Builder
 }
 
 func (b *builder) AddVirtualServices(virtualServices ...*appmesh_k8s_aws_v1beta2.VirtualService) {
@@ -677,4 +686,42 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 
 func (b *builder) AddCluster(cluster string) {
 	b.clusters = append(b.clusters, cluster)
+}
+
+func (b *builder) Clusters() []string {
+	return b.clusters
+}
+
+func (b *builder) Merge(other Builder) {
+	if other == nil {
+		return
+	}
+
+	b.AddVirtualServices(other.GetVirtualServices().List()...)
+	b.AddVirtualNodes(other.GetVirtualNodes().List()...)
+	b.AddVirtualRouters(other.GetVirtualRouters().List()...)
+	for _, cluster := range other.Clusters() {
+		b.AddCluster(cluster)
+	}
+}
+
+func (b *builder) Clone() Builder {
+	if b == nil {
+		return nil
+	}
+	clone := NewBuilder(b.ctx, b.name)
+
+	for _, virtualService := range b.GetVirtualServices().List() {
+		clone.AddVirtualServices(virtualService.DeepCopy())
+	}
+	for _, virtualNode := range b.GetVirtualNodes().List() {
+		clone.AddVirtualNodes(virtualNode.DeepCopy())
+	}
+	for _, virtualRouter := range b.GetVirtualRouters().List() {
+		clone.AddVirtualRouters(virtualRouter.DeepCopy())
+	}
+	for _, cluster := range b.Clusters() {
+		clone.AddCluster(cluster)
+	}
+	return clone
 }

@@ -13,6 +13,23 @@ message SettingsSpec {
 
     // Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence)
     .networking.smh.solo.io.TrafficPolicySpec.MTLS mtls = 1;
+
+    // Configure SMH Networking to communicate with one or more external gRPC NetworkingExtensions servers.
+    // Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence).
+    // Note: Extension Servers have full write access to the output objects written by Service Mesh Hub.
+    repeated NetworkingExtensionsServer networking_extension_servers = 2;
+}
+
+// Options for connecting to an external gRPC NetworkingExternsions server
+message NetworkingExtensionsServer {
+    // TCP address of the Networking Extensions Server (including port)
+    string address = 1;
+
+    // Communicate over HTTP rather than HTTPS
+    bool insecure = 2;
+
+    // Instruct SMH to automatically reconnect to the server on network failures
+    bool reconnect_on_network_failures = 3;
 }
 
 message SettingsStatus {

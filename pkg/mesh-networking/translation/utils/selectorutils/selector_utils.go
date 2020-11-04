@@ -19,6 +19,7 @@ func SelectorMatchesWorkload(selectors []*v1alpha2.WorkloadSelector, workload *d
 			if kubeWorkloadMatches(
 				selector.GetLabels(),
 				selector.GetNamespaces(),
+				selector.GetClusters(),
 				kubeWorkload,
 			) {
 				return true
@@ -103,9 +104,13 @@ func SelectorMatchesService(selectors []*v1alpha2.TrafficTargetSelector, service
 func kubeWorkloadMatches(
 	labels map[string]string,
 	namespaces []string,
+	clusters []string,
 	kubeWorkload *discoveryv1alpha2.WorkloadSpec_KubernetesWorkload,
 ) bool {
 	if len(namespaces) > 0 && !stringutils.ContainsString(kubeWorkload.GetController().GetNamespace(), namespaces) {
+		return false
+	}
+	if len(clusters) > 0 && !stringutils.ContainsString(kubeWorkload.GetController().GetClusterName(), clusters) {
 		return false
 	}
 	for k, v := range labels {

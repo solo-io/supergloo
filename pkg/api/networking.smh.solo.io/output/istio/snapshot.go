@@ -11,12 +11,12 @@ import (
 	"sort"
 
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/skv2/pkg/multicluster"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	certificates_smh_solo_io_v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2"
@@ -1387,6 +1387,15 @@ type Builder interface {
 	// add a cluster to the collected clusters.
 	// this can be used to collect clusters for use with MultiCluster snapshots.
 	AddCluster(cluster string)
+
+	// returns the set of clusters currently stored in this builder
+	Clusters() []string
+
+	// merge all the resources from another Builder into this one
+	Merge(other Builder)
+
+	// create a clone of this builder (deepcopying all resources)
+	Clone() Builder
 }
 
 func (b *builder) AddIssuedCertificates(issuedCertificates ...*certificates_smh_solo_io_v1alpha2.IssuedCertificate) {
@@ -1529,4 +1538,66 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 
 func (b *builder) AddCluster(cluster string) {
 	b.clusters = append(b.clusters, cluster)
+}
+
+func (b *builder) Clusters() []string {
+	return b.clusters
+}
+
+func (b *builder) Merge(other Builder) {
+	if other == nil {
+		return
+	}
+
+	b.AddIssuedCertificates(other.GetIssuedCertificates().List()...)
+	b.AddPodBounceDirectives(other.GetPodBounceDirectives().List()...)
+
+	b.AddDestinationRules(other.GetDestinationRules().List()...)
+	b.AddEnvoyFilters(other.GetEnvoyFilters().List()...)
+	b.AddGateways(other.GetGateways().List()...)
+	b.AddServiceEntries(other.GetServiceEntries().List()...)
+	b.AddVirtualServices(other.GetVirtualServices().List()...)
+
+	b.AddAuthorizationPolicies(other.GetAuthorizationPolicies().List()...)
+	for _, cluster := range other.Clusters() {
+		b.AddCluster(cluster)
+	}
+}
+
+func (b *builder) Clone() Builder {
+	if b == nil {
+		return nil
+	}
+	clone := NewBuilder(b.ctx, b.name)
+
+	for _, issuedCertificate := range b.GetIssuedCertificates().List() {
+		clone.AddIssuedCertificates(issuedCertificate.DeepCopy())
+	}
+	for _, podBounceDirective := range b.GetPodBounceDirectives().List() {
+		clone.AddPodBounceDirectives(podBounceDirective.DeepCopy())
+	}
+
+	for _, destinationRule := range b.GetDestinationRules().List() {
+		clone.AddDestinationRules(destinationRule.DeepCopy())
+	}
+	for _, envoyFilter := range b.GetEnvoyFilters().List() {
+		clone.AddEnvoyFilters(envoyFilter.DeepCopy())
+	}
+	for _, gateway := range b.GetGateways().List() {
+		clone.AddGateways(gateway.DeepCopy())
+	}
+	for _, serviceEntry := range b.GetServiceEntries().List() {
+		clone.AddServiceEntries(serviceEntry.DeepCopy())
+	}
+	for _, virtualService := range b.GetVirtualServices().List() {
+		clone.AddVirtualServices(virtualService.DeepCopy())
+	}
+
+	for _, authorizationPolicy := range b.GetAuthorizationPolicies().List() {
+		clone.AddAuthorizationPolicies(authorizationPolicy.DeepCopy())
+	}
+	for _, cluster := range b.Clusters() {
+		clone.AddCluster(cluster)
+	}
+	return clone
 }

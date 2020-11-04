@@ -41,6 +41,7 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2
+	github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
@@ -52,7 +53,7 @@ require (
 	github.com/pelletier/go-toml v1.3.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.7.1
-	github.com/pseudomuto/protoc-gen-doc v1.3.0
+	github.com/pseudomuto/protoc-gen-doc v1.3.2
 	github.com/pseudomuto/protokit v0.2.0
 	github.com/rotisserie/eris v0.4.0
 	github.com/servicemeshinterface/smi-sdk-go v0.4.1
@@ -60,19 +61,23 @@ require (
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/external-apis v0.1.1
 	github.com/solo-io/go-utils v0.18.1
-	github.com/solo-io/skv2 v0.13.0
+	github.com/solo-io/skv2 v0.13.3
 	github.com/solo-io/solo-kit v0.14.0
 	github.com/spf13/afero v1.3.4
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
+	go.uber.org/atomic v1.6.0
 	go.uber.org/zap v1.15.0
 	golang.org/x/tools v0.0.0-20200928201943-a0ef9b62deab // indirect
+	google.golang.org/grpc v1.31.1
 	helm.sh/helm/v3 v3.2.4
 	istio.io/api v0.0.0-20200819225923-c78f387f78a2
 	istio.io/client-go v0.0.0-20200812230733-f5504d568313
 	istio.io/istio v0.0.0-20200821180042-b0e61d10cbae
+	istio.io/tools v0.0.0-20201104002857-0941fe228148 // indirect
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v8.0.0+incompatible
+	k8s.io/utils v0.0.0-20201027101359-01387209bb0d
 	sigs.k8s.io/controller-runtime v0.6.2
 )

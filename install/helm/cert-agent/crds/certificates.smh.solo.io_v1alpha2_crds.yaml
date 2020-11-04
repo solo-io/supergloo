@@ -14,6 +14,7 @@ spec:
     listKind: IssuedCertificateList
     plural: issuedcertificates
     singular: issuedcertificate
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
@@ -149,6 +150,7 @@ spec:
     listKind: CertificateRequestList
     plural: certificaterequests
     singular: certificaterequest
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
@@ -227,6 +229,7 @@ spec:
     listKind: PodBounceDirectiveList
     plural: podbouncedirectives
     singular: podbouncedirective
+  preserveUnknownFields: false
   scope: Namespaced
   subresources: {}
   validation:

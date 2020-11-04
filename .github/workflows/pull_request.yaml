@@ -69,6 +69,7 @@ jobs:
           'https://github.com/istio/istio/releases/download/1.5.2/istio-1.5.2-linux.tar.gz',
           'https://github.com/istio/istio/releases/download/1.6.8/istio-1.6.8-linux-amd64.tar.gz',
           'https://github.com/istio/istio/releases/download/1.7.0/istio-1.7.0-linux-amd64.tar.gz',
+          'https://github.com/istio/istio/releases/download/1.8.0-alpha.2/istio-1.8.0-alpha.2-linux-amd64.tar.gz'
         ]
     steps:
       - uses: actions/checkout@v2
@@ -115,6 +116,7 @@ jobs:
           istioctl version
 
           make run-tests TEST_PKG=test/e2e/istio RUN_E2E=1 GINKGOFLAGS=-v
+
   e2e-osm:
     name: end-to-end-osm
     runs-on: ubuntu-18.04

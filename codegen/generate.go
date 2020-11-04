@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	externalapis "github.com/solo-io/external-apis/codegen"
+	"github.com/solo-io/service-mesh-hub/codegen/anyvendor"
 	"github.com/solo-io/service-mesh-hub/codegen/groups"
 	"github.com/solo-io/service-mesh-hub/codegen/helm"
 	"github.com/solo-io/service-mesh-hub/codegen/io"
@@ -14,7 +15,6 @@ import (
 	skv1alpha1 "github.com/solo-io/skv2/api/multicluster/v1alpha1"
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
-	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
 	"github.com/solo-io/skv2/contrib"
 )
 
@@ -132,9 +132,7 @@ var (
 		return allTemplates
 	}()
 
-	anyvendorImports = skv2_anyvendor.CreateDefaultMatchOptions([]string{
-		"api/**/*.proto",
-	})
+	anyvendorImports = anyvendor.AnyVendorImports()
 )
 
 func run() error {
@@ -164,11 +162,6 @@ func run() error {
 }
 
 func makeSmhCommand(chartOnly bool) codegen.Command {
-
-	anyvendorImports.External["github.com/solo-io/skv2"] = []string{
-		"api/**/*.proto",
-		"crds/multicluster.solo.io_v1alpha1_crds.yaml",
-	}
 
 	if chartOnly {
 		return codegen.Command{

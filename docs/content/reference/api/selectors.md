@@ -56,8 +56,8 @@ Selector capable of selecting specific service identities. Useful for binding po
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| namespaces | []string | repeated | Namespaces to allow. If not set, any namespace is allowed. |
-| clusters | []string | repeated | Cluster to allow. If not set, any cluster is allowed. |
+| namespaces | []string | repeated | If specified, match k8s identity if it exists in one of the specified namespaces. When used in a networking policy, omission matches any namespace. When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace. |
+| clusters | []string | repeated | If specified, match k8s identity if it exists in one of the specified clusters. When used in a networking policy, omission matches any cluster. When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster. |
 
 
 
@@ -72,7 +72,7 @@ Selector capable of selecting specific service identities. Useful for binding po
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| serviceAccounts | []core.skv2.solo.io.ClusterObjectRef | repeated | List of ServiceAccounts to allow. If not set, any ServiceAccount is allowed. |
+| serviceAccounts | []core.skv2.solo.io.ClusterObjectRef | repeated | Match k8s ServiceAccounts by direct reference. When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field. When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field. |
 
 
 
@@ -82,12 +82,12 @@ Selector capable of selecting specific service identities. Useful for binding po
 <a name="networking.smh.solo.io.TrafficTargetSelector"></a>
 
 ### TrafficTargetSelector
-Select Kubernetes services.<br>Only one of (labels + namespaces + cluster) or (resource refs) may be provided. If all four are provided, it will be considered an error, and the Status of the top level resource will be updated to reflect an IllegalSelection.<br>Valid: 1. selector: matcher: labels: foo: bar hello: world namespaces: - default cluster: "cluster-name" 2. selector: matcher: refs: - name: foo namespace: bar<br>Invalid: 1. selector: matcher: labels: foo: bar hello: world namespaces: - default cluster: "cluster-name" refs: - name: foo namespace: bar<br>By default labels will select across all namespaces, unless a list of namespaces is provided, in which case it will only select from those. An empty list is equal to AllNamespaces.<br>If no labels are given, and only namespaces, all resources from the namespaces will be selected.<br>The following selector will select all resources with the following labels in every namespace, in the local cluster:<br>selector: matcher: labels: foo: bar hello: world<br>Whereas the next selector will only select from the specified namespaces (foo, bar), in the local cluster:<br>selector: matcher: labels: foo: bar hello: world namespaces - foo - bar<br>This final selector will select all resources of a given type in the target namespace (foo), in the local cluster:<br>selector matcher: namespaces - foo - bar labels: hello: world
+Select TrafficTargets using one or more platform-specific selection objects.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeServiceMatcher | networking.smh.solo.io.TrafficTargetSelector.KubeServiceMatcher |  | A KubeServiceMatcher matches kubernetes services by the namespaces and clusters they belong to, as well as the provided labels. |
+| kubeServiceMatcher | networking.smh.solo.io.TrafficTargetSelector.KubeServiceMatcher |  | A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters. |
 | kubeServiceRefs | networking.smh.solo.io.TrafficTargetSelector.KubeServiceRefs |  | Match individual k8s Services by direct reference. |
 
 
@@ -103,9 +103,9 @@ Select Kubernetes services.<br>Only one of (labels + namespaces + cluster) or (r
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| labels | []networking.smh.solo.io.TrafficTargetSelector.KubeServiceMatcher.LabelsEntry | repeated | If specified, all labels must exist on k8s Service, else match on any labels. |
-| namespaces | []string | repeated | If specified, match k8s Services if they exist in one of the specified namespaces. If not specified, match on any namespace. |
-| clusters | []string | repeated | If specified, match k8s Services if they exist in one of the specified clusters. If not specified, match on any cluster. |
+| labels | []networking.smh.solo.io.TrafficTargetSelector.KubeServiceMatcher.LabelsEntry | repeated | If specified, all labels must exist on k8s Service. When used in a networking policy, omission matches any labels. When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value. |
+| namespaces | []string | repeated | If specified, match k8s Services if they exist in one of the specified namespaces. When used in a networking policy, omission matches any namespace. When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace. |
+| clusters | []string | repeated | If specified, match k8s Services if they exist in one of the specified clusters. When used in a networking policy, omission matches any cluster. When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster. |
 
 
 
@@ -136,7 +136,7 @@ Select Kubernetes services.<br>Only one of (labels + namespaces + cluster) or (r
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| services | []core.skv2.solo.io.ClusterObjectRef | repeated | Match k8s Services by direct reference. |
+| services | []core.skv2.solo.io.ClusterObjectRef | repeated | Match k8s Services by direct reference. When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field. When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field. |
 
 
 
@@ -146,13 +146,14 @@ Select Kubernetes services.<br>Only one of (labels + namespaces + cluster) or (r
 <a name="networking.smh.solo.io.WorkloadSelector"></a>
 
 ### WorkloadSelector
-Select Kubernetes workloads directly using label and/or namespace criteria. See comments on the fields for detailed semantics.
+Select Kubernetes workloads directly using label namespace and/or cluster criteria. See comments on the fields for detailed semantics.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| labels | []networking.smh.solo.io.WorkloadSelector.LabelsEntry | repeated | If specified, all labels must exist on workloads, else match on any labels. |
-| namespaces | []string | repeated | If specified, match workloads if they exist in one of the specified namespaces. If not specified, match on any namespace. |
+| labels | []networking.smh.solo.io.WorkloadSelector.LabelsEntry | repeated | If specified, all labels must exist on k8s workload. When used in a networking policy, omission matches any labels. When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value. |
+| namespaces | []string | repeated | If specified, match k8s workloads if they exist in one of the specified namespaces. When used in a networking policy, omission matches any namespace. When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace. |
+| clusters | []string | repeated | If specified, match k8s workloads if they exist in one of the specified clusters. When used in a networking policy, omission matches any cluster. When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster. |
 
 
 
