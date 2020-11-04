@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	v1alpha22 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/service-mesh-hub/test/data"
@@ -113,6 +113,7 @@ var _ = Describe("Federation", func() {
 			manifest.KubeDelete(BookinfoNamespace)
 		})
 
+		// TODO(harveyxia) move this to a unit test if possible
 		By("traffic mirrors and shifts should use correct hostname for federated ServiceEntry", func() {
 			manifest, err = utils.NewManifest("federation-trafficpolicies.yaml")
 			Expect(err).NotTo(HaveOccurred())
@@ -185,7 +186,7 @@ var _ = Describe("Federation", func() {
 						Namespace:   BookinfoNamespace,
 						ClusterName: remoteClusterName,
 					},
-					&v1alpha22.MeshSpec_MeshInstallation{
+					&discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: "istio-system",
 						Cluster:   mgmtClusterName,
 					},
