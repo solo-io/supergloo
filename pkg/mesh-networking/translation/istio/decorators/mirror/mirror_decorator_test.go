@@ -95,9 +95,85 @@ var _ = Describe("MirrorDecorator", func() {
 		expectedMirrorPercentage := &v1alpha3.Percent{
 			Value: appliedPolicy.Spec.Mirror.Percentage,
 		}
+		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, originalService, nil, output, registerField)
+
+		Expect(err).ToNot(HaveOccurred())
+		Expect(output.Mirror).To(Equal(expectedMirror))
+		Expect(output.MirrorPercentage).To(Equal(expectedMirrorPercentage))
+	})
+
+	It("should decorate mirror for federated TrafficTarget", func() {
+		trafficTargets := v1alpha2sets.NewTrafficTargetSet(
+			&discoveryv1alpha2.TrafficTarget{
+				Spec: discoveryv1alpha2.TrafficTargetSpec{
+					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+							Ref: &v1.ClusterObjectRef{
+								Name:        "mirror",
+								Namespace:   "namespace",
+								ClusterName: "local-cluster",
+							},
+							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+								{
+									Port:     9080,
+									Name:     "http1",
+									Protocol: "http",
+								},
+							},
+						},
+					},
+				},
+			})
+		mirrorDecorator = mirror.NewMirrorDecorator(mockClusterDomainRegistry, trafficTargets)
+		originalService := &discoveryv1alpha2.TrafficTarget{
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+						Ref: &v1.ClusterObjectRef{
+							ClusterName: "local-cluster",
+						},
+					},
+				},
+			},
+		}
+		registerField := func(fieldPtr, val interface{}) error {
+			return nil
+		}
+		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+			Spec: &v1alpha2.TrafficPolicySpec{
+				Mirror: &v1alpha2.TrafficPolicySpec_Mirror{
+					DestinationType: &v1alpha2.TrafficPolicySpec_Mirror_KubeService{
+						KubeService: &v1.ClusterObjectRef{
+							Name:        "mirror",
+							Namespace:   "namespace",
+							ClusterName: "local-cluster",
+						},
+					},
+					Percentage: 50,
+					// Not specifying port should default to the single port on the Mirror destination
+				},
+			},
+		}
+
+		sourceMeshInstallation := &discoveryv1alpha2.MeshSpec_MeshInstallation{
+			Cluster: "federated-cluster-name",
+		}
+		globalHostname := "name.namespace.svc.local-cluster.global"
+		mockClusterDomainRegistry.
+			EXPECT().
+			GetDestinationServiceFQDN(sourceMeshInstallation.GetCluster(), appliedPolicy.Spec.Mirror.GetKubeService()).
+			Return(globalHostname)
+
+		expectedMirror := &v1alpha3.Destination{
+			Host: globalHostname,
+		}
+		expectedMirrorPercentage := &v1alpha3.Percent{
+			Value: appliedPolicy.Spec.Mirror.Percentage,
+		}
 		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			originalService,
+			sourceMeshInstallation,
 			output,
 			registerField,
 		)
@@ -187,20 +263,10 @@ var _ = Describe("MirrorDecorator", func() {
 			Return(localHostname).
 			Times(2)
 
-		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicyMissingPort,
-			originalService,
-			output,
-			registerField,
-		)
+		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicyMissingPort, originalService, nil, output, registerField)
 		Expect(err.Error()).To(ContainSubstring("must provide port for mirror destination service"))
 
-		err = mirrorDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicyNonexistentPort,
-			originalService,
-			output,
-			registerField,
-		)
+		err = mirrorDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicyNonexistentPort, originalService, nil, output, registerField)
 		Expect(err.Error()).To(ContainSubstring("does not exist for mirror destination service"))
 	})
 
@@ -264,12 +330,7 @@ var _ = Describe("MirrorDecorator", func() {
 			GetDestinationServiceFQDN(originalService.Spec.GetKubeService().Ref.ClusterName, appliedPolicy.Spec.Mirror.GetKubeService()).
 			Return(localHostname)
 
-		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			originalService,
-			output,
-			registerField,
-		)
+		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, originalService, nil, output, registerField)
 
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 		Expect(output.Fault).To(BeNil())

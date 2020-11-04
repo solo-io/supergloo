@@ -65,11 +65,12 @@ func (d *trafficShiftDecorator) DecoratorName() string {
 
 func (d *trafficShiftDecorator) ApplyTrafficPolicyToVirtualService(
 	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
-	service *discoveryv1alpha2.TrafficTarget,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	trafficShiftDestinations, err := d.translateTrafficShift(service, appliedPolicy.Spec)
+	trafficShiftDestinations, err := d.translateTrafficShift(trafficTarget, appliedPolicy.Spec, sourceMeshInstallation.GetCluster())
 	if err != nil {
 		return err
 	}
@@ -85,6 +86,7 @@ func (d *trafficShiftDecorator) ApplyTrafficPolicyToVirtualService(
 func (d *trafficShiftDecorator) translateTrafficShift(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
+	sourceClusterName string,
 ) ([]*networkingv1alpha3spec.HTTPRouteDestination, error) {
 	trafficShift := trafficPolicy.GetTrafficShift()
 	if trafficShift == nil {
@@ -104,6 +106,7 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 				destinationType.KubeService,
 				trafficTarget,
 				destination.Weight,
+				sourceClusterName,
 			)
 			if err != nil {
 				return nil, err
@@ -129,10 +132,11 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 
 func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	kubeDest *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination,
-	originalService *discoveryv1alpha2.TrafficTarget,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	weight uint32,
+	sourceClusterName string,
 ) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
-	originalKubeService := originalService.Spec.GetKubeService()
+	originalKubeService := trafficTarget.Spec.GetKubeService()
 
 	if originalKubeService == nil {
 		return nil, eris.Errorf("traffic shift only supported for kube traffic targets")
@@ -154,8 +158,12 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	}
 	trafficShiftKubeService := trafficShiftService.Spec.GetKubeService()
 
-	sourceCluster := originalKubeService.Ref.ClusterName
-	destinationHost := d.clusterDomains.GetDestinationServiceFQDN(sourceCluster, svcRef)
+	// An empty sourceClusterName indicates translation for VirtualService local to trafficTarget
+	if sourceClusterName == "" {
+		sourceClusterName = trafficTarget.Spec.GetKubeService().GetRef().GetClusterName()
+	}
+
+	destinationHost := d.clusterDomains.GetDestinationServiceFQDN(sourceClusterName, svcRef)
 
 	var destinationPort *networkingv1alpha3spec.PortSelector
 	if port := kubeDest.GetPort(); port != 0 {
@@ -239,8 +247,9 @@ func MakeDestinationRuleSubsetsForTrafficTarget(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
+	sourceClusterName string,
 ) []*networkingv1alpha3spec.Subset {
-	return makeDestinationRuleSubsets(
+	subsets := makeDestinationRuleSubsets(
 		allTrafficTargets,
 		func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool {
 			switch destType := weightedDestination.DestinationType.(type) {
@@ -256,6 +265,36 @@ func MakeDestinationRuleSubsetsForTrafficTarget(
 			return false
 		},
 	)
+
+	// NOTE(ilackarms): we make subsets here for the client-side destination rule for a federated traffic target,
+	// which contain all the matching subset names for the remote destination rule.
+	// the labels for the subsets must match the labels on the ServiceEntry Endpoint(s).
+	// Based on https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
+	if sourceClusterName != "" && sourceClusterName != trafficTarget.ClusterName {
+		for _, subset := range subsets {
+			// only the name of the subset matters here.
+			// the labels must match those on the ServiceEntry's endpoints.
+			subset.Labels = MakeFederatedSubsetLabel(trafficTarget.Spec.GetKubeService().Ref.ClusterName)
+			// we also remove the traffic policy, leaving
+			// it to the server-side DestinationRule to enforce.
+			subset.TrafficPolicy = nil
+		}
+	}
+
+	return subsets
+}
+
+// clusterName corresponds to the cluster name for the federated traffic target.
+//
+// NOTE(ilackarms): we use these labels to support federated subsets.
+// the values don't actually matter; but the subset names should
+// match those on the DestinationRule for the TrafficTarget in the
+// remote cluster.
+// based on: https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
+func MakeFederatedSubsetLabel(clusterName string) map[string]string {
+	return map[string]string{
+		"cluster": clusterName,
+	}
 }
 
 func makeDestinationRuleSubsets(

@@ -34,12 +34,7 @@ var _ = Describe("TimeoutDecorator", func() {
 			},
 		}
 		expectedTimeout := &types.Duration{Seconds: 5}
-		err := timeoutDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
+		err := timeoutDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(output.Timeout).To(Equal(expectedTimeout))
 	})
@@ -54,12 +49,7 @@ var _ = Describe("TimeoutDecorator", func() {
 				RequestTimeout: &types.Duration{Seconds: 5},
 			},
 		}
-		err := timeoutDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
+		err := timeoutDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 	})
 })
