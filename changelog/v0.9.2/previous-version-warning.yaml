@@ -1,0 +1,5 @@
+changelog:
+  - type: NON_USER_FACING
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1051
+    description: Add a notice to older versions of the docs site
+    resolvesIssue: true
