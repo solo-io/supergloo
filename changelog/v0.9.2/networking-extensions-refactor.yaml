@@ -1,3 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Refactor the Extensions interface provided by SMH. Also includes other changes for use building the enterpirse extensions server.

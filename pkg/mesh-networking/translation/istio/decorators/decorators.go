@@ -62,8 +62,8 @@ type RegisterField func(fieldPtr, val interface{}) error
 	decorate a given output resource.
 */
 
-// a VirtualMeshServiceEntryDecorator modifies the ServiceEntry based on a VirtualMesh which applies to the TrafficTarget.
-type VirtualMeshServiceEntryDecorator interface {
+// a VirtualTrafficTargetEntryDecorator modifies the ServiceEntry based on a VirtualMesh which applies to the TrafficTarget.
+type VirtualTrafficTargetEntryDecorator interface {
 	Decorator
 
 	ApplyVirtualMeshToServiceEntry(
