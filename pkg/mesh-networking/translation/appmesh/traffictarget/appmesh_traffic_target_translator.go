@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
-	v1beta2sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
@@ -13,6 +12,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/appmesh"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	v1alpha2types "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/types"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/workloadutils"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/errors"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
@@ -77,16 +77,7 @@ func (t *translator) Translate(
 	}
 }
 
-func getVirtualNodeForTrafficTarget(trafficTarget *discoveryv1alpha2.TrafficTarget, virtualNodes v1beta2sets.VirtualNodeSet) *v1beta2.VirtualNode {
-	// TODO(ilackarms): non kube services currently unsupported
-	trafficTarget.Spec.GetKubeService()
-
-	// TODO joekelley update workload discovery to implement app mesh fields
-
-	return nil
-}
-
-func translate(trafficTarget *discoveryv1alpha2.TrafficTarget) (*v1beta2.VirtualService, *v1beta2.VirtualRouter) {
+func translate(trafficTarget *discoveryv1alpha2.TrafficTarget, workloads v1alpha2sets.WorkloadSet) (*v1beta2.VirtualService, *v1beta2.VirtualRouter) {
 	meta := metautils.TranslatedObjectMeta(
 		trafficTarget.Spec.GetKubeService().Ref,
 		trafficTarget.Annotations,
@@ -94,9 +85,12 @@ func translate(trafficTarget *discoveryv1alpha2.TrafficTarget) (*v1beta2.Virtual
 
 	vr := getVirtualRouter(meta, trafficTarget)
 
-	// TODO joekelley get this and pass it through; maybe even just node ARN?
-	var workload *discoveryv1alpha2.Workload
-	vs := getVirtualService(meta, vr, workload)
+	// TODO joekelley error-handling
+	backingWorkloads := workloadutils.FindBackingWorkloads(trafficTarget.Spec.GetKubeService(), workloads)
+	workload := backingWorkloads[0]
+	arn := workload.Spec.AppMesh.VirtualNodeArn
+
+	vs := getVirtualService(meta, vr, arn)
 
 	return vs, vr
 }
@@ -104,7 +98,7 @@ func translate(trafficTarget *discoveryv1alpha2.TrafficTarget) (*v1beta2.Virtual
 func getVirtualService(
 	meta metav1.ObjectMeta,
 	virtualRouter *v1beta2.VirtualRouter,
-	workload *discoveryv1alpha2.Workload,
+	arn string,
 ) *v1beta2.VirtualService {
 	var provider *v1beta2.VirtualServiceProvider
 	if virtualRouter != nil {
@@ -117,10 +111,9 @@ func getVirtualService(
 			},
 		}
 	} else {
-		// TODO joekelley implement discovery such that we get node ARN from workload
 		provider = &v1beta2.VirtualServiceProvider{
 			VirtualNode: &v1beta2.VirtualNodeServiceProvider{
-				VirtualNodeARN: &workload.Spec.AppMesh.VirtualNodeName, // TODO ARN
+				VirtualNodeARN: &arn,
 			},
 		}
 	}
@@ -247,7 +240,7 @@ func getTrafficPolicyRoutes(trafficPolicyRef *v1.ObjectRef, trafficPolicy *v1alp
 	}
 
 	getRouteAction := func() v1beta2.HTTPRouteAction {
-		// If this is not a traffic shift, route all traffic to the virtual node backing this traffic target.
+		// If there is no traffic shift, route all traffic to the virtual node backing this traffic target.
 		if trafficPolicy.GetTrafficShift() == nil {
 			var virtualNodeArn string
 			return v1beta2.HTTPRouteAction{
@@ -260,17 +253,24 @@ func getTrafficPolicyRoutes(trafficPolicyRef *v1.ObjectRef, trafficPolicy *v1alp
 
 		var weightedTargets []v1beta2.WeightedTarget
 		for _, destination := range trafficPolicy.GetTrafficShift().GetDestinations() {
+			// TODO joekelley report on anything but kube service
+
+			destination.GetKubeService()
+
+			var workloads v1alpha2sets.WorkloadSet
+			var arn string
+
+			// TODO
+			// - get traffic target for kube service destination
+			// - get backing workloads for traffic target
+			// - get ARN from workload
+
 			// TODO joekelley get virtual node info for each backing service
 			// kubeservice -> workloads -> aws info
-			// kubeservice -> traffic target -> mesh
-			// compose workload from ARN Name and mesh
 
 			weightedTargets = append(weightedTargets, v1beta2.WeightedTarget{
-				VirtualNodeRef: &v1beta2.VirtualNodeReference{
-					Namespace: nil,
-					Name:      "",
-				},
-				Weight: int64(destination.Weight),
+				VirtualNodeARN: &arn,
+				Weight:         int64(destination.Weight),
 			})
 		}
 
