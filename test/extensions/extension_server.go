@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net"
 
-	extensionutils "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/extensions"
+	extensionutils "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
 
 	"go.uber.org/atomic"
 

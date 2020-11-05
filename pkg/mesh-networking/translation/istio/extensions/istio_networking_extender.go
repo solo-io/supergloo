@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/extensions/v1alpha1"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/extensions"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
 )
 
 //go:generate mockgen -source ./istio_networking_extender.go -destination ./mocks/mock_istio_networking_extender.go

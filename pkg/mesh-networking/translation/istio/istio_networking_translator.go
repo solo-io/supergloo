@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/extensions"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
 
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"

@@ -15,9 +15,9 @@ import (
 	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/extensions"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/snapshotutils"
 

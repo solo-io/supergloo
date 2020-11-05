@@ -5,8 +5,8 @@ import (
 
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/extensions"
-	mock_extensions "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/extensions/mocks"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
+	mock_extensions "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions/mocks"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"

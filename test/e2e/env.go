@@ -227,8 +227,7 @@ func StartEnv(ctx context.Context) Env {
 	Expect(err).NotTo(HaveOccurred())
 
 	// get absolute path to setup script so this function can be called from any working directory)
-	setupScript := filepath.Join(util.MustGetThisDir(), "..", "..", "ci", "setup-kind.sh")
-	cmd := exec.CommandContext(ctx, setupScript, strconv.Itoa(GinkgoParallelNode()))
+	cmd := exec.CommandContext(ctx, "./ci/setup-kind.sh", strconv.Itoa(GinkgoParallelNode()))
 	cmd.Stdout = GinkgoWriter
 	cmd.Stderr = GinkgoWriter
 
