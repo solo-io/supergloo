@@ -52,15 +52,15 @@ var _ = Describe("VirtualServiceTranslator", func() {
 
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "mesh-service",
+				Name: "traffic-target",
 			},
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
 					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
-							Name:        "mesh-service",
-							Namespace:   "mesh-service-namespace",
-							ClusterName: "mesh-service-cluster",
+							Name:        "traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-cluster",
 						},
 						Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 							{
@@ -378,15 +378,15 @@ var _ = Describe("VirtualServiceTranslator", func() {
 	It("should not output a VirtualService if translated VirtualService has no HttpRoutes", func() {
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "mesh-service",
+				Name: "traffic-target",
 			},
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
 					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
-							Name:        "mesh-service",
-							Namespace:   "mesh-service-namespace",
-							ClusterName: "mesh-service-cluster",
+							Name:        "traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-cluster",
 						},
 						Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 							{

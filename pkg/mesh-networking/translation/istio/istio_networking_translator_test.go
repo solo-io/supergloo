@@ -92,13 +92,13 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 			AddTrafficTargets([]*discoveryv1alpha2.TrafficTarget{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:   "mesh-service-1",
+						Name:   "traffic-target-1",
 						Labels: metautils.TranslatedObjectLabels(),
 					},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:   "mesh-service-2",
+						Name:   "traffic-target-2",
 						Labels: metautils.TranslatedObjectLabels(),
 					},
 				},
