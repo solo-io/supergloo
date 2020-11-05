@@ -72,7 +72,7 @@ the parameters provided to the Extensions server when requesting patches
 <a name="extensions.networking.smh.solo.io.ExtensionPatchResponse"></a>
 
 ### ExtensionPatchResponse
-the set of patches the server wishes to apply to the SMH Networking outputs. Any objects provided here will be inserted into the final SMH snapshot. If multiple extensions servers are configured, this response may be operated upon by Extension patches provided by subsequent servers.
+the set of patches the server wishes to apply to the SMH Networking outputs. Any objects provided here will be inserted into the final SMH snapshot. If an object already exists in the snapshot, it will be overridden by the version provided here. If multiple extensions servers are configured, this response may be operated upon by Extension patches provided by subsequent servers.
 
 
 | Field | Type | Label | Description |
