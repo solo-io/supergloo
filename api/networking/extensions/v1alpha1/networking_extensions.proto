@@ -47,6 +47,7 @@ message ExtensionPatchRequest {
 
 // the set of patches the server wishes to apply to the SMH Networking outputs.
 // Any objects provided here will be inserted into the final SMH snapshot.
+// If an object already exists in the snapshot, it will be overridden by the version provided here.
 // If multiple extensions servers are configured, this response may be
 // operated upon by Extension patches provided by subsequent servers.
 message ExtensionPatchResponse {
