@@ -56,12 +56,7 @@ var _ = Describe("CorsDecorator", func() {
 			MaxAge:           &types.Duration{Seconds: 1},
 			AllowCredentials: &types.BoolValue{Value: false},
 		}
-		err := corsDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
+		err := corsDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(output.CorsPolicy).To(Equal(expectedCorsPolicy))
 	})
@@ -76,12 +71,7 @@ var _ = Describe("CorsDecorator", func() {
 				CorsPolicy: &v1alpha2.TrafficPolicySpec_CorsPolicy{},
 			},
 		}
-		err := corsDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
+		err := corsDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 		Expect(output.CorsPolicy).To(BeNil())
 	})

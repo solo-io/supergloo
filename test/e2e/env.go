@@ -72,6 +72,7 @@ type KubeContext struct {
 	SecretClient          kubernetes_core.SecretClient
 	VirtualMeshClient     networkingv1alpha2.VirtualMeshClient
 	DestinationRuleClient istionetworkingv1alpha3.DestinationRuleClient
+	VirtualServiceClient  istionetworkingv1alpha3.VirtualServiceClient
 }
 
 // If kubecontext is empty string, use current context.
@@ -107,6 +108,7 @@ func NewKubeContext(kubecontext string) KubeContext {
 		MeshClient:            discoveryClientset.Meshes(),
 		SecretClient:          kubeCoreClientset.Secrets(),
 		DestinationRuleClient: istioNetworkingClientset.DestinationRules(),
+		VirtualServiceClient:  istioNetworkingClientset.VirtualServices(),
 	}
 }
 

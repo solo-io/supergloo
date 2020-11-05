@@ -1,3 +1,6 @@
+{{ if ne "latest" (strings.TrimPrefix "/service-mesh-hub/" $.Site.Data.Solo.DocsVersion) }}
+  <div sytle="margin-right:5em;"><mark>You are viewing a previous version of Service Mesh Hub. Select latest from the drop-down menu. </mark></div>
+{{ end }}
 <label for="version-selection" id="version-selection-label">Version:</label>
 <select id="version-selection" onchange="javascript:location.href = this.value;">
   {{- range $version := .Site.Data.Solo.DocsVersions}}
