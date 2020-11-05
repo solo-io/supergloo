@@ -87,7 +87,7 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 			APIServerAddress: apiServerAddress,
 			ClusterDomain:    "",
 		},
-		CertAgent: registration.CertAgentInstallOptions{
+		CertAgent: registration.AgentInstallOptions{
 			ChartPath:   certAgentChartUri,
 			ChartValues: "",
 		},
@@ -147,7 +147,7 @@ func registerCluster(ctx context.Context, mgmtCluster string, cluster string, bo
 			APIServerAddress: apiServerAddress,
 			ClusterDomain:    "",
 		},
-		CertAgent: registration.CertAgentInstallOptions{
+		CertAgent: registration.AgentInstallOptions{
 			ChartPath:   certAgentChartUri,
 			ChartValues: "",
 		},

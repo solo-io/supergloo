@@ -3,28 +3,23 @@ package extensions
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 
 	"github.com/solo-io/go-utils/contextutils"
-
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/extensions/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/extensions/v1alpha1"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
+	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
 )
 
 //go:generate mockgen -source ./istio_networking_extender.go -destination ./mocks/mock_istio_networking_extender.go
 
 // IstioExtender provides a caller-friendly mechanism for the Istio Networking Translator to apply patches supplied by a set of preconfigured v1alpha1.NetworkingExtensionsServer.
 type IstioExtender interface {
-	// PatchTrafficTargetOutputs retrieves from the NetworkingExtensionsServers and applies patches to the outputs for a given TrafficTarget
-	PatchTrafficTargetOutputs(ctx context.Context, trafficTarget *v1alpha2.TrafficTarget, trafficTargetOutputs istio.Builder) error
-
-	// PatchWorkloadOutputs retrieves from the NetworkingExtensionsServers and applies patches to the outputs for a given Workload
-	PatchWorkloadOutputs(ctx context.Context, workload *v1alpha2.Workload, workloadOutputs istio.Builder) error
-
-	// PatchMeshOutputs retrieves from the NetworkingExtensionsServers and applies patches to the outputs for a given Mesh
-	PatchMeshOutputs(ctx context.Context, mesh *v1alpha2.Mesh, meshOutputs istio.Builder) error
+	// PatchOutputs retrieves from the NetworkingExtensionsServers and applies patches to the outputs for a given TrafficTarget
+	PatchOutputs(ctx context.Context, inputs input.Snapshot, outputs istio.Builder) error
 }
 
 type istioExtender struct {
@@ -37,167 +32,131 @@ func NewIstioExtender(clientset extensions.Clientset) *istioExtender {
 	return &istioExtender{clientset: clientset}
 }
 
-func (i *istioExtender) PatchTrafficTargetOutputs(ctx context.Context, trafficTarget *v1alpha2.TrafficTarget, trafficTargetOutputs istio.Builder) error {
+func (i *istioExtender) PatchOutputs(ctx context.Context, inputs input.Snapshot, outputs istio.Builder) error {
 	for _, exClient := range i.clientset.GetClients() {
-		patches, err := exClient.GetTrafficTargetPatches(ctx, &v1alpha1.TrafficTargetPatchRequest{
-			TrafficTarget: &v1alpha1.TrafficTargetResource{
-				Metadata: extensions.ObjectMetaToProto(trafficTarget.ObjectMeta),
-				Spec:     &trafficTarget.Spec,
-				Status:   &trafficTarget.Status,
-			},
-			GeneratedResources: MakeGeneratedResources(trafficTargetOutputs),
+		patches, err := exClient.GetExtensionPatches(ctx, &v1alpha1.ExtensionPatchRequest{
+			Inputs:  extensions.InputSnapshotToProto(inputs),
+			Outputs: OutputsToProto(outputs),
 		})
 		if err != nil {
 			return err
 		}
-		applyPatches(trafficTargetOutputs, patches)
+		applyPatches(ctx, outputs, patches)
 	}
 	return nil
 }
 
-func (i *istioExtender) PatchWorkloadOutputs(ctx context.Context, workload *v1alpha2.Workload, workloadOutputs istio.Builder) error {
-	for _, exClient := range i.clientset.GetClients() {
-		patches, err := exClient.GetWorkloadPatches(ctx, &v1alpha1.WorkloadPatchRequest{
-			Workload: &v1alpha1.WorkloadResource{
-				Metadata: extensions.ObjectMetaToProto(workload.ObjectMeta),
-				Spec:     &workload.Spec,
-				Status:   &workload.Status,
-			},
-			GeneratedResources: MakeGeneratedResources(workloadOutputs),
-		})
-		if err != nil {
-			return err
-		}
-		applyPatches(workloadOutputs, patches)
-	}
-	return nil
-}
-
-func (i *istioExtender) PatchMeshOutputs(ctx context.Context, mesh *v1alpha2.Mesh, meshOutputs istio.Builder) error {
-	for _, exClient := range i.clientset.GetClients() {
-		patches, err := exClient.GetMeshPatches(ctx, &v1alpha1.MeshPatchRequest{
-			Mesh: &v1alpha1.MeshResource{
-				Metadata: extensions.ObjectMetaToProto(mesh.ObjectMeta),
-				Spec:     &mesh.Spec,
-				Status:   &mesh.Status,
-			},
-			GeneratedResources: MakeGeneratedResources(meshOutputs),
-		})
-		if err != nil {
-			return err
-		}
-		applyPatches(meshOutputs, patches)
-	}
-	return nil
-}
-
-// convert istio.Builder to [generated resources]
+// OutputsToProto converts istio.Builder to [generated objects]
 // exposed as it is imported in extensions servers
-// NOTE: If we add more supported types of v1alpha1.GeneratedResources, we need to
+// NOTE: If we add more supported types of v1alpha1.GeneratedObjects, we need to
 // update this function to convert them.
-func MakeGeneratedResources(outputs istio.Builder) []*v1alpha1.GeneratedResource {
+func OutputsToProto(outputs istio.Builder) []*v1alpha1.GeneratedObject {
 	if outputs == nil {
 		return nil
 	}
-	var generatedResources []*v1alpha1.GeneratedResource
+	var generatedObjects []*v1alpha1.GeneratedObject
 
-	for _, resource := range outputs.GetDestinationRules().List() {
-		resource := resource // pike
-		generatedResources = append(generatedResources, &v1alpha1.GeneratedResource{
-			Metadata: extensions.ObjectMetaToProto(resource.ObjectMeta),
-			Type:     &v1alpha1.GeneratedResource_DestinationRule{DestinationRule: &resource.Spec},
+	for _, object := range outputs.GetDestinationRules().List() {
+		object := object // pike
+		generatedObjects = append(generatedObjects, &v1alpha1.GeneratedObject{
+			Metadata: extensions.ObjectMetaToProto(object.ObjectMeta),
+			Type:     &v1alpha1.GeneratedObject_DestinationRule{DestinationRule: &object.Spec},
 		})
 	}
 
-	for _, resource := range outputs.GetEnvoyFilters().List() {
-		resource := resource // pike
-		generatedResources = append(generatedResources, &v1alpha1.GeneratedResource{
-			Metadata: extensions.ObjectMetaToProto(resource.ObjectMeta),
-			Type:     &v1alpha1.GeneratedResource_EnvoyFilter{EnvoyFilter: &resource.Spec},
+	for _, object := range outputs.GetEnvoyFilters().List() {
+		object := object // pike
+		generatedObjects = append(generatedObjects, &v1alpha1.GeneratedObject{
+			Metadata: extensions.ObjectMetaToProto(object.ObjectMeta),
+			Type:     &v1alpha1.GeneratedObject_EnvoyFilter{EnvoyFilter: &object.Spec},
 		})
 	}
 
-	for _, resource := range outputs.GetServiceEntries().List() {
-		resource := resource // pike
-		generatedResources = append(generatedResources, &v1alpha1.GeneratedResource{
-			Metadata: extensions.ObjectMetaToProto(resource.ObjectMeta),
-			Type:     &v1alpha1.GeneratedResource_ServiceEntry{ServiceEntry: &resource.Spec},
+	for _, object := range outputs.GetServiceEntries().List() {
+		object := object // pike
+		generatedObjects = append(generatedObjects, &v1alpha1.GeneratedObject{
+			Metadata: extensions.ObjectMetaToProto(object.ObjectMeta),
+			Type:     &v1alpha1.GeneratedObject_ServiceEntry{ServiceEntry: &object.Spec},
 		})
 	}
 
-	for _, resource := range outputs.GetVirtualServices().List() {
-		resource := resource // pike
-		generatedResources = append(generatedResources, &v1alpha1.GeneratedResource{
-			Metadata: extensions.ObjectMetaToProto(resource.ObjectMeta),
-			Type:     &v1alpha1.GeneratedResource_VirtualService{VirtualService: &resource.Spec},
+	for _, object := range outputs.GetVirtualServices().List() {
+		object := object // pike
+		generatedObjects = append(generatedObjects, &v1alpha1.GeneratedObject{
+			Metadata: extensions.ObjectMetaToProto(object.ObjectMeta),
+			Type:     &v1alpha1.GeneratedObject_VirtualService{VirtualService: &object.Spec},
 		})
 	}
 
-	return generatedResources
+	return generatedObjects
 }
 
-// convert [generated resources] to istio.Builder
+// OutputsFromProto convert [generated objects] to istio.Builder
 // exposed here for use in Server implementations.
-// NOTE: If we add more supported types of v1alpha1.GeneratedResources, we need to
+// NOTE: If we add more supported types of v1alpha1.GeneratedObjects, we need to
 // update this function to convert them.
-func MakeOutputs(ctx context.Context, name string, generated []*v1alpha1.GeneratedResource) istio.Builder {
+func OutputsFromProto(ctx context.Context, name string, generated []*v1alpha1.GeneratedObject) istio.Builder {
 	outputs := istio.NewBuilder(ctx, name)
-	for _, resource := range generated {
-		switch resourceType := resource.Type.(type) {
-		case *v1alpha1.GeneratedResource_DestinationRule:
+	for _, object := range generated {
+		switch objectType := object.Type.(type) {
+		case *v1alpha1.GeneratedObject_DestinationRule:
 			outputs.AddDestinationRules(&istionetworkingv1alpha3.DestinationRule{
-				ObjectMeta: extensions.ObjectMetaFromProto(resource.Metadata),
-				Spec:       *resourceType.DestinationRule,
+				ObjectMeta: extensions.ObjectMetaFromProto(object.Metadata),
+				Spec:       *objectType.DestinationRule,
 			})
-		case *v1alpha1.GeneratedResource_EnvoyFilter:
+		case *v1alpha1.GeneratedObject_EnvoyFilter:
 			outputs.AddEnvoyFilters(&istionetworkingv1alpha3.EnvoyFilter{
-				ObjectMeta: extensions.ObjectMetaFromProto(resource.Metadata),
-				Spec:       *resourceType.EnvoyFilter,
+				ObjectMeta: extensions.ObjectMetaFromProto(object.Metadata),
+				Spec:       *objectType.EnvoyFilter,
 			})
-		case *v1alpha1.GeneratedResource_ServiceEntry:
+		case *v1alpha1.GeneratedObject_ServiceEntry:
 			outputs.AddServiceEntries(&istionetworkingv1alpha3.ServiceEntry{
-				ObjectMeta: extensions.ObjectMetaFromProto(resource.Metadata),
-				Spec:       *resourceType.ServiceEntry,
+				ObjectMeta: extensions.ObjectMetaFromProto(object.Metadata),
+				Spec:       *objectType.ServiceEntry,
 			})
-		case *v1alpha1.GeneratedResource_VirtualService:
+		case *v1alpha1.GeneratedObject_VirtualService:
 			outputs.AddVirtualServices(&istionetworkingv1alpha3.VirtualService{
-				ObjectMeta: extensions.ObjectMetaFromProto(resource.Metadata),
-				Spec:       *resourceType.VirtualService,
+				ObjectMeta: extensions.ObjectMetaFromProto(object.Metadata),
+				Spec:       *objectType.VirtualService,
 			})
 		default:
-			contextutils.LoggerFrom(ctx).DPanicf("unsupported resource type %T", resourceType)
+			contextutils.LoggerFrom(ctx).DPanicf("unsupported object type %T", objectType)
 		}
 	}
 	return outputs
 }
 
-// NOTE: If we add more supported types of v1alpha1.GeneratedResources, we need to
+// NOTE: If we add more supported types of v1alpha1.GeneratedObjects, we need to
 // update this function to convert them.
-func applyPatches(outputs istio.Builder, patches *v1alpha1.PatchList) {
+func applyPatches(ctx context.Context, outputs istio.Builder, patches *v1alpha1.ExtensionPatchResponse) {
 	if patches == nil {
 		return
 	}
-	for _, patchedResource := range patches.PatchedResources {
-		switch resourceType := patchedResource.Type.(type) {
-		case *v1alpha1.GeneratedResource_DestinationRule:
+	for _, patchedObject := range patches.PatchedOutputs {
+		switch objectType := patchedObject.Type.(type) {
+		case *v1alpha1.GeneratedObject_DestinationRule:
+			contextutils.LoggerFrom(ctx).Debugf("applied patched DestinationRule %v", sets.Key(patchedObject.Metadata))
 			outputs.AddDestinationRules(&istionetworkingv1alpha3.DestinationRule{
-				ObjectMeta: extensions.ObjectMetaFromProto(patchedResource.Metadata),
-				Spec:       *resourceType.DestinationRule,
+				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
+				Spec:       *objectType.DestinationRule,
 			})
-		case *v1alpha1.GeneratedResource_EnvoyFilter:
+		case *v1alpha1.GeneratedObject_EnvoyFilter:
+			contextutils.LoggerFrom(ctx).Debugf("applied patched EnvoyFilter %v", sets.Key(patchedObject.Metadata))
 			outputs.AddEnvoyFilters(&istionetworkingv1alpha3.EnvoyFilter{
-				ObjectMeta: extensions.ObjectMetaFromProto(patchedResource.Metadata),
-				Spec:       *resourceType.EnvoyFilter,
+				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
+				Spec:       *objectType.EnvoyFilter,
 			})
-		case *v1alpha1.GeneratedResource_ServiceEntry:
+		case *v1alpha1.GeneratedObject_ServiceEntry:
+			contextutils.LoggerFrom(ctx).Debugf("applied patched ServiceEntry %v", sets.Key(patchedObject.Metadata))
 			outputs.AddServiceEntries(&istionetworkingv1alpha3.ServiceEntry{
-				ObjectMeta: extensions.ObjectMetaFromProto(patchedResource.Metadata),
-				Spec:       *resourceType.ServiceEntry,
+				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
+				Spec:       *objectType.ServiceEntry,
 			})
-		case *v1alpha1.GeneratedResource_VirtualService:
+		case *v1alpha1.GeneratedObject_VirtualService:
+			contextutils.LoggerFrom(ctx).Debugf("applied patched VirtualService %v", sets.Key(patchedObject.Metadata))
 			outputs.AddVirtualServices(&istionetworkingv1alpha3.VirtualService{
-				ObjectMeta: extensions.ObjectMetaFromProto(patchedResource.Metadata),
-				Spec:       *resourceType.VirtualService,
+				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
+				Spec:       *objectType.VirtualService,
 			})
 		}
 	}

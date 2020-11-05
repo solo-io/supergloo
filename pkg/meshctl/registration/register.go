@@ -34,7 +34,8 @@ type RegistrantOptions struct {
 	MgmtContext    string
 	RemoteContext  string
 	Registration   register.RegistrationOptions
-	CertAgent      CertAgentInstallOptions
+	CertAgent      AgentInstallOptions
+	WasmAgent      AgentInstallOptions
 	Verbose        bool
 }
 
@@ -74,7 +75,9 @@ func NewRegistrant(opts *RegistrantOptions) (*Registrant, error) {
 	return registrant, nil
 }
 
-type CertAgentInstallOptions struct {
+// Options for installing agents (cert-agent, wasm-agent)
+type AgentInstallOptions struct {
+	Install     bool // If true, install the agent
 	ChartPath   string
 	ChartValues string
 }
@@ -85,9 +88,17 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
+	// The cert-agent should always be installed since it's required for the VirtualMesh API.
 	if err := r.installCertAgent(ctx); err != nil {
 		return err
 	}
+
+	if r.WasmAgent.Install {
+		if err := r.installWasmAgent(ctx); err != nil {
+			return err
+		}
+	}
+
 	return r.registerCluster(ctx)
 }
 
@@ -95,9 +106,15 @@ func (r *Registrant) DeregisterCluster(ctx context.Context) error {
 	if r.Verbose {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
+
 	if err := r.uninstallCertAgent(ctx); err != nil {
 		return err
 	}
+
+	if err := r.uninstallWasmAgent(ctx); err != nil {
+		return err
+	}
+
 	return r.Registration.DeregisterCluster(ctx)
 }
 
@@ -132,6 +149,30 @@ func (r *Registrant) uninstallCertAgent(ctx context.Context) error {
 		Namespace:   r.Registration.RemoteNamespace,
 		Verbose:     r.Verbose,
 	}.UninstallCertAgent(
+		ctx,
+	)
+}
+
+func (r *Registrant) installWasmAgent(ctx context.Context) error {
+	return smh.Installer{
+		HelmChartPath:  r.WasmAgent.ChartPath,
+		HelmValuesPath: r.WasmAgent.ChartValues,
+		KubeConfig:     r.KubeConfigPath,
+		KubeContext:    r.RemoteContext,
+		Namespace:      r.Registration.RemoteNamespace,
+		Verbose:        r.Verbose,
+	}.InstallWasmAgent(
+		ctx,
+	)
+}
+
+func (r *Registrant) uninstallWasmAgent(ctx context.Context) error {
+	return smh.Uninstaller{
+		KubeConfig:  r.KubeConfigPath,
+		KubeContext: r.RemoteContext,
+		Namespace:   r.Registration.RemoteNamespace,
+		Verbose:     r.Verbose,
+	}.UninstallWasmAgent(
 		ctx,
 	)
 }

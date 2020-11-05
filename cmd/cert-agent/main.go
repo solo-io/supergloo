@@ -7,11 +7,8 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/service-mesh-hub/pkg/certificates/agent"
 	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
 	"github.com/solo-io/service-mesh-hub/pkg/common/version"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func main() {
@@ -23,21 +20,8 @@ func main() {
 	contextutils.LoggerFrom(ctx).Info("exiting...")
 }
 
-type bootstrapOpts bootstrap.Options
-
-func (opts bootstrapOpts) getBootstrap() bootstrap.Options {
-	return bootstrap.Options(opts)
-}
-
-func (opts *bootstrapOpts) addToFlags(flags *pflag.FlagSet) {
-	flags.StringVarP(&opts.MasterNamespace, "namespace", "n", metav1.NamespaceAll, "if specified restricts the master manager's cache to watch objects in the desired namespace.")
-	flags.Uint32Var(&opts.MetricsBindPort, "metrics-port", defaults.MetricsPort, "port on which to serve Prometheus metrics. set to 0 to disable")
-	flags.BoolVar(&opts.VerboseMode, "verbose", true, "enables verbose/debug logging")
-	flags.StringVarP(&opts.ManagementContext, "context", "c", metav1.NamespaceAll, "if specified read the KubeConfig for the management cluster from this context. Only applies when running out of cluster")
-}
-
 func rootCommand(ctx context.Context) *cobra.Command {
-	var opts bootstrapOpts
+	opts := &bootstrap.Options{}
 	cmd := &cobra.Command{
 		Use:     "cert-agent [command]",
 		Short:   "Start the Service Mesh Hub Certificate Agent.",
@@ -51,11 +35,11 @@ func rootCommand(ctx context.Context) *cobra.Command {
 		},
 	}
 
-	opts.addToFlags(cmd.PersistentFlags())
+	opts.AddToFlags(cmd.PersistentFlags())
 
 	return cmd
 }
 
-func startAgent(ctx context.Context, opts bootstrapOpts) error {
-	return agent.Start(ctx, opts.getBootstrap())
+func startAgent(ctx context.Context, opts *bootstrap.Options) error {
+	return agent.Start(ctx, *opts)
 }

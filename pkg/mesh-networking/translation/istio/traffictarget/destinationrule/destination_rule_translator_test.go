@@ -82,15 +82,15 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "mesh-service",
+				Name: "traffic-target",
 			},
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
 					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
-							Name:        "mesh-service",
-							Namespace:   "mesh-service-namespace",
-							ClusterName: "mesh-service-cluster",
+							Name:        "traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-cluster",
 						},
 					},
 				},
@@ -117,15 +117,15 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		trafficTargets.Insert(&discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "another-mesh-service",
+				Name: "another-traffic-target",
 			},
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
 					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
-							Name:        "another-mesh-service",
-							Namespace:   "mesh-service-namespace",
-							ClusterName: "mesh-service-cluster",
+							Name:        "another-traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-cluster",
 						},
 					},
 				},
@@ -177,9 +177,9 @@ var _ = Describe("DestinationRuleTranslator", func() {
 					{
 						BackingServiceType: &v1alpha2.FailoverServiceSpec_BackingService_KubeService{
 							KubeService: &v1.ClusterObjectRef{
-								Name:        "mesh-service",
-								Namespace:   "mesh-service-namespace",
-								ClusterName: "mesh-service-cluster",
+								Name:        "traffic-target",
+								Namespace:   "traffic-target-namespace",
+								ClusterName: "traffic-target-cluster",
 							},
 						},
 					},
@@ -269,15 +269,15 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "mesh-service",
+				Name: "traffic-target",
 			},
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
 					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
-							Name:        "mesh-service",
-							Namespace:   "mesh-service-namespace",
-							ClusterName: "mesh-service-cluster",
+							Name:        "traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-cluster",
 						},
 					},
 				},
@@ -292,7 +292,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						Spec: &v1alpha2.TrafficPolicySpec{
 							SourceSelector: []*v1alpha2.WorkloadSelector{
 								{
-									Clusters: []string{"mesh-service-cluster"},
+									Clusters: []string{"traffic-target-cluster"},
 								},
 							},
 						},
@@ -376,9 +376,9 @@ var _ = Describe("DestinationRuleTranslator", func() {
 										{
 											DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
 												KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
-													Name:        "mesh-service",
-													Namespace:   "mesh-service-namespace",
-													ClusterName: "mesh-service-clustername",
+													Name:        "traffic-target",
+													Namespace:   "traffic-target-namespace",
+													ClusterName: "traffic-target-clustername",
 													Subset:      map[string]string{"k1": "v1"},
 													Port:        9080,
 												},
@@ -409,9 +409,9 @@ var _ = Describe("DestinationRuleTranslator", func() {
 										{
 											DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
 												KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
-													Name:        "mesh-service",
-													Namespace:   "mesh-service-namespace",
-													ClusterName: "mesh-service-clustername",
+													Name:        "traffic-target",
+													Namespace:   "traffic-target-namespace",
+													ClusterName: "traffic-target-clustername",
 													Subset:      map[string]string{"k2": "v2"},
 													Port:        9080,
 												},
@@ -457,16 +457,16 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "mesh-service",
+				Name:      "traffic-target",
 				Namespace: "service-mesh-hub",
 			},
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
 					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
-							Name:        "mesh-service",
-							Namespace:   "mesh-service-namespace",
-							ClusterName: "mesh-service-clustername",
+							Name:        "traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-clustername",
 						},
 					},
 				},
