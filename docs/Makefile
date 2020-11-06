@@ -12,11 +12,11 @@ endif
 VERSION ?= $(shell echo $(TAGGED_VERSION) | cut -c 2-)
 ### REPLACE with product name
 IMAGE_REGISTRY := soloio
-IMAGE_LEAF_NAME := service-mesh-hub-docs
+IMAGE_LEAF_NAME := gloo-mesh-docs
 IMAGE_REPO := $(IMAGE_REGISTRY)/$(IMAGE_LEAF_NAME)
 
 ### REPLACE with product name
-PRODUCT_SCOPE := service-mesh-hub
+PRODUCT_SCOPE := gloo-mesh
 DOCS_VERSION := latest
 
 #----------------------------------------------------------------------------------

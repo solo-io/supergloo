@@ -4,12 +4,12 @@ menuTitle: Traffic Policy
 weight: 25
 ---
 
-Service Mesh Hub can manage and configure multiple service meshes across multiple Kubernetes clusters. Service Mesh Hub can control the configuration of traffic policies of associated services from a given mesh, including properties like timeouts, retries, CORS, and header manipulation.
+Gloo Mesh can manage and configure multiple service meshes across multiple Kubernetes clusters. Gloo Mesh can control the configuration of traffic policies of associated services from a given mesh, including properties like timeouts, retries, CORS, and header manipulation.
 
-In this guide we will examine how Service Mesh Hub can configure Istio to apply retry and timeout settings to an existing service. We will be dealing with the same resource types that were introduced in the [Mesh Discovery]({{% versioned_link_path fromRoot="/guides/discovery_intro" %}}) guide.
+In this guide we will examine how Gloo Mesh can configure Istio to apply retry and timeout settings to an existing service. We will be dealing with the same resource types that were introduced in the [Mesh Discovery]({{% versioned_link_path fromRoot="/guides/discovery_intro" %}}) guide.
 
 1. **Kubernetes Clusters**
-    - Representation of a cluster that Service Mesh Hub is aware of and is authorized to talk to its Kubernetes API server
+    - Representation of a cluster that Gloo Mesh is aware of and is authorized to talk to its Kubernetes API server
     - *note*: this resource is created by `meshctl` at cluster registration time
 2. **Meshes**
     - Representation of a service mesh control plane that has been discovered 
@@ -22,9 +22,9 @@ In this guide we will examine how Service Mesh Hub can configure Istio to apply 
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Service Mesh Hub is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
+* Gloo Mesh is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
 * Istio is [installed on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
-* The management cluster is [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+* The management cluster is [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
 
 
 {{% notice note %}}
@@ -85,14 +85,14 @@ kubectl get pod -l app=petstore -oyaml | grep sidecar
 sidecar.istio.io/status: '{"version":"fca84600f9d5ec316cf1cf577da902f38bac258ab0fd595ee208ec0203dc0c6d","initContainers":["istio-init"],"containers":["istio-proxy"],"volumes":["istio-envoy","podinfo"],"imagePullSecrets":null}'
 ```
 
-Now we can verify that Service Mesh Hub has discovered the Pet Store application and configure a *TrafficPolicy* for it.
+Now we can verify that Gloo Mesh has discovered the Pet Store application and configure a *TrafficPolicy* for it.
 
 ### Configure Traffic Policy
 
-With our Pet Store application deployed and wired up to Istio, let's make sure that Service Mesh Hub has discovered it by checking for *Workload* and *TrafficTarget* resources.
+With our Pet Store application deployed and wired up to Istio, let's make sure that Gloo Mesh has discovered it by checking for *Workload* and *TrafficTarget* resources.
 
 ```shell
-kubectl get workloads -n service-mesh-hub
+kubectl get workloads -n gloo-mesh
 ```
 
 ```shell
@@ -105,7 +105,7 @@ petstore-default-mgmt-cluster-deployment                    3h4m
 If you've also deployed the Bookstore application, you may see entries for that as well. We can see the naming for the Pet Store application is the deployment name, followed by the namespace, and then the cluster name. We can also check for the *TrafficTarget*, which represents the service associated with the pods in the Workload resource.
 
 ```shell
-kubectl get traffictarget -n service-mesh-hub
+kubectl get traffictarget -n gloo-mesh
 ```
 
 ```shell
@@ -124,7 +124,7 @@ kubectl apply --context $MGMT_CONTEXT -f - << EOF
 apiVersion: networking.smh.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
   name: petstore
 spec:
   destinationSelector:
@@ -159,7 +159,7 @@ metadata:
   generation: 1
   labels:
     cluster.multicluster.solo.io: mgmt-cluster
-    owner.networking.smh.solo.io: service-mesh-hub
+    owner.networking.smh.solo.io: gloo-mesh
   name: petstore
   namespace: default
   resourceVersion: "8008"
@@ -178,8 +178,8 @@ spec:
     timeout: 0.100s
 ```
 
-As we can see above, the proper retry and timeout settings have been applied to the VirtualService from the Service Mesh Hub TrafficPolicy. This feature can be extended to configure many services across multiple service meshes and clusters. Many other features can be configured through the traffic policy as well, including fault injection and traffic mirroring. The [`TrafficPolicySpec`]({{% versioned_link_path fromRoot="/reference/api/traffic_policy" %}}) in our API provides more information on using traffic policies.
+As we can see above, the proper retry and timeout settings have been applied to the VirtualService from the Gloo Mesh TrafficPolicy. This feature can be extended to configure many services across multiple service meshes and clusters. Many other features can be configured through the traffic policy as well, including fault injection and traffic mirroring. The [`TrafficPolicySpec`]({{% versioned_link_path fromRoot="/reference/api/traffic_policy" %}}) in our API provides more information on using traffic policies.
 
 ## Next Steps
 
-Now that we have seen a simple example of how Service Mesh Hub can be used to configure traffic policies, we can expand that vision across multiple clusters in a [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}). See the guide on [establishing shared trust domain for multiple meshes]({{% versioned_link_path fromRoot="/guides/federate_identity" %}}).
+Now that we have seen a simple example of how Gloo Mesh can be used to configure traffic policies, we can expand that vision across multiple clusters in a [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}). See the guide on [establishing shared trust domain for multiple meshes]({{% versioned_link_path fromRoot="/guides/federate_identity" %}}).

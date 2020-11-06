@@ -4,16 +4,16 @@ menuTitle: Failover Service
 weight: 78
 ---
 
-Service Mesh Hub provides the ability to configure a *FailoverService*. A FailoverService is a virtual traffic destination that is composed of a list of services ordered in decreasing priority. The composing services are configured with outlier detection, the ability of the system to detect unresponsive services, [read more here](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier).Traffic will automatically be shifted over to services next in the priority order. Currently this feature is only supported for Istio meshes.
+Gloo Mesh provides the ability to configure a *FailoverService*. A FailoverService is a virtual traffic destination that is composed of a list of services ordered in decreasing priority. The composing services are configured with outlier detection, the ability of the system to detect unresponsive services, [read more here](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier).Traffic will automatically be shifted over to services next in the priority order. Currently this feature is only supported for Istio meshes.
 
 In this guide we will first enable outlier detection so the service mesh knows when a failure has ocurred. Then we will create the failover configuration to indicate which services are part of the failover process. Finally, we will test the failover configuration by generating errors on one of the instances of the service.
 
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Service Mesh Hub is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
+* Gloo Mesh is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
 * Istio is [installed on both the `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
-* Both the `mgmt-cluster` and `remote-cluster` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}}) under the names `mgmt-cluster` and `remote-cluster` respectively
+* Both the `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}}) under the names `mgmt-cluster` and `remote-cluster` respectively
 * The `bookinfo` app is [installed into both clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 * You have run through the guides for [Federated Trust and Identity]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}) and [Access Control]({{% versioned_link_path fromRoot="/guides/access_control_intro/" %}}).
 
@@ -31,7 +31,7 @@ kubectl apply -f - << EOF
 apiVersion: networking.smh.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
   name: mgmt-reviews-outlier
 spec:
   destinationSelector:
@@ -51,7 +51,7 @@ EOF
 For demonstration purposes, we're setting `consecutiveErrors` to 1 to more easily trigger the failover. Once applied, run the following:
 
 ```shell
-kubectl -n service-mesh-hub get trafficpolicy/mgmt-reviews-outlier -oyaml
+kubectl -n gloo-mesh get trafficpolicy/mgmt-reviews-outlier -oyaml
 ```
 
 You should see the following status indicating that the TrafficPolicy is valid and has been translated into mesh-specific config:
@@ -61,10 +61,10 @@ status:
   observedGeneration: "1"
   state: ACCEPTED
   trafficTargets:
-    reviews-bookinfo-mgmt-cluster.service-mesh-hub.:
+    reviews-bookinfo-mgmt-cluster.gloo-mesh.:
       acceptanceOrder: 1
       state: ACCEPTED
-    reviews-bookinfo-remote-cluster.service-mesh-hub.:
+    reviews-bookinfo-remote-cluster.gloo-mesh.:
       state: ACCEPTED
 ```
 
@@ -80,7 +80,7 @@ apiVersion: networking.smh.solo.io/v1alpha2
 kind: FailoverService
 metadata:
   name: reviews-failover
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 spec:
   hostname: reviews-failover.bookinfo.global
   port:
@@ -88,7 +88,7 @@ spec:
     protocol: http
   meshes:
     - name: istiod-istio-system-mgmt-cluster
-      namespace: service-mesh-hub
+      namespace: gloo-mesh
   backingServices:
   - kubeService:
       name: reviews
@@ -112,7 +112,7 @@ The `meshes` field indicates the control planes that the FailoverService is visi
 Once applied, run the following:
 
 ```shell
-kubectl -n service-mesh-hub get failoverservice/reviews-failover -oyaml
+kubectl -n gloo-mesh get failoverservice/reviews-failover -oyaml
 ```
 
 and you should see the following status:
@@ -120,7 +120,7 @@ and you should see the following status:
 ```yaml
 status:
     meshes:
-      istiod-istio-system-mgmt-cluster.service-mesh-hub.:
+      istiod-istio-system-mgmt-cluster.gloo-mesh.:
         state: ACCEPTED
     observedGeneration: "1"
     state: ACCEPTED
@@ -150,7 +150,7 @@ spec:
     destinations:
     - failoverService:
         name: reviews-failover
-        namespace: service-mesh-hub
+        namespace: gloo-mesh
 EOF
 ```
 
@@ -183,4 +183,4 @@ kubectl -n bookinfo patch deployment reviews-v2  --type json   -p '[{"op": "remo
 Once the deployment has rolled out, reloading the `productpage` should show reviews with no stars or black stars, indicating that the failover service is routing requests to the first listed service in the `mgmt-cluster`.
 
 ## Next Steps
-In this guide, you successfully configured cross-cluster failover using a VirtualMesh and Traffic Policies. To explore more about Service Mesh Hub, we recommend checking out the [concepts section]({{% versioned_link_path fromRoot="/concepts" %}}) of the docs.
+In this guide, you successfully configured cross-cluster failover using a VirtualMesh and Traffic Policies. To explore more about Gloo Mesh, we recommend checking out the [concepts section]({{% versioned_link_path fromRoot="/concepts" %}}) of the docs.

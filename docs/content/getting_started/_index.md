@@ -1,15 +1,15 @@
 ---
 title: "Getting Started"
 menuTitle: Getting Started
-description: How to get started using Service Mesh Hub
+description: How to get started using Gloo Mesh
 weight: 10
 ---
 
-Welcome to Service Mesh Hub, the open-source, multi-cluster, multi-mesh management plane. Service Mesh Hub simplifies service-mesh operations and lets you manage multiple clusters of a service mesh from a centralized management plane. Service Mesh Hub takes care of things like shared-trust/root CA federation, workload discovery, unified multi-cluster/global traffic policy, access policy, and more. 
+Welcome to Gloo Mesh, the open-source, multi-cluster, multi-mesh management plane. Gloo Mesh simplifies service-mesh operations and lets you manage multiple clusters of a service mesh from a centralized management plane. Gloo Mesh takes care of things like shared-trust/root CA federation, workload discovery, unified multi-cluster/global traffic policy, access policy, and more. 
 
 ## Getting `meshctl`
 
-Service Mesh Hub has a CLI tool called `meshctl` that helps bootstrap Service Mesh Hub, register clusters, describe configured resources, and more. Get the latest `meshctl` from the [releases page on solo-io/service-mesh-hub](https://github.com/solo-io/gloo-mesh/releases).
+Gloo Mesh has a CLI tool called `meshctl` that helps bootstrap Gloo Mesh, register clusters, describe configured resources, and more. Get the latest `meshctl` from the [releases page on solo-io/gloo-mesh](https://github.com/solo-io/gloo-mesh/releases).
 
 You can also quickly install like this:
 
@@ -45,7 +45,7 @@ To spin up two Kubernetes clusters with Kind, run:
 ```shell
 meshctl demo istio-multicluster init
 ```
-This will spin up two Kubernetes clusters in Docker with Istio installed on each. Additionally, this will install Service Mesh Hub on one of the clusters. Both clusters will be **registered** with Service Mesh Hub under the names `mgmt-cluster` and `remote-cluster`, which will be used throughout the documentation.
+This will spin up two Kubernetes clusters in Docker with Istio installed on each. Additionally, this will install Gloo Mesh on one of the clusters. Both clusters will be **registered** with Gloo Mesh under the names `mgmt-cluster` and `remote-cluster`, which will be used throughout the documentation.
 
 ```shell
 Creating cluster mgmt-cluster with ingress port 32001
@@ -87,10 +87,10 @@ export REMOTE_CTX=kind-remote-cluster
 Then you can run the following to connect to the mgmt-cluster cluster:
 
 ```shell
-kubectl --context $MGMT_PLANE_CTX get po -n service-mesh-hub
+kubectl --context $MGMT_PLANE_CTX get po -n gloo-mesh
 ```
 
-You should see Service Mesh Hub installed:
+You should see Gloo Mesh installed:
 
 ```shell
 NAME                              READY   STATUS    RESTARTS   AGE
@@ -115,13 +115,13 @@ You should see something similar:
 ✅ running the minimum supported Kubernetes version (required: >=1.13)
 
 
-✅ Service Mesh Hub Management Plane
+✅ Gloo Mesh Management Plane
 ------------------------------------
 ✅ installation namespace exists
 ✅ components are running
 
 
-✅ Service Mesh Hub check found no errors
+✅ Gloo Mesh check found no errors
 ```
 
 Setting up Kind and multiple clusters on your machine isn't always the easiest, and there may be some issues/hurdles you run into, especially on "company laptops" with extra security constraints. If you ran into any issues in the previous steps, please join us on the [Solo.io slack](https://slack.solo.io) and we'll be more than happy to help troubleshoot. 
@@ -138,4 +138,4 @@ meshctl demo istio-multicluster cleanup
 
 ## Next steps
 
-In this quick-start guide, we installed Service Mesh Hub. If these installation use cases were too simplistic or not representative of your environment, please check out our [Setup Guide]({{% versioned_link_path fromRoot="/setup/" %}}). Otherwise, please check out our [Guides]({{% versioned_link_path fromRoot="/guides/" %}}) to explore the power of Service Mesh Hub.
+In this quick-start guide, we installed Gloo Mesh. If these installation use cases were too simplistic or not representative of your environment, please check out our [Setup Guide]({{% versioned_link_path fromRoot="/setup/" %}}). Otherwise, please check out our [Guides]({{% versioned_link_path fromRoot="/guides/" %}}) to explore the power of Gloo Mesh.

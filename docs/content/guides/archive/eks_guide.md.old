@@ -1,15 +1,15 @@
 ---
 title: "EKS Guide"
 menuTitle: EKS Guide
-description: Guide for getting started using Service Mesh Hub with EKS.
+description: Guide for getting started using Gloo Mesh with EKS.
 weight: 120
 ---
 
-# Service Mesh Hub with Appmesh
+# Gloo Mesh with Appmesh
 
 [EKS](https://aws.amazon.com/eks/) provides hosted Kubernetes clusters as a service.
 
-Service Mesh Hub provides EKS cluster discovery and can manage the cluster and any service meshes on that cluster.
+Gloo Mesh provides EKS cluster discovery and can manage the cluster and any service meshes on that cluster.
 
 In this guide, we will configure SMH to automatically discover and register EKS clusters.
 
@@ -20,7 +20,7 @@ There are three pre-requisites to following these guides:
 1. Install `kubectl`
     - https://kubernetes.io/docs/tasks/tools/install-kubectl/
 2. Install `meshctl`
-    - `curl -sL https://run.solo.io/meshctl/install | sh && export PATH=$PATH:$HOME/.service-mesh-hub/bin`
+    - `curl -sL https://run.solo.io/meshctl/install | sh && export PATH=$PATH:$HOME/.gloo-mesh/bin`
     - see the [guide]({{% versioned_link_path fromRoot="/getting_started" %}})
 3. Install `helm`, [instructions here](https://helm.sh/docs/intro/install/)
 
@@ -141,9 +141,9 @@ kubectl label namespace <namespace> appmesh.k8s.aws/sidecarInjectorWebhook=enabl
 
 ## Grant Permissions to AWS API
 
-In order for Service Mesh Hub to interact with AWS resources, credentials for the AWS account
+In order for Gloo Mesh to interact with AWS resources, credentials for the AWS account
 must be granted by creating a k8s secret containing the API credentials in the k8s cluster
-on which Service Mesh Hub is deployed. The secret must take the following form:
+on which Gloo Mesh is deployed. The secret must take the following form:
 
 ```yaml
 apiVersion: v1
@@ -166,8 +166,8 @@ Once this secret is created, the logs for `mesh-networking` should show a log en
 
 ## Configure EKS discovery
 
-Upon installation of Service Mesh Hub v0.4.12+, you should see a `settings.core.smh.solo.io` CRD instance with the name 
-`settings` in the SMH write namespace (by default this is `service-mesh-hub`), populated with
+Upon installation of Gloo Mesh v0.4.12+, you should see a `settings.core.smh.solo.io` CRD instance with the name
+`settings` in the SMH write namespace (by default this is `gloo-mesh`), populated with
 
 ```yaml
 spec:
@@ -182,7 +182,7 @@ making the relevant substitutions (note for simplicity we disable Appmesh discov
 apiVersion: core.smh.solo.io/v1alpha1
 kind: Settings
 metadata:
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
   name: settings
 spec:
   aws:
@@ -210,7 +210,7 @@ allows for matching by region and tags. For instance, to discover all EKS cluste
 apiVersion: core.smh.solo.io/v1alpha1
 kind: Settings
 metadata:
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
   name: settings
 spec:
   aws:

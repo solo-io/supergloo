@@ -44,7 +44,7 @@ Code examples can be inline by using a pair of back-ticks: `` `code goes here` `
 
 ````
 ```yaml
-software: service mesh hub
+software: Gloo Mesh
 version: 1.2
 ```
 ````

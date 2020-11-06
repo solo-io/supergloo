@@ -2896,7 +2896,7 @@ metadata:
   labels:
     app: discovery
   name: discovery
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 ---
 # Source: gloo-mesh/templates/deployment.yaml
 # Service account for networking
@@ -2907,7 +2907,7 @@ metadata:
   labels:
     app: networking
   name: networking
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 ---
 # Source: gloo-mesh/templates/rbac.yaml
 kind: ClusterRole
@@ -3126,7 +3126,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: discovery
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 roleRef:
   kind: ClusterRole
   name: discovery
@@ -3143,7 +3143,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: networking
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 roleRef:
   kind: ClusterRole
   name: networking
@@ -3158,7 +3158,7 @@ metadata:
   labels:
     app: discovery
   name: discovery
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 spec:
   selector:
     app: discovery
@@ -3176,7 +3176,7 @@ metadata:
   labels:
     app: networking
   name: networking
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 spec:
   selector:
     app: networking
@@ -3194,7 +3194,7 @@ metadata:
   labels:
     app: discovery
   name: discovery
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 spec:
   selector:
     matchLabels:
@@ -3210,7 +3210,7 @@ spec:
     spec:
       serviceAccountName: discovery
       containers:
-      - image: soloio/gloo-mesh:0.9.1-18-ga3a45017-dirty
+      - image: soloio/gloo-mesh:0.9.1-19-g9995aedd-dirty
         args:
         - discovery
         - --metrics-port=9091
@@ -3244,7 +3244,7 @@ metadata:
   labels:
     app: networking
   name: networking
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 spec:
   selector:
     matchLabels:
@@ -3260,7 +3260,7 @@ spec:
     spec:
       serviceAccountName: networking
       containers:
-      - image: soloio/gloo-mesh:0.9.1-18-ga3a45017-dirty
+      - image: soloio/gloo-mesh:0.9.1-19-g9995aedd-dirty
         args:
         - networking
         - --metrics-port=9091

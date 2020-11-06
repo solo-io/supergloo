@@ -28,11 +28,11 @@ var (
 ---
 title: "Command-Line Reference"
 description: | 
-  Detailed descriptions and options for working with the Service Mesh Hub CLI. 
+  Detailed descriptions and options for working with the Gloo Mesh CLI. 
 weight: 2
 ---
 
-This section contains generated reference documentation for the ` + "`" + `Service Mesh Hub` + "`" + ` CLI.
+This section contains generated reference documentation for the ` + "`" + `Gloo Mesh` + "`" + ` CLI.
 
 `
 	protoDocTemplate  = filepath.Join(moduleRoot, "docs", "proto_docs_template.tmpl")
@@ -40,11 +40,11 @@ This section contains generated reference documentation for the ` + "`" + `Servi
 ---
 title: "API Reference"
 description: | 
-  This section contains the API Specification for the CRDs used by Service Mesh Hub.
+  This section contains the API Specification for the CRDs used by Gloo Mesh.
 weight: 4
 ---
 
-These docs describe the ` + "`" + `spec` + "`" + ` and ` + "`" + `status` + "`" + ` of the Service Mesh Hub CRDs.
+These docs describe the ` + "`" + `spec` + "`" + ` and ` + "`" + `status` + "`" + ` of the Gloo Mesh CRDs.
 
 {{% children description="true" %}}
 

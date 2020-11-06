@@ -1,6 +1,6 @@
 baseURL = "https://docs.solo.io"
 languageCode = "en-us"
-title = "Service Mesh Hub Docs"
+title = "Gloo Mesh Docs"
 theme = "hugo-theme-soloio"
 
 contentDir = "content"
@@ -34,7 +34,7 @@ defaultMarkdownHandler = "goldmark"
 
 [params]
 author = "Solo.io"
-description = "Documentation for Service Mesh Hub"
+description = "Documentation for Gloo Mesh"
 disableSearch = false
 disableAssetsBusting = false
 disableInlineCopyToClipBoard = true

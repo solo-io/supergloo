@@ -2,14 +2,14 @@
 title: Style Guide
 menuTitle: Style Guide
 weight: 20
-description: Standards and guidance for Service Mesh Hub documentation
+description: Standards and guidance for Gloo Mesh documentation
 ---
 
-The documentation for Service Mesh Hub is meant to be conversational and engaging. It should also be easy to read and inviting for the newcomer. In an attempt to maintain a consistent voice and style throughout the docs, please use the following conventions when approaching a new document or revising an existing one.
+The documentation for Gloo Mesh is meant to be conversational and engaging. It should also be easy to read and inviting for the newcomer. In an attempt to maintain a consistent voice and style throughout the docs, please use the following conventions when approaching a new document or revising an existing one.
 
 ## Style guide
 
-* **Introduce and guide** - All documents should start with a title and introduction. Assume that the reader ended up on this page without reading any other documents. Don't assume that they are coming to this document with deep technical knowledge about Service Mesh Hub. Be supportive and guide the reader to be successful.
+* **Introduce and guide** - All documents should start with a title and introduction. Assume that the reader ended up on this page without reading any other documents. Don't assume that they are coming to this document with deep technical knowledge about Gloo Mesh. Be supportive and guide the reader to be successful.
 
 * **Italicize terms** - When a technical term is first used in a document, it should be *italicized* to indicate to the reader that the term has a technical meaning. This is true for any technical term that is not commonly used by the general public. You might know what an *ingress controller* is, but don't assume your audience does. In addition, the term should be explained when it is first mentioned, either within the paragraph that contains it, or in [] square brackets immediately after the term.
 
@@ -35,13 +35,13 @@ The documentation for Service Mesh Hub is meant to be conversational and engagin
 
 * **Use Sentence Case for headings** - Headings for sections should be in Sentence Case. Sentence Case simply means that the first word should be capitalized, along with any proper nouns. All other words should be in lower case.
 
-* **Single space after a period** - This might be confusing to those old and young alike. The short version is that the docs for Service Mesh Hub use a single space after a period. Period.
+* **Single space after a period** - This might be confusing to those old and young alike. The short version is that the docs for Gloo Mesh use a single space after a period. Period.
 
 ---
 
 ## Document naming and structure
 
-The docs use Hugo to generate the static website, which makes the structure and naming of the directories holding the content important. The structure of the current docs can be found on the [Service Mesh Hub GitHub repository](https://github.com/solo-io/gloo-mesh). Here is a representation of `content` directory as of this writing.
+The docs use Hugo to generate the static website, which makes the structure and naming of the directories holding the content important. The structure of the current docs can be found on the [Gloo Mesh GitHub repository](https://github.com/solo-io/gloo-mesh). Here is a representation of `content` directory as of this writing.
 
 ```bash
 # Menu item in the navigation bar
@@ -60,5 +60,5 @@ To create a new menu item, simply create a directory at the root of the content 
 
 Now that you have a firm grasp of how the docs should be written, you can start writing your first doc or get set up on your local workstation.
 
-* The [Example Document doc]({{< versioned_link_path fromRoot="/contributing/documentation/example_doc/" >}}) provides a starting point for creating new docs in Service Mesh Hub
-* The [Editing Locally doc]({{< versioned_link_path fromRoot="/contributing/documentation/editing_locally/" >}}) provides a guide for getting started with Service Mesh Hub docs on your local workstation
+* The [Example Document doc]({{< versioned_link_path fromRoot="/contributing/documentation/example_doc/" >}}) provides a starting point for creating new docs in Gloo Mesh
+* The [Editing Locally doc]({{< versioned_link_path fromRoot="/contributing/documentation/editing_locally/" >}}) provides a guide for getting started with Gloo Mesh docs on your local workstation

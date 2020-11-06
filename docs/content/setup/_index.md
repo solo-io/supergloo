@@ -1,23 +1,23 @@
 ---
 title: "Setup"
 menuTitle: Setup
-description: Setting up service mesh hub
+description: Setting up Gloo Mesh
 weight: 30
 ---
 
 In this guide we will accomplish two tasks:
 
-1. [Install Service Mesh Hub](#install-service-mesh-hub)
+1. [Install Gloo Mesh](#install-gloo-mesh)
 2. [Register A Cluster](#register-a-cluster)
  
 
-We use a Kubernetes cluster to host the management plane (Service Mesh Hub) while each service mesh can run on its own independent cluster. If you don't have access to multiple clusters, see the [Getting Started Guide]({{% versioned_link_path fromRoot="/getting_started/" %}}) to get started with Kubernetes in Docker. 
+We use a Kubernetes cluster to host the management plane (Gloo Mesh) while each service mesh can run on its own independent cluster. If you don't have access to multiple clusters, see the [Getting Started Guide]({{% versioned_link_path fromRoot="/getting_started/" %}}) to get started with Kubernetes in Docker. 
 
-![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-3clusters.png" %}})
+![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/smh-3clusters.png" %}})
 
-You can install Service Mesh Hub onto its own cluster and register remote clusters, or you can co-locate Service Mesh Hub onto a cluster with a service mesh. The former (its own cluster) is the preferred deployment pattern, but for getting started, exploring, or to save resources, you can use the co-located deployment approach.
+You can install Gloo Mesh onto its own cluster and register remote clusters, or you can co-locate Gloo Mesh onto a cluster with a service mesh. The former (its own cluster) is the preferred deployment pattern, but for getting started, exploring, or to save resources, you can use the co-located deployment approach.
 
-![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-2clusters.png" %}})
+![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/smh-2clusters.png" %}})
 
 
 ## Assumptions for setup
@@ -27,9 +27,9 @@ We will assume in this guide that we have access to two clusters and the followi
 Your actual context names will likely be different.
 
 * `mgmt-cluster-context`
-    - kubeconfig context pointing to a cluster where we will install and operate Service Mesh Hub
+    - kubeconfig context pointing to a cluster where we will install and operate Gloo Mesh
 * `remote-cluster-context`
-    - kubeconfig context pointing to a cluster where we will install and manage a service mesh using Service Mesh Hub 
+    - kubeconfig context pointing to a cluster where we will install and manage a service mesh using Gloo Mesh 
 
 To verify you're running the following commands in the correct context, run:
 
@@ -103,15 +103,15 @@ EOF
 kubectl config use-context kind-mgmt-cluster
 ```
 
-## Install Service Mesh Hub
+## Install Gloo Mesh
 
 {{% notice note %}}
-Note that these contexts need not be different; you may install and manage a service mesh in the same cluster as Service Mesh Hub. For the purposes of this guide, though, we will assume they are different.
+Note that these contexts need not be different; you may install and manage a service mesh in the same cluster as Gloo Mesh. For the purposes of this guide, though, we will assume they are different.
 {{% /notice %}}
 
 ### Installing with `meshctl`
 
-`meshctl` is a CLI tool that helps bootstrap Service Mesh Hub, register clusters, describe configured resources, and more. Get the latest `meshctl` from the [releases page on solo-io/service-mesh-hub](https://github.com/solo-io/gloo-mesh/releases).
+`meshctl` is a CLI tool that helps bootstrap Gloo Mesh, register clusters, describe configured resources, and more. Get the latest `meshctl` from the [releases page on solo-io/gloo-mesh](https://github.com/solo-io/gloo-mesh/releases).
 
 You can also quickly install like this:
 
@@ -119,7 +119,7 @@ You can also quickly install like this:
 curl -sL https://run.solo.io/meshctl/install | sh
 ```
 
-Once you have the `meshctl` tool, you can install Service Mesh Hub onto a cluster acting as the `mgmt-cluster` like this:
+Once you have the `meshctl` tool, you can install Gloo Mesh onto a cluster acting as the `mgmt-cluster` like this:
 
 
 ```shell
@@ -135,10 +135,10 @@ meshctl install --kubecontext mgmt-cluster-context
 You should see output similar to this:
 
 ```shell
-Creating namespace service-mesh-hub... Done.
-Starting Service Mesh Hub installation...
-Service Mesh Hub successfully installed!
-Service Mesh Hub has been installed to namespace service-mesh-hub
+Creating namespace gloo-mesh... Done.
+Starting Gloo Mesh installation...
+Gloo Mesh successfully installed!
+Gloo Mesh has been installed to namespace gloo-mesh
 ```
 
 To undo the installation, run `uninstall`:
@@ -173,29 +173,29 @@ meshctl install --dry-run | kubectl delete -f -
 
 ### Install with Helm
 
-The Helm charts for Service Mesh Hub support Helm 3. To install with Helm:
+The Helm charts for Gloo Mesh support Helm 3. To install with Helm:
 
 ```shell
-helm repo add service-mesh-hub https://storage.googleapis.com/service-mesh-hub/service-mesh-hub
+helm repo add gloo-mesh https://storage.googleapis.com/gloo-mesh/gloo-mesh
 helm repo update
 ```
 
 {{% notice note %}}
-Note that the location of the Service Mesh Hub Helm charts is subject to change. When it finds a more permanent home, we'll remove this message.
+Note that the location of the Gloo Mesh Helm charts is subject to change. When it finds a more permanent home, we'll remove this message.
 {{% /notice %}}
 
-Then install Service Mesh Hub into the `service-mesh-hub` namespace:
+Then install Gloo Mesh into the `gloo-mesh` namespace:
 
 ```shell
-kubectl create ns service-mesh-hub
-helm install service-mesh-hub service-mesh-hub/service-mesh-hub --namespace service-mesh-hub
+kubectl create ns gloo-mesh
+helm install gloo-mesh gloo-mesh/gloo-mesh --namespace gloo-mesh
 ```
 
 ### Verify install
-Once you've installed Service Mesh Hub, verify what components got installed:
+Once you've installed Gloo Mesh, verify what components got installed:
 
 ```shell
-kubectl get po -n service-mesh-hub
+kubectl get po -n gloo-mesh
 
 NAME                          READY   STATUS    RESTARTS   AGE
 discovery-66675cf6fd-cdlpq    1/1     Running   0          32m
@@ -209,21 +209,21 @@ meshctl check
 ```
 
 ```shell
-Service Mesh Hub
+Gloo Mesh
 -------------------
-✅ Service Mesh Hub pods are running
+✅ Gloo Mesh pods are running
 
 Management Configuration
 ---------------------------
-✅ Service Mesh Hub networking configuration resources are in a valid state
+✅ Gloo Mesh networking configuration resources are in a valid state
 ```
 
-At this point you're ready to add clusters to the management plane, or discover existing service meshes on the cluster on which we just deployed Service Mesh Hub. 
+At this point you're ready to add clusters to the management plane, or discover existing service meshes on the cluster on which we just deployed Gloo Mesh. 
 
 
 ## Register A Cluster
 
-In order to identify a cluster as being managed by Service Mesh Hub, we have to *register* it in
+In order to identify a cluster as being managed by Gloo Mesh, we have to *register* it in
 our installation. This is both so that we are aware of it, and so that we have the proper credentials
 to communicate with the Kubernetes API server in that cluster.
 
@@ -237,7 +237,7 @@ meshctl cluster register \
 ```
 
 {{% notice note %}}
-Note that the `--remote-cluster-name` is NOT the name of the cluster in your kubeconfig file -- it's a name given to the cluster Service Mesh Hub can refer to it in various configurations. You can pick a name for this.
+Note that the `--remote-cluster-name` is NOT the name of the cluster in your kubeconfig file -- it's a name given to the cluster Gloo Mesh can refer to it in various configurations. You can pick a name for this.
 {{% /notice %}}
 
 ```shell
@@ -245,7 +245,7 @@ Successfully wrote service account to remote cluster...
 Successfully wrote kube config secret to master cluster...
 Successfully set up CSR agent...
 
-Cluster remote-cluster is now registered in your Service Mesh Hub installation
+Cluster remote-cluster is now registered in your Gloo Mesh installation
 ```
 
 {{< notice note >}}
@@ -254,7 +254,7 @@ If you are using Kind for your Kubernetes clusters, you will need to add the arg
 
 #### Register the management cluster
 
-You can automatically register the cluster on which you deploy Service Mesh Hub (for example, if you have a mesh running there as well) with the `--register` CLI flag when you're first installing with `meshctl`:
+You can automatically register the cluster on which you deploy Gloo Mesh (for example, if you have a mesh running there as well) with the `--register` CLI flag when you're first installing with `meshctl`:
 
 ```shell
 meshctl install --register --context mgmt-cluster-context
@@ -263,10 +263,10 @@ meshctl install --register --context mgmt-cluster-context
 By default, when you register like this, the cluster name will be `mgmt-cluster`. If you run the following, you should see the cluster registered:
 
 ```shell
-kubectl get kubernetescluster -n service-mesh-hub
+kubectl get kubernetescluster -n gloo-mesh
 
 NAMESPACE          NAME               AGE
-service-mesh-hub   mgmt-cluster       10s
+gloo-mesh   mgmt-cluster       10s
 ```
 
 {{< notice note >}}
@@ -277,10 +277,10 @@ If you are using Kind for your Kubernetes clusters, you will need to add the arg
 
 To go into slightly more detail about what just happened:
 
-* A service account was created in the `service-mesh-hub` namespace of the remote cluster
+* A service account was created in the `gloo-mesh` namespace of the remote cluster
 * That service account's auth token was stored in a secret in the management plane cluster
-* The Service Mesh Hub CSR agent was deployed in the remote cluster
-* Future communications that Service Mesh Hub does to the remote cluster's Kubernetes API server
+* The Gloo Mesh CSR agent was deployed in the remote cluster
+* Future communications that Gloo Mesh does to the remote cluster's Kubernetes API server
  will be done using the service account auth token created in the first bullet point
 
 ## Next Steps
