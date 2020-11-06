@@ -24,8 +24,8 @@ func main() {
 func rootCommand(ctx context.Context) *cobra.Command {
 	opts := &bootstrap.Options{}
 	cmd := &cobra.Command{
-		Use:     "service-mesh-hub [command]",
-		Short:   "Start the Service Mesh Hub Operators (discovery and networking)",
+		Use:     "gloo-mesh [command]",
+		Short:   "Start the Gloo Mesh Operators (discovery and networking)",
 		Version: version.Version,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			logrus.SetLevel(logrus.DebugLevel)
@@ -50,7 +50,7 @@ func discoveryCommand(ctx context.Context, bs *bootstrap.Options) *cobra.Command
 	opts := &discoveryOpts{Options: bs}
 	cmd := &cobra.Command{
 		Use:   "discovery",
-		Short: "Start the Service Mesh Hub Discovery Operator",
+		Short: "Start the Gloo Mesh Discovery Operator",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return startDiscovery(ctx, opts)
 		},
@@ -70,7 +70,7 @@ func networkingCommand(ctx context.Context, bs *bootstrap.Options) *cobra.Comman
 	opts := &networkingOpts{Options: bs}
 	cmd := &cobra.Command{
 		Use:   "networking",
-		Short: "Start the Service Mesh Hub Networking Operator",
+		Short: "Start the Gloo Mesh Networking Operator",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return startNetworking(ctx, opts)
 		},
