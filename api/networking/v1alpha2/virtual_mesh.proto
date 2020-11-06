@@ -1,9 +1,9 @@
 syntax = "proto3";
-package networking.smh.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2";
+package networking.gloomesh.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/v1alpha2";
 
 import "skv2/api/core/v1/core.proto";
-import "service-mesh-hub/api/networking/v1alpha2/validation_state.proto";
+import "gloo-mesh/api/networking/v1alpha2/validation_state.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 
@@ -47,7 +47,7 @@ message VirtualMeshSpec {
             LimitedTrust limited = 2;
         }
 
-        // Allow Service Mesh Hub to restart mesh pods when certificates are rotated.
+        // Allow Gloo Mesh to restart mesh pods when certificates are rotated.
         // If this option is not explicitly enabled,
         // users must restart the pods manually for the new certificates to be picked up.
         // `meshctl` provides the command `meshctl mesh restart` to simplify this process.
@@ -64,7 +64,7 @@ message VirtualMeshSpec {
             // Configure a Root Certificate Authority which will be shared by the
             // members of the virtual mesh.
             // If this is not provided, a self-signed certificate will be used
-            // by Service Mesh Hub to establish shared trust for the purposes of failover and federation.
+            // by Gloo Mesh to establish shared trust for the purposes of failover and federation.
             RootCertificateAuthority root_certificate_authority = 1;
         }
 
@@ -89,7 +89,7 @@ message VirtualMeshSpec {
     // root CA for a Virtual Mesh.
     message RootCertificateAuthority {
 
-        // Select a source for the Root CA data which Service Mesh Hub will use for the Virtual Mesh.
+        // Select a source for the Root CA data which Gloo Mesh will use for the Virtual Mesh.
         oneof ca_source {
             // Generate a self-signed root certificate with the given options.
             SelfSignedCert generated = 1;
@@ -108,12 +108,12 @@ message VirtualMeshSpec {
             uint32 ttl_days = 1;
             // Size in bytes of the root cert's private key. Defaults to 4096.
             uint32 rsa_key_size_bytes = 2;
-            // Root cert organization name. Defaults to "service-mesh-hub".
+            // Root cert organization name. Defaults to "gloo-mesh".
             string org_name = 3;
         }
     }
 
-    // In Service Mesh Hub, "federation" refers to the ability
+    // In Gloo Mesh, "federation" refers to the ability
     // to expose traffic targets with a global DNS name
     // for traffic originating from any workload within the
     // virtual mesh.

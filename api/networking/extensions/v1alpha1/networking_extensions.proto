@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package extensions.networking.smh.solo.io;
+package extensions.networking.gloomesh.solo.io;
 
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/extensions/v1alpha1";
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/extensions/v1alpha1";
 
-import "service-mesh-hub/api/discovery/v1alpha2/mesh.proto";
-import "service-mesh-hub/api/discovery/v1alpha2/traffic_target.proto";
-import "service-mesh-hub/api/discovery/v1alpha2/workload.proto";
+import "gloo-mesh/api/discovery/v1alpha2/mesh.proto";
+import "gloo-mesh/api/discovery/v1alpha2/traffic_target.proto";
+import "gloo-mesh/api/discovery/v1alpha2/workload.proto";
 
 import "networking/v1alpha3/destination_rule.proto";
 import "networking/v1alpha3/envoy_filter.proto";
@@ -16,8 +16,8 @@ import "networking/v1alpha3/sidecar.proto";
 import "networking/v1alpha3/virtual_service.proto";
 import "networking/v1alpha3/workload_entry.proto";
 
-// NetworkingExtensions provides customizeable patches to Service Mesh Hub-generated configuration.
-// Service Mesh Hub uses a NetworkingExtensions client to request optional patches from a pluggable
+// NetworkingExtensions provides customizeable patches to Gloo Mesh-generated configuration.
+// Gloo Mesh uses a NetworkingExtensions client to request optional patches from a pluggable
 // NetworkingExtensions server.
 // The server can return a set of patches which SMH will apply before writing configuration to the cluster.
 service NetworkingExtensions {
@@ -27,7 +27,7 @@ service NetworkingExtensions {
     }
 
     // WatchPushNotifications initiates a streaming connection which allows the NetworkingExtensions server
-    // to push notifications to Service Mesh Hub telling it to resync its configuration.
+    // to push notifications to Gloo Mesh telling it to resync its configuration.
     // This allows a NetworkingExtensions server to trigger SMH to resync its state for
     // events triggered by objects not watched by SMH.
     rpc WatchPushNotifications (WatchPushNotificationsRequest) returns (stream PushNotification) {
@@ -70,9 +70,9 @@ message TrafficTargetObject {
     // metadata of the object
     ObjectMeta metadata = 1;
     // the spec of the object
-    .discovery.smh.solo.io.TrafficTargetSpec spec = 2;
+    .discovery.gloomesh.solo.io.TrafficTargetSpec spec = 2;
     // the status of the object
-    .discovery.smh.solo.io.TrafficTargetStatus status = 3;
+    .discovery.gloomesh.solo.io.TrafficTargetStatus status = 3;
 }
 
 // a proto-serializable representation of a Workload object
@@ -80,9 +80,9 @@ message WorkloadObject {
     // metadata of the object
     ObjectMeta metadata = 1;
     // the spec of the object
-    .discovery.smh.solo.io.WorkloadSpec spec = 2;
+    .discovery.gloomesh.solo.io.WorkloadSpec spec = 2;
     // the status of the object
-    .discovery.smh.solo.io.WorkloadStatus status = 3;
+    .discovery.gloomesh.solo.io.WorkloadStatus status = 3;
 }
 
 // a proto-serializable representation of a Mesh object
@@ -90,9 +90,9 @@ message MeshObject {
     // metadata of the object
     ObjectMeta metadata = 1;
     // the spec of the object
-    .discovery.smh.solo.io.MeshSpec spec = 2;
+    .discovery.gloomesh.solo.io.MeshSpec spec = 2;
     // the status of the object
-    .discovery.smh.solo.io.MeshStatus status = 3;
+    .discovery.gloomesh.solo.io.MeshStatus status = 3;
 }
 
 // a generated object can be of any output type supported by SMH.
@@ -122,7 +122,7 @@ message ObjectMeta {
     // the kubernetes namespace of the object
     string namespace = 2;
 
-    // the kubernetes clusterName of the object (used internally by Service Mesh Hub)
+    // the kubernetes clusterName of the object (used internally by Gloo Mesh)
     string cluster_name = 3;
 
     // the kubernetes labels on the object

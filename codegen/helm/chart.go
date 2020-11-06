@@ -3,9 +3,9 @@ package helm
 import (
 	"os"
 
-	"github.com/solo-io/service-mesh-hub/codegen/io"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	"github.com/solo-io/service-mesh-hub/pkg/common/version"
+	"github.com/solo-io/gloo-mesh/codegen/io"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/common/version"
 
 	"github.com/solo-io/skv2/codegen/model"
 	v1 "k8s.io/api/core/v1"
@@ -13,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-// this file provides the source of truth for the Service Mesh Hub Helm chart.
+// this file provides the source of truth for the Gloo Mesh Helm chart.
 // it is imported into the root level generate.go to generate the Portal manifest
 
 var (
@@ -41,8 +41,8 @@ var Chart = &model.Chart{
 	FilterTemplate: filterTemplates,
 	Data: model.Data{
 		ApiVersion:  "v1",
-		Name:        "service-mesh-hub",
-		Description: "Helm chart for Service Mesh Hub.",
+		Name:        "gloo-mesh",
+		Description: "Helm chart for Gloo Mesh.",
 		Version:     version.Version,
 	},
 	Values: defaultValues(),
@@ -56,7 +56,7 @@ var CertAgentChart = &model.Chart{
 	Data: model.Data{
 		ApiVersion:  "v1",
 		Name:        "cert-agent",
-		Description: "Helm chart for the Service Mesh Hub Certificate Agent.",
+		Description: "Helm chart for the Gloo Mesh Certificate Agent.",
 		Version:     version.Version,
 	},
 	Values: nil,
@@ -224,7 +224,7 @@ func certAgentOperator() model.Operator {
 func smhImage() model.Image {
 	return model.Image{
 		Registry:   registry,
-		Repository: "service-mesh-hub",
+		Repository: "gloo-mesh",
 		Tag:        version.Version,
 		PullPolicy: v1.PullIfNotPresent,
 	}

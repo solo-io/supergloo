@@ -1,10 +1,10 @@
 syntax = "proto3";
-package discovery.smh.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2";
+package discovery.gloomesh.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2";
 
 import "skv2/api/core/v1/core.proto";
-import "service-mesh-hub/api/networking/v1alpha2/traffic_policy.proto";
-import "service-mesh-hub/api/networking/v1alpha2/access_policy.proto";
+import "gloo-mesh/api/networking/v1alpha2/traffic_policy.proto";
+import "gloo-mesh/api/networking/v1alpha2/access_policy.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -86,7 +86,7 @@ message TrafficTargetStatus {
         int64 observedGeneration = 2;
 
         // the last known valid spec of the traffic policy
-        .networking.smh.solo.io.TrafficPolicySpec spec = 3;
+        .networking.gloomesh.solo.io.TrafficPolicySpec spec = 3;
     }
 
     // AppliedAccessPolicy represents a access policy that has been applied to the TrafficTarget.
@@ -99,7 +99,7 @@ message TrafficTargetStatus {
         int64 observedGeneration = 2;
 
         // the last known valid spec of the access policy
-        .networking.smh.solo.io.AccessPolicySpec spec = 3;
+        .networking.gloomesh.solo.io.AccessPolicySpec spec = 3;
     }
 
     // Federation policy applied to this TrafficTarget, allowing access

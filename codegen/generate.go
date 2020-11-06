@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 
 	externalapis "github.com/solo-io/external-apis/codegen"
-	"github.com/solo-io/service-mesh-hub/codegen/anyvendor"
-	"github.com/solo-io/service-mesh-hub/codegen/groups"
-	"github.com/solo-io/service-mesh-hub/codegen/helm"
-	"github.com/solo-io/service-mesh-hub/codegen/io"
-	"github.com/solo-io/service-mesh-hub/pkg/common/version"
+	"github.com/solo-io/gloo-mesh/codegen/anyvendor"
+	"github.com/solo-io/gloo-mesh/codegen/groups"
+	"github.com/solo-io/gloo-mesh/codegen/helm"
+	"github.com/solo-io/gloo-mesh/codegen/io"
+	"github.com/solo-io/gloo-mesh/pkg/common/version"
 	skv1alpha1 "github.com/solo-io/skv2/api/multicluster/v1alpha1"
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
@@ -78,18 +78,18 @@ func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 }
 
 var (
-	appName = "service-mesh-hub"
+	appName = "gloo-mesh"
 
 	topLevelComponents = []topLevelComponent{
 		// discovery component
 		{
-			generatedCodeRoot: "pkg/api/discovery.smh.solo.io",
+			generatedCodeRoot: "pkg/api/discovery.gloomesh.solo.io",
 			inputResources:    io.DiscoveryInputTypes,
 			outputResources:   []io.OutputSnapshot{io.DiscoveryOutputTypes},
 		},
 		// networking snapshot
 		{
-			generatedCodeRoot: "pkg/api/networking.smh.solo.io",
+			generatedCodeRoot: "pkg/api/networking.gloomesh.solo.io",
 			inputResources:    io.NetworkingInputTypes,
 			outputResources: []io.OutputSnapshot{
 				io.IstioNetworkingOutputTypes,
@@ -100,18 +100,18 @@ var (
 		},
 		// certificate issuer component
 		{
-			generatedCodeRoot: "pkg/api/certificates.smh.solo.io/issuer",
+			generatedCodeRoot: "pkg/api/certificates.gloomesh.solo.io/issuer",
 			inputResources:    io.CertificateIssuerInputTypes,
 		},
 		// certificate agent component
 		{
-			generatedCodeRoot: "pkg/api/certificates.smh.solo.io/agent",
+			generatedCodeRoot: "pkg/api/certificates.gloomesh.solo.io/agent",
 			inputResources:    io.CertificateAgentInputTypes,
 			outputResources:   []io.OutputSnapshot{io.CertificateAgentOutputTypes},
 		},
 	}
 
-	smhManifestRoot       = "install/helm/service-mesh-hub"
+	smhManifestRoot       = "install/helm/gloo-mesh"
 	certAgentManifestRoot = "install/helm/cert-agent/"
 
 	vendoredMultiClusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
@@ -136,7 +136,7 @@ var (
 )
 
 func run() error {
-	log.Printf("generating service mesh hub code with version %v", version.Version)
+	log.Printf("generating gloo mesh code with version %v", version.Version)
 	chartOnly := flag.Bool("chart", false, "only generate the helm chart")
 	flag.Parse()
 

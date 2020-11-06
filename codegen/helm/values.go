@@ -2,9 +2,9 @@ package helm
 
 import (
 	"github.com/gogo/protobuf/jsonpb"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	settingsv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/v1alpha2"
+	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.gloomesh.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 )
 
 // The schema for our Helm chart values. Struct members must be public for visibility to skv2 Helm generator.

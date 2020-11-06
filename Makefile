@@ -2,7 +2,7 @@
 # Base
 #----------------------------------------------------------------------------------
 OUTDIR ?= _output
-PROJECT ?= service-mesh-hub
+PROJECT ?= gloo-mesh
 
 DOCKER_REPO ?= soloio
 SMH_IMAGE ?= $(DOCKER_REPO)/service-mesh-hub

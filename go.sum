@@ -1124,6 +1124,7 @@ github.com/prometheus/statsd_exporter v0.15.0/go.mod h1:Dv8HnkoLQkeEjkIE4/2ndAA7
 github.com/prometheus/tsdb v0.7.1/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
 github.com/pseudomuto/protoc-gen-doc v1.0.0 h1:g4ld0LeJ2OO2FXhm1o7Arrv+W75sdEClxuvVUSN2RAE=
 github.com/pseudomuto/protoc-gen-doc v1.0.0/go.mod h1:fwtQAY9erXp3mC92O8OTECnDlJT2r0Ff4KSEKbGEmy0=
+github.com/pseudomuto/protoc-gen-doc v1.3.0/go.mod h1:fwtQAY9erXp3mC92O8OTECnDlJT2r0Ff4KSEKbGEmy0=
 github.com/pseudomuto/protoc-gen-doc v1.3.2 h1:61vWZuxYa8D7Rn4h+2dgoTNqnluBmJya2MgbqO32z6g=
 github.com/pseudomuto/protoc-gen-doc v1.3.2/go.mod h1:y5+P6n3iGrbKG+9O04V5ld71in3v/bX88wUwgt+U8EA=
 github.com/pseudomuto/protokit v0.2.0 h1:hlnBDcy3YEDXH7kc9gV+NLaN0cDzhDvD1s7Y6FZ8RpM=
@@ -1216,7 +1217,10 @@ github.com/solo-io/go-utils v0.18.1/go.mod h1:If8NiehXROCFU65PGeDTrrZCNA5gJXvbcV
 github.com/solo-io/protoc-gen-ext v0.0.7/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz4Cbw6tBcmaNsEk=
 github.com/solo-io/protoc-gen-ext v0.0.9 h1:dU9C8nSLNkjqLXd5QGJ2dvBcrNUvNUP92qlxMfe3t7A=
 github.com/solo-io/protoc-gen-ext v0.0.9/go.mod h1:zZIFs9Ch3EU3uQgL2ZwCHlUGAtwiz4Cbw6tBcmaNsEk=
+github.com/solo-io/service-mesh-hub v0.9.1 h1:QGSClcSwx+bK2VPwDZGEJTCvlhhMuPagqVnkkju6Meg=
+github.com/solo-io/service-mesh-hub v0.9.1/go.mod h1:Ro7jnf6rEcKwp2L5guTu165bvQwmv+mLIt9eznEAu4M=
 github.com/solo-io/skv2 v0.12.0/go.mod h1:L9hUWAtZ9brCtRCM/bBBJTKy3kKuCn/tuap7VAypwzA=
+github.com/solo-io/skv2 v0.13.0/go.mod h1:a5lWPMUEQl2+OIalLgEXmhIPGqhTAHLHlCt4Wv/DUHc=
 github.com/solo-io/skv2 v0.13.3 h1:1knKWhsyNQhL8TmfHvjdttfytjX2LigNTWjg3ZZwW4I=
 github.com/solo-io/skv2 v0.13.3/go.mod h1:jtEAO2hGgEfe64C2wQPI0PAKsXGvG2M5HbUXlOx+WzM=
 github.com/solo-io/solo-kit v0.14.0 h1:5V5B93Vkt46KEQsco8S4GA3/U8ir2rpsPFJ2Dmk9Iwk=

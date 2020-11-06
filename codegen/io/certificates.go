@@ -1,7 +1,7 @@
 package io
 
 import (
-	"github.com/solo-io/service-mesh-hub/codegen/constants"
+	"github.com/solo-io/gloo-mesh/codegen/constants"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )

@@ -1,14 +1,14 @@
 package groups
 
 import (
-	"github.com/solo-io/service-mesh-hub/codegen/constants"
+	"github.com/solo-io/gloo-mesh/codegen/constants"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/contrib"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var (
-	smhModule       = "github.com/solo-io/service-mesh-hub"
+	smhModule       = "github.com/solo-io/gloo-mesh"
 	v1alpha2Version = "v1alpha2"
 	smhApiRoot      = "pkg/api"
 )
