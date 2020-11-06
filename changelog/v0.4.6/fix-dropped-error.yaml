@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Fix error being dropped in mesh-discovery
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/515
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/515

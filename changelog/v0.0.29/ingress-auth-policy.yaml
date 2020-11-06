@@ -1,4 +1,4 @@
 changelog:
 - type: FIX
   description: Create an AuthPolicy to allow all traffic through the ingress when AccessControl is enforced.
-  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/352
+  issueLink:  https://github.com/solo-io/gloo-mesh/issues/352

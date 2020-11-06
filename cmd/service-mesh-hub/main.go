@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/sirupsen/logrus"
+	"github.com/solo-io/gloo-mesh/pkg/common/bootstrap"
+	"github.com/solo-io/gloo-mesh/pkg/common/version"
+	mesh_discovery "github.com/solo-io/gloo-mesh/pkg/mesh-discovery"
+	mesh_networking "github.com/solo-io/gloo-mesh/pkg/mesh-networking"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
-	"github.com/solo-io/service-mesh-hub/pkg/common/version"
-	mesh_discovery "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery"
-	mesh_networking "github.com/solo-io/service-mesh-hub/pkg/mesh-networking"
 	"github.com/spf13/cobra"
 )
 

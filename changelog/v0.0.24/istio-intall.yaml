@@ -1,4 +1,4 @@
 changelog:
 - type: NEW_FEATURE
   description: Install Istio through meshctl
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/112
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/112

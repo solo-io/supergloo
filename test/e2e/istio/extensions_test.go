@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	"github.com/solo-io/service-mesh-hub/test/extensions"
-	"github.com/solo-io/service-mesh-hub/test/utils"
+	"github.com/solo-io/gloo-mesh/pkg/api/settings.gloomesh.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/test/extensions"
+	"github.com/solo-io/gloo-mesh/test/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/onsi/ginkgo"

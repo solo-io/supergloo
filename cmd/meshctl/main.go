@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands"
 )
 
 func main() {

@@ -1,7 +1,7 @@
 package virtualservice
 
 import (
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/types"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/v1alpha2/types"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -42,7 +42,7 @@ func isHttpRouteMatcherMoreSpecific(httpRouteA, httpRouteB *networkingv1alpha3sp
 		return httpRouteA.Match == nil
 	}
 	// each HttpRoute is guaranteed to only have a single HttpMatchRequest, see
-	// https://github.com/solo-io/service-mesh-hub/blob/f05b08c4fec934eb7d492f414808789613f2e7f8/pkg/mesh-networking/translation/istio/meshservice/virtualservice/virtual_service_translator.go#L99
+	// https://github.com/solo-io/gloo-mesh/blob/f05b08c4fec934eb7d492f414808789613f2e7f8/pkg/mesh-networking/translation/istio/meshservice/virtualservice/virtual_service_translator.go#L99
 	a := httpRouteA.GetMatch()[0]
 	b := httpRouteB.GetMatch()[0]
 	if isStringMatchMoreSpecific(a.GetUri(), b.GetUri()) {

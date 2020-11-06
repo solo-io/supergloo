@@ -1,4 +1,4 @@
 changelog:
 - type: NON_USER_FACING
   description: Start work on the traffic policy rewrite
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/585
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/585

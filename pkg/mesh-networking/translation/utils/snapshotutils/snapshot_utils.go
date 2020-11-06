@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/settings.gloomesh.solo.io/v1alpha2"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
 )
 
 // TODO extend skv2 snapshots with singleton object utilities

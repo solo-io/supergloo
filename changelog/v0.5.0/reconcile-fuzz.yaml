@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Add random fuzz to periodic reconcilers to avoid a thundering herd problem
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/705
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/705

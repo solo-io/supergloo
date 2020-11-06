@@ -5,7 +5,7 @@ weight: 10
 description: Understanding how to troubleshoot Service Mesh Hub with tips on logging, FAQ, and understanding how things work
 ---
 
-In this guide we explore how to troubleshoot when things don't behave the way you're expecting. We also try to explain how things work under the covers so you can use your own troubleshooting skills to find why things may not behave as expected. We would love to hear from you if you if you get stuck on the [Solo.io Slack](https://slack.solo.io) or if you figure out how to solve something not covered here, please consider a [Pull Request to the docs](https://github.com/solo-io/service-mesh-hub/tree/master/docs) to add it.
+In this guide we explore how to troubleshoot when things don't behave the way you're expecting. We also try to explain how things work under the covers so you can use your own troubleshooting skills to find why things may not behave as expected. We would love to hear from you if you if you get stuck on the [Solo.io Slack](https://slack.solo.io) or if you figure out how to solve something not covered here, please consider a [Pull Request to the docs](https://github.com/solo-io/gloo-mesh/tree/master/docs) to add it.
 
 ## Helpful debugging tips
 
@@ -13,11 +13,11 @@ So you've created some `TrafficPolicy` rules or just grouped your first `Virtual
 
 One of the first places to always start is `meshctl check`. This command is your friend. Here's what it does:
 
-* Test [connectivity to the Kubernetes cluster](https://github.com/solo-io/service-mesh-hub/blob/master/cli/pkg/tree/check/healthcheck/internal/kube_connectivity_check.go#L20)
-* Checking the [minimum supported Kubernetes minor version](https://github.com/solo-io/service-mesh-hub/blob/master/pkg/version/version.go#L13)
-* Checking that the `install` [namespace exists (default, `service-mesh-hub`)](https://github.com/solo-io/service-mesh-hub/blob/master/cli/pkg/tree/check/healthcheck/internal/install_namespace_existence.go#L23)
-* Verifying the Service Mesh Hub components [are installed and running](https://github.com/solo-io/service-mesh-hub/blob/master/cli/pkg/tree/check/healthcheck/internal/smh_components_health.go#L36)
-* Verify none of the `TrafficTargets` have [any federation errors](https://github.com/solo-io/service-mesh-hub/blob/master/cli/pkg/tree/check/healthcheck/internal/federation_decision_check.go#L43)
+* Test [connectivity to the Kubernetes cluster](https://github.com/solo-io/gloo-mesh/blob/master/cli/pkg/tree/check/healthcheck/internal/kube_connectivity_check.go#L20)
+* Checking the [minimum supported Kubernetes minor version](https://github.com/solo-io/gloo-mesh/blob/master/pkg/version/version.go#L13)
+* Checking that the `install` [namespace exists (default, `service-mesh-hub`)](https://github.com/solo-io/gloo-mesh/blob/master/cli/pkg/tree/check/healthcheck/internal/install_namespace_existence.go#L23)
+* Verifying the Service Mesh Hub components [are installed and running](https://github.com/solo-io/gloo-mesh/blob/master/cli/pkg/tree/check/healthcheck/internal/smh_components_health.go#L36)
+* Verify none of the `TrafficTargets` have [any federation errors](https://github.com/solo-io/gloo-mesh/blob/master/cli/pkg/tree/check/healthcheck/internal/federation_decision_check.go#L43)
 
 The last bullet in the list, checking federation status, is likely the most helpful especially after you've tried to apply a `VirtualMesh`. Often it's best to check the `VirtualMesh` CR `status` field to make sure it doesn't see any issues:
 
@@ -168,7 +168,7 @@ istiod                 ClusterIP      10.8.51.94    <none>           15012/TCP,4
 
 ```
 
-Note, the external-ip. Any `ServiceEntry` created for cross-cluster service discovery will use this external ip. The logic for getting the `ingressgateway` IP can be found in the [federation code base](https://github.com/solo-io/service-mesh-hub/blob/master/pkg/mesh-networking/federation/dns/external_access_point_getter.go#L85) of the `mesh-networking` service.
+Note, the external-ip. Any `ServiceEntry` created for cross-cluster service discovery will use this external ip. The logic for getting the `ingressgateway` IP can be found in the [federation code base](https://github.com/solo-io/gloo-mesh/blob/master/pkg/mesh-networking/federation/dns/external_access_point_getter.go#L85) of the `mesh-networking` service.
 
 ##### Do cross-cluster service entries resolve DNS?
 
@@ -205,4 +205,4 @@ https://discuss.istio.io/t/istio-upgrade-from-1-4-6-1-5-0-throws-istiod-errors-r
 
 If you've run into something else, please reach out the `@ceposta`, `@Joe Kelly`, or `@Harvey Xia` on the [Solo.io Slack](https://slack.solo.io) in the #service-mesh-hub channel
 
-If you see an error like `resource version conflict` please chime in on [https://github.com/solo-io/service-mesh-hub/issues/635](https://github.com/solo-io/service-mesh-hub/issues/635)
+If you see an error like `resource version conflict` please chime in on [https://github.com/solo-io/gloo-mesh/issues/635](https://github.com/solo-io/gloo-mesh/issues/635)

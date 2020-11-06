@@ -1,7 +1,7 @@
 changelog:
   - type: NEW_FEATURE
     description: Add the command `meshctl debug snapshot`.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/992
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/992
   - type: DEPENDENCY_BUMP
     dependencyOwner: solo-io
     dependencyRepo: go-utils

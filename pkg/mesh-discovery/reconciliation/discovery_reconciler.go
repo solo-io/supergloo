@@ -10,14 +10,14 @@ import (
 	"github.com/solo-io/skv2/pkg/verifier"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
+	"github.com/solo-io/gloo-mesh/pkg/common/utils/stats"
 	"github.com/solo-io/skv2/pkg/predicate"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"

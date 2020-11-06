@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"net"
 
-	extensionutils "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
+	extensionutils "github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
 
 	"go.uber.org/atomic"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/extensions"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/output/istio"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/extensions"
 	"google.golang.org/grpc"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/extensions/v1alpha1"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/extensions/v1alpha1"
 )
 
 const ExtensionsServerPort = 2345

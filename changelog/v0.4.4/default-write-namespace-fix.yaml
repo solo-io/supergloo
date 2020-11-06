@@ -1,4 +1,4 @@
 changelog:
   - type: NON_USER_FACING
     description: Replace all hardcoded write namespaces with getter method, in preparation for user configuration story.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/534
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/534

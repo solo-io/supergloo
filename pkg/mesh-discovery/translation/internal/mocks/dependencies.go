@@ -9,10 +9,10 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	input "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
-	mesh "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh"
-	traffictarget "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/traffictarget"
-	workload "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload"
+	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/input"
+	mesh "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh"
+	traffictarget "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/traffictarget"
+	workload "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload"
 )
 
 // MockDependencyFactory is a mock of DependencyFactory interface

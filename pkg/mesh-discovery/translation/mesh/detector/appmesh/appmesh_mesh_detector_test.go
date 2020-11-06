@@ -7,9 +7,9 @@ import (
 	aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	input "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	detector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
+	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2"
+	detector "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -68,7 +68,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 				Name:      fmt.Sprintf("%s-%s-%s", meshName1, "us-east-2", "1234"),
 				Namespace: "service-mesh-hub",
 				Labels: map[string]string{
-					"owner.discovery.smh.solo.io": "service-mesh-hub",
+					"owner.discovery.gloomesh.solo.io": "service-mesh-hub",
 				},
 			},
 			Spec: v1alpha2.MeshSpec{
@@ -133,7 +133,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 				Name:      fmt.Sprintf("%s-%s-%s", meshName1, "us-east-2", "1234"),
 				Namespace: "service-mesh-hub",
 				Labels: map[string]string{
-					"owner.discovery.smh.solo.io": "service-mesh-hub",
+					"owner.discovery.gloomesh.solo.io": "service-mesh-hub",
 				},
 			},
 			Spec: v1alpha2.MeshSpec{
@@ -153,7 +153,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 				Name:      fmt.Sprintf("%s-%s-%s", meshName2, "us-east-2", "1234"),
 				Namespace: "service-mesh-hub",
 				Labels: map[string]string{
-					"owner.discovery.smh.solo.io": "service-mesh-hub",
+					"owner.discovery.gloomesh.solo.io": "service-mesh-hub",
 				},
 			},
 			Spec: v1alpha2.MeshSpec{

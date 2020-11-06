@@ -21,7 +21,7 @@ There are three pre-requisites to following these guides:
 1. Install `kubectl`
     - https://kubernetes.io/docs/tasks/tools/install-kubectl/
 2. Install `meshctl`
-    - https://github.com/solo-io/service-mesh-hub/releases
+    - https://github.com/solo-io/gloo-mesh/releases
 3. Have multiple Kubernetes clusters ready to use, accessible in different `kubeconfig` contexts. If you don't have access to multiple Kubernetes clusters, see the section below, [Using Kind](#using-kind) to use Kubernetes in Docker (Kind) to spin up two clusters in containers.
 
 

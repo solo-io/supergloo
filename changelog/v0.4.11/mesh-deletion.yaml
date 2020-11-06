@@ -1,5 +1,5 @@
 changelog:
 - type: NEW_FEATURE
   description: Clean up Mesh CRs when the deployment backing them is deleted
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/584
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/584
   resolvesIssue: false

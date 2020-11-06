@@ -1,8 +1,8 @@
 changelog:
   - type: NEW_FEATURE
     description: Upon receipt of AWS credentials, SMH should automatically discover EKS clusters associated with that AWS account.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/665
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/665
   - type: NON_USER_FACING
     description: Factor out the cluster registration client from the meshctl cluster register command implementation. Still need to factor out deregistration logic.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/547
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/547
     resolvesIssue: false

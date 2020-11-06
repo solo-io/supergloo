@@ -3,8 +3,8 @@ package istio_multicluster
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/demo/common/cleanup"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/demo/common/initialize"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/demo/common/cleanup"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/demo/common/initialize"
 	"github.com/spf13/cobra"
 )
 

@@ -8,8 +8,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	input "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
-	sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/input"
+	sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2/sets"
 )
 
 // MockTranslator is a mock of Translator interface

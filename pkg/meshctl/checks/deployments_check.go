@@ -7,7 +7,7 @@ import (
 	"github.com/rotisserie/eris"
 	appsv1 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
 	corev1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	apps_v1 "k8s.io/api/apps/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

@@ -3,17 +3,17 @@ package commands
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/debug"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug"
 
 	"github.com/sirupsen/logrus"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/check"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/cluster"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/demo"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/install"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/mesh"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/uninstall"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/version"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/check"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/cluster"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/demo"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/install"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/mesh"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/uninstall"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/version"
 
 	"github.com/spf13/cobra"
 

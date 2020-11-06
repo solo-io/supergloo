@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	extv1 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/common/version"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/dockerutils"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
+	"github.com/solo-io/gloo-mesh/pkg/common/version"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/dockerutils"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	v1 "k8s.io/api/apps/v1"

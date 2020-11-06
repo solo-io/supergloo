@@ -14,14 +14,14 @@ import (
 
 	"k8s.io/client-go/rest"
 
-	"github.com/solo-io/service-mesh-hub/test/kubectl"
+	"github.com/solo-io/gloo-mesh/test/kubectl"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	istionetworkingv1alpha3 "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
 	kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2"
+	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/v1alpha2"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"

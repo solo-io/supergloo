@@ -3,20 +3,20 @@ package mesh_networking
 import (
 	"context"
 
-	certissuerinput "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/issuer/input"
-	certissuerreconciliation "github.com/solo-io/service-mesh-hub/pkg/certificates/issuer/reconciliation"
-	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/appmesh"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/osm"
+	certissuerinput "github.com/solo-io/gloo-mesh/pkg/api/certificates.gloomesh.solo.io/issuer/input"
+	certissuerreconciliation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/reconciliation"
+	"github.com/solo-io/gloo-mesh/pkg/common/bootstrap"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/appmesh"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reconciliation"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reconciliation"
 	"github.com/solo-io/skv2/pkg/multicluster"
 )
 

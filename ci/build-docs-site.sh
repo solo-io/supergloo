@@ -45,7 +45,7 @@ repoDir=$workingDir/ci/service-mesh-hub-temp
 mkdir $docsSiteDir
 echo $firebaseJson > $docsSiteDir/firebase.json
 
-git clone https://github.com/solo-io/service-mesh-hub.git $repoDir
+git clone https://github.com/solo-io/gloo-mesh.git $repoDir
 
 export PATH=$workingDir/_output/.bin:$PATH
 

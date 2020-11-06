@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
     description: Implement interactive meshctl creation of TrafficPolicy and AccessControlPolicy
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/519
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/519

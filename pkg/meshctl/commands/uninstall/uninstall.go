@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/service-mesh-hub/codegen/helm"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
+	"github.com/solo-io/gloo-mesh/codegen/helm"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/smh"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )

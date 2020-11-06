@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
     description: Add display name to mesh groups.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/15
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/15

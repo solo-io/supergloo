@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/output/istio"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 
 	udpa_type_v1 "github.com/cncf/udpa/go/udpa/type/v1"
 	envoy_api_v2 "github.com/envoyproxy/go-control-plane/envoy/api/v2"
@@ -17,17 +17,17 @@ import (
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/protoutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/traffictargetutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/validation/failoverservice"
 	"github.com/solo-io/go-utils/contextutils"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/protoutils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/traffictargetutils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/validation/failoverservice"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
@@ -242,7 +242,7 @@ func (t *translator) translateDestinationRule(
 				Tls: &networkingv1alpha3spec.ClientTLSSettings{
 					// TODO(ilackarms): currently we set all DRs to mTLS
 					// in the future we'll want to make this configurable
-					// https://github.com/solo-io/service-mesh-hub/issues/790
+					// https://github.com/solo-io/gloo-mesh/issues/790
 					Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
 				},
 			},

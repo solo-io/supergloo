@@ -1,4 +1,4 @@
 changelog:
 - type: FIX
   description: Fix panic in mesh-networking when an ACP selector references a nonexistent cluster
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/580
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/580

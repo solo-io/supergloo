@@ -111,7 +111,7 @@ Note that these contexts need not be different; you may install and manage a ser
 
 ### Installing with `meshctl`
 
-`meshctl` is a CLI tool that helps bootstrap Service Mesh Hub, register clusters, describe configured resources, and more. Get the latest `meshctl` from the [releases page on solo-io/service-mesh-hub](https://github.com/solo-io/service-mesh-hub/releases).
+`meshctl` is a CLI tool that helps bootstrap Service Mesh Hub, register clusters, describe configured resources, and more. Get the latest `meshctl` from the [releases page on solo-io/service-mesh-hub](https://github.com/solo-io/gloo-mesh/releases).
 
 You can also quickly install like this:
 

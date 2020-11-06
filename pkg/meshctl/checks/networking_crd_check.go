@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/v1alpha2"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

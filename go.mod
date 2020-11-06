@@ -14,8 +14,6 @@ replace (
 
 	// Required for proper serialization of CRDs
 	github.com/golang/protobuf => github.com/golang/protobuf v1.3.5
-	// TODO REMOVE BEFORE MERGING
-	github.com/solo-io/service-mesh-hub => /Users/harvey/gloo-mesh
 
 	// https://github.com/ory/dockertest/issues/208#issuecomment-686820414
 	golang.org/x/sys => golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6
@@ -63,7 +61,6 @@ require (
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/external-apis v0.1.1
 	github.com/solo-io/go-utils v0.18.1
-	github.com/solo-io/service-mesh-hub v0.0.0-00010101000000-000000000000
 	github.com/solo-io/skv2 v0.13.3
 	github.com/solo-io/solo-kit v0.14.0
 	github.com/spf13/afero v1.3.4

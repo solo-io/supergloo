@@ -11,7 +11,7 @@ jobs:
       image: ubuntu-1604:201903-01
       # need to upgrade plan before using large executor
       # resource_class: large
-    working_directory: ~/go/src/github.com/solo-io/service-mesh-hub
+    working_directory: ~/go/src/github.com/solo-io/gloo-mesh
     steps:
       - checkout
       - protobuf/install

@@ -3,11 +3,11 @@ package detector
 import (
 	"context"
 
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/workloadutils"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/workloadutils"
 	sets2 "github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -20,7 +20,7 @@ const (
 	// TODO: allow for specifying specific meshes.
 	// Currently this annotation assumes that there is only one mesh per cluster, and therefore the corresponding
 	// TrafficTarget will be associated with that mesh.
-	DiscoveryMeshAnnotation = "discovery.smh.solo.io/enabled"
+	DiscoveryMeshAnnotation = "discovery.gloomesh.solo.io/enabled"
 )
 
 var (

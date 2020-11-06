@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/sirupsen/logrus"
-	"github.com/solo-io/service-mesh-hub/codegen/io"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
+	"github.com/solo-io/gloo-mesh/codegen/io"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/smh"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 	rbacv1 "k8s.io/api/rbac/v1"

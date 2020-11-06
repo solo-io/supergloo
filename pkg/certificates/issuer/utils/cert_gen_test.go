@@ -5,8 +5,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/service-mesh-hub/pkg/certificates/agent/utils"
-	. "github.com/solo-io/service-mesh-hub/pkg/certificates/issuer/utils"
+	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/utils"
+	. "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/utils"
 	"istio.io/istio/security/pkg/pki/util"
 )
 

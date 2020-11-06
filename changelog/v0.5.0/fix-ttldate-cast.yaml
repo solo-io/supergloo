@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Fix casting ttlDays in virtual_mesh_printer.go with strconv.Itoa
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/725
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/725

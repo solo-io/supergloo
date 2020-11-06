@@ -9,7 +9,7 @@ Welcome to Service Mesh Hub, the open-source, multi-cluster, multi-mesh manageme
 
 ## Getting `meshctl`
 
-Service Mesh Hub has a CLI tool called `meshctl` that helps bootstrap Service Mesh Hub, register clusters, describe configured resources, and more. Get the latest `meshctl` from the [releases page on solo-io/service-mesh-hub](https://github.com/solo-io/service-mesh-hub/releases).
+Service Mesh Hub has a CLI tool called `meshctl` that helps bootstrap Service Mesh Hub, register clusters, describe configured resources, and more. Get the latest `meshctl` from the [releases page on solo-io/service-mesh-hub](https://github.com/solo-io/gloo-mesh/releases).
 
 You can also quickly install like this:
 

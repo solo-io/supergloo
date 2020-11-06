@@ -8,16 +8,16 @@ import (
 
 	"github.com/gobuffalo/packr"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/service-mesh-hub/codegen/helm"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	"github.com/solo-io/service-mesh-hub/pkg/common/version"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/registration"
+	"github.com/solo-io/gloo-mesh/codegen/helm"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/common/version"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/smh"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 )
 
 const (
-	// The default version of k8s under Linux is 1.18 https://github.com/solo-io/service-mesh-hub/issues/700
+	// The default version of k8s under Linux is 1.18 https://github.com/solo-io/gloo-mesh/issues/700
 	kindImage      = "kindest/node:v1.17.5"
 	managementPort = "32001"
 	remotePort     = "32000"

@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/919
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/919
     description: Fix for meshctl auth errors when running against GKE clusters.

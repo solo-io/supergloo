@@ -3,7 +3,7 @@ package debug
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/debug/snapshot"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug/snapshot"
 
 	"github.com/spf13/cobra"
 )

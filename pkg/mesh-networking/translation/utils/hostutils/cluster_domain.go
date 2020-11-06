@@ -3,7 +3,7 @@ package hostutils
 import (
 	"fmt"
 
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"

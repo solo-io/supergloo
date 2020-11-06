@@ -1,4 +1,4 @@
 changelog:
   - type: BREAKING_CHANGE
     description: Support varying default access control behavior depending on the mesh.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/721
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/721

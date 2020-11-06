@@ -3,23 +3,23 @@ package internal
 import (
 	"context"
 
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
 
-	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2/sets"
 
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/mtls"
 
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/access"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/failoverservice"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/federation"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/access"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/failoverservice"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/federation"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 )
 

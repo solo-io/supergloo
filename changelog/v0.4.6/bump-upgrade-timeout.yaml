@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Bump the timeout on meshctl upgrade, which was too restrictive before.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/506
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/506

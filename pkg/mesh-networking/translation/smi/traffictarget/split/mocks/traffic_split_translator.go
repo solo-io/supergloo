@@ -10,9 +10,9 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha2"
-	v1alpha20 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
+	v1alpha20 "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2"
+	input "github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/input"
+	reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 )
 
 // MockTranslator is a mock of Translator interface

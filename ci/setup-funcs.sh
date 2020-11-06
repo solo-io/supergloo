@@ -23,7 +23,7 @@ SMH_CHART=${INSTALL_DIR}/helm/_output/charts/service-mesh-hub/service-mesh-hub-$
 
 function create_kind_cluster() {
   # The default version of k8s under Linux is 1.18
-  # https://github.com/solo-io/service-mesh-hub/issues/700
+  # https://github.com/solo-io/gloo-mesh/issues/700
   kindImage=kindest/node:v1.17.5
 
   cluster=$1

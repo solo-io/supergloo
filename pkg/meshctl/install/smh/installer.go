@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/solo-io/service-mesh-hub/pkg/common/version"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/helm"
+	"github.com/solo-io/gloo-mesh/pkg/common/version"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
 )
 
 const (

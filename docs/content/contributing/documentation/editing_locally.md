@@ -40,7 +40,7 @@ With the correct software in place, now it is time to get the docs from the Serv
 
 In this step you will fork the Service Mesh Hub repository into your own account. This step assumes that you already have a GitHub account. More information on forking a repository can be found on [GitHub's website](https://guides.github.com/activities/forking/).
 
-* On the [Service Mesh Hub repository](https://github.com/solo-io/service-mesh-hub ), click on the **Fork** button at the top of the screen
+* On the [Service Mesh Hub repository](https://github.com/solo-io/gloo-mesh ), click on the **Fork** button at the top of the screen
 * Select your account as a destination for the fork
 
 After a few moments the fork will complete and you will be taken to the page with your fork of the Service Mesh Hub repository. This is the repository you will clone locally.

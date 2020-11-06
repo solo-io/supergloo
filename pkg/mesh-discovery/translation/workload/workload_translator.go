@@ -4,10 +4,10 @@ import (
 	"context"
 
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/detector"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/types"
 	"github.com/solo-io/go-utils/contextutils"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/types"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
 

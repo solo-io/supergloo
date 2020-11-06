@@ -3,7 +3,7 @@ package smh
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/helm"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
 )
 
 type Uninstaller struct {

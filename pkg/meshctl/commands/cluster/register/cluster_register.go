@@ -3,8 +3,8 @@ package register
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/registration"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
