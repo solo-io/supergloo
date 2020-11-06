@@ -1,6 +1,6 @@
 syntax = "proto3";
-package networking.gloomesh.solo.io;
-option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/v1alpha2";
+package networking.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2";
 
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
@@ -379,7 +379,7 @@ message TrafficPolicySpec {
 
     // Express an optional HttpMethod by wrapping it in a nillable message.
     message HttpMethod {
-        networking.gloomesh.solo.io.HttpMethodValue method = 1;
+        networking.mesh.gloo.solo.io.HttpMethodValue method = 1;
     }
 
     /*

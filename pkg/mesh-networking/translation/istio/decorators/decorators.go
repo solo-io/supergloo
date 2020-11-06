@@ -1,8 +1,8 @@
 package decorators
 
 import (
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/input"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )

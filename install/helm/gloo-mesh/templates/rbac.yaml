@@ -29,7 +29,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - discovery.gloomesh.solo.io
+  - discovery.mesh.gloo.solo.io
   resources:
   - meshes
   - workloads
@@ -89,7 +89,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - discovery.gloomesh.solo.io
+  - discovery.mesh.gloo.solo.io
   resources:
   - meshes
   - workloads
@@ -107,7 +107,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - networking.gloomesh.solo.io
+  - networking.mesh.gloo.solo.io
   resources:
   - trafficpolicies
   - accesspolicies
@@ -118,7 +118,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - settings.gloomesh.solo.io
+  - settings.mesh.gloo.solo.io
   resources:
   - settings
   verbs:
@@ -133,7 +133,7 @@ rules:
   - get
   - update
 - apiGroups:
-  - discovery.gloomesh.solo.io
+  - discovery.mesh.gloo.solo.io
   resources:
   - meshes/status
   - workloads/status
@@ -149,7 +149,7 @@ rules:
   - get
   - update
 - apiGroups:
-  - networking.gloomesh.solo.io
+  - networking.mesh.gloo.solo.io
   resources:
   - trafficpolicies/status
   - accesspolicies/status
@@ -159,7 +159,7 @@ rules:
   - get
   - update
 - apiGroups:
-  - settings.gloomesh.solo.io
+  - settings.mesh.gloo.solo.io
   resources:
   - settings/status
   verbs:
@@ -172,7 +172,7 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - certificates.gloomesh.solo.io
+  - certificates.mesh.gloo.solo.io
   resources:
   - issuedcertificates
   - podbouncedirectives
@@ -213,7 +213,7 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - certificates.gloomesh.solo.io
+  - certificates.mesh.gloo.solo.io
   resources:
   - issuedcertificates
   - certificaterequests
@@ -222,7 +222,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - certificates.gloomesh.solo.io
+  - certificates.mesh.gloo.solo.io
   resources:
   - issuedcertificates/status
   - certificaterequests/status

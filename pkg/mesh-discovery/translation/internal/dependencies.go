@@ -6,7 +6,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector/appmesh"
 	appmeshsidecar "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/detector/appmesh"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh"
 	meshdetector "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector/istio"

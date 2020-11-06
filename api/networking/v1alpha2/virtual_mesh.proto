@@ -1,6 +1,6 @@
 syntax = "proto3";
-package networking.gloomesh.solo.io;
-option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/v1alpha2";
+package networking.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2";
 
 import "skv2/api/core/v1/core.proto";
 import "gloo-mesh/api/networking/v1alpha2/validation_state.proto";

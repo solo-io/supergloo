@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/output/smi"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/smi"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm/internal"
 	"github.com/solo-io/go-utils/contextutils"

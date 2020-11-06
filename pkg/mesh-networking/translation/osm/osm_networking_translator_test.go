@@ -5,9 +5,9 @@ import (
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/input"
-	mock_output "github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/output/smi/mocks"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	mock_output "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/smi/mocks"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm/internal/mocks"
 	mock_mesh "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm/mesh/mocks"

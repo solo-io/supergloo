@@ -3,7 +3,7 @@ package istio_test
 import (
 	"context"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/gloo-mesh/test/e2e"
 	"github.com/solo-io/gloo-mesh/test/utils"

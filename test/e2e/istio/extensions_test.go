@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/settings.gloomesh.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/test/extensions"
 	"github.com/solo-io/gloo-mesh/test/utils"

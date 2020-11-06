@@ -83,13 +83,13 @@ var (
 	topLevelComponents = []topLevelComponent{
 		// discovery component
 		{
-			generatedCodeRoot: "pkg/api/discovery.gloomesh.solo.io",
+			generatedCodeRoot: "pkg/api/discovery.mesh.gloo.solo.io",
 			inputResources:    io.DiscoveryInputTypes,
 			outputResources:   []io.OutputSnapshot{io.DiscoveryOutputTypes},
 		},
 		// networking snapshot
 		{
-			generatedCodeRoot: "pkg/api/networking.gloomesh.solo.io",
+			generatedCodeRoot: "pkg/api/networking.mesh.gloo.solo.io",
 			inputResources:    io.NetworkingInputTypes,
 			outputResources: []io.OutputSnapshot{
 				io.IstioNetworkingOutputTypes,
@@ -100,12 +100,12 @@ var (
 		},
 		// certificate issuer component
 		{
-			generatedCodeRoot: "pkg/api/certificates.gloomesh.solo.io/issuer",
+			generatedCodeRoot: "pkg/api/certificates.mesh.gloo.solo.io/issuer",
 			inputResources:    io.CertificateIssuerInputTypes,
 		},
 		// certificate agent component
 		{
-			generatedCodeRoot: "pkg/api/certificates.gloomesh.solo.io/agent",
+			generatedCodeRoot: "pkg/api/certificates.mesh.gloo.solo.io/agent",
 			inputResources:    io.CertificateAgentInputTypes,
 			outputResources:   []io.OutputSnapshot{io.CertificateAgentOutputTypes},
 		},

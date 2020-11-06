@@ -3,8 +3,8 @@ package detector
 import (
 	"context"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/workloadutils"
 	"github.com/solo-io/go-utils/contextutils"
@@ -20,7 +20,7 @@ const (
 	// TODO: allow for specifying specific meshes.
 	// Currently this annotation assumes that there is only one mesh per cluster, and therefore the corresponding
 	// TrafficTarget will be associated with that mesh.
-	DiscoveryMeshAnnotation = "discovery.gloomesh.solo.io/enabled"
+	DiscoveryMeshAnnotation = "discovery.mesh.gloo.solo.io/enabled"
 )
 
 var (

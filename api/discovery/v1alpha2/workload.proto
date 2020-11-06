@@ -1,6 +1,6 @@
 syntax = "proto3";
-package discovery.gloomesh.solo.io;
-option go_package = "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2";
+package discovery.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2";
 
 import "skv2/api/core/v1/core.proto";
 

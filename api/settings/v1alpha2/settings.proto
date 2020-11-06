@@ -1,6 +1,6 @@
 syntax = "proto3";
-package settings.gloomesh.solo.io;
-option go_package = "github.com/solo-io/gloo-mesh/pkg/api/settings.gloomesh.solo.io/v1alpha2";
+package settings.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -12,7 +12,7 @@ import "gloo-mesh/api/networking/v1alpha2/traffic_policy.proto";
 message SettingsSpec {
 
     // Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence)
-    .networking.gloomesh.solo.io.TrafficPolicySpec.MTLS mtls = 1;
+    .networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS mtls = 1;
 
     // Configure SMH Networking to communicate with one or more external gRPC NetworkingExtensions servers.
     // Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence).
@@ -40,7 +40,7 @@ message SettingsStatus {
 
     // The state of the overall resource.
     // It will only show accepted if no processing errors encountered.
-    .networking.gloomesh.solo.io.ApprovalState state = 2;
+    .networking.mesh.gloo.solo.io.ApprovalState state = 2;
 
     // Any errors encountered while processing Settings object.
     repeated string errors = 3;

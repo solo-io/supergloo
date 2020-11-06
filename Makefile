@@ -219,9 +219,9 @@ chart-gen: clear-vendor-any
 	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go -chart
 
 .PHONY: manifest-gen
-manifest-gen: install/service-mesh-hub-default.yaml
-install/service-mesh-hub-default.yaml: chart-gen
-	helm template --include-crds --namespace service-mesh-hub install/helm/service-mesh-hub > $@
+manifest-gen: install/gloo-mesh-default.yaml
+install/gloo-mesh-default.yaml: chart-gen
+	helm template --include-crds --namespace service-mesh-hub install/helm/gloo-mesh > $@
 
 #----------------------------------------------------------------------------------
 # Test
@@ -260,7 +260,7 @@ endif
 
 .PHONY: clean
 clean: clean-helm
-	rm -f install/service-mesh-hub-default.yaml
+	rm -f install/gloo-mesh-default.yaml
 	rm -rf  _output/ vendor_any/
 
 .PHONY: clean-generated-code

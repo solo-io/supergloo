@@ -6,9 +6,9 @@ import (
 
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/output/istio"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/output/local"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	istioextensions "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/extensions"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/internal"

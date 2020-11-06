@@ -107,7 +107,7 @@ metadata:
     app: bookstore
   annotations:
     # annotation for traffic target discovery
-    "discovery.gloomesh.solo.io/enabled": "true"
+    "discovery.mesh.gloo.solo.io/enabled": "true"
 spec:
   ports:
   - port: 80

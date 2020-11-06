@@ -8,8 +8,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2"
-	sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2/sets"
+	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -37,7 +37,7 @@ func (m *MockSidecarDetector) EXPECT() *MockSidecarDetectorMockRecorder {
 }
 
 // DetectMeshSidecar mocks base method
-func (m *MockSidecarDetector) DetectMeshSidecar(pod *v1.Pod, meshes sets.MeshSet) *v1alpha2.Mesh {
+func (m *MockSidecarDetector) DetectMeshSidecar(pod *v1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DetectMeshSidecar", pod, meshes)
 	ret0, _ := ret[0].(*v1alpha2.Mesh)

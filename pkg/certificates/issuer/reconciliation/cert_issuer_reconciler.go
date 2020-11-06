@@ -6,9 +6,9 @@ import (
 
 	"github.com/rotisserie/eris"
 	corev1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
-	"github.com/solo-io/gloo-mesh/pkg/api/certificates.gloomesh.solo.io/issuer/input"
-	"github.com/solo-io/gloo-mesh/pkg/api/certificates.gloomesh.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.gloomesh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/issuer/utils"
 	"github.com/solo-io/go-utils/contextutils"

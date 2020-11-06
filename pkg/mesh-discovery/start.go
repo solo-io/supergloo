@@ -3,7 +3,7 @@ package mesh_discovery
 import (
 	"context"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/common/bootstrap"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/reconciliation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation"

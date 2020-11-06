@@ -1,7 +1,7 @@
 package virtualservice
 
 import (
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/v1alpha2/types"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/types"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 

@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package extensions.networking.gloomesh.solo.io;
+package extensions.networking.mesh.gloo.solo.io;
 
-option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/extensions/v1alpha1";
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1";
 
 import "gloo-mesh/api/discovery/v1alpha2/mesh.proto";
 import "gloo-mesh/api/discovery/v1alpha2/traffic_target.proto";
@@ -70,9 +70,9 @@ message TrafficTargetObject {
     // metadata of the object
     ObjectMeta metadata = 1;
     // the spec of the object
-    .discovery.gloomesh.solo.io.TrafficTargetSpec spec = 2;
+    .discovery.mesh.gloo.solo.io.TrafficTargetSpec spec = 2;
     // the status of the object
-    .discovery.gloomesh.solo.io.TrafficTargetStatus status = 3;
+    .discovery.mesh.gloo.solo.io.TrafficTargetStatus status = 3;
 }
 
 // a proto-serializable representation of a Workload object
@@ -80,9 +80,9 @@ message WorkloadObject {
     // metadata of the object
     ObjectMeta metadata = 1;
     // the spec of the object
-    .discovery.gloomesh.solo.io.WorkloadSpec spec = 2;
+    .discovery.mesh.gloo.solo.io.WorkloadSpec spec = 2;
     // the status of the object
-    .discovery.gloomesh.solo.io.WorkloadStatus status = 3;
+    .discovery.mesh.gloo.solo.io.WorkloadStatus status = 3;
 }
 
 // a proto-serializable representation of a Mesh object
@@ -90,9 +90,9 @@ message MeshObject {
     // metadata of the object
     ObjectMeta metadata = 1;
     // the spec of the object
-    .discovery.gloomesh.solo.io.MeshSpec spec = 2;
+    .discovery.mesh.gloo.solo.io.MeshSpec spec = 2;
     // the status of the object
-    .discovery.gloomesh.solo.io.MeshStatus status = 3;
+    .discovery.mesh.gloo.solo.io.MeshStatus status = 3;
 }
 
 // a generated object can be of any output type supported by SMH.

@@ -14,7 +14,7 @@ discovery:
     pullPolicy: IfNotPresent
     registry: soloio
     repository: gloo-mesh
-    tag: 0.9.1-14-ga067b144-dirty
+    tag: 0.9.1-16-ge07b4580-dirty
   resources:
     requests:
       cpu: 125m
@@ -31,7 +31,7 @@ networking:
     pullPolicy: IfNotPresent
     registry: soloio
     repository: gloo-mesh
-    tag: 0.9.1-14-ga067b144-dirty
+    tag: 0.9.1-16-ge07b4580-dirty
   resources:
     requests:
       cpu: 125m

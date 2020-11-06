@@ -5,7 +5,7 @@ import (
 
 	. "github.com/onsi/gomega"
 
-	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/v1alpha2"
+	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

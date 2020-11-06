@@ -3,7 +3,7 @@ package agent
 import (
 	"context"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/certificates.gloomesh.solo.io/agent/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
 
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/reconciliation"
 	"github.com/solo-io/gloo-mesh/pkg/common/bootstrap"

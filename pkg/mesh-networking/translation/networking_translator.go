@@ -7,11 +7,11 @@ import (
 
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/appmesh"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/input"
-	appmeshoutput "github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/output/appmesh"
-	istiooutput "github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/output/istio"
-	localoutput "github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/output/local"
-	smioutput "github.com/solo-io/gloo-mesh/pkg/api/networking.gloomesh.solo.io/output/smi"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	appmeshoutput "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/appmesh"
+	istiooutput "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
+	localoutput "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
+	smioutput "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/smi"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm"

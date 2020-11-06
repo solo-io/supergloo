@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.gloomesh.solo.io/v1alpha2"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/internal/flags"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/printing"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
