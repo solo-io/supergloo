@@ -1,6 +1,6 @@
 # Istio E2e Tests
 
-The Istio End-to-End tests provide the most robust single test suite in the Service Mesh Hub. 
+The Istio End-to-End tests provide the most robust single test suite in the Gloo Mesh. 
 
 These tests use `kind` and the `ci/setup-kind.sh` script to run tests against two KinD clusters which are configured 
 with a VirtualMesh for federation between two Istio meshes.
