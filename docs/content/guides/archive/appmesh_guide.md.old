@@ -55,8 +55,8 @@ Once this secret is created, the logs for `mesh-networking` should show a log en
 
 First confirm that your Appmesh instance exists by running `aws appmesh describe-mesh --mesh-name <mesh-name>`. Copy the ARN returned in the response, which you'll need in the steps below.
 
-Upon installation of Gloo Mesh v0.4.12+, you should see a `settings.core.smh.solo.io` CRD instance with the name
-`settings` in the SMH write namespace (by default this is `gloo-mesh`), populated with
+Upon installation of Gloo Mesh v0.4.12+, you should see a `settings.core.mesh.gloo.solo.io` CRD instance with the name
+`settings` in the Gloo Mesh write namespace (by default this is `gloo-mesh`), populated with
 
 ```yaml
 spec:
@@ -68,7 +68,7 @@ By default discovery for AWS resources is disabled. To enable discovery for your
 making the relevant substitutions (note for simplicity we disable EKS discovery, see the guides section for a tutorial on EKS discovery):
 
 ```yaml
-apiVersion: core.smh.solo.io/v1alpha1
+apiVersion: core.mesh.gloo.solo.io/v1alpha1
 kind: Settings
 metadata:
   namespace: gloo-mesh
@@ -84,16 +84,16 @@ spec:
           disabled: true
 ```
 
-This configuration instructs SMH to discover the Appmesh instance with the specified `<mesh-instance-arn>`.
+This configuration instructs Gloo Mesh to discover the Appmesh instance with the specified `<mesh-instance-arn>`.
 
-Once the settings object is updated, you should see that SMH has discovered the mesh by running `kubectl -n <smh-write-namespace> get mesh`.
+Once the settings object is updated, you should see that Gloo Mesh has discovered the mesh by running `kubectl -n <gloomesh-write-namespace> get mesh`.
 The name of the Mesh takes the form `appmesh-<mesh-name>-<aws-region>-<aws-account-id>`.
 
-The [DiscoverySelector](https://docs.solo.io/gloo-mesh/latest/reference/api/settings/#core.smh.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher) API
+The [DiscoverySelector](https://docs.solo.io/gloo-mesh/latest/reference/api/settings/#core.mesh.gloo.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher) API
 allows for matching by region and tags. For instance, to discover all Appmesh meshes in `us-east-2`, apply the following Settings config:
 
 ```yaml
-apiVersion: core.smh.solo.io/v1alpha1
+apiVersion: core.mesh.gloo.solo.io/v1alpha1
 kind: Settings
 metadata:
   namespace: gloo-mesh

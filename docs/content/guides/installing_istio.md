@@ -168,7 +168,7 @@ EOF
 
 With Gloo Mesh and Istio installed into the `mgmt-cluster`, and Istio installed into `remote-cluster`, we have an architecture that looks like this:
 
-![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/smh-2clusters.png" %}})
+![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/gloomesh-2clusters.png" %}})
 
 When the Istio Operator has finished the installation (can take up to 90 seconds),
 you should see the Istio control plane pods running successfully:

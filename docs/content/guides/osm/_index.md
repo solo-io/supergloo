@@ -122,7 +122,7 @@ In order to configure OSM to allow traffic between the various services, and pro
 
 ```shell script
 kubectl apply -f - <<EOF
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: AccessPolicy
 metadata:
   name: my-policy
@@ -146,7 +146,7 @@ spec:
 
 ---
 
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
   name: my-policy

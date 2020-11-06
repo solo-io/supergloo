@@ -28,7 +28,7 @@ The services composing a FailoverService must be configured with outlier detecti
 
 {{< highlight yaml "hl_lines=16-19" >}}
 kubectl apply -f - << EOF
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
   namespace: gloo-mesh
@@ -76,7 +76,7 @@ Now we will create the FailoverService for the `reviews` service, composed of th
  
 ```yaml
 kubectl apply -f - << EOF
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: FailoverService
 metadata:
   name: reviews-failover
@@ -134,7 +134,7 @@ Apply the following TrafficPolicy:
 
 ```yaml
 kubectl apply -f - << EOF
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
   name: reviews-shift-failover

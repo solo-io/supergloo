@@ -115,7 +115,7 @@ func generateProtoDocs(protoDir, templateFile, destDir, indexContents string) er
 	docsTemplate, err := collectDescriptors(protoDir, tmpDir,
 		func(file *model.DescriptorWithPath) bool {
 			// we only want docs for our protos
-			return !strings.HasSuffix(file.GetPackage(), "smh.solo.io")
+			return !strings.HasSuffix(file.GetPackage(), "mesh.gloo.solo.io")
 		})
 	if err != nil {
 		return err

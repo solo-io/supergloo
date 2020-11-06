@@ -25,7 +25,7 @@ We will now perform a *multi-cluster traffic split*, splitting traffic from the 
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
   namespace: gloo-mesh
@@ -61,7 +61,7 @@ spec:
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
   namespace: gloo-mesh

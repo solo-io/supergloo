@@ -7,7 +7,7 @@ weight: 20
 
 Gloo Mesh is a management plane that simplifies operations and workflows of service mesh installations across multiple clusters and deployment footprints. With Gloo Mesh, you can install, discover, and operate a service-mesh deployment across your enterprise, deployed on premises, or in the cloud, even across heterogeneous service-mesh implementations.
 
-![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/smh-3clusters.png" %}})
+![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/gloomesh-3clusters.png" %}})
 
 ## Why Gloo Mesh
 
@@ -30,7 +30,7 @@ Managing a service mesh deployment that is consistent and secure across multiple
 
 Gloo Mesh consists of a set of components that run on a single cluster, often referred to as your *management plane cluster*. The management plane components are stateless and rely exclusively on declarative CRDs.  Each service mesh installation that spans a deployment footprint often has its own control plane. You can think of Gloo Mesh as a management plane for multiple control planes.
 
-![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/concepts-smh-components.png" %}})
+![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/concepts-gloomesh-components.png" %}})
 
 Once a cluster is registered with Gloo Mesh, it can start managing that cluster - discovering workloads, pushing out configurations, unifying the trust model, scraping metrics, and more. 
 
@@ -78,7 +78,7 @@ The first task of discovery is to create an `Input Snapshot` and begin the tranl
 
 Finally, `TrafficTargetTranslator`  looks for services exposing the workloads of a mesh and adds them to the `Output Snapshot` which then writes a [`TrafficTarget`]({{% versioned_link_path fromRoot="/reference/api/mesh_service/" %}}) resource to the management plane cluster. 
 
-![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/concepts-smh-discovery.png" %}})
+![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/concepts-gloomesh-discovery.png" %}})
 
 At this point, the management plane has a complete view of the meshes, workloads, and traffic targets across your multi-cluster, multi-mesh environment. 
 
@@ -86,7 +86,7 @@ At this point, the management plane has a complete view of the meshes, workloads
 
 While the `mesh-discovery` components discover the resources in registered clusters, the `mesh-networking` components make decisions about federating the various clusters and meshes. The `VirtualMesh` concept helps to drive the federation behavior. When you create a `VirtualMesh` resource, you define what federation and trust model to use. `Mesh-Networking` performs translation at the mesh level for a group of meshes with the`VirtulMeshTranslator` and at the service level with `TrafficTargetTranslator` which will then decide which services federate to which workloads and handle building the correct service-discovery mechanisms. For example, with Istio, Gloo Mesh will create the appropriate `ServiceEntry` and `DestinationRule` resources to enable cross-cluster/mesh communication.
 
-![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/concepts-smh-networking.png" %}})
+![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/concepts-gloomesh-networking.png" %}})
 
 The `FederationTranslator`, `FailoverTranslator`, and `mTLSTranslator` are grouped within the `VirtulMeshTranslator` to handle mesh level configuration and networking.
  * `FederationTranslator` handles global DNS resolution and routing for services in remote clusters for each federated traffic target.

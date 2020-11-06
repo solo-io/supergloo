@@ -97,7 +97,7 @@ You should notice that the root certificates that signed the workload certificat
 Gloo Mesh uses the [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}) Custom Resource to configure a Virtual Mesh, which is a logical grouping of one or multiple service meshes for the purposes of federation according to some parameters. Let's take a look at a VirtualMesh configuration that can help unify our two service meshes and establish a *shared trust* model for identity:
 
 {{< highlight yaml "hl_lines=8-15 17-21" >}}
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: VirtualMesh
 metadata:
   name: virtual-mesh
@@ -203,7 +203,7 @@ Then Gloo Mesh will use a Certificate Request (CR) agent on each of the affected
 
  Gloo Mesh will sign the certificate with the Root CA specified in the VirtualMesh. At that point, we will want the mesh (Istio in this case) to pick up the new intermediate CA and start using that for its workloads.
 
-![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/smh-csr.png" %}})
+![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/gloomesh-csr.png" %}})
 
 To verify, let's check the `IssuedCertificates` CR in `remote-cluster-context`:
 
@@ -227,14 +227,14 @@ Lastly, let's verify the correct `cacerts` was created in the `istio-system` nam
 kubectl --context $MGMT_CONTEXT get secret -n istio-system cacerts 
 
 NAME      TYPE                                          DATA   AGE
-cacerts   certificates.smh.solo.io/issued_certificate   5      20s
+cacerts   certificates.mesh.gloo.solo.io/issued_certificate   5      20s
 ```
 
 ```shell
 kubectl --context $REMOTE_CONTEXT get secret -n istio-system cacerts 
 
 NAME      TYPE                                          DATA   AGE
-cacerts   certificates.smh.solo.io/issued_certificate   5      5m3s
+cacerts   certificates.mesh.gloo.solo.io/issued_certificate   5      5m3s
 ```
 
 In the previous section, we bounced the Istio control plane to pick up these intermediate certs. Again, this is being [improved in future versions of Istio](https://github.com/istio/istio/issues/22993). 

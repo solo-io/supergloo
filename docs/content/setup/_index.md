@@ -13,11 +13,11 @@ In this guide we will accomplish two tasks:
 
 We use a Kubernetes cluster to host the management plane (Gloo Mesh) while each service mesh can run on its own independent cluster. If you don't have access to multiple clusters, see the [Getting Started Guide]({{% versioned_link_path fromRoot="/getting_started/" %}}) to get started with Kubernetes in Docker. 
 
-![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/smh-3clusters.png" %}})
+![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/gloomesh-3clusters.png" %}})
 
 You can install Gloo Mesh onto its own cluster and register remote clusters, or you can co-locate Gloo Mesh onto a cluster with a service mesh. The former (its own cluster) is the preferred deployment pattern, but for getting started, exploring, or to save resources, you can use the co-located deployment approach.
 
-![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/smh-2clusters.png" %}})
+![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/gloomesh-2clusters.png" %}})
 
 
 ## Assumptions for setup

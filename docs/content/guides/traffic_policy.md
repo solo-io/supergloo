@@ -121,7 +121,7 @@ Here is the configuration we will apply:
 
 ```shell
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
   namespace: gloo-mesh
@@ -159,7 +159,7 @@ metadata:
   generation: 1
   labels:
     cluster.multicluster.solo.io: mgmt-cluster
-    owner.networking.smh.solo.io: gloo-mesh
+    owner.networking.mesh.gloo.solo.io: gloo-mesh
   name: petstore
   namespace: default
   resourceVersion: "8008"

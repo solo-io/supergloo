@@ -89,18 +89,18 @@ kubectl -n gloo-mesh get mesh istiod-istio-system-remote-cluster -oyaml
 (snipped for brevity)
 
 {{< highlight yaml >}}
-apiVersion: discovery.smh.solo.io/v1alpha2
+apiVersion: discovery.mesh.gloo.solo.io/v1alpha2
 kind: Mesh
 metadata:  
   ... 
   labels:
-    cluster.discovery.smh.solo.io: remote-cluster
+    cluster.discovery.mesh.gloo.solo.io: remote-cluster
     cluster.multicluster.solo.io: ""
-    owner.discovery.smh.solo.io: gloo-mesh
+    owner.discovery.mesh.gloo.solo.io: gloo-mesh
   name: istiod-istio-system-remote-cluster
   namespace: gloo-mesh
   resourceVersion: "2649"
-  selfLink: /apis/discovery.smh.solo.io/v1alpha2/namespaces/gloo-mesh/meshes/istiod-istio-system-remote-cluster
+  selfLink: /apis/discovery.mesh.gloo.solo.io/v1alpha2/namespaces/gloo-mesh/meshes/istiod-istio-system-remote-cluster
   uid: e7dfed16-7f29-40ac-896c-db24a7c05321
 spec:
   agentInfo:

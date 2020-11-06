@@ -47,7 +47,7 @@ In the previous guide, [we created a VirtualMesh resource]({{% versioned_link_pa
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: VirtualMesh
 metadata:
   name: virtual-mesh
@@ -68,7 +68,7 @@ spec:
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: VirtualMesh
 metadata:
   name: virtual-mesh
@@ -95,7 +95,7 @@ If you saved this VirtualMesh CR to a file named `demo-virtual-mesh.yaml`, you c
 ```shell
 kubectl --context $MGMT_CONTEXT apply -f demo-virtual-mesh.yaml
 
-virtualmesh.networking.smh.solo.io/virtual-mesh configured
+virtualmesh.networking.mesh.gloo.solo.io/virtual-mesh configured
 ```
 
 {{% notice note %}}
@@ -121,7 +121,7 @@ In this configuration, we select sources (in this case the `productpage` service
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: AccessPolicy
 metadata:
   namespace: gloo-mesh
@@ -141,7 +141,7 @@ EOF
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: AccessPolicy
 metadata:
   namespace: gloo-mesh
@@ -166,14 +166,14 @@ If you saved this VirtualMesh CR to a file named `demo-product-policy.yaml`, you
 ```shell
 kubectl --context $MGMT_CONTEXT apply -f demo-product-policy.yaml
 
-accesspolicy.networking.smh.solo.io/productpage created
+accesspolicy.networking.mesh.gloo.solo.io/productpage created
 ```
 
 In this next configuration, we enable traffic from `reviews` to `ratings`:
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: AccessPolicy
 metadata:
   namespace: gloo-mesh
@@ -194,7 +194,7 @@ spec:
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context $MGMT_CONTEXT -f - <<EOF
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: AccessPolicy
 metadata:
   namespace: gloo-mesh
@@ -221,7 +221,7 @@ If you have this YAML saved to a file called `reviews-access.yaml`, you can appl
 ```yaml
 kubectl --context $MGMT_CONTEXT apply -f reviews-access.yaml
 
-accesspolicy.networking.smh.solo.io/reviews created
+accesspolicy.networking.mesh.gloo.solo.io/reviews created
 ```
 
 Traffic should be allowed again.

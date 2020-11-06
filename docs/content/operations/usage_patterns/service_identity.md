@@ -97,7 +97,7 @@ In an Access Policy, the flexibility of destination selection means that you can
 Sticking with our Bookstore application example. Let's say that we want to allow traffic from the `bookinfo` namespace to all instances of the `details` service, and the only allowed method should be `GET`. The resulting policy would look like this:
 
 ```yaml
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: AccessPolicy
 metadata:
   namespace: gloo-mesh
@@ -125,7 +125,7 @@ In a Traffic Policy, the flexibility of both the workload and destination select
 Let's say that we wanted to mirror traffic between all instances of the `productpage` workload and `reviews` service for analysis. Assuming that labels have been applied consistently, the Traffic Policy would look like this:
 
 ```yaml
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
   namespace: gloo-mesh

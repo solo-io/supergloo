@@ -16,7 +16,7 @@ One of the first places to always start is `meshctl check`. This command is your
 * Test [connectivity to the Kubernetes cluster](https://github.com/solo-io/gloo-mesh/blob/master/cli/pkg/tree/check/healthcheck/internal/kube_connectivity_check.go#L20)
 * Checking the [minimum supported Kubernetes minor version](https://github.com/solo-io/gloo-mesh/blob/master/pkg/version/version.go#L13)
 * Checking that the `install` [namespace exists (default, `gloo-mesh`)](https://github.com/solo-io/gloo-mesh/blob/master/cli/pkg/tree/check/healthcheck/internal/install_namespace_existence.go#L23)
-* Verifying the Gloo Mesh components [are installed and running](https://github.com/solo-io/gloo-mesh/blob/master/cli/pkg/tree/check/healthcheck/internal/smh_components_health.go#L36)
+* Verifying the Gloo Mesh components [are installed and running](https://github.com/solo-io/gloo-mesh/blob/master/cli/pkg/tree/check/healthcheck/internal/gloomesh_components_health.go#L36)
 * Verify none of the `TrafficTargets` have [any federation errors](https://github.com/solo-io/gloo-mesh/blob/master/cli/pkg/tree/check/healthcheck/internal/federation_decision_check.go#L43)
 
 The last bullet in the list, checking federation status, is likely the most helpful especially after you've tried to apply a `VirtualMesh`. Often it's best to check the `VirtualMesh` CR `status` field to make sure it doesn't see any issues:
@@ -39,7 +39,7 @@ the state of the system.
 Consider the following TrafficPolicy resource:
 
 ```yaml
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
   generation: 1
@@ -95,7 +95,7 @@ Configuration can successfully apply to some traffic targets but not others. Thi
 field.
 
 If a traffic target does not appear in this list, it can mean either that the traffic target was not
-selected properly (see the [proto documentation for ServiceSelector]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.smh.solo.io.ServiceSelector" %}}) for detailed semantics),
+selected properly (see the [proto documentation for ServiceSelector]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.mesh.gloo.solo.io.ServiceSelector" %}}) for detailed semantics),
 or that the traffic target has not been discovered. You can examine discovered traffic targets by using `meshctl describe traffictarget`
 (this command will also show all networking configuration applied to each traffic target).
 

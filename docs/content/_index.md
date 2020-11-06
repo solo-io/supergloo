@@ -18,14 +18,14 @@ debugging tools.
 
 
 <figure>
-    <img src="{{% versioned_link_path fromRoot="/img/smh-diagram.png" %}}"/>
+    <img src="{{% versioned_link_path fromRoot="/img/gloomesh-diagram.png" %}}"/>
     <figcaption style="text-align: center"> Note: diagram reflects Gloo Mesh <b>v0.6.1</b></figcaption>
 </figure>
 
 
 ### Getting to know Gloo Mesh
 
-![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/smh-3clusters.png" %}})
+![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/gloomesh-3clusters.png" %}})
 
 Gloo Mesh can be run in its own cluster (or co-located with an existing mesh) and remotely operates and drives the configuration for specific service-mesh control planes. This allows Gloo Mesh to discover meshes/workloads, establish federated identity, enable global traffic routing and load balancing, access control policy, centralized observability and more. We walk through each of these components in the following videos:
 

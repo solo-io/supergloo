@@ -11,7 +11,7 @@ weight: 120
 
 Gloo Mesh provides EKS cluster discovery and can manage the cluster and any service meshes on that cluster.
 
-In this guide, we will configure SMH to automatically discover and register EKS clusters.
+In this guide, we will configure Gloo Mesh to automatically discover and register EKS clusters.
 
 ## Prerequisites
 
@@ -28,7 +28,7 @@ There are three pre-requisites to following these guides:
 
 {{% notice note %}}
 This step can be skipped if you have an existing EKS cluster you can use for testing (note that as this is still a developing feature,
- some SMH related resources may not be cleaned up).
+ some Gloo Mesh related resources may not be cleaned up).
 {{% /notice %}}
 
 Also note that enabling Appmesh is optional, we include it here for users who are looking to use Appmesh with EKS.
@@ -166,8 +166,8 @@ Once this secret is created, the logs for `mesh-networking` should show a log en
 
 ## Configure EKS discovery
 
-Upon installation of Gloo Mesh v0.4.12+, you should see a `settings.core.smh.solo.io` CRD instance with the name
-`settings` in the SMH write namespace (by default this is `gloo-mesh`), populated with
+Upon installation of Gloo Mesh v0.4.12+, you should see a `settings.core.mesh.gloo.solo.io` CRD instance with the name
+`settings` in the Gloo Mesh write namespace (by default this is `gloo-mesh`), populated with
 
 ```yaml
 spec:
@@ -179,7 +179,7 @@ By default discovery for AWS resources is disabled. To enable discovery for your
 making the relevant substitutions (note for simplicity we disable Appmesh discovery, see the guides section for a tutorial on Appmesh discovery):
 
 ```yaml
-apiVersion: core.smh.solo.io/v1alpha1
+apiVersion: core.mesh.gloo.solo.io/v1alpha1
 kind: Settings
 metadata:
   namespace: gloo-mesh
@@ -195,19 +195,19 @@ spec:
           disabled: true
 ```
 
-This configuration instructs SMH to discover the EKS cluster with the specified `<eks-cluster-arn>`.
+This configuration instructs Gloo Mesh to discover the EKS cluster with the specified `<eks-cluster-arn>`.
 
-Once the settings object is updated, you should see that SMH has discovered the cluster by running `kubectl -n <smh-write-namespace> get kubernetescluster`.
+Once the settings object is updated, you should see that Gloo Mesh has discovered the cluster by running `kubectl -n <gloomesh-write-namespace> get kubernetescluster`.
 The name of the KubernetesCluster takes the form `eks-<eks-cluster-name>-<region>`.
 
 Note that workload (MeshWorkload CRD) and service (MeshService CRD) discovery will not occur unless the workloads correspond
 to an existing discovered Mesh.
 
-The [DiscoverySelector]({{% versioned_link_path fromRoot="/reference/api/settings/#core.smh.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher" %}}) API
+The [DiscoverySelector]({{% versioned_link_path fromRoot="/reference/api/settings/#core.mesh.gloo.solo.io.SettingsSpec.AwsAccount.ResourceSelector.Matcher" %}}) API
 allows for matching by region and tags. For instance, to discover all EKS clusters in `us-east-2`, apply the following Settings config:
 
 ```yaml
-apiVersion: core.smh.solo.io/v1alpha1
+apiVersion: core.mesh.gloo.solo.io/v1alpha1
 kind: Settings
 metadata:
   namespace: gloo-mesh
