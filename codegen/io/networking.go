@@ -16,7 +16,7 @@ import (
 var (
 	NetworkingInputTypes = Snapshot{
 		schema.GroupVersion{
-			Group:   "discovery." + constants.ServiceMeshHubApiGroupSuffix,
+			Group:   "discovery." + constants.GlooMeshApiGroupSuffix,
 			Version: "v1alpha2",
 		}: {
 			"Mesh",
@@ -24,7 +24,7 @@ var (
 			"TrafficTarget",
 		},
 		schema.GroupVersion{
-			Group:   "networking." + constants.ServiceMeshHubApiGroupSuffix,
+			Group:   "networking." + constants.GlooMeshApiGroupSuffix,
 			Version: "v1alpha2",
 		}: {
 			"TrafficPolicy",
@@ -33,7 +33,7 @@ var (
 			"FailoverService",
 		},
 		schema.GroupVersion{
-			Group:   "settings." + constants.ServiceMeshHubApiGroupSuffix,
+			Group:   "settings." + constants.GlooMeshApiGroupSuffix,
 			Version: "v1alpha2",
 		}: {
 			"Settings",
@@ -60,7 +60,7 @@ var (
 				"AuthorizationPolicy",
 			},
 			schema.GroupVersion{
-				Group:   "certificates." + constants.ServiceMeshHubApiGroupSuffix,
+				Group:   "certificates." + constants.GlooMeshApiGroupSuffix,
 				Version: "v1alpha2",
 			}: {
 				"IssuedCertificate",

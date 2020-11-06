@@ -1,5 +1,5 @@
 package constants
 
 const (
-	ServiceMeshHubApiGroupSuffix = "mesh.gloo.solo.io"
+	GlooMeshApiGroupSuffix = "mesh.gloo.solo.io"
 )

@@ -31,7 +31,7 @@ var (
 		Name: "discovery",
 		Snapshot: Snapshot{
 			schema.GroupVersion{
-				Group:   "discovery." + constants.ServiceMeshHubApiGroupSuffix,
+				Group:   "discovery." + constants.GlooMeshApiGroupSuffix,
 				Version: "v1alpha2",
 			}: {
 				"Mesh",

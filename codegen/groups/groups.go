@@ -69,7 +69,7 @@ func MakeGroup(module, apiRoot, groupPrefix, version string, resourcesToGenerate
 
 	return model.Group{
 		GroupVersion: schema.GroupVersion{
-			Group:   groupPrefix + "." + constants.ServiceMeshHubApiGroupSuffix,
+			Group:   groupPrefix + "." + constants.GlooMeshApiGroupSuffix,
 			Version: version,
 		},
 		Module:                  module,
