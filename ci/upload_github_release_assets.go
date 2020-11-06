@@ -7,7 +7,7 @@ import (
 func main() {
 	const buildDir = "_output"
 	const repoOwner = "solo-io"
-	const repoName = "service-mesh-hub"
+	const repoName = "gloo-mesh"
 
 	assets := make([]githubutils.ReleaseAssetSpec, 3)
 	assets[0] = githubutils.ReleaseAssetSpec{

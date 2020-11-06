@@ -7,7 +7,7 @@
 
 set -ex
 
-# Update this array with all versions of SMH to include in the versioned docs website.
+# Update this array with all versions of GlooMesh to include in the versioned docs website.
 declare -a versions=($(cat docs/version.json | jq -rc '."versions" | join(" ")'))
 latestVersion=$(cat docs/version.json | jq -r ."latest")
 
@@ -45,6 +45,7 @@ repoDir=$workingDir/ci/gloo-mesh-temp
 mkdir $docsSiteDir
 echo $firebaseJson > $docsSiteDir/firebase.json
 
+# TODO(rebrand) change to gloo-mesh after renaming repo
 git clone https://github.com/solo-io/service-mesh-hub.git $repoDir
 
 export PATH=$workingDir/_output/.bin:$PATH

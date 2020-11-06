@@ -3,7 +3,7 @@
 #####################################
 #
 # Set up two kind clusters:
-#   1. a management cluster in which Service Mesh Hub is installed.
+#   1. a management cluster in which Gloo Mesh is installed.
 #   2. a remote cluster in which only Istio and the bookinfo app are installed.
 #
 # The management cluster will have the appropriate secret for communicating with the remote cluster
@@ -33,8 +33,8 @@ if [ "$1" == "osm" ]; then
 
   echo successfully set up clusters.
 
-  # install service mesh hub
-  install_smh ${mgmtCluster}
+  # install gloo mesh
+  install_gloomesh ${mgmtCluster}
 
   # sleep to allow crds to register
   sleep 4
@@ -82,8 +82,8 @@ else
 
   echo successfully set up clusters.
 
-  # install service mesh hub
-  install_smh ${mgmtCluster}
+  # install gloo mesh
+  install_gloomesh ${mgmtCluster}
 
   # sleep to allow crds to register
   sleep 4

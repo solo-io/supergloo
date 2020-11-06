@@ -15,9 +15,9 @@ AGENT_IMAGE_TAG=$(cat ${AGENT_VALUES} | grep "tag: " | awk '{print $2}' | sed 's
 AGENT_IMAGE=${AGENT_IMAGE_REGISTRY}/${AGENT_IMAGE_REPOSITORY}:${AGENT_IMAGE_TAG}
 AGENT_CHART=${INSTALL_DIR}/helm/_output/charts/cert-agent/cert-agent-${AGENT_IMAGE_TAG}.tgz
 
-SMH_VALUES=${INSTALL_DIR}/helm/service-mesh-hub/values.yaml
-SMH_IMAGE_TAG=$(cat ${SMH_VALUES} | grep -m 1 "tag: " | awk '{print $2}' | sed 's/"//g')
-SMH_CHART=${INSTALL_DIR}/helm/_output/charts/service-mesh-hub/service-mesh-hub-${SMH_IMAGE_TAG}.tgz
+GLOOMESH_VALUES=${INSTALL_DIR}/helm/gloo-mesh/values.yaml
+GLOOMESH_IMAGE_TAG=$(cat ${GLOOMESH_VALUES} | grep -m 1 "tag: " | awk '{print $2}' | sed 's/"//g')
+GLOOMESH_CHART=${INSTALL_DIR}/helm/_output/charts/gloo-mesh/gloo-mesh-${GLOOMESH_IMAGE_TAG}.tgz
 
 #### FUNCTIONS
 
@@ -399,11 +399,11 @@ function register_cluster() {
     --cert-agent-chart-file "${AGENT_CHART}"
 }
 
-function install_smh() {
+function install_gloomesh() {
   cluster=$1
   apiServerAddress=$(get_api_address ${cluster})
 
-  ${PROJECT_ROOT}/ci/setup-smh.sh ${cluster} ${SMH_CHART} ${AGENT_CHART} ${AGENT_IMAGE} ${apiServerAddress}
+  ${PROJECT_ROOT}/ci/setup-gloomesh.sh ${cluster} ${GLOOMESH_CHART} ${AGENT_CHART} ${AGENT_IMAGE} ${apiServerAddress}
 }
 
 #### START SCRIPT
