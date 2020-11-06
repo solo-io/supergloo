@@ -1,4 +1,4 @@
-{{ if ne "latest" (strings.TrimPrefix "/gloo-mesh/" $.Site.Data.Solo.DocsVersion) }}
+{{ if or (ne "latest" (strings.TrimPrefix "/gloo-mesh/" $.Site.Data.Solo.DocsVersion)) (ne "main" (strings.TrimPrefix "/gloo-mesh/" $.Site.Data.Solo.DocsVersion)) }}
   <div sytle="margin-right:5em;"><mark>You are viewing a previous version of Gloo Mesh. Select latest from the drop-down menu. </mark></div>
 {{ end }}
 <label for="version-selection" id="version-selection-label">Version:</label>

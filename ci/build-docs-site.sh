@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###################################################################################
-# This script generates a versioned docs website for Service Mesh Hub and
+# This script generates a versioned docs website for Gloo Mesh and
 # deploys to Firebase.
 ###################################################################################
 
@@ -15,7 +15,7 @@ latestVersion=$(cat docs/version.json | jq -r ."latest")
 firebaseJson=$(cat <<EOF
 {
   "hosting": {
-    "site": "service-mesh-hub",
+    "site": "gloo-mesh",
     "public": "public",
     "ignore": [
       "firebase.json",
@@ -25,11 +25,11 @@ firebaseJson=$(cat <<EOF
     "rewrites": [
       {
         "source": "/",
-        "destination": "/service-mesh-hub/latest/index.html"
+        "destination": "/gloo-mesh/latest/index.html"
       },
       {
-        "source": "/service-mesh-hub",
-        "destination": "/service-mesh-hub/latest/index.html"
+        "source": "/gloo-mesh",
+        "destination": "/gloo-mesh/latest/index.html"
       }
     ]
   }
@@ -40,12 +40,12 @@ EOF
 # This script assumes that the working directory is the root of the repo.
 workingDir=$(pwd)
 docsSiteDir=$workingDir/ci/docs-site
-repoDir=$workingDir/ci/service-mesh-hub-temp
+repoDir=$workingDir/ci/gloo-mesh-temp
 
 mkdir $docsSiteDir
 echo $firebaseJson > $docsSiteDir/firebase.json
 
-git clone https://github.com/solo-io/gloo-mesh.git $repoDir
+git clone https://github.com/solo-io/service-mesh-hub.git $repoDir
 
 export PATH=$workingDir/_output/.bin:$PATH
 
@@ -57,8 +57,8 @@ function generateHugoVersionsYaml() {
   yamlFile=$repoDir/docs/data/Solo.yaml
   # Truncate file first.
   echo "LatestVersion: $latestVersion" > $yamlFile
-  # /service-mesh-hub prefix is needed because the site is hosted under a domain name with suffix /service-mesh-hub
-  echo "DocsVersion: /service-mesh-hub/$1" >> $yamlFile
+  # /gloo-mesh prefix is needed because the site is hosted under a domain name with suffix /gloo-mesh
+  echo "DocsVersion: /gloo-mesh/$1" >> $yamlFile
   echo "CodeVersion: $1" >> $yamlFile
   echo "DocsVersions:" >> $yamlFile
   for hugoVersion in "${versions[@]}"
@@ -92,8 +92,8 @@ do
   # Generate the versioned static site.
   make site-release
   # Copy over versioned static site to firebase content folder.
-  mkdir -p $docsSiteDir/public/service-mesh-hub/$version
-  cp -a site-latest/. $docsSiteDir/public/service-mesh-hub/$version/
+  mkdir -p $docsSiteDir/public/gloo-mesh/$version
+  cp -a site-latest/. $docsSiteDir/public/gloo-mesh/$version/
   # Discard git changes and vendor_any for subsequent checkouts
   cd $repoDir
   git reset --hard
