@@ -458,7 +458,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "traffic-target",
-				Namespace: "service-mesh-hub",
+				Namespace: "gloo-mesh",
 			},
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{

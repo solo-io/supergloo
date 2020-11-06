@@ -18,7 +18,7 @@ var _ = Describe("CertGen workflow", func() {
 		hosts := []string{"spiffe://custom-domain/ns/istio-system/sa/istio-pilot-service-account"}
 		csr, err := utils.GenerateCertificateSigningRequest(
 			hosts,
-			"service-mesh-hub",
+			"gloo-mesh",
 			privateKey,
 		)
 		Expect(err).NotTo(HaveOccurred())

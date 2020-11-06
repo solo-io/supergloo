@@ -114,7 +114,7 @@ func isStringMatchMoreSpecific(a, b *networkingv1alpha3spec.StringMatch) bool {
 	return false
 }
 
-// SMH API currently only supports exact method matches
+// GlooMesh API currently only supports exact method matches
 func isMethodMoreSpecific(a, b *networkingv1alpha3spec.StringMatch) bool {
 	if a.GetExact() == "" {
 		return false

@@ -32,8 +32,8 @@ spec:
         args:
         - discovery
         - --metrics-port={{ $.Values.discovery.ports.metrics }}
-        - --settings-name={{ $.Values.smhOperatorArgs.settingsRef.name }}
-        - --settings-namespace={{ $.Values.smhOperatorArgs.settingsRef.namespace }}
+        - --settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}
+        - --settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}
         - --verbose
 {{- if $discovery.env }}
         env:
@@ -127,8 +127,8 @@ spec:
         args:
         - networking
         - --metrics-port={{ $.Values.networking.ports.metrics }}
-        - --settings-name={{ $.Values.smhOperatorArgs.settingsRef.name }}
-        - --settings-namespace={{ $.Values.smhOperatorArgs.settingsRef.namespace }}
+        - --settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}
+        - --settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}
         - --verbose
 {{- if $networking.env }}
         env:

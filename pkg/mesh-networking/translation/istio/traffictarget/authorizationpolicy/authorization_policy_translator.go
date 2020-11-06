@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	discovery_smh_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	discovery_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/types"
@@ -106,7 +106,7 @@ func (t *translator) initializeAuthorizationPolicy(
 */
 func (t *translator) translateAccessPolicy(
 	accessPolicy *v1alpha2.AccessPolicySpec,
-	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
+	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
 ) (*securityv1beta1spec.Rule, error) {
 	var fromRules []*securityv1beta1spec.Rule_From
 	for _, sourceSelector := range accessPolicy.SourceSelector {
@@ -144,7 +144,7 @@ func buildToRules(accessPolicy *v1alpha2.AccessPolicySpec) []*securityv1beta1spe
 // Reference: https://istio.io/docs/reference/config/security/authorization-policy/#Source
 func (t *translator) buildSource(
 	sources *v1alpha2.IdentitySelector,
-	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
+	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
 ) (*securityv1beta1spec.Rule_From, error) {
 	if sources.GetKubeIdentityMatcher() == nil && sources.GetKubeServiceAccountRefs() == nil {
 		// allow any source identity
@@ -174,7 +174,7 @@ func (t *translator) buildSource(
 // Parse a list of principals and namespaces from a KubeIdentityMatcher.
 func parseIdentityMatcher(
 	kubeIdentityMatcher *v1alpha2.IdentitySelector_KubeIdentityMatcher,
-	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
+	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
 ) ([]string, []string, error) {
 	var principals []string
 	var namespaces []string
@@ -211,7 +211,7 @@ func parseIdentityMatcher(
 
 func parseServiceAccountRefs(
 	kubeServiceAccountRefs *v1alpha2.IdentitySelector_KubeServiceAccountRefs,
-	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
+	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
 ) ([]string, error) {
 	if kubeServiceAccountRefs == nil {
 		return nil, nil
@@ -238,7 +238,7 @@ func parseServiceAccountRefs(
 */
 func getTrustDomainsForClusters(
 	clusterNames []string,
-	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
+	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
 ) ([]string, error) {
 	var errs *multierror.Error
 	var trustDomains []string
@@ -256,7 +256,7 @@ func getTrustDomainsForClusters(
 // Fetch trust domains by cluster so we can attribute missing trust domains to the problematic clusterName and report back to user.
 func getTrustDomainForCluster(
 	clusterName string,
-	meshes discovery_smh_solo_io_v1alpha2_sets.MeshSet,
+	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
 ) (string, error) {
 	var trustDomain string
 	for _, mesh := range meshes.List(func(mesh *discoveryv1alpha2.Mesh) bool {

@@ -31,7 +31,7 @@ type ClusterDomainRegistry interface {
 	GetServiceLocalFQDN(serviceRef ezkube.ClusterResourceId) string
 
 	// get the remote FQDN of a service in a given cluster.
-	// this is the DNS name used by Service Mesh Hub
+	// this is the DNS name used by Gloo Mesh
 	// to establish cross-cluster connectivity.
 	GetServiceGlobalFQDN(serviceRef ezkube.ClusterResourceId) string
 

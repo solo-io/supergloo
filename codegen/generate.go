@@ -111,14 +111,14 @@ var (
 		},
 	}
 
-	smhManifestRoot       = "install/helm/gloo-mesh"
+	glooMeshManifestRoot  = "install/helm/gloo-mesh"
 	certAgentManifestRoot = "install/helm/cert-agent/"
 
 	vendoredMultiClusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
-	importedMultiClusterCRDs = smhManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
+	importedMultiClusterCRDs = glooMeshManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 
 	allApiGroups = map[string][]model.Group{
-		"":                                 append(groups.SMHGroups, groups.CertAgentGroups...),
+		"":                                 append(groups.GlooMeshGroups, groups.CertAgentGroups...),
 		"github.com/solo-io/external-apis": externalapis.Groups,
 		"github.com/solo-io/skv2":          {skv1alpha1.Group},
 	}
@@ -140,7 +140,7 @@ func run() error {
 	chartOnly := flag.Bool("chart", false, "only generate the helm chart")
 	flag.Parse()
 
-	if err := makeSmhCommand(*chartOnly).Execute(); err != nil {
+	if err := makeGlooMeshCommand(*chartOnly).Execute(); err != nil {
 		return err
 	}
 
@@ -161,12 +161,12 @@ func run() error {
 	return nil
 }
 
-func makeSmhCommand(chartOnly bool) codegen.Command {
+func makeGlooMeshCommand(chartOnly bool) codegen.Command {
 
 	if chartOnly {
 		return codegen.Command{
 			AppName:      appName,
-			ManifestRoot: smhManifestRoot,
+			ManifestRoot: glooMeshManifestRoot,
 			Chart:        helm.Chart,
 		}
 	}
@@ -174,9 +174,9 @@ func makeSmhCommand(chartOnly bool) codegen.Command {
 	return codegen.Command{
 		AppName:           appName,
 		AnyVendorConfig:   anyvendorImports,
-		ManifestRoot:      smhManifestRoot,
+		ManifestRoot:      glooMeshManifestRoot,
 		TopLevelTemplates: topLevelTemplates,
-		Groups:            groups.SMHGroups,
+		Groups:            groups.GlooMeshGroups,
 		RenderProtos:      true,
 		Chart:             helm.Chart,
 	}

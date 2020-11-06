@@ -1,4 +1,4 @@
-package smh
+package gloomesh
 
 import (
 	"context"
@@ -9,12 +9,12 @@ import (
 )
 
 const (
-	ServiceMeshHubChartUriTemplate = "https://storage.googleapis.com/service-mesh-hub/service-mesh-hub/service-mesh-hub-%s.tgz"
-	CertAgentChartUriTemplate      = "https://storage.googleapis.com/service-mesh-hub/cert-agent/cert-agent-%s.tgz"
-	WasmAgentChartUriTemplate      = "https://storage.googleapis.com/service-mesh-hub/wasm-agent/wasm-agent-%s.tgz"
-	serviceMeshHubReleaseName      = "service-mesh-hub"
-	certAgentReleaseName           = "cert-agent"
-	wasmAgentReleaseName           = "wasm-agent"
+	GlooMeshChartUriTemplate  = "https://storage.googleapis.com/gloo-mesh/gloo-mesh/gloo-mesh-%s.tgz"
+	CertAgentChartUriTemplate = "https://storage.googleapis.com/gloo-mesh/cert-agent/cert-agent-%s.tgz"
+	WasmAgentChartUriTemplate = "https://storage.googleapis.com/gloo-mesh/wasm-agent/wasm-agent-%s.tgz"
+	GlooMeshReleaseName       = "gloo-mesh"
+	certAgentReleaseName      = "cert-agent"
+	wasmAgentReleaseName      = "wasm-agent"
 )
 
 type Installer struct {
@@ -28,10 +28,10 @@ type Installer struct {
 	DryRun         bool
 }
 
-func (i Installer) InstallServiceMeshHub(
+func (i Installer) InstallGlooMesh(
 	ctx context.Context,
 ) error {
-	return i.install(ctx, ServiceMeshHubChartUriTemplate, serviceMeshHubReleaseName)
+	return i.install(ctx, GlooMeshChartUriTemplate, GlooMeshReleaseName)
 }
 
 func (i Installer) InstallCertAgent(

@@ -9,11 +9,11 @@ import (
 
 // The schema for our Helm chart values. Struct members must be public for visibility to skv2 Helm generator.
 type ChartValues struct {
-	SmhOperatorArgs SmhOperatorArgs `json:"smhOperatorArgs"`
-	Settings        SettingsValues  `json:"settings"`
+	GlooMeshOperatorArgs GlooMeshOperatorArgs `json:"glooMeshOperatorArgs"`
+	Settings             SettingsValues       `json:"settings"`
 }
 
-type SmhOperatorArgs struct {
+type GlooMeshOperatorArgs struct {
 	SettingsRef SettingsRef `json:"settingsRef"`
 }
 
@@ -34,7 +34,7 @@ func (v SettingsValues) MarshalJSON() ([]byte, error) {
 // The default chart values
 func defaultValues() ChartValues {
 	return ChartValues{
-		SmhOperatorArgs: SmhOperatorArgs{
+		GlooMeshOperatorArgs: GlooMeshOperatorArgs{
 			SettingsRef: SettingsRef{
 				Name:      defaults.DefaultSettingsName,
 				Namespace: defaults.DefaultPodNamespace,

@@ -59,7 +59,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 		mesh := &v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", meshName, "some-cluster"),
-				Namespace: "service-mesh-hub",
+				Namespace: "gloo-mesh",
 			},
 			Spec: v1alpha2.MeshSpec{
 				MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
@@ -94,7 +94,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 		mesh := &v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", meshName, "some-cluster"),
-				Namespace: "service-mesh-hub",
+				Namespace: "gloo-mesh",
 			},
 			Spec: v1alpha2.MeshSpec{
 				MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
@@ -144,7 +144,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 		mesh := &v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", meshName, "some-cluster"),
-				Namespace: "service-mesh-hub",
+				Namespace: "gloo-mesh",
 			},
 			Spec: v1alpha2.MeshSpec{
 				MeshType: &v1alpha2.MeshSpec_Istio_{},
@@ -190,7 +190,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 		mesh := &v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", meshName, "some-cluster"),
-				Namespace: "service-mesh-hub",
+				Namespace: "gloo-mesh",
 			},
 			Spec: v1alpha2.MeshSpec{
 				MeshType: &v1alpha2.MeshSpec_Istio_{},

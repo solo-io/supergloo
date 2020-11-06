@@ -11,7 +11,7 @@ import (
 func Command(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "debug",
-		Short: "Debug Service Mesh Hub resources",
+		Short: "Debug Gloo Mesh resources",
 	}
 
 	cmd.AddCommand(

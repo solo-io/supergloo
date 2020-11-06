@@ -141,7 +141,7 @@ func (t *translator) updateMtlsOutputs(
 			mtlsConfig.AutoRestartPods,
 		)
 	case *v1alpha2.VirtualMeshSpec_MTLSConfig_Limited:
-		return eris.Errorf("limited trust not supported in version %v of service mesh hub", version.Version)
+		return eris.Errorf("limited trust not supported in version %v of Gloo Mesh", version.Version)
 	}
 
 	return nil
@@ -200,7 +200,7 @@ func (t *translator) getOrCreateRootCaSecret(
 	switch caType := rootCA.CaSource.(type) {
 	case *v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Generated:
 		generatedSecretName := virtualMeshRef.Name + "." + virtualMeshRef.Namespace
-		// write the signing secret to the smh namespace
+		// write the signing secret to the gloomesh namespace
 		generatedSecretNamespace := defaults.GetPodNamespace()
 		// use the existing secret if it exists
 		rootCaSecret = &v1.ObjectRef{
@@ -306,7 +306,7 @@ const (
 	defaultRootCertTTLDays     = 365
 	defaultRootCertTTLDuration = defaultRootCertTTLDays * 24 * time.Hour
 	defaultRootCertRsaKeySize  = 4096
-	defaultOrgName             = "service-mesh-hub"
+	defaultOrgName             = "gloo-mesh"
 )
 
 func generateSelfSignedCert(

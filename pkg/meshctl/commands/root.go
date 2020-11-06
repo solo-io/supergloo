@@ -24,7 +24,7 @@ import (
 func RootCommand(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "meshctl [command]",
-		Short: "The Command Line Interface for managing Service Mesh Hub.",
+		Short: "The Command Line Interface for managing Gloo Mesh.",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			logrus.SetLevel(logrus.DebugLevel)
 		},

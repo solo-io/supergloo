@@ -76,7 +76,7 @@ func discoveryOperator() model.Operator {
 	return model.Operator{
 		Name: "discovery",
 		Deployment: model.Deployment{
-			Image: smhImage(),
+			Image: glooMeshImage(),
 			Resources: &v1.ResourceRequirements{
 				Requests: v1.ResourceList{
 					v1.ResourceCPU:    resource.MustParse("125m"),
@@ -97,8 +97,8 @@ func discoveryOperator() model.Operator {
 		Args: []string{
 			"discovery",
 			"--metrics-port={{ $.Values.discovery.ports.metrics }}",
-			"--settings-name={{ $.Values.smhOperatorArgs.settingsRef.name }}",
-			"--settings-namespace={{ $.Values.smhOperatorArgs.settingsRef.namespace }}",
+			"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
+			"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
 			"--verbose",
 		},
 		Env: []v1.EnvVar{
@@ -130,7 +130,7 @@ func networkingOperator() model.Operator {
 	return model.Operator{
 		Name: "networking",
 		Deployment: model.Deployment{
-			Image: smhImage(),
+			Image: glooMeshImage(),
 			Resources: &v1.ResourceRequirements{
 				Requests: v1.ResourceList{
 					v1.ResourceCPU:    resource.MustParse("125m"),
@@ -151,8 +151,8 @@ func networkingOperator() model.Operator {
 		Args: []string{
 			"networking",
 			"--metrics-port={{ $.Values.networking.ports.metrics }}",
-			"--settings-name={{ $.Values.smhOperatorArgs.settingsRef.name }}",
-			"--settings-namespace={{ $.Values.smhOperatorArgs.settingsRef.namespace }}",
+			"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
+			"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
 			"--verbose",
 		},
 		Env: []v1.EnvVar{
@@ -220,8 +220,8 @@ func certAgentOperator() model.Operator {
 	}
 }
 
-// both smh operators share same image
-func smhImage() model.Image {
+// both glooMesh operators share same image
+func glooMeshImage() model.Image {
 	return model.Image{
 		Registry:   registry,
 		Repository: "gloo-mesh",

@@ -18,7 +18,7 @@ func NewNetworkingCrdCheck() Check {
 }
 
 func (c *networkingCrdCheck) GetDescription() string {
-	return "Service Mesh Hub networking configuration resources are in a valid state"
+	return "Gloo Mesh networking configuration resources are in a valid state"
 }
 
 func (c *networkingCrdCheck) Run(ctx context.Context, client client.Client, _ string) *Failure {
@@ -119,5 +119,5 @@ func (c *networkingCrdCheck) checkStatus(kind string, id ezkube.ResourceId, gene
 }
 
 func (c *networkingCrdCheck) buildHint() string {
-	return fmt.Sprintf(`check the status of Service Mesh Hub networking resources with "kubectl get <resource-type> -Aoyaml"`)
+	return fmt.Sprintf(`check the status of Gloo Mesh networking resources with "kubectl get <resource-type> -Aoyaml"`)
 }

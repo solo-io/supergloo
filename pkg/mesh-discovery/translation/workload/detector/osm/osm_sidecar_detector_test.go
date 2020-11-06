@@ -46,7 +46,7 @@ var _ = Describe("OsmSidecarDetector", func() {
 		return v1alpha2sets.NewMeshSet(
 			&v1alpha2.Mesh{
 				ObjectMeta: metav1.ObjectMeta{
-					Namespace: "service-mesh-hub",
+					Namespace: "gloo-mesh",
 					Name:      "osm-controller-osm-system-master-cluster",
 				},
 				Spec: v1alpha2.MeshSpec{

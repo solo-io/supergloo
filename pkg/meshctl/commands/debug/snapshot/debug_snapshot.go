@@ -49,7 +49,7 @@ func AddDebugSnapshotFlags(flags *pflag.FlagSet, opts *DebugSnapshotOpts) {
 	flags.StringVar(&opts.zip, "zip", "", "zip file output")
 	flags.BoolVar(&opts.verbose, "verbose", false, "enables verbose/debug logging")
 	flags.Uint32Var(&opts.metricsBindPort, "port", defaults.MetricsPort, "metrics port")
-	flags.StringVarP(&opts.namespace, "namespace", "n", defaults.GetPodNamespace(), "service-mesh-hub namespace")
+	flags.StringVarP(&opts.namespace, "namespace", "n", defaults.GetPodNamespace(), "gloo-mesh namespace")
 }
 
 func Command(ctx context.Context) *cobra.Command {

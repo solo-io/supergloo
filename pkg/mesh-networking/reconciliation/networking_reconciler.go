@@ -217,7 +217,7 @@ func (r *networkingReconciler) syncSettings(ctx context.Context, in input.Snapsh
 	return nil
 }
 
-// returns true if the passed object is a secret which is of a type that is ignored by SMH
+// returns true if the passed object is a secret which is of a type that is ignored by GlooMesh
 func isIgnoredSecret(obj metav1.Object) bool {
 	secret, ok := obj.(*corev1.Secret)
 	if !ok {

@@ -1,4 +1,4 @@
-package smh
+package gloomesh
 
 import (
 	"context"
@@ -15,10 +15,10 @@ type Uninstaller struct {
 	DryRun      bool
 }
 
-func (i Uninstaller) UninstallServiceMeshHub(
+func (i Uninstaller) UninstallGlooMesh(
 	ctx context.Context,
 ) error {
-	return i.uninstall(ctx, serviceMeshHubReleaseName)
+	return i.uninstall(ctx, GlooMeshReleaseName)
 }
 
 func (i Uninstaller) UninstallCertAgent(

@@ -55,13 +55,13 @@ var (
 	MissingMeshes          = eris.New("Missing required field \"meshes\".")
 	MissingServices        = eris.New("There must be at least one service declared for the FailoverService.")
 	BackingServiceNotFound = func(serviceRef *skv2core.ClusterObjectRef) error {
-		return eris.Errorf("Backing service %s.%s.%s not found in SMH discovery resources.",
+		return eris.Errorf("Backing service %s.%s.%s not found in GlooMesh discovery resources.",
 			serviceRef.GetName(),
 			serviceRef.GetNamespace(),
 			serviceRef.GetClusterName())
 	}
 	MeshNotFound = func(meshRef *skv2core.ObjectRef, serviceRef *skv2core.ClusterObjectRef) error {
-		return eris.Errorf("Mesh %s.%s for service %s.%s.%s not found in SMH discovery resources.",
+		return eris.Errorf("Mesh %s.%s for service %s.%s.%s not found in GlooMesh discovery resources.",
 			meshRef.GetName(),
 			meshRef.GetNamespace(),
 			serviceRef.GetName(),

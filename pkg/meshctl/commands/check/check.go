@@ -20,7 +20,7 @@ var (
 	// TODO implement kube connectivity check
 
 	managementPlane = checks.Category{
-		Name: "Service Mesh Hub",
+		Name: "Gloo Mesh",
 		Checks: []checks.Check{
 			checks.NewDeploymentsCheck(),
 		},
@@ -43,7 +43,7 @@ func Command(ctx context.Context) *cobra.Command {
 	opts := &options{}
 	cmd := &cobra.Command{
 		Use:   "check",
-		Short: "Perform health checks on the Service Mesh Hub system",
+		Short: "Perform health checks on the Gloo Mesh system",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
 			if err != nil {
@@ -66,7 +66,7 @@ type options struct {
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
 	utils.AddManagementKubeconfigFlags(&o.kubeconfig, &o.kubecontext, flags)
-	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace that Service Mesh Hub is installed in")
+	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace that Gloo Mesh is installed in")
 }
 
 func runChecks(ctx context.Context, client client.Client, installNamespace string) error {

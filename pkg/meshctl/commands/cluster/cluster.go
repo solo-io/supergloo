@@ -11,7 +11,7 @@ import (
 func Command(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "cluster",
-		Short: "Interacting with remote Kubernetes clusters registered to Service Mesh Hub",
+		Short: "Interacting with remote Kubernetes clusters registered to Gloo Mesh",
 	}
 
 	cmd.AddCommand(

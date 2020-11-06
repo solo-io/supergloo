@@ -8,12 +8,12 @@ import (
 )
 
 var (
-	smhModule       = "github.com/solo-io/gloo-mesh"
+	glooMeshModule  = "github.com/solo-io/gloo-mesh"
 	v1alpha2Version = "v1alpha2"
-	smhApiRoot      = "pkg/api"
+	glooMeshApiRoot = "pkg/api"
 )
 
-var SMHGroups = []model.Group{
+var GlooMeshGroups = []model.Group{
 	makeGroup("settings", v1alpha2Version, []ResourceToGenerate{
 		{Kind: "Settings"},
 	}),
@@ -44,7 +44,7 @@ type ResourceToGenerate struct {
 }
 
 func makeGroup(groupPrefix, version string, resourcesToGenerate []ResourceToGenerate) model.Group {
-	return MakeGroup(smhModule, smhApiRoot, groupPrefix, version, resourcesToGenerate)
+	return MakeGroup(glooMeshModule, glooMeshApiRoot, groupPrefix, version, resourcesToGenerate)
 }
 
 // exported for use in enterprise repo

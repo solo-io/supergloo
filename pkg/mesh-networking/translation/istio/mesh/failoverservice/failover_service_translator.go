@@ -190,7 +190,7 @@ func (t *translator) translateServiceEntry(
 	if err != nil {
 		return nil, err
 	}
-	// Locate ServiceEntry in default SMH namespace—by default a ServiceEntry is exported to all namespaces.
+	// Locate ServiceEntry in default GlooMesh namespace—by default a ServiceEntry is exported to all namespaces.
 	failoverServicePort := failoverService.Spec.GetPort()
 	serviceEntry := &networkingv1alpha3.ServiceEntry{
 		ObjectMeta: metav1.ObjectMeta{

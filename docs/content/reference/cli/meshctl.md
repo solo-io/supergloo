@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl
 
-The Command Line Interface for managing Service Mesh Hub.
+The Command Line Interface for managing Gloo Mesh.
 
 ### Synopsis
 
-The Command Line Interface for managing Service Mesh Hub.
+The Command Line Interface for managing Gloo Mesh.
 
 ### Options
 
@@ -18,13 +18,13 @@ The Command Line Interface for managing Service Mesh Hub.
 
 ### SEE ALSO
 
-* [meshctl check](../meshctl_check)	 - Perform health checks on the Service Mesh Hub system
-* [meshctl cluster](../meshctl_cluster)	 - Interacting with remote Kubernetes clusters registered to Service Mesh Hub
-* [meshctl debug](../meshctl_debug)	 - Debug Service Mesh Hub resources
-* [meshctl demo](../meshctl_demo)	 - Bootstrap environments for various demos demonstrating Service Mesh Hub functionality.
+* [meshctl check](../meshctl_check)	 - Perform health checks on the Gloo Mesh system
+* [meshctl cluster](../meshctl_cluster)	 - Interacting with remote Kubernetes clusters registered to Gloo Mesh
+* [meshctl debug](../meshctl_debug)	 - Debug Gloo Mesh resources
+* [meshctl demo](../meshctl_demo)	 - Bootstrap environments for various demos demonstrating Gloo Mesh functionality.
 * [meshctl describe](../meshctl_describe)	 - Human readable description of discovered resources and applicable configuration
-* [meshctl install](../meshctl_install)	 - Install Service Mesh Hub
+* [meshctl install](../meshctl_install)	 - Install Gloo Mesh
 * [meshctl mesh](../meshctl_mesh)	 - Operations on a specific mesh
-* [meshctl uninstall](../meshctl_uninstall)	 - Uninstall Service Mesh Hub from the referenced cluster
-* [meshctl version](../meshctl_version)	 - Display the version of meshctl and installed Service Mesh Hub components
+* [meshctl uninstall](../meshctl_uninstall)	 - Uninstall Gloo Mesh from the referenced cluster
+* [meshctl version](../meshctl_version)	 - Display the version of meshctl and installed Gloo Mesh components
 

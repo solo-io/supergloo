@@ -66,9 +66,9 @@ var _ = Describe("AppMesh MeshDetector", func() {
 		expected := v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s-%s", meshName1, "us-east-2", "1234"),
-				Namespace: "service-mesh-hub",
+				Namespace: "gloo-mesh",
 				Labels: map[string]string{
-					"owner.discovery.mesh.gloo.solo.io": "service-mesh-hub",
+					"owner.discovery.mesh.gloo.solo.io": "gloo-mesh",
 				},
 			},
 			Spec: v1alpha2.MeshSpec{
@@ -131,9 +131,9 @@ var _ = Describe("AppMesh MeshDetector", func() {
 		expected1 := v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s-%s", meshName1, "us-east-2", "1234"),
-				Namespace: "service-mesh-hub",
+				Namespace: "gloo-mesh",
 				Labels: map[string]string{
-					"owner.discovery.mesh.gloo.solo.io": "service-mesh-hub",
+					"owner.discovery.mesh.gloo.solo.io": "gloo-mesh",
 				},
 			},
 			Spec: v1alpha2.MeshSpec{
@@ -151,9 +151,9 @@ var _ = Describe("AppMesh MeshDetector", func() {
 		expected2 := v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s-%s", meshName2, "us-east-2", "1234"),
-				Namespace: "service-mesh-hub",
+				Namespace: "gloo-mesh",
 				Labels: map[string]string{
-					"owner.discovery.mesh.gloo.solo.io": "service-mesh-hub",
+					"owner.discovery.mesh.gloo.solo.io": "gloo-mesh",
 				},
 			},
 			Spec: v1alpha2.MeshSpec{

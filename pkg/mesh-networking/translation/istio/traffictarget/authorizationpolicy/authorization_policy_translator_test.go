@@ -129,7 +129,7 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 				Namespace:   trafficTarget.Spec.GetKubeService().Ref.Namespace,
 				ClusterName: trafficTarget.Spec.GetKubeService().Ref.ClusterName,
 				Labels: map[string]string{
-					"owner.networking.mesh.gloo.solo.io": "service-mesh-hub",
+					"owner.networking.mesh.gloo.solo.io": "gloo-mesh",
 				},
 			},
 			Spec: securityv1beta1spec.AuthorizationPolicy{

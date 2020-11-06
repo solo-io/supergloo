@@ -189,7 +189,7 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	}
 
 	if kubeDest.Subset != nil {
-		// Use the canonical SMH unique name for this subset.
+		// Use the canonical GlooMesh unique name for this subset.
 		httpRouteDestination.Destination.Subset = subsetName(kubeDest.Subset)
 	}
 
@@ -216,7 +216,7 @@ func (d *trafficShiftDecorator) buildFailoverServiceDestination(
 	}
 
 	if failoverServiceDest.Subset != nil {
-		// Use the canonical SMH unique name for this subset.
+		// Use the canonical GlooMesh unique name for this subset.
 		httpRouteDestination.Destination.Subset = subsetName(failoverServiceDest.Subset)
 	}
 

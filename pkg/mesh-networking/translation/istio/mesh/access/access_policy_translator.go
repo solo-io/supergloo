@@ -91,7 +91,7 @@ func buildAuthPoliciesForIngressgateways(
 	return authPolicies
 }
 
-// Creates a global AuthorizationPolicy that denies all traffic within the Mesh unless explicitly allowed by SMH AccessControl resources.
+// Creates a global AuthorizationPolicy that denies all traffic within the Mesh unless explicitly allowed by GlooMesh AccessControl resources.
 func buildGlobalAuthPolicy(
 	installationNamespace,
 	clusterName string,

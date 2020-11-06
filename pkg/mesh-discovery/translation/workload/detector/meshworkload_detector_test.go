@@ -98,7 +98,7 @@ var _ = Describe("WorkloadDetector", func() {
 	mesh := &v1alpha2.Mesh{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "mesh",
-			Namespace: "service-mesh-hub",
+			Namespace: "gloo-mesh",
 		},
 	}
 

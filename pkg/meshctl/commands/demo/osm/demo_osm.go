@@ -15,7 +15,7 @@ const (
 func Command(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "osm",
-		Short: "Demo Service Mesh Hub functionality one OSM control plane deployed",
+		Short: "Demo Gloo Mesh functionality one OSM control plane deployed",
 	}
 
 	cmd.AddCommand(

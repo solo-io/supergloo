@@ -19,7 +19,7 @@ func Command(ctx context.Context) *cobra.Command {
 	opts := &options{}
 	cmd := &cobra.Command{
 		Use:   "version",
-		Short: "Display the version of meshctl and installed Service Mesh Hub components",
+		Short: "Display the version of meshctl and installed Gloo Mesh components",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printVersion(ctx, opts)
 		},
@@ -57,7 +57,7 @@ type componentImage struct {
 
 const (
 	appLabelKey         = "app"
-	imageMatchSubstring = "service-mesh-hub"
+	imageMatchSubstring = "gloo-mesh"
 )
 
 func getImage(deployment *v1.Deployment) (*componentImage, error) {

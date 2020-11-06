@@ -24,7 +24,7 @@ func ClusterLabel(cluster string) (string, string) {
 		fmt.Sprintf("%s", cluster)
 }
 
-// identifies the instance of service-mesh-hub discovery that produced the resource.
+// identifies the instance of gloo-mesh discovery that produced the resource.
 // uses pod namespace to identify the instance
 func OwnershipLabels() map[string]string {
 	return map[string]string{
