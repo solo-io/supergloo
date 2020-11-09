@@ -18,7 +18,7 @@ import (
 
 func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "traffictarget",
+		Use:     "traffictarget [search terms]",
 		Short:   "Description of managed traffic targets",
 		Aliases: []string{"traffictargets"},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -26,7 +26,7 @@ func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			description, err := describeTrafficTargets(ctx, c)
+			description, err := describeTrafficTargets(ctx, c, args)
 			if err != nil {
 				return err
 			}
@@ -39,16 +39,18 @@ func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 	return cmd
 }
 
-func describeTrafficTargets(ctx context.Context, c client.Client) (string, error) {
+func describeTrafficTargets(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
 	trafficTargetClient := discoveryv1alpha2.NewTrafficTargetClient(c)
-	trafficTargetList, err := trafficTargetClient.ListTrafficTarget(ctx)
+	trafficTargetList, err := trafficTargetClient.ListTrafficTarget(ctx, )
 	if err != nil {
 		return "", err
 	}
 	var trafficTargetDescriptions []trafficTargetDescription
 	for _, trafficTarget := range trafficTargetList.Items {
 		trafficTarget := trafficTarget // pike
-		trafficTargetDescriptions = append(trafficTargetDescriptions, describeTrafficTarget(&trafficTarget))
+		if matchTrafficTarget(trafficTarget, searchTerms) {
+			trafficTargetDescriptions = append(trafficTargetDescriptions, describeTrafficTarget(&trafficTarget))
+		}
 	}
 
 	buf := new(bytes.Buffer)
@@ -89,6 +91,21 @@ type trafficTargetMetadata struct {
 	Name      string
 	Namespace string
 	Cluster   string
+}
+
+func matchTrafficTarget(trafficTarget discoveryv1alpha2.TrafficTarget, searchTerms []string) bool {
+	// do not apply matching when there are no search strings
+	if len(searchTerms) > 0 {
+		return true
+	}
+
+	for _, s := range searchTerms {
+		if strings.Contains(trafficTarget.Name, s) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func describeTrafficTarget(trafficTarget *discoveryv1alpha2.TrafficTarget) trafficTargetDescription {

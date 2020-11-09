@@ -18,7 +18,7 @@ import (
 
 func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "mesh",
+		Use:     "mesh [search terms]",
 		Short:   "Description of managed meshes",
 		Aliases: []string{"meshes"},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -26,7 +26,7 @@ func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			description, err := describeMeshes(ctx, c)
+			description, err := describeMeshes(ctx, c, args)
 			if err != nil {
 				return err
 			}
@@ -39,7 +39,7 @@ func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 	return cmd
 }
 
-func describeMeshes(ctx context.Context, c client.Client) (string, error) {
+func describeMeshes(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
 	meshClient := discoveryv1alpha2.NewMeshClient(c)
 	meshList, err := meshClient.ListMesh(ctx)
 	if err != nil {
@@ -48,7 +48,9 @@ func describeMeshes(ctx context.Context, c client.Client) (string, error) {
 	var meshDescriptions []meshDescription
 	for _, mesh := range meshList.Items {
 		mesh := mesh // pike
-		meshDescriptions = append(meshDescriptions, describeMesh(&mesh))
+		if matchMesh(mesh, searchTerms) {
+			meshDescriptions = append(meshDescriptions, describeMesh(&mesh))
+		}
 	}
 
 	buf := new(bytes.Buffer)
@@ -97,6 +99,21 @@ type meshMetadata struct {
 	Region       string
 	AwsAccountId string
 	Version      string
+}
+
+func matchMesh(mesh discoveryv1alpha2.Mesh, searchTerms []string) bool {
+	// do not apply matching when there are no search strings
+	if len(searchTerms) > 0 {
+		return true
+	}
+
+	for _, s := range searchTerms {
+		if strings.Contains(mesh.Name, s) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func describeMesh(mesh *discoveryv1alpha2.Mesh) meshDescription {
