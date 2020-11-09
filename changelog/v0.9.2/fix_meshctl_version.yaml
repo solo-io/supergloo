@@ -1,0 +1,4 @@
+changelog:
+  type: FIX
+  issueLink: https://github.com/solo-io/service-mesh-hub/issues/897
+  description: Log all errors that occur during meshctl version to stderr and always show output.
