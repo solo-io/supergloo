@@ -103,7 +103,7 @@ type meshMetadata struct {
 
 func matchMesh(mesh discoveryv1alpha2.Mesh, searchTerms []string) bool {
 	// do not apply matching when there are no search strings
-	if len(searchTerms) > 0 {
+	if len(searchTerms) == 0 {
 		return true
 	}
 

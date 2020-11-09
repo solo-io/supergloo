@@ -95,7 +95,7 @@ type trafficTargetMetadata struct {
 
 func matchTrafficTarget(trafficTarget discoveryv1alpha2.TrafficTarget, searchTerms []string) bool {
 	// do not apply matching when there are no search strings
-	if len(searchTerms) > 0 {
+	if len(searchTerms) == 0 {
 		return true
 	}
 
