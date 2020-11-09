@@ -17,7 +17,8 @@ meshctl describe mesh [flags]
 ### Options
 
 ```
-  -h, --help   help for mesh
+  -h, --help             help for mesh
+  -s, --search strings   A list of terms to match mesh names against
 ```
 
 ### Options inherited from parent commands

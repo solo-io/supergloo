@@ -11,13 +11,14 @@ Description of managed traffic targets
 Description of managed traffic targets
 
 ```
-meshctl describe traffictarget [flags]
+meshctl describe traffictarget [search terms] [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for traffictarget
+  -h, --help             help for traffictarget
+  -s, --search strings   A list of terms to match traffic target names against
 ```
 
 ### Options inherited from parent commands
