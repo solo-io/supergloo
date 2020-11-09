@@ -17,6 +17,7 @@ import (
 )
 
 func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
+	var searchTerms []string
 	cmd := &cobra.Command{
 		Use:     "traffictarget [search terms]",
 		Short:   "Description of managed traffic targets",
@@ -26,7 +27,7 @@ func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			description, err := describeTrafficTargets(ctx, c, args)
+			description, err := describeTrafficTargets(ctx, c, searchTerms)
 			if err != nil {
 				return err
 			}
@@ -36,12 +37,13 @@ func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 	}
 
 	cmd.SilenceUsage = true
+	cmd.Flags().StringSliceVarP(&searchTerms, "search", "s", []string{}, "A list of terms to match traffic target names against")
 	return cmd
 }
 
 func describeTrafficTargets(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
 	trafficTargetClient := discoveryv1alpha2.NewTrafficTargetClient(c)
-	trafficTargetList, err := trafficTargetClient.ListTrafficTarget(ctx, )
+	trafficTargetList, err := trafficTargetClient.ListTrafficTarget(ctx)
 	if err != nil {
 		return "", err
 	}

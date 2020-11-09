@@ -17,8 +17,9 @@ import (
 )
 
 func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
+	var searchTerms []string
 	cmd := &cobra.Command{
-		Use:     "mesh [search terms]",
+		Use:     "mesh",
 		Short:   "Description of managed meshes",
 		Aliases: []string{"meshes"},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -26,7 +27,7 @@ func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			description, err := describeMeshes(ctx, c, args)
+			description, err := describeMeshes(ctx, c, searchTerms)
 			if err != nil {
 				return err
 			}
@@ -35,6 +36,7 @@ func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 		},
 	}
 
+	cmd.Flags().StringSliceVarP(&searchTerms, "search", "s", []string{}, "A list of terms to match mesh names against")
 	cmd.SilenceUsage = true
 	return cmd
 }
