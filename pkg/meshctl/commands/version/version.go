@@ -96,13 +96,13 @@ func printVersion(ctx context.Context, opts *options) error {
 func makeServerVersions(ctx context.Context, opts *options) []serverVersion {
 	kubeClient, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to Kubernetes: %s", err.Error())
+		fmt.Fprintf(os.Stderr, "Unable to connect to Kubernetes: %s\n", err.Error())
 		return nil
 	}
 	deploymentClient := extv1.NewDeploymentClient(kubeClient)
 	deployments, err := deploymentClient.ListDeployment(ctx)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to list deployments: %s", err.Error())
+		fmt.Fprintf(os.Stderr, "Unable to list deployments: %s\n", err.Error())
 		return nil
 	}
 
