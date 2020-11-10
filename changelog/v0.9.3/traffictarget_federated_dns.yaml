@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/931
+    description: Add the federated DNS name to the output of `meshctl describe traffictarget`.
