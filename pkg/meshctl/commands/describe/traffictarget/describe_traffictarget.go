@@ -8,26 +8,26 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/internal/flags"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/printing"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
-	var searchTerms []string
+func Command(ctx context.Context) *cobra.Command {
+	opts := new(options)
 	cmd := &cobra.Command{
 		Use:     "traffictarget",
 		Short:   "Description of managed traffic targets",
 		Aliases: []string{"traffictargets"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := utils.BuildClient(opts.Kubeconfig, opts.Kubecontext)
+			c, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
 			if err != nil {
 				return err
 			}
-			description, err := describeTrafficTargets(ctx, c, searchTerms)
+			description, err := describeTrafficTargets(ctx, c, opts.searchTerms)
 			if err != nil {
 				return err
 			}
@@ -37,8 +37,18 @@ func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 	}
 
 	cmd.SilenceUsage = true
-	cmd.Flags().StringSliceVarP(&searchTerms, "search", "s", []string{}, "A list of terms to match traffic target names against")
 	return cmd
+}
+
+type options struct {
+	kubeconfig  string
+	kubecontext string
+	searchTerms []string
+}
+
+func (o *options) addToFlags(flags *pflag.FlagSet) {
+	utils.AddManagementKubeconfigFlags(&o.kubeconfig, &o.kubecontext, flags)
+	flags.StringSliceVarP(&o.searchTerms, "search", "s", []string{}, "A list of terms to match traffic target names against")
 }
 
 func describeTrafficTargets(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
