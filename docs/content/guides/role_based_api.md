@@ -8,13 +8,11 @@ weight: 75
 Service Mesh Hub Enterprise is required for this feature.
 {{% /notice %}}
 
-## Concepts
-
 At a high level, Service Mesh Hub manages control planes by translating networking policy configuration (`networking.smh.solo.io` CRD objects)
 into service-mesh-specific configuration. Each networking policy object _targets_ specified discovered mesh entities (represented by `discovery.smh.solo.io` CRD objects).
 
 Service Mesh Hub's role-based API allows organizations to restrict access to policy configuration (i.e. creation, updating, and deletion of policy configuration objects)
-based on the roles of individual users, represented by a `Role` CRD. Similar to the k8s RBAC model, Service Mesh Hub users are bound to one or more roles. A user may
+based on the roles of individual users, represented by a `Role` CRD. Similar to the Kubernetes RBAC model, Service Mesh Hub users are bound to one or more roles. A user may
 create, update, or delete a networking policy if they are bound to at least one role that permits access for that policy.
 
 ## Roles
@@ -24,12 +22,38 @@ The `Role` CRD structure allows for fine-grained permission definition. Because 
 A bound user is permitted to configure a policy if and only if all actions (if applicable) and scopes present on the policy are permitted by the role. The semantics
 for whether actions or scopes are permitted are described below.
 
-**Scope action semantics**
+## Scopes
+
+Permission scopes are defined against networking policy selectors. These selectors, in the context of networking policies, control the mesh entities that
+are affected by the policy. Each networking policy CRD has a different combination of selectors depending on which mesh entities it can affect.
+We detail the different scopes and their associated selectors below.
+
+**TrafficPolicyScope:** [TrafficPolicies]({{% versioned_link_path fromRoot="/reference/api/traffic_policy/" %}}) operate on routes between workloads and traffic targets.
+Thus, the TrafficPolicyScope defines the set of permitted [WorkloadSelectors]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.smh.solo.io.WorkloadSelector" %}}) 
+and [TrafficTargetSelectors]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.smh.solo.io.TrafficTargetSelector" %}}). In other words,
+a TrafficPolicyScope represents permission for creating TrafficPolicies that configure a specific set of workloads and associated traffic targets.
+
+**AccessPolicyScope:** [AccessPolicies]({{% versioned_link_path fromRoot="/reference/api/access_policy/" %}}) operate on routes between identities (which represent a set of workloads) and traffic targets.
+Thus, the AccessPolicyScope defines the set of permitted [IdentitySelectors]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.smh.solo.io.IdentitySelector" %}}) 
+and [TrafficTargetSelectors]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.smh.solo.io.TrafficTargetSelector" %}}). In other words,
+an AccessPolicyScope represents permission for creating AccessPolicies that configure a specific set of identities and associated traffic targets.
+
+**VirtualMeshScope:** [VirtualMeshes]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}) operate on discovered meshes.
+Thus, the VirtualMeshScope defines the set of permitted meshes by reference (name and namespace of the corresponding Mesh object). 
+In other words, a VirtualMeshScope represents permission for creating VirtualMeshes that group a set of discovered meshes.
+
+**FailoverServiceScope:** [FailoverServices]({{% versioned_link_path fromRoot="/reference/api/failover_service/" %}}) operate on discovered meshes and traffic targets.
+Thus, the FailoverServiceScope defines the set of permitted meshes by reference (name and namespace of the corresponding Mesh object) and
+[backing traffic targets]({{% versioned_link_path fromRoot="/reference/api/failover_service/#networking.smh.solo.io.FailoverServiceSpec.BackingService" %}}).
+In other words, a FailoverServiceScope represents permission for creating FailoverServices that creates a failover service visible on a specified
+set of meshes, consisting of a set of backing traffic targets.
+
+#### Scope Action Semantics
 
 The set of actions defined on a scope (if applicable to the policy type) describes the set of actions bound users are permitted to configure.
 Actions are enums which map onto the correspondingly named policy field (i.e. for TrafficPolicyScope, `TRAFFIC_SHIFT` maps onto the `traffic_shift` field).
 
-**Scope selector semantics:**
+#### Scope Selector Semantics:
 
 The set of selectors (WorkloadSelector, TrafficTargetSelector, or IdentitySelector) defined on a scope describes, verbatim, the selectors that the bound users
 are permitted to use, **with the important exception of omitted fields**. Omitted/empty selector fields carry wildcard semantics, allowing any value for that field.
@@ -71,7 +95,7 @@ destinationSelector:
     - remote-cluster
 ```
 
-## Example Roles
+## Example Roles / Personas
 
 The following examples demonstrate common personas one might encounter in organizations and how they can be represented using Service Mesh Hub Roles.
 
