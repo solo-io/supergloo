@@ -25,7 +25,7 @@ message MeshSpec {
         OSM osm = 6;
     }
 
-    // Information about the SMH certificate agent if it has been installed to the remote cluster.
+    // Information about the Gloo Mesh certificate agent if it has been installed to the remote cluster.
     AgentInfo agent_info = 5;
 
     // Mesh object representing an installed Istio control plane
@@ -140,7 +140,7 @@ message MeshSpec {
         string version = 4;
     }
 
-    // information about the SMH Cert-Agent which may be installed
+    // information about the Gloo Mesh Cert-Agent which may be installed
     // to the remote cluster which contains the Mesh control plane
     message AgentInfo {
         // the namespace in which the agent is installed

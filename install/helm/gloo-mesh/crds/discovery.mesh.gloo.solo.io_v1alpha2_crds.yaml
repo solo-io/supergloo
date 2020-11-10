@@ -987,7 +987,7 @@ spec:
             - osm
           properties:
             agentInfo:
-              description: Information about the SMH certificate agent if it has been installed to the remote cluster.
+              description: Information about the Gloo Mesh certificate agent if it has been installed to the remote cluster.
               properties:
                 agentNamespace:
                   description: the namespace in which the agent is installed

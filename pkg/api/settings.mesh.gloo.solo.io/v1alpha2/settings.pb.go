@@ -28,7 +28,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type SettingsSpec struct {
 	// Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence)
 	Mtls *v1alpha2.TrafficPolicySpec_MTLS `protobuf:"bytes,1,opt,name=mtls,proto3" json:"mtls,omitempty"`
-	// Configure SMH Networking to communicate with one or more external gRPC NetworkingExtensions servers.
+	// Configure Gloo Mesh networking to communicate with one or more external gRPC NetworkingExtensions servers.
 	// Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence).
 	// Note: Extension Servers have full write access to the output objects written by Gloo Mesh.
 	NetworkingExtensionServers []*NetworkingExtensionsServer `protobuf:"bytes,2,rep,name=networking_extension_servers,json=networkingExtensionServers,proto3" json:"networking_extension_servers,omitempty"`
@@ -81,7 +81,7 @@ type NetworkingExtensionsServer struct {
 	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
 	// Communicate over HTTP rather than HTTPS
 	Insecure bool `protobuf:"varint,2,opt,name=insecure,proto3" json:"insecure,omitempty"`
-	// Instruct SMH to automatically reconnect to the server on network failures
+	// Instruct Gloo Mesh to automatically reconnect to the server on network failures
 	ReconnectOnNetworkFailures bool     `protobuf:"varint,3,opt,name=reconnect_on_network_failures,json=reconnectOnNetworkFailures,proto3" json:"reconnect_on_network_failures,omitempty"`
 	XXX_NoUnkeyedLiteral       struct{} `json:"-"`
 	XXX_unrecognized           []byte   `json:"-"`

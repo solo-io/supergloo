@@ -29,9 +29,9 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // the parameters provided to the Extensions server when requesting patches
 type ExtensionPatchRequest struct {
-	// the set of discovery objects provided as inputs for the SMH translation
+	// the set of discovery objects provided as inputs for the Gloo Mesh translation
 	Inputs *DiscoverySnapshot `protobuf:"bytes,1,opt,name=inputs,proto3" json:"inputs,omitempty"`
-	// the base set of output objects translated by SMH.
+	// the base set of output objects translated by Gloo Mesh.
 	// these may have been operated upon by a previous Extension server if multiple servers
 	// have been configured.
 	Outputs              []*GeneratedObject `protobuf:"bytes,2,rep,name=outputs,proto3" json:"outputs,omitempty"`
@@ -78,8 +78,8 @@ func (m *ExtensionPatchRequest) GetOutputs() []*GeneratedObject {
 	return nil
 }
 
-// the set of patches the server wishes to apply to the SMH Networking outputs.
-// Any objects provided here will be inserted into the final SMH snapshot.
+// the set of patches the server wishes to apply to the Gloo Mesh Networking outputs.
+// Any objects provided here will be inserted into the final Gloo Mesh snapshot.
 // If an object already exists in the snapshot, it will be overridden by the version provided here.
 // If multiple extensions servers are configured, this response may be
 // operated upon by Extension patches provided by subsequent servers.
@@ -354,10 +354,10 @@ func (m *MeshObject) GetStatus() *v1alpha2.MeshStatus {
 	return nil
 }
 
-// a generated object can be of any output type supported by SMH.
+// a generated object can be of any output type supported by Gloo Mesh.
 // the content of the type field should be used to determine
 // the type of the output object.
-// TODO(ilackarms): consider parameterizing SMH to allow excluding GeneratedObjects from patch requests in the case where an implementer only performs additions (no updates required).
+// TODO(ilackarms): consider parameterizing Gloo Mesh to allow excluding GeneratedObjects from patch requests in the case where an implementer only performs additions (no updates required).
 type GeneratedObject struct {
 	// metadata of the object
 	Metadata *ObjectMeta `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
@@ -580,7 +580,7 @@ func (m *WatchPushNotificationsRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_WatchPushNotificationsRequest proto.InternalMessageInfo
 
-// triggers a resync of SMH objects
+// triggers a resync of Gloo Mesh objects
 type PushNotification struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -711,8 +711,8 @@ type NetworkingExtensionsClient interface {
 	GetExtensionPatches(ctx context.Context, in *ExtensionPatchRequest, opts ...grpc.CallOption) (*ExtensionPatchResponse, error)
 	// WatchPushNotifications initiates a streaming connection which allows the NetworkingExtensions server
 	// to push notifications to Gloo Mesh telling it to resync its configuration.
-	// This allows a NetworkingExtensions server to trigger SMH to resync its state for
-	// events triggered by objects not watched by SMH.
+	// This allows a NetworkingExtensions server to trigger Gloo Mesh to resync its state for
+	// events triggered by objects not watched by Gloo Mesh.
 	WatchPushNotifications(ctx context.Context, in *WatchPushNotificationsRequest, opts ...grpc.CallOption) (NetworkingExtensions_WatchPushNotificationsClient, error)
 }
 
@@ -772,8 +772,8 @@ type NetworkingExtensionsServer interface {
 	GetExtensionPatches(context.Context, *ExtensionPatchRequest) (*ExtensionPatchResponse, error)
 	// WatchPushNotifications initiates a streaming connection which allows the NetworkingExtensions server
 	// to push notifications to Gloo Mesh telling it to resync its configuration.
-	// This allows a NetworkingExtensions server to trigger SMH to resync its state for
-	// events triggered by objects not watched by SMH.
+	// This allows a NetworkingExtensions server to trigger Gloo Mesh to resync its state for
+	// events triggered by objects not watched by Gloo Mesh.
 	WatchPushNotifications(*WatchPushNotificationsRequest, NetworkingExtensions_WatchPushNotificationsServer) error
 }
 

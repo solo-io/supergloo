@@ -19,7 +19,7 @@ import "networking/v1alpha3/workload_entry.proto";
 // NetworkingExtensions provides customizeable patches to Gloo Mesh-generated configuration.
 // Gloo Mesh uses a NetworkingExtensions client to request optional patches from a pluggable
 // NetworkingExtensions server.
-// The server can return a set of patches which SMH will apply before writing configuration to the cluster.
+// The server can return a set of patches which Gloo Mesh will apply before writing configuration to the cluster.
 service NetworkingExtensions {
     // GetExtensionPatches fetches a set of patches to the output configuration from the Extensions server.
     // The current discovery snapshot and translated outputs are provided in the ExtensionPatchRequest
@@ -28,25 +28,25 @@ service NetworkingExtensions {
 
     // WatchPushNotifications initiates a streaming connection which allows the NetworkingExtensions server
     // to push notifications to Gloo Mesh telling it to resync its configuration.
-    // This allows a NetworkingExtensions server to trigger SMH to resync its state for
-    // events triggered by objects not watched by SMH.
+    // This allows a NetworkingExtensions server to trigger Gloo Mesh to resync its state for
+    // events triggered by objects not watched by Gloo Mesh.
     rpc WatchPushNotifications (WatchPushNotificationsRequest) returns (stream PushNotification) {
     }
 }
 
 // the parameters provided to the Extensions server when requesting patches
 message ExtensionPatchRequest {
-    // the set of discovery objects provided as inputs for the SMH translation
+    // the set of discovery objects provided as inputs for the Gloo Mesh translation
     DiscoverySnapshot inputs = 1;
 
-    // the base set of output objects translated by SMH.
+    // the base set of output objects translated by Gloo Mesh.
     // these may have been operated upon by a previous Extension server if multiple servers
     // have been configured.
     repeated GeneratedObject outputs = 2;
 }
 
-// the set of patches the server wishes to apply to the SMH Networking outputs.
-// Any objects provided here will be inserted into the final SMH snapshot.
+// the set of patches the server wishes to apply to the Gloo Mesh Networking outputs.
+// Any objects provided here will be inserted into the final Gloo Mesh snapshot.
 // If an object already exists in the snapshot, it will be overridden by the version provided here.
 // If multiple extensions servers are configured, this response may be
 // operated upon by Extension patches provided by subsequent servers.
@@ -95,10 +95,10 @@ message MeshObject {
     .discovery.mesh.gloo.solo.io.MeshStatus status = 3;
 }
 
-// a generated object can be of any output type supported by SMH.
+// a generated object can be of any output type supported by Gloo Mesh.
 // the content of the type field should be used to determine
 // the type of the output object.
-// TODO(ilackarms): consider parameterizing SMH to allow excluding GeneratedObjects from patch requests in the case where an implementer only performs additions (no updates required).
+// TODO(ilackarms): consider parameterizing Gloo Mesh to allow excluding GeneratedObjects from patch requests in the case where an implementer only performs additions (no updates required).
 message GeneratedObject {
     // metadata of the object
     ObjectMeta metadata = 1;
@@ -136,7 +136,7 @@ message ObjectMeta {
 message WatchPushNotificationsRequest {
 }
 
-// triggers a resync of SMH objects
+// triggers a resync of Gloo Mesh objects
 message PushNotification {
 
 }

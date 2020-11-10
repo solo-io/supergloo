@@ -39,7 +39,7 @@ type MeshSpec struct {
 	//	*MeshSpec_ConsulConnect
 	//	*MeshSpec_Osm
 	MeshType isMeshSpec_MeshType `protobuf_oneof:"mesh_type"`
-	// Information about the SMH certificate agent if it has been installed to the remote cluster.
+	// Information about the Gloo Mesh certificate agent if it has been installed to the remote cluster.
 	AgentInfo            *MeshSpec_AgentInfo `protobuf:"bytes,5,opt,name=agent_info,json=agentInfo,proto3" json:"agent_info,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
 	XXX_unrecognized     []byte              `json:"-"`
@@ -621,7 +621,7 @@ func (m *MeshSpec_MeshInstallation) GetVersion() string {
 	return ""
 }
 
-// information about the SMH Cert-Agent which may be installed
+// information about the Gloo Mesh Cert-Agent which may be installed
 // to the remote cluster which contains the Mesh control plane
 type MeshSpec_AgentInfo struct {
 	// the namespace in which the agent is installed

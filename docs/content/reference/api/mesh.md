@@ -51,7 +51,7 @@ Meshes represent a currently registered service mesh.
 | linkerd | discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh |  |  |
 | consulConnect | discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh |  |  |
 | osm | discovery.mesh.gloo.solo.io.MeshSpec.OSM |  |  |
-| agentInfo | discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo |  | Information about the SMH certificate agent if it has been installed to the remote cluster. |
+| agentInfo | discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo |  | Information about the Gloo Mesh certificate agent if it has been installed to the remote cluster. |
 
 
 
@@ -61,7 +61,7 @@ Meshes represent a currently registered service mesh.
 <a name="discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo"></a>
 
 ### MeshSpec.AgentInfo
-information about the SMH Cert-Agent which may be installed to the remote cluster which contains the Mesh control plane
+information about the Gloo Mesh Cert-Agent which may be installed to the remote cluster which contains the Mesh control plane
 
 
 | Field | Type | Label | Description |

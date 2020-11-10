@@ -61,8 +61,8 @@ the parameters provided to the Extensions server when requesting patches
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| inputs | extensions.networking.mesh.gloo.solo.io.DiscoverySnapshot |  | the set of discovery objects provided as inputs for the SMH translation |
-| outputs | []extensions.networking.mesh.gloo.solo.io.GeneratedObject | repeated | the base set of output objects translated by SMH. these may have been operated upon by a previous Extension server if multiple servers have been configured. |
+| inputs | extensions.networking.mesh.gloo.solo.io.DiscoverySnapshot |  | the set of discovery objects provided as inputs for the Gloo Mesh translation |
+| outputs | []extensions.networking.mesh.gloo.solo.io.GeneratedObject | repeated | the base set of output objects translated by Gloo Mesh. these may have been operated upon by a previous Extension server if multiple servers have been configured. |
 
 
 
@@ -72,7 +72,7 @@ the parameters provided to the Extensions server when requesting patches
 <a name="extensions.networking.mesh.gloo.solo.io.ExtensionPatchResponse"></a>
 
 ### ExtensionPatchResponse
-the set of patches the server wishes to apply to the SMH Networking outputs. Any objects provided here will be inserted into the final SMH snapshot. If an object already exists in the snapshot, it will be overridden by the version provided here. If multiple extensions servers are configured, this response may be operated upon by Extension patches provided by subsequent servers.
+the set of patches the server wishes to apply to the Gloo Mesh Networking outputs. Any objects provided here will be inserted into the final Gloo Mesh snapshot. If an object already exists in the snapshot, it will be overridden by the version provided here. If multiple extensions servers are configured, this response may be operated upon by Extension patches provided by subsequent servers.
 
 
 | Field | Type | Label | Description |
@@ -87,7 +87,7 @@ the set of patches the server wishes to apply to the SMH Networking outputs. Any
 <a name="extensions.networking.mesh.gloo.solo.io.GeneratedObject"></a>
 
 ### GeneratedObject
-a generated object can be of any output type supported by SMH. the content of the type field should be used to determine the type of the output object. TODO(ilackarms): consider parameterizing SMH to allow excluding GeneratedObjects from patch requests in the case where an implementer only performs additions (no updates required).
+a generated object can be of any output type supported by Gloo Mesh. the content of the type field should be used to determine the type of the output object. TODO(ilackarms): consider parameterizing Gloo Mesh to allow excluding GeneratedObjects from patch requests in the case where an implementer only performs additions (no updates required).
 
 
 | Field | Type | Label | Description |
@@ -174,7 +174,7 @@ ObjectMeta is a simplified clone of the kubernetes ObjectMeta used to represent 
 <a name="extensions.networking.mesh.gloo.solo.io.PushNotification"></a>
 
 ### PushNotification
-triggers a resync of SMH objects
+triggers a resync of Gloo Mesh objects
 
 
 
@@ -234,12 +234,12 @@ a proto-serializable representation of a Workload object
 <a name="extensions.networking.mesh.gloo.solo.io.NetworkingExtensions"></a>
 
 ### NetworkingExtensions
-NetworkingExtensions provides customizeable patches to Gloo Mesh-generated configuration. Gloo Mesh uses a NetworkingExtensions client to request optional patches from a pluggable NetworkingExtensions server. The server can return a set of patches which SMH will apply before writing configuration to the cluster.
+NetworkingExtensions provides customizeable patches to Gloo Mesh-generated configuration. Gloo Mesh uses a NetworkingExtensions client to request optional patches from a pluggable NetworkingExtensions server. The server can return a set of patches which Gloo Mesh will apply before writing configuration to the cluster.
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | GetExtensionPatches | [ExtensionPatchRequest](#extensions.networking.mesh.gloo.solo.io.ExtensionPatchRequest) | [ExtensionPatchResponse](#extensions.networking.mesh.gloo.solo.io.ExtensionPatchResponse) | GetExtensionPatches fetches a set of patches to the output configuration from the Extensions server. The current discovery snapshot and translated outputs are provided in the ExtensionPatchRequest |
-| WatchPushNotifications | [WatchPushNotificationsRequest](#extensions.networking.mesh.gloo.solo.io.WatchPushNotificationsRequest) | [PushNotification](#extensions.networking.mesh.gloo.solo.io.PushNotification) stream | WatchPushNotifications initiates a streaming connection which allows the NetworkingExtensions server to push notifications to Gloo Mesh telling it to resync its configuration. This allows a NetworkingExtensions server to trigger SMH to resync its state for events triggered by objects not watched by SMH. |
+| WatchPushNotifications | [WatchPushNotificationsRequest](#extensions.networking.mesh.gloo.solo.io.WatchPushNotificationsRequest) | [PushNotification](#extensions.networking.mesh.gloo.solo.io.PushNotification) stream | WatchPushNotifications initiates a streaming connection which allows the NetworkingExtensions server to push notifications to Gloo Mesh telling it to resync its configuration. This allows a NetworkingExtensions server to trigger Gloo Mesh to resync its state for events triggered by objects not watched by Gloo Mesh. |
 
  <!-- end services -->
 
