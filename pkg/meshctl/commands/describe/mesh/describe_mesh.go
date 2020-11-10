@@ -8,25 +8,26 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/internal/flags"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/printing"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
+func Command(ctx context.Context) *cobra.Command {
+	opts := new(options)
 	cmd := &cobra.Command{
 		Use:     "mesh",
 		Short:   "Description of managed meshes",
 		Aliases: []string{"meshes"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := utils.BuildClient(opts.Kubeconfig, opts.Kubecontext)
+			c, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
 			if err != nil {
 				return err
 			}
-			description, err := describeMeshes(ctx, c)
+			description, err := describeMeshes(ctx, c, opts.searchTerms)
 			if err != nil {
 				return err
 			}
@@ -34,12 +35,24 @@ func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 			return nil
 		},
 	}
+	opts.addToFlags(cmd.Flags())
 
 	cmd.SilenceUsage = true
 	return cmd
 }
 
-func describeMeshes(ctx context.Context, c client.Client) (string, error) {
+type options struct {
+	kubeconfig  string
+	kubecontext string
+	searchTerms []string
+}
+
+func (o *options) addToFlags(flags *pflag.FlagSet) {
+	utils.AddManagementKubeconfigFlags(&o.kubeconfig, &o.kubecontext, flags)
+	flags.StringSliceVarP(&o.searchTerms, "search", "s", []string{}, "A list of terms to match mesh names against")
+}
+
+func describeMeshes(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
 	meshClient := discoveryv1alpha2.NewMeshClient(c)
 	meshList, err := meshClient.ListMesh(ctx)
 	if err != nil {
@@ -48,7 +61,9 @@ func describeMeshes(ctx context.Context, c client.Client) (string, error) {
 	var meshDescriptions []meshDescription
 	for _, mesh := range meshList.Items {
 		mesh := mesh // pike
-		meshDescriptions = append(meshDescriptions, describeMesh(&mesh))
+		if matchMesh(mesh, searchTerms) {
+			meshDescriptions = append(meshDescriptions, describeMesh(&mesh))
+		}
 	}
 
 	buf := new(bytes.Buffer)
@@ -97,6 +112,21 @@ type meshMetadata struct {
 	Region       string
 	AwsAccountId string
 	Version      string
+}
+
+func matchMesh(mesh discoveryv1alpha2.Mesh, searchTerms []string) bool {
+	// do not apply matching when there are no search strings
+	if len(searchTerms) == 0 {
+		return true
+	}
+
+	for _, s := range searchTerms {
+		if strings.Contains(mesh.Name, s) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func describeMesh(mesh *discoveryv1alpha2.Mesh) meshDescription {
