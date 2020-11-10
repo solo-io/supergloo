@@ -11,7 +11,7 @@ Description of managed traffic targets
 Description of managed traffic targets
 
 ```
-meshctl describe traffictarget [search terms] [flags]
+meshctl describe traffictarget [flags]
 ```
 
 ### Options

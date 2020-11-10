@@ -19,7 +19,7 @@ import (
 func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 	var searchTerms []string
 	cmd := &cobra.Command{
-		Use:     "traffictarget [search terms]",
+		Use:     "traffictarget",
 		Short:   "Description of managed traffic targets",
 		Aliases: []string{"traffictargets"},
 		RunE: func(cmd *cobra.Command, args []string) error {
