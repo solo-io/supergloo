@@ -1,4 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1012
-    description: Add the ability to filter traffic targets and meshes by a list of search terms provided at the end of the meshctl describe command.
