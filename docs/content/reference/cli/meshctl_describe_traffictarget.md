@@ -17,16 +17,7 @@ meshctl describe traffictarget [flags]
 ### Options
 
 ```
-  -h, --help             help for traffictarget
-  -s, --search strings   A list of terms to match traffic target names against
-```
-
-### Options inherited from parent commands
-
-```
-      --kubeconfig string    path to the kubeconfig from which the management cluster will be accessed
-      --kubecontext string   name of the kubeconfig context to use for the management cluster
-      --namespace string     namespace that Service TrafficTarget Hub is installed in (default "service-mesh-hub")
+  -h, --help   help for traffictarget
 ```
 
 ### SEE ALSO
