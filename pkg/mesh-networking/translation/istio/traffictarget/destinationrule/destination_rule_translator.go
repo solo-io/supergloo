@@ -111,7 +111,7 @@ func (t *translator) Translate(
 	// Apply decorators which map a single applicable TrafficPolicy to a field on the DestinationRule.
 	for _, policy := range trafficTarget.Status.AppliedTrafficPolicies {
 
-		// Don't translate the trafficPolicy if the sourceClusterName is not selected by the SourceSelectors
+		// Don't translate the trafficPolicy if the sourceClusterName is not selected by the SourceServiceAccounts
 		if !selectorutils.WorkloadSelectorContainsCluster(policy.Spec.SourceSelector, sourceClusterName) {
 			continue
 		}

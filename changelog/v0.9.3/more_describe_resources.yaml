@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1058
+    description: Adds support for failover services, virtual meshes, workloads, access policies, and traffic policies for meshctl describe.
