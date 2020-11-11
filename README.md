@@ -1,5 +1,5 @@
 <h2 align="center">
-    <img src="https://github.com/solo-io/service-mesh-hub/blob/update-readme-logo/docs/content/img/readme-.png">
+    <img src="https://github.com/solo-io/service-mesh-hub/blob/update-readme-logo/docs/content/img/readme-logo.png">
     <br>
 </h2>
 
