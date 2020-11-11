@@ -17,15 +17,10 @@ meshctl describe mesh [flags]
 ### Options
 
 ```
-  -h, --help   help for mesh
-```
-
-### Options inherited from parent commands
-
-```
+  -h, --help                 help for mesh
       --kubeconfig string    path to the kubeconfig from which the management cluster will be accessed
       --kubecontext string   name of the kubeconfig context to use for the management cluster
-      --namespace string     namespace that Service TrafficTarget Hub is installed in (default "gloo-mesh")
+  -s, --search strings       A list of terms to match mesh names against
 ```
 
 ### SEE ALSO

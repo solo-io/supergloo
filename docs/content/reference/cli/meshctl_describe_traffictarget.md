@@ -20,14 +20,6 @@ meshctl describe traffictarget [flags]
   -h, --help   help for traffictarget
 ```
 
-### Options inherited from parent commands
-
-```
-      --kubeconfig string    path to the kubeconfig from which the management cluster will be accessed
-      --kubecontext string   name of the kubeconfig context to use for the management cluster
-      --namespace string     namespace that Service TrafficTarget Hub is installed in (default "gloo-mesh")
-```
-
 ### SEE ALSO
 
 * [meshctl describe](../meshctl_describe)	 - Human readable description of discovered resources and applicable configuration
