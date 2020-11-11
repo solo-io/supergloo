@@ -1,5 +1,5 @@
 <h2 align="center">
-    <img src="https://www.solo.io/wp-content/uploads/2019/11/Solo_ServiceMesh_Logo_Dark_bg.svg">
+    <img src="https://github.com/solo-io/service-mesh-hub/blob/update-readme-logo/docs/content/img/logo.png">
     <br>
 </h2>
 
