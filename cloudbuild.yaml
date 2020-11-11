@@ -53,7 +53,7 @@ steps:
   - "."
   - "--use-ssh"
   env:
-  - "PROJECT_ROOT=github.com/solo-io/service-mesh-hub"
+  - "PROJECT_ROOT=github.com/solo-io/gloo-mesh"
   id: "prepare-workspace"
 
 # Helm setup steps
@@ -67,7 +67,7 @@ steps:
 - name: 'gcr.io/$PROJECT_ID/go-mod-ginkgo:0.2.6'
   args: ['-r', '-p', '-failFast', '-trace', '-progress', '-race', '-compilers=4', '-failOnPending',  '-noColor', '-randomizeAllSpecs', '-randomizeSuites']
   env:
-  - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
+  - 'PROJECT_ROOT=github.com/solo-io/gloo-mesh'
   - 'TAGGED_VERSION=$TAG_NAME'
   - 'HELM_HOME=/root/.helm'
   secretEnv: ["GITHUB_TOKEN"]
@@ -84,7 +84,7 @@ steps:
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['push-all-images']
   env:
-  - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
+  - 'PROJECT_ROOT=github.com/solo-io/gloo-mesh'
   - 'TAGGED_VERSION=$TAG_NAME'
   - 'HELM_HOME=/root/.helm'
   dir: *dir
@@ -94,7 +94,7 @@ steps:
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['upload-github-release-assets']
   env:
-  - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
+  - 'PROJECT_ROOT=github.com/solo-io/gloo-mesh'
   - 'TAGGED_VERSION=$TAG_NAME'
   - 'HELM_HOME=/root/.helm'
   dir: *dir
@@ -106,7 +106,7 @@ steps:
   args: ['publish-chart']
   env:
   - 'TAGGED_VERSION=$TAG_NAME'
-  - 'PROJECT_ROOT=github.com/solo-io/service-mesh-hub'
+  - 'PROJECT_ROOT=github.com/solo-io/gloo-mesh'
   - 'HELM_HOME=/root/.helm' # tell helm where to find data
   dir: *dir
   id: 'release-helm'

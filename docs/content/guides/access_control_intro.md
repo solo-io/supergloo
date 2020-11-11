@@ -4,15 +4,15 @@ menuTitle: Access Control
 weight: 30
 ---
 
-In the [previous guide]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}), we federated multiple meshes and established a [shared root CA for a shared identity]({{% versioned_link_path fromRoot="/guides/federate_identity/#understanding-the-shared-root-process" %}}) domain. Now that we have a logical [VirtualMesh]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}), we need a way to establish **access** policies across the multiple meshes, without treating each of them individually. Service Mesh Hub helps by establishing a single, unified API that understands the logical VirtualMesh construct.
+In the [previous guide]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}), we federated multiple meshes and established a [shared root CA for a shared identity]({{% versioned_link_path fromRoot="/guides/federate_identity/#understanding-the-shared-root-process" %}}) domain. Now that we have a logical [VirtualMesh]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}), we need a way to establish **access** policies across the multiple meshes, without treating each of them individually. Gloo Mesh helps by establishing a single, unified API that understands the logical VirtualMesh construct.
 
 
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Service Mesh Hub is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
+* Gloo Mesh is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
 * Istio is [installed on both `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
-* Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+* Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
 * The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
@@ -41,17 +41,17 @@ kubectl --context $MGMT_CONTEXT -n bookinfo port-forward deployment/productpage-
 
 In a browser, visit [http://localhost:9080](http://localhost:9080) (potentially selecting "normal user" if this is your first time using the app) and verify that both the book details and the reviews are loading correctly. Depending on which review service is accessed you will see reviews with no stars or black stars. You can refresh the page to see the review source change.
 
-Let's use the Service Mesh Hub [AccessPolicy]({{% versioned_link_path fromRoot="/reference/api/access_policy/" %}}) resource to enforce access control across the logical VirtualMesh. The default behavior is to `deny-all`.
+Let's use the Gloo Mesh [AccessPolicy]({{% versioned_link_path fromRoot="/reference/api/access_policy/" %}}) resource to enforce access control across the logical VirtualMesh. The default behavior is to `deny-all`.
 
 In the previous guide, [we created a VirtualMesh resource]({{% versioned_link_path fromRoot="/guides/federate_identity/#creating-a-virtual-mesh" %}}), but we had access control disabled. Let's take a look at the same VirtualService, with access control enabled:
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: VirtualMesh
 metadata:
   name: virtual-mesh
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 spec:
   mtlsConfig:
     autoRestartPods: true
@@ -62,17 +62,17 @@ spec:
   globalAccessPolicy: ENABLED
   meshes:
   - name: istiod-istio-system-mgmt-cluster
-    namespace: service-mesh-hub
+    namespace: gloo-mesh
   - name: istiod-istio-system-remote-cluster
-    namespace: service-mesh-hub
+    namespace: gloo-mesh
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: VirtualMesh
 metadata:
   name: virtual-mesh
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 spec:
   mtlsConfig:
     autoRestartPods: true
@@ -83,9 +83,9 @@ spec:
   globalAccessPolicy: ENABLED
   meshes:
   - name: istiod-istio-system-mgmt-cluster
-    namespace: service-mesh-hub
+    namespace: gloo-mesh
   - name: istiod-istio-system-remote-cluster
-    namespace: service-mesh-hub
+    namespace: gloo-mesh
 EOF
 {{< /tab >}}
 {{< /tabs >}}
@@ -95,7 +95,7 @@ If you saved this VirtualMesh CR to a file named `demo-virtual-mesh.yaml`, you c
 ```shell
 kubectl --context $MGMT_CONTEXT apply -f demo-virtual-mesh.yaml
 
-virtualmesh.networking.smh.solo.io/virtual-mesh configured
+virtualmesh.networking.mesh.gloo.solo.io/virtual-mesh configured
 ```
 
 {{% notice note %}}
@@ -108,7 +108,7 @@ Try going back to [http://localhost:9080](http://localhost:9080) and refresh the
 
 For Istio, global access control is enforced using an AuthorizationPolicy with an empty spec, placed in Istio's root namespace (usually `istio-system`). More details can be found in the [Istio AuthorizationPolicy documentation](https://istio.io/latest/docs/reference/config/security/authorization-policy/#AuthorizationPolicy).
 
-Note that Service Mesh Hub will also create additional AuthorizationPolicies in order to allow all traffic through ingress gateways so that federated traffic can continue working as expected.
+Note that Gloo Mesh will also create additional AuthorizationPolicies in order to allow all traffic through ingress gateways so that federated traffic can continue working as expected.
 
 ## Using `AccessPolicy`
 
@@ -121,10 +121,10 @@ In this configuration, we select sources (in this case the `productpage` service
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: AccessPolicy
 metadata:
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
   name: productpage
 spec:
   sourceSelector:
@@ -141,10 +141,10 @@ EOF
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: AccessPolicy
 metadata:
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
   name: productpage
 spec:
   sourceSelector:
@@ -166,17 +166,17 @@ If you saved this VirtualMesh CR to a file named `demo-product-policy.yaml`, you
 ```shell
 kubectl --context $MGMT_CONTEXT apply -f demo-product-policy.yaml
 
-accesspolicy.networking.smh.solo.io/productpage created
+accesspolicy.networking.mesh.gloo.solo.io/productpage created
 ```
 
 In this next configuration, we enable traffic from `reviews` to `ratings`:
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: AccessPolicy
 metadata:
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
   name: reviews
 spec:
   sourceSelector:
@@ -194,10 +194,10 @@ spec:
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context $MGMT_CONTEXT -f - <<EOF
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: AccessPolicy
 metadata:
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
   name: reviews
 spec:
   sourceSelector:
@@ -221,15 +221,15 @@ If you have this YAML saved to a file called `reviews-access.yaml`, you can appl
 ```yaml
 kubectl --context $MGMT_CONTEXT apply -f reviews-access.yaml
 
-accesspolicy.networking.smh.solo.io/reviews created
+accesspolicy.networking.mesh.gloo.solo.io/reviews created
 ```
 
 Traffic should be allowed again.
 
 ## See it in action
 
-Check out "Part Three" of the ["Dive into Service Mesh Hub" video series](https://www.youtube.com/watch?v=4sWikVELr5M&list=PLBOtlFtGznBjr4E9xYHH9eVyiOwnk1ciK)
-(note that the video content reflects Service Mesh Hub <b>v0.6.1</b>):
+Check out "Part Three" of the ["Dive into Gloo Mesh" video series](https://www.youtube.com/watch?v=4sWikVELr5M&list=PLBOtlFtGznBjr4E9xYHH9eVyiOwnk1ciK)
+(note that the video content reflects Gloo Mesh <b>v0.6.1</b>):
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/cG1VCx9G408" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 

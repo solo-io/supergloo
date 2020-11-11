@@ -4,14 +4,14 @@ menuTitle: Introductory Guides
 weight: 10
 ---
 
-We can use `istioctl` CLI to easily install Istio in our registered cluster. You can find `istioctl` on the [Getting Started page](https://istio.io/latest/docs/setup/getting-started/) of the Istio site. Currently, Service Mesh Hub supports Istio versions 1.5, 1.6, and 1.7.
+We can use `istioctl` CLI to easily install Istio in our registered cluster. You can find `istioctl` on the [Getting Started page](https://istio.io/latest/docs/setup/getting-started/) of the Istio site. Currently, Gloo Mesh supports Istio versions 1.5, 1.6, and 1.7.
 
 {{% notice note %}}
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document. If you used the `meshctl demo init` command, Istio has already been installed for you.
 {{% /notice %}}
 
 
-In this guide we will walk you through two options for installing Istio for use with Service Mesh Hub in a single cluster and multi-cluster setting. The instructions here are for reference only, and your installation process for Istio will likely be different depending on your organization's policies and procedures.
+In this guide we will walk you through two options for installing Istio for use with Gloo Mesh in a single cluster and multi-cluster setting. The instructions here are for reference only, and your installation process for Istio will likely be different depending on your organization's policies and procedures.
 
 ## Istio quick install (single cluster)
 
@@ -28,7 +28,7 @@ This will NOT install Istio suitable for a multi-cluster installation. For a cor
 
 ## Istio quick install (multi cluster)
 
-For following some of the Service Mesh Hub guides, we assume two clusters with Istio installed for multi-cluster communication across both of them. 
+For following some of the Gloo Mesh guides, we assume two clusters with Istio installed for multi-cluster communication across both of them. 
 
 We will install Istio with a suitable configuration for a multi-cluster demonstration by overriding some of the Istio Operator values.
 
@@ -166,9 +166,9 @@ spec:
 EOF
 ```
 
-With Service Mesh Hub and Istio installed into the `mgmt-cluster`, and Istio installed into `remote-cluster`, we have an architecture that looks like this:
+With Gloo Mesh and Istio installed into the `mgmt-cluster`, and Istio installed into `remote-cluster`, we have an architecture that looks like this:
 
-![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-2clusters.png" %}})
+![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/gloomesh-2clusters.png" %}})
 
 When the Istio Operator has finished the installation (can take up to 90 seconds),
 you should see the Istio control plane pods running successfully:
@@ -254,4 +254,4 @@ EOF
 
 ## Next steps
 
-Now that we have Istio and Service Mesh Hub installed ([and appropriate clusters registered]({{% versioned_link_path fromRoot="/setup/#register-a-cluster" %}})), we can continue to explore the [discovery capabilities]({{% versioned_link_path fromRoot="/guides/discovery_intro" %}}) of Service Mesh Hub. 
+Now that we have Istio and Gloo Mesh installed ([and appropriate clusters registered]({{% versioned_link_path fromRoot="/setup/#register-a-cluster" %}})), we can continue to explore the [discovery capabilities]({{% versioned_link_path fromRoot="/guides/discovery_intro" %}}) of Gloo Mesh. 

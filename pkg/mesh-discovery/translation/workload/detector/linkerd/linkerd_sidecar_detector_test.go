@@ -8,9 +8,9 @@ package linkerd_test
 //
 // 	. "github.com/onsi/ginkgo"
 // 	. "github.com/onsi/gomega"
-// 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-// 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-// 	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector/linkerd"
+// 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+// 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+// 	. "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/detector/linkerd"
 // 	corev1 "k8s.io/api/core/v1"
 // 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 // )

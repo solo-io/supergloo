@@ -4,18 +4,18 @@ menuTitle: Federated Trust and Identity
 weight: 25
 ---
 
-Service Mesh Hub can help unify the root identity between multiple service mesh installations so any intermediates are signed by the same Root CA and end-to-end mTLS between clusters and services can be established correctly.
+Gloo Mesh can help unify the root identity between multiple service mesh installations so any intermediates are signed by the same Root CA and end-to-end mTLS between clusters and services can be established correctly.
 
-Service Mesh Hub will establish trust based on the [trust model](https://spiffe.io/spiffe/concepts/#trust-domain) defined by the user -- is there complete *shared trust* and a common root and identity? Or is there *limited trust* between clusters and traffic is gated by egress and ingress gateways? 
+Gloo Mesh will establish trust based on the [trust model](https://spiffe.io/spiffe/concepts/#trust-domain) defined by the user -- is there complete *shared trust* and a common root and identity? Or is there *limited trust* between clusters and traffic is gated by egress and ingress gateways? 
 
-In this guide, we'll explore the *shared trust* model between two Istio clusters and how Service Mesh Hub simplifies and orchestrates the processes needed for this to happen.
+In this guide, we'll explore the *shared trust* model between two Istio clusters and how Gloo Mesh simplifies and orchestrates the processes needed for this to happen.
 
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Service Mesh Hub is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
+* Gloo Mesh is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
 * Istio is [installed on both `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
-* Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+* Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
 * The `bookinfo` app is [installed into both clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
@@ -94,14 +94,14 @@ You should notice that the root certificates that signed the workload certificat
 
 ## Creating a Virtual Mesh
 
-Service Mesh Hub uses the [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}) Custom Resource to configure a Virtual Mesh, which is a logical grouping of one or multiple service meshes for the purposes of federation according to some parameters. Let's take a look at a VirtualMesh configuration that can help unify our two service meshes and establish a *shared trust* model for identity:
+Gloo Mesh uses the [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}) Custom Resource to configure a Virtual Mesh, which is a logical grouping of one or multiple service meshes for the purposes of federation according to some parameters. Let's take a look at a VirtualMesh configuration that can help unify our two service meshes and establish a *shared trust* model for identity:
 
 {{< highlight yaml "hl_lines=8-15 17-21" >}}
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: VirtualMesh
 metadata:
   name: virtual-mesh
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 spec:
   mtlsConfig:
     autoRestartPods: true
@@ -111,15 +111,15 @@ spec:
   federation: {}
   meshes:
   - name: istiod-istio-system-mgmt-cluster 
-    namespace: service-mesh-hub
+    namespace: gloo-mesh
   - name: istiod-istio-system-remote-cluster
-    namespace: service-mesh-hub
+    namespace: gloo-mesh
 {{< /highlight >}}
 
 
 ##### Understanding VirtualMesh
 
-In the first highlighted section, we can see the parameters establishing shared identity and federation. In this case, we tell Service Mesh Hub to create a Root CA using the parameters specified above (ttl, key size, org name, etc).
+In the first highlighted section, we can see the parameters establishing shared identity and federation. In this case, we tell Gloo Mesh to create a Root CA using the parameters specified above (ttl, key size, org name, etc).
 
 We could have also configured an existing Root CA by providing an existing secret:
 
@@ -141,7 +141,7 @@ Lastly, we are creating the VirtualMesh with two different service meshes: `isti
 
 ##### User Provided Certificates
 
-A root certificate for a VirtualMesh must be supplied to Service Mesh Hub 
+A root certificate for a VirtualMesh must be supplied to Gloo Mesh 
 as a Secret formatted as follows:
 
 ```yaml
@@ -163,7 +163,7 @@ this secret can be created by running:
 An example root certificate and private key file can be generated by following 
 [this guide](https://github.com/istio/istio/tree/1.5.0/samples/certs) and running `make root-ca`.
 
-Note that the name/namespace of the provided root cert cannot be `cacerts/istio-system` as that is used by Service Mesh Hub for carrying out the CSR ([certificate signing request](https://en.wikipedia.org/wiki/Certificate_signing_request)) procedure
+Note that the name/namespace of the provided root cert cannot be `cacerts/istio-system` as that is used by Gloo Mesh for carrying out the CSR ([certificate signing request](https://en.wikipedia.org/wiki/Certificate_signing_request)) procedure
 that unifies the trust root between Meshes in the VirtualMesh.
 
 ##### Applying VirtualMesh
@@ -174,7 +174,7 @@ If you saved this VirtualMesh CR to a file named `demo-virtual-mesh.yaml`, you c
 kubectl --context $MGMT_CONTEXT apply -f demo-virtual-mesh.yaml
 ```
 
-Notice the `autoRestartPods: true` in the mtlsConfig stanza. This instructs Service Mesh Hub to restart the Istio pods in the relevant clusters. 
+Notice the `autoRestartPods: true` in the mtlsConfig stanza. This instructs Gloo Mesh to restart the Istio pods in the relevant clusters. 
 
 This is due to a limitation of Istio. The Istio control plane picks up the CA for Citadel and does not rotate it often enough. This is being [improved in future versions of Istio](https://github.com/istio/istio/issues/22993). 
 
@@ -197,19 +197,19 @@ Creating this resource will instruct Service Mesh to establish a shared root ide
 
 ## Understanding the Shared Root Process
 
-When we create the VirtualMesh CR, set the trust model to `shared`, and configure the Root CA parameters, Service Mesh Hub will kick off the process to unify the identity to a shared root. First, Service Mesh Hub will either create the Root CA specified (if `generated` is used) or use the supplied CA information. 
+When we create the VirtualMesh CR, set the trust model to `shared`, and configure the Root CA parameters, Gloo Mesh will kick off the process to unify the identity to a shared root. First, Gloo Mesh will either create the Root CA specified (if `generated` is used) or use the supplied CA information. 
 
-Then Service Mesh Hub will use a Certificate Request (CR) agent on each of the affected clusters to create a new key/cert pair that will form an intermediate CA used by the mesh on that cluster. It will then create a Certificate Request, represented by the [CertificateRequest]({{% versioned_link_path fromRoot="/reference/api/certificate_request/" %}}) CR.
+Then Gloo Mesh will use a Certificate Request (CR) agent on each of the affected clusters to create a new key/cert pair that will form an intermediate CA used by the mesh on that cluster. It will then create a Certificate Request, represented by the [CertificateRequest]({{% versioned_link_path fromRoot="/reference/api/certificate_request/" %}}) CR.
 
- Service Mesh Hub will sign the certificate with the Root CA specified in the VirtualMesh. At that point, we will want the mesh (Istio in this case) to pick up the new intermediate CA and start using that for its workloads.
+ Gloo Mesh will sign the certificate with the Root CA specified in the VirtualMesh. At that point, we will want the mesh (Istio in this case) to pick up the new intermediate CA and start using that for its workloads.
 
-![Service Mesh Hub Architecture]({{% versioned_link_path fromRoot="/img/smh-csr.png" %}})
+![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/gloomesh-csr.png" %}})
 
 To verify, let's check the `IssuedCertificates` CR in `remote-cluster-context`:
 
 ```shell
 kubectl --context $REMOTE_CONTEXT \
-get issuedcertificates -n service-mesh-hub
+get issuedcertificates -n gloo-mesh
 ```
 
 We should see this on the remote cluster:
@@ -227,14 +227,14 @@ Lastly, let's verify the correct `cacerts` was created in the `istio-system` nam
 kubectl --context $MGMT_CONTEXT get secret -n istio-system cacerts 
 
 NAME      TYPE                                          DATA   AGE
-cacerts   certificates.smh.solo.io/issued_certificate   5      20s
+cacerts   certificates.mesh.gloo.solo.io/issued_certificate   5      20s
 ```
 
 ```shell
 kubectl --context $REMOTE_CONTEXT get secret -n istio-system cacerts 
 
 NAME      TYPE                                          DATA   AGE
-cacerts   certificates.smh.solo.io/issued_certificate   5      5m3s
+cacerts   certificates.mesh.gloo.solo.io/issued_certificate   5      5m3s
 ```
 
 In the previous section, we bounced the Istio control plane to pick up these intermediate certs. Again, this is being [improved in future versions of Istio](https://github.com/istio/istio/issues/22993). 
@@ -242,7 +242,7 @@ In the previous section, we bounced the Istio control plane to pick up these int
 
 ##### Multi-cluster mesh federation
 
-Once trust has been established, Service Mesh Hub will start federating services so that they are accessible across clusters. Behind the scenes, Service Mesh Hub will handle the networking -- possibly through egress and ingress gateways, and possibly affected by user-defined traffic and access policies -- and ensure requests to the service will resolve and be routed to the right destination. Users can fine-tune which services are federated where by editing the virtual mesh. 
+Once trust has been established, Gloo Mesh will start federating services so that they are accessible across clusters. Behind the scenes, Gloo Mesh will handle the networking -- possibly through egress and ingress gateways, and possibly affected by user-defined traffic and access policies -- and ensure requests to the service will resolve and be routed to the right destination. Users can fine-tune which services are federated where by editing the virtual mesh. 
 
 For example, you can see what Istio `ServiceEntry` objects were created. On the `mgmt-cluster` cluster you can see:
 
@@ -276,8 +276,8 @@ reviews.bookinfo.svc.mgmt-cluster.global                    [reviews.bookinfo.sv
 
 ## See it in action
 
-Check out "Part Two" of the ["Dive into Service Mesh Hub" video series](https://www.youtube.com/watch?v=4sWikVELr5M&list=PLBOtlFtGznBjr4E9xYHH9eVyiOwnk1ciK)
-(note that the video content reflects Service Mesh Hub <b>v0.6.1</b>):
+Check out "Part Two" of the ["Dive into Gloo Mesh" video series](https://www.youtube.com/watch?v=4sWikVELr5M&list=PLBOtlFtGznBjr4E9xYHH9eVyiOwnk1ciK)
+(note that the video content reflects Gloo Mesh <b>v0.6.1</b>):
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/djcDaIsqIl8" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 

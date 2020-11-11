@@ -3,4 +3,4 @@ changelog:
   description: >
     Temporarily invalidate multi-cluster subsets, as implementing them is slightly difficult, and they currently
     silently break istio/envoy
-  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/326
+  issueLink:  https://github.com/solo-io/gloo-mesh/issues/326

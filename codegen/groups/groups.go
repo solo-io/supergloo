@@ -1,19 +1,19 @@
 package groups
 
 import (
-	"github.com/solo-io/service-mesh-hub/codegen/constants"
+	"github.com/solo-io/gloo-mesh/codegen/constants"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/contrib"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var (
-	smhModule       = "github.com/solo-io/service-mesh-hub"
+	glooMeshModule  = "github.com/solo-io/gloo-mesh"
 	v1alpha2Version = "v1alpha2"
-	smhApiRoot      = "pkg/api"
+	glooMeshApiRoot = "pkg/api"
 )
 
-var SMHGroups = []model.Group{
+var GlooMeshGroups = []model.Group{
 	makeGroup("settings", v1alpha2Version, []ResourceToGenerate{
 		{Kind: "Settings"},
 	}),
@@ -44,7 +44,7 @@ type ResourceToGenerate struct {
 }
 
 func makeGroup(groupPrefix, version string, resourcesToGenerate []ResourceToGenerate) model.Group {
-	return MakeGroup(smhModule, smhApiRoot, groupPrefix, version, resourcesToGenerate)
+	return MakeGroup(glooMeshModule, glooMeshApiRoot, groupPrefix, version, resourcesToGenerate)
 }
 
 // exported for use in enterprise repo
@@ -69,7 +69,7 @@ func MakeGroup(module, apiRoot, groupPrefix, version string, resourcesToGenerate
 
 	return model.Group{
 		GroupVersion: schema.GroupVersion{
-			Group:   groupPrefix + "." + constants.ServiceMeshHubApiGroupSuffix,
+			Group:   groupPrefix + "." + constants.GlooMeshApiGroupSuffix,
 			Version: version,
 		},
 		Module:                  module,

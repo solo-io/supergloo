@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl demo istio-multicluster
 
-Demo Service Mesh Hub functionality with two Istio control planes deployed on separate k8s clusters
+Demo Gloo Mesh functionality with two Istio control planes deployed on separate k8s clusters
 
 ### Synopsis
 
-Demo Service Mesh Hub functionality with two Istio control planes deployed on separate k8s clusters
+Demo Gloo Mesh functionality with two Istio control planes deployed on separate k8s clusters
 
 ### Options
 
@@ -18,7 +18,7 @@ Demo Service Mesh Hub functionality with two Istio control planes deployed on se
 
 ### SEE ALSO
 
-* [meshctl demo](../meshctl_demo)	 - Bootstrap environments for various demos demonstrating Service Mesh Hub functionality.
+* [meshctl demo](../meshctl_demo)	 - Bootstrap environments for various demos demonstrating Gloo Mesh functionality.
 * [meshctl demo istio-multicluster cleanup](../meshctl_demo_istio-multicluster_cleanup)	 - Clean up bootstrapped local resources
-* [meshctl demo istio-multicluster init](../meshctl_demo_istio-multicluster_init)	 - Bootstrap a multicluster Istio demo with Service Mesh Hub
+* [meshctl demo istio-multicluster init](../meshctl_demo_istio-multicluster_init)	 - Bootstrap a multicluster Istio demo with Gloo Mesh
 

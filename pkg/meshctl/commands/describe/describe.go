@@ -3,8 +3,8 @@ package describe
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/mesh"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/traffictarget"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/mesh"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/traffictarget"
 	"github.com/spf13/cobra"
 )
 

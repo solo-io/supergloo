@@ -1,4 +1,4 @@
 changelog:
 - type: NEW_FEATURE
   description: Create revamped API definitions for OS release.
-  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/83
+  issueLink:  https://github.com/solo-io/gloo-mesh/issues/83

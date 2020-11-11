@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
     description: Add nodeSelector for mesh-discovery, mesh-networking, and csr-agent helm templates
-    issueLink: https://github.com/solo-io/service-mesh-hub/pull/715
+    issueLink: https://github.com/solo-io/gloo-mesh/pull/715

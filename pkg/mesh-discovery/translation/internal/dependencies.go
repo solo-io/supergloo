@@ -3,20 +3,20 @@ package translation
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector/appmesh"
-	appmeshsidecar "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector/appmesh"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector/appmesh"
+	appmeshsidecar "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/detector/appmesh"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh"
-	meshdetector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector/osm"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/traffictarget"
-	traffictargetdetector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/traffictarget/detector"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload"
-	workloaddetector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector"
-	istiosidecar "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector/istio"
-	osmsidecar "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector/osm"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh"
+	meshdetector "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector/istio"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector/osm"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/traffictarget"
+	traffictargetdetector "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/traffictarget/detector"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload"
+	workloaddetector "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/detector"
+	istiosidecar "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/detector/istio"
+	osmsidecar "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/detector/osm"
 )
 
 // we must generate in the same package because the interface is private

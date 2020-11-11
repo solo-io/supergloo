@@ -1,11 +1,11 @@
 package access
 
 import (
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/go-utils/kubeutils"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	securityv1beta1spec "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
 	securityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
@@ -91,7 +91,7 @@ func buildAuthPoliciesForIngressgateways(
 	return authPolicies
 }
 
-// Creates a global AuthorizationPolicy that denies all traffic within the Mesh unless explicitly allowed by SMH AccessControl resources.
+// Creates a global AuthorizationPolicy that denies all traffic within the Mesh unless explicitly allowed by GlooMesh AccessControl resources.
 func buildGlobalAuthPolicy(
 	installationNamespace,
 	clusterName string,

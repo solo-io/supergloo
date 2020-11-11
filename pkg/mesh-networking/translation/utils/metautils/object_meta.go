@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,7 +14,7 @@ import (
 
 var (
 	// the key used to differentiate translated resources by
-	// the SMH instance which produced them
+	// the GlooMesh instance which produced them
 	OwnershipLabelKey = fmt.Sprintf("owner.%s", v1alpha2.SchemeGroupVersion.Group)
 
 	// Annotation key indicating that the resource configures a federated traffic target
@@ -59,7 +59,7 @@ func federatedObjectName(
 	return strings.Join([]string{sourceObj.GetName(), sourceObj.GetNamespace(), sourceObj.GetClusterName()}, "-")
 }
 
-// ownership label defaults to current namespace to allow multiple SMH tenancy within a cluster.
+// ownership label defaults to current namespace to allow multiple GlooMesh tenancy within a cluster.
 func TranslatedObjectLabels() map[string]string {
 	return map[string]string{OwnershipLabelKey: defaults.GetPodNamespace()}
 }

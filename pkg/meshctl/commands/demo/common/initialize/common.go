@@ -8,16 +8,16 @@ import (
 
 	"github.com/gobuffalo/packr"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/service-mesh-hub/codegen/helm"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	"github.com/solo-io/service-mesh-hub/pkg/common/version"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/registration"
+	"github.com/solo-io/gloo-mesh/codegen/helm"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/common/version"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 )
 
 const (
-	// The default version of k8s under Linux is 1.18 https://github.com/solo-io/service-mesh-hub/issues/700
+	// The default version of k8s under Linux is 1.18 https://github.com/solo-io/gloo-mesh/issues/700
 	kindImage      = "kindest/node:v1.17.5"
 	managementPort = "32001"
 	remotePort     = "32000"
@@ -43,8 +43,8 @@ func createKindCluster(cluster string, port string, box packr.Box) error {
 	return nil
 }
 
-func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) error {
-	fmt.Printf("Deploying Service Mesh Hub to %s from images\n", cluster)
+func installGlooMesh(ctx context.Context, cluster string, box packr.Box) error {
+	fmt.Printf("Deploying Gloo Mesh to %s from images\n", cluster)
 
 	apiServerAddress, err := getApiAddress(cluster, box)
 	if err != nil {
@@ -56,11 +56,11 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 
 	namespace := defaults.DefaultPodNamespace
 	verbose := true
-	smhChartUri := fmt.Sprintf(smh.ServiceMeshHubChartUriTemplate, version.Version)
-	certAgentChartUri := fmt.Sprintf(smh.CertAgentChartUriTemplate, version.Version)
+	gloomeshChartUri := fmt.Sprintf(gloomesh.GlooMeshChartUriTemplate, version.Version)
+	certAgentChartUri := fmt.Sprintf(gloomesh.CertAgentChartUriTemplate, version.Version)
 
-	err = smh.Installer{
-		HelmChartPath:  smhChartUri,
+	err = gloomesh.Installer{
+		HelmChartPath:  gloomeshChartUri,
 		HelmValuesPath: "",
 		KubeConfig:     "",
 		KubeContext:    kubeContext,
@@ -68,11 +68,11 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 		ReleaseName:    helm.Chart.Data.Name,
 		Verbose:        verbose,
 		DryRun:         false,
-	}.InstallServiceMeshHub(
+	}.InstallGlooMesh(
 		ctx,
 	)
 	if err != nil {
-		return eris.Wrap(err, "Error installing Service Mesh Hub")
+		return eris.Wrap(err, "Error installing Gloo Mesh")
 	}
 
 	registrantOpts := &registration.RegistrantOptions{
@@ -103,7 +103,7 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 		return eris.Wrapf(err, "registering cluster %s", cluster)
 	}
 
-	script, err := box.FindString("post_install_smh.sh")
+	script, err := box.FindString("post_install_gloomesh.sh")
 	if err != nil {
 		return eris.Wrap(err, "Error loading script")
 	}
@@ -116,7 +116,7 @@ func installServiceMeshHub(ctx context.Context, cluster string, box packr.Box) e
 		return eris.Wrap(err, "Error running post-install script")
 	}
 
-	fmt.Printf("Successfully set up Service Mesh Hub on cluster %s\n", cluster)
+	fmt.Printf("Successfully set up Gloo Mesh on cluster %s\n", cluster)
 	return nil
 }
 
@@ -133,7 +133,7 @@ func registerCluster(ctx context.Context, mgmtCluster string, cluster string, bo
 	remoteKubeContext := fmt.Sprintf("kind-%s", cluster)
 
 	namespace := defaults.DefaultPodNamespace
-	certAgentChartUri := fmt.Sprintf(smh.CertAgentChartUriTemplate, version.Version)
+	certAgentChartUri := fmt.Sprintf(gloomesh.CertAgentChartUriTemplate, version.Version)
 
 	registrantOpts := &registration.RegistrantOptions{
 		KubeConfigPath: kubeConfig,

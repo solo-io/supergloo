@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
     description: Expose new Settings CRD that allows user configuration of SMH discovery for AWS resources.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/685
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/685

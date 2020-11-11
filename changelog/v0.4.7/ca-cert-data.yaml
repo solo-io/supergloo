@@ -1,6 +1,6 @@
 changelog:
 - type: FIX
   description: Fix the config creator so it will read the certificate data from a file if specified.
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/590
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/590
 
 

@@ -1,7 +1,7 @@
 package flags
 
 import (
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )

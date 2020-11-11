@@ -3,10 +3,10 @@ package output
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/fieldutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/fieldutils"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/output/discovery"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/output/discovery"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
 )

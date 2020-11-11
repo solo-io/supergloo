@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
+	"github.com/solo-io/gloo-mesh/pkg/common/schemes"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"

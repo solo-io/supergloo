@@ -22,5 +22,5 @@ meshctl demo osm cleanup [flags]
 
 ### SEE ALSO
 
-* [meshctl demo osm](../meshctl_demo_osm)	 - Demo Service Mesh Hub functionality one OSM control plane deployed
+* [meshctl demo osm](../meshctl_demo_osm)	 - Demo Gloo Mesh functionality one OSM control plane deployed
 

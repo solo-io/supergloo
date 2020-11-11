@@ -1,4 +1,4 @@
 changelog:
   - type: NON_USER_FACING
     description: Fix unit test flake caused by goroutine not being cleaned up
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/670
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/670

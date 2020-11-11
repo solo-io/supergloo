@@ -2,10 +2,10 @@
 # Base
 #----------------------------------------------------------------------------------
 OUTDIR ?= _output
-PROJECT ?= service-mesh-hub
+PROJECT ?= gloo-mesh
 
 DOCKER_REPO ?= soloio
-SMH_IMAGE ?= $(DOCKER_REPO)/service-mesh-hub
+GLOOMESH_IMAGE ?= $(DOCKER_REPO)/gloo-mesh
 CA_IMAGE ?= $(DOCKER_REPO)/cert-agent
 
 SOURCES := $(shell find . -name "*.go" | grep -v test.go)
@@ -104,40 +104,40 @@ generated-reference-docs: clear-vendor-any
 #----------------------------------------------------------------------------------
 
 .PHONY: build-all-images
-build-all-images: service-mesh-hub-image cert-agent-image
+build-all-images: gloo-mesh-image cert-agent-image
 
 #----------------------------------------------------------------------------------
-# Build service-mesh-hub controller + image
+# Build gloo-mesh controller + image
 #----------------------------------------------------------------------------------
 
-# for local development only; to build docker image, use service-mesh-hub-linux-amd-64
-.PHONY: service-mesh-hub
-service-mesh-hub: $(OUTDIR)/service-mesh-hub
-$(OUTDIR)/service-mesh-hub: $(SOURCES)
-	go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/service-mesh-hub/main.go
+# for local development only; to build docker image, use gloo-mesh-linux-amd-64
+.PHONY: gloo-mesh
+gloo-mesh: $(OUTDIR)/gloo-mesh
+$(OUTDIR)/gloo-mesh: $(SOURCES)
+	go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/gloo-mesh/main.go
 
-.PHONY: service-mesh-hub-linux-amd64
-service-mesh-hub-linux-amd64: $(OUTDIR)/service-mesh-hub-linux-amd64
-$(OUTDIR)/service-mesh-hub-linux-amd64: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/service-mesh-hub/main.go
+.PHONY: gloo-mesh-linux-amd64
+gloo-mesh-linux-amd64: $(OUTDIR)/gloo-mesh-linux-amd64
+$(OUTDIR)/gloo-mesh-linux-amd64: $(SOURCES)
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) -o $@ cmd/gloo-mesh/main.go
 
-# build image with service-mesh-hub binary
+# build image with gloo-mesh binary
 # this is an alternative to using operator-gen to build the image
-.PHONY: service-mesh-hub-image
-service-mesh-hub-image: service-mesh-hub-linux-amd64
-	cp $(OUTDIR)/service-mesh-hub-linux-amd64 build/service-mesh-hub/ && \
-	docker build -t $(SMH_IMAGE):$(VERSION) build/service-mesh-hub/
-	rm build/service-mesh-hub/service-mesh-hub-linux-amd64
+.PHONY: gloo-mesh-image
+gloo-mesh-image: gloo-mesh-linux-amd64
+	cp $(OUTDIR)/gloo-mesh-linux-amd64 build/gloo-mesh/ && \
+	docker build -t $(GLOOMESH_IMAGE):$(VERSION) build/gloo-mesh/
+	rm build/gloo-mesh/gloo-mesh-linux-amd64
 
-.PHONY: service-mesh-hub-image-push
-service-mesh-hub-image-push: service-mesh-hub-image
+.PHONY: gloo-mesh-image-push
+gloo-mesh-image-push: gloo-mesh-image
 ifeq ($(RELEASE),"true")
-	docker push $(SMH_IMAGE):$(VERSION)
+	docker push $(GLOOMESH_IMAGE):$(VERSION)
 endif
 
-.PHONY: service-mesh-hub-image-load
-service-mesh-hub-image-load: service-mesh-hub-image
-    kind load docker-image --name mgmt-cluster $(SMH_IMAGE):$(VERSION)
+.PHONY: gloo-mesh-image-load
+gloo-mesh-image-load: gloo-mesh-image
+    kind load docker-image --name mgmt-cluster $(GLOOMESH_IMAGE):$(VERSION)
 
 #----------------------------------------------------------------------------------
 # Build cert-agent + image
@@ -174,7 +174,7 @@ cert-agent-image-load: cert-agent-image
 
 
 #----------------------------------------------------------------------------------
-# Build service-mesh-hub cli (meshctl)
+# Build gloo-mesh cli (meshctl)
 #----------------------------------------------------------------------------------
 
 .PHONY: meshctl-linux-amd64
@@ -204,7 +204,7 @@ install-cli:
 #----------------------------------------------------------------------------------
 
 .PHONY: push-all-images
-push-all-images: service-mesh-hub-image-push cert-agent-image-push
+push-all-images: gloo-mesh-image-push cert-agent-image-push
 
 #----------------------------------------------------------------------------------
 # Helm chart
@@ -219,9 +219,9 @@ chart-gen: clear-vendor-any
 	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go -chart
 
 .PHONY: manifest-gen
-manifest-gen: install/service-mesh-hub-default.yaml
-install/service-mesh-hub-default.yaml: chart-gen
-	helm template --include-crds --namespace service-mesh-hub install/helm/service-mesh-hub > $@
+manifest-gen: install/gloo-mesh-default.yaml
+install/gloo-mesh-default.yaml: chart-gen
+	helm template --include-crds --namespace gloo-mesh install/helm/gloo-mesh > $@
 
 #----------------------------------------------------------------------------------
 # Test
@@ -260,7 +260,7 @@ endif
 
 .PHONY: clean
 clean: clean-helm
-	rm -f install/service-mesh-hub-default.yaml
+	rm -f install/gloo-mesh-default.yaml
 	rm -rf  _output/ vendor_any/
 
 .PHONY: clean-generated-code

@@ -1,4 +1,4 @@
 changelog:
 - type: NEW_FEATURE
   description: Write a KubernetesCluster resource to the master cluster on cluster registration
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/157
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/157

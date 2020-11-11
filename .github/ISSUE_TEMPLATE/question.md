@@ -8,4 +8,4 @@ assignees: ''
 ---
 
 For a fast response, consider asking your question on the solo slack. Get an invite at https://slack.solo.io.
-Also, please check out `https://docs.solo.io/service-mesh-hub/latest` for documentation and guides.
+Also, please check out `https://docs.solo.io/gloo-mesh/latest` for documentation and guides.

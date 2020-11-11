@@ -1,5 +1,5 @@
 changelog:
   - type: NEW_FEATURE
     description: Add SMI CRDs - TrafficTarget, HttpRouteGroups, TrafficSplits
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/25
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/25
 

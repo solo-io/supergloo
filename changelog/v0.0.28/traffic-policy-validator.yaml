@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
     description: Add logic to validate the values of user-supplied TrafficPolicy configuration.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/232
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/232

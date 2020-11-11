@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Restore check for istio post-install jobs in discovery syncer.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/5
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/5

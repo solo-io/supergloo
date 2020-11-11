@@ -3,7 +3,7 @@
 title: "mesh.proto"
 ---
 
-## Package : `discovery.smh.solo.io`
+## Package : `discovery.mesh.gloo.solo.io`
 
 
 
@@ -16,21 +16,21 @@ title: "mesh.proto"
 
 
 ## Table of Contents
-  - [MeshSpec](#discovery.smh.solo.io.MeshSpec)
-  - [MeshSpec.AgentInfo](#discovery.smh.solo.io.MeshSpec.AgentInfo)
-  - [MeshSpec.AwsAppMesh](#discovery.smh.solo.io.MeshSpec.AwsAppMesh)
-  - [MeshSpec.ConsulConnectMesh](#discovery.smh.solo.io.MeshSpec.ConsulConnectMesh)
-  - [MeshSpec.Istio](#discovery.smh.solo.io.MeshSpec.Istio)
-  - [MeshSpec.Istio.CitadelInfo](#discovery.smh.solo.io.MeshSpec.Istio.CitadelInfo)
-  - [MeshSpec.Istio.IngressGatewayInfo](#discovery.smh.solo.io.MeshSpec.Istio.IngressGatewayInfo)
-  - [MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry](#discovery.smh.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry)
-  - [MeshSpec.LinkerdMesh](#discovery.smh.solo.io.MeshSpec.LinkerdMesh)
-  - [MeshSpec.MeshInstallation](#discovery.smh.solo.io.MeshSpec.MeshInstallation)
-  - [MeshSpec.MeshInstallation.PodLabelsEntry](#discovery.smh.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry)
-  - [MeshSpec.OSM](#discovery.smh.solo.io.MeshSpec.OSM)
-  - [MeshStatus](#discovery.smh.solo.io.MeshStatus)
-  - [MeshStatus.AppliedFailoverService](#discovery.smh.solo.io.MeshStatus.AppliedFailoverService)
-  - [MeshStatus.AppliedVirtualMesh](#discovery.smh.solo.io.MeshStatus.AppliedVirtualMesh)
+  - [MeshSpec](#discovery.mesh.gloo.solo.io.MeshSpec)
+  - [MeshSpec.AgentInfo](#discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo)
+  - [MeshSpec.AwsAppMesh](#discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh)
+  - [MeshSpec.ConsulConnectMesh](#discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh)
+  - [MeshSpec.Istio](#discovery.mesh.gloo.solo.io.MeshSpec.Istio)
+  - [MeshSpec.Istio.CitadelInfo](#discovery.mesh.gloo.solo.io.MeshSpec.Istio.CitadelInfo)
+  - [MeshSpec.Istio.IngressGatewayInfo](#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo)
+  - [MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry](#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry)
+  - [MeshSpec.LinkerdMesh](#discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh)
+  - [MeshSpec.MeshInstallation](#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation)
+  - [MeshSpec.MeshInstallation.PodLabelsEntry](#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry)
+  - [MeshSpec.OSM](#discovery.mesh.gloo.solo.io.MeshSpec.OSM)
+  - [MeshStatus](#discovery.mesh.gloo.solo.io.MeshStatus)
+  - [MeshStatus.AppliedFailoverService](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService)
+  - [MeshStatus.AppliedVirtualMesh](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh)
 
 
 
@@ -38,7 +38,7 @@ title: "mesh.proto"
 
 
 
-<a name="discovery.smh.solo.io.MeshSpec"></a>
+<a name="discovery.mesh.gloo.solo.io.MeshSpec"></a>
 
 ### MeshSpec
 Meshes represent a currently registered service mesh.
@@ -46,22 +46,22 @@ Meshes represent a currently registered service mesh.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| istio | discovery.smh.solo.io.MeshSpec.Istio |  |  |
-| awsAppMesh | discovery.smh.solo.io.MeshSpec.AwsAppMesh |  |  |
-| linkerd | discovery.smh.solo.io.MeshSpec.LinkerdMesh |  |  |
-| consulConnect | discovery.smh.solo.io.MeshSpec.ConsulConnectMesh |  |  |
-| osm | discovery.smh.solo.io.MeshSpec.OSM |  |  |
-| agentInfo | discovery.smh.solo.io.MeshSpec.AgentInfo |  | Information about the SMH certificate agent if it has been installed to the remote cluster. |
+| istio | discovery.mesh.gloo.solo.io.MeshSpec.Istio |  |  |
+| awsAppMesh | discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh |  |  |
+| linkerd | discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh |  |  |
+| consulConnect | discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh |  |  |
+| osm | discovery.mesh.gloo.solo.io.MeshSpec.OSM |  |  |
+| agentInfo | discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo |  | Information about the Gloo Mesh certificate agent if it has been installed to the remote cluster. |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.MeshSpec.AgentInfo"></a>
+<a name="discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo"></a>
 
 ### MeshSpec.AgentInfo
-information about the SMH Cert-Agent which may be installed to the remote cluster which contains the Mesh control plane
+information about the Gloo Mesh Cert-Agent which may be installed to the remote cluster which contains the Mesh control plane
 
 
 | Field | Type | Label | Description |
@@ -73,7 +73,7 @@ information about the SMH Cert-Agent which may be installed to the remote cluste
 
 
 
-<a name="discovery.smh.solo.io.MeshSpec.AwsAppMesh"></a>
+<a name="discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh"></a>
 
 ### MeshSpec.AwsAppMesh
 Mesh object representing AWS AppMesh.
@@ -92,7 +92,7 @@ Mesh object representing AWS AppMesh.
 
 
 
-<a name="discovery.smh.solo.io.MeshSpec.ConsulConnectMesh"></a>
+<a name="discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh"></a>
 
 ### MeshSpec.ConsulConnectMesh
 Mesh object representing an installed ConsulConnect control plane.
@@ -100,14 +100,14 @@ Mesh object representing an installed ConsulConnect control plane.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | discovery.smh.solo.io.MeshSpec.MeshInstallation |  |  |
+| installation | discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation |  |  |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.MeshSpec.Istio"></a>
+<a name="discovery.mesh.gloo.solo.io.MeshSpec.Istio"></a>
 
 ### MeshSpec.Istio
 Mesh object representing an installed Istio control plane
@@ -115,16 +115,16 @@ Mesh object representing an installed Istio control plane
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | discovery.smh.solo.io.MeshSpec.MeshInstallation |  | Configuration metadata about the istio control plane installation. |
-| citadelInfo | discovery.smh.solo.io.MeshSpec.Istio.CitadelInfo |  | Configuration metadata for Istio Citadel (Istio's security component). |
-| ingressGateways | []discovery.smh.solo.io.MeshSpec.Istio.IngressGatewayInfo | repeated | Configuration metadata for Istio IngressGateway (the Istio Ingress). |
+| installation | discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation |  | Configuration metadata about the istio control plane installation. |
+| citadelInfo | discovery.mesh.gloo.solo.io.MeshSpec.Istio.CitadelInfo |  | Configuration metadata for Istio Citadel (Istio's security component). |
+| ingressGateways | []discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo | repeated | Configuration metadata for Istio IngressGateway (the Istio Ingress). |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.MeshSpec.Istio.CitadelInfo"></a>
+<a name="discovery.mesh.gloo.solo.io.MeshSpec.Istio.CitadelInfo"></a>
 
 ### MeshSpec.Istio.CitadelInfo
 Configuration metadata for Istio Citadel (Istio's security component).
@@ -140,7 +140,7 @@ Configuration metadata for Istio Citadel (Istio's security component).
 
 
 
-<a name="discovery.smh.solo.io.MeshSpec.Istio.IngressGatewayInfo"></a>
+<a name="discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo"></a>
 
 ### MeshSpec.Istio.IngressGatewayInfo
 
@@ -148,7 +148,7 @@ Configuration metadata for Istio Citadel (Istio's security component).
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| workloadLabels | []discovery.smh.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry | repeated | Labels matching the workload which backs the gateway, defaults to `{"istio": "ingressgateway"}`. |
+| workloadLabels | []discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry | repeated | Labels matching the workload which backs the gateway, defaults to `{"istio": "ingressgateway"}`. |
 | externalAddress | string |  | The externally-reachable address on which the gateway is listening for TLS connections. This will be the address used for cross-cluster connectivity. Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes Service (depending on its type). |
 | externalTlsPort | uint32 |  | The externally-reachable port on which the gateway is listening for TLS connections. This will be the port used for cross-cluster connectivity. List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio. Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type). |
 | tlsContainerPort | uint32 |  | Container port on which the gateway is listening for TLS connections. Defaults to 15443. |
@@ -158,7 +158,7 @@ Configuration metadata for Istio Citadel (Istio's security component).
 
 
 
-<a name="discovery.smh.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry"></a>
+<a name="discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry"></a>
 
 ### MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry
 
@@ -174,7 +174,7 @@ Configuration metadata for Istio Citadel (Istio's security component).
 
 
 
-<a name="discovery.smh.solo.io.MeshSpec.LinkerdMesh"></a>
+<a name="discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh"></a>
 
 ### MeshSpec.LinkerdMesh
 Mesh object representing an installed Linkerd control plane.
@@ -182,7 +182,7 @@ Mesh object representing an installed Linkerd control plane.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | discovery.smh.solo.io.MeshSpec.MeshInstallation |  |  |
+| installation | discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation |  |  |
 | clusterDomain | string |  | The cluster domain suffix this Linkerd mesh is configured with. See https://linkerd.io/2/tasks/using-custom-domain/ for info. |
 
 
@@ -190,7 +190,7 @@ Mesh object representing an installed Linkerd control plane.
 
 
 
-<a name="discovery.smh.solo.io.MeshSpec.MeshInstallation"></a>
+<a name="discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation"></a>
 
 ### MeshSpec.MeshInstallation
 The cluster on which the control plane for this mesh is deployed. Not all MeshTypes have a MeshInstallation. Only self-hosted control planes such as Istio and Linkerd will have installation metadata.
@@ -200,7 +200,7 @@ The cluster on which the control plane for this mesh is deployed. Not all MeshTy
 | ----- | ---- | ----- | ----------- |
 | namespace | string |  | Namespace in which the control plane has been installed. |
 | cluster | string |  | Cluster in which the control plane has been installed. |
-| podLabels | []discovery.smh.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry | repeated | the labels on the control plane pods (read from the deployment) |
+| podLabels | []discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry | repeated | the labels on the control plane pods (read from the deployment) |
 | version | string |  | Version of the Mesh that has been installed. Determined using the image tag on the Mesh's primary control plane image (e.g. the istio-pilot image tag). |
 
 
@@ -208,7 +208,7 @@ The cluster on which the control plane for this mesh is deployed. Not all MeshTy
 
 
 
-<a name="discovery.smh.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry"></a>
+<a name="discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry"></a>
 
 ### MeshSpec.MeshInstallation.PodLabelsEntry
 
@@ -224,7 +224,7 @@ The cluster on which the control plane for this mesh is deployed. Not all MeshTy
 
 
 
-<a name="discovery.smh.solo.io.MeshSpec.OSM"></a>
+<a name="discovery.mesh.gloo.solo.io.MeshSpec.OSM"></a>
 
 ### MeshSpec.OSM
 https://github.com/openservicemesh/osm
@@ -232,14 +232,14 @@ https://github.com/openservicemesh/osm
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | discovery.smh.solo.io.MeshSpec.MeshInstallation |  | Information about where OSM is installed in a managed Kubernetes Cluster. |
+| installation | discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation |  | Information about where OSM is installed in a managed Kubernetes Cluster. |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.MeshStatus"></a>
+<a name="discovery.mesh.gloo.solo.io.MeshStatus"></a>
 
 ### MeshStatus
 
@@ -248,15 +248,15 @@ https://github.com/openservicemesh/osm
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that mesh-networking has reconciled the latest version of the Mesh. |
-| appliedVirtualMesh | discovery.smh.solo.io.MeshStatus.AppliedVirtualMesh |  | The VirtualMesh, if any, which contains this mesh. |
-| appliedFailoverServices | []discovery.smh.solo.io.MeshStatus.AppliedFailoverService | repeated | The FailoverServices, if any, which applies to this mesh. |
+| appliedVirtualMesh | discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh |  | The VirtualMesh, if any, which contains this mesh. |
+| appliedFailoverServices | []discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService | repeated | The FailoverServices, if any, which applies to this mesh. |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.MeshStatus.AppliedFailoverService"></a>
+<a name="discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService"></a>
 
 ### MeshStatus.AppliedFailoverService
 AppliedFailoverService represents a FailoverService that has been applied to this Mesh. If an existing FailoverService becomes invalid the last applied FailoverService will be used.
@@ -266,14 +266,14 @@ AppliedFailoverService represents a FailoverService that has been applied to thi
 | ----- | ---- | ----- | ----------- |
 | ref | core.skv2.solo.io.ObjectRef |  | Reference to the FailoverService. |
 | observedGeneration | int64 |  | The observed generation of the accepted FailoverService. |
-| spec | networking.smh.solo.io.FailoverServiceSpec |  | The last known valid spec of the FailoverService. |
+| spec | networking.mesh.gloo.solo.io.FailoverServiceSpec |  | The last known valid spec of the FailoverService. |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.MeshStatus.AppliedVirtualMesh"></a>
+<a name="discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh"></a>
 
 ### MeshStatus.AppliedVirtualMesh
 AppliedVirtualMesh represents a VirtualMesh that has been applied to this Mesh. If an existing VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
@@ -283,7 +283,7 @@ AppliedVirtualMesh represents a VirtualMesh that has been applied to this Mesh. 
 | ----- | ---- | ----- | ----------- |
 | ref | core.skv2.solo.io.ObjectRef |  | Reference to the VirtualMesh. |
 | observedGeneration | int64 |  | The observed generation of the accepted VirtualMesh. |
-| spec | networking.smh.solo.io.VirtualMeshSpec |  | The last known valid spec of the VirtualMesh. |
+| spec | networking.mesh.gloo.solo.io.VirtualMeshSpec |  | The last known valid spec of the VirtualMesh. |
 
 
 

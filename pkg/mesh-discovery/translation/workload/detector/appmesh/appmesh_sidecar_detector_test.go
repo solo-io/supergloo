@@ -5,13 +5,13 @@ import (
 	"fmt"
 
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/onsi/ginkgo"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/detector"
 )
 
 var _ = Describe("AppMesh SidecarDetector", func() {
@@ -59,7 +59,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 		mesh := &v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", meshName, "some-cluster"),
-				Namespace: "service-mesh-hub",
+				Namespace: "gloo-mesh",
 			},
 			Spec: v1alpha2.MeshSpec{
 				MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
@@ -94,7 +94,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 		mesh := &v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", meshName, "some-cluster"),
-				Namespace: "service-mesh-hub",
+				Namespace: "gloo-mesh",
 			},
 			Spec: v1alpha2.MeshSpec{
 				MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
@@ -144,7 +144,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 		mesh := &v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", meshName, "some-cluster"),
-				Namespace: "service-mesh-hub",
+				Namespace: "gloo-mesh",
 			},
 			Spec: v1alpha2.MeshSpec{
 				MeshType: &v1alpha2.MeshSpec_Istio_{},
@@ -190,7 +190,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 		mesh := &v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", meshName, "some-cluster"),
-				Namespace: "service-mesh-hub",
+				Namespace: "gloo-mesh",
 			},
 			Spec: v1alpha2.MeshSpec{
 				MeshType: &v1alpha2.MeshSpec_Istio_{},

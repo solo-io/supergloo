@@ -3,7 +3,7 @@
 title: "issued_certificate.proto"
 ---
 
-## Package : `certificates.smh.solo.io`
+## Package : `certificates.mesh.gloo.solo.io`
 
 
 
@@ -16,17 +16,17 @@ title: "issued_certificate.proto"
 
 
 ## Table of Contents
-  - [IssuedCertificateSpec](#certificates.smh.solo.io.IssuedCertificateSpec)
-  - [IssuedCertificateStatus](#certificates.smh.solo.io.IssuedCertificateStatus)
+  - [IssuedCertificateSpec](#certificates.mesh.gloo.solo.io.IssuedCertificateSpec)
+  - [IssuedCertificateStatus](#certificates.mesh.gloo.solo.io.IssuedCertificateStatus)
 
-  - [IssuedCertificateStatus.State](#certificates.smh.solo.io.IssuedCertificateStatus.State)
-
-
+  - [IssuedCertificateStatus.State](#certificates.mesh.gloo.solo.io.IssuedCertificateStatus.State)
 
 
 
 
-<a name="certificates.smh.solo.io.IssuedCertificateSpec"></a>
+
+
+<a name="certificates.mesh.gloo.solo.io.IssuedCertificateSpec"></a>
 
 ### IssuedCertificateSpec
 IssuedCertificates are used to issue SSL certificates to remote Kubernetes clusters from a central (out-of-cluster) Certificate Authority.<br>When an IssuedCertificate is created, a certificate is issued to a remote cluster by a central Certificate Authority via the following workflow: - The Certificate Issuer creates the IssuedCertificate resource on the remote cluster - The Certificate Signature Requesting Agent installed to the remote cluster generates a Certificate Signing Request and writes it to the status of the IssuedCertificate - Finally, the Certificate Issuer generates signed a certificate for the CSR and writes it back as Secret in the remote cluster.<br>Shared trust can therefore be established across clusters without requiring private keys to ever leave the node.
@@ -45,7 +45,7 @@ IssuedCertificates are used to issue SSL certificates to remote Kubernetes clust
 
 
 
-<a name="certificates.smh.solo.io.IssuedCertificateStatus"></a>
+<a name="certificates.mesh.gloo.solo.io.IssuedCertificateStatus"></a>
 
 ### IssuedCertificateStatus
 The IssuedCertificate status is written by the CertificateRequesting agent.
@@ -55,7 +55,7 @@ The IssuedCertificate status is written by the CertificateRequesting agent.
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the IssuedCertificate metadata. If the observedGeneration does not match generation, the Certificate Requesting Agent has not processed the most recent version of this IssuedCertificate. |
 | error | string |  | Any error observed which prevented the CertificateRequest from being processed. If the error is empty, the request has been processed successfully. |
-| state | certificates.smh.solo.io.IssuedCertificateStatus.State |  | The current state of the IssuedCertificate workflow, reported by the agent. |
+| state | certificates.mesh.gloo.solo.io.IssuedCertificateStatus.State |  | The current state of the IssuedCertificate workflow, reported by the agent. |
 
 
 
@@ -64,7 +64,7 @@ The IssuedCertificate status is written by the CertificateRequesting agent.
  <!-- end messages -->
 
 
-<a name="certificates.smh.solo.io.IssuedCertificateStatus.State"></a>
+<a name="certificates.mesh.gloo.solo.io.IssuedCertificateStatus.State"></a>
 
 ### IssuedCertificateStatus.State
 Possible states in which an IssuedCertificate can exist.

@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Stop looking at post-install jobs for istio discovery.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/73
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/73
