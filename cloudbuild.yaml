@@ -60,7 +60,7 @@ steps:
 - name: gcr.io/cloud-builders/gsutil
   entrypoint: mkdir
   args: ['-p', './_output/helm']
-  dir: &dir "/workspace/service-mesh-hub"
+  dir: &dir "/workspace/gloo-mesh"
   waitFor: ['prepare-workspace']
   id: 'make-helm-dir'
 
