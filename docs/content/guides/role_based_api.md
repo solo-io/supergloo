@@ -123,9 +123,10 @@ spec:
             clusters:
               - "*"
         - kubeServiceRefs:
-            - name: "*"
-              namespace: "*"
-              clusterName: "*"
+            services:
+              - name: "*"
+                namespace: "*"
+                clusterName: "*"
       workloadSelectors:
         - labels:
             "*": "*"
@@ -160,9 +161,10 @@ spec:
             clusters:
               - "*"
         - kubeServiceRefs:
-            - name: "*"
-              namespace: "*"
-              clusterName: "*"
+            services:
+              - name: "*"
+                namespace: "*"
+                clusterName: "*"
   failoverServiceScopes:
     - meshRefs:
         - name: "*"
@@ -200,9 +202,10 @@ spec:
             clusters:
               - "mgmt-cluster"
         - kubeServiceRefs:
-            - name: "*"
-              namespace: "*"
-              clusterName: "mgmt-cluster"
+            services:
+              - name: "*"
+                namespace: "*"
+                clusterName: "mgmt-cluster"
       workloadSelectors:
         - labels:
             "*": "*"
@@ -232,9 +235,10 @@ spec:
             clusters:
               - "mgmt-cluster"
         - kubeServiceRefs:
-            - name: "*"
-              namespace: "*"
-              clusterName: "mgmt-cluster"
+            services:
+              - name: "*"
+                namespace: "*"
+                clusterName: "mgmt-cluster"
   failoverServiceScopes:
     - meshRefs:
         - name: istiod-istio-system-mgmt-cluster
