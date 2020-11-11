@@ -4,10 +4,13 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/solo-io/skv2/codegen/util"
 
 	"k8s.io/client-go/rest"
 
@@ -69,6 +72,7 @@ type KubeContext struct {
 	SecretClient          kubernetes_core.SecretClient
 	VirtualMeshClient     networkingv1alpha2.VirtualMeshClient
 	DestinationRuleClient istionetworkingv1alpha3.DestinationRuleClient
+	VirtualServiceClient  istionetworkingv1alpha3.VirtualServiceClient
 }
 
 // If kubecontext is empty string, use current context.
@@ -104,6 +108,7 @@ func NewKubeContext(kubecontext string) KubeContext {
 		MeshClient:            discoveryClientset.Meshes(),
 		SecretClient:          kubeCoreClientset.Secrets(),
 		DestinationRuleClient: istioNetworkingClientset.DestinationRules(),
+		VirtualServiceClient:  istioNetworkingClientset.VirtualServices(),
 	}
 }
 
@@ -217,11 +222,16 @@ func StartEnv(ctx context.Context) Env {
 		return newEnv(mgmt, remote)
 	}
 
+	// change to repo root dir
+	err := os.Chdir(filepath.Join(util.MustGetThisDir(), "..", ".."))
+	Expect(err).NotTo(HaveOccurred())
+
+	// get absolute path to setup script so this function can be called from any working directory)
 	cmd := exec.CommandContext(ctx, "./ci/setup-kind.sh", strconv.Itoa(GinkgoParallelNode()))
 	cmd.Stdout = GinkgoWriter
 	cmd.Stderr = GinkgoWriter
 
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		dumpState()
 	}

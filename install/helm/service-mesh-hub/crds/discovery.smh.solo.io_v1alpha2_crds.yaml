@@ -169,22 +169,29 @@ spec:
                         items:
                           properties:
                             kubeServiceMatcher:
-                              description: |-
-                                A KubeServiceMatcher matches kubernetes services by the namespaces and clusters they belong to, as well
-                                as the provided labels.
+                              description: A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters.
                               properties:
                                 clusters:
-                                  description: If specified, match k8s Services if they exist in one of the specified clusters. If not specified, match on any cluster.
+                                  description: |-
+                                    If specified, match k8s Services if they exist in one of the specified clusters.
+                                               When used in a networking policy, omission matches any cluster.
+                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
                                   items:
                                     type: string
                                   type: array
                                 labels:
                                   additionalProperties:
                                     type: string
-                                  description: If specified, all labels must exist on k8s Service, else match on any labels.
+                                  description: |-
+                                    If specified, all labels must exist on k8s Service.
+                                               When used in a networking policy, omission matches any labels.
+                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
                                   type: object
                                 namespaces:
-                                  description: If specified, match k8s Services if they exist in one of the specified namespaces. If not specified, match on any namespace.
+                                  description: |-
+                                    If specified, match k8s Services if they exist in one of the specified namespaces.
+                                               When used in a networking policy, omission matches any namespace.
+                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
                                   items:
                                     type: string
                                   type: array
@@ -193,7 +200,10 @@ spec:
                               description: Match individual k8s Services by direct reference.
                               properties:
                                 services:
-                                  description: Match k8s Services by direct reference.
+                                  description: |-
+                                    Match k8s Services by direct reference.
+                                               When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
+                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
                                   items:
                                     properties:
                                       clusterName:
@@ -228,12 +238,18 @@ spec:
                               description: A KubeIdentityMatcher matches request identities based on the k8s namespace and cluster.
                               properties:
                                 clusters:
-                                  description: Cluster to allow. If not set, any cluster is allowed.
+                                  description: |-
+                                    If specified, match k8s identity if it exists in one of the specified clusters.
+                                               When used in a networking policy, omission matches any cluster.
+                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
                                   items:
                                     type: string
                                   type: array
                                 namespaces:
-                                  description: Namespaces to allow. If not set, any namespace is allowed.
+                                  description: |-
+                                    If specified, match k8s identity if it exists in one of the specified namespaces.
+                                               When used in a networking policy, omission matches any namespace.
+                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
                                   items:
                                     type: string
                                   type: array
@@ -242,7 +258,10 @@ spec:
                               description: KubeServiceAccountRefs matches request identities based on the k8s service account of request.
                               properties:
                                 serviceAccounts:
-                                  description: List of ServiceAccounts to allow. If not set, any ServiceAccount is allowed.
+                                  description: |-
+                                    Match k8s ServiceAccounts by direct reference.
+                                               When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
+                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
                                   items:
                                     properties:
                                       clusterName:
@@ -363,22 +382,29 @@ spec:
                         items:
                           properties:
                             kubeServiceMatcher:
-                              description: |-
-                                A KubeServiceMatcher matches kubernetes services by the namespaces and clusters they belong to, as well
-                                as the provided labels.
+                              description: A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters.
                               properties:
                                 clusters:
-                                  description: If specified, match k8s Services if they exist in one of the specified clusters. If not specified, match on any cluster.
+                                  description: |-
+                                    If specified, match k8s Services if they exist in one of the specified clusters.
+                                               When used in a networking policy, omission matches any cluster.
+                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
                                   items:
                                     type: string
                                   type: array
                                 labels:
                                   additionalProperties:
                                     type: string
-                                  description: If specified, all labels must exist on k8s Service, else match on any labels.
+                                  description: |-
+                                    If specified, all labels must exist on k8s Service.
+                                               When used in a networking policy, omission matches any labels.
+                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
                                   type: object
                                 namespaces:
-                                  description: If specified, match k8s Services if they exist in one of the specified namespaces. If not specified, match on any namespace.
+                                  description: |-
+                                    If specified, match k8s Services if they exist in one of the specified namespaces.
+                                               When used in a networking policy, omission matches any namespace.
+                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
                                   items:
                                     type: string
                                   type: array
@@ -387,7 +413,10 @@ spec:
                               description: Match individual k8s Services by direct reference.
                               properties:
                                 services:
-                                  description: Match k8s Services by direct reference.
+                                  description: |-
+                                    Match k8s Services by direct reference.
+                                               When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
+                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
                                   items:
                                     properties:
                                       clusterName:
@@ -684,17 +713,26 @@ spec:
                         items:
                           properties:
                             clusters:
-                              description: If specified, match workloads if they exist in one of the specified clusters. If not specified, match on any cluster.
+                              description: |-
+                                If specified, match k8s workloads if they exist in one of the specified clusters.
+                                       When used in a networking policy, omission matches any cluster.
+                                       When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
                               items:
                                 type: string
                               type: array
                             labels:
                               additionalProperties:
                                 type: string
-                              description: If specified, all labels must exist on workloads, else match on any labels.
+                              description: |-
+                                If specified, all labels must exist on k8s workload.
+                                       When used in a networking policy, omission matches any labels.
+                                       When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
                               type: object
                             namespaces:
-                              description: If specified, match workloads if they exist in one of the specified namespaces. If not specified, match on any namespace.
+                              description: |-
+                                If specified, match k8s workloads if they exist in one of the specified namespaces.
+                                       When used in a networking policy, omission matches any namespace.
+                                       When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
                               items:
                                 type: string
                               type: array

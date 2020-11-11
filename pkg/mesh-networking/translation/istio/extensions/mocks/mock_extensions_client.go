@@ -37,64 +37,24 @@ func (m *MockNetworkingExtensionsClient) EXPECT() *MockNetworkingExtensionsClien
 	return m.recorder
 }
 
-// GetMeshPatches mocks base method
-func (m *MockNetworkingExtensionsClient) GetMeshPatches(arg0 context.Context, arg1 *v1alpha1.MeshPatchRequest, arg2 ...grpc.CallOption) (*v1alpha1.PatchList, error) {
+// GetExtensionPatches mocks base method
+func (m *MockNetworkingExtensionsClient) GetExtensionPatches(arg0 context.Context, arg1 *v1alpha1.ExtensionPatchRequest, arg2 ...grpc.CallOption) (*v1alpha1.ExtensionPatchResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "GetMeshPatches", varargs...)
-	ret0, _ := ret[0].(*v1alpha1.PatchList)
+	ret := m.ctrl.Call(m, "GetExtensionPatches", varargs...)
+	ret0, _ := ret[0].(*v1alpha1.ExtensionPatchResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetMeshPatches indicates an expected call of GetMeshPatches
-func (mr *MockNetworkingExtensionsClientMockRecorder) GetMeshPatches(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// GetExtensionPatches indicates an expected call of GetExtensionPatches
+func (mr *MockNetworkingExtensionsClientMockRecorder) GetExtensionPatches(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMeshPatches", reflect.TypeOf((*MockNetworkingExtensionsClient)(nil).GetMeshPatches), varargs...)
-}
-
-// GetTrafficTargetPatches mocks base method
-func (m *MockNetworkingExtensionsClient) GetTrafficTargetPatches(arg0 context.Context, arg1 *v1alpha1.TrafficTargetPatchRequest, arg2 ...grpc.CallOption) (*v1alpha1.PatchList, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "GetTrafficTargetPatches", varargs...)
-	ret0, _ := ret[0].(*v1alpha1.PatchList)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetTrafficTargetPatches indicates an expected call of GetTrafficTargetPatches
-func (mr *MockNetworkingExtensionsClientMockRecorder) GetTrafficTargetPatches(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrafficTargetPatches", reflect.TypeOf((*MockNetworkingExtensionsClient)(nil).GetTrafficTargetPatches), varargs...)
-}
-
-// GetWorkloadPatches mocks base method
-func (m *MockNetworkingExtensionsClient) GetWorkloadPatches(arg0 context.Context, arg1 *v1alpha1.WorkloadPatchRequest, arg2 ...grpc.CallOption) (*v1alpha1.PatchList, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "GetWorkloadPatches", varargs...)
-	ret0, _ := ret[0].(*v1alpha1.PatchList)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetWorkloadPatches indicates an expected call of GetWorkloadPatches
-func (mr *MockNetworkingExtensionsClientMockRecorder) GetWorkloadPatches(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkloadPatches", reflect.TypeOf((*MockNetworkingExtensionsClient)(nil).GetWorkloadPatches), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExtensionPatches", reflect.TypeOf((*MockNetworkingExtensionsClient)(nil).GetExtensionPatches), varargs...)
 }
 
 // WatchPushNotifications mocks base method

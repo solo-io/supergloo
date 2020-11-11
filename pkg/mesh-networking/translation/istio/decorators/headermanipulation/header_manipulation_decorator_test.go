@@ -47,12 +47,7 @@ var _ = Describe("HeaderManipulationDecorator", func() {
 				Remove: []string{"1", "2"},
 			},
 		}
-		err := headerManipulationDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
+		err := headerManipulationDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(output.Headers).To(Equal(expectedHeaderManipulation))
 	})
@@ -67,12 +62,7 @@ var _ = Describe("HeaderManipulationDecorator", func() {
 				HeaderManipulation: &v1alpha2.TrafficPolicySpec_HeaderManipulation{},
 			},
 		}
-		err := headerManipulationDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
+		err := headerManipulationDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 		Expect(output.Fault).To(BeNil())
 	})

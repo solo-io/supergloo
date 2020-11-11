@@ -45,7 +45,7 @@ func (p *panickingReporter) ReportTrafficPolicyToTrafficTarget(trafficTarget *di
 		DPanicw(
 			"internal error: error reported on TrafficPolicy which should have been caught by validation!",
 			"policy", sets.Key(trafficPolicy),
-			"mesh-service", sets.Key(trafficTarget),
+			"traffic-target", sets.Key(trafficTarget),
 			"error", err)
 }
 
@@ -53,7 +53,7 @@ func (p *panickingReporter) ReportAccessPolicyToTrafficTarget(trafficTarget *dis
 	contextutils.LoggerFrom(p.ctx).
 		DPanicw("internal error: error reported on AccessPolicy which should have been caught by validation!",
 			"policy", sets.Key(accessPolicy),
-			"mesh-service", sets.Key(trafficTarget),
+			"traffic-target", sets.Key(trafficTarget),
 			"error", err)
 }
 

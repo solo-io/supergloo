@@ -1,7 +1,7 @@
 package decorators
 
 import (
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
+	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
@@ -62,13 +62,13 @@ type RegisterField func(fieldPtr, val interface{}) error
 	decorate a given output resource.
 */
 
-// a VirtualMeshServiceEntryDecorator modifies the ServiceEntry based on a VirtualMesh which applies to the TrafficTarget.
-type VirtualMeshServiceEntryDecorator interface {
+// a VirtualTrafficTargetEntryDecorator modifies the ServiceEntry based on a VirtualMesh which applies to the TrafficTarget.
+type VirtualTrafficTargetEntryDecorator interface {
 	Decorator
 
 	ApplyVirtualMeshToServiceEntry(
-		appliedVirtualMesh *v1alpha2.MeshStatus_AppliedVirtualMesh,
-		service *v1alpha2.TrafficTarget,
+		appliedVirtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
+		service *discoveryv1alpha2.TrafficTarget,
 		output *networkingv1alpha3spec.ServiceEntry,
 		registerField RegisterField,
 	) error
@@ -84,20 +84,27 @@ type TrafficPolicyDestinationRuleDecorator interface {
 	Decorator
 
 	ApplyTrafficPolicyToDestinationRule(
-		appliedPolicy *v1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
-		service *v1alpha2.TrafficTarget,
+		appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+		service *discoveryv1alpha2.TrafficTarget,
 		output *networkingv1alpha3spec.DestinationRule,
 		registerField RegisterField,
 	) error
 }
 
-// a TrafficPolicyVirtualServiceDecorator modifies the VirtualService based on a TrafficPolicy which applies to the TrafficTarget.
+/*
+	A TrafficPolicyVirtualServiceDecorator modifies the VirtualService based on a TrafficPolicy which applies to the TrafficTarget.
+
+	If sourceMeshInstallation is specified, hostnames in the translated VirtualService will use global FQDNs if the trafficTarget
+	exists in a different cluster from the specified mesh (i.e. is a federated traffic target). Otherwise, assume translation
+	for cluster that the trafficTarget exists in and use local FQDNs.
+*/
 type TrafficPolicyVirtualServiceDecorator interface {
 	Decorator
 
 	ApplyTrafficPolicyToVirtualService(
-		appliedPolicy *v1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
-		service *v1alpha2.TrafficTarget,
+		appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+		trafficTarget *discoveryv1alpha2.TrafficTarget,
+		sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 		output *networkingv1alpha3spec.HTTPRoute,
 		registerField RegisterField,
 	) error

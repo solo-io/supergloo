@@ -36,6 +36,7 @@ func (d *corsDecorator) DecoratorName() string {
 func (d *corsDecorator) ApplyTrafficPolicyToVirtualService(
 	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
 	_ *discoveryv1alpha2.TrafficTarget,
+	_ *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {

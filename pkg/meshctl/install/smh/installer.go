@@ -11,8 +11,10 @@ import (
 const (
 	ServiceMeshHubChartUriTemplate = "https://storage.googleapis.com/service-mesh-hub/service-mesh-hub/service-mesh-hub-%s.tgz"
 	CertAgentChartUriTemplate      = "https://storage.googleapis.com/service-mesh-hub/cert-agent/cert-agent-%s.tgz"
-	certAgentReleaseName           = "cert-agent"
+	WasmAgentChartUriTemplate      = "https://storage.googleapis.com/service-mesh-hub/wasm-agent/wasm-agent-%s.tgz"
 	serviceMeshHubReleaseName      = "service-mesh-hub"
+	certAgentReleaseName           = "cert-agent"
+	wasmAgentReleaseName           = "wasm-agent"
 )
 
 type Installer struct {
@@ -36,6 +38,12 @@ func (i Installer) InstallCertAgent(
 	ctx context.Context,
 ) error {
 	return i.install(ctx, CertAgentChartUriTemplate, certAgentReleaseName)
+}
+
+func (i Installer) InstallWasmAgent(
+	ctx context.Context,
+) error {
+	return i.install(ctx, WasmAgentChartUriTemplate, wasmAgentReleaseName)
 }
 
 func (i Installer) install(

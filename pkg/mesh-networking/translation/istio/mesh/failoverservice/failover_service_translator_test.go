@@ -97,7 +97,7 @@ var _ = Describe("FailoverServiceTranslator", func() {
 		allTrafficTargets := []*discoveryv1alpha2.TrafficTarget{
 			{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "mesh-service-1",
+					Name:      "traffic-target-1",
 					Namespace: "default",
 				},
 				Spec: discoveryv1alpha2.TrafficTargetSpec{
@@ -121,7 +121,7 @@ var _ = Describe("FailoverServiceTranslator", func() {
 			},
 			{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "mesh-service-2",
+					Name:      "traffic-target-2",
 					Namespace: "default",
 				},
 				Spec: discoveryv1alpha2.TrafficTargetSpec{
@@ -232,8 +232,8 @@ var _ = Describe("FailoverServiceTranslator", func() {
           type_url: type.googleapis.com/envoy.config.cluster.aggregate.v2alpha.ClusterConfig
           value:
             clusters:
-            - outbound|9080||mesh-service-1.default
-            - outbound|9080||mesh-service-2.default.global
+            - outbound|9080||traffic-target-1.default
+            - outbound|9080||traffic-target-2.default.global
       connect_timeout: 1s
       lb_policy: CLUSTER_PROVIDED
       name: outbound|9080||failover-1.failover-namespace.cluster1
@@ -259,8 +259,8 @@ var _ = Describe("FailoverServiceTranslator", func() {
           type_url: type.googleapis.com/envoy.config.cluster.aggregate.v2alpha.ClusterConfig
           value:
             clusters:
-            - outbound|9080||mesh-service-1.default.global
-            - outbound|9080||mesh-service-2.default
+            - outbound|9080||traffic-target-1.default.global
+            - outbound|9080||traffic-target-2.default
       connect_timeout: 1s
       lb_policy: CLUSTER_PROVIDED
       name: outbound|9080||failover-1.failover-namespace.cluster1

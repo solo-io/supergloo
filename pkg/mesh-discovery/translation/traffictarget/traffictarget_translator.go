@@ -12,7 +12,7 @@ import (
 
 //go:generate mockgen -source ./traffictarget_translator.go -destination mocks/traffictarget_translator.go
 
-// the mesh-service translator converts deployments with injected sidecars into TrafficTarget CRs
+// the traffic-target translator converts deployments with injected sidecars into TrafficTarget CRs
 type Translator interface {
 	TranslateTrafficTargets(
 		services corev1sets.ServiceSet,

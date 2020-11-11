@@ -10,53 +10,58 @@ import (
 var (
 	smhModule       = "github.com/solo-io/service-mesh-hub"
 	v1alpha2Version = "v1alpha2"
-	apiRoot         = "pkg/api"
+	smhApiRoot      = "pkg/api"
 )
 
 var SMHGroups = []model.Group{
-	makeGroup("settings", v1alpha2Version, []resourceToGenerate{
-		{kind: "Settings"},
+	makeGroup("settings", v1alpha2Version, []ResourceToGenerate{
+		{Kind: "Settings"},
 	}),
-	makeGroup("discovery", v1alpha2Version, []resourceToGenerate{
-		{kind: "TrafficTarget"},
-		{kind: "Workload"},
-		{kind: "Mesh"},
+	makeGroup("discovery", v1alpha2Version, []ResourceToGenerate{
+		{Kind: "TrafficTarget"},
+		{Kind: "Workload"},
+		{Kind: "Mesh"},
 	}),
-	makeGroup("networking", v1alpha2Version, []resourceToGenerate{
-		{kind: "TrafficPolicy"},
-		{kind: "AccessPolicy"},
-		{kind: "VirtualMesh"},
-		{kind: "FailoverService"},
+	makeGroup("networking", v1alpha2Version, []ResourceToGenerate{
+		{Kind: "TrafficPolicy"},
+		{Kind: "AccessPolicy"},
+		{Kind: "VirtualMesh"},
+		{Kind: "FailoverService"},
 	}),
 }
 
 var CertAgentGroups = []model.Group{
-	makeGroup("certificates", v1alpha2Version, []resourceToGenerate{
-		{kind: "IssuedCertificate"},
-		{kind: "CertificateRequest"},
-		{kind: "PodBounceDirective", noStatus: true},
+	makeGroup("certificates", v1alpha2Version, []ResourceToGenerate{
+		{Kind: "IssuedCertificate"},
+		{Kind: "CertificateRequest"},
+		{Kind: "PodBounceDirective", NoStatus: true},
 	}),
 }
 
-type resourceToGenerate struct {
-	kind     string
-	noStatus bool // don't put a status on this resource
+type ResourceToGenerate struct {
+	Kind     string
+	NoStatus bool // don't put a status on this resource
 }
 
-func makeGroup(groupPrefix, version string, resourcesToGenerate []resourceToGenerate) model.Group {
+func makeGroup(groupPrefix, version string, resourcesToGenerate []ResourceToGenerate) model.Group {
+	return MakeGroup(smhModule, smhApiRoot, groupPrefix, version, resourcesToGenerate)
+}
+
+// exported for use in enterprise repo
+func MakeGroup(module, apiRoot, groupPrefix, version string, resourcesToGenerate []ResourceToGenerate) model.Group {
 	var resources []model.Resource
 	for _, resource := range resourcesToGenerate {
 		res := model.Resource{
-			Kind: resource.kind,
+			Kind: resource.Kind,
 			Spec: model.Field{
 				Type: model.Type{
-					Name: resource.kind + "Spec",
+					Name: resource.Kind + "Spec",
 				},
 			},
 		}
-		if !resource.noStatus {
+		if !resource.NoStatus {
 			res.Status = &model.Field{Type: model.Type{
-				Name: resource.kind + "Status",
+				Name: resource.Kind + "Status",
 			}}
 		}
 		resources = append(resources, res)
@@ -67,7 +72,7 @@ func makeGroup(groupPrefix, version string, resourcesToGenerate []resourceToGene
 			Group:   groupPrefix + "." + constants.ServiceMeshHubApiGroupSuffix,
 			Version: version,
 		},
-		Module:                  smhModule,
+		Module:                  module,
 		Resources:               resources,
 		RenderManifests:         true,
 		RenderValidationSchemas: true,

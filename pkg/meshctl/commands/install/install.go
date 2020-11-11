@@ -113,7 +113,7 @@ func install(ctx context.Context, opts *options) error {
 				APIServerAddress: opts.apiServerAddress,
 				ClusterDomain:    opts.clusterDomain,
 			},
-			CertAgent: registration.CertAgentInstallOptions{
+			CertAgent: registration.AgentInstallOptions{
 				ChartPath:   opts.certAgentChartPath,
 				ChartValues: opts.certAgentValuesPath,
 			},

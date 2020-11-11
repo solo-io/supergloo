@@ -52,15 +52,15 @@ var _ = Describe("VirtualServiceTranslator", func() {
 
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "mesh-service",
+				Name: "traffic-target",
 			},
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
 					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
-							Name:        "mesh-service",
-							Namespace:   "mesh-service-namespace",
-							ClusterName: "mesh-service-cluster",
+							Name:        "traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-cluster",
 						},
 						Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 							{
@@ -121,7 +121,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetServiceLocalFQDN(trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationServiceFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
 			Return("local-hostname").
 			Times(2)
 
@@ -355,6 +355,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			ApplyTrafficPolicyToVirtualService(
 				trafficTarget.Status.AppliedTrafficPolicies[0],
 				trafficTarget,
+				nil,
 				&networkingv1alpha3spec.HTTPRoute{
 					Match: initializedMatchRequests,
 				},
@@ -363,6 +364,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			func(
 				appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
 				service *discoveryv1alpha2.TrafficTarget,
+				sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
@@ -371,22 +373,364 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			}).
 			Return(nil)
 
-		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, mockReporter)
+		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, nil, mockReporter)
+		Expect(virtualService).To(Equal(expectedVirtualService))
+	})
+
+	It("should translate for a federated TrafficTarget", func() {
+		sourceSelectorLabels := map[string]string{"env": "dev"}
+		sourceSelectorNamespaces := []string{"n1", "n2"}
+		meshInstallation := &discoveryv1alpha2.MeshSpec_MeshInstallation{
+			Namespace: "foobar",
+			Cluster:   "mgmt-cluster",
+		}
+
+		trafficTarget := &discoveryv1alpha2.TrafficTarget{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "traffic-target",
+				ClusterName: "remote-cluster",
+			},
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+						Ref: &v1.ClusterObjectRef{
+							Name:        "traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-cluster",
+						},
+						Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+							{
+								Port:     8080,
+								Name:     "http1",
+								Protocol: "http",
+							},
+							{
+								Port:     9080,
+								Name:     "http2",
+								Protocol: "http",
+							},
+						},
+					},
+				},
+			},
+			Status: discoveryv1alpha2.TrafficTargetStatus{
+				AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+					{
+						Ref: &v1.ObjectRef{
+							Name:      "tp-1",
+							Namespace: "tp-namespace-1",
+						},
+						Spec: &networkingv1alpha2.TrafficPolicySpec{
+							SourceSelector: []*networkingv1alpha2.WorkloadSelector{
+								{
+									Labels:     sourceSelectorLabels,
+									Namespaces: sourceSelectorNamespaces,
+								},
+							},
+							HttpRequestMatchers: []*networkingv1alpha2.TrafficPolicySpec_HttpMatcher{
+								{
+									PathSpecifier: &networkingv1alpha2.TrafficPolicySpec_HttpMatcher_Exact{
+										Exact: "path",
+									},
+									Method: &networkingv1alpha2.TrafficPolicySpec_HttpMethod{Method: types.HttpMethodValue_GET},
+								},
+								{
+									Headers: []*networkingv1alpha2.TrafficPolicySpec_HeaderMatcher{
+										{
+											Name:        "name3",
+											Value:       "[a-z]+",
+											Regex:       true,
+											InvertMatch: true,
+										},
+									},
+									Method: &networkingv1alpha2.TrafficPolicySpec_HttpMethod{Method: types.HttpMethodValue_POST},
+								},
+							},
+							Retries: &networkingv1alpha2.TrafficPolicySpec_RetryPolicy{
+								Attempts: 5,
+							},
+						},
+					},
+				},
+			},
+		}
+
+		mockClusterDomainRegistry.
+			EXPECT().
+			GetDestinationServiceFQDN(meshInstallation.Cluster, trafficTarget.Spec.GetKubeService().Ref).
+			Return("local-hostname").
+			Times(2)
+
+		mockDecoratorFactory.
+			EXPECT().
+			MakeDecorators(decorators.Parameters{
+				ClusterDomains: mockClusterDomainRegistry,
+				Snapshot:       in,
+			}).
+			Return([]decorators.Decorator{mockDecorator})
+
+		initializedMatchRequests := []*networkingv1alpha3spec.HTTPMatchRequest{
+			{
+				Method:          &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "GET"}},
+				Uri:             &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "path"}},
+				SourceLabels:    sourceSelectorLabels,
+				SourceNamespace: sourceSelectorNamespaces[0],
+			},
+			{
+				Method: &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "POST"}},
+				WithoutHeaders: map[string]*networkingv1alpha3spec.StringMatch{
+					"name3": {MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: "[a-z]+"}},
+				},
+				SourceLabels:    sourceSelectorLabels,
+				SourceNamespace: sourceSelectorNamespaces[0],
+			},
+			{
+				Method:          &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "GET"}},
+				Uri:             &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "path"}},
+				SourceLabels:    sourceSelectorLabels,
+				SourceNamespace: sourceSelectorNamespaces[1],
+			},
+			{
+				Method: &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "POST"}},
+				WithoutHeaders: map[string]*networkingv1alpha3spec.StringMatch{
+					"name3": {MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: "[a-z]+"}},
+				},
+				SourceLabels:    sourceSelectorLabels,
+				SourceNamespace: sourceSelectorNamespaces[1],
+			},
+		}
+
+		httpRetry := &networkingv1alpha3spec.HTTPRetry{
+			Attempts: 5,
+		}
+
+		expectedHttpRoutes := []*networkingv1alpha3spec.HTTPRoute{
+			{
+				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
+					{
+						Method:          &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "GET"}},
+						Uri:             &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "path"}},
+						SourceLabels:    sourceSelectorLabels,
+						SourceNamespace: sourceSelectorNamespaces[1],
+						Port:            8080,
+					},
+				},
+				Route: []*networkingv1alpha3spec.HTTPRouteDestination{{
+					Destination: &networkingv1alpha3spec.Destination{
+						Host: "local-hostname",
+						Port: &networkingv1alpha3spec.PortSelector{
+							Number: 8080,
+						},
+					},
+				}},
+				Retries: httpRetry,
+			},
+			{
+				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
+					{
+						Method:          &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "GET"}},
+						Uri:             &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "path"}},
+						SourceLabels:    sourceSelectorLabels,
+						SourceNamespace: sourceSelectorNamespaces[1],
+						Port:            9080,
+					},
+				},
+				Route: []*networkingv1alpha3spec.HTTPRouteDestination{{
+					Destination: &networkingv1alpha3spec.Destination{
+						Host: "local-hostname",
+						Port: &networkingv1alpha3spec.PortSelector{
+							Number: 9080,
+						},
+					},
+				}},
+				Retries: httpRetry,
+			},
+			{
+				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
+					{
+						Method:          &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "GET"}},
+						Uri:             &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "path"}},
+						SourceLabels:    sourceSelectorLabels,
+						SourceNamespace: sourceSelectorNamespaces[0],
+						Port:            8080,
+					},
+				},
+				Route: []*networkingv1alpha3spec.HTTPRouteDestination{{
+					Destination: &networkingv1alpha3spec.Destination{
+						Host: "local-hostname",
+						Port: &networkingv1alpha3spec.PortSelector{
+							Number: 8080,
+						},
+					},
+				}},
+				Retries: httpRetry,
+			},
+			{
+				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
+					{
+						Method:          &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "GET"}},
+						Uri:             &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "path"}},
+						SourceLabels:    sourceSelectorLabels,
+						SourceNamespace: sourceSelectorNamespaces[0],
+						Port:            9080,
+					},
+				},
+				Route: []*networkingv1alpha3spec.HTTPRouteDestination{{
+					Destination: &networkingv1alpha3spec.Destination{
+						Host: "local-hostname",
+						Port: &networkingv1alpha3spec.PortSelector{
+							Number: 9080,
+						},
+					},
+				}},
+				Retries: httpRetry,
+			},
+			{
+				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
+					{
+						Method:          &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "POST"}},
+						SourceLabels:    sourceSelectorLabels,
+						SourceNamespace: sourceSelectorNamespaces[1],
+						WithoutHeaders: map[string]*networkingv1alpha3spec.StringMatch{
+							"name3": {MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: "[a-z]+"}},
+						},
+						Port: 8080,
+					},
+				},
+				Route: []*networkingv1alpha3spec.HTTPRouteDestination{{
+					Destination: &networkingv1alpha3spec.Destination{
+						Host: "local-hostname",
+						Port: &networkingv1alpha3spec.PortSelector{
+							Number: 8080,
+						},
+					},
+				}},
+				Retries: httpRetry,
+			},
+			{
+				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
+					{
+						Method:          &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "POST"}},
+						SourceLabels:    sourceSelectorLabels,
+						SourceNamespace: sourceSelectorNamespaces[1],
+						WithoutHeaders: map[string]*networkingv1alpha3spec.StringMatch{
+							"name3": {MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: "[a-z]+"}},
+						},
+						Port: 9080,
+					},
+				},
+				Route: []*networkingv1alpha3spec.HTTPRouteDestination{{
+					Destination: &networkingv1alpha3spec.Destination{
+						Host: "local-hostname",
+						Port: &networkingv1alpha3spec.PortSelector{
+							Number: 9080,
+						},
+					},
+				}},
+				Retries: httpRetry,
+			},
+			{
+				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
+					{
+						Method:          &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "POST"}},
+						SourceLabels:    sourceSelectorLabels,
+						SourceNamespace: sourceSelectorNamespaces[0],
+						WithoutHeaders: map[string]*networkingv1alpha3spec.StringMatch{
+							"name3": {MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: "[a-z]+"}},
+						},
+						Port: 8080,
+					},
+				},
+				Route: []*networkingv1alpha3spec.HTTPRouteDestination{{
+					Destination: &networkingv1alpha3spec.Destination{
+						Host: "local-hostname",
+						Port: &networkingv1alpha3spec.PortSelector{
+							Number: 8080,
+						},
+					},
+				}},
+				Retries: httpRetry,
+			},
+			{
+				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
+					{
+						Method:          &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: "POST"}},
+						SourceLabels:    sourceSelectorLabels,
+						SourceNamespace: sourceSelectorNamespaces[0],
+						WithoutHeaders: map[string]*networkingv1alpha3spec.StringMatch{
+							"name3": {MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: "[a-z]+"}},
+						},
+						Port: 9080,
+					},
+				},
+				Route: []*networkingv1alpha3spec.HTTPRouteDestination{{
+					Destination: &networkingv1alpha3spec.Destination{
+						Host: "local-hostname",
+						Port: &networkingv1alpha3spec.PortSelector{
+							Number: 9080,
+						},
+					},
+				}},
+				Retries: httpRetry,
+			},
+		}
+
+		expectedVirtualService := &networkingv1alpha3.VirtualService{
+			ObjectMeta: metautils.FederatedObjectMeta(
+				trafficTarget.Spec.GetKubeService().Ref,
+				meshInstallation,
+				trafficTarget.Annotations,
+			),
+			Spec: networkingv1alpha3spec.VirtualService{
+				Hosts: []string{"local-hostname"},
+				Http:  expectedHttpRoutes,
+			},
+		}
+
+		mockDecorator.
+			EXPECT().
+			ApplyTrafficPolicyToVirtualService(
+				trafficTarget.Status.AppliedTrafficPolicies[0],
+				trafficTarget,
+				meshInstallation,
+				&networkingv1alpha3spec.HTTPRoute{
+					Match: initializedMatchRequests,
+				},
+				gomock.Any(),
+			).DoAndReturn(
+			func(
+				appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+				service *discoveryv1alpha2.TrafficTarget,
+				sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+				output *networkingv1alpha3spec.HTTPRoute,
+				registerField decorators.RegisterField,
+			) error {
+				output.Retries = httpRetry
+				return nil
+			}).
+			Return(nil)
+
+		virtualService := virtualServiceTranslator.Translate(
+			in,
+			trafficTarget,
+			meshInstallation,
+			mockReporter,
+		)
 		Expect(virtualService).To(Equal(expectedVirtualService))
 	})
 
 	It("should not output a VirtualService if translated VirtualService has no HttpRoutes", func() {
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "mesh-service",
+				Name: "traffic-target",
 			},
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
 					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
-							Name:        "mesh-service",
-							Namespace:   "mesh-service-namespace",
-							ClusterName: "mesh-service-cluster",
+							Name:        "traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-cluster",
 						},
 						Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 							{
@@ -417,7 +761,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetServiceLocalFQDN(trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationServiceFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
 			Return("local-hostname")
 
 		mockDecoratorFactory.
@@ -433,12 +777,75 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			ApplyTrafficPolicyToVirtualService(
 				trafficTarget.Status.AppliedTrafficPolicies[0],
 				trafficTarget,
+				nil,
 				&networkingv1alpha3spec.HTTPRoute{},
 				gomock.Any(),
 			).
 			Return(nil)
 
-		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, mockReporter)
+		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, nil, mockReporter)
+		Expect(virtualService).To(BeNil())
+	})
+
+	It("should not output an HttpRoute if TrafficPolicy's WorkloadSelector does not select source cluster", func() {
+		trafficTarget := &discoveryv1alpha2.TrafficTarget{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "traffic-target",
+			},
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+						Ref: &v1.ClusterObjectRef{
+							Name:        "traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-cluster",
+						},
+						Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+							{
+								Port:     8080,
+								Name:     "http1",
+								Protocol: "http",
+							},
+						},
+					},
+				},
+			},
+			Status: discoveryv1alpha2.TrafficTargetStatus{
+				AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+					{
+						Ref: &v1.ObjectRef{
+							Name:      "tp-1",
+							Namespace: "tp-namespace-1",
+						},
+						Spec: &networkingv1alpha2.TrafficPolicySpec{
+							SourceSelector: []*networkingv1alpha2.WorkloadSelector{
+								{
+									Clusters: []string{"foobar"},
+								},
+							},
+							OutlierDetection: &networkingv1alpha2.TrafficPolicySpec_OutlierDetection{
+								ConsecutiveErrors: 5,
+							},
+						},
+					},
+				},
+			},
+		}
+
+		mockClusterDomainRegistry.
+			EXPECT().
+			GetDestinationServiceFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
+			Return("local-hostname")
+
+		mockDecoratorFactory.
+			EXPECT().
+			MakeDecorators(decorators.Parameters{
+				ClusterDomains: mockClusterDomainRegistry,
+				Snapshot:       in,
+			}).
+			Return([]decorators.Decorator{mockDecorator})
+
+		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, nil, mockReporter)
 		Expect(virtualService).To(BeNil())
 	})
 })

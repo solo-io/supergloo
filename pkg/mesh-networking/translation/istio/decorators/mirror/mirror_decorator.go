@@ -49,11 +49,12 @@ func (d *mirrorDecorator) DecoratorName() string {
 
 func (d *mirrorDecorator) ApplyTrafficPolicyToVirtualService(
 	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
-	service *discoveryv1alpha2.TrafficTarget,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	mirror, percentage, err := d.translateMirror(service, appliedPolicy.Spec)
+	mirror, percentage, err := d.translateMirror(trafficTarget, appliedPolicy.Spec, sourceMeshInstallation.GetCluster())
 	if err != nil {
 		return err
 	}
@@ -67,9 +68,11 @@ func (d *mirrorDecorator) ApplyTrafficPolicyToVirtualService(
 	return nil
 }
 
+// If federatedClusterName is non-empty, it indicates translation for a federated VirtualService, so use it as the source cluster name.
 func (d *mirrorDecorator) translateMirror(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
+	sourceClusterName string,
 ) (*networkingv1alpha3spec.Destination, *networkingv1alpha3spec.Percent, error) {
 	mirror := trafficPolicy.Mirror
 	if mirror == nil {
@@ -87,6 +90,7 @@ func (d *mirrorDecorator) translateMirror(
 			destinationType,
 			mirror.Port,
 			trafficTarget,
+			sourceClusterName,
 		)
 		if err != nil {
 			return nil, nil, err
@@ -103,7 +107,8 @@ func (d *mirrorDecorator) translateMirror(
 func (d *mirrorDecorator) makeKubeDestinationMirror(
 	destination *v1alpha2.TrafficPolicySpec_Mirror_KubeService,
 	port uint32,
-	originalService *discoveryv1alpha2.TrafficTarget,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	sourceClusterName string,
 ) (*networkingv1alpha3spec.Destination, error) {
 	destinationRef := destination.KubeService
 	mirrorService, err := traffictargetutils.FindTrafficTargetForKubeService(d.trafficTargets.List(), destinationRef)
@@ -113,9 +118,14 @@ func (d *mirrorDecorator) makeKubeDestinationMirror(
 	mirrorKubeService := mirrorService.Spec.GetKubeService()
 
 	// TODO(ilackarms): support other types of TrafficTarget destinations, e.g. via ServiceEntries
-	localCluster := originalService.Spec.GetKubeService().GetRef().GetClusterName()
+
+	// An empty sourceClusterName indicates translation for VirtualService local to trafficTarget
+	if sourceClusterName == "" {
+		sourceClusterName = trafficTarget.Spec.GetKubeService().GetRef().GetClusterName()
+	}
+
 	destinationHostname := d.clusterDomains.GetDestinationServiceFQDN(
-		localCluster,
+		sourceClusterName,
 		destinationRef,
 	)
 

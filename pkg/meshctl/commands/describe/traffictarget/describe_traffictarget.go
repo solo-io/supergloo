@@ -8,25 +8,26 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/internal/flags"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/printing"
 	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
+func Command(ctx context.Context) *cobra.Command {
+	opts := new(options)
 	cmd := &cobra.Command{
 		Use:     "traffictarget",
 		Short:   "Description of managed traffic targets",
 		Aliases: []string{"traffictargets"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := utils.BuildClient(opts.Kubeconfig, opts.Kubecontext)
+			c, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
 			if err != nil {
 				return err
 			}
-			description, err := describeTrafficTargets(ctx, c)
+			description, err := describeTrafficTargets(ctx, c, opts.searchTerms)
 			if err != nil {
 				return err
 			}
@@ -39,7 +40,18 @@ func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 	return cmd
 }
 
-func describeTrafficTargets(ctx context.Context, c client.Client) (string, error) {
+type options struct {
+	kubeconfig  string
+	kubecontext string
+	searchTerms []string
+}
+
+func (o *options) addToFlags(flags *pflag.FlagSet) {
+	utils.AddManagementKubeconfigFlags(&o.kubeconfig, &o.kubecontext, flags)
+	flags.StringSliceVarP(&o.searchTerms, "search", "s", []string{}, "A list of terms to match traffic target names against")
+}
+
+func describeTrafficTargets(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
 	trafficTargetClient := discoveryv1alpha2.NewTrafficTargetClient(c)
 	trafficTargetList, err := trafficTargetClient.ListTrafficTarget(ctx)
 	if err != nil {
@@ -48,7 +60,9 @@ func describeTrafficTargets(ctx context.Context, c client.Client) (string, error
 	var trafficTargetDescriptions []trafficTargetDescription
 	for _, trafficTarget := range trafficTargetList.Items {
 		trafficTarget := trafficTarget // pike
-		trafficTargetDescriptions = append(trafficTargetDescriptions, describeTrafficTarget(&trafficTarget))
+		if matchTrafficTarget(trafficTarget, searchTerms) {
+			trafficTargetDescriptions = append(trafficTargetDescriptions, describeTrafficTarget(&trafficTarget))
+		}
 	}
 
 	buf := new(bytes.Buffer)
@@ -75,6 +89,7 @@ func (m trafficTargetMetadata) string() string {
 	s.WriteString(printing.FormattedField("Namespace", m.Namespace))
 	s.WriteString(printing.FormattedField("Cluster", m.Cluster))
 	s.WriteString(printing.FormattedField("Type", m.Type))
+	s.WriteString(printing.FormattedField("Federated DNS Name", m.FederatedDnSName))
 	return s.String()
 }
 
@@ -85,15 +100,30 @@ type trafficTargetDescription struct {
 }
 
 type trafficTargetMetadata struct {
-	Type      string
-	Name      string
-	Namespace string
-	Cluster   string
+	Type             string
+	Name             string
+	Namespace        string
+	Cluster          string
+	FederatedDnSName string
+}
+
+func matchTrafficTarget(trafficTarget discoveryv1alpha2.TrafficTarget, searchTerms []string) bool {
+	// do not apply matching when there are no search strings
+	if len(searchTerms) == 0 {
+		return true
+	}
+
+	for _, s := range searchTerms {
+		if strings.Contains(trafficTarget.Name, s) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func describeTrafficTarget(trafficTarget *discoveryv1alpha2.TrafficTarget) trafficTargetDescription {
 	meshMeta := getTrafficTargetMetadata(trafficTarget)
-
 	var trafficPolicies []*v1.ObjectRef
 	for _, fs := range trafficTarget.Status.AppliedTrafficPolicies {
 		trafficPolicies = append(trafficPolicies, fs.Ref)
@@ -116,10 +146,11 @@ func getTrafficTargetMetadata(trafficTarget *discoveryv1alpha2.TrafficTarget) tr
 	case *discoveryv1alpha2.TrafficTargetSpec_KubeService_:
 		kubeServiceRef := trafficTarget.Spec.GetKubeService().Ref
 		return trafficTargetMetadata{
-			Type:      "kubernetes service",
-			Name:      kubeServiceRef.Name,
-			Namespace: kubeServiceRef.Namespace,
-			Cluster:   kubeServiceRef.ClusterName,
+			Type:             "kubernetes service",
+			Name:             kubeServiceRef.Name,
+			Namespace:        kubeServiceRef.Namespace,
+			Cluster:          kubeServiceRef.ClusterName,
+			FederatedDnSName: trafficTarget.Status.GetRemoteFqdn(),
 		}
 	}
 	return trafficTargetMetadata{}

@@ -97,6 +97,21 @@ func SelectorMatchesService(selectors []*v1alpha2.TrafficTargetSelector, service
 	return false
 }
 
+// Return true if any WorkloadSelector selects the specified clusterName
+func WorkloadSelectorContainsCluster(selectors []*v1alpha2.WorkloadSelector, clusterName string) bool {
+	if len(selectors) == 0 {
+		return true
+	}
+
+	for _, selector := range selectors {
+		if len(selector.Clusters) == 0 || stringutils.ContainsString(clusterName, selector.Clusters) {
+			return true
+		}
+	}
+
+	return false
+}
+
 /* For a k8s Workload to match:
 1) If labels is specified, all labels must exist on the k8s Workload
 2) If namespaces is specified, the k8s workload must be in one of those namespaces

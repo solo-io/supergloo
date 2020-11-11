@@ -5,7 +5,9 @@ import (
 	"sort"
 
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
@@ -24,15 +26,22 @@ import (
 
 // the VirtualService translator translates a TrafficTarget into a VirtualService.
 type Translator interface {
-	// Translate translates the appropriate VirtualService for the given TrafficTarget.
-	// returns nil if no VirtualService is required for the TrafficTarget (i.e. if no VirtualService features are required, such as subsets).
-	//
-	// Errors caused by invalid user config will be reported using the Reporter.
-	//
-	// Note that the input snapshot TrafficTargetSet contains the given TrafficTarget.
+	/*
+		Translate translates the appropriate VirtualService for the given TrafficTarget.
+		returns nil if no VirtualService is required for the TrafficTarget (i.e. if no VirtualService features are required, such as subsets).
+
+		If sourceMeshInstallation is specified, hostnames in the translated VirtualService will use global FQDNs if the trafficTarget
+		exists in a different cluster from the specified mesh (i.e. is a federated traffic target). Otherwise, assume translation
+		for cluster that the trafficTarget exists in and use local FQDNs.
+
+		Errors caused by invalid user config will be reported using the Reporter.
+
+		Note that the input snapshot TrafficTargetSet contains the given TrafficTarget.
+	*/
 	Translate(
 		in input.Snapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
+		sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 		reporter reporting.Reporter,
 	) *networkingv1alpha3.VirtualService
 }
@@ -46,12 +55,12 @@ func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFact
 	return &translator{clusterDomains: clusterDomains, decoratorFactory: decoratorFactory}
 }
 
-// translate the appropriate VirtualService for the given TrafficTarget.
-// returns nil if no VirtualService is required for the TrafficTarget (i.e. if no VirtualService features are required, such as subsets).
-// The input snapshot TrafficTargetSet contains n the
+// Translate a VirtualService for the TrafficTarget.
+// If sourceMeshInstallation is nil, assume that VirtualService is colocated to the trafficTarget and use local FQDNs.
 func (t *translator) Translate(
 	in input.Snapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	reporter reporting.Reporter,
 ) *networkingv1alpha3.VirtualService {
 	kubeService := trafficTarget.Spec.GetKubeService()
@@ -61,7 +70,12 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	virtualService := t.initializeVirtualService(trafficTarget)
+	sourceCluster := kubeService.Ref.ClusterName
+	if sourceMeshInstallation != nil {
+		sourceCluster = sourceMeshInstallation.Cluster
+	}
+
+	virtualService := t.initializeVirtualService(trafficTarget, sourceMeshInstallation)
 	// register the owners of the virtualservice fields
 	virtualServiceFields := fieldutils.NewOwnershipRegistry()
 	vsDecorators := t.decoratorFactory.MakeDecorators(decorators.Parameters{
@@ -70,7 +84,12 @@ func (t *translator) Translate(
 	})
 
 	for _, policy := range trafficTarget.Status.AppliedTrafficPolicies {
-		baseRoute := initializeBaseRoute(policy.Spec)
+		baseRoute := initializeBaseRoute(policy.Spec, sourceCluster)
+		// nil baseRoute indicates that this cluster is not selected by the WorkloadSelector and thus should not be translated
+		if baseRoute == nil {
+			continue
+		}
+
 		registerField := registerFieldFunc(virtualServiceFields, virtualService, policy.Ref)
 		for _, decorator := range vsDecorators {
 
@@ -78,6 +97,7 @@ func (t *translator) Translate(
 				if err := trafficPolicyDecorator.ApplyTrafficPolicyToVirtualService(
 					policy,
 					trafficTarget,
+					sourceMeshInstallation,
 					baseRoute,
 					registerField,
 				); err != nil {
@@ -87,13 +107,13 @@ func (t *translator) Translate(
 		}
 
 		// Avoid appending an HttpRoute that will have no affect, which occurs if no decorators mutate the baseRoute with any non-match config.
-		if equalityutils.Equals(initializeBaseRoute(policy.Spec), baseRoute) {
+		if equalityutils.Equals(initializeBaseRoute(policy.Spec, sourceCluster), baseRoute) {
 			continue
 		}
 
 		// set a default destination for the route (to the target traffictarget)
 		// if a decorator has not already set it
-		t.setDefaultDestination(baseRoute, trafficTarget)
+		t.setDefaultDestination(baseRoute, trafficTarget, sourceCluster)
 
 		// construct a copy of a route for each service port
 		// required because Istio needs the destination port for every route
@@ -144,13 +164,25 @@ func registerFieldFunc(
 	}
 }
 
-func (t *translator) initializeVirtualService(trafficTarget *discoveryv1alpha2.TrafficTarget) *networkingv1alpha3.VirtualService {
-	meta := metautils.TranslatedObjectMeta(
-		trafficTarget.Spec.GetKubeService().Ref,
-		trafficTarget.Annotations,
-	)
+func (t *translator) initializeVirtualService(
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+) *networkingv1alpha3.VirtualService {
+	var meta metav1.ObjectMeta
+	if sourceMeshInstallation != nil {
+		meta = metautils.FederatedObjectMeta(
+			trafficTarget.Spec.GetKubeService().Ref,
+			sourceMeshInstallation,
+			trafficTarget.Annotations,
+		)
+	} else {
+		meta = metautils.TranslatedObjectMeta(
+			trafficTarget.Spec.GetKubeService().Ref,
+			trafficTarget.Annotations,
+		)
+	}
 
-	hosts := []string{t.clusterDomains.GetServiceLocalFQDN(trafficTarget.Spec.GetKubeService().Ref)}
+	hosts := []string{t.clusterDomains.GetDestinationServiceFQDN(meta.ClusterName, trafficTarget.Spec.GetKubeService().Ref)}
 
 	return &networkingv1alpha3.VirtualService{
 		ObjectMeta: meta,
@@ -160,13 +192,21 @@ func (t *translator) initializeVirtualService(trafficTarget *discoveryv1alpha2.T
 	}
 }
 
-func initializeBaseRoute(trafficPolicy *v1alpha2.TrafficPolicySpec) *networkingv1alpha3spec.HTTPRoute {
+// Returns nil to prevent translating the trafficPolicy if the sourceClusterName is not selected by the WorkloadSelector
+func initializeBaseRoute(trafficPolicy *v1alpha2.TrafficPolicySpec, sourceClusterName string) *networkingv1alpha3spec.HTTPRoute {
+	if !selectorutils.WorkloadSelectorContainsCluster(trafficPolicy.SourceSelector, sourceClusterName) {
+		return nil
+	}
 	return &networkingv1alpha3spec.HTTPRoute{
 		Match: translateRequestMatchers(trafficPolicy),
 	}
 }
 
-func (t *translator) setDefaultDestination(baseRoute *networkingv1alpha3spec.HTTPRoute, trafficTarget *discoveryv1alpha2.TrafficTarget) {
+func (t *translator) setDefaultDestination(
+	baseRoute *networkingv1alpha3spec.HTTPRoute,
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	sourceClusterName string,
+) {
 	// if a route destination is already set, we don't need to modify the route
 	if baseRoute.Route != nil {
 		return
@@ -174,7 +214,7 @@ func (t *translator) setDefaultDestination(baseRoute *networkingv1alpha3spec.HTT
 
 	baseRoute.Route = []*networkingv1alpha3spec.HTTPRouteDestination{{
 		Destination: &networkingv1alpha3spec.Destination{
-			Host: t.clusterDomains.GetServiceLocalFQDN(trafficTarget.Spec.GetKubeService().GetRef()),
+			Host: t.clusterDomains.GetDestinationServiceFQDN(sourceClusterName, trafficTarget.Spec.GetKubeService().GetRef()),
 		},
 	}}
 }
