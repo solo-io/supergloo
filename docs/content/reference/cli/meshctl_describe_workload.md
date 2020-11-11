@@ -17,7 +17,10 @@ meshctl describe workload [flags]
 ### Options
 
 ```
-  -h, --help   help for workload
+  -h, --help                 help for workload
+      --kubeconfig string    path to the kubeconfig from which the management cluster will be accessed
+      --kubecontext string   name of the kubeconfig context to use for the management cluster
+  -s, --search strings       A list of terms to match workload names against
 ```
 
 ### SEE ALSO

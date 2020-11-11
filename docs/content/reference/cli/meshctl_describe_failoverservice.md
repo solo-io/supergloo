@@ -17,7 +17,10 @@ meshctl describe failoverservice [flags]
 ### Options
 
 ```
-  -h, --help   help for failoverservice
+  -h, --help                 help for failoverservice
+      --kubeconfig string    path to the kubeconfig from which the management cluster will be accessed
+      --kubecontext string   name of the kubeconfig context to use for the management cluster
+  -s, --search strings       A list of terms to match failover services names against
 ```
 
 ### SEE ALSO

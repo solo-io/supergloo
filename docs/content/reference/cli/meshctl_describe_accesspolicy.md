@@ -17,7 +17,10 @@ meshctl describe accesspolicy [flags]
 ### Options
 
 ```
-  -h, --help   help for accesspolicy
+  -h, --help                 help for accesspolicy
+      --kubeconfig string    path to the kubeconfig from which the management cluster will be accessed
+      --kubecontext string   name of the kubeconfig context to use for the management cluster
+  -s, --search strings       A list of terms to match access policy names against
 ```
 
 ### SEE ALSO
