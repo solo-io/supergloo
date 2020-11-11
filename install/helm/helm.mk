@@ -17,11 +17,10 @@ package-helm: chart-gen
 	helm package --destination $(CHART_OUTPUT_DIR)/gloo-mesh $(GLOOMESH_CHART_DIR)
 	helm package --destination $(CHART_OUTPUT_DIR)/cert-agent $(CA_CHART_DIR)
 
-# TODO rename GCP project from service-mesh-hub to gloo-mesh
 .PHONY: fetch-helm
 fetch-helm:
-	gsutil -m rsync -r gs://service-mesh-hub/gloo-mesh $(CHART_OUTPUT_DIR)/gloo-mesh
-	gsutil -m rsync -r gs://service-mesh-hub/cert-agent $(CHART_OUTPUT_DIR)/cert-agent
+	gsutil -m rsync -r gs://gloo-mesh/gloo-mesh $(CHART_OUTPUT_DIR)/gloo-mesh
+	gsutil -m rsync -r gs://gloo-mesh/cert-agent $(CHART_OUTPUT_DIR)/cert-agent
 
 .PHONY: index-helm
 index-helm: package-helm fetch-helm
@@ -31,8 +30,8 @@ index-helm: package-helm fetch-helm
 .PHONY: publish-chart
 publish-chart: index-helm
 ifeq ($(RELEASE),"true")
-	gsutil -m rsync -r $(CHART_OUTPUT_DIR)/gloo-mesh gs://service-mesh-hub/gloo-mesh
-	gsutil -m rsync -r $(CHART_OUTPUT_DIR)/cert-agent gs://service-mesh-hub/cert-agent
+	gsutil -m rsync -r $(CHART_OUTPUT_DIR)/gloo-mesh gs://gloo-mesh/gloo-mesh
+	gsutil -m rsync -r $(CHART_OUTPUT_DIR)/cert-agent gs://gloo-mesh/cert-agent
 else
 	@echo "Not a release, skipping chart upload to GCS"
 endif
