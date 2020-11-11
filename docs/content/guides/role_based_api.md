@@ -5,19 +5,19 @@ weight: 75
 ---
 
 {{% notice note %}}
-Service Mesh Hub Enterprise is required for this feature.
+Gloo Mesh Enterprise is required for this feature.
 {{% /notice %}}
 
-At a high level, Service Mesh Hub manages control planes by translating networking policy configuration (`networking.smh.solo.io` CRD objects)
-into service-mesh-specific configuration. Each networking policy object _targets_ specified discovered mesh entities (represented by `discovery.smh.solo.io` CRD objects).
+At a high level, Gloo Mesh manages control planes by translating networking policy configuration (`networking.mesh.gloo.solo.io` CRD objects)
+into service-mesh-specific configuration. Each networking policy object _targets_ specified discovered mesh entities (represented by `discovery.mesh.gloo.solo.io` CRD objects).
 
-Service Mesh Hub's role-based API allows organizations to restrict access to policy configuration (i.e. creation, updating, and deletion of policy configuration objects)
-based on the roles of individual users, represented by a `Role` CRD. Similar to the Kubernetes RBAC model, Service Mesh Hub users are bound to one or more roles. A user may
+Gloo Mesh's role-based API allows organizations to restrict access to policy configuration (i.e. creation, updating, and deletion of policy configuration objects)
+based on the roles of individual users, represented by a `Role` CRD. Similar to the Kubernetes RBAC model, Gloo Mesh users are bound to one or more roles. A user may
 create, update, or delete a networking policy if they are bound to at least one role that permits access for that policy.
 
 ## Roles
 
-The `Role` CRD structure allows for fine-grained permission definition. Because Service Mesh Hub's networking policies target different discovery entities 
+The `Role` CRD structure allows for fine-grained permission definition. Because Gloo Mesh's networking policies target different discovery entities 
 (some combination of workloads, traffic targets, meshes, and virtual meshes), permissions for each networking policy CRD are represented by separate _scopes_.
 A bound user is permitted to configure a policy if and only if all actions (if applicable) and scopes present on the policy are permitted by the role. The semantics
 for whether actions or scopes are permitted are described below.
@@ -29,13 +29,13 @@ are affected by the policy. Each networking policy CRD has a different combinati
 We detail the different scopes and their associated selectors below.
 
 **TrafficPolicyScope:** [TrafficPolicies]({{% versioned_link_path fromRoot="/reference/api/traffic_policy/" %}}) operate on routes between workloads and traffic targets.
-Thus, the TrafficPolicyScope defines the set of permitted [WorkloadSelectors]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.smh.solo.io.WorkloadSelector" %}}) 
-and [TrafficTargetSelectors]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.smh.solo.io.TrafficTargetSelector" %}}). In other words,
+Thus, the TrafficPolicyScope defines the set of permitted [WorkloadSelectors]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.mesh.gloo.solo.io.WorkloadSelector" %}}) 
+and [TrafficTargetSelectors]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.mesh.gloo.solo.io.TrafficTargetSelector" %}}). In other words,
 a TrafficPolicyScope represents permission for creating TrafficPolicies that configure a specific set of workloads and associated traffic targets.
 
 **AccessPolicyScope:** [AccessPolicies]({{% versioned_link_path fromRoot="/reference/api/access_policy/" %}}) operate on routes between identities (which represent a set of workloads) and traffic targets.
-Thus, the AccessPolicyScope defines the set of permitted [IdentitySelectors]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.smh.solo.io.IdentitySelector" %}}) 
-and [TrafficTargetSelectors]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.smh.solo.io.TrafficTargetSelector" %}}). In other words,
+Thus, the AccessPolicyScope defines the set of permitted [IdentitySelectors]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.mesh.gloo.solo.io.IdentitySelector" %}}) 
+and [TrafficTargetSelectors]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.mesh.gloo.solo.io.TrafficTargetSelector" %}}). In other words,
 an AccessPolicyScope represents permission for creating AccessPolicies that configure a specific set of identities and associated traffic targets.
 
 **VirtualMeshScope:** [VirtualMeshes]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}) operate on discovered meshes.
@@ -44,7 +44,7 @@ In other words, a VirtualMeshScope represents permission for creating VirtualMes
 
 **FailoverServiceScope:** [FailoverServices]({{% versioned_link_path fromRoot="/reference/api/failover_service/" %}}) operate on discovered meshes and traffic targets.
 Thus, the FailoverServiceScope defines the set of permitted meshes by reference (name and namespace of the corresponding Mesh object) and
-[backing traffic targets]({{% versioned_link_path fromRoot="/reference/api/failover_service/#networking.smh.solo.io.FailoverServiceSpec.BackingService" %}}).
+[backing traffic targets]({{% versioned_link_path fromRoot="/reference/api/failover_service/#networking.mesh.gloo.solo.io.FailoverServiceSpec.BackingService" %}}).
 In other words, a FailoverServiceScope represents permission for creating FailoverServices that creates a failover service visible on a specified
 set of meshes, consisting of a set of backing traffic targets.
 
@@ -97,7 +97,7 @@ destinationSelector:
 
 ## Example Roles / Personas
 
-The following examples demonstrate common personas one might encounter in organizations and how they can be represented using Service Mesh Hub Roles.
+The following examples demonstrate common personas one might encounter in organizations and how they can be represented using Gloo Mesh Roles.
 
 **System Administrator**
 
@@ -105,11 +105,11 @@ System administrators are responsible for operating and maintaining infrastructu
 permission set.
 
 ```yaml
-apiVersion: rbac.smh.solo.io/v1alpha1
+apiVersion: rbac.mesh.gloo.solo.io/v1alpha1
 kind: Role
 metadata:
   name: admin-role
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 spec:
   trafficPolicyScopes:
     - trafficPolicyActions:
@@ -184,11 +184,11 @@ Mesh owners are administrators responsible for operating and maintaining a servi
 meshes.
 
 ```yaml
-apiVersion: rbac.smh.solo.io/v1alpha1
+apiVersion: rbac.mesh.gloo.solo.io/v1alpha1
 kind: Role
 metadata:
   name: mesh-owner-role
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 spec:
   trafficPolicyScopes:
     - trafficPolicyActions:
@@ -242,7 +242,7 @@ spec:
   failoverServiceScopes:
     - meshRefs:
         - name: istiod-istio-system-mgmt-cluster
-          namespace: service-mesh-hub
+          namespace: gloo-mesh
       backingServices:
         - kubeService:
             name: "*"
@@ -261,11 +261,11 @@ Traffic target publishers own and operate traffic targets (also referred to as s
  the origin of incoming traffic.
  
 ```yaml
-apiVersion: rbac.smh.solo.io/v1alpha1
+apiVersion: rbac.mesh.gloo.solo.io/v1alpha1
 kind: Role
 metadata:
   name: traffic-target-owner-role
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 spec:
   trafficPolicyScopes:
     - trafficPolicyActions:
@@ -275,10 +275,10 @@ spec:
         - kubeServiceRefs:
             services:
               - name: ratings
-                namespace: service-mesh-hub
+                namespace: gloo-mesh
                 clusterName: mgmt-cluster
               - name: ratings
-                namespace: service-mesh-hub
+                namespace: gloo-mesh
                 clusterName: remote-cluster
       workloadSelectors:
         - labels:
@@ -314,11 +314,11 @@ Traffic target consumers own and operate workloads that originate requests to a 
 client-side networking policies affecting the route between their workload(s) and the relevant traffic targets.
 
 ```yaml
-apiVersion: rbac.smh.solo.io/v1alpha1
+apiVersion: rbac.mesh.gloo.solo.io/v1alpha1
 kind: Role
 metadata:
   name: traffic-target-consumer-role
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 spec:
   # A traffic target consumer has the ability to configure policies that affect the network edge between
   # a specific workload and an upstream traffic target.
