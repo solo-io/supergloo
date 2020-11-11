@@ -19,14 +19,14 @@ else
   OS=linux
 fi
 
-for smh_version in $GLOO_MESH_VERSIONS; do
+for gloo_mesh_version in $GLOO_MESH_VERSIONS; do
 
-tmp=$(mktemp -d /tmp/smh.XXXXXX)
+tmp=$(mktemp -d /tmp/gloo_mesh.XXXXXX)
 filename="meshctl-${OS}-amd64"
-url="https://github.com/solo-io/gloo-mesh/releases/download/${smh_version}/${filename}"
+url="https://github.com/solo-io/gloo-mesh/releases/download/${gloo_mesh_version}/${filename}"
 
 if curl -f ${url} >/dev/null 2>&1; then
-  echo "Attempting to download meshctl version ${smh_version}"
+  echo "Attempting to download meshctl version ${gloo_mesh_version}"
 else
   continue
 fi
