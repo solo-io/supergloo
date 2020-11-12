@@ -20,14 +20,14 @@ func Command(ctx context.Context) *cobra.Command {
 	opts := new(options)
 	cmd := &cobra.Command{
 		Use:     "trafficpolicy",
-		Short:   "Description of managed traffic policies",
-		Aliases: []string{"trafficpolicys"},
+		Short:   "Description of traffic policies",
+		Aliases: []string{"trafficpolicies"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
 			if err != nil {
 				return err
 			}
-			description, err := describeTrafficPolicys(ctx, c, opts.searchTerms)
+			description, err := describeTrafficPolicies(ctx, c, opts.searchTerms)
 			if err != nil {
 				return err
 			}
@@ -52,7 +52,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.StringSliceVarP(&o.searchTerms, "search", "s", []string{}, "A list of terms to match traffic policy names against")
 }
 
-func describeTrafficPolicys(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
+func describeTrafficPolicies(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
 	trafficPolicyClient := networkingv1alpha2.NewTrafficPolicyClient(c)
 	trafficPolicyList, err := trafficPolicyClient.ListTrafficPolicy(ctx)
 	if err != nil {
@@ -68,7 +68,7 @@ func describeTrafficPolicys(ctx context.Context, c client.Client, searchTerms []
 
 	buf := new(bytes.Buffer)
 	table := tablewriter.NewWriter(buf)
-	table.SetHeader([]string{"Metadata", "Source_Service_Accounts", "Destination_Services"})
+	table.SetHeader([]string{"Metadata", "Source_Workloads", "Destination_Services", "HTTP_Matchers"})
 	table.SetRowLine(true)
 	table.SetAutoWrapText(false)
 
@@ -122,7 +122,7 @@ func formattedHttpMatchers(sels []*networkingv1alpha2.TrafficPolicySpec_HttpMatc
 			}
 			s.WriteString(printing.FormattedField(header.Name, val))
 		}
-		s.WriteString("QUERY PARAMETERS")
+		s.WriteString("QUERY PARAMETERS\n")
 		for _, param := range matcher.GetQueryParameters() {
 			val := param.Value
 			if param.Regex {
@@ -175,10 +175,6 @@ func matchTrafficPolicy(trafficPolicy networkingv1alpha2.TrafficPolicy, searchTe
 
 func describeTrafficPolicy(trafficPolicy *networkingv1alpha2.TrafficPolicy) trafficPolicyDescription {
 	trafficPolicyMeta := getTrafficPolicyMetadata(trafficPolicy)
-	var sourceWorkloads []*networkingv1alpha2.WorkloadSelector
-	for _, wl := range trafficPolicy.Spec.GetSourceSelector() {
-		sourceWorkloads = append(sourceWorkloads, wl)
-	}
 
 	var destinationServices []*v1.ClusterObjectRef
 	for _, sel := range trafficPolicy.Spec.GetDestinationSelector() {
@@ -189,7 +185,7 @@ func describeTrafficPolicy(trafficPolicy *networkingv1alpha2.TrafficPolicy) traf
 
 	return trafficPolicyDescription{
 		Metadata:            &trafficPolicyMeta,
-		SourceWorkloads:     sourceWorkloads,
+		SourceWorkloads:     trafficPolicy.Spec.GetSourceSelector(),
 		DestinationServices: destinationServices,
 		HttpMatchers:        trafficPolicy.Spec.GetHttpRequestMatchers(),
 	}

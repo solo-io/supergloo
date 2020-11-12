@@ -20,7 +20,7 @@ func Command(ctx context.Context) *cobra.Command {
 	opts := new(options)
 	cmd := &cobra.Command{
 		Use:     "workload",
-		Short:   "Description of managed workloads",
+		Short:   "Description of workloads",
 		Aliases: []string{"workloads"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)

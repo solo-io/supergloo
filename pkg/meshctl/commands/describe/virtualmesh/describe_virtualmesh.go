@@ -20,7 +20,7 @@ func Command(ctx context.Context) *cobra.Command {
 	opts := new(options)
 	cmd := &cobra.Command{
 		Use:     "virtualmesh",
-		Short:   "Description of managed virtual meshes",
+		Short:   "Description of virtual meshes",
 		Aliases: []string{"virtualmeshes"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)

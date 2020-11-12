@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl describe workload
 
-Description of managed workloads
+Description of workloads
 
 ### Synopsis
 
-Description of managed workloads
+Description of workloads
 
 ```
 meshctl describe workload [flags]

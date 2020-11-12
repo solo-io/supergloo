@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl describe virtualmesh
 
-Description of managed virtual meshes
+Description of virtual meshes
 
 ### Synopsis
 
-Description of managed virtual meshes
+Description of virtual meshes
 
 ```
 meshctl describe virtualmesh [flags]

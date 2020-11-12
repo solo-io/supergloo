@@ -20,7 +20,7 @@ func Command(ctx context.Context) *cobra.Command {
 	opts := new(options)
 	cmd := &cobra.Command{
 		Use:     "failoverservice",
-		Short:   "Description of managed failover services",
+		Short:   "Description of failover services",
 		Aliases: []string{"failoverservices"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
@@ -49,7 +49,7 @@ type options struct {
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
 	utils.AddManagementKubeconfigFlags(&o.kubeconfig, &o.kubecontext, flags)
-	flags.StringSliceVarP(&o.searchTerms, "search", "s", []string{}, "A list of terms to match failover services names against")
+	flags.StringSliceVarP(&o.searchTerms, "search", "s", []string{}, "A list of terms to match failover service names against")
 }
 
 func describeFailoverServices(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
@@ -125,10 +125,6 @@ func matchFailoverService(failoverService networkingv1alpha2.FailoverService, se
 
 func describeFailoverService(failoverService *networkingv1alpha2.FailoverService) failoverServiceDescription {
 	failoverServiceMeta := getFailoverServiceMetadata(failoverService)
-	var meshes []*v1.ObjectRef
-	for _, m := range failoverService.Spec.GetMeshes() {
-		meshes = append(meshes, m)
-	}
 
 	var backingServices []*v1.ClusterObjectRef
 	for _, bs := range failoverService.Spec.GetBackingServices() {
@@ -140,7 +136,7 @@ func describeFailoverService(failoverService *networkingv1alpha2.FailoverService
 
 	return failoverServiceDescription{
 		Metadata:        &failoverServiceMeta,
-		Meshes:          meshes,
+		Meshes:          failoverService.Spec.GetMeshes(),
 		BackingServices: backingServices,
 	}
 }

@@ -20,14 +20,14 @@ func Command(ctx context.Context) *cobra.Command {
 	opts := new(options)
 	cmd := &cobra.Command{
 		Use:     "accesspolicy",
-		Short:   "Description of managed access policies",
-		Aliases: []string{"accesspolicys"},
+		Short:   "Description of access policies",
+		Aliases: []string{"accesspolicies"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
 			if err != nil {
 				return err
 			}
-			description, err := describeAccessPolicys(ctx, c, opts.searchTerms)
+			description, err := describeAccessPolicies(ctx, c, opts.searchTerms)
 			if err != nil {
 				return err
 			}
@@ -52,7 +52,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.StringSliceVarP(&o.searchTerms, "search", "s", []string{}, "A list of terms to match access policy names against")
 }
 
-func describeAccessPolicys(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
+func describeAccessPolicies(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
 	accessPolicyClient := networkingv1alpha2.NewAccessPolicyClient(c)
 	accessPolicyList, err := accessPolicyClient.ListAccessPolicy(ctx)
 	if err != nil {

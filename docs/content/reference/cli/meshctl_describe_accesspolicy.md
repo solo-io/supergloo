@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl describe accesspolicy
 
-Description of managed access policies
+Description of access policies
 
 ### Synopsis
 
-Description of managed access policies
+Description of access policies
 
 ```
 meshctl describe accesspolicy [flags]
