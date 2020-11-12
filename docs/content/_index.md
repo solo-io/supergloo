@@ -19,7 +19,6 @@ debugging tools.
 
 <figure>
     <img src="{{% versioned_link_path fromRoot="/img/gloomesh-diagram.png" %}}"/>
-    <figcaption style="text-align: center"> Note: diagram reflects Gloo Mesh <b>v0.6.1</b></figcaption>
 </figure>
 
 
