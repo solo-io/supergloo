@@ -96,7 +96,6 @@ type Clientset interface {
 	// GetClients returns the set of Extension clients that are cached with this Clientset.
 	// Must be called after UpdateServers
 	GetClients() Clients
-
 }
 
 type clientset struct {
@@ -116,7 +115,7 @@ type cachedClients struct {
 	clients     Clients
 }
 
-func (c *clientset) ConfigureServers(extensionsServerOptions []*v1alpha2.NetworkingExtensionsServer, pushFn PushFunc)  error {
+func (c *clientset) ConfigureServers(extensionsServerOptions []*v1alpha2.NetworkingExtensionsServer, pushFn PushFunc) error {
 	optionsHash, err := hashutils.HashAllSafe(nil, extensionsServerOptions)
 	if err != nil {
 		return err
