@@ -17,7 +17,7 @@ import (
 )
 
 func Command(ctx context.Context) *cobra.Command {
-	opts := new(options)
+	opts := &options{}
 	cmd := &cobra.Command{
 		Use:     "workload",
 		Short:   "Description of workloads",
@@ -68,15 +68,15 @@ func describeWorkloads(ctx context.Context, c client.Client, searchTerms []strin
 
 	buf := new(bytes.Buffer)
 	table := tablewriter.NewWriter(buf)
-	table.SetHeader([]string{"Metadata", "Mesh", "Kubernetes_Controller"})
+	table.SetHeader([]string{"Metadata", "Kubernetes", "Mesh"})
 	table.SetRowLine(true)
 	table.SetAutoWrapText(false)
 
 	for _, description := range workloadDescriptions {
 		table.Append([]string{
-			description.Metadata.string(),
+			printing.FormattedClusterObjectRef(description.Metadata),
+			description.Kubernetes.string(),
 			printing.FormattedObjectRef(description.Mesh),
-			printing.FormattedClusterObjectRef(description.KubernetesController),
 		})
 	}
 	table.Render()
@@ -84,26 +84,33 @@ func describeWorkloads(ctx context.Context, c client.Client, searchTerms []strin
 	return buf.String(), nil
 }
 
-func (m workloadMetadata) string() string {
+func (k workloadKubernetes) string() string {
 	var s strings.Builder
-	s.WriteString(printing.FormattedField("Name", m.Name))
-	s.WriteString(printing.FormattedField("Namespace", m.Namespace))
-	s.WriteString(printing.FormattedField("Cluster", m.Cluster))
-	s.WriteString(printing.FormattedField("Kubernetes Service Account", m.KubernetesServiceAccount))
+	s.WriteString(printing.FormattedField("Service Account", k.ServiceAccount))
+
+	if len(k.PodLabels) > 0 {
+		s.WriteString("\nPOD LABELS\n")
+		for label, value := range k.PodLabels {
+			s.WriteString(printing.FormattedField(label, value))
+		}
+	}
+
+	s.WriteString("\nCONTROLLER\n")
+	s.WriteString(printing.FormattedClusterObjectRef(k.Controller))
+
 	return s.String()
 }
 
 type workloadDescription struct {
-	Metadata             *workloadMetadata
-	Mesh                 *v1.ObjectRef
-	KubernetesController *v1.ClusterObjectRef
+	Metadata   *v1.ClusterObjectRef
+	Kubernetes *workloadKubernetes
+	Mesh       *v1.ObjectRef
 }
 
-type workloadMetadata struct {
-	Name                     string
-	Namespace                string
-	Cluster                  string
-	KubernetesServiceAccount string
+type workloadKubernetes struct {
+	ServiceAccount string
+	PodLabels      map[string]string
+	Controller     *v1.ClusterObjectRef
 }
 
 func matchWorkload(workload discoveryv1alpha2.Workload, searchTerms []string) bool {
@@ -123,18 +130,26 @@ func matchWorkload(workload discoveryv1alpha2.Workload, searchTerms []string) bo
 
 func describeWorkload(workload *discoveryv1alpha2.Workload) workloadDescription {
 	workloadMeta := getWorkloadMetadata(workload)
+	workloadKubernetes := getWorkloadKubernetes(workload)
 	return workloadDescription{
-		Metadata:             &workloadMeta,
-		Mesh:                 workload.Spec.Mesh,
-		KubernetesController: workload.Spec.GetKubernetes().Controller,
+		Metadata:   &workloadMeta,
+		Kubernetes: &workloadKubernetes,
+		Mesh:       workload.Spec.Mesh,
 	}
 }
 
-func getWorkloadMetadata(workload *discoveryv1alpha2.Workload) workloadMetadata {
-	return workloadMetadata{
-		Name:                     workload.Name,
-		Namespace:                workload.Namespace,
-		Cluster:                  workload.ClusterName,
-		KubernetesServiceAccount: workload.Spec.GetKubernetes().ServiceAccountName,
+func getWorkloadMetadata(workload *discoveryv1alpha2.Workload) v1.ClusterObjectRef {
+	return v1.ClusterObjectRef{
+		Name:        workload.Name,
+		Namespace:   workload.Namespace,
+		ClusterName: workload.ClusterName,
+	}
+}
+
+func getWorkloadKubernetes(workload *discoveryv1alpha2.Workload) workloadKubernetes {
+	return workloadKubernetes{
+		ServiceAccount: workload.Spec.GetKubernetes().ServiceAccountName,
+		PodLabels:      workload.Spec.GetKubernetes().GetPodLabels(),
+		Controller:     workload.Spec.GetKubernetes().Controller,
 	}
 }

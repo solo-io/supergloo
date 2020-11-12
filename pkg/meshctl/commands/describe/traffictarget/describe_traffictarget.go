@@ -17,7 +17,7 @@ import (
 )
 
 func Command(ctx context.Context) *cobra.Command {
-	opts := new(options)
+	opts := &options{}
 	cmd := &cobra.Command{
 		Use:     "traffictarget",
 		Short:   "Description of managed traffic targets",

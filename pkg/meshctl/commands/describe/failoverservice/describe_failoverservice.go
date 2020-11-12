@@ -17,7 +17,7 @@ import (
 )
 
 func Command(ctx context.Context) *cobra.Command {
-	opts := new(options)
+	opts := &options{}
 	cmd := &cobra.Command{
 		Use:     "failoverservice",
 		Short:   "Description of failover services",
@@ -68,13 +68,14 @@ func describeFailoverServices(ctx context.Context, c client.Client, searchTerms 
 
 	buf := new(bytes.Buffer)
 	table := tablewriter.NewWriter(buf)
-	table.SetHeader([]string{"Metadata", "Meshes", "Backing_Services"})
+	table.SetHeader([]string{"Metadata", "Net", "Meshes", "Backing_Services"})
 	table.SetRowLine(true)
 	table.SetAutoWrapText(false)
 
 	for _, description := range failoverServiceDescription {
 		table.Append([]string{
-			description.Metadata.string(),
+			printing.FormattedClusterObjectRef(description.Metadata),
+			description.Net.string(),
 			printing.FormattedObjectRefs(description.Meshes),
 			printing.FormattedClusterObjectRefs(description.BackingServices),
 		})
@@ -84,28 +85,23 @@ func describeFailoverServices(ctx context.Context, c client.Client, searchTerms 
 	return buf.String(), nil
 }
 
-func (m failoverServiceMetadata) string() string {
+func (n failoverServiceNet) string() string {
 	var s strings.Builder
-	s.WriteString(printing.FormattedField("Name", m.Name))
-	s.WriteString(printing.FormattedField("Namespace", m.Namespace))
-	s.WriteString(printing.FormattedField("Cluster", m.Cluster))
-	s.WriteString(printing.FormattedField("Hostname", m.Hostname))
-	s.WriteString(printing.FormattedField("Port", m.Port))
+	s.WriteString(printing.FormattedField("Hostname", n.Hostname))
+	s.WriteString(printing.FormattedField("Port", fmt.Sprint(n.Port)))
 	return s.String()
 }
 
 type failoverServiceDescription struct {
-	Metadata        *failoverServiceMetadata
+	Metadata        *v1.ClusterObjectRef
+	Net             *failoverServiceNet
 	Meshes          []*v1.ObjectRef
 	BackingServices []*v1.ClusterObjectRef
 }
 
-type failoverServiceMetadata struct {
-	Name      string
-	Namespace string
-	Cluster   string
-	Hostname  string
-	Port      string
+type failoverServiceNet struct {
+	Hostname string
+	Port     uint32
 }
 
 func matchFailoverService(failoverService networkingv1alpha2.FailoverService, searchTerms []string) bool {
@@ -125,6 +121,7 @@ func matchFailoverService(failoverService networkingv1alpha2.FailoverService, se
 
 func describeFailoverService(failoverService *networkingv1alpha2.FailoverService) failoverServiceDescription {
 	failoverServiceMeta := getFailoverServiceMetadata(failoverService)
+	failoverServiceNet := getFailoverServiceNet(failoverService)
 
 	var backingServices []*v1.ClusterObjectRef
 	for _, bs := range failoverService.Spec.GetBackingServices() {
@@ -136,17 +133,23 @@ func describeFailoverService(failoverService *networkingv1alpha2.FailoverService
 
 	return failoverServiceDescription{
 		Metadata:        &failoverServiceMeta,
+		Net:             &failoverServiceNet,
 		Meshes:          failoverService.Spec.GetMeshes(),
 		BackingServices: backingServices,
 	}
 }
 
-func getFailoverServiceMetadata(failoverService *networkingv1alpha2.FailoverService) failoverServiceMetadata {
-	return failoverServiceMetadata{
-		Name:      failoverService.Name,
-		Namespace: failoverService.Namespace,
-		Cluster:   failoverService.ClusterName,
-		Hostname:  failoverService.Spec.Hostname,
-		Port:      fmt.Sprint(failoverService.Spec.Port.Number),
+func getFailoverServiceMetadata(failoverService *networkingv1alpha2.FailoverService) v1.ClusterObjectRef {
+	return v1.ClusterObjectRef{
+		Name:        failoverService.Name,
+		Namespace:   failoverService.Namespace,
+		ClusterName: failoverService.ClusterName,
+	}
+}
+
+func getFailoverServiceNet(failoverService *networkingv1alpha2.FailoverService) failoverServiceNet {
+	return failoverServiceNet{
+		Hostname: failoverService.Spec.Hostname,
+		Port:     failoverService.Spec.Port.Number,
 	}
 }

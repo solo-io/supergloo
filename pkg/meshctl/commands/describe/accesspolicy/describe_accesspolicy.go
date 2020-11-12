@@ -17,7 +17,7 @@ import (
 )
 
 func Command(ctx context.Context) *cobra.Command {
-	opts := new(options)
+	opts := &options{}
 	cmd := &cobra.Command{
 		Use:     "accesspolicy",
 		Short:   "Description of access policies",
@@ -68,13 +68,14 @@ func describeAccessPolicies(ctx context.Context, c client.Client, searchTerms []
 
 	buf := new(bytes.Buffer)
 	table := tablewriter.NewWriter(buf)
-	table.SetHeader([]string{"Metadata", "Source_Service_Accounts", "Destination_Services"})
+	table.SetHeader([]string{"Metadata", "Filters", "Source_Service_Accounts", "Destination_Services"})
 	table.SetRowLine(true)
 	table.SetAutoWrapText(false)
 
 	for _, description := range accessPolicyDescriptions {
 		table.Append([]string{
-			description.Metadata.string(),
+			printing.FormattedClusterObjectRef(description.Metadata),
+			description.Filters.string(),
 			printing.FormattedClusterObjectRefs(description.SourceServiceAccounts),
 			printing.FormattedClusterObjectRefs(description.DestinationServices),
 		})
@@ -84,27 +85,22 @@ func describeAccessPolicies(ctx context.Context, c client.Client, searchTerms []
 	return buf.String(), nil
 }
 
-func (m accessPolicyMetadata) string() string {
+func (f accessPolicyFilters) string() string {
 	var s strings.Builder
-	s.WriteString(printing.FormattedField("Name", m.Name))
-	s.WriteString(printing.FormattedField("Namespace", m.Namespace))
-	s.WriteString(printing.FormattedField("Cluster", m.Cluster))
-	s.WriteString(printing.FormattedField("Allowed Paths", strings.Join(m.AllowedPaths, ", ")))
-	s.WriteString(printing.FormattedField("Allowed Methods", strings.Join(m.AllowedMethods, ", ")))
-	s.WriteString(printing.FormattedField("Allowed Ports", strings.Join(m.AllowedPorts, ", ")))
+	s.WriteString(printing.FormattedField("Allowed Paths", strings.Join(f.AllowedPaths, ", ")))
+	s.WriteString(printing.FormattedField("Allowed Methods", strings.Join(f.AllowedMethods, ", ")))
+	s.WriteString(printing.FormattedField("Allowed Ports", strings.Join(f.AllowedPorts, ", ")))
 	return s.String()
 }
 
 type accessPolicyDescription struct {
-	Metadata              *accessPolicyMetadata
+	Metadata              *v1.ClusterObjectRef
+	Filters               *accessPolicyFilters
 	SourceServiceAccounts []*v1.ClusterObjectRef
 	DestinationServices   []*v1.ClusterObjectRef
 }
 
-type accessPolicyMetadata struct {
-	Name           string
-	Namespace      string
-	Cluster        string
+type accessPolicyFilters struct {
 	AllowedPaths   []string
 	AllowedMethods []string
 	AllowedPorts   []string
@@ -127,6 +123,8 @@ func matchAccessPolicy(accessPolicy networkingv1alpha2.AccessPolicy, searchTerms
 
 func describeAccessPolicy(accessPolicy *networkingv1alpha2.AccessPolicy) accessPolicyDescription {
 	accessPolicyMeta := getAccessPolicyMetadata(accessPolicy)
+	accessPolicyFilters := getAccessPolicyFilters(accessPolicy)
+
 	var sourceServiceAccounts []*v1.ClusterObjectRef
 	for _, sel := range accessPolicy.Spec.GetSourceSelector() {
 		if svcAccs := sel.GetKubeServiceAccountRefs(); svcAccs != nil {
@@ -143,28 +141,34 @@ func describeAccessPolicy(accessPolicy *networkingv1alpha2.AccessPolicy) accessP
 
 	return accessPolicyDescription{
 		Metadata:              &accessPolicyMeta,
+		Filters:               &accessPolicyFilters,
 		SourceServiceAccounts: sourceServiceAccounts,
 		DestinationServices:   destinationServices,
 	}
 }
 
-func getAccessPolicyMetadata(accessPolicy *networkingv1alpha2.AccessPolicy) accessPolicyMetadata {
-	meta := accessPolicyMetadata{
-		Name:           accessPolicy.Name,
-		Namespace:      accessPolicy.Namespace,
-		Cluster:        accessPolicy.ClusterName,
+func getAccessPolicyMetadata(accessPolicy *networkingv1alpha2.AccessPolicy) v1.ClusterObjectRef {
+	return v1.ClusterObjectRef{
+		Name:        accessPolicy.Name,
+		Namespace:   accessPolicy.Namespace,
+		ClusterName: accessPolicy.ClusterName,
+	}
+}
+
+func getAccessPolicyFilters(accessPolicy *networkingv1alpha2.AccessPolicy) accessPolicyFilters {
+	filters := accessPolicyFilters{
 		AllowedPaths:   accessPolicy.Spec.AllowedPaths,
 		AllowedMethods: make([]string, len(accessPolicy.Spec.GetAllowedMethods())),
 		AllowedPorts:   make([]string, len(accessPolicy.Spec.GetAllowedPorts())),
 	}
 
 	for i, method := range accessPolicy.Spec.GetAllowedMethods() {
-		meta.AllowedMethods[i] = method.String()
+		filters.AllowedMethods[i] = method.String()
 	}
 
 	for i, port := range accessPolicy.Spec.GetAllowedPorts() {
-		meta.AllowedMethods[i] = fmt.Sprint(port)
+		filters.AllowedMethods[i] = fmt.Sprint(port)
 	}
 
-	return meta
+	return filters
 }

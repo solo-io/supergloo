@@ -17,7 +17,7 @@ import (
 )
 
 func Command(ctx context.Context) *cobra.Command {
-	opts := new(options)
+	opts := &options{}
 	cmd := &cobra.Command{
 		Use:     "trafficpolicy",
 		Short:   "Description of traffic policies",
@@ -74,7 +74,7 @@ func describeTrafficPolicies(ctx context.Context, c client.Client, searchTerms [
 
 	for _, description := range trafficPolicyDescriptions {
 		table.Append([]string{
-			description.Metadata.string(),
+			printing.FormattedClusterObjectRef(description.Metadata),
 			formattedWorkloadSelectors(description.SourceWorkloads),
 			printing.FormattedClusterObjectRefs(description.DestinationServices),
 			formattedHttpMatchers(description.HttpMatchers),
@@ -137,25 +137,11 @@ func formattedHttpMatchers(sels []*networkingv1alpha2.TrafficPolicySpec_HttpMatc
 	return s.String()
 }
 
-func (m trafficPolicyMetadata) string() string {
-	var s strings.Builder
-	s.WriteString(printing.FormattedField("Name", m.Name))
-	s.WriteString(printing.FormattedField("Namespace", m.Namespace))
-	s.WriteString(printing.FormattedField("Cluster", m.Cluster))
-	return s.String()
-}
-
 type trafficPolicyDescription struct {
-	Metadata            *trafficPolicyMetadata
+	Metadata            *v1.ClusterObjectRef
 	SourceWorkloads     []*networkingv1alpha2.WorkloadSelector
 	DestinationServices []*v1.ClusterObjectRef
 	HttpMatchers        []*networkingv1alpha2.TrafficPolicySpec_HttpMatcher
-}
-
-type trafficPolicyMetadata struct {
-	Name      string
-	Namespace string
-	Cluster   string
 }
 
 func matchTrafficPolicy(trafficPolicy networkingv1alpha2.TrafficPolicy, searchTerms []string) bool {
@@ -191,10 +177,10 @@ func describeTrafficPolicy(trafficPolicy *networkingv1alpha2.TrafficPolicy) traf
 	}
 }
 
-func getTrafficPolicyMetadata(trafficPolicy *networkingv1alpha2.TrafficPolicy) trafficPolicyMetadata {
-	return trafficPolicyMetadata{
-		Name:      trafficPolicy.Name,
-		Namespace: trafficPolicy.Namespace,
-		Cluster:   trafficPolicy.ClusterName,
+func getTrafficPolicyMetadata(trafficPolicy *networkingv1alpha2.TrafficPolicy) v1.ClusterObjectRef {
+	return v1.ClusterObjectRef{
+		Name:        trafficPolicy.Name,
+		Namespace:   trafficPolicy.Namespace,
+		ClusterName: trafficPolicy.ClusterName,
 	}
 }

@@ -17,11 +17,11 @@ import (
 )
 
 func Command(ctx context.Context) *cobra.Command {
-	opts := new(options)
+	opts := &options{}
 	cmd := &cobra.Command{
 		Use:     "virtualmesh",
 		Short:   "Description of virtual meshes",
-		Aliases: []string{"virtualmeshes"},
+		Aliases: []string{"virtualmeshes", "vmesh", "vmeshes"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
 			if err != nil {
@@ -68,13 +68,14 @@ func describeVirtualMeshes(ctx context.Context, c client.Client, searchTerms []s
 
 	buf := new(bytes.Buffer)
 	table := tablewriter.NewWriter(buf)
-	table.SetHeader([]string{"Metadata", "Meshes"})
+	table.SetHeader([]string{"Metadata", "Net", "Meshes"})
 	table.SetRowLine(true)
 	table.SetAutoWrapText(false)
 
 	for _, description := range virtualMeshDescriptions {
 		table.Append([]string{
-			description.Metadata.string(),
+			printing.FormattedClusterObjectRef(description.Metadata),
+			description.Net.string(),
 			printing.FormattedObjectRefs(description.Meshes),
 		})
 	}
@@ -83,24 +84,19 @@ func describeVirtualMeshes(ctx context.Context, c client.Client, searchTerms []s
 	return buf.String(), nil
 }
 
-func (m virtualMeshMetadata) string() string {
+func (n virtualMeshNet) string() string {
 	var s strings.Builder
-	s.WriteString(printing.FormattedField("Name", m.Name))
-	s.WriteString(printing.FormattedField("Namespace", m.Namespace))
-	s.WriteString(printing.FormattedField("Cluster", m.Cluster))
-	s.WriteString(printing.FormattedField("Global Access Policy", m.GlobalAccessPolicy))
+	s.WriteString(printing.FormattedField("Global Access Policy", n.GlobalAccessPolicy))
 	return s.String()
 }
 
 type virtualMeshDescription struct {
-	Metadata *virtualMeshMetadata
+	Metadata *v1.ClusterObjectRef
+	Net      *virtualMeshNet
 	Meshes   []*v1.ObjectRef
 }
 
-type virtualMeshMetadata struct {
-	Name               string
-	Namespace          string
-	Cluster            string
+type virtualMeshNet struct {
 	GlobalAccessPolicy string
 }
 
@@ -121,6 +117,7 @@ func matchVirtualMesh(virtualMesh networkingv1alpha2.VirtualMesh, searchTerms []
 
 func describeVirtualMesh(virtualMesh *networkingv1alpha2.VirtualMesh) virtualMeshDescription {
 	virtualMeshMeta := getVirtualMeshMetadata(virtualMesh)
+	virtualMeshNet := getVirtualMeshNet(virtualMesh)
 
 	var meshes []*v1.ObjectRef
 	for _, m := range virtualMesh.Spec.GetMeshes() {
@@ -129,15 +126,21 @@ func describeVirtualMesh(virtualMesh *networkingv1alpha2.VirtualMesh) virtualMes
 
 	return virtualMeshDescription{
 		Metadata: &virtualMeshMeta,
+		Net:      &virtualMeshNet,
 		Meshes:   meshes,
 	}
 }
 
-func getVirtualMeshMetadata(virtualMesh *networkingv1alpha2.VirtualMesh) virtualMeshMetadata {
-	return virtualMeshMetadata{
-		Name:               virtualMesh.Name,
-		Namespace:          virtualMesh.Namespace,
-		Cluster:            virtualMesh.ClusterName,
+func getVirtualMeshMetadata(virtualMesh *networkingv1alpha2.VirtualMesh) v1.ClusterObjectRef {
+	return v1.ClusterObjectRef{
+		Name:        virtualMesh.Name,
+		Namespace:   virtualMesh.Namespace,
+		ClusterName: virtualMesh.ClusterName,
+	}
+}
+
+func getVirtualMeshNet(virtualMesh *networkingv1alpha2.VirtualMesh) virtualMeshNet {
+	return virtualMeshNet{
 		GlobalAccessPolicy: virtualMesh.Spec.GlobalAccessPolicy.String(),
 	}
 }
