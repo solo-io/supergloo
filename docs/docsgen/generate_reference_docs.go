@@ -2,6 +2,7 @@ package docsgen
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -274,7 +275,10 @@ func collectDescriptors(protoDir, outDir string, filter func(file *model.Descrip
 }
 
 func generateChangelog(root string, opts ChangelogOptions) error {
-	if strings.ToLower(os.Getenv("RELEASE")) != "true" {
+	fmt.Println("version: " + os.Getenv("TAGGED_VERSION"))
+	fmt.Println("release: " + os.Getenv("RELEASE"))
+	if strings.ToLower(os.Getenv("RELEASE")) != `"true"` {
+		fmt.Println("skip?")
 		return nil
 	}
 
