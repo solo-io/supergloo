@@ -241,7 +241,7 @@ func StartEnv(ctx context.Context) Env {
 	}
 	Expect(err).NotTo(HaveOccurred())
 
-	err = os.Chdir(filepath.Join(originalWd))
+	err = os.Chdir(originalWd)
 	Expect(err).NotTo(HaveOccurred())
 
 	return newEnv(mgmtContext, remoteContext)
