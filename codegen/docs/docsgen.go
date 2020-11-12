@@ -35,6 +35,12 @@ func main() {
 			RootCmd:   commands.RootCommand(ctx),
 			OutputDir: "content/reference/cli",
 		},
+		Changelog: docsgen.ChangelogOptions{
+			Repos: []docsgen.ChangelogConfig{
+				{Name: "Open Source Gloo Mesh", Repo: "gloo-mesh", Path: "open_source"},
+				{Name: "Gloo Mesh Enterprise", Repo: "service-mesh-hub-enterprise", Path: "enterprise"}},
+			OutputDir: "content/reference/changelog",
+		},
 		DocsRoot: "docs",
 	}
 
