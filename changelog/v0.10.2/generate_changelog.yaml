@@ -1,4 +1,0 @@
-changelog:
-  - type: NEW_FEATURE
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1041
-    description: Add automatic changelog generation to the doc generation step.
