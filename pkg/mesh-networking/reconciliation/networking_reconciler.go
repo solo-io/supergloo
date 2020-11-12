@@ -194,27 +194,10 @@ func (r *networkingReconciler) syncSettings(ctx context.Context, in input.Snapsh
 	}
 
 	// update configured NetworkExtensionServers for the extension clients which are called inside the translator.
-	extensionsUpdated, err := r.extensionClients.ConfigureServers(settings.Spec.NetworkingExtensionServers)
-	if err != nil {
-		settings.Status.State = networkingv1alpha2.ApprovalState_INVALID
-		settings.Status.Errors = []string{err.Error()}
-		return err
-	}
-	if !extensionsUpdated {
-		return nil
-	}
-
-	// start watching push notifications for new set of extensions
-	if err := r.extensionClients.WatchPushNotifications(func(_ *v1alpha1.PushNotification) {
+	return r.extensionClients.ConfigureServers(settings.Spec.NetworkingExtensionServers, func(_ *v1alpha1.PushNotification) {
 		// ignore error because underlying impl should never error here
 		_, _ = r.reconciler.ReconcileGeneric(pushNotificationId)
-	}); err != nil {
-		settings.Status.State = networkingv1alpha2.ApprovalState_FAILED
-		settings.Status.Errors = []string{err.Error()}
-		return err
-	}
-
-	return nil
+	})
 }
 
 // returns true if the passed object is a secret which is of a type that is ignored by GlooMesh

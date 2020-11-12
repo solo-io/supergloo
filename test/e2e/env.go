@@ -223,18 +223,25 @@ func StartEnv(ctx context.Context) Env {
 	}
 
 	// change to repo root dir
-	err := os.Chdir(filepath.Join(util.MustGetThisDir(), "..", ".."))
+	originalWd, err := os.Getwd()
+	Expect(err).NotTo(HaveOccurred())
+
+	err = os.Chdir(filepath.Join(util.MustGetThisDir(), "..", ".."))
 	Expect(err).NotTo(HaveOccurred())
 
 	// get absolute path to setup script so this function can be called from any working directory)
 	cmd := exec.CommandContext(ctx, "./ci/setup-kind.sh", strconv.Itoa(GinkgoParallelNode()))
 	cmd.Stdout = GinkgoWriter
 	cmd.Stderr = GinkgoWriter
+	cmd.Env = os.Environ()
 
 	err = cmd.Run()
 	if err != nil {
 		dumpState()
 	}
+	Expect(err).NotTo(HaveOccurred())
+
+	err = os.Chdir(originalWd)
 	Expect(err).NotTo(HaveOccurred())
 
 	return newEnv(mgmtContext, remoteContext)

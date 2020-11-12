@@ -211,7 +211,7 @@ push-all-images: gloo-mesh-image-push cert-agent-image-push
 #----------------------------------------------------------------------------------
 HELM_ROOTDIR := install/helm
 # Include helm makefile so its targets can be ran from the root of this repo
-include install/helm/helm.mk
+include $(HELM_ROOTDIR)/helm.mk
 
 # Generate Manifests from Helm Chart
 .PHONY: chart-gen
@@ -221,7 +221,7 @@ chart-gen: clear-vendor-any
 .PHONY: manifest-gen
 manifest-gen: install/gloo-mesh-default.yaml
 install/gloo-mesh-default.yaml: chart-gen
-	helm template --include-crds --namespace gloo-mesh install/helm/gloo-mesh > $@
+	helm template --include-crds --namespace gloo-mesh $(HELM_ROOTDIR)/gloo-mesh > $@
 
 #----------------------------------------------------------------------------------
 # Test

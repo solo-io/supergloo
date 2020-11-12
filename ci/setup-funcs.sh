@@ -391,12 +391,22 @@ function register_cluster() {
   # load cert-agent image
   kind load docker-image --name "${cluster}" "${AGENT_IMAGE}"
 
+  EXTRA_FLAGS=""
+  # used by enterprise e2e test setup
+  # expects the following env set:
+  # INSTALL_WASM_AGENT=1
+  # WASM_AGENT_CHART=<path to chart>
+  if [ ${INSTALL_WASM_AGENT} == "1" ]; then
+    EXTRA_FLAGS="--install-wasm-agent --wasm-agent-chart-file=${WASM_AGENT_CHART}"
+  fi
+
   go run "${PROJECT_ROOT}/cmd/meshctl/main.go" cluster register \
     --cluster-name "${cluster}" \
     --mgmt-context "kind-${mgmtCluster}" \
     --remote-context "kind-${cluster}" \
     --api-server-address "${apiServerAddress}" \
-    --cert-agent-chart-file "${AGENT_CHART}"
+    --cert-agent-chart-file "${AGENT_CHART}" \
+    ${EXTRA_FLAGS}
 }
 
 function install_gloomesh() {
@@ -404,6 +414,10 @@ function install_gloomesh() {
   apiServerAddress=$(get_api_address ${cluster})
 
   ${PROJECT_ROOT}/ci/setup-gloomesh.sh ${cluster} ${GLOOMESH_CHART} ${AGENT_CHART} ${AGENT_IMAGE} ${apiServerAddress}
+
+  if [ ! -z ${POST_INSTALL_SCRIPT} ]; then
+    bash ${POST_INSTALL_SCRIPT}
+  fi
 }
 
 #### START SCRIPT
