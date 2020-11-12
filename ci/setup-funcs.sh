@@ -4,6 +4,8 @@
 # Functions for setting up kind clusters
 #####################################
 
+PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/.."
+
 #### FUNCTIONS
 
 function create_kind_cluster() {
@@ -365,6 +367,21 @@ function get_api_address() {
   echo ${apiServerAddress}
 }
 
+# must be called after make manifest-gen
+function setChartVariables() {
+  export INSTALL_DIR="${PROJECT_ROOT}/install/"
+  export DEFAULT_MANIFEST="${INSTALL_DIR}/gloo-mesh-default.yaml"
+  export AGENT_VALUES=${INSTALL_DIR}/helm/cert-agent/values.yaml
+  export AGENT_IMAGE_REGISTRY=$(cat ${AGENT_VALUES} | grep "registry: " | awk '{print $2}')
+  export AGENT_IMAGE_REPOSITORY=$(cat ${AGENT_VALUES} | grep "repository: " | awk '{print $2}')
+  export AGENT_IMAGE_TAG=$(cat ${AGENT_VALUES} | grep "tag: " | awk '{print $2}' | sed 's/"//g')
+  export AGENT_CHART=${INSTALL_DIR}/helm/_output/charts/cert-agent/cert-agent-${AGENT_IMAGE_TAG}.tgz
+  export AGENT_IMAGE=${AGENT_IMAGE_REGISTRY}/${AGENT_IMAGE_REPOSITORY}:${AGENT_IMAGE_TAG}
+  export GLOOMESH_VALUES=${INSTALL_DIR}/helm/gloo-mesh/values.yaml
+  export GLOOMESH_IMAGE_TAG=$(cat ${GLOOMESH_VALUES} | grep -m 1 "tag: " | awk '{print $2}' | sed 's/"//g')
+  export GLOOMESH_CHART=${INSTALL_DIR}/helm/_output/charts/gloo-mesh/gloo-mesh-${GLOOMESH_IMAGE_TAG}.tgz
+}
+
 function register_cluster() {
   cluster=$1
   apiServerAddress=$(get_api_address ${cluster})
@@ -384,6 +401,9 @@ function register_cluster() {
   if [ ${INSTALL_WASM_AGENT} == "1" ]; then
     EXTRA_FLAGS="--install-wasm-agent --wasm-agent-chart-file=${WASM_AGENT_CHART}"
   fi
+
+  # needwd for the agent chart
+  setChartVariables
 
   go run "${PROJECT_ROOT}/cmd/meshctl/main.go" cluster register \
     --cluster-name "${cluster}" \
