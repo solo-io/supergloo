@@ -3,14 +3,14 @@ package bootstrap
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/spf13/pflag"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/go-logr/zapr"
+	"github.com/solo-io/gloo-mesh/pkg/common/schemes"
+	"github.com/solo-io/gloo-mesh/pkg/common/utils/stats"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
-	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/multicluster/watch"

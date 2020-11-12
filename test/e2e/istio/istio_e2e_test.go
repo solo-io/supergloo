@@ -6,13 +6,13 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/solo-io/service-mesh-hub/test/extensions"
+	"github.com/solo-io/gloo-mesh/test/extensions"
 
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/service-mesh-hub/test/e2e"
+	"github.com/solo-io/gloo-mesh/test/e2e"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -25,12 +25,12 @@ var (
 
 	masterMesh = &v1.ObjectRef{
 		Name:      "istiod-istio-system-mgmt-cluster",
-		Namespace: "service-mesh-hub",
+		Namespace: "gloo-mesh",
 	}
 
 	remoteMesh = &v1.ObjectRef{
 		Name:      "istiod-istio-system-remote-cluster",
-		Namespace: "service-mesh-hub",
+		Namespace: "gloo-mesh",
 	}
 
 	// Initialize in BeforeSuite

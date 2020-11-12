@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1018
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1018
     description: Add the abiltiy to configure Service Mesh Hub with (gRPC) Extensions Servers. Extension Servers can be used to update and append output configurations produced by SMH before they are applied to managed clusters.

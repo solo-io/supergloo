@@ -8,8 +8,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	mesh "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/osm/mesh"
-	traffictarget "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/osm/traffictarget"
+	mesh "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm/mesh"
+	traffictarget "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm/traffictarget"
 )
 
 // MockDependencyFactory is a mock of DependencyFactory interface

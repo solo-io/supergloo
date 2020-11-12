@@ -7,9 +7,9 @@ import (
 	aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	input "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	detector "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
+	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	detector "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -66,9 +66,9 @@ var _ = Describe("AppMesh MeshDetector", func() {
 		expected := v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s-%s", meshName1, "us-east-2", "1234"),
-				Namespace: "service-mesh-hub",
+				Namespace: "gloo-mesh",
 				Labels: map[string]string{
-					"owner.discovery.smh.solo.io": "service-mesh-hub",
+					"owner.discovery.mesh.gloo.solo.io": "gloo-mesh",
 				},
 			},
 			Spec: v1alpha2.MeshSpec{
@@ -131,9 +131,9 @@ var _ = Describe("AppMesh MeshDetector", func() {
 		expected1 := v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s-%s", meshName1, "us-east-2", "1234"),
-				Namespace: "service-mesh-hub",
+				Namespace: "gloo-mesh",
 				Labels: map[string]string{
-					"owner.discovery.smh.solo.io": "service-mesh-hub",
+					"owner.discovery.mesh.gloo.solo.io": "gloo-mesh",
 				},
 			},
 			Spec: v1alpha2.MeshSpec{
@@ -151,9 +151,9 @@ var _ = Describe("AppMesh MeshDetector", func() {
 		expected2 := v1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s-%s", meshName2, "us-east-2", "1234"),
-				Namespace: "service-mesh-hub",
+				Namespace: "gloo-mesh",
 				Labels: map[string]string{
-					"owner.discovery.smh.solo.io": "service-mesh-hub",
+					"owner.discovery.mesh.gloo.solo.io": "gloo-mesh",
 				},
 			},
 			Spec: v1alpha2.MeshSpec{

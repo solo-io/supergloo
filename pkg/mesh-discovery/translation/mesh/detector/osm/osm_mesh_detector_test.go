@@ -3,14 +3,14 @@ package osm_test
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector/osm"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/labelutils"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	. "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector/osm"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/labelutils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

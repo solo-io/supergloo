@@ -1,4 +1,4 @@
 changelog:
 - type: NON_USER_FACING
   description: Remove generated clientsets in favor of dynamic
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/561
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/561

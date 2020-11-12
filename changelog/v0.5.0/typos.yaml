@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Clean up a number of typos in user-facing messages
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/697
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/697

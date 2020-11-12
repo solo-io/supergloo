@@ -1,15 +1,15 @@
 syntax = "proto3";
-package networking.smh.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2";
+package networking.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2";
 
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
 import "skv2/api/core/v1/core.proto";
-import "service-mesh-hub/api/networking/v1alpha2/http.proto";
-import "service-mesh-hub/api/networking/v1alpha2/selectors.proto";
-import "service-mesh-hub/api/networking/v1alpha2/validation_state.proto";
+import "gloo-mesh/api/networking/v1alpha2/http.proto";
+import "gloo-mesh/api/networking/v1alpha2/selectors.proto";
+import "gloo-mesh/api/networking/v1alpha2/validation_state.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -89,7 +89,7 @@ message TrafficPolicySpec {
     /*
         RetryPolicy contains mesh-specific retry configuration.
         Different meshes support different Retry features.
-        Service Mesh Hub's RetryPolicy exposes config for multiple meshes simultaneously,
+        Gloo Mesh's RetryPolicy exposes config for multiple meshes simultaneously,
         allowing the same TrafficPolicy to apply retries to different mesh types.
         The configuration applied to the target mesh will use the corresponding
         config for each type, while other config types will be ignored.
@@ -113,7 +113,7 @@ message TrafficPolicySpec {
                 // The namespace of the destination service.
                 string namespace = 2;
 
-                // The cluster of the destination k8s service (as it is registered with Service Mesh Hub).
+                // The cluster of the destination k8s service (as it is registered with Gloo Mesh).
                 string cluster_name = 3;
 
                 // Subset routing is currently only supported on Istio.
@@ -379,7 +379,7 @@ message TrafficPolicySpec {
 
     // Express an optional HttpMethod by wrapping it in a nillable message.
     message HttpMethod {
-        networking.smh.solo.io.HttpMethodValue method = 1;
+        networking.mesh.gloo.solo.io.HttpMethodValue method = 1;
     }
 
     /*

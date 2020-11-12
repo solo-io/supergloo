@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Package csr-agent with all CRD's as a Helm dependency.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/283
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/283

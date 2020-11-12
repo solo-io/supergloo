@@ -1,4 +1,4 @@
 changelog:
   - type: NON_USER_FACING
     description: Add initial infrastructure for Appmesh EKS e2e tests.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/752
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/752

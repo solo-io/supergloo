@@ -1,10 +1,10 @@
 syntax = "proto3";
-package networking.smh.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2";
+package networking.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2";
 
-import "service-mesh-hub/api/networking/v1alpha2/http.proto";
-import "service-mesh-hub/api/networking/v1alpha2/selectors.proto";
-import "service-mesh-hub/api/networking/v1alpha2/validation_state.proto";
+import "gloo-mesh/api/networking/v1alpha2/http.proto";
+import "gloo-mesh/api/networking/v1alpha2/selectors.proto";
+import "gloo-mesh/api/networking/v1alpha2/validation_state.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -15,7 +15,7 @@ option (gogoproto.equal_all) = true;
     ALLOW those requests that: originate from from **source workload**, target the **destination target**,
     and match the indicated request criteria (allowed_paths, allowed_methods, allowed_ports).
     Enforcement of access control is determined by the
-    [VirtualMesh's GlobalAccessPolicy]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/#networking.smh.solo.io.VirtualMeshSpec.GlobalAccessPolicy" %}})
+    [VirtualMesh's GlobalAccessPolicy]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy" %}})
 */
 message AccessPolicySpec {
     /*

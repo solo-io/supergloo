@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Clear an invalid configstatus if things were once invalid but are now valid
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/660
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/660

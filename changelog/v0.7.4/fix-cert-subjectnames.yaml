@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Fix Subject Names in Issued Certificates.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/943
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/943

@@ -3,8 +3,8 @@ package demo
 import (
 	"context"
 
-	istio_multicluster "github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/demo/istio-multicluster"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/demo/osm"
+	istio_multicluster "github.com/solo-io/gloo-mesh/pkg/meshctl/commands/demo/istio-multicluster"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/demo/osm"
 
 	"github.com/spf13/cobra"
 )
@@ -12,7 +12,7 @@ import (
 func Command(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "demo",
-		Short: "Bootstrap environments for various demos demonstrating Service Mesh Hub functionality.",
+		Short: "Bootstrap environments for various demos demonstrating Gloo Mesh functionality.",
 	}
 
 	cmd.AddCommand(

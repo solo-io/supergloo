@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
     description: Discover kube service ports and store that information on Mesh Services
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/289
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/289

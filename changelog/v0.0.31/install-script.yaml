@@ -1,5 +1,5 @@
 changelog:
 - type: NEW_FEATURE
   description: Add install script for meshctl
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/114
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/114
   resolvesIssue: false

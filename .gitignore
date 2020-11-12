@@ -21,7 +21,7 @@ cloudbuild-test.yaml
 
 # generated versioned docs site
 ci/docs-site/
-ci/service-mesh-hub-temp/
+ci/gloo-mesh-temp/
 
 # mesctl generated debug snapshot json files
 *snapshot.json

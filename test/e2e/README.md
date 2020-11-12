@@ -1,5 +1,5 @@
 # Integration tests
-This directory contains specs that test the e2e workflows of Service Mesh Hub deployed on Kubernetes.
+This directory contains specs that test the e2e workflows of Gloo Mesh deployed on Kubernetes.
 
 ## Cluster setup
 

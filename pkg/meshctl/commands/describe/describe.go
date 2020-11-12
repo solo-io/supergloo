@@ -2,14 +2,14 @@ package describe
 
 import (
 	"context"
-
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/accesspolicy"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/failoverservice"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/mesh"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/trafficpolicy"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/traffictarget"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/virtualmesh"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/workload"
+  
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/accesspolicy"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/failoverservice"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/mesh"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/trafficpolicy"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/traffictarget"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/virtualmesh"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/workload"
 	"github.com/spf13/cobra"
 )
 

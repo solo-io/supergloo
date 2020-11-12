@@ -18,7 +18,7 @@ Human readable description of discovered resources and applicable configuration
 
 ### SEE ALSO
 
-* [meshctl](../meshctl)	 - The Command Line Interface for managing Service Mesh Hub.
+* [meshctl](../meshctl)	 - The Command Line Interface for managing Gloo Mesh
 * [meshctl describe accesspolicy](../meshctl_describe_accesspolicy)	 - Description of managed access policies
 * [meshctl describe failoverservice](../meshctl_describe_failoverservice)	 - Description of managed failover services
 * [meshctl describe mesh](../meshctl_describe_mesh)	 - Description of managed meshes

@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl check
 
-Perform health checks on the Service Mesh Hub system
+Perform health checks on the Gloo Mesh system
 
 ### Synopsis
 
-Perform health checks on the Service Mesh Hub system
+Perform health checks on the Gloo Mesh system
 
 ```
 meshctl check [flags]
@@ -20,10 +20,10 @@ meshctl check [flags]
   -h, --help                 help for check
       --kubeconfig string    path to the kubeconfig from which the management cluster will be accessed
       --kubecontext string   name of the kubeconfig context to use for the management cluster
-      --namespace string     namespace that Service Mesh Hub is installed in (default "service-mesh-hub")
+      --namespace string     namespace that Gloo Mesh is installed in (default "gloo-mesh")
 ```
 
 ### SEE ALSO
 
-* [meshctl](../meshctl)	 - The Command Line Interface for managing Service Mesh Hub.
+* [meshctl](../meshctl)	 - The Command Line Interface for managing Gloo Mesh.
 

@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
     description: Expose Helm chart values files option to `meshctl cluster register` for csr-agent.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/716
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/716

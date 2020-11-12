@@ -6,29 +6,29 @@ import (
 	"time"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/service-mesh-hub/pkg/common/version"
+	"github.com/solo-io/gloo-mesh/pkg/common/version"
 
-	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/local"
+	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
 	"github.com/solo-io/skv2/pkg/ezkube"
 
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/certificates/common/secrets"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
 	"istio.io/istio/pkg/spiffe"
 	"istio.io/istio/security/pkg/pki/util"
 	corev1 "k8s.io/api/core/v1"
 
+	certificatesv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/go-utils/contextutils"
-	certificatesv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/v1alpha2"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 )
@@ -141,7 +141,7 @@ func (t *translator) updateMtlsOutputs(
 			mtlsConfig.AutoRestartPods,
 		)
 	case *v1alpha2.VirtualMeshSpec_MTLSConfig_Limited:
-		return eris.Errorf("limited trust not supported in version %v of service mesh hub", version.Version)
+		return eris.Errorf("limited trust not supported in version %v of Gloo Mesh", version.Version)
 	}
 
 	return nil
@@ -200,7 +200,7 @@ func (t *translator) getOrCreateRootCaSecret(
 	switch caType := rootCA.CaSource.(type) {
 	case *v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Generated:
 		generatedSecretName := virtualMeshRef.Name + "." + virtualMeshRef.Namespace
-		// write the signing secret to the smh namespace
+		// write the signing secret to the gloomesh namespace
 		generatedSecretNamespace := defaults.GetPodNamespace()
 		// use the existing secret if it exists
 		rootCaSecret = &v1.ObjectRef{
@@ -306,7 +306,7 @@ const (
 	defaultRootCertTTLDays     = 365
 	defaultRootCertTTLDuration = defaultRootCertTTLDays * 24 * time.Hour
 	defaultRootCertRsaKeySize  = 4096
-	defaultOrgName             = "service-mesh-hub"
+	defaultOrgName             = "gloo-mesh"
 )
 
 func generateSelfSignedCert(

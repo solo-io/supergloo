@@ -1,7 +1,7 @@
 package io
 
 import (
-	"github.com/solo-io/service-mesh-hub/codegen/constants"
+	"github.com/solo-io/gloo-mesh/codegen/constants"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -9,7 +9,7 @@ import (
 var (
 	CertificateIssuerInputTypes = Snapshot{
 		schema.GroupVersion{
-			Group:   "certificates." + constants.ServiceMeshHubApiGroupSuffix,
+			Group:   "certificates." + constants.GlooMeshApiGroupSuffix,
 			Version: "v1alpha2",
 		}: {
 			"IssuedCertificate",
@@ -19,7 +19,7 @@ var (
 
 	CertificateAgentInputTypes = Snapshot{
 		schema.GroupVersion{
-			Group:   "certificates." + constants.ServiceMeshHubApiGroupSuffix,
+			Group:   "certificates." + constants.GlooMeshApiGroupSuffix,
 			Version: "v1alpha2",
 		}: {
 			"IssuedCertificate",
@@ -36,7 +36,7 @@ var (
 		Name: "certagent",
 		Snapshot: Snapshot{
 			schema.GroupVersion{
-				Group:   "certificates." + constants.ServiceMeshHubApiGroupSuffix,
+				Group:   "certificates." + constants.GlooMeshApiGroupSuffix,
 				Version: "v1alpha2",
 			}: {
 				"CertificateRequest",

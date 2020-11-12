@@ -1,4 +1,4 @@
 changelog:
 - type: FIX
   description: Refactor the istio install command to be in a more generic CLI structure
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/372
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/372

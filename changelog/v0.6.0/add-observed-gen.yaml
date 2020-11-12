@@ -1,5 +1,5 @@
 changelog:
   - type: FIX
     description: Add observed generation to traffic policies, and make sure that only policies that have been observed are aggregated.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/753
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/753
     resolvesIssue: false

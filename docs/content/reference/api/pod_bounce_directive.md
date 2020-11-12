@@ -3,7 +3,7 @@
 title: "pod_bounce_directive.proto"
 ---
 
-## Package : `certificates.smh.solo.io`
+## Package : `certificates.mesh.gloo.solo.io`
 
 
 
@@ -16,9 +16,9 @@ title: "pod_bounce_directive.proto"
 
 
 ## Table of Contents
-  - [PodBounceDirectiveSpec](#certificates.smh.solo.io.PodBounceDirectiveSpec)
-  - [PodBounceDirectiveSpec.PodSelector](#certificates.smh.solo.io.PodBounceDirectiveSpec.PodSelector)
-  - [PodBounceDirectiveSpec.PodSelector.LabelsEntry](#certificates.smh.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry)
+  - [PodBounceDirectiveSpec](#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec)
+  - [PodBounceDirectiveSpec.PodSelector](#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector)
+  - [PodBounceDirectiveSpec.PodSelector.LabelsEntry](#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry)
 
 
 
@@ -26,7 +26,7 @@ title: "pod_bounce_directive.proto"
 
 
 
-<a name="certificates.smh.solo.io.PodBounceDirectiveSpec"></a>
+<a name="certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec"></a>
 
 ### PodBounceDirectiveSpec
 When certificates are issued, pods may need to be bounced (restarted) to ensure they pick up the new certificates. If so, the certificate Issuer will create a PodBounceDirective containing the namespaces and labels of the pods that need to be bounced in order to pick up the new certs.
@@ -34,14 +34,14 @@ When certificates are issued, pods may need to be bounced (restarted) to ensure 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| podsToBounce | []certificates.smh.solo.io.PodBounceDirectiveSpec.PodSelector | repeated | A list of k8s pods to bounce (delete and cause a restart) when the certificate is issued. This will include the control plane pods as well as any pods which share a data plane with the target mesh. |
+| podsToBounce | []certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector | repeated | A list of k8s pods to bounce (delete and cause a restart) when the certificate is issued. This will include the control plane pods as well as any pods which share a data plane with the target mesh. |
 
 
 
 
 
 
-<a name="certificates.smh.solo.io.PodBounceDirectiveSpec.PodSelector"></a>
+<a name="certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector"></a>
 
 ### PodBounceDirectiveSpec.PodSelector
 Pods that will be restarted.
@@ -50,14 +50,14 @@ Pods that will be restarted.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | namespace | string |  | The namespace in which the pods live. |
-| labels | []certificates.smh.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry | repeated | Any labels shared by the pods. |
+| labels | []certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry | repeated | Any labels shared by the pods. |
 
 
 
 
 
 
-<a name="certificates.smh.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry"></a>
+<a name="certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry"></a>
 
 ### PodBounceDirectiveSpec.PodSelector.LabelsEntry
 

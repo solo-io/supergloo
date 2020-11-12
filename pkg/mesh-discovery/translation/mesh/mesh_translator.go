@@ -3,11 +3,11 @@ package mesh
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/go-utils/contextutils"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
 
