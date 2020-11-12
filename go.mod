@@ -42,7 +42,6 @@ require (
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2
 	github.com/google/go-github v17.0.0+incompatible
-	github.com/google/go-github/v31 v31.0.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
