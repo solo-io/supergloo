@@ -413,7 +413,7 @@ function install_gloomesh() {
   cluster=$1
   apiServerAddress=$(get_api_address ${cluster})
 
-  ${PROJECT_ROOT}/ci/setup-gloomesh.sh ${cluster} ${GLOOMESH_CHART} ${AGENT_CHART} ${AGENT_IMAGE} ${apiServerAddress}
+  bash ${PROJECT_ROOT}/ci/setup-gloomesh.sh ${cluster} ${GLOOMESH_CHART} ${AGENT_CHART} ${AGENT_IMAGE} ${apiServerAddress}
 
   if [ ! -z ${POST_INSTALL_SCRIPT} ]; then
     bash ${POST_INSTALL_SCRIPT}
