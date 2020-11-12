@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
-	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/describe/printing"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
+	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/printing"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
