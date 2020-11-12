@@ -90,17 +90,13 @@ func startNotificationWatch(ctx context.Context, exClient v1alpha1.NetworkingExt
 // Clientset provides a handle to fetching a set of cached gRPC clients
 type Clientset interface {
 	// ConfigureServers updates the set of servers this Clientset is configured with.
-	// Returns true if servers were updated, false if options have not changed
-	ConfigureServers(extensionsServerOptions []*v1alpha2.NetworkingExtensionsServer) (bool, error)
+	// Restarts the notification watches if servers were updated, using the new pushFn to handle notification pushes.
+	ConfigureServers(extensionsServerOptions []*v1alpha2.NetworkingExtensionsServer, pushFn PushFunc) error
 
 	// GetClients returns the set of Extension clients that are cached with this Clientset.
 	// Must be called after UpdateServers
 	GetClients() Clients
 
-	// WatchPushNotifications watches push notifications from the available extension servers until the Clientset's root context is cancelled.
-	// Will call pushFn() when a notification is received.
-	// Should be called after UpdateServers
-	WatchPushNotifications(pushFn PushFunc) error
 }
 
 type clientset struct {
@@ -120,20 +116,20 @@ type cachedClients struct {
 	clients     Clients
 }
 
-func (c *clientset) ConfigureServers(extensionsServerOptions []*v1alpha2.NetworkingExtensionsServer) (bool, error) {
+func (c *clientset) ConfigureServers(extensionsServerOptions []*v1alpha2.NetworkingExtensionsServer, pushFn PushFunc)  error {
 	optionsHash, err := hashutils.HashAllSafe(nil, extensionsServerOptions)
 	if err != nil {
-		return false, err
+		return err
 	}
 	if c.cachedClients.optionsHash == optionsHash {
 		// nothing to do, options have remained the same
-		return false, nil
+		return nil
 	}
 
 	newContext, newCancel := context.WithCancel(c.rootCtx)
 	newClients, err := NewClientsFromSettings(newContext, extensionsServerOptions)
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	c.cachedClients.lock.Lock()
@@ -150,7 +146,7 @@ func (c *clientset) ConfigureServers(extensionsServerOptions []*v1alpha2.Network
 
 	c.cachedClients.lock.Unlock()
 
-	return true, nil
+	return c.watchPushNotifications(pushFn)
 }
 
 func (c *clientset) GetClients() Clients {
@@ -161,6 +157,6 @@ func (c *clientset) GetClients() Clients {
 	return clients
 }
 
-func (c *clientset) WatchPushNotifications(pushFn PushFunc) error {
+func (c *clientset) watchPushNotifications(pushFn PushFunc) error {
 	return c.GetClients().WatchPushNotifications(c.cachedClients.ctx, pushFn)
 }
