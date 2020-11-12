@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/output/discovery"
-	internal "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/internal"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/labelutils"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/output/discovery"
+	internal "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/internal"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/labelutils"
 )
 
 var DefaultDependencyFactory = internal.DependencyFactoryImpl{}

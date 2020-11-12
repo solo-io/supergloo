@@ -1,13 +1,13 @@
 ---
 title: "Guides Overview"
 menuTitle: Guides
-description: Guides for getting started using Service Mesh Hub
+description: Guides for getting started using Gloo Mesh
 weight: 40
 ---
 
-There are several guides available. To follow the guides included in this section, you will need at least two Kubernetes clusters with Service Mesh Hub installed on one. You can easily set up two such clusters [using Kind](#using-kind) as detailed below. Some of the guides also make use of the Bookinfo sample application. You can install the application by following the steps in the [Bookinfo deployment section](#bookinfo-deployment).
+There are several guides available. To follow the guides included in this section, you will need at least two Kubernetes clusters with Gloo Mesh installed on one. You can easily set up two such clusters [using Kind](#using-kind) as detailed below. Some of the guides also make use of the Bookinfo sample application. You can install the application by following the steps in the [Bookinfo deployment section](#bookinfo-deployment).
 
-To become familiar with Service Mesh Hub, we recommend following the guides in the order that they appear here, starting from the top and going down.
+To become familiar with Gloo Mesh, we recommend following the guides in the order that they appear here, starting from the top and going down.
 
 * [Installing Multi-cluster Istio]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
 * [Intro to Discovery]({{% versioned_link_path fromRoot="/guides/discovery_intro" %}})
@@ -21,7 +21,7 @@ There are three pre-requisites to following these guides:
 1. Install `kubectl`
     - https://kubernetes.io/docs/tasks/tools/install-kubectl/
 2. Install `meshctl`
-    - https://github.com/solo-io/service-mesh-hub/releases
+    - https://github.com/solo-io/gloo-mesh/releases
 3. Have multiple Kubernetes clusters ready to use, accessible in different `kubeconfig` contexts. If you don't have access to multiple Kubernetes clusters, see the section below, [Using Kind](#using-kind) to use Kubernetes in Docker (Kind) to spin up two clusters in containers.
 
 
@@ -32,15 +32,15 @@ We will assume in this guide that you have access to two clusters and the follow
 Your actual context names will likely be different.
 
 * `mgmt-cluster-context`
-    - kubeconfig context pointing to a cluster where we will install and operate Service Mesh Hub
+    - kubeconfig context pointing to a cluster where we will install and operate Gloo Mesh
 * `remote-cluster-context`
-    - kubeconfig context pointing to a cluster where we will install and manage a service mesh using Service Mesh Hub 
+    - kubeconfig context pointing to a cluster where we will install and manage a service mesh using Gloo Mesh 
 
-We assume you've [installed Service Mesh Hub]({{% versioned_link_path fromRoot="/setup/#installing-with-meshctl" %}}) into the cluster represented by the context `mgmt-cluster-context`.
+We assume you've [installed Gloo Mesh]({{% versioned_link_path fromRoot="/setup/#installing-with-meshctl" %}}) into the cluster represented by the context `mgmt-cluster-context`.
 
 
 #### Two registered clusters
-We also assume you've [registered]({{% versioned_link_path fromRoot="/setup/#register-a-cluster" %}}) both of those clusters with Service Mesh Hub:
+We also assume you've [registered]({{% versioned_link_path fromRoot="/setup/#register-a-cluster" %}}) both of those clusters with Gloo Mesh:
 
 
 ```shell
@@ -55,11 +55,11 @@ meshctl cluster register \
   --remote-context remote-cluster-context
 ```
 
-At this point we have two clusters, `mgmt-cluster` and `remote-cluster` both registered with Service Mesh Hub which happens to be installed on the `mgmt-cluster` cluster.
+At this point we have two clusters, `mgmt-cluster` and `remote-cluster` both registered with Gloo Mesh which happens to be installed on the `mgmt-cluster` cluster.
 
 ## Using Kind
 
-Kubernetes in Docker makes it easy to stand up Kubernetes clusters on your local desktop for testing and development. To assist with learning about Service Mesh Hub, you can use Kind to deploy two Kubernetes clusters. You can install Kind by following the [installation steps in their Quick Start guide](https://kind.sigs.k8s.io/docs/user/quick-start/).
+Kubernetes in Docker makes it easy to stand up Kubernetes clusters on your local desktop for testing and development. To assist with learning about Gloo Mesh, you can use Kind to deploy two Kubernetes clusters. You can install Kind by following the [installation steps in their Quick Start guide](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
 Once you have Kind installed, you can create the two clusters in question by running the following:
 
@@ -70,9 +70,9 @@ meshctl demo init
 The command will do the following:
 
 * Create two kind clusters: mgmt-cluster and remote-cluster
-* Install Service Mesh Hub on the management plane cluster
+* Install Gloo Mesh on the management plane cluster
 * Install Istio on both clusters
-* Register both clusters with Service Mesh Hub
+* Register both clusters with Gloo Mesh
 
 You should now be ready to start going through the guides.
 

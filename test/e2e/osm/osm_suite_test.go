@@ -10,9 +10,9 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/solo-io/gloo-mesh/test/e2e"
+	"github.com/solo-io/gloo-mesh/test/utils"
 	"github.com/solo-io/go-utils/testutils"
-	. "github.com/solo-io/service-mesh-hub/test/e2e"
-	"github.com/solo-io/service-mesh-hub/test/utils"
 )
 
 // to skip testing this package, run `make run-tests SKIP_PACKAGES=test/e2e

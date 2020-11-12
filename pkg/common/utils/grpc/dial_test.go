@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/go-multierror"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/solo-io/service-mesh-hub/pkg/common/utils/grpc"
-	"github.com/solo-io/service-mesh-hub/pkg/common/utils/grpc/test_api"
+	. "github.com/solo-io/gloo-mesh/pkg/common/utils/grpc"
+	"github.com/solo-io/gloo-mesh/pkg/common/utils/grpc/test_api"
 	"google.golang.org/grpc"
 )
 

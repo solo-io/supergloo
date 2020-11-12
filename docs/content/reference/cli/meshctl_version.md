@@ -4,11 +4,11 @@ weight: 5
 ---
 ## meshctl version
 
-Display the version of meshctl and installed Service Mesh Hub components
+Display the version of meshctl and installed Gloo Mesh components
 
 ### Synopsis
 
-Display the version of meshctl and installed Service Mesh Hub components
+Display the version of meshctl and installed Gloo Mesh components
 
 ```
 meshctl version [flags]
@@ -24,5 +24,5 @@ meshctl version [flags]
 
 ### SEE ALSO
 
-* [meshctl](../meshctl)	 - The Command Line Interface for managing Service Mesh Hub.
+* [meshctl](../meshctl)	 - The Command Line Interface for managing Gloo Mesh.
 

@@ -22,7 +22,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - certificates.smh.solo.io
+  - certificates.mesh.gloo.solo.io
   resources:
   - issuedcertificates
   - certificaterequests
@@ -40,7 +40,7 @@ rules:
   - get
   - update
 - apiGroups:
-  - certificates.smh.solo.io
+  - certificates.mesh.gloo.solo.io
   resources:
   - issuedcertificates/status
   - certificaterequests/status
@@ -55,7 +55,7 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - certificates.smh.solo.io
+  - certificates.mesh.gloo.solo.io
   resources:
   - certificaterequests
   verbs:

@@ -1,11 +1,11 @@
 changelog:
   - type: NEW_FEATURE
-    description: Start work on service discovery. Some details are pending https://github.com/solo-io/service-mesh-hub/issues/174
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/86
+    description: Start work on service discovery. Some details are pending https://github.com/solo-io/gloo-mesh/issues/174
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/86
     resolvesIssue: false
   - type: FIX
     description: Fix a nil panic due to typed nil checking
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/190
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/190
   - type: FIX
     description: RESTClientGetter doesn't respect the --context flag
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/189
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/189

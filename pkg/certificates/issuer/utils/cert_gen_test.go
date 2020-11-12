@@ -5,8 +5,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/service-mesh-hub/pkg/certificates/agent/utils"
-	. "github.com/solo-io/service-mesh-hub/pkg/certificates/issuer/utils"
+	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/utils"
+	. "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/utils"
 	"istio.io/istio/security/pkg/pki/util"
 )
 
@@ -18,7 +18,7 @@ var _ = Describe("CertGen workflow", func() {
 		hosts := []string{"spiffe://custom-domain/ns/istio-system/sa/istio-pilot-service-account"}
 		csr, err := utils.GenerateCertificateSigningRequest(
 			hosts,
-			"service-mesh-hub",
+			"gloo-mesh",
 			privateKey,
 		)
 		Expect(err).NotTo(HaveOccurred())

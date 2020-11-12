@@ -2,4 +2,4 @@ changelog:
   - type: NEW_FEATURE
     resolvesIssue: false
     description: Update API with new FailoverService CRD and extend TrafficPolicy CRD with outlier detection configuration.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/789
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/789

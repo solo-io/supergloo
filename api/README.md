@@ -1,9 +1,9 @@
-# Service Mesh Hub API
+# Gloo Mesh API
 
-The Service Mesh Hub Api is broken into 4 main groups
+The Gloo Mesh Api is broken into 4 main groups
 
 1. **Discovery**: Resources representing discovered entities. These resources are (for the most part) not meant to be
-configured directly by users, but rather discovered by service-mesh-hub. This currently includes the following:
+configured directly by users, but rather discovered by gloo-mesh. This currently includes the following:
     * `Meshes`
     * `Workloads`
     * `TrafficTargets`

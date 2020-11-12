@@ -1,4 +1,4 @@
 changelog:
 - type: NEW_FEATURE
   description: Discover subsets for the purpose of subset routing.
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/197
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/197

@@ -11,7 +11,7 @@ type Check interface {
 	// description of what is being checked
 	GetDescription() string
 
-	// Execute the check, pass in the namespace that Service Mesh Hub is installed in
+	// Execute the check, pass in the namespace that Gloo Mesh is installed in
 	Run(ctx context.Context, client client.Client, installNamespace string) *Failure
 }
 

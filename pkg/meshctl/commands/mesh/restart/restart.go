@@ -4,9 +4,9 @@ import (
 	"context"
 
 	corev1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/mesh/internal/flags"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/utils"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/mesh/internal/flags"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	skcorev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/spf13/cobra"

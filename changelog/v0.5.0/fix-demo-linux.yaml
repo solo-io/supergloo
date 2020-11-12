@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Fix setup-kind.sh to work on linux.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/692
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/692

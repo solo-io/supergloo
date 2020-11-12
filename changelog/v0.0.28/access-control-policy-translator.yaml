@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
     description: AccessControlPolicy translator with Istio translation.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/238
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/238

@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
     description: Document basic AWS discovery functionality for Appmesh and EKS.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/701
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/701

@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
     description: Start implementation of meshctl
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/80
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/80
