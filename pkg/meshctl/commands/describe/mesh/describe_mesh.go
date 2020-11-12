@@ -17,7 +17,7 @@ import (
 )
 
 func Command(ctx context.Context) *cobra.Command {
-	opts := new(options)
+	opts := &options{}
 	cmd := &cobra.Command{
 		Use:     "mesh",
 		Short:   "Description of managed meshes",

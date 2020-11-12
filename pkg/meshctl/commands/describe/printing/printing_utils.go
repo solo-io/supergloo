@@ -35,3 +35,26 @@ func FormattedObjectRefs(refs []*v1.ObjectRef) string {
 	}
 	return s.String()
 }
+
+func FormattedClusterObjectRef(ref *v1.ClusterObjectRef) string {
+	if ref == nil {
+		return ""
+	}
+	return FormattedClusterObjectRefs([]*v1.ClusterObjectRef{ref})
+}
+
+func FormattedClusterObjectRefs(refs []*v1.ClusterObjectRef) string {
+	if len(refs) < 1 {
+		return ""
+	}
+	var s strings.Builder
+	for i, ref := range refs {
+		s.WriteString(FormattedField("Name", ref.Name))
+		s.WriteString(FormattedField("Namespace", ref.Namespace))
+		s.WriteString(FormattedField("Cluster", ref.ClusterName))
+		if i < len(refs)-1 {
+			s.WriteString("\n")
+		}
+	}
+	return s.String()
+}
