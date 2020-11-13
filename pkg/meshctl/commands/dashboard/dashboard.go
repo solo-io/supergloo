@@ -78,7 +78,7 @@ func getStaticPort(ctx context.Context, kubeconfigPath, kubectx, kubens string) 
 	if err != nil {
 		return "", err
 	}
-	dep, err := client.AppsV1().Deployments(kubens).Get(ctx, "smh-apiserver", metav1.GetOptions{})
+	dep, err := client.AppsV1().Deployments(kubens).Get(ctx, "gloo-mesh-apiserver", metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			fmt.Printf("No Gloo Mesh dashboard found as part of the installation in namespace %s. "+
@@ -107,7 +107,7 @@ func getStaticPort(ctx context.Context, kubeconfigPath, kubectx, kubens string) 
 
 func forwardPort(kubens, localPort, kubePort string) (*exec.Cmd, error) {
 	cmd := exec.Command(
-		"kubectl", "port-forward", "-n", kubens, "deployment/smh-apiserver", localPort+":"+kubePort,
+		"kubectl", "port-forward", "-n", kubens, "deployment/gloo-mesh-apiserver", localPort+":"+kubePort,
 	)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -125,7 +125,7 @@ func waitForDashboard(portFwdCmd *exec.Cmd, localPort string) error {
 	ticker, timer := time.NewTicker(250*time.Millisecond), time.NewTimer(30*time.Second)
 	errs := &multierror.Error{}
 	for {
-		if err := func() error {
+		err := func() error {
 			res, err := http.Get("http://localhost:" + localPort)
 			if err != nil {
 				return err
@@ -136,11 +136,12 @@ func waitForDashboard(portFwdCmd *exec.Cmd, localPort string) error {
 			}
 			io.Copy(ioutil.Discard, res.Body)
 			return nil
-		}(); err == nil {
+		}()
+		if err == nil {
 			return nil
-		} else {
-			errs = multierror.Append(errs, err)
 		}
+
+		errs = multierror.Append(errs, err)
 
 		select {
 		case <-timer.C:
@@ -151,7 +152,6 @@ func waitForDashboard(portFwdCmd *exec.Cmd, localPort string) error {
 
 			return fmt.Errorf("timed out waiting for dashboard port forward to be ready: %s", errs.Error())
 		case <-ticker.C:
-			continue
 		}
 	}
 }
