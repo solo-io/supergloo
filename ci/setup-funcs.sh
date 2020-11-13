@@ -390,6 +390,9 @@ function register_cluster() {
 
   echo "registering ${cluster} with local cert-agent image..."
 
+  # needed for the agent chart
+  setChartVariables
+
   # load cert-agent image
   kind load docker-image --name "${cluster}" "${AGENT_IMAGE}"
 
@@ -401,9 +404,6 @@ function register_cluster() {
   if [ ${INSTALL_WASM_AGENT} == "1" ]; then
     EXTRA_FLAGS="--install-wasm-agent --wasm-agent-chart-file=${WASM_AGENT_CHART}"
   fi
-
-  # needwd for the agent chart
-  setChartVariables
 
   go run "${PROJECT_ROOT}/cmd/meshctl/main.go" cluster register \
     --cluster-name "${cluster}" \
