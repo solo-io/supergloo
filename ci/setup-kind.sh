@@ -1,5 +1,7 @@
 #!/bin/bash -ex
 
+set -o xtrace
+
 #####################################
 #
 # Set up two kind clusters:
