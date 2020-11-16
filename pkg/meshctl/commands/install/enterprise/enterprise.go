@@ -2,7 +2,6 @@ package enterprise
 
 import (
 	"context"
-	"errors"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/install/internal/flags"
@@ -29,29 +28,29 @@ func Command(ctx context.Context) *cobra.Command {
 type options struct {
 	flags.Options
 	licenseKey string
+	skipUI     bool
+	skipRBAC   bool
 }
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
 	o.AddToFlags(flags)
-	flags.StringVar(&o.licenseKey, "license", "", "Enterprise license key")
+	flags.StringVar(&o.licenseKey, "license", "", "Gloo Mesh Enterprise license key")
+	cobra.MarkFlagRequired(flags, "license")
+	flags.BoolVar(&o.skipUI, "skip-ui", false, "Skip installation of the Gloo Mesh UI")
+	flags.BoolVar(&o.skipRBAC, "skip-rbac", false, "Skip installation of the RBAC Webhook")
 }
 
-var NoLicenseError = errors.New("Gloo Mesh Enterprise requries a license key.")
-
 func install(ctx context.Context, opts *options) error {
-	if opts.licenseKey == "" {
-		return NoLicenseError
-	}
 	installer := opts.GetInstaller()
 	installer.Values["license.key"] = opts.licenseKey
+	if opts.skipUI {
+		installer.Values["include.ui"] = "false"
+	}
+	if opts.skipRBAC {
+		installer.Values["include.rbac"] = "false"
+	}
 	if err := installer.InstallGlooMeshEnterprise(ctx); err != nil {
 		return eris.Wrap(err, "installing gloo-mesh-enterprise")
-	}
-	if err := installer.InstallGlooMeshUI(ctx); err != nil {
-		return eris.Wrap(err, "installing gloo-mesh-ui")
-	}
-	if err := installer.InstallRbacWebHook(ctx); err != nil {
-		return eris.Wrap(err, "installing rbac-webhook")
 	}
 	if opts.Register && !opts.DryRun {
 		registrantOpts := opts.GetRegistrationOptions()

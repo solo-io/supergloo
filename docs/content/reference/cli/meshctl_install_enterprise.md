@@ -1,17 +1,17 @@
 ---
-title: "meshctl install"
+title: "meshctl install enterprise"
 weight: 5
 ---
-## meshctl install
+## meshctl install enterprise
 
-Install Gloo Mesh
+Install Gloo Mesh enterprise
 
 ### Synopsis
 
-Install Gloo Mesh
+Install Gloo Mesh enterprise
 
 ```
-meshctl install [flags]
+meshctl install enterprise [flags]
 ```
 
 ### Options
@@ -25,18 +25,20 @@ meshctl install [flags]
       --cluster-domain string            The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. Defaults to 'cluster.local'. Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
       --cluster-name string              Name with which to register the cluster running Gloo Mesh, only applies if --register is also set (default "mgmt-cluster")
   -d, --dry-run                          Output installation manifest
-  -h, --help                             help for install
+  -h, --help                             help for enterprise
       --kubeconfig string                path to the kubeconfig from which the management cluster will be accessed
       --kubecontext string               name of the kubeconfig context to use for the management cluster
+      --license string                   Gloo Mesh Enterprise license key
       --namespace string                 namespace in which to install Gloo Mesh (default "gloo-mesh")
   -r, --register                         Register the cluster running Gloo Mesh
       --release-name string              Helm release name (default "gloo-mesh")
+      --skip-rbac                        Skip installation of the RBAC Webhook
+      --skip-ui                          Skip installation of the Gloo Mesh UI
   -v, --verbose                          Enable verbose output
       --version string                   Version to install, defaults to latest if omitted
 ```
 
 ### SEE ALSO
 
-* [meshctl](../meshctl)	 - The Command Line Interface for managing Gloo Mesh.
-* [meshctl install enterprise](../meshctl_install_enterprise)	 - Install Gloo Mesh enterprise
+* [meshctl install](../meshctl_install)	 - Install Gloo Mesh
 
