@@ -22,13 +22,15 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+var ConsoleNotFoundError = errors.New("Console image not found. Your Gloo Mesh enterprise install may be a bad state.")
+
 func Command(ctx context.Context) *cobra.Command {
 	opts := &options{}
 	cmd := &cobra.Command{
 		Use:   "dashboard",
 		Short: "Port forwards the Gloo Mesh Enterprise UI and opens it in a browser if available",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return forwardDashboard(ctx, opts.kubeconfig, opts.kubecontext, opts.kubens, opts.port)
+			return forwardDashboard(ctx, opts.kubeconfig, opts.kubecontext, opts.namespace, opts.port)
 		},
 	}
 	opts.addToFlags(cmd.Flags())
@@ -40,24 +42,22 @@ func Command(ctx context.Context) *cobra.Command {
 type options struct {
 	kubeconfig  string
 	kubecontext string
-	kubens      string
+	namespace   string
 	port        uint32
 }
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
 	utils.AddManagementKubeconfigFlags(&o.kubeconfig, &o.kubecontext, flags)
-	flags.StringVar(&o.kubens, "kubes-namespace", "gloo-mesh", "The namespace that the Gloo Mesh UI is deployed in")
+	flags.StringVar(&o.namespace, "namespace", "gloo-mesh", "The namespace that the Gloo Mesh UI is deployed in")
 	flags.Uint32VarP(&o.port, "port", "p", 8090, "The local port to forward to the dashboard")
 }
 
-var ConsoleNotFoundError = errors.New("Console image not found. Your Gloo Mesh enterprise install may be a bad state.")
-
-func forwardDashboard(ctx context.Context, kubeconfigPath, kubectx, kubens string, localPort uint32) error {
-	staticPort, err := getStaticPort(ctx, kubeconfigPath, kubectx, kubens)
+func forwardDashboard(ctx context.Context, kubeconfigPath, kubectx, namespace string, localPort uint32) error {
+	staticPort, err := getStaticPort(ctx, kubeconfigPath, kubectx, namespace)
 	if err != nil {
 		return err
 	}
-	portFwdCmd, err := forwardPort(kubens, fmt.Sprint(localPort), staticPort)
+	portFwdCmd, err := forwardPort(namespace, fmt.Sprint(localPort), staticPort)
 	if err != nil {
 		return err
 	}
