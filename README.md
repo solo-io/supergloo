@@ -7,8 +7,8 @@ Gloo Mesh is a Kubernetes-native **management plane** that enables configuration
 and operational management of multiple heterogeneous service meshes across multiple 
 clusters through a unified API. The Gloo Mesh API integrates with the leading 
 service meshes and  abstracts away differences between their disparate API's, allowing 
-users to configure a set of different service meshes through a single API. Service 
-Mesh Hub is engineered with a focus on its utility as an operational management 
+users to configure a set of different service meshes through a single API. Gloo Mesh 
+is engineered with a focus on its utility as an operational management 
 tool, providing both graphical and command line UIs, observability features, and 
 debugging tools.
 
@@ -23,7 +23,8 @@ Welcome to Gloo Mesh
 
 ### Multi-mesh and multi-cluster
 A core feature of Gloo Mesh is its ability to configure and manage multiple 
-service mesh deployments across multiple clusters. The Gloo Mesh API provides 
+
+sh deployments across multiple clusters. The Gloo Mesh API provides 
 an abstraction that allows users to configure groups of meshes as a single entity 
 without having to deal with the underlying network configuration complexities.
 
