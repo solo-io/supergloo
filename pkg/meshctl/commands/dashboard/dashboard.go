@@ -69,7 +69,7 @@ func forwardDashboard(ctx context.Context, kubeconfigPath, kubectx, namespace st
 	return nil
 }
 
-func getStaticPort(ctx context.Context, kubeconfigPath, kubectx, kubens string) (string, error) {
+func getStaticPort(ctx context.Context, kubeconfigPath, kubectx, namespace string) (string, error) {
 	cfg, err := kubeconfig.GetRestConfigWithContext(kubeconfigPath, kubectx, "")
 	if err != nil {
 		return "", err
@@ -78,11 +78,11 @@ func getStaticPort(ctx context.Context, kubeconfigPath, kubectx, kubens string) 
 	if err != nil {
 		return "", err
 	}
-	dep, err := client.AppsV1().Deployments(kubens).Get(ctx, "gloo-mesh-apiserver", metav1.GetOptions{})
+	dep, err := client.AppsV1().Deployments(namespace).Get(ctx, "gloo-mesh-apiserver", metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			fmt.Printf("No Gloo Mesh dashboard found as part of the installation in namespace %s. "+
-				"The full dashboard is part of Gloo Mesh enterprise by default. ", kubens)
+				"The full dashboard is part of Gloo Mesh enterprise by default. ", namespace)
 		}
 
 		return "", err
@@ -105,9 +105,9 @@ func getStaticPort(ctx context.Context, kubeconfigPath, kubectx, kubens string) 
 	return staticPort, nil
 }
 
-func forwardPort(kubens, localPort, kubePort string) (*exec.Cmd, error) {
+func forwardPort(namespace, localPort, kubePort string) (*exec.Cmd, error) {
 	cmd := exec.Command(
-		"kubectl", "port-forward", "-n", kubens, "deployment/gloo-mesh-apiserver", localPort+":"+kubePort,
+		"kubectl", "port-forward", "-n", namespace, "deployment/gloo-mesh-apiserver", localPort+":"+kubePort,
 	)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
