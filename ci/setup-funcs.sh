@@ -4,20 +4,7 @@
 # Functions for setting up kind clusters
 #####################################
 
-#!/bin/bash
-
-INSTALL_DIR=${PROJECT_ROOT}/install
-AGENT_VALUES=${INSTALL_DIR}/helm/cert-agent/values.yaml
-AGENT_IMAGE_REGISTRY=$(cat ${AGENT_VALUES} | grep "registry: " | awk '{print $2}')
-AGENT_IMAGE_REPOSITORY=$(cat ${AGENT_VALUES} | grep "repository: " | awk '{print $2}')
-AGENT_IMAGE_TAG=$(cat ${AGENT_VALUES} | grep "tag: " | awk '{print $2}' | sed 's/"//g')
-
-AGENT_IMAGE=${AGENT_IMAGE_REGISTRY}/${AGENT_IMAGE_REPOSITORY}:${AGENT_IMAGE_TAG}
-AGENT_CHART=${INSTALL_DIR}/helm/_output/charts/cert-agent/cert-agent-${AGENT_IMAGE_TAG}.tgz
-
-GLOOMESH_VALUES=${INSTALL_DIR}/helm/gloo-mesh/values.yaml
-GLOOMESH_IMAGE_TAG=$(cat ${GLOOMESH_VALUES} | grep -m 1 "tag: " | awk '{print $2}' | sed 's/"//g')
-GLOOMESH_CHART=${INSTALL_DIR}/helm/_output/charts/gloo-mesh/gloo-mesh-${GLOOMESH_IMAGE_TAG}.tgz
+PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/.."
 
 #### FUNCTIONS
 
@@ -380,6 +367,21 @@ function get_api_address() {
   echo ${apiServerAddress}
 }
 
+# must be called after make manifest-gen
+function setChartVariables() {
+  export INSTALL_DIR="${PROJECT_ROOT}/install/"
+  export DEFAULT_MANIFEST="${INSTALL_DIR}/gloo-mesh-default.yaml"
+  export AGENT_VALUES=${INSTALL_DIR}/helm/cert-agent/values.yaml
+  export AGENT_IMAGE_REGISTRY=$(cat ${AGENT_VALUES} | grep "registry: " | awk '{print $2}')
+  export AGENT_IMAGE_REPOSITORY=$(cat ${AGENT_VALUES} | grep "repository: " | awk '{print $2}')
+  export AGENT_IMAGE_TAG=$(cat ${AGENT_VALUES} | grep "tag: " | awk '{print $2}' | sed 's/"//g')
+  export AGENT_CHART=${INSTALL_DIR}/helm/_output/charts/cert-agent/cert-agent-${AGENT_IMAGE_TAG}.tgz
+  export AGENT_IMAGE=${AGENT_IMAGE_REGISTRY}/${AGENT_IMAGE_REPOSITORY}:${AGENT_IMAGE_TAG}
+  export GLOOMESH_VALUES=${INSTALL_DIR}/helm/gloo-mesh/values.yaml
+  export GLOOMESH_IMAGE_TAG=$(cat ${GLOOMESH_VALUES} | grep -m 1 "tag: " | awk '{print $2}' | sed 's/"//g')
+  export GLOOMESH_CHART=${INSTALL_DIR}/helm/_output/charts/gloo-mesh/gloo-mesh-${GLOOMESH_IMAGE_TAG}.tgz
+}
+
 function register_cluster() {
   cluster=$1
   apiServerAddress=$(get_api_address ${cluster})
@@ -387,6 +389,9 @@ function register_cluster() {
   K="kubectl --context kind-${cluster}"
 
   echo "registering ${cluster} with local cert-agent image..."
+
+  # needed for the agent chart
+  setChartVariables
 
   # load cert-agent image
   kind load docker-image --name "${cluster}" "${AGENT_IMAGE}"
@@ -410,10 +415,11 @@ function register_cluster() {
 }
 
 function install_gloomesh() {
+
   cluster=$1
   apiServerAddress=$(get_api_address ${cluster})
 
-  ${PROJECT_ROOT}/ci/setup-gloomesh.sh ${cluster} ${GLOOMESH_CHART} ${AGENT_CHART} ${AGENT_IMAGE} ${apiServerAddress}
+  bash ${PROJECT_ROOT}/ci/setup-gloomesh.sh ${cluster} ${apiServerAddress}
 
   if [ ! -z ${POST_INSTALL_SCRIPT} ]; then
     bash ${POST_INSTALL_SCRIPT}

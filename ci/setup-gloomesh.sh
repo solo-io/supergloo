@@ -7,12 +7,10 @@
 #####################################
 
 cluster=$1
-glooMeshChart=$2
-agentChart=$3
-agentImage=$4
-apiServerAddress=$5
+apiServerAddress=$2
 
 PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/.."
+source ${PROJECT_ROOT}/ci/setup-funcs.sh
 
 if [ "${cluster}" == "" ]; then
   cluster=mgmt-cluster
@@ -24,10 +22,13 @@ echo "deploying gloo-mesh to ${cluster} from local images..."
 
 ## build and load GlooMesh docker images
 MAKE="make -C $PROJECT_ROOT"
-eval "${MAKE} manifest-gen package-helm build-all-images -B"
+eval "${MAKE} clean-helm manifest-gen package-helm build-all-images -B"
 
-INSTALL_DIR="${PROJECT_ROOT}/install/"
-DEFAULT_MANIFEST="${INSTALL_DIR}/gloo-mesh-default.yaml"
+setChartVariables
+
+agentChart=${AGENT_CHART}
+agentImage=${AGENT_IMAGE}
+gloomeshChart=${GLOOMESH_CHART}
 
 # load GlooMesh discovery and networking images
 grep "image:" "${DEFAULT_MANIFEST}" \
@@ -42,7 +43,7 @@ kind load docker-image --name "${cluster}" "${agentImage}"
 
 go run "${PROJECT_ROOT}/cmd/meshctl/main.go" install \
   --kubecontext kind-"${cluster}" \
-  --chart-file "${glooMeshChart}" \
+  --chart-file "${gloomeshChart}" \
   --namespace gloo-mesh \
   --register \
   --cluster-name "${cluster}" \
