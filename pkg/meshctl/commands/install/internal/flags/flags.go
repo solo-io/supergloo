@@ -1,11 +1,8 @@
 package flags
 
 import (
-	"fmt"
-
 	"github.com/solo-io/gloo-mesh/codegen/helm"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
-	"github.com/solo-io/gloo-mesh/pkg/common/version"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
@@ -55,23 +52,13 @@ func (o *Options) AddToFlags(flags *pflag.FlagSet) {
 }
 
 func (o *Options) GetInstaller() gloomesh.Installer {
-	// User-specified chartPath takes precedence over specified version.
-	chartURI := o.ChartPath
-	gmVersion := o.Version
-	if gmVersion == "" {
-		gmVersion = version.Version
-	}
-	if chartURI == "" {
-		chartURI = fmt.Sprintf(gloomesh.GlooMeshChartUriTemplate, gmVersion)
-	}
-
 	return gloomesh.Installer{
-		HelmChartPath:  chartURI,
 		HelmValuesPath: o.ChartValuesFile,
 		KubeConfig:     o.KubeCfgPath,
 		KubeContext:    o.KubeContext,
 		Namespace:      o.Namespace,
 		ReleaseName:    o.ReleaseName,
+		Values:         make(map[string]string),
 		Verbose:        o.Verbose,
 		DryRun:         o.DryRun,
 	}

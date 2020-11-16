@@ -9,12 +9,18 @@ import (
 )
 
 const (
-	GlooMeshChartUriTemplate  = "https://storage.googleapis.com/gloo-mesh/gloo-mesh/gloo-mesh-%s.tgz"
-	CertAgentChartUriTemplate = "https://storage.googleapis.com/gloo-mesh/cert-agent/cert-agent-%s.tgz"
-	WasmAgentChartUriTemplate = "https://storage.googleapis.com/gloo-mesh/wasm-agent/wasm-agent-%s.tgz"
-	GlooMeshReleaseName       = "gloo-mesh"
-	certAgentReleaseName      = "cert-agent"
-	wasmAgentReleaseName      = "wasm-agent"
+	GlooMeshChartUriTemplate           = "https://storage.googleapis.com/gloo-mesh/gloo-mesh/gloo-mesh-%s.tgz"
+	CertAgentChartUriTemplate          = "https://storage.googleapis.com/gloo-mesh/cert-agent/cert-agent-%s.tgz"
+	WasmAgentChartUriTemplate          = "https://storage.googleapis.com/gloo-mesh/wasm-agent/wasm-agent-%s.tgz"
+	GlooMeshEnterpriseChartUriTemplate = "https://storage.googleapis.com/gloo-mesh-enterprise/gloo-mesh-enterprise/gloo-mesh-enterprise-%s.tgz"
+	GlooMeshUiChartUriTemplate         = "https://storage.googleapis.com/gloo-mesh-enterprise/gloo-mesh-ui/gloo-mesh-ui-%s.tgz"
+	RbacWebhookChartUriTemplate        = "https://storage.googleapis.com/gloo-mesh-enterprise/rbac-webhook/rbac-webhook-%s.tgz"
+	GlooMeshReleaseName                = "gloo-mesh"
+	certAgentReleaseName               = "cert-agent"
+	wasmAgentReleaseName               = "wasm-agent"
+	glooMeshEnterpriseReleaseName      = "gloo-mesh-enterprise"
+	glooMeshUiReleaseName              = "gloo-mesh-ui"
+	rbacWebhookReleasename             = "rbac-webhook"
 )
 
 type Installer struct {
@@ -24,6 +30,7 @@ type Installer struct {
 	KubeContext    string
 	Namespace      string
 	ReleaseName    string
+	Values         map[string]string
 	Verbose        bool
 	DryRun         bool
 }
@@ -44,6 +51,24 @@ func (i Installer) InstallWasmAgent(
 	ctx context.Context,
 ) error {
 	return i.install(ctx, WasmAgentChartUriTemplate, wasmAgentReleaseName)
+}
+
+func (i Installer) InstallGlooMeshEnterprise(
+	ctx context.Context,
+) error {
+	return i.install(ctx, GlooMeshEnterpriseChartUriTemplate, glooMeshEnterpriseReleaseName)
+}
+
+func (i Installer) InstallGlooMeshUI(
+	ctx context.Context,
+) error {
+	return i.install(ctx, GlooMeshUiChartUriTemplate, glooMeshUiReleaseName)
+}
+
+func (i Installer) InstallRbacWebHook(
+	ctx context.Context,
+) error {
+	return i.install(ctx, RbacWebhookChartUriTemplate, rbacWebhookReleasename)
 }
 
 func (i Installer) install(
@@ -68,6 +93,7 @@ func (i Installer) install(
 		Namespace:   i.Namespace,
 		ReleaseName: releaseName,
 		ValuesFile:  i.HelmValuesPath,
+		Values:      i.Values,
 		Verbose:     i.Verbose,
 		DryRun:      i.DryRun,
 	}.InstallChart(ctx)
