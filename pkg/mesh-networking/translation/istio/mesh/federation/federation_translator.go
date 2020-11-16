@@ -5,10 +5,8 @@ import (
 	"fmt"
 
 	"github.com/Masterminds/semver"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/go-utils/kubeutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 
 	envoy_api_v2_listener "github.com/envoyproxy/go-control-plane/envoy/api/v2/listener"
 	"github.com/gogo/protobuf/types"
@@ -28,7 +26,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/protoutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/traffictargetutils"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -160,8 +157,6 @@ func (t *translator) federateSharedTrust(
 		contextutils.LoggerFrom(t.ctx).Errorf("internal error: cluster %v for istio mesh %v not found", istioCluster, sets.Key(mesh))
 		return
 	}
-
-	istioNamespace := istioMesh.Installation.Namespace
 
 	tcpRewritePatch, err := buildTcpRewritePatch(
 		istioMesh,
@@ -469,6 +464,7 @@ func (t *translator) federateLimitedTrust(
 				trafficTarget,
 				t.trafficTargets,
 				t.failoverServices,
+				mesh.ClusterName,
 			)
 			for _, subset := range federatedSubsets {
 				// only the name of the subset matters here.
@@ -733,6 +729,7 @@ func buildTrafficPolicyPortSettings(
 func buildCredentialName(virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh) string {
 	return fmt.Sprintf("%s-mtls-credential", virtualMesh.Ref.Name)
 }
+
 // Convert protocol of k8s Service port to application level protocol
 func convertKubePortProtocol(port *discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort) string {
 	var appProtocol *string

@@ -1397,7 +1397,7 @@ spec:
                                   description: Generate a self-signed root certificate with the given options.
                                   properties:
                                     orgName:
-                                      description: Root cert organization name. Defaults to "service-mesh-hub".
+                                      description: Root cert organization name. Defaults to "gloo-mesh".
                                       type: string
                                     rsaKeySizeBytes:
                                       description: Size in bytes of the root cert's private key. Defaults to 4096.

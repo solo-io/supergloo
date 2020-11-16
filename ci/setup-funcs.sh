@@ -453,11 +453,11 @@ function create_virtual_mesh() {
   cluster=$1
   K="kubectl --context=kind-${cluster}"
   ${K} apply -f - <<EOF
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: VirtualMesh
 metadata:
   name: virtual-mesh
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
 spec:
   mtlsConfig:
     autoRestartPods: true
@@ -466,9 +466,9 @@ spec:
         generated: {}
   federation: {}
   meshes:
-  - name: istiod-istio-system-mgmt-cluster
-    namespace: service-mesh-hub
+  - name: istiod-istio-system-mgmt-cluster 
+    namespace: gloo-mesh
   - name: istiod-istio-system-remote-cluster
-    namespace: service-mesh-hub
+    namespace: gloo-mesh
 EOF
 }
