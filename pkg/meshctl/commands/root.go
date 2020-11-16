@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/dashboard"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug"
 
 	"github.com/sirupsen/logrus"
@@ -39,6 +40,7 @@ func RootCommand(ctx context.Context) *cobra.Command {
 		install.Command(ctx),
 		uninstall.Command(ctx),
 		check.Command(ctx),
+		dashboard.Command(ctx),
 		version.Command(ctx),
 	)
 

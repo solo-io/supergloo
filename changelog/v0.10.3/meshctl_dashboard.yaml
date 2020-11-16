@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1053
+    description: Add a command `meshctl dashboard` that sets up a port forward to the Gloo Mesh Enterprise dashboard if available.
