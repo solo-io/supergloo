@@ -41,7 +41,13 @@ func startReconciler(
 		appmesh.NewAppmeshTranslator(),
 		osm.NewOSMTranslator(),
 	)
-	applier := apply.NewApplier(translator)
+
+	validatingTranslator := translation.NewTranslator(
+		istio.NewIstioTranslator(nil), // the applier should not call the extender
+		appmesh.NewAppmeshTranslator(),
+		osm.NewOSMTranslator(),
+	)
+	applier := apply.NewApplier(validatingTranslator)
 
 	startCertIssuer(
 		parameters.Ctx,

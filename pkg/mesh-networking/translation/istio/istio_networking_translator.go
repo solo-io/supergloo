@@ -34,13 +34,13 @@ type istioTranslator struct {
 
 	// note: these interfaces are set directly in unit tests, but not exposed in the Translator's constructor
 	dependencies internal.DependencyFactory
-	extensions   istioextensions.IstioExtender
+	extender     istioextensions.IstioExtender
 }
 
 func NewIstioTranslator(extensionClients extensions.Clientset) Translator {
 	return &istioTranslator{
 		dependencies: internal.NewDependencyFactory(),
-		extensions:   istioextensions.NewIstioExtender(extensionClients),
+		extender:     istioextensions.NewIstioExtender(extensionClients),
 	}
 }
 
@@ -77,8 +77,8 @@ func (t *istioTranslator) Translate(
 		meshTranslator.Translate(in, mesh, istioOutputs, localOutputs, reporter)
 	}
 
-	if err := t.extensions.PatchOutputs(ctx, in, istioOutputs); err != nil {
-		// TODO(ilackarms): consider providing/checking user option to fail here when the extensions server is unavailable.
+	if err := t.extender.PatchOutputs(ctx, in, istioOutputs); err != nil {
+		// TODO(ilackarms): consider providing/checking user option to fail here when the extender server is unavailable.
 		// currently we just log the error and continue.
 		contextutils.LoggerFrom(ctx).Errorf("failed to apply extension patches: %v", err)
 	}
