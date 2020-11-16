@@ -5,14 +5,14 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	v1alpha2sets2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
+	mock_hostutils "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils/mocks"
 	"github.com/solo-io/go-utils/testutils"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	v1alpha2sets2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
-	mock_hostutils "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils/mocks"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/api/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -116,9 +116,104 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				Weight: 50,
 			},
 		}
+		err := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, originalService, nil, output, registerField)
+
+		Expect(err).ToNot(HaveOccurred())
+		Expect(output.Route).To(Equal(expectedHTTPDestinations))
+	})
+
+	It("should decorate mirror for federated TrafficTarget with selected port", func() {
+		trafficTargets := v1alpha2sets.NewTrafficTargetSet(
+			&discoveryv1alpha2.TrafficTarget{
+				Spec: discoveryv1alpha2.TrafficTargetSpec{
+					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+							Ref: &v1.ClusterObjectRef{
+								Name:        "traffic-shift",
+								Namespace:   "namespace",
+								ClusterName: "cluster",
+							},
+							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+								{
+									Port:     9080,
+									Name:     "http1",
+									Protocol: "http",
+								},
+								{
+									Port:     9081,
+									Name:     "http2",
+									Protocol: "http",
+								},
+							},
+						},
+					},
+				},
+			})
+		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets, nil)
+		originalService := &discoveryv1alpha2.TrafficTarget{
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+						Ref: &v1.ClusterObjectRef{
+							ClusterName: "local-cluster",
+						},
+					},
+				},
+			},
+		}
+		registerField := func(fieldPtr, val interface{}) error {
+			return nil
+		}
+		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+			Spec: &v1alpha2.TrafficPolicySpec{
+				TrafficShift: &v1alpha2.TrafficPolicySpec_MultiDestination{
+					Destinations: []*v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination{
+						{
+							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
+								KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
+									Name:        "traffic-shift",
+									Namespace:   "namespace",
+									ClusterName: "cluster",
+									Port:        9080,
+								},
+							},
+							Weight: 50,
+						},
+					},
+				},
+			},
+		}
+
+		sourceMeshInstallation := &discoveryv1alpha2.MeshSpec_MeshInstallation{
+			Cluster: "federated-cluster-name",
+		}
+		globalTrafficShiftHostname := "name.namespace.svc.local-cluster.global"
+		mockClusterDomainRegistry.
+			EXPECT().
+			GetDestinationServiceFQDN(
+				sourceMeshInstallation.GetCluster(),
+				&v1.ClusterObjectRef{
+					Name:        appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Name,
+					Namespace:   appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Namespace,
+					ClusterName: appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().ClusterName,
+				}).
+			Return(globalTrafficShiftHostname)
+
+		expectedHTTPDestinations := []*v1alpha3.HTTPRouteDestination{
+			{
+				Destination: &v1alpha3.Destination{
+					Host: globalTrafficShiftHostname,
+					Port: &v1alpha3.PortSelector{
+						Number: 9080,
+					},
+				},
+				Weight: 50,
+			},
+		}
 		err := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(
 			appliedPolicy,
 			originalService,
+			sourceMeshInstallation,
 			output,
 			registerField,
 		)
@@ -218,20 +313,10 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				}).
 			Return(trafficShiftHostname).Times(2)
 
-		noPortError := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicyMissingPort,
-			originalService,
-			output,
-			registerField,
-		)
+		noPortError := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicyMissingPort, originalService, nil, output, registerField)
 		Expect(noPortError.Error()).To(ContainSubstring("must provide port for traffic shift destination service"))
 
-		nonexistentPort := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicyNonexistentPort,
-			originalService,
-			output,
-			registerField,
-		)
+		nonexistentPort := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicyNonexistentPort, originalService, nil, output, registerField)
 		Expect(nonexistentPort.Error()).To(ContainSubstring("does not exist for traffic shift destination service"))
 	})
 
@@ -310,12 +395,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				}).
 			Return(trafficShiftHostname)
 
-		err := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			originalService,
-			output,
-			registerField,
-		)
+		err := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, originalService, nil, output, registerField)
 
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 	})
@@ -358,12 +438,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		err := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
+		err := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
 		expectedRoute := []*v1alpha3.HTTPRouteDestination{
 			{
 				Destination: &v1alpha3.Destination{

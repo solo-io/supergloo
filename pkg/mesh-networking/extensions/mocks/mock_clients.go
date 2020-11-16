@@ -8,8 +8,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
-	extensions "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
+	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	extensions "github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
 )
 
 // MockClientset is a mock of Clientset interface
@@ -36,18 +36,17 @@ func (m *MockClientset) EXPECT() *MockClientsetMockRecorder {
 }
 
 // ConfigureServers mocks base method
-func (m *MockClientset) ConfigureServers(extensionsServerOptions []*v1alpha2.NetworkingExtensionsServer) (bool, error) {
+func (m *MockClientset) ConfigureServers(extensionsServerOptions []*v1alpha2.NetworkingExtensionsServer, pushFn extensions.PushFunc) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConfigureServers", extensionsServerOptions)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "ConfigureServers", extensionsServerOptions, pushFn)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ConfigureServers indicates an expected call of ConfigureServers
-func (mr *MockClientsetMockRecorder) ConfigureServers(extensionsServerOptions interface{}) *gomock.Call {
+func (mr *MockClientsetMockRecorder) ConfigureServers(extensionsServerOptions, pushFn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureServers", reflect.TypeOf((*MockClientset)(nil).ConfigureServers), extensionsServerOptions)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureServers", reflect.TypeOf((*MockClientset)(nil).ConfigureServers), extensionsServerOptions, pushFn)
 }
 
 // GetClients mocks base method
@@ -62,18 +61,4 @@ func (m *MockClientset) GetClients() extensions.Clients {
 func (mr *MockClientsetMockRecorder) GetClients() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClients", reflect.TypeOf((*MockClientset)(nil).GetClients))
-}
-
-// WatchPushNotifications mocks base method
-func (m *MockClientset) WatchPushNotifications(pushFn extensions.PushFunc) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WatchPushNotifications", pushFn)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// WatchPushNotifications indicates an expected call of WatchPushNotifications
-func (mr *MockClientsetMockRecorder) WatchPushNotifications(pushFn interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WatchPushNotifications", reflect.TypeOf((*MockClientset)(nil).WatchPushNotifications), pushFn)
 }

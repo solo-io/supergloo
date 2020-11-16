@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Handle both istioctl version < 1.7 and >= 1.7 in `meshctl demo istio-multicluster init`.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/958
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/958

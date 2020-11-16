@@ -3,20 +3,20 @@ package failoverservice
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
-	mock_hostutils "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/validation/failoverservice"
-	mock_validation "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/validation/failoverservice/mocks"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
+	mock_hostutils "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils/mocks"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/validation/failoverservice"
+	mock_validation "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/validation/failoverservice/mocks"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	"istio.io/istio/pkg/util/protomarshal"
@@ -97,7 +97,7 @@ var _ = Describe("FailoverServiceTranslator", func() {
 		allTrafficTargets := []*discoveryv1alpha2.TrafficTarget{
 			{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "mesh-service-1",
+					Name:      "traffic-target-1",
 					Namespace: "default",
 				},
 				Spec: discoveryv1alpha2.TrafficTargetSpec{
@@ -121,7 +121,7 @@ var _ = Describe("FailoverServiceTranslator", func() {
 			},
 			{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "mesh-service-2",
+					Name:      "traffic-target-2",
 					Namespace: "default",
 				},
 				Spec: discoveryv1alpha2.TrafficTargetSpec{
@@ -232,8 +232,8 @@ var _ = Describe("FailoverServiceTranslator", func() {
           type_url: type.googleapis.com/envoy.config.cluster.aggregate.v2alpha.ClusterConfig
           value:
             clusters:
-            - outbound|9080||mesh-service-1.default
-            - outbound|9080||mesh-service-2.default.global
+            - outbound|9080||traffic-target-1.default
+            - outbound|9080||traffic-target-2.default.global
       connect_timeout: 1s
       lb_policy: CLUSTER_PROVIDED
       name: outbound|9080||failover-1.failover-namespace.cluster1
@@ -259,8 +259,8 @@ var _ = Describe("FailoverServiceTranslator", func() {
           type_url: type.googleapis.com/envoy.config.cluster.aggregate.v2alpha.ClusterConfig
           value:
             clusters:
-            - outbound|9080||mesh-service-1.default.global
-            - outbound|9080||mesh-service-2.default
+            - outbound|9080||traffic-target-1.default.global
+            - outbound|9080||traffic-target-2.default
       connect_timeout: 1s
       lb_policy: CLUSTER_PROVIDED
       name: outbound|9080||failover-1.failover-namespace.cluster1

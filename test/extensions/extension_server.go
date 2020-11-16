@@ -5,14 +5,16 @@ import (
 	"fmt"
 	"net"
 
+	extensionutils "github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
+
 	"go.uber.org/atomic"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/extensions"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/extensions"
 	"google.golang.org/grpc"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/extensions/v1alpha1"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
 )
 
 const ExtensionsServerPort = 2345
@@ -38,23 +40,19 @@ func (t *testExtensionsServer) Run() error {
 	return grpcSrv.Serve(l)
 }
 
-func (t *testExtensionsServer) GetMeshPatches(ctx context.Context, request *v1alpha1.MeshPatchRequest) (*v1alpha1.PatchList, error) {
-	outputs, err := t.createMeshPatches(ctx, request.Mesh.Spec)
-	if err != nil {
-		return nil, err
+func (t *testExtensionsServer) GetExtensionPatches(ctx context.Context, request *v1alpha1.ExtensionPatchRequest) (*v1alpha1.ExtensionPatchResponse, error) {
+	inputs := extensionutils.InputSnapshotFromProto("test-server", request.Inputs)
+
+	var patches []*v1alpha1.GeneratedObject
+	for _, mesh := range inputs.Meshes().List() {
+		mesh := mesh // shadow for pointer
+		outputs, err := t.createMeshPatches(ctx, &mesh.Spec)
+		if err != nil {
+			return nil, err
+		}
+		patches = append(patches, extensions.OutputsToProto(outputs)...)
 	}
-
-	return &v1alpha1.PatchList{
-		PatchedResources: extensions.MakeGeneratedResources(outputs),
-	}, nil
-}
-
-func (t *testExtensionsServer) GetTrafficTargetPatches(ctx context.Context, request *v1alpha1.TrafficTargetPatchRequest) (*v1alpha1.PatchList, error) {
-	return &v1alpha1.PatchList{}, nil
-}
-
-func (t *testExtensionsServer) GetWorkloadPatches(ctx context.Context, request *v1alpha1.WorkloadPatchRequest) (*v1alpha1.PatchList, error) {
-	return &v1alpha1.PatchList{}, nil
+	return &v1alpha1.ExtensionPatchResponse{PatchedOutputs: patches}, nil
 }
 
 func (t *testExtensionsServer) WatchPushNotifications(request *v1alpha1.WatchPushNotificationsRequest, server v1alpha1.NetworkingExtensions_WatchPushNotificationsServer) error {

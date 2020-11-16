@@ -1,0 +1,4 @@
+changelog:
+  - type: BREAKING_CHANGE
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1062
+    description: Rebrand from Service Mesh Hub to Gloo Mesh.

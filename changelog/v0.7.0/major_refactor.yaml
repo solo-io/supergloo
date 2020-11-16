@@ -3,22 +3,22 @@ changelog:
     description: |
         Perform major refactor of codebase organization, clarity, and concision. Functional improvements include stabilizing
         reconciliation, improving garbage collection and scoping it to SMH managed objects, and expose introspection to facilitate debugging.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/841
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/841
   - type: NEW_FEATURE
     description: Add support for multicluster subset routing in TrafficPolicy for Istio meshes.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/671
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/671
   - type: NEW_FEATURE
     description: Add support for Istio 1.7
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/817
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/817
   - type: NEW_FEATURE
     description: Enable discovery for k8s workloads controlled by StatefulSets and Daemonsets.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/791
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/791
   - type: BREAKING_CHANGE
     description: Rename the following CRDs—“MeshService” to “TrafficTarget”, “MeshWorkload” to “Workload”, “AccessControlPolicy” to “AccessPolicy”
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/882
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/882
   - type: BREAKING_CHANGE
     description: Drop support for installing service meshes using `meshctl mesh install ...`
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/883
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/883
   - type: BREAKING_CHANGE
     description: Temporarily drop support for Appmesh and EKS cluster discovery. Support will be restored in the subsequent release.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/883
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/883

@@ -15,15 +15,15 @@ AGENT_IMAGE_TAG=$(cat ${AGENT_VALUES} | grep "tag: " | awk '{print $2}' | sed 's
 AGENT_IMAGE=${AGENT_IMAGE_REGISTRY}/${AGENT_IMAGE_REPOSITORY}:${AGENT_IMAGE_TAG}
 AGENT_CHART=${INSTALL_DIR}/helm/_output/charts/cert-agent/cert-agent-${AGENT_IMAGE_TAG}.tgz
 
-SMH_VALUES=${INSTALL_DIR}/helm/service-mesh-hub/values.yaml
-SMH_IMAGE_TAG=$(cat ${SMH_VALUES} | grep -m 1 "tag: " | awk '{print $2}' | sed 's/"//g')
-SMH_CHART=${INSTALL_DIR}/helm/_output/charts/service-mesh-hub/service-mesh-hub-${SMH_IMAGE_TAG}.tgz
+GLOOMESH_VALUES=${INSTALL_DIR}/helm/gloo-mesh/values.yaml
+GLOOMESH_IMAGE_TAG=$(cat ${GLOOMESH_VALUES} | grep -m 1 "tag: " | awk '{print $2}' | sed 's/"//g')
+GLOOMESH_CHART=${INSTALL_DIR}/helm/_output/charts/gloo-mesh/gloo-mesh-${GLOOMESH_IMAGE_TAG}.tgz
 
 #### FUNCTIONS
 
 function create_kind_cluster() {
   # The default version of k8s under Linux is 1.18
-  # https://github.com/solo-io/service-mesh-hub/issues/700
+  # https://github.com/solo-io/gloo-mesh/issues/700
   kindImage=kindest/node:v1.17.5
 
   cluster=$1
@@ -398,19 +398,33 @@ function register_cluster() {
   # load cert-agent image
   kind load docker-image --name "${cluster}" "${AGENT_IMAGE}"
 
+  EXTRA_FLAGS=""
+  # used by enterprise e2e test setup
+  # expects the following env set:
+  # INSTALL_WASM_AGENT=1
+  # WASM_AGENT_CHART=<path to chart>
+  if [ ${INSTALL_WASM_AGENT} == "1" ]; then
+    EXTRA_FLAGS="--install-wasm-agent --wasm-agent-chart-file=${WASM_AGENT_CHART}"
+  fi
+
   go run "${PROJECT_ROOT}/cmd/meshctl/main.go" cluster register \
     --cluster-name "${cluster}" \
     --mgmt-context "kind-${mgmtCluster}" \
     --remote-context "kind-${cluster}" \
     --api-server-address "${apiServerAddress}" \
-    --cert-agent-chart-file "${AGENT_CHART}"
+    --cert-agent-chart-file "${AGENT_CHART}" \
+    ${EXTRA_FLAGS}
 }
 
-function install_smh() {
+function install_gloomesh() {
   cluster=$1
   apiServerAddress=$(get_api_address ${cluster})
 
-  ${PROJECT_ROOT}/ci/setup-smh.sh ${cluster} ${SMH_CHART} ${AGENT_CHART} ${AGENT_IMAGE} ${apiServerAddress}
+  ${PROJECT_ROOT}/ci/setup-gloomesh.sh ${cluster} ${GLOOMESH_CHART} ${AGENT_CHART} ${AGENT_IMAGE} ${apiServerAddress}
+
+  if [ ! -z ${POST_INSTALL_SCRIPT} ]; then
+    bash ${POST_INSTALL_SCRIPT}
+  fi
 }
 
 #### START SCRIPT

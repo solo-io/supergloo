@@ -1,4 +1,4 @@
 changelog:
 - type: NEW_FEATURE
   description: Upload CLI release assets.
-  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/115
+  issueLink:  https://github.com/solo-io/gloo-mesh/issues/115

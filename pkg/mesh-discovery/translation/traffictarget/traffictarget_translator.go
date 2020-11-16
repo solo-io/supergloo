@@ -4,15 +4,15 @@ import (
 	"context"
 
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/traffictarget/detector"
 	"github.com/solo-io/go-utils/contextutils"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/traffictarget/detector"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
 
 //go:generate mockgen -source ./traffictarget_translator.go -destination mocks/traffictarget_translator.go
 
-// the mesh-service translator converts deployments with injected sidecars into TrafficTarget CRs
+// the traffic-target translator converts deployments with injected sidecars into TrafficTarget CRs
 type Translator interface {
 	TranslateTrafficTargets(
 		services corev1sets.ServiceSet,

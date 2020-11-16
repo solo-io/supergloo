@@ -1,9 +1,9 @@
 changelog:
 - type: FIX
   description: Remove mesh-config syncer
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/102
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/102
   resolvesIssue: false
 - type: FIX
   description: remove discovery pod from helm chart
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/102
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/102
   resolvesIssue: false

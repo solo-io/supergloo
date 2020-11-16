@@ -1,4 +1,4 @@
 changelog:
   - type: NON_USER_FACING
     description: Port the mesh-discovery implementation to autopilot
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/85
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/85

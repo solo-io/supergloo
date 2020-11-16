@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/onsi/ginkgo"
 
 	"github.com/solo-io/go-utils/testutils"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/codegen/render"
-	"github.com/solo-io/skv2/codegen/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -23,7 +23,13 @@ type Manifest struct {
 }
 
 func NewManifest(filename string) (Manifest, error) {
-	manifest := Manifest{filename: filepath.Join(filepath.Dir(util.GoModPath()), "test/e2e/"+filename)}
+	_, callerFile, _, ok := runtime.Caller(1)
+	if !ok {
+		return Manifest{}, fmt.Errorf("failed to get runtime.Caller")
+	}
+	callerDir := filepath.Dir(callerFile)
+
+	manifest := Manifest{filename: filepath.Join(callerDir, filename)}
 	err := manifest.CreateOrTruncate()
 	if err != nil {
 		return Manifest{}, err

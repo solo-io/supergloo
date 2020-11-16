@@ -2,7 +2,7 @@ package io
 
 import (
 	appmeshv1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
-	"github.com/solo-io/service-mesh-hub/codegen/constants"
+	"github.com/solo-io/gloo-mesh/codegen/constants"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -31,7 +31,7 @@ var (
 		Name: "discovery",
 		Snapshot: Snapshot{
 			schema.GroupVersion{
-				Group:   "discovery." + constants.ServiceMeshHubApiGroupSuffix,
+				Group:   "discovery." + constants.GlooMeshApiGroupSuffix,
 				Version: "v1alpha2",
 			}: {
 				"Mesh",

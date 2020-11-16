@@ -3,7 +3,7 @@
 title: "settings.proto"
 ---
 
-## Package : `settings.smh.solo.io`
+## Package : `settings.mesh.gloo.solo.io`
 
 
 
@@ -16,9 +16,9 @@ title: "settings.proto"
 
 
 ## Table of Contents
-  - [NetworkingExtensionsServer](#settings.smh.solo.io.NetworkingExtensionsServer)
-  - [SettingsSpec](#settings.smh.solo.io.SettingsSpec)
-  - [SettingsStatus](#settings.smh.solo.io.SettingsStatus)
+  - [NetworkingExtensionsServer](#settings.mesh.gloo.solo.io.NetworkingExtensionsServer)
+  - [SettingsSpec](#settings.mesh.gloo.solo.io.SettingsSpec)
+  - [SettingsStatus](#settings.mesh.gloo.solo.io.SettingsStatus)
 
 
 
@@ -26,7 +26,7 @@ title: "settings.proto"
 
 
 
-<a name="settings.smh.solo.io.NetworkingExtensionsServer"></a>
+<a name="settings.mesh.gloo.solo.io.NetworkingExtensionsServer"></a>
 
 ### NetworkingExtensionsServer
 Options for connecting to an external gRPC NetworkingExternsions server
@@ -36,14 +36,14 @@ Options for connecting to an external gRPC NetworkingExternsions server
 | ----- | ---- | ----- | ----------- |
 | address | string |  | TCP address of the Networking Extensions Server (including port) |
 | insecure | bool |  | Communicate over HTTP rather than HTTPS |
-| reconnectOnNetworkFailures | bool |  | Instruct SMH to automatically reconnect to the server on network failures |
+| reconnectOnNetworkFailures | bool |  | Instruct Gloo Mesh to automatically reconnect to the server on network failures |
 
 
 
 
 
 
-<a name="settings.smh.solo.io.SettingsSpec"></a>
+<a name="settings.mesh.gloo.solo.io.SettingsSpec"></a>
 
 ### SettingsSpec
 Configure global settings and defaults.
@@ -51,15 +51,15 @@ Configure global settings and defaults.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| mtls | networking.smh.solo.io.TrafficPolicySpec.MTLS |  | Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence) |
-| networkingExtensionServers | []settings.smh.solo.io.NetworkingExtensionsServer | repeated | Configure SMH Networking to communicate with one or more external gRPC NetworkingExtensions servers. Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence). Note: Extension Servers have full write access to the output objects written by Service Mesh Hub. |
+| mtls | networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS |  | Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence) |
+| networkingExtensionServers | []settings.mesh.gloo.solo.io.NetworkingExtensionsServer | repeated | Configure Gloo Mesh networking to communicate with one or more external gRPC NetworkingExtensions servers. Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence). Note: Extension Servers have full write access to the output objects written by Gloo Mesh. |
 
 
 
 
 
 
-<a name="settings.smh.solo.io.SettingsStatus"></a>
+<a name="settings.mesh.gloo.solo.io.SettingsStatus"></a>
 
 ### SettingsStatus
 
@@ -68,7 +68,7 @@ Configure global settings and defaults.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the Settings metadata. If the observedGeneration does not match generation, the controller has not processed the most recent version of this resource. |
-| state | networking.smh.solo.io.ApprovalState |  | The state of the overall resource. It will only show accepted if no processing errors encountered. |
+| state | networking.mesh.gloo.solo.io.ApprovalState |  | The state of the overall resource. It will only show accepted if no processing errors encountered. |
 | errors | []string | repeated | Any errors encountered while processing Settings object. |
 
 

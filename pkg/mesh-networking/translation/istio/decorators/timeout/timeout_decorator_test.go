@@ -5,11 +5,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/timeout"
 	"github.com/solo-io/go-utils/testutils"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/timeout"
 	"istio.io/api/networking/v1alpha3"
 )
 
@@ -34,12 +34,7 @@ var _ = Describe("TimeoutDecorator", func() {
 			},
 		}
 		expectedTimeout := &types.Duration{Seconds: 5}
-		err := timeoutDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
+		err := timeoutDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(output.Timeout).To(Equal(expectedTimeout))
 	})
@@ -54,12 +49,7 @@ var _ = Describe("TimeoutDecorator", func() {
 				RequestTimeout: &types.Duration{Seconds: 5},
 			},
 		}
-		err := timeoutDecorator.ApplyTrafficPolicyToVirtualService(
-			appliedPolicy,
-			nil,
-			output,
-			registerField,
-		)
+		err := timeoutDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
 		Expect(err).To(testutils.HaveInErrorChain(testErr))
 	})
 })

@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Deploy a versioned docs website that tracks released versions as well as master.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/811
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/811

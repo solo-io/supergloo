@@ -1,4 +1,4 @@
 changelog:
 - type: NEW_FEATURE
   description: Rename MeshGroup to VirtualMesh.
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/280
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/280

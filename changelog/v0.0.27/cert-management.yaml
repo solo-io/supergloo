@@ -1,4 +1,4 @@
 changelog:
 - type: NEW_FEATURE
   description: Multi cluster cert management
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/159
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/159

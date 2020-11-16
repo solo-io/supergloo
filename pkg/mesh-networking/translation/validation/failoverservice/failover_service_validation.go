@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/rotisserie/eris"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	networkingv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networkingv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	skv2core "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	v1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -55,13 +55,13 @@ var (
 	MissingMeshes          = eris.New("Missing required field \"meshes\".")
 	MissingServices        = eris.New("There must be at least one service declared for the FailoverService.")
 	BackingServiceNotFound = func(serviceRef *skv2core.ClusterObjectRef) error {
-		return eris.Errorf("Backing service %s.%s.%s not found in SMH discovery resources.",
+		return eris.Errorf("Backing service %s.%s.%s not found in GlooMesh discovery resources.",
 			serviceRef.GetName(),
 			serviceRef.GetNamespace(),
 			serviceRef.GetClusterName())
 	}
 	MeshNotFound = func(meshRef *skv2core.ObjectRef, serviceRef *skv2core.ClusterObjectRef) error {
-		return eris.Errorf("Mesh %s.%s for service %s.%s.%s not found in SMH discovery resources.",
+		return eris.Errorf("Mesh %s.%s for service %s.%s.%s not found in GlooMesh discovery resources.",
 			meshRef.GetName(),
 			meshRef.GetNamespace(),
 			serviceRef.GetName(),

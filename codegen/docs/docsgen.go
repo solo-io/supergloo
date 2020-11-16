@@ -5,9 +5,9 @@ import (
 	"log"
 
 	"github.com/solo-io/anyvendor/pkg/manager"
-	"github.com/solo-io/service-mesh-hub/codegen/anyvendor"
-	"github.com/solo-io/service-mesh-hub/docs/docsgen"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands"
+	"github.com/solo-io/gloo-mesh/codegen/anyvendor"
+	"github.com/solo-io/gloo-mesh/docs/docsgen"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands"
 )
 
 //go:generate go run docsgen.go
@@ -34,6 +34,12 @@ func main() {
 		Cli: docsgen.CliOptions{
 			RootCmd:   commands.RootCommand(ctx),
 			OutputDir: "content/reference/cli",
+		},
+		Changelog: docsgen.ChangelogOptions{
+			Repos: []docsgen.ChangelogConfig{
+				{Name: "Open Source Gloo Mesh", Repo: "gloo-mesh", Path: "open_source"},
+				{Name: "Gloo Mesh Enterprise", Repo: "service-mesh-hub-enterprise", Path: "enterprise"}},
+			OutputDir: "content/reference/changelog",
 		},
 		DocsRoot: "docs",
 	}

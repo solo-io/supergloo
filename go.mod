@@ -1,4 +1,4 @@
-module github.com/solo-io/service-mesh-hub
+module github.com/solo-io/gloo-mesh
 
 go 1.14
 
@@ -41,6 +41,7 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2
+	github.com/google/go-github v17.0.0+incompatible
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
@@ -68,6 +69,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/atomic v1.6.0
 	go.uber.org/zap v1.15.0
+	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	golang.org/x/tools v0.0.0-20200928201943-a0ef9b62deab // indirect
 	google.golang.org/grpc v1.31.1
 	helm.sh/helm/v3 v3.2.4

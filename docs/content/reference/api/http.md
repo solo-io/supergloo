@@ -3,7 +3,7 @@
 title: "http.proto"
 ---
 
-## Package : `networking.smh.solo.io`
+## Package : `networking.mesh.gloo.solo.io`
 
 
 
@@ -17,7 +17,7 @@ title: "http.proto"
 
 ## Table of Contents
 
-  - [HttpMethodValue](#networking.smh.solo.io.HttpMethodValue)
+  - [HttpMethodValue](#networking.mesh.gloo.solo.io.HttpMethodValue)
 
 
 
@@ -26,7 +26,7 @@ title: "http.proto"
  <!-- end messages -->
 
 
-<a name="networking.smh.solo.io.HttpMethodValue"></a>
+<a name="networking.mesh.gloo.solo.io.HttpMethodValue"></a>
 
 ### HttpMethodValue
 

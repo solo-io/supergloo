@@ -9,9 +9,9 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	input "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
+	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 )
 
@@ -39,15 +39,15 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(ctx context.Context, in input.Snapshot, trafficTarget *v1alpha2.TrafficTarget, reporter reporting.Reporter) *v1alpha3.DestinationRule {
+func (m *MockTranslator) Translate(ctx context.Context, in input.Snapshot, trafficTarget *v1alpha2.TrafficTarget, sourceMeshInstallation *v1alpha2.MeshSpec_MeshInstallation, reporter reporting.Reporter) *v1alpha3.DestinationRule {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Translate", ctx, in, trafficTarget, reporter)
+	ret := m.ctrl.Call(m, "Translate", ctx, in, trafficTarget, sourceMeshInstallation, reporter)
 	ret0, _ := ret[0].(*v1alpha3.DestinationRule)
 	return ret0
 }
 
 // Translate indicates an expected call of Translate
-func (mr *MockTranslatorMockRecorder) Translate(ctx, in, trafficTarget, reporter interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) Translate(ctx, in, trafficTarget, sourceMeshInstallation, reporter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), ctx, in, trafficTarget, reporter)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), ctx, in, trafficTarget, sourceMeshInstallation, reporter)
 }

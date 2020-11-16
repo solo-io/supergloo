@@ -4,21 +4,24 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
-	"github.com/solo-io/service-mesh-hub/test/data"
+	"github.com/golang/mock/gomock"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
+	mock_destinationrule "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/destinationrule/mocks"
+	mock_virtualservice "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice/mocks"
+	"github.com/solo-io/gloo-mesh/test/data"
 	"istio.io/istio/pkg/config/protocol"
 
 	"github.com/gogo/protobuf/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	istiov1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	. "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/federation"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/federation"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	skv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
@@ -30,7 +33,10 @@ import (
 
 var _ = Describe("FederationTranslator", func() {
 	ctx := context.TODO()
+	ctrl := gomock.NewController(GinkgoT())
 	clusterDomains := hostutils.NewClusterDomainRegistry(skv1alpha1sets.NewKubernetesClusterSet())
+	mockVirtualServiceTranslator := mock_virtualservice.NewMockTranslator(ctrl)
+	mockDestinationRuleTranslator := mock_destinationrule.NewMockTranslator(ctrl)
 
 	It("translates federation resources for a virtual mesh with shared trust", func() {
 
@@ -156,7 +162,27 @@ var _ = Describe("FederationTranslator", func() {
 			AddKubernetesClusters(skv1alpha1.KubernetesClusterSlice{kubeCluster}).
 			Build()
 
-		t := NewTranslator(ctx, clusterDomains, in.TrafficTargets(), in.FailoverServices())
+		expectedVS := &networkingv1alpha3.VirtualService{}
+		mockVirtualServiceTranslator.
+			EXPECT().
+			Translate(in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
+			Return(expectedVS)
+
+		expectedDR := &networkingv1alpha3.DestinationRule{}
+		mockDestinationRuleTranslator.
+			EXPECT().
+			Translate(ctx, in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
+			Return(expectedDR)
+
+		t := NewTranslator(
+			ctx,
+			clusterDomains,
+			in.TrafficTargets(),
+			in.FailoverServices(),
+			mockVirtualServiceTranslator,
+			mockDestinationRuleTranslator,
+		)
+
 		outputs := istio.NewBuilder(context.TODO(), "")
 		t.Translate(
 			in,
@@ -166,6 +192,147 @@ var _ = Describe("FederationTranslator", func() {
 			nil, // no reports expected
 		)
 
+		Expect(outputs.GetGateways().Length()).To(Equal(1))
+		Expect(outputs.GetGateways().List()[0]).To(Equal(expectedGateway))
+		Expect(outputs.GetEnvoyFilters().Length()).To(Equal(1))
+		Expect(outputs.GetEnvoyFilters().List()[0]).To(Equal(expectedEnvoyFilter))
+		Expect(outputs.GetDestinationRules()).To(Equal(istiov1alpha3sets.NewDestinationRuleSet(expectedDR)))
+		Expect(outputs.GetServiceEntries()).To(Equal(expectedServiceEntries))
+		Expect(outputs.GetVirtualServices()).To(Equal(istiov1alpha3sets.NewVirtualServiceSet(expectedVS)))
+	})
+})
+
+var expectedGateway = &networkingv1alpha3.Gateway{
+	ObjectMeta: metav1.ObjectMeta{
+		Name:        "my-virtual-mesh-config-namespace",
+		Namespace:   "namespace",
+		ClusterName: "cluster",
+		Labels:      metautils.TranslatedObjectLabels(),
+	},
+	Spec: networkingv1alpha3spec.Gateway{
+		Servers: []*networkingv1alpha3spec.Server{
+			{
+				Port: &networkingv1alpha3spec.Port{
+					Number:   9191,
+					Protocol: "TLS",
+					Name:     "tls",
+				},
+				Hosts: []string{
+					"*.global",
+				},
+				Tls: &networkingv1alpha3spec.ServerTLSSettings{
+					Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
+				},
+			},
+		},
+		Selector: map[string]string{"gatewaylabels": "righthere"},
+	},
+}
+var expectedEnvoyFilter = &networkingv1alpha3.EnvoyFilter{
+	ObjectMeta: metav1.ObjectMeta{
+		Name:        "my-virtual-mesh.config-namespace",
+		Namespace:   "namespace",
+		ClusterName: "cluster",
+		Labels:      metautils.TranslatedObjectLabels(),
+	},
+	Spec: networkingv1alpha3spec.EnvoyFilter{
+		WorkloadSelector: &networkingv1alpha3spec.WorkloadSelector{
+			Labels: map[string]string{"gatewaylabels": "righthere"},
+		},
+		ConfigPatches: []*networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectPatch{
+			{
+				ApplyTo: networkingv1alpha3spec.EnvoyFilter_NETWORK_FILTER,
+				Match: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch{
+					Context: networkingv1alpha3spec.EnvoyFilter_GATEWAY,
+					ObjectTypes: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
+						Listener: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch{
+							PortNumber: 9191,
+							FilterChain: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch_FilterChainMatch{
+								Filter: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch_FilterMatch{
+									Name: "envoy.filters.network.sni_cluster",
+								},
+							},
+						},
+					},
+				},
+				Patch: &networkingv1alpha3spec.EnvoyFilter_Patch{
+					Operation: 5,
+					Value: &types.Struct{
+						Fields: map[string]*types.Value{
+							"name": {
+								Kind: &types.Value_StringValue{
+									StringValue: "envoy.filters.network.tcp_cluster_rewrite",
+								},
+							},
+							"typed_config": {
+								Kind: &types.Value_StructValue{
+									StructValue: &types.Struct{
+										Fields: map[string]*types.Value{
+											"@type": {
+												Kind: &types.Value_StringValue{
+													StringValue: "type.googleapis.com/istio.envoy.config.filter.network.tcp_cluster_rewrite.v2alpha1.TcpClusterRewrite",
+												},
+											},
+											"cluster_replacement": {
+												Kind: &types.Value_StringValue{
+													StringValue: ".cluster.local",
+												},
+											},
+											"cluster_pattern": {
+												Kind: &types.Value_StringValue{
+													StringValue: "\\.cluster.global$",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+}
+var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1alpha3.ServiceEntry{
+	ObjectMeta: metav1.ObjectMeta{
+		Name:        "some-svc.some-ns.svc.cluster.global",
+		Namespace:   "remote-namespace",
+		ClusterName: "remote-cluster",
+		Labels:      metautils.TranslatedObjectLabels(),
+	},
+	Spec: networkingv1alpha3spec.ServiceEntry{
+		Hosts: []string{
+			"some-svc.some-ns.svc.cluster.global",
+		},
+		Addresses: []string{
+			"243.21.204.125",
+		},
+		Ports: []*networkingv1alpha3spec.Port{
+			{
+				Number:   1234,
+				Protocol: string(protocol.HTTP),
+				Name:     "http",
+			},
+			{
+				Number:   5678,
+				Protocol: string(protocol.GRPC),
+				Name:     "grpc",
+			},
+		},
+		Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
+		Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
+		Endpoints: []*networkingv1alpha3spec.WorkloadEntry{
+			{
+				Address: "mesh-gateway.dns.name",
+				Ports: map[string]uint32{
+					"http": 8181,
+					"grpc": 8181,
+				},
+				Labels: map[string]string{"cluster": "cluster"},
+			},
+		},
+	},
 		var expectedGateway = &networkingv1alpha3.Gateway{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        "my-virtual-mesh-config-namespace",

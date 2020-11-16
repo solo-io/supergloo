@@ -7,7 +7,7 @@ changelog:
     Also, the multicluster commands are currently using multiple kubeconfigs for configuration,
     when the trend seems to be using seperate contexts, rather than config files, so we have moved to this as
     well.
-  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/124
+  issueLink:  https://github.com/solo-io/gloo-mesh/issues/124
 - type: FIX
   description: Allow meshctl to run without a kubeconfig on commands which don't need it.
-  issueLink:  https://github.com/solo-io/service-mesh-hub/issues/120
+  issueLink:  https://github.com/solo-io/gloo-mesh/issues/120

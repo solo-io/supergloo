@@ -1,0 +1,12 @@
+# Settings CRD
+{{- $settings := $.Values.settings}}
+
+kind: Settings
+apiVersion: settings.mesh.gloo.solo.io/v1alpha2
+metadata:
+  name: settings
+  namespace: {{ $.Release.Namespace }}
+spec:
+  mtls:
+    istio:
+      tlsMode: {{ $settings.mtls.istio.tlsMode }}

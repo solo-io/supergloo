@@ -2,4 +2,4 @@ changelog:
   - type: FIX
     resolvesIssue: false
     description: Add documentation on how to provide a structured root cert for a VM.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/786
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/786

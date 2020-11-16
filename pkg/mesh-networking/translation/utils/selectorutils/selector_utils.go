@@ -1,9 +1,9 @@
 package selectorutils
 
 import (
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/go-utils/stringutils"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
@@ -91,6 +91,21 @@ func SelectorMatchesService(selectors []*v1alpha2.TrafficTargetSelector, service
 					return true
 				}
 			}
+		}
+	}
+
+	return false
+}
+
+// Return true if any WorkloadSelector selects the specified clusterName
+func WorkloadSelectorContainsCluster(selectors []*v1alpha2.WorkloadSelector, clusterName string) bool {
+	if len(selectors) == 0 {
+		return true
+	}
+
+	for _, selector := range selectors {
+		if len(selector.Clusters) == 0 || stringutils.ContainsString(clusterName, selector.Clusters) {
+			return true
 		}
 	}
 

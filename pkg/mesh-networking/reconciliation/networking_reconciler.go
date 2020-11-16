@@ -8,18 +8,18 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/go-utils/contextutils"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/extensions/v1alpha1"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	settingsv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/extensions"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/mtls"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/snapshotutils"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/common/utils/stats"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/mtls"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/snapshotutils"
 
 	skinput "github.com/solo-io/skv2/contrib/pkg/input"
 	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
@@ -194,30 +194,13 @@ func (r *networkingReconciler) syncSettings(ctx context.Context, in input.Snapsh
 	}
 
 	// update configured NetworkExtensionServers for the extension clients which are called inside the translator.
-	extensionsUpdated, err := r.extensionClients.ConfigureServers(settings.Spec.NetworkingExtensionServers)
-	if err != nil {
-		settings.Status.State = networkingv1alpha2.ApprovalState_INVALID
-		settings.Status.Errors = []string{err.Error()}
-		return err
-	}
-	if !extensionsUpdated {
-		return nil
-	}
-
-	// start watching push notifications for new set of extensions
-	if err := r.extensionClients.WatchPushNotifications(func(_ *v1alpha1.PushNotification) {
+	return r.extensionClients.ConfigureServers(settings.Spec.NetworkingExtensionServers, func(_ *v1alpha1.PushNotification) {
 		// ignore error because underlying impl should never error here
 		_, _ = r.reconciler.ReconcileGeneric(pushNotificationId)
-	}); err != nil {
-		settings.Status.State = networkingv1alpha2.ApprovalState_FAILED
-		settings.Status.Errors = []string{err.Error()}
-		return err
-	}
-
-	return nil
+	})
 }
 
-// returns true if the passed object is a secret which is of a type that is ignored by SMH
+// returns true if the passed object is a secret which is of a type that is ignored by GlooMesh
 func isIgnoredSecret(obj metav1.Object) bool {
 	secret, ok := obj.(*corev1.Secret)
 	if !ok {

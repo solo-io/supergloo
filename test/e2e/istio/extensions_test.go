@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/settings.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	"github.com/solo-io/service-mesh-hub/test/extensions"
-	"github.com/solo-io/service-mesh-hub/test/utils"
+	"github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/test/extensions"
+	"github.com/solo-io/gloo-mesh/test/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/onsi/ginkgo"
@@ -16,9 +16,9 @@ import (
 
 var _ = Describe("Istio Networking Extensions", func() {
 	var (
-		err          error
-		manifest     utils.Manifest
-		smhNamespace = defaults.GetPodNamespace()
+		err               error
+		manifest          utils.Manifest
+		glooMeshNamespace = defaults.GetPodNamespace()
 	)
 
 	AfterEach(func() {
@@ -31,12 +31,12 @@ var _ = Describe("Istio Networking Extensions", func() {
 				APIVersion: v1alpha2.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Namespace: smhNamespace,
+				Namespace: glooMeshNamespace,
 				Name:      "settings", // the default/expected name
 			},
 		})
 		Expect(err).NotTo(HaveOccurred())
-		err = manifest.KubeApply(smhNamespace)
+		err = manifest.KubeApply(glooMeshNamespace)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -44,7 +44,7 @@ var _ = Describe("Istio Networking Extensions", func() {
 		manifest, err = utils.NewManifest("extension-settings.yaml")
 		Expect(err).NotTo(HaveOccurred())
 
-		By("with extensions enabled, additional configs can be added to SMH outputs", func() {
+		By("with extensions enabled, additional configs can be added to GlooMesh outputs", func() {
 
 			helloMsg := "hello from a 3rd party"
 
@@ -70,7 +70,7 @@ var _ = Describe("Istio Networking Extensions", func() {
 					APIVersion: v1alpha2.SchemeGroupVersion.String(),
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Namespace: smhNamespace,
+					Namespace: glooMeshNamespace,
 					Name:      "settings", // the default/expected name
 				},
 				Spec: v1alpha2.SettingsSpec{
@@ -83,7 +83,7 @@ var _ = Describe("Istio Networking Extensions", func() {
 				},
 			})
 			Expect(err).NotTo(HaveOccurred())
-			err = manifest.KubeApply(smhNamespace)
+			err = manifest.KubeApply(glooMeshNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
 			// ensure the server eventually connects to us

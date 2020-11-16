@@ -3,8 +3,8 @@ package labelutils
 import (
 	"fmt"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 )
 
 // the key used to differentiate discovery resources by
@@ -24,7 +24,7 @@ func ClusterLabel(cluster string) (string, string) {
 		fmt.Sprintf("%s", cluster)
 }
 
-// identifies the instance of service-mesh-hub discovery that produced the resource.
+// identifies the instance of gloo-mesh discovery that produced the resource.
 // uses pod namespace to identify the instance
 func OwnershipLabels() map[string]string {
 	return map[string]string{

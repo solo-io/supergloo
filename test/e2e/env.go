@@ -4,21 +4,24 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/solo-io/skv2/codegen/util"
+
 	"k8s.io/client-go/rest"
 
-	"github.com/solo-io/service-mesh-hub/test/kubectl"
+	"github.com/solo-io/gloo-mesh/test/kubectl"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	istionetworkingv1alpha3 "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
 	kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -69,6 +72,7 @@ type KubeContext struct {
 	SecretClient          kubernetes_core.SecretClient
 	VirtualMeshClient     networkingv1alpha2.VirtualMeshClient
 	DestinationRuleClient istionetworkingv1alpha3.DestinationRuleClient
+	VirtualServiceClient  istionetworkingv1alpha3.VirtualServiceClient
 }
 
 // If kubecontext is empty string, use current context.
@@ -104,6 +108,7 @@ func NewKubeContext(kubecontext string) KubeContext {
 		MeshClient:            discoveryClientset.Meshes(),
 		SecretClient:          kubeCoreClientset.Secrets(),
 		DestinationRuleClient: istioNetworkingClientset.DestinationRules(),
+		VirtualServiceClient:  istioNetworkingClientset.VirtualServices(),
 	}
 }
 
@@ -217,14 +222,26 @@ func StartEnv(ctx context.Context) Env {
 		return newEnv(mgmt, remote)
 	}
 
+	// change to repo root dir
+	originalWd, err := os.Getwd()
+	Expect(err).NotTo(HaveOccurred())
+
+	err = os.Chdir(filepath.Join(util.MustGetThisDir(), "..", ".."))
+	Expect(err).NotTo(HaveOccurred())
+
+	// get absolute path to setup script so this function can be called from any working directory)
 	cmd := exec.CommandContext(ctx, "./ci/setup-kind.sh", strconv.Itoa(GinkgoParallelNode()))
 	cmd.Stdout = GinkgoWriter
 	cmd.Stderr = GinkgoWriter
+	cmd.Env = os.Environ()
 
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		dumpState()
 	}
+	Expect(err).NotTo(HaveOccurred())
+
+	err = os.Chdir(originalWd)
 	Expect(err).NotTo(HaveOccurred())
 
 	return newEnv(mgmtContext, remoteContext)

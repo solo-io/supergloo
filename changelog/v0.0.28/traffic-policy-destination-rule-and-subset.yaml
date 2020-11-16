@@ -1,7 +1,7 @@
 changelog:
 - type: NEW_FEATURE
   description: TrafficPolicy translator creates DestinationRules colocated with the kube Service its configuring.
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/244
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/244
 - type: NEW_FEATURE
   description: Implement subset routing in the TrafficPolicy translator.
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/231
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/231

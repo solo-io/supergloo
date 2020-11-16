@@ -7,7 +7,7 @@ import (
 	"github.com/rotisserie/eris"
 	appsv1 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
 	corev1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	apps_v1 "k8s.io/api/apps/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -19,7 +19,7 @@ func NewDeploymentsCheck() Check {
 }
 
 func (d *deploymentsCheck) GetDescription() string {
-	return "Service Mesh Hub pods are running"
+	return "Gloo Mesh pods are running"
 }
 
 func (d *deploymentsCheck) Run(ctx context.Context, c client.Client, installNamespace string) *Failure {
@@ -46,7 +46,7 @@ func (d *deploymentsCheck) checkDeployments(deployments *apps_v1.DeploymentList,
 		return &Failure{
 			Errors: []error{eris.Errorf("no deployments found in namespace %s", installNamespace)},
 			Hint: fmt.Sprintf(
-				`Service Mesh Hub'd installation namespace can be supplied to this cmd with the "--namespace" flag, which defaults to %s`,
+				`Gloo Mesh'd installation namespace can be supplied to this cmd with the "--namespace" flag, which defaults to %s`,
 				defaults.DefaultPodNamespace),
 		}
 	}
@@ -66,5 +66,5 @@ func (d *deploymentsCheck) checkDeployments(deployments *apps_v1.DeploymentList,
 }
 
 func (d *deploymentsCheck) buildHint(installNamespace string) string {
-	return fmt.Sprintf(`check the status of Service Mesh Hub deployments with "kubectl -n %s get deployments -oyaml"`, installNamespace)
+	return fmt.Sprintf(`check the status of Gloo Mesh deployments with "kubectl -n %s get deployments -oyaml"`, installNamespace)
 }

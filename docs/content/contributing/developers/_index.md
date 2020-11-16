@@ -1,11 +1,11 @@
 ---
 title: Developers
 menuTitle: Developers
-description: Ways to contribute to Service Mesh Hub.
+description: Ways to contribute to Gloo Mesh.
 weight: 10
 ---
 
-Excited about Service Mesh Hub and want to help make it better? 
+Excited about Gloo Mesh and want to help make it better? 
 
 At Solo we strive to make the world of microservices, serverless and service mesh available to everyone. If you want to help but don't know where to start, let us know, and we'll find something for you.
 
@@ -27,7 +27,7 @@ If you encounter a bug, please file an issue on GitHub. If an issue you have is 
 
 ### Improving the documentation
 
-[Improving the documentation]({{< versioned_link_path fromRoot="/contributing/documentation/" >}}), adding examples or use cases can be the easiest way to contribute to Service Mesh Hub. If you see a piece of content that can be better, open a PR with an improvement, it doesn't matter how small!
+[Improving the documentation]({{< versioned_link_path fromRoot="/contributing/documentation/" >}}), adding examples or use cases can be the easiest way to contribute to Gloo Mesh. If you see a piece of content that can be better, open a PR with an improvement, it doesn't matter how small!
 
 ### Small bug fixes
 
@@ -51,9 +51,9 @@ For significant changes to the repository, it’s important to settle on a desig
 
 ### Code review guidelines
 
-It’s important that every piece of code in Service Mesh Hub is reviewed by at least one Solo team member familiar with that codebase.
+It’s important that every piece of code in Gloo Mesh is reviewed by at least one Solo team member familiar with that codebase.
 
-1. **Changelog** Every PR in Service Mesh Hub needs a changelog entry. For more information about changelogs, see the [readme](https://github.com/solo-io/go-utils/tree/master/changelogutils). 
+1. **Changelog** Every PR in Gloo Mesh needs a changelog entry. For more information about changelogs, see the [readme](https://github.com/solo-io/go-utils/tree/master/changelogutils). 
 2. **CI check** A Solo team member needs to kick off the CI process by commenting `/test` on your PR.
 3. **Testing** Please write tests for your changes. Bias towards fast / unit testing. 
 4. **Comments** The code reviewer may leave comments to discuss changes. Minor preferences are often called out with `nit`.

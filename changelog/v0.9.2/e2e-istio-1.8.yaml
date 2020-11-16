@@ -1,4 +1,4 @@
 changelog:
   - type: NON_USER_FACING
     description: Add istio 1.8 to e2e tests to validate compatibility.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1010
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1010
