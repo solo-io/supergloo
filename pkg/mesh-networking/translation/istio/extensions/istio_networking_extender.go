@@ -33,6 +33,9 @@ func NewIstioExtender(clientset extensions.Clientset) *istioExtender {
 }
 
 func (i *istioExtender) PatchOutputs(ctx context.Context, inputs input.Snapshot, outputs istio.Builder) error {
+	if i.clientset == nil {
+		return nil
+	}
 	for _, exClient := range i.clientset.GetClients() {
 		patches, err := exClient.GetExtensionPatches(ctx, &v1alpha1.ExtensionPatchRequest{
 			Inputs:  extensions.InputSnapshotToProto(inputs),

@@ -46,7 +46,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		mockDependencyFactory = mock_istio.NewMockDependencyFactory(ctrl)
 		mockIstioOutputs = mock_istio_output.NewMockBuilder(ctrl)
 		mockLocalOutputs = mock_local_output.NewMockBuilder(ctrl)
-		translator = &istioTranslator{dependencies: mockDependencyFactory, extensions: mockIstioExtender}
+		translator = &istioTranslator{dependencies: mockDependencyFactory, extender: mockIstioExtender}
 	})
 
 	AfterEach(func() {
