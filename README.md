@@ -1,5 +1,5 @@
 <h2 align="center">
-    <img src="https://github.com/solo-io/service-mesh-hub/raw/main/docs/content/img/logo.png">
+    <img src="https://github.com/solo-io/gloo-mesh/raw/main/docs/content/img/logo.png">
     <br>
 </h2>
 
@@ -7,8 +7,7 @@ Gloo Mesh is a Kubernetes-native **management plane** that enables configuration
 and operational management of multiple heterogeneous service meshes across multiple 
 clusters through a unified API. The Gloo Mesh API integrates with the leading 
 service meshes and  abstracts away differences between their disparate API's, allowing 
-users to configure a set of different service meshes through a single API. Service 
-Mesh Hub is engineered with a focus on its utility as an operational management 
+users to configure a set of different service meshes through a single API. Gloo Mesh is engineered with a focus on its utility as an operational management 
 tool, providing both graphical and command line UIs, observability features, and 
 debugging tools.
 
