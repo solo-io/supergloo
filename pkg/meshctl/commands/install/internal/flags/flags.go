@@ -51,8 +51,9 @@ func (o *Options) AddToFlags(flags *pflag.FlagSet) {
 	flags.BoolVarP(&o.Verbose, "verbose", "v", false, "Enable verbose output")
 }
 
-func (o *Options) GetInstaller() gloomesh.Installer {
+func (o *Options) GetInstaller(chartPath string) gloomesh.Installer {
 	return gloomesh.Installer{
+		HelmChartPath:  chartPath,
 		HelmValuesPath: o.ChartValuesFile,
 		KubeConfig:     o.KubeCfgPath,
 		KubeContext:    o.KubeContext,

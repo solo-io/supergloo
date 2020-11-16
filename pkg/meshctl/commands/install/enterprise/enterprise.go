@@ -2,9 +2,12 @@ package enterprise
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/gloo-mesh/pkg/common/version"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/install/internal/flags"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -41,13 +44,22 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 }
 
 func install(ctx context.Context, opts *options) error {
-	installer := opts.GetInstaller()
+	// User-specified chartPath takes precedence over specified version.
+	gloomeshEnterpriseChartUri := opts.ChartPath
+	gloomeshEnterpriseVersion := opts.Version
+	if opts.Version == "" {
+		gloomeshEnterpriseVersion = version.Version
+	}
+	if gloomeshEnterpriseChartUri == "" {
+		gloomeshEnterpriseChartUri = fmt.Sprintf(gloomesh.GlooMeshEnterpriseChartUriTemplate, gloomeshEnterpriseVersion)
+	}
+	installer := opts.GetInstaller(gloomeshEnterpriseChartUri)
 	installer.Values["license.key"] = opts.licenseKey
 	if opts.skipUI {
-		installer.Values["include.ui"] = "false"
+		installer.Values["gloo-mesh-ui.enabled"] = "false"
 	}
 	if opts.skipRBAC {
-		installer.Values["include.rbac"] = "false"
+		installer.Values["rbac-webhook.enabled"] = "false"
 	}
 	if err := installer.InstallGlooMeshEnterprise(ctx); err != nil {
 		return eris.Wrap(err, "installing gloo-mesh-enterprise")

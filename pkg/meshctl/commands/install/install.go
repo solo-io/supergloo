@@ -2,10 +2,13 @@ package install
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/gloo-mesh/pkg/common/version"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/install/enterprise"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/install/internal/flags"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
 	"github.com/spf13/cobra"
 )
@@ -27,7 +30,17 @@ func Command(ctx context.Context) *cobra.Command {
 }
 
 func install(ctx context.Context, opts *flags.Options) error {
-	if err := opts.GetInstaller().InstallGlooMesh(ctx); err != nil {
+	// User-specified chartPath takes precedence over specified version.
+	gloomeshChartUri := opts.ChartPath
+	gloomeshVersion := opts.Version
+	if opts.Version == "" {
+		gloomeshVersion = version.Version
+	}
+	if gloomeshChartUri == "" {
+		gloomeshChartUri = fmt.Sprintf(gloomesh.GlooMeshChartUriTemplate, gloomeshVersion)
+	}
+
+	if err := opts.GetInstaller(gloomeshChartUri).InstallGlooMesh(ctx); err != nil {
 		return eris.Wrap(err, "installing gloo-mesh")
 	}
 
