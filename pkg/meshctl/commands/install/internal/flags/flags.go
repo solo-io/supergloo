@@ -1,8 +1,11 @@
 package flags
 
 import (
+	"fmt"
+
 	"github.com/solo-io/gloo-mesh/codegen/helm"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/common/version"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
@@ -51,9 +54,16 @@ func (o *Options) AddToFlags(flags *pflag.FlagSet) {
 	flags.BoolVarP(&o.Verbose, "verbose", "v", false, "Enable verbose output")
 }
 
-func (o *Options) GetInstaller(chartPath string) gloomesh.Installer {
+func (o *Options) GetInstaller(chartUriTemplate string) gloomesh.Installer {
+	// User-specified chartPath takes precedence over specified version.
+	if o.Version == "" {
+		o.Version = version.Version
+	}
+	if o.ChartPath == "" {
+		o.ChartPath = fmt.Sprintf(gloomesh.GlooMeshEnterpriseChartUriTemplate, o.Version)
+	}
 	return gloomesh.Installer{
-		HelmChartPath:  chartPath,
+		HelmChartPath:  o.ChartPath,
 		HelmValuesPath: o.ChartValuesFile,
 		KubeConfig:     o.KubeCfgPath,
 		KubeContext:    o.KubeContext,
