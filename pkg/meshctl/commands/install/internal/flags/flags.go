@@ -60,7 +60,7 @@ func (o *Options) GetInstaller(chartUriTemplate string) gloomesh.Installer {
 		o.Version = version.Version
 	}
 	if o.ChartPath == "" {
-		o.ChartPath = fmt.Sprintf(gloomesh.GlooMeshEnterpriseChartUriTemplate, o.Version)
+		o.ChartPath = fmt.Sprintf(chartUriTemplate, o.Version)
 	}
 	return gloomesh.Installer{
 		HelmChartPath:  o.ChartPath,
