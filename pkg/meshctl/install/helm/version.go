@@ -5,14 +5,13 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"path/filepath"
 
 	"github.com/rotisserie/eris"
 	"gopkg.in/yaml.v2"
 )
 
 func GetLatestChartVersion(repoURI, chartName string) (string, error) {
-	res, err := http.Get(filepath.Join(repoURI, chartName, "index.yaml"))
+	res, err := http.Get(fmt.Sprintf("%s/%s/index.yaml", repoURI, chartName))
 	if err != nil {
 		return "", err
 	}
@@ -37,5 +36,6 @@ func GetLatestChartVersion(repoURI, chartName string) (string, error) {
 		return "", eris.New("no versions found")
 	}
 
+	// entries are sorted by version so the first will have the latest
 	return entries[0].Version, nil
 }

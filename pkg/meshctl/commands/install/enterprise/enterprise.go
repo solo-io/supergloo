@@ -2,10 +2,6 @@ package enterprise
 
 import (
 	"context"
-	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/install/internal/flags"
@@ -14,7 +10,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"gopkg.in/yaml.v2"
 )
 
 func Command(ctx context.Context) *cobra.Command {
@@ -83,32 +78,4 @@ func install(ctx context.Context, opts *options) error {
 	}
 
 	return nil
-}
-
-func latestChartVersion() (string, error) {
-	const chartIndexURI = "https://storage.googleapis.com/gloo-mesh-enterprise/gloo-mesh-enterprise/index.yaml"
-	res, err := http.Get(chartIndexURI)
-	if err != nil {
-		return "", err
-	}
-	defer res.Body.Close()
-	if res.StatusCode != http.StatusOK {
-		io.Copy(ioutil.Discard, res.Body)
-		return "", fmt.Errorf("invalid response from the Helm repository: %d %s", res.StatusCode, res.Status)
-	}
-	index := struct {
-		Entries struct {
-			GlooMesh []struct {
-				Version string `yaml:"version"`
-			} `yaml:"gloo-mesh"`
-		} `yaml:"entries"`
-	}{}
-	if err := yaml.NewDecoder(res.Body).Decode(&index); err != nil {
-		return "", err
-	}
-	if len(index.Entries.GlooMesh) == 0 {
-		return "", eris.New("no Gloo Mesh Enterprise versions found")
-	}
-
-	return index.Entries.GlooMesh[0].Version, nil
 }

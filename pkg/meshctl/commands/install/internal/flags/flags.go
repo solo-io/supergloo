@@ -5,7 +5,6 @@ import (
 
 	"github.com/solo-io/gloo-mesh/codegen/helm"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
-	"github.com/solo-io/gloo-mesh/pkg/common/version"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
@@ -56,9 +55,6 @@ func (o *Options) AddToFlags(flags *pflag.FlagSet) {
 
 func (o *Options) GetInstaller(chartUriTemplate string) gloomesh.Installer {
 	// User-specified chartPath takes precedence over specified version.
-	if o.Version == "" {
-		o.Version = version.Version
-	}
 	if o.ChartPath == "" {
 		o.ChartPath = fmt.Sprintf(chartUriTemplate, o.Version)
 	}
