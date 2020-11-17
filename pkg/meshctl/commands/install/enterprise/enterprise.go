@@ -10,6 +10,7 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/install/internal/flags"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -47,11 +48,18 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 }
 
 func install(ctx context.Context, opts *options) error {
-	version, err := latestChartVersion()
-	if err != nil {
-		return err
+	const (
+		repoURI   = "https://storage.googleapis.com/gloo-mesh-enterprise"
+		chartName = "gloo-mesh-enterprise"
+	)
+	if opts.Version == "" {
+		version, err := helm.GetLatestChartVersion(repoURI, chartName)
+		if err != nil {
+			return err
+		}
+		opts.Version = version
 	}
-	opts.Version = version
+
 	installer := opts.GetInstaller(gloomesh.GlooMeshEnterpriseChartUriTemplate)
 	installer.Values["license.key"] = opts.licenseKey
 	if opts.skipUI {
