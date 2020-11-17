@@ -38,7 +38,7 @@ func main() {
 		Changelog: docsgen.ChangelogOptions{
 			Repos: []docsgen.ChangelogConfig{
 				{Name: "Open Source Gloo Mesh", Repo: "gloo-mesh", Path: "open_source"},
-				{Name: "Gloo Mesh Enterprise", Repo: "service-mesh-hub-enterprise", Path: "enterprise"}},
+				{Name: "Gloo Mesh Enterprise", Repo: "gloo-mesh-enterprise", Path: "enterprise"}},
 			OutputDir: "content/reference/changelog",
 		},
 		DocsRoot: "docs",
