@@ -37,6 +37,7 @@ type Installer struct {
 	Namespace   string
 	ReleaseName string
 	ValuesFile  string
+	Values      map[string]string
 	Verbose     bool
 	DryRun      bool
 }
@@ -77,6 +78,9 @@ func (i Installer) InstallChart(ctx context.Context) error {
 	valueOpts := &values.Options{}
 	if valuesFile != "" {
 		valueOpts.ValueFiles = []string{valuesFile}
+	}
+	for key, value := range i.Values {
+		valueOpts.Values = append(valueOpts.Values, key+"="+value)
 	}
 	parsedValues, err := valueOpts.MergeValues(getter.All(settings))
 	if err != nil {
