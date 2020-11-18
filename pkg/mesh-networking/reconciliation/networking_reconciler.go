@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
 
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
@@ -22,7 +23,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/snapshotutils"
 
 	skinput "github.com/solo-io/skv2/contrib/pkg/input"
-	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -169,7 +169,7 @@ func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Sn
 		return err
 	}
 
-	errHandler := errhandlers.AppendingErrHandler{}
+	errHandler := errHandler{r.mgmtClient, errhandlers.AppendingErrHandler{}}
 
 	outputSnap.Apply(ctx, r.mgmtClient, r.multiClusterClient, errHandler)
 
