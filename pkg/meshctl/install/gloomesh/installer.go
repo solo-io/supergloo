@@ -9,12 +9,14 @@ import (
 )
 
 const (
-	GlooMeshChartUriTemplate  = "https://storage.googleapis.com/gloo-mesh/gloo-mesh/gloo-mesh-%s.tgz"
-	CertAgentChartUriTemplate = "https://storage.googleapis.com/gloo-mesh/cert-agent/cert-agent-%s.tgz"
-	WasmAgentChartUriTemplate = "https://storage.googleapis.com/gloo-mesh/wasm-agent/wasm-agent-%s.tgz"
-	GlooMeshReleaseName       = "gloo-mesh"
-	certAgentReleaseName      = "cert-agent"
-	wasmAgentReleaseName      = "wasm-agent"
+	GlooMeshChartUriTemplate           = "https://storage.googleapis.com/gloo-mesh/gloo-mesh/gloo-mesh-%s.tgz"
+	GlooMeshEnterpriseChartUriTemplate = "https://storage.googleapis.com/gloo-mesh-enterprise/gloo-mesh-enterprise/gloo-mesh-enterprise-%s.tgz"
+	CertAgentChartUriTemplate          = "https://storage.googleapis.com/gloo-mesh/cert-agent/cert-agent-%s.tgz"
+	WasmAgentChartUriTemplate          = "https://storage.googleapis.com/gloo-mesh/wasm-agent/wasm-agent-%s.tgz"
+	GlooMeshReleaseName                = "gloo-mesh"
+	GlooMeshEnterpriseReleaseName      = "gloo-mesh-enterprise"
+	certAgentReleaseName               = "cert-agent"
+	wasmAgentReleaseName               = "wasm-agent"
 )
 
 type Installer struct {
@@ -24,6 +26,7 @@ type Installer struct {
 	KubeContext    string
 	Namespace      string
 	ReleaseName    string
+	Values         map[string]string
 	Verbose        bool
 	DryRun         bool
 }
@@ -32,6 +35,12 @@ func (i Installer) InstallGlooMesh(
 	ctx context.Context,
 ) error {
 	return i.install(ctx, GlooMeshChartUriTemplate, GlooMeshReleaseName)
+}
+
+func (i Installer) InstallGlooMeshEnterprise(
+	ctx context.Context,
+) error {
+	return i.install(ctx, GlooMeshEnterpriseChartUriTemplate, GlooMeshEnterpriseReleaseName)
 }
 
 func (i Installer) InstallCertAgent(
@@ -68,6 +77,7 @@ func (i Installer) install(
 		Namespace:   i.Namespace,
 		ReleaseName: releaseName,
 		ValuesFile:  i.HelmValuesPath,
+		Values:      i.Values,
 		Verbose:     i.Verbose,
 		DryRun:      i.DryRun,
 	}.InstallChart(ctx)
