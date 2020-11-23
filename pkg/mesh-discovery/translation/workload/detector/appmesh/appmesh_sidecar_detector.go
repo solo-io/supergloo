@@ -28,10 +28,10 @@ func NewSidecarDetector(ctx context.Context) *sidecarDetector {
 	return &sidecarDetector{ctx: ctx}
 }
 
-func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
+func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) (*v1alpha2.Mesh, *v1alpha2.WorkloadSpec_ProxyInstance) {
 	sidecarContainer := getSidecar(pod.Spec.Containers)
 	if sidecarContainer == nil {
-		return nil
+		return nil, nil
 	}
 
 	var sidecarMeshName string
@@ -46,7 +46,7 @@ func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.
 		split := strings.Split(envVar.Value, "/")
 		if len(split) != 4 {
 			contextutils.LoggerFrom(d.ctx).Warnw("warning: unexpected virtual node name format", "pod", sets.Key(pod), "virtualNode", envVar.Value)
-			return nil
+			return nil, nil
 		}
 		sidecarMeshName = split[1]
 	}
@@ -59,12 +59,12 @@ func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.
 
 		// TODO joekelley this does not deduplicate across disparate accounts, which are not referenced on sidecars.
 		if appmesh.AwsName == sidecarMeshName {
-			return mesh
+			return mesh, nil
 		}
 	}
 
 	contextutils.LoggerFrom(d.ctx).Warnw("warning: no mesh found corresponding to pod with appmesh sidecar", "pod", sets.Key(pod))
-	return nil
+	return nil, nil
 }
 
 func getSidecar(containers []corev1.Container) *corev1.Container {

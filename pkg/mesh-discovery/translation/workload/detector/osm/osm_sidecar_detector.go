@@ -35,9 +35,9 @@ func NewSidecarDetector(ctx context.Context) *sidecarDetector {
 /*
 	OSM uses vanilla envoy sidecars currently, specifically `envoyproxy/envoy-alpine`.
 */
-func (s *sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
+func (s *sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) (*v1alpha2.Mesh, *v1alpha2.WorkloadSpec_ProxyInstance) {
 	if !(containsInitContainer(pod.Spec.InitContainers) && containsSidecar(pod.Spec.Containers)) {
-		return nil
+		return nil, nil
 	}
 
 	for _, mesh := range meshes.List() {
@@ -50,13 +50,13 @@ func (s *sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets
 		// and that the control plane for a given sidecar is always
 		// the mesh
 		if osmMesh.Installation.GetCluster() == pod.ClusterName {
-			return mesh
+			return mesh, nil
 		}
 	}
 
 	contextutils.LoggerFrom(s.ctx).Warnw("warning: no mesh found corresponding to pod with osm sidecar", "pod", sets.Key(pod))
 
-	return nil
+	return nil, nil
 }
 
 func containsInitContainer(containers []corev1.Container) bool {

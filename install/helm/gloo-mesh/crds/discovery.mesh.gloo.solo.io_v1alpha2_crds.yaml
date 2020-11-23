@@ -921,6 +921,15 @@ spec:
                   description: namespace of the resource being referenced
                   type: string
               type: object
+            proxyInstances:
+              description: instances of the proxy running within this workload (e.g Envoy processes)
+              items:
+                properties:
+                  proxyNodeId:
+                    description: the node ID of the proxy (Envoy) running on this instance
+                    type: string
+                type: object
+              type: array
           type: object
         status:
           properties:

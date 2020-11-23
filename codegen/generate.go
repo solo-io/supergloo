@@ -118,7 +118,7 @@ var (
 	importedMultiClusterCRDs = glooMeshManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 
 	allApiGroups = map[string][]model.Group{
-		"":                                 append(groups.GlooMeshGroups, groups.CertAgentGroups...),
+		"":                                 append(append(groups.GlooMeshGroups, groups.CertAgentGroups...), groups.XdsAgentGroup),
 		"github.com/solo-io/external-apis": externalapis.Groups,
 		"github.com/solo-io/skv2":          {skv1alpha1.Group},
 	}
@@ -176,7 +176,7 @@ func makeGlooMeshCommand(chartOnly bool) codegen.Command {
 		AnyVendorConfig:   anyvendorImports,
 		ManifestRoot:      glooMeshManifestRoot,
 		TopLevelTemplates: topLevelTemplates,
-		Groups:            groups.GlooMeshGroups,
+		Groups:            append(groups.GlooMeshGroups, groups.XdsAgentGroup),
 		RenderProtos:      true,
 		Chart:             helm.Chart,
 	}

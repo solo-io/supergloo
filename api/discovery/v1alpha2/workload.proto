@@ -22,6 +22,9 @@ message WorkloadSpec {
     // The mesh with which this workload is associated.
     .core.skv2.solo.io.ObjectRef mesh = 4;
 
+    // instances of the proxy running within this workload (e.g Envoy processes)
+    repeated ProxyInstance proxy_instances = 6;
+
     // Appmesh specific metadata.
     AppMesh app_mesh = 5;
 
@@ -45,6 +48,11 @@ message WorkloadSpec {
         string service_account_name = 3;
     }
 
+    // Describes an instance of a single workload proxy (e.g. a Pod container or VM process)
+    message ProxyInstance {
+        // the node ID of the proxy (Envoy) running on this instance
+        string proxy_node_id = 1;
+    }
 
     // Information relevant to AppMesh-injected workloads.
     message AppMesh {

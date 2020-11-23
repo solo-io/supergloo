@@ -38,6 +38,10 @@ var CertAgentGroups = []model.Group{
 	}),
 }
 
+var XdsAgentGroup = makeGroup("xds.enterprise.agent", "v1alpha1", []ResourceToGenerate{
+	{Kind: "XdsConfig"},
+})
+
 type ResourceToGenerate struct {
 	Kind     string
 	NoStatus bool // don't put a status on this resource

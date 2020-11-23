@@ -50,18 +50,18 @@ else
 
   # NOTE(ilackarms): we run the setup_kind clusters sequentially due to this bug:
   # related: https://github.com/kubernetes-sigs/kind/issues/1596
-  create_kind_cluster ${mgmtCluster} 32001
+  create_kind_cluster ${mgmtCluster} 32001 || echo ok
   install_istio ${mgmtCluster} 32001 &
 
-  create_kind_cluster ${remoteCluster} 32000
+  create_kind_cluster ${remoteCluster} 32000 || echo ok
   install_istio ${remoteCluster} 32000 &
 
   wait
 
   # create istio-injectable namespace
-  kubectl --context kind-${mgmtCluster} create namespace bookinfo
+  kubectl --context kind-${mgmtCluster} create namespace bookinfo || echo ok
   kubectl --context kind-${mgmtCluster} label ns bookinfo istio-injection=enabled --overwrite
-  kubectl --context kind-${remoteCluster} create namespace bookinfo
+  kubectl --context kind-${remoteCluster} create namespace bookinfo || echo ok
   kubectl --context kind-${remoteCluster} label ns bookinfo istio-injection=enabled --overwrite
 
   # install bookinfo without reviews-v3 to management cluster

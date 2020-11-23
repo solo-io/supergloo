@@ -12,18 +12,18 @@ import (
 type SidecarDetector interface {
 	// returns a ref to a mesh if the provided Pod contains a sidecar
 	// pointing at that mesh. returns nil if the
-	DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh
+	DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) (*v1alpha2.Mesh, *v1alpha2.WorkloadSpec_ProxyInstance)
 }
 
 // wrapper for multiple mesh detectors.
 // returns the first successfully detected mesh
 type SidecarDetectors []SidecarDetector
 
-func (d SidecarDetectors) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
+func (d SidecarDetectors) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) (*v1alpha2.Mesh, *v1alpha2.WorkloadSpec_ProxyInstance) {
 	for _, detector := range d {
-		if mesh := detector.DetectMeshSidecar(pod, meshes); mesh != nil {
-			return mesh
+		if mesh, instance := detector.DetectMeshSidecar(pod, meshes); mesh != nil {
+			return mesh, instance
 		}
 	}
-	return nil
+	return nil, nil
 }

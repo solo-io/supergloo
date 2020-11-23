@@ -57,7 +57,7 @@ func NewWorkloadDetector(
 func (d workloadDetector) DetectWorkload(workload types.Workload, meshes v1alpha2sets.MeshSet) *v1alpha2.Workload {
 	podsForWorkload := d.getPodsForWorkload(workload)
 
-	mesh := d.getMeshForPods(podsForWorkload, meshes)
+	mesh, instances := d.getMeshAndInstancesForPods(podsForWorkload, meshes)
 
 	if mesh == nil {
 		return nil
@@ -82,19 +82,28 @@ func (d workloadDetector) DetectWorkload(workload types.Workload, meshes v1alpha
 					ServiceAccountName: serviceAccount,
 				},
 			},
-			Mesh: meshRef,
+			ProxyInstances: instances,
+			Mesh:           meshRef,
 		},
 	}
 }
 
-func (d workloadDetector) getMeshForPods(pods corev1sets.PodSet, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
+func (d workloadDetector) getMeshAndInstancesForPods(pods corev1sets.PodSet, meshes v1alpha2sets.MeshSet) (*v1alpha2.Mesh, []*v1alpha2.WorkloadSpec_ProxyInstance) {
 	// as long as one pod is detected for a mesh, consider the set owned by that mesh.
+	var (
+		detectedMesh *v1alpha2.Mesh
+		instances    []*v1alpha2.WorkloadSpec_ProxyInstance
+	)
 	for _, pod := range pods.List() {
-		if mesh := d.detector.DetectMeshSidecar(pod, meshes); mesh != nil {
-			return mesh
+		mesh, instance := d.detector.DetectMeshSidecar(pod, meshes)
+		if mesh != nil {
+			detectedMesh = mesh // note: assumes all pods in the same mesh
+		}
+		if instance != nil {
+			instances = append(instances, instance)
 		}
 	}
-	return nil
+	return detectedMesh, instances
 }
 
 func (d workloadDetector) getPodsForWorkload(workload types.Workload) corev1sets.PodSet {
