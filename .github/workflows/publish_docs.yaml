@@ -36,6 +36,8 @@ jobs:
         make install-go-tools
 
     - name: Generate versioned docs site
+      env:
+        RELEASE: true
       run: ./ci/build-docs-site.sh
 
     - name: Deploy to Firebase
