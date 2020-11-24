@@ -119,6 +119,10 @@ func (t *translator) Translate(
 				},
 			},
 		}
+		if err := metautils.AppendParent(trafficTarget, target, target.GVK()); err != nil {
+			// TODO(ryantking): Handle error
+			return nil, nil
+		}
 
 		for _, sourceSelector := range ap.GetSpec().GetSourceSelector() {
 			if sourceSelector.GetKubeIdentityMatcher() != nil {
@@ -194,6 +198,10 @@ func (t *translator) Translate(
 			Spec: smispecsv1alpha3.HTTPRouteGroupSpec{
 				Matches: httpMatches,
 			},
+		}
+		if err := metautils.AppendParent(routeGroup, target, target.GVK()); err != nil {
+			// TODO(ryantking): Handle error
+			return nil, nil
 		}
 		// Append the ap ref to the name as each ap gets it's own route group
 		routeGroup.Name += fmt.Sprintf(".%s", t.kubeValidName(ap.GetRef()))

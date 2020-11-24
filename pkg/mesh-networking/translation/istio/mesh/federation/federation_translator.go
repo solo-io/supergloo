@@ -219,6 +219,10 @@ func (t *translator) Translate(
 					Ports:      ports,
 				},
 			}
+			if err := metautils.AppendParent(se, ref, mesh.GVK()); err != nil {
+				// TODO(ryantking): Handle error
+				return
+			}
 
 			// Translate VirtualServices for federated TrafficTargets
 			vs := t.virtualServiceTranslator.Translate(in, trafficTarget, clientIstio.Installation, reporter)
@@ -256,6 +260,10 @@ func (t *translator) Translate(
 			Selector: ingressGateway.WorkloadLabels,
 		},
 	}
+	if err := metautils.AppendParent(gw, mesh, mesh.GVK()); err != nil {
+		// TODO(ryantking): Handle error
+		return
+	}
 	outputs.AddGateways(gw)
 
 	ef := &networkingv1alpha3.EnvoyFilter{
@@ -289,6 +297,10 @@ func (t *translator) Translate(
 				},
 			}},
 		},
+	}
+	if err := metautils.AppendParent(ef, mesh, mesh.GVK()); err != nil {
+		// TODO(ryantking): Handle error
+		return
 	}
 	outputs.AddEnvoyFilters(ef)
 }

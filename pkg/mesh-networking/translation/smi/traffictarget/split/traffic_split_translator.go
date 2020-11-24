@@ -115,6 +115,11 @@ func (t *translator) Translate(
 			Backends: nil,
 		},
 	}
+	if err := metautils.AppendParent(trafficSplit, trafficTarget, trafficTarget.GVK()); err != nil {
+		// TODO(ryantking): Handle error
+		return nil
+	}
+
 	backends, err := buildBackends(appliedTrafficPolicy.GetRef(), appliedTrafficPolicy.Spec.GetTrafficShift(), kubeService)
 	if err != nil {
 		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, appliedTrafficPolicy.GetRef(), err)

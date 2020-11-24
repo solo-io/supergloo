@@ -132,13 +132,25 @@ func (t *translator) translate(
 		if err != nil {
 			errsForMesh = multierror.Append(errsForMesh, err)
 		}
+		if err := metautils.AppendParent(serviceEntry, mesh, mesh.GVK()); err != nil {
+			// TODO(ryantking): Handle error
+			return nil, nil, nil
+		}
 		destinationRule, err := t.translateDestinationRule(failoverService, subsets)
 		if err != nil {
 			errsForMesh = multierror.Append(errsForMesh, err)
 		}
+		if err := metautils.AppendParent(destinationRule, mesh, mesh.GVK()); err != nil {
+			// TODO(ryantking): Handle error
+			return nil, nil, nil
+		}
 		envoyFilter, err := t.translateEnvoyFilter(failoverService, mesh, prioritizedTrafficTargets, subsets)
 		if err != nil {
 			errsForMesh = multierror.Append(errsForMesh, err)
+		}
+		if err := metautils.AppendParent(envoyFilter, mesh, mesh.GVK()); err != nil {
+			// TODO(ryantking): Handle error
+			return nil, nil, nil
 		}
 		errs := errsForMesh.ErrorOrNil()
 		if errs != nil {
@@ -214,6 +226,7 @@ func (t *translator) translateServiceEntry(
 			Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
 		},
 	}
+
 	return serviceEntry, nil
 }
 
@@ -234,7 +247,7 @@ func (t *translator) translateDestinationRule(
 		nil,
 	)
 
-	return &networkingv1alpha3.DestinationRule{
+	dr := &networkingv1alpha3.DestinationRule{
 		ObjectMeta: meta,
 		Spec: networkingv1alpha3spec.DestinationRule{
 			Host: failoverService.Spec.Hostname,
@@ -248,7 +261,9 @@ func (t *translator) translateDestinationRule(
 			},
 			Subsets: subsets,
 		},
-	}, nil
+	}
+
+	return dr, nil
 }
 
 func (t *translator) translateEnvoyFilter(

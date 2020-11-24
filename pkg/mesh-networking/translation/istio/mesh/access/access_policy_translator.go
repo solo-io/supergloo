@@ -54,8 +54,8 @@ func (t *translator) Translate(
 	}
 	clusterName := istioMesh.Installation.Cluster
 	installationNamespace := istioMesh.Installation.Namespace
-	globalAuthPolicy := buildGlobalAuthPolicy(installationNamespace, clusterName)
-	ingressGatewayAuthPolicies := buildAuthPoliciesForIngressgateways(installationNamespace, clusterName, istioMesh.IngressGateways)
+	globalAuthPolicy := buildGlobalAuthPolicy(installationNamespace, clusterName, mesh)
+	ingressGatewayAuthPolicies := buildAuthPoliciesForIngressgateways(installationNamespace, clusterName, istioMesh.IngressGateways, mesh)
 
 	outputs.AddAuthorizationPolicies(globalAuthPolicy)
 	outputs.AddAuthorizationPolicies(ingressGatewayAuthPolicies...)
@@ -67,10 +67,11 @@ func buildAuthPoliciesForIngressgateways(
 	installationNamespace string,
 	clusterName string,
 	ingressGateways []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo,
+	mesh *discoveryv1alpha2.Mesh,
 ) []*securityv1beta1.AuthorizationPolicy {
 	var authPolicies []*securityv1beta1.AuthorizationPolicy
 	for _, ingressGateway := range ingressGateways {
-		authPolicies = append(authPolicies, &securityv1beta1.AuthorizationPolicy{
+		ap := &securityv1beta1.AuthorizationPolicy{
 			ObjectMeta: v1.ObjectMeta{
 				Name:        ingressGatewayAuthPolicyName(ingressGateway),
 				Namespace:   installationNamespace,
@@ -86,7 +87,12 @@ func buildAuthPoliciesForIngressgateways(
 					MatchLabels: ingressGateway.WorkloadLabels,
 				},
 			},
-		})
+		}
+		if err := metautils.AppendParent(ap, mesh, mesh.GVK()); err != nil {
+			// TODO(ryantking): Handle error
+			return nil
+		}
+		authPolicies = append(authPolicies, ap)
 	}
 	return authPolicies
 }
@@ -95,12 +101,13 @@ func buildAuthPoliciesForIngressgateways(
 func buildGlobalAuthPolicy(
 	installationNamespace,
 	clusterName string,
+	mesh *discoveryv1alpha2.Mesh,
 ) *securityv1beta1.AuthorizationPolicy {
 	// The following config denies all traffic in the mesh because it defaults to an ALLOW rule that doesn't match any requests,
 	// set to the installation namespace so it affects all namespaces,
 	// thereby denying traffic unless explicitly allowed by the user through additional AuthorizationPolicies.
 	// https://istio.io/docs/reference/config/security/authorization-policy/#AuthorizationPolicy
-	return &securityv1beta1.AuthorizationPolicy{
+	ap := &securityv1beta1.AuthorizationPolicy{
 		ObjectMeta: v1.ObjectMeta{
 			Name:        GlobalAccessControlAuthPolicyName,
 			Namespace:   installationNamespace,
@@ -109,6 +116,12 @@ func buildGlobalAuthPolicy(
 		},
 		Spec: securityv1beta1spec.AuthorizationPolicy{},
 	}
+	if err := metautils.AppendParent(ap, mesh, mesh.GVK()); err != nil {
+		// TODO(ryantking): Handle error
+		return nil
+	}
+
+	return ap
 }
 
 func ingressGatewayAuthPolicyName(ingressGateway *discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo) string {

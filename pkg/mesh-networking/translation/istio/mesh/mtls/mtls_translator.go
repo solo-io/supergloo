@@ -228,6 +228,13 @@ func (t *translator) getOrCreateRootCaSecret(
 				Type: signingCertSecretType,
 			}
 		}
+		if err := metautils.AppendParent(
+			selfSignedCertSecret,
+			virtualMeshRef,
+			v1alpha2.VirtualMesh{}.GVK(),
+		); err != nil {
+			return nil, err
+		}
 		localOutputs.AddSecrets(selfSignedCertSecret)
 	case *v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Secret:
 		rootCaSecret = caType.Secret
@@ -290,7 +297,7 @@ func (t *translator) constructIssuedCertificate(
 	}
 
 	// issue a certificate to the mesh agent
-	return &certificatesv1alpha2.IssuedCertificate{
+	issuedCert := &certificatesv1alpha2.IssuedCertificate{
 		ObjectMeta: issuedCertificateMeta,
 		Spec: certificatesv1alpha2.IssuedCertificateSpec{
 			Hosts:                    []string{buildSpiffeURI(trustDomain, istioNamespace, citadelServiceAccount)},
@@ -299,7 +306,13 @@ func (t *translator) constructIssuedCertificate(
 			IssuedCertificateSecret:  istioCaCerts,
 			PodBounceDirective:       podBounceRef,
 		},
-	}, podBounceDirective
+	}
+	if err := metautils.AppendParent(issuedCert, rootCaSecret, discoveryv1alpha2.Mesh{}.GVK()); err != nil {
+		// TODO(ryantking): Handle error
+		return nil, nil
+	}
+
+	return issuedCert, podBounceDirective
 }
 
 const (

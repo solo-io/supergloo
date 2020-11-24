@@ -5,6 +5,7 @@ package v1alpha2
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // +genclient
@@ -19,6 +20,15 @@ type TrafficTarget struct {
 
 	Spec   TrafficTargetSpec   `json:"spec,omitempty"`
 	Status TrafficTargetStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (TrafficTarget) GVK() schema.GroupVersionKind {
+	return schema.GroupVersionKind{
+		Group:   "discovery.mesh.gloo.solo.io/v1alpha2",
+		Version: "v1alpha2",
+		Kind:    "TrafficTarget",
+	}
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -44,6 +54,15 @@ type Workload struct {
 	Status WorkloadStatus `json:"status,omitempty"`
 }
 
+// GVK returns the GroupVersionKind associated with the resource type.
+func (Workload) GVK() schema.GroupVersionKind {
+	return schema.GroupVersionKind{
+		Group:   "discovery.mesh.gloo.solo.io/v1alpha2",
+		Version: "v1alpha2",
+		Kind:    "Workload",
+	}
+}
+
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // WorkloadList contains a list of Workload
@@ -65,6 +84,15 @@ type Mesh struct {
 
 	Spec   MeshSpec   `json:"spec,omitempty"`
 	Status MeshStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (Mesh) GVK() schema.GroupVersionKind {
+	return schema.GroupVersionKind{
+		Group:   "discovery.mesh.gloo.solo.io/v1alpha2",
+		Version: "v1alpha2",
+		Kind:    "Mesh",
+	}
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

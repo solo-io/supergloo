@@ -1,35 +1,45 @@
 package reconciliation
 
 import (
-	"reflect"
-
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
 var _ output.ErrorHandler = errHandler{}
 
-type errHandler struct{}
+type errHandler struct {
+	inp input.Snapshot
+}
 
 func (e errHandler) HandleWriteError(resource ezkube.Object, err error) {
-	val := reflect.ValueOf(resource)
-	if val.Kind() == reflect.Ptr {
-		val = val.Elem()
-	}
+	// annotations := resource.GetAnnotations()
+	//
+	// switch gvk {
+	// case "failoverservice.networking.mesh.gloo.solo.io":
+	// 	e.inp.FailoverServices()
+	// }
 
-	errs := val.FieldByName("Status").FieldByName("Errors")
-	errs.Set(reflect.Append(errs, reflect.ValueOf(err.Error())))
+	// switch r := resource.(type) {
+	// case *v1alpha2.VirtualMesh:
+	// 	r.Status.Errors = append(r.Status.Errors, err.Error())
+	// case *v1alpha2.FailoverService:
+	// 	r.Status.Errors = append(r.Status.Errors, err.Error())
+	// case *v1alpha2.TrafficPolicy:
+	// 	r.Status.Errors = append(r.Status.Errors, err.Error())
+	// case *v1alpha2.AccessPolicy:
+	// 	r.Status.Errors = append(r.Status.Errors, err.Error())
+	// }
 }
 
 func (e errHandler) HandleDeleteError(resource ezkube.Object, err error) {
-	val := reflect.ValueOf(resource)
-	if val.Kind() == reflect.Ptr {
-		val = val.Elem()
-	}
-
-	errs := val.FieldByName("Status").FieldByName("Errors")
-	errs.Set(reflect.Append(errs, reflect.ValueOf(err.Error())))
+	panic("unimplemented")
 }
 
-func (e errHandler) HandleListError(resource ezkube.Object, err error) {
+func (e errHandler) HandleListError(err error) {
+	panic("unimplemented")
+}
+
+func (e errHandler) Errors() error {
+	return nil
 }

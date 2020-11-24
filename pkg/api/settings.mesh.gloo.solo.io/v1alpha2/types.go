@@ -5,6 +5,7 @@ package v1alpha2
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // +genclient
@@ -19,6 +20,15 @@ type Settings struct {
 
 	Spec   SettingsSpec   `json:"spec,omitempty"`
 	Status SettingsStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (Settings) GVK() schema.GroupVersionKind {
+	return schema.GroupVersionKind{
+		Group:   "settings.mesh.gloo.solo.io/v1alpha2",
+		Version: "v1alpha2",
+		Kind:    "Settings",
+	}
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
