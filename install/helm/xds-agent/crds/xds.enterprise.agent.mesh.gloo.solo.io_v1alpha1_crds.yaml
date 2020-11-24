@@ -36,9 +36,6 @@ spec:
               items:
                 type: string
               type: array
-            org:
-              description: The organization for this certificate.
-              type: string
             types:
               description: |-
                 the xDS resources to serve to the nodes.

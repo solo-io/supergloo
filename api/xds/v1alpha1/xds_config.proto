@@ -21,12 +21,9 @@ message XdsConfigSpec {
      */
     repeated string nodes = 1;
 
-    // The organization for this certificate.
-    string org = 2;
-
     // the xDS resources to serve to the nodes.
     // mapped by type URL.
-   repeated TypedResources types = 3;
+   repeated TypedResources types = 2;
 
     // a set of resources of a single type (typeURL)
     message TypedResources {

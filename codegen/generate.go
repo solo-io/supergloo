@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/solo-io/skv2/codegen/render"
+
 	externalapis "github.com/solo-io/external-apis/codegen"
 	"github.com/solo-io/gloo-mesh/codegen/anyvendor"
 	"github.com/solo-io/gloo-mesh/codegen/groups"
@@ -113,6 +115,7 @@ var (
 
 	glooMeshManifestRoot  = "install/helm/gloo-mesh"
 	certAgentManifestRoot = "install/helm/cert-agent/"
+	xdsAgentManifestRoot  = "install/helm/xds-agent/"
 
 	vendoredMultiClusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 	importedMultiClusterCRDs = glooMeshManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
@@ -158,6 +161,10 @@ func run() error {
 		return err
 	}
 
+	if err := makeXdsAgentCommand().Execute(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -176,7 +183,7 @@ func makeGlooMeshCommand(chartOnly bool) codegen.Command {
 		AnyVendorConfig:   anyvendorImports,
 		ManifestRoot:      glooMeshManifestRoot,
 		TopLevelTemplates: topLevelTemplates,
-		Groups:            append(groups.GlooMeshGroups, groups.XdsAgentGroup),
+		Groups:            groups.GlooMeshGroups,
 		RenderProtos:      true,
 		Chart:             helm.Chart,
 	}
@@ -199,6 +206,15 @@ func makeCertAgentCommand(chartOnly bool) codegen.Command {
 		Groups:            groups.CertAgentGroups,
 		RenderProtos:      true,
 		Chart:             helm.CertAgentChart,
+	}
+}
+
+func makeXdsAgentCommand() codegen.Command {
+	return codegen.Command{
+		AppName:      appName,
+		ManifestRoot: xdsAgentManifestRoot,
+		Groups:       []render.Group{groups.XdsAgentGroup},
+		RenderProtos: true,
 	}
 }
 

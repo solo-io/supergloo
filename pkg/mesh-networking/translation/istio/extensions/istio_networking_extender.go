@@ -3,6 +3,8 @@ package extensions
 import (
 	"context"
 
+	xdsv1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1"
+
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	corev1 "k8s.io/api/core/v1"
 
@@ -92,6 +94,14 @@ func OutputsToProto(outputs istio.Builder) []*v1alpha1.GeneratedObject {
 		})
 	}
 
+	for _, object := range outputs.GetXdsConfigs().List() {
+		object := object // pike
+		generatedObjects = append(generatedObjects, &v1alpha1.GeneratedObject{
+			Metadata: extensions.ObjectMetaToProto(object.ObjectMeta),
+			Type:     &v1alpha1.GeneratedObject_XdsConfig{XdsConfig: &object.Spec},
+		})
+	}
+
 	for _, object := range outputs.GetConfigMaps().List() {
 		object := object // pike
 		generatedObjects = append(generatedObjects, &v1alpha1.GeneratedObject{
@@ -146,6 +156,12 @@ func applyPatches(ctx context.Context, outputs istio.Builder, patches []*v1alpha
 			outputs.AddVirtualServices(&istionetworkingv1alpha3.VirtualService{
 				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
 				Spec:       *objectType.VirtualService,
+			})
+		case *v1alpha1.GeneratedObject_XdsConfig:
+			contextutils.LoggerFrom(ctx).Debugf("applied patched XdsConfig %v", sets.Key(patchedObject.Metadata))
+			outputs.AddXdsConfigs(&xdsv1alpha1.XdsConfig{
+				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
+				Spec:       *objectType.XdsConfig,
 			})
 		case *v1alpha1.GeneratedObject_ConfigMap_:
 			outputs.AddConfigMaps(&corev1.ConfigMap{

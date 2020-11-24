@@ -69,6 +69,7 @@ func (opts *Options) AddToFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&opts.MasterNamespace, "namespace", "n", metav1.NamespaceAll, "if specified restricts the master manager's cache to watch objects in the desired namespace.")
 	flags.Uint32Var(&opts.MetricsBindPort, "metrics-port", defaults.MetricsPort, "port on which to serve Prometheus metrics. set to 0 to disable")
 	flags.BoolVar(&opts.VerboseMode, "verbose", true, "enables verbose/debug logging")
+	flags.StringVar(&opts.ManagementContext, "context", "", "If specified, use this context from the selected KubeConfig to connect to the local (management) cluster.")
 	flags.StringVar(&opts.SettingsRef.Name, "settings-name", defaults.DefaultSettingsName, "The name of the Settings object this controller should use.")
 	flags.StringVar(&opts.SettingsRef.Namespace, "settings-namespace", defaults.DefaultPodNamespace, "The namespace of the Settings object this controller should use.")
 }
