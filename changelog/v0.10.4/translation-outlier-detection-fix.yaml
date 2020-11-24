@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1096
+    description: Fix DestinationRules not being output even if they contain outlier detection config.

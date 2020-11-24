@@ -94,3 +94,15 @@ func (mr *MockReporterMockRecorder) ReportFailoverService(failoverService, errs 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportFailoverService", reflect.TypeOf((*MockReporter)(nil).ReportFailoverService), failoverService, errs)
 }
+
+// ReportTrafficTarget mocks base method
+func (m *MockReporter) ReportTrafficTarget(trafficTarget ezkube.ResourceId, errs []error) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "ReportTrafficTarget", trafficTarget, errs)
+}
+
+// ReportTrafficTarget indicates an expected call of ReportTrafficTarget
+func (mr *MockReporterMockRecorder) ReportTrafficTarget(trafficTarget, errs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportTrafficTarget", reflect.TypeOf((*MockReporter)(nil).ReportTrafficTarget), trafficTarget, errs)
+}

@@ -11,7 +11,9 @@
 // * AccessPolicies
 // * VirtualMeshes
 // * FailoverServices
+// * DestinationRules
 // * VirtualServices
+// * AuthorizationPolicies
 // * Secrets
 // * KubernetesClusters
 // read from a given cluster or set of clusters, across all namespaces.
@@ -50,6 +52,9 @@ import (
 	networking_istio_io_v1alpha3 "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
 	networking_istio_io_v1alpha3_sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 
+	security_istio_io_v1beta1 "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1"
+	security_istio_io_v1beta1_sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
+
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 
@@ -79,8 +84,13 @@ type Snapshot interface {
 	// return the set of input FailoverServices
 	FailoverServices() networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
 
+	// return the set of input DestinationRules
+	DestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet
 	// return the set of input VirtualServices
 	VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet
+
+	// return the set of input AuthorizationPolicies
+	AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet
 
 	// return the set of input Secrets
 	Secrets() v1_sets.SecretSet
@@ -112,7 +122,10 @@ type snapshot struct {
 	virtualMeshes    networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 	failoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
 
-	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet
+	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet
+	virtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
+
+	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
 
 	secrets v1_sets.SecretSet
 
@@ -133,7 +146,10 @@ func NewSnapshot(
 	virtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet,
 	failoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet,
 
+	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
 	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
+
+	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
 
 	secrets v1_sets.SecretSet,
 
@@ -143,17 +159,19 @@ func NewSnapshot(
 	return &snapshot{
 		name: name,
 
-		settings:           settings,
-		trafficTargets:     trafficTargets,
-		workloads:          workloads,
-		meshes:             meshes,
-		trafficPolicies:    trafficPolicies,
-		accessPolicies:     accessPolicies,
-		virtualMeshes:      virtualMeshes,
-		failoverServices:   failoverServices,
-		virtualServices:    virtualServices,
-		secrets:            secrets,
-		kubernetesClusters: kubernetesClusters,
+		settings:              settings,
+		trafficTargets:        trafficTargets,
+		workloads:             workloads,
+		meshes:                meshes,
+		trafficPolicies:       trafficPolicies,
+		accessPolicies:        accessPolicies,
+		virtualMeshes:         virtualMeshes,
+		failoverServices:      failoverServices,
+		destinationRules:      destinationRules,
+		virtualServices:       virtualServices,
+		authorizationPolicies: authorizationPolicies,
+		secrets:               secrets,
+		kubernetesClusters:    kubernetesClusters,
 	}
 }
 
@@ -189,8 +207,16 @@ func (s snapshot) FailoverServices() networking_mesh_gloo_solo_io_v1alpha2_sets.
 	return s.failoverServices
 }
 
+func (s snapshot) DestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet {
+	return s.destinationRules
+}
+
 func (s snapshot) VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet {
 	return s.virtualServices
+}
+
+func (s snapshot) AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet {
+	return s.authorizationPolicies
 }
 
 func (s snapshot) Secrets() v1_sets.SecretSet {
@@ -353,7 +379,9 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap["accessPolicies"] = s.accessPolicies.List()
 	snapshotMap["virtualMeshes"] = s.virtualMeshes.List()
 	snapshotMap["failoverServices"] = s.failoverServices.List()
+	snapshotMap["destinationRules"] = s.destinationRules.List()
 	snapshotMap["virtualServices"] = s.virtualServices.List()
+	snapshotMap["authorizationPolicies"] = s.authorizationPolicies.List()
 	snapshotMap["secrets"] = s.secrets.List()
 	snapshotMap["kubernetesClusters"] = s.kubernetesClusters.List()
 	return json.Marshal(snapshotMap)
@@ -389,8 +417,13 @@ type BuildOptions struct {
 	// List options for composing a snapshot from FailoverServices
 	FailoverServices ResourceBuildOptions
 
+	// List options for composing a snapshot from DestinationRules
+	DestinationRules ResourceBuildOptions
 	// List options for composing a snapshot from VirtualServices
 	VirtualServices ResourceBuildOptions
+
+	// List options for composing a snapshot from AuthorizationPolicies
+	AuthorizationPolicies ResourceBuildOptions
 
 	// List options for composing a snapshot from Secrets
 	Secrets ResourceBuildOptions
@@ -439,7 +472,10 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	virtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
 	failoverServices := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
+	destinationRules := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
 	virtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+
+	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
 	secrets := v1_sets.NewSecretSet()
 
@@ -473,7 +509,13 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		if err := b.insertFailoverServicesFromCluster(ctx, cluster, failoverServices, opts.FailoverServices); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertDestinationRulesFromCluster(ctx, cluster, destinationRules, opts.DestinationRules); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertVirtualServicesFromCluster(ctx, cluster, virtualServices, opts.VirtualServices); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertAuthorizationPoliciesFromCluster(ctx, cluster, authorizationPolicies, opts.AuthorizationPolicies); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets); err != nil {
@@ -496,7 +538,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		accessPolicies,
 		virtualMeshes,
 		failoverServices,
+		destinationRules,
 		virtualServices,
+		authorizationPolicies,
 		secrets,
 		kubernetesClusters,
 	)
@@ -843,6 +887,48 @@ func (b *multiClusterBuilder) insertFailoverServicesFromCluster(ctx context.Cont
 	return nil
 }
 
+func (b *multiClusterBuilder) insertDestinationRulesFromCluster(ctx context.Context, cluster string, destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet, opts ResourceBuildOptions) error {
+	destinationRuleClient, err := networking_istio_io_v1alpha3.NewMulticlusterDestinationRuleClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "DestinationRule",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	destinationRuleList, err := destinationRuleClient.ListDestinationRule(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range destinationRuleList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		destinationRules.Insert(&item)
+	}
+
+	return nil
+}
 func (b *multiClusterBuilder) insertVirtualServicesFromCluster(ctx context.Context, cluster string, virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet, opts ResourceBuildOptions) error {
 	virtualServiceClient, err := networking_istio_io_v1alpha3.NewMulticlusterVirtualServiceClient(b.client).Cluster(cluster)
 	if err != nil {
@@ -881,6 +967,49 @@ func (b *multiClusterBuilder) insertVirtualServicesFromCluster(ctx context.Conte
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
 		virtualServices.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *multiClusterBuilder) insertAuthorizationPoliciesFromCluster(ctx context.Context, cluster string, authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet, opts ResourceBuildOptions) error {
+	authorizationPolicyClient, err := security_istio_io_v1beta1.NewMulticlusterAuthorizationPolicyClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "security.istio.io",
+			Version: "v1beta1",
+			Kind:    "AuthorizationPolicy",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	authorizationPolicyList, err := authorizationPolicyClient.ListAuthorizationPolicy(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range authorizationPolicyList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		authorizationPolicies.Insert(&item)
 	}
 
 	return nil
@@ -999,7 +1128,10 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	virtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
 	failoverServices := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
+	destinationRules := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
 	virtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+
+	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
 	secrets := v1_sets.NewSecretSet()
 
@@ -1031,7 +1163,13 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	if err := b.insertFailoverServices(ctx, failoverServices, opts.FailoverServices); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertDestinationRules(ctx, destinationRules, opts.DestinationRules); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertVirtualServices(ctx, virtualServices, opts.VirtualServices); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertAuthorizationPolicies(ctx, authorizationPolicies, opts.AuthorizationPolicies); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertSecrets(ctx, secrets, opts.Secrets); err != nil {
@@ -1052,7 +1190,9 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 		accessPolicies,
 		virtualMeshes,
 		failoverServices,
+		destinationRules,
 		virtualServices,
+		authorizationPolicies,
 		secrets,
 		kubernetesClusters,
 	)
@@ -1319,6 +1459,38 @@ func (b *singleClusterBuilder) insertFailoverServices(ctx context.Context, failo
 	return nil
 }
 
+func (b *singleClusterBuilder) insertDestinationRules(ctx context.Context, destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "DestinationRule",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	destinationRuleList, err := networking_istio_io_v1alpha3.NewDestinationRuleClient(b.mgr.GetClient()).ListDestinationRule(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range destinationRuleList.Items {
+		item := item // pike
+		destinationRules.Insert(&item)
+	}
+
+	return nil
+}
 func (b *singleClusterBuilder) insertVirtualServices(ctx context.Context, virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet, opts ResourceBuildOptions) error {
 
 	if opts.Verifier != nil {
@@ -1347,6 +1519,39 @@ func (b *singleClusterBuilder) insertVirtualServices(ctx context.Context, virtua
 	for _, item := range virtualServiceList.Items {
 		item := item // pike
 		virtualServices.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterBuilder) insertAuthorizationPolicies(ctx context.Context, authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "security.istio.io",
+			Version: "v1beta1",
+			Kind:    "AuthorizationPolicy",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	authorizationPolicyList, err := security_istio_io_v1beta1.NewAuthorizationPolicyClient(b.mgr.GetClient()).ListAuthorizationPolicy(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range authorizationPolicyList.Items {
+		item := item // pike
+		authorizationPolicies.Insert(&item)
 	}
 
 	return nil

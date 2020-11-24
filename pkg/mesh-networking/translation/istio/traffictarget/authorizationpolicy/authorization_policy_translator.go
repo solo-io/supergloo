@@ -74,10 +74,6 @@ func (t *translator) Translate(
 		authPolicy.Spec.Rules = append(authPolicy.Spec.Rules, rule)
 	}
 
-	if len(authPolicy.Spec.Rules) == 0 {
-		// no need to create this AuthorizationPolicy as it has no effect
-		return nil
-	}
 	return authPolicy
 }
 

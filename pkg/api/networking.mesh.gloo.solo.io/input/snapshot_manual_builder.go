@@ -18,6 +18,9 @@ import (
 	networking_istio_io_v1alpha3_sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	networking_istio_io_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 
+	security_istio_io_v1beta1_sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
+	security_istio_io_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
+
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1 "k8s.io/api/core/v1"
 
@@ -39,7 +42,10 @@ type InputSnapshotManualBuilder struct {
 	virtualMeshes    networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 	failoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
 
-	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet
+	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet
+	virtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
+
+	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
 
 	secrets v1_sets.SecretSet
 
@@ -61,7 +67,10 @@ func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 		virtualMeshes:    networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet(),
 		failoverServices: networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet(),
 
-		virtualServices: networking_istio_io_v1alpha3_sets.NewVirtualServiceSet(),
+		destinationRules: networking_istio_io_v1alpha3_sets.NewDestinationRuleSet(),
+		virtualServices:  networking_istio_io_v1alpha3_sets.NewVirtualServiceSet(),
+
+		authorizationPolicies: security_istio_io_v1beta1_sets.NewAuthorizationPolicySet(),
 
 		secrets: v1_sets.NewSecretSet(),
 
@@ -84,7 +93,10 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 		i.virtualMeshes,
 		i.failoverServices,
 
+		i.destinationRules,
 		i.virtualServices,
+
+		i.authorizationPolicies,
 
 		i.secrets,
 
@@ -123,8 +135,16 @@ func (i *InputSnapshotManualBuilder) AddFailoverServices(failoverServices []*net
 	i.failoverServices.Insert(failoverServices...)
 	return i
 }
+func (i *InputSnapshotManualBuilder) AddDestinationRules(destinationRules []*networking_istio_io_v1alpha3.DestinationRule) *InputSnapshotManualBuilder {
+	i.destinationRules.Insert(destinationRules...)
+	return i
+}
 func (i *InputSnapshotManualBuilder) AddVirtualServices(virtualServices []*networking_istio_io_v1alpha3.VirtualService) *InputSnapshotManualBuilder {
 	i.virtualServices.Insert(virtualServices...)
+	return i
+}
+func (i *InputSnapshotManualBuilder) AddAuthorizationPolicies(authorizationPolicies []*security_istio_io_v1beta1.AuthorizationPolicy) *InputSnapshotManualBuilder {
+	i.authorizationPolicies.Insert(authorizationPolicies...)
 	return i
 }
 func (i *InputSnapshotManualBuilder) AddSecrets(secrets []*v1.Secret) *InputSnapshotManualBuilder {

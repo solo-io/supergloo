@@ -3,9 +3,12 @@ package destinationrule_test
 import (
 	"context"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/rotisserie/eris"
+	"github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
@@ -21,7 +24,10 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
 	mock_hostutils "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils/mocks"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -543,5 +549,135 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		destinationRule := destinationRuleTranslator.Translate(ctx, in, trafficTarget, sourceMeshInstallation, mockReporter)
 		Expect(destinationRule).To(Equal(expectedDestinatonRule))
+	})
+
+	It("should report error if translated DestinationRule applies to host already configured by existing DestinationRule", func() {
+		in = input.NewInputSnapshotManualBuilder("").
+			AddSettings(settingsv1alpha2.SettingsSlice{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      defaults.DefaultSettingsName,
+						Namespace: defaults.DefaultPodNamespace,
+					},
+					Spec: settingsv1alpha2.SettingsSpec{
+						Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
+							Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
+								TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_DISABLE,
+							},
+						},
+					},
+				},
+			}).
+			AddDestinationRules(v1alpha3.DestinationRuleSlice{
+				// Gloo Mesh translated, should not yield error
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "gloo-mesh-translated-dr",
+						Namespace: "foo",
+						Labels:    metautils.TranslatedObjectLabels(),
+					},
+					Spec: networkingv1alpha3spec.DestinationRule{
+						Host: "*-hostname",
+					},
+				},
+				// user-supplied, should yield conflict error
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "user-provided-dr",
+						Namespace: "foo",
+					},
+					Spec: networkingv1alpha3spec.DestinationRule{
+						Host: "*-hostname",
+					},
+				},
+			}).
+			Build()
+
+		trafficTarget := &discoveryv1alpha2.TrafficTarget{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "traffic-target",
+			},
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+						Ref: &v1.ClusterObjectRef{
+							Name:        "traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-cluster",
+						},
+					},
+				},
+			},
+			Status: discoveryv1alpha2.TrafficTargetStatus{
+				AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+					{
+						Ref: &v1.ObjectRef{
+							Name:      "tp-1",
+							Namespace: "tp-namespace-1",
+						},
+						Spec: &v1alpha2.TrafficPolicySpec{
+							SourceSelector: []*v1alpha2.WorkloadSelector{
+								{
+									Clusters: []string{"traffic-target-cluster"},
+								},
+							},
+							OutlierDetection: &v1alpha2.TrafficPolicySpec_OutlierDetection{
+								ConsecutiveErrors: 5,
+							},
+						},
+					},
+				},
+			},
+		}
+
+		mockDecoratorFactory.
+			EXPECT().
+			MakeDecorators(decorators.Parameters{
+				ClusterDomains: mockClusterDomainRegistry,
+				Snapshot:       in,
+			}).
+			Return([]decorators.Decorator{mockDecorator})
+
+		mockClusterDomainRegistry.
+			EXPECT().
+			GetDestinationServiceFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
+			Return("local-hostname")
+
+		mockDecorator.
+			EXPECT().
+			ApplyTrafficPolicyToDestinationRule(
+				trafficTarget.Status.AppliedTrafficPolicies[0],
+				trafficTarget,
+				gomock.Any(),
+				gomock.Any(),
+			).
+			DoAndReturn(func(
+				appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+				service *discoveryv1alpha2.TrafficTarget,
+				output *networkingv1alpha3spec.DestinationRule,
+				registerField decorators.RegisterField,
+			) error {
+				output.TrafficPolicy.OutlierDetection = &networkingv1alpha3spec.OutlierDetection{
+					Consecutive_5XxErrors: &types.UInt32Value{Value: 5},
+				}
+				return nil
+			})
+
+		mockReporter.
+			EXPECT().
+			ReportTrafficTarget(
+				trafficTarget,
+				gomock.Any()).
+			DoAndReturn(func(trafficTarget ezkube.ResourceId, errs []error) {
+				Expect(errs).To(ContainElement(
+					testutils.HaveInErrorChain(
+						eris.Errorf("Unable to translate AppliedTrafficPolicies to DestinationRule, applies to host %s that is already configured by the existing DestinationRule %s",
+							"local-hostname",
+							sets.Key(in.DestinationRules().List()[1])),
+					),
+				))
+			})
+
+		_ = destinationRuleTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
 	})
 })

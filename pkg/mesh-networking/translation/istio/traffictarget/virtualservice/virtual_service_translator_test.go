@@ -4,6 +4,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
@@ -15,7 +16,10 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
 	mock_hostutils "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils/mocks"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -847,5 +851,131 @@ var _ = Describe("VirtualServiceTranslator", func() {
 
 		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, nil, mockReporter)
 		Expect(virtualService).To(BeNil())
+	})
+
+	It("should not output a VirtualService if it contains a host that is already configured by an existing VirtualService not owned by Gloo Mesh", func() {
+		trafficTarget := &discoveryv1alpha2.TrafficTarget{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "traffic-target",
+			},
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+						Ref: &v1.ClusterObjectRef{
+							Name:        "traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-cluster",
+						},
+						Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+							{
+								Port:     8080,
+								Name:     "http1",
+								Protocol: "http",
+							},
+						},
+					},
+				},
+			},
+			Status: discoveryv1alpha2.TrafficTargetStatus{
+				AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+					{
+						Ref: &v1.ObjectRef{
+							Name:      "tp-1",
+							Namespace: "tp-namespace-1",
+						},
+						Spec: &networkingv1alpha2.TrafficPolicySpec{
+							SourceSelector: []*networkingv1alpha2.WorkloadSelector{
+								{
+									Clusters: []string{"traffic-target-cluster"},
+								},
+							},
+							Retries: &networkingv1alpha2.TrafficPolicySpec_RetryPolicy{
+								Attempts: 5,
+							},
+						},
+					},
+				},
+			},
+		}
+
+		in = input.NewInputSnapshotManualBuilder("").
+			AddVirtualServices([]*networkingv1alpha3.VirtualService{
+				// Gloo Mesh translated, should not yield error
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "gloo-mesh-translated-vs",
+						Namespace: "foo",
+						Labels:    metautils.TranslatedObjectLabels(),
+					},
+					Spec: networkingv1alpha3spec.VirtualService{
+						Hosts: []string{"*-hostname"},
+					},
+				},
+				// user-supplied, should yield conflict error
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "user-provided-vs",
+						Namespace: "foo",
+					},
+					Spec: networkingv1alpha3spec.VirtualService{
+						Hosts: []string{"*-hostname"},
+					},
+				},
+			}).
+			Build()
+
+		mockClusterDomainRegistry.
+			EXPECT().
+			GetDestinationServiceFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
+			Return("local-hostname").
+			Times(2)
+
+		mockDecoratorFactory.
+			EXPECT().
+			MakeDecorators(decorators.Parameters{
+				ClusterDomains: mockClusterDomainRegistry,
+				Snapshot:       in,
+			}).
+			Return([]decorators.Decorator{mockDecorator})
+
+		mockDecorator.
+			EXPECT().
+			ApplyTrafficPolicyToVirtualService(
+				trafficTarget.Status.AppliedTrafficPolicies[0],
+				trafficTarget,
+				nil,
+				gomock.Any(),
+				gomock.Any(),
+			).DoAndReturn(
+			func(
+				appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+				service *discoveryv1alpha2.TrafficTarget,
+				sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+				output *networkingv1alpha3spec.HTTPRoute,
+				registerField decorators.RegisterField,
+			) error {
+				output.Retries = &networkingv1alpha3spec.HTTPRetry{
+					Attempts: 5,
+				}
+				return nil
+			}).
+			Return(nil)
+
+		mockReporter.
+			EXPECT().
+			ReportTrafficTarget(
+				trafficTarget,
+				gomock.Any()).
+			DoAndReturn(func(trafficTarget ezkube.ResourceId, errs []error) {
+				Expect(errs).To(ContainElement(
+					testutils.HaveInErrorChain(
+						eris.Errorf("Unable to translate AppliedTrafficPolicies to VirtualService, applies to hosts %+v that are already configured by the existing VirtualService %s",
+							[]string{"local-hostname"},
+							sets.Key(in.VirtualServices().List()[1])),
+					),
+				))
+			})
+
+		_ = virtualServiceTranslator.Translate(in, trafficTarget, nil, mockReporter)
 	})
 })

@@ -4,9 +4,12 @@ import (
 	"reflect"
 	"sort"
 
+	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"istio.io/istio/pkg/config/host"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rotisserie/eris"
@@ -134,6 +137,10 @@ func (t *translator) Translate(
 	if len(virtualService.Spec.Http) == 0 {
 		// no need to create this VirtualService as it has no effect
 		return nil
+	}
+
+	if errs := conflictsWithUserVirtualService(in.VirtualServices(), virtualService); len(errs) > 0 {
+		reporter.ReportTrafficTarget(trafficTarget, errs)
 	}
 
 	return virtualService
@@ -392,4 +399,34 @@ func translateRequestMatcherPathSpecifier(matcher *v1alpha2.TrafficPolicySpec_Ht
 		}
 	}
 	return nil
+}
+
+// Return errors for each user-supplied VirtualService that applies to the same hostname as the translated VirtualService
+func conflictsWithUserVirtualService(
+	virtualServices v1alpha3sets.VirtualServiceSet,
+	translatedVirtualService *networkingv1alpha3.VirtualService,
+) []error {
+	// For each user VS, check whether any hosts match any hosts from translated VS
+	var errs []error
+
+	virtualServices.List(func(vs *networkingv1alpha3.VirtualService) (_ bool) {
+		// ignore translated VS
+		if metautils.IsTranslated(vs) {
+			return
+		}
+		// check if common hostnames exist
+		userHostnames := host.NewNames(vs.Spec.Hosts)
+		translatedHostnames := host.NewNames(translatedVirtualService.Spec.Hosts)
+		commonHostnames := userHostnames.Intersection(translatedHostnames)
+
+		if len(commonHostnames) > 0 {
+			errs = append(
+				errs,
+				eris.Errorf("Unable to translate AppliedTrafficPolicies to VirtualService, applies to hosts %+v that are already configured by the existing VirtualService %s", commonHostnames, sets.Key(vs)),
+			)
+		}
+		return
+	})
+
+	return errs
 }

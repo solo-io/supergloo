@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1097
+    description: Fix AuthorizationPolicies not being output if "rules" field not specified.

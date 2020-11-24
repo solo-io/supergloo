@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 
+	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/tls"
@@ -11,6 +12,8 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/snapshotutils"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
+	"istio.io/istio/pkg/config/host"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rotisserie/eris"
@@ -134,9 +137,14 @@ func (t *translator) Translate(
 
 	// TODO need a more robust implementation of determining whether a DestinationRule has any effect
 	if len(destinationRule.Spec.Subsets) == 0 &&
-		destinationRule.Spec.GetTrafficPolicy().GetTls().GetMode() == networkingv1alpha3spec.ClientTLSSettings_DISABLE {
+		destinationRule.Spec.GetTrafficPolicy().GetTls().GetMode() == networkingv1alpha3spec.ClientTLSSettings_DISABLE &&
+		destinationRule.Spec.GetTrafficPolicy().GetOutlierDetection() == nil {
 		// no need to create this DestinationRule as it has no effect
 		return nil
+	}
+
+	if errs := conflictsWithUserDestinationRule(in.DestinationRules(), destinationRule); len(errs) > 0 {
+		reporter.ReportTrafficTarget(trafficTarget, errs)
 	}
 
 	return destinationRule
@@ -211,4 +219,34 @@ func (t *translator) initializeDestinationRule(
 	}
 
 	return destinationRule, nil
+}
+
+// Return errors for each user-supplied VirtualService that applies to the same hostname as the translated VirtualService
+func conflictsWithUserDestinationRule(
+	destinationRules v1alpha3sets.DestinationRuleSet,
+	translatedDestinationRule *networkingv1alpha3.DestinationRule,
+) []error {
+	// For each user DR, check whether any hosts match any hosts from translated DR
+	var errs []error
+
+	destinationRules.List(func(dr *networkingv1alpha3.DestinationRule) (_ bool) {
+		// ignore translated DR
+		if metautils.IsTranslated(dr) {
+			return
+		}
+		// check if common hostnames exist
+		userHostnames := host.NewNames([]string{dr.Spec.Host})
+		translatedHostnames := host.NewNames([]string{translatedDestinationRule.Spec.Host})
+		commonHostname := userHostnames.Intersection(translatedHostnames)
+
+		if len(commonHostname) > 0 {
+			errs = append(
+				errs,
+				eris.Errorf("Unable to translate AppliedTrafficPolicies to DestinationRule, applies to host %s that is already configured by the existing DestinationRule %s", commonHostname[0], sets.Key(dr)),
+			)
+		}
+		return
+	})
+
+	return errs
 }

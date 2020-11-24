@@ -12,7 +12,9 @@
 // * AccessPolicies
 // * VirtualMeshes
 // * FailoverServices
+// * DestinationRules
 // * VirtualServices
+// * AuthorizationPolicies
 // * Secrets
 // * KubernetesClusters
 // for a given cluster or set of clusters.
@@ -45,6 +47,9 @@ import (
 	networking_istio_io_v1alpha3_controllers "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/controller"
 	networking_istio_io_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 
+	security_istio_io_v1beta1_controllers "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/controller"
+	security_istio_io_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
+
 	v1_controllers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	v1 "k8s.io/api/core/v1"
 
@@ -66,7 +71,10 @@ type multiClusterReconciler interface {
 	networking_mesh_gloo_solo_io_v1alpha2_controllers.MulticlusterVirtualMeshReconciler
 	networking_mesh_gloo_solo_io_v1alpha2_controllers.MulticlusterFailoverServiceReconciler
 
+	networking_istio_io_v1alpha3_controllers.MulticlusterDestinationRuleReconciler
 	networking_istio_io_v1alpha3_controllers.MulticlusterVirtualServiceReconciler
+
+	security_istio_io_v1beta1_controllers.MulticlusterAuthorizationPolicyReconciler
 
 	v1_controllers.MulticlusterSecretReconciler
 
@@ -101,8 +109,13 @@ type ReconcileOptions struct {
 	// Options for reconciling FailoverServices
 	FailoverServices reconcile.Options
 
+	// Options for reconciling DestinationRules
+	DestinationRules reconcile.Options
 	// Options for reconciling VirtualServices
 	VirtualServices reconcile.Options
+
+	// Options for reconciling AuthorizationPolicies
+	AuthorizationPolicies reconcile.Options
 
 	// Options for reconciling Secrets
 	Secrets reconcile.Options
@@ -151,7 +164,11 @@ func RegisterMultiClusterReconciler(
 
 	networking_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterFailoverServiceReconcileLoop("FailoverService", clusters, options.FailoverServices).AddMulticlusterFailoverServiceReconciler(ctx, r, predicates...)
 
+	networking_istio_io_v1alpha3_controllers.NewMulticlusterDestinationRuleReconcileLoop("DestinationRule", clusters, options.DestinationRules).AddMulticlusterDestinationRuleReconciler(ctx, r, predicates...)
+
 	networking_istio_io_v1alpha3_controllers.NewMulticlusterVirtualServiceReconcileLoop("VirtualService", clusters, options.VirtualServices).AddMulticlusterVirtualServiceReconciler(ctx, r, predicates...)
+
+	security_istio_io_v1beta1_controllers.NewMulticlusterAuthorizationPolicyReconcileLoop("AuthorizationPolicy", clusters, options.AuthorizationPolicies).AddMulticlusterAuthorizationPolicyReconciler(ctx, r, predicates...)
 
 	v1_controllers.NewMulticlusterSecretReconcileLoop("Secret", clusters, options.Secrets).AddMulticlusterSecretReconciler(ctx, r, predicates...)
 
@@ -279,12 +296,42 @@ func (r *multiClusterReconcilerImpl) ReconcileFailoverServiceDeletion(clusterNam
 	return err
 }
 
+func (r *multiClusterReconcilerImpl) ReconcileDestinationRule(clusterName string, obj *networking_istio_io_v1alpha3.DestinationRule) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileDestinationRuleDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
+}
+
 func (r *multiClusterReconcilerImpl) ReconcileVirtualService(clusterName string, obj *networking_istio_io_v1alpha3.VirtualService) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileVirtualServiceDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileAuthorizationPolicy(clusterName string, obj *security_istio_io_v1beta1.AuthorizationPolicy) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileAuthorizationPolicyDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -338,7 +385,10 @@ type singleClusterReconciler interface {
 	networking_mesh_gloo_solo_io_v1alpha2_controllers.VirtualMeshReconciler
 	networking_mesh_gloo_solo_io_v1alpha2_controllers.FailoverServiceReconciler
 
+	networking_istio_io_v1alpha3_controllers.DestinationRuleReconciler
 	networking_istio_io_v1alpha3_controllers.VirtualServiceReconciler
+
+	security_istio_io_v1beta1_controllers.AuthorizationPolicyReconciler
 
 	v1_controllers.SecretReconciler
 
@@ -402,7 +452,14 @@ func RegisterSingleClusterReconciler(
 		return nil, err
 	}
 
+	if err := networking_istio_io_v1alpha3_controllers.NewDestinationRuleReconcileLoop("DestinationRule", mgr, options).RunDestinationRuleReconciler(ctx, r, predicates...); err != nil {
+		return nil, err
+	}
 	if err := networking_istio_io_v1alpha3_controllers.NewVirtualServiceReconcileLoop("VirtualService", mgr, options).RunVirtualServiceReconciler(ctx, r, predicates...); err != nil {
+		return nil, err
+	}
+
+	if err := security_istio_io_v1beta1_controllers.NewAuthorizationPolicyReconcileLoop("AuthorizationPolicy", mgr, options).RunAuthorizationPolicyReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
 	}
 
@@ -521,11 +578,37 @@ func (r *singleClusterReconcilerImpl) ReconcileFailoverServiceDeletion(obj recon
 	return err
 }
 
+func (r *singleClusterReconcilerImpl) ReconcileDestinationRule(obj *networking_istio_io_v1alpha3.DestinationRule) (reconcile.Result, error) {
+	return r.base.ReconcileGeneric(obj)
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileDestinationRuleDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
+}
+
 func (r *singleClusterReconcilerImpl) ReconcileVirtualService(obj *networking_istio_io_v1alpha3.VirtualService) (reconcile.Result, error) {
 	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileVirtualServiceDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileAuthorizationPolicy(obj *security_istio_io_v1beta1.AuthorizationPolicy) (reconcile.Result, error) {
+	return r.base.ReconcileGeneric(obj)
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileAuthorizationPolicyDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

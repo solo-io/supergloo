@@ -46,6 +46,10 @@ var (
 		},
 		istionetworkingv1alpha3.SchemeGroupVersion: {
 			"VirtualService",
+			"DestinationRule",
+		},
+		istiosecurityv1beta1.SchemeGroupVersion: {
+			"AuthorizationPolicy",
 		},
 	}
 
