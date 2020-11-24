@@ -50,31 +50,19 @@ func (t *translator) Translate(
 	outputs appmesh.Builder,
 	reporter reporting.Reporter,
 ) {
-	// only translate appmesh trafficTargets
+	// Only translate appmesh TrafficTargets.
 	if !isAppmeshTrafficTarget(ctx, trafficTarget, in.Meshes()) {
 		return
 	}
 
-	kubeService := trafficTarget.Spec.GetKubeService()
-
-	if kubeService == nil {
-		// TODO(ilackarms): non kube services currently unsupported
-		return
-	}
-
+	// AppMesh doesn't support all policies; report those which aren't implemented.
 	for _, tp := range trafficTarget.Status.GetAppliedTrafficPolicies() {
 		report(tp, trafficTarget, reporter)
-
-		// TODO joekelley
-		//virtualNode := getVirtualNodeForTrafficTarget(trafficTarget, in.VirtualNodes())
-
-		virtualService, virtualRouter := translate(trafficTarget)
-		if virtualService != nil {
-
-		}
-		outputs.AddVirtualServices(virtualService)
-		outputs.AddVirtualRouters(virtualRouter)
 	}
+
+	virtualService, virtualRouter := translate(trafficTarget, in.Workloads())
+	outputs.AddVirtualServices(virtualService)
+	outputs.AddVirtualRouters(virtualRouter)
 }
 
 func translate(trafficTarget *discoveryv1alpha2.TrafficTarget, workloads v1alpha2sets.WorkloadSet) (*v1beta2.VirtualService, *v1beta2.VirtualRouter) {
