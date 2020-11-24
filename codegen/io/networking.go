@@ -44,6 +44,9 @@ var (
 		corev1.SchemeGroupVersion: {
 			"Secret",
 		},
+		istionetworkingv1alpha3.SchemeGroupVersion: {
+			"VirtualService",
+		},
 	}
 
 	IstioNetworkingOutputTypes = OutputSnapshot{

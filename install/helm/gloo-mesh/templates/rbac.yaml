@@ -107,6 +107,14 @@ rules:
   - list
   - watch
 - apiGroups:
+  - networking.istio.io
+  resources:
+  - virtualservices
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - networking.mesh.gloo.solo.io
   resources:
   - trafficpolicies
@@ -145,6 +153,13 @@ rules:
   - multicluster.solo.io
   resources:
   - kubernetesclusters/status
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - networking.istio.io
+  resources:
+  - virtualservices/status
   verbs:
   - get
   - update

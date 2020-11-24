@@ -11,6 +11,7 @@
 // * AccessPolicies
 // * VirtualMeshes
 // * FailoverServices
+// * VirtualServices
 // * Secrets
 // * KubernetesClusters
 // read from a given cluster or set of clusters, across all namespaces.
@@ -46,6 +47,9 @@ import (
 	networking_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	networking_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 
+	networking_istio_io_v1alpha3 "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
+	networking_istio_io_v1alpha3_sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
+
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 
@@ -74,6 +78,9 @@ type Snapshot interface {
 	VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 	// return the set of input FailoverServices
 	FailoverServices() networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
+
+	// return the set of input VirtualServices
+	VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet
 
 	// return the set of input Secrets
 	Secrets() v1_sets.SecretSet
@@ -105,6 +112,8 @@ type snapshot struct {
 	virtualMeshes    networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 	failoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
 
+	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet
+
 	secrets v1_sets.SecretSet
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
@@ -124,6 +133,8 @@ func NewSnapshot(
 	virtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet,
 	failoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet,
 
+	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
+
 	secrets v1_sets.SecretSet,
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet,
@@ -140,6 +151,7 @@ func NewSnapshot(
 		accessPolicies:     accessPolicies,
 		virtualMeshes:      virtualMeshes,
 		failoverServices:   failoverServices,
+		virtualServices:    virtualServices,
 		secrets:            secrets,
 		kubernetesClusters: kubernetesClusters,
 	}
@@ -175,6 +187,10 @@ func (s snapshot) VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.Vir
 
 func (s snapshot) FailoverServices() networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet {
 	return s.failoverServices
+}
+
+func (s snapshot) VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet {
+	return s.virtualServices
 }
 
 func (s snapshot) Secrets() v1_sets.SecretSet {
@@ -337,6 +353,7 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap["accessPolicies"] = s.accessPolicies.List()
 	snapshotMap["virtualMeshes"] = s.virtualMeshes.List()
 	snapshotMap["failoverServices"] = s.failoverServices.List()
+	snapshotMap["virtualServices"] = s.virtualServices.List()
 	snapshotMap["secrets"] = s.secrets.List()
 	snapshotMap["kubernetesClusters"] = s.kubernetesClusters.List()
 	return json.Marshal(snapshotMap)
@@ -371,6 +388,9 @@ type BuildOptions struct {
 	VirtualMeshes ResourceBuildOptions
 	// List options for composing a snapshot from FailoverServices
 	FailoverServices ResourceBuildOptions
+
+	// List options for composing a snapshot from VirtualServices
+	VirtualServices ResourceBuildOptions
 
 	// List options for composing a snapshot from Secrets
 	Secrets ResourceBuildOptions
@@ -419,6 +439,8 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	virtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
 	failoverServices := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
+	virtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+
 	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
@@ -451,6 +473,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		if err := b.insertFailoverServicesFromCluster(ctx, cluster, failoverServices, opts.FailoverServices); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertVirtualServicesFromCluster(ctx, cluster, virtualServices, opts.VirtualServices); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -471,6 +496,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		accessPolicies,
 		virtualMeshes,
 		failoverServices,
+		virtualServices,
 		secrets,
 		kubernetesClusters,
 	)
@@ -817,6 +843,49 @@ func (b *multiClusterBuilder) insertFailoverServicesFromCluster(ctx context.Cont
 	return nil
 }
 
+func (b *multiClusterBuilder) insertVirtualServicesFromCluster(ctx context.Context, cluster string, virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet, opts ResourceBuildOptions) error {
+	virtualServiceClient, err := networking_istio_io_v1alpha3.NewMulticlusterVirtualServiceClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "VirtualService",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	virtualServiceList, err := virtualServiceClient.ListVirtualService(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range virtualServiceList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		virtualServices.Insert(&item)
+	}
+
+	return nil
+}
+
 func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, cluster string, secrets v1_sets.SecretSet, opts ResourceBuildOptions) error {
 	secretClient, err := v1.NewMulticlusterSecretClient(b.client).Cluster(cluster)
 	if err != nil {
@@ -930,6 +999,8 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	virtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
 	failoverServices := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
+	virtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+
 	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
@@ -960,6 +1031,9 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	if err := b.insertFailoverServices(ctx, failoverServices, opts.FailoverServices); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertVirtualServices(ctx, virtualServices, opts.VirtualServices); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertSecrets(ctx, secrets, opts.Secrets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -978,6 +1052,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 		accessPolicies,
 		virtualMeshes,
 		failoverServices,
+		virtualServices,
 		secrets,
 		kubernetesClusters,
 	)
@@ -1239,6 +1314,39 @@ func (b *singleClusterBuilder) insertFailoverServices(ctx context.Context, failo
 	for _, item := range failoverServiceList.Items {
 		item := item // pike
 		failoverServices.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterBuilder) insertVirtualServices(ctx context.Context, virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.istio.io",
+			Version: "v1alpha3",
+			Kind:    "VirtualService",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	virtualServiceList, err := networking_istio_io_v1alpha3.NewVirtualServiceClient(b.mgr.GetClient()).ListVirtualService(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range virtualServiceList.Items {
+		item := item // pike
+		virtualServices.Insert(&item)
 	}
 
 	return nil

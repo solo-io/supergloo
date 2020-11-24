@@ -15,6 +15,9 @@ import (
 	networking_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	networking_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 
+	networking_istio_io_v1alpha3_sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
+	networking_istio_io_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1 "k8s.io/api/core/v1"
 
@@ -36,6 +39,8 @@ type InputSnapshotManualBuilder struct {
 	virtualMeshes    networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 	failoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
 
+	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet
+
 	secrets v1_sets.SecretSet
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
@@ -55,6 +60,8 @@ func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 		accessPolicies:   networking_mesh_gloo_solo_io_v1alpha2_sets.NewAccessPolicySet(),
 		virtualMeshes:    networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet(),
 		failoverServices: networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet(),
+
+		virtualServices: networking_istio_io_v1alpha3_sets.NewVirtualServiceSet(),
 
 		secrets: v1_sets.NewSecretSet(),
 
@@ -76,6 +83,8 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 		i.accessPolicies,
 		i.virtualMeshes,
 		i.failoverServices,
+
+		i.virtualServices,
 
 		i.secrets,
 
@@ -112,6 +121,10 @@ func (i *InputSnapshotManualBuilder) AddVirtualMeshes(virtualMeshes []*networkin
 }
 func (i *InputSnapshotManualBuilder) AddFailoverServices(failoverServices []*networking_mesh_gloo_solo_io_v1alpha2.FailoverService) *InputSnapshotManualBuilder {
 	i.failoverServices.Insert(failoverServices...)
+	return i
+}
+func (i *InputSnapshotManualBuilder) AddVirtualServices(virtualServices []*networking_istio_io_v1alpha3.VirtualService) *InputSnapshotManualBuilder {
+	i.virtualServices.Insert(virtualServices...)
 	return i
 }
 func (i *InputSnapshotManualBuilder) AddSecrets(secrets []*v1.Secret) *InputSnapshotManualBuilder {
