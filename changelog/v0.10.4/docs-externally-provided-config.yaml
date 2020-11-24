@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1086
+    description: Document Gloo Mesh translated object naming conventions and recommendations for using in conjunction with externally supplied mesh config.
