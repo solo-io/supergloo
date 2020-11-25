@@ -74,6 +74,12 @@ func (t *translator) Translate(
 		authPolicy.Spec.Rules = append(authPolicy.Spec.Rules, rule)
 	}
 
+	// don't output an AuthPolicy with no matching rules, which semantically denies all requests
+	// reference: https://istio.io/latest/docs/reference/config/security/authorization-policy/#AuthorizationPolicy
+	if len(authPolicy.Spec.Rules) == 0 {
+		return nil
+	}
+
 	return authPolicy
 }
 
