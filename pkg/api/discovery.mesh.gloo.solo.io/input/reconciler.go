@@ -4,6 +4,7 @@
 
 // The Input Reconciler calls a simple func() error whenever a
 // storage event is received for any of:
+// * Settings
 // * Meshes
 // * ConfigMaps
 // * Services
@@ -31,6 +32,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
+	settings_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	settings_mesh_gloo_solo_io_v1alpha2_controllers "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/controller"
+
 	appmesh_k8s_aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	appmesh_k8s_aws_v1beta2_controllers "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/controller"
 
@@ -44,6 +48,8 @@ import (
 // the multiClusterReconciler reconciles events for input resources across clusters
 // this private interface is used to ensure that the generated struct implements the intended functions
 type multiClusterReconciler interface {
+	settings_mesh_gloo_solo_io_v1alpha2_controllers.MulticlusterSettingsReconciler
+
 	appmesh_k8s_aws_v1beta2_controllers.MulticlusterMeshReconciler
 
 	v1_controllers.MulticlusterConfigMapReconciler
@@ -65,6 +71,9 @@ type multiClusterReconcilerImpl struct {
 
 // Options for reconcileing a snapshot
 type ReconcileOptions struct {
+
+	// Options for reconciling Settings
+	Settings reconcile.Options
 
 	// Options for reconciling Meshes
 	Meshes reconcile.Options
@@ -112,6 +121,8 @@ func RegisterMultiClusterReconciler(
 
 	// initialize reconcile loops
 
+	settings_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterSettingsReconcileLoop("Settings", clusters, options.Settings).AddMulticlusterSettingsReconciler(ctx, r, predicates...)
+
 	appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterMeshReconcileLoop("Mesh", clusters, options.Meshes).AddMulticlusterMeshReconciler(ctx, r, predicates...)
 
 	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters, options.ConfigMaps).AddMulticlusterConfigMapReconciler(ctx, r, predicates...)
@@ -130,6 +141,21 @@ func RegisterMultiClusterReconciler(
 
 	apps_v1_controllers.NewMulticlusterStatefulSetReconcileLoop("StatefulSet", clusters, options.StatefulSets).AddMulticlusterStatefulSetReconciler(ctx, r, predicates...)
 	return r.base
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileSettings(clusterName string, obj *settings_mesh_gloo_solo_io_v1alpha2.Settings) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileSettingsDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileMesh(clusterName string, obj *appmesh_k8s_aws_v1beta2.Mesh) (reconcile.Result, error) {
@@ -270,6 +296,8 @@ func (r *multiClusterReconcilerImpl) ReconcileStatefulSetDeletion(clusterName st
 // the singleClusterReconciler reconciles events for input resources across clusters
 // this private interface is used to ensure that the generated struct implements the intended functions
 type singleClusterReconciler interface {
+	settings_mesh_gloo_solo_io_v1alpha2_controllers.SettingsReconciler
+
 	appmesh_k8s_aws_v1beta2_controllers.MeshReconciler
 
 	v1_controllers.ConfigMapReconciler
@@ -313,6 +341,10 @@ func RegisterSingleClusterReconciler(
 
 	// initialize reconcile loops
 
+	if err := settings_mesh_gloo_solo_io_v1alpha2_controllers.NewSettingsReconcileLoop("Settings", mgr, options).RunSettingsReconciler(ctx, r, predicates...); err != nil {
+		return nil, err
+	}
+
 	if err := appmesh_k8s_aws_v1beta2_controllers.NewMeshReconcileLoop("Mesh", mgr, options).RunMeshReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
 	}
@@ -344,6 +376,19 @@ func RegisterSingleClusterReconciler(
 	}
 
 	return r.base, nil
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileSettings(obj *settings_mesh_gloo_solo_io_v1alpha2.Settings) (reconcile.Result, error) {
+	return r.base.ReconcileGeneric(obj)
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileSettingsDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileMesh(obj *appmesh_k8s_aws_v1beta2.Mesh) (reconcile.Result, error) {

@@ -3,6 +3,7 @@
 //go:generate mockgen -source ./snapshot.go -destination mocks/snapshot.go
 
 // The Input Snapshot contains the set of all:
+// * Settings
 // * Meshes
 // * ConfigMaps
 // * Services
@@ -32,8 +33,12 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 
+	"github.com/solo-io/skv2/pkg/controllerutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	settings_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	settings_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
 
 	appmesh_k8s_aws_v1beta2 "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2"
 	appmesh_k8s_aws_v1beta2_sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
@@ -47,6 +52,9 @@ import (
 
 // the snapshot of input resources consumed by translation
 type Snapshot interface {
+
+	// return the set of input Settings
+	Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 
 	// return the set of input Meshes
 	Meshes() appmesh_k8s_aws_v1beta2_sets.MeshSet
@@ -68,12 +76,21 @@ type Snapshot interface {
 	DaemonSets() apps_v1_sets.DaemonSetSet
 	// return the set of input StatefulSets
 	StatefulSets() apps_v1_sets.StatefulSetSet
+	// update the status of all input objects which support
+	// the Status subresource (in the local cluster)
+	SyncStatuses(ctx context.Context, c client.Client) error
+
+	// update the status of all input objects which support
+	// the Status subresource (across multiple clusters)
+	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error
 	// serialize the entire snapshot as JSON
 	MarshalJSON() ([]byte, error)
 }
 
 type snapshot struct {
 	name string
+
+	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 
 	meshes appmesh_k8s_aws_v1beta2_sets.MeshSet
 
@@ -91,6 +108,8 @@ type snapshot struct {
 func NewSnapshot(
 	name string,
 
+	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet,
+
 	meshes appmesh_k8s_aws_v1beta2_sets.MeshSet,
 
 	configMaps v1_sets.ConfigMapSet,
@@ -107,6 +126,7 @@ func NewSnapshot(
 	return &snapshot{
 		name: name,
 
+		settings:     settings,
 		meshes:       meshes,
 		configMaps:   configMaps,
 		services:     services,
@@ -117,6 +137,10 @@ func NewSnapshot(
 		daemonSets:   daemonSets,
 		statefulSets: statefulSets,
 	}
+}
+
+func (s snapshot) Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet {
+	return s.settings
 }
 
 func (s snapshot) Meshes() appmesh_k8s_aws_v1beta2_sets.MeshSet {
@@ -154,10 +178,36 @@ func (s snapshot) DaemonSets() apps_v1_sets.DaemonSetSet {
 func (s snapshot) StatefulSets() apps_v1_sets.StatefulSetSet {
 	return s.statefulSets
 }
+func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
+
+	for _, obj := range s.Settings().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
+
+	for _, obj := range s.Settings().List() {
+		clusterClient, err := mcClient.Cluster(obj.ClusterName)
+		if err != nil {
+			return err
+		}
+		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
+	snapshotMap["settings"] = s.settings.List()
 	snapshotMap["meshes"] = s.meshes.List()
 	snapshotMap["configMaps"] = s.configMaps.List()
 	snapshotMap["services"] = s.services.List()
@@ -180,6 +230,9 @@ type Builder interface {
 
 // Options for building a snapshot
 type BuildOptions struct {
+
+	// List options for composing a snapshot from Settings
+	Settings ResourceBuildOptions
 
 	// List options for composing a snapshot from Meshes
 	Meshes ResourceBuildOptions
@@ -232,6 +285,8 @@ func NewMultiClusterBuilder(
 
 func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
+	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+
 	meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
 
 	configMaps := v1_sets.NewConfigMapSet()
@@ -248,6 +303,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 
 	for _, cluster := range b.clusters.ListClusters() {
 
+		if err := b.insertSettingsFromCluster(ctx, cluster, settings, opts.Settings); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertMeshesFromCluster(ctx, cluster, meshes, opts.Meshes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -281,6 +339,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	outputSnap := NewSnapshot(
 		name,
 
+		settings,
 		meshes,
 		configMaps,
 		services,
@@ -293,6 +352,49 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	)
 
 	return outputSnap, errs
+}
+
+func (b *multiClusterBuilder) insertSettingsFromCluster(ctx context.Context, cluster string, settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceBuildOptions) error {
+	settingsClient, err := settings_mesh_gloo_solo_io_v1alpha2.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "settings.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Settings",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	settingsList, err := settingsClient.ListSettings(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range settingsList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		settings.Insert(&item)
+	}
+
+	return nil
 }
 
 func (b *multiClusterBuilder) insertMeshesFromCluster(ctx context.Context, cluster string, meshes appmesh_k8s_aws_v1beta2_sets.MeshSet, opts ResourceBuildOptions) error {
@@ -692,6 +794,8 @@ func NewSingleClusterBuilder(
 
 func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
+	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+
 	meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
 
 	configMaps := v1_sets.NewConfigMapSet()
@@ -706,6 +810,9 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	var errs error
 
+	if err := b.insertSettings(ctx, settings, opts.Settings); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertMeshes(ctx, meshes, opts.Meshes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -737,6 +844,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	outputSnap := NewSnapshot(
 		name,
 
+		settings,
 		meshes,
 		configMaps,
 		services,
@@ -749,6 +857,39 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	)
 
 	return outputSnap, errs
+}
+
+func (b *singleClusterBuilder) insertSettings(ctx context.Context, settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "settings.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Settings",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	settingsList, err := settings_mesh_gloo_solo_io_v1alpha2.NewSettingsClient(b.mgr.GetClient()).ListSettings(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range settingsList.Items {
+		item := item // pike
+		settings.Insert(&item)
+	}
+
+	return nil
 }
 
 func (b *singleClusterBuilder) insertMeshes(ctx context.Context, meshes appmesh_k8s_aws_v1beta2_sets.MeshSet, opts ResourceBuildOptions) error {

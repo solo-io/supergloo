@@ -6,6 +6,9 @@
 package input
 
 import (
+	settings_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	settings_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
+
 	appmesh_k8s_aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	appmesh_k8s_aws_v1beta2_sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
 
@@ -18,6 +21,8 @@ import (
 
 type InputSnapshotManualBuilder struct {
 	name string
+
+	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 
 	meshes appmesh_k8s_aws_v1beta2_sets.MeshSet
 
@@ -35,6 +40,8 @@ type InputSnapshotManualBuilder struct {
 func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 	return &InputSnapshotManualBuilder{
 		name: name,
+
+		settings: settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet(),
 
 		meshes: appmesh_k8s_aws_v1beta2_sets.NewMeshSet(),
 
@@ -54,6 +61,8 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 	return NewSnapshot(
 		i.name,
 
+		i.settings,
+
 		i.meshes,
 
 		i.configMaps,
@@ -66,6 +75,10 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 		i.daemonSets,
 		i.statefulSets,
 	)
+}
+func (i *InputSnapshotManualBuilder) AddSettings(settings []*settings_mesh_gloo_solo_io_v1alpha2.Settings) *InputSnapshotManualBuilder {
+	i.settings.Insert(settings...)
+	return i
 }
 func (i *InputSnapshotManualBuilder) AddMeshes(meshes []*appmesh_k8s_aws_v1beta2.Mesh) *InputSnapshotManualBuilder {
 	i.meshes.Insert(meshes...)

@@ -18,6 +18,11 @@ title: "settings.proto"
 ## Table of Contents
   - [NetworkingExtensionsServer](#settings.mesh.gloo.solo.io.NetworkingExtensionsServer)
   - [SettingsSpec](#settings.mesh.gloo.solo.io.SettingsSpec)
+  - [SettingsSpec.Istio](#settings.mesh.gloo.solo.io.SettingsSpec.Istio)
+  - [SettingsSpec.Istio.GatewayWorkloadLabelsEntry](#settings.mesh.gloo.solo.io.SettingsSpec.Istio.GatewayWorkloadLabelsEntry)
+  - [SettingsSpec.Istio.OverrideWorkloadLabelsEntry](#settings.mesh.gloo.solo.io.SettingsSpec.Istio.OverrideWorkloadLabelsEntry)
+  - [SettingsSpec.Istio.WorkloadLabel](#settings.mesh.gloo.solo.io.SettingsSpec.Istio.WorkloadLabel)
+  - [SettingsSpec.Istio.WorkloadLabel.LabelsEntry](#settings.mesh.gloo.solo.io.SettingsSpec.Istio.WorkloadLabel.LabelsEntry)
   - [SettingsStatus](#settings.mesh.gloo.solo.io.SettingsStatus)
 
 
@@ -53,6 +58,87 @@ Configure global settings and defaults.
 | ----- | ---- | ----- | ----------- |
 | mtls | networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS |  | Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence) |
 | networkingExtensionServers | []settings.mesh.gloo.solo.io.NetworkingExtensionsServer | repeated | Configure Gloo Mesh networking to communicate with one or more external gRPC NetworkingExtensions servers. Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence). Note: Extension Servers have full write access to the output objects written by Gloo Mesh. |
+| istio | settings.mesh.gloo.solo.io.SettingsSpec.Istio |  | Istio-specific discovery settings |
+
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.SettingsSpec.Istio"></a>
+
+### SettingsSpec.Istio
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| gatewayWorkloadLabels | []settings.mesh.gloo.solo.io.SettingsSpec.Istio.GatewayWorkloadLabelsEntry | repeated | The workload labels used during discovery to detect ingress gateways for a mesh. If not specified, will default to `{"istio": "ingressgateway"}`. To override the labels for a specific cluster, use `override_workload_labels`. |
+| overrideWorkloadLabels | []settings.mesh.gloo.solo.io.SettingsSpec.Istio.OverrideWorkloadLabelsEntry | repeated | Override the gateway workload labels on a per-cluster basis. The key to the map is a k8s cluster name, and the value is a labels map. If an entry is found for a given cluster, it will be used, otherwise we will fall back to `gateway_workload_labels`. |
+| gatewayTlsPortName | string |  | The name of the TLS port used to detect ingress gateways. Services must have a port with this name in order to be recognized as an ingress gateway during discovery. If not specified, will default to `tls`. |
+
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.SettingsSpec.Istio.GatewayWorkloadLabelsEntry"></a>
+
+### SettingsSpec.Istio.GatewayWorkloadLabelsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+| value | string |  |  |
+
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.SettingsSpec.Istio.OverrideWorkloadLabelsEntry"></a>
+
+### SettingsSpec.Istio.OverrideWorkloadLabelsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+| value | settings.mesh.gloo.solo.io.SettingsSpec.Istio.WorkloadLabel |  |  |
+
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.SettingsSpec.Istio.WorkloadLabel"></a>
+
+### SettingsSpec.Istio.WorkloadLabel
+Wrapper for a set of labels.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| labels | []settings.mesh.gloo.solo.io.SettingsSpec.Istio.WorkloadLabel.LabelsEntry | repeated |  |
+
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.SettingsSpec.Istio.WorkloadLabel.LabelsEntry"></a>
+
+### SettingsSpec.Istio.WorkloadLabel.LabelsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+| value | string |  |  |
 
 
 

@@ -3,6 +3,7 @@ package io
 import (
 	appmeshv1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	"github.com/solo-io/gloo-mesh/codegen/constants"
+	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -24,6 +25,9 @@ var (
 		},
 		appmeshv1beta2.GroupVersion: {
 			"Mesh",
+		},
+		settingsv1alpha2.SchemeGroupVersion: {
+			"Settings",
 		},
 	}
 

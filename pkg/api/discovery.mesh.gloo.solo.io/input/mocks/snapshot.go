@@ -13,6 +13,9 @@ import (
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	v1sets0 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
+	multicluster "github.com/solo-io/skv2/pkg/multicluster"
+	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MockSnapshot is a mock of Snapshot interface
@@ -36,6 +39,20 @@ func NewMockSnapshot(ctrl *gomock.Controller) *MockSnapshot {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockSnapshot) EXPECT() *MockSnapshotMockRecorder {
 	return m.recorder
+}
+
+// Settings mocks base method
+func (m *MockSnapshot) Settings() v1alpha2sets.SettingsSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Settings")
+	ret0, _ := ret[0].(v1alpha2sets.SettingsSet)
+	return ret0
+}
+
+// Settings indicates an expected call of Settings
+func (mr *MockSnapshotMockRecorder) Settings() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Settings", reflect.TypeOf((*MockSnapshot)(nil).Settings))
 }
 
 // Meshes mocks base method
@@ -162,6 +179,34 @@ func (m *MockSnapshot) StatefulSets() v1sets.StatefulSetSet {
 func (mr *MockSnapshotMockRecorder) StatefulSets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StatefulSets", reflect.TypeOf((*MockSnapshot)(nil).StatefulSets))
+}
+
+// SyncStatuses mocks base method
+func (m *MockSnapshot) SyncStatuses(ctx context.Context, c client.Client) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SyncStatuses", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SyncStatuses indicates an expected call of SyncStatuses
+func (mr *MockSnapshotMockRecorder) SyncStatuses(ctx, c interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatuses", reflect.TypeOf((*MockSnapshot)(nil).SyncStatuses), ctx, c)
+}
+
+// SyncStatusesMultiCluster mocks base method
+func (m *MockSnapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SyncStatusesMultiCluster", ctx, mcClient)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SyncStatusesMultiCluster indicates an expected call of SyncStatusesMultiCluster
+func (mr *MockSnapshotMockRecorder) SyncStatusesMultiCluster(ctx, mcClient interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatusesMultiCluster", reflect.TypeOf((*MockSnapshot)(nil).SyncStatusesMultiCluster), ctx, mcClient)
 }
 
 // MarshalJSON mocks base method
