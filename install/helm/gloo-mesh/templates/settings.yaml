@@ -10,3 +10,5 @@ spec:
   mtls:
     istio:
       tlsMode: {{ $settings.mtls.istio.tlsMode }}
+  networking:
+    disallowIntersectingConfig: {{ $settings.networking.disallowIntersectingConfig }}

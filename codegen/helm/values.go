@@ -27,7 +27,7 @@ type SettingsValues settingsv1alpha2.SettingsSpec
 
 func (v SettingsValues) MarshalJSON() ([]byte, error) {
 	settings := settingsv1alpha2.SettingsSpec(v)
-	js, err := (&jsonpb.Marshaler{}).MarshalToString(&settings)
+	js, err := (&jsonpb.Marshaler{EmitDefaults: true}).MarshalToString(&settings)
 	return []byte(js), err
 }
 
@@ -45,6 +45,9 @@ func defaultValues() ChartValues {
 				Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
 					TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
 				},
+			},
+			Networking: &settingsv1alpha2.Networking{
+				DisallowIntersectingConfig: false,
 			},
 		},
 	}

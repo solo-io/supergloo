@@ -39,6 +39,15 @@ spec:
                       type: string
                   type: object
               type: object
+            networking:
+              description: Configure options for the core networking component
+              properties:
+                disallowIntersectingConfig:
+                  description: |-
+                    If true, Gloo Mesh will detect and report errors when outputting service mesh configuration that
+                    overlaps with existing config not managed by Gloo Mesh.
+                  type: boolean
+              type: object
             networkingExtensionServers:
               description: |-
                 Configure Gloo Mesh networking to communicate with one or more external gRPC NetworkingExtensions servers.
