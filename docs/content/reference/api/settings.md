@@ -16,10 +16,26 @@ title: "settings.proto"
 
 
 ## Table of Contents
+  - [Networking](#settings.mesh.gloo.solo.io.Networking)
   - [NetworkingExtensionsServer](#settings.mesh.gloo.solo.io.NetworkingExtensionsServer)
   - [SettingsSpec](#settings.mesh.gloo.solo.io.SettingsSpec)
   - [SettingsStatus](#settings.mesh.gloo.solo.io.SettingsStatus)
 
+
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.Networking"></a>
+
+### Networking
+Options for configuring the core networking component
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| disallowIntersectingConfig | bool |  | If true, Gloo Mesh will detect and report errors when outputting service mesh configuration that overlaps with existing config not managed by Gloo Mesh. |
 
 
 
@@ -53,6 +69,7 @@ Configure global settings and defaults.
 | ----- | ---- | ----- | ----------- |
 | mtls | networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS |  | Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence) |
 | networkingExtensionServers | []settings.mesh.gloo.solo.io.NetworkingExtensionsServer | repeated | Configure Gloo Mesh networking to communicate with one or more external gRPC NetworkingExtensions servers. Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence). Note: Extension Servers have full write access to the output objects written by Gloo Mesh. |
+| networking | settings.mesh.gloo.solo.io.Networking |  | Configure options for the core networking component |
 
 
 

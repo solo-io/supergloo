@@ -1,12 +1,14 @@
 package virtualservice
 
 import (
+	"context"
 	"reflect"
 	"sort"
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/snapshotutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"istio.io/istio/pkg/config/host"
@@ -42,6 +44,7 @@ type Translator interface {
 		Note that the input snapshot TrafficTargetSet contains the given TrafficTarget.
 	*/
 	Translate(
+		ctx context.Context,
 		in input.Snapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
@@ -61,11 +64,18 @@ func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFact
 // Translate a VirtualService for the TrafficTarget.
 // If sourceMeshInstallation is nil, assume that VirtualService is colocated to the trafficTarget and use local FQDNs.
 func (t *translator) Translate(
+	ctx context.Context,
 	in input.Snapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	reporter reporting.Reporter,
 ) *networkingv1alpha3.VirtualService {
+	settings, err := snapshotutils.GetSingletonSettings(ctx, in)
+	if err != nil {
+		// should be caught earlier in the reconciliation loop
+		return nil
+	}
+
 	kubeService := trafficTarget.Spec.GetKubeService()
 
 	if kubeService == nil {
@@ -139,7 +149,12 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	if errs := conflictsWithUserVirtualService(in.VirtualServices(), virtualService); len(errs) > 0 {
+	// detect and report error on intersecting config if enabled in settings
+	if errs := conflictsWithUserVirtualService(
+		settings.Spec.GetNetworking().GetDisallowIntersectingConfig(),
+		in.VirtualServices(),
+		virtualService,
+	); len(errs) > 0 {
 		reporter.ReportTrafficTarget(trafficTarget, errs)
 	}
 
@@ -403,9 +418,14 @@ func translateRequestMatcherPathSpecifier(matcher *v1alpha2.TrafficPolicySpec_Ht
 
 // Return errors for each user-supplied VirtualService that applies to the same hostname as the translated VirtualService
 func conflictsWithUserVirtualService(
+	disallowIntersectingConfig bool,
 	virtualServices v1alpha3sets.VirtualServiceSet,
 	translatedVirtualService *networkingv1alpha3.VirtualService,
 ) []error {
+	if !disallowIntersectingConfig {
+		return nil
+	}
+
 	// For each user VS, check whether any hosts match any hosts from translated VS
 	var errs []error
 

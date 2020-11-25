@@ -85,7 +85,7 @@ var _ = Describe("IstioTrafficTargetTranslator", func() {
 			Return(dr)
 		mockVirtualServiceTranslator.
 			EXPECT().
-			Translate(in, trafficTarget, nil, mockReporter).
+			Translate(ctx, in, trafficTarget, nil, mockReporter).
 			Return(vs)
 		mockAuthorizationPolicyTranslator.
 			EXPECT().

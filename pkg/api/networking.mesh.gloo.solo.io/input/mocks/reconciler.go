@@ -14,6 +14,7 @@ import (
 	v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	reconcile "github.com/solo-io/skv2/pkg/reconcile"
 	v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -160,6 +161,21 @@ func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileFailoverService(clust
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileFailoverService", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileFailoverService), clusterName, obj)
 }
 
+// ReconcileDestinationRule mocks base method
+func (m *MockmultiClusterReconciler) ReconcileDestinationRule(clusterName string, obj *v1alpha3.DestinationRule) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileDestinationRule", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileDestinationRule indicates an expected call of ReconcileDestinationRule
+func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileDestinationRule(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileDestinationRule", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileDestinationRule), clusterName, obj)
+}
+
 // ReconcileVirtualService mocks base method
 func (m *MockmultiClusterReconciler) ReconcileVirtualService(clusterName string, obj *v1alpha3.VirtualService) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
@@ -173,6 +189,21 @@ func (m *MockmultiClusterReconciler) ReconcileVirtualService(clusterName string,
 func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileVirtualService(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualService", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileVirtualService), clusterName, obj)
+}
+
+// ReconcileAuthorizationPolicy mocks base method
+func (m *MockmultiClusterReconciler) ReconcileAuthorizationPolicy(clusterName string, obj *v1beta1.AuthorizationPolicy) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileAuthorizationPolicy", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileAuthorizationPolicy indicates an expected call of ReconcileAuthorizationPolicy
+func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileAuthorizationPolicy(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAuthorizationPolicy", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileAuthorizationPolicy), clusterName, obj)
 }
 
 // ReconcileSecret mocks base method
@@ -348,6 +379,21 @@ func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileFailoverService(obj 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileFailoverService", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileFailoverService), obj)
 }
 
+// ReconcileDestinationRule mocks base method
+func (m *MocksingleClusterReconciler) ReconcileDestinationRule(obj *v1alpha3.DestinationRule) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileDestinationRule", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileDestinationRule indicates an expected call of ReconcileDestinationRule
+func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileDestinationRule(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileDestinationRule", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileDestinationRule), obj)
+}
+
 // ReconcileVirtualService mocks base method
 func (m *MocksingleClusterReconciler) ReconcileVirtualService(obj *v1alpha3.VirtualService) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
@@ -361,6 +407,21 @@ func (m *MocksingleClusterReconciler) ReconcileVirtualService(obj *v1alpha3.Virt
 func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileVirtualService(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualService", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileVirtualService), obj)
+}
+
+// ReconcileAuthorizationPolicy mocks base method
+func (m *MocksingleClusterReconciler) ReconcileAuthorizationPolicy(obj *v1beta1.AuthorizationPolicy) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileAuthorizationPolicy", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileAuthorizationPolicy indicates an expected call of ReconcileAuthorizationPolicy
+func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileAuthorizationPolicy(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAuthorizationPolicy", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileAuthorizationPolicy), obj)
 }
 
 // ReconcileSecret mocks base method

@@ -1,6 +1,8 @@
 package virtualservice_test
 
 import (
+	"context"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -9,6 +11,8 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/types"
+	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	mock_decorators "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/mocks"
@@ -34,6 +38,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockDecorator             *mock_trafficpolicy.MockTrafficPolicyVirtualServiceDecorator
 		virtualServiceTranslator  virtualservice.Translator
 		in                        input.Snapshot
+		ctx                       = context.TODO()
 	)
 
 	BeforeEach(func() {
@@ -43,7 +48,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockDecorator = mock_trafficpolicy.NewMockTrafficPolicyVirtualServiceDecorator(ctrl)
 		virtualServiceTranslator = virtualservice.NewTranslator(mockClusterDomainRegistry, mockDecoratorFactory)
-		in = input.NewInputSnapshotManualBuilder("").Build()
+		in = input.NewInputSnapshotManualBuilder("").AddSettings(settingsv1alpha2.SettingsSlice{{}}).Build()
 	})
 
 	AfterEach(func() {
@@ -377,7 +382,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			}).
 			Return(nil)
 
-		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, nil, mockReporter)
+		virtualService := virtualServiceTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
 		Expect(virtualService).To(Equal(expectedVirtualService))
 	})
 
@@ -715,6 +720,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			Return(nil)
 
 		virtualService := virtualServiceTranslator.Translate(
+			ctx,
 			in,
 			trafficTarget,
 			meshInstallation,
@@ -787,7 +793,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			).
 			Return(nil)
 
-		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, nil, mockReporter)
+		virtualService := virtualServiceTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
 		Expect(virtualService).To(BeNil())
 	})
 
@@ -849,7 +855,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			}).
 			Return([]decorators.Decorator{mockDecorator})
 
-		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, nil, mockReporter)
+		virtualService := virtualServiceTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
 		Expect(virtualService).To(BeNil())
 	})
 
@@ -899,6 +905,19 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		}
 
 		in = input.NewInputSnapshotManualBuilder("").
+			AddSettings(settingsv1alpha2.SettingsSlice{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      defaults.DefaultSettingsName,
+						Namespace: defaults.DefaultPodNamespace,
+					},
+					Spec: settingsv1alpha2.SettingsSpec{
+						Networking: &settingsv1alpha2.Networking{
+							DisallowIntersectingConfig: true,
+						},
+					},
+				},
+			}).
 			AddVirtualServices([]*networkingv1alpha3.VirtualService{
 				// Gloo Mesh translated, should not yield error
 				{
@@ -976,6 +995,6 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				))
 			})
 
-		_ = virtualServiceTranslator.Translate(in, trafficTarget, nil, mockReporter)
+		_ = virtualServiceTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
 	})
 })

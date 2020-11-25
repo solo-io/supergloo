@@ -560,10 +560,8 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						Namespace: defaults.DefaultPodNamespace,
 					},
 					Spec: settingsv1alpha2.SettingsSpec{
-						Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
-							Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
-								TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_DISABLE,
-							},
+						Networking: &settingsv1alpha2.Networking{
+							DisallowIntersectingConfig: true,
 						},
 					},
 				},

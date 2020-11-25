@@ -5,6 +5,7 @@
 package mock_virtualservice
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -38,15 +39,15 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(in input.Snapshot, trafficTarget *v1alpha2.TrafficTarget, sourceMeshInstallation *v1alpha2.MeshSpec_MeshInstallation, reporter reporting.Reporter) *v1alpha3.VirtualService {
+func (m *MockTranslator) Translate(ctx context.Context, in input.Snapshot, trafficTarget *v1alpha2.TrafficTarget, sourceMeshInstallation *v1alpha2.MeshSpec_MeshInstallation, reporter reporting.Reporter) *v1alpha3.VirtualService {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Translate", in, trafficTarget, sourceMeshInstallation, reporter)
+	ret := m.ctrl.Call(m, "Translate", ctx, in, trafficTarget, sourceMeshInstallation, reporter)
 	ret0, _ := ret[0].(*v1alpha3.VirtualService)
 	return ret0
 }
 
 // Translate indicates an expected call of Translate
-func (mr *MockTranslatorMockRecorder) Translate(in, trafficTarget, sourceMeshInstallation, reporter interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) Translate(ctx, in, trafficTarget, sourceMeshInstallation, reporter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), in, trafficTarget, sourceMeshInstallation, reporter)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), ctx, in, trafficTarget, sourceMeshInstallation, reporter)
 }

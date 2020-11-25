@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
+	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
@@ -155,6 +156,20 @@ func (mr *MockSnapshotMockRecorder) FailoverServices() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FailoverServices", reflect.TypeOf((*MockSnapshot)(nil).FailoverServices))
 }
 
+// DestinationRules mocks base method
+func (m *MockSnapshot) DestinationRules() v1alpha3sets.DestinationRuleSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DestinationRules")
+	ret0, _ := ret[0].(v1alpha3sets.DestinationRuleSet)
+	return ret0
+}
+
+// DestinationRules indicates an expected call of DestinationRules
+func (mr *MockSnapshotMockRecorder) DestinationRules() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DestinationRules", reflect.TypeOf((*MockSnapshot)(nil).DestinationRules))
+}
+
 // VirtualServices mocks base method
 func (m *MockSnapshot) VirtualServices() v1alpha3sets.VirtualServiceSet {
 	m.ctrl.T.Helper()
@@ -167,6 +182,20 @@ func (m *MockSnapshot) VirtualServices() v1alpha3sets.VirtualServiceSet {
 func (mr *MockSnapshotMockRecorder) VirtualServices() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualServices", reflect.TypeOf((*MockSnapshot)(nil).VirtualServices))
+}
+
+// AuthorizationPolicies mocks base method
+func (m *MockSnapshot) AuthorizationPolicies() v1beta1sets.AuthorizationPolicySet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AuthorizationPolicies")
+	ret0, _ := ret[0].(v1beta1sets.AuthorizationPolicySet)
+	return ret0
+}
+
+// AuthorizationPolicies indicates an expected call of AuthorizationPolicies
+func (mr *MockSnapshotMockRecorder) AuthorizationPolicies() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthorizationPolicies", reflect.TypeOf((*MockSnapshot)(nil).AuthorizationPolicies))
 }
 
 // Secrets mocks base method

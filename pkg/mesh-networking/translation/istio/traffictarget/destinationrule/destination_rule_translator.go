@@ -81,6 +81,12 @@ func (t *translator) Translate(
 	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	reporter reporting.Reporter,
 ) *networkingv1alpha3.DestinationRule {
+	settings, err := snapshotutils.GetSingletonSettings(ctx, in)
+	if err != nil {
+		// should be caught earlier in the reconciliation loop
+		return nil
+	}
+
 	kubeService := trafficTarget.Spec.GetKubeService()
 
 	if kubeService == nil {
@@ -91,11 +97,6 @@ func (t *translator) Translate(
 	sourceClusterName := kubeService.Ref.ClusterName
 	if sourceMeshInstallation != nil {
 		sourceClusterName = sourceMeshInstallation.Cluster
-	}
-
-	settings, err := snapshotutils.GetSingletonSettings(ctx, in)
-	if err != nil {
-		return nil
 	}
 
 	destinationRule, err := t.initializeDestinationRule(trafficTarget, settings.Spec.Mtls, sourceMeshInstallation)
@@ -143,7 +144,12 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	if errs := conflictsWithUserDestinationRule(in.DestinationRules(), destinationRule); len(errs) > 0 {
+	// detect and report error on intersecting config if enabled in settings
+	if errs := conflictsWithUserDestinationRule(
+		settings.Spec.GetNetworking().GetDisallowIntersectingConfig(),
+		in.DestinationRules(),
+		destinationRule,
+	); len(errs) > 0 {
 		reporter.ReportTrafficTarget(trafficTarget, errs)
 	}
 
@@ -223,9 +229,14 @@ func (t *translator) initializeDestinationRule(
 
 // Return errors for each user-supplied VirtualService that applies to the same hostname as the translated VirtualService
 func conflictsWithUserDestinationRule(
+	disallowIntersectingConfig bool,
 	destinationRules v1alpha3sets.DestinationRuleSet,
 	translatedDestinationRule *networkingv1alpha3.DestinationRule,
 ) []error {
+	if !disallowIntersectingConfig {
+		return nil
+	}
+
 	// For each user DR, check whether any hosts match any hosts from translated DR
 	var errs []error
 

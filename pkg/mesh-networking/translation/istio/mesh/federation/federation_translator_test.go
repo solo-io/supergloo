@@ -158,7 +158,7 @@ var _ = Describe("FederationTranslator", func() {
 		expectedVS := &networkingv1alpha3.VirtualService{}
 		mockVirtualServiceTranslator.
 			EXPECT().
-			Translate(in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
+			Translate(ctx, in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
 			Return(expectedVS)
 
 		expectedDR := &networkingv1alpha3.DestinationRule{}
