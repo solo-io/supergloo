@@ -155,7 +155,12 @@ func (t *translator) Translate(
 		in.VirtualServices(),
 		virtualService,
 	); len(errs) > 0 {
-		reporter.ReportTrafficTarget(trafficTarget, errs)
+		for _, err := range errs {
+			for _, policy := range trafficTarget.Status.AppliedTrafficPolicies {
+				reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, policy.Ref, err)
+			}
+		}
+		return nil
 	}
 
 	return virtualService

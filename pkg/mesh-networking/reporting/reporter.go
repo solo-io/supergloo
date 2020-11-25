@@ -27,9 +27,6 @@ type Reporter interface {
 
 	// report an error on a failover service
 	ReportFailoverService(failoverService ezkube.ResourceId, errs []error)
-
-	// report an error on a traffic target
-	ReportTrafficTarget(trafficTarget ezkube.ResourceId, errs []error)
 }
 
 // this reporter implementation is only used inside
@@ -80,12 +77,5 @@ func (p *panickingReporter) ReportFailoverService(failoverService ezkube.Resourc
 	contextutils.LoggerFrom(p.ctx).
 		DPanicw("internal error: error reported on FailoverService which should have been caught by validation!",
 			"failover-service", sets.Key(failoverService),
-			"errors", errs)
-}
-
-func (p *panickingReporter) ReportTrafficTarget(trafficTarget ezkube.ResourceId, errs []error) {
-	contextutils.LoggerFrom(p.ctx).
-		DPanicw("internal error: error reported on TrafficTarget which should have been caught by validation!",
-			"traffic-target", sets.Key(trafficTarget),
 			"errors", errs)
 }

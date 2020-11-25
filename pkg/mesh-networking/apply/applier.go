@@ -407,7 +407,6 @@ type applyReporter struct {
 	unappliedFailoverServices map[*discoveryv1alpha2.Mesh]map[string][]error
 	unappliedVirtualMeshes    map[*discoveryv1alpha2.Mesh]map[string][]error
 	invalidFailoverServices   map[string][]error
-	invalidTrafficTargets     map[string][]error
 }
 
 func newApplyReporter() *applyReporter {
@@ -478,16 +477,6 @@ func (v *applyReporter) ReportFailoverService(failoverService ezkube.ResourceId,
 	}
 	errs = append(errs, newErrs...)
 	v.invalidFailoverServices[key] = errs
-}
-
-func (v *applyReporter) ReportTrafficTarget(trafficTarget ezkube.ResourceId, newErrs []error) {
-	key := sets.Key(trafficTarget)
-	errs := v.invalidTrafficTargets[key]
-	if errs == nil {
-		errs = []error{}
-	}
-	errs = append(errs, newErrs...)
-	v.invalidTrafficTargets[key] = errs
 }
 
 func (v *applyReporter) getTrafficPolicyErrors(trafficTarget *discoveryv1alpha2.TrafficTarget, trafficPolicy ezkube.ResourceId) []error {
