@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1086
+    description: Add a toggle to Settings to enable detection and error reporting when networking translates VirtualServices or Destination rules that intersect with externally provided VirtualServices/DestinationRules.
