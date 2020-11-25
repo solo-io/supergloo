@@ -61,7 +61,7 @@ func (t *translator) Translate(
 	outputs.AddAuthorizationPolicies(ingressGatewayAuthPolicies...)
 }
 
-// Creates an AuthorizationPolicy that allows all traffic into the "istio-ingressgateway" service
+// Creates an AuthorizationPolicy that allows all traffic into the service
 // which backs the Gateway used for multi cluster traffic.
 func buildAuthPoliciesForIngressgateways(
 	installationNamespace string,

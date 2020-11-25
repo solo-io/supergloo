@@ -6,3 +6,8 @@ package defaults
 var DefaultGatewayWorkloadLabels = map[string]string{
 	"istio": "ingressgateway",
 }
+
+const (
+	// https://istio.io/docs/ops/deployment/requirements/#ports-used-by-istio
+	DefaultGatewayPortName = "tls"
+)

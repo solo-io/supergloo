@@ -2,7 +2,7 @@ package helm
 
 import (
 	"github.com/gogo/protobuf/jsonpb"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 )
@@ -41,10 +41,14 @@ func defaultValues() ChartValues {
 			},
 		},
 		Settings: SettingsValues{
-			Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
-				Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
-					TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
+			Mtls: &networkingv1alpha2.TrafficPolicySpec_MTLS{
+				Istio: &networkingv1alpha2.TrafficPolicySpec_MTLS_Istio{
+					TlsMode: networkingv1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
 				},
+			},
+			Istio: &settingsv1alpha2.SettingsSpec_Istio{
+				GatewayWorkloadLabels: defaults.DefaultGatewayWorkloadLabels,
+				GatewayTlsPortName:    defaults.DefaultGatewayPortName,
 			},
 		},
 	}
