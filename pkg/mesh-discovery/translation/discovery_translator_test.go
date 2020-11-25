@@ -4,17 +4,17 @@ import (
 	"context"
 
 	"github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
-	v1beta2sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
-
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	v1beta2sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/output/discovery"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	discovery_sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	settings_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation"
 	mock_translator_internal "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/internal/mocks"
 	mock_mesh "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/mocks"
@@ -53,6 +53,7 @@ var _ = Describe("Translator", func() {
 	It("translates", func() {
 		t := NewTranslator(mockDependencyFactory)
 
+		settings := settings_sets.NewSettingsSet()
 		appMeshes := v1beta2sets.NewMeshSet(&v1beta2.Mesh{})
 		configMaps := corev1sets.NewConfigMapSet(&corev1.ConfigMap{})
 		services := corev1sets.NewServiceSet(&corev1.Service{})
@@ -65,6 +66,7 @@ var _ = Describe("Translator", func() {
 
 		in := input.NewSnapshot(
 			"mesh-discovery",
+			settings,
 			appMeshes,
 			configMaps,
 			services,
@@ -82,9 +84,9 @@ var _ = Describe("Translator", func() {
 
 		labeledMeta := metav1.ObjectMeta{Labels: labelutils.ClusterLabels("cluster")}
 
-		meshes := v1alpha2sets.NewMeshSet(&v1alpha2.Mesh{ObjectMeta: labeledMeta})
-		workloads := v1alpha2sets.NewWorkloadSet(&v1alpha2.Workload{ObjectMeta: labeledMeta})
-		trafficTargets := v1alpha2sets.NewTrafficTargetSet(&v1alpha2.TrafficTarget{ObjectMeta: labeledMeta})
+		meshes := discovery_sets.NewMeshSet(&v1alpha2.Mesh{ObjectMeta: labeledMeta})
+		workloads := discovery_sets.NewWorkloadSet(&v1alpha2.Workload{ObjectMeta: labeledMeta})
+		trafficTargets := discovery_sets.NewTrafficTargetSet(&v1alpha2.TrafficTarget{ObjectMeta: labeledMeta})
 
 		mockMeshTranslator.EXPECT().TranslateMeshes(in).Return(meshes)
 		mockWorkloadTranslator.EXPECT().TranslateWorkloads(deployments, daemonSets, statefulSets, meshes).Return(workloads)
