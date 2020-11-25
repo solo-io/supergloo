@@ -47,8 +47,10 @@ func defaultValues() ChartValues {
 				},
 			},
 			Istio: &settingsv1alpha2.SettingsSpec_Istio{
-				GatewayWorkloadLabels: defaults.DefaultGatewayWorkloadLabels,
-				GatewayTlsPortName:    defaults.DefaultGatewayPortName,
+				IngressGatewayMatcher: &settingsv1alpha2.SettingsSpec_Istio_IngressGatewayMatcher{
+					GatewayWorkloadLabels: defaults.DefaultGatewayWorkloadLabels,
+					GatewayTlsPortName:    defaults.DefaultGatewayPortName,
+				},
 			},
 		},
 	}

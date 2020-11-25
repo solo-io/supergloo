@@ -19,10 +19,9 @@ title: "settings.proto"
   - [NetworkingExtensionsServer](#settings.mesh.gloo.solo.io.NetworkingExtensionsServer)
   - [SettingsSpec](#settings.mesh.gloo.solo.io.SettingsSpec)
   - [SettingsSpec.Istio](#settings.mesh.gloo.solo.io.SettingsSpec.Istio)
-  - [SettingsSpec.Istio.GatewayWorkloadLabelsEntry](#settings.mesh.gloo.solo.io.SettingsSpec.Istio.GatewayWorkloadLabelsEntry)
-  - [SettingsSpec.Istio.OverrideWorkloadLabelsEntry](#settings.mesh.gloo.solo.io.SettingsSpec.Istio.OverrideWorkloadLabelsEntry)
-  - [SettingsSpec.Istio.WorkloadLabel](#settings.mesh.gloo.solo.io.SettingsSpec.Istio.WorkloadLabel)
-  - [SettingsSpec.Istio.WorkloadLabel.LabelsEntry](#settings.mesh.gloo.solo.io.SettingsSpec.Istio.WorkloadLabel.LabelsEntry)
+  - [SettingsSpec.Istio.IngressGatewayMatcher](#settings.mesh.gloo.solo.io.SettingsSpec.Istio.IngressGatewayMatcher)
+  - [SettingsSpec.Istio.IngressGatewayMatcher.GatewayWorkloadLabelsEntry](#settings.mesh.gloo.solo.io.SettingsSpec.Istio.IngressGatewayMatcher.GatewayWorkloadLabelsEntry)
+  - [SettingsSpec.Istio.IngressGatewayMatcherOverridesEntry](#settings.mesh.gloo.solo.io.SettingsSpec.Istio.IngressGatewayMatcherOverridesEntry)
   - [SettingsStatus](#settings.mesh.gloo.solo.io.SettingsStatus)
 
 
@@ -73,8 +72,23 @@ Configure global settings and defaults.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| gatewayWorkloadLabels | []settings.mesh.gloo.solo.io.SettingsSpec.Istio.GatewayWorkloadLabelsEntry | repeated | The workload labels used during discovery to detect ingress gateways for a mesh. If not specified, will default to `{"istio": "ingressgateway"}`. To override the labels for a specific cluster, use `overrideWorkloadLabels`. |
-| overrideWorkloadLabels | []settings.mesh.gloo.solo.io.SettingsSpec.Istio.OverrideWorkloadLabelsEntry | repeated | Override the gateway workload labels on a per-cluster basis. The key to the map is a k8s cluster name, and the value is a labels map. If an entry is found for a given cluster, it will be used, otherwise we will fall back to `gatewayWorkloadLabels`. |
+| ingressGatewayMatcher | settings.mesh.gloo.solo.io.SettingsSpec.Istio.IngressGatewayMatcher |  | Workload labels and TLS port name used during discovery to detect ingress gateways for a mesh. If not specified, will fall back to the default values specified by `IngressGatewayMatcher`. To override the labels and/or TLS ports for a specific cluster, use `ingressGatewayMatcherOverrides`. |
+| ingressGatewayMatcherOverrides | []settings.mesh.gloo.solo.io.SettingsSpec.Istio.IngressGatewayMatcherOverridesEntry | repeated | Override the ingress gateway matchers on a per-cluster basis. The key to the map is a k8s cluster name. If an entry is found for a given cluster, it will be used. Otherwise, will fall back to `ingressGatewayMatcher`. If the cluster's `IngressGatewayMatcher` entry does not specify all the fields, it will fall back to the `ingressGatewayMatcher` values for the missing field(s). |
+
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.SettingsSpec.Istio.IngressGatewayMatcher"></a>
+
+### SettingsSpec.Istio.IngressGatewayMatcher
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| gatewayWorkloadLabels | []settings.mesh.gloo.solo.io.SettingsSpec.Istio.IngressGatewayMatcher.GatewayWorkloadLabelsEntry | repeated | The workload labels used during discovery to detect ingress gateways for a mesh. If not specified, will default to `{"istio": "ingressgateway"}`. |
 | gatewayTlsPortName | string |  | The name of the TLS port used to detect ingress gateways. Services must have a port with this name in order to be recognized as an ingress gateway during discovery. If not specified, will default to `tls`. |
 
 
@@ -82,56 +96,9 @@ Configure global settings and defaults.
 
 
 
-<a name="settings.mesh.gloo.solo.io.SettingsSpec.Istio.GatewayWorkloadLabelsEntry"></a>
+<a name="settings.mesh.gloo.solo.io.SettingsSpec.Istio.IngressGatewayMatcher.GatewayWorkloadLabelsEntry"></a>
 
-### SettingsSpec.Istio.GatewayWorkloadLabelsEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | string |  |  |
-| value | string |  |  |
-
-
-
-
-
-
-<a name="settings.mesh.gloo.solo.io.SettingsSpec.Istio.OverrideWorkloadLabelsEntry"></a>
-
-### SettingsSpec.Istio.OverrideWorkloadLabelsEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | string |  |  |
-| value | settings.mesh.gloo.solo.io.SettingsSpec.Istio.WorkloadLabel |  |  |
-
-
-
-
-
-
-<a name="settings.mesh.gloo.solo.io.SettingsSpec.Istio.WorkloadLabel"></a>
-
-### SettingsSpec.Istio.WorkloadLabel
-Wrapper for a set of labels.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| labels | []settings.mesh.gloo.solo.io.SettingsSpec.Istio.WorkloadLabel.LabelsEntry | repeated |  |
-
-
-
-
-
-
-<a name="settings.mesh.gloo.solo.io.SettingsSpec.Istio.WorkloadLabel.LabelsEntry"></a>
-
-### SettingsSpec.Istio.WorkloadLabel.LabelsEntry
+### SettingsSpec.Istio.IngressGatewayMatcher.GatewayWorkloadLabelsEntry
 
 
 
@@ -139,6 +106,22 @@ Wrapper for a set of labels.
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
 | value | string |  |  |
+
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.SettingsSpec.Istio.IngressGatewayMatcherOverridesEntry"></a>
+
+### SettingsSpec.Istio.IngressGatewayMatcherOverridesEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+| value | settings.mesh.gloo.solo.io.SettingsSpec.Istio.IngressGatewayMatcher |  |  |
 
 
 
