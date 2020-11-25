@@ -5,13 +5,13 @@
 package v1alpha1
 
 import (
-	bytes "bytes"
-	fmt "fmt"
-	math "math"
+    bytes "bytes"
+    fmt "fmt"
+    math "math"
 
-	proto "github.com/gogo/protobuf/proto"
-	_ "github.com/gogo/protobuf/types"
-	skv2jsonpb "github.com/solo-io/skv2/pkg/jsonpb"
+    skv2jsonpb "github.com/solo-io/skv2/pkg/jsonpb"
+    proto "github.com/gogo/protobuf/proto"
+    _ "github.com/gogo/protobuf/types"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -20,7 +20,7 @@ var _ = fmt.Errorf
 var _ = math.Inf
 
 var (
-	marshaller   = &skv2jsonpb.Marshaler{}
+	marshaller = &skv2jsonpb.Marshaler{}
 	unmarshaller = &skv2jsonpb.Unmarshaler{}
 )
 
@@ -34,7 +34,6 @@ func (this *XdsConfigSpec) MarshalJSON() ([]byte, error) {
 func (this *XdsConfigSpec) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
-
 // MarshalJSON is a custom marshaler for XdsConfigStatus
 func (this *XdsConfigStatus) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)

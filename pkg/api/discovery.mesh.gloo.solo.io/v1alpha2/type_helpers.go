@@ -3,6 +3,9 @@
 // Definitions for the Kubernetes types
 package v1alpha2
 
+import (
+)
+
 // TrafficTargetSlice represents a slice of *TrafficTarget
 type TrafficTargetSlice []*TrafficTarget
 

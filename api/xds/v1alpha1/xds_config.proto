@@ -17,9 +17,9 @@ import "google/protobuf/duration.proto";
 */
 message XdsConfigSpec {
     /*
-         The nodes (Envoy Node ID) that will receive this XDS Configuration.
+         The Workloads that will receive this XDS Configuration.
      */
-    repeated string nodes = 1;
+    repeated .core.skv2.solo.io.ObjectRef workloads = 1;
 
     // the xDS resources to serve to the nodes.
     // mapped by type URL.

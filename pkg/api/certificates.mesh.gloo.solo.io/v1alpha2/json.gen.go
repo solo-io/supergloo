@@ -5,13 +5,13 @@
 package v1alpha2
 
 import (
-	bytes "bytes"
-	fmt "fmt"
-	math "math"
+    bytes "bytes"
+    fmt "fmt"
+    math "math"
 
-	proto "github.com/gogo/protobuf/proto"
-	_ "github.com/gogo/protobuf/types"
-	skv2jsonpb "github.com/solo-io/skv2/pkg/jsonpb"
+    skv2jsonpb "github.com/solo-io/skv2/pkg/jsonpb"
+    proto "github.com/gogo/protobuf/proto"
+    _ "github.com/gogo/protobuf/types"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -20,7 +20,7 @@ var _ = fmt.Errorf
 var _ = math.Inf
 
 var (
-	marshaller   = &skv2jsonpb.Marshaler{}
+	marshaller = &skv2jsonpb.Marshaler{}
 	unmarshaller = &skv2jsonpb.Unmarshaler{}
 )
 
@@ -34,7 +34,6 @@ func (this *IssuedCertificateSpec) MarshalJSON() ([]byte, error) {
 func (this *IssuedCertificateSpec) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
-
 // MarshalJSON is a custom marshaler for IssuedCertificateStatus
 func (this *IssuedCertificateStatus) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
@@ -56,7 +55,6 @@ func (this *CertificateRequestSpec) MarshalJSON() ([]byte, error) {
 func (this *CertificateRequestSpec) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
-
 // MarshalJSON is a custom marshaler for CertificateRequestStatus
 func (this *CertificateRequestStatus) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)

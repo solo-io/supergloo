@@ -4,8 +4,7 @@
 package v1alpha1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1")
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -14,22 +13,22 @@ import (
 
 // XdsConfig is the Schema for the xdsConfig API
 type XdsConfig struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+    metav1.TypeMeta   `json:",inline"`
+    metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   XdsConfigSpec   `json:"spec,omitempty"`
-	Status XdsConfigStatus `json:"status,omitempty"`
+    Spec XdsConfigSpec `json:"spec,omitempty"`
+    Status XdsConfigStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // XdsConfigList contains a list of XdsConfig
 type XdsConfigList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []XdsConfig `json:"items"`
+    metav1.TypeMeta `json:",inline"`
+    metav1.ListMeta `json:"metadata,omitempty"`
+    Items           []XdsConfig `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&XdsConfig{}, &XdsConfigList{})
+    SchemeBuilder.Register(&XdsConfig{}, &XdsConfigList{})
 }
