@@ -73,8 +73,8 @@ Configure global settings and defaults.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| gatewayWorkloadLabels | []settings.mesh.gloo.solo.io.SettingsSpec.Istio.GatewayWorkloadLabelsEntry | repeated | The workload labels used during discovery to detect ingress gateways for a mesh. If not specified, will default to `{"istio": "ingressgateway"}`. To override the labels for a specific cluster, use `override_workload_labels`. |
-| overrideWorkloadLabels | []settings.mesh.gloo.solo.io.SettingsSpec.Istio.OverrideWorkloadLabelsEntry | repeated | Override the gateway workload labels on a per-cluster basis. The key to the map is a k8s cluster name, and the value is a labels map. If an entry is found for a given cluster, it will be used, otherwise we will fall back to `gateway_workload_labels`. |
+| gatewayWorkloadLabels | []settings.mesh.gloo.solo.io.SettingsSpec.Istio.GatewayWorkloadLabelsEntry | repeated | The workload labels used during discovery to detect ingress gateways for a mesh. If not specified, will default to `{"istio": "ingressgateway"}`. To override the labels for a specific cluster, use `overrideWorkloadLabels`. |
+| overrideWorkloadLabels | []settings.mesh.gloo.solo.io.SettingsSpec.Istio.OverrideWorkloadLabelsEntry | repeated | Override the gateway workload labels on a per-cluster basis. The key to the map is a k8s cluster name, and the value is a labels map. If an entry is found for a given cluster, it will be used, otherwise we will fall back to `gatewayWorkloadLabels`. |
 | gatewayTlsPortName | string |  | The name of the TLS port used to detect ingress gateways. Services must have a port with this name in order to be recognized as an ingress gateway during discovery. If not specified, will default to `tls`. |
 
 

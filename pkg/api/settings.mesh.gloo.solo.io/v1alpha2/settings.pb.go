@@ -87,12 +87,12 @@ func (m *SettingsSpec) GetIstio() *SettingsSpec_Istio {
 type SettingsSpec_Istio struct {
 	// The workload labels used during discovery to detect ingress gateways for a mesh.
 	// If not specified, will default to `{"istio": "ingressgateway"}`.
-	// To override the labels for a specific cluster, use `override_workload_labels`.
+	// To override the labels for a specific cluster, use `overrideWorkloadLabels`.
 	GatewayWorkloadLabels map[string]string `protobuf:"bytes,1,rep,name=gateway_workload_labels,json=gatewayWorkloadLabels,proto3" json:"gateway_workload_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// Override the gateway workload labels on a per-cluster basis.
 	// The key to the map is a k8s cluster name, and the value is a labels map.
 	// If an entry is found for a given cluster, it will be used, otherwise we will fall back to
-	// `gateway_workload_labels`.
+	// `gatewayWorkloadLabels`.
 	OverrideWorkloadLabels map[string]*SettingsSpec_Istio_WorkloadLabel `protobuf:"bytes,2,rep,name=override_workload_labels,json=overrideWorkloadLabels,proto3" json:"override_workload_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// The name of the TLS port used to detect ingress gateways. Services must have a port with this name
 	// in order to be recognized as an ingress gateway during discovery.
