@@ -663,17 +663,17 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		mockReporter.
 			EXPECT().
-			ReportTrafficTarget(
+			ReportTrafficPolicyToTrafficTarget(
 				trafficTarget,
+				trafficTarget.Status.AppliedTrafficPolicies[0].Ref,
 				gomock.Any()).
-			DoAndReturn(func(trafficTarget ezkube.ResourceId, errs []error) {
-				Expect(errs).To(ContainElement(
-					testutils.HaveInErrorChain(
-						eris.Errorf("Unable to translate AppliedTrafficPolicies to DestinationRule, applies to host %s that is already configured by the existing DestinationRule %s",
-							"local-hostname",
-							sets.Key(in.DestinationRules().List()[1])),
-					),
-				))
+			DoAndReturn(func(trafficTarget *discoveryv1alpha2.TrafficTarget, trafficPolicy ezkube.ResourceId, err error) {
+				Expect(err).To(testutils.HaveInErrorChain(
+					eris.Errorf("Unable to translate AppliedTrafficPolicies to DestinationRule, applies to host %s that is already configured by the existing DestinationRule %s",
+						"local-hostname",
+						sets.Key(in.DestinationRules().List()[1])),
+				),
+				)
 			})
 
 		_ = destinationRuleTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)

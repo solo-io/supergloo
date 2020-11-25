@@ -982,17 +982,17 @@ var _ = Describe("VirtualServiceTranslator", func() {
 
 		mockReporter.
 			EXPECT().
-			ReportTrafficTarget(
+			ReportTrafficPolicyToTrafficTarget(
 				trafficTarget,
+				trafficTarget.Status.AppliedTrafficPolicies[0].Ref,
 				gomock.Any()).
-			DoAndReturn(func(trafficTarget ezkube.ResourceId, errs []error) {
-				Expect(errs).To(ContainElement(
-					testutils.HaveInErrorChain(
-						eris.Errorf("Unable to translate AppliedTrafficPolicies to VirtualService, applies to hosts %+v that are already configured by the existing VirtualService %s",
-							[]string{"local-hostname"},
-							sets.Key(in.VirtualServices().List()[1])),
-					),
-				))
+			DoAndReturn(func(trafficTarget *discoveryv1alpha2.TrafficTarget, trafficPolicy ezkube.ResourceId, err error) {
+				Expect(err).To(testutils.HaveInErrorChain(
+					eris.Errorf("Unable to translate AppliedTrafficPolicies to VirtualService, applies to hosts %+v that are already configured by the existing VirtualService %s",
+						[]string{"local-hostname"},
+						sets.Key(in.VirtualServices().List()[1])),
+				),
+				)
 			})
 
 		_ = virtualServiceTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
