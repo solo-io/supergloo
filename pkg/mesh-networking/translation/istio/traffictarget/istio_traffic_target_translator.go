@@ -14,6 +14,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
@@ -72,6 +73,11 @@ func (t *translator) Translate(
 	vs := t.virtualServices.Translate(in, trafficTarget, nil, reporter)
 	dr := t.destinationRules.Translate(t.ctx, in, trafficTarget, nil, reporter)
 	ap := t.authorizationPolicies.Translate(in, trafficTarget, reporter)
+
+	// Append the traffic target as a parent to each output resource
+	metautils.AppendParent(t.ctx, vs, trafficTarget, trafficTarget.GVK())
+	metautils.AppendParent(t.ctx, dr, trafficTarget, trafficTarget.GVK())
+	metautils.AppendParent(t.ctx, ap, trafficTarget, trafficTarget.GVK())
 
 	outputs.AddVirtualServices(vs)
 	outputs.AddDestinationRules(dr)

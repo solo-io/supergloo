@@ -74,11 +74,6 @@ func (t *translator) Translate(
 		authPolicy.Spec.Rules = append(authPolicy.Spec.Rules, rule)
 	}
 
-	if err := metautils.AppendParent(authPolicy, trafficTarget, trafficTarget.GVK()); err != nil {
-		// TODO(ryantking): Handle error
-		return nil
-	}
-
 	if len(authPolicy.Spec.Rules) == 0 {
 		// no need to create this AuthorizationPolicy as it has no effect
 		return nil
@@ -101,10 +96,6 @@ func (t *translator) initializeAuthorizationPolicy(
 			},
 			Action: securityv1beta1spec.AuthorizationPolicy_ALLOW,
 		},
-	}
-	if err := metautils.AppendParent(authPolicy, trafficTarget, trafficTarget.GVK()); err != nil {
-		// TODO(ryantking): Handle error
-		return nil
 	}
 
 	return authPolicy

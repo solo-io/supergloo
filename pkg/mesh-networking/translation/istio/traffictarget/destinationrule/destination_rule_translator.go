@@ -164,13 +164,6 @@ func registerFieldFunc(
 			return err
 		}
 
-		if err := metautils.AppendParent(
-			destinationRule,
-			policy,
-			v1alpha2.TrafficPolicy{}.GVK(),
-		); err != nil {
-			return err
-		}
 		return nil
 	}
 }
@@ -207,9 +200,6 @@ func (t *translator) initializeDestinationRule(
 				sourceMeshInstallation.GetCluster(),
 			),
 		},
-	}
-	if err := metautils.AppendParent(destinationRule, trafficTarget, trafficTarget.GVK()); err != nil {
-		return nil, err
 	}
 
 	// Initialize Istio TLS mode with default declared in Settings

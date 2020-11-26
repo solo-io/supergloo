@@ -1,6 +1,8 @@
 package access
 
 import (
+	"context"
+
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
@@ -31,10 +33,12 @@ const (
 	GlobalAccessControlAuthPolicyName = "global-access-control"
 )
 
-type translator struct{}
+type translator struct {
+	ctx context.Context
+}
 
-func NewTranslator() Translator {
-	return &translator{}
+func NewTranslator(ctx context.Context) Translator {
+	return &translator{ctx}
 }
 
 func (t *translator) Translate(
@@ -54,8 +58,18 @@ func (t *translator) Translate(
 	}
 	clusterName := istioMesh.Installation.Cluster
 	installationNamespace := istioMesh.Installation.Namespace
-	globalAuthPolicy := buildGlobalAuthPolicy(installationNamespace, clusterName, mesh)
-	ingressGatewayAuthPolicies := buildAuthPoliciesForIngressgateways(installationNamespace, clusterName, istioMesh.IngressGateways, mesh)
+	globalAuthPolicy := buildGlobalAuthPolicy(installationNamespace, clusterName)
+	ingressGatewayAuthPolicies := buildAuthPoliciesForIngressgateways(
+		t.ctx,
+		installationNamespace,
+		clusterName,
+		istioMesh.IngressGateways,
+		mesh,
+		virtualMesh,
+	)
+
+	// Append the virtual mesh as a parent to the global access policy
+	metautils.AppendParent(t.ctx, globalAuthPolicy, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 
 	outputs.AddAuthorizationPolicies(globalAuthPolicy)
 	outputs.AddAuthorizationPolicies(ingressGatewayAuthPolicies...)
@@ -64,10 +78,12 @@ func (t *translator) Translate(
 // Creates an AuthorizationPolicy that allows all traffic into the "istio-ingressgateway" service
 // which backs the Gateway used for multi cluster traffic.
 func buildAuthPoliciesForIngressgateways(
+	ctx context.Context,
 	installationNamespace string,
 	clusterName string,
 	ingressGateways []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo,
 	mesh *discoveryv1alpha2.Mesh,
+	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
 ) []*securityv1beta1.AuthorizationPolicy {
 	var authPolicies []*securityv1beta1.AuthorizationPolicy
 	for _, ingressGateway := range ingressGateways {
@@ -88,10 +104,10 @@ func buildAuthPoliciesForIngressgateways(
 				},
 			},
 		}
-		if err := metautils.AppendParent(ap, mesh, mesh.GVK()); err != nil {
-			// TODO(ryantking): Handle error
-			return nil
-		}
+
+		// Append the virtual mesh as a parent to each output access policy
+		metautils.AppendParent(ctx, ap, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+
 		authPolicies = append(authPolicies, ap)
 	}
 	return authPolicies
@@ -101,7 +117,6 @@ func buildAuthPoliciesForIngressgateways(
 func buildGlobalAuthPolicy(
 	installationNamespace,
 	clusterName string,
-	mesh *discoveryv1alpha2.Mesh,
 ) *securityv1beta1.AuthorizationPolicy {
 	// The following config denies all traffic in the mesh because it defaults to an ALLOW rule that doesn't match any requests,
 	// set to the installation namespace so it affects all namespaces,
@@ -115,10 +130,6 @@ func buildGlobalAuthPolicy(
 			Labels:      metautils.TranslatedObjectLabels(),
 		},
 		Spec: securityv1beta1spec.AuthorizationPolicy{},
-	}
-	if err := metautils.AppendParent(ap, mesh, mesh.GVK()); err != nil {
-		// TODO(ryantking): Handle error
-		return nil
 	}
 
 	return ap

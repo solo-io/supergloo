@@ -1,6 +1,7 @@
 package metautils
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -8,6 +9,7 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -72,10 +74,11 @@ func TranslatedObjectLabels() map[string]string {
 
 // add a parent to the annotation for a given child object
 func AppendParent(
+	ctx context.Context,
 	child metav1.Object,
 	parentId ezkube.ResourceId,
 	parentGVK schema.GroupVersionKind,
-) error {
+) {
 	annotations := child.GetAnnotations()
 	if annotations == nil {
 		annotations = make(map[string]string)
@@ -84,7 +87,8 @@ func AppendParent(
 	parentsStr, ok := annotations[ParentLabelkey]
 	if ok {
 		if err := json.Unmarshal([]byte(parentsStr), &parents); err != nil {
-			return err
+			contextutils.LoggerFrom(ctx).Errorf("internal error: could not unmarshal %q annotation", ParentLabelkey)
+			return
 		}
 	}
 
@@ -95,17 +99,18 @@ func AppendParent(
 	parentRef := ezkube.MakeObjectRef(parentId)
 	for _, parent := range curParents {
 		if parent.Equal(parentRef) {
-			return nil
+			return
 		}
 	}
 	parents[parentGVK.String()] = append(curParents, parentRef)
 
 	b, err := json.Marshal(parents)
 	if err != nil {
-		return err
+		contextutils.LoggerFrom(ctx).Error("internal error: could not marshal parents map")
+		return
 	}
 
 	annotations[ParentLabelkey] = string(b)
 	child.SetAnnotations(annotations)
-	return nil
+	return
 }

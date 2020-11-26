@@ -180,6 +180,11 @@ func (t *translator) configureSharedTrust(
 		agentInfo.AgentNamespace,
 		autoRestartPods,
 	)
+
+	// Append the virtual mesh as a parent to the output resources
+	metautils.AppendParent(t.ctx, issuedCertificate, virtualMeshRef, v1alpha2.VirtualMesh{}.GVK())
+	metautils.AppendParent(t.ctx, podBounceDirective, virtualMeshRef, v1alpha2.VirtualMesh{}.GVK())
+
 	istioOutputs.AddIssuedCertificates(issuedCertificate)
 	istioOutputs.AddPodBounceDirectives(podBounceDirective)
 	return nil
@@ -227,13 +232,6 @@ func (t *translator) getOrCreateRootCaSecret(
 				Data: selfSignedCert.ToSecretData(),
 				Type: signingCertSecretType,
 			}
-		}
-		if err := metautils.AppendParent(
-			selfSignedCertSecret,
-			virtualMeshRef,
-			v1alpha2.VirtualMesh{}.GVK(),
-		); err != nil {
-			return nil, err
 		}
 		localOutputs.AddSecrets(selfSignedCertSecret)
 	case *v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Secret:
@@ -306,10 +304,6 @@ func (t *translator) constructIssuedCertificate(
 			IssuedCertificateSecret:  istioCaCerts,
 			PodBounceDirective:       podBounceRef,
 		},
-	}
-	if err := metautils.AppendParent(issuedCert, rootCaSecret, discoveryv1alpha2.Mesh{}.GVK()); err != nil {
-		// TODO(ryantking): Handle error
-		return nil, nil
 	}
 
 	return issuedCert, podBounceDirective

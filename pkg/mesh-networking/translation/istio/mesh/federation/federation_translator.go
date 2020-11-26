@@ -12,6 +12,7 @@ import (
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
@@ -219,15 +220,16 @@ func (t *translator) Translate(
 					Ports:      ports,
 				},
 			}
-			if err := metautils.AppendParent(se, ref, mesh.GVK()); err != nil {
-				// TODO(ryantking): Handle error
-				return
-			}
 
 			// Translate VirtualServices for federated TrafficTargets
 			vs := t.virtualServiceTranslator.Translate(in, trafficTarget, clientIstio.Installation, reporter)
 			// Translate DestinationRules for federated TrafficTargets
 			dr := t.destinationRuleTranslator.Translate(t.ctx, in, trafficTarget, clientIstio.Installation, reporter)
+
+			// Append virtual mesh as a parent to each output resource
+			metautils.AppendParent(t.ctx, se, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+			metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+			metautils.AppendParent(t.ctx, vs, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 
 			outputs.AddServiceEntries(se)
 			outputs.AddDestinationRules(dr)
@@ -260,11 +262,6 @@ func (t *translator) Translate(
 			Selector: ingressGateway.WorkloadLabels,
 		},
 	}
-	if err := metautils.AppendParent(gw, mesh, mesh.GVK()); err != nil {
-		// TODO(ryantking): Handle error
-		return
-	}
-	outputs.AddGateways(gw)
 
 	ef := &networkingv1alpha3.EnvoyFilter{
 		ObjectMeta: metav1.ObjectMeta{
@@ -298,10 +295,12 @@ func (t *translator) Translate(
 			}},
 		},
 	}
-	if err := metautils.AppendParent(ef, mesh, mesh.GVK()); err != nil {
-		// TODO(ryantking): Handle error
-		return
-	}
+
+	// Append virtual mesh as a parent to each output resource
+	metautils.AppendParent(t.ctx, gw, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+	metautils.AppendParent(t.ctx, ef, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+
+	outputs.AddGateways(gw)
 	outputs.AddEnvoyFilters(ef)
 }
 

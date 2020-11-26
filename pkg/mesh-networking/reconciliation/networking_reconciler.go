@@ -168,7 +168,7 @@ func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Sn
 		return err
 	}
 
-	errHandler := errHandler{}
+	errHandler := newErrHandler(ctx, in)
 
 	outputSnap.Apply(ctx, r.mgmtClient, r.multiClusterClient, errHandler)
 

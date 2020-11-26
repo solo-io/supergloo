@@ -119,10 +119,6 @@ func (t *translator) Translate(
 				},
 			},
 		}
-		if err := metautils.AppendParent(trafficTarget, target, target.GVK()); err != nil {
-			// TODO(ryantking): Handle error
-			return nil, nil
-		}
 
 		for _, sourceSelector := range ap.GetSpec().GetSourceSelector() {
 			if sourceSelector.GetKubeIdentityMatcher() != nil {
@@ -154,6 +150,9 @@ func (t *translator) Translate(
 
 		// Append the ap ref to the name as each ap gets it's own traffic target
 		trafficTarget.Name += fmt.Sprintf(".%s", t.kubeValidName(ap.GetRef()))
+
+		// Append the traffic target as a parent to each output SMI traffic target
+		metautils.AppendParent(ctx, trafficTarget, target, target.GVK())
 
 		if len(ap.GetSpec().GetAllowedPorts()) > 1 {
 			// Add a traffic target per port
@@ -199,10 +198,6 @@ func (t *translator) Translate(
 				Matches: httpMatches,
 			},
 		}
-		if err := metautils.AppendParent(routeGroup, target, target.GVK()); err != nil {
-			// TODO(ryantking): Handle error
-			return nil, nil
-		}
 		// Append the ap ref to the name as each ap gets it's own route group
 		routeGroup.Name += fmt.Sprintf(".%s", t.kubeValidName(ap.GetRef()))
 
@@ -217,6 +212,9 @@ func (t *translator) Translate(
 			}
 			tt.Spec.Rules = append(tt.Spec.Rules, rule)
 		}
+
+		// Append the traffic target as a parent to each output route group
+		metautils.AppendParent(ctx, routeGroup, target, target.GVK())
 
 		httpRouteGroups = append(httpRouteGroups, routeGroup)
 		trafficTargets = append(trafficTargets, trafficTargetsByAp...)

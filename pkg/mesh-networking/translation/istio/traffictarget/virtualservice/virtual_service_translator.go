@@ -161,14 +161,6 @@ func registerFieldFunc(
 			return err
 		}
 
-		if err := metautils.AppendParent(
-			virtualService,
-			policyRef,
-			v1alpha2.TrafficPolicy{}.GVK(),
-		); err != nil {
-			return err
-		}
-
 		return nil
 	}
 }
@@ -198,10 +190,6 @@ func (t *translator) initializeVirtualService(
 		Spec: networkingv1alpha3spec.VirtualService{
 			Hosts: hosts,
 		},
-	}
-	if err := metautils.AppendParent(vs, trafficTarget, trafficTarget.GVK()); err != nil {
-		// TODO(ryantking): Handle error
-		return nil
 	}
 
 	return vs
