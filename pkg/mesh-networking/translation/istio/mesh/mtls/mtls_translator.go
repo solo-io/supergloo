@@ -295,7 +295,7 @@ func (t *translator) constructIssuedCertificate(
 	}
 
 	// issue a certificate to the mesh agent
-	issuedCert := &certificatesv1alpha2.IssuedCertificate{
+	return &certificatesv1alpha2.IssuedCertificate{
 		ObjectMeta: issuedCertificateMeta,
 		Spec: certificatesv1alpha2.IssuedCertificateSpec{
 			Hosts:                    []string{buildSpiffeURI(trustDomain, istioNamespace, citadelServiceAccount)},
@@ -304,9 +304,7 @@ func (t *translator) constructIssuedCertificate(
 			IssuedCertificateSecret:  istioCaCerts,
 			PodBounceDirective:       podBounceRef,
 		},
-	}
-
-	return issuedCert, podBounceDirective
+	}, podBounceDirective
 }
 
 const (

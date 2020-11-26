@@ -160,7 +160,6 @@ func registerFieldFunc(
 		); err != nil {
 			return err
 		}
-
 		return nil
 	}
 }
@@ -185,14 +184,12 @@ func (t *translator) initializeVirtualService(
 
 	hosts := []string{t.clusterDomains.GetDestinationServiceFQDN(meta.ClusterName, trafficTarget.Spec.GetKubeService().Ref)}
 
-	vs := &networkingv1alpha3.VirtualService{
+	return &networkingv1alpha3.VirtualService{
 		ObjectMeta: meta,
 		Spec: networkingv1alpha3spec.VirtualService{
 			Hosts: hosts,
 		},
 	}
-
-	return vs
 }
 
 // Returns nil to prevent translating the trafficPolicy if the sourceClusterName is not selected by the WorkloadSelector

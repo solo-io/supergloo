@@ -163,7 +163,6 @@ func registerFieldFunc(
 		); err != nil {
 			return err
 		}
-
 		return nil
 	}
 }

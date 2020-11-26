@@ -240,7 +240,7 @@ func (t *translator) translateDestinationRule(
 		nil,
 	)
 
-	dr := &networkingv1alpha3.DestinationRule{
+	return &networkingv1alpha3.DestinationRule{
 		ObjectMeta: meta,
 		Spec: networkingv1alpha3spec.DestinationRule{
 			Host: failoverService.Spec.Hostname,
@@ -254,9 +254,7 @@ func (t *translator) translateDestinationRule(
 			},
 			Subsets: subsets,
 		},
-	}
-
-	return dr, nil
+	}, nil
 }
 
 func (t *translator) translateEnvoyFilter(

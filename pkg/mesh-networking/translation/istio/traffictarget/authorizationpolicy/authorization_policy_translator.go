@@ -97,7 +97,6 @@ func (t *translator) initializeAuthorizationPolicy(
 			Action: securityv1beta1spec.AuthorizationPolicy_ALLOW,
 		},
 	}
-
 	return authPolicy
 }
 
