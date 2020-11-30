@@ -47,7 +47,7 @@ message SettingsSpec {
     }
 }
 
-// Options for connecting to an external gRPC NetworkingExternsions server
+// Options for connecting to an external gRPC NetworkingExtensions server
 message NetworkingExtensionsServer {
     // TCP address of the Networking Extensions Server (including port)
     string address = 1;

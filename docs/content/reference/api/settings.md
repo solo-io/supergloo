@@ -33,7 +33,7 @@ title: "settings.proto"
 <a name="settings.mesh.gloo.solo.io.NetworkingExtensionsServer"></a>
 
 ### NetworkingExtensionsServer
-Options for connecting to an external gRPC NetworkingExternsions server
+Options for connecting to an external gRPC NetworkingExtensions server
 
 
 | Field | Type | Label | Description |

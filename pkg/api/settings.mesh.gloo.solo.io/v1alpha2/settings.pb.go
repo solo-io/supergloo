@@ -190,7 +190,7 @@ func (m *SettingsSpec_Istio_IngressGatewayMatcher) GetGatewayTlsPortName() strin
 	return ""
 }
 
-// Options for connecting to an external gRPC NetworkingExternsions server
+// Options for connecting to an external gRPC NetworkingExtensions server
 type NetworkingExtensionsServer struct {
 	// TCP address of the Networking Extensions Server (including port)
 	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
