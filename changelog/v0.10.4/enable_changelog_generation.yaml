@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/service-mesh-hub/issues/1041
+    description: Sets the required environment variables for the changelog generation in the GitHub actions.

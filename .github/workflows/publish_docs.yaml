@@ -37,6 +37,8 @@ jobs:
 
     - name: Generate versioned docs site
       run: ./ci/build-docs-site.sh
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Deploy to Firebase
       uses: w9jds/firebase-action@master

@@ -83,7 +83,7 @@ do
   then
     version="latest"
   fi
-  go run codegen/docs/docsgen.go
+  TAGGED_VERSION=$version RELEASE=\"true\" go run codegen/docs/docsgen.go
   cd docs
   # Generate data/Solo.yaml file with version info populated.
   generateHugoVersionsYaml $version
