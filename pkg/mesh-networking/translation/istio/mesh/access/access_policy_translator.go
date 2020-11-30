@@ -122,7 +122,7 @@ func buildGlobalAuthPolicy(
 	// set to the installation namespace so it affects all namespaces,
 	// thereby denying traffic unless explicitly allowed by the user through additional AuthorizationPolicies.
 	// https://istio.io/docs/reference/config/security/authorization-policy/#AuthorizationPolicy
-	ap := &securityv1beta1.AuthorizationPolicy{
+	return &securityv1beta1.AuthorizationPolicy{
 		ObjectMeta: v1.ObjectMeta{
 			Name:        GlobalAccessControlAuthPolicyName,
 			Namespace:   installationNamespace,
@@ -131,8 +131,6 @@ func buildGlobalAuthPolicy(
 		},
 		Spec: securityv1beta1spec.AuthorizationPolicy{},
 	}
-
-	return ap
 }
 
 func ingressGatewayAuthPolicyName(ingressGateway *discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo) string {
