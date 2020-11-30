@@ -25,7 +25,7 @@ type TrafficTarget struct {
 // GVK returns the GroupVersionKind associated with the resource type.
 func (TrafficTarget) GVK() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
-		Group:   "discovery.mesh.gloo.solo.io/v1alpha2",
+		Group:   "discovery.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "TrafficTarget",
 	}
@@ -57,7 +57,7 @@ type Workload struct {
 // GVK returns the GroupVersionKind associated with the resource type.
 func (Workload) GVK() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
-		Group:   "discovery.mesh.gloo.solo.io/v1alpha2",
+		Group:   "discovery.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "Workload",
 	}
@@ -89,7 +89,7 @@ type Mesh struct {
 // GVK returns the GroupVersionKind associated with the resource type.
 func (Mesh) GVK() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
-		Group:   "discovery.mesh.gloo.solo.io/v1alpha2",
+		Group:   "discovery.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "Mesh",
 	}

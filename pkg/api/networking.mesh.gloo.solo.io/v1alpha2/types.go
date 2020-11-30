@@ -25,7 +25,7 @@ type TrafficPolicy struct {
 // GVK returns the GroupVersionKind associated with the resource type.
 func (TrafficPolicy) GVK() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
-		Group:   "networking.mesh.gloo.solo.io/v1alpha2",
+		Group:   "networking.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "TrafficPolicy",
 	}
@@ -57,7 +57,7 @@ type AccessPolicy struct {
 // GVK returns the GroupVersionKind associated with the resource type.
 func (AccessPolicy) GVK() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
-		Group:   "networking.mesh.gloo.solo.io/v1alpha2",
+		Group:   "networking.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "AccessPolicy",
 	}
@@ -89,7 +89,7 @@ type VirtualMesh struct {
 // GVK returns the GroupVersionKind associated with the resource type.
 func (VirtualMesh) GVK() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
-		Group:   "networking.mesh.gloo.solo.io/v1alpha2",
+		Group:   "networking.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "VirtualMesh",
 	}
@@ -121,7 +121,7 @@ type FailoverService struct {
 // GVK returns the GroupVersionKind associated with the resource type.
 func (FailoverService) GVK() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
-		Group:   "networking.mesh.gloo.solo.io/v1alpha2",
+		Group:   "networking.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "FailoverService",
 	}

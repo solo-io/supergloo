@@ -25,7 +25,7 @@ type Settings struct {
 // GVK returns the GroupVersionKind associated with the resource type.
 func (Settings) GVK() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
-		Group:   "settings.mesh.gloo.solo.io/v1alpha2",
+		Group:   "settings.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "Settings",
 	}

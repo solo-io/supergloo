@@ -116,6 +116,9 @@ func (t *translator) Translate(
 		},
 	}
 
+	// Append the applied traffic policy as the parent to the traffic split
+	metautils.AppendParent(ctx, trafficSplit, appliedTrafficPolicy.GetRef(), v1alpha2.TrafficPolicy{}.GVK())
+
 	backends, err := buildBackends(appliedTrafficPolicy.GetRef(), appliedTrafficPolicy.Spec.GetTrafficShift(), kubeService)
 	if err != nil {
 		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, appliedTrafficPolicy.GetRef(), err)

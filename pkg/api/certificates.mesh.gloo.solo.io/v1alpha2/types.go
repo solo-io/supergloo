@@ -25,7 +25,7 @@ type IssuedCertificate struct {
 // GVK returns the GroupVersionKind associated with the resource type.
 func (IssuedCertificate) GVK() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
-		Group:   "certificates.mesh.gloo.solo.io/v1alpha2",
+		Group:   "certificates.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "IssuedCertificate",
 	}
@@ -57,7 +57,7 @@ type CertificateRequest struct {
 // GVK returns the GroupVersionKind associated with the resource type.
 func (CertificateRequest) GVK() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
-		Group:   "certificates.mesh.gloo.solo.io/v1alpha2",
+		Group:   "certificates.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "CertificateRequest",
 	}
@@ -88,7 +88,7 @@ type PodBounceDirective struct {
 // GVK returns the GroupVersionKind associated with the resource type.
 func (PodBounceDirective) GVK() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
-		Group:   "certificates.mesh.gloo.solo.io/v1alpha2",
+		Group:   "certificates.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "PodBounceDirective",
 	}
