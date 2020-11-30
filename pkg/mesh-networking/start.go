@@ -28,7 +28,7 @@ type NetworkingOpts struct {
 }
 
 func (opts *NetworkingOpts) AddToFlags(flags *pflag.FlagSet) {
-	flags.BoolVar(&opts.VerboseMode, "disallow-intersecting-config", false, "if enabled, Gloo Mesh will detect and report errors when outputting service mesh configuration that overlaps with existing config not managed by Gloo Mesh")
+	flags.BoolVar(&opts.disallowIntersectionConfig, "disallow-intersecting-config", false, "if enabled, Gloo Mesh will detect and report errors when outputting service mesh configuration that overlaps with existing config not managed by Gloo Mesh")
 }
 
 // the mesh-networking controller is the Kubernetes Controller/Operator

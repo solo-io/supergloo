@@ -12,6 +12,7 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
@@ -56,6 +57,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockDecorator = mock_trafficpolicy.NewMockTrafficPolicyDestinationRuleDecorator(ctrl)
 		destinationRuleTranslator = destinationrule.NewTranslator(
+			nil,
 			mockClusterDomainRegistry,
 			mockDecoratorFactory,
 			trafficTargets,
@@ -433,6 +435,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		)
 
 		destinationRuleTranslator = destinationrule.NewTranslator(
+			nil,
 			mockClusterDomainRegistry,
 			mockDecoratorFactory,
 			trafficTargets,
@@ -559,13 +562,11 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						Name:      defaults.DefaultSettingsName,
 						Namespace: defaults.DefaultPodNamespace,
 					},
-					Spec: settingsv1alpha2.SettingsSpec{
-						Networking: &settingsv1alpha2.Networking{
-							DisallowIntersectingConfig: true,
-						},
-					},
+					Spec: settingsv1alpha2.SettingsSpec{},
 				},
 			}).
+			Build()
+		userIn := user.NewInputSnapshotManualBuilder("").
 			AddDestinationRules(v1alpha3.DestinationRuleSlice{
 				// Gloo Mesh translated, should not yield error
 				{
@@ -671,10 +672,18 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				Expect(err).To(testutils.HaveInErrorChain(
 					eris.Errorf("Unable to translate AppliedTrafficPolicies to DestinationRule, applies to host %s that is already configured by the existing DestinationRule %s",
 						"local-hostname",
-						sets.Key(in.DestinationRules().List()[1])),
+						sets.Key(userIn.DestinationRules().List()[1])),
 				),
 				)
 			})
+
+		destinationRuleTranslator = destinationrule.NewTranslator(
+			userIn,
+			mockClusterDomainRegistry,
+			mockDecoratorFactory,
+			trafficTargets,
+			failoverServices,
+		)
 
 		_ = destinationRuleTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
 	})

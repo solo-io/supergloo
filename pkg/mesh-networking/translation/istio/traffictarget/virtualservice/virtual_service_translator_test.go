@@ -9,6 +9,7 @@ import (
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/types"
 	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
@@ -47,7 +48,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockDecoratorFactory = mock_decorators.NewMockFactory(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockDecorator = mock_trafficpolicy.NewMockTrafficPolicyVirtualServiceDecorator(ctrl)
-		virtualServiceTranslator = virtualservice.NewTranslator(mockClusterDomainRegistry, mockDecoratorFactory)
+		virtualServiceTranslator = virtualservice.NewTranslator(nil, mockClusterDomainRegistry, mockDecoratorFactory)
 		in = input.NewInputSnapshotManualBuilder("").AddSettings(settingsv1alpha2.SettingsSlice{{}}).Build()
 	})
 
@@ -911,13 +912,12 @@ var _ = Describe("VirtualServiceTranslator", func() {
 						Name:      defaults.DefaultSettingsName,
 						Namespace: defaults.DefaultPodNamespace,
 					},
-					Spec: settingsv1alpha2.SettingsSpec{
-						Networking: &settingsv1alpha2.Networking{
-							DisallowIntersectingConfig: true,
-						},
-					},
+					Spec: settingsv1alpha2.SettingsSpec{},
 				},
 			}).
+			Build()
+
+		userIn := user.NewInputSnapshotManualBuilder("user").
 			AddVirtualServices([]*networkingv1alpha3.VirtualService{
 				// Gloo Mesh translated, should not yield error
 				{
@@ -990,11 +990,12 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				Expect(err).To(testutils.HaveInErrorChain(
 					eris.Errorf("Unable to translate AppliedTrafficPolicies to VirtualService, applies to hosts %+v that are already configured by the existing VirtualService %s",
 						[]string{"local-hostname"},
-						sets.Key(in.VirtualServices().List()[1])),
+						sets.Key(userIn.VirtualServices().List()[1])),
 				),
 				)
 			})
 
+		virtualServiceTranslator = virtualservice.NewTranslator(userIn, mockClusterDomainRegistry, mockDecoratorFactory)
 		_ = virtualServiceTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
 	})
 })

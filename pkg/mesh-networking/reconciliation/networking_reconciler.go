@@ -31,7 +31,9 @@ import (
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"github.com/solo-io/skv2/pkg/verifier"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/selection"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -116,7 +118,6 @@ func Start(
 
 	// Start watches on translation output types to detect intersecting config
 	if disallowIntersectingConfig {
-
 		var mcReconcile = func(id ezkube.ClusterResourceId) (bool, error) {
 			return r.reconcile(id)
 		}
@@ -124,7 +125,7 @@ func Start(
 		// filter out translated resources
 		filterUserConfig := predicate.SimplePredicate{
 			Filter: predicate.SimpleEventFilterFunc(func(obj metav1.Object) bool {
-				return !metautils.IsTranslated(obj)
+				return metautils.IsTranslated(obj)
 			}),
 		}
 
@@ -167,9 +168,19 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 
 	var userInputSnap user.Snapshot
 	if r.disallowIntersectingConfig {
+		selector := labels.NewSelector()
+		for k := range metautils.TranslatedObjectLabels() {
+			// select objects without the translated object label key
+			requirement, err := labels.NewRequirement(k, selection.DoesNotExist, nil)
+			if err != nil {
+				// shouldn't happen
+				return false, err
+			}
+			selector.Add([]labels.Requirement{*requirement}...)
+		}
 		resourceBuildOptions := user.ResourceBuildOptions{
 			ListOptions: []client.ListOption{
-				client.MatchingLabels(metautils.TranslatedObjectLabels()),
+				&client.ListOptions{LabelSelector: selector},
 			},
 			Verifier: verifier.NewVerifier(ctx, map[schema.GroupVersionKind]verifier.ServerVerifyOption{
 				// avoid error when mesh-specific input resources are not available

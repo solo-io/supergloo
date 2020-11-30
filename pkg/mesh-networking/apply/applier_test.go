@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
@@ -95,7 +96,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap)
+			applier.Apply(context.TODO(), snap, nil)
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy1.Status.TrafficTargets).To(HaveKey(sets.Key(trafficTarget)))
@@ -151,7 +152,7 @@ var _ = Describe("Applier", func() {
 				reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, trafficPolicy, errors.New("did an oopsie"))
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap)
+			applier.Apply(context.TODO(), snap, nil)
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy.Status.TrafficTargets).To(HaveKey(sets.Key(trafficTarget)))
@@ -254,7 +255,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap)
+			applier.Apply(context.TODO(), snap, nil)
 
 			// trafficTarget and workload1 are both in mesh1
 			Expect(trafficPolicy.Status.Workloads).To(HaveLen(1))
@@ -275,7 +276,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap)
+			applier.Apply(context.TODO(), snap, nil)
 
 			// trafficTarget is in mesh1, workload1 is in mesh1, and workload2 is in mesh2.
 			// since mesh1 and mesh2 are in the same virtual mesh, both workloads are returned
@@ -299,7 +300,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap)
+			applier.Apply(context.TODO(), snap, nil)
 
 			// trafficTarget is in mesh1, but both workloads are in mesh2
 			Expect(trafficPolicy.Status.Workloads).To(BeNil())
@@ -314,7 +315,12 @@ type testIstioTranslator struct {
 	callReporter func(reporter reporting.Reporter)
 }
 
-func (t testIstioTranslator) Translate(ctx context.Context, in input.Snapshot, reporter reporting.Reporter) (translation.OutputSnapshots, error) {
+func (t testIstioTranslator) Translate(
+	ctx context.Context,
+	in input.Snapshot,
+	userInputSnap user.Snapshot,
+	reporter reporting.Reporter,
+) (translation.OutputSnapshots, error) {
 	t.callReporter(reporter)
 	return translation.OutputSnapshots{}, nil
 }
