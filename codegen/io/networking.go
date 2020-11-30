@@ -15,48 +15,54 @@ import (
 
 var (
 	NetworkingInputTypes = Snapshot{
-		schema.GroupVersion{
-			Group:   "discovery." + constants.GlooMeshApiGroupSuffix,
-			Version: "v1alpha2",
-		}: {
-			"Mesh",
-			"Workload",
-			"TrafficTarget",
-		},
-		schema.GroupVersion{
-			Group:   "networking." + constants.GlooMeshApiGroupSuffix,
-			Version: "v1alpha2",
-		}: {
-			"TrafficPolicy",
-			"AccessPolicy",
-			"VirtualMesh",
-			"FailoverService",
-		},
-		schema.GroupVersion{
-			Group:   "settings." + constants.GlooMeshApiGroupSuffix,
-			Version: "v1alpha2",
-		}: {
-			"Settings",
-		},
-		skv1alpha1.SchemeGroupVersion: {
-			"KubernetesCluster",
-		},
-		corev1.SchemeGroupVersion: {
-			"Secret",
-		},
-		// mesh-specific CRDs, these will only exist if the relevant mesh is deployed on the cluster
-		istionetworkingv1alpha3.SchemeGroupVersion: {
-			"VirtualService",
-			"DestinationRule",
-		},
-		istiosecurityv1beta1.SchemeGroupVersion: {
-			"AuthorizationPolicy",
+		Name: "networking",
+		Resources: SnapshotResources{
+			schema.GroupVersion{
+				Group:   "discovery." + constants.GlooMeshApiGroupSuffix,
+				Version: "v1alpha2",
+			}: {
+				"Mesh",
+				"Workload",
+				"TrafficTarget",
+			},
+			schema.GroupVersion{
+				Group:   "networking." + constants.GlooMeshApiGroupSuffix,
+				Version: "v1alpha2",
+			}: {
+				"TrafficPolicy",
+				"AccessPolicy",
+				"VirtualMesh",
+				"FailoverService",
+			},
+			schema.GroupVersion{
+				Group:   "settings." + constants.GlooMeshApiGroupSuffix,
+				Version: "v1alpha2",
+			}: {
+				"Settings",
+			},
+			skv1alpha1.SchemeGroupVersion: {
+				"KubernetesCluster",
+			},
+			corev1.SchemeGroupVersion: {
+				"Secret",
+			},
 		},
 	}
 
-	IstioNetworkingOutputTypes = OutputSnapshot{
+	// User-supplied service mesh config types for which we may detect intersecting config
+	NetworkingUserSuppliedInputTypes = Snapshot{
+		Name: "user",
+		Resources: SnapshotResources{
+			istionetworkingv1alpha3.SchemeGroupVersion: {
+				"VirtualService",
+				"DestinationRule",
+			},
+		},
+	}
+
+	IstioNetworkingOutputTypes = Snapshot{
 		Name: "istio",
-		Snapshot: Snapshot{
+		Resources: SnapshotResources{
 			istionetworkingv1alpha3.SchemeGroupVersion: {
 				"DestinationRule",
 				"VirtualService",
@@ -77,18 +83,18 @@ var (
 		},
 	}
 
-	LocalNetworkingOutputTypes = OutputSnapshot{
+	LocalNetworkingOutputTypes = Snapshot{
 		Name: "local",
-		Snapshot: Snapshot{
+		Resources: SnapshotResources{
 			corev1.SchemeGroupVersion: {
 				"Secret",
 			},
 		},
 	}
 
-	SmiNetworkingOutputTypes = OutputSnapshot{
+	SmiNetworkingOutputTypes = Snapshot{
 		Name: "smi",
-		Snapshot: Snapshot{
+		Resources: SnapshotResources{
 			smislpitv1alpha2.SchemeGroupVersion: {
 				"TrafficSplit",
 			},
@@ -101,9 +107,9 @@ var (
 		},
 	}
 
-	AppMeshNetworkingOutputTypes = OutputSnapshot{
+	AppMeshNetworkingOutputTypes = Snapshot{
 		Name: "appmesh",
-		Snapshot: Snapshot{
+		Resources: SnapshotResources{
 			appmeshv1beta2.GroupVersion: {
 				"VirtualNode",
 				"VirtualRouter",

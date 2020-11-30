@@ -5,6 +5,9 @@
 // The Input Snapshot contains the set of all:
 // * IssuedCertificates
 // * CertificateRequests
+// * PodBounceDirectives
+// * Secrets
+// * Pods
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
@@ -13,7 +16,7 @@
 // Resources in a MultiCluster snapshot will have their ClusterName set to the
 // name of the cluster from which the resource was read.
 
-package input
+package agent
 
 import (
 	"context"
@@ -31,6 +34,9 @@ import (
 
 	certificates_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
 	certificates_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
+
+	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 )
 
 // the snapshot of input resources consumed by translation
@@ -40,6 +46,13 @@ type Snapshot interface {
 	IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
 	// return the set of input CertificateRequests
 	CertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
+	// return the set of input PodBounceDirectives
+	PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+
+	// return the set of input Secrets
+	Secrets() v1_sets.SecretSet
+	// return the set of input Pods
+	Pods() v1_sets.PodSet
 	// update the status of all input objects which support
 	// the Status subresource (in the local cluster)
 	SyncStatuses(ctx context.Context, c client.Client) error
@@ -56,6 +69,10 @@ type snapshot struct {
 
 	issuedCertificates  certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
 	certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
+	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+
+	secrets v1_sets.SecretSet
+	pods    v1_sets.PodSet
 }
 
 func NewSnapshot(
@@ -63,6 +80,10 @@ func NewSnapshot(
 
 	issuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet,
 	certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet,
+	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
+
+	secrets v1_sets.SecretSet,
+	pods v1_sets.PodSet,
 
 ) Snapshot {
 	return &snapshot{
@@ -70,6 +91,9 @@ func NewSnapshot(
 
 		issuedCertificates:  issuedCertificates,
 		certificateRequests: certificateRequests,
+		podBounceDirectives: podBounceDirectives,
+		secrets:             secrets,
+		pods:                pods,
 	}
 }
 
@@ -79,6 +103,18 @@ func (s snapshot) IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_s
 
 func (s snapshot) CertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet {
 	return s.certificateRequests
+}
+
+func (s snapshot) PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet {
+	return s.podBounceDirectives
+}
+
+func (s snapshot) Secrets() v1_sets.SecretSet {
+	return s.secrets
+}
+
+func (s snapshot) Pods() v1_sets.PodSet {
+	return s.pods
 }
 func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
 
@@ -92,6 +128,7 @@ func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -115,6 +152,7 @@ func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicl
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -123,6 +161,9 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 
 	snapshotMap["issuedCertificates"] = s.issuedCertificates.List()
 	snapshotMap["certificateRequests"] = s.certificateRequests.List()
+	snapshotMap["podBounceDirectives"] = s.podBounceDirectives.List()
+	snapshotMap["secrets"] = s.secrets.List()
+	snapshotMap["pods"] = s.pods.List()
 	return json.Marshal(snapshotMap)
 }
 
@@ -141,6 +182,13 @@ type BuildOptions struct {
 	IssuedCertificates ResourceBuildOptions
 	// List options for composing a snapshot from CertificateRequests
 	CertificateRequests ResourceBuildOptions
+	// List options for composing a snapshot from PodBounceDirectives
+	PodBounceDirectives ResourceBuildOptions
+
+	// List options for composing a snapshot from Secrets
+	Secrets ResourceBuildOptions
+	// List options for composing a snapshot from Pods
+	Pods ResourceBuildOptions
 }
 
 // Options for reading resources of a given type
@@ -174,6 +222,10 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 
 	issuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
 	certificateRequests := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
+	podBounceDirectives := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+
+	secrets := v1_sets.NewSecretSet()
+	pods := v1_sets.NewPodSet()
 
 	var errs error
 
@@ -185,6 +237,15 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		if err := b.insertCertificateRequestsFromCluster(ctx, cluster, certificateRequests, opts.CertificateRequests); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertPodBounceDirectivesFromCluster(ctx, cluster, podBounceDirectives, opts.PodBounceDirectives); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertPodsFromCluster(ctx, cluster, pods, opts.Pods); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 
 	}
 
@@ -193,6 +254,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 
 		issuedCertificates,
 		certificateRequests,
+		podBounceDirectives,
+		secrets,
+		pods,
 	)
 
 	return outputSnap, errs
@@ -282,6 +346,133 @@ func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.C
 
 	return nil
 }
+func (b *multiClusterBuilder) insertPodBounceDirectivesFromCluster(ctx context.Context, cluster string, podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet, opts ResourceBuildOptions) error {
+	podBounceDirectiveClient, err := certificates_mesh_gloo_solo_io_v1alpha2.NewMulticlusterPodBounceDirectiveClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "certificates.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "PodBounceDirective",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	podBounceDirectiveList, err := podBounceDirectiveClient.ListPodBounceDirective(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range podBounceDirectiveList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		podBounceDirectives.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, cluster string, secrets v1_sets.SecretSet, opts ResourceBuildOptions) error {
+	secretClient, err := v1.NewMulticlusterSecretClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Secret",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	secretList, err := secretClient.ListSecret(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range secretList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		secrets.Insert(&item)
+	}
+
+	return nil
+}
+func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster string, pods v1_sets.PodSet, opts ResourceBuildOptions) error {
+	podClient, err := v1.NewMulticlusterPodClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Pod",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	podList, err := podClient.ListPod(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range podList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		pods.Insert(&item)
+	}
+
+	return nil
+}
 
 // build a snapshot from resources in a single cluster
 type singleClusterBuilder struct {
@@ -301,6 +492,10 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	issuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
 	certificateRequests := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
+	podBounceDirectives := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+
+	secrets := v1_sets.NewSecretSet()
+	pods := v1_sets.NewPodSet()
 
 	var errs error
 
@@ -310,12 +505,24 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	if err := b.insertCertificateRequests(ctx, certificateRequests, opts.CertificateRequests); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertPodBounceDirectives(ctx, podBounceDirectives, opts.PodBounceDirectives); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertSecrets(ctx, secrets, opts.Secrets); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertPods(ctx, pods, opts.Pods); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 
 	outputSnap := NewSnapshot(
 		name,
 
 		issuedCertificates,
 		certificateRequests,
+		podBounceDirectives,
+		secrets,
+		pods,
 	)
 
 	return outputSnap, errs
@@ -381,6 +588,103 @@ func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, ce
 	for _, item := range certificateRequestList.Items {
 		item := item // pike
 		certificateRequests.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterBuilder) insertPodBounceDirectives(ctx context.Context, podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "certificates.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "PodBounceDirective",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	podBounceDirectiveList, err := certificates_mesh_gloo_solo_io_v1alpha2.NewPodBounceDirectiveClient(b.mgr.GetClient()).ListPodBounceDirective(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range podBounceDirectiveList.Items {
+		item := item // pike
+		podBounceDirectives.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterBuilder) insertSecrets(ctx context.Context, secrets v1_sets.SecretSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Secret",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	secretList, err := v1.NewSecretClient(b.mgr.GetClient()).ListSecret(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range secretList.Items {
+		item := item // pike
+		secrets.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Pod",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	podList, err := v1.NewPodClient(b.mgr.GetClient()).ListPod(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range podList.Items {
+		item := item // pike
+		pods.Insert(&item)
 	}
 
 	return nil

@@ -35,32 +35,32 @@ type topLevelComponent struct {
 	generatedCodeRoot string
 
 	// the set of input resources for which to generate a snapshot and reconciler
-	inputResources io.Snapshot
+	inputResources []io.Snapshot
 
 	// the set of output resources for which to generate a snapshot
-	outputResources []io.OutputSnapshot
+	outputResources []io.Snapshot
 }
 
 func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 	var topLevelTemplates []model.CustomTemplates
 
-	if len(t.inputResources) > 0 {
+	for _, inputResources := range t.inputResources {
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshot,
-			t.generatedCodeRoot+"/input/snapshot.go",
-			t.inputResources,
+			filepath.Join(t.generatedCodeRoot, "input", inputResources.Name, "snapshot.go"),
+			inputResources.Resources,
 		))
 
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputReconciler,
-			t.generatedCodeRoot+"/input/reconciler.go",
-			t.inputResources,
+			filepath.Join(t.generatedCodeRoot, "input", inputResources.Name, "reconciler.go"),
+			inputResources.Resources,
 		))
 
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshotManualBuilder,
-			t.generatedCodeRoot+"/input/snapshot_manual_builder.go",
-			t.inputResources,
+			filepath.Join(t.generatedCodeRoot, "input", inputResources.Name, "snapshot_manual_builder.go"),
+			inputResources.Resources,
 		))
 
 	}
@@ -70,7 +70,7 @@ func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.OutputSnapshot,
 			filePath,
-			outputResources.Snapshot,
+			outputResources.Resources,
 		))
 	}
 
@@ -84,14 +84,14 @@ var (
 		// discovery component
 		{
 			generatedCodeRoot: "pkg/api/discovery.mesh.gloo.solo.io",
-			inputResources:    io.DiscoveryInputTypes,
-			outputResources:   []io.OutputSnapshot{io.DiscoveryOutputTypes},
+			inputResources:    []io.Snapshot{io.DiscoveryInputTypes},
+			outputResources:   []io.Snapshot{io.DiscoveryOutputTypes},
 		},
 		// networking snapshot
 		{
 			generatedCodeRoot: "pkg/api/networking.mesh.gloo.solo.io",
-			inputResources:    io.NetworkingInputTypes,
-			outputResources: []io.OutputSnapshot{
+			inputResources:    []io.Snapshot{io.NetworkingInputTypes, io.NetworkingUserSuppliedInputTypes},
+			outputResources: []io.Snapshot{
 				io.IstioNetworkingOutputTypes,
 				io.SmiNetworkingOutputTypes,
 				io.LocalNetworkingOutputTypes,
@@ -101,13 +101,13 @@ var (
 		// certificate issuer component
 		{
 			generatedCodeRoot: "pkg/api/certificates.mesh.gloo.solo.io/issuer",
-			inputResources:    io.CertificateIssuerInputTypes,
+			inputResources:    []io.Snapshot{io.CertificateIssuerInputTypes},
 		},
 		// certificate agent component
 		{
 			generatedCodeRoot: "pkg/api/certificates.mesh.gloo.solo.io/agent",
-			inputResources:    io.CertificateAgentInputTypes,
-			outputResources:   []io.OutputSnapshot{io.CertificateAgentOutputTypes},
+			inputResources:    []io.Snapshot{io.CertificateAgentInputTypes},
+			outputResources:   []io.Snapshot{io.CertificateAgentOutputTypes},
 		},
 	}
 
@@ -202,7 +202,7 @@ func makeCertAgentCommand(chartOnly bool) codegen.Command {
 	}
 }
 
-func makeTopLevelTemplate(templateFunc func(params contrib.CrossGroupTemplateParameters) model.CustomTemplates, outPath string, resourceSnapshot io.Snapshot) model.CustomTemplates {
+func makeTopLevelTemplate(templateFunc func(params contrib.CrossGroupTemplateParameters) model.CustomTemplates, outPath string, resourceSnapshot io.SnapshotResources) model.CustomTemplates {
 	return templateFunc(contrib.CrossGroupTemplateParameters{
 		OutputFilename:    outPath,
 		SelectFromGroups:  allApiGroups,

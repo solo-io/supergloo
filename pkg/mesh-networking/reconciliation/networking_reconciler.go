@@ -6,14 +6,9 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/skv2/pkg/verifier"
-	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
-	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
@@ -23,8 +18,9 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/mtls"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/snapshotutils"
-
+	"github.com/solo-io/go-utils/contextutils"
 	skinput "github.com/solo-io/skv2/contrib/pkg/input"
 	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -33,7 +29,9 @@ import (
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/predicate"
 	"github.com/solo-io/skv2/pkg/reconcile"
-
+	"github.com/solo-io/skv2/pkg/verifier"
+	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -43,20 +41,21 @@ import (
 )
 
 type networkingReconciler struct {
-	ctx                context.Context
-	builder            input.Builder
-	applier            apply.Applier
-	reporter           reporting.Reporter
-	translator         translation.Translator
-	mgmtClient         client.Client
-	multiClusterClient multicluster.Client
-	history            *stats.SnapshotHistory
-	totalReconciles    int
-	verboseMode        bool
-	settingsRef        v1.ObjectRef
-	extensionClients   extensions.Clientset
-	reconciler         skinput.SingleClusterReconciler
-	verifier           verifier.ServerResourceVerifier
+	ctx                         context.Context
+	builder                     input.Builder
+	applier                     apply.Applier
+	reporter                    reporting.Reporter
+	translator                  translation.Translator
+	mgmtClient                  client.Client
+	multiClusterClient          multicluster.Client
+	history                     *stats.SnapshotHistory
+	totalReconciles             int
+	verboseMode                 bool
+	settingsRef                 v1.ObjectRef
+	extensionClients            extensions.Clientset
+	reconciler                  skinput.SingleClusterReconciler
+	userSuppliedSnapshotBuilder user.Builder
+	disallowIntersectingConfig  bool
 }
 
 // pushNotificationId is a special identifier for a reconcile event triggered by an extension server pushing a notification
@@ -70,45 +69,31 @@ func Start(
 	applier apply.Applier,
 	reporter reporting.Reporter,
 	translator translation.Translator,
+	clusters multicluster.ClusterWatcher,
 	multiClusterClient multicluster.Client,
 	mgr manager.Manager,
 	history *stats.SnapshotHistory,
 	verboseMode bool,
 	settingsRef v1.ObjectRef,
 	extensionClients extensions.Clientset,
+	userSuppliedSnapshotBuilder user.Builder,
+	disallowIntersectingConfig bool,
 ) error {
-	verifier := verifier.NewVerifier(ctx, map[schema.GroupVersionKind]verifier.ServerVerifyOption{
-		// avoid error when mesh-specific input resources are not available
-		schema.GroupVersionKind{
-			Group:   istionetworkingv1alpha3.SchemeGroupVersion.Group,
-			Version: istionetworkingv1alpha3.SchemeGroupVersion.Version,
-			Kind:    "VirtualService",
-		}: verifier.ServerVerifyOption_LogDebugIfNotPresent,
-		schema.GroupVersionKind{
-			Group:   istionetworkingv1alpha3.SchemeGroupVersion.Group,
-			Version: istionetworkingv1alpha3.SchemeGroupVersion.Version,
-			Kind:    "DestinationRule",
-		}: verifier.ServerVerifyOption_LogDebugIfNotPresent,
-		schema.GroupVersionKind{
-			Group:   istiosecurityv1beta1.SchemeGroupVersion.Group,
-			Version: istiosecurityv1beta1.SchemeGroupVersion.Version,
-			Kind:    "AuthorizationPolicy",
-		}: verifier.ServerVerifyOption_LogDebugIfNotPresent,
-	})
 
 	r := &networkingReconciler{
-		ctx:                ctx,
-		builder:            builder,
-		applier:            applier,
-		reporter:           reporter,
-		translator:         translator,
-		mgmtClient:         mgr.GetClient(),
-		multiClusterClient: multiClusterClient,
-		history:            history,
-		verboseMode:        verboseMode,
-		settingsRef:        settingsRef,
-		extensionClients:   extensionClients,
-		verifier:           verifier,
+		ctx:                         ctx,
+		builder:                     builder,
+		applier:                     applier,
+		reporter:                    reporter,
+		translator:                  translator,
+		mgmtClient:                  mgr.GetClient(),
+		multiClusterClient:          multiClusterClient,
+		history:                     history,
+		verboseMode:                 verboseMode,
+		settingsRef:                 settingsRef,
+		extensionClients:            extensionClients,
+		userSuppliedSnapshotBuilder: userSuppliedSnapshotBuilder,
+		disallowIntersectingConfig:  disallowIntersectingConfig,
 	}
 
 	filterNetworkingEvents := predicate.SimplePredicate{
@@ -127,6 +112,23 @@ func Start(
 	reconciler, err := input.RegisterSingleClusterReconciler(ctx, mgr, r.reconcile, time.Second/2, reconcile.Options{}, filterNetworkingEvents)
 	if err != nil {
 		return err
+	}
+
+	// Start watches on translation output types to detect intersecting config
+	if disallowIntersectingConfig {
+
+		var mcReconcile = func(id ezkube.ClusterResourceId) (bool, error) {
+			return r.reconcile(id)
+		}
+
+		// filter out translated resources
+		filterUserConfig := predicate.SimplePredicate{
+			Filter: predicate.SimpleEventFilterFunc(func(obj metav1.Object) bool {
+				return !metautils.IsTranslated(obj)
+			}),
+		}
+
+		user.RegisterMultiClusterReconciler(ctx, clusters, mcReconcile, time.Second/2, user.ReconcileOptions{}, filterUserConfig)
 	}
 
 	r.reconciler = reconciler
@@ -157,30 +159,50 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 				}),
 			},
 		},
-		// ignore NoKindMatchError for mesh-specific CRDs, which are only present if the relevant mesh is deployed on the cluster
-		DestinationRules: input.ResourceBuildOptions{
-			Verifier: r.verifier,
-		},
-		VirtualServices: input.ResourceBuildOptions{
-			Verifier: r.verifier,
-		},
-		AuthorizationPolicies: input.ResourceBuildOptions{
-			Verifier: r.verifier,
-		},
 	})
 	if err != nil {
 		// failed to read from cache; should never happen
 		return false, err
 	}
 
+	var userInputSnap user.Snapshot
+	if r.disallowIntersectingConfig {
+		resourceBuildOptions := user.ResourceBuildOptions{
+			ListOptions: []client.ListOption{
+				client.MatchingLabels(metautils.TranslatedObjectLabels()),
+			},
+			Verifier: verifier.NewVerifier(ctx, map[schema.GroupVersionKind]verifier.ServerVerifyOption{
+				// avoid error when mesh-specific input resources are not available
+				schema.GroupVersionKind{
+					Group:   istionetworkingv1alpha3.SchemeGroupVersion.Group,
+					Version: istionetworkingv1alpha3.SchemeGroupVersion.Version,
+					Kind:    "VirtualService",
+				}: verifier.ServerVerifyOption_LogDebugIfNotPresent,
+				schema.GroupVersionKind{
+					Group:   istionetworkingv1alpha3.SchemeGroupVersion.Group,
+					Version: istionetworkingv1alpha3.SchemeGroupVersion.Version,
+					Kind:    "DestinationRule",
+				}: verifier.ServerVerifyOption_LogDebugIfNotPresent,
+			}),
+		}
+		userInputSnap, err = r.userSuppliedSnapshotBuilder.BuildSnapshot(ctx, "mesh-networking-user", user.BuildOptions{
+			DestinationRules: resourceBuildOptions,
+			VirtualServices:  resourceBuildOptions,
+		})
+		if err != nil {
+			// failed to read from cache; should never happen
+			return false, err
+		}
+	}
+
 	// apply policies to the discovery resources they target
-	r.applier.Apply(ctx, inputSnap)
+	r.applier.Apply(ctx, inputSnap, userInputSnap)
 
 	// append errors as we still want to sync statuses if applying translation fails
 	var errs error
 
 	// translate and apply outputs
-	if err := r.applyTranslation(ctx, inputSnap); err != nil {
+	if err := r.applyTranslation(ctx, inputSnap, userInputSnap); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -192,13 +214,13 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	return false, errs
 }
 
-func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Snapshot) error {
+func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Snapshot, userInputSnap user.Snapshot) error {
 	if err := r.syncSettings(ctx, in); err != nil {
 		// fail early if settings failed to sync
 		return err
 	}
 
-	outputSnap, err := r.translator.Translate(ctx, in, r.reporter)
+	outputSnap, err := r.translator.Translate(ctx, in, userInputSnap, r.reporter)
 	if err != nil {
 		// internal translator errors should never happen
 		return err

@@ -11,17 +11,17 @@ import (
 )
 
 // a Snapshot is a group of individual resources from one or more GroupVersions
-type Snapshot map[schema.GroupVersion][]string
+type SnapshotResources map[schema.GroupVersion][]string
 
-type OutputSnapshot struct {
+type Snapshot struct {
 	// Snapshot to be used as an output snapshot
-	Snapshot Snapshot
+	Resources SnapshotResources
 	// Name to be used for placing this builder in a subdirectory
 	Name string
 }
 
 // get the rbac policies needed to watch the snapshot
-func (s Snapshot) RbacPoliciesWatch() []rbacv1.PolicyRule {
+func (s SnapshotResources) RbacPoliciesWatch() []rbacv1.PolicyRule {
 	return s.rbacPolicies(
 		[]string{"get", "list", "watch"},
 		"",
@@ -29,7 +29,7 @@ func (s Snapshot) RbacPoliciesWatch() []rbacv1.PolicyRule {
 }
 
 // get the rbac policies needed to write the snapshot
-func (s Snapshot) RbacPoliciesWrite() []rbacv1.PolicyRule {
+func (s SnapshotResources) RbacPoliciesWrite() []rbacv1.PolicyRule {
 	return s.rbacPolicies(
 		[]string{"*"},
 		"",
@@ -37,14 +37,14 @@ func (s Snapshot) RbacPoliciesWrite() []rbacv1.PolicyRule {
 }
 
 // get the rbac policies needed to update the snapshot statuses
-func (s Snapshot) RbacPoliciesUpdateStatus() []rbacv1.PolicyRule {
+func (s SnapshotResources) RbacPoliciesUpdateStatus() []rbacv1.PolicyRule {
 	return s.rbacPolicies(
 		[]string{"get", "update"},
 		"status",
 	)
 }
 
-func (s Snapshot) rbacPolicies(
+func (s SnapshotResources) rbacPolicies(
 	verbs []string,
 	subresource string,
 ) []rbacv1.PolicyRule {

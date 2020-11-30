@@ -10,7 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	networking "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
 	reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 )
@@ -39,7 +39,7 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(ctx context.Context, in input.Snapshot, trafficTarget *v1alpha2.TrafficTarget, sourceMeshInstallation *v1alpha2.MeshSpec_MeshInstallation, reporter reporting.Reporter) *v1alpha3.VirtualService {
+func (m *MockTranslator) Translate(ctx context.Context, in networking.Snapshot, trafficTarget *v1alpha2.TrafficTarget, sourceMeshInstallation *v1alpha2.MeshSpec_MeshInstallation, reporter reporting.Reporter) *v1alpha3.VirtualService {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Translate", ctx, in, trafficTarget, sourceMeshInstallation, reporter)
 	ret0, _ := ret[0].(*v1alpha3.VirtualService)

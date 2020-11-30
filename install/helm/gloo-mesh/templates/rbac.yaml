@@ -107,29 +107,12 @@ rules:
   - list
   - watch
 - apiGroups:
-  - networking.istio.io
-  resources:
-  - virtualservices
-  - destinationrules
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
   - networking.mesh.gloo.solo.io
   resources:
   - trafficpolicies
   - accesspolicies
   - virtualmeshes
   - failoverservices
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - security.istio.io
-  resources:
-  - authorizationpolicies
   verbs:
   - get
   - list
@@ -166,27 +149,12 @@ rules:
   - get
   - update
 - apiGroups:
-  - networking.istio.io
-  resources:
-  - virtualservices/status
-  - destinationrules/status
-  verbs:
-  - get
-  - update
-- apiGroups:
   - networking.mesh.gloo.solo.io
   resources:
   - trafficpolicies/status
   - accesspolicies/status
   - virtualmeshes/status
   - failoverservices/status
-  verbs:
-  - get
-  - update
-- apiGroups:
-  - security.istio.io
-  resources:
-  - authorizationpolicies/status
   verbs:
   - get
   - update

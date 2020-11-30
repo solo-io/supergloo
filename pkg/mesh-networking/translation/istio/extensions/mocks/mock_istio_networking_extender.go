@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	networking "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
 	istio "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 )
 
@@ -37,7 +37,7 @@ func (m *MockIstioExtender) EXPECT() *MockIstioExtenderMockRecorder {
 }
 
 // PatchOutputs mocks base method
-func (m *MockIstioExtender) PatchOutputs(ctx context.Context, inputs input.Snapshot, outputs istio.Builder) error {
+func (m *MockIstioExtender) PatchOutputs(ctx context.Context, inputs networking.Snapshot, outputs istio.Builder) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PatchOutputs", ctx, inputs, outputs)
 	ret0, _ := ret[0].(error)

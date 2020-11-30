@@ -6,6 +6,7 @@ import (
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/tls"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
@@ -18,7 +19,7 @@ import (
 
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
@@ -51,6 +52,7 @@ type Translator interface {
 }
 
 type translator struct {
+	userInputSnap    user.Snapshot
 	clusterDomains   hostutils.ClusterDomainRegistry
 	decoratorFactory decorators.Factory
 	trafficTargets   discoveryv1alpha2sets.TrafficTargetSet
@@ -58,12 +60,14 @@ type translator struct {
 }
 
 func NewTranslator(
+	userInputSnap user.Snapshot,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
 ) Translator {
 	return &translator{
+		userInputSnap:    userInputSnap,
 		clusterDomains:   clusterDomains,
 		decoratorFactory: decoratorFactory,
 		trafficTargets:   trafficTargets,
@@ -144,10 +148,13 @@ func (t *translator) Translate(
 		return nil
 	}
 
+	if t.userInputSnap == nil {
+		return destinationRule
+	}
+
 	// detect and report error on intersecting config if enabled in settings
 	if errs := conflictsWithUserDestinationRule(
-		settings.Spec.GetNetworking().GetDisallowIntersectingConfig(),
-		in.DestinationRules(),
+		t.userInputSnap.DestinationRules(),
 		destinationRule,
 	); len(errs) > 0 {
 		for _, err := range errs {
@@ -234,14 +241,9 @@ func (t *translator) initializeDestinationRule(
 
 // Return errors for each user-supplied VirtualService that applies to the same hostname as the translated VirtualService
 func conflictsWithUserDestinationRule(
-	disallowIntersectingConfig bool,
 	destinationRules v1alpha3sets.DestinationRuleSet,
 	translatedDestinationRule *networkingv1alpha3.DestinationRule,
 ) []error {
-	if !disallowIntersectingConfig {
-		return nil
-	}
-
 	// For each user DR, check whether any hosts match any hosts from translated DR
 	var errs []error
 

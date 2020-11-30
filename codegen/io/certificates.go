@@ -8,33 +8,39 @@ import (
 
 var (
 	CertificateIssuerInputTypes = Snapshot{
-		schema.GroupVersion{
-			Group:   "certificates." + constants.GlooMeshApiGroupSuffix,
-			Version: "v1alpha2",
-		}: {
-			"IssuedCertificate",
-			"CertificateRequest",
+		Name: "issuer",
+		Resources: SnapshotResources{
+			schema.GroupVersion{
+				Group:   "certificates." + constants.GlooMeshApiGroupSuffix,
+				Version: "v1alpha2",
+			}: {
+				"IssuedCertificate",
+				"CertificateRequest",
+			},
 		},
 	}
 
 	CertificateAgentInputTypes = Snapshot{
-		schema.GroupVersion{
-			Group:   "certificates." + constants.GlooMeshApiGroupSuffix,
-			Version: "v1alpha2",
-		}: {
-			"IssuedCertificate",
-			"CertificateRequest",
-			"PodBounceDirective",
-		},
-		corev1.SchemeGroupVersion: {
-			"Secret",
-			"Pod",
+		Name: "agent",
+		Resources: SnapshotResources{
+			schema.GroupVersion{
+				Group:   "certificates." + constants.GlooMeshApiGroupSuffix,
+				Version: "v1alpha2",
+			}: {
+				"IssuedCertificate",
+				"CertificateRequest",
+				"PodBounceDirective",
+			},
+			corev1.SchemeGroupVersion: {
+				"Secret",
+				"Pod",
+			},
 		},
 	}
 
-	CertificateAgentOutputTypes = OutputSnapshot{
+	CertificateAgentOutputTypes = Snapshot{
 		Name: "certagent",
-		Snapshot: Snapshot{
+		Resources: SnapshotResources{
 			schema.GroupVersion{
 				Group:   "certificates." + constants.GlooMeshApiGroupSuffix,
 				Version: "v1alpha2",

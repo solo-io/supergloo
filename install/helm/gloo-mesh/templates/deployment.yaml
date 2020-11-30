@@ -130,6 +130,7 @@ spec:
         - --settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}
         - --settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}
         - --verbose
+        - --disallow-intersecting-config={{ $.Values.disallowIntersectingConfig }}
 {{- if $networking.env }}
         env:
 {{ toYaml $networking.env | indent 10 }}

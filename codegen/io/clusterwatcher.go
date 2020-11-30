@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ClusterWatcherInputTypes = Snapshot{
+	ClusterWatcherInputTypes = SnapshotResources{
 		corev1.SchemeGroupVersion: {
 			"Secret",
 		},

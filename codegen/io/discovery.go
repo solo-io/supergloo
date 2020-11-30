@@ -10,26 +10,29 @@ import (
 
 var (
 	DiscoveryInputTypes = Snapshot{
-		corev1.SchemeGroupVersion: {
-			"Pod",
-			"Service",
-			"ConfigMap",
-			"Node",
-		},
-		appsv1.SchemeGroupVersion: {
-			"Deployment",
-			"ReplicaSet",
-			"DaemonSet",
-			"StatefulSet",
-		},
-		appmeshv1beta2.GroupVersion: {
-			"Mesh",
+		Name: "discovery",
+		Resources: SnapshotResources{
+			corev1.SchemeGroupVersion: {
+				"Pod",
+				"Service",
+				"ConfigMap",
+				"Node",
+			},
+			appsv1.SchemeGroupVersion: {
+				"Deployment",
+				"ReplicaSet",
+				"DaemonSet",
+				"StatefulSet",
+			},
+			appmeshv1beta2.GroupVersion: {
+				"Mesh",
+			},
 		},
 	}
 
-	DiscoveryOutputTypes = OutputSnapshot{
+	DiscoveryOutputTypes = Snapshot{
 		Name: "discovery",
-		Snapshot: Snapshot{
+		Resources: SnapshotResources{
 			schema.GroupVersion{
 				Group:   "discovery." + constants.GlooMeshApiGroupSuffix,
 				Version: "v1alpha2",

@@ -71,7 +71,7 @@ func discoveryOperator() model.Operator {
 	var rbacPolicies []rbacv1.PolicyRule
 
 	rbacPolicies = append(rbacPolicies, io.ClusterWatcherInputTypes.RbacPoliciesWatch()...)
-	rbacPolicies = append(rbacPolicies, io.DiscoveryOutputTypes.Snapshot.RbacPoliciesWrite()...)
+	rbacPolicies = append(rbacPolicies, io.DiscoveryOutputTypes.Resources.RbacPoliciesWrite()...)
 
 	return model.Operator{
 		Name: "discovery",
@@ -119,13 +119,13 @@ func networkingOperator() model.Operator {
 	var rbacPolicies []rbacv1.PolicyRule
 
 	rbacPolicies = append(rbacPolicies, io.ClusterWatcherInputTypes.RbacPoliciesWatch()...)
-	rbacPolicies = append(rbacPolicies, io.NetworkingInputTypes.RbacPoliciesWatch()...)
-	rbacPolicies = append(rbacPolicies, io.NetworkingInputTypes.RbacPoliciesUpdateStatus()...)
-	rbacPolicies = append(rbacPolicies, io.LocalNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
-	rbacPolicies = append(rbacPolicies, io.IstioNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
-	rbacPolicies = append(rbacPolicies, io.SmiNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
-	rbacPolicies = append(rbacPolicies, io.CertificateIssuerInputTypes.RbacPoliciesWatch()...)
-	rbacPolicies = append(rbacPolicies, io.CertificateIssuerInputTypes.RbacPoliciesUpdateStatus()...)
+	rbacPolicies = append(rbacPolicies, io.NetworkingInputTypes.Resources.RbacPoliciesWatch()...)
+	rbacPolicies = append(rbacPolicies, io.NetworkingInputTypes.Resources.RbacPoliciesUpdateStatus()...)
+	rbacPolicies = append(rbacPolicies, io.LocalNetworkingOutputTypes.Resources.RbacPoliciesWrite()...)
+	rbacPolicies = append(rbacPolicies, io.IstioNetworkingOutputTypes.Resources.RbacPoliciesWrite()...)
+	rbacPolicies = append(rbacPolicies, io.SmiNetworkingOutputTypes.Resources.RbacPoliciesWrite()...)
+	rbacPolicies = append(rbacPolicies, io.CertificateIssuerInputTypes.Resources.RbacPoliciesWatch()...)
+	rbacPolicies = append(rbacPolicies, io.CertificateIssuerInputTypes.Resources.RbacPoliciesUpdateStatus()...)
 
 	return model.Operator{
 		Name: "networking",
@@ -154,6 +154,7 @@ func networkingOperator() model.Operator {
 			"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
 			"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
 			"--verbose",
+			"--disallow-intersecting-config={{ $.Values.disallowIntersectingConfig }}",
 		},
 		Env: []v1.EnvVar{
 			{
@@ -172,9 +173,9 @@ func certAgentOperator() model.Operator {
 
 	var rbacPolicies []rbacv1.PolicyRule
 
-	rbacPolicies = append(rbacPolicies, io.CertificateAgentInputTypes.RbacPoliciesWatch()...)
-	rbacPolicies = append(rbacPolicies, io.CertificateAgentInputTypes.RbacPoliciesUpdateStatus()...)
-	rbacPolicies = append(rbacPolicies, io.CertificateAgentOutputTypes.Snapshot.RbacPoliciesWrite()...)
+	rbacPolicies = append(rbacPolicies, io.CertificateAgentInputTypes.Resources.RbacPoliciesWatch()...)
+	rbacPolicies = append(rbacPolicies, io.CertificateAgentInputTypes.Resources.RbacPoliciesUpdateStatus()...)
+	rbacPolicies = append(rbacPolicies, io.CertificateAgentOutputTypes.Resources.RbacPoliciesWrite()...)
 	// ability to bounce pods
 	rbacPolicies = append(rbacPolicies, rbacv1.PolicyRule{
 		Verbs:     []string{"*"},

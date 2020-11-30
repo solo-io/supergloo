@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
+	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input/discovery"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/output/discovery"
 	internal "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/internal"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/labelutils"

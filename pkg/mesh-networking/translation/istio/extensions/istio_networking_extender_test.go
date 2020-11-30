@@ -3,7 +3,7 @@ package extensions_test
 import (
 	"context"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
 
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
 	mock_extensions "github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions/mocks"

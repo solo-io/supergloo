@@ -5,9 +5,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/appmesh"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
 	appmeshoutput "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/appmesh"
 	istiooutput "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	localoutput "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
@@ -69,6 +70,7 @@ type Translator interface {
 	Translate(
 		ctx context.Context,
 		in input.Snapshot,
+		userInputSnap user.Snapshot,
 		reporter reporting.Reporter,
 	) (OutputSnapshots, error)
 }
@@ -95,6 +97,7 @@ func NewTranslator(
 func (t *translator) Translate(
 	ctx context.Context,
 	in input.Snapshot,
+	userInputSnap user.Snapshot,
 	reporter reporting.Reporter,
 ) (OutputSnapshots, error) {
 	t.totalTranslates++
@@ -105,7 +108,7 @@ func (t *translator) Translate(
 	smiOutputs := smioutput.NewBuilder(ctx, fmt.Sprintf("networking-smi-%v", t.totalTranslates))
 	localOutputs := localoutput.NewBuilder(ctx, fmt.Sprintf("networking-local-%v", t.totalTranslates))
 
-	t.istioTranslator.Translate(ctx, in, istioOutputs, localOutputs, reporter)
+	t.istioTranslator.Translate(ctx, in, userInputSnap, istioOutputs, localOutputs, reporter)
 
 	t.appmeshTranslator.Translate(ctx, in, appmeshOutputs, reporter)
 

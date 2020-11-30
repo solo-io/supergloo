@@ -9,7 +9,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	networking "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
 	reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 )
@@ -38,7 +38,7 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(in input.Snapshot, trafficTarget *v1alpha2.TrafficTarget, reporter reporting.Reporter) *v1beta1.AuthorizationPolicy {
+func (m *MockTranslator) Translate(in networking.Snapshot, trafficTarget *v1alpha2.TrafficTarget, reporter reporting.Reporter) *v1beta1.AuthorizationPolicy {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Translate", in, trafficTarget, reporter)
 	ret0, _ := ret[0].(*v1beta1.AuthorizationPolicy)

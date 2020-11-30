@@ -2,7 +2,7 @@
 
 //go:generate mockgen -source ./snapshot.go -destination mocks/snapshot.go
 
-// The Input Snapshot contains the set of all:
+// The Input Resources contains the set of all:
 // * IssuedCertificates
 // * CertificateRequests
 // * PodBounceDirectives

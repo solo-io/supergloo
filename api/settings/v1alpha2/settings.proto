@@ -18,17 +18,6 @@ message SettingsSpec {
     // Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence).
     // Note: Extension Servers have full write access to the output objects written by Gloo Mesh.
     repeated NetworkingExtensionsServer networking_extension_servers = 2;
-
-    // Configure options for the core networking component
-    Networking networking = 3;
-}
-
-// Options for configuring the core networking component
-message Networking {
-
-    // If true, Gloo Mesh will detect and report errors when outputting service mesh configuration that
-    // overlaps with existing config not managed by Gloo Mesh.
-    bool disallow_intersecting_config = 1;
 }
 
 // Options for connecting to an external gRPC NetworkingExternsions server

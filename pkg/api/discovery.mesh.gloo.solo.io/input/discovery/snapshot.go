@@ -20,7 +20,7 @@
 // Resources in a MultiCluster snapshot will have their ClusterName set to the
 // name of the cluster from which the resource was read.
 
-package input
+package discovery
 
 import (
 	"context"

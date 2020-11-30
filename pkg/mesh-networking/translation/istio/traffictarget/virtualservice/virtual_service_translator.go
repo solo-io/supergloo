@@ -6,9 +6,9 @@ import (
 	"sort"
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/snapshotutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"istio.io/istio/pkg/config/host"
@@ -16,7 +16,7 @@ import (
 
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/equalityutils"
@@ -53,29 +53,32 @@ type Translator interface {
 }
 
 type translator struct {
+	userInputSnap    user.Snapshot
 	clusterDomains   hostutils.ClusterDomainRegistry
 	decoratorFactory decorators.Factory
 }
 
-func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory) Translator {
-	return &translator{clusterDomains: clusterDomains, decoratorFactory: decoratorFactory}
+func NewTranslator(
+	userInputSnap user.Snapshot,
+	clusterDomains hostutils.ClusterDomainRegistry,
+	decoratorFactory decorators.Factory,
+) Translator {
+	return &translator{
+		userInputSnap:    userInputSnap,
+		clusterDomains:   clusterDomains,
+		decoratorFactory: decoratorFactory,
+	}
 }
 
 // Translate a VirtualService for the TrafficTarget.
 // If sourceMeshInstallation is nil, assume that VirtualService is colocated to the trafficTarget and use local FQDNs.
 func (t *translator) Translate(
-	ctx context.Context,
+	_ context.Context,
 	in input.Snapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	reporter reporting.Reporter,
 ) *networkingv1alpha3.VirtualService {
-	settings, err := snapshotutils.GetSingletonSettings(ctx, in)
-	if err != nil {
-		// should be caught earlier in the reconciliation loop
-		return nil
-	}
-
 	kubeService := trafficTarget.Spec.GetKubeService()
 
 	if kubeService == nil {
@@ -149,10 +152,13 @@ func (t *translator) Translate(
 		return nil
 	}
 
+	if t.userInputSnap == nil {
+		return virtualService
+	}
+
 	// detect and report error on intersecting config if enabled in settings
 	if errs := conflictsWithUserVirtualService(
-		settings.Spec.GetNetworking().GetDisallowIntersectingConfig(),
-		in.VirtualServices(),
+		t.userInputSnap.VirtualServices(),
 		virtualService,
 	); len(errs) > 0 {
 		for _, err := range errs {
@@ -423,14 +429,9 @@ func translateRequestMatcherPathSpecifier(matcher *v1alpha2.TrafficPolicySpec_Ht
 
 // Return errors for each user-supplied VirtualService that applies to the same hostname as the translated VirtualService
 func conflictsWithUserVirtualService(
-	disallowIntersectingConfig bool,
 	virtualServices v1alpha3sets.VirtualServiceSet,
 	translatedVirtualService *networkingv1alpha3.VirtualService,
 ) []error {
-	if !disallowIntersectingConfig {
-		return nil
-	}
-
 	// For each user VS, check whether any hosts match any hosts from translated VS
 	var errs []error
 

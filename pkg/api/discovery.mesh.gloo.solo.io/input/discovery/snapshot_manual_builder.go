@@ -3,7 +3,7 @@
 /*
 	Utility for manually building input snapshots. Used primarily in tests.
 */
-package input
+package discovery
 
 import (
 	appmesh_k8s_aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"

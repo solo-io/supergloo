@@ -12,7 +12,7 @@ import (
 	v1beta2sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	v1sets0 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
+	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input/discovery"
 )
 
 // MockSnapshot is a mock of Snapshot interface

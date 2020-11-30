@@ -17,7 +17,7 @@
 //
 // Input Reconcilers can be be constructed from either a single Manager (watch events in a single cluster)
 // or a ClusterWatcher (watch events in multiple clusters).
-package input
+package discovery
 
 import (
 	"context"

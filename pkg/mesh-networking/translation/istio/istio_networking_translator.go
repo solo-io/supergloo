@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
@@ -23,6 +24,7 @@ type Translator interface {
 	Translate(
 		ctx context.Context,
 		in input.Snapshot,
+		userInputSnap user.Snapshot,
 		istioOutputs istio.Builder,
 		localOutputs local.Builder,
 		reporter reporting.Reporter,
@@ -47,6 +49,7 @@ func NewIstioTranslator(extensionClients extensions.Clientset) Translator {
 func (t *istioTranslator) Translate(
 	ctx context.Context,
 	in input.Snapshot,
+	userInputSnap user.Snapshot,
 	istioOutputs istio.Builder,
 	localOutputs local.Builder,
 	reporter reporting.Reporter,
@@ -55,6 +58,7 @@ func (t *istioTranslator) Translate(
 
 	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator(
 		ctx,
+		userInputSnap,
 		in.KubernetesClusters(),
 		in.TrafficTargets(),
 		in.FailoverServices(),
@@ -66,6 +70,7 @@ func (t *istioTranslator) Translate(
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(
 		ctx,
+		userInputSnap,
 		in.KubernetesClusters(),
 		in.Secrets(),
 		in.Workloads(),
