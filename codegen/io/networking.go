@@ -44,6 +44,7 @@ var (
 		corev1.SchemeGroupVersion: {
 			"Secret",
 		},
+		// mesh-specific CRDs, these will only exist if the relevant mesh is deployed on the cluster
 		istionetworkingv1alpha3.SchemeGroupVersion: {
 			"VirtualService",
 			"DestinationRule",

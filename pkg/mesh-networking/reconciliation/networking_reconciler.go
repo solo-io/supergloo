@@ -7,6 +7,10 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/skv2/pkg/verifier"
+	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
@@ -52,6 +56,7 @@ type networkingReconciler struct {
 	settingsRef        v1.ObjectRef
 	extensionClients   extensions.Clientset
 	reconciler         skinput.SingleClusterReconciler
+	verifier           verifier.ServerResourceVerifier
 }
 
 // pushNotificationId is a special identifier for a reconcile event triggered by an extension server pushing a notification
@@ -72,6 +77,25 @@ func Start(
 	settingsRef v1.ObjectRef,
 	extensionClients extensions.Clientset,
 ) error {
+	verifier := verifier.NewVerifier(ctx, map[schema.GroupVersionKind]verifier.ServerVerifyOption{
+		// avoid error when mesh-specific input resources are not available
+		schema.GroupVersionKind{
+			Group:   istionetworkingv1alpha3.SchemeGroupVersion.Group,
+			Version: istionetworkingv1alpha3.SchemeGroupVersion.Version,
+			Kind:    "VirtualService",
+		}: verifier.ServerVerifyOption_LogDebugIfNotPresent,
+		schema.GroupVersionKind{
+			Group:   istionetworkingv1alpha3.SchemeGroupVersion.Group,
+			Version: istionetworkingv1alpha3.SchemeGroupVersion.Version,
+			Kind:    "DestinationRule",
+		}: verifier.ServerVerifyOption_LogDebugIfNotPresent,
+		schema.GroupVersionKind{
+			Group:   istiosecurityv1beta1.SchemeGroupVersion.Group,
+			Version: istiosecurityv1beta1.SchemeGroupVersion.Version,
+			Kind:    "AuthorizationPolicy",
+		}: verifier.ServerVerifyOption_LogDebugIfNotPresent,
+	})
+
 	r := &networkingReconciler{
 		ctx:                ctx,
 		builder:            builder,
@@ -84,6 +108,7 @@ func Start(
 		verboseMode:        verboseMode,
 		settingsRef:        settingsRef,
 		extensionClients:   extensionClients,
+		verifier:           verifier,
 	}
 
 	filterNetworkingEvents := predicate.SimplePredicate{
@@ -131,6 +156,16 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 					"metadata.name": r.settingsRef.Name,
 				}),
 			},
+		},
+		// ignore NoKindMatchError for mesh-specific CRDs, which are only present if the relevant mesh is deployed on the cluster
+		DestinationRules: input.ResourceBuildOptions{
+			Verifier: r.verifier,
+		},
+		VirtualServices: input.ResourceBuildOptions{
+			Verifier: r.verifier,
+		},
+		AuthorizationPolicies: input.ResourceBuildOptions{
+			Verifier: r.verifier,
 		},
 	})
 	if err != nil {
