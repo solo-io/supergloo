@@ -64,7 +64,6 @@ func (t *translator) Translate(
 		installationNamespace,
 		clusterName,
 		istioMesh.IngressGateways,
-		mesh,
 		virtualMesh,
 	)
 
@@ -82,7 +81,6 @@ func buildAuthPoliciesForIngressgateways(
 	installationNamespace string,
 	clusterName string,
 	ingressGateways []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo,
-	mesh *discoveryv1alpha2.Mesh,
 	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
 ) []*securityv1beta1.AuthorizationPolicy {
 	var authPolicies []*securityv1beta1.AuthorizationPolicy
