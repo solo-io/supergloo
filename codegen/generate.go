@@ -90,7 +90,10 @@ var (
 		// networking snapshot
 		{
 			generatedCodeRoot: "pkg/api/networking.mesh.gloo.solo.io",
-			inputResources:    []io.Snapshot{io.NetworkingInputTypes, io.NetworkingUserSuppliedInputTypes},
+			inputResources: []io.Snapshot{
+				io.NetworkingInputTypes,
+				io.IstioNetworkingOutputTypes, // needed to initiate watches on istio output types
+			},
 			outputResources: []io.Snapshot{
 				io.IstioNetworkingOutputTypes,
 				io.SmiNetworkingOutputTypes,

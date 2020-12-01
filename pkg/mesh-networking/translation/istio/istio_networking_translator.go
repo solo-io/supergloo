@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
+	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
 
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
@@ -24,7 +24,7 @@ type Translator interface {
 	Translate(
 		ctx context.Context,
 		in input.Snapshot,
-		userInputSnap user.Snapshot,
+		userInputSnap istioinputs.Snapshot,
 		istioOutputs istio.Builder,
 		localOutputs local.Builder,
 		reporter reporting.Reporter,
@@ -49,7 +49,7 @@ func NewIstioTranslator(extensionClients extensions.Clientset) Translator {
 func (t *istioTranslator) Translate(
 	ctx context.Context,
 	in input.Snapshot,
-	userInputSnap user.Snapshot,
+	userInputSnap istioinputs.Snapshot,
 	istioOutputs istio.Builder,
 	localOutputs local.Builder,
 	reporter reporting.Reporter,

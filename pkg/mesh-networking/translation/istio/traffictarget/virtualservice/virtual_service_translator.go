@@ -6,7 +6,7 @@ import (
 	"sort"
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
+	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -53,13 +53,13 @@ type Translator interface {
 }
 
 type translator struct {
-	userInputSnap    user.Snapshot
+	userInputSnap    istioinputs.Snapshot
 	clusterDomains   hostutils.ClusterDomainRegistry
 	decoratorFactory decorators.Factory
 }
 
 func NewTranslator(
-	userInputSnap user.Snapshot,
+	userInputSnap istioinputs.Snapshot,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
 ) Translator {

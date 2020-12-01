@@ -6,7 +6,7 @@ import (
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
+	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/tls"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
@@ -52,7 +52,7 @@ type Translator interface {
 }
 
 type translator struct {
-	userInputSnap    user.Snapshot
+	userInputSnap    istioinputs.Snapshot
 	clusterDomains   hostutils.ClusterDomainRegistry
 	decoratorFactory decorators.Factory
 	trafficTargets   discoveryv1alpha2sets.TrafficTargetSet
@@ -60,7 +60,7 @@ type translator struct {
 }
 
 func NewTranslator(
-	userInputSnap user.Snapshot,
+	userInputSnap istioinputs.Snapshot,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,

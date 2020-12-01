@@ -6,8 +6,8 @@ import (
 
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply/configtarget"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
@@ -25,7 +25,7 @@ import (
 // Note that the Applier also updates the statuses of objects contained in the input Snapshot.
 // The Input Snapshot's SyncStatuses method should usually be called after running the Applier.
 type Applier interface {
-	Apply(ctx context.Context, input input.Snapshot, userInputSnap user.Snapshot)
+	Apply(ctx context.Context, input input.Snapshot, userInputSnap istioinputs.Snapshot)
 }
 
 type applier struct {
@@ -41,7 +41,7 @@ func NewApplier(
 	}
 }
 
-func (v *applier) Apply(ctx context.Context, input input.Snapshot, userInputSnap user.Snapshot) {
+func (v *applier) Apply(ctx context.Context, input input.Snapshot, userInputSnap istioinputs.Snapshot) {
 	ctx = contextutils.WithLogger(ctx, "validation")
 	reporter := newApplyReporter()
 

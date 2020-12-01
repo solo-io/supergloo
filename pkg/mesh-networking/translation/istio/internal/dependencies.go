@@ -3,7 +3,7 @@ package internal
 import (
 	"context"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
+	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
@@ -32,14 +32,14 @@ import (
 type DependencyFactory interface {
 	MakeTrafficTargetTranslator(
 		ctx context.Context,
-		userInputSnap user.Snapshot,
+		userInputSnap istioinputs.Snapshot,
 		clusters skv1alpha1sets.KubernetesClusterSet,
 		trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 		failoverServices v1alpha2sets.FailoverServiceSet,
 	) traffictarget.Translator
 	MakeMeshTranslator(
 		ctx context.Context,
-		userInputSnap user.Snapshot,
+		userInputSnap istioinputs.Snapshot,
 		clusters skv1alpha1sets.KubernetesClusterSet,
 		secrets corev1sets.SecretSet,
 		workloads discoveryv1alpha2sets.WorkloadSet,
@@ -56,7 +56,7 @@ func NewDependencyFactory() DependencyFactory {
 
 func (d dependencyFactoryImpl) MakeTrafficTargetTranslator(
 	ctx context.Context,
-	userInputSnap user.Snapshot,
+	userInputSnap istioinputs.Snapshot,
 	clusters skv1alpha1sets.KubernetesClusterSet,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
@@ -69,7 +69,7 @@ func (d dependencyFactoryImpl) MakeTrafficTargetTranslator(
 
 func (d dependencyFactoryImpl) MakeMeshTranslator(
 	ctx context.Context,
-	userInputSnap user.Snapshot,
+	userInputSnap istioinputs.Snapshot,
 	clusters skv1alpha1sets.KubernetesClusterSet,
 	secrets corev1sets.SecretSet,
 	workloads discoveryv1alpha2sets.WorkloadSet,

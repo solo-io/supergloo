@@ -4,7 +4,7 @@ import (
 	"context"
 
 	certissuerinput "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input/issuer"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
+	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
 	certissuerreconciliation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/reconciliation"
 	"github.com/solo-io/gloo-mesh/pkg/common/bootstrap"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply"
@@ -50,8 +50,8 @@ func startReconciler(
 
 	snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager)
 
-	// contains user-supplied service mesh config read from all registered clusters
-	userSuppliedSnapshotBuilder := user.NewMultiClusterBuilder(parameters.Clusters, parameters.McClient)
+	// contains istio config read from all registered clusters
+	istioSnapshotBuilder := istioinputs.NewMultiClusterBuilder(parameters.Clusters, parameters.McClient)
 
 	reporter := reporting.NewPanickingReporter(parameters.Ctx)
 	translator := translation.NewTranslator(
@@ -87,7 +87,7 @@ func startReconciler(
 		parameters.VerboseMode,
 		parameters.SettingsRef,
 		extensionClientset,
-		userSuppliedSnapshotBuilder,
+		istioSnapshotBuilder,
 		disallowIntersectingConfig,
 	)
 }

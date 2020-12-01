@@ -49,17 +49,6 @@ var (
 		},
 	}
 
-	// User-supplied service mesh config types for which we may detect intersecting config
-	NetworkingUserSuppliedInputTypes = Snapshot{
-		Name: "user",
-		Resources: SnapshotResources{
-			istionetworkingv1alpha3.SchemeGroupVersion: {
-				"VirtualService",
-				"DestinationRule",
-			},
-		},
-	}
-
 	IstioNetworkingOutputTypes = Snapshot{
 		Name: "istio",
 		Resources: SnapshotResources{

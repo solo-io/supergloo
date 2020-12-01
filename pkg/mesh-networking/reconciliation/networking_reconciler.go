@@ -7,8 +7,8 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
+	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
@@ -43,21 +43,21 @@ import (
 )
 
 type networkingReconciler struct {
-	ctx                         context.Context
-	builder                     input.Builder
-	applier                     apply.Applier
-	reporter                    reporting.Reporter
-	translator                  translation.Translator
-	mgmtClient                  client.Client
-	multiClusterClient          multicluster.Client
-	history                     *stats.SnapshotHistory
-	totalReconciles             int
-	verboseMode                 bool
-	settingsRef                 v1.ObjectRef
-	extensionClients            extensions.Clientset
-	reconciler                  skinput.SingleClusterReconciler
-	userSuppliedSnapshotBuilder user.Builder
-	disallowIntersectingConfig  bool
+	ctx                        context.Context
+	builder                    input.Builder
+	applier                    apply.Applier
+	reporter                   reporting.Reporter
+	translator                 translation.Translator
+	mgmtClient                 client.Client
+	multiClusterClient         multicluster.Client
+	history                    *stats.SnapshotHistory
+	totalReconciles            int
+	verboseMode                bool
+	settingsRef                v1.ObjectRef
+	extensionClients           extensions.Clientset
+	reconciler                 skinput.SingleClusterReconciler
+	istioInputs                istioinputs.Builder
+	disallowIntersectingConfig bool
 }
 
 // pushNotificationId is a special identifier for a reconcile event triggered by an extension server pushing a notification
@@ -78,24 +78,24 @@ func Start(
 	verboseMode bool,
 	settingsRef v1.ObjectRef,
 	extensionClients extensions.Clientset,
-	userSuppliedSnapshotBuilder user.Builder,
+	istioInputs istioinputs.Builder,
 	disallowIntersectingConfig bool,
 ) error {
 
 	r := &networkingReconciler{
-		ctx:                         ctx,
-		builder:                     builder,
-		applier:                     applier,
-		reporter:                    reporter,
-		translator:                  translator,
-		mgmtClient:                  mgr.GetClient(),
-		multiClusterClient:          multiClusterClient,
-		history:                     history,
-		verboseMode:                 verboseMode,
-		settingsRef:                 settingsRef,
-		extensionClients:            extensionClients,
-		userSuppliedSnapshotBuilder: userSuppliedSnapshotBuilder,
-		disallowIntersectingConfig:  disallowIntersectingConfig,
+		ctx:                        ctx,
+		builder:                    builder,
+		applier:                    applier,
+		reporter:                   reporter,
+		translator:                 translator,
+		mgmtClient:                 mgr.GetClient(),
+		multiClusterClient:         multiClusterClient,
+		history:                    history,
+		verboseMode:                verboseMode,
+		settingsRef:                settingsRef,
+		extensionClients:           extensionClients,
+		istioInputs:                istioInputs,
+		disallowIntersectingConfig: disallowIntersectingConfig,
 	}
 
 	filterNetworkingEvents := predicate.SimplePredicate{
@@ -116,21 +116,17 @@ func Start(
 		return err
 	}
 
-	// Start watches on translation output types to detect intersecting config
-	if disallowIntersectingConfig {
-		var mcReconcile = func(id ezkube.ClusterResourceId) (bool, error) {
+	// watch istio output types for changes, including objects managed by Gloo Mesh itself
+	// this should eventually reach a steady state since Gloo Mesh performs equality checks before updating existing objects
+	istioinputs.RegisterMultiClusterReconciler(
+		ctx,
+		clusters,
+		func(id ezkube.ClusterResourceId) (bool, error) {
 			return r.reconcile(id)
-		}
-
-		// filter out translated resources
-		filterUserConfig := predicate.SimplePredicate{
-			Filter: predicate.SimpleEventFilterFunc(func(obj metav1.Object) bool {
-				return metautils.IsTranslated(obj)
-			}),
-		}
-
-		user.RegisterMultiClusterReconciler(ctx, clusters, mcReconcile, time.Second/2, user.ReconcileOptions{}, filterUserConfig)
-	}
+		},
+		time.Second/2,
+		istioinputs.ReconcileOptions{},
+	)
 
 	r.reconciler = reconciler
 
@@ -166,7 +162,8 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 		return false, err
 	}
 
-	var userInputSnap user.Snapshot
+	// nil istioInputSnap signals to downstream translators that intersecting config should not be detected
+	var istioInputSnap istioinputs.Snapshot
 	if r.disallowIntersectingConfig {
 		selector := labels.NewSelector()
 		for k := range metautils.TranslatedObjectLabels() {
@@ -178,7 +175,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 			}
 			selector.Add([]labels.Requirement{*requirement}...)
 		}
-		resourceBuildOptions := user.ResourceBuildOptions{
+		resourceBuildOptions := istioinputs.ResourceBuildOptions{
 			ListOptions: []client.ListOption{
 				&client.ListOptions{LabelSelector: selector},
 			},
@@ -196,7 +193,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 				}: verifier.ServerVerifyOption_LogDebugIfNotPresent,
 			}),
 		}
-		userInputSnap, err = r.userSuppliedSnapshotBuilder.BuildSnapshot(ctx, "mesh-networking-user", user.BuildOptions{
+		istioInputSnap, err = r.istioInputs.BuildSnapshot(ctx, "mesh-networking-istio-inputs", istioinputs.BuildOptions{
 			DestinationRules: resourceBuildOptions,
 			VirtualServices:  resourceBuildOptions,
 		})
@@ -207,13 +204,13 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	}
 
 	// apply policies to the discovery resources they target
-	r.applier.Apply(ctx, inputSnap, userInputSnap)
+	r.applier.Apply(ctx, inputSnap, istioInputSnap)
 
 	// append errors as we still want to sync statuses if applying translation fails
 	var errs error
 
 	// translate and apply outputs
-	if err := r.applyTranslation(ctx, inputSnap, userInputSnap); err != nil {
+	if err := r.applyTranslation(ctx, inputSnap, istioInputSnap); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -225,7 +222,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	return false, errs
 }
 
-func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Snapshot, userInputSnap user.Snapshot) error {
+func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Snapshot, userInputSnap istioinputs.Snapshot) error {
 	if err := r.syncSettings(ctx, in); err != nil {
 		// fail early if settings failed to sync
 		return err

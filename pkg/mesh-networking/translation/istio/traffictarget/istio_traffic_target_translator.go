@@ -5,8 +5,8 @@ import (
 
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
@@ -37,7 +37,7 @@ type Translator interface {
 
 type translator struct {
 	ctx                   context.Context
-	userInputSnap         user.Snapshot
+	userInputSnap         istioinputs.Snapshot
 	destinationRules      destinationrule.Translator
 	virtualServices       virtualservice.Translator
 	authorizationPolicies authorizationpolicy.Translator
@@ -45,7 +45,7 @@ type translator struct {
 
 func NewTranslator(
 	ctx context.Context,
-	userInputSnap user.Snapshot,
+	userInputSnap istioinputs.Snapshot,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,

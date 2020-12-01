@@ -11,7 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	user "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/user"
+	istio "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
 	v1alpha2sets0 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	mesh "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh"
 	traffictarget "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget"
@@ -42,7 +42,7 @@ func (m *MockDependencyFactory) EXPECT() *MockDependencyFactoryMockRecorder {
 }
 
 // MakeTrafficTargetTranslator mocks base method
-func (m *MockDependencyFactory) MakeTrafficTargetTranslator(ctx context.Context, userInputSnap user.Snapshot, clusters v1alpha1sets.KubernetesClusterSet, trafficTargets v1alpha2sets.TrafficTargetSet, failoverServices v1alpha2sets0.FailoverServiceSet) traffictarget.Translator {
+func (m *MockDependencyFactory) MakeTrafficTargetTranslator(ctx context.Context, userInputSnap istio.Snapshot, clusters v1alpha1sets.KubernetesClusterSet, trafficTargets v1alpha2sets.TrafficTargetSet, failoverServices v1alpha2sets0.FailoverServiceSet) traffictarget.Translator {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MakeTrafficTargetTranslator", ctx, userInputSnap, clusters, trafficTargets, failoverServices)
 	ret0, _ := ret[0].(traffictarget.Translator)
@@ -56,7 +56,7 @@ func (mr *MockDependencyFactoryMockRecorder) MakeTrafficTargetTranslator(ctx, us
 }
 
 // MakeMeshTranslator mocks base method
-func (m *MockDependencyFactory) MakeMeshTranslator(ctx context.Context, userInputSnap user.Snapshot, clusters v1alpha1sets.KubernetesClusterSet, secrets v1sets.SecretSet, workloads v1alpha2sets.WorkloadSet, trafficTargets v1alpha2sets.TrafficTargetSet, failoverServices v1alpha2sets0.FailoverServiceSet) mesh.Translator {
+func (m *MockDependencyFactory) MakeMeshTranslator(ctx context.Context, userInputSnap istio.Snapshot, clusters v1alpha1sets.KubernetesClusterSet, secrets v1sets.SecretSet, workloads v1alpha2sets.WorkloadSet, trafficTargets v1alpha2sets.TrafficTargetSet, failoverServices v1alpha2sets0.FailoverServiceSet) mesh.Translator {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MakeMeshTranslator", ctx, userInputSnap, clusters, secrets, workloads, trafficTargets, failoverServices)
 	ret0, _ := ret[0].(mesh.Translator)
