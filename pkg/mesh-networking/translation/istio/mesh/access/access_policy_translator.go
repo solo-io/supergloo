@@ -59,16 +59,17 @@ func (t *translator) Translate(
 	clusterName := istioMesh.Installation.Cluster
 	installationNamespace := istioMesh.Installation.Namespace
 	globalAuthPolicy := buildGlobalAuthPolicy(installationNamespace, clusterName)
-	ingressGatewayAuthPolicies := buildAuthPoliciesForIngressgateways(
-		t.ctx,
+	ingressGatewayAuthPolicies := buildAuthPoliciesForIngressGateways(
 		installationNamespace,
 		clusterName,
 		istioMesh.IngressGateways,
-		virtualMesh,
 	)
 
-	// Append the virtual mesh as a parent to the global access policy
+	// Append the virtual mesh as a parent to each output resource
 	metautils.AppendParent(t.ctx, globalAuthPolicy, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+	for _, ap := range ingressGatewayAuthPolicies {
+		metautils.AppendParent(t.ctx, ap, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+	}
 
 	outputs.AddAuthorizationPolicies(globalAuthPolicy)
 	outputs.AddAuthorizationPolicies(ingressGatewayAuthPolicies...)
@@ -76,12 +77,10 @@ func (t *translator) Translate(
 
 // Creates an AuthorizationPolicy that allows all traffic into the "istio-ingressgateway" service
 // which backs the Gateway used for multi cluster traffic.
-func buildAuthPoliciesForIngressgateways(
-	ctx context.Context,
+func buildAuthPoliciesForIngressGateways(
 	installationNamespace string,
 	clusterName string,
 	ingressGateways []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo,
-	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
 ) []*securityv1beta1.AuthorizationPolicy {
 	var authPolicies []*securityv1beta1.AuthorizationPolicy
 	for _, ingressGateway := range ingressGateways {
@@ -102,9 +101,6 @@ func buildAuthPoliciesForIngressgateways(
 				},
 			},
 		}
-
-		// Append the virtual mesh as a parent to each output access policy
-		metautils.AppendParent(ctx, ap, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 
 		authPolicies = append(authPolicies, ap)
 	}

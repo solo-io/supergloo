@@ -79,32 +79,39 @@ func AppendParent(
 	parentId ezkube.ResourceId,
 	parentGVK schema.GroupVersionKind,
 ) {
+	fmt.Printf("child %T = %v\n", child, child)
+	fmt.Printf("child == nil: %t\n", child == nil)
+	if child == nil {
+		fmt.Println("nil")
+		return
+	}
+	fmt.Println("not nil")
+
 	annotations := child.GetAnnotations()
 	if annotations == nil {
 		annotations = make(map[string]string)
 	}
-	parents := make(map[string][]*v1.ObjectRef)
-	parentsStr, ok := annotations[ParentLabelkey]
-	if ok {
-		if err := json.Unmarshal([]byte(parentsStr), &parents); err != nil {
+	parentsAnnotation := make(map[string][]*v1.ObjectRef)
+	if paStr, ok := annotations[ParentLabelkey]; ok {
+		if err := json.Unmarshal([]byte(paStr), &parentsAnnotation); err != nil {
 			contextutils.LoggerFrom(ctx).Errorf("internal error: could not unmarshal %q annotation", ParentLabelkey)
 			return
 		}
 	}
 
-	curParents, ok := parents[parentGVK.String()]
+	typeParents, ok := parentsAnnotation[parentGVK.String()]
 	if !ok {
-		curParents = make([]*v1.ObjectRef, 0, 1)
+		typeParents = make([]*v1.ObjectRef, 0, 1)
 	}
 	parentRef := ezkube.MakeObjectRef(parentId)
-	for _, parent := range curParents {
+	for _, parent := range typeParents {
 		if parent.Equal(parentRef) {
 			return
 		}
 	}
-	parents[parentGVK.String()] = append(curParents, parentRef)
+	parentsAnnotation[parentGVK.String()] = append(typeParents, parentRef)
 
-	b, err := json.Marshal(parents)
+	b, err := json.Marshal(parentsAnnotation)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Error("internal error: could not marshal parents map")
 		return
@@ -112,5 +119,4 @@ func AppendParent(
 
 	annotations[ParentLabelkey] = string(b)
 	child.SetAnnotations(annotations)
-	return
 }

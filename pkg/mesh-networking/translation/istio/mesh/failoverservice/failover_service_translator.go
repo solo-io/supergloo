@@ -148,16 +148,12 @@ func (t *translator) translate(
 
 		// Append failover service as a parent to each output resource
 		metautils.AppendParent(t.ctx, serviceEntry, failoverService.GetRef(), v1alpha2.FailoverService{}.GVK())
+		metautils.AppendParent(t.ctx, destinationRule, failoverService.GetRef(), v1alpha2.FailoverService{}.GVK())
 		metautils.AppendParent(t.ctx, envoyFilter, failoverService.GetRef(), v1alpha2.FailoverService{}.GVK())
 
 		serviceEntries = append(serviceEntries, serviceEntry)
+		destinationRules = append(destinationRules, destinationRule)
 		envoyFilters = append(envoyFilters, envoyFilter)
-
-		// add destination rule if necessary
-		if destinationRule != nil {
-			metautils.AppendParent(t.ctx, destinationRule, failoverService.GetRef(), v1alpha2.FailoverService{}.GVK())
-			destinationRules = append(destinationRules, destinationRule)
-		}
 	}
 	return serviceEntries, destinationRules, envoyFilters
 }
