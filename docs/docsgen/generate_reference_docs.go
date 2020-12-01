@@ -2,6 +2,7 @@ package docsgen
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -133,6 +134,7 @@ type ChangelogConfig struct {
 }
 
 type ChangelogOptions struct {
+	Generate  bool
 	Repos     []ChangelogConfig
 	OutputDir string
 }
@@ -275,6 +277,11 @@ func collectDescriptors(protoDir, outDir string, filter func(file *model.Descrip
 }
 
 func generateChangelog(root string, opts ChangelogOptions) error {
+	if !opts.Generate {
+		fmt.Println("skipping changelog generation, pass --changelog to enable")
+		return nil
+	}
+
 	// flush directory for idempotence
 	changelogDir := filepath.Join(root, opts.OutputDir)
 	os.RemoveAll(changelogDir)

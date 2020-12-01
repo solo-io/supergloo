@@ -16,9 +16,11 @@ import (
 func main() {
 	log.Printf("Started docs generation\n")
 	var (
-		ossVersion string
-		eeVersion  string
+		genChangelog bool
+		ossVersion   string
+		eeVersion    string
 	)
+	flag.BoolVar(&genChangelog, "changelog", false, "Enable changelog generation")
 	flag.StringVar(&ossVersion, "oss-version", "", "OSS version to generate the changelog for")
 	flag.StringVar(&eeVersion, "ee-version", "", "Enterprise version to generate the changelog for")
 	flag.Parse()
@@ -44,6 +46,7 @@ func main() {
 			OutputDir: "content/reference/cli",
 		},
 		Changelog: docsgen.ChangelogOptions{
+			Generate: genChangelog,
 			Repos: []docsgen.ChangelogConfig{
 				{Name: "Open Source Gloo Mesh", Repo: "gloo-mesh", Path: "open_source", Version: ossVersion},
 				{Name: "Gloo Mesh Enterprise", Repo: "gloo-mesh-enterprise", Path: "enterprise", Version: eeVersion}},
