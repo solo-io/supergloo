@@ -50,7 +50,7 @@ var _ = Describe("FailoverServiceTranslator", func() {
 		ctrl.Finish()
 	})
 
-	FIt("should translate a FailoverService into ServiceEntries and EnvoyFilters", func() {
+	It("should translate a FailoverService into ServiceEntries and EnvoyFilters", func() {
 		failoverService := &discoveryv1alpha2.MeshStatus_AppliedFailoverService{
 			Ref: &v1.ObjectRef{
 				Name:      "failover-service",

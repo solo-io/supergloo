@@ -79,14 +79,6 @@ func AppendParent(
 	parentId ezkube.ResourceId,
 	parentGVK schema.GroupVersionKind,
 ) {
-	fmt.Printf("child %T = %v\n", child, child)
-	fmt.Printf("child == nil: %t\n", child == nil)
-	if child == nil {
-		fmt.Println("nil")
-		return
-	}
-	fmt.Println("not nil")
-
 	annotations := child.GetAnnotations()
 	if annotations == nil {
 		annotations = make(map[string]string)

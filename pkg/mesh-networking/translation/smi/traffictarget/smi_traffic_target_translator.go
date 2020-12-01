@@ -6,9 +6,11 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/smi"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/smi/traffictarget/access"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/smi/traffictarget/split"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 )
 
 //go:generate mockgen -source ./smi_traffic_target_translator.go -destination mocks/smi_traffic_target_translator.go
@@ -48,10 +50,45 @@ func (t *translator) Translate(
 	outputs smi.Builder,
 	reporter reporting.Reporter,
 ) {
-	trafficSplit := t.trafficSplit.Translate(ctx, in, trafficTarget, reporter)
-	outputs.AddTrafficSplits(trafficSplit)
+	var appliedTrafficPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy
+	for _, tp := range trafficTarget.Status.GetAppliedTrafficPolicies() {
+		if len(tp.GetSpec().GetTrafficShift().GetDestinations()) > 0 {
+			appliedTrafficPolicy = tp
+			break
+		}
+	}
 
+	// Translate TrafficSplit for TrafficTarget, can be nil if non-kube service or no applied traffic policy
+	if trafficSplit := t.trafficSplit.Translate(ctx, in, trafficTarget, reporter); trafficSplit != nil {
+		if appliedTrafficPolicy != nil {
+			// Append the applied traffic policy as the parent to the traffic split
+			metautils.AppendParent(ctx, trafficSplit, appliedTrafficPolicy.GetRef(), v1alpha2.TrafficPolicy{}.GVK())
+		}
+
+		outputs.AddTrafficSplits(trafficSplit)
+	}
+
+	// Translate output TrafficTargets and HttpRouteGroups for discovered TrafficTarget,
+	// can be nil if non-kube service
 	trafficTargets, httpRouteGroups := t.trafficTarget.Translate(ctx, in, trafficTarget, reporter)
-	outputs.AddTrafficTargets(trafficTargets...)
-	outputs.AddHTTPRouteGroups(httpRouteGroups...)
+	if trafficTarget != nil {
+		if appliedTrafficPolicy != nil {
+			// Append the applied traffic policy as the parent to each traffic target
+			for _, tt := range trafficTargets {
+				metautils.AppendParent(ctx, tt, appliedTrafficPolicy.GetRef(), v1alpha2.TrafficPolicy{}.GVK())
+			}
+		}
+
+		outputs.AddTrafficTargets(trafficTargets...)
+	}
+	if httpRouteGroups != nil {
+		// Append the applied traffic policy as the parent to each http route group
+		if appliedTrafficPolicy != nil {
+			for _, rg := range httpRouteGroups {
+				metautils.AppendParent(ctx, rg, appliedTrafficPolicy.GetRef(), v1alpha2.TrafficPolicy{}.GVK())
+			}
+		}
+
+		outputs.AddHTTPRouteGroups(httpRouteGroups...)
+	}
 }
