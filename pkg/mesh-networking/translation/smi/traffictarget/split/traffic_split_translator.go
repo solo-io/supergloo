@@ -123,6 +123,10 @@ func (t *translator) Translate(
 
 	trafficSplit.Spec.Backends = backends
 
+	// Append the applied traffic policy as the parent to the traffic split
+	// Done here to avoid duplicating the logic to find the applied traffic policy in the SMI traffic target translator
+	metautils.AppendParent(ctx, trafficSplit, appliedTrafficPolicy.GetRef(), v1alpha2.TrafficPolicy{}.GVK())
+
 	return trafficSplit
 }
 
