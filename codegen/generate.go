@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/solo-io/skv2/codegen/render"
+
 	externalapis "github.com/solo-io/external-apis/codegen"
 	"github.com/solo-io/gloo-mesh/codegen/anyvendor"
 	"github.com/solo-io/gloo-mesh/codegen/groups"
@@ -113,12 +115,13 @@ var (
 
 	glooMeshManifestRoot  = "install/helm/gloo-mesh"
 	certAgentManifestRoot = "install/helm/cert-agent/"
+	xdsAgentManifestRoot  = "install/helm/xds-agent/"
 
 	vendoredMultiClusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 	importedMultiClusterCRDs = glooMeshManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 
 	allApiGroups = map[string][]model.Group{
-		"":                                 append(groups.GlooMeshGroups, groups.CertAgentGroups...),
+		"":                                 append(append(groups.GlooMeshGroups, groups.CertAgentGroups...), groups.XdsAgentGroup),
 		"github.com/solo-io/external-apis": externalapis.Groups,
 		"github.com/solo-io/skv2":          {skv1alpha1.Group},
 	}
@@ -155,6 +158,10 @@ func run() error {
 	// TODO(ilackarms): we copy skv2 CRDs out of vendor_any into our helm chart.
 	// we should consider using skv2 to automate this step for us
 	if err := os.Rename(vendoredMultiClusterCRDs, importedMultiClusterCRDs); err != nil {
+		return err
+	}
+
+	if err := makeXdsAgentCommand().Execute(); err != nil {
 		return err
 	}
 
@@ -199,6 +206,15 @@ func makeCertAgentCommand(chartOnly bool) codegen.Command {
 		Groups:            groups.CertAgentGroups,
 		RenderProtos:      true,
 		Chart:             helm.CertAgentChart,
+	}
+}
+
+func makeXdsAgentCommand() codegen.Command {
+	return codegen.Command{
+		AppName:      appName,
+		ManifestRoot: xdsAgentManifestRoot,
+		Groups:       []render.Group{groups.XdsAgentGroup},
+		RenderProtos: true,
 	}
 }
 

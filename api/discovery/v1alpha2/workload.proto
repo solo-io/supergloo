@@ -45,7 +45,6 @@ message WorkloadSpec {
         string service_account_name = 3;
     }
 
-
     // Information relevant to AppMesh-injected workloads.
     message AppMesh {
         // The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container.
