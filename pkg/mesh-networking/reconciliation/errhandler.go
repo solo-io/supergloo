@@ -57,27 +57,43 @@ func (e *errHandler) handleError(resource ezkube.Object, err error) {
 		switch gvk {
 		case v1alpha2.VirtualMesh{}.GVK().String():
 			for _, parentVMesh := range parents {
-				if vmesh, findErr := e.in.VirtualMeshes().Find(parentVMesh); findErr == nil {
-					vmesh.Status.Errors = append(vmesh.Status.Errors, err.Error())
+				vmesh, findErr := e.in.VirtualMeshes().Find(parentVMesh)
+				if findErr != nil {
+					contextutils.LoggerFrom(e.ctx).Errorf("internal error: resource for parent not found: %s", parentVMesh.String())
+					continue
 				}
+
+				vmesh.Status.Errors = append(vmesh.Status.Errors, err.Error())
 			}
 		case v1alpha2.AccessPolicy{}.GVK().String():
 			for _, parentAP := range parents {
-				if ap, findErr := e.in.VirtualMeshes().Find(parentAP); findErr == nil {
-					ap.Status.Errors = append(ap.Status.Errors, err.Error())
+				ap, findErr := e.in.VirtualMeshes().Find(parentAP)
+				if findErr != nil {
+					contextutils.LoggerFrom(e.ctx).Errorf("internal error: resource for parent not found: %s", parentAP.String())
+					continue
 				}
+
+				ap.Status.Errors = append(ap.Status.Errors, err.Error())
 			}
 		case v1alpha2.TrafficPolicy{}.GVK().String():
 			for _, parentTP := range parents {
-				if tp, findErr := e.in.VirtualMeshes().Find(parentTP); findErr == nil {
-					tp.Status.Errors = append(tp.Status.Errors, err.Error())
+				tp, findErr := e.in.VirtualMeshes().Find(parentTP)
+				if findErr != nil {
+					contextutils.LoggerFrom(e.ctx).Errorf("internal error: resource for parent not found: %s", parentTP.String())
+					continue
 				}
+
+				tp.Status.Errors = append(tp.Status.Errors, err.Error())
 			}
 		case v1alpha2.FailoverService{}.GVK().String():
 			for _, parentFS := range parents {
-				if fs, findErr := e.in.VirtualMeshes().Find(parentFS); findErr == nil {
-					fs.Status.Errors = append(fs.Status.Errors, err.Error())
+				fs, findErr := e.in.VirtualMeshes().Find(parentFS)
+				if findErr != nil {
+					contextutils.LoggerFrom(e.ctx).Errorf("internal error: resource for parent not found: %s", parentFS.String())
+					continue
 				}
+
+				fs.Status.Errors = append(fs.Status.Errors, err.Error())
 			}
 		}
 	}
