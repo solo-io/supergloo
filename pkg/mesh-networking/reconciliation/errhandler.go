@@ -57,33 +57,25 @@ func (e *errHandler) handleError(resource ezkube.Object, err error) {
 		switch gvk {
 		case v1alpha2.VirtualMesh{}.GVK().String():
 			for _, parentVMesh := range parents {
-				for _, vmesh := range e.in.VirtualMeshes().List(func(vmesh *v1alpha2.VirtualMesh) bool {
-					return parentVMesh.Equal(vmesh)
-				}) {
+				if vmesh, findErr := e.in.VirtualMeshes().Find(parentVMesh); findErr == nil {
 					vmesh.Status.Errors = append(vmesh.Status.Errors, err.Error())
 				}
 			}
 		case v1alpha2.AccessPolicy{}.GVK().String():
 			for _, parentAP := range parents {
-				for _, ap := range e.in.AccessPolicies().List(func(ap *v1alpha2.AccessPolicy) bool {
-					return parentAP.Equal(ap)
-				}) {
+				if ap, findErr := e.in.VirtualMeshes().Find(parentAP); findErr == nil {
 					ap.Status.Errors = append(ap.Status.Errors, err.Error())
 				}
 			}
 		case v1alpha2.TrafficPolicy{}.GVK().String():
 			for _, parentTP := range parents {
-				for _, tp := range e.in.TrafficPolicies().List(func(tp *v1alpha2.TrafficPolicy) bool {
-					return parentTP.Equal(tp)
-				}) {
+				if tp, findErr := e.in.VirtualMeshes().Find(parentTP); findErr == nil {
 					tp.Status.Errors = append(tp.Status.Errors, err.Error())
 				}
 			}
 		case v1alpha2.FailoverService{}.GVK().String():
 			for _, parentFS := range parents {
-				for _, fs := range e.in.FailoverServices().List(func(fs *v1alpha2.FailoverService) bool {
-					return parentFS.Equal(fs)
-				}) {
+				if fs, findErr := e.in.VirtualMeshes().Find(parentFS); findErr == nil {
 					fs.Status.Errors = append(fs.Status.Errors, err.Error())
 				}
 			}
