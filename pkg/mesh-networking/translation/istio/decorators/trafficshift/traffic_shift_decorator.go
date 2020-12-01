@@ -352,5 +352,5 @@ func subsetName(labels map[string]string) string {
 		keys = append(keys, key+"-"+val)
 	}
 	sort.Strings(keys)
-	return kubeutils.SanitizeNameV2(strings.Join(keys, "_"))
+	return kubeutils.SanitizeNameV2(strings.Join(keys, "-"))
 }

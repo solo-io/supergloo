@@ -275,10 +275,8 @@ func collectDescriptors(protoDir, outDir string, filter func(file *model.Descrip
 }
 
 func generateChangelog(root string, opts ChangelogOptions) error {
-	fmt.Println("version: " + os.Getenv("TAGGED_VERSION"))
-	fmt.Println("release: " + os.Getenv("RELEASE"))
-	if strings.ToLower(os.Getenv("RELEASE")) != `"true"` {
-		fmt.Println("skip?")
+	if strings.ToLower(os.Getenv("RELEASE")) != "true" {
+		fmt.Println("not a release, skipping changelog generation")
 		return nil
 	}
 
