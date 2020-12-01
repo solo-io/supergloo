@@ -2,7 +2,6 @@ package docsgen
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -127,9 +126,10 @@ type ProtoOptions struct {
 }
 
 type ChangelogConfig struct {
-	Name string
-	Repo string
-	Path string
+	Name    string
+	Repo    string
+	Path    string
+	Version string
 }
 
 type ChangelogOptions struct {
@@ -275,11 +275,6 @@ func collectDescriptors(protoDir, outDir string, filter func(file *model.Descrip
 }
 
 func generateChangelog(root string, opts ChangelogOptions) error {
-	if strings.ToLower(os.Getenv("RELEASE")) != "true" {
-		fmt.Println("not a release, skipping changelog generation")
-		return nil
-	}
-
 	// flush directory for idempotence
 	changelogDir := filepath.Join(root, opts.OutputDir)
 	os.RemoveAll(changelogDir)
@@ -291,7 +286,7 @@ func generateChangelog(root string, opts ChangelogOptions) error {
 	}
 	tmpl := template.Must(template.New("changelog").Parse(changelogTmpl))
 	for i, cfg := range opts.Repos {
-		body, err := generateChangelogMD(cfg.Repo)
+		body, err := generateChangelogMD(cfg.Repo, cfg.Version)
 		if err != nil {
 			return err
 		}
@@ -335,7 +330,7 @@ func getGithubClient() (*github.Client, error) {
 	return githubClient, nil
 }
 
-func generateChangelogMD(repo string) (string, error) {
+func generateChangelogMD(repo, version string) (string, error) {
 	client, err := getGithubClient()
 	if err != nil {
 		return "", err
@@ -346,8 +341,20 @@ func generateChangelogMD(repo string) (string, error) {
 		return "", err
 	}
 
-	var sb strings.Builder
+	var (
+		sb           strings.Builder
+		foundVersion = version == "" // Include all versions if none specified
+	)
 	for _, release := range releases {
+		// Do not include versions after the provided version
+		if !foundVersion {
+			if release.GetTagName() == version {
+				foundVersion = true
+			} else {
+				continue
+			}
+		}
+
 		sb.WriteString("### " + *release.TagName + "\n\n")
 		sb.WriteString(*release.Body + "\n")
 	}

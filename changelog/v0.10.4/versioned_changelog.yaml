@@ -1,0 +1,4 @@
+changelog:
+  type: FIX
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/1105
+  description: Generate changelog for specific versions.

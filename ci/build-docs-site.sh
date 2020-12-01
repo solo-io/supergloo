@@ -72,8 +72,10 @@ for version in "${versions[@]}"
 do
   echo "Generating site for version $version"
   cd $repoDir
+  changelogVersion=$version
   if [[ "$version" == "main" ]]
   then
+    changelogVersion=""
     git checkout main
   else
     git checkout tags/v"$version"
@@ -83,7 +85,7 @@ do
   then
     version="latest"
   fi
-  go run codegen/docs/docsgen.go
+  go run codegen/docs/docsgen.go --oss-version="$changelogVersion"
   cd docs
   # Generate data/Solo.yaml file with version info populated.
   generateHugoVersionsYaml $version
