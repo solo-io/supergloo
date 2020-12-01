@@ -36,6 +36,9 @@ jobs:
         make install-go-tools
 
     - name: Generate versioned docs site
+      env:
+        RELEASE: true
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: ./ci/build-docs-site.sh
 
     - name: Deploy to Firebase

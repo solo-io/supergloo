@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1041
+    description: Fix changelog generation by inserting environment variable `RELEASE=true` in Github workflow.
