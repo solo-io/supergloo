@@ -4,7 +4,8 @@
 package v1alpha2
 
 import (
-    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1")
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -13,20 +14,20 @@ import (
 
 // TrafficPolicy is the Schema for the trafficPolicy API
 type TrafficPolicy struct {
-    metav1.TypeMeta   `json:",inline"`
-    metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-    Spec TrafficPolicySpec `json:"spec,omitempty"`
-    Status TrafficPolicyStatus `json:"status,omitempty"`
+	Spec   TrafficPolicySpec   `json:"spec,omitempty"`
+	Status TrafficPolicyStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // TrafficPolicyList contains a list of TrafficPolicy
 type TrafficPolicyList struct {
-    metav1.TypeMeta `json:",inline"`
-    metav1.ListMeta `json:"metadata,omitempty"`
-    Items           []TrafficPolicy `json:"items"`
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []TrafficPolicy `json:"items"`
 }
 
 // +genclient
@@ -36,20 +37,20 @@ type TrafficPolicyList struct {
 
 // AccessPolicy is the Schema for the accessPolicy API
 type AccessPolicy struct {
-    metav1.TypeMeta   `json:",inline"`
-    metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-    Spec AccessPolicySpec `json:"spec,omitempty"`
-    Status AccessPolicyStatus `json:"status,omitempty"`
+	Spec   AccessPolicySpec   `json:"spec,omitempty"`
+	Status AccessPolicyStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // AccessPolicyList contains a list of AccessPolicy
 type AccessPolicyList struct {
-    metav1.TypeMeta `json:",inline"`
-    metav1.ListMeta `json:"metadata,omitempty"`
-    Items           []AccessPolicy `json:"items"`
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []AccessPolicy `json:"items"`
 }
 
 // +genclient
@@ -59,20 +60,20 @@ type AccessPolicyList struct {
 
 // VirtualMesh is the Schema for the virtualMesh API
 type VirtualMesh struct {
-    metav1.TypeMeta   `json:",inline"`
-    metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-    Spec VirtualMeshSpec `json:"spec,omitempty"`
-    Status VirtualMeshStatus `json:"status,omitempty"`
+	Spec   VirtualMeshSpec   `json:"spec,omitempty"`
+	Status VirtualMeshStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // VirtualMeshList contains a list of VirtualMesh
 type VirtualMeshList struct {
-    metav1.TypeMeta `json:",inline"`
-    metav1.ListMeta `json:"metadata,omitempty"`
-    Items           []VirtualMesh `json:"items"`
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []VirtualMesh `json:"items"`
 }
 
 // +genclient
@@ -82,25 +83,25 @@ type VirtualMeshList struct {
 
 // FailoverService is the Schema for the failoverService API
 type FailoverService struct {
-    metav1.TypeMeta   `json:",inline"`
-    metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-    Spec FailoverServiceSpec `json:"spec,omitempty"`
-    Status FailoverServiceStatus `json:"status,omitempty"`
+	Spec   FailoverServiceSpec   `json:"spec,omitempty"`
+	Status FailoverServiceStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // FailoverServiceList contains a list of FailoverService
 type FailoverServiceList struct {
-    metav1.TypeMeta `json:",inline"`
-    metav1.ListMeta `json:"metadata,omitempty"`
-    Items           []FailoverService `json:"items"`
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []FailoverService `json:"items"`
 }
 
 func init() {
-    SchemeBuilder.Register(&TrafficPolicy{}, &TrafficPolicyList{})
-    SchemeBuilder.Register(&AccessPolicy{}, &AccessPolicyList{})
-    SchemeBuilder.Register(&VirtualMesh{}, &VirtualMeshList{})
-    SchemeBuilder.Register(&FailoverService{}, &FailoverServiceList{})
+	SchemeBuilder.Register(&TrafficPolicy{}, &TrafficPolicyList{})
+	SchemeBuilder.Register(&AccessPolicy{}, &AccessPolicyList{})
+	SchemeBuilder.Register(&VirtualMesh{}, &VirtualMeshList{})
+	SchemeBuilder.Register(&FailoverService{}, &FailoverServiceList{})
 }

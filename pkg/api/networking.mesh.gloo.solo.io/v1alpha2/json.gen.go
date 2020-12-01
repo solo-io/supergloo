@@ -5,13 +5,13 @@
 package v1alpha2
 
 import (
-    bytes "bytes"
-    fmt "fmt"
-    math "math"
+	bytes "bytes"
+	fmt "fmt"
+	math "math"
 
-    skv2jsonpb "github.com/solo-io/skv2/pkg/jsonpb"
-    proto "github.com/gogo/protobuf/proto"
-    _ "github.com/gogo/protobuf/types"
+	proto "github.com/gogo/protobuf/proto"
+	_ "github.com/gogo/protobuf/types"
+	skv2jsonpb "github.com/solo-io/skv2/pkg/jsonpb"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -20,7 +20,7 @@ var _ = fmt.Errorf
 var _ = math.Inf
 
 var (
-	marshaller = &skv2jsonpb.Marshaler{}
+	marshaller   = &skv2jsonpb.Marshaler{}
 	unmarshaller = &skv2jsonpb.Unmarshaler{}
 )
 
@@ -34,6 +34,7 @@ func (this *TrafficPolicySpec) MarshalJSON() ([]byte, error) {
 func (this *TrafficPolicySpec) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
+
 // MarshalJSON is a custom marshaler for TrafficPolicyStatus
 func (this *TrafficPolicyStatus) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
@@ -55,6 +56,7 @@ func (this *AccessPolicySpec) MarshalJSON() ([]byte, error) {
 func (this *AccessPolicySpec) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
+
 // MarshalJSON is a custom marshaler for AccessPolicyStatus
 func (this *AccessPolicyStatus) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
@@ -76,6 +78,7 @@ func (this *VirtualMeshSpec) MarshalJSON() ([]byte, error) {
 func (this *VirtualMeshSpec) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
+
 // MarshalJSON is a custom marshaler for VirtualMeshStatus
 func (this *VirtualMeshStatus) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
@@ -97,6 +100,7 @@ func (this *FailoverServiceSpec) MarshalJSON() ([]byte, error) {
 func (this *FailoverServiceSpec) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
+
 // MarshalJSON is a custom marshaler for FailoverServiceStatus
 func (this *FailoverServiceStatus) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)

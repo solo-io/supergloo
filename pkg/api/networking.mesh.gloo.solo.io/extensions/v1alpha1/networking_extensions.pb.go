@@ -6,6 +6,8 @@ package v1alpha1
 import (
 	context "context"
 	fmt "fmt"
+	math "math"
+
 	proto "github.com/gogo/protobuf/proto"
 	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1"
@@ -13,7 +15,6 @@ import (
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	v1alpha3 "istio.io/api/networking/v1alpha3"
-	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

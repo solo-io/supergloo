@@ -6,10 +6,11 @@ package v1alpha2
 import (
 	bytes "bytes"
 	fmt "fmt"
+	math "math"
+
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	types "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/types"
-	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

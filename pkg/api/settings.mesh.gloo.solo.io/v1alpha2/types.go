@@ -4,7 +4,8 @@
 package v1alpha2
 
 import (
-    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1")
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -13,22 +14,22 @@ import (
 
 // Settings is the Schema for the settings API
 type Settings struct {
-    metav1.TypeMeta   `json:",inline"`
-    metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-    Spec SettingsSpec `json:"spec,omitempty"`
-    Status SettingsStatus `json:"status,omitempty"`
+	Spec   SettingsSpec   `json:"spec,omitempty"`
+	Status SettingsStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // SettingsList contains a list of Settings
 type SettingsList struct {
-    metav1.TypeMeta `json:",inline"`
-    metav1.ListMeta `json:"metadata,omitempty"`
-    Items           []Settings `json:"items"`
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []Settings `json:"items"`
 }
 
 func init() {
-    SchemeBuilder.Register(&Settings{}, &SettingsList{})
+	SchemeBuilder.Register(&Settings{}, &SettingsList{})
 }

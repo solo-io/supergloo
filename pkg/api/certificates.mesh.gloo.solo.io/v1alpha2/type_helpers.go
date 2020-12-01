@@ -3,9 +3,6 @@
 // Definitions for the Kubernetes types
 package v1alpha2
 
-import (
-)
-
 // IssuedCertificateSlice represents a slice of *IssuedCertificate
 type IssuedCertificateSlice []*IssuedCertificate
 
