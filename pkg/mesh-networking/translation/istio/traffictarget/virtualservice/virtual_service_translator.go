@@ -53,20 +53,20 @@ type Translator interface {
 }
 
 type translator struct {
-	userInputSnap    istioinputs.Snapshot
-	clusterDomains   hostutils.ClusterDomainRegistry
-	decoratorFactory decorators.Factory
+	existingIstioResources istioinputs.Snapshot
+	clusterDomains         hostutils.ClusterDomainRegistry
+	decoratorFactory       decorators.Factory
 }
 
 func NewTranslator(
-	userInputSnap istioinputs.Snapshot,
+	existingIstioResources istioinputs.Snapshot,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
 ) Translator {
 	return &translator{
-		userInputSnap:    userInputSnap,
-		clusterDomains:   clusterDomains,
-		decoratorFactory: decoratorFactory,
+		existingIstioResources: existingIstioResources,
+		clusterDomains:         clusterDomains,
+		decoratorFactory:       decoratorFactory,
 	}
 }
 
@@ -152,13 +152,13 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	if t.userInputSnap == nil {
+	if t.existingIstioResources == nil {
 		return virtualService
 	}
 
 	// detect and report error on intersecting config if enabled in settings
 	if errs := conflictsWithUserVirtualService(
-		t.userInputSnap.VirtualServices(),
+		t.existingIstioResources.VirtualServices(),
 		virtualService,
 	); len(errs) > 0 {
 		for _, err := range errs {

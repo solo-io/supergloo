@@ -566,7 +566,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				},
 			}).
 			Build()
-		userIn := istioinputs.NewInputSnapshotManualBuilder("").
+		existingIstioResources := istioinputs.NewInputSnapshotManualBuilder("").
 			AddDestinationRules(v1alpha3.DestinationRuleSlice{
 				// Gloo Mesh translated, should not yield error
 				{
@@ -672,13 +672,13 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				Expect(err).To(testutils.HaveInErrorChain(
 					eris.Errorf("Unable to translate AppliedTrafficPolicies to DestinationRule, applies to host %s that is already configured by the existing DestinationRule %s",
 						"local-hostname",
-						sets.Key(userIn.DestinationRules().List()[1])),
+						sets.Key(existingIstioResources.DestinationRules().List()[1])),
 				),
 				)
 			})
 
 		destinationRuleTranslator = destinationrule.NewTranslator(
-			userIn,
+			existingIstioResources,
 			mockClusterDomainRegistry,
 			mockDecoratorFactory,
 			trafficTargets,

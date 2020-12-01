@@ -917,7 +917,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			}).
 			Build()
 
-		userIn := istioinputs.NewInputSnapshotManualBuilder("user").
+		existingIstioResources := istioinputs.NewInputSnapshotManualBuilder("user").
 			AddVirtualServices([]*networkingv1alpha3.VirtualService{
 				// Gloo Mesh translated, should not yield error
 				{
@@ -990,12 +990,12 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				Expect(err).To(testutils.HaveInErrorChain(
 					eris.Errorf("Unable to translate AppliedTrafficPolicies to VirtualService, applies to hosts %+v that are already configured by the existing VirtualService %s",
 						[]string{"local-hostname"},
-						sets.Key(userIn.VirtualServices().List()[1])),
+						sets.Key(existingIstioResources.VirtualServices().List()[1])),
 				),
 				)
 			})
 
-		virtualServiceTranslator = virtualservice.NewTranslator(userIn, mockClusterDomainRegistry, mockDecoratorFactory)
+		virtualServiceTranslator = virtualservice.NewTranslator(existingIstioResources, mockClusterDomainRegistry, mockDecoratorFactory)
 		_ = virtualServiceTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
 	})
 })

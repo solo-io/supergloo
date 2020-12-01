@@ -32,14 +32,14 @@ import (
 type DependencyFactory interface {
 	MakeTrafficTargetTranslator(
 		ctx context.Context,
-		userInputSnap istioinputs.Snapshot,
+		existingIstioResources istioinputs.Snapshot,
 		clusters skv1alpha1sets.KubernetesClusterSet,
 		trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 		failoverServices v1alpha2sets.FailoverServiceSet,
 	) traffictarget.Translator
 	MakeMeshTranslator(
 		ctx context.Context,
-		userInputSnap istioinputs.Snapshot,
+		existingIstioResources istioinputs.Snapshot,
 		clusters skv1alpha1sets.KubernetesClusterSet,
 		secrets corev1sets.SecretSet,
 		workloads discoveryv1alpha2sets.WorkloadSet,
@@ -56,7 +56,7 @@ func NewDependencyFactory() DependencyFactory {
 
 func (d dependencyFactoryImpl) MakeTrafficTargetTranslator(
 	ctx context.Context,
-	userInputSnap istioinputs.Snapshot,
+	existingIstioResources istioinputs.Snapshot,
 	clusters skv1alpha1sets.KubernetesClusterSet,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
@@ -64,12 +64,12 @@ func (d dependencyFactoryImpl) MakeTrafficTargetTranslator(
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
 	decoratorFactory := decorators.NewFactory()
 
-	return traffictarget.NewTranslator(ctx, userInputSnap, clusterDomains, decoratorFactory, trafficTargets, failoverServices)
+	return traffictarget.NewTranslator(ctx, existingIstioResources, clusterDomains, decoratorFactory, trafficTargets, failoverServices)
 }
 
 func (d dependencyFactoryImpl) MakeMeshTranslator(
 	ctx context.Context,
-	userInputSnap istioinputs.Snapshot,
+	existingIstioResources istioinputs.Snapshot,
 	clusters skv1alpha1sets.KubernetesClusterSet,
 	secrets corev1sets.SecretSet,
 	workloads discoveryv1alpha2sets.WorkloadSet,
@@ -82,8 +82,8 @@ func (d dependencyFactoryImpl) MakeMeshTranslator(
 		clusterDomains,
 		trafficTargets,
 		failoverServices,
-		virtualservice.NewTranslator(userInputSnap, clusterDomains, decorators.NewFactory()),
-		destinationrule.NewTranslator(userInputSnap, clusterDomains, decorators.NewFactory(), trafficTargets, failoverServices),
+		virtualservice.NewTranslator(existingIstioResources, clusterDomains, decorators.NewFactory()),
+		destinationrule.NewTranslator(existingIstioResources, clusterDomains, decorators.NewFactory(), trafficTargets, failoverServices),
 	)
 	mtlsTranslator := mtls.NewTranslator(ctx, secrets, workloads)
 	accessTranslator := access.NewTranslator()

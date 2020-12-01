@@ -52,26 +52,26 @@ type Translator interface {
 }
 
 type translator struct {
-	userInputSnap    istioinputs.Snapshot
-	clusterDomains   hostutils.ClusterDomainRegistry
-	decoratorFactory decorators.Factory
-	trafficTargets   discoveryv1alpha2sets.TrafficTargetSet
-	failoverServices v1alpha2sets.FailoverServiceSet
+	existingIstioResources istioinputs.Snapshot
+	clusterDomains         hostutils.ClusterDomainRegistry
+	decoratorFactory       decorators.Factory
+	trafficTargets         discoveryv1alpha2sets.TrafficTargetSet
+	failoverServices       v1alpha2sets.FailoverServiceSet
 }
 
 func NewTranslator(
-	userInputSnap istioinputs.Snapshot,
+	existingIstioResources istioinputs.Snapshot,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
 ) Translator {
 	return &translator{
-		userInputSnap:    userInputSnap,
-		clusterDomains:   clusterDomains,
-		decoratorFactory: decoratorFactory,
-		trafficTargets:   trafficTargets,
-		failoverServices: failoverServices,
+		existingIstioResources: existingIstioResources,
+		clusterDomains:         clusterDomains,
+		decoratorFactory:       decoratorFactory,
+		trafficTargets:         trafficTargets,
+		failoverServices:       failoverServices,
 	}
 }
 
@@ -148,13 +148,13 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	if t.userInputSnap == nil {
+	if t.existingIstioResources == nil {
 		return destinationRule
 	}
 
 	// detect and report error on intersecting config if enabled in settings
 	if errs := conflictsWithUserDestinationRule(
-		t.userInputSnap.DestinationRules(),
+		t.existingIstioResources.DestinationRules(),
 		destinationRule,
 	); len(errs) > 0 {
 		for _, err := range errs {

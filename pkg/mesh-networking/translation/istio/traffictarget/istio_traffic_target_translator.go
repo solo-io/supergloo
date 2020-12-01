@@ -36,16 +36,16 @@ type Translator interface {
 }
 
 type translator struct {
-	ctx                   context.Context
-	userInputSnap         istioinputs.Snapshot
-	destinationRules      destinationrule.Translator
-	virtualServices       virtualservice.Translator
-	authorizationPolicies authorizationpolicy.Translator
+	ctx                    context.Context
+	existingIstioResources istioinputs.Snapshot
+	destinationRules       destinationrule.Translator
+	virtualServices        virtualservice.Translator
+	authorizationPolicies  authorizationpolicy.Translator
 }
 
 func NewTranslator(
 	ctx context.Context,
-	userInputSnap istioinputs.Snapshot,
+	existingIstioResources istioinputs.Snapshot,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
@@ -53,8 +53,8 @@ func NewTranslator(
 ) Translator {
 	return &translator{
 		ctx:                   ctx,
-		destinationRules:      destinationrule.NewTranslator(userInputSnap, clusterDomains, decoratorFactory, trafficTargets, failoverServices),
-		virtualServices:       virtualservice.NewTranslator(userInputSnap, clusterDomains, decoratorFactory),
+		destinationRules:      destinationrule.NewTranslator(existingIstioResources, clusterDomains, decoratorFactory, trafficTargets, failoverServices),
+		virtualServices:       virtualservice.NewTranslator(existingIstioResources, clusterDomains, decoratorFactory),
 		authorizationPolicies: authorizationpolicy.NewTranslator(),
 	}
 }

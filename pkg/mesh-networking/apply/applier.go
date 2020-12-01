@@ -25,7 +25,7 @@ import (
 // Note that the Applier also updates the statuses of objects contained in the input Snapshot.
 // The Input Snapshot's SyncStatuses method should usually be called after running the Applier.
 type Applier interface {
-	Apply(ctx context.Context, input input.Snapshot, userInputSnap istioinputs.Snapshot)
+	Apply(ctx context.Context, input input.Snapshot, existingIstioResources istioinputs.Snapshot)
 }
 
 type applier struct {
@@ -41,7 +41,7 @@ func NewApplier(
 	}
 }
 
-func (v *applier) Apply(ctx context.Context, input input.Snapshot, userInputSnap istioinputs.Snapshot) {
+func (v *applier) Apply(ctx context.Context, input input.Snapshot, existingIstioResources istioinputs.Snapshot) {
 	ctx = contextutils.WithLogger(ctx, "validation")
 	reporter := newApplyReporter()
 
@@ -53,7 +53,7 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot, userInputSnap
 
 	applyPoliciesToConfigTargets(input)
 
-	_, err := v.translator.Translate(ctx, input, userInputSnap, reporter)
+	_, err := v.translator.Translate(ctx, input, existingIstioResources, reporter)
 	if err != nil {
 		// should never happen
 		contextutils.LoggerFrom(ctx).DPanicf("internal error: failed to run translator: %v", err)

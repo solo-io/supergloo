@@ -42,29 +42,29 @@ func (m *MockDependencyFactory) EXPECT() *MockDependencyFactoryMockRecorder {
 }
 
 // MakeTrafficTargetTranslator mocks base method
-func (m *MockDependencyFactory) MakeTrafficTargetTranslator(ctx context.Context, userInputSnap istio.Snapshot, clusters v1alpha1sets.KubernetesClusterSet, trafficTargets v1alpha2sets.TrafficTargetSet, failoverServices v1alpha2sets0.FailoverServiceSet) traffictarget.Translator {
+func (m *MockDependencyFactory) MakeTrafficTargetTranslator(ctx context.Context, existingIstioResources istio.Snapshot, clusters v1alpha1sets.KubernetesClusterSet, trafficTargets v1alpha2sets.TrafficTargetSet, failoverServices v1alpha2sets0.FailoverServiceSet) traffictarget.Translator {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MakeTrafficTargetTranslator", ctx, userInputSnap, clusters, trafficTargets, failoverServices)
+	ret := m.ctrl.Call(m, "MakeTrafficTargetTranslator", ctx, existingIstioResources, clusters, trafficTargets, failoverServices)
 	ret0, _ := ret[0].(traffictarget.Translator)
 	return ret0
 }
 
 // MakeTrafficTargetTranslator indicates an expected call of MakeTrafficTargetTranslator
-func (mr *MockDependencyFactoryMockRecorder) MakeTrafficTargetTranslator(ctx, userInputSnap, clusters, trafficTargets, failoverServices interface{}) *gomock.Call {
+func (mr *MockDependencyFactoryMockRecorder) MakeTrafficTargetTranslator(ctx, existingIstioResources, clusters, trafficTargets, failoverServices interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeTrafficTargetTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeTrafficTargetTranslator), ctx, userInputSnap, clusters, trafficTargets, failoverServices)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeTrafficTargetTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeTrafficTargetTranslator), ctx, existingIstioResources, clusters, trafficTargets, failoverServices)
 }
 
 // MakeMeshTranslator mocks base method
-func (m *MockDependencyFactory) MakeMeshTranslator(ctx context.Context, userInputSnap istio.Snapshot, clusters v1alpha1sets.KubernetesClusterSet, secrets v1sets.SecretSet, workloads v1alpha2sets.WorkloadSet, trafficTargets v1alpha2sets.TrafficTargetSet, failoverServices v1alpha2sets0.FailoverServiceSet) mesh.Translator {
+func (m *MockDependencyFactory) MakeMeshTranslator(ctx context.Context, existingIstioResources istio.Snapshot, clusters v1alpha1sets.KubernetesClusterSet, secrets v1sets.SecretSet, workloads v1alpha2sets.WorkloadSet, trafficTargets v1alpha2sets.TrafficTargetSet, failoverServices v1alpha2sets0.FailoverServiceSet) mesh.Translator {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MakeMeshTranslator", ctx, userInputSnap, clusters, secrets, workloads, trafficTargets, failoverServices)
+	ret := m.ctrl.Call(m, "MakeMeshTranslator", ctx, existingIstioResources, clusters, secrets, workloads, trafficTargets, failoverServices)
 	ret0, _ := ret[0].(mesh.Translator)
 	return ret0
 }
 
 // MakeMeshTranslator indicates an expected call of MakeMeshTranslator
-func (mr *MockDependencyFactoryMockRecorder) MakeMeshTranslator(ctx, userInputSnap, clusters, secrets, workloads, trafficTargets, failoverServices interface{}) *gomock.Call {
+func (mr *MockDependencyFactoryMockRecorder) MakeMeshTranslator(ctx, existingIstioResources, clusters, secrets, workloads, trafficTargets, failoverServices interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeMeshTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeMeshTranslator), ctx, userInputSnap, clusters, secrets, workloads, trafficTargets, failoverServices)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeMeshTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeMeshTranslator), ctx, existingIstioResources, clusters, secrets, workloads, trafficTargets, failoverServices)
 }

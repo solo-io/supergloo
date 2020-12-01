@@ -163,7 +163,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	}
 
 	// nil istioInputSnap signals to downstream translators that intersecting config should not be detected
-	var istioInputSnap istioinputs.Snapshot
+	var existingIstioResources istioinputs.Snapshot
 	if r.disallowIntersectingConfig {
 		selector := labels.NewSelector()
 		for k := range metautils.TranslatedObjectLabels() {
@@ -193,7 +193,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 				}: verifier.ServerVerifyOption_LogDebugIfNotPresent,
 			}),
 		}
-		istioInputSnap, err = r.istioInputs.BuildSnapshot(ctx, "mesh-networking-istio-inputs", istioinputs.BuildOptions{
+		existingIstioResources, err = r.istioInputs.BuildSnapshot(ctx, "mesh-networking-istio-inputs", istioinputs.BuildOptions{
 			DestinationRules: resourceBuildOptions,
 			VirtualServices:  resourceBuildOptions,
 		})
@@ -204,13 +204,13 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	}
 
 	// apply policies to the discovery resources they target
-	r.applier.Apply(ctx, inputSnap, istioInputSnap)
+	r.applier.Apply(ctx, inputSnap, existingIstioResources)
 
 	// append errors as we still want to sync statuses if applying translation fails
 	var errs error
 
 	// translate and apply outputs
-	if err := r.applyTranslation(ctx, inputSnap, istioInputSnap); err != nil {
+	if err := r.applyTranslation(ctx, inputSnap, existingIstioResources); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -222,13 +222,13 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	return false, errs
 }
 
-func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Snapshot, userInputSnap istioinputs.Snapshot) error {
+func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Snapshot, existingIstioResources istioinputs.Snapshot) error {
 	if err := r.syncSettings(ctx, in); err != nil {
 		// fail early if settings failed to sync
 		return err
 	}
 
-	outputSnap, err := r.translator.Translate(ctx, in, userInputSnap, r.reporter)
+	outputSnap, err := r.translator.Translate(ctx, in, existingIstioResources, r.reporter)
 	if err != nil {
 		// internal translator errors should never happen
 		return err

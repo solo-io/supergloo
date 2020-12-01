@@ -318,7 +318,7 @@ type testIstioTranslator struct {
 func (t testIstioTranslator) Translate(
 	ctx context.Context,
 	in input.Snapshot,
-	userInputSnap istioinputs.Snapshot,
+	existingIstioResources istioinputs.Snapshot,
 	reporter reporting.Reporter,
 ) (translation.OutputSnapshots, error) {
 	t.callReporter(reporter)
