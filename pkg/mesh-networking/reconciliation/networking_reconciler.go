@@ -3,9 +3,12 @@ package reconciliation
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-multierror"
+	"github.com/solo-io/gloo-mesh/codegen/constants"
+	"github.com/solo-io/gloo-mesh/codegen/io"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
 	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
@@ -30,7 +33,6 @@ import (
 	"github.com/solo-io/skv2/pkg/predicate"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"github.com/solo-io/skv2/pkg/verifier"
-	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/selection"
@@ -58,6 +60,7 @@ type networkingReconciler struct {
 	reconciler                 skinput.SingleClusterReconciler
 	istioInputs                istioinputs.Builder
 	disallowIntersectingConfig bool
+	istioResourceVerifier      verifier.ServerResourceVerifier
 }
 
 // pushNotificationId is a special identifier for a reconcile event triggered by an extension server pushing a notification
@@ -82,6 +85,8 @@ func Start(
 	disallowIntersectingConfig bool,
 ) error {
 
+	istioResourceVerifier := buildIstioResourceVerifier(ctx)
+
 	r := &networkingReconciler{
 		ctx:                        ctx,
 		builder:                    builder,
@@ -96,6 +101,7 @@ func Start(
 		extensionClients:           extensionClients,
 		istioInputs:                istioInputs,
 		disallowIntersectingConfig: disallowIntersectingConfig,
+		istioResourceVerifier:      istioResourceVerifier,
 	}
 
 	filterNetworkingEvents := predicate.SimplePredicate{
@@ -125,7 +131,16 @@ func Start(
 			return r.reconcile(id)
 		},
 		time.Second/2,
-		istioinputs.ReconcileOptions{},
+		istioinputs.ReconcileOptions{
+			IssuedCertificates:    reconcile.Options{Verifier: istioResourceVerifier},
+			PodBounceDirectives:   reconcile.Options{Verifier: istioResourceVerifier},
+			DestinationRules:      reconcile.Options{Verifier: istioResourceVerifier},
+			EnvoyFilters:          reconcile.Options{Verifier: istioResourceVerifier},
+			Gateways:              reconcile.Options{Verifier: istioResourceVerifier},
+			ServiceEntries:        reconcile.Options{Verifier: istioResourceVerifier},
+			VirtualServices:       reconcile.Options{Verifier: istioResourceVerifier},
+			AuthorizationPolicies: reconcile.Options{Verifier: istioResourceVerifier},
+		},
 	)
 
 	r.reconciler = reconciler
@@ -179,23 +194,15 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 			ListOptions: []client.ListOption{
 				&client.ListOptions{LabelSelector: selector},
 			},
-			Verifier: verifier.NewVerifier(ctx, map[schema.GroupVersionKind]verifier.ServerVerifyOption{
-				// avoid error when mesh-specific input resources are not available
-				schema.GroupVersionKind{
-					Group:   istionetworkingv1alpha3.SchemeGroupVersion.Group,
-					Version: istionetworkingv1alpha3.SchemeGroupVersion.Version,
-					Kind:    "VirtualService",
-				}: verifier.ServerVerifyOption_LogDebugIfNotPresent,
-				schema.GroupVersionKind{
-					Group:   istionetworkingv1alpha3.SchemeGroupVersion.Group,
-					Version: istionetworkingv1alpha3.SchemeGroupVersion.Version,
-					Kind:    "DestinationRule",
-				}: verifier.ServerVerifyOption_LogDebugIfNotPresent,
-			}),
+			Verifier: r.istioResourceVerifier,
 		}
 		existingIstioResources, err = r.istioInputs.BuildSnapshot(ctx, "mesh-networking-istio-inputs", istioinputs.BuildOptions{
-			DestinationRules: resourceBuildOptions,
-			VirtualServices:  resourceBuildOptions,
+			DestinationRules:      resourceBuildOptions,
+			EnvoyFilters:          resourceBuildOptions,
+			Gateways:              resourceBuildOptions,
+			ServiceEntries:        resourceBuildOptions,
+			VirtualServices:       resourceBuildOptions,
+			AuthorizationPolicies: resourceBuildOptions,
 		})
 		if err != nil {
 			// failed to read from cache; should never happen
@@ -272,4 +279,25 @@ func isIgnoredSecret(obj metav1.Object) bool {
 		return false
 	}
 	return !mtls.IsSigningCert(secret)
+}
+
+// build a verifier that ignores NoKindMatch errors for mesh-specific types
+// we expect these errors on clusters on which that mesh is not deployed
+func buildIstioResourceVerifier(ctx context.Context) verifier.ServerResourceVerifier {
+	options := map[schema.GroupVersionKind]verifier.ServerVerifyOption{}
+	for groupVersion, kinds := range io.IstioNetworkingOutputTypes.Resources {
+		// don't ignore errors for Gloo Mesh types
+		if strings.Contains(groupVersion.Group, constants.GlooMeshApiGroupSuffix) {
+			continue
+		}
+		for _, kind := range kinds {
+			gvk := schema.GroupVersionKind{
+				Group:   groupVersion.Group,
+				Version: groupVersion.Version,
+				Kind:    kind,
+			}
+			options[gvk] = verifier.ServerVerifyOption_LogDebugIfNotPresent
+		}
+	}
+	return verifier.NewVerifier(ctx, options)
 }
