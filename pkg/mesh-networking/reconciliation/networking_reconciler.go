@@ -59,8 +59,9 @@ type networkingReconciler struct {
 	extensionClients           extensions.Clientset
 	reconciler                 skinput.SingleClusterReconciler
 	istioInputs                istioinputs.Builder
-	disallowIntersectingConfig bool
 	istioResourceVerifier      verifier.ServerResourceVerifier
+	disallowIntersectingConfig bool
+	watchOutputTypes           bool
 }
 
 // pushNotificationId is a special identifier for a reconcile event triggered by an extension server pushing a notification
@@ -83,6 +84,7 @@ func Start(
 	extensionClients extensions.Clientset,
 	istioInputs istioinputs.Builder,
 	disallowIntersectingConfig bool,
+	watchOutputTypes bool,
 ) error {
 
 	istioResourceVerifier := buildIstioResourceVerifier(ctx)
@@ -102,6 +104,7 @@ func Start(
 		istioInputs:                istioInputs,
 		disallowIntersectingConfig: disallowIntersectingConfig,
 		istioResourceVerifier:      istioResourceVerifier,
+		watchOutputTypes:           watchOutputTypes,
 	}
 
 	filterNetworkingEvents := predicate.SimplePredicate{
@@ -124,24 +127,26 @@ func Start(
 
 	// watch istio output types for changes, including objects managed by Gloo Mesh itself
 	// this should eventually reach a steady state since Gloo Mesh performs equality checks before updating existing objects
-	istioinputs.RegisterMultiClusterReconciler(
-		ctx,
-		clusters,
-		func(id ezkube.ClusterResourceId) (bool, error) {
-			return r.reconcile(id)
-		},
-		time.Second/2,
-		istioinputs.ReconcileOptions{
-			IssuedCertificates:    reconcile.Options{Verifier: istioResourceVerifier},
-			PodBounceDirectives:   reconcile.Options{Verifier: istioResourceVerifier},
-			DestinationRules:      reconcile.Options{Verifier: istioResourceVerifier},
-			EnvoyFilters:          reconcile.Options{Verifier: istioResourceVerifier},
-			Gateways:              reconcile.Options{Verifier: istioResourceVerifier},
-			ServiceEntries:        reconcile.Options{Verifier: istioResourceVerifier},
-			VirtualServices:       reconcile.Options{Verifier: istioResourceVerifier},
-			AuthorizationPolicies: reconcile.Options{Verifier: istioResourceVerifier},
-		},
-	)
+	if r.watchOutputTypes {
+		istioinputs.RegisterMultiClusterReconciler(
+			ctx,
+			clusters,
+			func(id ezkube.ClusterResourceId) (bool, error) {
+				return r.reconcile(id)
+			},
+			time.Second/2,
+			istioinputs.ReconcileOptions{
+				IssuedCertificates:    reconcile.Options{Verifier: istioResourceVerifier},
+				PodBounceDirectives:   reconcile.Options{Verifier: istioResourceVerifier},
+				DestinationRules:      reconcile.Options{Verifier: istioResourceVerifier},
+				EnvoyFilters:          reconcile.Options{Verifier: istioResourceVerifier},
+				Gateways:              reconcile.Options{Verifier: istioResourceVerifier},
+				ServiceEntries:        reconcile.Options{Verifier: istioResourceVerifier},
+				VirtualServices:       reconcile.Options{Verifier: istioResourceVerifier},
+				AuthorizationPolicies: reconcile.Options{Verifier: istioResourceVerifier},
+			},
+		)
+	}
 
 	r.reconciler = reconciler
 

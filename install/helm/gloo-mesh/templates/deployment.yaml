@@ -131,6 +131,7 @@ spec:
         - --settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}
         - --verbose
         - --disallow-intersecting-config={{ $.Values.disallowIntersectingConfig }}
+        - --watch-output-types={{ $.Values.watchOutputTypes }}
 {{- if $networking.env }}
         env:
 {{ toYaml $networking.env | indent 10 }}

@@ -25,10 +25,12 @@ import (
 type NetworkingOpts struct {
 	*bootstrap.Options
 	disallowIntersectionConfig bool
+	watchOutputTypes           bool
 }
 
 func (opts *NetworkingOpts) AddToFlags(flags *pflag.FlagSet) {
 	flags.BoolVar(&opts.disallowIntersectionConfig, "disallow-intersecting-config", false, "if enabled, Gloo Mesh will detect and report errors when outputting service mesh configuration that overlaps with existing config not managed by Gloo Mesh")
+	flags.BoolVar(&opts.watchOutputTypes, "watch-output-types", true, "if disabled, Gloo Mesh will not resync upon changes to service mesh config managed by Gloo Mesh")
 }
 
 // the mesh-networking controller is the Kubernetes Controller/Operator
@@ -36,13 +38,14 @@ func (opts *NetworkingOpts) AddToFlags(flags *pflag.FlagSet) {
 // discovered resources.
 func Start(ctx context.Context, opts *NetworkingOpts) error {
 	return bootstrap.Start(ctx, "networking", func(parameters bootstrap.StartParameters) error {
-		return startReconciler(opts.disallowIntersectionConfig, parameters)
+		return startReconciler(opts.disallowIntersectionConfig, opts.watchOutputTypes, parameters)
 	}, *opts.Options)
 }
 
 // start the main reconcile loop
 func startReconciler(
 	disallowIntersectingConfig bool,
+	watchOutputTypes bool,
 	parameters bootstrap.StartParameters,
 ) error {
 
@@ -89,6 +92,7 @@ func startReconciler(
 		extensionClientset,
 		istioSnapshotBuilder,
 		disallowIntersectingConfig,
+		watchOutputTypes,
 	)
 }
 

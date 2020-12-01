@@ -12,6 +12,7 @@ type ChartValues struct {
 	GlooMeshOperatorArgs       GlooMeshOperatorArgs `json:"glooMeshOperatorArgs"`
 	Settings                   SettingsValues       `json:"settings"`
 	DisallowIntersectingConfig bool                 `json:"disallowIntersectingConfig"`
+	WatchOutputTypes           bool                 `json:"watchOutputTypes"`
 }
 
 type GlooMeshOperatorArgs struct {
@@ -49,5 +50,6 @@ func defaultValues() ChartValues {
 			},
 		},
 		DisallowIntersectingConfig: false,
+		WatchOutputTypes:           true,
 	}
 }
