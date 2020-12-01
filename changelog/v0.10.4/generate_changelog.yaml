@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Add XdsConfig API to the Istio Output Types. This allows the Enterprise Extender to generate XdsConfigs which are used to configure the Xds Agent Server, used by the Wasm Extension. Also adds ConfigMaps to the output snapshot which are currently used to configure the Envoy bootstrap to enable connecting to the Xds Agent.
