@@ -47,7 +47,7 @@ Across the top of the page is a navigation bar with five options.
 
 * **Overview**: Provides a high-level overview of Gloo Mesh
 * **Meshes**: Displays service meshes being managed by Gloo Mesh
-* **Policies**: Displays defined RBAC policies for Gloo Mesh
+* **Policies**: Displays defined traffic and access policies for Gloo Mesh
 * **Wasm**: Displays WASM deployments being managed by Gloo Mesh
 * **Debug**: Displays full configurations for service meshes.
 
