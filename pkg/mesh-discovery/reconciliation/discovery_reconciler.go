@@ -6,7 +6,6 @@ import (
 	"time"
 
 	appmeshv1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
-	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"github.com/solo-io/skv2/pkg/verifier"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -55,12 +54,6 @@ func Start(
 			Version: appmeshv1beta2.GroupVersion.Version,
 			Kind:    "Mesh",
 		}: verifier.ServerVerifyOption_WarnIfNotPresent,
-		// ignore if Settings resource is not available on cluster
-		schema.GroupVersionKind{
-			Group:   settingsv1alpha2.SchemeGroupVersion.Group,
-			Version: settingsv1alpha2.SchemeGroupVersion.Version,
-			Kind:    "Settings",
-		}: verifier.ServerVerifyOption_IgnoreIfNotPresent,
 	})
 	r := &discoveryReconciler{
 		ctx:          ctx,
