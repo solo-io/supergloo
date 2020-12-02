@@ -141,6 +141,10 @@ func run() error {
 	chartOnly := flag.Bool("chart", false, "only generate the helm chart")
 	flag.Parse()
 
+	if err := makeAgentCrdsCommand().Execute(); err != nil {
+		return err
+	}
+
 	if err := makeGlooMeshCommand(*chartOnly).Execute(); err != nil {
 		return err
 	}
@@ -156,10 +160,6 @@ func run() error {
 	// TODO(ilackarms): we copy skv2 CRDs out of vendor_any into our helm chart.
 	// we should consider using skv2 to automate this step for us
 	if err := os.Rename(vendoredMultiClusterCRDs, importedMultiClusterCRDs); err != nil {
-		return err
-	}
-
-	if err := makeAgentCrdsCommand().Execute(); err != nil {
 		return err
 	}
 
@@ -208,10 +208,12 @@ func makeCertAgentCommand(chartOnly bool) codegen.Command {
 
 func makeAgentCrdsCommand() codegen.Command {
 	return codegen.Command{
-		AppName:      appName,
-		ManifestRoot: agentCrdsManifestRoot,
-		Groups:       append(groups.CertAgentGroups, groups.XdsAgentGroup),
-		RenderProtos: true,
+		AppName:         appName,
+		AnyVendorConfig: anyvendorImports,
+		ManifestRoot:    agentCrdsManifestRoot,
+		Groups:          append(groups.CertAgentGroups, groups.XdsAgentGroup),
+		RenderProtos:    true,
+		Chart:           helm.AgentCrdsChart,
 	}
 }
 

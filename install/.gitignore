@@ -5,3 +5,5 @@ helm/gloo-mesh/Chart.yaml
 helm/gloo-mesh/values.yaml
 helm/cert-agent/Chart.yaml
 helm/cert-agent/values.yaml
+helm/agent-crds/Chart.yaml
+helm/agent-crds/values.yaml

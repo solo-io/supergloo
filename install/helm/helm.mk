@@ -18,7 +18,10 @@ clean-helm:
 .PHONY: package-helm
 package-helm: chart-gen
 	helm package --destination $(CHART_OUTPUT_DIR)/gloo-mesh $(GLOOMESH_CHART_DIR)
+
+	helm dependency update $(CA_CHART_DIR)
 	helm package --destination $(CHART_OUTPUT_DIR)/cert-agent $(CA_CHART_DIR)
+
 	helm package --destination $(CHART_OUTPUT_DIR)/agent-crds $(AGENT_CRDS_CHART_DIR)
 
 .PHONY: fetch-helm
@@ -36,9 +39,9 @@ index-helm: package-helm fetch-helm
 .PHONY: publish-chart
 publish-chart: index-helm
 ifeq ($(RELEASE),"true")
-	gsutil -m rsync -r $(CHART_OUTPUT_DIR)/gloo-mesh gs://gloo-mesh/gloo-mesh
-	gsutil -m rsync -r $(CHART_OUTPUT_DIR)/cert-agent gs://gloo-mesh/cert-agent
-	gsutil -m rsync -r $(CHART_OUTPUT_DIR)/agent-crds gs://gloo-mesh/agent-crds
+	gsutil -h "Cache-Control:no-cache,max-age=0" -m rsync -r $(CHART_OUTPUT_DIR)/gloo-mesh gs://gloo-mesh/gloo-mesh
+	gsutil -h "Cache-Control:no-cache,max-age=0" -m rsync -r $(CHART_OUTPUT_DIR)/cert-agent gs://gloo-mesh/cert-agent
+	gsutil -h "Cache-Control:no-cache,max-age=0" -m rsync -r $(CHART_OUTPUT_DIR)/agent-crds gs://gloo-mesh/agent-crds
 else
 	@echo "Not a release, skipping chart upload to GCS"
 endif
