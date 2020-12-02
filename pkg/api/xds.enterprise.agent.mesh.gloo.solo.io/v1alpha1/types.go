@@ -5,6 +5,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // +genclient
@@ -19,6 +20,15 @@ type XdsConfig struct {
 
 	Spec   XdsConfigSpec   `json:"spec,omitempty"`
 	Status XdsConfigStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (XdsConfig) GVK() schema.GroupVersionKind {
+	return schema.GroupVersionKind{
+		Group:   "xds.enterprise.agent.mesh.gloo.solo.io",
+		Version: "v1alpha1",
+		Kind:    "XdsConfig",
+	}
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
