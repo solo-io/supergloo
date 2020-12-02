@@ -235,6 +235,9 @@ var _ = Describe("TrafficTargetTranslator", func() {
 			},
 		}
 		expectedHRG.Name += "." + refernceString
+		expectedHRG.Annotations = map[string]string{
+			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=AccessPolicy":[{"name":"hello","namespace":"world"}]}`,
+		}
 
 		expectedTT := &v1alpha2.TrafficTarget{
 			ObjectMeta: metautils.TranslatedObjectMeta(
@@ -264,6 +267,9 @@ var _ = Describe("TrafficTargetTranslator", func() {
 			},
 		}
 		expectedTT.Name += "." + refernceString
+		expectedTT.Annotations = map[string]string{
+			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=AccessPolicy":[{"name":"hello","namespace":"world"}]}`,
+		}
 
 		tt, hrg := NewTranslator().Translate(ctx, in, trafficTarget, reporter)
 		Expect(tt).To(HaveLen(1))
