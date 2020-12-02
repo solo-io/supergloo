@@ -3,11 +3,9 @@ package reconciliation
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/solo-io/gloo-mesh/codegen/constants"
 	"github.com/solo-io/gloo-mesh/codegen/io"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
 	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
@@ -138,6 +136,7 @@ func Start(
 			istioinputs.ReconcileOptions{
 				IssuedCertificates:    reconcile.Options{Verifier: istioResourceVerifier},
 				PodBounceDirectives:   reconcile.Options{Verifier: istioResourceVerifier},
+				XdsConfigs:            reconcile.Options{Verifier: istioResourceVerifier},
 				DestinationRules:      reconcile.Options{Verifier: istioResourceVerifier},
 				EnvoyFilters:          reconcile.Options{Verifier: istioResourceVerifier},
 				Gateways:              reconcile.Options{Verifier: istioResourceVerifier},
@@ -202,6 +201,9 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 			Verifier: r.istioResourceVerifier,
 		}
 		existingIstioResources, err = r.istioInputs.BuildSnapshot(ctx, "mesh-networking-istio-inputs", istioinputs.BuildOptions{
+			IssuedCertificates:    resourceBuildOptions,
+			PodBounceDirectives:   resourceBuildOptions,
+			XdsConfigs:            resourceBuildOptions,
 			DestinationRules:      resourceBuildOptions,
 			EnvoyFilters:          resourceBuildOptions,
 			Gateways:              resourceBuildOptions,
@@ -291,17 +293,13 @@ func isIgnoredSecret(obj metav1.Object) bool {
 func buildIstioResourceVerifier(ctx context.Context) verifier.ServerResourceVerifier {
 	options := map[schema.GroupVersionKind]verifier.ServerVerifyOption{}
 	for groupVersion, kinds := range io.IstioNetworkingOutputTypes.Resources {
-		// don't ignore errors for Gloo Mesh types
-		if strings.Contains(groupVersion.Group, constants.GlooMeshApiGroupSuffix) {
-			continue
-		}
 		for _, kind := range kinds {
 			gvk := schema.GroupVersionKind{
 				Group:   groupVersion.Group,
 				Version: groupVersion.Version,
 				Kind:    kind,
 			}
-			options[gvk] = verifier.ServerVerifyOption_LogDebugIfNotPresent
+			options[gvk] = verifier.ServerVerifyOption_IgnoreIfNotPresent
 		}
 	}
 	return verifier.NewVerifier(ctx, options)
