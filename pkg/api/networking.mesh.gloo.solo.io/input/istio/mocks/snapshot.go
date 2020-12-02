@@ -11,8 +11,10 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
+	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
 	istio "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
+	v1alpha1sets "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -66,6 +68,20 @@ func (m *MockSnapshot) PodBounceDirectives() v1alpha2sets.PodBounceDirectiveSet 
 func (mr *MockSnapshotMockRecorder) PodBounceDirectives() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PodBounceDirectives", reflect.TypeOf((*MockSnapshot)(nil).PodBounceDirectives))
+}
+
+// XdsConfigs mocks base method
+func (m *MockSnapshot) XdsConfigs() v1alpha1sets.XdsConfigSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "XdsConfigs")
+	ret0, _ := ret[0].(v1alpha1sets.XdsConfigSet)
+	return ret0
+}
+
+// XdsConfigs indicates an expected call of XdsConfigs
+func (mr *MockSnapshotMockRecorder) XdsConfigs() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "XdsConfigs", reflect.TypeOf((*MockSnapshot)(nil).XdsConfigs))
 }
 
 // DestinationRules mocks base method
@@ -150,6 +166,20 @@ func (m *MockSnapshot) AuthorizationPolicies() v1beta1sets.AuthorizationPolicySe
 func (mr *MockSnapshotMockRecorder) AuthorizationPolicies() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthorizationPolicies", reflect.TypeOf((*MockSnapshot)(nil).AuthorizationPolicies))
+}
+
+// ConfigMaps mocks base method
+func (m *MockSnapshot) ConfigMaps() v1sets.ConfigMapSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfigMaps")
+	ret0, _ := ret[0].(v1sets.ConfigMapSet)
+	return ret0
+}
+
+// ConfigMaps indicates an expected call of ConfigMaps
+func (mr *MockSnapshotMockRecorder) ConfigMaps() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigMaps", reflect.TypeOf((*MockSnapshot)(nil).ConfigMaps))
 }
 
 // SyncStatuses mocks base method

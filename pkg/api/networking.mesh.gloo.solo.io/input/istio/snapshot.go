@@ -5,12 +5,14 @@
 // The Input Snapshot contains the set of all:
 // * IssuedCertificates
 // * PodBounceDirectives
+// * XdsConfigs
 // * DestinationRules
 // * EnvoyFilters
 // * Gateways
 // * ServiceEntries
 // * VirtualServices
 // * AuthorizationPolicies
+// * ConfigMaps
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
@@ -38,11 +40,17 @@ import (
 	certificates_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
 	certificates_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
 
+	xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1"
+	xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1/sets"
+
 	networking_istio_io_v1alpha3 "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
 	networking_istio_io_v1alpha3_sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 
 	security_istio_io_v1beta1 "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1"
 	security_istio_io_v1beta1_sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
+
+	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 )
 
 // the snapshot of input resources consumed by translation
@@ -52,6 +60,9 @@ type Snapshot interface {
 	IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
 	// return the set of input PodBounceDirectives
 	PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+
+	// return the set of input XdsConfigs
+	XdsConfigs() xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
 
 	// return the set of input DestinationRules
 	DestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet
@@ -66,6 +77,9 @@ type Snapshot interface {
 
 	// return the set of input AuthorizationPolicies
 	AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet
+
+	// return the set of input ConfigMaps
+	ConfigMaps() v1_sets.ConfigMapSet
 	// update the status of all input objects which support
 	// the Status subresource (in the local cluster)
 	SyncStatuses(ctx context.Context, c client.Client) error
@@ -83,6 +97,8 @@ type snapshot struct {
 	issuedCertificates  certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
 	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 
+	xdsConfigs xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet
 	envoyFilters     networking_istio_io_v1alpha3_sets.EnvoyFilterSet
 	gateways         networking_istio_io_v1alpha3_sets.GatewaySet
@@ -90,6 +106,8 @@ type snapshot struct {
 	virtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
+
+	configMaps v1_sets.ConfigMapSet
 }
 
 func NewSnapshot(
@@ -97,6 +115,8 @@ func NewSnapshot(
 
 	issuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet,
 	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
+
+	xdsConfigs xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet,
 
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
 	envoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
@@ -106,18 +126,22 @@ func NewSnapshot(
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
 
+	configMaps v1_sets.ConfigMapSet,
+
 ) Snapshot {
 	return &snapshot{
 		name: name,
 
 		issuedCertificates:    issuedCertificates,
 		podBounceDirectives:   podBounceDirectives,
+		xdsConfigs:            xdsConfigs,
 		destinationRules:      destinationRules,
 		envoyFilters:          envoyFilters,
 		gateways:              gateways,
 		serviceEntries:        serviceEntries,
 		virtualServices:       virtualServices,
 		authorizationPolicies: authorizationPolicies,
+		configMaps:            configMaps,
 	}
 }
 
@@ -127,6 +151,10 @@ func (s snapshot) IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_s
 
 func (s snapshot) PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet {
 	return s.podBounceDirectives
+}
+
+func (s snapshot) XdsConfigs() xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet {
+	return s.xdsConfigs
 }
 
 func (s snapshot) DestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet {
@@ -152,9 +180,19 @@ func (s snapshot) VirtualServices() networking_istio_io_v1alpha3_sets.VirtualSer
 func (s snapshot) AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet {
 	return s.authorizationPolicies
 }
+
+func (s snapshot) ConfigMaps() v1_sets.ConfigMapSet {
+	return s.configMaps
+}
 func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
 
 	for _, obj := range s.IssuedCertificates().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
+		}
+	}
+
+	for _, obj := range s.XdsConfigs().List() {
 		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 			return err
 		}
@@ -175,6 +213,16 @@ func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicl
 		}
 	}
 
+	for _, obj := range s.XdsConfigs().List() {
+		clusterClient, err := mcClient.Cluster(obj.ClusterName)
+		if err != nil {
+			return err
+		}
+		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -183,12 +231,14 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 
 	snapshotMap["issuedCertificates"] = s.issuedCertificates.List()
 	snapshotMap["podBounceDirectives"] = s.podBounceDirectives.List()
+	snapshotMap["xdsConfigs"] = s.xdsConfigs.List()
 	snapshotMap["destinationRules"] = s.destinationRules.List()
 	snapshotMap["envoyFilters"] = s.envoyFilters.List()
 	snapshotMap["gateways"] = s.gateways.List()
 	snapshotMap["serviceEntries"] = s.serviceEntries.List()
 	snapshotMap["virtualServices"] = s.virtualServices.List()
 	snapshotMap["authorizationPolicies"] = s.authorizationPolicies.List()
+	snapshotMap["configMaps"] = s.configMaps.List()
 	return json.Marshal(snapshotMap)
 }
 
@@ -208,6 +258,9 @@ type BuildOptions struct {
 	// List options for composing a snapshot from PodBounceDirectives
 	PodBounceDirectives ResourceBuildOptions
 
+	// List options for composing a snapshot from XdsConfigs
+	XdsConfigs ResourceBuildOptions
+
 	// List options for composing a snapshot from DestinationRules
 	DestinationRules ResourceBuildOptions
 	// List options for composing a snapshot from EnvoyFilters
@@ -221,6 +274,9 @@ type BuildOptions struct {
 
 	// List options for composing a snapshot from AuthorizationPolicies
 	AuthorizationPolicies ResourceBuildOptions
+
+	// List options for composing a snapshot from ConfigMaps
+	ConfigMaps ResourceBuildOptions
 }
 
 // Options for reading resources of a given type
@@ -255,6 +311,8 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	issuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
 	podBounceDirectives := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
 
+	xdsConfigs := xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
+
 	destinationRules := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
 	envoyFilters := networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet()
 	gateways := networking_istio_io_v1alpha3_sets.NewGatewaySet()
@@ -262,6 +320,8 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	virtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
 
 	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
+
+	configMaps := v1_sets.NewConfigMapSet()
 
 	var errs error
 
@@ -271,6 +331,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertPodBounceDirectivesFromCluster(ctx, cluster, podBounceDirectives, opts.PodBounceDirectives); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertXdsConfigsFromCluster(ctx, cluster, xdsConfigs, opts.XdsConfigs); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertDestinationRulesFromCluster(ctx, cluster, destinationRules, opts.DestinationRules); err != nil {
@@ -291,6 +354,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		if err := b.insertAuthorizationPoliciesFromCluster(ctx, cluster, authorizationPolicies, opts.AuthorizationPolicies); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertConfigMapsFromCluster(ctx, cluster, configMaps, opts.ConfigMaps); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 
 	}
 
@@ -299,12 +365,14 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 
 		issuedCertificates,
 		podBounceDirectives,
+		xdsConfigs,
 		destinationRules,
 		envoyFilters,
 		gateways,
 		serviceEntries,
 		virtualServices,
 		authorizationPolicies,
+		configMaps,
 	)
 
 	return outputSnap, errs
@@ -390,6 +458,49 @@ func (b *multiClusterBuilder) insertPodBounceDirectivesFromCluster(ctx context.C
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
 		podBounceDirectives.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *multiClusterBuilder) insertXdsConfigsFromCluster(ctx context.Context, cluster string, xdsConfigs xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet, opts ResourceBuildOptions) error {
+	xdsConfigClient, err := xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1.NewMulticlusterXdsConfigClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "xds.enterprise.agent.mesh.gloo.solo.io",
+			Version: "v1alpha1",
+			Kind:    "XdsConfig",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	xdsConfigList, err := xdsConfigClient.ListXdsConfig(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range xdsConfigList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		xdsConfigs.Insert(&item)
 	}
 
 	return nil
@@ -649,6 +760,49 @@ func (b *multiClusterBuilder) insertAuthorizationPoliciesFromCluster(ctx context
 	return nil
 }
 
+func (b *multiClusterBuilder) insertConfigMapsFromCluster(ctx context.Context, cluster string, configMaps v1_sets.ConfigMapSet, opts ResourceBuildOptions) error {
+	configMapClient, err := v1.NewMulticlusterConfigMapClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "ConfigMap",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	configMapList, err := configMapClient.ListConfigMap(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range configMapList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		configMaps.Insert(&item)
+	}
+
+	return nil
+}
+
 // build a snapshot from resources in a single cluster
 type singleClusterBuilder struct {
 	mgr manager.Manager
@@ -668,6 +822,8 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	issuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
 	podBounceDirectives := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
 
+	xdsConfigs := xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
+
 	destinationRules := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
 	envoyFilters := networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet()
 	gateways := networking_istio_io_v1alpha3_sets.NewGatewaySet()
@@ -676,12 +832,17 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
+	configMaps := v1_sets.NewConfigMapSet()
+
 	var errs error
 
 	if err := b.insertIssuedCertificates(ctx, issuedCertificates, opts.IssuedCertificates); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertPodBounceDirectives(ctx, podBounceDirectives, opts.PodBounceDirectives); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertXdsConfigs(ctx, xdsConfigs, opts.XdsConfigs); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertDestinationRules(ctx, destinationRules, opts.DestinationRules); err != nil {
@@ -702,18 +863,23 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	if err := b.insertAuthorizationPolicies(ctx, authorizationPolicies, opts.AuthorizationPolicies); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertConfigMaps(ctx, configMaps, opts.ConfigMaps); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 
 	outputSnap := NewSnapshot(
 		name,
 
 		issuedCertificates,
 		podBounceDirectives,
+		xdsConfigs,
 		destinationRules,
 		envoyFilters,
 		gateways,
 		serviceEntries,
 		virtualServices,
 		authorizationPolicies,
+		configMaps,
 	)
 
 	return outputSnap, errs
@@ -779,6 +945,39 @@ func (b *singleClusterBuilder) insertPodBounceDirectives(ctx context.Context, po
 	for _, item := range podBounceDirectiveList.Items {
 		item := item // pike
 		podBounceDirectives.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterBuilder) insertXdsConfigs(ctx context.Context, xdsConfigs xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "xds.enterprise.agent.mesh.gloo.solo.io",
+			Version: "v1alpha1",
+			Kind:    "XdsConfig",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	xdsConfigList, err := xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1.NewXdsConfigClient(b.mgr.GetClient()).ListXdsConfig(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range xdsConfigList.Items {
+		item := item // pike
+		xdsConfigs.Insert(&item)
 	}
 
 	return nil
@@ -973,6 +1172,39 @@ func (b *singleClusterBuilder) insertAuthorizationPolicies(ctx context.Context, 
 	for _, item := range authorizationPolicyList.Items {
 		item := item // pike
 		authorizationPolicies.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterBuilder) insertConfigMaps(ctx context.Context, configMaps v1_sets.ConfigMapSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "ConfigMap",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	configMapList, err := v1.NewConfigMapClient(b.mgr.GetClient()).ListConfigMap(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range configMapList.Items {
+		item := item // pike
+		configMaps.Insert(&item)
 	}
 
 	return nil

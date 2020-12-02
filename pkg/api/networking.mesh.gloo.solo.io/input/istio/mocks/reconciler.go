@@ -9,9 +9,11 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
+	v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1"
 	reconcile "github.com/solo-io/skv2/pkg/reconcile"
 	v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
+	v1 "k8s.io/api/core/v1"
 )
 
 // MockmultiClusterReconciler is a mock of multiClusterReconciler interface
@@ -65,6 +67,21 @@ func (m *MockmultiClusterReconciler) ReconcilePodBounceDirective(clusterName str
 func (mr *MockmultiClusterReconcilerMockRecorder) ReconcilePodBounceDirective(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcilePodBounceDirective", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcilePodBounceDirective), clusterName, obj)
+}
+
+// ReconcileXdsConfig mocks base method
+func (m *MockmultiClusterReconciler) ReconcileXdsConfig(clusterName string, obj *v1alpha1.XdsConfig) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileXdsConfig", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileXdsConfig indicates an expected call of ReconcileXdsConfig
+func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileXdsConfig(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileXdsConfig", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileXdsConfig), clusterName, obj)
 }
 
 // ReconcileDestinationRule mocks base method
@@ -157,6 +174,21 @@ func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileAuthorizationPolicy(c
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAuthorizationPolicy", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileAuthorizationPolicy), clusterName, obj)
 }
 
+// ReconcileConfigMap mocks base method
+func (m *MockmultiClusterReconciler) ReconcileConfigMap(clusterName string, obj *v1.ConfigMap) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileConfigMap", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileConfigMap indicates an expected call of ReconcileConfigMap
+func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileConfigMap(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileConfigMap", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileConfigMap), clusterName, obj)
+}
+
 // MocksingleClusterReconciler is a mock of singleClusterReconciler interface
 type MocksingleClusterReconciler struct {
 	ctrl     *gomock.Controller
@@ -208,6 +240,21 @@ func (m *MocksingleClusterReconciler) ReconcilePodBounceDirective(obj *v1alpha2.
 func (mr *MocksingleClusterReconcilerMockRecorder) ReconcilePodBounceDirective(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcilePodBounceDirective", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcilePodBounceDirective), obj)
+}
+
+// ReconcileXdsConfig mocks base method
+func (m *MocksingleClusterReconciler) ReconcileXdsConfig(obj *v1alpha1.XdsConfig) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileXdsConfig", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileXdsConfig indicates an expected call of ReconcileXdsConfig
+func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileXdsConfig(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileXdsConfig", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileXdsConfig), obj)
 }
 
 // ReconcileDestinationRule mocks base method
@@ -298,4 +345,19 @@ func (m *MocksingleClusterReconciler) ReconcileAuthorizationPolicy(obj *v1beta1.
 func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileAuthorizationPolicy(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAuthorizationPolicy", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileAuthorizationPolicy), obj)
+}
+
+// ReconcileConfigMap mocks base method
+func (m *MocksingleClusterReconciler) ReconcileConfigMap(obj *v1.ConfigMap) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileConfigMap", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileConfigMap indicates an expected call of ReconcileConfigMap
+func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileConfigMap(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileConfigMap", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileConfigMap), obj)
 }

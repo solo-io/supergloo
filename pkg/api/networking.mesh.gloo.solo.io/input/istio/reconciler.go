@@ -6,12 +6,14 @@
 // storage event is received for any of:
 // * IssuedCertificates
 // * PodBounceDirectives
+// * XdsConfigs
 // * DestinationRules
 // * EnvoyFilters
 // * Gateways
 // * ServiceEntries
 // * VirtualServices
 // * AuthorizationPolicies
+// * ConfigMaps
 // for a given cluster or set of clusters.
 //
 // Input Reconcilers can be be constructed from either a single Manager (watch events in a single cluster)
@@ -33,11 +35,17 @@ import (
 	certificates_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
 	certificates_mesh_gloo_solo_io_v1alpha2_controllers "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/controller"
 
+	xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1"
+	xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_controllers "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1/controller"
+
 	networking_istio_io_v1alpha3_controllers "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/controller"
 	networking_istio_io_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 
 	security_istio_io_v1beta1_controllers "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/controller"
 	security_istio_io_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
+
+	v1_controllers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
+	v1 "k8s.io/api/core/v1"
 )
 
 // the multiClusterReconciler reconciles events for input resources across clusters
@@ -46,6 +54,8 @@ type multiClusterReconciler interface {
 	certificates_mesh_gloo_solo_io_v1alpha2_controllers.MulticlusterIssuedCertificateReconciler
 	certificates_mesh_gloo_solo_io_v1alpha2_controllers.MulticlusterPodBounceDirectiveReconciler
 
+	xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_controllers.MulticlusterXdsConfigReconciler
+
 	networking_istio_io_v1alpha3_controllers.MulticlusterDestinationRuleReconciler
 	networking_istio_io_v1alpha3_controllers.MulticlusterEnvoyFilterReconciler
 	networking_istio_io_v1alpha3_controllers.MulticlusterGatewayReconciler
@@ -53,6 +63,8 @@ type multiClusterReconciler interface {
 	networking_istio_io_v1alpha3_controllers.MulticlusterVirtualServiceReconciler
 
 	security_istio_io_v1beta1_controllers.MulticlusterAuthorizationPolicyReconciler
+
+	v1_controllers.MulticlusterConfigMapReconciler
 }
 
 var _ multiClusterReconciler = &multiClusterReconcilerImpl{}
@@ -69,6 +81,9 @@ type ReconcileOptions struct {
 	// Options for reconciling PodBounceDirectives
 	PodBounceDirectives reconcile.Options
 
+	// Options for reconciling XdsConfigs
+	XdsConfigs reconcile.Options
+
 	// Options for reconciling DestinationRules
 	DestinationRules reconcile.Options
 	// Options for reconciling EnvoyFilters
@@ -82,6 +97,9 @@ type ReconcileOptions struct {
 
 	// Options for reconciling AuthorizationPolicies
 	AuthorizationPolicies reconcile.Options
+
+	// Options for reconciling ConfigMaps
+	ConfigMaps reconcile.Options
 }
 
 // register the reconcile func with the cluster watcher
@@ -112,6 +130,8 @@ func RegisterMultiClusterReconciler(
 
 	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterPodBounceDirectiveReconcileLoop("PodBounceDirective", clusters, options.PodBounceDirectives).AddMulticlusterPodBounceDirectiveReconciler(ctx, r, predicates...)
 
+	xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_controllers.NewMulticlusterXdsConfigReconcileLoop("XdsConfig", clusters, options.XdsConfigs).AddMulticlusterXdsConfigReconciler(ctx, r, predicates...)
+
 	networking_istio_io_v1alpha3_controllers.NewMulticlusterDestinationRuleReconcileLoop("DestinationRule", clusters, options.DestinationRules).AddMulticlusterDestinationRuleReconciler(ctx, r, predicates...)
 
 	networking_istio_io_v1alpha3_controllers.NewMulticlusterEnvoyFilterReconcileLoop("EnvoyFilter", clusters, options.EnvoyFilters).AddMulticlusterEnvoyFilterReconciler(ctx, r, predicates...)
@@ -123,6 +143,8 @@ func RegisterMultiClusterReconciler(
 	networking_istio_io_v1alpha3_controllers.NewMulticlusterVirtualServiceReconcileLoop("VirtualService", clusters, options.VirtualServices).AddMulticlusterVirtualServiceReconciler(ctx, r, predicates...)
 
 	security_istio_io_v1beta1_controllers.NewMulticlusterAuthorizationPolicyReconcileLoop("AuthorizationPolicy", clusters, options.AuthorizationPolicies).AddMulticlusterAuthorizationPolicyReconciler(ctx, r, predicates...)
+
+	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters, options.ConfigMaps).AddMulticlusterConfigMapReconciler(ctx, r, predicates...)
 	return r.base
 }
 
@@ -147,6 +169,21 @@ func (r *multiClusterReconcilerImpl) ReconcilePodBounceDirective(clusterName str
 }
 
 func (r *multiClusterReconcilerImpl) ReconcilePodBounceDirectiveDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileXdsConfig(clusterName string, obj *xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1.XdsConfig) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileXdsConfigDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -246,11 +283,28 @@ func (r *multiClusterReconcilerImpl) ReconcileAuthorizationPolicyDeletion(cluste
 	return err
 }
 
+func (r *multiClusterReconcilerImpl) ReconcileConfigMap(clusterName string, obj *v1.ConfigMap) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileClusterGeneric(obj)
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileConfigMapDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileClusterGeneric(ref)
+	return err
+}
+
 // the singleClusterReconciler reconciles events for input resources across clusters
 // this private interface is used to ensure that the generated struct implements the intended functions
 type singleClusterReconciler interface {
 	certificates_mesh_gloo_solo_io_v1alpha2_controllers.IssuedCertificateReconciler
 	certificates_mesh_gloo_solo_io_v1alpha2_controllers.PodBounceDirectiveReconciler
+
+	xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_controllers.XdsConfigReconciler
 
 	networking_istio_io_v1alpha3_controllers.DestinationRuleReconciler
 	networking_istio_io_v1alpha3_controllers.EnvoyFilterReconciler
@@ -259,6 +313,8 @@ type singleClusterReconciler interface {
 	networking_istio_io_v1alpha3_controllers.VirtualServiceReconciler
 
 	security_istio_io_v1beta1_controllers.AuthorizationPolicyReconciler
+
+	v1_controllers.ConfigMapReconciler
 }
 
 var _ singleClusterReconciler = &singleClusterReconcilerImpl{}
@@ -298,6 +354,10 @@ func RegisterSingleClusterReconciler(
 		return nil, err
 	}
 
+	if err := xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_controllers.NewXdsConfigReconcileLoop("XdsConfig", mgr, options).RunXdsConfigReconciler(ctx, r, predicates...); err != nil {
+		return nil, err
+	}
+
 	if err := networking_istio_io_v1alpha3_controllers.NewDestinationRuleReconcileLoop("DestinationRule", mgr, options).RunDestinationRuleReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
 	}
@@ -315,6 +375,10 @@ func RegisterSingleClusterReconciler(
 	}
 
 	if err := security_istio_io_v1beta1_controllers.NewAuthorizationPolicyReconcileLoop("AuthorizationPolicy", mgr, options).RunAuthorizationPolicyReconciler(ctx, r, predicates...); err != nil {
+		return nil, err
+	}
+
+	if err := v1_controllers.NewConfigMapReconcileLoop("ConfigMap", mgr, options).RunConfigMapReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
 	}
 
@@ -339,6 +403,19 @@ func (r *singleClusterReconcilerImpl) ReconcilePodBounceDirective(obj *certifica
 }
 
 func (r *singleClusterReconcilerImpl) ReconcilePodBounceDirectiveDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileXdsConfig(obj *xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1.XdsConfig) (reconcile.Result, error) {
+	return r.base.ReconcileGeneric(obj)
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileXdsConfigDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
@@ -417,6 +494,19 @@ func (r *singleClusterReconcilerImpl) ReconcileAuthorizationPolicy(obj *security
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileAuthorizationPolicyDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileGeneric(ref)
+	return err
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileConfigMap(obj *v1.ConfigMap) (reconcile.Result, error) {
+	return r.base.ReconcileGeneric(obj)
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileConfigMapDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

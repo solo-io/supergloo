@@ -9,11 +9,17 @@ import (
 	certificates_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
 	certificates_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
 
+	xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1"
+	xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1/sets"
+
 	networking_istio_io_v1alpha3_sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	networking_istio_io_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 
 	security_istio_io_v1beta1_sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	security_istio_io_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
+
+	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	v1 "k8s.io/api/core/v1"
 )
 
 type InputSnapshotManualBuilder struct {
@@ -22,6 +28,8 @@ type InputSnapshotManualBuilder struct {
 	issuedCertificates  certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
 	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 
+	xdsConfigs xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet
 	envoyFilters     networking_istio_io_v1alpha3_sets.EnvoyFilterSet
 	gateways         networking_istio_io_v1alpha3_sets.GatewaySet
@@ -29,6 +37,8 @@ type InputSnapshotManualBuilder struct {
 	virtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
+
+	configMaps v1_sets.ConfigMapSet
 }
 
 func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
@@ -38,6 +48,8 @@ func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 		issuedCertificates:  certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet(),
 		podBounceDirectives: certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet(),
 
+		xdsConfigs: xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet(),
+
 		destinationRules: networking_istio_io_v1alpha3_sets.NewDestinationRuleSet(),
 		envoyFilters:     networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet(),
 		gateways:         networking_istio_io_v1alpha3_sets.NewGatewaySet(),
@@ -45,6 +57,8 @@ func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 		virtualServices:  networking_istio_io_v1alpha3_sets.NewVirtualServiceSet(),
 
 		authorizationPolicies: security_istio_io_v1beta1_sets.NewAuthorizationPolicySet(),
+
+		configMaps: v1_sets.NewConfigMapSet(),
 	}
 }
 
@@ -55,6 +69,8 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 		i.issuedCertificates,
 		i.podBounceDirectives,
 
+		i.xdsConfigs,
+
 		i.destinationRules,
 		i.envoyFilters,
 		i.gateways,
@@ -62,6 +78,8 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 		i.virtualServices,
 
 		i.authorizationPolicies,
+
+		i.configMaps,
 	)
 }
 func (i *InputSnapshotManualBuilder) AddIssuedCertificates(issuedCertificates []*certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate) *InputSnapshotManualBuilder {
@@ -70,6 +88,10 @@ func (i *InputSnapshotManualBuilder) AddIssuedCertificates(issuedCertificates []
 }
 func (i *InputSnapshotManualBuilder) AddPodBounceDirectives(podBounceDirectives []*certificates_mesh_gloo_solo_io_v1alpha2.PodBounceDirective) *InputSnapshotManualBuilder {
 	i.podBounceDirectives.Insert(podBounceDirectives...)
+	return i
+}
+func (i *InputSnapshotManualBuilder) AddXdsConfigs(xdsConfigs []*xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1.XdsConfig) *InputSnapshotManualBuilder {
+	i.xdsConfigs.Insert(xdsConfigs...)
 	return i
 }
 func (i *InputSnapshotManualBuilder) AddDestinationRules(destinationRules []*networking_istio_io_v1alpha3.DestinationRule) *InputSnapshotManualBuilder {
@@ -94,5 +116,9 @@ func (i *InputSnapshotManualBuilder) AddVirtualServices(virtualServices []*netwo
 }
 func (i *InputSnapshotManualBuilder) AddAuthorizationPolicies(authorizationPolicies []*security_istio_io_v1beta1.AuthorizationPolicy) *InputSnapshotManualBuilder {
 	i.authorizationPolicies.Insert(authorizationPolicies...)
+	return i
+}
+func (i *InputSnapshotManualBuilder) AddConfigMaps(configMaps []*v1.ConfigMap) *InputSnapshotManualBuilder {
+	i.configMaps.Insert(configMaps...)
 	return i
 }
