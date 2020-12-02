@@ -7,6 +7,7 @@ function check_diffs() {
 }
 
 bash ./ci/check-test-suites.bash
+bash ./ci/check-imports.bash
 
 protoc --version
 
