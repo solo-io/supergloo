@@ -81,7 +81,7 @@ func (d dependencyFactoryImpl) MakeMeshTranslator(
 		destinationrule.NewTranslator(clusterDomains, decorators.NewFactory(), trafficTargets, failoverServices),
 	)
 	mtlsTranslator := mtls.NewTranslator(ctx, secrets, workloads)
-	accessTranslator := access.NewTranslator()
+	accessTranslator := access.NewTranslator(ctx)
 	failoverServiceTranslator := failoverservice.NewTranslator(ctx, clusterDomains)
 
 	return mesh.NewTranslator(
