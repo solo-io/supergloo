@@ -219,7 +219,8 @@ chart-gen: clear-vendor-any
 	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go -chart
 
 .PHONY: manifest-gen
-manifest-gen: install/gloo-mesh-default.yaml fmt
+manifest-gen: install/gloo-mesh-default.yaml install-go-tools
+	goimports -w $(shell ls -d */ | grep -v vendor)
 install/gloo-mesh-default.yaml: chart-gen
 	helm template --include-crds --namespace gloo-mesh $(HELM_ROOTDIR)/gloo-mesh > $@
 
