@@ -354,12 +354,10 @@ func generateChangelogMD(repo, version string) (string, error) {
 	)
 	for _, release := range releases {
 		// Do not include versions after the provided version
-		if !foundVersion {
-			if release.GetTagName() == version {
-				foundVersion = true
-			} else {
-				continue
-			}
+		if !foundVersion && release.GetTagName() == version {
+			foundVersion = true
+		} else if !foundVersion {
+			continue
 		}
 
 		sb.WriteString("### " + *release.TagName + "\n\n")
