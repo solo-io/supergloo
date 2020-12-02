@@ -46,12 +46,6 @@ func defaultValues() ChartValues {
 					TlsMode: networkingv1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
 				},
 			},
-			Istio: &settingsv1alpha2.SettingsSpec_Istio{
-				IngressGatewayDetector: &settingsv1alpha2.SettingsSpec_Istio_IngressGatewayDetector{
-					GatewayWorkloadLabels: defaults.DefaultGatewayWorkloadLabels,
-					GatewayTlsPortName:    defaults.DefaultGatewayPortName,
-				},
-			},
 		},
 	}
 }

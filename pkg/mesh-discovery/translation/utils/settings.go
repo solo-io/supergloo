@@ -34,22 +34,21 @@ func GetIngressGatewayDetector(ctx context.Context, in input.Snapshot, clusterNa
 	var labels map[string]string
 	var portName string
 
-	// First, check if cluster-specific values are set
-	clusterDetectorSettings := settings.Spec.GetIstio().GetIngressGatewayDetectorOverrides()
-	if clusterDetectorSettings != nil && clusterDetectorSettings[clusterName] != nil {
-		labels = clusterDetectorSettings[clusterName].GetGatewayWorkloadLabels()
-		portName = clusterDetectorSettings[clusterName].GetGatewayTlsPortName()
-	}
+	gatewayDetectors := settings.Spec.GetIstio().GetIngressGatewayDetectors()
+	if gatewayDetectors != nil {
+		// First, check if cluster-specific values are set
+		if gatewayDetectors[clusterName] != nil {
+			labels = gatewayDetectors[clusterName].GetGatewayWorkloadLabels()
+			portName = gatewayDetectors[clusterName].GetGatewayTlsPortName()
+		}
 
-	// Check the top-level gateway detector settings if needed
-	if labels == nil || portName == "" {
-		detectorSettings := settings.Spec.GetIstio().GetIngressGatewayDetector()
-		if detectorSettings != nil {
+		// Check the wildcard (all clusters) entry if needed
+		if (labels == nil || portName == "") && gatewayDetectors["*"] != nil {
 			if labels == nil {
-				labels = detectorSettings.GetGatewayWorkloadLabels()
+				labels = gatewayDetectors["*"].GetGatewayWorkloadLabels()
 			}
 			if portName == "" {
-				portName = detectorSettings.GetGatewayTlsPortName()
+				portName = gatewayDetectors["*"].GetGatewayTlsPortName()
 			}
 		}
 	}

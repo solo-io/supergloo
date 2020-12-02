@@ -348,11 +348,11 @@ var _ = Describe("IstioMeshDetector", func() {
 			{
 				Spec: settingsv1alpha2.SettingsSpec{
 					Istio: &settingsv1alpha2.SettingsSpec_Istio{
-						IngressGatewayDetector: &settingsv1alpha2.SettingsSpec_Istio_IngressGatewayDetector{
-							GatewayWorkloadLabels: map[string]string{"mykey": "myvalue"},
-							GatewayTlsPortName:    "myport",
-						},
-						IngressGatewayDetectorOverrides: map[string]*settingsv1alpha2.SettingsSpec_Istio_IngressGatewayDetector{
+						IngressGatewayDetectors: map[string]*settingsv1alpha2.SettingsSpec_Istio_IngressGatewayDetector{
+							"*": {
+								GatewayWorkloadLabels: map[string]string{"mykey": "myvalue"},
+								GatewayTlsPortName:    "myport",
+							},
 							clusterName: {
 								GatewayTlsPortName: "specialport",
 							},
