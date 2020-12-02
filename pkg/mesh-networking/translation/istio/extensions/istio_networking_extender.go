@@ -3,7 +3,10 @@ package extensions
 import (
 	"context"
 
+	xdsv1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1"
+
 	"github.com/solo-io/skv2/contrib/pkg/sets"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/solo-io/go-utils/contextutils"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -44,7 +47,7 @@ func (i *istioExtender) PatchOutputs(ctx context.Context, inputs input.Snapshot,
 		if err != nil {
 			return err
 		}
-		applyPatches(ctx, outputs, patches)
+		applyPatches(ctx, outputs, patches.PatchedOutputs)
 	}
 	return nil
 }
@@ -91,6 +94,24 @@ func OutputsToProto(outputs istio.Builder) []*v1alpha1.GeneratedObject {
 		})
 	}
 
+	for _, object := range outputs.GetXdsConfigs().List() {
+		object := object // pike
+		generatedObjects = append(generatedObjects, &v1alpha1.GeneratedObject{
+			Metadata: extensions.ObjectMetaToProto(object.ObjectMeta),
+			Type:     &v1alpha1.GeneratedObject_XdsConfig{XdsConfig: &object.Spec},
+		})
+	}
+
+	for _, object := range outputs.GetConfigMaps().List() {
+		object := object // pike
+		generatedObjects = append(generatedObjects, &v1alpha1.GeneratedObject{
+			Metadata: extensions.ObjectMetaToProto(object.ObjectMeta),
+			Type: &v1alpha1.GeneratedObject_ConfigMap_{ConfigMap: &v1alpha1.GeneratedObject_ConfigMap{
+				Data: object.Data,
+			}},
+		})
+	}
+
 	return generatedObjects
 }
 
@@ -100,42 +121,17 @@ func OutputsToProto(outputs istio.Builder) []*v1alpha1.GeneratedObject {
 // update this function to convert them.
 func OutputsFromProto(ctx context.Context, name string, generated []*v1alpha1.GeneratedObject) istio.Builder {
 	outputs := istio.NewBuilder(ctx, name)
-	for _, object := range generated {
-		switch objectType := object.Type.(type) {
-		case *v1alpha1.GeneratedObject_DestinationRule:
-			outputs.AddDestinationRules(&istionetworkingv1alpha3.DestinationRule{
-				ObjectMeta: extensions.ObjectMetaFromProto(object.Metadata),
-				Spec:       *objectType.DestinationRule,
-			})
-		case *v1alpha1.GeneratedObject_EnvoyFilter:
-			outputs.AddEnvoyFilters(&istionetworkingv1alpha3.EnvoyFilter{
-				ObjectMeta: extensions.ObjectMetaFromProto(object.Metadata),
-				Spec:       *objectType.EnvoyFilter,
-			})
-		case *v1alpha1.GeneratedObject_ServiceEntry:
-			outputs.AddServiceEntries(&istionetworkingv1alpha3.ServiceEntry{
-				ObjectMeta: extensions.ObjectMetaFromProto(object.Metadata),
-				Spec:       *objectType.ServiceEntry,
-			})
-		case *v1alpha1.GeneratedObject_VirtualService:
-			outputs.AddVirtualServices(&istionetworkingv1alpha3.VirtualService{
-				ObjectMeta: extensions.ObjectMetaFromProto(object.Metadata),
-				Spec:       *objectType.VirtualService,
-			})
-		default:
-			contextutils.LoggerFrom(ctx).DPanicf("unsupported object type %T", objectType)
-		}
-	}
+	applyPatches(ctx, outputs, generated)
 	return outputs
 }
 
 // NOTE: If we add more supported types of v1alpha1.GeneratedObjects, we need to
 // update this function to convert them.
-func applyPatches(ctx context.Context, outputs istio.Builder, patches *v1alpha1.ExtensionPatchResponse) {
+func applyPatches(ctx context.Context, outputs istio.Builder, patches []*v1alpha1.GeneratedObject) {
 	if patches == nil {
 		return
 	}
-	for _, patchedObject := range patches.PatchedOutputs {
+	for _, patchedObject := range patches {
 		switch objectType := patchedObject.Type.(type) {
 		case *v1alpha1.GeneratedObject_DestinationRule:
 			contextutils.LoggerFrom(ctx).Debugf("applied patched DestinationRule %v", sets.Key(patchedObject.Metadata))
@@ -161,6 +157,19 @@ func applyPatches(ctx context.Context, outputs istio.Builder, patches *v1alpha1.
 				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
 				Spec:       *objectType.VirtualService,
 			})
+		case *v1alpha1.GeneratedObject_XdsConfig:
+			contextutils.LoggerFrom(ctx).Debugf("applied patched XdsConfig %v", sets.Key(patchedObject.Metadata))
+			outputs.AddXdsConfigs(&xdsv1alpha1.XdsConfig{
+				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
+				Spec:       *objectType.XdsConfig,
+			})
+		case *v1alpha1.GeneratedObject_ConfigMap_:
+			outputs.AddConfigMaps(&corev1.ConfigMap{
+				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
+				Data:       objectType.ConfigMap.Data,
+			})
+		default:
+			contextutils.LoggerFrom(ctx).DPanicf("unsupported object type %T", objectType)
 		}
 	}
 }
