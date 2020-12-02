@@ -14,17 +14,15 @@ import (
 //go:generate go run docsgen.go
 
 func main() {
-	log.Printf("Started docs generation\n")
 	var (
 		genChangelog bool
-		ossVersion   string
-		eeVersion    string
+		version      string
 	)
 	flag.BoolVar(&genChangelog, "changelog", false, "Enable changelog generation")
-	flag.StringVar(&ossVersion, "oss-version", "", "OSS version to generate the changelog for")
-	flag.StringVar(&eeVersion, "ee-version", "", "Enterprise version to generate the changelog for")
+	flag.StringVar(&version, "version", "", "OSS version to generate the changelog for")
 	flag.Parse()
 
+	log.Printf("Started docs generation\n")
 	ctx := context.TODO()
 	mgr, err := manager.NewManager(ctx, "")
 	if err != nil {
@@ -48,8 +46,10 @@ func main() {
 		Changelog: docsgen.ChangelogOptions{
 			Generate: genChangelog,
 			Repos: []docsgen.ChangelogConfig{
-				{Name: "Open Source Gloo Mesh", Repo: "gloo-mesh", Path: "open_source", Version: ossVersion},
-				{Name: "Gloo Mesh Enterprise", Repo: "gloo-mesh-enterprise", Path: "enterprise", Version: eeVersion}},
+				{Name: "Open Source Gloo Mesh", Repo: "gloo-mesh", Path: "open_source", Version: version},
+				// TODO(ryantking): Get enterprise changelog generation setup properly then enable this
+				// {Name: "Gloo Mesh Enterprise", Repo: "gloo-mesh-enterprise", Path: "enterprise"}
+			},
 			OutputDir: "content/reference/changelog",
 		},
 		DocsRoot: "docs",
