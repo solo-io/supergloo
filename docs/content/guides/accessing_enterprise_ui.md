@@ -40,3 +40,27 @@ Now that you’re connected, let’s explore the UI.
 The main page of the dashboard starts with an **Overview** of the resources under management of Gloo Mesh, such as *Clusters*, *Workloads*, and *Traffic Targets*.
 
 ![Gloo Mesh Admin Dashboard resources]({{% versioned_link_path fromRoot="/img/admin-resources.png" %}})
+
+Across the top of the page is a navigation bar with five options.
+
+![Gloo Mesh Admin Dashboard navigation]({{% versioned_link_path fromRoot="/img/admin-navigation.png" %}})
+
+* **Overview**: Provides a high-level overview of Gloo Mesh
+* **Meshes**: Displays service meshes being managed by Gloo Mesh
+* **Policies**: Displays defined RBAC policies for Gloo Mesh
+* **Wasm**: Displays WASM deployments being managed by Gloo Mesh
+* **Debug**: Displays full configurations for service meshes.
+
+There is also a small gear to the right of the navigation elements, which will take you to the Admin area. 
+
+![Gloo Mesh Admin Dashboard gear]({{% versioned_link_path fromRoot="/img/admin-gear.png" %}})
+
+From there you are able to view clusters and role-Based access configurations.
+
+![Gloo Mesh Admin area]({{% versioned_link_path fromRoot="/img/admin-view.png" %}})
+
+The purpose of the Admin Dashboard is primarily to view the status of Gloo Mesh and managed resources, and not to make any changes. It is possible to register a new cluster through the dashboard, but that is currently the only alteration of Gloo Mesh that is possible.
+
+## Next Steps
+
+If your Admin Dashboard is looking a bit sparse, now might be a good time to walk through the [Istio installation]({{% versioned_link_path fromRoot="/guides/installing_istio/" %}}) or [traffic policy guides]({{% versioned_link_path fromRoot="/guides/traffic_policy/" %}}).
