@@ -1,6 +1,8 @@
 package access
 
 import (
+	"context"
+
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
@@ -31,10 +33,12 @@ const (
 	GlobalAccessControlAuthPolicyName = "global-access-control"
 )
 
-type translator struct{}
+type translator struct {
+	ctx context.Context
+}
 
-func NewTranslator() Translator {
-	return &translator{}
+func NewTranslator(ctx context.Context) Translator {
+	return &translator{ctx}
 }
 
 func (t *translator) Translate(
@@ -55,7 +59,17 @@ func (t *translator) Translate(
 	clusterName := istioMesh.Installation.Cluster
 	installationNamespace := istioMesh.Installation.Namespace
 	globalAuthPolicy := buildGlobalAuthPolicy(installationNamespace, clusterName)
-	ingressGatewayAuthPolicies := buildAuthPoliciesForIngressgateways(installationNamespace, clusterName, istioMesh.IngressGateways)
+	ingressGatewayAuthPolicies := buildAuthPoliciesForIngressGateways(
+		installationNamespace,
+		clusterName,
+		istioMesh.IngressGateways,
+	)
+
+	// Append the virtual mesh as a parent to each output resource
+	metautils.AppendParent(t.ctx, globalAuthPolicy, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+	for _, ap := range ingressGatewayAuthPolicies {
+		metautils.AppendParent(t.ctx, ap, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+	}
 
 	outputs.AddAuthorizationPolicies(globalAuthPolicy)
 	outputs.AddAuthorizationPolicies(ingressGatewayAuthPolicies...)
@@ -63,14 +77,14 @@ func (t *translator) Translate(
 
 // Creates an AuthorizationPolicy that allows all traffic into the service
 // which backs the Gateway used for multi cluster traffic.
-func buildAuthPoliciesForIngressgateways(
+func buildAuthPoliciesForIngressGateways(
 	installationNamespace string,
 	clusterName string,
 	ingressGateways []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo,
 ) []*securityv1beta1.AuthorizationPolicy {
 	var authPolicies []*securityv1beta1.AuthorizationPolicy
 	for _, ingressGateway := range ingressGateways {
-		authPolicies = append(authPolicies, &securityv1beta1.AuthorizationPolicy{
+		ap := &securityv1beta1.AuthorizationPolicy{
 			ObjectMeta: v1.ObjectMeta{
 				Name:        ingressGatewayAuthPolicyName(ingressGateway),
 				Namespace:   installationNamespace,
@@ -86,7 +100,9 @@ func buildAuthPoliciesForIngressgateways(
 					MatchLabels: ingressGateway.WorkloadLabels,
 				},
 			},
-		})
+		}
+
+		authPolicies = append(authPolicies, ap)
 	}
 	return authPolicies
 }

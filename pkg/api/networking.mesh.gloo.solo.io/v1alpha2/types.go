@@ -5,6 +5,7 @@ package v1alpha2
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // +genclient
@@ -19,6 +20,15 @@ type TrafficPolicy struct {
 
 	Spec   TrafficPolicySpec   `json:"spec,omitempty"`
 	Status TrafficPolicyStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (TrafficPolicy) GVK() schema.GroupVersionKind {
+	return schema.GroupVersionKind{
+		Group:   "networking.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "TrafficPolicy",
+	}
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -44,6 +54,15 @@ type AccessPolicy struct {
 	Status AccessPolicyStatus `json:"status,omitempty"`
 }
 
+// GVK returns the GroupVersionKind associated with the resource type.
+func (AccessPolicy) GVK() schema.GroupVersionKind {
+	return schema.GroupVersionKind{
+		Group:   "networking.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "AccessPolicy",
+	}
+}
+
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // AccessPolicyList contains a list of AccessPolicy
@@ -67,6 +86,15 @@ type VirtualMesh struct {
 	Status VirtualMeshStatus `json:"status,omitempty"`
 }
 
+// GVK returns the GroupVersionKind associated with the resource type.
+func (VirtualMesh) GVK() schema.GroupVersionKind {
+	return schema.GroupVersionKind{
+		Group:   "networking.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "VirtualMesh",
+	}
+}
+
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // VirtualMeshList contains a list of VirtualMesh
@@ -88,6 +116,15 @@ type FailoverService struct {
 
 	Spec   FailoverServiceSpec   `json:"spec,omitempty"`
 	Status FailoverServiceStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (FailoverService) GVK() schema.GroupVersionKind {
+	return schema.GroupVersionKind{
+		Group:   "networking.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "FailoverService",
+	}
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
