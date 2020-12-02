@@ -25,7 +25,7 @@ func getSingletonSettings(ctx context.Context, in input.Snapshot) (*v1alpha2.Set
 }
 
 // Get the workload labels and TLS port name used to detect ingress gateways in the given cluster.
-func GetIngressGatewayMatcher(ctx context.Context, in input.Snapshot, clusterName string) (*v1alpha2.SettingsSpec_Istio_IngressGatewayMatcher, error) {
+func GetIngressGatewayDetector(ctx context.Context, in input.Snapshot, clusterName string) (*v1alpha2.SettingsSpec_Istio_IngressGatewayDetector, error) {
 	settings, err := getSingletonSettings(ctx, in)
 	if err != nil {
 		return nil, err
@@ -35,21 +35,21 @@ func GetIngressGatewayMatcher(ctx context.Context, in input.Snapshot, clusterNam
 	var portName string
 
 	// First, check if cluster-specific values are set
-	clusterMatcherSettings := settings.Spec.GetIstio().GetIngressGatewayMatcherOverrides()
-	if clusterMatcherSettings != nil && clusterMatcherSettings[clusterName] != nil {
-		labels = clusterMatcherSettings[clusterName].GetGatewayWorkloadLabels()
-		portName = clusterMatcherSettings[clusterName].GetGatewayTlsPortName()
+	clusterDetectorSettings := settings.Spec.GetIstio().GetIngressGatewayDetectorOverrides()
+	if clusterDetectorSettings != nil && clusterDetectorSettings[clusterName] != nil {
+		labels = clusterDetectorSettings[clusterName].GetGatewayWorkloadLabels()
+		portName = clusterDetectorSettings[clusterName].GetGatewayTlsPortName()
 	}
 
-	// Check the top-level gateway matcher settings if needed
+	// Check the top-level gateway detector settings if needed
 	if labels == nil || portName == "" {
-		matcherSettings := settings.Spec.GetIstio().GetIngressGatewayMatcher()
-		if matcherSettings != nil {
+		detectorSettings := settings.Spec.GetIstio().GetIngressGatewayDetector()
+		if detectorSettings != nil {
 			if labels == nil {
-				labels = matcherSettings.GetGatewayWorkloadLabels()
+				labels = detectorSettings.GetGatewayWorkloadLabels()
 			}
 			if portName == "" {
-				portName = matcherSettings.GetGatewayTlsPortName()
+				portName = detectorSettings.GetGatewayTlsPortName()
 			}
 		}
 	}
@@ -62,7 +62,7 @@ func GetIngressGatewayMatcher(ctx context.Context, in input.Snapshot, clusterNam
 		portName = defaults.DefaultGatewayPortName
 	}
 
-	return &v1alpha2.SettingsSpec_Istio_IngressGatewayMatcher{
+	return &v1alpha2.SettingsSpec_Istio_IngressGatewayDetector{
 		GatewayWorkloadLabels: labels,
 		GatewayTlsPortName:    portName,
 	}, nil

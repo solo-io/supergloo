@@ -85,7 +85,7 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Snapsh
 		return nil, err
 	}
 
-	ingressGatewayMatcher, err := utils.GetIngressGatewayMatcher(d.ctx, in, deployment.ClusterName)
+	ingressGatewayDetector, err := utils.GetIngressGatewayDetector(d.ctx, in, deployment.ClusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -94,8 +94,8 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Snapsh
 		d.ctx,
 		deployment.Namespace,
 		deployment.ClusterName,
-		ingressGatewayMatcher.GetGatewayWorkloadLabels(),
-		ingressGatewayMatcher.GetGatewayTlsPortName(),
+		ingressGatewayDetector.GetGatewayWorkloadLabels(),
+		ingressGatewayDetector.GetGatewayTlsPortName(),
 		in.Services(),
 		in.Pods(),
 		in.Nodes(),

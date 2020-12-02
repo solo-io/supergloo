@@ -24,17 +24,17 @@ message SettingsSpec {
 
     message Istio {
         // Workload labels and TLS port name used during discovery to detect ingress gateways for a mesh.
-        // If not specified, will fall back to the default values specified by `IngressGatewayMatcher`.
-        // To override the labels and/or TLS ports for a specific cluster, use `ingressGatewayMatcherOverrides`.
-        IngressGatewayMatcher ingress_gateway_matcher = 1;
+        // If not specified, will fall back to the default values specified by `IngressGatewayDetector`.
+        // To override the labels and/or TLS ports for a specific cluster, use `IngressGatewayDetectorOverrides`.
+        IngressGatewayDetector ingress_gateway_detector = 1;
 
-        // Override the ingress gateway matchers on a per-cluster basis. The key to the map is a k8s cluster name.
-        // If an entry is found for a given cluster, it will be used. Otherwise, will fall back to `ingressGatewayMatcher`.
-        // If the cluster's `IngressGatewayMatcher` entry does not specify all the fields, it will fall back to the
-        // `ingressGatewayMatcher` values for the missing field(s).
-        map<string, IngressGatewayMatcher> ingress_gateway_matcher_overrides = 3;
+        // Override the ingress gateway detectors on a per-cluster basis. The key to the map is a k8s cluster name.
+        // If an entry is found for a given cluster, it will be used. Otherwise, will fall back to `ingressGatewayDetector`.
+        // If the cluster's `IngressGatewayDetector` entry does not specify all the fields, it will fall back to the
+        // `ingressGatewayDetector` values for the missing field(s).
+        map<string, IngressGatewayDetector> ingress_gateway_detector_overrides = 3;
 
-        message IngressGatewayMatcher {
+        message IngressGatewayDetector {
             // The workload labels used during discovery to detect ingress gateways for a mesh.
             // If not specified, will default to `{"istio": "ingressgateway"}`.
             map<string, string> gateway_workload_labels = 1;

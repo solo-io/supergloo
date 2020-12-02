@@ -27,11 +27,11 @@ spec:
             istio:
               description: Istio-specific discovery settings
               properties:
-                ingressGatewayMatcher:
+                ingressGatewayDetector:
                   description: |-
                     Workload labels and TLS port name used during discovery to detect ingress gateways for a mesh.
-                    If not specified, will fall back to the default values specified by `IngressGatewayMatcher`.
-                    To override the labels and/or TLS ports for a specific cluster, use `ingressGatewayMatcherOverrides`.
+                    If not specified, will fall back to the default values specified by `IngressGatewayDetector`.
+                    To override the labels and/or TLS ports for a specific cluster, use `IngressGatewayDetectorOverrides`.
                   properties:
                     gatewayTlsPortName:
                       description: |-
@@ -47,7 +47,7 @@ spec:
                         If not specified, will default to `{"istio": "ingressgateway"}`.
                       type: object
                   type: object
-                ingressGatewayMatcherOverrides:
+                ingressGatewayDetectorOverrides:
                   additionalProperties:
                     properties:
                       gatewayTlsPortName:
@@ -65,10 +65,10 @@ spec:
                         type: object
                     type: object
                   description: |-
-                    Override the ingress gateway matchers on a per-cluster basis. The key to the map is a k8s cluster name.
-                    If an entry is found for a given cluster, it will be used. Otherwise, will fall back to `ingressGatewayMatcher`.
-                    If the cluster's `IngressGatewayMatcher` entry does not specify all the fields, it will fall back to the
-                    `ingressGatewayMatcher` values for the missing field(s).
+                    Override the ingress gateway detectors on a per-cluster basis. The key to the map is a k8s cluster name.
+                    If an entry is found for a given cluster, it will be used. Otherwise, will fall back to `ingressGatewayDetector`.
+                    If the cluster's `IngressGatewayDetector` entry does not specify all the fields, it will fall back to the
+                    `ingressGatewayDetector` values for the missing field(s).
                   type: object
               type: object
             mtls:
