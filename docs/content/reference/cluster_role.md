@@ -7,6 +7,10 @@ weight: 10
 
 The following YAML shows the ClusterRole created on a target cluster when it is registered with Gloo Mesh.
 
+{{< notice note >}}
+This document is current as of version 0.10.3.
+{{< /notice >}}
+
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
