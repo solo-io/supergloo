@@ -16,13 +16,10 @@ clean-helm:
 	rm -f $(AGENT_CRDS_CHART_DIR)/values.yaml
 
 .PHONY: package-helm
-package-helm: chart-gen
-	helm package --destination $(CHART_OUTPUT_DIR)/gloo-mesh $(GLOOMESH_CHART_DIR)
-
-	helm dependency update $(CA_CHART_DIR)
-	helm package --destination $(CHART_OUTPUT_DIR)/cert-agent $(CA_CHART_DIR)
-
+package-helm: chart-gen fmt
 	helm package --destination $(CHART_OUTPUT_DIR)/agent-crds $(AGENT_CRDS_CHART_DIR)
+	helm package --destination $(CHART_OUTPUT_DIR)/gloo-mesh $(GLOOMESH_CHART_DIR)
+	helm package --destination $(CHART_OUTPUT_DIR)/cert-agent $(CA_CHART_DIR)
 
 .PHONY: fetch-helm
 fetch-helm:

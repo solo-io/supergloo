@@ -71,13 +71,6 @@ var CertAgentChart = &model.Chart{
 		Name:        "cert-agent",
 		Description: "Helm chart for the Gloo Mesh Certificate Agent.",
 		Version:     version.Version,
-		Dependencies: []model.Dependency{
-			{
-				Name:       "agent-crds",
-				Version:    version.Version,
-				Repository: "https://storage.googleapis.com/gloo-mesh/agent-crds",
-			},
-		},
 	},
 	Values: nil,
 }
