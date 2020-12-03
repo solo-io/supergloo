@@ -2,9 +2,12 @@ package commands
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/dashboard"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/plugins"
 
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/check"
@@ -21,6 +24,8 @@ import (
 	// required import to enable kube client-go auth plugins
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
+
+const binaryName = "meshctl"
 
 func RootCommand(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
@@ -43,6 +48,18 @@ func RootCommand(ctx context.Context) *cobra.Command {
 		dashboard.Command(ctx),
 		version.Command(ctx),
 	)
+
+	if len(os.Args) > 1 {
+		if _, _, err := cmd.Find(os.Args[1:]); err != nil {
+			handler := plugins.NewPathHandler(binaryName)
+			if err := plugins.Handle(handler, os.Args[1:]); err != nil {
+				fmt.Fprintf(os.Stderr, "plugin error: %s\n", err.Error())
+				os.Exit(1)
+			}
+
+			os.Exit(0)
+		}
+	}
 
 	return cmd
 }
