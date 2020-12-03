@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1110
+    description: Create new Helm chart to bundle all CRDs required by remote agents.
