@@ -25,7 +25,6 @@ func NewBinaryPlugin(path string) *BinaryPlugin {
 }
 
 func (bp BinaryPlugin) Run(args []string) error {
-	// cmd := exec.Command(bp.path, append([]string{bp.path}, args...)...)
 	cmd := exec.Command(bp.path, args...)
 	cmd.Stdin = bp.In
 	cmd.Stdout = bp.Out
