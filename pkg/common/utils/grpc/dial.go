@@ -55,5 +55,6 @@ func (o DialOpts) Dial(ctx context.Context) (*grpc.ClientConn, error) {
 	if err != nil {
 		return nil, err
 	}
+	contextutils.LoggerFrom(ctx).Debugw("connected to grpc server", "addr", o.Address)
 	return cc, nil
 }
