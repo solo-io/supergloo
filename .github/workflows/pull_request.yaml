@@ -110,7 +110,7 @@ jobs:
           ISTIO_VERSION=istio-$(echo $ISTIOCTL_BINARY | grep -o "download/.*/" | sed 's/\bdownload\b//g' |  sed 's/[\/]//g')
           curl -sSL $ISTIOCTL_BINARY | tar -xzf - $ISTIO_VERSION/bin/istioctl
           # move istio binary to _output, which is gitignored, to avoid `-dirty` suffix when computing version in subsequent makefile invocations
-          mkdir _output && mv $ISTIO_VERSION _output/$ISTIO_VERSION
+          mkdir -p _output && mv $ISTIO_VERSION _output/$ISTIO_VERSION
           export PATH=$PWD/_output/$ISTIO_VERSION/bin:/opt/hostedtoolcache/kubectl/1.18.0/x64:$PATH
           istioctl version
 

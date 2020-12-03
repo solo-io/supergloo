@@ -30,13 +30,14 @@ type Registrant struct {
 }
 
 type RegistrantOptions struct {
-	KubeConfigPath string
-	MgmtContext    string
-	RemoteContext  string
-	Registration   register.RegistrationOptions
-	CertAgent      AgentInstallOptions
-	WasmAgent      AgentInstallOptions
-	Verbose        bool
+	KubeConfigPath     string
+	MgmtContext        string
+	RemoteContext      string
+	Registration       register.RegistrationOptions
+	AgentCrdsChartPath string
+	CertAgent          AgentInstallOptions
+	WasmAgent          AgentInstallOptions
+	Verbose            bool
 }
 
 // Initialize a ClientConfig for the management and remote clusters from the options.
@@ -88,6 +89,11 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
+	// agent CRDs should always be installed since they're required by any remote agents
+	if err := r.installAgentCrds(ctx); err != nil {
+		return err
+	}
+
 	// The cert-agent should always be installed since it's required for the VirtualMesh API.
 	if err := r.installCertAgent(ctx); err != nil {
 		return err
@@ -105,6 +111,10 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 func (r *Registrant) DeregisterCluster(ctx context.Context) error {
 	if r.Verbose {
 		logrus.SetLevel(logrus.DebugLevel)
+	}
+
+	if err := r.uninstallAgentCrds(ctx); err != nil {
+		return err
 	}
 
 	if err := r.uninstallCertAgent(ctx); err != nil {
@@ -127,6 +137,29 @@ func (r *Registrant) registerCluster(ctx context.Context) error {
 
 	logrus.Infof("successfully registered cluster %v", r.Registration.ClusterName)
 	return nil
+}
+
+func (r *Registrant) installAgentCrds(ctx context.Context) error {
+	return gloomesh.Installer{
+		HelmChartPath: r.AgentCrdsChartPath,
+		KubeConfig:    r.KubeConfigPath,
+		KubeContext:   r.RemoteContext,
+		Namespace:     r.Registration.RemoteNamespace,
+		Verbose:       r.Verbose,
+	}.InstallAgentCrds(
+		ctx,
+	)
+}
+
+func (r *Registrant) uninstallAgentCrds(ctx context.Context) error {
+	return gloomesh.Uninstaller{
+		KubeConfig:  r.KubeConfigPath,
+		KubeContext: r.RemoteContext,
+		Namespace:   r.Registration.RemoteNamespace,
+		Verbose:     r.Verbose,
+	}.UninstallCertAgent(
+		ctx,
+	)
 }
 
 func (r *Registrant) installCertAgent(ctx context.Context) error {

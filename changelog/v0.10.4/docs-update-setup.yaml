@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Update the setup section of the docs to include Enterprise installation and separate sections into docs.
