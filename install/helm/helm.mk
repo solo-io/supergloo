@@ -13,7 +13,6 @@ clean-helm:
 	rm -f $(CA_CHART_DIR)/Chart.yaml
 	rm -f $(CA_CHART_DIR)/values.yaml
 	rm -f $(AGENT_CRDS_CHART_DIR)/Chart.yaml
-	rm -f $(AGENT_CRDS_CHART_DIR)/values.yaml
 
 .PHONY: package-helm
 package-helm: chart-gen fmt
