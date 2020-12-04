@@ -41,7 +41,6 @@ require (
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
-	github.com/mitchellh/hashstructure v1.0.0
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.2
 	github.com/onsi/ginkgo v1.13.0
@@ -77,7 +76,6 @@ require (
 	istio.io/api v0.0.0-20200819225923-c78f387f78a2
 	istio.io/client-go v0.0.0-20200812230733-f5504d568313
 	istio.io/istio v0.0.0-20200821180042-b0e61d10cbae
-	istio.io/tools v0.0.0-20201203135925-d54d80f7d7e9 // indirect
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v8.0.0+incompatible

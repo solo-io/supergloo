@@ -6,6 +6,8 @@ package mock_internal
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
@@ -13,7 +15,6 @@ import (
 	mesh "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh"
 	traffictarget "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget"
 	v1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
-	reflect "reflect"
 )
 
 // MockDependencyFactory is a mock of DependencyFactory interface
