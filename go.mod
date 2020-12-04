@@ -84,5 +84,3 @@ require (
 	k8s.io/utils v0.0.0-20201027101359-01387209bb0d
 	sigs.k8s.io/controller-runtime v0.6.2
 )
-
-replace github.com/solo-io/skv2 => ../skv2
