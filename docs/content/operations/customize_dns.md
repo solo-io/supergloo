@@ -5,7 +5,7 @@ weight: 50
 description: Understanding how to configure Istio DNS for resolvable routing between clusters
 ---
 
-At the moment, when Service Mesh Hub creates [ServiceEntry](https://istio.io/docs/reference/config/networking/service-entry/) resources for Istio to enable cross-cluster routing and service discovery, these entries and the hostnames they use are not directly routable. 
+At the moment, when Gloo Mesh creates [ServiceEntry](https://istio.io/docs/reference/config/networking/service-entry/) resources for Istio to enable cross-cluster routing and service discovery, these entries and the hostnames they use are not directly routable. 
 
 For example, when you have the Bookinfo sample installed across multiple clusters [as in the guides]({{% versioned_link_path fromRoot="/guides" %}}) you will end up with `ServiceEntry` resources automatically created on `cluster-1` which reference services on `cluster-2`
 
@@ -268,4 +268,4 @@ EOF
 {{< /tab >}}
 {{< /tabs >}}
 
-At this point the hostnames specified in the `ServiceEntry` created by Service Mesh Hub should be routable within your Kuberentes cluster.
+At this point the hostnames specified in the `ServiceEntry` created by Gloo Mesh should be routable within your Kuberentes cluster.

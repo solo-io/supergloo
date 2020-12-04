@@ -4,7 +4,7 @@ import "os"
 
 const (
 	PodNamespaceEnv     = "POD_NAMESPACE"
-	DefaultPodNamespace = "service-mesh-hub"
+	DefaultPodNamespace = "gloo-mesh"
 )
 
 func GetPodNamespace() string {

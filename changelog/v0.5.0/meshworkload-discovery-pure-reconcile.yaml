@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Handle deletion of MeshWorkloads and migrate to reconcile paradigm.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/674
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/674

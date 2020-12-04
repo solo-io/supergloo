@@ -8,13 +8,14 @@ import (
 	"github.com/rotisserie/eris"
 	smiaccessv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
 	smispecsv1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/types"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/workloadutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/go-utils/contextutils"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/types"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/workloadutils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"go.uber.org/zap"
@@ -209,6 +210,10 @@ func (t *translator) Translate(
 			}
 			tt.Spec.Rules = append(tt.Spec.Rules, rule)
 		}
+
+		// Append the traffic target as a parent to each output route group
+		metautils.AppendParent(ctx, routeGroup, ap.GetRef(), v1alpha2.AccessPolicy{}.GVK())
+		metautils.AppendParent(ctx, trafficTarget, ap.GetRef(), v1alpha2.AccessPolicy{}.GVK())
 
 		httpRouteGroups = append(httpRouteGroups, routeGroup)
 		trafficTargets = append(trafficTargets, trafficTargetsByAp...)

@@ -7,14 +7,14 @@ import (
 	"path/filepath"
 
 	externalapis "github.com/solo-io/external-apis/codegen"
-	"github.com/solo-io/service-mesh-hub/codegen/groups"
-	"github.com/solo-io/service-mesh-hub/codegen/helm"
-	"github.com/solo-io/service-mesh-hub/codegen/io"
-	"github.com/solo-io/service-mesh-hub/pkg/common/version"
+	"github.com/solo-io/gloo-mesh/codegen/anyvendor"
+	"github.com/solo-io/gloo-mesh/codegen/groups"
+	"github.com/solo-io/gloo-mesh/codegen/helm"
+	"github.com/solo-io/gloo-mesh/codegen/io"
+	"github.com/solo-io/gloo-mesh/pkg/common/version"
 	skv1alpha1 "github.com/solo-io/skv2/api/multicluster/v1alpha1"
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
-	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
 	"github.com/solo-io/skv2/contrib"
 )
 
@@ -78,18 +78,18 @@ func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 }
 
 var (
-	appName = "service-mesh-hub"
+	appName = "gloo-mesh"
 
 	topLevelComponents = []topLevelComponent{
 		// discovery component
 		{
-			generatedCodeRoot: "pkg/api/discovery.smh.solo.io",
+			generatedCodeRoot: "pkg/api/discovery.mesh.gloo.solo.io",
 			inputResources:    io.DiscoveryInputTypes,
 			outputResources:   []io.OutputSnapshot{io.DiscoveryOutputTypes},
 		},
 		// networking snapshot
 		{
-			generatedCodeRoot: "pkg/api/networking.smh.solo.io",
+			generatedCodeRoot: "pkg/api/networking.mesh.gloo.solo.io",
 			inputResources:    io.NetworkingInputTypes,
 			outputResources: []io.OutputSnapshot{
 				io.IstioNetworkingOutputTypes,
@@ -100,25 +100,26 @@ var (
 		},
 		// certificate issuer component
 		{
-			generatedCodeRoot: "pkg/api/certificates.smh.solo.io/issuer",
+			generatedCodeRoot: "pkg/api/certificates.mesh.gloo.solo.io/issuer",
 			inputResources:    io.CertificateIssuerInputTypes,
 		},
 		// certificate agent component
 		{
-			generatedCodeRoot: "pkg/api/certificates.smh.solo.io/agent",
+			generatedCodeRoot: "pkg/api/certificates.mesh.gloo.solo.io/agent",
 			inputResources:    io.CertificateAgentInputTypes,
 			outputResources:   []io.OutputSnapshot{io.CertificateAgentOutputTypes},
 		},
 	}
 
-	smhManifestRoot       = "install/helm/service-mesh-hub"
+	glooMeshManifestRoot  = "install/helm/gloo-mesh"
 	certAgentManifestRoot = "install/helm/cert-agent/"
+	agentCrdsManifestRoot = "install/helm/agent-crds/"
 
 	vendoredMultiClusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
-	importedMultiClusterCRDs = smhManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
+	importedMultiClusterCRDs = glooMeshManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 
 	allApiGroups = map[string][]model.Group{
-		"":                                 append(groups.SMHGroups, groups.CertAgentGroups...),
+		"":                                 append(append(groups.GlooMeshGroups, groups.CertAgentGroups...), groups.XdsAgentGroup),
 		"github.com/solo-io/external-apis": externalapis.Groups,
 		"github.com/solo-io/skv2":          {skv1alpha1.Group},
 	}
@@ -132,17 +133,19 @@ var (
 		return allTemplates
 	}()
 
-	anyvendorImports = skv2_anyvendor.CreateDefaultMatchOptions([]string{
-		"api/**/*.proto",
-	})
+	anyvendorImports = anyvendor.AnyVendorImports()
 )
 
 func run() error {
-	log.Printf("generating service mesh hub code with version %v", version.Version)
+	log.Printf("generating gloo mesh code with version %v", version.Version)
 	chartOnly := flag.Bool("chart", false, "only generate the helm chart")
 	flag.Parse()
 
-	if err := makeSmhCommand(*chartOnly).Execute(); err != nil {
+	if err := makeAgentCrdsCommand().Execute(); err != nil {
+		return err
+	}
+
+	if err := makeGlooMeshCommand(*chartOnly).Execute(); err != nil {
 		return err
 	}
 
@@ -163,17 +166,12 @@ func run() error {
 	return nil
 }
 
-func makeSmhCommand(chartOnly bool) codegen.Command {
-
-	anyvendorImports.External["github.com/solo-io/skv2"] = []string{
-		"api/**/*.proto",
-		"crds/multicluster.solo.io_v1alpha1_crds.yaml",
-	}
+func makeGlooMeshCommand(chartOnly bool) codegen.Command {
 
 	if chartOnly {
 		return codegen.Command{
 			AppName:      appName,
-			ManifestRoot: smhManifestRoot,
+			ManifestRoot: glooMeshManifestRoot,
 			Chart:        helm.Chart,
 		}
 	}
@@ -181,9 +179,9 @@ func makeSmhCommand(chartOnly bool) codegen.Command {
 	return codegen.Command{
 		AppName:           appName,
 		AnyVendorConfig:   anyvendorImports,
-		ManifestRoot:      smhManifestRoot,
+		ManifestRoot:      glooMeshManifestRoot,
 		TopLevelTemplates: topLevelTemplates,
-		Groups:            groups.SMHGroups,
+		Groups:            groups.GlooMeshGroups,
 		RenderProtos:      true,
 		Chart:             helm.Chart,
 	}
@@ -203,9 +201,19 @@ func makeCertAgentCommand(chartOnly bool) codegen.Command {
 		AnyVendorConfig:   anyvendorImports,
 		ManifestRoot:      certAgentManifestRoot,
 		TopLevelTemplates: topLevelTemplates,
-		Groups:            groups.CertAgentGroups,
 		RenderProtos:      true,
 		Chart:             helm.CertAgentChart,
+	}
+}
+
+func makeAgentCrdsCommand() codegen.Command {
+	return codegen.Command{
+		AppName:         appName,
+		AnyVendorConfig: anyvendorImports,
+		ManifestRoot:    agentCrdsManifestRoot,
+		Groups:          append(groups.CertAgentGroups, groups.XdsAgentGroup),
+		RenderProtos:    true,
+		Chart:           helm.AgentCrdsChart,
 	}
 }
 

@@ -6,15 +6,16 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
-	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/mesh/access"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
+	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/access"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	securityv1beta1spec "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
 	securityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("AccessPolicyTranslator", func() {
@@ -23,7 +24,7 @@ var _ = Describe("AccessPolicyTranslator", func() {
 	)
 
 	BeforeEach(func() {
-		translator = access.NewTranslator()
+		translator = access.NewTranslator(context.Background())
 	})
 
 	It("should translate an AuthorizationPolicy for the ingress gateway and in the installation namespace", func() {
@@ -54,6 +55,10 @@ var _ = Describe("AccessPolicyTranslator", func() {
 			},
 			Status: discoveryv1alpha2.MeshStatus{
 				AppliedVirtualMesh: &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
+					Ref: &v1.ObjectRef{
+						Name:      "virtual-mesh",
+						Namespace: "gloo-mesh",
+					},
 					Spec: &networkingv1alpha2.VirtualMeshSpec{
 						GlobalAccessPolicy: networkingv1alpha2.VirtualMeshSpec_ENABLED,
 					},
@@ -62,11 +67,14 @@ var _ = Describe("AccessPolicyTranslator", func() {
 		}
 		expectedAuthPolicies := v1beta1sets.NewAuthorizationPolicySet(
 			&securityv1beta1.AuthorizationPolicy{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:        access.IngressGatewayAuthPolicyName + "-1-1-1-1",
 					Namespace:   "istio-system",
 					ClusterName: "cluster-name",
 					Labels:      metautils.TranslatedObjectLabels(),
+					Annotations: map[string]string{
+						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"virtual-mesh","namespace":"gloo-mesh"}]}`,
+					},
 				},
 				Spec: securityv1beta1spec.AuthorizationPolicy{
 					Action: securityv1beta1spec.AuthorizationPolicy_ALLOW,
@@ -81,11 +89,14 @@ var _ = Describe("AccessPolicyTranslator", func() {
 				},
 			},
 			&securityv1beta1.AuthorizationPolicy{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:        access.IngressGatewayAuthPolicyName + "-2-2-2-2",
 					Namespace:   "istio-system",
 					ClusterName: "cluster-name",
 					Labels:      metautils.TranslatedObjectLabels(),
+					Annotations: map[string]string{
+						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"virtual-mesh","namespace":"gloo-mesh"}]}`,
+					},
 				},
 				Spec: securityv1beta1spec.AuthorizationPolicy{
 					Action: securityv1beta1spec.AuthorizationPolicy_ALLOW,
@@ -100,11 +111,14 @@ var _ = Describe("AccessPolicyTranslator", func() {
 				},
 			},
 			&securityv1beta1.AuthorizationPolicy{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:        access.GlobalAccessControlAuthPolicyName,
 					Namespace:   "istio-system",
 					ClusterName: "cluster-name",
 					Labels:      metautils.TranslatedObjectLabels(),
+					Annotations: map[string]string{
+						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"virtual-mesh","namespace":"gloo-mesh"}]}`,
+					},
 				},
 				Spec: securityv1beta1spec.AuthorizationPolicy{},
 			},

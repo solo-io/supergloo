@@ -1,4 +1,4 @@
 changelog:
 - type: FIX
   description: Change the default MD rendered for the docs to fix the yaml rendering.
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/601
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/601

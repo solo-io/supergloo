@@ -1,6 +1,6 @@
 syntax = "proto3";
-package networking.smh.solo.io;
-option go_package = "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2";
+package networking.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2";
 
 import "skv2/api/core/v1/core.proto";
 
@@ -27,13 +27,13 @@ message ApprovalStatus {
 
 }
 
-// State of a Policy resource reflected in the status by Service Mesh Hub while processing a resource.
+// State of a Policy resource reflected in the status by Gloo Mesh while processing a resource.
 enum ApprovalState {
-    // Resources are in a Pending state before they have been processed by Service Mesh Hub.
+    // Resources are in a Pending state before they have been processed by Gloo Mesh.
     PENDING = 0;
 
     // Resources are in a Accepted state when they are valid and have been applied successfully to
-    // the Service Mesh Hub configuration.
+    // the Gloo Mesh configuration.
     ACCEPTED = 1;
 
     // Resources are in an Invalid state when they contain incorrect configuration parameters,

@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/appmesh"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/appmesh/traffictarget/virtualrouter"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/appmesh/traffictarget/virtualservice"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/errors"
 	"github.com/solo-io/go-utils/contextutils"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/appmesh"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/appmesh/traffictarget/virtualrouter"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/appmesh/traffictarget/virtualservice"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/errors"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
 

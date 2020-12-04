@@ -3,18 +3,19 @@ package traffictarget
 import (
 	"context"
 
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/authorizationpolicy"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/go-utils/contextutils"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/authorizationpolicy"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
 
@@ -68,13 +69,25 @@ func (t *translator) Translate(
 		return
 	}
 
-	vs := t.virtualServices.Translate(in, trafficTarget, reporter)
-	dr := t.destinationRules.Translate(in, trafficTarget, reporter)
-	ap := t.authorizationPolicies.Translate(in, trafficTarget, reporter)
-
-	outputs.AddVirtualServices(vs)
-	outputs.AddDestinationRules(dr)
-	outputs.AddAuthorizationPolicies(ap)
+	// Translate VirtualServices for TrafficTargets, can be nil if there is no service or applied traffic policies
+	// Pass nil sourceMeshInstallation to translate VirtualService local to trafficTarget
+	if vs := t.virtualServices.Translate(in, trafficTarget, nil, reporter); vs != nil {
+		// Append the traffic target as a parent to the virtual service
+		metautils.AppendParent(t.ctx, vs, trafficTarget, trafficTarget.GVK())
+		outputs.AddVirtualServices(vs)
+	}
+	// Translate DestinationRules for TrafficTargets, can be nil if there is no service or applied traffic policies
+	if dr := t.destinationRules.Translate(t.ctx, in, trafficTarget, nil, reporter); dr != nil {
+		// Append the traffic target as a parent to the destination rule
+		metautils.AppendParent(t.ctx, dr, trafficTarget, trafficTarget.GVK())
+		outputs.AddDestinationRules(dr)
+	}
+	// Translate AuthorizationPolicies for TrafficTargets, can be nil if there is no service or applied traffic policies
+	if ap := t.authorizationPolicies.Translate(in, trafficTarget, reporter); ap != nil {
+		// Append the traffic target as a parent to the authorization policy
+		metautils.AppendParent(t.ctx, ap, trafficTarget, trafficTarget.GVK())
+		outputs.AddAuthorizationPolicies(ap)
+	}
 }
 
 func (t *translator) isIstioTrafficTarget(

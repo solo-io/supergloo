@@ -7,10 +7,10 @@ import (
 	"github.com/rotisserie/eris"
 	v1beta2sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	decorator "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/decorator"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/types"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	decorator "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/decorator"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/types"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"go.uber.org/zap"
 )

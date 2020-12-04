@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Don't delete all kind clusters when demo cleanup
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/641
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/641

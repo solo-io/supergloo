@@ -1,3 +1,3 @@
-# Documentation for Service Mesh Hub
+# Documentation for Gloo Mesh
 
-This directory contains sources for the docs hosted at `https://docs.solo.io/service-mesh-hub/latest`. 
+This directory contains sources for the docs hosted at `https://docs.solo.io/gloo-mesh/latest`. 

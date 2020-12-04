@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
     description: Add `cluster deregister` command for deregistering manually registered clusters.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/675
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/675

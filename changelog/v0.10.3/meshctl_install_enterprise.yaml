@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1020
+    description: Add `meshctl install enterprise` that installs Gloo Mesh Enterprise.

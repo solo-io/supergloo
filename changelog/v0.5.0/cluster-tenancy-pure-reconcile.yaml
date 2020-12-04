@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Fix infinite event loop in cluster tenancy finder by using pure reconcile logic (i.e. reconcile the entire state cluster tenancy).
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/657
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/657

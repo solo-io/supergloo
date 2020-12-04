@@ -4,26 +4,13 @@
 # Functions for setting up kind clusters
 #####################################
 
-#!/bin/bash
-
-INSTALL_DIR=${PROJECT_ROOT}/install
-AGENT_VALUES=${INSTALL_DIR}/helm/cert-agent/values.yaml
-AGENT_IMAGE_REGISTRY=$(cat ${AGENT_VALUES} | grep "registry: " | awk '{print $2}')
-AGENT_IMAGE_REPOSITORY=$(cat ${AGENT_VALUES} | grep "repository: " | awk '{print $2}')
-AGENT_IMAGE_TAG=$(cat ${AGENT_VALUES} | grep "tag: " | awk '{print $2}' | sed 's/"//g')
-
-AGENT_IMAGE=${AGENT_IMAGE_REGISTRY}/${AGENT_IMAGE_REPOSITORY}:${AGENT_IMAGE_TAG}
-AGENT_CHART=${INSTALL_DIR}/helm/_output/charts/cert-agent/cert-agent-${AGENT_IMAGE_TAG}.tgz
-
-SMH_VALUES=${INSTALL_DIR}/helm/service-mesh-hub/values.yaml
-SMH_IMAGE_TAG=$(cat ${SMH_VALUES} | grep -m 1 "tag: " | awk '{print $2}' | sed 's/"//g')
-SMH_CHART=${INSTALL_DIR}/helm/_output/charts/service-mesh-hub/service-mesh-hub-${SMH_IMAGE_TAG}.tgz
+PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/.."
 
 #### FUNCTIONS
 
 function create_kind_cluster() {
   # The default version of k8s under Linux is 1.18
-  # https://github.com/solo-io/service-mesh-hub/issues/700
+  # https://github.com/solo-io/gloo-mesh/issues/700
   kindImage=kindest/node:v1.17.5
 
   cluster=$1
@@ -164,7 +151,7 @@ function install_istio_1_7() {
 
   echo "installing istio to ${cluster}..."
 
-  cat << EOF | istioctl manifest install --context "kind-${cluster}" -f -
+  cat << EOF | istioctl install --context "kind-${cluster}" -y -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -217,16 +204,70 @@ spec:
 EOF
 }
 
+# Operator spec for istio 1.8.x
+function install_istio_1_8() {
+  cluster=$1
+  port=$2
+  K="kubectl --context=kind-${cluster}"
+
+  echo "installing istio to ${cluster}..."
+
+  cat << EOF | istioctl manifest install -y --context "kind-${cluster}" -f -
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: example-istiooperator
+  namespace: istio-system
+spec:
+  profile: minimal
+  addonComponents:
+    istiocoredns:
+      enabled: true
+  components:
+    # Istio Gateway feature
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        env:
+          - name: ISTIO_META_ROUTER_MODE
+            value: "sni-dnat"
+        service:
+          type: NodePort
+          ports:
+            - port: 80
+              targetPort: 8080
+              name: http2
+            - port: 443
+              targetPort: 8443
+              name: https
+            - port: 15443
+              targetPort: 15443
+              name: tls
+              nodePort: ${port}
+  meshConfig:
+    enableAutoMtls: true
+  values:
+    global:
+      pilotCertProvider: kubernetes
+      podDNSSearchNamespaces:
+      - global
+EOF
+}
+
 function install_istio() {
   cluster=$1
   port=$2
   K="kubectl --context=kind-${cluster}"
 
-  if istioctl version | grep 1.7
+  if istioctl version | grep -E -- '1.5|1.6'
+  then
+    install_istio_1_5 $cluster $port
+  elif istioctl version | grep -E -- '1.7'
   then
     install_istio_1_7 $cluster $port
   else
-    install_istio_1_5 $cluster $port
+    install_istio_1_8 $cluster $port
   fi
 
   # enable istio dns for .global stub domain:
@@ -326,6 +367,25 @@ function get_api_address() {
   echo ${apiServerAddress}
 }
 
+# must be called after make manifest-gen
+function setChartVariables() {
+  export INSTALL_DIR="${PROJECT_ROOT}/install/"
+  export DEFAULT_MANIFEST="${INSTALL_DIR}/gloo-mesh-default.yaml"
+  export AGENT_VALUES=${INSTALL_DIR}/helm/cert-agent/values.yaml
+  export AGENT_IMAGE_REGISTRY=$(cat ${AGENT_VALUES} | grep "registry: " | awk '{print $2}')
+  export AGENT_IMAGE_REPOSITORY=$(cat ${AGENT_VALUES} | grep "repository: " | awk '{print $2}')
+  export AGENT_IMAGE_TAG=$(cat ${AGENT_VALUES} | grep "tag: " | awk '{print $2}' | sed 's/"//g')
+  export AGENT_CHART=${INSTALL_DIR}/helm/_output/charts/cert-agent/cert-agent-${AGENT_IMAGE_TAG}.tgz
+  export AGENT_IMAGE=${AGENT_IMAGE_REGISTRY}/${AGENT_IMAGE_REPOSITORY}:${AGENT_IMAGE_TAG}
+  export GLOOMESH_VALUES=${INSTALL_DIR}/helm/gloo-mesh/values.yaml
+  export GLOOMESH_IMAGE_TAG=$(cat ${GLOOMESH_VALUES} | grep -m 1 "tag: " | awk '{print $2}' | sed 's/"//g')
+  export GLOOMESH_CHART=${INSTALL_DIR}/helm/_output/charts/gloo-mesh/gloo-mesh-${GLOOMESH_IMAGE_TAG}.tgz
+
+  export AGENT_CRDS_CHART_YAML=${INSTALL_DIR}/helm/agent-crds/Chart.yaml
+  export AGENT_CRDS_VERSION=$(cat ${AGENT_CRDS_CHART_YAML} | grep "version: " | awk '{print $2}' | sed 's/"//g')
+  export AGENT_CRDS_CHART=${INSTALL_DIR}/helm/_output/charts/agent-crds/agent-crds-${AGENT_CRDS_VERSION}.tgz
+}
+
 function register_cluster() {
   cluster=$1
   apiServerAddress=$(get_api_address ${cluster})
@@ -334,22 +394,41 @@ function register_cluster() {
 
   echo "registering ${cluster} with local cert-agent image..."
 
+  # needed for the agent chart
+  setChartVariables
+
   # load cert-agent image
   kind load docker-image --name "${cluster}" "${AGENT_IMAGE}"
+
+  EXTRA_FLAGS=""
+  # used by enterprise e2e test setup
+  # expects the following env set:
+  # INSTALL_WASM_AGENT=1
+  # WASM_AGENT_CHART=<path to chart>
+  if [ ${INSTALL_WASM_AGENT} == "1" ]; then
+    EXTRA_FLAGS="--install-wasm-agent --wasm-agent-chart-file=${WASM_AGENT_CHART}"
+  fi
 
   go run "${PROJECT_ROOT}/cmd/meshctl/main.go" cluster register \
     --cluster-name "${cluster}" \
     --mgmt-context "kind-${mgmtCluster}" \
     --remote-context "kind-${cluster}" \
     --api-server-address "${apiServerAddress}" \
-    --cert-agent-chart-file "${AGENT_CHART}"
+    --cert-agent-chart-file "${AGENT_CHART}" \
+    --agent-crds-chart-file "${AGENT_CRDS_CHART}" \
+    ${EXTRA_FLAGS}
 }
 
-function install_smh() {
+function install_gloomesh() {
+
   cluster=$1
   apiServerAddress=$(get_api_address ${cluster})
 
-  ${PROJECT_ROOT}/ci/setup-smh.sh ${cluster} ${SMH_CHART} ${AGENT_CHART} ${AGENT_IMAGE} ${apiServerAddress}
+  bash ${PROJECT_ROOT}/ci/setup-gloomesh.sh ${cluster} ${apiServerAddress}
+
+  if [ ! -z ${POST_INSTALL_SCRIPT} ]; then
+    bash ${POST_INSTALL_SCRIPT}
+  fi
 }
 
 #### START SCRIPT

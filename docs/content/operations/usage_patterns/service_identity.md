@@ -1,13 +1,13 @@
 ---
 title: "Multicluster Service Identity"
 menuTitle: Multicluster Service Identity
-description: Guidance on using Service Mesh Hub to apply consistent policies to services across clusters.
+description: Guidance on using Gloo Mesh to apply consistent policies to services across clusters.
 weight: 10
 ---
 
-Service Mesh Hub was created to simplify the management of multiple service mesh deployments across multiple clusters. One of the key abstractions of Service Mesh Hub is the VirtualMesh, essentially the combination of multiple service meshes into a single logical entity. The VirtualMesh enables cross-cluster, secured communication with a common root certificate authority serving to provide trusted mTLS communications.
+Gloo Mesh was created to simplify the management of multiple service mesh deployments across multiple clusters. One of the key abstractions of Gloo Mesh is the VirtualMesh, essentially the combination of multiple service meshes into a single logical entity. The VirtualMesh enables cross-cluster, secured communication with a common root certificate authority serving to provide trusted mTLS communications.
 
-To further manage communication within and between clusters, Service Mesh Hub includes Access Policies and Traffic Policies. The Access Policies define what communication is allowed between sources (identities) and destinations. In addition to source and destination, the Access Policy can also specify paths, methods, and ports for a request. Traffic Policies define how communication between a source and destination is handled, including things like traffic shifting, fault injection, and header manipulation. 
+To further manage communication within and between clusters, Gloo Mesh includes Access Policies and Traffic Policies. The Access Policies define what communication is allowed between sources (identities) and destinations. In addition to source and destination, the Access Policy can also specify paths, methods, and ports for a request. Traffic Policies define how communication between a source and destination is handled, including things like traffic shifting, fault injection, and header manipulation. 
 
 Both the Access and Traffic Policies use `sourceSelector` for workloads/identities and `destinationSelector` for services. The selection syntax provides an opportunity to abstract a workload, identity, or service and apply consistent policies across multiple resources in different meshes and clusters.
 
@@ -38,7 +38,7 @@ kubeIdentityMatcher:
     - cluster-two
 ```
 
-Now if `cluster-three` is added to Service Mesh Hub, the `app1` and `app2` namespaces in that cluster would not be part of the Access Policy until it was updated.
+Now if `cluster-three` is added to Gloo Mesh, the `app1` and `app2` namespaces in that cluster would not be part of the Access Policy until it was updated.
 
 ## Workload Selector
 
@@ -97,10 +97,10 @@ In an Access Policy, the flexibility of destination selection means that you can
 Sticking with our Bookstore application example. Let's say that we want to allow traffic from the `bookinfo` namespace to all instances of the `details` service, and the only allowed method should be `GET`. The resulting policy would look like this:
 
 ```yaml
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: AccessPolicy
 metadata:
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
   name: allow-details
 spec:
   sourceSelector:
@@ -125,10 +125,10 @@ In a Traffic Policy, the flexibility of both the workload and destination select
 Let's say that we wanted to mirror traffic between all instances of the `productpage` workload and `reviews` service for analysis. Assuming that labels have been applied consistently, the Traffic Policy would look like this:
 
 ```yaml
-apiVersion: networking.smh.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
   name: traffic-mirror
 spec:
   sourceSelector:

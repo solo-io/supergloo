@@ -1,9 +1,9 @@
 package selectorutils
 
 import (
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/go-utils/stringutils"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
@@ -19,6 +19,7 @@ func SelectorMatchesWorkload(selectors []*v1alpha2.WorkloadSelector, workload *d
 			if kubeWorkloadMatches(
 				selector.GetLabels(),
 				selector.GetNamespaces(),
+				selector.GetClusters(),
 				kubeWorkload,
 			) {
 				return true
@@ -96,6 +97,21 @@ func SelectorMatchesService(selectors []*v1alpha2.TrafficTargetSelector, service
 	return false
 }
 
+// Return true if any WorkloadSelector selects the specified clusterName
+func WorkloadSelectorContainsCluster(selectors []*v1alpha2.WorkloadSelector, clusterName string) bool {
+	if len(selectors) == 0 {
+		return true
+	}
+
+	for _, selector := range selectors {
+		if len(selector.Clusters) == 0 || stringutils.ContainsString(clusterName, selector.Clusters) {
+			return true
+		}
+	}
+
+	return false
+}
+
 /* For a k8s Workload to match:
 1) If labels is specified, all labels must exist on the k8s Workload
 2) If namespaces is specified, the k8s workload must be in one of those namespaces
@@ -103,9 +119,13 @@ func SelectorMatchesService(selectors []*v1alpha2.TrafficTargetSelector, service
 func kubeWorkloadMatches(
 	labels map[string]string,
 	namespaces []string,
+	clusters []string,
 	kubeWorkload *discoveryv1alpha2.WorkloadSpec_KubernetesWorkload,
 ) bool {
 	if len(namespaces) > 0 && !stringutils.ContainsString(kubeWorkload.GetController().GetNamespace(), namespaces) {
+		return false
+	}
+	if len(clusters) > 0 && !stringutils.ContainsString(kubeWorkload.GetController().GetClusterName(), clusters) {
 		return false
 	}
 	for k, v := range labels {

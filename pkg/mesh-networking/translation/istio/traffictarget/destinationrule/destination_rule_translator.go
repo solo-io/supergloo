@@ -1,22 +1,28 @@
 package destinationrule
 
 import (
+	"context"
 	"reflect"
 
-	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
+	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/tls"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/snapshotutils"
+	"github.com/solo-io/go-utils/contextutils"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rotisserie/eris"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/equalityutils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/fieldutils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/equalityutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/fieldutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -33,8 +39,10 @@ type Translator interface {
 	//
 	// Note that the input snapshot TrafficTargetSet contains the given TrafficTarget.
 	Translate(
+		ctx context.Context,
 		in input.Snapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
+		sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 		reporter reporting.Reporter,
 	) *networkingv1alpha3.DestinationRule
 }
@@ -64,8 +72,10 @@ func NewTranslator(
 // returns nil if no DestinationRule is required for the TrafficTarget (i.e. if no DestinationRule features are required, such as subsets).
 // The input snapshot TrafficTargetSet contains n the
 func (t *translator) Translate(
+	ctx context.Context,
 	in input.Snapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	reporter reporting.Reporter,
 ) *networkingv1alpha3.DestinationRule {
 	kubeService := trafficTarget.Spec.GetKubeService()
@@ -75,7 +85,22 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	destinationRule := t.initializeDestinationRule(trafficTarget)
+	sourceClusterName := kubeService.Ref.ClusterName
+	if sourceMeshInstallation != nil {
+		sourceClusterName = sourceMeshInstallation.Cluster
+	}
+
+	settings, err := snapshotutils.GetSingletonSettings(ctx, in)
+	if err != nil {
+		return nil
+	}
+
+	destinationRule, err := t.initializeDestinationRule(trafficTarget, settings.Spec.Mtls, sourceMeshInstallation)
+	if err != nil {
+		contextutils.LoggerFrom(ctx).Error(err)
+		return nil
+	}
+
 	// register the owners of the destinationrule fields
 	destinationRuleFields := fieldutils.NewOwnershipRegistry()
 	drDecorators := t.decoratorFactory.MakeDecorators(decorators.Parameters{
@@ -85,6 +110,12 @@ func (t *translator) Translate(
 
 	// Apply decorators which map a single applicable TrafficPolicy to a field on the DestinationRule.
 	for _, policy := range trafficTarget.Status.AppliedTrafficPolicies {
+
+		// Don't translate the trafficPolicy if the sourceClusterName is not selected by the SourceSelectors
+		if !selectorutils.WorkloadSelectorContainsCluster(policy.Spec.SourceSelector, sourceClusterName) {
+			continue
+		}
+
 		registerField := registerFieldFunc(destinationRuleFields, destinationRule, policy.Ref)
 		for _, decorator := range drDecorators {
 
@@ -101,7 +132,9 @@ func (t *translator) Translate(
 		}
 	}
 
-	if len(destinationRule.Spec.Subsets) == 0 && destinationRule.Spec.TrafficPolicy == nil {
+	// TODO need a more robust implementation of determining whether a DestinationRule has any effect
+	if len(destinationRule.Spec.Subsets) == 0 &&
+		destinationRule.Spec.GetTrafficPolicy().GetTls().GetMode() == networkingv1alpha3spec.ClientTLSSettings_DISABLE {
 		// no need to create this DestinationRule as it has no effect
 		return nil
 	}
@@ -134,30 +167,48 @@ func registerFieldFunc(
 	}
 }
 
-func (t *translator) initializeDestinationRule(trafficTarget *discoveryv1alpha2.TrafficTarget) *networkingv1alpha3.DestinationRule {
-	meta := metautils.TranslatedObjectMeta(
-		trafficTarget.Spec.GetKubeService().Ref,
-		trafficTarget.Annotations,
-	)
-	hostname := t.clusterDomains.GetServiceLocalFQDN(trafficTarget.Spec.GetKubeService().Ref)
+func (t *translator) initializeDestinationRule(
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	mtlsDefault *v1alpha2.TrafficPolicySpec_MTLS,
+	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+) (*networkingv1alpha3.DestinationRule, error) {
+	var meta metav1.ObjectMeta
+	if sourceMeshInstallation != nil {
+		meta = metautils.FederatedObjectMeta(
+			trafficTarget.Spec.GetKubeService().Ref,
+			sourceMeshInstallation,
+			trafficTarget.Annotations,
+		)
+	} else {
+		meta = metautils.TranslatedObjectMeta(
+			trafficTarget.Spec.GetKubeService().Ref,
+			trafficTarget.Annotations,
+		)
+	}
+	hostname := t.clusterDomains.GetDestinationServiceFQDN(meta.ClusterName, trafficTarget.Spec.GetKubeService().Ref)
 
-	return &networkingv1alpha3.DestinationRule{
+	destinationRule := &networkingv1alpha3.DestinationRule{
 		ObjectMeta: meta,
 		Spec: networkingv1alpha3spec.DestinationRule{
-			Host: hostname,
-			TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{
-				Tls: &networkingv1alpha3spec.ClientTLSSettings{
-					// TODO(ilackarms): currently we set all DRs to mTLS
-					// in the future we'll want to make this configurable
-					// https://github.com/solo-io/service-mesh-hub/issues/790
-					Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
-				},
-			},
+			Host:          hostname,
+			TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{},
 			Subsets: trafficshift.MakeDestinationRuleSubsetsForTrafficTarget(
 				trafficTarget,
 				t.trafficTargets,
 				t.failoverServices,
+				sourceMeshInstallation.GetCluster(),
 			),
 		},
 	}
+
+	// Initialize Istio TLS mode with default declared in Settings
+	istioTlsMode, err := tls.MapIstioTlsMode(mtlsDefault.GetIstio().GetTlsMode())
+	if err != nil {
+		return nil, err
+	}
+	destinationRule.Spec.TrafficPolicy.Tls = &networkingv1alpha3spec.ClientTLSSettings{
+		Mode: istioTlsMode,
+	}
+
+	return destinationRule, nil
 }

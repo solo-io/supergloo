@@ -3,24 +3,25 @@ package detector
 import (
 	"context"
 
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/workloadutils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/go-utils/stringutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/utils/workloadutils"
 	sets2 "github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/utils/pointer"
 )
 
 const (
 	// TODO: allow for specifying specific meshes.
 	// Currently this annotation assumes that there is only one mesh per cluster, and therefore the corresponding
 	// TrafficTarget will be associated with that mesh.
-	DiscoveryMeshAnnotation = "discovery.smh.solo.io/enabled"
+	DiscoveryMeshAnnotation = "discovery.mesh.gloo.solo.io/enabled"
 )
 
 var (
@@ -54,7 +55,6 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 	meshWorkloads v1alpha2sets.WorkloadSet,
 	meshes v1alpha2sets.MeshSet,
 ) *v1alpha2.TrafficTarget {
-
 	kubeService := &v1alpha2.TrafficTargetSpec_KubeService{
 		Ref:                    ezkube.MakeClusterObjectRef(service),
 		WorkloadSelectorLabels: service.Spec.Selector,
@@ -165,9 +165,10 @@ func findSubsets(backingWorkloads v1alpha2.WorkloadSlice) map[string]*v1alpha2.T
 func convertPorts(service *corev1.Service) (ports []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort) {
 	for _, kubePort := range service.Spec.Ports {
 		ports = append(ports, &v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
-			Port:     uint32(kubePort.Port),
-			Name:     kubePort.Name,
-			Protocol: string(kubePort.Protocol),
+			Port:        uint32(kubePort.Port),
+			Name:        kubePort.Name,
+			Protocol:    string(kubePort.Protocol),
+			AppProtocol: pointer.StringPtrDerefOr(kubePort.AppProtocol, ""),
 		})
 	}
 	return ports

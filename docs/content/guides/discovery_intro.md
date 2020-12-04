@@ -4,12 +4,12 @@ menuTitle: Mesh Discovery
 weight: 20
 ---
 
-Service Mesh Hub can automatically discover service mesh installations on registered clusters using control plane and sidecar discovery, as well as workloads and services exposed through the service mesh.
+Gloo Mesh can automatically discover service mesh installations on registered clusters using control plane and sidecar discovery, as well as workloads and services exposed through the service mesh.
 
 In this guide we will learn about the four main discovery capabilities in the context of Kubernetes as the compute platform:
 
 1. **Kubernetes Clusters**
-    - Representation of a cluster that Service Mesh Hub is aware of and is authorized to talk to its Kubernetes API server
+    - Representation of a cluster that Gloo Mesh is aware of and is authorized to talk to its Kubernetes API server
     - *note*: this resource is created by `meshctl` at cluster registration time
 2. **Meshes**
     - Representation of a service mesh control plane that has been discovered 
@@ -22,9 +22,9 @@ In this guide we will learn about the four main discovery capabilities in the co
 ## Before you begin
 To illustrate these concepts, we will assume that:
 
-* Service Mesh Hub is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-service-mesh-hub" %}})
+* Gloo Mesh is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
 * Istio is [installed on both the `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
-* Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Service Mesh Hub]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+* Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
 * The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
 
@@ -45,7 +45,7 @@ kubectl config use-context $MGMT_CONTEXT
 Validate that the cluster have been registered by checking for `KubernetesClusters` custom resources:
 
 ```shell
-kubectl get kubernetesclusters -n service-mesh-hub
+kubectl get kubernetesclusters -n gloo-mesh
 ```
 
 ```shell
@@ -83,28 +83,28 @@ meshctl describe mesh
 We can print it in YAML form to see all the information we discovered:
 
 ```shell
-kubectl -n service-mesh-hub get mesh istiod-istio-system-remote-cluster -oyaml
+kubectl -n gloo-mesh get mesh istiod-istio-system-remote-cluster -oyaml
 ```
 
 (snipped for brevity)
 
 {{< highlight yaml >}}
-apiVersion: discovery.smh.solo.io/v1alpha2
+apiVersion: discovery.mesh.gloo.solo.io/v1alpha2
 kind: Mesh
 metadata:  
   ... 
   labels:
-    cluster.discovery.smh.solo.io: remote-cluster
+    cluster.discovery.mesh.gloo.solo.io: remote-cluster
     cluster.multicluster.solo.io: ""
-    owner.discovery.smh.solo.io: service-mesh-hub
+    owner.discovery.mesh.gloo.solo.io: gloo-mesh
   name: istiod-istio-system-remote-cluster
-  namespace: service-mesh-hub
+  namespace: gloo-mesh
   resourceVersion: "2649"
-  selfLink: /apis/discovery.smh.solo.io/v1alpha2/namespaces/service-mesh-hub/meshes/istiod-istio-system-remote-cluster
+  selfLink: /apis/discovery.mesh.gloo.solo.io/v1alpha2/namespaces/gloo-mesh/meshes/istiod-istio-system-remote-cluster
   uid: e7dfed16-7f29-40ac-896c-db24a7c05321
 spec:
   agentInfo:
-    agentNamespace: service-mesh-hub
+    agentNamespace: gloo-mesh
   istio:
     citadelInfo:
       citadelServiceAccount: istio-pilot-service-account
@@ -131,7 +131,7 @@ status:
 Check to see that the `bookinfo` pods have been correctly identified as Workloads:
 
 ```shell
-kubectl -n service-mesh-hub get workloads
+kubectl -n gloo-mesh get workloads
 ```
 
 ```
@@ -153,7 +153,7 @@ reviews-v3-bookinfo-remote-cluster-deployment                   2m
 Similarly for the `bookinfo` services:
 
 ```shell
-kubectl -n service-mesh-hub get traffictargets
+kubectl -n gloo-mesh get traffictargets
 ```
 
 ```
@@ -170,11 +170,11 @@ reviews-bookinfo-remote-cluster                      2m29s
 
 ## See it in action
 
-Check out "Part One" of the ["Dive into Service Mesh Hub" video series](https://www.youtube.com/watch?v=4sWikVELr5M&list=PLBOtlFtGznBjr4E9xYHH9eVyiOwnk1ciK)
-(note that the video content reflects Service Mesh Hub <b>v0.6.1</b>):
+Check out "Part One" of the ["Dive into Gloo Mesh" video series](https://www.youtube.com/watch?v=4sWikVELr5M&list=PLBOtlFtGznBjr4E9xYHH9eVyiOwnk1ciK)
+(note that the video content reflects Gloo Mesh <b>v0.6.1</b>):
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/4sWikVELr5M" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ## Next Steps
 
-Now that we have Istio installed, and we've seen Service Mesh Hub discover the meshes across different clusters, we can now unify them into a single [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}). See the guide on [establishing shared trust domain for multiple meshes]({{% versioned_link_path fromRoot="/guides/federate_identity" %}}).
+Now that we have Istio installed, and we've seen Gloo Mesh discover the meshes across different clusters, we can now unify them into a single [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}). See the guide on [establishing shared trust domain for multiple meshes]({{% versioned_link_path fromRoot="/guides/federate_identity" %}}).

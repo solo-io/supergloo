@@ -3,8 +3,8 @@ package mesh
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/mesh/internal/flags"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/commands/mesh/restart"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/mesh/internal/flags"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/mesh/restart"
 	"github.com/spf13/cobra"
 )
 

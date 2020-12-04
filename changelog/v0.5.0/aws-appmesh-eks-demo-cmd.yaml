@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
     description: Create a cmd to showcase SMH functionalioty for Appmesh + EKS.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/708
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/708

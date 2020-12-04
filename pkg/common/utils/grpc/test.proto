@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package grpc.test;
+
+option go_package = "./test_api";
+
+service TestService {
+    rpc Invoke (Request) returns (Response) {
+    }
+}
+
+message Request {
+}
+
+message Response {
+}

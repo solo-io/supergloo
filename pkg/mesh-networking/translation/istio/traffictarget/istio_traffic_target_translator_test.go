@@ -1,15 +1,17 @@
 package traffictarget
 
 import (
+	"context"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	mock_output "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio/mocks"
-	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
-	mock_authorizationpolicy "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/authorizationpolicy/mocks"
-	mock_destinationrule "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/destinationrule/mocks"
-	mock_virtualservice "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/virtualservice/mocks"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	mock_output "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio/mocks"
+	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
+	mock_authorizationpolicy "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/authorizationpolicy/mocks"
+	mock_destinationrule "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/destinationrule/mocks"
+	mock_virtualservice "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice/mocks"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/security/v1beta1"
@@ -25,6 +27,7 @@ var _ = Describe("IstioTrafficTargetTranslator", func() {
 		mockOutputs                       *mock_output.MockBuilder
 		mockReporter                      *mock_reporting.MockReporter
 		istioTrafficTargetTranslator      Translator
+		ctx                               = context.TODO()
 	)
 
 	BeforeEach(func() {
@@ -35,6 +38,7 @@ var _ = Describe("IstioTrafficTargetTranslator", func() {
 		mockOutputs = mock_output.NewMockBuilder(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		istioTrafficTargetTranslator = &translator{
+			ctx:                   ctx,
 			destinationRules:      mockDestinationRuleTranslator,
 			virtualServices:       mockVirtualServiceTranslator,
 			authorizationPolicies: mockAuthorizationPolicyTranslator,
@@ -77,11 +81,11 @@ var _ = Describe("IstioTrafficTargetTranslator", func() {
 
 		mockDestinationRuleTranslator.
 			EXPECT().
-			Translate(in, trafficTarget, mockReporter).
+			Translate(ctx, in, trafficTarget, nil, mockReporter).
 			Return(dr)
 		mockVirtualServiceTranslator.
 			EXPECT().
-			Translate(in, trafficTarget, mockReporter).
+			Translate(in, trafficTarget, nil, mockReporter).
 			Return(vs)
 		mockAuthorizationPolicyTranslator.
 			EXPECT().

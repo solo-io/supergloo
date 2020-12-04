@@ -3,12 +3,12 @@ package traffictarget
 import (
 	"context"
 
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/smi"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget/access"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget/split"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/smi"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/smi/traffictarget/access"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/smi/traffictarget/split"
 )
 
 //go:generate mockgen -source ./smi_traffic_target_translator.go -destination mocks/smi_traffic_target_translator.go
@@ -48,10 +48,13 @@ func (t *translator) Translate(
 	outputs smi.Builder,
 	reporter reporting.Reporter,
 ) {
+	// Translate TrafficSplit for TrafficTarget, can be nil if non-kube service or no applied traffic policy
 	trafficSplit := t.trafficSplit.Translate(ctx, in, trafficTarget, reporter)
-	outputs.AddTrafficSplits(trafficSplit)
 
+	// Translate output TrafficTargets and HttpRouteGroups for discovered TrafficTarget
 	trafficTargets, httpRouteGroups := t.trafficTarget.Translate(ctx, in, trafficTarget, reporter)
+
+	outputs.AddTrafficSplits(trafficSplit)
 	outputs.AddTrafficTargets(trafficTargets...)
 	outputs.AddHTTPRouteGroups(httpRouteGroups...)
 }

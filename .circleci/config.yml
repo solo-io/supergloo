@@ -11,7 +11,7 @@ jobs:
       image: ubuntu-1604:201903-01
       # need to upgrade plan before using large executor
       # resource_class: large
-    working_directory: ~/go/src/github.com/solo-io/service-mesh-hub
+    working_directory: ~/go/src/github.com/solo-io/gloo-mesh
     steps:
       - checkout
       - protobuf/install
@@ -45,7 +45,7 @@ jobs:
           name: e2e istio 1.5 tests
           no_output_timeout: 30m
           command: |
-            make print-version install-go-tools manifest-gen
+            make print-version manifest-gen
 
             go install github.com/onsi/ginkgo/ginkgo
 

@@ -5,17 +5,18 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/pointer"
 
-	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/traffictarget/detector"
+	. "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/traffictarget/detector"
 )
 
 var _ = Describe("TrafficTargetDetector", func() {
@@ -80,7 +81,8 @@ var _ = Describe("TrafficTargetDetector", func() {
 							Type:   intstr.String,
 							StrVal: "http",
 						},
-						Protocol: "TCP",
+						Protocol:    "TCP",
+						AppProtocol: pointer.StringPtr("HTTP"),
 					},
 					{
 						Name: "port2",
@@ -123,9 +125,10 @@ var _ = Describe("TrafficTargetDetector", func() {
 						Labels:                 svc.Labels,
 						Ports: []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 							{
-								Port:     1234,
-								Name:     "port1",
-								Protocol: "TCP",
+								Port:        1234,
+								Name:        "port1",
+								Protocol:    "TCP",
+								AppProtocol: "HTTP",
 							},
 							{
 								Port:     2345,
@@ -181,9 +184,10 @@ var _ = Describe("TrafficTargetDetector", func() {
 						Labels:                 svc.Labels,
 						Ports: []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 							{
-								Port:     1234,
-								Name:     "port1",
-								Protocol: "TCP",
+								Port:        1234,
+								Name:        "port1",
+								Protocol:    "TCP",
+								AppProtocol: "HTTP",
 							},
 							{
 								Port:     2345,

@@ -4,12 +4,12 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	networkingv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/types"
-	mock_reporting "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting/mocks"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/traffictarget/authorizationpolicy"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/types"
+	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/authorizationpolicy"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	securityv1beta1spec "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
@@ -129,7 +129,7 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 				Namespace:   trafficTarget.Spec.GetKubeService().Ref.Namespace,
 				ClusterName: trafficTarget.Spec.GetKubeService().Ref.ClusterName,
 				Labels: map[string]string{
-					"owner.networking.smh.solo.io": "service-mesh-hub",
+					"owner.networking.mesh.gloo.solo.io": "gloo-mesh",
 				},
 			},
 			Spec: securityv1beta1spec.AuthorizationPolicy{

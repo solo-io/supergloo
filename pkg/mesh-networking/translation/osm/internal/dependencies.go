@@ -1,11 +1,11 @@
 package internal
 
 import (
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/osm/mesh"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/osm/traffictarget"
-	smitraffictarget "github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget/access"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/smi/traffictarget/split"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm/mesh"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm/traffictarget"
+	smitraffictarget "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/smi/traffictarget"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/smi/traffictarget/access"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/smi/traffictarget/split"
 )
 
 //go:generate mockgen -source ./dependencies.go -destination mocks/dependencies.go

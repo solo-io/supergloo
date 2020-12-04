@@ -6,12 +6,12 @@ import (
 
 	"github.com/rotisserie/eris"
 	smislpitv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha2"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/errors"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/errors"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 )
 
@@ -90,12 +90,17 @@ func (t *translator) Translate(
 			Backends: nil,
 		},
 	}
+
 	backends, err := buildBackends(appliedTrafficPolicy.GetRef(), appliedTrafficPolicy.Spec.GetTrafficShift(), kubeService)
 	if err != nil {
 		reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, appliedTrafficPolicy.GetRef(), err)
 	}
 
 	trafficSplit.Spec.Backends = backends
+
+	// Append the applied traffic policy as the parent to the traffic split
+	// Done here to avoid duplicating the logic to find the applied traffic policy in the SMI traffic target translator
+	metautils.AppendParent(ctx, trafficSplit, appliedTrafficPolicy.GetRef(), v1alpha2.TrafficPolicy{}.GVK())
 
 	return trafficSplit
 }

@@ -3,20 +3,20 @@ package mesh_networking
 import (
 	"context"
 
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/appmesh"
-
-	certissuerinput "github.com/solo-io/service-mesh-hub/pkg/api/certificates.smh.solo.io/issuer/input"
-	certissuerreconciliation "github.com/solo-io/service-mesh-hub/pkg/certificates/issuer/reconciliation"
-	"github.com/solo-io/service-mesh-hub/pkg/common/bootstrap"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/apply"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/osm"
+	certissuerinput "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
+	certissuerreconciliation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/reconciliation"
+	"github.com/solo-io/gloo-mesh/pkg/common/bootstrap"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/appmesh"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reconciliation"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reconciliation"
 	"github.com/solo-io/skv2/pkg/multicluster"
 )
 
@@ -32,14 +32,22 @@ func startReconciler(
 	parameters bootstrap.StartParameters,
 ) error {
 
+	extensionClientset := extensions.NewClientset(parameters.Ctx)
+
 	snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager)
 	reporter := reporting.NewPanickingReporter(parameters.Ctx)
 	translator := translation.NewTranslator(
-		istio.NewIstioTranslator(),
+		istio.NewIstioTranslator(extensionClientset),
 		appmesh.NewAppmeshTranslator(),
 		osm.NewOSMTranslator(),
 	)
-	applier := apply.NewApplier(translator)
+
+	validatingTranslator := translation.NewTranslator(
+		istio.NewIstioTranslator(nil), // the applier should not call the extender
+		appmesh.NewAppmeshTranslator(),
+		osm.NewOSMTranslator(),
+	)
+	applier := apply.NewApplier(validatingTranslator)
 
 	startCertIssuer(
 		parameters.Ctx,
@@ -58,6 +66,8 @@ func startReconciler(
 		parameters.MasterManager,
 		parameters.SnapshotHistory,
 		parameters.VerboseMode,
+		parameters.SettingsRef,
+		extensionClientset,
 	)
 }
 

@@ -3,8 +3,8 @@ package reporting
 import (
 	"context"
 
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/go-utils/contextutils"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
@@ -45,7 +45,7 @@ func (p *panickingReporter) ReportTrafficPolicyToTrafficTarget(trafficTarget *di
 		DPanicw(
 			"internal error: error reported on TrafficPolicy which should have been caught by validation!",
 			"policy", sets.Key(trafficPolicy),
-			"mesh-service", sets.Key(trafficTarget),
+			"traffic-target", sets.Key(trafficTarget),
 			"error", err)
 }
 
@@ -53,7 +53,7 @@ func (p *panickingReporter) ReportAccessPolicyToTrafficTarget(trafficTarget *dis
 	contextutils.LoggerFrom(p.ctx).
 		DPanicw("internal error: error reported on AccessPolicy which should have been caught by validation!",
 			"policy", sets.Key(accessPolicy),
-			"mesh-service", sets.Key(trafficTarget),
+			"traffic-target", sets.Key(trafficTarget),
 			"error", err)
 }
 

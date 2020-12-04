@@ -1,7 +1,7 @@
 changelog:
 - type: FIX
   description: Fix bug where `meshctl describe` was including policies more than once because of a loop iter var getting closed over
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/567
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/567
 - type: FIX
   description: Fix bug where `meshctl describe` has confusing output when no policies apply
-  issueLink: https://github.com/solo-io/service-mesh-hub/issues/566
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/566

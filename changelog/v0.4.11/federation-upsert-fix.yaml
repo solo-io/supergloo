@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     description: Use Upsert method for federation MeshService update.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/638
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/638

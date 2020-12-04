@@ -1,4 +1,4 @@
 changelog:
   - type: NEW_FEATURE
     description: Implement source selection in TrafficPolicy translator.
-    issueLink: https://github.com/solo-io/service-mesh-hub/issues/233
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/233

@@ -3,10 +3,15 @@ package bootstrap
 import (
 	"context"
 
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/spf13/pflag"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/go-logr/zapr"
+	"github.com/solo-io/gloo-mesh/pkg/common/schemes"
+	"github.com/solo-io/gloo-mesh/pkg/common/utils/stats"
 	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/service-mesh-hub/pkg/common/schemes"
-	"github.com/solo-io/service-mesh-hub/pkg/common/utils/stats"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/multicluster/watch"
 	"go.uber.org/zap"
@@ -26,7 +31,8 @@ type StartParameters struct {
 	McClient        multicluster.Client
 	Clusters        multicluster.Interface
 	SnapshotHistory *stats.SnapshotHistory
-
+	// Reference to Settings object this controller uses.
+	SettingsRef v1.ObjectRef
 	// enable additional logging
 	VerboseMode bool
 }
@@ -36,7 +42,6 @@ type StartReconciler func(
 ) error
 
 // bootstrap options for starting discovery
-// TODO: wire these up to Settings CR
 type Options struct {
 	// MetricsBindPort is the TCP port that the controller should bind to
 	// for serving prometheus metrics.
@@ -54,6 +59,19 @@ type Options struct {
 
 	// ManagementContext if specified read the KubeConfig for the management cluster from this context. Only applies when running out of cluster.
 	ManagementContext string
+
+	// Reference to the Settings object that the controller should use.
+	SettingsRef v1.ObjectRef
+}
+
+// convenience function for setting these options via spf13 flags
+func (opts *Options) AddToFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&opts.MasterNamespace, "namespace", "n", metav1.NamespaceAll, "if specified restricts the master manager's cache to watch objects in the desired namespace.")
+	flags.Uint32Var(&opts.MetricsBindPort, "metrics-port", defaults.MetricsPort, "port on which to serve Prometheus metrics. set to 0 to disable")
+	flags.BoolVar(&opts.VerboseMode, "verbose", true, "enables verbose/debug logging")
+	flags.StringVar(&opts.ManagementContext, "context", "", "If specified, use this context from the selected KubeConfig to connect to the local (management) cluster.")
+	flags.StringVar(&opts.SettingsRef.Name, "settings-name", defaults.DefaultSettingsName, "The name of the Settings object this controller should use.")
+	flags.StringVar(&opts.SettingsRef.Namespace, "settings-namespace", defaults.DefaultPodNamespace, "The namespace of the Settings object this controller should use.")
 }
 
 // the mesh-discovery controller is the Kubernetes Controller/Operator
@@ -86,6 +104,7 @@ func Start(ctx context.Context, rootLogger string, start StartReconciler, opts O
 		Clusters:        clusterWatcher,
 		SnapshotHistory: snapshotHistory,
 		VerboseMode:     opts.VerboseMode,
+		SettingsRef:     opts.SettingsRef,
 	}
 
 	if err := start(params); err != nil {

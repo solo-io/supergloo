@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1091
+    description: Use DNS-1123 compliant name for generated subset names (replace underscore delimiter with hyphen).

@@ -3,7 +3,7 @@
 title: "traffic_target.proto"
 ---
 
-## Package : `discovery.smh.solo.io`
+## Package : `discovery.mesh.gloo.solo.io`
 
 
 
@@ -16,17 +16,17 @@ title: "traffic_target.proto"
 
 
 ## Table of Contents
-  - [TrafficTargetSpec](#discovery.smh.solo.io.TrafficTargetSpec)
-  - [TrafficTargetSpec.KubeService](#discovery.smh.solo.io.TrafficTargetSpec.KubeService)
-  - [TrafficTargetSpec.KubeService.KubeServicePort](#discovery.smh.solo.io.TrafficTargetSpec.KubeService.KubeServicePort)
-  - [TrafficTargetSpec.KubeService.LabelsEntry](#discovery.smh.solo.io.TrafficTargetSpec.KubeService.LabelsEntry)
-  - [TrafficTargetSpec.KubeService.Subset](#discovery.smh.solo.io.TrafficTargetSpec.KubeService.Subset)
-  - [TrafficTargetSpec.KubeService.SubsetsEntry](#discovery.smh.solo.io.TrafficTargetSpec.KubeService.SubsetsEntry)
-  - [TrafficTargetSpec.KubeService.WorkloadSelectorLabelsEntry](#discovery.smh.solo.io.TrafficTargetSpec.KubeService.WorkloadSelectorLabelsEntry)
-  - [TrafficTargetStatus](#discovery.smh.solo.io.TrafficTargetStatus)
-  - [TrafficTargetStatus.AppliedAccessPolicy](#discovery.smh.solo.io.TrafficTargetStatus.AppliedAccessPolicy)
-  - [TrafficTargetStatus.AppliedFederation](#discovery.smh.solo.io.TrafficTargetStatus.AppliedFederation)
-  - [TrafficTargetStatus.AppliedTrafficPolicy](#discovery.smh.solo.io.TrafficTargetStatus.AppliedTrafficPolicy)
+  - [TrafficTargetSpec](#discovery.mesh.gloo.solo.io.TrafficTargetSpec)
+  - [TrafficTargetSpec.KubeService](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService)
+  - [TrafficTargetSpec.KubeService.KubeServicePort](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort)
+  - [TrafficTargetSpec.KubeService.LabelsEntry](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.LabelsEntry)
+  - [TrafficTargetSpec.KubeService.Subset](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.Subset)
+  - [TrafficTargetSpec.KubeService.SubsetsEntry](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.SubsetsEntry)
+  - [TrafficTargetSpec.KubeService.WorkloadSelectorLabelsEntry](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.WorkloadSelectorLabelsEntry)
+  - [TrafficTargetStatus](#discovery.mesh.gloo.solo.io.TrafficTargetStatus)
+  - [TrafficTargetStatus.AppliedAccessPolicy](#discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedAccessPolicy)
+  - [TrafficTargetStatus.AppliedFederation](#discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedFederation)
+  - [TrafficTargetStatus.AppliedTrafficPolicy](#discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedTrafficPolicy)
 
 
 
@@ -34,7 +34,7 @@ title: "traffic_target.proto"
 
 
 
-<a name="discovery.smh.solo.io.TrafficTargetSpec"></a>
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec"></a>
 
 ### TrafficTargetSpec
 The TrafficTarget is an abstraction for a traffic target which we have discovered to be part of a given mesh.
@@ -42,15 +42,15 @@ The TrafficTarget is an abstraction for a traffic target which we have discovere
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeService | [TrafficTargetSpec.KubeService](#discovery.smh.solo.io.TrafficTargetSpec.KubeService) |  | Metadata about the kube-native traffic target backing this TrafficTarget. |
-| mesh | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | The mesh with which this traffic target is associated. |
+| kubeService | discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService |  | Metadata about the kube-native traffic target backing this TrafficTarget. |
+| mesh | core.skv2.solo.io.ObjectRef |  | The mesh with which this traffic target is associated. |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.TrafficTargetSpec.KubeService"></a>
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService"></a>
 
 ### TrafficTargetSpec.KubeService
 
@@ -58,18 +58,18 @@ The TrafficTarget is an abstraction for a traffic target which we have discovere
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ref | [core.skv2.solo.io.ClusterObjectRef](#core.skv2.solo.io.ClusterObjectRef) |  | A reference to the kube-native traffic target that this TrafficTarget represents. |
-| workloadSelectorLabels | [][TrafficTargetSpec.KubeService.WorkloadSelectorLabelsEntry](#discovery.smh.solo.io.TrafficTargetSpec.KubeService.WorkloadSelectorLabelsEntry) | repeated | Selectors for the set of pods targeted by the k8s Service. |
-| labels | [][TrafficTargetSpec.KubeService.LabelsEntry](#discovery.smh.solo.io.TrafficTargetSpec.KubeService.LabelsEntry) | repeated | Labels on the underlying k8s Service itself. |
-| ports | [][TrafficTargetSpec.KubeService.KubeServicePort](#discovery.smh.solo.io.TrafficTargetSpec.KubeService.KubeServicePort) | repeated | The ports exposed by the underlying service. |
-| subsets | [][TrafficTargetSpec.KubeService.SubsetsEntry](#discovery.smh.solo.io.TrafficTargetSpec.KubeService.SubsetsEntry) | repeated | Subsets for routing, based on labels. |
+| ref | core.skv2.solo.io.ClusterObjectRef |  | A reference to the kube-native traffic target that this TrafficTarget represents. |
+| workloadSelectorLabels | []discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.WorkloadSelectorLabelsEntry | repeated | Selectors for the set of pods targeted by the k8s Service. |
+| labels | []discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.LabelsEntry | repeated | Labels on the underlying k8s Service itself. |
+| ports | []discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort | repeated | The ports exposed by the underlying service. |
+| subsets | []discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.SubsetsEntry | repeated | Subsets for routing, based on labels. |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.TrafficTargetSpec.KubeService.KubeServicePort"></a>
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort"></a>
 
 ### TrafficTargetSpec.KubeService.KubeServicePort
 
@@ -77,16 +77,17 @@ The TrafficTarget is an abstraction for a traffic target which we have discovere
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| port | [uint32](#uint32) |  | External-facing port for this k8s service (NOT the service's target port on the backing pods). |
-| name | [string](#string) |  |  |
-| protocol | [string](#string) |  |  |
+| port | uint32 |  | External-facing port for this k8s service (NOT the service's target port on the backing pods). |
+| name | string |  |  |
+| protocol | string |  |  |
+| appProtocol | string |  | Available in k8s 1.18+, specifies the application protocol. |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.TrafficTargetSpec.KubeService.LabelsEntry"></a>
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.LabelsEntry"></a>
 
 ### TrafficTargetSpec.KubeService.LabelsEntry
 
@@ -94,15 +95,15 @@ The TrafficTarget is an abstraction for a traffic target which we have discovere
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| key | [string](#string) |  |  |
-| value | [string](#string) |  |  |
+| key | string |  |  |
+| value | string |  |  |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.TrafficTargetSpec.KubeService.Subset"></a>
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.Subset"></a>
 
 ### TrafficTargetSpec.KubeService.Subset
 Subsets for routing, based on labels.
@@ -110,14 +111,14 @@ Subsets for routing, based on labels.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| values | [][string](#string) | repeated |  |
+| values | []string | repeated |  |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.TrafficTargetSpec.KubeService.SubsetsEntry"></a>
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.SubsetsEntry"></a>
 
 ### TrafficTargetSpec.KubeService.SubsetsEntry
 
@@ -125,15 +126,15 @@ Subsets for routing, based on labels.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| key | [string](#string) |  |  |
-| value | [TrafficTargetSpec.KubeService.Subset](#discovery.smh.solo.io.TrafficTargetSpec.KubeService.Subset) |  |  |
+| key | string |  |  |
+| value | discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.Subset |  |  |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.TrafficTargetSpec.KubeService.WorkloadSelectorLabelsEntry"></a>
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.WorkloadSelectorLabelsEntry"></a>
 
 ### TrafficTargetSpec.KubeService.WorkloadSelectorLabelsEntry
 
@@ -141,15 +142,15 @@ Subsets for routing, based on labels.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| key | [string](#string) |  |  |
-| value | [string](#string) |  |  |
+| key | string |  |  |
+| value | string |  |  |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.TrafficTargetStatus"></a>
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetStatus"></a>
 
 ### TrafficTargetStatus
 
@@ -157,16 +158,18 @@ Subsets for routing, based on labels.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| observedGeneration | [int64](#int64) |  | The most recent generation observed in the the TrafficPolicy metadata. if the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
-| appliedTrafficPolicies | [][TrafficTargetStatus.AppliedTrafficPolicy](#discovery.smh.solo.io.TrafficTargetStatus.AppliedTrafficPolicy) | repeated | The set of Traffic Policies that have been applied to this TrafficTarget |
-| appliedAccessPolicies | [][TrafficTargetStatus.AppliedAccessPolicy](#discovery.smh.solo.io.TrafficTargetStatus.AppliedAccessPolicy) | repeated | The set of Access Policies that have been applied to this TrafficTarget |
+| observedGeneration | int64 |  | The most recent generation observed in the the TrafficPolicy metadata. if the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
+| appliedTrafficPolicies | []discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedTrafficPolicy | repeated | The set of Traffic Policies that have been applied to this TrafficTarget |
+| appliedAccessPolicies | []discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedAccessPolicy | repeated | The set of Access Policies that have been applied to this TrafficTarget |
+| localFqdn | string |  | The local fully qualified domain |
+| remoteFqdn | string |  | The remote fully qualified domain |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.TrafficTargetStatus.AppliedAccessPolicy"></a>
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedAccessPolicy"></a>
 
 ### TrafficTargetStatus.AppliedAccessPolicy
 AppliedAccessPolicy represents a access policy that has been applied to the TrafficTarget. if an existing Access Policy becomes invalid, the last applied policy will be used
@@ -174,16 +177,16 @@ AppliedAccessPolicy represents a access policy that has been applied to the Traf
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ref | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | reference to the access policy |
-| observedGeneration | [int64](#int64) |  | the observed generation of the accepted access policy |
-| spec | [networking.smh.solo.io.AccessPolicySpec](#networking.smh.solo.io.AccessPolicySpec) |  | the last known valid spec of the access policy |
+| ref | core.skv2.solo.io.ObjectRef |  | reference to the access policy |
+| observedGeneration | int64 |  | the observed generation of the accepted access policy |
+| spec | networking.mesh.gloo.solo.io.AccessPolicySpec |  | the last known valid spec of the access policy |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.TrafficTargetStatus.AppliedFederation"></a>
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedFederation"></a>
 
 ### TrafficTargetStatus.AppliedFederation
 Federation policy applied to this TrafficTarget, allowing access to the traffic target from other meshes/clusters.
@@ -191,15 +194,15 @@ Federation policy applied to this TrafficTarget, allowing access to the traffic 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| multiclusterDnsName | [string](#string) |  | For any workload that this traffic target has federated to (i.e., any Workload whose ref appears in `federated_to_workloads`), a client in that workload will be able to reach this traffic target at this DNS name. This includes workloads on clusters other than the one hosting this service. |
-| federatedToMeshes | [][core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) | repeated | The list of Meshes which are able to resolve this service's `multicluster_dns_name`. |
+| multiclusterDnsName | string |  | For any workload that this traffic target has federated to (i.e., any Workload whose ref appears in `federated_to_workloads`), a client in that workload will be able to reach this traffic target at this DNS name. This includes workloads on clusters other than the one hosting this service. |
+| federatedToMeshes | []core.skv2.solo.io.ObjectRef | repeated | The list of Meshes which are able to resolve this service's `multicluster_dns_name`. |
 
 
 
 
 
 
-<a name="discovery.smh.solo.io.TrafficTargetStatus.AppliedTrafficPolicy"></a>
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedTrafficPolicy"></a>
 
 ### TrafficTargetStatus.AppliedTrafficPolicy
 AppliedTrafficPolicy represents a traffic policy that has been applied to the TrafficTarget. if an existing Traffic Policy becomes invalid, the last applied policy will be used
@@ -207,9 +210,9 @@ AppliedTrafficPolicy represents a traffic policy that has been applied to the Tr
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ref | [core.skv2.solo.io.ObjectRef](#core.skv2.solo.io.ObjectRef) |  | reference to the traffic policy |
-| observedGeneration | [int64](#int64) |  | the observed generation of the accepted traffic policy |
-| spec | [networking.smh.solo.io.TrafficPolicySpec](#networking.smh.solo.io.TrafficPolicySpec) |  | the last known valid spec of the traffic policy |
+| ref | core.skv2.solo.io.ObjectRef |  | reference to the traffic policy |
+| observedGeneration | int64 |  | the observed generation of the accepted traffic policy |
+| spec | networking.mesh.gloo.solo.io.TrafficPolicySpec |  | the last known valid spec of the traffic policy |
 
 
 

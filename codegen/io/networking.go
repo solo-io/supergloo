@@ -5,7 +5,8 @@ import (
 	smiaccessv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
 	smispecsv1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
 	smislpitv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha2"
-	"github.com/solo-io/service-mesh-hub/codegen/constants"
+	"github.com/solo-io/gloo-mesh/codegen/constants"
+	"github.com/solo-io/gloo-mesh/codegen/groups"
 	skv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
@@ -16,7 +17,7 @@ import (
 var (
 	NetworkingInputTypes = Snapshot{
 		schema.GroupVersion{
-			Group:   "discovery." + constants.ServiceMeshHubApiGroupSuffix,
+			Group:   "discovery." + constants.GlooMeshApiGroupSuffix,
 			Version: "v1alpha2",
 		}: {
 			"Mesh",
@@ -24,13 +25,19 @@ var (
 			"TrafficTarget",
 		},
 		schema.GroupVersion{
-			Group:   "networking." + constants.ServiceMeshHubApiGroupSuffix,
+			Group:   "networking." + constants.GlooMeshApiGroupSuffix,
 			Version: "v1alpha2",
 		}: {
 			"TrafficPolicy",
 			"AccessPolicy",
 			"VirtualMesh",
 			"FailoverService",
+		},
+		schema.GroupVersion{
+			Group:   "settings." + constants.GlooMeshApiGroupSuffix,
+			Version: "v1alpha2",
+		}: {
+			"Settings",
 		},
 		skv1alpha1.SchemeGroupVersion: {
 			"KubernetesCluster",
@@ -58,11 +65,17 @@ var (
 				"AuthorizationPolicy",
 			},
 			schema.GroupVersion{
-				Group:   "certificates." + constants.ServiceMeshHubApiGroupSuffix,
+				Group:   "certificates." + constants.GlooMeshApiGroupSuffix,
 				Version: "v1alpha2",
 			}: {
 				"IssuedCertificate",
 				"PodBounceDirective",
+			},
+			groups.XdsAgentGroup.GroupVersion: {
+				"XdsConfig",
+			},
+			corev1.SchemeGroupVersion: {
+				"ConfigMap",
 			},
 		},
 	}

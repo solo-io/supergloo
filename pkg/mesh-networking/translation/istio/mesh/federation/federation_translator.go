@@ -5,31 +5,36 @@ import (
 	"fmt"
 
 	"github.com/Masterminds/semver"
-	"github.com/solo-io/go-utils/kubeutils"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/output/istio"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/istio/decorators/trafficshift"
-
 	envoy_api_v2_listener "github.com/envoyproxy/go-control-plane/envoy/api/v2/listener"
 	"github.com/gogo/protobuf/types"
 	"github.com/rotisserie/eris"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/protoutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/traffictargetutils"
 	"github.com/solo-io/go-utils/contextutils"
-	discoveryv1alpha2 "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	discoveryv1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	"github.com/solo-io/service-mesh-hub/pkg/api/networking.smh.solo.io/input"
-	"github.com/solo-io/service-mesh-hub/pkg/common/defaults"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/reporting"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/hostutils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/metautils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/protoutils"
-	"github.com/solo-io/service-mesh-hub/pkg/mesh-networking/translation/utils/traffictargetutils"
+	"github.com/solo-io/go-utils/kubeutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	"istio.io/istio/pkg/config/kube"
 	"istio.io/istio/pkg/envoy/config/filter/network/tcp_cluster_rewrite/v2alpha1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/pointer"
 )
 
 //go:generate mockgen -source ./federation_translator.go -destination mocks/federation_translator.go
@@ -61,10 +66,12 @@ type Translator interface {
 }
 
 type translator struct {
-	ctx              context.Context
-	clusterDomains   hostutils.ClusterDomainRegistry
-	trafficTargets   discoveryv1alpha2sets.TrafficTargetSet
-	failoverServices v1alpha2sets.FailoverServiceSet
+	ctx                       context.Context
+	clusterDomains            hostutils.ClusterDomainRegistry
+	trafficTargets            discoveryv1alpha2sets.TrafficTargetSet
+	failoverServices          v1alpha2sets.FailoverServiceSet
+	virtualServiceTranslator  virtualservice.Translator
+	destinationRuleTranslator destinationrule.Translator
 }
 
 func NewTranslator(
@@ -72,12 +79,16 @@ func NewTranslator(
 	clusterDomains hostutils.ClusterDomainRegistry,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
+	virtualServiceTranslator virtualservice.Translator,
+	destinationRuleTranslator destinationrule.Translator,
 ) Translator {
 	return &translator{
-		ctx:              ctx,
-		clusterDomains:   clusterDomains,
-		trafficTargets:   trafficTargets,
-		failoverServices: failoverServices,
+		ctx:                       ctx,
+		clusterDomains:            clusterDomains,
+		trafficTargets:            trafficTargets,
+		failoverServices:          failoverServices,
+		virtualServiceTranslator:  virtualServiceTranslator,
+		destinationRuleTranslator: destinationRuleTranslator,
 	}
 }
 
@@ -158,7 +169,7 @@ func (t *translator) Translate(
 		for _, port := range trafficTarget.Spec.GetKubeService().GetPorts() {
 			ports = append(ports, &networkingv1alpha3spec.Port{
 				Number:   port.Port,
-				Protocol: port.Protocol,
+				Protocol: convertKubePortProtocol(port),
 				Name:     port.Name,
 			})
 			endpointPorts[port.Name] = ingressGateway.ExternalTlsPort
@@ -169,9 +180,7 @@ func (t *translator) Translate(
 		// match those on the DestinationRule for the TrafficTarget in the
 		// remote cluster.
 		// based on: https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
-		clusterLabels := map[string]string{
-			"cluster": istioCluster,
-		}
+		clusterLabels := trafficshift.MakeFederatedSubsetLabel(istioCluster)
 
 		endpoints := []*networkingv1alpha3spec.WorkloadEntry{{
 			Address: ingressGateway.ExternalAddress,
@@ -212,44 +221,28 @@ func (t *translator) Translate(
 				},
 			}
 
-			// NOTE(ilackarms): we make subsets here for the client-side destination rule
-			// which contain all the matching subset names for the remote destination rule.
-			// the labels for the subsets must match the labels on the ServiceEntry Endpoint(s).
-			federatedSubsets := trafficshift.MakeDestinationRuleSubsetsForTrafficTarget(
-				trafficTarget,
-				t.trafficTargets,
-				t.failoverServices,
-			)
-			for _, subset := range federatedSubsets {
-				// only the name of the subset matters here.
-				// the labels must match the ServiceEntry.
-				subset.Labels = clusterLabels
-				// we also remove the traffic policy, leaving
-				// it to the server-side DestinationRule to enforce.
-				subset.TrafficPolicy = nil
-			}
-
-			dr := &networkingv1alpha3.DestinationRule{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:        federatedHostname,
-					Namespace:   clientIstio.Installation.Namespace,
-					ClusterName: clientIstio.Installation.Cluster,
-					Labels:      metautils.TranslatedObjectLabels(),
-				},
-				Spec: networkingv1alpha3spec.DestinationRule{
-					Host: federatedHostname,
-					TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{
-						Tls: &networkingv1alpha3spec.ClientTLSSettings{
-							// TODO this won't work with other mesh types https://github.com/solo-io/service-mesh-hub/issues/242
-							Mode: networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL,
-						},
-					},
-					Subsets: federatedSubsets,
-				},
-			}
+			// Append the virtual mesh as a parent to the output service entry
+			metautils.AppendParent(t.ctx, se, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 
 			outputs.AddServiceEntries(se)
-			outputs.AddDestinationRules(dr)
+
+			// Translate VirtualServices for federated TrafficTargets, can be nil
+			if vs := t.virtualServiceTranslator.Translate(
+				in, trafficTarget, clientIstio.Installation, reporter,
+			); vs != nil {
+				// Append the virtual mesh as a parent to the output virtual service
+				metautils.AppendParent(t.ctx, vs, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+				outputs.AddVirtualServices(vs)
+			}
+
+			// Translate DestinationRules for federated TrafficTargets, can be nil
+			if dr := t.destinationRuleTranslator.Translate(
+				t.ctx, in, trafficTarget, clientIstio.Installation, reporter,
+			); dr != nil {
+				// Append the virtual mesh as a parent to the output destination rule
+				metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+				outputs.AddDestinationRules(dr)
+			}
 		}
 	}
 
@@ -278,7 +271,6 @@ func (t *translator) Translate(
 			Selector: ingressGateway.WorkloadLabels,
 		},
 	}
-	outputs.AddGateways(gw)
 
 	ef := &networkingv1alpha3.EnvoyFilter{
 		ObjectMeta: metav1.ObjectMeta{
@@ -312,6 +304,12 @@ func (t *translator) Translate(
 			}},
 		},
 	}
+
+	// Append the virtual mesh as a parent to each output resource
+	metautils.AppendParent(t.ctx, gw, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+	metautils.AppendParent(t.ctx, ef, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+
+	outputs.AddGateways(gw)
 	outputs.AddEnvoyFilters(ef)
 }
 
@@ -381,4 +379,13 @@ func buildTcpRewritePatchAsConfig(clusterName, clusterDomain string) (*types.Str
 			Config: tcpRewrite,
 		},
 	})
+}
+
+// Convert protocol of k8s Service port to application level protocol
+func convertKubePortProtocol(port *discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort) string {
+	var appProtocol *string
+	if port.AppProtocol != "" {
+		appProtocol = pointer.StringPtr(port.AppProtocol)
+	}
+	return string(kube.ConvertProtocol(int32(port.Port), port.Name, corev1.Protocol(port.Protocol), appProtocol))
 }

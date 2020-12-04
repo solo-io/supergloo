@@ -5,9 +5,9 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
-	. "github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/workload/detector/osm"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	. "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/detector/osm"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -46,7 +46,7 @@ var _ = Describe("OsmSidecarDetector", func() {
 		return v1alpha2sets.NewMeshSet(
 			&v1alpha2.Mesh{
 				ObjectMeta: metav1.ObjectMeta{
-					Namespace: "service-mesh-hub",
+					Namespace: "gloo-mesh",
 					Name:      "osm-controller-osm-system-master-cluster",
 				},
 				Spec: v1alpha2.MeshSpec{

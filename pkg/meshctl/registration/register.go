@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/sirupsen/logrus"
-	"github.com/solo-io/service-mesh-hub/codegen/io"
-	"github.com/solo-io/service-mesh-hub/pkg/meshctl/install/smh"
+	"github.com/solo-io/gloo-mesh/codegen/io"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -13,7 +13,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-var smhRbacRequirements = func() []rbacv1.PolicyRule {
+var gloomeshRbacRequirements = func() []rbacv1.PolicyRule {
 	var policyRules []rbacv1.PolicyRule
 	policyRules = append(policyRules, io.DiscoveryInputTypes.RbacPoliciesWatch()...)
 	policyRules = append(policyRules, io.LocalNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
@@ -30,12 +30,14 @@ type Registrant struct {
 }
 
 type RegistrantOptions struct {
-	KubeConfigPath string
-	MgmtContext    string
-	RemoteContext  string
-	Registration   register.RegistrationOptions
-	CertAgent      CertAgentInstallOptions
-	Verbose        bool
+	KubeConfigPath     string
+	MgmtContext        string
+	RemoteContext      string
+	Registration       register.RegistrationOptions
+	AgentCrdsChartPath string
+	CertAgent          AgentInstallOptions
+	WasmAgent          AgentInstallOptions
+	Verbose            bool
 }
 
 // Initialize a ClientConfig for the management and remote clusters from the options.
@@ -57,9 +59,9 @@ func NewRegistrant(opts *RegistrantOptions) (*Registrant, error) {
 		{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: registrant.Registration.RemoteNamespace,
-				Name:      "smh-remote-access",
+				Name:      "gloomesh-remote-access",
 			},
-			Rules: smhRbacRequirements,
+			Rules: gloomeshRbacRequirements,
 		},
 	}
 	// Convert kubeconfig path and context into ClientConfig for Registration
@@ -74,7 +76,9 @@ func NewRegistrant(opts *RegistrantOptions) (*Registrant, error) {
 	return registrant, nil
 }
 
-type CertAgentInstallOptions struct {
+// Options for installing agents (cert-agent, wasm-agent)
+type AgentInstallOptions struct {
+	Install     bool // If true, install the agent
 	ChartPath   string
 	ChartValues string
 }
@@ -85,9 +89,22 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
+	// agent CRDs should always be installed since they're required by any remote agents
+	if err := r.installAgentCrds(ctx); err != nil {
+		return err
+	}
+
+	// The cert-agent should always be installed since it's required for the VirtualMesh API.
 	if err := r.installCertAgent(ctx); err != nil {
 		return err
 	}
+
+	if r.WasmAgent.Install {
+		if err := r.installWasmAgent(ctx); err != nil {
+			return err
+		}
+	}
+
 	return r.registerCluster(ctx)
 }
 
@@ -95,9 +112,19 @@ func (r *Registrant) DeregisterCluster(ctx context.Context) error {
 	if r.Verbose {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
+
+	if err := r.uninstallAgentCrds(ctx); err != nil {
+		return err
+	}
+
 	if err := r.uninstallCertAgent(ctx); err != nil {
 		return err
 	}
+
+	if err := r.uninstallWasmAgent(ctx); err != nil {
+		return err
+	}
+
 	return r.Registration.DeregisterCluster(ctx)
 }
 
@@ -112,8 +139,31 @@ func (r *Registrant) registerCluster(ctx context.Context) error {
 	return nil
 }
 
+func (r *Registrant) installAgentCrds(ctx context.Context) error {
+	return gloomesh.Installer{
+		HelmChartPath: r.AgentCrdsChartPath,
+		KubeConfig:    r.KubeConfigPath,
+		KubeContext:   r.RemoteContext,
+		Namespace:     r.Registration.RemoteNamespace,
+		Verbose:       r.Verbose,
+	}.InstallAgentCrds(
+		ctx,
+	)
+}
+
+func (r *Registrant) uninstallAgentCrds(ctx context.Context) error {
+	return gloomesh.Uninstaller{
+		KubeConfig:  r.KubeConfigPath,
+		KubeContext: r.RemoteContext,
+		Namespace:   r.Registration.RemoteNamespace,
+		Verbose:     r.Verbose,
+	}.UninstallCertAgent(
+		ctx,
+	)
+}
+
 func (r *Registrant) installCertAgent(ctx context.Context) error {
-	return smh.Installer{
+	return gloomesh.Installer{
 		HelmChartPath:  r.CertAgent.ChartPath,
 		HelmValuesPath: r.CertAgent.ChartValues,
 		KubeConfig:     r.KubeConfigPath,
@@ -126,12 +176,36 @@ func (r *Registrant) installCertAgent(ctx context.Context) error {
 }
 
 func (r *Registrant) uninstallCertAgent(ctx context.Context) error {
-	return smh.Uninstaller{
+	return gloomesh.Uninstaller{
 		KubeConfig:  r.KubeConfigPath,
 		KubeContext: r.RemoteContext,
 		Namespace:   r.Registration.RemoteNamespace,
 		Verbose:     r.Verbose,
 	}.UninstallCertAgent(
+		ctx,
+	)
+}
+
+func (r *Registrant) installWasmAgent(ctx context.Context) error {
+	return gloomesh.Installer{
+		HelmChartPath:  r.WasmAgent.ChartPath,
+		HelmValuesPath: r.WasmAgent.ChartValues,
+		KubeConfig:     r.KubeConfigPath,
+		KubeContext:    r.RemoteContext,
+		Namespace:      r.Registration.RemoteNamespace,
+		Verbose:        r.Verbose,
+	}.InstallWasmAgent(
+		ctx,
+	)
+}
+
+func (r *Registrant) uninstallWasmAgent(ctx context.Context) error {
+	return gloomesh.Uninstaller{
+		KubeConfig:  r.KubeConfigPath,
+		KubeContext: r.RemoteContext,
+		Namespace:   r.Registration.RemoteNamespace,
+		Verbose:     r.Verbose,
+	}.UninstallWasmAgent(
 		ctx,
 	)
 }
