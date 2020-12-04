@@ -148,12 +148,18 @@ func getMeshMetadata(mesh *discoveryv1alpha2.Mesh) meshMetadata {
 	var meshType string
 	if mesh.Spec.GetAwsAppMesh() != nil {
 		appmesh := mesh.Spec.GetAwsAppMesh()
+
+		var clusters []string
+		for cluster := range appmesh.ClusterMeshResources {
+			clusters = append(clusters, cluster)
+		}
+
 		return meshMetadata{
 			Type:         "appmesh",
 			Name:         appmesh.AwsName,
 			Region:       appmesh.Region,
 			AwsAccountId: appmesh.AwsAccountId,
-			Clusters:     appmesh.Clusters,
+			Clusters:     clusters,
 		}
 	}
 	var meshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation

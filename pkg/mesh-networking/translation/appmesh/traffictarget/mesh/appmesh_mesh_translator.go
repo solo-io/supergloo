@@ -47,7 +47,7 @@ func (t *translator) Translate(
 		return
 	}
 
-	for _, cluster := range appmeshMesh.Clusters {
+	for cluster := range appmeshMesh.ClusterMeshResources {
 		outputs.AddCluster(cluster)
 	}
 }

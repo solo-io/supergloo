@@ -76,24 +76,25 @@ func (d *meshDetector) discoverMesh(meshArn string, awsMeshList []*aws_v1beta2.M
 		return nil, err
 	}
 
-	meshName := strings.TrimPrefix(parsedArn.Resource, meshResourcePrefix)
-
-	clusters := make([]string, 0, len(awsMeshList))
+	meshRefsByCluster := make(map[string]*v1alpha2.MeshSpec_AwsAppMesh_MeshRef)
 	for _, awsMesh := range awsMeshList {
-		clusters = append(clusters, awsMesh.ClusterName)
+		meshRefsByCluster[awsMesh.ClusterName] = &v1alpha2.MeshSpec_AwsAppMesh_MeshRef{
+			Name: awsMesh.Name,
+			Uid:  string(awsMesh.UID),
+		}
 	}
-	sort.Strings(clusters)
 
+	meshName := strings.TrimPrefix(parsedArn.Resource, meshResourcePrefix)
 	mesh := &v1alpha2.Mesh{
 		ObjectMeta: discoveredMeshObjectMeta(meshName, parsedArn.Region, parsedArn.AccountID),
 		Spec: v1alpha2.MeshSpec{
 			MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
 				AwsAppMesh: &v1alpha2.MeshSpec_AwsAppMesh{
-					AwsName:      meshName,
-					Region:       parsedArn.Region,
-					AwsAccountId: parsedArn.AccountID,
-					Arn:          meshArn,
-					Clusters:     clusters,
+					AwsName:              meshName,
+					Region:               parsedArn.Region,
+					AwsAccountId:         parsedArn.AccountID,
+					Arn:                  meshArn,
+					ClusterMeshResources: meshRefsByCluster,
 				},
 			},
 		},

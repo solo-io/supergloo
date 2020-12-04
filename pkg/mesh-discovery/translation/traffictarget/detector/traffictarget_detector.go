@@ -83,7 +83,11 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 					break
 				}
 			case *v1alpha2.MeshSpec_AwsAppMesh_:
-				if stringutils.ContainsString(service.GetClusterName(), typedMesh.AwsAppMesh.Clusters) {
+				var clusters []string
+				for cluster := range typedMesh.AwsAppMesh.ClusterMeshResources {
+					clusters = append(clusters, cluster)
+				}
+				if stringutils.ContainsString(service.GetClusterName(), clusters) {
 					validMesh = ezkube.MakeObjectRef(mesh)
 					break
 				}

@@ -34,6 +34,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        meshName1,
 				ClusterName: cluster1,
+				UID:         "one",
 			},
 			Spec: aws_v1beta2.MeshSpec{
 				AWSName: &meshName1,
@@ -51,6 +52,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        meshName1,
 				ClusterName: cluster2,
+				UID:         "two",
 			},
 			Spec: aws_v1beta2.MeshSpec{
 				AWSName: &meshName1,
@@ -78,7 +80,16 @@ var _ = Describe("AppMesh MeshDetector", func() {
 						Region:       "us-east-2",
 						AwsAccountId: "1234",
 						Arn:          meshArn1,
-						Clusters:     []string{cluster1, cluster2},
+						ClusterMeshResources: map[string]*v1alpha2.MeshSpec_AwsAppMesh_MeshRef{
+							cluster1: {
+								Name: awsMesh1.Name,
+								Uid:  string(awsMesh1.UID),
+							},
+							cluster2: {
+								Name: awsMesh2.Name,
+								Uid:  string(awsMesh2.UID),
+							},
+						},
 					},
 				},
 			},
@@ -98,6 +109,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        meshName1,
 				ClusterName: cluster1,
+				UID:         "one",
 			},
 			Spec: aws_v1beta2.MeshSpec{
 				AWSName: &meshName1,
@@ -116,6 +128,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        meshName2,
 				ClusterName: cluster1,
+				UID:         "two",
 			},
 			Spec: aws_v1beta2.MeshSpec{
 				AWSName: &meshName2,
@@ -143,8 +156,12 @@ var _ = Describe("AppMesh MeshDetector", func() {
 						Region:       "us-east-2",
 						AwsAccountId: "1234",
 						Arn:          meshArn1,
-						Clusters:     []string{cluster1},
-					},
+						ClusterMeshResources: map[string]*v1alpha2.MeshSpec_AwsAppMesh_MeshRef{
+							cluster1: {
+								Name: awsMesh1.Name,
+								Uid:  string(awsMesh1.UID),
+							},
+						}},
 				},
 			},
 		}
@@ -163,8 +180,12 @@ var _ = Describe("AppMesh MeshDetector", func() {
 						Region:       "us-east-2",
 						AwsAccountId: "1234",
 						Arn:          meshArn2,
-						Clusters:     []string{cluster1},
-					},
+						ClusterMeshResources: map[string]*v1alpha2.MeshSpec_AwsAppMesh_MeshRef{
+							cluster1: {
+								Name: awsMesh2.Name,
+								Uid:  string(awsMesh2.UID),
+							},
+						}},
 				},
 			},
 		}
@@ -184,6 +205,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        meshName1,
 				ClusterName: cluster1,
+				UID:         "one",
 			},
 			Spec: aws_v1beta2.MeshSpec{
 				AWSName: &meshName1,
@@ -209,6 +231,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        meshName1,
 				ClusterName: cluster1,
+				UID:         "one",
 			},
 			Spec: aws_v1beta2.MeshSpec{
 				AWSName: &meshName1,
