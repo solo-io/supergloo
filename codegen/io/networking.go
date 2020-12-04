@@ -46,7 +46,7 @@ var (
 			"Secret",
 		},
 		appmeshv1beta2.GroupVersion: {
-			"VirtualNode",
+			"VirtualRouter",
 			"VirtualService",
 		},
 	}

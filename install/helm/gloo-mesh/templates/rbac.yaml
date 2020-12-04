@@ -91,7 +91,7 @@ rules:
 - apiGroups:
   - appmesh.k8s.aws
   resources:
-  - virtualnodes
+  - virtualrouters
   - virtualservices
   verbs:
   - get
@@ -144,7 +144,7 @@ rules:
 - apiGroups:
   - appmesh.k8s.aws
   resources:
-  - virtualnodes/status
+  - virtualrouters/status
   - virtualservices/status
   verbs:
   - get

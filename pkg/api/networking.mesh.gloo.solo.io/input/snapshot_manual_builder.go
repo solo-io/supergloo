@@ -40,7 +40,7 @@ type InputSnapshotManualBuilder struct {
 	failoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
 
 	virtualServices appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet
-	virtualNodes    appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
+	virtualRouters  appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet
 
 	secrets v1_sets.SecretSet
 
@@ -63,7 +63,7 @@ func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 		failoverServices: networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet(),
 
 		virtualServices: appmesh_k8s_aws_v1beta2_sets.NewVirtualServiceSet(),
-		virtualNodes:    appmesh_k8s_aws_v1beta2_sets.NewVirtualNodeSet(),
+		virtualRouters:  appmesh_k8s_aws_v1beta2_sets.NewVirtualRouterSet(),
 
 		secrets: v1_sets.NewSecretSet(),
 
@@ -87,7 +87,7 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 		i.failoverServices,
 
 		i.virtualServices,
-		i.virtualNodes,
+		i.virtualRouters,
 
 		i.secrets,
 
@@ -130,8 +130,8 @@ func (i *InputSnapshotManualBuilder) AddVirtualServices(virtualServices []*appme
 	i.virtualServices.Insert(virtualServices...)
 	return i
 }
-func (i *InputSnapshotManualBuilder) AddVirtualNodes(virtualNodes []*appmesh_k8s_aws_v1beta2.VirtualNode) *InputSnapshotManualBuilder {
-	i.virtualNodes.Insert(virtualNodes...)
+func (i *InputSnapshotManualBuilder) AddVirtualRouters(virtualRouters []*appmesh_k8s_aws_v1beta2.VirtualRouter) *InputSnapshotManualBuilder {
+	i.virtualRouters.Insert(virtualRouters...)
 	return i
 }
 func (i *InputSnapshotManualBuilder) AddSecrets(secrets []*v1.Secret) *InputSnapshotManualBuilder {

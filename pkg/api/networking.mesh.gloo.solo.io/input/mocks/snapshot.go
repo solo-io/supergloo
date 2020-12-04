@@ -169,18 +169,18 @@ func (mr *MockSnapshotMockRecorder) VirtualServices() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualServices", reflect.TypeOf((*MockSnapshot)(nil).VirtualServices))
 }
 
-// VirtualNodes mocks base method
-func (m *MockSnapshot) VirtualNodes() v1beta2sets.VirtualNodeSet {
+// VirtualRouters mocks base method
+func (m *MockSnapshot) VirtualRouters() v1beta2sets.VirtualRouterSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VirtualNodes")
-	ret0, _ := ret[0].(v1beta2sets.VirtualNodeSet)
+	ret := m.ctrl.Call(m, "VirtualRouters")
+	ret0, _ := ret[0].(v1beta2sets.VirtualRouterSet)
 	return ret0
 }
 
-// VirtualNodes indicates an expected call of VirtualNodes
-func (mr *MockSnapshotMockRecorder) VirtualNodes() *gomock.Call {
+// VirtualRouters indicates an expected call of VirtualRouters
+func (mr *MockSnapshotMockRecorder) VirtualRouters() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualNodes", reflect.TypeOf((*MockSnapshot)(nil).VirtualNodes))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualRouters", reflect.TypeOf((*MockSnapshot)(nil).VirtualRouters))
 }
 
 // Secrets mocks base method

@@ -12,7 +12,7 @@
 // * VirtualMeshes
 // * FailoverServices
 // * VirtualServices
-// * VirtualNodes
+// * VirtualRouters
 // * Secrets
 // * KubernetesClusters
 // read from a given cluster or set of clusters, across all namespaces.
@@ -82,8 +82,8 @@ type Snapshot interface {
 
 	// return the set of input VirtualServices
 	VirtualServices() appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet
-	// return the set of input VirtualNodes
-	VirtualNodes() appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
+	// return the set of input VirtualRouters
+	VirtualRouters() appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet
 
 	// return the set of input Secrets
 	Secrets() v1_sets.SecretSet
@@ -116,7 +116,7 @@ type snapshot struct {
 	failoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
 
 	virtualServices appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet
-	virtualNodes    appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
+	virtualRouters  appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet
 
 	secrets v1_sets.SecretSet
 
@@ -138,7 +138,7 @@ func NewSnapshot(
 	failoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet,
 
 	virtualServices appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet,
-	virtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet,
+	virtualRouters appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet,
 
 	secrets v1_sets.SecretSet,
 
@@ -157,7 +157,7 @@ func NewSnapshot(
 		virtualMeshes:      virtualMeshes,
 		failoverServices:   failoverServices,
 		virtualServices:    virtualServices,
-		virtualNodes:       virtualNodes,
+		virtualRouters:     virtualRouters,
 		secrets:            secrets,
 		kubernetesClusters: kubernetesClusters,
 	}
@@ -199,8 +199,8 @@ func (s snapshot) VirtualServices() appmesh_k8s_aws_v1beta2_sets.VirtualServiceS
 	return s.virtualServices
 }
 
-func (s snapshot) VirtualNodes() appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet {
-	return s.virtualNodes
+func (s snapshot) VirtualRouters() appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet {
+	return s.virtualRouters
 }
 
 func (s snapshot) Secrets() v1_sets.SecretSet {
@@ -364,7 +364,7 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap["virtualMeshes"] = s.virtualMeshes.List()
 	snapshotMap["failoverServices"] = s.failoverServices.List()
 	snapshotMap["virtualServices"] = s.virtualServices.List()
-	snapshotMap["virtualNodes"] = s.virtualNodes.List()
+	snapshotMap["virtualRouters"] = s.virtualRouters.List()
 	snapshotMap["secrets"] = s.secrets.List()
 	snapshotMap["kubernetesClusters"] = s.kubernetesClusters.List()
 	return json.Marshal(snapshotMap)
@@ -402,8 +402,8 @@ type BuildOptions struct {
 
 	// List options for composing a snapshot from VirtualServices
 	VirtualServices ResourceBuildOptions
-	// List options for composing a snapshot from VirtualNodes
-	VirtualNodes ResourceBuildOptions
+	// List options for composing a snapshot from VirtualRouters
+	VirtualRouters ResourceBuildOptions
 
 	// List options for composing a snapshot from Secrets
 	Secrets ResourceBuildOptions
@@ -453,7 +453,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	failoverServices := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
 	virtualServices := appmesh_k8s_aws_v1beta2_sets.NewVirtualServiceSet()
-	virtualNodes := appmesh_k8s_aws_v1beta2_sets.NewVirtualNodeSet()
+	virtualRouters := appmesh_k8s_aws_v1beta2_sets.NewVirtualRouterSet()
 
 	secrets := v1_sets.NewSecretSet()
 
@@ -490,7 +490,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		if err := b.insertVirtualServicesFromCluster(ctx, cluster, virtualServices, opts.VirtualServices); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertVirtualNodesFromCluster(ctx, cluster, virtualNodes, opts.VirtualNodes); err != nil {
+		if err := b.insertVirtualRoutersFromCluster(ctx, cluster, virtualRouters, opts.VirtualRouters); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets); err != nil {
@@ -514,7 +514,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		virtualMeshes,
 		failoverServices,
 		virtualServices,
-		virtualNodes,
+		virtualRouters,
 		secrets,
 		kubernetesClusters,
 	)
@@ -903,8 +903,8 @@ func (b *multiClusterBuilder) insertVirtualServicesFromCluster(ctx context.Conte
 
 	return nil
 }
-func (b *multiClusterBuilder) insertVirtualNodesFromCluster(ctx context.Context, cluster string, virtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet, opts ResourceBuildOptions) error {
-	virtualNodeClient, err := appmesh_k8s_aws_v1beta2.NewMulticlusterVirtualNodeClient(b.client).Cluster(cluster)
+func (b *multiClusterBuilder) insertVirtualRoutersFromCluster(ctx context.Context, cluster string, virtualRouters appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet, opts ResourceBuildOptions) error {
+	virtualRouterClient, err := appmesh_k8s_aws_v1beta2.NewMulticlusterVirtualRouterClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -918,7 +918,7 @@ func (b *multiClusterBuilder) insertVirtualNodesFromCluster(ctx context.Context,
 		gvk := schema.GroupVersionKind{
 			Group:   "appmesh.k8s.aws",
 			Version: "v1beta2",
-			Kind:    "VirtualNode",
+			Kind:    "VirtualRouter",
 		}
 
 		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
@@ -932,15 +932,15 @@ func (b *multiClusterBuilder) insertVirtualNodesFromCluster(ctx context.Context,
 		}
 	}
 
-	virtualNodeList, err := virtualNodeClient.ListVirtualNode(ctx, opts.ListOptions...)
+	virtualRouterList, err := virtualRouterClient.ListVirtualRouter(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range virtualNodeList.Items {
+	for _, item := range virtualRouterList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		virtualNodes.Insert(&item)
+		virtualRouters.Insert(&item)
 	}
 
 	return nil
@@ -1060,7 +1060,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	failoverServices := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
 	virtualServices := appmesh_k8s_aws_v1beta2_sets.NewVirtualServiceSet()
-	virtualNodes := appmesh_k8s_aws_v1beta2_sets.NewVirtualNodeSet()
+	virtualRouters := appmesh_k8s_aws_v1beta2_sets.NewVirtualRouterSet()
 
 	secrets := v1_sets.NewSecretSet()
 
@@ -1095,7 +1095,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	if err := b.insertVirtualServices(ctx, virtualServices, opts.VirtualServices); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertVirtualNodes(ctx, virtualNodes, opts.VirtualNodes); err != nil {
+	if err := b.insertVirtualRouters(ctx, virtualRouters, opts.VirtualRouters); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertSecrets(ctx, secrets, opts.Secrets); err != nil {
@@ -1117,7 +1117,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 		virtualMeshes,
 		failoverServices,
 		virtualServices,
-		virtualNodes,
+		virtualRouters,
 		secrets,
 		kubernetesClusters,
 	)
@@ -1416,13 +1416,13 @@ func (b *singleClusterBuilder) insertVirtualServices(ctx context.Context, virtua
 
 	return nil
 }
-func (b *singleClusterBuilder) insertVirtualNodes(ctx context.Context, virtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet, opts ResourceBuildOptions) error {
+func (b *singleClusterBuilder) insertVirtualRouters(ctx context.Context, virtualRouters appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet, opts ResourceBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
 			Group:   "appmesh.k8s.aws",
 			Version: "v1beta2",
-			Kind:    "VirtualNode",
+			Kind:    "VirtualRouter",
 		}
 
 		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
@@ -1436,14 +1436,14 @@ func (b *singleClusterBuilder) insertVirtualNodes(ctx context.Context, virtualNo
 		}
 	}
 
-	virtualNodeList, err := appmesh_k8s_aws_v1beta2.NewVirtualNodeClient(b.mgr.GetClient()).ListVirtualNode(ctx, opts.ListOptions...)
+	virtualRouterList, err := appmesh_k8s_aws_v1beta2.NewVirtualRouterClient(b.mgr.GetClient()).ListVirtualRouter(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range virtualNodeList.Items {
+	for _, item := range virtualRouterList.Items {
 		item := item // pike
-		virtualNodes.Insert(&item)
+		virtualRouters.Insert(&item)
 	}
 
 	return nil

@@ -13,7 +13,7 @@
 // * VirtualMeshes
 // * FailoverServices
 // * VirtualServices
-// * VirtualNodes
+// * VirtualRouters
 // * Secrets
 // * KubernetesClusters
 // for a given cluster or set of clusters.
@@ -68,7 +68,7 @@ type multiClusterReconciler interface {
 	networking_mesh_gloo_solo_io_v1alpha2_controllers.MulticlusterFailoverServiceReconciler
 
 	appmesh_k8s_aws_v1beta2_controllers.MulticlusterVirtualServiceReconciler
-	appmesh_k8s_aws_v1beta2_controllers.MulticlusterVirtualNodeReconciler
+	appmesh_k8s_aws_v1beta2_controllers.MulticlusterVirtualRouterReconciler
 
 	v1_controllers.MulticlusterSecretReconciler
 
@@ -105,8 +105,8 @@ type ReconcileOptions struct {
 
 	// Options for reconciling VirtualServices
 	VirtualServices reconcile.Options
-	// Options for reconciling VirtualNodes
-	VirtualNodes reconcile.Options
+	// Options for reconciling VirtualRouters
+	VirtualRouters reconcile.Options
 
 	// Options for reconciling Secrets
 	Secrets reconcile.Options
@@ -157,7 +157,7 @@ func RegisterMultiClusterReconciler(
 
 	appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterVirtualServiceReconcileLoop("VirtualService", clusters, options.VirtualServices).AddMulticlusterVirtualServiceReconciler(ctx, r, predicates...)
 
-	appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterVirtualNodeReconcileLoop("VirtualNode", clusters, options.VirtualNodes).AddMulticlusterVirtualNodeReconciler(ctx, r, predicates...)
+	appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterVirtualRouterReconcileLoop("VirtualRouter", clusters, options.VirtualRouters).AddMulticlusterVirtualRouterReconciler(ctx, r, predicates...)
 
 	v1_controllers.NewMulticlusterSecretReconcileLoop("Secret", clusters, options.Secrets).AddMulticlusterSecretReconciler(ctx, r, predicates...)
 
@@ -300,12 +300,12 @@ func (r *multiClusterReconcilerImpl) ReconcileVirtualServiceDeletion(clusterName
 	return err
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileVirtualNode(clusterName string, obj *appmesh_k8s_aws_v1beta2.VirtualNode) (reconcile.Result, error) {
+func (r *multiClusterReconcilerImpl) ReconcileVirtualRouter(clusterName string, obj *appmesh_k8s_aws_v1beta2.VirtualRouter) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileClusterGeneric(obj)
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileVirtualNodeDeletion(clusterName string, obj reconcile.Request) error {
+func (r *multiClusterReconcilerImpl) ReconcileVirtualRouterDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -360,7 +360,7 @@ type singleClusterReconciler interface {
 	networking_mesh_gloo_solo_io_v1alpha2_controllers.FailoverServiceReconciler
 
 	appmesh_k8s_aws_v1beta2_controllers.VirtualServiceReconciler
-	appmesh_k8s_aws_v1beta2_controllers.VirtualNodeReconciler
+	appmesh_k8s_aws_v1beta2_controllers.VirtualRouterReconciler
 
 	v1_controllers.SecretReconciler
 
@@ -427,7 +427,7 @@ func RegisterSingleClusterReconciler(
 	if err := appmesh_k8s_aws_v1beta2_controllers.NewVirtualServiceReconcileLoop("VirtualService", mgr, options).RunVirtualServiceReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
 	}
-	if err := appmesh_k8s_aws_v1beta2_controllers.NewVirtualNodeReconcileLoop("VirtualNode", mgr, options).RunVirtualNodeReconciler(ctx, r, predicates...); err != nil {
+	if err := appmesh_k8s_aws_v1beta2_controllers.NewVirtualRouterReconcileLoop("VirtualRouter", mgr, options).RunVirtualRouterReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
 	}
 
@@ -559,11 +559,11 @@ func (r *singleClusterReconcilerImpl) ReconcileVirtualServiceDeletion(obj reconc
 	return err
 }
 
-func (r *singleClusterReconcilerImpl) ReconcileVirtualNode(obj *appmesh_k8s_aws_v1beta2.VirtualNode) (reconcile.Result, error) {
+func (r *singleClusterReconcilerImpl) ReconcileVirtualRouter(obj *appmesh_k8s_aws_v1beta2.VirtualRouter) (reconcile.Result, error) {
 	return r.base.ReconcileGeneric(obj)
 }
 
-func (r *singleClusterReconcilerImpl) ReconcileVirtualNodeDeletion(obj reconcile.Request) error {
+func (r *singleClusterReconcilerImpl) ReconcileVirtualRouterDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
