@@ -23,7 +23,12 @@ meshctl uninstall [flags]
       --kubecontext string    name of the kubeconfig context to use for the management cluster
       --namespace string      namespace in which to install Gloo Mesh (default "gloo-mesh")
       --release-name string   Helm release name (default "gloo-mesh")
-  -v, --verbose               Enable verbose output
+```
+
+### Options inherited from parent commands
+
+```
+  -v, --verbose   enable verbose logging
 ```
 
 ### SEE ALSO

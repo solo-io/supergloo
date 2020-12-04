@@ -16,6 +16,12 @@ Bootstrap environments for various demos demonstrating Gloo Mesh functionality.
   -h, --help   help for demo
 ```
 
+### Options inherited from parent commands
+
+```
+  -v, --verbose   enable verbose logging
+```
+
 ### SEE ALSO
 
 * [meshctl](../meshctl)	 - The Command Line Interface for managing Gloo Mesh.

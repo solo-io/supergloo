@@ -24,6 +24,12 @@ meshctl dashboard [flags]
   -p, --port uint32          The local port to forward to the dashboard (default 8090)
 ```
 
+### Options inherited from parent commands
+
+```
+  -v, --verbose   enable verbose logging
+```
+
 ### SEE ALSO
 
 * [meshctl](../meshctl)	 - The Command Line Interface for managing Gloo Mesh.

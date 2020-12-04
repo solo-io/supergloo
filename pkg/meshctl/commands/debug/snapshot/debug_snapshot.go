@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"github.com/solo-io/go-utils/cliutils"
 	"github.com/solo-io/go-utils/tarutils"
 	"github.com/solo-io/k8s-utils/debugutils"
@@ -47,13 +48,15 @@ func AddDebugSnapshotFlags(flags *pflag.FlagSet, opts *DebugSnapshotOpts) {
 	flags.BoolVar(&opts.json, "json", false, "display the entire json snapshot. The output can be piped into a command like jq (https://stedolan.github.io/jq/tutorial/). For example:\n meshctl debug snapshot discovery input | jq '.'")
 	flags.StringVarP(&opts.file, "file", "f", "", "file to write output to")
 	flags.StringVar(&opts.zip, "zip", "", "zip file output")
-	flags.BoolVar(&opts.verbose, "verbose", false, "enables verbose/debug logging")
 	flags.Uint32Var(&opts.metricsBindPort, "port", defaults.MetricsPort, "metrics port")
 	flags.StringVarP(&opts.namespace, "namespace", "n", defaults.GetPodNamespace(), "gloo-mesh namespace")
 }
 
-func Command(ctx context.Context) *cobra.Command {
-	opts := &DebugSnapshotOpts{}
+func Command(ctx context.Context, globalFlags utils.GlobalFlags) *cobra.Command {
+	opts := &DebugSnapshotOpts{
+		verbose: globalFlags.Verbose,
+	}
+
 	cmd := &cobra.Command{
 		Use:   "snapshot",
 		Short: "Input and Output snapshots for the discovery and networking pod. Requires jq to be installed if the --json flag is not being used.",

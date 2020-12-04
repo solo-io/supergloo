@@ -16,6 +16,12 @@ Demo Gloo Mesh functionality with two Istio control planes deployed on separate 
   -h, --help   help for istio-multicluster
 ```
 
+### Options inherited from parent commands
+
+```
+  -v, --verbose   enable verbose logging
+```
+
 ### SEE ALSO
 
 * [meshctl demo](../meshctl_demo)	 - Bootstrap environments for various demos demonstrating Gloo Mesh functionality.
