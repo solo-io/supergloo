@@ -84,11 +84,6 @@ type AgentInstallOptions struct {
 }
 
 func (r *Registrant) RegisterCluster(ctx context.Context) error {
-	// TODO(ilackarms): move verbose option to global flag at root level of meshctl
-	if r.Verbose {
-		logrus.SetLevel(logrus.DebugLevel)
-	}
-
 	// agent CRDs should always be installed since they're required by any remote agents
 	if err := r.installAgentCrds(ctx); err != nil {
 		return err
@@ -109,10 +104,6 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 }
 
 func (r *Registrant) DeregisterCluster(ctx context.Context) error {
-	if r.Verbose {
-		logrus.SetLevel(logrus.DebugLevel)
-	}
-
 	if err := r.uninstallAgentCrds(ctx); err != nil {
 		return err
 	}
