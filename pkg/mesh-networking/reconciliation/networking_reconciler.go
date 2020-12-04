@@ -145,7 +145,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 		// ignore NoKindMatchError for AppMesh Mesh CRs
 		// (only clusters with AppMesh Controller installed will
 		// have these kinds registered)
-		VirtualNodes: input.ResourceBuildOptions{
+		VirtualServices: input.ResourceBuildOptions{
 			Verifier: r.verifier,
 		},
 		VirtualMeshes: input.ResourceBuildOptions{

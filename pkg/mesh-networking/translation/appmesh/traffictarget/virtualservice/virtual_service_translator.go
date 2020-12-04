@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	appmeshv1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
+	v1beta2sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/workloadutils"
@@ -74,7 +75,7 @@ func (t *translator) Translate(
 			// TODO joekelley
 		}
 
-		virtualServices = append(virtualServices, getVirtualService(meta, virtualRouter, awsMeshRef, arn))
+		virtualServices = append(virtualServices, getVirtualService(meta, in.VirtualServices(), virtualRouter, awsMeshRef, arn))
 	}
 
 	return virtualServices
@@ -82,6 +83,7 @@ func (t *translator) Translate(
 
 func getVirtualService(
 	meta metav1.ObjectMeta,
+	virtualServices v1beta2sets.VirtualServiceSet,
 	virtualRouter *appmeshv1beta2.VirtualRouter,
 	meshRef *appmeshv1beta2.MeshReference,
 	arn string,
@@ -102,6 +104,15 @@ func getVirtualService(
 				VirtualNodeARN: &arn,
 			},
 		}
+	}
+
+	// If the virtual service exists, we must set the mesh ref on the virtual service.
+	// If it does not exist, we must not set the mesh ref on the virtual router,
+	// as the app mesh controller's admission controller will block the write.
+	// TODO blocker need the hybrid snapshot for this
+	existingVirtualService, _ := virtualServices.Find(&meta)
+	if existingVirtualService == nil {
+		meshRef = nil
 	}
 
 	// This is the default name written back by the AWS controller.

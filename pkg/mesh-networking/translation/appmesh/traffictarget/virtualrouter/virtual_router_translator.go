@@ -63,6 +63,15 @@ func (t *translator) Translate(
 	// TODO undo
 	meta.Name = meta.Name + "-test"
 
+	// If the router exists, we must set the mesh ref on the virtual router.
+	// If it does not exist, we must not set the mesh ref on the virtual router,
+	// as the app mesh controller's admission controller will block the write.
+	// TODO blocker need the hybrid snapshot for this
+	existingRouter, _ := in.VirtualRouters().Find(&meta)
+	if existingRouter == nil {
+		meshRef = nil
+	}
+
 	// This is the default name written back by the AWS controller.
 	// We must provide it explicitly, else the App Mesh controller's
 	// validating admission webhook will reject our changes on update.
