@@ -55,7 +55,10 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	// Create a virtual service for all backing workloads
+	// Create a virtual service for all backing workloads.
+	// We do this in order to have a virtual service for every virtual node
+	// in the event that no router is provided, such that virtual services
+	// are still available to clients after a traffic policy is deleted.
 	virtualServices := make([]*appmeshv1beta2.VirtualService, 0, len(backingWorkloads))
 	for _, workload := range backingWorkloads {
 		arn := workload.Spec.AppMesh.VirtualNodeArn
@@ -108,7 +111,6 @@ func getVirtualService(
 
 func mergeRefs(refs ...ezkube.ClusterResourceId) ezkube.ClusterResourceId {
 	output := &v1.ClusterObjectRef{}
-
 	for _, ref := range refs {
 		output = &v1.ClusterObjectRef{
 			Name:        strings.Join([]string{output.Name, ref.GetName()}, "-"),
@@ -116,4 +118,5 @@ func mergeRefs(refs ...ezkube.ClusterResourceId) ezkube.ClusterResourceId {
 			ClusterName: strings.Join([]string{output.ClusterName, ref.GetClusterName()}, "-"),
 		}
 	}
+	return output
 }

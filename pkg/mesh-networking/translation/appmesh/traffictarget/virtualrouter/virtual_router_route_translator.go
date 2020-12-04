@@ -31,12 +31,12 @@ func newRouteTranslator(reporter reporting.Reporter, trafficTargets discoveryv1a
 func (r *routeTranslator) getRoutes(trafficTarget *discoveryv1alpha2.TrafficTarget) []appmeshv1beta2.Route {
 	var routes []appmeshv1beta2.Route
 	for _, tp := range trafficTarget.Status.GetAppliedTrafficPolicies() {
-		routes = append(routes, r.getTrafficPolicyRoutes(tp.Ref, tp.Spec)...)
+		routes = append(routes, r.getTrafficPolicyRoutes(trafficTarget, tp.Ref, tp.Spec)...)
 	}
 	return routes
 }
 
-func (r *routeTranslator) getTrafficPolicyRoutes(trafficPolicyRef *v1.ObjectRef, trafficPolicy *v1alpha2.TrafficPolicySpec) []appmeshv1beta2.Route {
+func (r *routeTranslator) getTrafficPolicyRoutes(trafficTarget *discoveryv1alpha2.TrafficTarget, trafficPolicyRef *v1.ObjectRef, trafficPolicy *v1alpha2.TrafficPolicySpec) []appmeshv1beta2.Route {
 	getMatches := func(networkingMatchers []*v1alpha2.TrafficPolicySpec_HttpMatcher) []appmeshv1beta2.HTTPRouteMatch {
 		var httpRouteMatches []appmeshv1beta2.HTTPRouteMatch
 
@@ -57,15 +57,21 @@ func (r *routeTranslator) getTrafficPolicyRoutes(trafficPolicyRef *v1.ObjectRef,
 	}
 
 	getRouteAction := func() appmeshv1beta2.HTTPRouteAction {
-		// If there is no traffic shift, route all traffic to the virtual node backing this traffic target.
+		// If there is no traffic shift, split traffic among the virtual nodes backing this traffic target.
 		if trafficPolicy.GetTrafficShift() == nil {
-			var virtualNodeArn string
-			return appmeshv1beta2.HTTPRouteAction{
-				WeightedTargets: []appmeshv1beta2.WeightedTarget{{
-					VirtualNodeARN: &virtualNodeArn,
+			var weightedTargets []appmeshv1beta2.WeightedTarget
+			for _, workload := range workloadutils.FindBackingWorkloads(trafficTarget.Spec.GetKubeService(), r.workloads) {
+				if workload.Spec.AppMesh == nil {
+					// TODO joekelley report and error out
+				}
+
+				weightedTargets = append(weightedTargets, appmeshv1beta2.WeightedTarget{
+					VirtualNodeARN: &workload.Spec.AppMesh.VirtualNodeArn,
 					Weight:         1,
-				}},
+				})
 			}
+
+			return appmeshv1beta2.HTTPRouteAction{WeightedTargets: weightedTargets}
 		}
 
 		var weightedTargets []appmeshv1beta2.WeightedTarget
@@ -81,6 +87,8 @@ func (r *routeTranslator) getTrafficPolicyRoutes(trafficPolicyRef *v1.ObjectRef,
 				// TODO joekelley here and below
 			}
 
+			// Route traffic to one backing workload for the provided service
+			// TODO split traffic among all backing workloads
 			backingWorkloads := workloadutils.FindBackingWorkloads(destinationTrafficTarget.Spec.GetKubeService(), r.workloads)
 			if len(backingWorkloads) == 0 {
 				// TODO
@@ -89,7 +97,7 @@ func (r *routeTranslator) getTrafficPolicyRoutes(trafficPolicyRef *v1.ObjectRef,
 
 			arn := workload.Spec.AppMesh.VirtualNodeArn
 			if arn == "" {
-				// TODO
+				// TODO joekelley
 			}
 
 			weightedTargets = append(weightedTargets, appmeshv1beta2.WeightedTarget{
