@@ -3,7 +3,6 @@ package virtualservice
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	appmeshv1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
@@ -59,11 +58,13 @@ func (t *translator) Translate(
 	// We do this in order to have a virtual service for every virtual node
 	// in the event that no router is provided, such that virtual services
 	// are still available to clients after a traffic policy is deleted.
+	// TODO joekelley think this thru
+	// TODO joekelley remove special ref
 	virtualServices := make([]*appmeshv1beta2.VirtualService, 0, len(backingWorkloads))
 	for _, workload := range backingWorkloads {
 		arn := workload.Spec.AppMesh.VirtualNodeArn
 		meta := metautils.TranslatedObjectMeta(
-			mergeRefs(trafficTarget.Spec.GetKubeService().Ref, workload),
+			myRef(trafficTarget.Spec.GetKubeService().Ref),
 			trafficTarget.Annotations,
 		)
 
@@ -96,6 +97,8 @@ func getVirtualService(
 		}
 	}
 
+	// TODO add mesh ref to each cluster for app mesh discovery so we can always set mesh ref
+
 	// This is the default name written back by the AWS controller.
 	// We must provide it explicitly, else the App Mesh controller's
 	// validating admission webhook will reject our changes on update.
@@ -109,14 +112,11 @@ func getVirtualService(
 	}
 }
 
-func mergeRefs(refs ...ezkube.ClusterResourceId) ezkube.ClusterResourceId {
-	output := &v1.ClusterObjectRef{}
-	for _, ref := range refs {
-		output = &v1.ClusterObjectRef{
-			Name:        strings.Join([]string{output.Name, ref.GetName()}, "-"),
-			Namespace:   strings.Join([]string{output.Namespace, ref.GetNamespace()}, "-"),
-			ClusterName: strings.Join([]string{output.ClusterName, ref.GetClusterName()}, "-"),
-		}
+func myRef(ref ezkube.ClusterResourceId) ezkube.ClusterResourceId {
+	output := &v1.ClusterObjectRef{
+		Name:        ref.GetName() + "-test",
+		Namespace:   ref.GetNamespace(),
+		ClusterName: ref.GetClusterName(),
 	}
 	return output
 }
