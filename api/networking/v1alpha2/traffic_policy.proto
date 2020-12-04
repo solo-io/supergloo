@@ -6,13 +6,13 @@ import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
-import "skv2/api/core/v1/core.proto";
-import "gloo-mesh/api/networking/v1alpha2/http.proto";
-import "gloo-mesh/api/networking/v1alpha2/selectors.proto";
-import "gloo-mesh/api/networking/v1alpha2/validation_state.proto";
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/http.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
 
-import "gogoproto/gogo.proto";
-option (gogoproto.equal_all) = true;
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
 
 /*
     A Traffic Policy applies some L7 routing features to an existing mesh.

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/gogo/protobuf/proto"
 	plugin_gogo "github.com/gogo/protobuf/protoc-gen-gogo/plugin"
+	"github.com/golang/protobuf/proto"
 	plugin_go "github.com/golang/protobuf/protoc-gen-go/plugin"
 	"github.com/google/go-github/github"
 	"github.com/iancoleman/strcase"

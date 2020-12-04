@@ -12,8 +12,8 @@ import (
 
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/go-utils/cliutils"
-	"github.com/solo-io/go-utils/debugutils"
 	"github.com/solo-io/go-utils/tarutils"
+	"github.com/solo-io/k8s-utils/debugutils"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"

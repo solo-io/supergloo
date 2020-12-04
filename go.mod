@@ -10,11 +10,6 @@ replace (
 	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 
-	github.com/envoyproxy/go-control-plane => github.com/envoyproxy/go-control-plane v0.9.5
-
-	// Required for proper serialization of CRDs
-	github.com/golang/protobuf => github.com/golang/protobuf v1.3.5
-
 	// https://github.com/ory/dockertest/issues/208#issuecomment-686820414
 	golang.org/x/sys => golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6
 
@@ -40,12 +35,13 @@ require (
 	github.com/gobuffalo/packr v1.30.1
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4
-	github.com/golang/protobuf v1.4.2
+	github.com/golang/protobuf v1.4.3
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
+	github.com/mitchellh/hashstructure v1.0.0
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.2
 	github.com/onsi/ginkgo v1.13.0
@@ -62,7 +58,9 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/external-apis v0.1.1
-	github.com/solo-io/go-utils v0.18.1
+	github.com/solo-io/go-utils v0.20.0
+	github.com/solo-io/k8s-utils v0.0.3
+	github.com/solo-io/protoc-gen-ext v0.0.13
 	github.com/solo-io/skv2 v0.13.4
 	github.com/solo-io/solo-kit v0.14.0
 	github.com/spf13/afero v1.3.4
@@ -73,14 +71,18 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	golang.org/x/tools v0.0.0-20200928201943-a0ef9b62deab // indirect
 	google.golang.org/grpc v1.31.1
+	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.3.0
 	helm.sh/helm/v3 v3.2.4
 	istio.io/api v0.0.0-20200819225923-c78f387f78a2
 	istio.io/client-go v0.0.0-20200812230733-f5504d568313
 	istio.io/istio v0.0.0-20200821180042-b0e61d10cbae
+	istio.io/tools v0.0.0-20201203135925-d54d80f7d7e9 // indirect
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v8.0.0+incompatible
 	k8s.io/utils v0.0.0-20201027101359-01387209bb0d
 	sigs.k8s.io/controller-runtime v0.6.2
 )
+
+replace github.com/solo-io/skv2 => ../skv2
