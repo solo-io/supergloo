@@ -10,6 +10,7 @@ import (
 	smispecsv1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/types"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/workloadutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
@@ -209,6 +210,10 @@ func (t *translator) Translate(
 			}
 			tt.Spec.Rules = append(tt.Spec.Rules, rule)
 		}
+
+		// Append the traffic target as a parent to each output route group
+		metautils.AppendParent(ctx, routeGroup, ap.GetRef(), v1alpha2.AccessPolicy{}.GVK())
+		metautils.AppendParent(ctx, trafficTarget, ap.GetRef(), v1alpha2.AccessPolicy{}.GVK())
 
 		httpRouteGroups = append(httpRouteGroups, routeGroup)
 		trafficTargets = append(trafficTargets, trafficTargetsByAp...)

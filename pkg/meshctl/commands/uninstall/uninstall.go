@@ -12,8 +12,10 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func Command(ctx context.Context) *cobra.Command {
-	opts := &options{}
+func Command(ctx context.Context, globalFlags utils.GlobalFlags) *cobra.Command {
+	opts := &options{
+		verbose: globalFlags.Verbose,
+	}
 
 	cmd := &cobra.Command{
 		Use:   "uninstall",
@@ -41,7 +43,6 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.BoolVarP(&o.dryRun, "dry-run", "d", false, "Output installation manifest")
 	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace in which to install Gloo Mesh")
 	flags.StringVar(&o.releaseName, "release-name", helm.Chart.Data.Name, "Helm release name")
-	flags.BoolVarP(&o.verbose, "verbose", "v", false, "Enable verbose output")
 }
 
 func uninstall(ctx context.Context, opts *options) error {

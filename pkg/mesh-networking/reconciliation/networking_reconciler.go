@@ -23,7 +23,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/snapshotutils"
 	"github.com/solo-io/go-utils/contextutils"
 	skinput "github.com/solo-io/skv2/contrib/pkg/input"
-	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -248,7 +247,7 @@ func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Sn
 		return err
 	}
 
-	errHandler := errhandlers.AppendingErrHandler{}
+	errHandler := newErrHandler(ctx, in)
 
 	outputSnap.Apply(ctx, r.mgmtClient, r.multiClusterClient, errHandler)
 

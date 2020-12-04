@@ -91,6 +91,18 @@ func (t *translator) Translate(
 	}
 
 	serviceEntries, destinationRules, envoyFilters := t.translate(failoverService, in.TrafficTargets(), in.Meshes(), reporter)
+
+	// Append failover service as a parent to each output resource
+	for _, se := range serviceEntries {
+		metautils.AppendParent(t.ctx, se, failoverService.GetRef(), v1alpha2.FailoverService{}.GVK())
+	}
+	for _, dr := range destinationRules {
+		metautils.AppendParent(t.ctx, dr, failoverService.GetRef(), v1alpha2.FailoverService{}.GVK())
+	}
+	for _, ef := range envoyFilters {
+		metautils.AppendParent(t.ctx, ef, failoverService.GetRef(), v1alpha2.FailoverService{}.GVK())
+	}
+
 	outputs.AddServiceEntries(serviceEntries...)
 	outputs.AddDestinationRules(destinationRules...)
 	outputs.AddEnvoyFilters(envoyFilters...)
@@ -147,9 +159,14 @@ func (t *translator) translate(
 		}
 
 		serviceEntries = append(serviceEntries, serviceEntry)
-		destinationRules = append(destinationRules, destinationRule)
 		envoyFilters = append(envoyFilters, envoyFilter)
+
+		// Destination Rules can be nil if there are no subsets
+		if destinationRule != nil {
+			destinationRules = append(destinationRules, destinationRule)
+		}
 	}
+
 	return serviceEntries, destinationRules, envoyFilters
 }
 
@@ -214,6 +231,7 @@ func (t *translator) translateServiceEntry(
 			Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
 		},
 	}
+
 	return serviceEntry, nil
 }
 

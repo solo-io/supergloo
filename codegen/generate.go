@@ -6,8 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/solo-io/skv2/codegen/render"
-
 	externalapis "github.com/solo-io/external-apis/codegen"
 	"github.com/solo-io/gloo-mesh/codegen/anyvendor"
 	"github.com/solo-io/gloo-mesh/codegen/groups"
@@ -118,7 +116,7 @@ var (
 
 	glooMeshManifestRoot  = "install/helm/gloo-mesh"
 	certAgentManifestRoot = "install/helm/cert-agent/"
-	xdsAgentManifestRoot  = "install/helm/xds-agent/"
+	agentCrdsManifestRoot = "install/helm/agent-crds/"
 
 	vendoredMultiClusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 	importedMultiClusterCRDs = glooMeshManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
@@ -146,6 +144,10 @@ func run() error {
 	chartOnly := flag.Bool("chart", false, "only generate the helm chart")
 	flag.Parse()
 
+	if err := makeAgentCrdsCommand().Execute(); err != nil {
+		return err
+	}
+
 	if err := makeGlooMeshCommand(*chartOnly).Execute(); err != nil {
 		return err
 	}
@@ -161,10 +163,6 @@ func run() error {
 	// TODO(ilackarms): we copy skv2 CRDs out of vendor_any into our helm chart.
 	// we should consider using skv2 to automate this step for us
 	if err := os.Rename(vendoredMultiClusterCRDs, importedMultiClusterCRDs); err != nil {
-		return err
-	}
-
-	if err := makeXdsAgentCommand().Execute(); err != nil {
 		return err
 	}
 
@@ -206,18 +204,19 @@ func makeCertAgentCommand(chartOnly bool) codegen.Command {
 		AnyVendorConfig:   anyvendorImports,
 		ManifestRoot:      certAgentManifestRoot,
 		TopLevelTemplates: topLevelTemplates,
-		Groups:            groups.CertAgentGroups,
 		RenderProtos:      true,
 		Chart:             helm.CertAgentChart,
 	}
 }
 
-func makeXdsAgentCommand() codegen.Command {
+func makeAgentCrdsCommand() codegen.Command {
 	return codegen.Command{
-		AppName:      appName,
-		ManifestRoot: xdsAgentManifestRoot,
-		Groups:       []render.Group{groups.XdsAgentGroup},
-		RenderProtos: true,
+		AppName:         appName,
+		AnyVendorConfig: anyvendorImports,
+		ManifestRoot:    agentCrdsManifestRoot,
+		Groups:          append(groups.CertAgentGroups, groups.XdsAgentGroup),
+		RenderProtos:    true,
+		Chart:           helm.AgentCrdsChart,
 	}
 }
 

@@ -7,6 +7,4 @@ metadata:
   name: settings
   namespace: {{ $.Release.Namespace }}
 spec:
-  mtls:
-    istio:
-      tlsMode: {{ $settings.mtls.istio.tlsMode }}
+{{ toYaml $settings | indent 2 }}

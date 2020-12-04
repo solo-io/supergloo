@@ -16,6 +16,12 @@ Interacting with remote Kubernetes clusters registered to Gloo Mesh
   -h, --help   help for cluster
 ```
 
+### Options inherited from parent commands
+
+```
+  -v, --verbose   enable verbose logging
+```
+
 ### SEE ALSO
 
 * [meshctl](../meshctl)	 - The Command Line Interface for managing Gloo Mesh.

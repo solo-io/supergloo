@@ -4,7 +4,7 @@ package groups
 	DO NOT IMPORT THIS PACKAGE
 	This package imports the "github.com/solo-io/skv2/contrib" package, which
 	will panic when skv2 template files are not found in the executing environment.
- */
+*/
 
 import (
 	"github.com/solo-io/gloo-mesh/codegen/constants"

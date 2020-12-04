@@ -48,10 +48,13 @@ func (t *translator) Translate(
 	outputs smi.Builder,
 	reporter reporting.Reporter,
 ) {
+	// Translate TrafficSplit for TrafficTarget, can be nil if non-kube service or no applied traffic policy
 	trafficSplit := t.trafficSplit.Translate(ctx, in, trafficTarget, reporter)
-	outputs.AddTrafficSplits(trafficSplit)
 
+	// Translate output TrafficTargets and HttpRouteGroups for discovered TrafficTarget
 	trafficTargets, httpRouteGroups := t.trafficTarget.Translate(ctx, in, trafficTarget, reporter)
+
+	outputs.AddTrafficSplits(trafficSplit)
 	outputs.AddTrafficTargets(trafficTargets...)
 	outputs.AddHTTPRouteGroups(httpRouteGroups...)
 }

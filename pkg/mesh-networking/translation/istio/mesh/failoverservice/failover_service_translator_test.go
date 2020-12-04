@@ -296,12 +296,18 @@ resolution: DNS
 				Namespace:   "istio-system",
 				ClusterName: "cluster-1",
 				Labels:      metautils.TranslatedObjectLabels(),
+				Annotations: map[string]string{
+					metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=FailoverService":[{"name":"failover-service","namespace":"failover-service-namespace"}]}`,
+				},
 			},
 			{
 				Name:        "failover-service",
 				Namespace:   "istio-system",
 				ClusterName: "cluster-2",
 				Labels:      metautils.TranslatedObjectLabels(),
+				Annotations: map[string]string{
+					metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=FailoverService":[{"name":"failover-service","namespace":"failover-service-namespace"}]}`,
+				},
 			},
 		}
 		expectedServiceEntryObjectMetas := []metav1.ObjectMeta{
@@ -310,12 +316,18 @@ resolution: DNS
 				Namespace:   defaults.GetPodNamespace(),
 				ClusterName: "cluster-1",
 				Labels:      metautils.TranslatedObjectLabels(),
+				Annotations: map[string]string{
+					metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=FailoverService":[{"name":"failover-service","namespace":"failover-service-namespace"}]}`,
+				},
 			},
 			{
 				Name:        "failover-service",
 				Namespace:   defaults.GetPodNamespace(),
 				ClusterName: "cluster-2",
 				Labels:      metautils.TranslatedObjectLabels(),
+				Annotations: map[string]string{
+					metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=FailoverService":[{"name":"failover-service","namespace":"failover-service-namespace"}]}`,
+				},
 			},
 		}
 		var envoyFilterYamls []string

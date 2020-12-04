@@ -107,6 +107,9 @@ var _ = Describe("TrafficSplitTranslator", func() {
 				},
 			},
 		}
+		expectedTT.Annotations = map[string]string{
+			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=TrafficPolicy":[{"name":"tt","namespace":"default"}]}`,
+		}
 
 		ts := NewTranslator().Translate(ctx, in, trafficTarget, mockReporter)
 		Expect(ts).To(Equal(expectedTT))

@@ -201,6 +201,9 @@ var expectedGateway = &networkingv1alpha3.Gateway{
 		Namespace:   "namespace",
 		ClusterName: "cluster",
 		Labels:      metautils.TranslatedObjectLabels(),
+		Annotations: map[string]string{
+			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+		},
 	},
 	Spec: networkingv1alpha3spec.Gateway{
 		Servers: []*networkingv1alpha3spec.Server{
@@ -227,6 +230,9 @@ var expectedEnvoyFilter = &networkingv1alpha3.EnvoyFilter{
 		Namespace:   "namespace",
 		ClusterName: "cluster",
 		Labels:      metautils.TranslatedObjectLabels(),
+		Annotations: map[string]string{
+			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+		},
 	},
 	Spec: networkingv1alpha3spec.EnvoyFilter{
 		WorkloadSelector: &networkingv1alpha3spec.WorkloadSelector{
@@ -293,6 +299,9 @@ var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1a
 		Namespace:   "remote-namespace",
 		ClusterName: "remote-cluster",
 		Labels:      metautils.TranslatedObjectLabels(),
+		Annotations: map[string]string{
+			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+		},
 	},
 	Spec: networkingv1alpha3spec.ServiceEntry{
 		Hosts: []string{
