@@ -215,11 +215,12 @@ include $(HELM_ROOTDIR)/helm.mk
 
 # Generate Manifests from Helm Chart
 .PHONY: chart-gen
-chart-gen: clear-vendor-any
+chart-gen: clear-vendor-any install-go-tools
 	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go -chart
 
 .PHONY: manifest-gen
 manifest-gen: install/gloo-mesh-default.yaml
+	goimports -w $(shell ls -d */ | grep -v vendor)
 install/gloo-mesh-default.yaml: chart-gen
 	helm template --include-crds --namespace gloo-mesh $(HELM_ROOTDIR)/gloo-mesh > $@
 
