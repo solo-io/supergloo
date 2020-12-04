@@ -10,6 +10,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/workloadutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/appmesh/traffictarget/internal/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -68,7 +69,12 @@ func (t *translator) Translate(
 			trafficTarget.Annotations,
 		)
 
-		virtualServices = append(virtualServices, getVirtualService(meta, virtualRouter, arn))
+		awsMeshRef, err := utils.GetAppMeshMeshRef(trafficTarget, in.Meshes())
+		if err != nil {
+			// TODO joekelley
+		}
+
+		virtualServices = append(virtualServices, getVirtualService(meta, virtualRouter, awsMeshRef, arn))
 	}
 
 	return virtualServices
@@ -77,6 +83,7 @@ func (t *translator) Translate(
 func getVirtualService(
 	meta metav1.ObjectMeta,
 	virtualRouter *appmeshv1beta2.VirtualRouter,
+	meshRef *appmeshv1beta2.MeshReference,
 	arn string,
 ) *appmeshv1beta2.VirtualService {
 	var provider *appmeshv1beta2.VirtualServiceProvider
@@ -97,8 +104,6 @@ func getVirtualService(
 		}
 	}
 
-	// TODO add mesh ref to each cluster for app mesh discovery so we can always set mesh ref
-
 	// This is the default name written back by the AWS controller.
 	// We must provide it explicitly, else the App Mesh controller's
 	// validating admission webhook will reject our changes on update.
@@ -106,6 +111,7 @@ func getVirtualService(
 	return &appmeshv1beta2.VirtualService{
 		ObjectMeta: meta,
 		Spec: v1beta2.VirtualServiceSpec{
+			MeshRef:  meshRef,
 			AWSName:  &awsName,
 			Provider: provider,
 		},

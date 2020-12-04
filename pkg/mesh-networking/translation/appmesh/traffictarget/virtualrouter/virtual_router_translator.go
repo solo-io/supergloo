@@ -2,11 +2,13 @@ package virtualrouter
 
 import (
 	"context"
+	"fmt"
 
 	appmeshv1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/appmesh/traffictarget/internal/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 )
 
@@ -48,12 +50,29 @@ func (t *translator) Translate(
 	listenerTranslator := newListenerTranslator()
 	listeners := listenerTranslator.getListeners(trafficTarget)
 
+	meshRef, err := utils.GetAppMeshMeshRef(trafficTarget, in.Meshes())
+	if err != nil {
+		// TODO joekelley
+		return nil
+	}
+
+	meta := metautils.TranslatedObjectMeta(
+		trafficTarget.Spec.GetKubeService().Ref,
+		trafficTarget.Annotations,
+	)
+	// TODO undo
+	meta.Name = meta.Name + "-test"
+
+	// This is the default name written back by the AWS controller.
+	// We must provide it explicitly, else the App Mesh controller's
+	// validating admission webhook will reject our changes on update.
+	awsName := fmt.Sprintf("%s_%s", meta.Name, meta.Namespace)
+
 	return &appmeshv1beta2.VirtualRouter{
-		ObjectMeta: metautils.TranslatedObjectMeta(
-			trafficTarget.Spec.GetKubeService().Ref,
-			trafficTarget.Annotations,
-		),
+		ObjectMeta: meta,
 		Spec: appmeshv1beta2.VirtualRouterSpec{
+			AWSName:   &awsName,
+			MeshRef:   meshRef,
 			Listeners: listeners,
 			Routes:    routes,
 		},

@@ -38,18 +38,20 @@ func (r *routeTranslator) getRoutes(trafficTarget *discoveryv1alpha2.TrafficTarg
 
 func (r *routeTranslator) getTrafficPolicyRoutes(trafficTarget *discoveryv1alpha2.TrafficTarget, trafficPolicyRef *v1.ObjectRef, trafficPolicy *v1alpha2.TrafficPolicySpec) []appmeshv1beta2.Route {
 	getMatches := func(networkingMatchers []*v1alpha2.TrafficPolicySpec_HttpMatcher) []appmeshv1beta2.HTTPRouteMatch {
+		if len(networkingMatchers) == 0 {
+			// If there are no networking matchers, insert a * matcher.
+			networkingMatchers = append(networkingMatchers, &v1alpha2.TrafficPolicySpec_HttpMatcher{
+				PathSpecifier: &v1alpha2.TrafficPolicySpec_HttpMatcher_Prefix{},
+			})
+		}
+
 		var httpRouteMatches []appmeshv1beta2.HTTPRouteMatch
-
 		for _, nm := range networkingMatchers {
-			if nm.GetPrefix() == "" {
-				// TODO report any non-prefix matchers as they're not supported by app mesh
-				continue
-			}
-
 			httpRouteMatches = append(httpRouteMatches, appmeshv1beta2.HTTPRouteMatch{
 				Headers: convertHeaders(nm.Headers),
 				Method:  convertMethod(nm.Method),
-				Prefix:  nm.GetPrefix(),
+				// TODO report any non-prefix matchers as they're not supported by app mesh
+				Prefix: nm.GetPrefix(),
 			})
 		}
 
@@ -184,6 +186,11 @@ func convertHeaders(in []*v1alpha2.TrafficPolicySpec_HeaderMatcher) []appmeshv1b
 
 func convertMethod(in *v1alpha2.TrafficPolicySpec_HttpMethod) *string {
 	var str string
+
+	if in == nil {
+		return nil
+	}
+
 	switch in.Method {
 	case v1alpha2types.HttpMethodValue_GET:
 		str = "GET"
