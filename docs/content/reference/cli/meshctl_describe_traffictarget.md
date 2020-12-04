@@ -20,6 +20,12 @@ meshctl describe traffictarget [flags]
   -h, --help   help for traffictarget
 ```
 
+### Options inherited from parent commands
+
+```
+  -v, --verbose   enable verbose logging
+```
+
 ### SEE ALSO
 
 * [meshctl describe](../meshctl_describe)	 - Human readable description of discovered resources and applicable configuration

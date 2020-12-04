@@ -35,8 +35,13 @@ meshctl install enterprise [flags]
       --release-name string              Helm release name (default "gloo-mesh")
       --skip-rbac                        Skip installation of the RBAC Webhook
       --skip-ui                          Skip installation of the Gloo Mesh UI
-  -v, --verbose                          Enable verbose output
       --version string                   Version to install, defaults to latest if omitted
+```
+
+### Options inherited from parent commands
+
+```
+  -v, --verbose   enable verbose logging
 ```
 
 ### SEE ALSO

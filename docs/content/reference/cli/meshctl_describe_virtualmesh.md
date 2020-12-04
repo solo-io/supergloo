@@ -23,6 +23,12 @@ meshctl describe virtualmesh [flags]
   -s, --search strings       A list of terms to match virtual mesh names against
 ```
 
+### Options inherited from parent commands
+
+```
+  -v, --verbose   enable verbose logging
+```
+
 ### SEE ALSO
 
 * [meshctl describe](../meshctl_describe)	 - Human readable description of discovered resources and applicable configuration
