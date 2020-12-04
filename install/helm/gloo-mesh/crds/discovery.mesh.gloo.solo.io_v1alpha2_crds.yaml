@@ -1007,8 +1007,22 @@ spec:
                 awsName:
                   description: AWS name for the AppMesh instance, must be unique across the AWS account.
                   type: string
+                clusterMeshResources:
+                  additionalProperties:
+                    properties:
+                      name:
+                        description: The name of the Mesh resource.
+                        type: string
+                      uid:
+                        description: The UID of the Mesh resource.
+                        type: string
+                    type: object
+                  description: Map from cluster to the App Mesh Mesh resource found on that cluster.
+                  type: object
                 clusters:
-                  description: The k8s clusters on which sidecars for this AppMesh instance have been discovered.
+                  description: |-
+                    The k8s clusters on which sidecars for this AppMesh instance have been discovered.
+                    Deprecated
                   items:
                     type: string
                   type: array

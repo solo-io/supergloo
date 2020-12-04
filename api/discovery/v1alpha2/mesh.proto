@@ -93,7 +93,19 @@ message MeshSpec {
         // The unique AWS ARN associated with the Mesh.
         string arn = 4;
         // The k8s clusters on which sidecars for this AppMesh instance have been discovered.
+        // Deprecated
         repeated string clusters = 5;
+        // Map from cluster to the App Mesh Mesh resource found on that cluster.
+        map<string, MeshRef> cluster_mesh_resources = 6;
+
+        // Reference to a cluster-scoped AWS Mesh resource.
+        // Used by the AWS App Mesh controller to associate resources with an App Mesh instance.
+        message MeshRef {
+            // The name of the Mesh resource.
+            string name = 1;
+            // The UID of the Mesh resource.
+            string uid = 2;
+        }
     }
 
     // Mesh object representing an installed Linkerd control plane.

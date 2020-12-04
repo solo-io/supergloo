@@ -54,14 +54,9 @@ Information relevant to AppMesh-injected workloads.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-<<<<<<< HEAD
-| virtualNodeName | [string](#string) |  | The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container. |
-| ports | [][WorkloadSpec.AppMesh.ContainerPort](#discovery.smh.solo.io.WorkloadSpec.AppMesh.ContainerPort) | repeated | Needed for declaring Appmesh VirtualNode listeners. |
-| virtualNodeArn | [string](#string) |  | The fully qualified Amazon Resource Name for this virtual node. |
-=======
 | virtualNodeName | string |  | The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container. |
 | ports | []discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh.ContainerPort | repeated | Needed for declaring Appmesh VirtualNode listeners. |
->>>>>>> origin
+| virtualNodeArn | string |  | The fully qualified Amazon Resource Name for this virtual node. |
 
 
 

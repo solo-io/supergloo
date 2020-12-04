@@ -19,6 +19,8 @@ title: "mesh.proto"
   - [MeshSpec](#discovery.mesh.gloo.solo.io.MeshSpec)
   - [MeshSpec.AgentInfo](#discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo)
   - [MeshSpec.AwsAppMesh](#discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh)
+  - [MeshSpec.AwsAppMesh.ClusterMeshResourcesEntry](#discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh.ClusterMeshResourcesEntry)
+  - [MeshSpec.AwsAppMesh.MeshRef](#discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh.MeshRef)
   - [MeshSpec.ConsulConnectMesh](#discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh)
   - [MeshSpec.Istio](#discovery.mesh.gloo.solo.io.MeshSpec.Istio)
   - [MeshSpec.Istio.CitadelInfo](#discovery.mesh.gloo.solo.io.MeshSpec.Istio.CitadelInfo)
@@ -85,7 +87,40 @@ Mesh object representing AWS AppMesh.
 | region | string |  | The AWS region the AWS App Mesh control plane resources exist in. |
 | awsAccountId | string |  | The AWS Account ID associated with the Mesh. Populated at REST API registration time. |
 | arn | string |  | The unique AWS ARN associated with the Mesh. |
-| clusters | []string | repeated | The k8s clusters on which sidecars for this AppMesh instance have been discovered. |
+| clusters | []string | repeated | The k8s clusters on which sidecars for this AppMesh instance have been discovered. Deprecated |
+| clusterMeshResources | []discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh.ClusterMeshResourcesEntry | repeated | Map from cluster to the App Mesh Mesh resource found on that cluster. |
+
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh.ClusterMeshResourcesEntry"></a>
+
+### MeshSpec.AwsAppMesh.ClusterMeshResourcesEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+| value | discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh.MeshRef |  |  |
+
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh.MeshRef"></a>
+
+### MeshSpec.AwsAppMesh.MeshRef
+Reference to a cluster-scoped AWS Mesh resource. Used by the AWS App Mesh controller to associate resources with an App Mesh instance.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | string |  | The name of the Mesh resource. |
+| uid | string |  | The UID of the Mesh resource. |
 
 
 
