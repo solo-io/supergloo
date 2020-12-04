@@ -35,6 +35,7 @@ type appmeshTranslator struct {
 func NewAppmeshTranslator() Translator {
 	return &appmeshTranslator{
 		trafficTargetTranslator: traffictarget.NewTranslator(),
+		meshTranslator:          mesh.NewTranslator(),
 	}
 }
 

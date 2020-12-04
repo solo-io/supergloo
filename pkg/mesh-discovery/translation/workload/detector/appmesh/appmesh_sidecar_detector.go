@@ -49,6 +49,7 @@ func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.
 			return nil
 		}
 		sidecarMeshName = split[1]
+		break
 	}
 
 	for _, mesh := range meshes.List() {

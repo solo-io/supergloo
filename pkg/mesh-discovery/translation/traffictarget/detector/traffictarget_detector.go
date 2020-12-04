@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/go-utils/stringutils"
 	"github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/service-mesh-hub/pkg/api/discovery.smh.solo.io/v1alpha2/sets"
 	"github.com/solo-io/service-mesh-hub/pkg/mesh-discovery/translation/utils"
@@ -78,6 +79,11 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 				}
 			case *v1alpha2.MeshSpec_Istio_:
 				if typedMesh.Istio.GetInstallation().GetCluster() == service.GetClusterName() {
+					validMesh = ezkube.MakeObjectRef(mesh)
+					break
+				}
+			case *v1alpha2.MeshSpec_AwsAppMesh_:
+				if stringutils.ContainsString(service.GetClusterName(), typedMesh.AwsAppMesh.Clusters) {
 					validMesh = ezkube.MakeObjectRef(mesh)
 					break
 				}
