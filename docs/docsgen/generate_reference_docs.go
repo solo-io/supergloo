@@ -9,7 +9,6 @@ import (
 	"strings"
 	"text/template"
 
-	plugin_gogo "github.com/gogo/protobuf/protoc-gen-gogo/plugin"
 	"github.com/golang/protobuf/proto"
 	plugin_go "github.com/golang/protobuf/protoc-gen-go/plugin"
 	"github.com/google/go-github/github"
@@ -238,7 +237,7 @@ func collectDescriptors(protoDir, outDir string, filter func(file *model.Descrip
 		return nil, err
 	}
 
-	req := &plugin_gogo.CodeGeneratorRequest{}
+	req := &plugin_go.CodeGeneratorRequest{}
 	for _, file := range descriptors {
 		var added bool
 		for _, addedFile := range req.GetFileToGenerate() {
