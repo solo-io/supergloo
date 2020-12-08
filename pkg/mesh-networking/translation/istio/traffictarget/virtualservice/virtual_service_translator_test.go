@@ -8,8 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/types"
 	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
@@ -38,7 +37,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockReporter              *mock_reporting.MockReporter
 		mockDecorator             *mock_trafficpolicy.MockTrafficPolicyVirtualServiceDecorator
 		virtualServiceTranslator  virtualservice.Translator
-		in                        input.Snapshot
+		in                        input.LocalSnapshot
 		ctx                       = context.TODO()
 	)
 
@@ -49,7 +48,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockDecorator = mock_trafficpolicy.NewMockTrafficPolicyVirtualServiceDecorator(ctrl)
 		virtualServiceTranslator = virtualservice.NewTranslator(nil, mockClusterDomainRegistry, mockDecoratorFactory)
-		in = input.NewInputSnapshotManualBuilder("").AddSettings(settingsv1alpha2.SettingsSlice{{}}).Build()
+		in = input.NewInputLocalSnapshotManualBuilder("").AddSettings(settingsv1alpha2.SettingsSlice{{}}).Build()
 	})
 
 	AfterEach(func() {
@@ -905,7 +904,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			},
 		}
 
-		in = input.NewInputSnapshotManualBuilder("").
+		in = input.NewInputLocalSnapshotManualBuilder("").
 			AddSettings(settingsv1alpha2.SettingsSlice{
 				{
 					ObjectMeta: metav1.ObjectMeta{
@@ -917,7 +916,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			}).
 			Build()
 
-		existingIstioResources := istioinputs.NewInputSnapshotManualBuilder("user").
+		existingIstioResources := input.NewInputRemoteSnapshotManualBuilder("user").
 			AddVirtualServices([]*networkingv1alpha3.VirtualService{
 				// Gloo Mesh translated, should not yield error
 				{

@@ -6,7 +6,6 @@ import (
 	"sort"
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
-	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -16,7 +15,7 @@ import (
 
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/equalityutils"
@@ -45,7 +44,7 @@ type Translator interface {
 	*/
 	Translate(
 		ctx context.Context,
-		in input.Snapshot,
+		in input.LocalSnapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 		reporter reporting.Reporter,
@@ -53,20 +52,20 @@ type Translator interface {
 }
 
 type translator struct {
-	existingIstioResources istioinputs.Snapshot
-	clusterDomains         hostutils.ClusterDomainRegistry
-	decoratorFactory       decorators.Factory
+	remoteSnapshot   input.RemoteSnapshot
+	clusterDomains   hostutils.ClusterDomainRegistry
+	decoratorFactory decorators.Factory
 }
 
 func NewTranslator(
-	existingIstioResources istioinputs.Snapshot,
+	remoteSnapshot input.RemoteSnapshot,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
 ) Translator {
 	return &translator{
-		existingIstioResources: existingIstioResources,
-		clusterDomains:         clusterDomains,
-		decoratorFactory:       decoratorFactory,
+		remoteSnapshot:   remoteSnapshot,
+		clusterDomains:   clusterDomains,
+		decoratorFactory: decoratorFactory,
 	}
 }
 
@@ -74,7 +73,7 @@ func NewTranslator(
 // If sourceMeshInstallation is nil, assume that VirtualService is colocated to the trafficTarget and use local FQDNs.
 func (t *translator) Translate(
 	_ context.Context,
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	reporter reporting.Reporter,
@@ -152,13 +151,13 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	if t.existingIstioResources == nil {
+	if t.remoteSnapshot == nil {
 		return virtualService
 	}
 
 	// detect and report error on intersecting config if enabled in settings
 	if errs := conflictsWithUserVirtualService(
-		t.existingIstioResources.VirtualServices(),
+		t.remoteSnapshot.VirtualServices(),
 		virtualService,
 	); len(errs) > 0 {
 		for _, err := range errs {

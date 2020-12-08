@@ -5,8 +5,7 @@ import (
 
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
@@ -29,7 +28,7 @@ type Translator interface {
 	// Output resources will be added to the output.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
-		in input.Snapshot,
+		in input.LocalSnapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		outputs istio.Builder,
 		reporter reporting.Reporter,
@@ -37,16 +36,16 @@ type Translator interface {
 }
 
 type translator struct {
-	ctx                    context.Context
-	existingIstioResources istioinputs.Snapshot
-	destinationRules       destinationrule.Translator
-	virtualServices        virtualservice.Translator
-	authorizationPolicies  authorizationpolicy.Translator
+	ctx                   context.Context
+	remoteSnapshot        input.RemoteSnapshot
+	destinationRules      destinationrule.Translator
+	virtualServices       virtualservice.Translator
+	authorizationPolicies authorizationpolicy.Translator
 }
 
 func NewTranslator(
 	ctx context.Context,
-	existingIstioResources istioinputs.Snapshot,
+	remoteSnapshot input.RemoteSnapshot,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
@@ -54,15 +53,15 @@ func NewTranslator(
 ) Translator {
 	return &translator{
 		ctx:                   ctx,
-		destinationRules:      destinationrule.NewTranslator(existingIstioResources, clusterDomains, decoratorFactory, trafficTargets, failoverServices),
-		virtualServices:       virtualservice.NewTranslator(existingIstioResources, clusterDomains, decoratorFactory),
+		destinationRules:      destinationrule.NewTranslator(remoteSnapshot, clusterDomains, decoratorFactory, trafficTargets, failoverServices),
+		virtualServices:       virtualservice.NewTranslator(remoteSnapshot, clusterDomains, decoratorFactory),
 		authorizationPolicies: authorizationpolicy.NewTranslator(),
 	}
 }
 
 // translate the appropriate resources for the given TrafficTarget.
 func (t *translator) Translate(
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	outputs istio.Builder,
 	reporter reporting.Reporter,

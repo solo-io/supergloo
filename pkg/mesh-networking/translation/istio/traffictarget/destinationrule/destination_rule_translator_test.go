@@ -11,8 +11,7 @@ import (
 	"github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
@@ -44,7 +43,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		mockReporter              *mock_reporting.MockReporter
 		mockDecorator             *mock_trafficpolicy.MockTrafficPolicyDestinationRuleDecorator
 		destinationRuleTranslator destinationrule.Translator
-		in                        input.Snapshot
+		in                        input.LocalSnapshot
 		ctx                       = context.TODO()
 	)
 
@@ -70,7 +69,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 	})
 
 	It("should translate respecting default mTLS Settings", func() {
-		in = input.NewInputSnapshotManualBuilder("").
+		in = input.NewInputLocalSnapshotManualBuilder("").
 			AddSettings(settingsv1alpha2.SettingsSlice{
 				{
 					ObjectMeta: metav1.ObjectMeta{
@@ -257,7 +256,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 	})
 
 	It("should not output DestinationRule when DestinationRule has no effect", func() {
-		in = input.NewInputSnapshotManualBuilder("").
+		in = input.NewInputLocalSnapshotManualBuilder("").
 			AddSettings(settingsv1alpha2.SettingsSlice{
 				{
 					ObjectMeta: metav1.ObjectMeta{
@@ -446,7 +445,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			Cluster: "source-cluster",
 		}
 
-		in = input.NewInputSnapshotManualBuilder("").
+		in = input.NewInputLocalSnapshotManualBuilder("").
 			AddSettings(settingsv1alpha2.SettingsSlice{
 				{
 					ObjectMeta: metav1.ObjectMeta{
@@ -555,7 +554,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 	})
 
 	It("should report error if translated DestinationRule applies to host already configured by existing DestinationRule", func() {
-		in = input.NewInputSnapshotManualBuilder("").
+		in = input.NewInputLocalSnapshotManualBuilder("").
 			AddSettings(settingsv1alpha2.SettingsSlice{
 				{
 					ObjectMeta: metav1.ObjectMeta{
@@ -566,7 +565,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				},
 			}).
 			Build()
-		existingIstioResources := istioinputs.NewInputSnapshotManualBuilder("").
+		existingIstioResources := input.NewInputRemoteSnapshotManualBuilder("").
 			AddDestinationRules(v1alpha3.DestinationRuleSlice{
 				// Gloo Mesh translated, should not yield error
 				{

@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
 
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
@@ -23,8 +22,8 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		ctx context.Context,
-		in input.Snapshot,
-		existingIstioResources istioinputs.Snapshot,
+		in input.LocalSnapshot,
+		remoteSnapshot input.RemoteSnapshot,
 		istioOutputs istio.Builder,
 		localOutputs local.Builder,
 		reporter reporting.Reporter,
@@ -48,8 +47,8 @@ func NewIstioTranslator(extensionClients extensions.Clientset) Translator {
 
 func (t *istioTranslator) Translate(
 	ctx context.Context,
-	in input.Snapshot,
-	existingIstioResources istioinputs.Snapshot,
+	in input.LocalSnapshot,
+	remoteSnapshot input.RemoteSnapshot,
 	istioOutputs istio.Builder,
 	localOutputs local.Builder,
 	reporter reporting.Reporter,
@@ -58,7 +57,7 @@ func (t *istioTranslator) Translate(
 
 	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator(
 		ctx,
-		existingIstioResources,
+		remoteSnapshot,
 		in.KubernetesClusters(),
 		in.TrafficTargets(),
 		in.FailoverServices(),
@@ -70,7 +69,7 @@ func (t *istioTranslator) Translate(
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(
 		ctx,
-		existingIstioResources,
+		remoteSnapshot,
 		in.KubernetesClusters(),
 		in.Secrets(),
 		in.Workloads(),

@@ -8,8 +8,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/gloo-mesh/codegen/io"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
-	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
@@ -27,7 +26,7 @@ import (
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
-	"github.com/solo-io/skv2/pkg/predicate"
+	skv2predicate "github.com/solo-io/skv2/pkg/predicate"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"github.com/solo-io/skv2/pkg/verifier"
 	"k8s.io/apimachinery/pkg/labels"
@@ -35,6 +34,7 @@ import (
 	"k8s.io/apimachinery/pkg/selection"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,7 +43,8 @@ import (
 
 type networkingReconciler struct {
 	ctx                        context.Context
-	builder                    input.Builder
+	localBuilder               input.LocalBuilder
+	remoteBuilder              input.RemoteBuilder
 	applier                    apply.Applier
 	reporter                   reporting.Reporter
 	translator                 translation.Translator
@@ -54,8 +55,7 @@ type networkingReconciler struct {
 	verboseMode                bool
 	settingsRef                v1.ObjectRef
 	extensionClients           extensions.Clientset
-	reconciler                 skinput.SingleClusterReconciler
-	istioInputs                istioinputs.Builder
+	reconciler                 skinput.InputReconciler
 	istioResourceVerifier      verifier.ServerResourceVerifier
 	disallowIntersectingConfig bool
 	watchOutputTypes           bool
@@ -68,7 +68,8 @@ var pushNotificationId = &v1.ObjectRef{
 
 func Start(
 	ctx context.Context,
-	builder input.Builder,
+	localBuilder input.LocalBuilder,
+	remoteBuilder input.RemoteBuilder,
 	applier apply.Applier,
 	reporter reporting.Reporter,
 	translator translation.Translator,
@@ -79,7 +80,6 @@ func Start(
 	verboseMode bool,
 	settingsRef v1.ObjectRef,
 	extensionClients extensions.Clientset,
-	istioInputs istioinputs.Builder,
 	disallowIntersectingConfig bool,
 	watchOutputTypes bool,
 ) error {
@@ -88,7 +88,8 @@ func Start(
 
 	r := &networkingReconciler{
 		ctx:                        ctx,
-		builder:                    builder,
+		localBuilder:               localBuilder,
+		remoteBuilder:              remoteBuilder,
 		applier:                    applier,
 		reporter:                   reporter,
 		translator:                 translator,
@@ -98,14 +99,9 @@ func Start(
 		verboseMode:                verboseMode,
 		settingsRef:                settingsRef,
 		extensionClients:           extensionClients,
-		istioInputs:                istioInputs,
 		disallowIntersectingConfig: disallowIntersectingConfig,
 		istioResourceVerifier:      istioResourceVerifier,
 		watchOutputTypes:           watchOutputTypes,
-	}
-
-	filterNetworkingEvents := predicate.SimplePredicate{
-		Filter: predicate.SimpleEventFilterFunc(isIgnoredSecret),
 	}
 
 	// TODO extend skv2 snapshots with singleton object utilities
@@ -117,22 +113,36 @@ func Start(
 		return err
 	}
 
-	reconciler, err := input.RegisterSingleClusterReconciler(ctx, mgr, r.reconcile, time.Second/2, reconcile.Options{}, filterNetworkingEvents)
-	if err != nil {
-		return err
+	var remotePredicate skv2predicate.SimplePredicate
+	// ignore all events (i.e. don't reconcile) if not watching output types
+	if r.watchOutputTypes {
+		remotePredicate = skv2predicate.SimplePredicate{
+			Filter: skv2predicate.SimpleEventFilterFunc(func(obj metav1.Object) bool {
+				return true
+			}),
+		}
 	}
 
-	// watch istio output types for changes, including objects managed by Gloo Mesh itself
+	// watch local input types for changes
+	// also watch istio output types for changes, including objects managed by Gloo Mesh itself
 	// this should eventually reach a steady state since Gloo Mesh performs equality checks before updating existing objects
-	if r.watchOutputTypes {
-		istioinputs.RegisterMultiClusterReconciler(
-			ctx,
-			clusters,
-			func(id ezkube.ClusterResourceId) (bool, error) {
-				return r.reconcile(id)
+	reconciler, err := input.RegisterInputReconciler(
+		ctx,
+		clusters,
+		func(id ezkube.ClusterResourceId) (bool, error) {
+			return r.reconcile(id)
+		},
+		mgr,
+		r.reconcile,
+		input.ReconcileOptions{
+			Local: input.LocalReconcileOptions{
+				Predicates: []predicate.Predicate{
+					skv2predicate.SimplePredicate{
+						Filter: skv2predicate.SimpleEventFilterFunc(isIgnoredSecret),
+					},
+				},
 			},
-			time.Second/2,
-			istioinputs.ReconcileOptions{
+			Remote: input.RemoteReconcileOptions{
 				IssuedCertificates:    reconcile.Options{Verifier: istioResourceVerifier},
 				PodBounceDirectives:   reconcile.Options{Verifier: istioResourceVerifier},
 				XdsConfigs:            reconcile.Options{Verifier: istioResourceVerifier},
@@ -142,8 +152,13 @@ func Start(
 				ServiceEntries:        reconcile.Options{Verifier: istioResourceVerifier},
 				VirtualServices:       reconcile.Options{Verifier: istioResourceVerifier},
 				AuthorizationPolicies: reconcile.Options{Verifier: istioResourceVerifier},
+				Predicates:            []predicate.Predicate{remotePredicate},
 			},
-		)
+			ReconcileInterval: time.Second / 2,
+		},
+	)
+	if err != nil {
+		return err
 	}
 
 	r.reconciler = reconciler
@@ -160,12 +175,12 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	ctx := contextutils.WithLogger(r.ctx, fmt.Sprintf("reconcile-%v", r.totalReconciles))
 
 	// build the input snapshot from the caches
-	inputSnap, err := r.builder.BuildSnapshot(ctx, "mesh-networking", input.BuildOptions{
+	inputSnap, err := r.localBuilder.BuildSnapshot(ctx, "mesh-networking", input.LocalBuildOptions{
 		// only look at kube clusters in our own namespace
-		KubernetesClusters: input.ResourceBuildOptions{
+		KubernetesClusters: input.ResourceLocalBuildOptions{
 			ListOptions: []client.ListOption{client.InNamespace(defaults.GetPodNamespace())},
 		},
-		Settings: input.ResourceBuildOptions{
+		Settings: input.ResourceLocalBuildOptions{
 			// Ensure that only declared Settings object exists in snapshot.
 			ListOptions: []client.ListOption{
 				client.InNamespace(r.settingsRef.Namespace),
@@ -181,7 +196,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	}
 
 	// nil istioInputSnap signals to downstream translators that intersecting config should not be detected
-	var existingIstioResources istioinputs.Snapshot
+	var remoteSnapshot input.RemoteSnapshot
 	if r.disallowIntersectingConfig {
 		selector := labels.NewSelector()
 		for k := range metautils.TranslatedObjectLabels() {
@@ -193,13 +208,13 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 			}
 			selector.Add([]labels.Requirement{*requirement}...)
 		}
-		resourceBuildOptions := istioinputs.ResourceBuildOptions{
+		resourceBuildOptions := input.ResourceRemoteBuildOptions{
 			ListOptions: []client.ListOption{
 				&client.ListOptions{LabelSelector: selector},
 			},
 			Verifier: r.istioResourceVerifier,
 		}
-		existingIstioResources, err = r.istioInputs.BuildSnapshot(ctx, "mesh-networking-istio-inputs", istioinputs.BuildOptions{
+		remoteSnapshot, err = r.remoteBuilder.BuildSnapshot(ctx, "mesh-networking-istio-inputs", input.RemoteBuildOptions{
 			IssuedCertificates:    resourceBuildOptions,
 			PodBounceDirectives:   resourceBuildOptions,
 			XdsConfigs:            resourceBuildOptions,
@@ -217,13 +232,13 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	}
 
 	// apply policies to the discovery resources they target
-	r.applier.Apply(ctx, inputSnap, existingIstioResources)
+	r.applier.Apply(ctx, inputSnap, remoteSnapshot)
 
 	// append errors as we still want to sync statuses if applying translation fails
 	var errs error
 
 	// translate and apply outputs
-	if err := r.applyTranslation(ctx, inputSnap, existingIstioResources); err != nil {
+	if err := r.applyTranslation(ctx, inputSnap, remoteSnapshot); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -235,13 +250,13 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	return false, errs
 }
 
-func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Snapshot, existingIstioResources istioinputs.Snapshot) error {
+func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.LocalSnapshot, remoteSnapshot input.RemoteSnapshot) error {
 	if err := r.syncSettings(ctx, in); err != nil {
 		// fail early if settings failed to sync
 		return err
 	}
 
-	outputSnap, err := r.translator.Translate(ctx, in, existingIstioResources, r.reporter)
+	outputSnap, err := r.translator.Translate(ctx, in, remoteSnapshot, r.reporter)
 	if err != nil {
 		// internal translator errors should never happen
 		return err
@@ -260,7 +275,7 @@ func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Sn
 // validate and process the settings stored in the input snapshot.
 // exactly one should be present.
 // processing/validation errors will be reported to the settings status
-func (r *networkingReconciler) syncSettings(ctx context.Context, in input.Snapshot) error {
+func (r *networkingReconciler) syncSettings(ctx context.Context, in input.LocalSnapshot) error {
 	settings, err := snapshotutils.GetSingletonSettings(ctx, in)
 	if err != nil {
 		return err
@@ -274,7 +289,7 @@ func (r *networkingReconciler) syncSettings(ctx context.Context, in input.Snapsh
 	// update configured NetworkExtensionServers for the extension clients which are called inside the translator.
 	return r.extensionClients.ConfigureServers(settings.Spec.NetworkingExtensionServers, func(_ *v1alpha1.PushNotification) {
 		// ignore error because underlying impl should never error here
-		_, _ = r.reconciler.ReconcileGeneric(pushNotificationId)
+		_, _ = r.reconciler.ReconcileLocalGeneric(pushNotificationId)
 	})
 }
 
@@ -291,7 +306,7 @@ func isIgnoredSecret(obj metav1.Object) bool {
 // we expect these errors on clusters on which that mesh is not deployed
 func buildIstioResourceVerifier(ctx context.Context) verifier.ServerResourceVerifier {
 	options := map[schema.GroupVersionKind]verifier.ServerVerifyOption{}
-	for groupVersion, kinds := range io.IstioNetworkingOutputTypes.Resources {
+	for groupVersion, kinds := range io.IstioNetworkingOutputTypes.Snapshot {
 		for _, kind := range kinds {
 			gvk := schema.GroupVersionKind{
 				Group:   groupVersion.Group,

@@ -35,42 +35,101 @@ type topLevelComponent struct {
 	generatedCodeRoot string
 
 	// the set of input resources for which to generate a snapshot and reconciler
-	inputResources []io.Snapshot
+	// local inptus are read from the local cluster where the controller runs
+	localInputResources io.Snapshot
+	// remote inptus are read from managed cluster registered to the controller cluster
+	remoteInputResources io.Snapshot
 
 	// the set of output resources for which to generate a snapshot
-	outputResources []io.Snapshot
+	outputResources []io.OutputSnapshot
 }
 
 func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 	var topLevelTemplates []model.CustomTemplates
 
-	for _, inputResources := range t.inputResources {
+	switch {
+	case t.localInputResources != nil && t.remoteInputResources != nil:
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshot,
-			filepath.Join(t.generatedCodeRoot, "input", inputResources.Name, "snapshot.go"),
-			inputResources.Resources,
+			"Local",
+			t.generatedCodeRoot+"/input/local_snapshot.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
+		))
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputSnapshot,
+			"Remote",
+			t.generatedCodeRoot+"/input/remote_snapshot.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
+		))
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputSnapshotManualBuilder,
+			"Local",
+			t.generatedCodeRoot+"/input/local_snapshot_manual_builder.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
+		))
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputSnapshotManualBuilder,
+			"Remote",
+			t.generatedCodeRoot+"/input/remote_snapshot_manual_builder.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
 		))
 
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputReconciler,
-			filepath.Join(t.generatedCodeRoot, "input", inputResources.Name, "reconciler.go"),
-			inputResources.Resources,
+			"",
+			t.generatedCodeRoot+"/input/reconciler.go",
+			contrib.HybridSnapshotResources{
+				LocalResourcesToSelect:  t.localInputResources,
+				RemoteResourcesToSelect: t.remoteInputResources,
+			},
 		))
-
+	case t.localInputResources != nil:
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputSnapshot,
+			"",
+			t.generatedCodeRoot+"/input/snapshot.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
+		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshotManualBuilder,
-			filepath.Join(t.generatedCodeRoot, "input", inputResources.Name, "snapshot_manual_builder.go"),
-			inputResources.Resources,
+			"",
+			t.generatedCodeRoot+"/input/snapshot_manual_builder.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
 		))
-
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputReconciler,
+			"",
+			t.generatedCodeRoot+"/input/reconciler.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
+		))
+	case t.remoteInputResources != nil:
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputSnapshot,
+			"",
+			t.generatedCodeRoot+"/input/snapshot.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
+		))
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputSnapshotManualBuilder,
+			"",
+			t.generatedCodeRoot+"/input/snapshot_manual_builder.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
+		))
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputReconciler,
+			"",
+			t.generatedCodeRoot+"/input/reconciler.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
+		))
 	}
 
 	for _, outputResources := range t.outputResources {
 		filePath := filepath.Join(t.generatedCodeRoot, "output", outputResources.Name, "snapshot.go")
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.OutputSnapshot,
+			"",
 			filePath,
-			outputResources.Resources,
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: outputResources.Snapshot},
 		))
 	}
 
@@ -83,18 +142,17 @@ var (
 	topLevelComponents = []topLevelComponent{
 		// discovery component
 		{
-			generatedCodeRoot: "pkg/api/discovery.mesh.gloo.solo.io",
-			inputResources:    []io.Snapshot{io.DiscoveryInputTypes},
-			outputResources:   []io.Snapshot{io.DiscoveryOutputTypes},
+			generatedCodeRoot:    "pkg/api/discovery.mesh.gloo.solo.io",
+			remoteInputResources: io.DiscoveryRemoteInputTypes,
+			localInputResources:  io.DiscoveryLocalInputTypes,
+			outputResources:      []io.OutputSnapshot{io.DiscoveryOutputTypes},
 		},
 		// networking snapshot
 		{
-			generatedCodeRoot: "pkg/api/networking.mesh.gloo.solo.io",
-			inputResources: []io.Snapshot{
-				io.NetworkingInputTypes,
-				io.IstioNetworkingOutputTypes, // needed to initiate watches on istio output types
-			},
-			outputResources: []io.Snapshot{
+			generatedCodeRoot:    "pkg/api/networking.mesh.gloo.solo.io",
+			localInputResources:  io.NetworkingInputTypes,
+			remoteInputResources: io.IstioNetworkingOutputTypes.Snapshot,
+			outputResources: []io.OutputSnapshot{
 				io.IstioNetworkingOutputTypes,
 				io.SmiNetworkingOutputTypes,
 				io.LocalNetworkingOutputTypes,
@@ -103,14 +161,14 @@ var (
 		},
 		// certificate issuer component
 		{
-			generatedCodeRoot: "pkg/api/certificates.mesh.gloo.solo.io/issuer",
-			inputResources:    []io.Snapshot{io.CertificateIssuerInputTypes},
+			generatedCodeRoot:    "pkg/api/certificates.mesh.gloo.solo.io/issuer",
+			remoteInputResources: io.CertificateIssuerInputTypes,
 		},
 		// certificate agent component
 		{
-			generatedCodeRoot: "pkg/api/certificates.mesh.gloo.solo.io/agent",
-			inputResources:    []io.Snapshot{io.CertificateAgentInputTypes},
-			outputResources:   []io.Snapshot{io.CertificateAgentOutputTypes},
+			generatedCodeRoot:   "pkg/api/certificates.mesh.gloo.solo.io/agent",
+			localInputResources: io.CertificateAgentInputTypes,
+			outputResources:     []io.OutputSnapshot{io.CertificateAgentOutputTypes},
 		},
 	}
 
@@ -220,10 +278,11 @@ func makeAgentCrdsCommand() codegen.Command {
 	}
 }
 
-func makeTopLevelTemplate(templateFunc func(params contrib.CrossGroupTemplateParameters) model.CustomTemplates, outPath string, resourceSnapshot io.SnapshotResources) model.CustomTemplates {
-	return templateFunc(contrib.CrossGroupTemplateParameters{
+func makeTopLevelTemplate(templateFunc func(params contrib.SnapshotTemplateParameters) model.CustomTemplates, snapshotName, outPath string, snapshotResources contrib.SnapshotResources) model.CustomTemplates {
+	return templateFunc(contrib.SnapshotTemplateParameters{
+		SnapshotName:      snapshotName,
 		OutputFilename:    outPath,
 		SelectFromGroups:  allApiGroups,
-		ResourcesToSelect: resourceSnapshot,
+		SnapshotResources: snapshotResources,
 	})
 }

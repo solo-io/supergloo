@@ -7,8 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
@@ -83,7 +82,7 @@ var _ = Describe("Applier", func() {
 				},
 			}
 
-			snap = input.NewInputSnapshotManualBuilder("").
+			snap = input.NewInputLocalSnapshotManualBuilder("").
 				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
 				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy1, trafficPolicy2}).
 				AddWorkloads(discoveryv1alpha2.WorkloadSlice{workload}).
@@ -140,7 +139,7 @@ var _ = Describe("Applier", func() {
 				},
 			}
 
-			snap = input.NewInputSnapshotManualBuilder("").
+			snap = input.NewInputLocalSnapshotManualBuilder("").
 				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
 				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy}).
 				Build()
@@ -244,7 +243,7 @@ var _ = Describe("Applier", func() {
 		)
 
 		It("sets policy workloads using mesh", func() {
-			snap := input.NewInputSnapshotManualBuilder("").
+			snap := input.NewInputLocalSnapshotManualBuilder("").
 				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy}).
 				AddAccessPolicies(v1alpha2.AccessPolicySlice{accessPolicy}).
 				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
@@ -264,7 +263,7 @@ var _ = Describe("Applier", func() {
 			Expect(accessPolicy.Status.Workloads[0]).To(Equal(sets.Key(workload1)))
 		})
 		It("sets policy workloads using virtual mesh", func() {
-			snap := input.NewInputSnapshotManualBuilder("").
+			snap := input.NewInputLocalSnapshotManualBuilder("").
 				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy}).
 				AddAccessPolicies(v1alpha2.AccessPolicySlice{accessPolicy}).
 				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
@@ -289,7 +288,7 @@ var _ = Describe("Applier", func() {
 		})
 		It("sets no policy workloads when there is no matching mesh", func() {
 			workload1.Spec.Mesh.Name = "mesh2"
-			snap := input.NewInputSnapshotManualBuilder("").
+			snap := input.NewInputLocalSnapshotManualBuilder("").
 				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy}).
 				AddAccessPolicies(v1alpha2.AccessPolicySlice{accessPolicy}).
 				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
@@ -317,8 +316,8 @@ type testIstioTranslator struct {
 
 func (t testIstioTranslator) Translate(
 	ctx context.Context,
-	in input.Snapshot,
-	existingIstioResources istioinputs.Snapshot,
+	in input.LocalSnapshot,
+	existingIstioResources input.RemoteSnapshot,
 	reporter reporting.Reporter,
 ) (translation.OutputSnapshots, error) {
 	t.callReporter(reporter)

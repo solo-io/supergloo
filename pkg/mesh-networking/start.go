@@ -3,8 +3,7 @@ package mesh_networking
 import (
 	"context"
 
-	certissuerinput "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input/issuer"
-	istioinputs "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/istio"
+	certissuerinput "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
 	certissuerreconciliation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/reconciliation"
 	"github.com/solo-io/gloo-mesh/pkg/common/bootstrap"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply"
@@ -17,7 +16,7 @@ import (
 	"github.com/spf13/pflag"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reconciliation"
 	"github.com/solo-io/skv2/pkg/multicluster"
 )
@@ -51,10 +50,10 @@ func startReconciler(
 
 	extensionClientset := extensions.NewClientset(parameters.Ctx)
 
-	snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager)
+	localSnapshotBuilder := input.NewSingleClusterLocalBuilder(parameters.MasterManager)
 
-	// contains istio config read from all registered clusters
-	istioSnapshotBuilder := istioinputs.NewMultiClusterBuilder(parameters.Clusters, parameters.McClient)
+	// contains output resource types read from all registered clusters
+	remoteSnapshotBuilder := input.NewMultiClusterRemoteBuilder(parameters.Clusters, parameters.McClient)
 
 	reporter := reporting.NewPanickingReporter(parameters.Ctx)
 	translator := translation.NewTranslator(
@@ -79,7 +78,8 @@ func startReconciler(
 
 	return reconciliation.Start(
 		parameters.Ctx,
-		snapshotBuilder,
+		localSnapshotBuilder,
+		remoteSnapshotBuilder,
 		applier,
 		reporter,
 		translator,
@@ -90,7 +90,6 @@ func startReconciler(
 		parameters.VerboseMode,
 		parameters.SettingsRef,
 		extensionClientset,
-		istioSnapshotBuilder,
 		disallowIntersectingConfig,
 		watchOutputTypes,
 	)

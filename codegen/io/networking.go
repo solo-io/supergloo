@@ -15,43 +15,40 @@ import (
 
 var (
 	NetworkingInputTypes = Snapshot{
-		Name: "networking",
-		Resources: SnapshotResources{
-			schema.GroupVersion{
-				Group:   "discovery." + constants.GlooMeshApiGroupSuffix,
-				Version: "v1alpha2",
-			}: {
-				"Mesh",
-				"Workload",
-				"TrafficTarget",
-			},
-			schema.GroupVersion{
-				Group:   "networking." + constants.GlooMeshApiGroupSuffix,
-				Version: "v1alpha2",
-			}: {
-				"TrafficPolicy",
-				"AccessPolicy",
-				"VirtualMesh",
-				"FailoverService",
-			},
-			schema.GroupVersion{
-				Group:   "settings." + constants.GlooMeshApiGroupSuffix,
-				Version: "v1alpha2",
-			}: {
-				"Settings",
-			},
-			skv1alpha1.SchemeGroupVersion: {
-				"KubernetesCluster",
-			},
-			corev1.SchemeGroupVersion: {
-				"Secret",
-			},
+		schema.GroupVersion{
+			Group:   "discovery." + constants.GlooMeshApiGroupSuffix,
+			Version: "v1alpha2",
+		}: {
+			"Mesh",
+			"Workload",
+			"TrafficTarget",
+		},
+		schema.GroupVersion{
+			Group:   "networking." + constants.GlooMeshApiGroupSuffix,
+			Version: "v1alpha2",
+		}: {
+			"TrafficPolicy",
+			"AccessPolicy",
+			"VirtualMesh",
+			"FailoverService",
+		},
+		schema.GroupVersion{
+			Group:   "settings." + constants.GlooMeshApiGroupSuffix,
+			Version: "v1alpha2",
+		}: {
+			"Settings",
+		},
+		skv1alpha1.SchemeGroupVersion: {
+			"KubernetesCluster",
+		},
+		corev1.SchemeGroupVersion: {
+			"Secret",
 		},
 	}
 
-	IstioNetworkingOutputTypes = Snapshot{
+	IstioNetworkingOutputTypes = OutputSnapshot{
 		Name: "istio",
-		Resources: SnapshotResources{
+		Snapshot: Snapshot{
 			istionetworkingv1alpha3.SchemeGroupVersion: {
 				"DestinationRule",
 				"VirtualService",
@@ -81,18 +78,18 @@ var (
 		},
 	}
 
-	LocalNetworkingOutputTypes = Snapshot{
+	LocalNetworkingOutputTypes = OutputSnapshot{
 		Name: "local",
-		Resources: SnapshotResources{
+		Snapshot: Snapshot{
 			corev1.SchemeGroupVersion: {
 				"Secret",
 			},
 		},
 	}
 
-	SmiNetworkingOutputTypes = Snapshot{
+	SmiNetworkingOutputTypes = OutputSnapshot{
 		Name: "smi",
-		Resources: SnapshotResources{
+		Snapshot: Snapshot{
 			smislpitv1alpha2.SchemeGroupVersion: {
 				"TrafficSplit",
 			},
@@ -105,9 +102,9 @@ var (
 		},
 	}
 
-	AppMeshNetworkingOutputTypes = Snapshot{
+	AppMeshNetworkingOutputTypes = OutputSnapshot{
 		Name: "appmesh",
-		Resources: SnapshotResources{
+		Snapshot: Snapshot{
 			appmeshv1beta2.GroupVersion: {
 				"VirtualNode",
 				"VirtualRouter",
