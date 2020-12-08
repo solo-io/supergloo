@@ -1264,6 +1264,8 @@ github.com/solo-io/skv2 v0.14.2-0.20201207232046-1f6e745dd649 h1:EqYeK2kMN0ac57R
 github.com/solo-io/skv2 v0.14.2-0.20201207232046-1f6e745dd649/go.mod h1:m1a3AUh8D+49AO6kwD0yUnOJGSzekiPq/6TUoXueeuk=
 github.com/solo-io/skv2 v0.14.2-0.20201208180052-dce5b733104f h1:bnLbxRqr02WExgVK7QxQ7kQBwJnC6Pr+YG0WzTtZ5zE=
 github.com/solo-io/skv2 v0.14.2-0.20201208180052-dce5b733104f/go.mod h1:m1a3AUh8D+49AO6kwD0yUnOJGSzekiPq/6TUoXueeuk=
+github.com/solo-io/skv2 v0.14.2-0.20201208194626-0a4f537f5889 h1:9eQU3STRbFrDrxTDyQ3iwOELLs9cbWWXFDu7pBtxu90=
+github.com/solo-io/skv2 v0.14.2-0.20201208194626-0a4f537f5889/go.mod h1:m1a3AUh8D+49AO6kwD0yUnOJGSzekiPq/6TUoXueeuk=
 github.com/solo-io/solo-kit v0.14.0 h1:5V5B93Vkt46KEQsco8S4GA3/U8ir2rpsPFJ2Dmk9Iwk=
 github.com/solo-io/solo-kit v0.14.0/go.mod h1:arV9Cw3lQHmW2XqXR6yHcp9CHVCUQdwTEFAnMMKbHyQ=
 github.com/solo-io/solo-kit v0.16.0 h1:76nw9KQwgbgBwuocJ4xSdp81K49SqHn9WmE59VeI7VY=

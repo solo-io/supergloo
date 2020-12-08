@@ -21,7 +21,6 @@ import (
 
 	"github.com/solo-io/skv2/pkg/verifier"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"github.com/hashicorp/go-multierror"
 
@@ -40,10 +39,6 @@ type Snapshot interface {
 	IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
 	// return the set of input CertificateRequests
 	CertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
-	// update the status of all input objects which support
-	// the Status subresource (in the local cluster)
-	SyncStatuses(ctx context.Context, c client.Client) error
-
 	// update the status of all input objects which support
 	// the Status subresource (across multiple clusters)
 	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error
@@ -80,20 +75,6 @@ func (s snapshot) IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_s
 func (s snapshot) CertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet {
 	return s.certificateRequests
 }
-func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
-
-	for _, obj := range s.IssuedCertificates().List() {
-		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-			return err
-		}
-	}
-	for _, obj := range s.CertificateRequests().List() {
-		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-			return err
-		}
-	}
-	return nil
-}
 
 func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
 
@@ -127,9 +108,6 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 }
 
 // builds the input snapshot from API Clients.
-// Two types of builders are available:
-// a builder for snapshots of resources across multiple clusters
-// a builder for snapshots of resources within a single cluster
 type Builder interface {
 	BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error)
 }
@@ -277,109 +255,6 @@ func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.C
 	for _, item := range certificateRequestList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		certificateRequests.Insert(&item)
-	}
-
-	return nil
-}
-
-// build a snapshot from resources in a single cluster
-type singleClusterBuilder struct {
-	mgr manager.Manager
-}
-
-// Produces snapshots of resources across all clusters defined in the ClusterSet
-func NewSingleClusterBuilder(
-	mgr manager.Manager,
-) Builder {
-	return &singleClusterBuilder{
-		mgr: mgr,
-	}
-}
-
-func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
-
-	issuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
-	certificateRequests := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
-
-	var errs error
-
-	if err := b.insertIssuedCertificates(ctx, issuedCertificates, opts.IssuedCertificates); err != nil {
-		errs = multierror.Append(errs, err)
-	}
-	if err := b.insertCertificateRequests(ctx, certificateRequests, opts.CertificateRequests); err != nil {
-		errs = multierror.Append(errs, err)
-	}
-
-	outputSnap := NewSnapshot(
-		name,
-
-		issuedCertificates,
-		certificateRequests,
-	)
-
-	return outputSnap, errs
-}
-
-func (b *singleClusterBuilder) insertIssuedCertificates(ctx context.Context, issuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ResourceBuildOptions) error {
-
-	if opts.Verifier != nil {
-		gvk := schema.GroupVersionKind{
-			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
-			Kind:    "IssuedCertificate",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			"", // verify in the local cluster
-			b.mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	issuedCertificateList, err := certificates_mesh_gloo_solo_io_v1alpha2.NewIssuedCertificateClient(b.mgr.GetClient()).ListIssuedCertificate(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range issuedCertificateList.Items {
-		item := item // pike
-		issuedCertificates.Insert(&item)
-	}
-
-	return nil
-}
-func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet, opts ResourceBuildOptions) error {
-
-	if opts.Verifier != nil {
-		gvk := schema.GroupVersionKind{
-			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
-			Kind:    "CertificateRequest",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			"", // verify in the local cluster
-			b.mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	certificateRequestList, err := certificates_mesh_gloo_solo_io_v1alpha2.NewCertificateRequestClient(b.mgr.GetClient()).ListCertificateRequest(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range certificateRequestList.Items {
-		item := item // pike
 		certificateRequests.Insert(&item)
 	}
 

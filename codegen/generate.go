@@ -53,25 +53,25 @@ func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 			contrib.InputSnapshot,
 			"Local",
 			t.generatedCodeRoot+"/input/local_snapshot.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources, MultiCluster: false},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshot,
 			"Remote",
 			t.generatedCodeRoot+"/input/remote_snapshot.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources, MultiCluster: true},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshotManualBuilder,
 			"Local",
 			t.generatedCodeRoot+"/input/local_snapshot_manual_builder.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources, MultiCluster: false},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshotManualBuilder,
 			"Remote",
 			t.generatedCodeRoot+"/input/remote_snapshot_manual_builder.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources, MultiCluster: true},
 		))
 
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
@@ -88,38 +88,38 @@ func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 			contrib.InputSnapshot,
 			"",
 			t.generatedCodeRoot+"/input/snapshot.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources, MultiCluster: false},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshotManualBuilder,
 			"",
 			t.generatedCodeRoot+"/input/snapshot_manual_builder.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources, MultiCluster: false},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputReconciler,
 			"",
 			t.generatedCodeRoot+"/input/reconciler.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources, MultiCluster: false},
 		))
 	case t.remoteInputResources != nil:
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshot,
 			"",
 			t.generatedCodeRoot+"/input/snapshot.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources, MultiCluster: true},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshotManualBuilder,
 			"",
 			t.generatedCodeRoot+"/input/snapshot_manual_builder.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources, MultiCluster: true},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputReconciler,
 			"",
 			t.generatedCodeRoot+"/input/reconciler.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources, MultiCluster: true},
 		))
 	}
 
