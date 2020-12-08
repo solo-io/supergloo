@@ -9,15 +9,17 @@ import (
 )
 
 const (
+	GlooMeshChartRepo                  = "https://storage.googleapis.com/gloo-mesh-enterprise"
 	GlooMeshChartUriTemplate           = "https://storage.googleapis.com/gloo-mesh/gloo-mesh/gloo-mesh-%s.tgz"
 	GlooMeshEnterpriseChartUriTemplate = "https://storage.googleapis.com/gloo-mesh-enterprise/gloo-mesh-enterprise/gloo-mesh-enterprise-%s.tgz"
 	AgentCrdsChartUriTemplate          = "https://storage.googleapis.com/gloo-mesh/agent-crds/agent-crds-%s.tgz"
 	CertAgentChartUriTemplate          = "https://storage.googleapis.com/gloo-mesh/cert-agent/cert-agent-%s.tgz"
-	WasmAgentChartUriTemplate          = "https://storage.googleapis.com/gloo-mesh/wasm-agent/wasm-agent-%s.tgz"
+	WasmAgentChartUriTemplate          = "https://storage.googleapis.com/gloo-mesh-enterprise/wasm-agent/wasm-agent-%s.tgz"
 	GlooMeshReleaseName                = "gloo-mesh"
 	GlooMeshEnterpriseReleaseName      = "gloo-mesh-enterprise"
 	agentCrdsReleaseName               = "agent-crds"
 	certAgentReleaseName               = "cert-agent"
+	WasmAgentChartName                 = "wasm-agent"
 	wasmAgentReleaseName               = "wasm-agent"
 )
 

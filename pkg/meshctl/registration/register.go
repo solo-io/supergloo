@@ -2,10 +2,13 @@ package registration
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/gloo-mesh/codegen/io"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/enterprise"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -84,18 +87,24 @@ type AgentInstallOptions struct {
 }
 
 func (r *Registrant) RegisterCluster(ctx context.Context) error {
-	// agent CRDs should always be installed since they're required by any remote agents
-	if err := r.installAgentCrds(ctx); err != nil {
+	//// agent CRDs should always be installed since they're required by any remote agents
+	//if err := r.installAgentCrds(ctx); err != nil {
+	//	return err
+	//}
+	//
+	//// The cert-agent should always be installed since it's required for the VirtualMesh API.
+	//if err := r.installCertAgent(ctx); err != nil {
+	//	return err
+	//}
+
+	extenderVersion, err := enterprise.GetEnterpriseExtenderVersion(context.Background(), r.KubeConfigPath, r.MgmtContext)
+	if err != nil {
 		return err
 	}
 
-	// The cert-agent should always be installed since it's required for the VirtualMesh API.
-	if err := r.installCertAgent(ctx); err != nil {
-		return err
-	}
-
-	if r.WasmAgent.Install {
-		if err := r.installWasmAgent(ctx); err != nil {
+	// TODO joekelley add opt-out flag instead?
+	if r.WasmAgent.Install || extenderVersion != "" {
+		if err := r.installWasmAgent(ctx, extenderVersion); err != nil {
 			return err
 		}
 	}
@@ -177,7 +186,21 @@ func (r *Registrant) uninstallCertAgent(ctx context.Context) error {
 	)
 }
 
-func (r *Registrant) installWasmAgent(ctx context.Context) error {
+func (r *Registrant) installWasmAgent(ctx context.Context, enterpriseExtenderVersion string) error {
+	if r.WasmAgent.ChartPath == "" {
+		if enterpriseExtenderVersion == "" {
+			// If we can determine the user's Enterprise Extender version, install the corresponding Wasm Agent.
+			r.WasmAgent.ChartPath = fmt.Sprintf(gloomesh.WasmAgentChartUriTemplate, enterpriseExtenderVersion)
+		} else {
+			// Else, install the latest Wasm Agent.
+			version, err := helm.GetLatestChartVersion(gloomesh.GlooMeshChartRepo, gloomesh.WasmAgentChartName)
+			if err != nil {
+				return err
+			}
+			r.WasmAgent.ChartPath = fmt.Sprintf(gloomesh.WasmAgentChartUriTemplate, version)
+		}
+	}
+
 	return gloomesh.Installer{
 		HelmChartPath:  r.WasmAgent.ChartPath,
 		HelmValuesPath: r.WasmAgent.ChartValues,
