@@ -48,19 +48,19 @@ func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshot,
 			t.generatedCodeRoot+"/input/snapshot.go",
-			t.inputResources,
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.inputResources},
 		))
 
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputReconciler,
 			t.generatedCodeRoot+"/input/reconciler.go",
-			t.inputResources,
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.inputResources},
 		))
 
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshotManualBuilder,
 			t.generatedCodeRoot+"/input/snapshot_manual_builder.go",
-			t.inputResources,
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.inputResources},
 		))
 
 	}
@@ -70,7 +70,7 @@ func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.OutputSnapshot,
 			filePath,
-			outputResources.Snapshot,
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: outputResources.Snapshot},
 		))
 	}
 
@@ -217,10 +217,10 @@ func makeAgentCrdsCommand() codegen.Command {
 	}
 }
 
-func makeTopLevelTemplate(templateFunc func(params contrib.CrossGroupTemplateParameters) model.CustomTemplates, outPath string, resourceSnapshot io.Snapshot) model.CustomTemplates {
-	return templateFunc(contrib.CrossGroupTemplateParameters{
+func makeTopLevelTemplate(templateFunc func(params contrib.SnapshotTemplateParameters) model.CustomTemplates, outPath string, snapshotResources contrib.SnapshotResources) model.CustomTemplates {
+	return templateFunc(contrib.SnapshotTemplateParameters{
 		OutputFilename:    outPath,
 		SelectFromGroups:  allApiGroups,
-		ResourcesToSelect: resourceSnapshot,
+		SnapshotResources: snapshotResources,
 	})
 }
