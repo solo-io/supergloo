@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Remove Istio 1.6 from e2e test matrix.
