@@ -187,14 +187,14 @@ function install_istio() {
   port=$2
   K="kubectl --context=kind-${cluster}"
 
-  if istioctl version | grep "client" | grep -E -- '1.7'
+  if istioctl version | grep -E -- '1.7'
   then
     install_istio_1_7 $cluster $port
-  elif istioctl version | grep "client" | grep -E -- '1.8'
+  elif istioctl version | grep -E -- '1.8'
   then
     install_istio_1_8 $cluster $port
   else
-    echo "Encountered unsupported version of Istio: $(istioctl version | grep "client")"
+    echo "Encountered unsupported version of Istio: $(istioctl version)"
     exit 1
   fi
 
