@@ -148,7 +148,7 @@ func (r *Registrant) uninstallAgentCrds(ctx context.Context) error {
 		KubeContext: r.RemoteContext,
 		Namespace:   r.Registration.RemoteNamespace,
 		Verbose:     r.Verbose,
-	}.UninstallCertAgent(
+	}.UninstallAgentCrds(
 		ctx,
 	)
 }

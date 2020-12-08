@@ -98,7 +98,8 @@ func (i Installer) InstallChart(ctx context.Context) error {
 			return eris.Wrapf(err, "installing helm chart")
 		}
 
-		logrus.Infof("finished upgrading chart as release: %+v", release)
+		logrus.Infof("finished upgrading chart as release %s", release.Name)
+		logrus.Debugf("%+v", release)
 
 	} else {
 		// release does not exist, perform install
@@ -113,7 +114,8 @@ func (i Installer) InstallChart(ctx context.Context) error {
 			return eris.Wrapf(err, "installing helm chart")
 		}
 
-		logrus.Infof("finished installing chart as release: %+v", release)
+		logrus.Infof("finished installing chart as release: %s", release.Name)
+		logrus.Debugf("%+v", release)
 	}
 
 	return nil
