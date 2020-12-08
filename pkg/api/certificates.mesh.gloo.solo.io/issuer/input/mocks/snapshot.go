@@ -6,12 +6,12 @@ package mock_input
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	input "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
-	reflect "reflect"
-	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MockSnapshot is a mock of Snapshot interface
@@ -63,20 +63,6 @@ func (m *MockSnapshot) CertificateRequests() v1alpha2sets.CertificateRequestSet 
 func (mr *MockSnapshotMockRecorder) CertificateRequests() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificateRequests", reflect.TypeOf((*MockSnapshot)(nil).CertificateRequests))
-}
-
-// SyncStatuses mocks base method
-func (m *MockSnapshot) SyncStatuses(ctx context.Context, c client.Client) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SyncStatuses", ctx, c)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SyncStatuses indicates an expected call of SyncStatuses
-func (mr *MockSnapshotMockRecorder) SyncStatuses(ctx, c interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatuses", reflect.TypeOf((*MockSnapshot)(nil).SyncStatuses), ctx, c)
 }
 
 // SyncStatusesMultiCluster mocks base method

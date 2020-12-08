@@ -6,6 +6,8 @@ package mock_input
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
@@ -14,8 +16,6 @@ import (
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	v1alpha1sets "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
-	reflect "reflect"
-	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MockRemoteSnapshot is a mock of RemoteSnapshot interface
@@ -179,20 +179,6 @@ func (m *MockRemoteSnapshot) ConfigMaps() v1sets.ConfigMapSet {
 func (mr *MockRemoteSnapshotMockRecorder) ConfigMaps() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigMaps", reflect.TypeOf((*MockRemoteSnapshot)(nil).ConfigMaps))
-}
-
-// SyncStatuses mocks base method
-func (m *MockRemoteSnapshot) SyncStatuses(ctx context.Context, c client.Client) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SyncStatuses", ctx, c)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SyncStatuses indicates an expected call of SyncStatuses
-func (mr *MockRemoteSnapshotMockRecorder) SyncStatuses(ctx, c interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatuses", reflect.TypeOf((*MockRemoteSnapshot)(nil).SyncStatuses), ctx, c)
 }
 
 // SyncStatusesMultiCluster mocks base method
