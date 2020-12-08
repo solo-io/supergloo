@@ -56,7 +56,6 @@ clear-vendor-any:
 install-go-tools: mod-download
 	mkdir -p $(DEPSGOBIN)
 	go install istio.io/tools/cmd/protoc-gen-jsonshim
-	go install github.com/gogo/protobuf/protoc-gen-gogo
 	go install github.com/golang/protobuf/protoc-gen-go
 	go install github.com/solo-io/protoc-gen-ext
 	go install github.com/golang/mock/mockgen

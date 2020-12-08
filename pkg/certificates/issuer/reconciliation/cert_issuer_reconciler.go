@@ -4,6 +4,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/go-multierror"
+	"github.com/solo-io/skv2/pkg/controllerutils"
+
 	"github.com/rotisserie/eris"
 	corev1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	input "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input/issuer"
@@ -57,7 +60,22 @@ func (r *certIssuerReconciler) reconcile(_ ezkube.ClusterResourceId) (bool, erro
 		}
 	}
 
-	return false, inputSnap.SyncStatusesMultiCluster(r.ctx, r.mcClient)
+	return false, r.syncStatuses(inputSnap)
+}
+
+func (r *certIssuerReconciler) syncStatuses(inputs input.Snapshot) error {
+	var errs error
+	for _, obj := range inputs.CertificateRequests().List() {
+		clusterClient, err := r.mcClient.Cluster(obj.ClusterName)
+		if err != nil {
+			errs = multierror.Append(errs, err)
+			continue
+		}
+		if _, err := controllerutils.UpdateStatus(r.ctx, clusterClient, obj); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+	}
+	return errs
 }
 
 func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v1alpha2.CertificateRequest, issuedCertificates v1alpha2sets.IssuedCertificateSet) error {

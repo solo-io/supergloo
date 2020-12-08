@@ -5,7 +5,7 @@
 package v1alpha1
 
 import (
-	proto "github.com/gogo/protobuf/proto"
+	proto "github.com/golang/protobuf/proto"
 )
 
 // DeepCopyInto for the XdsConfig.Spec
