@@ -70,79 +70,6 @@ EOF
   ${K} delete ns local-path-storage
 }
 
-# Operator spec for istio 1.5.x and 1.6.x
-function install_istio_1_5() {
-  cluster=$1
-  port=$2
-  K="kubectl --context=kind-${cluster}"
-
-  echo "installing istio to ${cluster}..."
-
-  cat << EOF | istioctl manifest apply --context "kind-${cluster}" -f -
-apiVersion: install.istio.io/v1alpha1
-kind: IstioOperator
-metadata:
-  name: example-istiooperator
-  namespace: istio-system
-spec:
-  profile: minimal
-  addonComponents:
-    istiocoredns:
-      enabled: true
-  components:
-    pilot:
-      k8s:
-        env:
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-    proxy:
-      k8s:
-        env:
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-    # Istio Gateway feature
-    ingressGateways:
-    - name: istio-ingressgateway
-      enabled: true
-      k8s:
-        env:
-          - name: ISTIO_META_ROUTER_MODE
-            value: "sni-dnat"
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-        service:
-          ports:
-            - port: 80
-              targetPort: 8080
-              name: http2
-            - port: 443
-              targetPort: 8443
-              name: https
-            - port: 15443
-              targetPort: 15443
-              name: tls
-              nodePort: ${port}
-  values:
-    prometheus:
-      enabled: false
-    gateways:
-      istio-ingressgateway:
-        type: NodePort
-        ports:
-          - targetPort: 15443
-            name: tls
-            nodePort: ${port}
-            port: 15443
-    global:
-      pilotCertProvider: kubernetes
-      controlPlaneSecurityEnabled: true
-      mtls:
-        enabled: true
-      podDNSSearchNamespaces:
-      - global
-EOF
-}
-
 # Operator spec for istio 1.7.x
 function install_istio_1_7() {
   cluster=$1
@@ -260,14 +187,15 @@ function install_istio() {
   port=$2
   K="kubectl --context=kind-${cluster}"
 
-  if istioctl version | grep -E -- '1.5|1.6'
-  then
-    install_istio_1_5 $cluster $port
-  elif istioctl version | grep -E -- '1.7'
+  if istioctl version | grep -E -- '1.7'
   then
     install_istio_1_7 $cluster $port
-  else
+  elif istioctl version | grep -E -- '1.8'
+  then
     install_istio_1_8 $cluster $port
+  else
+    echo "Encountered unsupported version of Istio: $(istioctl version)"
+    exit 1
   fi
 
   # enable istio dns for .global stub domain:
