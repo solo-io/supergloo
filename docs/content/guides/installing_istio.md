@@ -4,12 +4,15 @@ menuTitle: Introductory Guides
 weight: 10
 ---
 
-We can use `istioctl` CLI to easily install Istio in our registered cluster. You can find `istioctl` on the [Getting Started page](https://istio.io/latest/docs/setup/getting-started/) of the Istio site. Currently, Gloo Mesh supports Istio versions 1.5, 1.6, and 1.7.
+We can use `istioctl` CLI to easily install Istio in our registered cluster. You can find `istioctl` on the [Getting Started page](https://istio.io/latest/docs/setup/getting-started/) of the Istio site. Currently, Gloo Mesh supports Istio versions 1.7 and 1.8.
 
 {{% notice note %}}
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document. If you used the `meshctl demo init` command, Istio has already been installed for you.
 {{% /notice %}}
 
+{{% notice warning %}}
+Istio 1.8.0 has a [known issue](https://github.com/istio/istio/issues/28620) where sidecar proxies may fail to start.
+{{% /notice %}}
 
 In this guide we will walk you through two options for installing Istio for use with Gloo Mesh in a single cluster and multi-cluster setting. The instructions here are for reference only, and your installation process for Istio will likely be different depending on your organization's policies and procedures.
 

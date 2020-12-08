@@ -181,24 +181,11 @@ This automation, to set up the DNS stubbing, is coming very soon (and this doc m
 
 ##### What Istio versions are supported?
 
-Right now, Gloo Mesh supports Istio 1.5.x. More versions can be supported based on user feedback. Additional meshes like Linkerd and AppMesh are also supported, each in various stages of completeness. 
+Right now, Gloo Mesh supports Istio 1.7.x and 1.8.x.
 
 {{% notice warning %}}
-We do not yet support automatically upgrading Istio in-place from versions 1.4 and earlier to 1.5, due to a number of
-breaking changes across that version change. If you are currently running Istio prior to 1.5, you may have to
-fully uninstall the mesh before attempting an installation of 1.5. 
-
-<br/>
-
-Users have reported seeing the following when attempting to upgrade in-place:
-
-<br/>
-
-https://discuss.istio.io/t/istio-upgrade-from-1-4-6-1-5-0-throws-istiod-errors-remote-error-tls-error-decrypting-message/5727
-
+Istio 1.8.0 has a [known issue](https://github.com/istio/istio/issues/28620) where sidecar proxies may fail to start.
 {{% /notice %}}
-
-
 
 
 ##### Found something else?
