@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1115
+    description: Update meshctl install enterprise to be compatible with v0.2.0 of the enterprise helm chart.
