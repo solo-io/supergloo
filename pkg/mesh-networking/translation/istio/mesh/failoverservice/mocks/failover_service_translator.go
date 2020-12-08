@@ -5,13 +5,12 @@
 package mock_failoverservice
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	networking "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	istio "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	reflect "reflect"
 )
 
 // MockTranslator is a mock of Translator interface
@@ -38,7 +37,7 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(in networking.Snapshot, mesh *v1alpha2.Mesh, failoverService *v1alpha2.MeshStatus_AppliedFailoverService, outputs istio.Builder, reporter reporting.Reporter) {
+func (m *MockTranslator) Translate(in input.LocalSnapshot, mesh *v1alpha2.Mesh, failoverService *v1alpha2.MeshStatus_AppliedFailoverService, outputs istio.Builder, reporter reporting.Reporter) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Translate", in, mesh, failoverService, outputs, reporter)
 }

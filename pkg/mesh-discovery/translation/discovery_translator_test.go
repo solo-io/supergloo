@@ -5,7 +5,7 @@ import (
 
 	"github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	v1beta2sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
-	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input/discovery"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -63,7 +63,7 @@ var _ = Describe("Translator", func() {
 		daemonSets := appsv1sets.NewDaemonSetSet(&appsv1.DaemonSet{})
 		statefulSets := appsv1sets.NewStatefulSetSet(&appsv1.StatefulSet{})
 
-		in := input.NewSnapshot(
+		in := input.NewRemoteSnapshot(
 			"mesh-discovery",
 			appMeshes,
 			configMaps,

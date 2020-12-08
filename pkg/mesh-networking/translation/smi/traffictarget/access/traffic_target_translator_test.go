@@ -11,7 +11,7 @@ import (
 	"github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
 	"github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/smi/traffictarget/access"
@@ -38,7 +38,7 @@ var _ = Describe("TrafficTargetTranslator", func() {
 	})
 
 	It("will report an error if no backing workloads exist", func() {
-		in := input.NewInputSnapshotManualBuilder("").Build()
+		in := input.NewInputLocalSnapshotManualBuilder("").Build()
 
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{},
@@ -76,7 +76,7 @@ var _ = Describe("TrafficTargetTranslator", func() {
 	It("will report an error if backing workloads belong to multiple service accounts", func() {
 		ns := "default"
 		podLabels := map[string]string{"we": "match"}
-		in := input.NewInputSnapshotManualBuilder("").
+		in := input.NewInputLocalSnapshotManualBuilder("").
 			AddWorkloads([]*discoveryv1alpha2.Workload{
 				{
 					ObjectMeta: metav1.ObjectMeta{
@@ -153,7 +153,7 @@ var _ = Describe("TrafficTargetTranslator", func() {
 	It("can create a valid traffictarget/httproutegroup pair", func() {
 		ns := "default"
 		podLabels := map[string]string{"we": "match"}
-		in := input.NewInputSnapshotManualBuilder("").
+		in := input.NewInputLocalSnapshotManualBuilder("").
 			AddWorkloads([]*discoveryv1alpha2.Workload{
 				{
 					ObjectMeta: metav1.ObjectMeta{

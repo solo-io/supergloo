@@ -4,7 +4,7 @@ import (
 	"context"
 
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/smi"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/smi/traffictarget/access"
@@ -21,7 +21,7 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		ctx context.Context,
-		in input.Snapshot,
+		in input.LocalSnapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		outputs smi.Builder,
 		reporter reporting.Reporter,
@@ -43,7 +43,7 @@ func NewTranslator(tsTranslator split.Translator, ttTranslator access.Translator
 // translate the appropriate resources for the given TrafficTarget.
 func (t *translator) Translate(
 	ctx context.Context,
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	outputs smi.Builder,
 	reporter reporting.Reporter,

@@ -3,7 +3,7 @@ package extensions_test
 import (
 	"context"
 
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
 	mock_extensions "github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions/mocks"
@@ -66,7 +66,7 @@ var _ = Describe("IstioNetworkingExtender", func() {
 			},
 		}
 
-		inputs := input.NewInputSnapshotManualBuilder("istio-extender-test").
+		inputs := input.NewInputLocalSnapshotManualBuilder("istio-extender-test").
 			AddMeshes([]*discoveryv1alpha2.Mesh{mesh}).
 			AddWorkloads([]*discoveryv1alpha2.Workload{workload}).
 			AddTrafficTargets([]*discoveryv1alpha2.TrafficTarget{trafficTarget}).

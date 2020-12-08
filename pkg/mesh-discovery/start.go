@@ -3,7 +3,7 @@ package mesh_discovery
 import (
 	"context"
 
-	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input/discovery"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/common/bootstrap"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/reconciliation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation"
@@ -20,13 +20,13 @@ func Start(ctx context.Context, opts bootstrap.Options) error {
 func startReconciler(
 	parameters bootstrap.StartParameters,
 ) error {
-	snapshotBuilder := input.NewMultiClusterBuilder(parameters.Clusters, parameters.McClient)
+	snapshotBuilder := input.NewMultiClusterRemoteBuilder(parameters.Clusters, parameters.McClient)
 	translator := translation.NewTranslator(translation.DefaultDependencyFactory)
 	reconciliation.Start(
 		parameters.Ctx,
 		snapshotBuilder,
 		translator,
-		parameters.MasterManager.GetClient(),
+		parameters.MasterManager,
 		parameters.Clusters,
 		parameters.SnapshotHistory,
 		parameters.VerboseMode,

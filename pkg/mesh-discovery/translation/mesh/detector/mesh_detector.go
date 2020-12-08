@@ -2,7 +2,7 @@ package detector
 
 import (
 	"github.com/hashicorp/go-multierror"
-	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input/discovery"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 )
 
@@ -12,14 +12,14 @@ import (
 // If no mesh is detected, an empty list is returned
 // Separate Detectors are implemented for different Mesh types / versions.
 type MeshDetector interface {
-	DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, error)
+	DetectMeshes(in input.RemoteSnapshot) (v1alpha2.MeshSlice, error)
 }
 
 // wrapper for multiple mesh detectors.
 // returns all detected meshes
 type MeshDetectors []MeshDetector
 
-func (d MeshDetectors) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, error) {
+func (d MeshDetectors) DetectMeshes(in input.RemoteSnapshot) (v1alpha2.MeshSlice, error) {
 	var allMeshes v1alpha2.MeshSlice
 	var errs error
 	for _, detector := range d {

@@ -12,7 +12,7 @@ import (
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
 )
@@ -22,7 +22,7 @@ import (
 // IstioExtender provides a caller-friendly mechanism for the Istio Networking Translator to apply patches supplied by a set of preconfigured v1alpha1.NetworkingExtensionsServer.
 type IstioExtender interface {
 	// PatchOutputs retrieves from the NetworkingExtensionsServers and applies patches to the outputs for a given TrafficTarget
-	PatchOutputs(ctx context.Context, inputs input.Snapshot, outputs istio.Builder) error
+	PatchOutputs(ctx context.Context, inputs input.LocalSnapshot, outputs istio.Builder) error
 }
 
 type istioExtender struct {
@@ -35,7 +35,7 @@ func NewIstioExtender(clientset extensions.Clientset) *istioExtender {
 	return &istioExtender{clientset: clientset}
 }
 
-func (i *istioExtender) PatchOutputs(ctx context.Context, inputs input.Snapshot, outputs istio.Builder) error {
+func (i *istioExtender) PatchOutputs(ctx context.Context, inputs input.LocalSnapshot, outputs istio.Builder) error {
 	if i.clientset == nil {
 		return nil
 	}

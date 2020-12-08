@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-multierror"
-	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input/discovery"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/dockerutils"
@@ -58,7 +58,7 @@ func NewMeshDetector(
 }
 
 // returns a mesh for each deployment that contains the istiod image
-func (d *meshDetector) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, error) {
+func (d *meshDetector) DetectMeshes(in input.RemoteSnapshot) (v1alpha2.MeshSlice, error) {
 	var meshes v1alpha2.MeshSlice
 	var errs error
 	for _, deployment := range in.Deployments().List() {
@@ -74,7 +74,7 @@ func (d *meshDetector) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, erro
 	return meshes, errs
 }
 
-func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Snapshot) (*v1alpha2.Mesh, error) {
+func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.RemoteSnapshot) (*v1alpha2.Mesh, error) {
 	version, err := d.getIstiodVersion(deployment)
 	if err != nil {
 		return nil, err

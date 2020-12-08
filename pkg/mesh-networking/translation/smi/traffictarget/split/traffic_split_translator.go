@@ -7,7 +7,7 @@ import (
 	"github.com/rotisserie/eris"
 	smislpitv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha2"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
@@ -28,7 +28,7 @@ type Translator interface {
 	// Note that the input snapshot TrafficTargetSet contains the given TrafficTarget.
 	Translate(
 		ctx context.Context,
-		in input.Snapshot,
+		in input.LocalSnapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		reporter reporting.Reporter,
 	) *smislpitv1alpha2.TrafficSplit
@@ -66,7 +66,7 @@ type translator struct{}
 
 func (t *translator) Translate(
 	ctx context.Context,
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	reporter reporting.Reporter,
 ) *smislpitv1alpha2.TrafficSplit {

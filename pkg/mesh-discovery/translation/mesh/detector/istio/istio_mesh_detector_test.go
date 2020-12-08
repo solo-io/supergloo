@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input/discovery"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/labelutils"
@@ -86,7 +86,7 @@ var _ = Describe("IstioMeshDetector", func() {
 			ctx,
 		)
 
-		in := input.NewInputSnapshotManualBuilder("")
+		in := input.NewInputRemoteSnapshotManualBuilder("")
 		in.AddDeployments([]*appsv1.Deployment{deployment})
 
 		meshes, err := detector.DetectMeshes(in.Build())
@@ -102,7 +102,7 @@ var _ = Describe("IstioMeshDetector", func() {
 			ctx,
 		)
 
-		in := input.NewInputSnapshotManualBuilder("")
+		in := input.NewInputRemoteSnapshotManualBuilder("")
 		in.AddDeployments([]*appsv1.Deployment{deployment})
 		in.AddConfigMaps(configMaps.List())
 
@@ -136,7 +136,7 @@ var _ = Describe("IstioMeshDetector", func() {
 		configMaps := istioConfigMap()
 		deployment := istioDeployment(istiodDeploymentName)
 
-		in := input.NewInputSnapshotManualBuilder("")
+		in := input.NewInputRemoteSnapshotManualBuilder("")
 		in.AddDeployments([]*appsv1.Deployment{deployment})
 		in.AddConfigMaps(configMaps.List())
 
@@ -231,7 +231,7 @@ var _ = Describe("IstioMeshDetector", func() {
 
 		deployment := istioDeployment(istiodDeploymentName)
 
-		in := input.NewInputSnapshotManualBuilder("")
+		in := input.NewInputRemoteSnapshotManualBuilder("")
 		in.AddDeployments([]*appsv1.Deployment{deployment})
 		in.AddConfigMaps(configMaps.List())
 		in.AddServices(services.List())

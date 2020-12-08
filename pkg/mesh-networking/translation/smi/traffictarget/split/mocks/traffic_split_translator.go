@@ -6,13 +6,12 @@ package mock_split
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha2"
 	v1alpha20 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	networking "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	reflect "reflect"
 )
 
 // MockTranslator is a mock of Translator interface
@@ -39,7 +38,7 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(ctx context.Context, in networking.Snapshot, trafficTarget *v1alpha20.TrafficTarget, reporter reporting.Reporter) *v1alpha2.TrafficSplit {
+func (m *MockTranslator) Translate(ctx context.Context, in input.LocalSnapshot, trafficTarget *v1alpha20.TrafficTarget, reporter reporting.Reporter) *v1alpha2.TrafficSplit {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Translate", ctx, in, trafficTarget, reporter)
 	ret0, _ := ret[0].(*v1alpha2.TrafficSplit)

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-multierror"
-	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input/discovery"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
@@ -33,7 +33,7 @@ func NewMeshDetector(
 }
 
 // returns a mesh for each deployment that contains the osm controller image
-func (d *meshDetector) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, error) {
+func (d *meshDetector) DetectMeshes(in input.RemoteSnapshot) (v1alpha2.MeshSlice, error) {
 	var meshes v1alpha2.MeshSlice
 	var errs error
 	for _, deployment := range in.Deployments().List() {

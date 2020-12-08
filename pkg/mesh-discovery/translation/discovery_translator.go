@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input/discovery"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/output/discovery"
 	internal "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/internal"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/labelutils"
@@ -15,7 +15,7 @@ var DefaultDependencyFactory = internal.DependencyFactoryImpl{}
 // the translator "reconciles the entire state of the world"
 type Translator interface {
 	// translates the Input Snapshot to an Output Snapshot
-	Translate(ctx context.Context, in input.Snapshot) (discovery.Snapshot, error)
+	Translate(ctx context.Context, in input.RemoteSnapshot) (discovery.Snapshot, error)
 }
 
 type translator struct {
@@ -29,7 +29,7 @@ func NewTranslator(dependencyFactory internal.DependencyFactory) Translator {
 	}
 }
 
-func (t translator) Translate(ctx context.Context, in input.Snapshot) (discovery.Snapshot, error) {
+func (t translator) Translate(ctx context.Context, in input.RemoteSnapshot) (discovery.Snapshot, error) {
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(ctx)
 

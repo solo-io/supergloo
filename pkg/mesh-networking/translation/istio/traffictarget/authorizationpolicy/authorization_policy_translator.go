@@ -8,7 +8,7 @@ import (
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	discovery_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/types"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
@@ -39,7 +39,7 @@ type Translator interface {
 	//
 	// Note that the input snapshot TrafficTargetSet contains the given TrafficTarget.
 	Translate(
-		in input.Snapshot,
+		in input.LocalSnapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		reporter reporting.Reporter,
 	) *securityv1beta1.AuthorizationPolicy
@@ -52,7 +52,7 @@ func NewTranslator() Translator {
 }
 
 func (t *translator) Translate(
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	reporter reporting.Reporter,
 ) *securityv1beta1.AuthorizationPolicy {

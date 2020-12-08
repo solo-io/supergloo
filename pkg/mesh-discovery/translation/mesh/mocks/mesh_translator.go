@@ -5,11 +5,10 @@
 package mock_mesh
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
-	discovery "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input/discovery"
+	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	reflect "reflect"
 )
 
 // MockTranslator is a mock of Translator interface
@@ -36,7 +35,7 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // TranslateMeshes mocks base method
-func (m *MockTranslator) TranslateMeshes(in discovery.Snapshot) v1alpha2sets.MeshSet {
+func (m *MockTranslator) TranslateMeshes(in input.RemoteSnapshot) v1alpha2sets.MeshSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranslateMeshes", in)
 	ret0, _ := ret[0].(v1alpha2sets.MeshSet)

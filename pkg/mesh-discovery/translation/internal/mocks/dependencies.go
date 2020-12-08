@@ -6,13 +6,12 @@ package mock_translation
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
-	discovery "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input/discovery"
+	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	mesh "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh"
 	traffictarget "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/traffictarget"
 	workload "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload"
+	reflect "reflect"
 )
 
 // MockDependencyFactory is a mock of DependencyFactory interface
@@ -53,7 +52,7 @@ func (mr *MockDependencyFactoryMockRecorder) MakeMeshTranslator(ctx interface{})
 }
 
 // MakeWorkloadTranslator mocks base method
-func (m *MockDependencyFactory) MakeWorkloadTranslator(ctx context.Context, in discovery.Snapshot) workload.Translator {
+func (m *MockDependencyFactory) MakeWorkloadTranslator(ctx context.Context, in input.RemoteSnapshot) workload.Translator {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MakeWorkloadTranslator", ctx, in)
 	ret0, _ := ret[0].(workload.Translator)

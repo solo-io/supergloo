@@ -3,7 +3,7 @@ package mesh
 import (
 	"context"
 
-	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input/discovery"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector"
@@ -15,7 +15,7 @@ import (
 
 // the mesh translator converts deployments with control plane images into Mesh CRs
 type Translator interface {
-	TranslateMeshes(in input.Snapshot) v1alpha2sets.MeshSet
+	TranslateMeshes(in input.RemoteSnapshot) v1alpha2sets.MeshSet
 }
 
 type translator struct {
@@ -31,7 +31,7 @@ func NewTranslator(
 	return &translator{ctx: ctx, meshDetector: meshDetector}
 }
 
-func (t *translator) TranslateMeshes(in input.Snapshot) v1alpha2sets.MeshSet {
+func (t *translator) TranslateMeshes(in input.RemoteSnapshot) v1alpha2sets.MeshSet {
 	meshSet := v1alpha2sets.NewMeshSet()
 	meshes, err := t.meshDetector.DetectMeshes(in)
 	if err != nil {

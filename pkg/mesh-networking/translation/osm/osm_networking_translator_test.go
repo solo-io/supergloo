@@ -6,7 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	mock_output "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/smi/mocks"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm/internal/mocks"
@@ -43,7 +43,7 @@ var _ = Describe("SmiNetworkingTranslator", func() {
 	})
 
 	It("should translate all meshes and traffictargets", func() {
-		in := input.NewInputSnapshotManualBuilder("").
+		in := input.NewInputLocalSnapshotManualBuilder("").
 			AddMeshes([]*discoveryv1alpha2.Mesh{
 				{
 					ObjectMeta: metav1.ObjectMeta{},

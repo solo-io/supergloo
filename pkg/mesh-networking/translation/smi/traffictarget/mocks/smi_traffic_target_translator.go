@@ -6,13 +6,12 @@ package mock_traffictarget
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	networking "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	smi "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/smi"
 	reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	reflect "reflect"
 )
 
 // MockTranslator is a mock of Translator interface
@@ -39,7 +38,7 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(ctx context.Context, in networking.Snapshot, trafficTarget *v1alpha2.TrafficTarget, outputs smi.Builder, reporter reporting.Reporter) {
+func (m *MockTranslator) Translate(ctx context.Context, in input.LocalSnapshot, trafficTarget *v1alpha2.TrafficTarget, outputs smi.Builder, reporter reporting.Reporter) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Translate", ctx, in, trafficTarget, outputs, reporter)
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	mock_istio_output "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio/mocks"
 	mock_local_output "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local/mocks"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
@@ -54,7 +54,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 	})
 
 	It("should translate", func() {
-		in := input.NewInputSnapshotManualBuilder("").
+		in := input.NewInputLocalSnapshotManualBuilder("").
 			AddKubernetesClusters([]*multiclusterv1alpha1.KubernetesCluster{
 				{
 					ObjectMeta: metav1.ObjectMeta{

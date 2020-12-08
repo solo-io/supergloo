@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/go-utils/contextutils"
@@ -19,11 +19,11 @@ var _ output.ErrorHandler = &errHandler{}
 
 type errHandler struct {
 	ctx  context.Context
-	in   input.Snapshot
+	in   input.LocalSnapshot
 	errs *multierror.Error
 }
 
-func newErrHandler(ctx context.Context, inp input.Snapshot) *errHandler {
+func newErrHandler(ctx context.Context, inp input.LocalSnapshot) *errHandler {
 	return &errHandler{ctx, inp, &multierror.Error{}}
 }
 

@@ -6,11 +6,10 @@ package mock_extensions
 
 import (
 	context "context"
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
-	networking "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	istio "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
+	reflect "reflect"
 )
 
 // MockIstioExtender is a mock of IstioExtender interface
@@ -37,7 +36,7 @@ func (m *MockIstioExtender) EXPECT() *MockIstioExtenderMockRecorder {
 }
 
 // PatchOutputs mocks base method
-func (m *MockIstioExtender) PatchOutputs(ctx context.Context, inputs networking.Snapshot, outputs istio.Builder) error {
+func (m *MockIstioExtender) PatchOutputs(ctx context.Context, inputs input.LocalSnapshot, outputs istio.Builder) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PatchOutputs", ctx, inputs, outputs)
 	ret0, _ := ret[0].(error)

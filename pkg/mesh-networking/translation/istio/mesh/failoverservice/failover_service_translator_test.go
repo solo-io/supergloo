@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
@@ -179,7 +179,7 @@ var _ = Describe("FailoverServiceTranslator", func() {
 			},
 		}
 
-		in := input.NewInputSnapshotManualBuilder("").
+		in := input.NewInputLocalSnapshotManualBuilder("").
 			AddTrafficTargets(allTrafficTargets).
 			AddMeshes(allMeshes).
 			AddKubernetesClusters([]*v1alpha1.KubernetesCluster{{ObjectMeta: metav1.ObjectMeta{Name: "kube-cluster"}}}).

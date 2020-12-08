@@ -2,7 +2,7 @@ package decorators
 
 import (
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
@@ -12,7 +12,7 @@ import (
 // parameters for initializing decorators
 type Parameters struct {
 	ClusterDomains hostutils.ClusterDomainRegistry
-	Snapshot       input.Snapshot
+	Snapshot       input.LocalSnapshot
 }
 
 func Register(constructor Constructor) {

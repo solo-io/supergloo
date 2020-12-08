@@ -3,12 +3,12 @@ package extensions
 import (
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
-	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input/networking"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // InputSnapshotToProto constructs a proto-compatible Discovery Snapshot from a networking input snapshot
-func InputSnapshotToProto(in input.Snapshot) *v1alpha1.DiscoverySnapshot {
+func InputSnapshotToProto(in input.LocalSnapshot) *v1alpha1.DiscoverySnapshot {
 	var meshes []*v1alpha1.MeshObject
 	for _, mesh := range in.Meshes().List() {
 		mesh := mesh
@@ -45,8 +45,8 @@ func InputSnapshotToProto(in input.Snapshot) *v1alpha1.DiscoverySnapshot {
 
 // InputSnapshotFromProto constructs a Networking input snapshot from proto Discovery Snapshot
 // This method is not intended to be used here, but called from implementating servers.
-func InputSnapshotFromProto(name string, in *v1alpha1.DiscoverySnapshot) input.Snapshot {
-	builder := input.NewInputSnapshotManualBuilder(name)
+func InputSnapshotFromProto(name string, in *v1alpha1.DiscoverySnapshot) input.LocalSnapshot {
+	builder := input.NewInputLocalSnapshotManualBuilder(name)
 
 	// insert meshes
 	var meshes discoveryv1alpha2.MeshSlice
