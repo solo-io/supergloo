@@ -113,19 +113,31 @@ func Start(
 		return err
 	}
 
-	var remotePredicate skv2predicate.SimplePredicate
-	// ignore all events (i.e. don't reconcile) if not watching output types
-	if r.watchOutputTypes {
-		remotePredicate = skv2predicate.SimplePredicate{
-			Filter: skv2predicate.SimpleEventFilterFunc(func(obj metav1.Object) bool {
-				return true
-			}),
-		}
-	}
-
 	// watch local input types for changes
 	// also watch istio output types for changes, including objects managed by Gloo Mesh itself
 	// this should eventually reach a steady state since Gloo Mesh performs equality checks before updating existing objects
+	remoteReconcileOpts := input.RemoteReconcileOptions{
+		IssuedCertificates:    reconcile.Options{Verifier: istioResourceVerifier},
+		PodBounceDirectives:   reconcile.Options{Verifier: istioResourceVerifier},
+		XdsConfigs:            reconcile.Options{Verifier: istioResourceVerifier},
+		DestinationRules:      reconcile.Options{Verifier: istioResourceVerifier},
+		EnvoyFilters:          reconcile.Options{Verifier: istioResourceVerifier},
+		Gateways:              reconcile.Options{Verifier: istioResourceVerifier},
+		ServiceEntries:        reconcile.Options{Verifier: istioResourceVerifier},
+		VirtualServices:       reconcile.Options{Verifier: istioResourceVerifier},
+		AuthorizationPolicies: reconcile.Options{Verifier: istioResourceVerifier},
+	}
+	// ignore all events (i.e. don't reconcile) if not watching output types
+	if !r.watchOutputTypes {
+		remoteReconcileOpts.Predicates = []predicate.Predicate{
+			skv2predicate.SimplePredicate{
+				Filter: skv2predicate.SimpleEventFilterFunc(func(obj metav1.Object) bool {
+					return true
+				}),
+			},
+		}
+	}
+
 	reconciler, err := input.RegisterInputReconciler(
 		ctx,
 		clusters,
@@ -142,18 +154,7 @@ func Start(
 					},
 				},
 			},
-			Remote: input.RemoteReconcileOptions{
-				IssuedCertificates:    reconcile.Options{Verifier: istioResourceVerifier},
-				PodBounceDirectives:   reconcile.Options{Verifier: istioResourceVerifier},
-				XdsConfigs:            reconcile.Options{Verifier: istioResourceVerifier},
-				DestinationRules:      reconcile.Options{Verifier: istioResourceVerifier},
-				EnvoyFilters:          reconcile.Options{Verifier: istioResourceVerifier},
-				Gateways:              reconcile.Options{Verifier: istioResourceVerifier},
-				ServiceEntries:        reconcile.Options{Verifier: istioResourceVerifier},
-				VirtualServices:       reconcile.Options{Verifier: istioResourceVerifier},
-				AuthorizationPolicies: reconcile.Options{Verifier: istioResourceVerifier},
-				Predicates:            []predicate.Predicate{remotePredicate},
-			},
+			Remote:            remoteReconcileOpts,
 			ReconcileInterval: time.Second / 2,
 		},
 	)
