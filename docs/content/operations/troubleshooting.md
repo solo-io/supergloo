@@ -183,7 +183,7 @@ This automation, to set up the DNS stubbing, is coming very soon (and this doc m
 
 Right now, Gloo Mesh supports Istio 1.7.x and 1.8.x.
 
-{{% notice warning %}}
+{{% notice note %}}
 Istio 1.8.0 has a [known issue](https://github.com/istio/istio/issues/28620) where sidecar proxies may fail to start
 under specific circumstances. This bug may surface in sidecars configured by Failover Services.
 {{% /notice %}}

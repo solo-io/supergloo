@@ -10,7 +10,7 @@ We can use `istioctl` CLI to easily install Istio in our registered cluster. You
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document. If you used the `meshctl demo init` command, Istio has already been installed for you.
 {{% /notice %}}
 
-{{% notice warning %}}
+{{% notice note %}}
 Istio 1.8.0 has a [known issue](https://github.com/istio/istio/issues/28620) where sidecar proxies may fail to start
 under specific circumstances. This bug may surface in sidecars configured by Failover Services.
 {{% /notice %}}
