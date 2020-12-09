@@ -182,17 +182,17 @@ func (mr *MockSnapshotMockRecorder) KubernetesClusters() *gomock.Call {
 }
 
 // SyncStatuses mocks base method
-func (m *MockSnapshot) SyncStatuses(ctx context.Context, c client.Client) error {
+func (m *MockSnapshot) SyncStatuses(ctx context.Context, c client.Client, opts input.SyncStatusOptions) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SyncStatuses", ctx, c)
+	ret := m.ctrl.Call(m, "SyncStatuses", ctx, c, opts)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SyncStatuses indicates an expected call of SyncStatuses
-func (mr *MockSnapshotMockRecorder) SyncStatuses(ctx, c interface{}) *gomock.Call {
+func (mr *MockSnapshotMockRecorder) SyncStatuses(ctx, c, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatuses", reflect.TypeOf((*MockSnapshot)(nil).SyncStatuses), ctx, c)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatuses", reflect.TypeOf((*MockSnapshot)(nil).SyncStatuses), ctx, c, opts)
 }
 
 // MarshalJSON mocks base method
