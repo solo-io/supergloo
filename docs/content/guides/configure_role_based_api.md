@@ -9,10 +9,9 @@ This feature is available in Gloo Mesh Enterprise only. If you are using the ope
 {{< /notice >}}
 
 Gloo Mesh's role-based API allows organizations to restrict access to policy configuration (i.e. creation, updating, and deletion of policy configuration objects)
-based on the roles of individual users, represented by a `Role` CRD. Similar to the Kubernetes RBAC model, Gloo Mesh users are bound to one or more roles. A user may
-create, update, or delete a networking policy if they are bound to at least one role that permits access for that policy.
+based on the roles of individual users, represented by a `Role` CRD. Similar to the Kubernetes RBAC model, Gloo Mesh users are bound to one or more roles. A user may create, update, or delete a networking policy if they are bound to at least one role that permits access for that policy.
 
-When you install Gloo Mesh Enterprise with default settings, the role-based API is enabled by default. This creates an implicit deny on all networking policy actions, and requires that Roles are created and bound to subject to grant them the permissions they need to perform their job duties.
+When you install Gloo Mesh Enterprise with default settings, the role-based API is enabled by default. This creates an implicit **deny** on all networking policy actions, and requires that Roles are created and bound to subject to grant them the permissions they need to perform their job duties.
 
 In this guide, we will walk through some deployment options when it comes to configuring the role-based API. We are assuming that you already have installed Gloo Mesh Enterprise or have a Kubernetes cluster on which to install it.
 
@@ -25,7 +24,7 @@ kubectl get rbac-webhook -n gloo-mesh -oyaml
 kubectl get ValidatingWebhookConfiguration rbac-webhook -oyaml
 ```
 
-When a CRUD operation is attempted against the API group `networking.mesh.gloo.solo.io`, the web hook is triggered and passed to the rbac service for validation. The rbac service makes a determination of whether the action should be allowed.
+When a CRUD operation is attempted against the API group `networking.mesh.gloo.solo.io`, the web hook is triggered and passed to the `rbac-webhook` service for validation. The service makes a determination of whether the action should be allowed.
 
 ## Disable role-based API
 
@@ -49,7 +48,7 @@ You could also update your existing installation to add the role-based API compo
 
 By default, the role-based API will deny any requests that are not explicitly allowed through a role and role binding. Rather than removing the role-based API, you can instead choose to run it in permissive mode, which will implicitly allow all requests. Even though the requests will be allowed, the `rbac-webhook` container will still evaluate all requests and log whether they would be allowed or not. This is perfect for testing your roles before enforcing them!
 
-Permissive mode is enabled by setting the environment variable `RBAC_PERMISSIVE_MODE` to true for `rbac-webhook` pod. You can do this through a Helm chart installation or update. The value to change is:
+Permissive mode is enabled by setting the environment variable `RBAC_PERMISSIVE_MODE` to true for `rbac-webhook` pod. You can do this through a Helm chart installation or update. The updated value.yaml file you will need is below:
 
 ```yaml
 licenseKey: LICENSE_KEY_STRING
@@ -82,9 +81,15 @@ rbac-webhook:
             name: gloo-mesh-enterprise-license
 ```
 
-You can simply save the above yaml as permissive.yaml and then run the following command:
+We are setting `RBAC_PERMISSIVE_MODE` to `true` and the `LOG_LEVEL` to `debug` to ensure that we can capture the evaluation of policies even though requests will not be blocked. You can simply save the above yaml as vaules.yaml and then run the following command:
 
 ```shell
 helm upgrade gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise -n gloo-mesh \
-  --set-file permissive.yaml
+  --set-file values.yaml
 ```
+
+When you are ready to update the configuration to an enforced mode, you can simply update the `RBAC_PERMISSIVE_MODE` to `false` and change the `LOG_LEVEL` back to `info`.
+
+## Summary and Next Steps
+
+With the role-based API enabled, you can start creating roles and bindings with our [Using the Role-based API]({{% versioned_link_path fromRoot="/guides/using_role_based_api" %}}).

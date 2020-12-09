@@ -8,9 +8,9 @@ weight: 80
 This feature is available in Gloo Mesh Enterprise only. If you are using the open source version of Gloo Mesh, this guide will not work.
 {{< /notice >}}
 
-In the role-based API concepts document, we review the functionality of the role-based API and the core components that comprise a role. Now let's actually get some role deploy and bound to users and service accounts. 
+In the role-based API concepts document, we review the functionality of the role-based API and the core components that comprise a role. Now let's actually get some roles deployed and bound to subjects. 
 
-This guide will have you create three example roles and bind them to a user. Then we can demonstrate how Gloo Mesh enforces the permissions defined in the role.
+This guide will have you create two example roles and bind them to users.
 
 ## Before you begin
 To illustrate these concepts, we will assume that:
@@ -29,7 +29,7 @@ Be sure to review the assumptions and satisfy the pre-requisites from the [Guide
 
 The role-based API in Gloo Mesh Enterprise uses a `Role` Custom Resource Definition to create Custom Resources that represent roles you would like to define. The roles are then bound to users with a `RoleBinding` CRD. 
 
-The Roles are used to target some combination of workloads, traffic targets, meshes, and virtual meshes and define actions the role is allowed to perform on the targets.
+The Roles are used to target some combination of *Workloads*, *Traffic Targets*, *Meshes*, and *Virtual Meshes* and define actions the role is allowed to perform on the targets.
 
 When you install Gloo Mesh Enterprise with the default settings, the role-based API is enabled by default. This comes with an implicit **deny** on all operations that are not explicitly allowed by a Role and RoleBinding.
 
@@ -44,7 +44,7 @@ rbacWebhook:
 
 That might be good for testing, but certainly shouldn't be done in a production environment. The alternative is to create and admin role that has permissions to perform all actions, and binding it to admin users who need that level of access.
 
-Let's try and create a network policy on our Gloo Mesh Enterprise deployment with first creating a role.
+Let's try and create a network policy on our Gloo Mesh Enterprise deployment without first creating a role and binding.
 
 ```shell
 MGMT_CONTEXT=<your management plane cluster>
@@ -78,13 +78,13 @@ Let's dig into some example roles starting with the admin role referenced above.
 
 ### Admin Role
 
-The `admin-role` defined below is granting permissions to perform all actions on all scopes. Obviously this role should be treated with caution.
+The `full-admin-role` defined below is granting permissions to perform all actions on all scopes. Obviously this role should be treated with caution.
 
 ```yaml
 apiVersion: rbac.mesh.gloo.solo.io/v1alpha1
 kind: Role
 metadata:
-  name: admin-role
+  name: full-admin-role
   namespace: gloo-mesh
 spec:
   trafficPolicyScopes:
@@ -160,14 +160,14 @@ spec:
             - "*"
 ```
 
-You can save the above role to the file `admin-role.yaml` and deploy it with the following command:
+You can save the above role to the file `full-admin-role.yaml` and deploy it with the following command:
 
 ```shell
 MGMT_CONTEXT=<your management plane cluster>
-kubectl --context $MGMT_CONTEXT apply -f admin-role.yaml
+kubectl --context $MGMT_CONTEXT apply -f full-admin-role.yaml
 ``` 
 
-Next we will create the RoleBinding for the `kubernetes-admin` user.
+Next we will create the RoleBinding for the `kubernetes-admin` user. You may need to change the username depending on the configuration of your management cluster running Gloo Mesh Enterprise.
 
 ```yaml
 apiVersion: rbac.mesh.gloo.solo.io/v1alpha1
@@ -175,21 +175,21 @@ kind: RoleBinding
 metadata:
   labels:
     app: gloo-mesh
-  name: admin-role-binding
+  name: full-admin-role-binding
   namespace: gloo-mesh
 spec:
   roleRef:
-    name: admin-role
+    name: full-admin-role
     namespace: gloo-mesh
   subjects:
     - kind: User
       name: kubernetes-admin
 ```
 
-You can save the above binding to the file `admin-role-binding.yaml` and deploy it with the following command:
+You can save the above binding to the file `full-admin-role-binding.yaml` and deploy it with the following command:
 
 ```shell
-kubectl --context $MGMT_CONTEXT apply -f admin-role-binding.yaml
+kubectl --context $MGMT_CONTEXT apply -f full-admin-role-binding.yaml
 ```
 
 Now if we try to create a Gloo Mesh resource again, the result should be successful:
@@ -227,7 +227,7 @@ If you've been following the guides, you should already have the bookstore app d
 
 Specifically, the role allows the TrafficPolicyActions: `RETRIES`, `REQUEST_TIMEOUT`, and `FAULT_INJECTION`. We are also using TrafficTargetSelectors to select the `ratings` service running in the `bookinfo` namespace on any registered cluster. The WorkloadSelectors configuration selects version `v1` of the app `productpage` in the namespace `bookinfo` running on any registered cluster.
 
-The role also creates an AccessPolicyScope defining where access policies could be created, restricted by identity and traffic target. Using the Identity selector, we are restricting identities to the `productpage` service account on the `bookinfo` namespace on any registered cluster. Using the TrafficTargetSelector we are restricting traffic targets to the `ratings` service running in the `bookinfo` namespace on any registered cluster
+The Traffic Consumer Role also creates an AccessPolicyScope defining where access policies could be created, restricted by identity and traffic target. Using the Identity selector, we are restricting identities to the `productpage` service account on the `bookinfo` namespace on any registered cluster. Using the TrafficTargetSelector we are restricting traffic targets to the `ratings` service running in the `bookinfo` namespace on any registered cluster
 
 The end result is that the role allows the management of AccessPolicies for a specific identity and traffic target, and allows a small number of TrafficPolicyActions on a specific service and workload. This type of fine-grained permissions could then be bound to a developer or operator responsible for managing traffic.
 
@@ -311,4 +311,4 @@ kubectl --context $MGMT_CONTEXT apply -f traffic-target-consumer-binding.yaml
 
 ## Summary and Next Steps
 
-In this guide you created and assigned two roles using the Gloo Mesh role-based API. You can read more about the role, and see additional role examples in the concepts section.
+In this guide you created and assigned two roles using the Gloo Mesh role-based API. You can read more about the role, and see additional role examples in the [concepts section]({{% versioned_link_path fromRoot="/concepts/role_based_api" %}}).

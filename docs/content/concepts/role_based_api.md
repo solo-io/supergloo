@@ -367,4 +367,4 @@ This role allows configuration of TrafficPolicies (only request timeouts, retrie
 
 ## Next Steps
 
-To test drive the Role-based API for yourself, we recommend following our guide on the topic.
+To test drive the Role-based API for yourself, we recommend [following our guide]({{% versioned_link_path fromRoot="/guides/using_role_based_api" %}}) on the topic.
