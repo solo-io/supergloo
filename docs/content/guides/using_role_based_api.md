@@ -1,7 +1,7 @@
 ---
 title: Using the Role-based API
 menuTitle: Using Role-based API
-weight: 80
+weight: 100
 ---
 
 {{< notice note >}}
