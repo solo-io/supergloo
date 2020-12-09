@@ -17,7 +17,7 @@ A cluster is registered using the CLI `meshctl cluster register` command. During
 
 The discovery process is initiated by Gloo Mesh running on the mgmt-cluster, pulling and translating information from the registered target clusters. Discovery of a target cluster is performed when the cluster is first registered and then periodically to discover and translate any newly added meshes, workloads, and traffic targets.
 
-The first task of discovery is to create an `Input Snapshot` and begin the tranlation of the service meshes and services on the cluster to create an `Output Snapshot` that creates custom resources to the management plane cluster. 
+The first task of discovery is to create an `Input Snapshot` and begin the translation of the service meshes and services on the cluster to create an `Output Snapshot` that creates custom resources to the management plane cluster. 
 
 `MeshTranslator` looks for installed service mesh control planes and then will add them to the `Output Snapshot` for a   [`Mesh`]({{% versioned_link_path fromRoot="/reference/api/mesh/" %}}) resource to be written to the management plane cluster, linked to the `KubernetesCluster` resource that was written during cluster registration. Currently, Gloo Mesh discovers and manages both [Istio](https://istio.io) and [Open Service Mesh](https://openservicemesh.io/) meshes, with plans to support more in the near future.
 
