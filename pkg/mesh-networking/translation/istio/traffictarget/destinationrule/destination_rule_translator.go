@@ -19,7 +19,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/equalityutils"
+	"github.com/solo-io/skv2/pkg/equalityutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
@@ -151,7 +151,7 @@ func registerFieldFunc(
 	return func(fieldPtr, val interface{}) error {
 		fieldVal := reflect.ValueOf(fieldPtr).Elem().Interface()
 
-		if equalityutils.Equals(fieldVal, val) {
+		if equalityutils.DeepEqual(fieldVal, val) {
 			return nil
 		}
 		if err := destinationRuleFields.RegisterFieldOwnership(

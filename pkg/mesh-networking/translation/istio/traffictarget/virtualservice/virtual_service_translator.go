@@ -11,11 +11,11 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice/equality"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/equalityutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
+	"github.com/solo-io/skv2/pkg/equalityutils"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -114,7 +114,7 @@ func (t *translator) Translate(
 		}
 
 		// Avoid appending an HttpRoute that will have no affect, which occurs if no decorators mutate the baseRoute with any non-match config.
-		if equalityutils.Equals(initializeBaseRoute(tpsByRequestMatcher[0].Spec, sourceCluster), baseRoute) {
+		if equalityutils.DeepEqual(initializeBaseRoute(tpsByRequestMatcher[0].Spec, sourceCluster), baseRoute) {
 			continue
 		}
 
@@ -181,7 +181,7 @@ func registerFieldFunc(
 	return func(fieldPtr, val interface{}) error {
 		fieldVal := reflect.ValueOf(fieldPtr).Elem().Interface()
 
-		if equalityutils.Equals(fieldVal, val) {
+		if equalityutils.DeepEqual(fieldVal, val) {
 			return nil
 		}
 		if err := virtualServiceFields.RegisterFieldOwnership(
