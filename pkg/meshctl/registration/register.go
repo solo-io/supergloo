@@ -79,7 +79,7 @@ func NewRegistrant(opts *RegistrantOptions) (*Registrant, error) {
 	return registrant, nil
 }
 
-// Options for installing the cert agent
+// Options for installing agents (cert-agent, wasm-agent)
 type AgentInstallOptions struct {
 	Install     bool // If true, install the agent
 	ChartPath   string
