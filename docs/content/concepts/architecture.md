@@ -9,7 +9,7 @@ This document details the architecture of Gloo Mesh, which informs how Gloo Mesh
 
 ## Components
 
-The components that comprise Gloo Mesh can be categorized as `mesh-discovery` and `mesh-networking` components. These components work together to discover meshes, traffic targets, and unify them using a `VirtualMesh` (see above). These components will write all of the necessary service-mesh-specific resources to the various clusters/meshes under management. For example, Gloo Mesh would write all of the `ServiceEntry`, `VirtualService` and `DestinationRule` resources if managing Istio. Let's take a closer look at the components.
+The components that comprise Gloo Mesh can be categorized as `mesh-discovery` and `mesh-networking` components. These components work together to discover meshes, traffic targets, and unify them using a [`VirtualMesh`]({{% versioned_link_path fromRoot="/concepts/concepts" %}}). These components will write all of the necessary service-mesh-specific resources to the various clusters/meshes under management. For example, Gloo Mesh would write all of the `ServiceEntry`, `VirtualService` and `DestinationRule` resources if managing Istio. Let's take a closer look at the components.
  
 ##### Mesh Discovery
 
@@ -31,7 +31,9 @@ At this point, the management plane has a complete view of the meshes, workloads
 
 ##### Mesh Networking
 
-While the `mesh-discovery` components discover the resources in registered clusters, the `mesh-networking` components make decisions about federating the various clusters and meshes. The `VirtualMesh` concept helps to drive the federation behavior. When you create a `VirtualMesh` resource, you define what federation and trust model to use. `Mesh-Networking` performs translation at the mesh level for a group of meshes with the`VirtulMeshTranslator` and at the service level with `TrafficTargetTranslator` which will then decide which services federate to which workloads and handle building the correct service-discovery mechanisms. For example, with Istio, Gloo Mesh will create the appropriate `ServiceEntry` and `DestinationRule` resources to enable cross-cluster/mesh communication.
+While the `mesh-discovery` components discover the resources in registered clusters, the `mesh-networking` components make decisions about federating clusters and meshes. The `VirtualMesh` concept enables the federation of multiple meshes into a single managed construct. As part of the `VirtualMesh` resource, you will define a federation model and trust model to use. 
+
+`Mesh-networking` is what performs translation at the mesh level for the group of meshes within the VirtualMesh. There are two components that comprise `mesh-networking`, `VirtulMeshTranslator` and `TrafficTargetTranslator`. The `VirtulMeshTranslator` handles translation of settings at the mesh level, mapping mesh configuration defined by the VirtualMesh to individual meshes.  The `TrafficTargetTranslator` handles translation at the service layer to manage the mapping of services to workloads and traffic targets. For example, with Istio, Gloo Mesh will create the appropriate `ServiceEntry` and `DestinationRule` resources to enable cross-cluster/mesh communication.
 
 ![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/concepts-gloomesh-networking.png" %}})
 
