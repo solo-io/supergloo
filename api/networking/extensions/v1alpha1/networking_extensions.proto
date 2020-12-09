@@ -4,10 +4,10 @@ package extensions.networking.mesh.gloo.solo.io;
 
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1";
 
-import "gloo-mesh/api/discovery/v1alpha2/mesh.proto";
-import "gloo-mesh/api/discovery/v1alpha2/traffic_target.proto";
-import "gloo-mesh/api/discovery/v1alpha2/workload.proto";
-import "gloo-mesh/api/xds/v1alpha1/xds_config.proto";
+import "github.com/solo-io/gloo-mesh/api/discovery/v1alpha2/mesh.proto";
+import "github.com/solo-io/gloo-mesh/api/discovery/v1alpha2/traffic_target.proto";
+import "github.com/solo-io/gloo-mesh/api/discovery/v1alpha2/workload.proto";
+import "github.com/solo-io/gloo-mesh/api/xds/v1alpha1/xds_config.proto";
 
 import "networking/v1alpha3/destination_rule.proto";
 import "networking/v1alpha3/envoy_filter.proto";
