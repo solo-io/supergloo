@@ -5,7 +5,7 @@ description: Understanding Gloo Mesh Architecture
 weight: 20
 ---
 
-This document details the architecture of Gloo Mesh, which informs how Gloo Mesh is deploy and operated.
+This document details the architecture of Gloo Mesh, which informs how Gloo Mesh is deployed and operated.
 
 ## Components
 
