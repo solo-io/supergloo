@@ -35,7 +35,7 @@ While the `mesh-discovery` components discover the resources in registered clust
 
 ![Gloo Mesh Architecture]({{% versioned_link_path fromRoot="/img/concepts-gloomesh-networking.png" %}})
 
-The `FederationTranslator`, `FailoverTranslator`, and `mTLSTranslator` are grouped within the `VirtulMeshTranslator` to handle mesh level configuration and networking.
+The `FederationTranslator`, `FailoverTranslator`, and `mTLSTranslator` are grouped within the `VirtuslMeshTranslator` to handle mesh level configuration and networking.
  * `FederationTranslator` handles global DNS resolution and routing for services in remote clusters for each federated traffic target.
  * `FailoverTranslator` re-routes traffic to targets in remote clusters when local targets are unhealthy.
  * `mTLSTranslator` controls mesh-level settings for performing mTLS, including issuing & rotating root certificates used by each mesh.
