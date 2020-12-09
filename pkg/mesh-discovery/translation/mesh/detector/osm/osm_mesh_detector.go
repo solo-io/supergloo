@@ -33,7 +33,7 @@ func NewMeshDetector(
 }
 
 // returns a mesh for each deployment that contains the osm controller image
-func (d *meshDetector) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, error) {
+func (d *meshDetector) DetectMeshes(in input.RemoteSnapshot) (v1alpha2.MeshSlice, error) {
 	var meshes v1alpha2.MeshSlice
 	var errs error
 	for _, deployment := range in.Deployments().List() {
