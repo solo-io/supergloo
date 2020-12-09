@@ -12,7 +12,6 @@ import (
 	input "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
-	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MockSnapshot is a mock of Snapshot interface
@@ -66,32 +65,18 @@ func (mr *MockSnapshotMockRecorder) CertificateRequests() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificateRequests", reflect.TypeOf((*MockSnapshot)(nil).CertificateRequests))
 }
 
-// SyncStatuses mocks base method
-func (m *MockSnapshot) SyncStatuses(ctx context.Context, c client.Client) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SyncStatuses", ctx, c)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SyncStatuses indicates an expected call of SyncStatuses
-func (mr *MockSnapshotMockRecorder) SyncStatuses(ctx, c interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatuses", reflect.TypeOf((*MockSnapshot)(nil).SyncStatuses), ctx, c)
-}
-
 // SyncStatusesMultiCluster mocks base method
-func (m *MockSnapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
+func (m *MockSnapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts input.SyncStatusOptions) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SyncStatusesMultiCluster", ctx, mcClient)
+	ret := m.ctrl.Call(m, "SyncStatusesMultiCluster", ctx, mcClient, opts)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SyncStatusesMultiCluster indicates an expected call of SyncStatusesMultiCluster
-func (mr *MockSnapshotMockRecorder) SyncStatusesMultiCluster(ctx, mcClient interface{}) *gomock.Call {
+func (mr *MockSnapshotMockRecorder) SyncStatusesMultiCluster(ctx, mcClient, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatusesMultiCluster", reflect.TypeOf((*MockSnapshot)(nil).SyncStatusesMultiCluster), ctx, mcClient)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatusesMultiCluster", reflect.TypeOf((*MockSnapshot)(nil).SyncStatusesMultiCluster), ctx, mcClient, opts)
 }
 
 // MarshalJSON mocks base method
