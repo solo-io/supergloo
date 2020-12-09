@@ -67,7 +67,7 @@ var (
 				"PodBounceDirective",
 			},
 			schema.GroupVersion{
-				Group:   "xds.enterprise.agent." + constants.GlooMeshApiGroupSuffix,
+				Group:   "xds.agent.enterprise." + constants.GlooMeshApiGroupSuffix,
 				Version: "v1alpha1",
 			}: {
 				"XdsConfig",

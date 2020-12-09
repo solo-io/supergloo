@@ -13,7 +13,7 @@ import (
 
 	proto "github.com/golang/protobuf/proto"
 	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1"
+	v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -938,8 +938,8 @@ var file_github_com_solo_io_gloo_mesh_api_networking_extensions_v1alpha1_network
 	0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x2e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x4d, 0x61, 0x70,
 	0x48, 0x00, 0x52, 0x09, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x4d, 0x61, 0x70, 0x12, 0x56, 0x0a,
 	0x0a, 0x78, 0x64, 0x73, 0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x18, 0x07, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x35, 0x2e, 0x78, 0x64, 0x73, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x69,
-	0x73, 0x65, 0x2e, 0x61, 0x67, 0x65, 0x6e, 0x74, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c,
+	0x0b, 0x32, 0x35, 0x2e, 0x78, 0x64, 0x73, 0x2e, 0x61, 0x67, 0x65, 0x6e, 0x74, 0x2e, 0x65, 0x6e,
+	0x74, 0x65, 0x72, 0x70, 0x72, 0x69, 0x73, 0x65, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c,
 	0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x58, 0x64, 0x73, 0x43, 0x6f,
 	0x6e, 0x66, 0x69, 0x67, 0x53, 0x70, 0x65, 0x63, 0x48, 0x00, 0x52, 0x09, 0x78, 0x64, 0x73, 0x43,
 	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x1a, 0xa6, 0x01, 0x0a, 0x09, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67,
@@ -1051,7 +1051,7 @@ var file_github_com_solo_io_gloo_mesh_api_networking_extensions_v1alpha1_network
 	(*v1alpha3.EnvoyFilter)(nil),          // 21: istio.networking.v1alpha3.EnvoyFilter
 	(*v1alpha3.ServiceEntry)(nil),         // 22: istio.networking.v1alpha3.ServiceEntry
 	(*v1alpha3.VirtualService)(nil),       // 23: istio.networking.v1alpha3.VirtualService
-	(*v1alpha1.XdsConfigSpec)(nil),        // 24: xds.enterprise.agent.mesh.gloo.solo.io.XdsConfigSpec
+	(*v1alpha1.XdsConfigSpec)(nil),        // 24: xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec
 }
 var file_github_com_solo_io_gloo_mesh_api_networking_extensions_v1alpha1_networking_extensions_proto_depIdxs = []int32{
 	2,  // 0: extensions.networking.mesh.gloo.solo.io.ExtensionPatchRequest.inputs:type_name -> extensions.networking.mesh.gloo.solo.io.DiscoverySnapshot
@@ -1075,7 +1075,7 @@ var file_github_com_solo_io_gloo_mesh_api_networking_extensions_v1alpha1_network
 	22, // 18: extensions.networking.mesh.gloo.solo.io.GeneratedObject.service_entry:type_name -> istio.networking.v1alpha3.ServiceEntry
 	23, // 19: extensions.networking.mesh.gloo.solo.io.GeneratedObject.virtual_service:type_name -> istio.networking.v1alpha3.VirtualService
 	10, // 20: extensions.networking.mesh.gloo.solo.io.GeneratedObject.config_map:type_name -> extensions.networking.mesh.gloo.solo.io.GeneratedObject.ConfigMap
-	24, // 21: extensions.networking.mesh.gloo.solo.io.GeneratedObject.xds_config:type_name -> xds.enterprise.agent.mesh.gloo.solo.io.XdsConfigSpec
+	24, // 21: extensions.networking.mesh.gloo.solo.io.GeneratedObject.xds_config:type_name -> xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec
 	12, // 22: extensions.networking.mesh.gloo.solo.io.ObjectMeta.labels:type_name -> extensions.networking.mesh.gloo.solo.io.ObjectMeta.LabelsEntry
 	13, // 23: extensions.networking.mesh.gloo.solo.io.ObjectMeta.annotations:type_name -> extensions.networking.mesh.gloo.solo.io.ObjectMeta.AnnotationsEntry
 	11, // 24: extensions.networking.mesh.gloo.solo.io.GeneratedObject.ConfigMap.data:type_name -> extensions.networking.mesh.gloo.solo.io.GeneratedObject.ConfigMap.DataEntry
