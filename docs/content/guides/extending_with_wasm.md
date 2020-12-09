@@ -1,7 +1,7 @@
 ---
 title: Extending the Mesh with Wasm
 menuTitle: Extending the Mesh with Wasm
-weight: 85
+weight: 100
 ---
 
 {{% notice note %}}

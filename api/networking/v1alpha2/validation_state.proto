@@ -2,10 +2,10 @@ syntax = "proto3";
 package networking.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2";
 
-import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "skv2/api/core/v1/core.proto";
 
-import "extproto/ext.proto";
-option (extproto.equal_all) = true;
+import "gogoproto/gogo.proto";
+option (gogoproto.equal_all) = true;
 
 // The approval status of a policy that has been applied to a discovery resource.
 message ApprovalStatus {

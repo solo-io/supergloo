@@ -1,13 +1,12 @@
 ---
-title: "Gloo Mesh Role-based API"
+title: Role-based API
 menuTitle: Role-based API
-description: Understanding Gloo Mesh Enterprise Role-based API
-weight: 30
+weight: 75
 ---
 
-{{< notice note >}}
-This feature is available in Gloo Mesh Enterprise only.
-{{< /notice >}}
+{{% notice note %}}
+Gloo Mesh Enterprise is required for this feature.
+{{% /notice %}}
 
 At a high level, Gloo Mesh manages control planes by translating networking policy configuration (`networking.mesh.gloo.solo.io` CRD objects)
 into service-mesh-specific configuration. Each networking policy object _targets_ specified discovered mesh entities (represented by `discovery.mesh.gloo.solo.io` CRD objects).
@@ -364,7 +363,3 @@ spec:
 This role allows configuration of TrafficPolicies (only request timeouts, retries, and fault injections) and AccessPolicies that affect traffic originating
  from the `productpage` workload to the `ratings` traffic target on both `mgmt-cluster` and `remote-cluster`. We assume that the `productpage-service-account` 
  service account identity applies only to the `productpage` workload (and no other workloads). 
-
-## Next Steps
-
-To test drive the Role-based API for yourself, we recommend [following our guide]({{% versioned_link_path fromRoot="/guides/using_role_based_api" %}}) on the topic.

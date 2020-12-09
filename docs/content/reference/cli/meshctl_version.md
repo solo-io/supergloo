@@ -22,12 +22,6 @@ meshctl version [flags]
       --kubecontext string   name of the kubeconfig context to use for the management cluster
 ```
 
-### Options inherited from parent commands
-
-```
-  -v, --verbose   enable verbose logging
-```
-
 ### SEE ALSO
 
 * [meshctl](../meshctl)	 - The Command Line Interface for managing Gloo Mesh.

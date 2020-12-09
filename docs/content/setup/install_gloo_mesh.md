@@ -45,7 +45,7 @@ kubectl config use-context $MGMT_CONTEXT
 Note that these contexts need not be different; you may install and manage a service mesh in the same cluster as Gloo Mesh. For the purposes of this guide, though, we will assume they are different.
 {{% /notice %}}
 
-The following directions show how to install both Gloo Mesh and Gloo Mesh Enterprise. Select the tab that meets your scenario. If you are deploying Gloo Mesh Enterprise, you should also follow our guide on configuring Role-based API control.
+The following directions show how to install both Gloo Mesh and Gloo Mesh Enterprise. Select the tab that meets your scenario.
 
 ### Installing with `meshctl`
 
@@ -162,7 +162,7 @@ helm install gloo-mesh gloo-mesh/gloo-mesh --namespace gloo-mesh
 {{< /tab >}}
 {{< tab name="Gloo Mesh Enterprise" codelang="shell">}}
 kubectl create ns gloo-mesh
-helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise -n gloo-mesh --set licenseKey=LICENSE_KEY_STRING
+helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise -n gloo-mesh --set license.key=LICENSE_KEY_STRING
 {{< /tab >}}
 {{< /tabs >}}
 

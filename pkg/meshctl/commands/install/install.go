@@ -9,14 +9,11 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"github.com/spf13/cobra"
 )
 
-func Command(ctx context.Context, globalFlags utils.GlobalFlags) *cobra.Command {
-	opts := &flags.Options{
-		Verbose: globalFlags.Verbose,
-	}
+func Command(ctx context.Context) *cobra.Command {
+	opts := &flags.Options{}
 
 	cmd := &cobra.Command{
 		Use:   "install",
@@ -27,7 +24,7 @@ func Command(ctx context.Context, globalFlags utils.GlobalFlags) *cobra.Command 
 	}
 	opts.AddToFlags(cmd.Flags())
 	cmd.SilenceUsage = true
-	cmd.AddCommand(enterprise.Command(ctx, globalFlags))
+	cmd.AddCommand(enterprise.Command(ctx))
 	return cmd
 }
 

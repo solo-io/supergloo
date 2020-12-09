@@ -30,14 +30,9 @@ meshctl cluster register [flags]
       --mgmt-context string              name of the kubeconfig context to use for the management cluster
       --remote-context string            name of the kubeconfig context to use for the remote cluster
       --remote-namespace string          namespace in the target cluster where a service account enabling remote access will be created. If the namespace does not exist it will be created. (default "gloo-mesh")
+      --verbose                          enable/disable verbose logging during installation of cert-agent (default true)
       --wasm-agent-chart-file string     Path to a local Helm chart for installing the Wasm Agent. If unset, this command will install the Wasm Agent from the publicly released Helm chart.
       --wasm-agent-chart-values string   Path to a Helm values.yaml file for customizing the installation of the Wasm Agent. If unset, this command will install the Wasm Agent with default Helm values.
-```
-
-### Options inherited from parent commands
-
-```
-  -v, --verbose   enable verbose logging
 ```
 
 ### SEE ALSO

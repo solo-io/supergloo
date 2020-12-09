@@ -101,9 +101,7 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 	outSnap.ApplyLocalCluster(r.ctx, r.localClient, errHandler)
 
 	errs := errHandler.Errors()
-	if err := inputSnap.SyncStatuses(r.ctx, r.localClient, input.SyncStatusOptions{
-		IssuedCertificate: true,
-	}); err != nil {
+	if err := inputSnap.SyncStatuses(r.ctx, r.localClient); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 

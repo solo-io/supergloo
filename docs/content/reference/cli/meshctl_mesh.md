@@ -20,12 +20,6 @@ Operations on a specific mesh
       --mesh-namespace string   namespace of the Mesh object representing the service mesh being operated on (default "gloo-mesh")
 ```
 
-### Options inherited from parent commands
-
-```
-  -v, --verbose   enable verbose logging
-```
-
 ### SEE ALSO
 
 * [meshctl](../meshctl)	 - The Command Line Interface for managing Gloo Mesh.

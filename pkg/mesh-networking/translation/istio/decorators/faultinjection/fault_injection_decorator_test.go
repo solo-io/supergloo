@@ -2,7 +2,6 @@ package faultinjection_test
 
 import (
 	"github.com/gogo/protobuf/types"
-	"github.com/golang/protobuf/ptypes/duration"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
@@ -60,7 +59,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 			Spec: &v1alpha2.TrafficPolicySpec{
 				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
 					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_FixedDelay{
-						FixedDelay: &duration.Duration{Seconds: 2},
+						FixedDelay: &types.Duration{Seconds: 2},
 					},
 					Percentage: 50,
 				},
@@ -85,7 +84,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 			Spec: &v1alpha2.TrafficPolicySpec{
 				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
 					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_ExponentialDelay{
-						ExponentialDelay: &duration.Duration{Seconds: 2},
+						ExponentialDelay: &types.Duration{Seconds: 2},
 					},
 					Percentage: 50,
 				},
@@ -111,7 +110,7 @@ var _ = Describe("FaultInjectionDecorator", func() {
 			Spec: &v1alpha2.TrafficPolicySpec{
 				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
 					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_ExponentialDelay{
-						ExponentialDelay: &duration.Duration{Seconds: 2},
+						ExponentialDelay: &types.Duration{Seconds: 2},
 					},
 				},
 			},

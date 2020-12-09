@@ -32,13 +32,8 @@ meshctl install [flags]
       --namespace string                 namespace in which to install Gloo Mesh (default "gloo-mesh")
   -r, --register                         Register the cluster running Gloo Mesh
       --release-name string              Helm release name (default "gloo-mesh")
+  -v, --verbose                          Enable verbose output
       --version string                   Version to install, defaults to latest if omitted
-```
-
-### Options inherited from parent commands
-
-```
-  -v, --verbose   enable verbose logging
 ```
 
 ### SEE ALSO

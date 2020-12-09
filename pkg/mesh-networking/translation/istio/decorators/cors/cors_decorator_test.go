@@ -2,8 +2,6 @@ package cors_test
 
 import (
 	"github.com/gogo/protobuf/types"
-	"github.com/golang/protobuf/ptypes/duration"
-	"github.com/golang/protobuf/ptypes/wrappers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
@@ -41,8 +39,8 @@ var _ = Describe("CorsDecorator", func() {
 					AllowMethods:     []string{"GET", "POST"},
 					AllowHeaders:     []string{"Header1", "Header2"},
 					ExposeHeaders:    []string{"ExposedHeader1", "ExposedHeader2"},
-					MaxAge:           &duration.Duration{Seconds: 1},
-					AllowCredentials: &wrappers.BoolValue{Value: false},
+					MaxAge:           &types.Duration{Seconds: 1},
+					AllowCredentials: &types.BoolValue{Value: false},
 				},
 			},
 		}

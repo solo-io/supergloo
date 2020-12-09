@@ -1,4 +1,0 @@
-changelog:
-  - type: FIX
-    description: Relegate Helm release info to debug output.
-    issueLink: https://github.com/solo-io/gloo-mesh/issues/1117

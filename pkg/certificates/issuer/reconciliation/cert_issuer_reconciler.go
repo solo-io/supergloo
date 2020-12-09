@@ -57,9 +57,7 @@ func (r *certIssuerReconciler) reconcile(_ ezkube.ClusterResourceId) (bool, erro
 		}
 	}
 
-	return false, inputSnap.SyncStatusesMultiCluster(r.ctx, r.mcClient, input.SyncStatusOptions{
-		CertificateRequest: true,
-	})
+	return false, inputSnap.SyncStatusesMultiCluster(r.ctx, r.mcClient)
 }
 
 func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v1alpha2.CertificateRequest, issuedCertificates v1alpha2sets.IssuedCertificateSet) error {

@@ -5,7 +5,7 @@
 package v1alpha2
 
 import (
-	proto "github.com/golang/protobuf/proto"
+	proto "github.com/gogo/protobuf/proto"
 )
 
 // DeepCopyInto for the TrafficPolicy.Spec

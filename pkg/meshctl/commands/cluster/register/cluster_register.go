@@ -5,15 +5,12 @@ import (
 
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
-func Command(ctx context.Context, globalFlags utils.GlobalFlags) *cobra.Command {
-	opts := registrationOptions{
-		Verbose: globalFlags.Verbose,
-	}
+func Command(ctx context.Context) *cobra.Command {
+	opts := registrationOptions{}
 	cmd := &cobra.Command{
 		Use:   "register",
 		Short: "Register a Kubernetes cluster with Gloo Mesh",
@@ -49,4 +46,5 @@ func (opts *registrationOptions) addToFlags(set *pflag.FlagSet) {
 	set.BoolVar(&opts.WasmAgent.Install, "install-wasm-agent", false, "If true, install the wasm-agent on the cluster being registered.")
 	set.StringVar(&opts.WasmAgent.ChartPath, "wasm-agent-chart-file", "", "Path to a local Helm chart for installing the Wasm Agent. If unset, this command will install the Wasm Agent from the publicly released Helm chart.")
 	set.StringVar(&opts.WasmAgent.ChartValues, "wasm-agent-chart-values", "", "Path to a Helm values.yaml file for customizing the installation of the Wasm Agent. If unset, this command will install the Wasm Agent with default Helm values.")
+	set.BoolVar(&opts.Verbose, "verbose", true, "enable/disable verbose logging during installation of cert-agent")
 }

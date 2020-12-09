@@ -16,12 +16,6 @@ Debug Gloo Mesh resources
   -h, --help   help for debug
 ```
 
-### Options inherited from parent commands
-
-```
-  -v, --verbose   enable verbose logging
-```
-
 ### SEE ALSO
 
 * [meshctl](../meshctl)	 - The Command Line Interface for managing Gloo Mesh.

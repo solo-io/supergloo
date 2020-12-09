@@ -1,4 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Add build time check to report any transitive dependencies on "github.com/solo-io/skv2/contrib".
-    issueLink: https://github.com/solo-io/gloo-mesh/issues/1119

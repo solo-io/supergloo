@@ -31,12 +31,6 @@ meshctl demo osm init [flags]
   -h, --help   help for init
 ```
 
-### Options inherited from parent commands
-
-```
-  -v, --verbose   enable verbose logging
-```
-
 ### SEE ALSO
 
 * [meshctl demo osm](../meshctl_demo_osm)	 - Demo Gloo Mesh functionality one OSM control plane deployed

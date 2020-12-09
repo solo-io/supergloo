@@ -70,7 +70,7 @@ type multiClusterReconciler interface {
 var _ multiClusterReconciler = &multiClusterReconcilerImpl{}
 
 type multiClusterReconcilerImpl struct {
-	base input.InputReconciler
+	base input.MultiClusterReconciler
 }
 
 // Options for reconcileing a snapshot
@@ -112,12 +112,11 @@ func RegisterMultiClusterReconciler(
 	reconcileInterval time.Duration,
 	options ReconcileOptions,
 	predicates ...predicate.Predicate,
-) input.InputReconciler {
+) input.MultiClusterReconciler {
 
-	base := input.NewInputReconciler(
+	base := input.NewMultiClusterReconcilerImpl(
 		ctx,
 		reconcileFunc,
-		nil,
 		reconcileInterval,
 	)
 
@@ -151,7 +150,7 @@ func RegisterMultiClusterReconciler(
 
 func (r *multiClusterReconcilerImpl) ReconcileSettings(clusterName string, obj *settings_mesh_gloo_solo_io_v1alpha2.Settings) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileSettingsDeletion(clusterName string, obj reconcile.Request) error {
@@ -160,13 +159,13 @@ func (r *multiClusterReconcilerImpl) ReconcileSettingsDeletion(clusterName strin
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+	_, err := r.base.ReconcileClusterGeneric(ref)
 	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileTrafficTarget(clusterName string, obj *discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileTrafficTargetDeletion(clusterName string, obj reconcile.Request) error {
@@ -175,13 +174,13 @@ func (r *multiClusterReconcilerImpl) ReconcileTrafficTargetDeletion(clusterName 
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+	_, err := r.base.ReconcileClusterGeneric(ref)
 	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileWorkload(clusterName string, obj *discovery_mesh_gloo_solo_io_v1alpha2.Workload) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileWorkloadDeletion(clusterName string, obj reconcile.Request) error {
@@ -190,13 +189,13 @@ func (r *multiClusterReconcilerImpl) ReconcileWorkloadDeletion(clusterName strin
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+	_, err := r.base.ReconcileClusterGeneric(ref)
 	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileMesh(clusterName string, obj *discovery_mesh_gloo_solo_io_v1alpha2.Mesh) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileMeshDeletion(clusterName string, obj reconcile.Request) error {
@@ -205,13 +204,13 @@ func (r *multiClusterReconcilerImpl) ReconcileMeshDeletion(clusterName string, o
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+	_, err := r.base.ReconcileClusterGeneric(ref)
 	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileTrafficPolicy(clusterName string, obj *networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileTrafficPolicyDeletion(clusterName string, obj reconcile.Request) error {
@@ -220,13 +219,13 @@ func (r *multiClusterReconcilerImpl) ReconcileTrafficPolicyDeletion(clusterName 
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+	_, err := r.base.ReconcileClusterGeneric(ref)
 	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileAccessPolicy(clusterName string, obj *networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileAccessPolicyDeletion(clusterName string, obj reconcile.Request) error {
@@ -235,13 +234,13 @@ func (r *multiClusterReconcilerImpl) ReconcileAccessPolicyDeletion(clusterName s
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+	_, err := r.base.ReconcileClusterGeneric(ref)
 	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileVirtualMesh(clusterName string, obj *networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileVirtualMeshDeletion(clusterName string, obj reconcile.Request) error {
@@ -250,13 +249,13 @@ func (r *multiClusterReconcilerImpl) ReconcileVirtualMeshDeletion(clusterName st
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+	_, err := r.base.ReconcileClusterGeneric(ref)
 	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileFailoverService(clusterName string, obj *networking_mesh_gloo_solo_io_v1alpha2.FailoverService) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileFailoverServiceDeletion(clusterName string, obj reconcile.Request) error {
@@ -265,13 +264,13 @@ func (r *multiClusterReconcilerImpl) ReconcileFailoverServiceDeletion(clusterNam
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+	_, err := r.base.ReconcileClusterGeneric(ref)
 	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileSecret(clusterName string, obj *v1.Secret) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileSecretDeletion(clusterName string, obj reconcile.Request) error {
@@ -280,13 +279,13 @@ func (r *multiClusterReconcilerImpl) ReconcileSecretDeletion(clusterName string,
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+	_, err := r.base.ReconcileClusterGeneric(ref)
 	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileKubernetesCluster(clusterName string, obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+	return r.base.ReconcileClusterGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileKubernetesClusterDeletion(clusterName string, obj reconcile.Request) error {
@@ -295,7 +294,7 @@ func (r *multiClusterReconcilerImpl) ReconcileKubernetesClusterDeletion(clusterN
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+	_, err := r.base.ReconcileClusterGeneric(ref)
 	return err
 }
 
@@ -321,7 +320,7 @@ type singleClusterReconciler interface {
 var _ singleClusterReconciler = &singleClusterReconcilerImpl{}
 
 type singleClusterReconcilerImpl struct {
-	base input.InputReconciler
+	base input.SingleClusterReconciler
 }
 
 // register the reconcile func with the manager
@@ -334,11 +333,10 @@ func RegisterSingleClusterReconciler(
 	reconcileInterval time.Duration,
 	options reconcile.Options,
 	predicates ...predicate.Predicate,
-) (input.InputReconciler, error) {
+) (input.SingleClusterReconciler, error) {
 
-	base := input.NewInputReconciler(
+	base := input.NewSingleClusterReconciler(
 		ctx,
-		nil,
 		reconcileFunc,
 		reconcileInterval,
 	)
@@ -388,7 +386,7 @@ func RegisterSingleClusterReconciler(
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileSettings(obj *settings_mesh_gloo_solo_io_v1alpha2.Settings) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileSettingsDeletion(obj reconcile.Request) error {
@@ -396,12 +394,12 @@ func (r *singleClusterReconcilerImpl) ReconcileSettingsDeletion(obj reconcile.Re
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+	_, err := r.base.ReconcileGeneric(ref)
 	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileTrafficTarget(obj *discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileTrafficTargetDeletion(obj reconcile.Request) error {
@@ -409,12 +407,12 @@ func (r *singleClusterReconcilerImpl) ReconcileTrafficTargetDeletion(obj reconci
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+	_, err := r.base.ReconcileGeneric(ref)
 	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileWorkload(obj *discovery_mesh_gloo_solo_io_v1alpha2.Workload) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileWorkloadDeletion(obj reconcile.Request) error {
@@ -422,12 +420,12 @@ func (r *singleClusterReconcilerImpl) ReconcileWorkloadDeletion(obj reconcile.Re
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+	_, err := r.base.ReconcileGeneric(ref)
 	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileMesh(obj *discovery_mesh_gloo_solo_io_v1alpha2.Mesh) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileMeshDeletion(obj reconcile.Request) error {
@@ -435,12 +433,12 @@ func (r *singleClusterReconcilerImpl) ReconcileMeshDeletion(obj reconcile.Reques
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+	_, err := r.base.ReconcileGeneric(ref)
 	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileTrafficPolicy(obj *networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileTrafficPolicyDeletion(obj reconcile.Request) error {
@@ -448,12 +446,12 @@ func (r *singleClusterReconcilerImpl) ReconcileTrafficPolicyDeletion(obj reconci
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+	_, err := r.base.ReconcileGeneric(ref)
 	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileAccessPolicy(obj *networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileAccessPolicyDeletion(obj reconcile.Request) error {
@@ -461,12 +459,12 @@ func (r *singleClusterReconcilerImpl) ReconcileAccessPolicyDeletion(obj reconcil
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+	_, err := r.base.ReconcileGeneric(ref)
 	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileVirtualMesh(obj *networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileVirtualMeshDeletion(obj reconcile.Request) error {
@@ -474,12 +472,12 @@ func (r *singleClusterReconcilerImpl) ReconcileVirtualMeshDeletion(obj reconcile
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+	_, err := r.base.ReconcileGeneric(ref)
 	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileFailoverService(obj *networking_mesh_gloo_solo_io_v1alpha2.FailoverService) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileFailoverServiceDeletion(obj reconcile.Request) error {
@@ -487,12 +485,12 @@ func (r *singleClusterReconcilerImpl) ReconcileFailoverServiceDeletion(obj recon
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+	_, err := r.base.ReconcileGeneric(ref)
 	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileSecret(obj *v1.Secret) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileSecretDeletion(obj reconcile.Request) error {
@@ -500,12 +498,12 @@ func (r *singleClusterReconcilerImpl) ReconcileSecretDeletion(obj reconcile.Requ
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+	_, err := r.base.ReconcileGeneric(ref)
 	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	return r.base.ReconcileGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileKubernetesClusterDeletion(obj reconcile.Request) error {
@@ -513,6 +511,6 @@ func (r *singleClusterReconcilerImpl) ReconcileKubernetesClusterDeletion(obj rec
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+	_, err := r.base.ReconcileGeneric(ref)
 	return err
 }

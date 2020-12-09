@@ -29,12 +29,13 @@ import (
 
 	"github.com/solo-io/skv2/pkg/verifier"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"github.com/hashicorp/go-multierror"
 
 	"github.com/solo-io/skv2/pkg/controllerutils"
+	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	settings_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	settings_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
@@ -81,38 +82,13 @@ type Snapshot interface {
 	KubernetesClusters() multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
 	// update the status of all input objects which support
 	// the Status subresource (in the local cluster)
-	SyncStatuses(ctx context.Context, c client.Client, opts SyncStatusOptions) error
+	SyncStatuses(ctx context.Context, c client.Client) error
+
+	// update the status of all input objects which support
+	// the Status subresource (across multiple clusters)
+	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error
 	// serialize the entire snapshot as JSON
 	MarshalJSON() ([]byte, error)
-}
-
-// options for syncing input object statuses
-type SyncStatusOptions struct {
-
-	// sync status of Settings objects
-	Settings bool
-
-	// sync status of TrafficTarget objects
-	TrafficTarget bool
-	// sync status of Workload objects
-	Workload bool
-	// sync status of Mesh objects
-	Mesh bool
-
-	// sync status of TrafficPolicy objects
-	TrafficPolicy bool
-	// sync status of AccessPolicy objects
-	AccessPolicy bool
-	// sync status of VirtualMesh objects
-	VirtualMesh bool
-	// sync status of FailoverService objects
-	FailoverService bool
-
-	// sync status of Secret objects
-	Secret bool
-
-	// sync status of KubernetesCluster objects
-	KubernetesCluster bool
 }
 
 type snapshot struct {
@@ -208,77 +184,146 @@ func (s snapshot) Secrets() v1_sets.SecretSet {
 func (s snapshot) KubernetesClusters() multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet {
 	return s.kubernetesClusters
 }
+func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
 
-func (s snapshot) SyncStatuses(ctx context.Context, c client.Client, opts SyncStatusOptions) error {
-	var errs error
-
-	if opts.Settings {
-		for _, obj := range s.Settings().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
+	for _, obj := range s.Settings().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
 		}
 	}
 
-	if opts.TrafficTarget {
-		for _, obj := range s.TrafficTargets().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
+	for _, obj := range s.TrafficTargets().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
 		}
 	}
-	if opts.Workload {
-		for _, obj := range s.Workloads().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
+	for _, obj := range s.Workloads().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
 		}
 	}
-	if opts.Mesh {
-		for _, obj := range s.Meshes().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
+	for _, obj := range s.Meshes().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
 		}
 	}
 
-	if opts.TrafficPolicy {
-		for _, obj := range s.TrafficPolicies().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
+	for _, obj := range s.TrafficPolicies().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
 		}
 	}
-	if opts.AccessPolicy {
-		for _, obj := range s.AccessPolicies().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
+	for _, obj := range s.AccessPolicies().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
 		}
 	}
-	if opts.VirtualMesh {
-		for _, obj := range s.VirtualMeshes().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
+	for _, obj := range s.VirtualMeshes().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
 		}
 	}
-	if opts.FailoverService {
-		for _, obj := range s.FailoverServices().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
+	for _, obj := range s.FailoverServices().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
 		}
 	}
 
-	if opts.KubernetesCluster {
-		for _, obj := range s.KubernetesClusters().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
+	for _, obj := range s.KubernetesClusters().List() {
+		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			return err
 		}
 	}
-	return errs
+	return nil
+}
+
+func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
+
+	for _, obj := range s.Settings().List() {
+		clusterClient, err := mcClient.Cluster(obj.ClusterName)
+		if err != nil {
+			return err
+		}
+		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			return err
+		}
+	}
+
+	for _, obj := range s.TrafficTargets().List() {
+		clusterClient, err := mcClient.Cluster(obj.ClusterName)
+		if err != nil {
+			return err
+		}
+		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			return err
+		}
+	}
+	for _, obj := range s.Workloads().List() {
+		clusterClient, err := mcClient.Cluster(obj.ClusterName)
+		if err != nil {
+			return err
+		}
+		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			return err
+		}
+	}
+	for _, obj := range s.Meshes().List() {
+		clusterClient, err := mcClient.Cluster(obj.ClusterName)
+		if err != nil {
+			return err
+		}
+		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			return err
+		}
+	}
+
+	for _, obj := range s.TrafficPolicies().List() {
+		clusterClient, err := mcClient.Cluster(obj.ClusterName)
+		if err != nil {
+			return err
+		}
+		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			return err
+		}
+	}
+	for _, obj := range s.AccessPolicies().List() {
+		clusterClient, err := mcClient.Cluster(obj.ClusterName)
+		if err != nil {
+			return err
+		}
+		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			return err
+		}
+	}
+	for _, obj := range s.VirtualMeshes().List() {
+		clusterClient, err := mcClient.Cluster(obj.ClusterName)
+		if err != nil {
+			return err
+		}
+		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			return err
+		}
+	}
+	for _, obj := range s.FailoverServices().List() {
+		clusterClient, err := mcClient.Cluster(obj.ClusterName)
+		if err != nil {
+			return err
+		}
+		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			return err
+		}
+	}
+
+	for _, obj := range s.KubernetesClusters().List() {
+		clusterClient, err := mcClient.Cluster(obj.ClusterName)
+		if err != nil {
+			return err
+		}
+		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s snapshot) MarshalJSON() ([]byte, error) {
@@ -298,6 +343,9 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 }
 
 // builds the input snapshot from API Clients.
+// Two types of builders are available:
+// a builder for snapshots of resources across multiple clusters
+// a builder for snapshots of resources within a single cluster
 type Builder interface {
 	BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error)
 }
@@ -339,6 +387,520 @@ type ResourceBuildOptions struct {
 
 	// If provided, ensure the resource has been verified before adding it to snapshots
 	Verifier verifier.ServerResourceVerifier
+}
+
+// build a snapshot from resources across multiple clusters
+type multiClusterBuilder struct {
+	clusters multicluster.Interface
+	client   multicluster.Client
+}
+
+// Produces snapshots of resources across all clusters defined in the ClusterSet
+func NewMultiClusterBuilder(
+	clusters multicluster.Interface,
+	client multicluster.Client,
+) Builder {
+	return &multiClusterBuilder{
+		clusters: clusters,
+		client:   client,
+	}
+}
+
+func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
+
+	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+
+	trafficTargets := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet()
+	workloads := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet()
+	meshes := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet()
+
+	trafficPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficPolicySet()
+	accessPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewAccessPolicySet()
+	virtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
+	failoverServices := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
+
+	secrets := v1_sets.NewSecretSet()
+
+	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
+
+	var errs error
+
+	for _, cluster := range b.clusters.ListClusters() {
+
+		if err := b.insertSettingsFromCluster(ctx, cluster, settings, opts.Settings); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertTrafficTargetsFromCluster(ctx, cluster, trafficTargets, opts.TrafficTargets); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertWorkloadsFromCluster(ctx, cluster, workloads, opts.Workloads); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertMeshesFromCluster(ctx, cluster, meshes, opts.Meshes); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertTrafficPoliciesFromCluster(ctx, cluster, trafficPolicies, opts.TrafficPolicies); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertAccessPoliciesFromCluster(ctx, cluster, accessPolicies, opts.AccessPolicies); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertVirtualMeshesFromCluster(ctx, cluster, virtualMeshes, opts.VirtualMeshes); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertFailoverServicesFromCluster(ctx, cluster, failoverServices, opts.FailoverServices); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertKubernetesClustersFromCluster(ctx, cluster, kubernetesClusters, opts.KubernetesClusters); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+
+	}
+
+	outputSnap := NewSnapshot(
+		name,
+
+		settings,
+		trafficTargets,
+		workloads,
+		meshes,
+		trafficPolicies,
+		accessPolicies,
+		virtualMeshes,
+		failoverServices,
+		secrets,
+		kubernetesClusters,
+	)
+
+	return outputSnap, errs
+}
+
+func (b *multiClusterBuilder) insertSettingsFromCluster(ctx context.Context, cluster string, settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceBuildOptions) error {
+	settingsClient, err := settings_mesh_gloo_solo_io_v1alpha2.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "settings.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Settings",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	settingsList, err := settingsClient.ListSettings(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range settingsList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		settings.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *multiClusterBuilder) insertTrafficTargetsFromCluster(ctx context.Context, cluster string, trafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet, opts ResourceBuildOptions) error {
+	trafficTargetClient, err := discovery_mesh_gloo_solo_io_v1alpha2.NewMulticlusterTrafficTargetClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "discovery.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "TrafficTarget",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	trafficTargetList, err := trafficTargetClient.ListTrafficTarget(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range trafficTargetList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		trafficTargets.Insert(&item)
+	}
+
+	return nil
+}
+func (b *multiClusterBuilder) insertWorkloadsFromCluster(ctx context.Context, cluster string, workloads discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet, opts ResourceBuildOptions) error {
+	workloadClient, err := discovery_mesh_gloo_solo_io_v1alpha2.NewMulticlusterWorkloadClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "discovery.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Workload",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	workloadList, err := workloadClient.ListWorkload(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range workloadList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		workloads.Insert(&item)
+	}
+
+	return nil
+}
+func (b *multiClusterBuilder) insertMeshesFromCluster(ctx context.Context, cluster string, meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet, opts ResourceBuildOptions) error {
+	meshClient, err := discovery_mesh_gloo_solo_io_v1alpha2.NewMulticlusterMeshClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "discovery.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Mesh",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	meshList, err := meshClient.ListMesh(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range meshList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		meshes.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *multiClusterBuilder) insertTrafficPoliciesFromCluster(ctx context.Context, cluster string, trafficPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet, opts ResourceBuildOptions) error {
+	trafficPolicyClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterTrafficPolicyClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "TrafficPolicy",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	trafficPolicyList, err := trafficPolicyClient.ListTrafficPolicy(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range trafficPolicyList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		trafficPolicies.Insert(&item)
+	}
+
+	return nil
+}
+func (b *multiClusterBuilder) insertAccessPoliciesFromCluster(ctx context.Context, cluster string, accessPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet, opts ResourceBuildOptions) error {
+	accessPolicyClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterAccessPolicyClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "AccessPolicy",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	accessPolicyList, err := accessPolicyClient.ListAccessPolicy(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range accessPolicyList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		accessPolicies.Insert(&item)
+	}
+
+	return nil
+}
+func (b *multiClusterBuilder) insertVirtualMeshesFromCluster(ctx context.Context, cluster string, virtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceBuildOptions) error {
+	virtualMeshClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterVirtualMeshClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "VirtualMesh",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	virtualMeshList, err := virtualMeshClient.ListVirtualMesh(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range virtualMeshList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		virtualMeshes.Insert(&item)
+	}
+
+	return nil
+}
+func (b *multiClusterBuilder) insertFailoverServicesFromCluster(ctx context.Context, cluster string, failoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet, opts ResourceBuildOptions) error {
+	failoverServiceClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterFailoverServiceClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "FailoverService",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	failoverServiceList, err := failoverServiceClient.ListFailoverService(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range failoverServiceList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		failoverServices.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, cluster string, secrets v1_sets.SecretSet, opts ResourceBuildOptions) error {
+	secretClient, err := v1.NewMulticlusterSecretClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Secret",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	secretList, err := secretClient.ListSecret(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range secretList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		secrets.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *multiClusterBuilder) insertKubernetesClustersFromCluster(ctx context.Context, cluster string, kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet, opts ResourceBuildOptions) error {
+	kubernetesClusterClient, err := multicluster_solo_io_v1alpha1.NewMulticlusterKubernetesClusterClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "multicluster.solo.io",
+			Version: "v1alpha1",
+			Kind:    "KubernetesCluster",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	kubernetesClusterList, err := kubernetesClusterClient.ListKubernetesCluster(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range kubernetesClusterList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		kubernetesClusters.Insert(&item)
+	}
+
+	return nil
 }
 
 // build a snapshot from resources in a single cluster

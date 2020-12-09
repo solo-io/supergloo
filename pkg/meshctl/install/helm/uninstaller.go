@@ -42,11 +42,11 @@ func (i Uninstaller) UninstallChart(ctx context.Context) error {
 	if err == nil && len(h) > 0 {
 		client := action.NewUninstall(actionConfig)
 		client.DryRun = dryRun
-		_, err := client.Run(releaseName)
+		release, err := client.Run(releaseName)
 		if err != nil {
 			return eris.Wrapf(err, "uninstalling helm release %s", releaseName)
 		}
-		logrus.Infof("finished uninstalling release %s", releaseName)
+		logrus.Infof("finished uninstalling release %s: %+v", releaseName, release)
 	} else {
 		logrus.Infof("release %s does not exist, nothing to uninstall", releaseName)
 	}
