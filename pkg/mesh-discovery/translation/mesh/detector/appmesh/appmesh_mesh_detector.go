@@ -35,7 +35,7 @@ func NewMeshDetector(
 }
 
 // returns a mesh for each unique AppMesh Controller Mesh CRD in the snapshot
-func (d *meshDetector) DetectMeshes(in input.Snapshot) (v1alpha2.MeshSlice, error) {
+func (d *meshDetector) DetectMeshes(in input.RemoteSnapshot) (v1alpha2.MeshSlice, error) {
 	var errors error
 
 	// Group meshes by ARN because meshes that share an ARN are backed by the same AWS resources.
