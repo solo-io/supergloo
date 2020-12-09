@@ -11,9 +11,9 @@ import (
 	return true if two TrafficPolicies contain semantically equivalent request matchers,
 	which requires equivalence on the SourceSelector and HttpRequestMatcher fields.
 */
-func TrafficPolicyMatchersEqual(tp1 *v1alpha2.TrafficPolicy, tp2 *v1alpha2.TrafficPolicy) bool {
-	return workloadSelectorListsEqual(tp1.Spec.GetSourceSelector(), tp2.Spec.GetSourceSelector()) &&
-		httpMatcherListsEqual(tp1.Spec.GetHttpRequestMatchers(), tp2.Spec.HttpRequestMatchers)
+func TrafficPolicyMatchersEqual(tp1 *v1alpha2.TrafficPolicySpec, tp2 *v1alpha2.TrafficPolicySpec) bool {
+	return workloadSelectorListsEqual(tp1.GetSourceSelector(), tp2.GetSourceSelector()) &&
+		httpMatcherListsEqual(tp1.GetHttpRequestMatchers(), tp2.HttpRequestMatchers)
 }
 
 func workloadSelectorsEqual(ws1 *v1alpha2.WorkloadSelector, ws2 *v1alpha2.WorkloadSelector) bool {

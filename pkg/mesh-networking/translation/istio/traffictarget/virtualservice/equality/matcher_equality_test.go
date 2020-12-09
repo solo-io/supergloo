@@ -80,204 +80,172 @@ var _ = Describe("MatcherEquality", func() {
 	}
 
 	DescribeTable("should equate two TrafficPolicies with semantically equivalent request matchers",
-		func(tp1 *v1alpha2.TrafficPolicy, tp2 *v1alpha2.TrafficPolicy, expected bool) {
+		func(tp1 *v1alpha2.TrafficPolicySpec, tp2 *v1alpha2.TrafficPolicySpec, expected bool) {
 			Expect(equality.TrafficPolicyMatchersEqual(tp1, tp2)).To(Equal(expected))
 		},
 
 		Entry(
 			"no matchers",
-			&v1alpha2.TrafficPolicy{},
-			&v1alpha2.TrafficPolicy{},
+			&v1alpha2.TrafficPolicySpec{},
+			&v1alpha2.TrafficPolicySpec{},
 			true,
 		),
 
 		Entry("equal workload selectors with differently ordered fields",
-			&v1alpha2.TrafficPolicy{
-				Spec: v1alpha2.TrafficPolicySpec{
-					SourceSelector: []*v1alpha2.WorkloadSelector{
-						workloadSelector1a,
-						workloadSelector2a,
-					},
+			&v1alpha2.TrafficPolicySpec{
+				SourceSelector: []*v1alpha2.WorkloadSelector{
+					workloadSelector1a,
+					workloadSelector2a,
 				},
 			},
-			&v1alpha2.TrafficPolicy{
-				Spec: v1alpha2.TrafficPolicySpec{
-					SourceSelector: []*v1alpha2.WorkloadSelector{
-						workloadSelector2b,
-						workloadSelector1b,
-					},
+			&v1alpha2.TrafficPolicySpec{
+				SourceSelector: []*v1alpha2.WorkloadSelector{
+					workloadSelector2b,
+					workloadSelector1b,
 				},
 			},
 			true,
 		),
 
 		Entry("unequal workload selectors of equal length",
-			&v1alpha2.TrafficPolicy{
-				Spec: v1alpha2.TrafficPolicySpec{
-					SourceSelector: []*v1alpha2.WorkloadSelector{
-						workloadSelector1a,
-						workloadSelector1a,
-					},
+			&v1alpha2.TrafficPolicySpec{
+				SourceSelector: []*v1alpha2.WorkloadSelector{
+					workloadSelector1a,
+					workloadSelector1a,
 				},
 			},
-			&v1alpha2.TrafficPolicy{
-				Spec: v1alpha2.TrafficPolicySpec{
-					SourceSelector: []*v1alpha2.WorkloadSelector{
-						workloadSelector2b,
-						workloadSelector1b,
-					},
+			&v1alpha2.TrafficPolicySpec{
+				SourceSelector: []*v1alpha2.WorkloadSelector{
+					workloadSelector2b,
+					workloadSelector1b,
 				},
 			},
 			false,
 		),
 
 		Entry("unequal workload selectors of equal length",
-			&v1alpha2.TrafficPolicy{
-				Spec: v1alpha2.TrafficPolicySpec{
-					SourceSelector: []*v1alpha2.WorkloadSelector{
-						workloadSelector1a,
-						workloadSelector2a,
-					},
+			&v1alpha2.TrafficPolicySpec{
+				SourceSelector: []*v1alpha2.WorkloadSelector{
+					workloadSelector1a,
+					workloadSelector2a,
 				},
 			},
-			&v1alpha2.TrafficPolicy{
-				Spec: v1alpha2.TrafficPolicySpec{
-					SourceSelector: []*v1alpha2.WorkloadSelector{
-						workloadSelector2b,
-						workloadSelector2b,
-					},
+			&v1alpha2.TrafficPolicySpec{
+				SourceSelector: []*v1alpha2.WorkloadSelector{
+					workloadSelector2b,
+					workloadSelector2b,
 				},
 			},
 			false,
 		),
 
 		Entry("unequal workload selectors with differently ordered fields",
-			&v1alpha2.TrafficPolicy{
-				Spec: v1alpha2.TrafficPolicySpec{
-					SourceSelector: []*v1alpha2.WorkloadSelector{
-						workloadSelector1a,
-						{
-							Labels:     map[string]string{"e": "f", "g": "i"}, // diff
-							Namespaces: []string{"boo", "baz"},
-							Clusters:   []string{"cluster3", "cluster4"},
-						},
+			&v1alpha2.TrafficPolicySpec{
+				SourceSelector: []*v1alpha2.WorkloadSelector{
+					workloadSelector1a,
+					{
+						Labels:     map[string]string{"e": "f", "g": "i"}, // diff
+						Namespaces: []string{"boo", "baz"},
+						Clusters:   []string{"cluster3", "cluster4"},
 					},
 				},
 			},
-			&v1alpha2.TrafficPolicy{
-				Spec: v1alpha2.TrafficPolicySpec{
-					SourceSelector: []*v1alpha2.WorkloadSelector{
-						workloadSelector2b,
-						workloadSelector1b,
-					},
+			&v1alpha2.TrafficPolicySpec{
+				SourceSelector: []*v1alpha2.WorkloadSelector{
+					workloadSelector2b,
+					workloadSelector1b,
 				},
 			},
 			false,
 		),
 
 		Entry("equal http matchers",
-			&v1alpha2.TrafficPolicy{
-				Spec: v1alpha2.TrafficPolicySpec{
-					HttpRequestMatchers: []*v1alpha2.TrafficPolicySpec_HttpMatcher{
-						httpMatcher1,
-					},
+			&v1alpha2.TrafficPolicySpec{
+				HttpRequestMatchers: []*v1alpha2.TrafficPolicySpec_HttpMatcher{
+					httpMatcher1,
 				},
 			},
-			&v1alpha2.TrafficPolicy{
-				Spec: v1alpha2.TrafficPolicySpec{
-					HttpRequestMatchers: []*v1alpha2.TrafficPolicySpec_HttpMatcher{
-						httpMatcher1,
-					},
+			&v1alpha2.TrafficPolicySpec{
+				HttpRequestMatchers: []*v1alpha2.TrafficPolicySpec_HttpMatcher{
+					httpMatcher1,
 				},
 			},
 			true,
 		),
 
 		Entry("unequal http matchers of equal length",
-			&v1alpha2.TrafficPolicy{
-				Spec: v1alpha2.TrafficPolicySpec{
-					HttpRequestMatchers: []*v1alpha2.TrafficPolicySpec_HttpMatcher{
-						{
-							PathSpecifier: &v1alpha2.TrafficPolicySpec_HttpMatcher_Prefix{
-								Prefix: "/diff", // diff
-							},
-							Headers: []*v1alpha2.TrafficPolicySpec_HeaderMatcher{
-								{
-									Name:        "header2-name",
-									Value:       "header2-value",
-									Regex:       false,
-									InvertMatch: false,
-								},
-							},
-							QueryParameters: []*v1alpha2.TrafficPolicySpec_QueryParameterMatcher{
-								{
-									Name:  "query-param2-name",
-									Value: "query-param2-value",
-									Regex: false,
-								},
-							},
-							Method: &v1alpha2.TrafficPolicySpec_HttpMethod{
-								Method: types.HttpMethodValue_HEAD,
+			&v1alpha2.TrafficPolicySpec{
+				HttpRequestMatchers: []*v1alpha2.TrafficPolicySpec_HttpMatcher{
+					{
+						PathSpecifier: &v1alpha2.TrafficPolicySpec_HttpMatcher_Prefix{
+							Prefix: "/diff", // diff
+						},
+						Headers: []*v1alpha2.TrafficPolicySpec_HeaderMatcher{
+							{
+								Name:        "header2-name",
+								Value:       "header2-value",
+								Regex:       false,
+								InvertMatch: false,
 							},
 						},
-						httpMatcher1,
+						QueryParameters: []*v1alpha2.TrafficPolicySpec_QueryParameterMatcher{
+							{
+								Name:  "query-param2-name",
+								Value: "query-param2-value",
+								Regex: false,
+							},
+						},
+						Method: &v1alpha2.TrafficPolicySpec_HttpMethod{
+							Method: types.HttpMethodValue_HEAD,
+						},
 					},
+					httpMatcher1,
 				},
 			},
-			&v1alpha2.TrafficPolicy{
-				Spec: v1alpha2.TrafficPolicySpec{
-					HttpRequestMatchers: []*v1alpha2.TrafficPolicySpec_HttpMatcher{
-						httpMatcher1,
-						httpMatcher2,
-					},
+			&v1alpha2.TrafficPolicySpec{
+				HttpRequestMatchers: []*v1alpha2.TrafficPolicySpec_HttpMatcher{
+					httpMatcher1,
+					httpMatcher2,
 				},
 			},
 			false,
 		),
 
 		Entry("equal multiple http matchers",
-			&v1alpha2.TrafficPolicy{
-				Spec: v1alpha2.TrafficPolicySpec{
-					HttpRequestMatchers: []*v1alpha2.TrafficPolicySpec_HttpMatcher{
-						httpMatcher2,
-						httpMatcher1,
-					},
+			&v1alpha2.TrafficPolicySpec{
+				HttpRequestMatchers: []*v1alpha2.TrafficPolicySpec_HttpMatcher{
+					httpMatcher2,
+					httpMatcher1,
 				},
 			},
-			&v1alpha2.TrafficPolicy{
-				Spec: v1alpha2.TrafficPolicySpec{
-					HttpRequestMatchers: []*v1alpha2.TrafficPolicySpec_HttpMatcher{
-						httpMatcher1,
-						httpMatcher2,
-					},
+			&v1alpha2.TrafficPolicySpec{
+				HttpRequestMatchers: []*v1alpha2.TrafficPolicySpec_HttpMatcher{
+					httpMatcher1,
+					httpMatcher2,
 				},
 			},
 			true,
 		),
 
 		Entry("equal with both workload selectors and http matchers",
-			&v1alpha2.TrafficPolicy{
-				Spec: v1alpha2.TrafficPolicySpec{
-					SourceSelector: []*v1alpha2.WorkloadSelector{
-						workloadSelector1a,
-						workloadSelector2a,
-					},
-					HttpRequestMatchers: []*v1alpha2.TrafficPolicySpec_HttpMatcher{
-						httpMatcher2,
-						httpMatcher1,
-					},
+			&v1alpha2.TrafficPolicySpec{
+				SourceSelector: []*v1alpha2.WorkloadSelector{
+					workloadSelector1a,
+					workloadSelector2a,
+				},
+				HttpRequestMatchers: []*v1alpha2.TrafficPolicySpec_HttpMatcher{
+					httpMatcher2,
+					httpMatcher1,
 				},
 			},
-			&v1alpha2.TrafficPolicy{
-				Spec: v1alpha2.TrafficPolicySpec{
-					SourceSelector: []*v1alpha2.WorkloadSelector{
-						workloadSelector2b,
-						workloadSelector1b,
-					},
-					HttpRequestMatchers: []*v1alpha2.TrafficPolicySpec_HttpMatcher{
-						httpMatcher1,
-						httpMatcher2,
-					},
+			&v1alpha2.TrafficPolicySpec{
+				SourceSelector: []*v1alpha2.WorkloadSelector{
+					workloadSelector2b,
+					workloadSelector1b,
+				},
+				HttpRequestMatchers: []*v1alpha2.TrafficPolicySpec_HttpMatcher{
+					httpMatcher1,
+					httpMatcher2,
 				},
 			},
 			true,

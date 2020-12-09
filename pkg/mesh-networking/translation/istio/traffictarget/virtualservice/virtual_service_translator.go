@@ -10,6 +10,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice/equality"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/equalityutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
@@ -82,31 +83,38 @@ func (t *translator) Translate(
 		Snapshot:       in,
 	})
 
-	for _, policy := range trafficTarget.Status.AppliedTrafficPolicies {
-		baseRoute := initializeBaseRoute(policy.Spec, sourceCluster)
-		// nil baseRoute indicates that this cluster is not selected by the WorkloadSelector and thus should not be translated
-		if baseRoute == nil {
-			continue
-		}
+	appliedTpsByRequestMatcher := groupAppliedTpsByRequestMatcher(trafficTarget.Status.AppliedTrafficPolicies)
 
-		registerField := registerFieldFunc(virtualServiceFields, virtualService, policy.Ref)
-		for _, decorator := range vsDecorators {
+	for _, tpsByRequestMatcher := range appliedTpsByRequestMatcher {
 
-			if trafficPolicyDecorator, ok := decorator.(decorators.TrafficPolicyVirtualServiceDecorator); ok {
-				if err := trafficPolicyDecorator.ApplyTrafficPolicyToVirtualService(
-					policy,
-					trafficTarget,
-					sourceMeshInstallation,
-					baseRoute,
-					registerField,
-				); err != nil {
-					reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
+		// initialize base route for TP's group by request matcher
+		baseRoute := initializeBaseRoute(tpsByRequestMatcher[0].Spec, sourceCluster)
+
+		for _, policy := range tpsByRequestMatcher {
+			// nil baseRoute indicates that this cluster is not selected by the WorkloadSelector and thus should not be translated
+			if baseRoute == nil {
+				continue
+			}
+
+			registerField := registerFieldFunc(virtualServiceFields, virtualService, policy.Ref)
+			for _, decorator := range vsDecorators {
+
+				if trafficPolicyDecorator, ok := decorator.(decorators.TrafficPolicyVirtualServiceDecorator); ok {
+					if err := trafficPolicyDecorator.ApplyTrafficPolicyToVirtualService(
+						policy,
+						trafficTarget,
+						sourceMeshInstallation,
+						baseRoute,
+						registerField,
+					); err != nil {
+						reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
+					}
 				}
 			}
 		}
 
 		// Avoid appending an HttpRoute that will have no affect, which occurs if no decorators mutate the baseRoute with any non-match config.
-		if equalityutils.Equals(initializeBaseRoute(policy.Spec, sourceCluster), baseRoute) {
+		if equalityutils.Equals(initializeBaseRoute(tpsByRequestMatcher[0].Spec, sourceCluster), baseRoute) {
 			continue
 		}
 
@@ -136,6 +144,32 @@ func (t *translator) Translate(
 	}
 
 	return virtualService
+}
+
+// ensure that only a single VirtualService HTTPRoute gets created per TrafficPolicy request matcher
+// by first grouping TrafficPolicies by semantically equivalent request matchers
+func groupAppliedTpsByRequestMatcher(
+	appliedTps []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+) [][]*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy {
+	var allGroupedTps [][]*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy
+
+	for _, appliedTp := range appliedTps {
+		var grouped bool
+		for i, groupedTps := range allGroupedTps {
+			// append to existing group
+			if equality.TrafficPolicyMatchersEqual(appliedTp.Spec, groupedTps[0].Spec) {
+				allGroupedTps[i] = append(groupedTps, appliedTp)
+				grouped = true
+				break
+			}
+		}
+		// create new group
+		if !grouped {
+			allGroupedTps = append(allGroupedTps, []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{appliedTp})
+		}
+	}
+
+	return allGroupedTps
 }
 
 // construct the callback for registering fields in the virtual service
