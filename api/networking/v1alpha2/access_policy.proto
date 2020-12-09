@@ -2,12 +2,12 @@ syntax = "proto3";
 package networking.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2";
 
-import "gloo-mesh/api/networking/v1alpha2/http.proto";
-import "gloo-mesh/api/networking/v1alpha2/selectors.proto";
-import "gloo-mesh/api/networking/v1alpha2/validation_state.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/http.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
 
-import "gogoproto/gogo.proto";
-option (gogoproto.equal_all) = true;
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
 
 /*
     Access control policies apply ALLOW policies to communication in a mesh.

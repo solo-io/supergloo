@@ -63,7 +63,7 @@ var _ = Describe("Translator", func() {
 		daemonSets := appsv1sets.NewDaemonSetSet(&appsv1.DaemonSet{})
 		statefulSets := appsv1sets.NewStatefulSetSet(&appsv1.StatefulSet{})
 
-		in := input.NewSnapshot(
+		in := input.NewRemoteSnapshot(
 			"mesh-discovery",
 			appMeshes,
 			configMaps,

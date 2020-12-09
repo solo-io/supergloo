@@ -162,7 +162,7 @@ helm install gloo-mesh gloo-mesh/gloo-mesh --namespace gloo-mesh
 {{< /tab >}}
 {{< tab name="Gloo Mesh Enterprise" codelang="shell">}}
 kubectl create ns gloo-mesh
-helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise -n gloo-mesh --set license.key=LICENSE_KEY_STRING
+helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise -n gloo-mesh --set licenseKey=LICENSE_KEY_STRING
 {{< /tab >}}
 {{< /tabs >}}
 

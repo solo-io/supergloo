@@ -21,6 +21,12 @@ func (i Uninstaller) UninstallGlooMesh(
 	return i.uninstall(ctx, GlooMeshReleaseName)
 }
 
+func (i Uninstaller) UninstallAgentCrds(
+	ctx context.Context,
+) error {
+	return i.uninstall(ctx, agentCrdsReleaseName)
+}
+
 func (i Uninstaller) UninstallCertAgent(
 	ctx context.Context,
 ) error {

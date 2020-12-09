@@ -10,11 +10,6 @@ replace (
 	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 
-	github.com/envoyproxy/go-control-plane => github.com/envoyproxy/go-control-plane v0.9.5
-
-	// Required for proper serialization of CRDs
-	github.com/golang/protobuf => github.com/golang/protobuf v1.3.5
-
 	// https://github.com/ory/dockertest/issues/208#issuecomment-686820414
 	golang.org/x/sys => golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6
 
@@ -40,7 +35,7 @@ require (
 	github.com/gobuffalo/packr v1.30.1
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/mock v1.4.4
-	github.com/golang/protobuf v1.4.2
+	github.com/golang/protobuf v1.4.3
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
 	github.com/hashicorp/go-multierror v1.1.0
@@ -62,9 +57,11 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/external-apis v0.1.1
-	github.com/solo-io/go-utils v0.18.1
-	github.com/solo-io/skv2 v0.13.4
-	github.com/solo-io/solo-kit v0.14.0
+	github.com/solo-io/go-utils v0.20.0
+	github.com/solo-io/k8s-utils v0.0.3
+	github.com/solo-io/protoc-gen-ext v0.0.13
+	github.com/solo-io/skv2 v0.15.1
+	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.3.4
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
@@ -73,6 +70,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	golang.org/x/tools v0.0.0-20200928201943-a0ef9b62deab // indirect
 	google.golang.org/grpc v1.31.1
+	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.3.0
 	helm.sh/helm/v3 v3.2.4
 	istio.io/api v0.0.0-20200819225923-c78f387f78a2

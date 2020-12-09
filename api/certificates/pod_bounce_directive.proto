@@ -2,12 +2,12 @@ syntax = "proto3";
 package certificates.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2";
 
-import "skv2/api/core/v1/core.proto";
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 
-import "gogoproto/gogo.proto";
-option (gogoproto.equal_all) = true;
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
 
 /*
     When certificates are issued, pods may need to be bounced (restarted) to ensure they pick up the
