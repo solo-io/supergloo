@@ -81,9 +81,38 @@ type Snapshot interface {
 	KubernetesClusters() multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
 	// update the status of all input objects which support
 	// the Status subresource (in the local cluster)
-	SyncStatuses(ctx context.Context, c client.Client) error
+	SyncStatuses(ctx context.Context, c client.Client, opts SyncStatusOptions) error
 	// serialize the entire snapshot as JSON
 	MarshalJSON() ([]byte, error)
+}
+
+// options for syncing input object statuses
+type SyncStatusOptions struct {
+
+	// sync status of Settings objects
+	Settings bool
+
+	// sync status of TrafficTarget objects
+	TrafficTarget bool
+	// sync status of Workload objects
+	Workload bool
+	// sync status of Mesh objects
+	Mesh bool
+
+	// sync status of TrafficPolicy objects
+	TrafficPolicy bool
+	// sync status of AccessPolicy objects
+	AccessPolicy bool
+	// sync status of VirtualMesh objects
+	VirtualMesh bool
+	// sync status of FailoverService objects
+	FailoverService bool
+
+	// sync status of Secret objects
+	Secret bool
+
+	// sync status of KubernetesCluster objects
+	KubernetesCluster bool
 }
 
 type snapshot struct {
@@ -180,57 +209,76 @@ func (s snapshot) KubernetesClusters() multicluster_solo_io_v1alpha1_sets.Kubern
 	return s.kubernetesClusters
 }
 
-func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
+func (s snapshot) SyncStatuses(ctx context.Context, c client.Client, opts SyncStatusOptions) error {
+	var errs error
 
-	for _, obj := range s.Settings().List() {
-		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-			return err
-		}
-	}
-
-	for _, obj := range s.TrafficTargets().List() {
-		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-			return err
-		}
-	}
-	for _, obj := range s.Workloads().List() {
-		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-			return err
-		}
-	}
-	for _, obj := range s.Meshes().List() {
-		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-			return err
+	if opts.Settings {
+		for _, obj := range s.Settings().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
 		}
 	}
 
-	for _, obj := range s.TrafficPolicies().List() {
-		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-			return err
+	if opts.TrafficTarget {
+		for _, obj := range s.TrafficTargets().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
 		}
 	}
-	for _, obj := range s.AccessPolicies().List() {
-		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-			return err
+	if opts.Workload {
+		for _, obj := range s.Workloads().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
 		}
 	}
-	for _, obj := range s.VirtualMeshes().List() {
-		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-			return err
-		}
-	}
-	for _, obj := range s.FailoverServices().List() {
-		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-			return err
+	if opts.Mesh {
+		for _, obj := range s.Meshes().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
 		}
 	}
 
-	for _, obj := range s.KubernetesClusters().List() {
-		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-			return err
+	if opts.TrafficPolicy {
+		for _, obj := range s.TrafficPolicies().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
 		}
 	}
-	return nil
+	if opts.AccessPolicy {
+		for _, obj := range s.AccessPolicies().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.VirtualMesh {
+		for _, obj := range s.VirtualMeshes().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.FailoverService {
+		for _, obj := range s.FailoverServices().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
+	if opts.KubernetesCluster {
+		for _, obj := range s.KubernetesClusters().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	return errs
 }
 
 func (s snapshot) MarshalJSON() ([]byte, error) {

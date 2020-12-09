@@ -41,9 +41,18 @@ type Snapshot interface {
 	CertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
 	// update the status of all input objects which support
 	// the Status subresource (across multiple clusters)
-	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error
+	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts SyncStatusOptions) error
 	// serialize the entire snapshot as JSON
 	MarshalJSON() ([]byte, error)
+}
+
+// options for syncing input object statuses
+type SyncStatusOptions struct {
+
+	// sync status of IssuedCertificate objects
+	IssuedCertificate bool
+	// sync status of CertificateRequest objects
+	CertificateRequest bool
 }
 
 type snapshot struct {
@@ -76,27 +85,34 @@ func (s snapshot) CertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_
 	return s.certificateRequests
 }
 
-func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
+func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts SyncStatusOptions) error {
+	var errs error
 
-	for _, obj := range s.IssuedCertificates().List() {
-		clusterClient, err := mcClient.Cluster(obj.ClusterName)
-		if err != nil {
-			return err
-		}
-		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
-			return err
-		}
-	}
-	for _, obj := range s.CertificateRequests().List() {
-		clusterClient, err := mcClient.Cluster(obj.ClusterName)
-		if err != nil {
-			return err
-		}
-		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
-			return err
+	if opts.IssuedCertificate {
+		for _, obj := range s.IssuedCertificates().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
 		}
 	}
-	return nil
+	if opts.CertificateRequest {
+		for _, obj := range s.CertificateRequests().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	return errs
 }
 
 func (s snapshot) MarshalJSON() ([]byte, error) {

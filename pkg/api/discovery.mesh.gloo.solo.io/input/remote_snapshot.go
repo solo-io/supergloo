@@ -71,6 +71,31 @@ type RemoteSnapshot interface {
 	MarshalJSON() ([]byte, error)
 }
 
+// options for syncing input object statuses
+type RemoteSyncStatusOptions struct {
+
+	// sync status of Mesh objects
+	Mesh bool
+
+	// sync status of ConfigMap objects
+	ConfigMap bool
+	// sync status of Service objects
+	Service bool
+	// sync status of Pod objects
+	Pod bool
+	// sync status of Node objects
+	Node bool
+
+	// sync status of Deployment objects
+	Deployment bool
+	// sync status of ReplicaSet objects
+	ReplicaSet bool
+	// sync status of DaemonSet objects
+	DaemonSet bool
+	// sync status of StatefulSet objects
+	StatefulSet bool
+}
+
 type snapshotRemote struct {
 	name string
 

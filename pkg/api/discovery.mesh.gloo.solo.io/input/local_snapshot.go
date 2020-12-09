@@ -38,9 +38,16 @@ type LocalSnapshot interface {
 	Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 	// update the status of all input objects which support
 	// the Status subresource (in the local cluster)
-	SyncStatuses(ctx context.Context, c client.Client) error
+	SyncStatuses(ctx context.Context, c client.Client, opts LocalSyncStatusOptions) error
 	// serialize the entire snapshot as JSON
 	MarshalJSON() ([]byte, error)
+}
+
+// options for syncing input object statuses
+type LocalSyncStatusOptions struct {
+
+	// sync status of Settings objects
+	Settings bool
 }
 
 type snapshotLocal struct {
@@ -66,14 +73,17 @@ func (s snapshotLocal) Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.Setti
 	return s.settings
 }
 
-func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client) error {
+func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts LocalSyncStatusOptions) error {
+	var errs error
 
-	for _, obj := range s.Settings().List() {
-		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-			return err
+	if opts.Settings {
+		for _, obj := range s.Settings().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
 		}
 	}
-	return nil
+	return errs
 }
 
 func (s snapshotLocal) MarshalJSON() ([]byte, error) {

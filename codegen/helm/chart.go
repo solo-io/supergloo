@@ -84,6 +84,7 @@ func discoveryOperator() model.Operator {
 	var rbacPolicies []rbacv1.PolicyRule
 
 	rbacPolicies = append(rbacPolicies, io.ClusterWatcherInputTypes.RbacPoliciesWatch()...)
+	rbacPolicies = append(rbacPolicies, io.DiscoveryLocalInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.DiscoveryOutputTypes.Snapshot.RbacPoliciesWrite()...)
 
 	return model.Operator{
