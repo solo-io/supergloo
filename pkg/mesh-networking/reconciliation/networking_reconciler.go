@@ -126,16 +126,21 @@ func Start(
 		ServiceEntries:        reconcile.Options{Verifier: istioResourceVerifier},
 		VirtualServices:       reconcile.Options{Verifier: istioResourceVerifier},
 		AuthorizationPolicies: reconcile.Options{Verifier: istioResourceVerifier},
+		Predicates: []predicate.Predicate{
+			skv2predicate.SimplePredicate{
+				Filter: skv2predicate.SimpleEventFilterFunc(isIgnoredConfigMap),
+			},
+		},
 	}
 	// ignore all events (i.e. don't reconcile) if not watching output types
 	if !r.watchOutputTypes {
-		remoteReconcileOpts.Predicates = []predicate.Predicate{
+		remoteReconcileOpts.Predicates = append(
+			remoteReconcileOpts.Predicates,
 			skv2predicate.SimplePredicate{
 				Filter: skv2predicate.SimpleEventFilterFunc(func(obj metav1.Object) bool {
 					return true
-				}),
-			},
-		}
+				})},
+		)
 	}
 
 	reconciler, err := input.RegisterInputReconciler(
@@ -310,6 +315,16 @@ func isIgnoredSecret(obj metav1.Object) bool {
 		return false
 	}
 	return !mtls.IsSigningCert(secret)
+}
+
+// returns true if the passed object is a configmap which is of a type that is ignored by GlooMesh
+// this is necessary because Istio-controlled configmaps update very frequently
+func isIgnoredConfigMap(obj metav1.Object) bool {
+	_, ok := obj.(*corev1.ConfigMap)
+	if !ok {
+		return false
+	}
+	return !metautils.IsTranslated(obj)
 }
 
 // build a verifier that ignores NoKindMatch errors for mesh-specific types
