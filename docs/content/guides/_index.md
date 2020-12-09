@@ -45,13 +45,13 @@ We also assume you've [registered]({{% versioned_link_path fromRoot="/setup/#reg
 
 ```shell
 meshctl cluster register \
-  --remote-cluster-name mgmt-cluster \
+  --cluster-name mgmt-cluster \
   --remote-context mgmt-cluster-context
 ```
 
 ```shell
 meshctl cluster register \
-  --remote-cluster-name remote-cluster \
+  --cluster-name remote-cluster \
   --remote-context remote-cluster-context
 ```
 

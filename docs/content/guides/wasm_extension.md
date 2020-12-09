@@ -1,0 +1,306 @@
+---
+title: Wasm Extension Guide for Gloo Mesh Enterprise
+menuTitle: Wasm extension
+weight: 110
+---
+
+{{% notice note %}}
+Gloo Mesh Enterprise is required for this feature.
+{{% /notice %}}
+
+With the Gloo Mesh Enterprise CLI, you can initialize, build, and push proprietary Wasm filters. Choose your preferred programming language and we’ll generate all the source code you need to get started implementing custom mesh behavior. To publish your work use the `build` and `push` commands. These will compile your Wasm module and make it available via webassemblyhub.io or the OCI registry of your choice.
+
+To add your new Wasm filter to the mesh, all you need is a `WasmDeployment` Kubernetes custom resource. Specify which Workloads should be configured and with which Wasm filters, then let Gloo Mesh handle the rest. A Gloo Mesh Enterprise extension server will watch for WasmDeployments and manage the lifecycle of all your Wasm filters accordingly.
+
+In this guide we will enable a Wasm filter for use by an Envoy proxy. The filter will add a custom header to the response from the reviews service in the bookinfo application. To do this, we will walk through the following steps:
+
+1. Prepare the Envoy sidecar to fetch Wasm filters
+1. Ensure the Enterprise Extender feature is enabled
+1. Install the Wasm agent
+1. Deploy the Wasm filter and validate
+
+## Before you begin
+To illustrate these concepts, we will assume that:
+
+* Gloo Mesh Enterprise is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
+* Istio **1.8** is [installed on both the `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
+* Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh Enterprise]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+* The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
+
+
+{{% notice note %}}
+Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document.
+{{% /notice %}}
+
+Set your environment variables like so to reference the management and remote clusters:
+
+```shell
+export MGMT_CONTEXT=kind-mgmt-cluster
+export REMOTE_CONTEXT=kind-remote-cluster
+export ENTERPRISE_VERSION=0.2.1
+```
+
+## Prepare the Envoy sidecar to fetch Wasm filters
+
+Our Envoy instances will fetch their wasm filters from an [envoy cluster](https://www.envoyproxy.io/docs/envoy/latest/api-v2/clusters/clusters) that must be defined in the static bootstrap config. We must therefore perform a one-time operation to add the `wasm-agent` as a cluster in the Envoy bootstrap.
+
+To do so, let's create a ConfigMap containing the custom additions to the Envoy bootstrap:
+
+```bash
+cat <<EOF | kubectl apply --context ${REMOTE_CONTEXT} -n bookinfo -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gloo-mesh-custom-envoy-bootstrap
+  namespace: bookinfo
+data:
+  custom_bootstrap.json: |
+    {
+      "static_resources": {
+        "clusters": [{
+          "name": "wasm_agent_cluster",
+          "type" : "STRICT_DNS",
+          "connect_timeout": "1s",
+          "lb_policy": "ROUND_ROBIN",
+          "load_assignment": {
+            "cluster_name": "wasm_agent_cluster",
+            "endpoints": [{
+              "lb_endpoints": [{
+                "endpoint": {
+                  "address":{
+                    "socket_address": {
+                      "address": "wasm-agent.gloo-mesh.svc.cluster.local",
+                      "port_value": 9977
+                    }
+                  }
+                }
+              }]
+            }]
+          },
+          "circuit_breakers": {
+            "thresholds": [
+              {
+                "priority": "DEFAULT",
+                "max_connections": 100000,
+                "max_pending_requests": 100000,
+                "max_requests": 100000
+              },
+              {
+                "priority": "HIGH",
+                "max_connections": 100000,
+                "max_pending_requests": 100000,
+                "max_requests": 100000
+              }
+            ]
+          },
+          "upstream_connection_options": {
+            "tcp_keepalive": {
+              "keepalive_time": 300
+            }
+          },
+          "max_requests_per_connection": 1,
+          "http2_protocol_options": { }
+        }]
+      }
+    }
+EOF
+```
+
+Next we'll patch the `reviews-v3` deployment to include this custom boostrap in the sidecar:
+
+```bash
+kubectl patch deployment -n bookinfo reviews-v3 --context ${REMOTE_CONTEXT} \
+  --patch='{"spec":{"template": {"metadata": {"annotations": {"sidecar.istio.io/bootstrapOverride": "gloo-mesh-custom-envoy-bootstrap"}}}}}' \
+  --type=merge
+```
+
+Now our deployment is wasm-ready.
+
+##  Ensure the Enterprise Extender feature is enabled
+
+The default installation of Gloo Mesh Enterprise should already have the Enterprise Extender feature included. We can check by running the following:
+
+```shell
+kubectl get deployment/enterprise-extender -n gloo-mesh
+```
+
+You should see the following:
+
+```shell
+NAME                  READY   UP-TO-DATE   AVAILABLE   AGE
+enterprise-extender   1/1     1            1           53m
+```
+
+If there is no output, you will need to update your installation to include the Enterprise Extender feature. You can add the feature in by creating the following YAML file. Be sure to update the license key value before running the Helm upgrade.
+
+```
+# create values.yaml file to configure gloo-mesh to use the enterprise-extender
+cat > gloo-mesh-values.yaml << EOF
+licenseKey: <your-license-key>
+
+# Set to false to omit installing the Gloo Mesh UI
+gloo-mesh-ui:
+  enabled: true
+
+# Set to false to omit installing the RBAC webhook
+rbac-webhook:
+  enabled: true
+
+# Set to false to omit installing the Gloo Mesh Enterprise Extender
+gloo-mesh-extender:
+  enabled: true
+
+gloo-mesh:
+  settings:
+    networkingExtensionServers:
+      - address: enterprise-extender:9900
+        insecure: true
+        reconnectOnNetworkFailures: true
+EOF
+
+# install upgrade from helm chart
+helm upgrade --install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise \
+  --namespace gloo-mesh --kube-context $MGMT_CONTEXT \
+  --values gloo-mesh-values.yaml
+
+```
+
+You can run the previous command to verify the deployment was successful.
+
+```shell
+kubectl get deployment/enterprise-extender -n gloo-mesh
+```
+
+The next step is to install the `wasm-agent` on the remote cluster.
+
+## Install the Wasm agent
+
+We are going to register the `remote-cluster` to install the wasm-agent. Even if you already registered the cluster, the wasm-agent is not part of the default registration command. We will re-run the registration command and include the `--install-wasm-agent` flag.
+
+If using `kind` or another docker-based Kubernetes distro, the cluster registration command requires an additional flag `--api-server-address` along with the API server address and port. Use the command on the Kind tab if that is the case.
+
+{{< tabs >}}
+{{< tab name="Kubernetes" codelang="shell" >}}
+meshctl cluster register \
+    --cluster-name remote-cluster \
+    --mgmt-context "${MGMT_CONTEXT}" \
+    --remote-context "${REMOTE_CONTEXT}" \
+    --install-wasm-agent --wasm-agent-chart-file=https://storage.googleapis.com/gloo-mesh-enterprise/wasm-agent/wasm-agent-${ENTERPRISE_VERSION}.tgz
+{{< /tab >}}
+{{< tab name="Kind" codelang="shell" >}}
+# For macOS
+ADDRESS=host.docker.internal
+
+# For Linux
+ADDRESS=$(docker exec "remote-cluster-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')
+
+meshctl cluster register \
+    --cluster-name remote-cluster \
+    --mgmt-context "${MGMT_CONTEXT}" \
+    --remote-context "${REMOTE_CONTEXT}" \
+    --api-server-address $ADDRESS \
+    --install-wasm-agent --wasm-agent-chart-file=https://storage.googleapis.com/gloo-mesh-enterprise/wasm-agent/wasm-agent-${ENTERPRISE_VERSION}.tgz
+{{< /tab >}}
+{{< /tabs >}}
+
+We can validate the agent has been deployed by running the following:
+
+```shell
+kubectl get pods -n gloo-mesh --context $REMOTE_CONTEXT
+
+NAME                          READY   STATUS    RESTARTS   AGE
+cert-agent-d449599d9-26mz7    1/1     Running   0          38m
+wasm-agent-7f56898555-lc5pn   1/1     Running   0          18s
+```
+
+## Deploy the Wasm filter and validate
+
+We've got everything in place to use the Wasm filter, but first let's see what things look like without the filter added.
+
+### Test without Wasm Filter
+
+As a sanity check, let's run a `curl` without any wasm filter deployed:
+
+```bash
+CONTEXT=kind-remote-cluster NAME=reviews-v3 NAMESPACE=bookinfo; \
+kubectl alpha debug --image=curlimages/curl@sha256:aa45e9d93122a3cfdf8d7de272e2798ea63733eeee6d06bd2ee4f2f8c4027d7c -n $NAMESPACE --context $CONTEXT $(kubectl get pod -n $NAMESPACE --context $CONTEXT | grep ratings | awk '{print $1}') -i -- curl reviews:9080/reviews/1 -v
+```
+
+Expected response:
+```bash
+Defaulting debug container name to debugger-x6mrj.
+If you don't see a command prompt, try pressing enter.
+  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0{"id": "1","reviews": [{  "reviewer": "Reviewer1",  "text": "An extremely entertaining play by Shakespeare. The slapstick humour is refreshing!", "rating": {"stars": 5, "color": "red"}},{  "reviewer": "Reviewer2",  "text": "Absolutely fun and entertaining. The play lacks thematic depth when compared to other plays by Shakespeare.", "rating": {"stars": 4, "color": "red"}}]}* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< x-powered-by: Servlet/3.1
+< content-type: application/json
+< date: Thu, 03 Dec 2020 18:38:22 GMT
+< content-language: en-US
+< content-length: 375
+< x-envoy-upstream-service-time: 1856
+< server: envoy
+< 
+{ [375 bytes data]
+100   375  100   375    0     0    199      0  0:00:01  0:00:01 --:--:--   199
+* Connection #0 to host reviews left intact
+
+```
+
+### Deploy the Filter
+
+Now let's deploy a Wasm filter with a WasmDeployment:
+
+```bash
+cat <<EOF | kubectl apply --context ${MGMT_CONTEXT} -f-
+apiVersion: enterprise.networking.mesh.gloo.solo.io/v1alpha1
+kind: WasmDeployment
+metadata:
+  labels:
+    app: bookinfo-policies
+    app.kubernetes.io/name: bookinfo-policies
+  name: remote-reviews-wasm
+  namespace: bookinfo
+spec:
+  filters:
+  - filterContext: SIDECAR_INBOUND
+    wasmImageSource:
+      wasmImageTag: webassemblyhub.io/ilackarms/assemblyscript-test:istio-1.8
+  workloadSelector:
+  - clusters:
+    - remote-cluster
+    labels:
+      app: reviews
+      version: v3
+    namespaces:
+    - bookinfo
+EOF
+```
+
+Let's try our curl again:
+
+```bash
+CONTEXT=${REMOTE_CONTEXT} NAME=reviews-v3 NAMESPACE=bookinfo; kubectl alpha debug --image=curlimages/curl@sha256:aa45e9d93122a3cfdf8d7de272e2798ea63733eeee6d06bd2ee4f2f8c4027d7c -n $NAMESPACE --context $CONTEXT $(kubectl get pod -n $NAMESPACE --context $CONTEXT | grep ratings | awk '{print $1}') -i -- curl reviews:9080/reviews/1 -v
+```
+
+Expected response:
+```bash
+Defaulting debug container name to debugger-8jd9x.
+If you don't see a command prompt, try pressing enter.
+  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0{"id": "1","reviews": [{  "reviewer": "Reviewer1",  "text": "An extremely entertaining play by Shakespeare. The slapstick humour is refreshing!", "rating": {"stars": 5, "color": "red"}},{  "reviewer": "Reviewer2",  "text": "Absolutely fun and entertaining. The play lacks thematic depth when compared to other plays by Shakespeare.", "rating": {"stars": 4, "color": "red"}}]}* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< x-powered-by: Servlet/3.1
+< content-type: application/json
+< date: Thu, 03 Dec 2020 18:50:25 GMT
+< content-language: en-US
+< content-length: 375
+< x-envoy-upstream-service-time: 1203
+< hello: world!
+< server: envoy
+< 
+{ [375 bytes data]
+100   375  100   375    0     0    310      0  0:00:01  0:00:01 --:--:--   310
+* Connection #0 to host reviews left intact
+
+```
+
+We should see the `< hello: world!` header in our response if the filter was deployed successfully.
