@@ -69,7 +69,7 @@ var _ = Describe("OsmMeshDetector", func() {
 			ctx,
 		)
 
-		in := input.NewInputSnapshotManualBuilder("")
+		in := input.NewInputRemoteSnapshotManualBuilder("")
 		in.AddDeployments([]*appsv1.Deployment{deployment})
 
 		meshes, err := detector.DetectMeshes(in.Build())
@@ -104,7 +104,7 @@ var _ = Describe("OsmMeshDetector", func() {
 			},
 		}
 
-		in := input.NewInputSnapshotManualBuilder("")
+		in := input.NewInputRemoteSnapshotManualBuilder("")
 		in.AddDeployments([]*appsv1.Deployment{deployment})
 
 		meshes, err := detector.DetectMeshes(in.Build())

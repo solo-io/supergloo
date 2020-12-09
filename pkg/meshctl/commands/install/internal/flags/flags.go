@@ -52,7 +52,6 @@ func (o *Options) AddToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.AgentCrdsChartPath, "agent-crds-chart-file", "", "Path to a local Helm chart for installing CRDs needed by remote agents. If unset, this command will install the agent CRDs from the publicly released Helm chart.")
 	flags.StringVar(&o.CertAgentChartPath, "cert-agent-chart-file", "", "Path to a local Helm chart for installing the Certificate Agent. If unset, this command will install the Certificate Agent from the publicly released Helm chart.")
 	flags.StringVar(&o.CertAgentValuesPath, "cert-agent-chart-values", "", "Path to a Helm values.yaml file for customizing the installation of the Certificate Agent. If unset, this command will install the Certificate Agent with default Helm values.")
-	flags.BoolVarP(&o.Verbose, "verbose", "v", false, "Enable verbose output")
 }
 
 func (o *Options) GetInstaller(chartUriTemplate string) gloomesh.Installer {

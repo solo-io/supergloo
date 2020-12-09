@@ -16,6 +16,12 @@ Human readable description of discovered resources and applicable configuration
   -h, --help   help for describe
 ```
 
+### Options inherited from parent commands
+
+```
+  -v, --verbose   enable verbose logging
+```
+
 ### SEE ALSO
 
 * [meshctl](../meshctl)	 - The Command Line Interface for managing Gloo Mesh.

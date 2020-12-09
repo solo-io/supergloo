@@ -64,6 +64,7 @@ func (e *errHandler) handleError(resource ezkube.Object, err error) {
 				}
 
 				vmesh.Status.Errors = append(vmesh.Status.Errors, err.Error())
+				vmesh.Status.State = v1alpha2.ApprovalState_FAILED
 			}
 		case v1alpha2.AccessPolicy{}.GVK().String():
 			for _, parentAP := range parents {
@@ -74,6 +75,7 @@ func (e *errHandler) handleError(resource ezkube.Object, err error) {
 				}
 
 				ap.Status.Errors = append(ap.Status.Errors, err.Error())
+				ap.Status.State = v1alpha2.ApprovalState_FAILED
 			}
 		case v1alpha2.TrafficPolicy{}.GVK().String():
 			for _, parentTP := range parents {
@@ -84,6 +86,7 @@ func (e *errHandler) handleError(resource ezkube.Object, err error) {
 				}
 
 				tp.Status.Errors = append(tp.Status.Errors, err.Error())
+				tp.Status.State = v1alpha2.ApprovalState_FAILED
 			}
 		case v1alpha2.FailoverService{}.GVK().String():
 			for _, parentFS := range parents {
@@ -94,6 +97,7 @@ func (e *errHandler) handleError(resource ezkube.Object, err error) {
 				}
 
 				fs.Status.Errors = append(fs.Status.Errors, err.Error())
+				fs.Status.State = v1alpha2.ApprovalState_FAILED
 			}
 		}
 	}

@@ -5,6 +5,7 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/gogoutils"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -66,11 +67,11 @@ func (d *outlierDetectionDecorator) translateOutlierDetection(
 	}
 	interval := &types.Duration{Seconds: defaultInterval}
 	if userInterval := outlierDetection.GetInterval(); userInterval != nil {
-		interval = userInterval
+		interval = gogoutils.DurationProtoToGogo(userInterval)
 	}
 	ejectionTime := &types.Duration{Seconds: defaultEjectionTime}
 	if userEjectionTime := outlierDetection.GetBaseEjectionTime(); userEjectionTime != nil {
-		ejectionTime = userEjectionTime
+		ejectionTime = gogoutils.DurationProtoToGogo(userEjectionTime)
 	}
 	maxEjectionPercent := defaultMaxEjectionPercent
 	if userMaxEjectionPercent := outlierDetection.GetMaxEjectionPercent(); userMaxEjectionPercent != 0 {

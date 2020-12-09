@@ -8,12 +8,18 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
-func Command(ctx context.Context) *cobra.Command {
-	opts := &options{}
+func Command(ctx context.Context, globalFlags utils.GlobalFlags) *cobra.Command {
+	opts := &options{
+		Options: flags.Options{
+			Verbose: globalFlags.Verbose,
+		},
+	}
+
 	cmd := &cobra.Command{
 		Use:   "enterprise",
 		Short: "Install Gloo Mesh enterprise",
@@ -56,7 +62,7 @@ func install(ctx context.Context, opts *options) error {
 	}
 
 	installer := opts.GetInstaller(gloomesh.GlooMeshEnterpriseChartUriTemplate)
-	installer.Values["license.key"] = opts.licenseKey
+	installer.Values["licenseKey"] = opts.licenseKey
 	if opts.skipUI {
 		installer.Values["gloo-mesh-ui.enabled"] = "false"
 	}

@@ -15,7 +15,7 @@ import (
 
 var gloomeshRbacRequirements = func() []rbacv1.PolicyRule {
 	var policyRules []rbacv1.PolicyRule
-	policyRules = append(policyRules, io.DiscoveryInputTypes.RbacPoliciesWatch()...)
+	policyRules = append(policyRules, io.DiscoveryRemoteInputTypes.RbacPoliciesWatch()...)
 	policyRules = append(policyRules, io.LocalNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	policyRules = append(policyRules, io.IstioNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	policyRules = append(policyRules, io.SmiNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
@@ -84,11 +84,6 @@ type AgentInstallOptions struct {
 }
 
 func (r *Registrant) RegisterCluster(ctx context.Context) error {
-	// TODO(ilackarms): move verbose option to global flag at root level of meshctl
-	if r.Verbose {
-		logrus.SetLevel(logrus.DebugLevel)
-	}
-
 	// agent CRDs should always be installed since they're required by any remote agents
 	if err := r.installAgentCrds(ctx); err != nil {
 		return err
@@ -109,10 +104,6 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 }
 
 func (r *Registrant) DeregisterCluster(ctx context.Context) error {
-	if r.Verbose {
-		logrus.SetLevel(logrus.DebugLevel)
-	}
-
 	if err := r.uninstallAgentCrds(ctx); err != nil {
 		return err
 	}
@@ -157,7 +148,7 @@ func (r *Registrant) uninstallAgentCrds(ctx context.Context) error {
 		KubeContext: r.RemoteContext,
 		Namespace:   r.Registration.RemoteNamespace,
 		Verbose:     r.Verbose,
-	}.UninstallCertAgent(
+	}.UninstallAgentCrds(
 		ctx,
 	)
 }

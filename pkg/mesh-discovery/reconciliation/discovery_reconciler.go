@@ -5,13 +5,16 @@ import (
 	"fmt"
 	"time"
 
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+
 	appmeshv1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"github.com/solo-io/skv2/pkg/verifier"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/solo-io/gloo-mesh/pkg/common/utils/stats"
-	"github.com/solo-io/skv2/pkg/predicate"
+	skpredicate "github.com/solo-io/skv2/pkg/predicate"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
@@ -28,7 +31,7 @@ import (
 
 type discoveryReconciler struct {
 	ctx             context.Context
-	builder         input.Builder
+	builder         input.RemoteBuilder
 	translator      translation.Translator
 	masterClient    client.Client
 	managers        multicluster.ManagerSet
@@ -40,9 +43,9 @@ type discoveryReconciler struct {
 
 func Start(
 	ctx context.Context,
-	builder input.Builder,
+	builder input.RemoteBuilder,
 	translator translation.Translator,
-	masterClient client.Client,
+	masterMgr manager.Manager,
 	clusters multicluster.ClusterWatcher,
 	history *stats.SnapshotHistory,
 	verboseMode bool,
@@ -59,28 +62,41 @@ func Start(
 		ctx:          ctx,
 		builder:      builder,
 		translator:   translator,
-		masterClient: masterClient,
+		masterClient: masterMgr.GetClient(),
 		history:      history,
 		verboseMode:  verboseMode,
 		verifier:     verifier,
 	}
 
-	filterDiscoveryEvents := predicate.SimplePredicate{
-		Filter: predicate.SimpleEventFilterFunc(isLeaderElectionObject),
+	filterDiscoveryEvents := skpredicate.SimplePredicate{
+		Filter: skpredicate.SimpleEventFilterFunc(isLeaderElectionObject),
 	}
 
-	input.RegisterMultiClusterReconciler(
+	input.RegisterInputReconciler(
 		ctx,
 		clusters,
 		r.reconcile,
-		time.Second/2,
+		masterMgr,
+		r.reconcileLocal,
 		input.ReconcileOptions{
-			Meshes: reconcile.Options{
-				Verifier: verifier,
+			Remote: input.RemoteReconcileOptions{
+				Meshes: reconcile.Options{
+					Verifier: verifier,
+				},
+				Predicates: []predicate.Predicate{filterDiscoveryEvents},
 			},
+			ReconcileInterval: time.Second / 2,
 		},
-		filterDiscoveryEvents,
 	)
+}
+
+func (r *discoveryReconciler) reconcileLocal(obj ezkube.ResourceId) (bool, error) {
+	clusterObj, ok := obj.(ezkube.ClusterResourceId)
+	if !ok {
+		contextutils.LoggerFrom(r.ctx).Debugf("ignoring event for non cluster type %T %v", obj, sets.Key(obj))
+		return false, nil
+	}
+	return r.reconcile(clusterObj)
 }
 
 func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, error) {
@@ -89,11 +105,11 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 
 	contextutils.LoggerFrom(ctx).Debugf("object triggered resync: %T<%v>", obj, sets.Key(obj))
 
-	inputSnap, err := r.builder.BuildSnapshot(ctx, "mesh-discovery", input.BuildOptions{
+	inputSnap, err := r.builder.BuildSnapshot(ctx, "mesh-discovery", input.RemoteBuildOptions{
 		// ignore NoKindMatchError for AppMesh Mesh CRs
 		// (only clusters with AppMesh Controller installed will
 		// have this kind registered)
-		Meshes: input.ResourceBuildOptions{
+		Meshes: input.ResourceRemoteBuildOptions{
 			Verifier: r.verifier,
 		},
 	})
