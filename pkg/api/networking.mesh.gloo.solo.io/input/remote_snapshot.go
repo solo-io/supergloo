@@ -81,9 +81,38 @@ type RemoteSnapshot interface {
 	ConfigMaps() v1_sets.ConfigMapSet
 	// update the status of all input objects which support
 	// the Status subresource (across multiple clusters)
-	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error
+	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts RemoteSyncStatusOptions) error
 	// serialize the entire snapshot as JSON
 	MarshalJSON() ([]byte, error)
+}
+
+// options for syncing input object statuses
+type RemoteSyncStatusOptions struct {
+
+	// sync status of IssuedCertificate objects
+	IssuedCertificate bool
+	// sync status of PodBounceDirective objects
+	PodBounceDirective bool
+
+	// sync status of XdsConfig objects
+	XdsConfig bool
+
+	// sync status of DestinationRule objects
+	DestinationRule bool
+	// sync status of EnvoyFilter objects
+	EnvoyFilter bool
+	// sync status of Gateway objects
+	Gateway bool
+	// sync status of ServiceEntry objects
+	ServiceEntry bool
+	// sync status of VirtualService objects
+	VirtualService bool
+
+	// sync status of AuthorizationPolicy objects
+	AuthorizationPolicy bool
+
+	// sync status of ConfigMap objects
+	ConfigMap bool
 }
 
 type snapshotRemote struct {
@@ -180,29 +209,36 @@ func (s snapshotRemote) ConfigMaps() v1_sets.ConfigMapSet {
 	return s.configMaps
 }
 
-func (s snapshotRemote) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
+func (s snapshotRemote) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts RemoteSyncStatusOptions) error {
+	var errs error
 
-	for _, obj := range s.IssuedCertificates().List() {
-		clusterClient, err := mcClient.Cluster(obj.ClusterName)
-		if err != nil {
-			return err
-		}
-		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
-			return err
+	if opts.IssuedCertificate {
+		for _, obj := range s.IssuedCertificates().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
 		}
 	}
 
-	for _, obj := range s.XdsConfigs().List() {
-		clusterClient, err := mcClient.Cluster(obj.ClusterName)
-		if err != nil {
-			return err
-		}
-		if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
-			return err
+	if opts.XdsConfig {
+		for _, obj := range s.XdsConfigs().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
 		}
 	}
 
-	return nil
+	return errs
 }
 
 func (s snapshotRemote) MarshalJSON() ([]byte, error) {

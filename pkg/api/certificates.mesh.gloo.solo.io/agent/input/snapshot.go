@@ -54,9 +54,25 @@ type Snapshot interface {
 	Pods() v1_sets.PodSet
 	// update the status of all input objects which support
 	// the Status subresource (in the local cluster)
-	SyncStatuses(ctx context.Context, c client.Client) error
+	SyncStatuses(ctx context.Context, c client.Client, opts SyncStatusOptions) error
 	// serialize the entire snapshot as JSON
 	MarshalJSON() ([]byte, error)
+}
+
+// options for syncing input object statuses
+type SyncStatusOptions struct {
+
+	// sync status of IssuedCertificate objects
+	IssuedCertificate bool
+	// sync status of CertificateRequest objects
+	CertificateRequest bool
+	// sync status of PodBounceDirective objects
+	PodBounceDirective bool
+
+	// sync status of Secret objects
+	Secret bool
+	// sync status of Pod objects
+	Pod bool
 }
 
 type snapshot struct {
@@ -112,20 +128,25 @@ func (s snapshot) Pods() v1_sets.PodSet {
 	return s.pods
 }
 
-func (s snapshot) SyncStatuses(ctx context.Context, c client.Client) error {
+func (s snapshot) SyncStatuses(ctx context.Context, c client.Client, opts SyncStatusOptions) error {
+	var errs error
 
-	for _, obj := range s.IssuedCertificates().List() {
-		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-			return err
+	if opts.IssuedCertificate {
+		for _, obj := range s.IssuedCertificates().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
 		}
 	}
-	for _, obj := range s.CertificateRequests().List() {
-		if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-			return err
+	if opts.CertificateRequest {
+		for _, obj := range s.CertificateRequests().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
 		}
 	}
 
-	return nil
+	return errs
 }
 
 func (s snapshot) MarshalJSON() ([]byte, error) {

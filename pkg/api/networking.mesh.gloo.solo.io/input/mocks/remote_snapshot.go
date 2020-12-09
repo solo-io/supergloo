@@ -182,17 +182,17 @@ func (mr *MockRemoteSnapshotMockRecorder) ConfigMaps() *gomock.Call {
 }
 
 // SyncStatusesMultiCluster mocks base method
-func (m *MockRemoteSnapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client) error {
+func (m *MockRemoteSnapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts input.RemoteSyncStatusOptions) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SyncStatusesMultiCluster", ctx, mcClient)
+	ret := m.ctrl.Call(m, "SyncStatusesMultiCluster", ctx, mcClient, opts)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SyncStatusesMultiCluster indicates an expected call of SyncStatusesMultiCluster
-func (mr *MockRemoteSnapshotMockRecorder) SyncStatusesMultiCluster(ctx, mcClient interface{}) *gomock.Call {
+func (mr *MockRemoteSnapshotMockRecorder) SyncStatusesMultiCluster(ctx, mcClient, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatusesMultiCluster", reflect.TypeOf((*MockRemoteSnapshot)(nil).SyncStatusesMultiCluster), ctx, mcClient)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatusesMultiCluster", reflect.TypeOf((*MockRemoteSnapshot)(nil).SyncStatusesMultiCluster), ctx, mcClient, opts)
 }
 
 // MarshalJSON mocks base method
