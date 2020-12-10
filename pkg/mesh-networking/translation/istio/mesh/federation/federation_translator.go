@@ -21,6 +21,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
+	istioUtils "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/protoutils"
@@ -362,7 +363,7 @@ func (t *translator) federateLimitedTrust(
 				Tls: &networkingv1alpha3spec.ServerTLSSettings{
 					Mode: networkingv1alpha3spec.ServerTLSSettings_MUTUAL,
 					// Hardcoded for now, until Cert Creation is done
-					CredentialName: buildCredentialName(virtualMesh),
+					CredentialName: istioUtils.CreateCredentialsName(virtualMesh.Ref),
 				},
 			}},
 			Selector: ingressGateway.WorkloadLabels,
@@ -379,7 +380,7 @@ func (t *translator) federateLimitedTrust(
 		}
 
 		// Do not include istio services when configuring limited trust
-		if _, ok := trafficTarget.Spec.GetKubeService().GetLabels()["istio"]; ok {
+		if istioUtils.IsIstioInternal(trafficTarget) {
 			continue
 		}
 
@@ -393,7 +394,7 @@ func (t *translator) federateLimitedTrust(
 
 		endpointPorts := make(map[string]uint32)
 		var ports []*networkingv1alpha3spec.Port
-		for _, port := range trafficTarget.Spec.GetKubeService().GetPorts() {
+		for _, port := range meshKubeService.GetPorts() {
 			ports = append(ports, &networkingv1alpha3spec.Port{
 				Number:   port.Port,
 				Protocol: port.Protocol,
@@ -716,7 +717,7 @@ func buildTrafficPolicyPortSettings(
 
 			Tls: &networkingv1alpha3spec.ClientTLSSettings{
 				Mode:           networkingv1alpha3spec.ClientTLSSettings_MUTUAL,
-				CredentialName: buildCredentialName(virtualMesh),
+				CredentialName: istioUtils.CreateCredentialsName(virtualMesh.Ref),
 				Sni:            sni,
 			},
 		}
@@ -724,10 +725,6 @@ func buildTrafficPolicyPortSettings(
 	}
 
 	return trafficPorts
-}
-
-func buildCredentialName(virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh) string {
-	return fmt.Sprintf("%s-mtls-credential", virtualMesh.Ref.Name)
 }
 
 // Convert protocol of k8s Service port to application level protocol

@@ -26,6 +26,7 @@ import (
 	certificatesv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	istioUtils "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -41,9 +42,8 @@ const (
 	defaultIstioNamespace        = "istio-system"
 	// name of the istio root CA secret
 	// https://istio.io/latest/docs/tasks/security/cert-management/plugin-ca-cert/
-	istioCaSecretName                  = "cacerts"
-	defaultCaSecretName                = "smh-cacerts"
-	defaultGatewayCredentialNameSuffix = "mtls-credential"
+	istioCaSecretName   = "cacerts"
+	defaultCaSecretName = "smh-cacerts"
 )
 
 var (
@@ -220,13 +220,12 @@ func (t *translator) configureLimitedTrust(
 		return nil
 	}
 
-	issuedCertificate, podBounceDirective := t.constructIssuedCertificate(
+	issuedCertificate, podBounceDirective := t.constructIssuedCertificateForLimitedTrust(
 		mesh,
 		rootCaSecret,
+		virtualMeshRef,
 		agentInfo.AgentNamespace,
-		autoRestartPods,
 	)
-	issuedCertificate = t.modifyCertificateForLimitedTrust(mesh, virtualMeshRef, issuedCertificate)
 	istioOutputs.AddIssuedCertificates(issuedCertificate)
 	istioOutputs.AddPodBounceDirectives(podBounceDirective)
 	return nil
@@ -345,30 +344,9 @@ func (t *translator) constructIssuedCertificate(
 			SigningCertificateSecret: rootCaSecret,
 			IssuedCertificateSecret:  istioCaCerts,
 			PodBounceDirective:       podBounceRef,
+			TlsType:                  certificatesv1alpha2.IssuedCertificateSpec_SHARED,
 		},
 	}, podBounceDirective
-}
-
-func (t *translator) modifyCertificateForLimitedTrust(
-	mesh *discoveryv1alpha2.Mesh,
-	virtualMeshRef *v1.ObjectRef,
-	certs *certificatesv1alpha2.IssuedCertificate,
-) *certificatesv1alpha2.IssuedCertificate {
-	istioMesh := mesh.Spec.GetIstio()
-	istioNamespace := istioMesh.GetInstallation().GetNamespace()
-	if istioNamespace == "" {
-		istioNamespace = defaultIstioNamespace
-	}
-
-	certs.Spec.LimitedTrust = &certificatesv1alpha2.IssuedCertificateSpec_LimitedTrust{
-		GatewayCertificateSecret: &v1.ObjectRef{
-			Name:      fmt.Sprintf("%s-%s", virtualMeshRef.Name, defaultGatewayCredentialNameSuffix),
-			Namespace: istioNamespace,
-		},
-		GatewaySni: fmt.Sprintf("%s.global", istioMesh.GetInstallation().GetCluster()),
-	}
-
-	return certs
 }
 
 const (
@@ -456,4 +434,61 @@ func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha
 	})
 
 	return podsToBounce
+}
+
+func (t *translator) constructIssuedCertificateForLimitedTrust(
+	mesh *discoveryv1alpha2.Mesh,
+	rootCaSecret *v1.ObjectRef,
+	virtualMeshRef *v1.ObjectRef,
+	agentNamespace string,
+) (*certificatesv1alpha2.IssuedCertificate, *certificatesv1alpha2.PodBounceDirective) {
+	istioMesh := mesh.Spec.GetIstio()
+
+	istioNamespace := istioMesh.GetInstallation().GetNamespace()
+	if istioNamespace == "" {
+		istioNamespace = defaultIstioNamespace
+	}
+
+	issuedCertificate := &v1.ObjectRef{
+		Name:      istioUtils.CreateCredentialsName(virtualMeshRef),
+		Namespace: istioNamespace,
+	}
+
+	issuedCertificateMeta := metav1.ObjectMeta{
+		Name: mesh.Name,
+		// write to the agent namespace
+		Namespace: agentNamespace,
+		// write to the mesh cluster
+		ClusterName: istioMesh.GetInstallation().GetCluster(),
+		Labels:      metautils.TranslatedObjectLabels(),
+	}
+
+	// get the pods that need to be bounced for this mesh
+	podsToBounce := getPodsToBounce(mesh, t.workloads, false)
+	var (
+		podBounceDirective *certificatesv1alpha2.PodBounceDirective
+		podBounceRef       *v1.ObjectRef
+	)
+	if len(podsToBounce) > 0 {
+		podBounceDirective = &certificatesv1alpha2.PodBounceDirective{
+			ObjectMeta: issuedCertificateMeta,
+			Spec: certificatesv1alpha2.PodBounceDirectiveSpec{
+				PodsToBounce: podsToBounce,
+			},
+		}
+		podBounceRef = ezkube.MakeObjectRef(podBounceDirective)
+	}
+
+	// issue a certificate to the mesh agent
+	return &certificatesv1alpha2.IssuedCertificate{
+		ObjectMeta: issuedCertificateMeta,
+		Spec: certificatesv1alpha2.IssuedCertificateSpec{
+			Hosts:                    []string{fmt.Sprintf("%s.global", istioMesh.GetInstallation().GetCluster())},
+			Org:                      defaultIstioOrg,
+			SigningCertificateSecret: rootCaSecret,
+			IssuedCertificateSecret:  issuedCertificate,
+			PodBounceDirective:       podBounceRef,
+			TlsType:                  certificatesv1alpha2.IssuedCertificateSpec_LIMITED,
+		},
+	}, podBounceDirective
 }

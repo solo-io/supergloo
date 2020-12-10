@@ -3,8 +3,6 @@ package certificates.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2";
 
 import "skv2/api/core/v1/core.proto";
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/duration.proto";
 
 import "gogoproto/gogo.proto";
 option (gogoproto.equal_all) = true;
@@ -51,18 +49,16 @@ message IssuedCertificateSpec {
     // which share a data plane with the target mesh.
     .core.skv2.solo.io.ObjectRef pod_bounce_directive = 5;
 
-    // LimitedTrust defines parameters for limited trust configuration
-    message LimitedTrust {
+    // Type of certificate to be used for security
+    TlsType tls_type = 6;
 
-        // The secret containing gateway mutual TLS credential information
-        .core.skv2.solo.io.ObjectRef gateway_certificate_secret = 7;
-
-        // SNI name for generated tls certificates
-        string gateway_sni = 8;
+    // Possible TLS types for which to generate certificates
+    enum TlsType {
+        // Set when shared trust is used
+        SHARED = 0;
+        // Set when limited trust is used
+        LIMITED = 1;
     }
-
-    // Limited trust specific configuration
-    LimitedTrust limited_trust = 6;
 }
 
 // The IssuedCertificate status is written by the CertificateRequesting agent.

@@ -3,6 +3,7 @@ package istio_test
 import (
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"time"
 
@@ -45,6 +46,9 @@ var (
 	}
 
 	curlRemoteReviews = func() string {
+		if isLimitedTrust() {
+			return curlFromProductpage(fmt.Sprintf("http://reviews.%v.svc.%v.global/reviews/1", BookinfoNamespace, remoteClusterName))
+		}
 		return curlFromProductpage(fmt.Sprintf("http://reviews.%v.svc.%v.global:9080/reviews/1", BookinfoNamespace, remoteClusterName))
 	}
 
@@ -68,5 +72,9 @@ var (
 		GinkgoWriter.Write(out)
 
 		return string(out)
+	}
+
+	isLimitedTrust = func() bool {
+		return os.Getenv(e2e.LimitedTrust) != ""
 	}
 )

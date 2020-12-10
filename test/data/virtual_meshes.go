@@ -32,3 +32,31 @@ func SelfSignedVirtualMesh(name, namespace string, meshes []*v1.ObjectRef) *v1al
 		},
 	}
 }
+
+// LimitedTrustSelfSignedVirtualMesh creates a virtual mesh manifest that uses limited trust model
+func LimitedTrustSelfSignedVirtualMesh(name, namespace string, meshes []*v1.ObjectRef) *v1alpha2.VirtualMesh {
+	return &v1alpha2.VirtualMesh{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "VirtualMesh",
+			APIVersion: v1alpha2.SchemeGroupVersion.String(),
+		},
+		Spec: v1alpha2.VirtualMeshSpec{
+			Meshes: meshes,
+			MtlsConfig: &v1alpha2.VirtualMeshSpec_MTLSConfig{
+				TrustModel: &v1alpha2.VirtualMeshSpec_MTLSConfig_Limited{Limited: &v1alpha2.VirtualMeshSpec_MTLSConfig_LimitedTrust{
+					RootCertificateAuthority: &v1alpha2.VirtualMeshSpec_RootCertificateAuthority{
+						CaSource: &v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Generated{
+							Generated: &v1alpha2.VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert{},
+						},
+					},
+				}},
+				AutoRestartPods: false,
+			},
+			Federation: &v1alpha2.VirtualMeshSpec_Federation{},
+		},
+	}
+}

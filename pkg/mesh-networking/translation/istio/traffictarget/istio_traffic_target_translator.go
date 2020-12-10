@@ -13,6 +13,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/authorizationpolicy"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
+	istioUtils "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -68,7 +69,8 @@ func (t *translator) Translate(
 		return
 	}
 
-	if t.isIstioInternalTarget(t.ctx, trafficTarget) {
+	if istioUtils.IsIstioInternal(trafficTarget) {
+		contextutils.LoggerFrom(t.ctx).Debugf("skipping istio internal services %v", trafficTarget.Name)
 		return
 	}
 
@@ -98,12 +100,4 @@ func (t *translator) isIstioTrafficTarget(
 		return false
 	}
 	return mesh.Spec.GetIstio() != nil
-}
-
-func (t *translator) isIstioInternalTarget(ctx context.Context, target *discoveryv1alpha2.TrafficTarget) bool {
-	_, ok := target.Spec.GetKubeService().GetLabels()["istio"]
-	if ok {
-		contextutils.LoggerFrom(ctx).Debugf("skipping istio internal services %v", target.Name)
-	}
-	return ok
 }

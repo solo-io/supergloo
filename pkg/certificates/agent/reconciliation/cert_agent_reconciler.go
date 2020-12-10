@@ -25,6 +25,7 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/reconcile"
+
 	"istio.io/istio/security/pkg/pki/util"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -139,46 +140,6 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		if issuedCertificateSecret, err := inputSecrets.Find(issuedCertificate.Spec.IssuedCertificateSecret); err == nil {
 			// add secret output to prevent it from being GC'ed
 			outputs.AddSecrets(issuedCertificateSecret)
-			if issuedCertificate.Spec.LimitedTrust != nil {
-				issuedCertificateData := secrets.IntermediateCADataFromSecretData(issuedCertificateSecret.Data)
-				opts := util.CertOptions{
-					Host:       issuedCertificate.Spec.LimitedTrust.GatewaySni,
-					TTL:        defaultGatewayTTL,
-					NotBefore:  time.Now(),
-					Org:        issuedCertificate.Spec.Org,
-					RSAKeySize: defaultGatewayRsaKeySize,
-					IsDualUse:  true,
-					IsClient:   true,
-					IsServer:   true,
-				}
-
-				block, _ := pem.Decode(issuedCertificateData.CaCert)
-				if opts.SignerCert, err = x509.ParseCertificate(block.Bytes); err != nil {
-					return fmt.Errorf("error parsing local CA certificate: %w", err)
-				}
-				block, _ = pem.Decode(issuedCertificateData.CaPrivateKey)
-				if opts.SignerPriv, err = x509.ParsePKCS1PrivateKey(block.Bytes); err != nil {
-					return fmt.Errorf("error parsing local CA key: %w", err)
-				}
-
-				cert, key, err := util.GenCertKeyFromOptions(opts)
-				if err != nil {
-					return fmt.Errorf("error generating gateway certificate: %w", err)
-				}
-
-				outputs.AddSecrets(&corev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      issuedCertificate.Spec.LimitedTrust.GatewayCertificateSecret.Name,
-						Namespace: issuedCertificate.Spec.LimitedTrust.GatewayCertificateSecret.Namespace,
-						Labels:    agentLabels,
-					},
-					Data: secrets.GatewayMTLSCredentialData{
-						CaCert: issuedCertificateData.RootCert,
-						Cert:   utils.AppendRootCerts(cert, issuedCertificateData.CaCert),
-						Key:    key,
-					}.ToSecretData(),
-				})
-			}
 			return nil
 		}
 		// otherwise, restart the workflow from PENDING
@@ -271,17 +232,25 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			CaPrivateKey: privateKey,
 		}
 
-		// finally, create the secret
-		issuedCertificateSecret := &corev1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      issuedCertificate.Spec.IssuedCertificateSecret.Name,
-				Namespace: issuedCertificate.Spec.IssuedCertificateSecret.Namespace,
-				Labels:    agentLabels,
-			},
-			Data: issuedCertificateData.ToSecretData(),
-			Type: issuedCertificateSecretType,
+		switch issuedCertificate.Spec.TlsType {
+		case v1alpha2.IssuedCertificateSpec_LIMITED:
+			issuedCertificateSecret, err := generateSecretForLimitedTrust(issuedCertificate, issuedCertificateData)
+			if err != nil {
+				return err
+			}
+			outputs.AddSecrets(issuedCertificateSecret)
+		default:
+			issuedCertificateSecret := &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      issuedCertificate.Spec.IssuedCertificateSecret.Name,
+					Namespace: issuedCertificate.Spec.IssuedCertificateSecret.Namespace,
+					Labels:    agentLabels,
+				},
+				Data: issuedCertificateData.ToSecretData(),
+				Type: issuedCertificateSecretType,
+			}
+			outputs.AddSecrets(issuedCertificateSecret)
 		}
-		outputs.AddSecrets(issuedCertificateSecret)
 
 		// mark issued certificate as ISSUED
 		issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_ISSUED
@@ -337,4 +306,49 @@ func (r *certAgentReconciler) bouncePods(podBounceDirectiveRef *v1.ObjectRef, al
 		}
 	}
 	return errs
+}
+
+func generateSecretForLimitedTrust(issuedCertificate *v1alpha2.IssuedCertificate, issuedCertificateData secrets.IntermediateCAData) (*corev1.Secret, error) {
+	if len(issuedCertificate.Spec.Hosts) < 1 {
+		return nil, fmt.Errorf("issued certificate %s does not have hosts set", issuedCertificate.Name)
+	}
+	opts := util.CertOptions{
+		Host:       issuedCertificate.Spec.Hosts[0],
+		TTL:        defaultGatewayTTL,
+		NotBefore:  time.Now(),
+		Org:        issuedCertificate.Spec.Org,
+		RSAKeySize: defaultGatewayRsaKeySize,
+		IsDualUse:  true,
+		IsClient:   true,
+		IsServer:   true,
+	}
+	var err error
+	block, _ := pem.Decode(issuedCertificateData.CaCert)
+	if opts.SignerCert, err = x509.ParseCertificate(block.Bytes); err != nil {
+		return nil, fmt.Errorf("error parsing local CA certificate: %w", err)
+	}
+	block, _ = pem.Decode(issuedCertificateData.CaPrivateKey)
+	if opts.SignerPriv, err = x509.ParsePKCS1PrivateKey(block.Bytes); err != nil {
+		return nil, fmt.Errorf("error parsing local CA key: %w", err)
+	}
+
+	cert, key, err := util.GenCertKeyFromOptions(opts)
+	if err != nil {
+		return nil, fmt.Errorf("error generating gateway certificate: %w", err)
+	}
+
+	issuedCertificateSecret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      issuedCertificate.Spec.IssuedCertificateSecret.Name,
+			Namespace: issuedCertificate.Spec.IssuedCertificateSecret.Namespace,
+			Labels:    agentLabels,
+		},
+		Data: secrets.GatewayMTLSCredentialData{
+			CaCert: issuedCertificateData.RootCert,
+			Cert:   utils.AppendRootCerts(cert, issuedCertificateData.CaCert),
+			Key:    key,
+		}.ToSecretData(),
+	}
+
+	return issuedCertificateSecret, nil
 }

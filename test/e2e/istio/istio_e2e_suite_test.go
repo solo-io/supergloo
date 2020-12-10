@@ -28,7 +28,7 @@ var (
 // to skip testing this package, run `make run-tests SKIP_PACKAGES=test/e2e/istio
 // to test only this package, run `make run-tests TEST_PKG=test/e2e/istio
 func TestIstio(t *testing.T) {
-	if os.Getenv("RUN_E2E") == "" {
+	if os.Getenv(RunE2E) == "" {
 		fmt.Println("skipping E2E tests")
 		return
 	}
@@ -36,7 +36,7 @@ func TestIstio(t *testing.T) {
 		utils.RunShell("./ci/print-kind-info.sh")
 		Fail(message, callerSkip...)
 	})
-	RunSpecs(t, "E2e Suite")
+	RunSpecs(t, "E2E Suite")
 }
 
 // Before running tests, federate the two clusters by creating a VirtualMesh with mTLS enabled.
@@ -57,14 +57,31 @@ var _ = BeforeSuite(func() {
 	federateClusters(dynamicClient)
 })
 
+// Before a test check whether limited trust is set
+var _ = BeforeEach(func() {
+	if isLimitedTrust() {
+		Skip("Limited trust does not currently support the current test case")
+	}
+})
+
 func federateClusters(dynamicClient client.Client) {
-	VirtualMesh = data.SelfSignedVirtualMesh(
-		"bookinfo-federation",
-		BookinfoNamespace,
-		[]*v1.ObjectRef{
-			masterMesh,
-			remoteMesh,
-		})
+	if isLimitedTrust() {
+		VirtualMesh = data.LimitedTrustSelfSignedVirtualMesh(
+			"bookinfo-federation",
+			BookinfoNamespace,
+			[]*v1.ObjectRef{
+				masterMesh,
+				remoteMesh,
+			})
+	} else {
+		VirtualMesh = data.SelfSignedVirtualMesh(
+			"bookinfo-federation",
+			BookinfoNamespace,
+			[]*v1.ObjectRef{
+				masterMesh,
+				remoteMesh,
+			})
+	}
 
 	err = VirtualMeshManifest.AppendResources(VirtualMesh)
 	Expect(err).NotTo(HaveOccurred())
@@ -95,7 +112,7 @@ var _ = AfterSuite(func() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	if os.Getenv("NO_CLEANUP") != "" {
+	if os.Getenv(NoCleanup) != "" {
 		return
 	}
 	_ = ClearEnv(ctx)

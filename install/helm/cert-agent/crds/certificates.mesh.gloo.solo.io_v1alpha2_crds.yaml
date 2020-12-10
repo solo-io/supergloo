@@ -59,23 +59,6 @@ spec:
                   description: namespace of the resource being referenced
                   type: string
               type: object
-            limitedTrust:
-              description: Limited trust specific configuration
-              properties:
-                gatewayCertificateSecret:
-                  description: The secret containing gateway mutual TLS credential information
-                  properties:
-                    name:
-                      description: name of the resource being referenced
-                      type: string
-                    namespace:
-                      description: namespace of the resource being referenced
-                      type: string
-                  type: object
-                gatewaySni:
-                  description: SNI name for generated tls certificates
-                  type: string
-              type: object
             org:
               description: The organization for this certificate.
               type: string
@@ -103,6 +86,12 @@ spec:
                   description: namespace of the resource being referenced
                   type: string
               type: object
+            tlsType:
+              description: Type of certificate to be used for security
+              enum:
+              - SHARED
+              - LIMITED
+              type: string
           type: object
         status:
           description: The IssuedCertificate status is written by the CertificateRequesting agent.
