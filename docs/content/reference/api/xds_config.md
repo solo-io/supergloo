@@ -3,7 +3,7 @@
 title: "xds_config.proto"
 ---
 
-## Package : `xds.enterprise.agent.mesh.gloo.solo.io`
+## Package : `xds.agent.enterprise.mesh.gloo.solo.io`
 
 
 
@@ -16,10 +16,10 @@ title: "xds_config.proto"
 
 
 ## Table of Contents
-  - [XdsConfigSpec](#xds.enterprise.agent.mesh.gloo.solo.io.XdsConfigSpec)
-  - [XdsConfigSpec.Resource](#xds.enterprise.agent.mesh.gloo.solo.io.XdsConfigSpec.Resource)
-  - [XdsConfigSpec.TypedResources](#xds.enterprise.agent.mesh.gloo.solo.io.XdsConfigSpec.TypedResources)
-  - [XdsConfigStatus](#xds.enterprise.agent.mesh.gloo.solo.io.XdsConfigStatus)
+  - [XdsConfigSpec](#xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec)
+  - [XdsConfigSpec.Resource](#xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.Resource)
+  - [XdsConfigSpec.TypedResources](#xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.TypedResources)
+  - [XdsConfigStatus](#xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigStatus)
 
 
 
@@ -27,7 +27,7 @@ title: "xds_config.proto"
 
 
 
-<a name="xds.enterprise.agent.mesh.gloo.solo.io.XdsConfigSpec"></a>
+<a name="xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec"></a>
 
 ### XdsConfigSpec
 XdsConfigs are used to issue XDS Configuration Resources to running Envoy instances. They are created by Gloo Mesh for processing by an agent running on managed clusters.<br>The agent will serve the specified XDS configuration resources on its grpc-xds port (default 9977) to the Envoy instances (nodes) defined in the XDSConfigSpec.<br>This feature is currently only available in Gloo Mesh Enterprise.
@@ -36,14 +36,14 @@ XdsConfigs are used to issue XDS Configuration Resources to running Envoy instan
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | workloads | []core.skv2.solo.io.ObjectRef | repeated | The Workloads that will receive this XDS Configuration. |
-| types | []xds.enterprise.agent.mesh.gloo.solo.io.XdsConfigSpec.TypedResources | repeated | the xDS resources to serve to the nodes. mapped by type URL. |
+| types | []xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.TypedResources | repeated | the xDS resources to serve to the nodes. mapped by type URL. |
 
 
 
 
 
 
-<a name="xds.enterprise.agent.mesh.gloo.solo.io.XdsConfigSpec.Resource"></a>
+<a name="xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.Resource"></a>
 
 ### XdsConfigSpec.Resource
 a single named resource
@@ -59,7 +59,7 @@ a single named resource
 
 
 
-<a name="xds.enterprise.agent.mesh.gloo.solo.io.XdsConfigSpec.TypedResources"></a>
+<a name="xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.TypedResources"></a>
 
 ### XdsConfigSpec.TypedResources
 a set of resources of a single type (typeURL)
@@ -68,14 +68,14 @@ a set of resources of a single type (typeURL)
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | typeUrl | string |  | the type URL of the resources in the given set |
-| resources | []xds.enterprise.agent.mesh.gloo.solo.io.XdsConfigSpec.Resource | repeated | stored as compressed, base-64 encoded raw bytes. |
+| resources | []xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.Resource | repeated | stored as compressed, base-64 encoded raw bytes. |
 
 
 
 
 
 
-<a name="xds.enterprise.agent.mesh.gloo.solo.io.XdsConfigStatus"></a>
+<a name="xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigStatus"></a>
 
 ### XdsConfigStatus
 The XdsConfig status is written by the CertificateRequesting agent.

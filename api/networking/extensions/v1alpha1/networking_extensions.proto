@@ -110,7 +110,7 @@ message GeneratedObject {
         .istio.networking.v1alpha3.ServiceEntry service_entry = 4;
         .istio.networking.v1alpha3.VirtualService virtual_service = 5;
         ConfigMap config_map = 6;
-        .xds.enterprise.agent.mesh.gloo.solo.io.XdsConfigSpec xds_config = 7;
+        .xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec xds_config = 7;
         // TODO(ilackarms): add more types here. note that we may need to support non-proto resourecs here in the future,
         // in which case we will probably use a proto Struct to represent the object.
     }

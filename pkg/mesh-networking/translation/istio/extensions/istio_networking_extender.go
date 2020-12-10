@@ -3,7 +3,7 @@ package extensions
 import (
 	"context"
 
-	xdsv1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1"
+	xdsv1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1"
 
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	corev1 "k8s.io/api/core/v1"
