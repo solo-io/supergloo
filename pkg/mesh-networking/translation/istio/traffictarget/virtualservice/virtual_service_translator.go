@@ -7,10 +7,10 @@ import (
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"istio.io/istio/pkg/config/host"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rotisserie/eris"
@@ -52,20 +52,20 @@ type Translator interface {
 }
 
 type translator struct {
-	remoteSnapshot   input.RemoteSnapshot
-	clusterDomains   hostutils.ClusterDomainRegistry
-	decoratorFactory decorators.Factory
+	userVirtualServices v1alpha3sets.VirtualServiceSet
+	clusterDomains      hostutils.ClusterDomainRegistry
+	decoratorFactory    decorators.Factory
 }
 
 func NewTranslator(
-	remoteSnapshot input.RemoteSnapshot,
+	userVirtualServices v1alpha3sets.VirtualServiceSet,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
 ) Translator {
 	return &translator{
-		remoteSnapshot:   remoteSnapshot,
-		clusterDomains:   clusterDomains,
-		decoratorFactory: decoratorFactory,
+		userVirtualServices: userVirtualServices,
+		clusterDomains:      clusterDomains,
+		decoratorFactory:    decoratorFactory,
 	}
 }
 
@@ -151,13 +151,13 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	if t.remoteSnapshot == nil {
+	if t.userVirtualServices == nil {
 		return virtualService
 	}
 
 	// detect and report error on intersecting config if enabled in settings
 	if errs := conflictsWithUserVirtualService(
-		t.remoteSnapshot.VirtualServices(),
+		t.userVirtualServices,
 		virtualService,
 	); len(errs) > 0 {
 		for _, err := range errs {
@@ -428,22 +428,16 @@ func translateRequestMatcherPathSpecifier(matcher *v1alpha2.TrafficPolicySpec_Ht
 
 // Return errors for each user-supplied VirtualService that applies to the same hostname as the translated VirtualService
 func conflictsWithUserVirtualService(
-	virtualServices v1alpha3sets.VirtualServiceSet,
+	userVirtualServices v1alpha3sets.VirtualServiceSet,
 	translatedVirtualService *networkingv1alpha3.VirtualService,
 ) []error {
 	// For each user VS, check whether any hosts match any hosts from translated VS
 	var errs []error
 
-	virtualServices.List(func(vs *networkingv1alpha3.VirtualService) (_ bool) {
-		// ignore translated VS
-		if metautils.IsTranslated(vs) {
-			return
-		}
+	// virtual services from RemoteSnapshot only contain non-translated objects
+	userVirtualServices.List(func(vs *networkingv1alpha3.VirtualService) (_ bool) {
 		// check if common hostnames exist
-		userHostnames := host.NewNames(vs.Spec.Hosts)
-		translatedHostnames := host.NewNames(translatedVirtualService.Spec.Hosts)
-		commonHostnames := userHostnames.Intersection(translatedHostnames)
-
+		commonHostnames := utils.CommonHostnames(vs.Spec.Hosts, translatedVirtualService.Spec.Hosts)
 		if len(commonHostnames) > 0 {
 			errs = append(
 				errs,

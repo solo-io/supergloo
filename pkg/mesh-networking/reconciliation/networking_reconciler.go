@@ -56,9 +56,8 @@ type networkingReconciler struct {
 	settingsRef                v1.ObjectRef
 	extensionClients           extensions.Clientset
 	reconciler                 skinput.InputReconciler
-	istioResourceVerifier      verifier.ServerResourceVerifier
+	remoteResourceVerifier     verifier.ServerResourceVerifier
 	disallowIntersectingConfig bool
-	watchOutputTypes           bool
 }
 
 // pushNotificationId is a special identifier for a reconcile event triggered by an extension server pushing a notification
@@ -84,7 +83,7 @@ func Start(
 	watchOutputTypes bool,
 ) error {
 
-	istioResourceVerifier := buildIstioResourceVerifier(ctx)
+	remoteResourceVerifier := buildRemoteResourceVerifier(ctx)
 
 	r := &networkingReconciler{
 		ctx:                        ctx,
@@ -100,8 +99,7 @@ func Start(
 		settingsRef:                settingsRef,
 		extensionClients:           extensionClients,
 		disallowIntersectingConfig: disallowIntersectingConfig,
-		istioResourceVerifier:      istioResourceVerifier,
-		watchOutputTypes:           watchOutputTypes,
+		remoteResourceVerifier:     remoteResourceVerifier,
 	}
 
 	// TODO extend skv2 snapshots with singleton object utilities
@@ -116,16 +114,17 @@ func Start(
 	// watch local input types for changes
 	// also watch istio output types for changes, including objects managed by Gloo Mesh itself
 	// this should eventually reach a steady state since Gloo Mesh performs equality checks before updating existing objects
+	remoteReconcileOptions := reconcile.Options{Verifier: remoteResourceVerifier}
 	remoteReconcileOpts := input.RemoteReconcileOptions{
-		IssuedCertificates:    reconcile.Options{Verifier: istioResourceVerifier},
-		PodBounceDirectives:   reconcile.Options{Verifier: istioResourceVerifier},
-		XdsConfigs:            reconcile.Options{Verifier: istioResourceVerifier},
-		DestinationRules:      reconcile.Options{Verifier: istioResourceVerifier},
-		EnvoyFilters:          reconcile.Options{Verifier: istioResourceVerifier},
-		Gateways:              reconcile.Options{Verifier: istioResourceVerifier},
-		ServiceEntries:        reconcile.Options{Verifier: istioResourceVerifier},
-		VirtualServices:       reconcile.Options{Verifier: istioResourceVerifier},
-		AuthorizationPolicies: reconcile.Options{Verifier: istioResourceVerifier},
+		IssuedCertificates:    remoteReconcileOptions,
+		PodBounceDirectives:   remoteReconcileOptions,
+		XdsConfigs:            remoteReconcileOptions,
+		DestinationRules:      remoteReconcileOptions,
+		EnvoyFilters:          remoteReconcileOptions,
+		Gateways:              remoteReconcileOptions,
+		ServiceEntries:        remoteReconcileOptions,
+		VirtualServices:       remoteReconcileOptions,
+		AuthorizationPolicies: remoteReconcileOptions,
 		Predicates: []predicate.Predicate{
 			skv2predicate.SimplePredicate{
 				Filter: skv2predicate.SimpleEventFilterFunc(isIgnoredConfigMap),
@@ -133,13 +132,16 @@ func Start(
 		},
 	}
 	// ignore all events (i.e. don't reconcile) if not watching output types
-	if !r.watchOutputTypes {
+	if !watchOutputTypes {
 		remoteReconcileOpts.Predicates = append(
 			remoteReconcileOpts.Predicates,
 			skv2predicate.SimplePredicate{
-				Filter: skv2predicate.SimpleEventFilterFunc(func(obj metav1.Object) bool {
-					return true
-				})},
+				Filter: skv2predicate.SimpleEventFilterFunc(
+					func(obj metav1.Object) bool {
+						return true
+					},
+				),
+			},
 		)
 	}
 
@@ -202,7 +204,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	}
 
 	// nil istioInputSnap signals to downstream translators that intersecting config should not be detected
-	var remoteSnapshot input.RemoteSnapshot
+	var userSupplied input.RemoteSnapshot
 	if r.disallowIntersectingConfig {
 		selector := labels.NewSelector()
 		for k := range metautils.TranslatedObjectLabels() {
@@ -212,15 +214,15 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 				// shouldn't happen
 				return false, err
 			}
-			selector.Add([]labels.Requirement{*requirement}...)
+			selector = selector.Add([]labels.Requirement{*requirement}...)
 		}
 		resourceBuildOptions := input.ResourceRemoteBuildOptions{
 			ListOptions: []client.ListOption{
 				&client.ListOptions{LabelSelector: selector},
 			},
-			Verifier: r.istioResourceVerifier,
+			Verifier: r.remoteResourceVerifier,
 		}
-		remoteSnapshot, err = r.remoteBuilder.BuildSnapshot(ctx, "mesh-networking-istio-inputs", input.RemoteBuildOptions{
+		userSupplied, err = r.remoteBuilder.BuildSnapshot(ctx, "mesh-networking-istio-inputs", input.RemoteBuildOptions{
 			IssuedCertificates:    resourceBuildOptions,
 			PodBounceDirectives:   resourceBuildOptions,
 			XdsConfigs:            resourceBuildOptions,
@@ -238,13 +240,13 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	}
 
 	// apply policies to the discovery resources they target
-	r.applier.Apply(ctx, inputSnap, remoteSnapshot)
+	r.applier.Apply(ctx, inputSnap, userSupplied)
 
 	// append errors as we still want to sync statuses if applying translation fails
 	var errs error
 
 	// translate and apply outputs
-	if err := r.applyTranslation(ctx, inputSnap, remoteSnapshot); err != nil {
+	if err := r.applyTranslation(ctx, inputSnap, userSupplied); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -265,13 +267,13 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	return false, errs
 }
 
-func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.LocalSnapshot, remoteSnapshot input.RemoteSnapshot) error {
+func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.LocalSnapshot, userSupplied input.RemoteSnapshot) error {
 	if err := r.syncSettings(ctx, in); err != nil {
 		// fail early if settings failed to sync
 		return err
 	}
 
-	outputSnap, err := r.translator.Translate(ctx, in, remoteSnapshot, r.reporter)
+	outputSnap, err := r.translator.Translate(ctx, in, userSupplied, r.reporter)
 	if err != nil {
 		// internal translator errors should never happen
 		return err
@@ -329,7 +331,7 @@ func isIgnoredConfigMap(obj metav1.Object) bool {
 
 // build a verifier that ignores NoKindMatch errors for mesh-specific types
 // we expect these errors on clusters on which that mesh is not deployed
-func buildIstioResourceVerifier(ctx context.Context) verifier.ServerResourceVerifier {
+func buildRemoteResourceVerifier(ctx context.Context) verifier.ServerResourceVerifier {
 	options := map[schema.GroupVersionKind]verifier.ServerVerifyOption{}
 	for groupVersion, kinds := range io.IstioNetworkingOutputTypes.Snapshot {
 		for _, kind := range kinds {

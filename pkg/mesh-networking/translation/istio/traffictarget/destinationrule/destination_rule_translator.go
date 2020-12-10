@@ -9,11 +9,11 @@ import (
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/tls"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/snapshotutils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	"istio.io/istio/pkg/config/host"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rotisserie/eris"
@@ -51,26 +51,26 @@ type Translator interface {
 }
 
 type translator struct {
-	existingIstioResources input.RemoteSnapshot
-	clusterDomains         hostutils.ClusterDomainRegistry
-	decoratorFactory       decorators.Factory
-	trafficTargets         discoveryv1alpha2sets.TrafficTargetSet
-	failoverServices       v1alpha2sets.FailoverServiceSet
+	userDestinationRules v1alpha3sets.DestinationRuleSet
+	clusterDomains       hostutils.ClusterDomainRegistry
+	decoratorFactory     decorators.Factory
+	trafficTargets       discoveryv1alpha2sets.TrafficTargetSet
+	failoverServices     v1alpha2sets.FailoverServiceSet
 }
 
 func NewTranslator(
-	existingIstioResources input.RemoteSnapshot,
+	userDestinationRules v1alpha3sets.DestinationRuleSet,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
 ) Translator {
 	return &translator{
-		existingIstioResources: existingIstioResources,
-		clusterDomains:         clusterDomains,
-		decoratorFactory:       decoratorFactory,
-		trafficTargets:         trafficTargets,
-		failoverServices:       failoverServices,
+		userDestinationRules: userDestinationRules,
+		clusterDomains:       clusterDomains,
+		decoratorFactory:     decoratorFactory,
+		trafficTargets:       trafficTargets,
+		failoverServices:     failoverServices,
 	}
 }
 
@@ -87,6 +87,7 @@ func (t *translator) Translate(
 	settings, err := snapshotutils.GetSingletonSettings(ctx, in)
 	if err != nil {
 		// should be caught earlier in the reconciliation loop
+		contextutils.LoggerFrom(ctx).DPanicf("%+v", err)
 		return nil
 	}
 
@@ -147,13 +148,13 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	if t.existingIstioResources == nil {
+	if t.userDestinationRules == nil {
 		return destinationRule
 	}
 
 	// detect and report error on intersecting config if enabled in settings
 	if errs := conflictsWithUserDestinationRule(
-		t.existingIstioResources.DestinationRules(),
+		t.userDestinationRules,
 		destinationRule,
 	); len(errs) > 0 {
 		for _, err := range errs {
@@ -240,29 +241,23 @@ func (t *translator) initializeDestinationRule(
 
 // Return errors for each user-supplied VirtualService that applies to the same hostname as the translated VirtualService
 func conflictsWithUserDestinationRule(
-	destinationRules v1alpha3sets.DestinationRuleSet,
+	userDestinationRules v1alpha3sets.DestinationRuleSet,
 	translatedDestinationRule *networkingv1alpha3.DestinationRule,
 ) []error {
 	// For each user DR, check whether any hosts match any hosts from translated DR
 	var errs []error
 
-	destinationRules.List(func(dr *networkingv1alpha3.DestinationRule) (_ bool) {
-		// ignore translated DR
-		if metautils.IsTranslated(dr) {
-			return
-		}
+	// destination rules from RemoteSnapshot only contain non-translated objects
+	userDestinationRules.List(func(dr *networkingv1alpha3.DestinationRule) bool {
 		// check if common hostnames exist
-		userHostnames := host.NewNames([]string{dr.Spec.Host})
-		translatedHostnames := host.NewNames([]string{translatedDestinationRule.Spec.Host})
-		commonHostname := userHostnames.Intersection(translatedHostnames)
-
+		commonHostname := utils.CommonHostnames([]string{dr.Spec.Host}, []string{translatedDestinationRule.Spec.Host})
 		if len(commonHostname) > 0 {
 			errs = append(
 				errs,
 				eris.Errorf("Unable to translate AppliedTrafficPolicies to DestinationRule, applies to host %s that is already configured by the existing DestinationRule %s", commonHostname[0], sets.Key(dr)),
 			)
 		}
-		return
+		return false
 	})
 
 	return errs

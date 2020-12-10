@@ -23,7 +23,7 @@ type Translator interface {
 	Translate(
 		ctx context.Context,
 		in input.LocalSnapshot,
-		remoteSnapshot input.RemoteSnapshot,
+		userSupplied input.RemoteSnapshot,
 		istioOutputs istio.Builder,
 		localOutputs local.Builder,
 		reporter reporting.Reporter,
@@ -48,7 +48,7 @@ func NewIstioTranslator(extensionClients extensions.Clientset) Translator {
 func (t *istioTranslator) Translate(
 	ctx context.Context,
 	in input.LocalSnapshot,
-	remoteSnapshot input.RemoteSnapshot,
+	userSupplied input.RemoteSnapshot,
 	istioOutputs istio.Builder,
 	localOutputs local.Builder,
 	reporter reporting.Reporter,
@@ -57,7 +57,7 @@ func (t *istioTranslator) Translate(
 
 	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator(
 		ctx,
-		remoteSnapshot,
+		userSupplied,
 		in.KubernetesClusters(),
 		in.TrafficTargets(),
 		in.FailoverServices(),
@@ -69,7 +69,7 @@ func (t *istioTranslator) Translate(
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(
 		ctx,
-		remoteSnapshot,
+		userSupplied,
 		in.KubernetesClusters(),
 		in.Secrets(),
 		in.Workloads(),

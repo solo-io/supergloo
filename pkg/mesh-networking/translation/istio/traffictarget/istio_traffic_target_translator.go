@@ -3,6 +3,7 @@ package traffictarget
 import (
 	"context"
 
+	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
@@ -37,7 +38,7 @@ type Translator interface {
 
 type translator struct {
 	ctx                   context.Context
-	remoteSnapshot        input.RemoteSnapshot
+	userSupplied          input.RemoteSnapshot
 	destinationRules      destinationrule.Translator
 	virtualServices       virtualservice.Translator
 	authorizationPolicies authorizationpolicy.Translator
@@ -45,16 +46,23 @@ type translator struct {
 
 func NewTranslator(
 	ctx context.Context,
-	remoteSnapshot input.RemoteSnapshot,
+	userSupplied input.RemoteSnapshot,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
 ) Translator {
+	var existingVirtualServices v1alpha3sets.VirtualServiceSet
+	var existingDestinationRules v1alpha3sets.DestinationRuleSet
+	if userSupplied != nil {
+		existingVirtualServices = userSupplied.VirtualServices()
+		existingDestinationRules = userSupplied.DestinationRules()
+	}
+
 	return &translator{
 		ctx:                   ctx,
-		destinationRules:      destinationrule.NewTranslator(remoteSnapshot, clusterDomains, decoratorFactory, trafficTargets, failoverServices),
-		virtualServices:       virtualservice.NewTranslator(remoteSnapshot, clusterDomains, decoratorFactory),
+		destinationRules:      destinationrule.NewTranslator(existingDestinationRules, clusterDomains, decoratorFactory, trafficTargets, failoverServices),
+		virtualServices:       virtualservice.NewTranslator(existingVirtualServices, clusterDomains, decoratorFactory),
 		authorizationPolicies: authorizationpolicy.NewTranslator(),
 	}
 }

@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
+	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
@@ -916,31 +917,18 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			}).
 			Build()
 
-		existingIstioResources := input.NewInputRemoteSnapshotManualBuilder("user").
-			AddVirtualServices([]*networkingv1alpha3.VirtualService{
-				// Gloo Mesh translated, should not yield error
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "gloo-mesh-translated-vs",
-						Namespace: "foo",
-						Labels:    metautils.TranslatedObjectLabels(),
-					},
-					Spec: networkingv1alpha3spec.VirtualService{
-						Hosts: []string{"*-hostname"},
-					},
+		existingVirtualServices := v1alpha3sets.NewVirtualServiceSet(
+			// user-supplied, should yield conflict error
+			&networkingv1alpha3.VirtualService{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "user-provided-vs",
+					Namespace: "foo",
 				},
-				// user-supplied, should yield conflict error
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "user-provided-vs",
-						Namespace: "foo",
-					},
-					Spec: networkingv1alpha3spec.VirtualService{
-						Hosts: []string{"*-hostname"},
-					},
+				Spec: networkingv1alpha3spec.VirtualService{
+					Hosts: []string{"*-hostname"},
 				},
-			}).
-			Build()
+			},
+		)
 
 		mockClusterDomainRegistry.
 			EXPECT().
@@ -989,12 +977,12 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				Expect(err).To(testutils.HaveInErrorChain(
 					eris.Errorf("Unable to translate AppliedTrafficPolicies to VirtualService, applies to hosts %+v that are already configured by the existing VirtualService %s",
 						[]string{"local-hostname"},
-						sets.Key(existingIstioResources.VirtualServices().List()[1])),
+						sets.Key(existingVirtualServices.List()[0])),
 				),
 				)
 			})
 
-		virtualServiceTranslator = virtualservice.NewTranslator(existingIstioResources, mockClusterDomainRegistry, mockDecoratorFactory)
+		virtualServiceTranslator = virtualservice.NewTranslator(existingVirtualServices, mockClusterDomainRegistry, mockDecoratorFactory)
 		_ = virtualServiceTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
 	})
 })

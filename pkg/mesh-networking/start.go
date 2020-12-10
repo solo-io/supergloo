@@ -36,17 +36,21 @@ func (opts *NetworkingOpts) AddToFlags(flags *pflag.FlagSet) {
 // which processes k8s storage events to produce
 // discovered resources.
 func Start(ctx context.Context, opts *NetworkingOpts) error {
-	return bootstrap.Start(ctx, "networking", func(parameters bootstrap.StartParameters) error {
-		return startReconciler(opts.disallowIntersectionConfig, opts.watchOutputTypes, parameters)
-	}, *opts.Options)
+	starter := networkingStarter{
+		disallowIntersectingConfig: opts.disallowIntersectionConfig,
+		watchOutputTypes:           opts.watchOutputTypes,
+	}
+
+	return bootstrap.Start(ctx, "networking", starter.startReconciler, *opts.Options)
+}
+
+type networkingStarter struct {
+	disallowIntersectingConfig bool
+	watchOutputTypes           bool
 }
 
 // start the main reconcile loop
-func startReconciler(
-	disallowIntersectingConfig bool,
-	watchOutputTypes bool,
-	parameters bootstrap.StartParameters,
-) error {
+func (s networkingStarter) startReconciler(parameters bootstrap.StartParameters) error {
 
 	extensionClientset := extensions.NewClientset(parameters.Ctx)
 
@@ -90,8 +94,8 @@ func startReconciler(
 		parameters.VerboseMode,
 		parameters.SettingsRef,
 		extensionClientset,
-		disallowIntersectingConfig,
-		watchOutputTypes,
+		s.disallowIntersectingConfig,
+		s.watchOutputTypes,
 	)
 }
 

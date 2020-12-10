@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
+	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
@@ -565,31 +565,19 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				},
 			}).
 			Build()
-		existingIstioResources := input.NewInputRemoteSnapshotManualBuilder("").
-			AddDestinationRules(v1alpha3.DestinationRuleSlice{
-				// Gloo Mesh translated, should not yield error
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "gloo-mesh-translated-dr",
-						Namespace: "foo",
-						Labels:    metautils.TranslatedObjectLabels(),
-					},
-					Spec: networkingv1alpha3spec.DestinationRule{
-						Host: "*-hostname",
-					},
+
+		existingDestinationRules := v1alpha3sets.NewDestinationRuleSet(
+			// user-supplied, should yield conflict error
+			&networkingv1alpha3.DestinationRule{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "user-provided-dr",
+					Namespace: "foo",
 				},
-				// user-supplied, should yield conflict error
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "user-provided-dr",
-						Namespace: "foo",
-					},
-					Spec: networkingv1alpha3spec.DestinationRule{
-						Host: "*-hostname",
-					},
+				Spec: networkingv1alpha3spec.DestinationRule{
+					Host: "*-hostname",
 				},
-			}).
-			Build()
+			},
+		)
 
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
@@ -671,13 +659,13 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				Expect(err).To(testutils.HaveInErrorChain(
 					eris.Errorf("Unable to translate AppliedTrafficPolicies to DestinationRule, applies to host %s that is already configured by the existing DestinationRule %s",
 						"local-hostname",
-						sets.Key(existingIstioResources.DestinationRules().List()[1])),
+						sets.Key(existingDestinationRules.List()[0])),
 				),
 				)
 			})
 
 		destinationRuleTranslator = destinationrule.NewTranslator(
-			existingIstioResources,
+			existingDestinationRules,
 			mockClusterDomainRegistry,
 			mockDecoratorFactory,
 			trafficTargets,
