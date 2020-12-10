@@ -2,9 +2,12 @@ package registration
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/rotisserie/eris"
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/gloo-mesh/codegen/io"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/enterprise"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
@@ -94,9 +97,20 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 		return err
 	}
 
+	// Users can opt out of installing the Wasm Agent since it's only required for the WasmDeployment API.
 	if r.WasmAgent.Install {
-		if err := r.installWasmAgent(ctx); err != nil {
+		extenderVersion, err := enterprise.GetEnterpriseExtenderVersion(ctx, r.KubeConfigPath, r.MgmtContext)
+		if err != nil {
 			return err
+		}
+
+		// If the Enterprise Extender is present or the user explicitly provided a chart path, install the agent.
+		if extenderVersion != "" || r.WasmAgent.ChartPath != "" {
+			if err := r.installWasmAgent(ctx, extenderVersion); err != nil {
+				return err
+			}
+		} else {
+			logrus.Debug("Enterprise Extender not found in management cluster, skipping Wasm Agent install.")
 		}
 	}
 
@@ -177,7 +191,19 @@ func (r *Registrant) uninstallCertAgent(ctx context.Context) error {
 	)
 }
 
-func (r *Registrant) installWasmAgent(ctx context.Context) error {
+func (r *Registrant) installWasmAgent(ctx context.Context, enterpriseExtenderVersion string) error {
+	if r.WasmAgent.ChartPath == "" {
+		if enterpriseExtenderVersion != "" {
+			// If we know the user's Enterprise Extender version, install the corresponding Wasm Agent.
+			r.WasmAgent.ChartPath = fmt.Sprintf(gloomesh.WasmAgentChartUriTemplate, enterpriseExtenderVersion)
+		} else {
+			return eris.New("Failed to install Wasm Agent: no Enterprise Extender detected and no chart override provided.")
+		}
+	} else if enterpriseExtenderVersion == "" {
+		logrus.Warn("Gloo Mesh Enterprise Extender not detected. Wasm Agent installation will proceed because a chart " +
+			"override was provided, but Wasm features depend on the presence of the Extender.")
+	}
+
 	return gloomesh.Installer{
 		HelmChartPath:  r.WasmAgent.ChartPath,
 		HelmValuesPath: r.WasmAgent.ChartValues,
