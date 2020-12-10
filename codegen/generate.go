@@ -179,8 +179,8 @@ var (
 	vendoredMultiClusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 	importedMultiClusterCRDs = glooMeshManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 
-	allApiGroups = map[string][]model.Group{
-		"":                                 append(append(groups.GlooMeshGroups, groups.CertAgentGroups...), groups.XdsAgentGroup),
+	snapshotApiGroups = map[string][]model.Group{
+		"":                                 groups.AllGeneratedGroups,
 		"github.com/solo-io/external-apis": externalapis.Groups,
 		"github.com/solo-io/skv2":          {skv1alpha1.Group},
 	}
@@ -282,7 +282,7 @@ func makeTopLevelTemplate(templateFunc func(params contrib.SnapshotTemplateParam
 	return templateFunc(contrib.SnapshotTemplateParameters{
 		SnapshotName:      snapshotName,
 		OutputFilename:    outPath,
-		SelectFromGroups:  allApiGroups,
+		SelectFromGroups:  snapshotApiGroups,
 		SnapshotResources: snapshotResources,
 	})
 }
