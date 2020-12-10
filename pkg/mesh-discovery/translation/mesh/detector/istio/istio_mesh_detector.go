@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 
-	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/dockerutils"
 
 	"github.com/solo-io/go-utils/contextutils"
@@ -33,9 +32,6 @@ const (
 	pilotContainerKeyword     = "pilot"
 	istioConfigMapName        = "istio"
 	istioConfigMapMeshDataKey = "mesh"
-
-	// https://istio.io/docs/ops/deployment/requirements/#ports-used-by-istio
-	defaultGatewayPortName = "tls"
 )
 
 var (
@@ -58,11 +54,11 @@ func NewMeshDetector(
 }
 
 // returns a mesh for each deployment that contains the istiod image
-func (d *meshDetector) DetectMeshes(in input.RemoteSnapshot) (v1alpha2.MeshSlice, error) {
+func (d *meshDetector) DetectMeshes(inRemote input.RemoteSnapshot, inLocal input.LocalSnapshot) (v1alpha2.MeshSlice, error) {
 	var meshes v1alpha2.MeshSlice
 	var errs error
-	for _, deployment := range in.Deployments().List() {
-		mesh, err := d.detectMesh(deployment, in)
+	for _, deployment := range inRemote.Deployments().List() {
+		mesh, err := d.detectMesh(deployment, inRemote, inLocal)
 		if err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -74,7 +70,7 @@ func (d *meshDetector) DetectMeshes(in input.RemoteSnapshot) (v1alpha2.MeshSlice
 	return meshes, errs
 }
 
-func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.RemoteSnapshot) (*v1alpha2.Mesh, error) {
+func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, inRemote input.RemoteSnapshot, inLocal input.LocalSnapshot) (*v1alpha2.Mesh, error) {
 	version, err := d.getIstiodVersion(deployment)
 	if err != nil {
 		return nil, err
@@ -84,25 +80,30 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Remote
 		return nil, nil
 	}
 
-	trustDomain, err := getTrustDomain(in.ConfigMaps(), deployment.ClusterName, deployment.Namespace)
+	trustDomain, err := getTrustDomain(inRemote.ConfigMaps(), deployment.ClusterName, deployment.Namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO(ilackarms): allow configuring ingress gateway workload labels
+	ingressGatewayDetector, err := utils.GetIngressGatewayDetector(d.ctx, inLocal, deployment.ClusterName)
+	if err != nil {
+		return nil, err
+	}
+
 	ingressGateways := getIngressGateways(
 		d.ctx,
 		deployment.Namespace,
 		deployment.ClusterName,
-		defaults.DefaultGatewayWorkloadLabels,
-		in.Services(),
-		in.Pods(),
-		in.Nodes(),
+		ingressGatewayDetector.GetGatewayWorkloadLabels(),
+		ingressGatewayDetector.GetGatewayTlsPortName(),
+		inRemote.Services(),
+		inRemote.Pods(),
+		inRemote.Nodes(),
 	)
 
 	agent := getAgent(
 		deployment.ClusterName,
-		in.Pods(),
+		inRemote.Pods(),
 	)
 
 	mesh := &v1alpha2.Mesh{
@@ -136,6 +137,7 @@ func getIngressGateways(
 	namespace string,
 	clusterName string,
 	workloadLabels map[string]string,
+	tlsPortName string,
 	allServices corev1sets.ServiceSet,
 	allPods corev1sets.PodSet,
 	allNodes corev1sets.NodeSet,
@@ -143,7 +145,7 @@ func getIngressGateways(
 	ingressSvcs := getIngressServices(allServices, namespace, clusterName, workloadLabels)
 	var ingressGateways []*v1alpha2.MeshSpec_Istio_IngressGatewayInfo
 	for _, svc := range ingressSvcs {
-		gateway, err := getIngressGateway(svc, workloadLabels, allPods, allNodes)
+		gateway, err := getIngressGateway(svc, workloadLabels, tlsPortName, allPods, allNodes)
 		if err != nil {
 			contextutils.LoggerFrom(ctx).Warnw("detection failed for matching istio ingress service", "error", err, "service", sets.Key(svc))
 			continue
@@ -156,6 +158,7 @@ func getIngressGateways(
 func getIngressGateway(
 	svc *corev1.Service,
 	workloadLabels map[string]string,
+	tlsPortName string,
 	allPods corev1sets.PodSet,
 	allNodes corev1sets.NodeSet,
 ) (*v1alpha2.MeshSpec_Istio_IngressGatewayInfo, error) {
@@ -164,7 +167,7 @@ func getIngressGateway(
 	)
 	for _, port := range svc.Spec.Ports {
 		port := port // pike
-		if port.Name == defaultGatewayPortName {
+		if port.Name == tlsPortName {
 			tlsPort = &port
 			break
 		}

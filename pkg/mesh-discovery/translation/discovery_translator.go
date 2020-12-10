@@ -15,7 +15,7 @@ var DefaultDependencyFactory = internal.DependencyFactoryImpl{}
 // the translator "reconciles the entire state of the world"
 type Translator interface {
 	// translates the Input Snapshot to an Output Snapshot
-	Translate(ctx context.Context, in input.RemoteSnapshot) (discovery.Snapshot, error)
+	Translate(ctx context.Context, inRemote input.RemoteSnapshot, inLocal input.LocalSnapshot) (discovery.Snapshot, error)
 }
 
 type translator struct {
@@ -29,24 +29,24 @@ func NewTranslator(dependencyFactory internal.DependencyFactory) Translator {
 	}
 }
 
-func (t translator) Translate(ctx context.Context, in input.RemoteSnapshot) (discovery.Snapshot, error) {
+func (t translator) Translate(ctx context.Context, inRemote input.RemoteSnapshot, inLocal input.LocalSnapshot) (discovery.Snapshot, error) {
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(ctx)
 
-	workloadTranslator := t.dependencies.MakeWorkloadTranslator(ctx, in)
+	workloadTranslator := t.dependencies.MakeWorkloadTranslator(ctx, inRemote)
 
 	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator(ctx)
 
-	meshes := meshTranslator.TranslateMeshes(in)
+	meshes := meshTranslator.TranslateMeshes(inRemote, inLocal)
 
 	workloads := workloadTranslator.TranslateWorkloads(
-		in.Deployments(),
-		in.DaemonSets(),
-		in.StatefulSets(),
+		inRemote.Deployments(),
+		inRemote.DaemonSets(),
+		inRemote.StatefulSets(),
 		meshes,
 	)
 
-	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(in.Services(), workloads, meshes)
+	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(inRemote.Services(), workloads, meshes)
 
 	t.totalTranslates++
 

@@ -36,15 +36,15 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // TranslateMeshes mocks base method
-func (m *MockTranslator) TranslateMeshes(in input.RemoteSnapshot) v1alpha2sets.MeshSet {
+func (m *MockTranslator) TranslateMeshes(inRemote input.RemoteSnapshot, inLocal input.LocalSnapshot) v1alpha2sets.MeshSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranslateMeshes", in)
+	ret := m.ctrl.Call(m, "TranslateMeshes", inRemote, inLocal)
 	ret0, _ := ret[0].(v1alpha2sets.MeshSet)
 	return ret0
 }
 
 // TranslateMeshes indicates an expected call of TranslateMeshes
-func (mr *MockTranslatorMockRecorder) TranslateMeshes(in interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) TranslateMeshes(inRemote, inLocal interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateMeshes", reflect.TypeOf((*MockTranslator)(nil).TranslateMeshes), in)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateMeshes", reflect.TypeOf((*MockTranslator)(nil).TranslateMeshes), inRemote, inLocal)
 }

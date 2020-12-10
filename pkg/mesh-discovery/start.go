@@ -20,16 +20,19 @@ func Start(ctx context.Context, opts bootstrap.Options) error {
 func startReconciler(
 	parameters bootstrap.StartParameters,
 ) error {
-	snapshotBuilder := input.NewMultiClusterRemoteBuilder(parameters.Clusters, parameters.McClient)
+	remoteSnapshotBuilder := input.NewMultiClusterRemoteBuilder(parameters.Clusters, parameters.McClient)
+	localSnapshotBuilder := input.NewSingleClusterLocalBuilder(parameters.MasterManager)
 	translator := translation.NewTranslator(translation.DefaultDependencyFactory)
 	reconciliation.Start(
 		parameters.Ctx,
-		snapshotBuilder,
+		remoteSnapshotBuilder,
+		localSnapshotBuilder,
 		translator,
 		parameters.MasterManager,
 		parameters.Clusters,
 		parameters.SnapshotHistory,
 		parameters.VerboseMode,
+		parameters.SettingsRef,
 	)
 	return nil
 }

@@ -9,6 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	appmeshv1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"github.com/solo-io/skv2/pkg/verifier"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -31,24 +32,28 @@ import (
 
 type discoveryReconciler struct {
 	ctx             context.Context
-	builder         input.RemoteBuilder
+	remoteBuilder   input.RemoteBuilder
+	localBuilder    input.LocalBuilder
 	translator      translation.Translator
 	masterClient    client.Client
 	managers        multicluster.ManagerSet
 	history         *stats.SnapshotHistory
 	verboseMode     bool
+	settingsRef     v1.ObjectRef
 	verifier        verifier.ServerResourceVerifier
 	totalReconciles int
 }
 
 func Start(
 	ctx context.Context,
-	builder input.RemoteBuilder,
+	remoteBuilder input.RemoteBuilder,
+	localBuilder input.LocalBuilder,
 	translator translation.Translator,
 	masterMgr manager.Manager,
 	clusters multicluster.ClusterWatcher,
 	history *stats.SnapshotHistory,
 	verboseMode bool,
+	settingsRef v1.ObjectRef,
 ) {
 	verifier := verifier.NewVerifier(ctx, map[schema.GroupVersionKind]verifier.ServerVerifyOption{
 		// only warn (avoids error) if appmesh Mesh resource is not available on cluster
@@ -59,13 +64,15 @@ func Start(
 		}: verifier.ServerVerifyOption_WarnIfNotPresent,
 	})
 	r := &discoveryReconciler{
-		ctx:          ctx,
-		builder:      builder,
-		translator:   translator,
-		masterClient: masterMgr.GetClient(),
-		history:      history,
-		verboseMode:  verboseMode,
-		verifier:     verifier,
+		ctx:           ctx,
+		remoteBuilder: remoteBuilder,
+		localBuilder:  localBuilder,
+		translator:    translator,
+		masterClient:  masterMgr.GetClient(),
+		history:       history,
+		verboseMode:   verboseMode,
+		verifier:      verifier,
+		settingsRef:   settingsRef,
 	}
 
 	filterDiscoveryEvents := skpredicate.SimplePredicate{
@@ -85,6 +92,7 @@ func Start(
 				},
 				Predicates: []predicate.Predicate{filterDiscoveryEvents},
 			},
+			Local:             input.LocalReconcileOptions{},
 			ReconcileInterval: time.Second / 2,
 		},
 	)
@@ -105,7 +113,7 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 
 	contextutils.LoggerFrom(ctx).Debugf("object triggered resync: %T<%v>", obj, sets.Key(obj))
 
-	inputSnap, err := r.builder.BuildSnapshot(ctx, "mesh-discovery", input.RemoteBuildOptions{
+	remoteInputSnap, err := r.remoteBuilder.BuildSnapshot(ctx, "mesh-discovery-remote", input.RemoteBuildOptions{
 		// ignore NoKindMatchError for AppMesh Mesh CRs
 		// (only clusters with AppMesh Controller installed will
 		// have this kind registered)
@@ -118,7 +126,18 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 		return false, err
 	}
 
-	outputSnap, err := r.translator.Translate(ctx, inputSnap)
+	localInputSnap, err := r.localBuilder.BuildSnapshot(ctx, "mesh-discovery-local", input.LocalBuildOptions{
+		Settings: input.ResourceLocalBuildOptions{
+			// Ensure that only declared Settings object exists in snapshot.
+			ListOptions: []client.ListOption{
+				client.InNamespace(r.settingsRef.Namespace),
+				client.MatchingFields(map[string]string{
+					"metadata.name": r.settingsRef.Name,
+				}),
+			},
+		},
+	})
+	outputSnap, err := r.translator.Translate(ctx, remoteInputSnap, localInputSnap)
 	if err != nil {
 		// internal translator errors should never happen
 		return false, err
@@ -137,7 +156,7 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 		},
 	})
 
-	r.history.SetInput(inputSnap)
+	r.history.SetInput(remoteInputSnap)
 	r.history.SetOutput(outputSnap)
 
 	return false, errs
