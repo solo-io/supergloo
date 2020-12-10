@@ -137,6 +137,11 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 			},
 		},
 	})
+	if err != nil {
+		// failed to read from cache; should never happen
+		return false, err
+	}
+
 	outputSnap, err := r.translator.Translate(ctx, remoteInputSnap, localInputSnap)
 	if err != nil {
 		// internal translator errors should never happen
