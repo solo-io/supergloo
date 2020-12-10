@@ -4,13 +4,13 @@ import (
 	"reflect"
 	"sort"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice/equality"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
@@ -20,6 +20,7 @@ import (
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 //go:generate mockgen -source ./virtual_service_translator.go -destination mocks/virtual_service_translator.go
@@ -157,7 +158,7 @@ func groupAppliedTpsByRequestMatcher(
 		var grouped bool
 		for i, groupedTps := range allGroupedTps {
 			// append to existing group
-			if equality.TrafficPolicyMatchersEqual(appliedTp.Spec, groupedTps[0].Spec) {
+			if requestMatchersEqual(appliedTp.Spec, groupedTps[0].Spec) {
 				allGroupedTps[i] = append(groupedTps, appliedTp)
 				grouped = true
 				break
@@ -170,6 +171,54 @@ func groupAppliedTpsByRequestMatcher(
 	}
 
 	return allGroupedTps
+}
+
+func requestMatchersEqual(tp1, tp2 *v1alpha2.TrafficPolicySpec) bool {
+	return workloadSelectorListsEqual(tp1.GetSourceSelector(), tp2.GetSourceSelector()) &&
+		httpRequestMatchersEqual(tp1.GetHttpRequestMatchers(), tp2.GetHttpRequestMatchers())
+}
+
+func httpRequestMatchersEqual(matchers1, matchers2 []*v1alpha2.TrafficPolicySpec_HttpMatcher) bool {
+	if len(matchers1) != len(matchers2) {
+		return false
+	}
+	for i := range matchers1 {
+		if !proto.Equal(matchers1[i], matchers2[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+// return true if workload selectors' labels and namespaces are equivalent, ignore clusters
+func workloadSelectorsEqual(ws1, ws2 *v1alpha2.WorkloadSelector) bool {
+	return reflect.DeepEqual(ws1.Labels, ws2.Labels) &&
+		sets.NewString(ws1.Namespaces...).Equal(sets.NewString(ws2.Namespaces...))
+}
+
+// return true if two lists of WorkloadSelectors are semantically equivalent, abstracting away order
+func workloadSelectorListsEqual(wsList1, wsList2 []*v1alpha2.WorkloadSelector) bool {
+	if len(wsList1) != len(wsList2) {
+		return false
+	}
+	matchedWs2 := sets.NewInt()
+	for _, ws1 := range wsList1 {
+		var matched bool
+		for i, ws2 := range wsList2 {
+			if matchedWs2.Has(i) {
+				continue
+			}
+			if workloadSelectorsEqual(ws1, ws2) {
+				matchedWs2.Insert(i)
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			return false
+		}
+	}
+	return true
 }
 
 // construct the callback for registering fields in the virtual service
