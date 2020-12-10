@@ -18,8 +18,7 @@ func TrafficPolicyMatchersEqual(tp1 *v1alpha2.TrafficPolicySpec, tp2 *v1alpha2.T
 
 func workloadSelectorsEqual(ws1 *v1alpha2.WorkloadSelector, ws2 *v1alpha2.WorkloadSelector) bool {
 	return reflect.DeepEqual(ws1.Labels, ws2.Labels) &&
-		sets.NewString(ws1.Namespaces...).Equal(sets.NewString(ws2.Namespaces...)) &&
-		sets.NewString(ws1.Clusters...).Equal(sets.NewString(ws2.Clusters...))
+		sets.NewString(ws1.Namespaces...).Equal(sets.NewString(ws2.Namespaces...))
 }
 
 // return true if two lists of WorkloadSelectors are semantically equivalent, abstracting away order

@@ -13,23 +13,19 @@ var _ = Describe("MatcherEquality", func() {
 	workloadSelector1a := &v1alpha2.WorkloadSelector{
 		Labels:     map[string]string{"a": "b", "c": "d"},
 		Namespaces: []string{"foo", "bar"},
-		Clusters:   []string{"cluster1", "cluster2"},
 	}
 	workloadSelector1b := &v1alpha2.WorkloadSelector{
 		Labels:     map[string]string{"c": "d", "a": "b"},
 		Namespaces: []string{"bar", "foo"},
-		Clusters:   []string{"cluster2", "cluster1"},
 	}
 
 	workloadSelector2a := &v1alpha2.WorkloadSelector{
 		Labels:     map[string]string{"e": "f", "g": "h"},
 		Namespaces: []string{"boo", "baz"},
-		Clusters:   []string{"cluster3", "cluster4"},
 	}
 	workloadSelector2b := &v1alpha2.WorkloadSelector{
 		Labels:     map[string]string{"g": "h", "e": "f"},
-		Namespaces: []string{"boo", "baz"},
-		Clusters:   []string{"cluster4", "cluster3"},
+		Namespaces: []string{"baz", "boo"},
 	}
 
 	httpMatcher1 := &v1alpha2.TrafficPolicySpec_HttpMatcher{
