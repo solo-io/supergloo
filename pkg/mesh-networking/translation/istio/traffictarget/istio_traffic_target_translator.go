@@ -15,6 +15,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
 	istioUtils "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
@@ -74,14 +75,25 @@ func (t *translator) Translate(
 		return
 	}
 
+	// Translate VirtualServices for TrafficTargets, can be nil if there is no service or applied traffic policies
 	// Pass nil sourceMeshInstallation to translate VirtualService local to trafficTarget
-	vs := t.virtualServices.Translate(in, trafficTarget, nil, reporter)
-	dr := t.destinationRules.Translate(t.ctx, in, trafficTarget, nil, reporter)
-	ap := t.authorizationPolicies.Translate(in, trafficTarget, reporter)
-
-	outputs.AddVirtualServices(vs)
-	outputs.AddDestinationRules(dr)
-	outputs.AddAuthorizationPolicies(ap)
+	if vs := t.virtualServices.Translate(in, trafficTarget, nil, reporter); vs != nil {
+		// Append the traffic target as a parent to the virtual service
+		metautils.AppendParent(t.ctx, vs, trafficTarget, trafficTarget.GVK())
+		outputs.AddVirtualServices(vs)
+	}
+	// Translate DestinationRules for TrafficTargets, can be nil if there is no service or applied traffic policies
+	if dr := t.destinationRules.Translate(t.ctx, in, trafficTarget, nil, reporter); dr != nil {
+		// Append the traffic target as a parent to the destination rule
+		metautils.AppendParent(t.ctx, dr, trafficTarget, trafficTarget.GVK())
+		outputs.AddDestinationRules(dr)
+	}
+	// Translate AuthorizationPolicies for TrafficTargets, can be nil if there is no service or applied traffic policies
+	if ap := t.authorizationPolicies.Translate(in, trafficTarget, reporter); ap != nil {
+		// Append the traffic target as a parent to the authorization policy
+		metautils.AppendParent(t.ctx, ap, trafficTarget, trafficTarget.GVK())
+		outputs.AddAuthorizationPolicies(ap)
+	}
 }
 
 func (t *translator) isIstioTrafficTarget(

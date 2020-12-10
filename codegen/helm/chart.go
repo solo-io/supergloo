@@ -2,6 +2,7 @@ package helm
 
 import (
 	"os"
+	"strings"
 
 	"github.com/solo-io/gloo-mesh/codegen/io"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
@@ -48,6 +49,18 @@ var Chart = &model.Chart{
 	Values: defaultValues(),
 }
 
+var AgentCrdsChart = &model.Chart{
+	FilterTemplate: func(outPath string) bool {
+		return strings.Contains(outPath, "templates") || outPath == "values.yaml"
+	},
+	Data: model.Data{
+		ApiVersion:  "v1",
+		Name:        "agent-crds",
+		Description: "CRDs required by Gloo Mesh remote agents (i.e. cert-agent and wasm-agent.",
+		Version:     version.Version,
+	},
+}
+
 var CertAgentChart = &model.Chart{
 	Operators: []model.Operator{
 		certAgentOperator(),
@@ -71,6 +84,7 @@ func discoveryOperator() model.Operator {
 	var rbacPolicies []rbacv1.PolicyRule
 
 	rbacPolicies = append(rbacPolicies, io.ClusterWatcherInputTypes.RbacPoliciesWatch()...)
+	rbacPolicies = append(rbacPolicies, io.DiscoveryLocalInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.DiscoveryOutputTypes.Snapshot.RbacPoliciesWrite()...)
 
 	return model.Operator{

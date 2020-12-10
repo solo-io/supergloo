@@ -2,13 +2,13 @@ syntax = "proto3";
 package networking.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2";
 
-import "skv2/api/core/v1/core.proto";
-import "gloo-mesh/api/networking/v1alpha2/validation_state.proto";
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 
-import "gogoproto/gogo.proto";
-option (gogoproto.equal_all) = true;
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
 
 /*
     A VirtualMesh represents a logical grouping of meshes for

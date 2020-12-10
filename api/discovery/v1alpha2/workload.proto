@@ -2,10 +2,10 @@ syntax = "proto3";
 package discovery.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2";
 
-import "skv2/api/core/v1/core.proto";
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
 
-import "gogoproto/gogo.proto";
-option (gogoproto.equal_all) = true;
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
 
 /**
     The Workload is an abstraction for a workload/client which mesh-discovery has discovered to be part of a
@@ -44,7 +44,6 @@ message WorkloadSpec {
         // Service account attached to the pods owned by this controller.
         string service_account_name = 3;
     }
-
 
     // Information relevant to AppMesh-injected workloads.
     message AppMesh {

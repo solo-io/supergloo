@@ -84,7 +84,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 			},
 		}
 
-		builder := input.NewInputSnapshotManualBuilder("app mesh test")
+		builder := input.NewInputRemoteSnapshotManualBuilder("app mesh test")
 		builder.AddMeshes([]*aws_v1beta2.Mesh{&awsMesh1, &awsMesh2})
 
 		actual, err := meshDetector.DetectMeshes(builder.Build())
@@ -169,7 +169,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 			},
 		}
 
-		builder := input.NewInputSnapshotManualBuilder("app mesh test")
+		builder := input.NewInputRemoteSnapshotManualBuilder("app mesh test")
 		builder.AddMeshes([]*aws_v1beta2.Mesh{&awsMesh1, &awsMesh2})
 
 		actual, err := meshDetector.DetectMeshes(builder.Build())
@@ -194,7 +194,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 			Status: aws_v1beta2.MeshStatus{},
 		}
 
-		builder := input.NewInputSnapshotManualBuilder("app mesh test")
+		builder := input.NewInputRemoteSnapshotManualBuilder("app mesh test")
 		builder.AddMeshes([]*aws_v1beta2.Mesh{&awsMesh})
 
 		actual, err := meshDetector.DetectMeshes(builder.Build())
@@ -221,7 +221,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 			},
 		}
 
-		builder := input.NewInputSnapshotManualBuilder("app mesh test")
+		builder := input.NewInputRemoteSnapshotManualBuilder("app mesh test")
 		builder.AddMeshes([]*aws_v1beta2.Mesh{&awsMesh})
 
 		_, err := meshDetector.DetectMeshes(builder.Build())

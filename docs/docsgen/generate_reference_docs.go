@@ -9,8 +9,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/gogo/protobuf/proto"
-	plugin_gogo "github.com/gogo/protobuf/protoc-gen-gogo/plugin"
+	"github.com/golang/protobuf/proto"
 	plugin_go "github.com/golang/protobuf/protoc-gen-go/plugin"
 	"github.com/google/go-github/github"
 	"github.com/iancoleman/strcase"
@@ -238,7 +237,7 @@ func collectDescriptors(protoDir, outDir string, filter func(file *model.Descrip
 		return nil, err
 	}
 
-	req := &plugin_gogo.CodeGeneratorRequest{}
+	req := &plugin_go.CodeGeneratorRequest{}
 	for _, file := range descriptors {
 		var added bool
 		for _, addedFile := range req.GetFileToGenerate() {
@@ -275,10 +274,8 @@ func collectDescriptors(protoDir, outDir string, filter func(file *model.Descrip
 }
 
 func generateChangelog(root string, opts ChangelogOptions) error {
-	fmt.Println("version: " + os.Getenv("TAGGED_VERSION"))
-	fmt.Println("release: " + os.Getenv("RELEASE"))
-	if strings.ToLower(os.Getenv("RELEASE")) != `"true"` {
-		fmt.Println("skip?")
+	if strings.ToLower(os.Getenv("RELEASE")) != "true" {
+		fmt.Println("not a release, skipping changelog generation")
 		return nil
 	}
 

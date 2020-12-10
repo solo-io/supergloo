@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/Masterminds/semver"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/go-utils/kubeutils"
 
 	envoy_api_v2_listener "github.com/envoyproxy/go-control-plane/envoy/api/v2/listener"
@@ -15,6 +14,7 @@ import (
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
@@ -246,14 +246,28 @@ func (t *translator) federateSharedTrust(
 				},
 			}
 
-			// Translate VirtualServices for federated TrafficTargets
-			vs := t.virtualServiceTranslator.Translate(in, trafficTarget, clientIstio.Installation, reporter)
-			// Translate DestinationRules for federated TrafficTargets
-			dr := t.destinationRuleTranslator.Translate(t.ctx, in, trafficTarget, clientIstio.Installation, reporter)
+			// Append the virtual mesh as a parent to the output service entry
+			metautils.AppendParent(t.ctx, se, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 
 			outputs.AddServiceEntries(se)
-			outputs.AddDestinationRules(dr)
-			outputs.AddVirtualServices(vs)
+
+			// Translate VirtualServices for federated TrafficTargets, can be nil
+			if vs := t.virtualServiceTranslator.Translate(
+				in, trafficTarget, clientIstio.Installation, reporter,
+			); vs != nil {
+				// Append the virtual mesh as a parent to the output virtual service
+				metautils.AppendParent(t.ctx, vs, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+				outputs.AddVirtualServices(vs)
+			}
+
+			// Translate DestinationRules for federated TrafficTargets, can be nil
+			if dr := t.destinationRuleTranslator.Translate(
+				t.ctx, in, trafficTarget, clientIstio.Installation, reporter,
+			); dr != nil {
+				// Append the virtual mesh as a parent to the output destination rule
+				metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+				outputs.AddDestinationRules(dr)
+			}
 		}
 	}
 
@@ -282,7 +296,6 @@ func (t *translator) federateSharedTrust(
 			Selector: ingressGateway.WorkloadLabels,
 		},
 	}
-	outputs.AddGateways(gw)
 
 	ef := &networkingv1alpha3.EnvoyFilter{
 		ObjectMeta: metav1.ObjectMeta{
@@ -316,6 +329,12 @@ func (t *translator) federateSharedTrust(
 			}},
 		},
 	}
+
+	// Append the virtual mesh as a parent to each output resource
+	metautils.AppendParent(t.ctx, gw, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+	metautils.AppendParent(t.ctx, ef, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+
+	outputs.AddGateways(gw)
 	outputs.AddEnvoyFilters(ef)
 }
 

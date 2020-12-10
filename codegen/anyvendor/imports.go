@@ -12,6 +12,10 @@ func AnyVendorImports() *skv2_anyvendor.Imports {
 		"crds/multicluster.solo.io_v1alpha1_crds.yaml",
 	}
 
+	anyVendorImports.External["github.com/gogo/protobuf"] = []string{
+		"gogoproto/*.proto",
+	}
+
 	anyVendorImports.External["istio.io/api"] = []string{
 		"networking/v1alpha3/*.proto",
 		"common-protos/google/api/field_behavior.proto",

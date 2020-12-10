@@ -66,6 +66,15 @@ var (
 				"IssuedCertificate",
 				"PodBounceDirective",
 			},
+			schema.GroupVersion{
+				Group:   "xds.enterprise.agent." + constants.GlooMeshApiGroupSuffix,
+				Version: "v1alpha1",
+			}: {
+				"XdsConfig",
+			},
+			corev1.SchemeGroupVersion: {
+				"ConfigMap",
+			},
 		},
 	}
 

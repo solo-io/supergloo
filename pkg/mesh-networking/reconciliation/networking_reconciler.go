@@ -22,7 +22,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/snapshotutils"
 
 	skinput "github.com/solo-io/skv2/contrib/pkg/input"
-	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -51,7 +50,7 @@ type networkingReconciler struct {
 	verboseMode        bool
 	settingsRef        v1.ObjectRef
 	extensionClients   extensions.Clientset
-	reconciler         skinput.SingleClusterReconciler
+	reconciler         skinput.InputReconciler
 }
 
 // pushNotificationId is a special identifier for a reconcile event triggered by an extension server pushing a notification
@@ -150,7 +149,16 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	}
 
 	// update statuses of input objects
-	if err := inputSnap.SyncStatuses(ctx, r.mgmtClient); err != nil {
+	if err := inputSnap.SyncStatuses(ctx, r.mgmtClient, input.SyncStatusOptions{
+		Settings:        true,
+		TrafficTarget:   true,
+		Workload:        true,
+		Mesh:            true,
+		TrafficPolicy:   true,
+		AccessPolicy:    true,
+		VirtualMesh:     true,
+		FailoverService: true,
+	}); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -169,7 +177,7 @@ func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Sn
 		return err
 	}
 
-	errHandler := errhandlers.AppendingErrHandler{}
+	errHandler := newErrHandler(ctx, in)
 
 	outputSnap.Apply(ctx, r.mgmtClient, r.multiClusterClient, errHandler)
 
@@ -196,7 +204,7 @@ func (r *networkingReconciler) syncSettings(ctx context.Context, in input.Snapsh
 	// update configured NetworkExtensionServers for the extension clients which are called inside the translator.
 	return r.extensionClients.ConfigureServers(settings.Spec.NetworkingExtensionServers, func(_ *v1alpha1.PushNotification) {
 		// ignore error because underlying impl should never error here
-		_, _ = r.reconciler.ReconcileGeneric(pushNotificationId)
+		_, _ = r.reconciler.ReconcileLocalGeneric(pushNotificationId)
 	})
 }
 

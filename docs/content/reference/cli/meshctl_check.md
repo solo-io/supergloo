@@ -23,6 +23,12 @@ meshctl check [flags]
       --namespace string     namespace that Gloo Mesh is installed in (default "gloo-mesh")
 ```
 
+### Options inherited from parent commands
+
+```
+  -v, --verbose   enable verbose logging
+```
+
 ### SEE ALSO
 
 * [meshctl](../meshctl)	 - The Command Line Interface for managing Gloo Mesh.

@@ -20,6 +20,8 @@ title: "networking_extensions.proto"
   - [ExtensionPatchRequest](#extensions.networking.mesh.gloo.solo.io.ExtensionPatchRequest)
   - [ExtensionPatchResponse](#extensions.networking.mesh.gloo.solo.io.ExtensionPatchResponse)
   - [GeneratedObject](#extensions.networking.mesh.gloo.solo.io.GeneratedObject)
+  - [GeneratedObject.ConfigMap](#extensions.networking.mesh.gloo.solo.io.GeneratedObject.ConfigMap)
+  - [GeneratedObject.ConfigMap.DataEntry](#extensions.networking.mesh.gloo.solo.io.GeneratedObject.ConfigMap.DataEntry)
   - [MeshObject](#extensions.networking.mesh.gloo.solo.io.MeshObject)
   - [ObjectMeta](#extensions.networking.mesh.gloo.solo.io.ObjectMeta)
   - [ObjectMeta.AnnotationsEntry](#extensions.networking.mesh.gloo.solo.io.ObjectMeta.AnnotationsEntry)
@@ -96,7 +98,40 @@ a generated object can be of any output type supported by Gloo Mesh. the content
 | destinationRule | istio.networking.v1alpha3.DestinationRule |  |  |
 | envoyFilter | istio.networking.v1alpha3.EnvoyFilter |  |  |
 | serviceEntry | istio.networking.v1alpha3.ServiceEntry |  |  |
-| virtualService | istio.networking.v1alpha3.VirtualService |  | TODO(ilackarms): add more types here. note that we may need to support non-proto resourecs here in the future, in which case we will probably use a proto Struct to represent the object. |
+| virtualService | istio.networking.v1alpha3.VirtualService |  |  |
+| configMap | extensions.networking.mesh.gloo.solo.io.GeneratedObject.ConfigMap |  |  |
+| xdsConfig | xds.enterprise.agent.mesh.gloo.solo.io.XdsConfigSpec |  | TODO(ilackarms): add more types here. note that we may need to support non-proto resourecs here in the future, in which case we will probably use a proto Struct to represent the object. |
+
+
+
+
+
+
+<a name="extensions.networking.mesh.gloo.solo.io.GeneratedObject.ConfigMap"></a>
+
+### GeneratedObject.ConfigMap
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| data | []extensions.networking.mesh.gloo.solo.io.GeneratedObject.ConfigMap.DataEntry | repeated |  |
+
+
+
+
+
+
+<a name="extensions.networking.mesh.gloo.solo.io.GeneratedObject.ConfigMap.DataEntry"></a>
+
+### GeneratedObject.ConfigMap.DataEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+| value | string |  |  |
 
 
 

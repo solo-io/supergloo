@@ -87,7 +87,7 @@ var _ = Describe("IstioMeshDetector", func() {
 			ctx,
 		)
 
-		in := input.NewInputSnapshotManualBuilder("")
+		in := input.NewInputRemoteSnapshotManualBuilder("")
 		in.AddDeployments([]*appsv1.Deployment{deployment})
 
 		meshes, err := detector.DetectMeshes(in.Build())
@@ -103,7 +103,7 @@ var _ = Describe("IstioMeshDetector", func() {
 			ctx,
 		)
 
-		in := input.NewInputSnapshotManualBuilder("")
+		in := input.NewInputRemoteSnapshotManualBuilder("")
 		in.AddDeployments([]*appsv1.Deployment{deployment})
 		in.AddConfigMaps(configMaps.List())
 
@@ -137,7 +137,7 @@ var _ = Describe("IstioMeshDetector", func() {
 		configMaps := istioConfigMap()
 		deployment := istioDeployment(istiodDeploymentName)
 
-		in := input.NewInputSnapshotManualBuilder("")
+		in := input.NewInputRemoteSnapshotManualBuilder("")
 		in.AddDeployments([]*appsv1.Deployment{deployment})
 		in.AddConfigMaps(configMaps.List())
 
@@ -239,7 +239,7 @@ var _ = Describe("IstioMeshDetector", func() {
 
 		deployment := istioDeployment(istiodDeploymentName)
 
-		in := input.NewInputSnapshotManualBuilder("")
+		in := input.NewInputRemoteSnapshotManualBuilder("")
 		in.AddDeployments([]*appsv1.Deployment{deployment})
 		in.AddConfigMaps(configMaps.List())
 		in.AddServices(services.List())

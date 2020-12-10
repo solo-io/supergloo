@@ -56,13 +56,14 @@ clear-vendor-any:
 install-go-tools: mod-download
 	mkdir -p $(DEPSGOBIN)
 	go install istio.io/tools/cmd/protoc-gen-jsonshim
-	go install github.com/gogo/protobuf/protoc-gen-gogo
 	go install github.com/golang/protobuf/protoc-gen-go
 	go install github.com/solo-io/protoc-gen-ext
 	go install github.com/golang/mock/mockgen
 	go install golang.org/x/tools/cmd/goimports
 	go install github.com/onsi/ginkgo/ginkgo
 	go install github.com/gobuffalo/packr/packr
+	# protoc-gen-gogo is only needed for generating our versioned docs site, since older versions of the repo (<= 0.10.7) use gogo
+	go install github.com/gogo/protobuf/protoc-gen-gogo
 
 # Call all generated code targets
 .PHONY: generated-code
@@ -215,11 +216,12 @@ include $(HELM_ROOTDIR)/helm.mk
 
 # Generate Manifests from Helm Chart
 .PHONY: chart-gen
-chart-gen: clear-vendor-any
+chart-gen: clear-vendor-any install-go-tools
 	go run -ldflags=$(LDFLAGS) -gcflags=$(GCFLAGS) codegen/generate.go -chart
 
 .PHONY: manifest-gen
 manifest-gen: install/gloo-mesh-default.yaml
+	goimports -w $(shell ls -d */ | grep -v vendor)
 install/gloo-mesh-default.yaml: chart-gen
 	helm template --include-crds --namespace gloo-mesh $(HELM_ROOTDIR)/gloo-mesh > $@
 

@@ -27,6 +27,7 @@ meshctl mesh restart [flags]
       --kubecontext string      name of the kubeconfig context to use for the management cluster
       --mesh-name string        name of the Mesh object representing the service mesh being operated on
       --mesh-namespace string   namespace of the Mesh object representing the service mesh being operated on (default "gloo-mesh")
+  -v, --verbose                 enable verbose logging
 ```
 
 ### SEE ALSO

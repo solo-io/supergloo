@@ -147,7 +147,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 											Namespace:   trafficTarget.Spec.GetKubeService().GetRef().Namespace,
 											ClusterName: trafficTarget.Spec.GetKubeService().GetRef().ClusterName,
 
-											Subset: map[string]string{"foo": "bar"},
+											Subset: map[string]string{"foo": "bar", "version": "v1"},
 										}},
 									},
 									{
@@ -214,8 +214,8 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				},
 				Subsets: []*networkingv1alpha3spec.Subset{
 					{
-						Name:   "foo-bar",
-						Labels: map[string]string{"foo": "bar"},
+						Name:   "foo-bar-version-v1",
+						Labels: map[string]string{"foo": "bar", "version": "v1"},
 					},
 					{
 						Name:   "boo-baz",

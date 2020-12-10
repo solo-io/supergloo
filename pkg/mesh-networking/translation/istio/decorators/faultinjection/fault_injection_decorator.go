@@ -5,6 +5,7 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/gogoutils"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -75,15 +76,19 @@ func translateFaultInjection(validatedPolicy *v1alpha2.TrafficPolicySpec) (*netw
 	case *v1alpha2.TrafficPolicySpec_FaultInjection_FixedDelay:
 		translatedFaultInjection = &networkingv1alpha3spec.HTTPFaultInjection{
 			Delay: &networkingv1alpha3spec.HTTPFaultInjection_Delay{
-				HttpDelayType: &networkingv1alpha3spec.HTTPFaultInjection_Delay_FixedDelay{FixedDelay: faultInjection.GetFixedDelay()},
-				Percentage:    &networkingv1alpha3spec.Percent{Value: faultInjection.GetPercentage()},
+				HttpDelayType: &networkingv1alpha3spec.HTTPFaultInjection_Delay_FixedDelay{
+					FixedDelay: gogoutils.DurationProtoToGogo(faultInjection.GetFixedDelay()),
+				},
+				Percentage: &networkingv1alpha3spec.Percent{Value: faultInjection.GetPercentage()},
 			},
 		}
 	case *v1alpha2.TrafficPolicySpec_FaultInjection_ExponentialDelay:
 		translatedFaultInjection = &networkingv1alpha3spec.HTTPFaultInjection{
 			Delay: &networkingv1alpha3spec.HTTPFaultInjection_Delay{
-				HttpDelayType: &networkingv1alpha3spec.HTTPFaultInjection_Delay_ExponentialDelay{ExponentialDelay: faultInjection.GetExponentialDelay()},
-				Percentage:    &networkingv1alpha3spec.Percent{Value: faultInjection.GetPercentage()},
+				HttpDelayType: &networkingv1alpha3spec.HTTPFaultInjection_Delay_ExponentialDelay{
+					ExponentialDelay: gogoutils.DurationProtoToGogo(faultInjection.GetExponentialDelay()),
+				},
+				Percentage: &networkingv1alpha3spec.Percent{Value: faultInjection.GetPercentage()},
 			},
 		}
 	default:

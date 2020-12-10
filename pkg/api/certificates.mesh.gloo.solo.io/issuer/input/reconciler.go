@@ -38,7 +38,7 @@ type multiClusterReconciler interface {
 var _ multiClusterReconciler = &multiClusterReconcilerImpl{}
 
 type multiClusterReconcilerImpl struct {
-	base input.MultiClusterReconciler
+	base input.InputReconciler
 }
 
 // Options for reconcileing a snapshot
@@ -60,11 +60,12 @@ func RegisterMultiClusterReconciler(
 	reconcileInterval time.Duration,
 	options ReconcileOptions,
 	predicates ...predicate.Predicate,
-) input.MultiClusterReconciler {
+) input.InputReconciler {
 
-	base := input.NewMultiClusterReconcilerImpl(
+	base := input.NewInputReconciler(
 		ctx,
 		reconcileFunc,
+		nil,
 		reconcileInterval,
 	)
 
@@ -82,7 +83,7 @@ func RegisterMultiClusterReconciler(
 
 func (r *multiClusterReconcilerImpl) ReconcileIssuedCertificate(clusterName string, obj *certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileClusterGeneric(obj)
+	return r.base.ReconcileRemoteGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileIssuedCertificateDeletion(clusterName string, obj reconcile.Request) error {
@@ -91,13 +92,13 @@ func (r *multiClusterReconcilerImpl) ReconcileIssuedCertificateDeletion(clusterN
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileClusterGeneric(ref)
+	_, err := r.base.ReconcileRemoteGeneric(ref)
 	return err
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileCertificateRequest(clusterName string, obj *certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequest) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileClusterGeneric(obj)
+	return r.base.ReconcileRemoteGeneric(obj)
 }
 
 func (r *multiClusterReconcilerImpl) ReconcileCertificateRequestDeletion(clusterName string, obj reconcile.Request) error {
@@ -106,7 +107,7 @@ func (r *multiClusterReconcilerImpl) ReconcileCertificateRequestDeletion(cluster
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileClusterGeneric(ref)
+	_, err := r.base.ReconcileRemoteGeneric(ref)
 	return err
 }
 
@@ -120,7 +121,7 @@ type singleClusterReconciler interface {
 var _ singleClusterReconciler = &singleClusterReconcilerImpl{}
 
 type singleClusterReconcilerImpl struct {
-	base input.SingleClusterReconciler
+	base input.InputReconciler
 }
 
 // register the reconcile func with the manager
@@ -133,10 +134,11 @@ func RegisterSingleClusterReconciler(
 	reconcileInterval time.Duration,
 	options reconcile.Options,
 	predicates ...predicate.Predicate,
-) (input.SingleClusterReconciler, error) {
+) (input.InputReconciler, error) {
 
-	base := input.NewSingleClusterReconciler(
+	base := input.NewInputReconciler(
 		ctx,
+		nil,
 		reconcileFunc,
 		reconcileInterval,
 	)
@@ -158,7 +160,7 @@ func RegisterSingleClusterReconciler(
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileIssuedCertificate(obj *certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate) (reconcile.Result, error) {
-	return r.base.ReconcileGeneric(obj)
+	return r.base.ReconcileLocalGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileIssuedCertificateDeletion(obj reconcile.Request) error {
@@ -166,12 +168,12 @@ func (r *singleClusterReconcilerImpl) ReconcileIssuedCertificateDeletion(obj rec
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileGeneric(ref)
+	_, err := r.base.ReconcileLocalGeneric(ref)
 	return err
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileCertificateRequest(obj *certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequest) (reconcile.Result, error) {
-	return r.base.ReconcileGeneric(obj)
+	return r.base.ReconcileLocalGeneric(obj)
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileCertificateRequestDeletion(obj reconcile.Request) error {
@@ -179,6 +181,6 @@ func (r *singleClusterReconcilerImpl) ReconcileCertificateRequestDeletion(obj re
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileGeneric(ref)
+	_, err := r.base.ReconcileLocalGeneric(ref)
 	return err
 }

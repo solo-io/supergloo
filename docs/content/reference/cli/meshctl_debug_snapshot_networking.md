@@ -26,7 +26,7 @@ meshctl debug snapshot networking [flags]
   -f, --file string   file to write output to
       --json          display the entire json snapshot. The output can be piped into a command like jq (https://stedolan.github.io/jq/tutorial/). For example:
                        meshctl debug snapshot discovery input | jq '.'
-      --verbose       enables verbose/debug logging
+  -v, --verbose       enable verbose logging
       --zip string    zip file output
 ```
 
