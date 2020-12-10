@@ -115,7 +115,7 @@ jobs:
 
           make run-tests TEST_PKG=test/e2e/istio RUN_E2E=1 GINKGOFLAGS=-v
 
-    e2e-istio-limited:
+  e2e-istio-limited:
     name: end-to-end-istio-limited
     runs-on: ubuntu-18.04
     strategy:
