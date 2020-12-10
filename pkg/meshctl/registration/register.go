@@ -199,7 +199,7 @@ func (r *Registrant) installWasmAgent(ctx context.Context, enterpriseExtenderVer
 		} else {
 			return eris.New("Failed to install Wasm Agent: no Enterprise Extender detected and no chart override provided.")
 		}
-	} else {
+	} else if enterpriseExtenderVersion == "" {
 		logrus.Warn("Gloo Mesh Enterprise Extender not detected. Wasm Agent installation will proceed because a chart " +
 			"override was provided, but Wasm features depend on the presence of the Extender.")
 	}
