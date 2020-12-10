@@ -162,6 +162,9 @@ var _ = Describe("FederationTranslator", func() {
 				Namespace:   "namespace",
 				ClusterName: "cluster",
 				Labels:      metautils.TranslatedObjectLabels(),
+				Annotations: map[string]string{
+					metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+				},
 			},
 			Spec: networkingv1alpha3spec.Gateway{
 				Servers: []*networkingv1alpha3spec.Server{
@@ -188,6 +191,9 @@ var _ = Describe("FederationTranslator", func() {
 				Namespace:   "namespace",
 				ClusterName: "cluster",
 				Labels:      metautils.TranslatedObjectLabels(),
+				Annotations: map[string]string{
+					metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+				},
 			},
 			Spec: networkingv1alpha3spec.EnvoyFilter{
 				WorkloadSelector: &networkingv1alpha3spec.WorkloadSelector{
@@ -254,6 +260,9 @@ var _ = Describe("FederationTranslator", func() {
 				Namespace:   "remote-namespace",
 				ClusterName: "remote-cluster",
 				Labels:      metautils.TranslatedObjectLabels(),
+				Annotations: map[string]string{
+					metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+				},
 			},
 			Spec: networkingv1alpha3spec.ServiceEntry{
 				Hosts: []string{
@@ -485,6 +494,9 @@ var _ = Describe("FederationTranslator", func() {
 					Namespace:   "namespace",
 					ClusterName: "cluster",
 					Labels:      metautils.TranslatedObjectLabels(),
+					Annotations: map[string]string{
+						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+					},
 				},
 				Spec: networkingv1alpha3spec.Gateway{
 					Servers: []*networkingv1alpha3spec.Server{
@@ -513,6 +525,9 @@ var _ = Describe("FederationTranslator", func() {
 					Namespace:   "remote-namespace",
 					ClusterName: "remote-cluster",
 					Labels:      metautils.TranslatedObjectLabels(),
+					Annotations: map[string]string{
+						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+					},
 				},
 				Spec: networkingv1alpha3spec.Gateway{
 					Servers: []*networkingv1alpha3spec.Server{
@@ -541,6 +556,9 @@ var _ = Describe("FederationTranslator", func() {
 					Namespace:   "remote-namespace",
 					ClusterName: "remote-cluster",
 					Labels:      metautils.TranslatedObjectLabels(),
+					Annotations: map[string]string{
+						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+					},
 				},
 				Spec: networkingv1alpha3spec.DestinationRule{
 					Host: "mesh-egress-gateway.remote-namespace.svc.cluster.local",
@@ -570,6 +588,9 @@ var _ = Describe("FederationTranslator", func() {
 					Namespace:   "remote-namespace",
 					ClusterName: "remote-cluster",
 					Labels:      metautils.TranslatedObjectLabels(),
+					Annotations: map[string]string{
+						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+					},
 				},
 				Spec: networkingv1alpha3spec.DestinationRule{
 					Host: "some-svc.some-ns.svc.cluster.global",
@@ -620,6 +641,9 @@ var _ = Describe("FederationTranslator", func() {
 				Namespace:   "remote-namespace",
 				ClusterName: "remote-cluster",
 				Labels:      metautils.TranslatedObjectLabels(),
+				Annotations: map[string]string{
+					metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+				},
 			},
 			Spec: networkingv1alpha3spec.ServiceEntry{
 				Hosts: []string{
@@ -661,6 +685,9 @@ var _ = Describe("FederationTranslator", func() {
 					Namespace:   "remote-namespace",
 					ClusterName: "remote-cluster",
 					Labels:      metautils.TranslatedObjectLabels(),
+					Annotations: map[string]string{
+						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+					},
 				},
 				Spec: networkingv1alpha3spec.VirtualService{
 					Hosts:    []string{clusterDomains.GetServiceGlobalFQDN(trafficTarget1.Spec.GetKubeService().GetRef())},
@@ -708,6 +735,9 @@ var _ = Describe("FederationTranslator", func() {
 					Namespace:   "namespace",
 					ClusterName: "cluster",
 					Labels:      metautils.TranslatedObjectLabels(),
+					Annotations: map[string]string{
+						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+					},
 				},
 				Spec: networkingv1alpha3spec.VirtualService{
 					Hosts:    []string{federatedHostName},

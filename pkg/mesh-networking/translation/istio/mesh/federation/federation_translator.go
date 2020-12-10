@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Masterminds/semver"
-	"github.com/solo-io/go-utils/kubeutils"
+	"github.com/solo-io/k8s-utils/kubeutils"
 
 	envoy_api_v2_listener "github.com/envoyproxy/go-control-plane/envoy/api/v2/listener"
 	"github.com/gogo/protobuf/types"
@@ -170,9 +170,6 @@ func (t *translator) federateSharedTrust(
 		return
 	}
 
-	filterChainMatchName := envoySniClusterFilterName
-	filterPatchOp := networkingv1alpha3spec.EnvoyFilter_Patch_INSERT_AFTER
-
 	for _, trafficTarget := range trafficTargets {
 		meshKubeService := trafficTarget.Spec.GetKubeService()
 		if meshKubeService == nil {
@@ -317,13 +314,13 @@ func (t *translator) federateSharedTrust(
 							PortNumber: ingressGateway.TlsContainerPort,
 							FilterChain: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch_FilterChainMatch{
 								Filter: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch_FilterMatch{
-									Name: filterChainMatchName,
+									Name: envoySniClusterFilterName,
 								},
 							},
 						}},
 				},
 				Patch: &networkingv1alpha3spec.EnvoyFilter_Patch{
-					Operation: filterPatchOp,
+					Operation: networkingv1alpha3spec.EnvoyFilter_Patch_INSERT_AFTER,
 					Value:     tcpRewritePatch,
 				},
 			}},
@@ -388,6 +385,7 @@ func (t *translator) federateLimitedTrust(
 			Selector: ingressGateway.WorkloadLabels,
 		},
 	}
+	metautils.AppendParent(t.ctx, igw, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 	outputs.AddGateways(igw)
 
 	for _, trafficTarget := range trafficTargets {
@@ -521,10 +519,12 @@ func (t *translator) federateLimitedTrust(
 					Selector: egressGateway.WorkloadLabels,
 				},
 			}
+			metautils.AppendParent(t.ctx, egw, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 			outputs.AddGateways(egw)
 
 			tlsOriginationSubsetName := kubeutils.SanitizeNameV2(fmt.Sprintf("%v-tls-origination", trafficTarget.Name))
-
+			// For limited trust, the traffic flow is as following source -> egress gateway -> ingress gateway -> destination.
+			// This destination rule is for sending the traffic to the egress gateway
 			drName := kubeutils.SanitizeNameV2(fmt.Sprintf("%v-originate-tls-%v", trafficTarget.Name, virtualMesh.Ref.Name))
 			dr := &networkingv1alpha3.DestinationRule{
 				ObjectMeta: metav1.ObjectMeta{
@@ -556,6 +556,7 @@ func (t *translator) federateLimitedTrust(
 					},
 				},
 			}
+			metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 			outputs.AddDestinationRules(dr)
 
 			vsName := kubeutils.SanitizeNameV2(fmt.Sprintf("%v-%v-egw-traffic", trafficTarget.Name, virtualMesh.Ref.Name))
@@ -606,6 +607,7 @@ func (t *translator) federateLimitedTrust(
 					},
 				},
 			}
+			metautils.AppendParent(t.ctx, vs, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 			outputs.AddVirtualServices(vs)
 
 			dr2 := &networkingv1alpha3.DestinationRule{
@@ -623,7 +625,9 @@ func (t *translator) federateLimitedTrust(
 					Subsets: federatedSubsets,
 				},
 			}
+			metautils.AppendParent(t.ctx, se, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 			outputs.AddServiceEntries(se)
+			metautils.AppendParent(t.ctx, dr2, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 			outputs.AddDestinationRules(dr2)
 		}
 		ingressVsName := kubeutils.SanitizeNameV2(fmt.Sprintf("%v-%v-igw-traffic", trafficTarget.Name, virtualMesh.Ref.Name))
@@ -650,6 +654,7 @@ func (t *translator) federateLimitedTrust(
 				},
 			},
 		}
+		metautils.AppendParent(t.ctx, ingressVs, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 		outputs.AddVirtualServices(ingressVs)
 	}
 }

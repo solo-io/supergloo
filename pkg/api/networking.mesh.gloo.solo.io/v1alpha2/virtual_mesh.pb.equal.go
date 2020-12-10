@@ -353,6 +353,16 @@ func (m *VirtualMeshSpec_MTLSConfig_LimitedTrust) Equal(that interface{}) bool {
 		return false
 	}
 
+	if h, ok := interface{}(m.GetRootCertificateAuthority()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRootCertificateAuthority()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRootCertificateAuthority(), target.GetRootCertificateAuthority()) {
+			return false
+		}
+	}
+
 	return true
 }
 

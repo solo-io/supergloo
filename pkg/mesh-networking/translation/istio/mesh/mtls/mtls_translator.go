@@ -231,6 +231,11 @@ func (t *translator) configureLimitedTrust(
 		virtualMeshRef,
 		agentInfo.AgentNamespace,
 	)
+
+	// Append the virtual mesh as a parent to each output resource
+	metautils.AppendParent(t.ctx, issuedCertificate, virtualMeshRef, v1alpha2.VirtualMesh{}.GVK())
+	metautils.AppendParent(t.ctx, podBounceDirective, virtualMeshRef, v1alpha2.VirtualMesh{}.GVK())
+
 	istioOutputs.AddIssuedCertificates(issuedCertificate)
 	istioOutputs.AddPodBounceDirectives(podBounceDirective)
 	return nil
@@ -334,15 +339,13 @@ func (t *translator) constructIssuedCertificate(
 		podBounceDirective *certificatesv1alpha2.PodBounceDirective
 		podBounceRef       *v1.ObjectRef
 	)
-	if len(podsToBounce) > 0 {
-		podBounceDirective = &certificatesv1alpha2.PodBounceDirective{
-			ObjectMeta: issuedCertificateMeta,
-			Spec: certificatesv1alpha2.PodBounceDirectiveSpec{
-				PodsToBounce: podsToBounce,
-			},
-		}
-		podBounceRef = ezkube.MakeObjectRef(podBounceDirective)
+	podBounceDirective = &certificatesv1alpha2.PodBounceDirective{
+		ObjectMeta: issuedCertificateMeta,
+		Spec: certificatesv1alpha2.PodBounceDirectiveSpec{
+			PodsToBounce: podsToBounce,
+		},
 	}
+	podBounceRef = ezkube.MakeObjectRef(podBounceDirective)
 
 	// issue a certificate to the mesh agent
 	return &certificatesv1alpha2.IssuedCertificate{
@@ -406,8 +409,9 @@ func buildSpiffeURI(trustDomain, namespace, serviceAccount string) string {
 // get selectors for all the pods in a mesh; they need to be bounced (including the mesh control plane itself)
 func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha2sets.WorkloadSet, autoRestartPods bool) []*certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector {
 	// if autoRestartPods is false, we rely on the user to manually restart their pods
+	// returning empty list to conform to the nil object pattern and avoid panics
 	if !autoRestartPods {
-		return nil
+		return []*certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector{}
 	}
 	istioMesh := mesh.Spec.GetIstio()
 	istioInstall := istioMesh.GetInstallation()
@@ -478,15 +482,13 @@ func (t *translator) constructIssuedCertificateForLimitedTrust(
 		podBounceDirective *certificatesv1alpha2.PodBounceDirective
 		podBounceRef       *v1.ObjectRef
 	)
-	if len(podsToBounce) > 0 {
-		podBounceDirective = &certificatesv1alpha2.PodBounceDirective{
-			ObjectMeta: issuedCertificateMeta,
-			Spec: certificatesv1alpha2.PodBounceDirectiveSpec{
-				PodsToBounce: podsToBounce,
-			},
-		}
-		podBounceRef = ezkube.MakeObjectRef(podBounceDirective)
+	podBounceDirective = &certificatesv1alpha2.PodBounceDirective{
+		ObjectMeta: issuedCertificateMeta,
+		Spec: certificatesv1alpha2.PodBounceDirectiveSpec{
+			PodsToBounce: podsToBounce,
+		},
 	}
+	podBounceRef = ezkube.MakeObjectRef(podBounceDirective)
 
 	// issue a certificate to the mesh agent
 	return &certificatesv1alpha2.IssuedCertificate{

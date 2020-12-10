@@ -91,6 +91,10 @@ func (m *IssuedCertificateSpec) Equal(that interface{}) bool {
 		}
 	}
 
+	if m.GetTlsType() != target.GetTlsType() {
+		return false
+	}
+
 	return true
 }
 

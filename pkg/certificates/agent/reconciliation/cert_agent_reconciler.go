@@ -131,6 +131,8 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_PENDING
 	}
 
+	contextutils.LoggerFrom(r.ctx).Infof("%v", issuedCertificate.Spec.TlsType)
+
 	// reset & update status
 	issuedCertificate.Status.ObservedGeneration = issuedCertificate.Generation
 	issuedCertificate.Status.Error = ""
@@ -236,12 +238,14 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 
 		switch issuedCertificate.Spec.TlsType {
 		case v1alpha2.IssuedCertificateSpec_LIMITED:
+			contextutils.LoggerFrom(r.ctx).Infof("LIMITED TRUST")
 			issuedCertificateSecret, err := generateSecretForLimitedTrust(issuedCertificate, issuedCertificateData)
 			if err != nil {
 				return err
 			}
 			outputs.AddSecrets(issuedCertificateSecret)
-		default:
+		case v1alpha2.IssuedCertificateSpec_SHARED:
+			contextutils.LoggerFrom(r.ctx).Infof("SHARED TRUST 2")
 			issuedCertificateSecret := &corev1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      issuedCertificate.Spec.IssuedCertificateSecret.Name,
@@ -252,6 +256,8 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 				Type: issuedCertificateSecretType,
 			}
 			outputs.AddSecrets(issuedCertificateSecret)
+		default:
+			return fmt.Errorf("Invalid trust model passed")
 		}
 
 		// mark issued certificate as ISSUED
@@ -311,6 +317,7 @@ func (r *certAgentReconciler) bouncePods(podBounceDirectiveRef *v1.ObjectRef, al
 }
 
 func generateSecretForLimitedTrust(issuedCertificate *v1alpha2.IssuedCertificate, issuedCertificateData secrets.IntermediateCAData) (*corev1.Secret, error) {
+	fmt.Println("In limited trust")
 	if len(issuedCertificate.Spec.Hosts) < 1 {
 		return nil, fmt.Errorf("issued certificate %s does not have hosts set", issuedCertificate.Name)
 	}
