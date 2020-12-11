@@ -321,4 +321,8 @@ Expected response:
 
 We should see the `< hello: world!` header in our response if the filter was deployed successfully.
 
+## Summary and Next Steps
+
+In this guide you used Gloo Mesh Enterprise and the Wasm extension to push a Wasm filter to a service managed by Gloo Mesh.
+
 This is a simple example of a Wasm filter to illustrate the concept. The flexibility of Wasm filters coupled with Envoy provides a platform for incredible innovation. Check out our docs on [Web Assembly Hub](https://docs.solo.io/web-assembly-hub/latest) for more information.
