@@ -285,6 +285,21 @@ spec:
 EOF
 ```
 
+You can verify the filter has been deployed successfully by checking on the new WasmDeployment:
+
+```shell
+kubectl get wasmdeployment -n bookinfo remote-reviews-wasm -oyaml
+```
+
+At the bottom of the output, you should see the following status:
+
+```yaml
+status:
+  observedGeneration: 1
+  workloadStates:
+    reviews-v3-bookinfo-remote-cluster-deployment.gloo-mesh.: FILTERS_DEPLOYED
+```
+
 Let's try our curl again:
 
 ```bash
@@ -312,8 +327,8 @@ Expected response:
 < content-language: en-US
 < content-length: 375
 < x-envoy-upstream-service-time: 22
-< server: envoy
 < hello: world!
+< server: envoy
 <
 * Connection #0 to host reviews left intact
 {"id": "1","reviews": [{  "reviewer": "Reviewer1",  "text": "An extremely entertaining play by Shakespeare. The slapstick humour is refreshing!", "rating": {"stars": 5, "color": "red"}},{  "reviewer": "Reviewer2",  "text": "Absolutely fun and entertaining. The play lacks thematic depth when compared to other plays by Shakespeare.", "rating": {"stars": 4, "color": "red"}}]}
