@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Import enterprise CRDs from enteprise repo. Now included in OSS Helm chart.

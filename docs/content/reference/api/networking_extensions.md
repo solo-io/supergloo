@@ -100,7 +100,7 @@ a generated object can be of any output type supported by Gloo Mesh. the content
 | serviceEntry | istio.networking.v1alpha3.ServiceEntry |  |  |
 | virtualService | istio.networking.v1alpha3.VirtualService |  |  |
 | configMap | extensions.networking.mesh.gloo.solo.io.GeneratedObject.ConfigMap |  |  |
-| xdsConfig | xds.enterprise.agent.mesh.gloo.solo.io.XdsConfigSpec |  | TODO(ilackarms): add more types here. note that we may need to support non-proto resourecs here in the future, in which case we will probably use a proto Struct to represent the object. |
+| xdsConfig | xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec |  | TODO(ilackarms): add more types here. note that we may need to support non-proto resourecs here in the future, in which case we will probably use a proto Struct to represent the object. |
 
 
 

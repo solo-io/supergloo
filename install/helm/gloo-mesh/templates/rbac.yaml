@@ -209,7 +209,7 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - xds.enterprise.agent.mesh.gloo.solo.io
+  - xds.agent.enterprise.mesh.gloo.solo.io
   resources:
   - xdsconfigs
   verbs:
