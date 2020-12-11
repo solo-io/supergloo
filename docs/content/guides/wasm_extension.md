@@ -37,7 +37,7 @@ Set your environment variables like so to reference the management and remote cl
 ```shell
 export MGMT_CONTEXT=kind-mgmt-cluster
 export REMOTE_CONTEXT=kind-remote-cluster
-export ENTERPRISE_EXTENDER_VERSION=0.1.11
+export ENTERPRISE_EXTENDER_VERSION=0.2.0
 ```
 
 ## Prepare the Envoy sidecar to fetch Wasm filters
