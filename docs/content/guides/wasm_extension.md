@@ -16,7 +16,7 @@ In this guide we will enable a Wasm filter for use by an Envoy proxy. The filter
 
 1. Prepare the Envoy sidecar to fetch Wasm filters
 1. Ensure the Enterprise Extender feature is enabled
-1. Install the Wasm agent
+1. Ensure the Wasm agent is installed
 1. Deploy the Wasm filter and validate
 
 ## Before you begin
@@ -37,7 +37,7 @@ Set your environment variables like so to reference the management and remote cl
 ```shell
 export MGMT_CONTEXT=kind-mgmt-cluster
 export REMOTE_CONTEXT=kind-remote-cluster
-export ENTERPRISE_VERSION=0.1.11
+export ENTERPRISE_EXTENDER_VERSION=0.1.11
 ```
 
 ## Prepare the Envoy sidecar to fetch Wasm filters
@@ -165,7 +165,7 @@ helm upgrade --install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enter
 
 ```
 
-You can run the previous command to verify the deployment was successful.
+You can run the following command to verify the deployment was successful.
 
 ```shell
 kubectl get deployment/enterprise-extender -n gloo-mesh
@@ -173,9 +173,22 @@ kubectl get deployment/enterprise-extender -n gloo-mesh
 
 The next step is to install the `wasm-agent` on the remote cluster.
 
-## Install the Wasm agent
+## Ensure the Wasm agent is installed
 
-We are going to register the `remote-cluster` to install the wasm-agent. Even if you already registered the cluster, the wasm-agent is not part of the default registration command. We will re-run the registration command and include the `--install-wasm-agent` flag.
+If you registered the `remote-cluster` after having installed the Enterprise Extender, meshctl should have already installed the Wasm agent on your behalf. Run the following command to verify presence of the Wasm agent.
+
+```shell
+kubectl get deployment/wasm-agent -n gloo-mesh --context $REMOTE_CONTEXT
+```
+
+You should see the following:
+
+```shell
+NAME         READY   UP-TO-DATE   AVAILABLE   AGE
+wasm-agent   1/1     1            1           55m
+```
+
+If not, we will register the `remote-cluster` to install the wasm-agent. Even if you already registered the cluster, we will re-run the registration command and include the `--install-wasm-agent` flag to add the Wasm agent.
 
 If using `kind` or another docker-based Kubernetes distro, the cluster registration command requires an additional flag `--api-server-address` along with the API server address and port. Use the command on the Kind tab if that is the case.
 
@@ -185,7 +198,7 @@ meshctl cluster register \
     --cluster-name remote-cluster \
     --mgmt-context "${MGMT_CONTEXT}" \
     --remote-context "${REMOTE_CONTEXT}" \
-    --install-wasm-agent --wasm-agent-chart-file=https://storage.googleapis.com/gloo-mesh-enterprise/wasm-agent/wasm-agent-${ENTERPRISE_VERSION}.tgz
+    --install-wasm-agent --wasm-agent-chart-file=https://storage.googleapis.com/gloo-mesh-enterprise/wasm-agent/wasm-agent-${ENTERPRISE_EXTENDER_VERSION}.tgz
 {{< /tab >}}
 {{< tab name="Kind" codelang="shell" >}}
 # For macOS
@@ -199,7 +212,7 @@ meshctl cluster register \
     --mgmt-context "${MGMT_CONTEXT}" \
     --remote-context "${REMOTE_CONTEXT}" \
     --api-server-address ${ADDRESS}:6443 \
-    --install-wasm-agent --wasm-agent-chart-file=https://storage.googleapis.com/gloo-mesh-enterprise/wasm-agent/wasm-agent-${ENTERPRISE_VERSION}.tgz
+    --install-wasm-agent --wasm-agent-chart-file=https://storage.googleapis.com/gloo-mesh-enterprise/wasm-agent/wasm-agent-${ENTERPRISE_EXTENDER_VERSION}.tgz
 {{< /tab >}}
 {{< /tabs >}}
 
