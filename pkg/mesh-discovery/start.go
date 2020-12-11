@@ -23,7 +23,7 @@ func startReconciler(
 	remoteSnapshotBuilder := input.NewMultiClusterRemoteBuilder(parameters.Clusters, parameters.McClient)
 	localSnapshotBuilder := input.NewSingleClusterLocalBuilder(parameters.MasterManager)
 	translator := translation.NewTranslator(translation.DefaultDependencyFactory)
-	reconciliation.Start(
+	return reconciliation.Start(
 		parameters.Ctx,
 		remoteSnapshotBuilder,
 		localSnapshotBuilder,
@@ -34,5 +34,4 @@ func startReconciler(
 		parameters.VerboseMode,
 		parameters.SettingsRef,
 	)
-	return nil
 }

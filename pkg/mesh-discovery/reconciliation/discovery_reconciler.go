@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
@@ -27,6 +29,7 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -54,7 +57,7 @@ func Start(
 	history *stats.SnapshotHistory,
 	verboseMode bool,
 	settingsRef v1.ObjectRef,
-) {
+) error {
 	verifier := verifier.NewVerifier(ctx, map[schema.GroupVersionKind]verifier.ServerVerifyOption{
 		// only warn (avoids error) if appmesh Mesh resource is not available on cluster
 		schema.GroupVersionKind{
@@ -79,6 +82,14 @@ func Start(
 		Filter: skpredicate.SimpleEventFilterFunc(isLeaderElectionObject),
 	}
 
+	// Needed in order to use field selector on metadata.name for Settings CRD.
+	if err := masterMgr.GetFieldIndexer().IndexField(ctx, &settingsv1alpha2.Settings{}, "metadata.name", func(object runtime.Object) []string {
+		settings := object.(*settingsv1alpha2.Settings)
+		return []string{settings.Name}
+	}); err != nil {
+		return err
+	}
+
 	input.RegisterInputReconciler(
 		ctx,
 		clusters,
@@ -96,6 +107,7 @@ func Start(
 			ReconcileInterval: time.Second / 2,
 		},
 	)
+	return nil
 }
 
 func (r *discoveryReconciler) reconcileLocal(obj ezkube.ResourceId) (bool, error) {
