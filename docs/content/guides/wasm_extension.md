@@ -311,7 +311,7 @@ curl http://reviews:9080/reviews/1 -v
 ```
 
 Expected response:
-{{< highlight shell "hl_lines=17" >}}
+{{< highlight shell "hl_lines=16" >}}
    Trying 10.96.151.245:9080...
 * Connected to reviews (10.96.151.245) port 9080 (#0)
 > GET /reviews/1 HTTP/1.1
