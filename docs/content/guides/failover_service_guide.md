@@ -22,6 +22,11 @@ To illustrate these concepts, we will assume that:
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document.
 {{% /notice %}}
 
+{{% notice note %}}
+Istio 1.8.0 has a [known issue](https://github.com/istio/istio/issues/28620) where sidecar proxies may fail to start
+under specific circumstances. This bug may surface in sidecars configured by Failover Services.
+{{% /notice %}}
+
 ## Configure Outlier Detection
 
 The services composing a FailoverService must be configured with outlier detection, which is done through a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/traffic_policy" >}}) custom resource. We are going to apply the following config on the `mgmt-cluster` cluster:
