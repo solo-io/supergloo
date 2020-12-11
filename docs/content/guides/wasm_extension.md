@@ -37,7 +37,7 @@ Set your environment variables like so to reference the management and remote cl
 ```shell
 export MGMT_CONTEXT=kind-mgmt-cluster
 export REMOTE_CONTEXT=kind-remote-cluster
-export ENTERPRISE_VERSION=0.2.1
+export ENTERPRISE_VERSION=0.1.11
 ```
 
 ## Prepare the Envoy sidecar to fetch Wasm filters
@@ -198,7 +198,7 @@ meshctl cluster register \
     --cluster-name remote-cluster \
     --mgmt-context "${MGMT_CONTEXT}" \
     --remote-context "${REMOTE_CONTEXT}" \
-    --api-server-address $ADDRESS \
+    --api-server-address ${ADDRESS}:6443 \
     --install-wasm-agent --wasm-agent-chart-file=https://storage.googleapis.com/gloo-mesh-enterprise/wasm-agent/wasm-agent-${ENTERPRISE_VERSION}.tgz
 {{< /tab >}}
 {{< /tabs >}}
@@ -219,32 +219,41 @@ We've got everything in place to use the Wasm filter, but first let's see what t
 
 ### Test without Wasm Filter
 
-As a sanity check, let's run a `curl` without any wasm filter deployed:
+As a sanity check, let's run a `curl` without any wasm filter deployed. First we'll create a temporary container to run curl from in the same namespace as the review service.
 
 ```bash
-CONTEXT=kind-remote-cluster NAME=reviews-v3 NAMESPACE=bookinfo; \
-kubectl alpha debug --image=curlimages/curl@sha256:aa45e9d93122a3cfdf8d7de272e2798ea63733eeee6d06bd2ee4f2f8c4027d7c -n $NAMESPACE --context $CONTEXT $(kubectl get pod -n $NAMESPACE --context $CONTEXT | grep ratings | awk '{print $1}') -i -- curl reviews:9080/reviews/1 -v
+kubectl run -it -n bookinfo --context $REMOTE_CONTEXT curl \
+  --image=curlimages/curl:7.73.0 --rm  -- sh
+
+# From the new terminal run the following
+curl http://reviews:9080/reviews/1 -v
 ```
 
-Expected response:
+You should see the following response:
+
 ```bash
-Defaulting debug container name to debugger-x6mrj.
-If you don't see a command prompt, try pressing enter.
-  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0{"id": "1","reviews": [{  "reviewer": "Reviewer1",  "text": "An extremely entertaining play by Shakespeare. The slapstick humour is refreshing!", "rating": {"stars": 5, "color": "red"}},{  "reviewer": "Reviewer2",  "text": "Absolutely fun and entertaining. The play lacks thematic depth when compared to other plays by Shakespeare.", "rating": {"stars": 4, "color": "red"}}]}* Mark bundle as not supporting multiuse
+   Trying 10.96.151.245:9080...
+* Connected to reviews (10.96.151.245) port 9080 (#0)
+> GET /reviews/1 HTTP/1.1
+> Host: reviews:9080
+> User-Agent: curl/7.73.0-DEV
+> Accept: */*
+>
+* Mark bundle as not supporting multiuse
 < HTTP/1.1 200 OK
 < x-powered-by: Servlet/3.1
 < content-type: application/json
-< date: Thu, 03 Dec 2020 18:38:22 GMT
+< date: Thu, 10 Dec 2020 20:54:27 GMT
 < content-language: en-US
 < content-length: 375
-< x-envoy-upstream-service-time: 1856
+< x-envoy-upstream-service-time: 22
 < server: envoy
-< 
-{ [375 bytes data]
-100   375  100   375    0     0    199      0  0:00:01  0:00:01 --:--:--   199
+<
 * Connection #0 to host reviews left intact
-
+{"id": "1","reviews": [{  "reviewer": "Reviewer1",  "text": "An extremely entertaining play by Shakespeare. The slapstick humour is refreshing!", "rating": {"stars": 5, "color": "red"}},{  "reviewer": "Reviewer2",  "text": "Absolutely fun and entertaining. The play lacks thematic depth when compared to other plays by Shakespeare.", "rating": {"stars": 4, "color": "red"}}]}
 ```
+
+Go ahead and exit the pod and it will delete itself. Next we'll try the same after we deploy the Wasm filter.
 
 ### Deploy the Filter
 
@@ -279,28 +288,37 @@ EOF
 Let's try our curl again:
 
 ```bash
-CONTEXT=${REMOTE_CONTEXT} NAME=reviews-v3 NAMESPACE=bookinfo; kubectl alpha debug --image=curlimages/curl@sha256:aa45e9d93122a3cfdf8d7de272e2798ea63733eeee6d06bd2ee4f2f8c4027d7c -n $NAMESPACE --context $CONTEXT $(kubectl get pod -n $NAMESPACE --context $CONTEXT | grep ratings | awk '{print $1}') -i -- curl reviews:9080/reviews/1 -v
+kubectl run -it -n bookinfo --context $REMOTE_CONTEXT curl \
+  --image=curlimages/curl:7.73.0 --rm  -- sh
+
+# From the new terminal run the following
+curl http://reviews:9080/reviews/1 -v
 ```
 
 Expected response:
-```bash
-Defaulting debug container name to debugger-8jd9x.
-If you don't see a command prompt, try pressing enter.
-  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0{"id": "1","reviews": [{  "reviewer": "Reviewer1",  "text": "An extremely entertaining play by Shakespeare. The slapstick humour is refreshing!", "rating": {"stars": 5, "color": "red"}},{  "reviewer": "Reviewer2",  "text": "Absolutely fun and entertaining. The play lacks thematic depth when compared to other plays by Shakespeare.", "rating": {"stars": 4, "color": "red"}}]}* Mark bundle as not supporting multiuse
+{{< highlight shell "hl_lines=17" >}}
+   Trying 10.96.151.245:9080...
+* Connected to reviews (10.96.151.245) port 9080 (#0)
+> GET /reviews/1 HTTP/1.1
+> Host: reviews:9080
+> User-Agent: curl/7.73.0-DEV
+> Accept: */*
+>
+* Mark bundle as not supporting multiuse
 < HTTP/1.1 200 OK
 < x-powered-by: Servlet/3.1
 < content-type: application/json
-< date: Thu, 03 Dec 2020 18:50:25 GMT
+< date: Thu, 10 Dec 2020 20:54:27 GMT
 < content-language: en-US
 < content-length: 375
-< x-envoy-upstream-service-time: 1203
-< hello: world!
+< x-envoy-upstream-service-time: 22
 < server: envoy
-< 
-{ [375 bytes data]
-100   375  100   375    0     0    310      0  0:00:01  0:00:01 --:--:--   310
+< hello: world!
+<
 * Connection #0 to host reviews left intact
-
-```
+{"id": "1","reviews": [{  "reviewer": "Reviewer1",  "text": "An extremely entertaining play by Shakespeare. The slapstick humour is refreshing!", "rating": {"stars": 5, "color": "red"}},{  "reviewer": "Reviewer2",  "text": "Absolutely fun and entertaining. The play lacks thematic depth when compared to other plays by Shakespeare.", "rating": {"stars": 4, "color": "red"}}]}
+{{< /highlight >}}
 
 We should see the `< hello: world!` header in our response if the filter was deployed successfully.
+
+This is a simple example of a Wasm filter to illustrate the concept. The flexibility of Wasm filters coupled with Envoy provides a platform for incredible innovation. Check out our docs on [Web Assembly Hub](https://docs.solo.io/web-assembly-hub/latest) for more information.
