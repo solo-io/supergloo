@@ -26,8 +26,6 @@ message SettingsSpec {
         // Ingress gateway detectors for each cluster. The key to the map is either a k8s cluster name or the wildcard
         // `*` meaning all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the
         // wildcard entry will be used if it exists. Lastly, we will fall back to the default values.
-        // If any entry does not specify all the fields, it will fall back to the wildcard or default values for
-        // the missing field(s).
         map<string, IngressGatewayDetector> ingress_gateway_detectors = 1;
 
         // Workload labels and TLS port name used during discovery to detect ingress gateways for a mesh.

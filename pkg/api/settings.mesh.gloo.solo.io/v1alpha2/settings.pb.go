@@ -241,8 +241,6 @@ type SettingsSpec_Istio struct {
 	// Ingress gateway detectors for each cluster. The key to the map is either a k8s cluster name or the wildcard
 	// `*` meaning all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the
 	// wildcard entry will be used if it exists. Lastly, we will fall back to the default values.
-	// If any entry does not specify all the fields, it will fall back to the wildcard or default values for
-	// the missing field(s).
 	IngressGatewayDetectors map[string]*SettingsSpec_Istio_IngressGatewayDetector `protobuf:"bytes,1,rep,name=ingress_gateway_detectors,json=ingressGatewayDetectors,proto3" json:"ingress_gateway_detectors,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 

@@ -72,7 +72,7 @@ Configure global settings and defaults.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ingressGatewayDetectors | []settings.mesh.gloo.solo.io.SettingsSpec.Istio.IngressGatewayDetectorsEntry | repeated | Ingress gateway detectors for each cluster. The key to the map is either a k8s cluster name or the wildcard `*` meaning all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the wildcard entry will be used if it exists. Lastly, we will fall back to the default values. If any entry does not specify all the fields, it will fall back to the wildcard or default values for the missing field(s). |
+| ingressGatewayDetectors | []settings.mesh.gloo.solo.io.SettingsSpec.Istio.IngressGatewayDetectorsEntry | repeated | Ingress gateway detectors for each cluster. The key to the map is either a k8s cluster name or the wildcard `*` meaning all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the wildcard entry will be used if it exists. Lastly, we will fall back to the default values. |
 
 
 
