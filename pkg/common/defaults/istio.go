@@ -8,6 +8,6 @@ var DefaultGatewayWorkloadLabels = map[string]string{
 }
 
 const (
-	// https://istio.io/docs/ops/deployment/requirements/#ports-used-by-istio
+	// The name of the externally-reachable port on which the ingress gateway is listening for TLS connections.
 	DefaultGatewayPortName = "tls"
 )
