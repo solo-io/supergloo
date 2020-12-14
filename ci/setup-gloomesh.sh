@@ -26,6 +26,7 @@ eval "${MAKE} clean-helm manifest-gen package-helm build-all-images -B"
 
 setChartVariables
 
+agentCrdsChart=${AGENT_CRDS_CHART}
 agentChart=${AGENT_CHART}
 agentImage=${AGENT_IMAGE}
 gloomeshChart=${GLOOMESH_CHART}
@@ -49,7 +50,8 @@ go run "${PROJECT_ROOT}/cmd/meshctl/main.go" install \
   --cluster-name "${cluster}" \
   --verbose  \
   --api-server-address "${apiServerAddress}" \
-  --cert-agent-chart-file "${agentChart}"
+  --cert-agent-chart-file "${agentChart}" \
+  --agent-crds-chart-file "${agentCrdsChart}"
 
 
 ${K} -n gloo-mesh rollout status deployment networking

@@ -1,7 +1,7 @@
 ---
 title: Extending the Mesh with Wasm
 menuTitle: Extending the Mesh with Wasm
-weight: 85
+weight: 50
 ---
 
 {{% notice note %}}
@@ -23,4 +23,6 @@ To add your new Wasm filter to the mesh, all you need is a `WasmDeployment` Kube
 Workloads should be configured and with which Wasm filters, then let Gloo Mesh handle the rest. A Gloo Mesh Enterprise 
 extension server will watch for WasmDeployments and manage the lifecycle of all your Wasm filters accordingly.
 
-To learn more about Wasm and Gloo Mesh Enterprise, request a demo at [solo.io](https://www.solo.io/).
+## Next Steps
+
+You can check out our deployment guide to try out the WASM extension. To learn more about Wasm and Gloo Mesh Enterprise, request a demo at [solo.io](https://www.solo.io/).
