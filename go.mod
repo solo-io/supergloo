@@ -9,7 +9,6 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.0.0+incompatible
 	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
-	github.com/solo-io/skv2 => /Users/joe/code2/skv2
 
 	// https://github.com/ory/dockertest/issues/208#issuecomment-686820414
 	golang.org/x/sys => golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6
@@ -61,7 +60,7 @@ require (
 	github.com/solo-io/go-utils v0.20.0
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.13
-	github.com/solo-io/skv2 v0.15.1
+	github.com/solo-io/skv2 v0.15.2-0.20201214195457-815ea0443bd7
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.3.4
 	github.com/spf13/cobra v1.0.0
