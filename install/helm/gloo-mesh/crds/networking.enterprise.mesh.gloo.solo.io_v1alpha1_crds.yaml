@@ -120,6 +120,7 @@ spec:
                       this field is required
                     type: string
                   staticFilterConfig:
+                    additionalProperties: true
                     description: |-
                       Provide configuration as a static
                       `google.protobuf.Struct` is serialized as JSON before
