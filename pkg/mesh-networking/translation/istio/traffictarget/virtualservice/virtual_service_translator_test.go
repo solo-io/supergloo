@@ -56,7 +56,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		ctrl.Finish()
 	})
 
-	It("should translate", func() {
+	It("should translate and merge traffic policies by request matcher", func() {
 		sourceSelectorLabels := map[string]string{"env": "dev"}
 		sourceSelectorNamespaces := []string{"n1", "n2"}
 
@@ -125,6 +125,47 @@ var _ = Describe("VirtualServiceTranslator", func() {
 							},
 						},
 					},
+					{
+						Ref: &v1.ObjectRef{
+							Name:      "tp-2",
+							Namespace: "tp-namespace-2",
+						},
+						Spec: &networkingv1alpha2.TrafficPolicySpec{
+							SourceSelector: []*networkingv1alpha2.WorkloadSelector{
+								{
+									Labels:     sourceSelectorLabels,
+									Namespaces: sourceSelectorNamespaces,
+								},
+							},
+							HttpRequestMatchers: []*networkingv1alpha2.TrafficPolicySpec_HttpMatcher{
+								{
+									PathSpecifier: &networkingv1alpha2.TrafficPolicySpec_HttpMatcher_Exact{
+										Exact: "path",
+									},
+									Method: &networkingv1alpha2.TrafficPolicySpec_HttpMethod{Method: types.HttpMethodValue_GET},
+								},
+								{
+									Headers: []*networkingv1alpha2.TrafficPolicySpec_HeaderMatcher{
+										{
+											Name:        "name3",
+											Value:       "[a-z]+",
+											Regex:       true,
+											InvertMatch: true,
+										},
+									},
+									Method: &networkingv1alpha2.TrafficPolicySpec_HttpMethod{Method: types.HttpMethodValue_POST},
+								},
+							},
+							FaultInjection: &networkingv1alpha2.TrafficPolicySpec_FaultInjection{
+								FaultInjectionType: &networkingv1alpha2.TrafficPolicySpec_FaultInjection_Abort_{
+									Abort: &networkingv1alpha2.TrafficPolicySpec_FaultInjection_Abort{
+										HttpStatus: 500,
+									},
+								},
+								Percentage: 50,
+							},
+						},
+					},
 				},
 			},
 		}
@@ -177,6 +218,14 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		httpRetry := &networkingv1alpha3spec.HTTPRetry{
 			Attempts: 5,
 		}
+		faultInjection := &networkingv1alpha3spec.HTTPFaultInjection{
+			Abort: &networkingv1alpha3spec.HTTPFaultInjection_Abort{
+				ErrorType: &networkingv1alpha3spec.HTTPFaultInjection_Abort_HttpStatus{
+					HttpStatus: 500,
+				},
+				Percentage: &networkingv1alpha3spec.Percent{Value: 50},
+			},
+		}
 
 		expectedHttpRoutes := []*networkingv1alpha3spec.HTTPRoute{
 			{
@@ -198,6 +247,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				}},
 				Retries: httpRetry,
+				Fault:   faultInjection,
 			},
 			{
 				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
@@ -218,6 +268,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				}},
 				Retries: httpRetry,
+				Fault:   faultInjection,
 			},
 			{
 				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
@@ -238,6 +289,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				}},
 				Retries: httpRetry,
+				Fault:   faultInjection,
 			},
 			{
 				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
@@ -258,6 +310,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				}},
 				Retries: httpRetry,
+				Fault:   faultInjection,
 			},
 			{
 				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
@@ -280,6 +333,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				}},
 				Retries: httpRetry,
+				Fault:   faultInjection,
 			},
 			{
 				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
@@ -302,6 +356,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				}},
 				Retries: httpRetry,
+				Fault:   faultInjection,
 			},
 			{
 				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
@@ -324,6 +379,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				}},
 				Retries: httpRetry,
+				Fault:   faultInjection,
 			},
 			{
 				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
@@ -346,6 +402,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				}},
 				Retries: httpRetry,
+				Fault:   faultInjection,
 			},
 		}
 
@@ -379,6 +436,30 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				registerField decorators.RegisterField,
 			) error {
 				output.Retries = httpRetry
+				return nil
+			}).
+			Return(nil)
+
+		mockDecorator.
+			EXPECT().
+			ApplyTrafficPolicyToVirtualService(
+				trafficTarget.Status.AppliedTrafficPolicies[1],
+				trafficTarget,
+				nil,
+				&networkingv1alpha3spec.HTTPRoute{
+					Match:   initializedMatchRequests,
+					Retries: httpRetry,
+				},
+				gomock.Any(),
+			).DoAndReturn(
+			func(
+				appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+				service *discoveryv1alpha2.TrafficTarget,
+				sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+				output *networkingv1alpha3spec.HTTPRoute,
+				registerField decorators.RegisterField,
+			) error {
+				output.Fault = faultInjection
 				return nil
 			}).
 			Return(nil)
