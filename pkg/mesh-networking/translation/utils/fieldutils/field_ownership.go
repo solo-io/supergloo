@@ -2,6 +2,7 @@ package fieldutils
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/resourceidutils"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -16,7 +17,9 @@ type FieldConflictError struct {
 }
 
 func (e FieldConflictError) Error() string {
-	return fmt.Sprintf("field %v is already owned by %T %s (priority %v)", e.Field, e.OwnerType, resourceidutils.ResourceIdsToString(e.Owners), e.Priority)
+	// remove ** from field name
+	fieldName := strings.ReplaceAll(fmt.Sprintf("%T", e.Field), "*", "")
+	return fmt.Sprintf("field %s is already owned by %T %s (priority %v)", fieldName, e.OwnerType, resourceidutils.ResourceIdsToString(e.Owners), e.Priority)
 }
 
 // an FieldOwnershipRegistry tracks the ownership of individual object fields.
