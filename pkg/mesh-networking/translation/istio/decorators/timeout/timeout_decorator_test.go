@@ -2,6 +2,7 @@ package timeout_test
 
 import (
 	"github.com/gogo/protobuf/types"
+	"github.com/golang/protobuf/ptypes/duration"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
@@ -30,7 +31,7 @@ var _ = Describe("TimeoutDecorator", func() {
 		}
 		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
-				RequestTimeout: &types.Duration{Seconds: 5},
+				RequestTimeout: &duration.Duration{Seconds: 5},
 			},
 		}
 		expectedTimeout := &types.Duration{Seconds: 5}
@@ -46,7 +47,7 @@ var _ = Describe("TimeoutDecorator", func() {
 		}
 		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
-				RequestTimeout: &types.Duration{Seconds: 5},
+				RequestTimeout: &duration.Duration{Seconds: 5},
 			},
 		}
 		err := timeoutDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)

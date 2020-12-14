@@ -2,6 +2,7 @@ package retries_test
 
 import (
 	"github.com/gogo/protobuf/types"
+	"github.com/golang/protobuf/ptypes/duration"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
@@ -32,7 +33,7 @@ var _ = Describe("RetriesDecorator", func() {
 			Spec: &v1alpha2.TrafficPolicySpec{
 				Retries: &v1alpha2.TrafficPolicySpec_RetryPolicy{
 					Attempts:      5,
-					PerTryTimeout: &types.Duration{Seconds: 2},
+					PerTryTimeout: &duration.Duration{Seconds: 2},
 				},
 			},
 		}
@@ -54,7 +55,7 @@ var _ = Describe("RetriesDecorator", func() {
 			Spec: &v1alpha2.TrafficPolicySpec{
 				Retries: &v1alpha2.TrafficPolicySpec_RetryPolicy{
 					Attempts:      5,
-					PerTryTimeout: &types.Duration{Seconds: 2},
+					PerTryTimeout: &duration.Duration{Seconds: 2},
 				},
 			},
 		}

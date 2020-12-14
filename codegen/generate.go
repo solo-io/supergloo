@@ -6,8 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/solo-io/skv2/codegen/render"
-
 	externalapis "github.com/solo-io/external-apis/codegen"
 	"github.com/solo-io/gloo-mesh/codegen/anyvendor"
 	"github.com/solo-io/gloo-mesh/codegen/groups"
@@ -37,7 +35,10 @@ type topLevelComponent struct {
 	generatedCodeRoot string
 
 	// the set of input resources for which to generate a snapshot and reconciler
-	inputResources io.Snapshot
+	// local inptus are read from the local cluster where the controller runs
+	localInputResources io.Snapshot
+	// remote inptus are read from managed cluster registered to the controller cluster
+	remoteInputResources io.Snapshot
 
 	// the set of output resources for which to generate a snapshot
 	outputResources []io.OutputSnapshot
@@ -46,33 +47,89 @@ type topLevelComponent struct {
 func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 	var topLevelTemplates []model.CustomTemplates
 
-	if len(t.inputResources) > 0 {
+	switch {
+	case t.localInputResources != nil && t.remoteInputResources != nil:
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshot,
-			t.generatedCodeRoot+"/input/snapshot.go",
-			t.inputResources,
+			"Local",
+			t.generatedCodeRoot+"/input/local_snapshot.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources, MultiCluster: false},
+		))
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputSnapshot,
+			"Remote",
+			t.generatedCodeRoot+"/input/remote_snapshot.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources, MultiCluster: true},
+		))
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputSnapshotManualBuilder,
+			"Local",
+			t.generatedCodeRoot+"/input/local_snapshot_manual_builder.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources, MultiCluster: false},
+		))
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputSnapshotManualBuilder,
+			"Remote",
+			t.generatedCodeRoot+"/input/remote_snapshot_manual_builder.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources, MultiCluster: true},
 		))
 
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputReconciler,
+			"",
 			t.generatedCodeRoot+"/input/reconciler.go",
-			t.inputResources,
+			contrib.HybridSnapshotResources{
+				LocalResourcesToSelect:  t.localInputResources,
+				RemoteResourcesToSelect: t.remoteInputResources,
+			},
 		))
-
+	case t.localInputResources != nil:
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputSnapshot,
+			"",
+			t.generatedCodeRoot+"/input/snapshot.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources, MultiCluster: false},
+		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshotManualBuilder,
+			"",
 			t.generatedCodeRoot+"/input/snapshot_manual_builder.go",
-			t.inputResources,
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources, MultiCluster: false},
 		))
-
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputReconciler,
+			"",
+			t.generatedCodeRoot+"/input/reconciler.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources, MultiCluster: false},
+		))
+	case t.remoteInputResources != nil:
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputSnapshot,
+			"",
+			t.generatedCodeRoot+"/input/snapshot.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources, MultiCluster: true},
+		))
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputSnapshotManualBuilder,
+			"",
+			t.generatedCodeRoot+"/input/snapshot_manual_builder.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources, MultiCluster: true},
+		))
+		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+			contrib.InputReconciler,
+			"",
+			t.generatedCodeRoot+"/input/reconciler.go",
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources, MultiCluster: true},
+		))
 	}
 
 	for _, outputResources := range t.outputResources {
 		filePath := filepath.Join(t.generatedCodeRoot, "output", outputResources.Name, "snapshot.go")
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.OutputSnapshot,
+			"",
 			filePath,
-			outputResources.Snapshot,
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: outputResources.Snapshot},
 		))
 	}
 
@@ -85,14 +142,15 @@ var (
 	topLevelComponents = []topLevelComponent{
 		// discovery component
 		{
-			generatedCodeRoot: "pkg/api/discovery.mesh.gloo.solo.io",
-			inputResources:    io.DiscoveryInputTypes,
-			outputResources:   []io.OutputSnapshot{io.DiscoveryOutputTypes},
+			generatedCodeRoot:    "pkg/api/discovery.mesh.gloo.solo.io",
+			remoteInputResources: io.DiscoveryRemoteInputTypes,
+			localInputResources:  io.DiscoveryLocalInputTypes,
+			outputResources:      []io.OutputSnapshot{io.DiscoveryOutputTypes},
 		},
 		// networking snapshot
 		{
-			generatedCodeRoot: "pkg/api/networking.mesh.gloo.solo.io",
-			inputResources:    io.NetworkingInputTypes,
+			generatedCodeRoot:   "pkg/api/networking.mesh.gloo.solo.io",
+			localInputResources: io.NetworkingInputTypes,
 			outputResources: []io.OutputSnapshot{
 				io.IstioNetworkingOutputTypes,
 				io.SmiNetworkingOutputTypes,
@@ -102,26 +160,26 @@ var (
 		},
 		// certificate issuer component
 		{
-			generatedCodeRoot: "pkg/api/certificates.mesh.gloo.solo.io/issuer",
-			inputResources:    io.CertificateIssuerInputTypes,
+			generatedCodeRoot:    "pkg/api/certificates.mesh.gloo.solo.io/issuer",
+			remoteInputResources: io.CertificateIssuerInputTypes,
 		},
 		// certificate agent component
 		{
-			generatedCodeRoot: "pkg/api/certificates.mesh.gloo.solo.io/agent",
-			inputResources:    io.CertificateAgentInputTypes,
-			outputResources:   []io.OutputSnapshot{io.CertificateAgentOutputTypes},
+			generatedCodeRoot:   "pkg/api/certificates.mesh.gloo.solo.io/agent",
+			localInputResources: io.CertificateAgentInputTypes,
+			outputResources:     []io.OutputSnapshot{io.CertificateAgentOutputTypes},
 		},
 	}
 
 	glooMeshManifestRoot  = "install/helm/gloo-mesh"
 	certAgentManifestRoot = "install/helm/cert-agent/"
-	xdsAgentManifestRoot  = "install/helm/xds-agent/"
+	agentCrdsManifestRoot = "install/helm/agent-crds/"
 
 	vendoredMultiClusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 	importedMultiClusterCRDs = glooMeshManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 
-	allApiGroups = map[string][]model.Group{
-		"":                                 append(append(groups.GlooMeshGroups, groups.CertAgentGroups...), groups.XdsAgentGroup),
+	snapshotApiGroups = map[string][]model.Group{
+		"":                                 groups.AllGeneratedGroups,
 		"github.com/solo-io/external-apis": externalapis.Groups,
 		"github.com/solo-io/skv2":          {skv1alpha1.Group},
 	}
@@ -143,6 +201,10 @@ func run() error {
 	chartOnly := flag.Bool("chart", false, "only generate the helm chart")
 	flag.Parse()
 
+	if err := makeAgentCrdsCommand().Execute(); err != nil {
+		return err
+	}
+
 	if err := makeGlooMeshCommand(*chartOnly).Execute(); err != nil {
 		return err
 	}
@@ -158,10 +220,6 @@ func run() error {
 	// TODO(ilackarms): we copy skv2 CRDs out of vendor_any into our helm chart.
 	// we should consider using skv2 to automate this step for us
 	if err := os.Rename(vendoredMultiClusterCRDs, importedMultiClusterCRDs); err != nil {
-		return err
-	}
-
-	if err := makeXdsAgentCommand().Execute(); err != nil {
 		return err
 	}
 
@@ -203,25 +261,27 @@ func makeCertAgentCommand(chartOnly bool) codegen.Command {
 		AnyVendorConfig:   anyvendorImports,
 		ManifestRoot:      certAgentManifestRoot,
 		TopLevelTemplates: topLevelTemplates,
-		Groups:            groups.CertAgentGroups,
 		RenderProtos:      true,
 		Chart:             helm.CertAgentChart,
 	}
 }
 
-func makeXdsAgentCommand() codegen.Command {
+func makeAgentCrdsCommand() codegen.Command {
 	return codegen.Command{
-		AppName:      appName,
-		ManifestRoot: xdsAgentManifestRoot,
-		Groups:       []render.Group{groups.XdsAgentGroup},
-		RenderProtos: true,
+		AppName:         appName,
+		AnyVendorConfig: anyvendorImports,
+		ManifestRoot:    agentCrdsManifestRoot,
+		Groups:          append(groups.CertAgentGroups, groups.XdsAgentGroup),
+		RenderProtos:    true,
+		Chart:           helm.AgentCrdsChart,
 	}
 }
 
-func makeTopLevelTemplate(templateFunc func(params contrib.CrossGroupTemplateParameters) model.CustomTemplates, outPath string, resourceSnapshot io.Snapshot) model.CustomTemplates {
-	return templateFunc(contrib.CrossGroupTemplateParameters{
+func makeTopLevelTemplate(templateFunc func(params contrib.SnapshotTemplateParameters) model.CustomTemplates, snapshotName, outPath string, snapshotResources contrib.SnapshotResources) model.CustomTemplates {
+	return templateFunc(contrib.SnapshotTemplateParameters{
+		SnapshotName:      snapshotName,
 		OutputFilename:    outPath,
-		SelectFromGroups:  allApiGroups,
-		ResourcesToSelect: resourceSnapshot,
+		SelectFromGroups:  snapshotApiGroups,
+		SnapshotResources: snapshotResources,
 	})
 }

@@ -1,7 +1,7 @@
 ---
 title: Failover Service
 menuTitle: Failover Service
-weight: 78
+weight: 50
 ---
 
 Gloo Mesh provides the ability to configure a *FailoverService*. A FailoverService is a virtual traffic destination that is composed of a list of services ordered in decreasing priority. The composing services are configured with outlier detection, the ability of the system to detect unresponsive services, [read more here](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier).Traffic will automatically be shifted over to services next in the priority order. Currently this feature is only supported for Istio meshes.
@@ -20,6 +20,11 @@ To illustrate these concepts, we will assume that:
 
 {{% notice note %}}
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document.
+{{% /notice %}}
+
+{{% notice note %}}
+Istio 1.8.0 has a [known issue](https://github.com/istio/istio/issues/28620) where sidecar proxies may fail to start
+under specific circumstances. This bug may surface in sidecars configured by Failover Services.
 {{% /notice %}}
 
 ## Configure Outlier Detection

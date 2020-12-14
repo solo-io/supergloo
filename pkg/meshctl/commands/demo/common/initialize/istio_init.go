@@ -37,6 +37,11 @@ management-plane as well as Istio, and the other will just run Istio.
 func initIstioCmd(ctx context.Context, mgmtCluster, remoteCluster string) error {
 	box := packr.NewBox("./scripts")
 
+	// make sure istio version is supported
+	if err := checkIstioVersion(box); err != nil {
+		return err
+	}
+
 	// management cluster
 	if err := createKindCluster(mgmtCluster, managementPort, box); err != nil {
 		return err
@@ -84,5 +89,18 @@ func installIstio(cluster string, port string, box packr.Box) error {
 	}
 
 	fmt.Printf("Successfully installed Istio on cluster %s\n", cluster)
+	return nil
+}
+
+func checkIstioVersion(box packr.Box) error {
+	script, err := box.FindString("check_istio_version.sh")
+	if err != nil {
+		return eris.Wrap(err, "Error loading script")
+	}
+	cmd := exec.Command("bash", "-c", script)
+	bytes, err := cmd.Output()
+	if err != nil {
+		return eris.Wrap(err, string(bytes))
+	}
 	return nil
 }

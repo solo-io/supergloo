@@ -4,6 +4,7 @@ import (
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/gogoutils"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -62,6 +63,6 @@ func (d *retriesDecorator) translateRetries(
 	}
 	return &networkingv1alpha3spec.HTTPRetry{
 		Attempts:      retries.GetAttempts(),
-		PerTryTimeout: retries.GetPerTryTimeout(),
+		PerTryTimeout: gogoutils.DurationProtoToGogo(retries.GetPerTryTimeout()),
 	}, nil
 }

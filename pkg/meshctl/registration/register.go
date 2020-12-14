@@ -2,9 +2,12 @@ package registration
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/rotisserie/eris"
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/gloo-mesh/codegen/io"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/enterprise"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
@@ -15,7 +18,7 @@ import (
 
 var gloomeshRbacRequirements = func() []rbacv1.PolicyRule {
 	var policyRules []rbacv1.PolicyRule
-	policyRules = append(policyRules, io.DiscoveryInputTypes.RbacPoliciesWatch()...)
+	policyRules = append(policyRules, io.DiscoveryRemoteInputTypes.RbacPoliciesWatch()...)
 	policyRules = append(policyRules, io.LocalNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	policyRules = append(policyRules, io.IstioNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	policyRules = append(policyRules, io.SmiNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
@@ -30,13 +33,14 @@ type Registrant struct {
 }
 
 type RegistrantOptions struct {
-	KubeConfigPath string
-	MgmtContext    string
-	RemoteContext  string
-	Registration   register.RegistrationOptions
-	CertAgent      AgentInstallOptions
-	WasmAgent      AgentInstallOptions
-	Verbose        bool
+	KubeConfigPath     string
+	MgmtContext        string
+	RemoteContext      string
+	Registration       register.RegistrationOptions
+	AgentCrdsChartPath string
+	CertAgent          AgentInstallOptions
+	WasmAgent          AgentInstallOptions
+	Verbose            bool
 }
 
 // Initialize a ClientConfig for the management and remote clusters from the options.
@@ -83,9 +87,9 @@ type AgentInstallOptions struct {
 }
 
 func (r *Registrant) RegisterCluster(ctx context.Context) error {
-	// TODO(ilackarms): move verbose option to global flag at root level of meshctl
-	if r.Verbose {
-		logrus.SetLevel(logrus.DebugLevel)
+	// agent CRDs should always be installed since they're required by any remote agents
+	if err := r.installAgentCrds(ctx); err != nil {
+		return err
 	}
 
 	// The cert-agent should always be installed since it's required for the VirtualMesh API.
@@ -93,9 +97,20 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 		return err
 	}
 
+	// Users can opt out of installing the Wasm Agent since it's only required for the WasmDeployment API.
 	if r.WasmAgent.Install {
-		if err := r.installWasmAgent(ctx); err != nil {
+		extenderVersion, err := enterprise.GetEnterpriseExtenderVersion(ctx, r.KubeConfigPath, r.MgmtContext)
+		if err != nil {
 			return err
+		}
+
+		// If the Enterprise Extender is present or the user explicitly provided a chart path, install the agent.
+		if extenderVersion != "" || r.WasmAgent.ChartPath != "" {
+			if err := r.installWasmAgent(ctx, extenderVersion); err != nil {
+				return err
+			}
+		} else {
+			logrus.Debug("Enterprise Extender not found in management cluster, skipping Wasm Agent install.")
 		}
 	}
 
@@ -103,8 +118,8 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 }
 
 func (r *Registrant) DeregisterCluster(ctx context.Context) error {
-	if r.Verbose {
-		logrus.SetLevel(logrus.DebugLevel)
+	if err := r.uninstallAgentCrds(ctx); err != nil {
+		return err
 	}
 
 	if err := r.uninstallCertAgent(ctx); err != nil {
@@ -127,6 +142,29 @@ func (r *Registrant) registerCluster(ctx context.Context) error {
 
 	logrus.Infof("successfully registered cluster %v", r.Registration.ClusterName)
 	return nil
+}
+
+func (r *Registrant) installAgentCrds(ctx context.Context) error {
+	return gloomesh.Installer{
+		HelmChartPath: r.AgentCrdsChartPath,
+		KubeConfig:    r.KubeConfigPath,
+		KubeContext:   r.RemoteContext,
+		Namespace:     r.Registration.RemoteNamespace,
+		Verbose:       r.Verbose,
+	}.InstallAgentCrds(
+		ctx,
+	)
+}
+
+func (r *Registrant) uninstallAgentCrds(ctx context.Context) error {
+	return gloomesh.Uninstaller{
+		KubeConfig:  r.KubeConfigPath,
+		KubeContext: r.RemoteContext,
+		Namespace:   r.Registration.RemoteNamespace,
+		Verbose:     r.Verbose,
+	}.UninstallAgentCrds(
+		ctx,
+	)
 }
 
 func (r *Registrant) installCertAgent(ctx context.Context) error {
@@ -153,7 +191,19 @@ func (r *Registrant) uninstallCertAgent(ctx context.Context) error {
 	)
 }
 
-func (r *Registrant) installWasmAgent(ctx context.Context) error {
+func (r *Registrant) installWasmAgent(ctx context.Context, enterpriseExtenderVersion string) error {
+	if r.WasmAgent.ChartPath == "" {
+		if enterpriseExtenderVersion != "" {
+			// If we know the user's Enterprise Extender version, install the corresponding Wasm Agent.
+			r.WasmAgent.ChartPath = fmt.Sprintf(gloomesh.WasmAgentChartUriTemplate, enterpriseExtenderVersion)
+		} else {
+			return eris.New("Failed to install Wasm Agent: no Enterprise Extender detected and no chart override provided.")
+		}
+	} else if enterpriseExtenderVersion == "" {
+		logrus.Warn("Gloo Mesh Enterprise Extender not detected. Wasm Agent installation will proceed because a chart " +
+			"override was provided, but Wasm features depend on the presence of the Extender.")
+	}
+
 	return gloomesh.Installer{
 		HelmChartPath:  r.WasmAgent.ChartPath,
 		HelmValuesPath: r.WasmAgent.ChartValues,

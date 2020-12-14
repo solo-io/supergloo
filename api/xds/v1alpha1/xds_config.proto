@@ -1,8 +1,8 @@
 syntax = "proto3";
-package xds.enterprise.agent.mesh.gloo.solo.io;
-option go_package = "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1";
+package xds.agent.enterprise.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1";
 
-import "skv2/api/core/v1/core.proto";
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 
