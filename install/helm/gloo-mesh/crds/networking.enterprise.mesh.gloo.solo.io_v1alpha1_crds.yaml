@@ -120,13 +120,13 @@ spec:
                       this field is required
                     type: string
                   staticFilterConfig:
-                    additionalProperties: true
                     description: |-
                       Provide configuration as a static
                       `google.protobuf.Struct` is serialized as JSON before
                       passing it to the plugin. `google.protobuf.BytesValue` and
                       `google.protobuf.StringValue` are passed directly without the wrapper.
                     type: object
+                    x-kubernetes-preserve-unknown-fields: true
                   vmId:
                     description: |-
                       An ID which will be used along with a hash of the wasm code
