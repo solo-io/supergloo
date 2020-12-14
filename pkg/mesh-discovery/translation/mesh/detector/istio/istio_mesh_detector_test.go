@@ -92,9 +92,8 @@ var _ = Describe("IstioMeshDetector", func() {
 
 		inRemote := input.NewInputRemoteSnapshotManualBuilder("")
 		inRemote.AddDeployments([]*appsv1.Deployment{deployment})
-		inLocal := input.NewInputLocalSnapshotManualBuilder("")
 
-		meshes, err := detector.DetectMeshes(inRemote.Build(), inLocal.Build())
+		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshes).To(HaveLen(0))
 	})
@@ -110,10 +109,8 @@ var _ = Describe("IstioMeshDetector", func() {
 		inRemote := input.NewInputRemoteSnapshotManualBuilder("")
 		inRemote.AddDeployments([]*appsv1.Deployment{deployment})
 		inRemote.AddConfigMaps(configMaps.List())
-		inLocal := input.NewInputLocalSnapshotManualBuilder("")
-		inLocal.AddSettings([]*settingsv1alpha2.Settings{settings})
 
-		meshes, err := detector.DetectMeshes(inRemote.Build(), inLocal.Build())
+		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshes).To(HaveLen(1))
 		Expect(meshes[0]).To(Equal(&discoveryv1alpha2.Mesh{
@@ -146,14 +143,12 @@ var _ = Describe("IstioMeshDetector", func() {
 		inRemote := input.NewInputRemoteSnapshotManualBuilder("")
 		inRemote.AddDeployments([]*appsv1.Deployment{deployment})
 		inRemote.AddConfigMaps(configMaps.List())
-		inLocal := input.NewInputLocalSnapshotManualBuilder("")
-		inLocal.AddSettings([]*settingsv1alpha2.Settings{settings})
 
 		detector := NewMeshDetector(
 			ctx,
 		)
 
-		meshes, err := detector.DetectMeshes(inRemote.Build(), inLocal.Build())
+		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshes).To(HaveLen(1))
 		Expect(meshes[0]).To(Equal(&discoveryv1alpha2.Mesh{
@@ -246,10 +241,8 @@ var _ = Describe("IstioMeshDetector", func() {
 		inRemote.AddServices(services.List())
 		inRemote.AddPods(pods.List())
 		inRemote.AddNodes(nodes.List())
-		inLocal := input.NewInputLocalSnapshotManualBuilder("")
-		inLocal.AddSettings([]*settingsv1alpha2.Settings{settings})
 
-		meshes, err := detector.DetectMeshes(inRemote.Build(), inLocal.Build())
+		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
 
 		expectedMesh := &discoveryv1alpha2.Mesh{
@@ -348,26 +341,23 @@ var _ = Describe("IstioMeshDetector", func() {
 		inRemote.AddServices(services.List())
 		inRemote.AddPods(pods.List())
 		inRemote.AddNodes(nodes.List())
-		inLocal := input.NewInputLocalSnapshotManualBuilder("")
-		inLocal.AddSettings([]*settingsv1alpha2.Settings{
-			{
-				Spec: settingsv1alpha2.SettingsSpec{
-					Istio: &settingsv1alpha2.SettingsSpec_Istio{
-						IngressGatewayDetectors: map[string]*settingsv1alpha2.SettingsSpec_Istio_IngressGatewayDetector{
-							"*": {
-								GatewayWorkloadLabels: map[string]string{"mykey": "myvalue"},
-								GatewayTlsPortName:    "myport",
-							},
-							clusterName: {
-								GatewayTlsPortName: "specialport",
-							},
+		settings := &settingsv1alpha2.Settings{
+			Spec: settingsv1alpha2.SettingsSpec{
+				Istio: &settingsv1alpha2.SettingsSpec_Istio{
+					IngressGatewayDetectors: map[string]*settingsv1alpha2.SettingsSpec_Istio_IngressGatewayDetector{
+						"*": {
+							GatewayWorkloadLabels: map[string]string{"mykey": "myvalue"},
+							GatewayTlsPortName:    "myport",
+						},
+						clusterName: {
+							GatewayTlsPortName: "specialport",
 						},
 					},
 				},
 			},
-		})
+		}
 
-		meshes, err := detector.DetectMeshes(inRemote.Build(), inLocal.Build())
+		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
 
 		expectedMesh := &discoveryv1alpha2.Mesh{

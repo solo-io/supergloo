@@ -16,7 +16,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
-	settingsv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation"
 	mock_translator_internal "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/internal/mocks"
 	mock_mesh "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/mocks"
@@ -64,7 +63,6 @@ var _ = Describe("Translator", func() {
 		replicaSets := appsv1sets.NewReplicaSetSet(&appsv1.ReplicaSet{})
 		daemonSets := appsv1sets.NewDaemonSetSet(&appsv1.DaemonSet{})
 		statefulSets := appsv1sets.NewStatefulSetSet(&appsv1.StatefulSet{})
-		settings := settingsv1alpha2sets.NewSettingsSet(&settingsv1alpha2.Settings{})
 		inRemote := input.NewRemoteSnapshot(
 			"mesh-discovery-remote",
 			appMeshes,
@@ -77,8 +75,7 @@ var _ = Describe("Translator", func() {
 			daemonSets,
 			statefulSets,
 		)
-
-		inLocal := input.NewLocalSnapshot("mesh-discovery-local", settings)
+		settings := &settingsv1alpha2.Settings{}
 
 		mockDependencyFactory.EXPECT().MakeMeshTranslator(ctx).Return(mockMeshTranslator)
 		mockDependencyFactory.EXPECT().MakeWorkloadTranslator(ctx, inRemote).Return(mockWorkloadTranslator)
@@ -90,11 +87,11 @@ var _ = Describe("Translator", func() {
 		workloads := v1alpha2sets.NewWorkloadSet(&v1alpha2.Workload{ObjectMeta: labeledMeta})
 		trafficTargets := v1alpha2sets.NewTrafficTargetSet(&v1alpha2.TrafficTarget{ObjectMeta: labeledMeta})
 
-		mockMeshTranslator.EXPECT().TranslateMeshes(inRemote, inLocal).Return(meshes)
+		mockMeshTranslator.EXPECT().TranslateMeshes(inRemote, settings).Return(meshes)
 		mockWorkloadTranslator.EXPECT().TranslateWorkloads(deployments, daemonSets, statefulSets, meshes).Return(workloads)
 		mockTrafficTargetTranslator.EXPECT().TranslateTrafficTargets(services, workloads, meshes).Return(trafficTargets)
 
-		out, err := t.Translate(ctx, inRemote, inLocal)
+		out, err := t.Translate(ctx, inRemote, settings)
 		Expect(err).NotTo(HaveOccurred())
 
 		expectedOut, err := discovery.NewSinglePartitionedSnapshot(

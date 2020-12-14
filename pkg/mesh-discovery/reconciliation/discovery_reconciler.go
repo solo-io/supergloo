@@ -16,18 +16,18 @@ import (
 	"github.com/solo-io/skv2/pkg/verifier"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/solo-io/gloo-mesh/pkg/common/utils/stats"
-	skpredicate "github.com/solo-io/skv2/pkg/predicate"
-
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/common/utils/stats"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	skpredicate "github.com/solo-io/skv2/pkg/predicate"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -154,7 +154,12 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 		return false, err
 	}
 
-	outputSnap, err := r.translator.Translate(ctx, remoteInputSnap, localInputSnap)
+	settings, err := utils.GetSingletonSettings(ctx, localInputSnap)
+	if err != nil {
+		return false, err
+	}
+
+	outputSnap, err := r.translator.Translate(ctx, remoteInputSnap, settings)
 	if err != nil {
 		// internal translator errors should never happen
 		return false, err

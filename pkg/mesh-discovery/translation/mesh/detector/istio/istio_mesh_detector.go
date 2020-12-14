@@ -5,24 +5,22 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
-
-	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/dockerutils"
-
-	"github.com/solo-io/go-utils/contextutils"
-	"github.com/solo-io/skv2/contrib/pkg/sets"
-	"k8s.io/apimachinery/pkg/labels"
-
 	"github.com/rotisserie/eris"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/dockerutils"
+	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	istiov1alpha1 "istio.io/api/mesh/v1alpha1"
 	"istio.io/istio/pkg/util/gogoprotomarshal"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 const (
@@ -54,11 +52,11 @@ func NewMeshDetector(
 }
 
 // returns a mesh for each deployment that contains the istiod image
-func (d *meshDetector) DetectMeshes(inRemote input.RemoteSnapshot, inLocal input.LocalSnapshot) (v1alpha2.MeshSlice, error) {
+func (d *meshDetector) DetectMeshes(in input.RemoteSnapshot, settings *settingsv1alpha2.Settings) (v1alpha2.MeshSlice, error) {
 	var meshes v1alpha2.MeshSlice
 	var errs error
-	for _, deployment := range inRemote.Deployments().List() {
-		mesh, err := d.detectMesh(deployment, inRemote, inLocal)
+	for _, deployment := range in.Deployments().List() {
+		mesh, err := d.detectMesh(deployment, in, settings)
 		if err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -70,7 +68,7 @@ func (d *meshDetector) DetectMeshes(inRemote input.RemoteSnapshot, inLocal input
 	return meshes, errs
 }
 
-func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, inRemote input.RemoteSnapshot, inLocal input.LocalSnapshot) (*v1alpha2.Mesh, error) {
+func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.RemoteSnapshot, settings *settingsv1alpha2.Settings) (*v1alpha2.Mesh, error) {
 	version, err := d.getIstiodVersion(deployment)
 	if err != nil {
 		return nil, err
@@ -80,12 +78,12 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, inRemote input.
 		return nil, nil
 	}
 
-	trustDomain, err := getTrustDomain(inRemote.ConfigMaps(), deployment.ClusterName, deployment.Namespace)
+	trustDomain, err := getTrustDomain(in.ConfigMaps(), deployment.ClusterName, deployment.Namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	ingressGatewayDetector, err := utils.GetIngressGatewayDetector(d.ctx, inLocal, deployment.ClusterName)
+	ingressGatewayDetector, err := utils.GetIngressGatewayDetector(settings, deployment.ClusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -96,14 +94,14 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, inRemote input.
 		deployment.ClusterName,
 		ingressGatewayDetector.GetGatewayWorkloadLabels(),
 		ingressGatewayDetector.GetGatewayTlsPortName(),
-		inRemote.Services(),
-		inRemote.Pods(),
-		inRemote.Nodes(),
+		in.Services(),
+		in.Pods(),
+		in.Nodes(),
 	)
 
 	agent := getAgent(
 		deployment.ClusterName,
-		inRemote.Pods(),
+		in.Pods(),
 	)
 
 	mesh := &v1alpha2.Mesh{
