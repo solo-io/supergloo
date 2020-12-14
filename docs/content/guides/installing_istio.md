@@ -161,6 +161,49 @@ spec:
       - global
 EOF
 {{< /tab >}}
+{{< tab name="Istio 1.8" codelang="shell" >}}
+cat << EOF | istioctl manifest install -y --context kind-mgmt-cluster -f -
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: example-istiooperator
+  namespace: istio-system
+spec:
+  profile: minimal
+  addonComponents:
+    istiocoredns:
+      enabled: true
+  components:
+    # Istio Gateway feature
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        env:
+          - name: ISTIO_META_ROUTER_MODE
+            value: "sni-dnat"
+        service:
+          type: NodePort
+          ports:
+            - port: 80
+              targetPort: 8080
+              name: http2
+            - port: 443
+              targetPort: 8443
+              name: https
+            - port: 15443
+              targetPort: 15443
+              name: tls
+              nodePort: 32001
+  meshConfig:
+    enableAutoMtls: true
+  values:
+    global:
+      pilotCertProvider: kubernetes
+      podDNSSearchNamespaces:
+      - global
+EOF
+{{< /tab >}}
 {{< /tabs >}}
 
 #### Remote cluster install
@@ -280,6 +323,49 @@ spec:
     global:
       pilotCertProvider: kubernetes
       controlPlaneSecurityEnabled: true
+      podDNSSearchNamespaces:
+      - global
+EOF
+{{< /tab >}}
+{{< tab name="Istio 1.8" codelang="shell" >}}
+cat << EOF | istioctl manifest install -y --context kind-remote-cluster -f -
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: example-istiooperator
+  namespace: istio-system
+spec:
+  profile: minimal
+  addonComponents:
+    istiocoredns:
+      enabled: true
+  components:
+    # Istio Gateway feature
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        env:
+          - name: ISTIO_META_ROUTER_MODE
+            value: "sni-dnat"
+        service:
+          type: NodePort
+          ports:
+            - port: 80
+              targetPort: 8080
+              name: http2
+            - port: 443
+              targetPort: 8443
+              name: https
+            - port: 15443
+              targetPort: 15443
+              name: tls
+              nodePort: 32000
+  meshConfig:
+    enableAutoMtls: true
+  values:
+    global:
+      pilotCertProvider: kubernetes
       podDNSSearchNamespaces:
       - global
 EOF

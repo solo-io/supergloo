@@ -106,7 +106,7 @@ System administrators are responsible for operating and maintaining infrastructu
 permission set.
 
 ```yaml
-apiVersion: rbac.mesh.gloo.solo.io/v1alpha1
+apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1alpha1
 kind: Role
 metadata:
   name: admin-role
@@ -185,7 +185,7 @@ Mesh owners are administrators responsible for operating and maintaining a servi
 meshes.
 
 ```yaml
-apiVersion: rbac.mesh.gloo.solo.io/v1alpha1
+apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1alpha1
 kind: Role
 metadata:
   name: mesh-owner-role
@@ -262,7 +262,7 @@ Traffic target publishers own and operate traffic targets (also referred to as s
  the origin of incoming traffic.
  
 ```yaml
-apiVersion: rbac.mesh.gloo.solo.io/v1alpha1
+apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1alpha1
 kind: Role
 metadata:
   name: traffic-target-owner-role
@@ -315,7 +315,7 @@ Traffic target consumers own and operate workloads that originate requests to a 
 client-side networking policies affecting the route between their workload(s) and the relevant traffic targets.
 
 ```yaml
-apiVersion: rbac.mesh.gloo.solo.io/v1alpha1
+apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1alpha1
 kind: Role
 metadata:
   name: traffic-target-consumer-role
