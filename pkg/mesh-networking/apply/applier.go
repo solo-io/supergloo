@@ -74,7 +74,7 @@ func initializePolicyStatuses(input input.Snapshot) {
 		trafficPolicy.Status = networkingv1alpha2.TrafficPolicyStatus{
 			State:              networkingv1alpha2.ApprovalState_ACCEPTED,
 			ObservedGeneration: trafficPolicy.Generation,
-			TrafficTargets:     map[string]*networkingv1alpha2.ApprovalStatus{},
+			TrafficTargets:     trafficPolicy.Status.TrafficTargets,
 		}
 	}
 
@@ -247,6 +247,10 @@ func validateAndReturnApprovedTrafficPolicies(ctx context.Context, input input.S
 			// should never happen
 			contextutils.LoggerFrom(ctx).Errorf("internal error: failed to look up applied traffic policy %v: %v", appliedTrafficPolicy.Ref, err)
 			continue
+		}
+
+		if trafficPolicy.Status.TrafficTargets == nil {
+			trafficPolicy.Status.TrafficTargets = map[string]*networkingv1alpha2.ApprovalStatus{}
 		}
 
 		if len(errsForTrafficPolicy) == 0 {
@@ -586,7 +590,7 @@ func sortTrafficPoliciesByAcceptedDate(trafficTarget *discoveryv1alpha2.TrafficT
 			// and should get sorted after an accepted status.
 			return status1 != nil
 		} else if status1 == nil {
-			return true
+			return false
 		}
 
 		switch {
