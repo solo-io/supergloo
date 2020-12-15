@@ -73,6 +73,16 @@ func (m *SettingsSpec) Equal(that interface{}) bool {
 
 	}
 
+	if h, ok := interface{}(m.GetIstio()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetIstio()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetIstio(), target.GetIstio()) {
+			return false
+		}
+	}
+
 	return true
 }
 
@@ -150,6 +160,86 @@ func (m *SettingsStatus) Equal(that interface{}) bool {
 			return false
 		}
 
+	}
+
+	return true
+}
+
+// Equal function
+func (m *SettingsSpec_Istio) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*SettingsSpec_Istio)
+	if !ok {
+		that2, ok := that.(SettingsSpec_Istio)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetIngressGatewayDetectors()) != len(target.GetIngressGatewayDetectors()) {
+		return false
+	}
+	for k, v := range m.GetIngressGatewayDetectors() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetIngressGatewayDetectors()[k]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetIngressGatewayDetectors()[k]) {
+				return false
+			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
+func (m *SettingsSpec_Istio_IngressGatewayDetector) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*SettingsSpec_Istio_IngressGatewayDetector)
+	if !ok {
+		that2, ok := that.(SettingsSpec_Istio_IngressGatewayDetector)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetGatewayWorkloadLabels()) != len(target.GetGatewayWorkloadLabels()) {
+		return false
+	}
+	for k, v := range m.GetGatewayWorkloadLabels() {
+
+		if strings.Compare(v, target.GetGatewayWorkloadLabels()[k]) != 0 {
+			return false
+		}
+
+	}
+
+	if strings.Compare(m.GetGatewayTlsPortName(), target.GetGatewayTlsPortName()) != 0 {
+		return false
 	}
 
 	return true
