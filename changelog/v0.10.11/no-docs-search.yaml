@@ -1,0 +1,6 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/627
+    desrcription: Remove search bar from docs site.
+  - type: NON_USER_FACING
+    description: Bump served docs version.
