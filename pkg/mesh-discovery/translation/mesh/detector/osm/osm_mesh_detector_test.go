@@ -72,7 +72,7 @@ var _ = Describe("OsmMeshDetector", func() {
 		in := input.NewInputRemoteSnapshotManualBuilder("")
 		in.AddDeployments([]*appsv1.Deployment{deployment})
 
-		meshes, err := detector.DetectMeshes(in.Build())
+		meshes, err := detector.DetectMeshes(in.Build(), nil)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshes).To(BeNil())
 	})
@@ -107,7 +107,7 @@ var _ = Describe("OsmMeshDetector", func() {
 		in := input.NewInputRemoteSnapshotManualBuilder("")
 		in.AddDeployments([]*appsv1.Deployment{deployment})
 
-		meshes, err := detector.DetectMeshes(in.Build())
+		meshes, err := detector.DetectMeshes(in.Build(), nil)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshes).To(HaveLen(1))
 		Expect(meshes[0]).To(Equal(expected))
