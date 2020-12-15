@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1148
+    description: Update validation schema on the WasmDeployment to allow filter config.
