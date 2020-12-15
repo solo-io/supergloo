@@ -35,7 +35,7 @@ defaultMarkdownHandler = "goldmark"
 [params]
 author = "Solo.io"
 description = "Documentation for Gloo Mesh"
-disableSearch = false
+disableSearch = true
 disableAssetsBusting = false
 disableInlineCopyToClipBoard = true
 disableShortcutsTitle = false
