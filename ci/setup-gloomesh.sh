@@ -5,6 +5,7 @@
 # Set up gloo mesh in the target kind cluster.
 #
 #####################################
+set -o xtrace
 
 cluster=$1
 apiServerAddress=$2
@@ -45,7 +46,6 @@ go run "${PROJECT_ROOT}/cmd/meshctl/main.go" install \
   --kubecontext kind-"${cluster}" \
   --chart-file "${gloomeshChart}" \
   --namespace gloo-mesh \
-  --register \
   --cluster-name "${cluster}" \
   --verbose  \
   --api-server-address "${apiServerAddress}" \

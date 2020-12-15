@@ -92,6 +92,7 @@ else
 
   # register remote cluster
   register_cluster ${remoteCluster} &
+  register_cluster ${mgmtCluster} &
 
   wait
 
