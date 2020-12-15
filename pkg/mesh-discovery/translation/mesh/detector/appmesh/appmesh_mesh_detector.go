@@ -6,6 +6,8 @@ import (
 	"sort"
 	"strings"
 
+	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+
 	aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/hashicorp/go-multierror"
@@ -35,7 +37,7 @@ func NewMeshDetector(
 }
 
 // returns a mesh for each unique AppMesh Controller Mesh CRD in the snapshot
-func (d *meshDetector) DetectMeshes(in input.RemoteSnapshot) (v1alpha2.MeshSlice, error) {
+func (d *meshDetector) DetectMeshes(in input.RemoteSnapshot, _ *settingsv1alpha2.Settings) (v1alpha2.MeshSlice, error) {
 	var errors error
 
 	// Group meshes by ARN because meshes that share an ARN are backed by the same AWS resources.
