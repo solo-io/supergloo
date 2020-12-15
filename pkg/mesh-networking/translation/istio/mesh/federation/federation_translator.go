@@ -31,6 +31,7 @@ import (
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/istio/pkg/config/kube"
+	"istio.io/istio/pkg/config/protocol"
 	"istio.io/istio/pkg/envoy/config/filter/network/tcp_cluster_rewrite/v2alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -387,5 +388,9 @@ func convertKubePortProtocol(port *discoveryv1alpha2.TrafficTargetSpec_KubeServi
 	if port.AppProtocol != "" {
 		appProtocol = pointer.StringPtr(port.AppProtocol)
 	}
-	return string(kube.ConvertProtocol(int32(port.Port), port.Name, corev1.Protocol(port.Protocol), appProtocol))
+	convertedProtocol := kube.ConvertProtocol(int32(port.Port), port.Name, corev1.Protocol(port.Protocol), appProtocol)
+	if convertedProtocol == protocol.Unsupported {
+		return port.Protocol
+	}
+	return string(convertedProtocol)
 }

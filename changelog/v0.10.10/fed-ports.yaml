@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1146
+    description: Fallback to port protocol when failing to determine App Protocol for federation translation.
