@@ -14,6 +14,7 @@ import (
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -70,6 +71,14 @@ func federatedObjectName(
 // ownership label defaults to current namespace to allow multiple GlooMesh tenancy within a cluster.
 func TranslatedObjectLabels() map[string]string {
 	return map[string]string{OwnershipLabelKey: defaults.GetPodNamespace()}
+}
+
+// Return true if the object is translated by Gloo Mesh
+func IsTranslated(object metav1.Object) bool {
+	translatedObjectLabels := TranslatedObjectLabels()
+	objLabels := object.GetLabels()
+	// AreLabelsInWhiteList returns true if whitelist labels are empty, so we need to check for that case
+	return len(objLabels) > 0 && labels.AreLabelsInWhiteList(translatedObjectLabels, objLabels)
 }
 
 // add a parent to the annotation for a given child object

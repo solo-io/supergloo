@@ -68,7 +68,8 @@ type Translator interface {
 	// errors reflect an internal translation error and should never happen
 	Translate(
 		ctx context.Context,
-		in input.Snapshot,
+		in input.LocalSnapshot,
+		userSupplied input.RemoteSnapshot,
 		reporter reporting.Reporter,
 	) (OutputSnapshots, error)
 }
@@ -94,7 +95,8 @@ func NewTranslator(
 
 func (t *translator) Translate(
 	ctx context.Context,
-	in input.Snapshot,
+	in input.LocalSnapshot,
+	userSupplied input.RemoteSnapshot,
 	reporter reporting.Reporter,
 ) (OutputSnapshots, error) {
 	t.totalTranslates++
@@ -105,7 +107,7 @@ func (t *translator) Translate(
 	smiOutputs := smioutput.NewBuilder(ctx, fmt.Sprintf("networking-smi-%v", t.totalTranslates))
 	localOutputs := localoutput.NewBuilder(ctx, fmt.Sprintf("networking-local-%v", t.totalTranslates))
 
-	t.istioTranslator.Translate(ctx, in, istioOutputs, localOutputs, reporter)
+	t.istioTranslator.Translate(ctx, in, userSupplied, istioOutputs, localOutputs, reporter)
 
 	t.appmeshTranslator.Translate(ctx, in, appmeshOutputs, reporter)
 

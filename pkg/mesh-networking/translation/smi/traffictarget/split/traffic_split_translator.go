@@ -28,7 +28,7 @@ type Translator interface {
 	// Note that the input snapshot TrafficTargetSet contains the given TrafficTarget.
 	Translate(
 		ctx context.Context,
-		in input.Snapshot,
+		in input.LocalSnapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		reporter reporting.Reporter,
 	) *smislpitv1alpha2.TrafficSplit
@@ -66,7 +66,7 @@ type translator struct{}
 
 func (t *translator) Translate(
 	ctx context.Context,
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	reporter reporting.Reporter,
 ) *smislpitv1alpha2.TrafficSplit {

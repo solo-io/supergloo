@@ -43,7 +43,7 @@ type Translator interface {
 	// Output resources will be added to the istio.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
-		in input.Snapshot,
+		in input.LocalSnapshot,
 		mesh *discoveryv1alpha2.Mesh,
 		failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
 		outputs istio.Builder,
@@ -66,7 +66,7 @@ func NewTranslator(ctx context.Context, clusterDomains hostutils.ClusterDomainRe
 }
 
 func (t *translator) Translate(
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	mesh *discoveryv1alpha2.Mesh,
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
 	outputs istio.Builder,

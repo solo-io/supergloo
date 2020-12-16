@@ -25,7 +25,7 @@ type Translator interface {
 	// Output resources will be added to the istio.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
-		in input.Snapshot,
+		in input.LocalSnapshot,
 		mesh *discoveryv1alpha2.Mesh,
 		istioOutputs istio.Builder,
 		localOutputs local.Builder,
@@ -59,7 +59,7 @@ func NewTranslator(
 
 // translate the appropriate resources for the given Mesh.
 func (t *translator) Translate(
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	mesh *discoveryv1alpha2.Mesh,
 	istioOutputs istio.Builder,
 	localOutputs local.Builder,

@@ -43,7 +43,7 @@ var _ = Describe("SmiNetworkingTranslator", func() {
 	})
 
 	It("should translate all meshes and traffictargets", func() {
-		in := input.NewInputSnapshotManualBuilder("").
+		in := input.NewInputLocalSnapshotManualBuilder("").
 			AddMeshes([]*discoveryv1alpha2.Mesh{
 				{
 					ObjectMeta: metav1.ObjectMeta{},
