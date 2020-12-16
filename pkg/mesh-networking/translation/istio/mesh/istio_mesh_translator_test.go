@@ -28,7 +28,7 @@ var _ = Describe("IstioMeshTranslator", func() {
 		mockAccessTranslator          *mock_access.MockTranslator
 		mockFailoverServiceTranslator *mock_failoverservice.MockTranslator
 		mockReporter                  *mock_reporting.MockReporter
-		in                            input.Snapshot
+		in                            input.LocalSnapshot
 		istioMeshTranslator           mesh.Translator
 	)
 
@@ -40,7 +40,7 @@ var _ = Describe("IstioMeshTranslator", func() {
 		mockAccessTranslator = mock_access.NewMockTranslator(ctrl)
 		mockFailoverServiceTranslator = mock_failoverservice.NewMockTranslator(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
-		in = input.NewInputSnapshotManualBuilder("").Build()
+		in = input.NewInputLocalSnapshotManualBuilder("").Build()
 		istioMeshTranslator = mesh.NewTranslator(ctx, mockMtlsTranslator, mockFederationTranslator, mockAccessTranslator, mockFailoverServiceTranslator)
 	})
 

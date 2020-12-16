@@ -11,7 +11,7 @@ import (
 
 // TODO extend skv2 snapshots with singleton object utilities
 // Safely fetch the single Settings object from snapshot. Log and error if not singleton.
-func GetSingletonSettings(ctx context.Context, in input.Snapshot) (*v1alpha2.Settings, error) {
+func GetSingletonSettings(ctx context.Context, in input.LocalSnapshot) (*v1alpha2.Settings, error) {
 	settings := in.Settings().List()
 	n := len(settings)
 	if n != 1 {

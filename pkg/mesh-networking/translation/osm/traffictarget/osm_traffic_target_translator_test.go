@@ -38,7 +38,7 @@ var _ = Describe("SmiTrafficTargetTranslator", func() {
 	})
 
 	It("should not translate when not an osm traffic target", func() {
-		in := input.NewInputSnapshotManualBuilder("").Build()
+		in := input.NewInputLocalSnapshotManualBuilder("").Build()
 		trafficTarget := &v1alpha2.TrafficTarget{}
 
 		osmTrafficTargetTranslator.Translate(ctx, in, trafficTarget, mockOutputs, mockReporter)
@@ -53,7 +53,7 @@ var _ = Describe("SmiTrafficTargetTranslator", func() {
 				},
 			},
 		}
-		in := input.NewInputSnapshotManualBuilder("").
+		in := input.NewInputLocalSnapshotManualBuilder("").
 			AddMeshes([]*v1alpha2.Mesh{
 				{
 					ObjectMeta: metav1.ObjectMeta{

@@ -39,7 +39,7 @@ type Translator interface {
 	//
 	// Note that the input snapshot TrafficTargetSet contains the given TrafficTarget.
 	Translate(
-		in input.Snapshot,
+		in input.LocalSnapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		reporter reporting.Reporter,
 	) *securityv1beta1.AuthorizationPolicy
@@ -52,7 +52,7 @@ func NewTranslator() Translator {
 }
 
 func (t *translator) Translate(
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	reporter reporting.Reporter,
 ) *securityv1beta1.AuthorizationPolicy {
@@ -74,10 +74,12 @@ func (t *translator) Translate(
 		authPolicy.Spec.Rules = append(authPolicy.Spec.Rules, rule)
 	}
 
+	// don't output an AuthPolicy with no matching rules, which semantically denies all requests
+	// reference: https://istio.io/latest/docs/reference/config/security/authorization-policy/#AuthorizationPolicy
 	if len(authPolicy.Spec.Rules) == 0 {
-		// no need to create this AuthorizationPolicy as it has no effect
 		return nil
 	}
+
 	return authPolicy
 }
 

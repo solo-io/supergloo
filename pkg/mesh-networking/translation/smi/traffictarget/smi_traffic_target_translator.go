@@ -21,7 +21,7 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		ctx context.Context,
-		in input.Snapshot,
+		in input.LocalSnapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		outputs smi.Builder,
 		reporter reporting.Reporter,
@@ -43,7 +43,7 @@ func NewTranslator(tsTranslator split.Translator, ttTranslator access.Translator
 // translate the appropriate resources for the given TrafficTarget.
 func (t *translator) Translate(
 	ctx context.Context,
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	outputs smi.Builder,
 	reporter reporting.Reporter,

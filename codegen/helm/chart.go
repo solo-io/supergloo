@@ -168,6 +168,8 @@ func networkingOperator() model.Operator {
 			"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
 			"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
 			"--verbose",
+			"--disallow-intersecting-config={{ $.Values.disallowIntersectingConfig }}",
+			"--watch-output-types={{ $.Values.watchOutputTypes }}",
 		},
 		Env: []v1.EnvVar{
 			{

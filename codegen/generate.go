@@ -149,8 +149,9 @@ var (
 		},
 		// networking snapshot
 		{
-			generatedCodeRoot:   "pkg/api/networking.mesh.gloo.solo.io",
-			localInputResources: io.NetworkingInputTypes,
+			generatedCodeRoot:    "pkg/api/networking.mesh.gloo.solo.io",
+			localInputResources:  io.NetworkingInputTypes,
+			remoteInputResources: io.IstioNetworkingOutputTypes.Snapshot,
 			outputResources: []io.OutputSnapshot{
 				io.IstioNetworkingOutputTypes,
 				io.SmiNetworkingOutputTypes,

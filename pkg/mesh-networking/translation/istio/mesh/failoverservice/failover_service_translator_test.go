@@ -179,7 +179,7 @@ var _ = Describe("FailoverServiceTranslator", func() {
 			},
 		}
 
-		in := input.NewInputSnapshotManualBuilder("").
+		in := input.NewInputLocalSnapshotManualBuilder("").
 			AddTrafficTargets(allTrafficTargets).
 			AddMeshes(allMeshes).
 			AddKubernetesClusters([]*v1alpha1.KubernetesCluster{{ObjectMeta: metav1.ObjectMeta{Name: "kube-cluster"}}}).

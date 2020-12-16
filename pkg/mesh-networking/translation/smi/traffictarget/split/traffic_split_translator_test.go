@@ -30,7 +30,7 @@ var _ = Describe("TrafficSplitTranslator", func() {
 	})
 
 	It("will return nothing if no traffic policies are applied", func() {
-		in := input.NewInputSnapshotManualBuilder("").Build()
+		in := input.NewInputLocalSnapshotManualBuilder("").Build()
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{}
 
 		ts := NewTranslator().Translate(ctx, in, trafficTarget, mockReporter)
@@ -39,7 +39,7 @@ var _ = Describe("TrafficSplitTranslator", func() {
 
 	It("can build a proper traffic shift", func() {
 		ns := "default"
-		in := input.NewInputSnapshotManualBuilder("").Build()
+		in := input.NewInputLocalSnapshotManualBuilder("").Build()
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{},
 			Spec: discoveryv1alpha2.TrafficTargetSpec{

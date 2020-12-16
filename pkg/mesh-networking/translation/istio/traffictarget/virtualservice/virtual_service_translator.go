@@ -1,25 +1,30 @@
 package virtualservice
 
 import (
+	"context"
 	"reflect"
 	"sort"
 
 	"github.com/golang/protobuf/proto"
+	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/utils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
+	skv2sets "github.com/solo-io/skv2/contrib/pkg/sets"
+	"github.com/solo-io/skv2/pkg/ezkube"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/skv2/pkg/equalityutils"
-	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -40,7 +45,8 @@ type Translator interface {
 		Note that the input snapshot TrafficTargetSet contains the given TrafficTarget.
 	*/
 	Translate(
-		in input.Snapshot,
+		ctx context.Context,
+		in input.LocalSnapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 		reporter reporting.Reporter,
@@ -48,18 +54,28 @@ type Translator interface {
 }
 
 type translator struct {
-	clusterDomains   hostutils.ClusterDomainRegistry
-	decoratorFactory decorators.Factory
+	userVirtualServices v1alpha3sets.VirtualServiceSet
+	clusterDomains      hostutils.ClusterDomainRegistry
+	decoratorFactory    decorators.Factory
 }
 
-func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory) Translator {
-	return &translator{clusterDomains: clusterDomains, decoratorFactory: decoratorFactory}
+func NewTranslator(
+	userVirtualServices v1alpha3sets.VirtualServiceSet,
+	clusterDomains hostutils.ClusterDomainRegistry,
+	decoratorFactory decorators.Factory,
+) Translator {
+	return &translator{
+		userVirtualServices: userVirtualServices,
+		clusterDomains:      clusterDomains,
+		decoratorFactory:    decoratorFactory,
+	}
 }
 
 // Translate a VirtualService for the TrafficTarget.
 // If sourceMeshInstallation is nil, assume that VirtualService is colocated to the trafficTarget and use local FQDNs.
 func (t *translator) Translate(
-	in input.Snapshot,
+	_ context.Context,
+	in input.LocalSnapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	reporter reporting.Reporter,
@@ -141,6 +157,23 @@ func (t *translator) Translate(
 
 	if len(virtualService.Spec.Http) == 0 {
 		// no need to create this VirtualService as it has no effect
+		return nil
+	}
+
+	if t.userVirtualServices == nil {
+		return virtualService
+	}
+
+	// detect and report error on intersecting config if enabled in settings
+	if errs := conflictsWithUserVirtualService(
+		t.userVirtualServices,
+		virtualService,
+	); len(errs) > 0 {
+		for _, err := range errs {
+			for _, policy := range trafficTarget.Status.AppliedTrafficPolicies {
+				reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, policy.Ref, err)
+			}
+		}
 		return nil
 	}
 
@@ -474,4 +507,28 @@ func translateRequestMatcherPathSpecifier(matcher *v1alpha2.TrafficPolicySpec_Ht
 		}
 	}
 	return nil
+}
+
+// Return errors for each user-supplied VirtualService that applies to the same hostname as the translated VirtualService
+func conflictsWithUserVirtualService(
+	userVirtualServices v1alpha3sets.VirtualServiceSet,
+	translatedVirtualService *networkingv1alpha3.VirtualService,
+) []error {
+	// For each user VS, check whether any hosts match any hosts from translated VS
+	var errs []error
+
+	// virtual services from RemoteSnapshot only contain non-translated objects
+	userVirtualServices.List(func(vs *networkingv1alpha3.VirtualService) (_ bool) {
+		// check if common hostnames exist
+		commonHostnames := utils.CommonHostnames(vs.Spec.Hosts, translatedVirtualService.Spec.Hosts)
+		if len(commonHostnames) > 0 {
+			errs = append(
+				errs,
+				eris.Errorf("Unable to translate AppliedTrafficPolicies to VirtualService, applies to hosts %+v that are already configured by the existing VirtualService %s", commonHostnames, skv2sets.Key(vs)),
+			)
+		}
+		return
+	})
+
+	return errs
 }
