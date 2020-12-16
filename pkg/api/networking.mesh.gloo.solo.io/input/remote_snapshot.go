@@ -224,6 +224,18 @@ func (s snapshotRemote) SyncStatusesMultiCluster(ctx context.Context, mcClient m
 			}
 		}
 	}
+	if opts.PodBounceDirective {
+		for _, obj := range s.PodBounceDirectives().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
 
 	if opts.XdsConfig {
 		for _, obj := range s.XdsConfigs().List() {
