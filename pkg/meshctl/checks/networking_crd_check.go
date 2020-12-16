@@ -35,6 +35,10 @@ func (c *networkingCrdCheck) Run(ctx context.Context, client client.Client, _ st
 	if err != nil {
 		allErrors = append(allErrors, err)
 	}
+	vmList, err := v1alpha2.NewVirtualMeshClient(client).ListVirtualMesh(ctx)
+	if err != nil {
+		allErrors = append(allErrors, err)
+	}
 
 	if errs := c.checkTrafficPolicies(tpList); errs != nil {
 		allErrors = append(allErrors, errs...)
@@ -43,6 +47,9 @@ func (c *networkingCrdCheck) Run(ctx context.Context, client client.Client, _ st
 		allErrors = append(allErrors, errs...)
 	}
 	if errs := c.checkFailoverServices(fsList); errs != nil {
+		allErrors = append(allErrors, errs...)
+	}
+	if errs := c.checkVirtualMeshes(vmList); errs != nil {
 		allErrors = append(allErrors, errs...)
 	}
 
@@ -91,6 +98,20 @@ func (c *networkingCrdCheck) checkFailoverServices(fsList *v1alpha2.FailoverServ
 	for _, fs := range fsList.Items {
 		fs := fs // pike
 		if err := c.checkStatus(fs.Kind, &fs, fs.Generation, &fs.Status); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errs
+}
+
+func (c *networkingCrdCheck) checkVirtualMeshes(vmList *v1alpha2.VirtualMeshList) []error {
+	if vmList == nil {
+		return nil
+	}
+	var errs []error
+	for _, vm := range vmList.Items {
+		vm := vm // pike
+		if err := c.checkStatus(vm.Kind, &vm, vm.Generation, &vm.Status); err != nil {
 			errs = append(errs, err)
 		}
 	}

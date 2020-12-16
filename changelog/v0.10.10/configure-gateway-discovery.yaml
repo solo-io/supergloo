@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    description: Allow the workload labels and tls port name used for Istio ingress disovery to be configurable.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1094
