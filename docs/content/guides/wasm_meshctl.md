@@ -24,7 +24,7 @@ You will also need the wasm plugin for `meshctl`. It can be installed by running
 curl solo.io/meshctl-wasm/foo/bar/install | sh
 ```
 
-We will be pushing our filter to the public hosted WebAssembly Hub, so you will need to sign up for a user account following [this guide](https://docs.solo.io/web-assembly-hub/latest/tutorial_code/push_tutorials/basic_push/#create-a-user-on-webassemblyhub-io-https-webassemblyhub-io).
+We will be pushing our filter to the publicly hosted WebAssembly Hub, so you will need to sign up for a user account following [this guide](https://docs.solo.io/web-assembly-hub/latest/tutorial_code/push_tutorials/basic_push/#create-a-user-on-webassemblyhub-io-https-webassemblyhub-io).
 
 {{% notice note %}}
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document.
@@ -207,20 +207,35 @@ With our image pushed to a repository, we are now able to use it in an Istio con
 
 ## Deploy the Wasm filter
 
-We are going to deploy our Wasm filter on Istio 1.8 to the bookinfo application running in the `bookinfo` namespace on the management cluster. We will be using Gloo Mesh Enterprise's Wasm extension to do so. As mentioned at the beginning of the guide, we will assume that you have already followed the [Wasm Extension Guide for Gloo Mesh Enterprise]({{% versioned_link_path fromRoot="/guides/wasm_extension/" %}}). That means you have two Kuberenetes clusters, with Istio 1.8 and Gloo Mesh Enterprise installed. You also have the bookinfo application deployed in both clusters. 
+We are going to deploy our Wasm filter on Istio 1.8 to the bookinfo application running in the `meshctl` namespace on the management cluster. We will be using Gloo Mesh Enterprise's Wasm extension to do so. As mentioned at the beginning of the guide, we will assume that you have already followed the [Wasm Extension Guide for Gloo Mesh Enterprise]({{% versioned_link_path fromRoot="/guides/wasm_extension/" %}}). That means you have two Kuberenetes clusters, with Istio 1.8 and Gloo Mesh Enterprise installed. 
+
+We are going to deploy just the `reviews` components of the bookinfo application to a new namespace in the management cluster, so we don't have a collision with the bookinfo components you deployed in previous guides.
+
+Run these commands to create the namespace and deploy the components:
+
+```shell
+# Set the management cluster context variable
+MGMT_CONTEXT=kind-mgmt-cluster
+
+# Select the management context for use
+kubectl config use-context $MGMT_CONTEXT
+
+# Create the namespace and label it for Istio
+kubectl create ns meshctl
+kubectl label namespace meshctl istio-injection=enabled
+
+# Deploy the reviews service account, pod, and service
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.8/samples/bookinfo/platform/kube/bookinfo.yaml -n meshctl -l account=reviews
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.8/samples/bookinfo/platform/kube/bookinfo.yaml -n meshctl -l app=reviews,version=v1
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.8/samples/bookinfo/platform/kube/bookinfo.yaml -n meshctl -l app=reviews,service=reviews
+```
 
 In the previous guide, we altered the Envoy filters for v3 of the reviews service in the remote cluster. Included were the steps to apply a ConfigMap, patch a deployment, and write a WasmDeployment CRD. The `meshctl wasm deploy` command takes care of all those steps for you. 
 
-First let's set a variable to reference the management cluster:
-
-```shell
-MGMT_CONTEXT=kind-mgmt-cluster
-```
-
-Before we deploy the filter, let's test the reviews service in the management cluster. We'll spin up a temporary pod with and use curl to check.
+Before we deploy the filter, let's test the reviews service in the meshctl namespace. We'll spin up a temporary pod with and use curl to check.
 
 ```bash
-kubectl run -it -n bookinfo --context $MGMT_CONTEXT curl \
+kubectl run -it -n meshctl --context $MGMT_CONTEXT curl \
   --image=curlimages/curl:7.73.0 --rm  -- sh
 
 # From the new terminal run the following
@@ -259,8 +274,8 @@ Now we can run the `deploy` command to get our Wasm filter in place.
 ```shell
 meshctl wasm deploy \
   --cluster mgmt-cluster \
-  --namespace bookinfo \
-  --labels "app=productpage" \
+  --namespace meshctl \
+  --labels "app=reviews" \
   --filter-name meshctl-filter \
   --image webassemblyhub.io/$HUB_USERNAME/add-header:v0.1 \
   --mgmt-kubecontext $MGMT_CONTEXT \
@@ -271,19 +286,48 @@ You should see the following output.
 
 ```shell
 creating envoy bootstrap configmap...
-configmap created
-annotating workloads with configmap
-workloads updated
 deploying wasm filter
-wasm filter deployed
 ```
 
 Now let's try using `curl` again to check for our custom header.
 
 ```bash
-kubectl run -it -n bookinfo --context $MGMT_CONTEXT curl \
+kubectl run -it -n meshctl --context $MGMT_CONTEXT curl \
   --image=curlimages/curl:7.73.0 --rm  -- sh
 
 # From the new terminal run the following
 curl http://reviews:9080/reviews/1 -v
 ```
+
+You should see the following output:
+
+{{< highlight shell "hl_lines=16" >}
+*   Trying 10.96.177.171:9080...
+* Connected to reviews (10.96.177.171) port 9080 (#0)
+> GET /reviews/1 HTTP/1.1
+> Host: reviews:9080
+> User-Agent: curl/7.73.0-DEV
+> Accept: */*
+>
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< x-powered-by: Servlet/3.1
+< content-type: application/json
+< date: Wed, 16 Dec 2020 14:45:07 GMT
+< content-language: en-US
+< content-length: 295
+< x-envoy-upstream-service-time: 547
+< wasm: built-with-meshctl!
+< server: envoy
+<
+* Connection #0 to host reviews left intact
+{"id": "1","reviews": [{  "reviewer": "Reviewer1",  "text": "An extremely entertaining play by Shakespeare. The slapstick humour is refreshing!"},{  "reviewer": "Reviewer2",  "text": "Absolutely fun and entertaining. The play lacks thematic depth when compared to other plays by Shakespeare."}]}/
+{{< /highlight >}}
+
+We should see the `< wasm: built-with-meshctl!` header in our response if the filter was deployed successfully.
+
+## Summary and Next Steps
+
+In this guide you used `meshctl wasm` to push a Wasm filter to a service managed by Gloo Mesh.
+
+This is a simple example of a Wasm filter to illustrate the concept. The flexibility of Wasm filters coupled with Envoy provides a platform for incredible innovation. Check out our docs on [Web Assembly Hub](https://docs.solo.io/web-assembly-hub/latest) for more information.
