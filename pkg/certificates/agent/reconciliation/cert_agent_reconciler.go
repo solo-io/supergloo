@@ -356,7 +356,7 @@ func replacementsReady(
 	// get the list of pods that are in ready condition
 	currentReadyPods := currentPods.List(func(pod *corev1.Pod) bool {
 		for _, deletedPodName := range deletedPodNames {
-			if deletdPodName == pod.Name {
+			if deletedPodName == pod.Name {
 				// exclude pods that have been recently deleted, but still appear in the snapshot
 				return true
 			}
