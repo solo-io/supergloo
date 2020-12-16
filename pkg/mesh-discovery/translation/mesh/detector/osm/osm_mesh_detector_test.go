@@ -3,10 +3,9 @@ package osm_test
 import (
 	"context"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector/osm"

@@ -154,7 +154,7 @@ var _ = Describe("FederationTranslator", func() {
 			},
 		}
 
-		in := input.NewInputSnapshotManualBuilder("ignored").
+		in := input.NewInputLocalSnapshotManualBuilder("ignored").
 			AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget1}).
 			AddMeshes(discoveryv1alpha2.MeshSlice{mesh, clientMesh}).
 			AddKubernetesClusters(skv1alpha1.KubernetesClusterSlice{kubeCluster}).
@@ -163,7 +163,7 @@ var _ = Describe("FederationTranslator", func() {
 		expectedVS := &networkingv1alpha3.VirtualService{}
 		mockVirtualServiceTranslator.
 			EXPECT().
-			Translate(in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
+			Translate(ctx, in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
 			Return(expectedVS)
 
 		expectedDR := &networkingv1alpha3.DestinationRule{}

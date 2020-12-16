@@ -59,7 +59,7 @@ var _ = Describe("IstioTrafficTargetTranslator", func() {
 			},
 		}
 
-		in := input.NewInputSnapshotManualBuilder("").
+		in := input.NewInputLocalSnapshotManualBuilder("").
 			AddMeshes([]*v1alpha2.Mesh{
 				{
 					ObjectMeta: metav1.ObjectMeta{
@@ -85,7 +85,7 @@ var _ = Describe("IstioTrafficTargetTranslator", func() {
 			Return(dr)
 		mockVirtualServiceTranslator.
 			EXPECT().
-			Translate(in, trafficTarget, nil, mockReporter).
+			Translate(ctx, in, trafficTarget, nil, mockReporter).
 			Return(vs)
 		mockAuthorizationPolicyTranslator.
 			EXPECT().
