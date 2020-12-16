@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
@@ -20,6 +19,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/skv2/contrib/pkg/output/errhandlers"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/reconcile"
@@ -86,6 +86,7 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 			inputSnap.Secrets(),
 			inputSnap.Pods(),
 			inputSnap.CertificateRequests(),
+			inputSnap.PodBounceDirectives(),
 			outputs,
 		); err != nil {
 			issuedCertificate.Status.Error = err.Error()
@@ -102,7 +103,8 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 
 	errs := errHandler.Errors()
 	if err := inputSnap.SyncStatuses(r.ctx, r.localClient, input.SyncStatusOptions{
-		IssuedCertificate: true,
+		IssuedCertificate:  true,
+		PodBounceDirective: true,
 	}); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -115,6 +117,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 	inputSecrets corev1sets.SecretSet,
 	inputPods corev1sets.PodSet,
 	inputCertificateRequests v1alpha2sets.CertificateRequestSet,
+	podBounceDirectives v1alpha2sets.PodBounceDirectiveSet,
 	outputs certagent.Builder,
 ) error {
 	// if observed generation is out of sync, treat the issued certificate as Pending (spec has been modified)
@@ -248,9 +251,23 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			outputs.AddSecrets(issuedCertificateSecret)
 		}
 
-		// now we must bounce all the pods
-		if err := r.bouncePods(issuedCertificate.Spec.PodBounceDirective, inputPods); err != nil {
-			return eris.Wrap(err, "bouncing pods")
+		// see if we need to bounce pods
+		if issuedCertificate.Spec.PodBounceDirective != nil {
+			podBounceDirective, err := podBounceDirectives.Find(issuedCertificate.Spec.PodBounceDirective)
+			if err != nil {
+				return eris.Wrap(err, "failed to find specified pod bounce directive")
+			}
+
+			// try to bounce the pods and see if we need to wait
+			waitingForReplacements, err := r.bouncePods(podBounceDirective, inputPods)
+			if err != nil {
+				return eris.Wrap(err, "bouncing pods")
+			}
+
+			if waitingForReplacements {
+				// return here without updating the status of the issued Certificate; we want to retry bouncing the pods when replacement pods have been created
+				return nil
+			}
 		}
 
 		// mark issued certificate as finished
@@ -263,32 +280,96 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 }
 
 // bounce (delete) the listed pods
-func (r *certAgentReconciler) bouncePods(podBounceDirectiveRef *v1.ObjectRef, allPods corev1sets.PodSet) error {
-	if podBounceDirectiveRef == nil {
-		return nil
-	}
-	podBounceDirective, err := v1alpha2.NewPodBounceDirectiveClient(r.localClient).GetPodBounceDirective(r.ctx, ezkube.MakeClientObjectKey(podBounceDirectiveRef))
-	if err != nil {
-		return eris.Wrap(err, "failed to find specified pod bounce directive")
+// returns true if we need to wait for replacement pods before proceeding to process the podBounceDirective.
+// this will cause the reconcile to end early and persist the IssuedCertificate in the Issued state
+func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceDirective, allPods corev1sets.PodSet) (bool, error) {
+
+	// create a client here to call for deletions
+	podClient := corev1client.NewPodClient(r.localClient)
+
+	var errs error
+
+	// collect the pods we want to delete in the order they're specified in the directive
+	// it is important Istiod is restarted before any of the other pods
+	for i, selector := range podBounceDirective.Spec.PodsToBounce {
+		if len(podBounceDirective.Status.PodsBounced) > i {
+			// the set of pods for this selector was already bounced, so we instead ensure that
+			// the minimum number of replacement pods are ready before moving on with the deletion
+			podsBounced := podBounceDirective.Status.PodsBounced[i]
+
+			// if all required replicas are not ready, return true to indicate we should halt processing
+			// of the directive here in order to wait for a future update to the Pods in the input snapshot.
+			if !replacementsReady(allPods, selector, podsBounced.BouncedPods) {
+
+				contextutils.LoggerFrom(r.ctx).Debugf("podBounceDirective %v: waiting for ready pods for selector %v", sets.Key(podBounceDirective), selector)
+
+				time.Sleep(time.Second)
+
+				// wait for all replicas of these pods to be ready before proceeding to the next selector
+				// used to ensure gateway restart does not preempt control plane restart
+				return true, errs
+			}
+
+			// skip deletion, these pods were already bounced
+			continue
+		}
+
+		podsToDelete := allPods.List(func(pod *corev1.Pod) bool {
+			return !isPodSelected(pod, selector)
+		})
+
+		var bouncedPods []string
+		for _, pod := range podsToDelete {
+			contextutils.LoggerFrom(r.ctx).Debugf("deleting pod %v", sets.Key(pod))
+			if err := podClient.DeletePod(r.ctx, ezkube.MakeClientObjectKey(pod)); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+			bouncedPods = append(bouncedPods, pod.Name)
+		}
+
+		// update the status to show we've bounced this selector already
+		podBounceDirective.Status.PodsBounced = append(
+			podBounceDirective.Status.PodsBounced,
+			&v1alpha2.PodBounceDirectiveStatus_BouncedPodSet{BouncedPods: bouncedPods},
+		)
+
+		if selector.WaitForReplicas > 0 {
+			// if we just deleted pods for a selector that wants us to wait, we should return here
+			// and signal a wait
+			return true, errs
+		}
 	}
 
-	podsToDelete := allPods.List(func(pod *corev1.Pod) bool {
-		for _, selector := range podBounceDirective.Spec.PodsToBounce {
-			if selector.Namespace == pod.Namespace &&
-				labels.SelectorFromSet(selector.Labels).Matches(labels.Set(pod.Labels)) {
-				return false
+	return false, errs
+}
+
+// indicates whether replacements for the deleted pods to be ready
+func replacementsReady(
+	currentPods corev1sets.PodSet,
+	podSelector *v1alpha2.PodBounceDirectiveSpec_PodSelector,
+	deletedPodNames []string,
+) bool {
+	if podSelector.WaitForReplicas == 0 {
+		return true
+	}
+
+	// get the list of pods that are in ready condition
+	currentReadyPods := currentPods.List(func(pod *corev1.Pod) bool {
+		for _, deletdPodName := range deletedPodNames {
+			if deletdPodName == pod.Name {
+				// exclude pods that have been recently deleted, but still appear in the snapshot
+				return true
 			}
 		}
-		return true
+		// exclude pods that are not ready && selected
+		return !(isPodSelected(pod, podSelector) && podutil.IsPodReady(pod))
 	})
 
-	podClient := corev1client.NewPodClient(r.localClient)
-	var errs error
-	for _, pod := range podsToDelete {
-		contextutils.LoggerFrom(r.ctx).Debugf("deleting pod %v", sets.Key(pod))
-		if err := podClient.DeletePod(r.ctx, ezkube.MakeClientObjectKey(pod)); err != nil {
-			errs = multierror.Append(errs, err)
-		}
-	}
-	return errs
+	// ensure we have the right number of ready replicas
+	return len(currentReadyPods) >= int(podSelector.WaitForReplicas)
+}
+
+func isPodSelected(pod *corev1.Pod, podSelector *v1alpha2.PodBounceDirectiveSpec_PodSelector) bool {
+	return podSelector.Namespace == pod.Namespace &&
+		labels.SelectorFromSet(podSelector.Labels).Matches(labels.Set(pod.Labels))
 }
