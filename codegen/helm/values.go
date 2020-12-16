@@ -48,6 +48,8 @@ func defaultValues() ChartValues {
 					TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
 				},
 			},
+			// needed to ensure that generated yaml uses "{}" for empty message instead of "null", which causes a schema validation error
+			Istio: &settingsv1alpha2.SettingsSpec_Istio{},
 		},
 		DisallowIntersectingConfig: false,
 		WatchOutputTypes:           true,
