@@ -82,7 +82,7 @@ kubectl get pod -l app=petstore -oyaml | grep sidecar
 ```
 
 ```shell
-sidecar.istio.io/status: '{"version":"fca84600f9d5ec316cf1cf577da902f38bac258ab0fd595ee208ec0203dc0c6d","initContainers":["istio-init"],"containers":["istio-proxy"],"volumes":["istio-envoy","podinfo"],"imagePullSecrets":null}'
+sidecar.istio.io/status: '{"version":"e2cb9d4837cda9584fd272bfa1f348525bcaacfadb7e9b9efbd21a3bb44ad7a1","initContainers":["istio-init"],"containers":["istio-proxy"],"volumes":["istio-envoy","istio-data","istio-podinfo"],"imagePullSecrets":null}'
 ```
 
 Now we can verify that Gloo Mesh has discovered the Pet Store application and configure a *TrafficPolicy* for it.
@@ -97,9 +97,9 @@ kubectl get workloads -n gloo-mesh
 
 ```shell
 NAME                                                              AGE
-istio-ingressgateway-istio-system-mgmt-cluster-deployment   3h4m
+istio-ingressgateway-istio-system-mgmt-cluster-deployment         3h4m
 istio-ingressgateway-istio-system-remote-cluster-deployment       3h4m
-petstore-default-mgmt-cluster-deployment                    3h4m
+petstore-default-mgmt-cluster-deployment                          3h4m
 ```
 
 If you've also deployed the Bookstore application, you may see entries for that as well. We can see the naming for the Pet Store application is the deployment name, followed by the namespace, and then the cluster name. We can also check for the *TrafficTarget*, which represents the service associated with the pods in the Workload resource.
@@ -110,9 +110,9 @@ kubectl get traffictarget -n gloo-mesh
 
 ```shell
 NAME                                                   AGE
-istio-ingressgateway-istio-system-mgmt-cluster   3h7m
+istio-ingressgateway-istio-system-mgmt-cluster         3h7m
 istio-ingressgateway-istio-system-remote-cluster       3h6m
-petstore-default-mgmt-cluster                    3h7m
+petstore-default-mgmt-cluster                          3h7m
 ```
 
 We are going to create a TrafficPolicy that uses the `petstore-default-mgmt-cluster` as a TrafficTarget. Within the TrafficPolicy, we are going to set a retry limit and timeout for the service. You can find more information about the options available for TrafficPolicy in the [API reference section]({{% versioned_link_path fromRoot="/reference/api/traffic_policy" %}}).
@@ -155,16 +155,18 @@ metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
       {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"service":"petstore"},"name":"petstore","namespace":"default"},"spec":{"ports":[{"port":8080,"protocol":"TCP"}],"selector":{"app":"petstore"}}}
-  creationTimestamp: "2020-08-25T15:12:56Z"
+    parents.networking.mesh.gloo.solo.io: '{"discovery.mesh.gloo.solo.io/v1alpha2,
+      Kind=TrafficTarget":[{"name":"petstore-default-mgmt-cluster","namespace":"gloo-mesh"}]}'
+  creationTimestamp: "2020-12-16T20:39:22Z"
   generation: 1
   labels:
     cluster.multicluster.solo.io: mgmt-cluster
     owner.networking.mesh.gloo.solo.io: gloo-mesh
   name: petstore
   namespace: default
-  resourceVersion: "8008"
+  resourceVersion: "39986"
   selfLink: /apis/networking.istio.io/v1beta1/namespaces/default/virtualservices/petstore
-  uid: f605f2b7-611b-43fa-8ed2-22c6cc5b4166
+  uid: 45fe34e2-0645-4cc7-97a6-0ab88dc9d164
 spec:
   hosts:
   - petstore.default.svc.cluster.local
