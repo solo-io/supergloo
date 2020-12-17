@@ -214,7 +214,8 @@ spec:
     singular: podbouncedirective
   preserveUnknownFields: false
   scope: Namespaced
-  subresources: {}
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       properties:
@@ -240,6 +241,34 @@ spec:
                   namespace:
                     description: The namespace in which the pods live.
                     type: string
+                  waitForReplicas:
+                    description: |-
+                      Wait for this number of replacement pods to reach be fully Ready before
+                      deleting the next set of selected pods.
+                      This is used to ensure the control plane pods are allowed to restart
+                      before sidecars and gateways are restarted.
+                    maximum: 4294967295
+                    minimum: 0
+                    type: integer
+                type: object
+              type: array
+          type: object
+        status:
+          description: PodBounceDirectiveStatus reports the status for stateful pod bounces (when bouncing pods requires waiting for readiness)
+          properties:
+            podsBounced:
+              description: |-
+                A list of k8s pods to bounce (delete and cause a restart)
+                when the certificate is issued.
+                This will include the control plane pods as well as any pods
+                which share a data plane with the target mesh.
+              items:
+                properties:
+                  bouncedPods:
+                    description: The names of the pods that were bounced for the corresponding selector.
+                    items:
+                      type: string
+                    type: array
                 type: object
               type: array
           type: object

@@ -2,6 +2,7 @@ package istio_test
 
 import (
 	"context"
+	"time"
 
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
@@ -56,7 +57,12 @@ var _ = Describe("TrafficPolicy", func() {
 
 			// ensure status is updated
 			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
-			// check we consistently hit the v2 subset
+
+			// insert a sleep because we can't effectively use an Eventually here to ensure config has propagated to envoy
+			time.Sleep(time.Second * 5)
+
+			// check we can eventually (consistently) hit the v2 subset
+			Eventually(curlReviews, "30s", "0.1s").Should(ContainSubstring(`"color": "black"`))
 			Consistently(curlReviews, "10s", "0.1s").Should(ContainSubstring(`"color": "black"`))
 		})
 

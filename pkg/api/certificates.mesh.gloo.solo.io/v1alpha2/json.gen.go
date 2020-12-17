@@ -78,3 +78,14 @@ func (this *PodBounceDirectiveSpec) MarshalJSON() ([]byte, error) {
 func (this *PodBounceDirectiveSpec) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
+
+// MarshalJSON is a custom marshaler for PodBounceDirectiveStatus
+func (this *PodBounceDirectiveStatus) MarshalJSON() ([]byte, error) {
+	str, err := marshaller.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for PodBounceDirectiveStatus
+func (this *PodBounceDirectiveStatus) UnmarshalJSON(b []byte) error {
+	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
+}

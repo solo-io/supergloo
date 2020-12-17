@@ -56,7 +56,7 @@ var CertAgentGroups = []model.Group{
 	makeGroup("certificates", "v1alpha2", []ResourceToGenerate{
 		{Kind: "IssuedCertificate"},
 		{Kind: "CertificateRequest"},
-		{Kind: "PodBounceDirective", NoStatus: true},
+		{Kind: "PodBounceDirective"},
 	}),
 }
 
