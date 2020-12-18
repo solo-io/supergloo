@@ -23,7 +23,7 @@ In particular, you will need to have installed Gloo Mesh Enterprise and register
 You will also need the wasm plugin for `meshctl`. It can be installed by running the following one-liner:
 
 ```shell
-curl -sL https://storage.googleapis.com/gloo-mesh-enterprise/meshctl-plugins/wasm/install.sh | sh
+curl -sL http://run.solo.io/meshctl-wasm/install | sh
 ```
 
 We will be pushing our filter to the publicly hosted WebAssembly Hub, so you will need to sign up for a user account following [this guide](https://docs.solo.io/web-assembly-hub/latest/tutorial_code/push_tutorials/basic_push/#create-a-user-on-webassemblyhub-io-https-webassemblyhub-io).
