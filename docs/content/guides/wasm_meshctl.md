@@ -18,6 +18,7 @@ In this guide we will walk through how you can use the wasm plugin for the `mesh
 ## Before you begin
 
 To illustrate these concepts, we will assume that you have already followed the [Wasm Extension Guide for Gloo Mesh Enterprise]({{% versioned_link_path fromRoot="/guides/wasm_extension/#ensure-the-enterprise-extender-feature-is-enabled" %}}) to get all the necessary components ready for the deploy step.
+In particular, you will need to have installed Gloo Mesh Enterprise and registered your clusters such that the `enterprise-extender` is running on the management cluster and `wasm-agent` is available on registered clusters; `meshctl-wasm` will take care of the rest.
 
 You will also need the wasm plugin for `meshctl`. It can be installed by running the following one-liner:
 
@@ -274,7 +275,7 @@ Now we can run the `deploy` command to get our Wasm filter in place.
 
 ```shell
 meshctl wasm deploy \
-  --cluster mmt-cluster \
+  --cluster mgmt-cluster \
   --namespace meshctl \
   --labels "app=reviews" \
   --deployment-name meshctl-filter \
@@ -302,7 +303,7 @@ curl http://reviews:9080/reviews/1 -v
 
 You should see the following output:
 
-{{< highlight shell "hl_lines=16" >}
+{{< highlight shell "hl_lines=16" >}}
 *   Trying 10.96.177.171:9080...
 * Connected to reviews (10.96.177.171) port 9080 (#0)
 > GET /reviews/1 HTTP/1.1
