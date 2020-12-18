@@ -8,7 +8,7 @@ weight: 100
 This feature is available in Gloo Mesh Enterprise only. If you are using the open source version of Gloo Mesh, this guide will not work.
 {{< /notice >}}
 
-In the role-based API concepts document, we review the functionality of the role-based API and the core components that comprise a role. Now let's actually get some roles deployed and bound to subjects. 
+In the role-based API concepts document, we review the functionality of the role-based API and the core components that comprise a role. Users, Groups, and Service Accounts are supported as role binding subjects. Now let's actually get some roles deployed and bound to subjects. 
 
 This guide will have you create two example roles and bind them to users.
 
