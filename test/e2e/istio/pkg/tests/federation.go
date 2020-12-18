@@ -1,4 +1,4 @@
-package istio_test
+package tests
 
 import (
 	"context"
@@ -20,7 +20,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Federation", func() {
+func FederationTest() {
 	var (
 		err      error
 		manifest utils.Manifest
@@ -217,4 +217,4 @@ var _ = Describe("Federation", func() {
 			}, "30s", "1s").Should(BeTrue())
 		})
 	})
-})
+}
