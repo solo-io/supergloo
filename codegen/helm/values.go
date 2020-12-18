@@ -9,8 +9,10 @@ import (
 
 // The schema for our Helm chart values. Struct members must be public for visibility to skv2 Helm generator.
 type ChartValues struct {
-	GlooMeshOperatorArgs GlooMeshOperatorArgs `json:"glooMeshOperatorArgs"`
-	Settings             SettingsValues       `json:"settings"`
+	GlooMeshOperatorArgs       GlooMeshOperatorArgs `json:"glooMeshOperatorArgs"`
+	Settings                   SettingsValues       `json:"settings"`
+	DisallowIntersectingConfig bool                 `json:"disallowIntersectingConfig"`
+	WatchOutputTypes           bool                 `json:"watchOutputTypes"`
 }
 
 type GlooMeshOperatorArgs struct {
@@ -27,7 +29,7 @@ type SettingsValues settingsv1alpha2.SettingsSpec
 
 func (v SettingsValues) MarshalJSON() ([]byte, error) {
 	settings := settingsv1alpha2.SettingsSpec(v)
-	js, err := (&jsonpb.Marshaler{}).MarshalToString(&settings)
+	js, err := (&jsonpb.Marshaler{EmitDefaults: true}).MarshalToString(&settings)
 	return []byte(js), err
 }
 
@@ -46,6 +48,10 @@ func defaultValues() ChartValues {
 					TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
 				},
 			},
+			// needed to ensure that generated yaml uses "{}" for empty message instead of "null", which causes a schema validation error
+			Istio: &settingsv1alpha2.SettingsSpec_Istio{},
 		},
+		DisallowIntersectingConfig: false,
+		WatchOutputTypes:           true,
 	}
 }

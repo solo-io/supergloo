@@ -22,7 +22,7 @@ import (
 	multicluster_solo_io_v1alpha1_sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 )
 
-type InputSnapshotManualBuilder struct {
+type InputLocalSnapshotManualBuilder struct {
 	name string
 
 	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
@@ -41,8 +41,8 @@ type InputSnapshotManualBuilder struct {
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
 }
 
-func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
-	return &InputSnapshotManualBuilder{
+func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBuilder {
+	return &InputLocalSnapshotManualBuilder{
 		name: name,
 
 		settings: settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet(),
@@ -62,8 +62,8 @@ func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 	}
 }
 
-func (i *InputSnapshotManualBuilder) Build() Snapshot {
-	return NewSnapshot(
+func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
+	return NewLocalSnapshot(
 		i.name,
 
 		i.settings,
@@ -82,43 +82,43 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 		i.kubernetesClusters,
 	)
 }
-func (i *InputSnapshotManualBuilder) AddSettings(settings []*settings_mesh_gloo_solo_io_v1alpha2.Settings) *InputSnapshotManualBuilder {
+func (i *InputLocalSnapshotManualBuilder) AddSettings(settings []*settings_mesh_gloo_solo_io_v1alpha2.Settings) *InputLocalSnapshotManualBuilder {
 	i.settings.Insert(settings...)
 	return i
 }
-func (i *InputSnapshotManualBuilder) AddTrafficTargets(trafficTargets []*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) *InputSnapshotManualBuilder {
+func (i *InputLocalSnapshotManualBuilder) AddTrafficTargets(trafficTargets []*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) *InputLocalSnapshotManualBuilder {
 	i.trafficTargets.Insert(trafficTargets...)
 	return i
 }
-func (i *InputSnapshotManualBuilder) AddWorkloads(workloads []*discovery_mesh_gloo_solo_io_v1alpha2.Workload) *InputSnapshotManualBuilder {
+func (i *InputLocalSnapshotManualBuilder) AddWorkloads(workloads []*discovery_mesh_gloo_solo_io_v1alpha2.Workload) *InputLocalSnapshotManualBuilder {
 	i.workloads.Insert(workloads...)
 	return i
 }
-func (i *InputSnapshotManualBuilder) AddMeshes(meshes []*discovery_mesh_gloo_solo_io_v1alpha2.Mesh) *InputSnapshotManualBuilder {
+func (i *InputLocalSnapshotManualBuilder) AddMeshes(meshes []*discovery_mesh_gloo_solo_io_v1alpha2.Mesh) *InputLocalSnapshotManualBuilder {
 	i.meshes.Insert(meshes...)
 	return i
 }
-func (i *InputSnapshotManualBuilder) AddTrafficPolicies(trafficPolicies []*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy) *InputSnapshotManualBuilder {
+func (i *InputLocalSnapshotManualBuilder) AddTrafficPolicies(trafficPolicies []*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy) *InputLocalSnapshotManualBuilder {
 	i.trafficPolicies.Insert(trafficPolicies...)
 	return i
 }
-func (i *InputSnapshotManualBuilder) AddAccessPolicies(accessPolicies []*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy) *InputSnapshotManualBuilder {
+func (i *InputLocalSnapshotManualBuilder) AddAccessPolicies(accessPolicies []*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy) *InputLocalSnapshotManualBuilder {
 	i.accessPolicies.Insert(accessPolicies...)
 	return i
 }
-func (i *InputSnapshotManualBuilder) AddVirtualMeshes(virtualMeshes []*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh) *InputSnapshotManualBuilder {
+func (i *InputLocalSnapshotManualBuilder) AddVirtualMeshes(virtualMeshes []*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh) *InputLocalSnapshotManualBuilder {
 	i.virtualMeshes.Insert(virtualMeshes...)
 	return i
 }
-func (i *InputSnapshotManualBuilder) AddFailoverServices(failoverServices []*networking_mesh_gloo_solo_io_v1alpha2.FailoverService) *InputSnapshotManualBuilder {
+func (i *InputLocalSnapshotManualBuilder) AddFailoverServices(failoverServices []*networking_mesh_gloo_solo_io_v1alpha2.FailoverService) *InputLocalSnapshotManualBuilder {
 	i.failoverServices.Insert(failoverServices...)
 	return i
 }
-func (i *InputSnapshotManualBuilder) AddSecrets(secrets []*v1.Secret) *InputSnapshotManualBuilder {
+func (i *InputLocalSnapshotManualBuilder) AddSecrets(secrets []*v1.Secret) *InputLocalSnapshotManualBuilder {
 	i.secrets.Insert(secrets...)
 	return i
 }
-func (i *InputSnapshotManualBuilder) AddKubernetesClusters(kubernetesClusters []*multicluster_solo_io_v1alpha1.KubernetesCluster) *InputSnapshotManualBuilder {
+func (i *InputLocalSnapshotManualBuilder) AddKubernetesClusters(kubernetesClusters []*multicluster_solo_io_v1alpha1.KubernetesCluster) *InputLocalSnapshotManualBuilder {
 	i.kubernetesClusters.Insert(kubernetesClusters...)
 	return i
 }

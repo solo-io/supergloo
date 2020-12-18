@@ -48,7 +48,7 @@ var _ = Describe("Dial Integration Test", func() {
 			time.Sleep(time.Second * 15)
 
 			// start server back up
-			err = s.GoListen(ctx, addr)
+			err := s.GoListen(ctx, addr)
 			Expect(err).NotTo(HaveOccurred())
 		}()
 

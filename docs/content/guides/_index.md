@@ -103,8 +103,8 @@ kubectl create ns bookinfo
 kubectl label namespace bookinfo istio-injection=enabled
 ​
 # we deploy everything except reviews-v3 to the management plane cluster
-kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app,version notin (v3)'
-kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account'
+kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.8/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app,version notin (v3)'
+kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.8/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account'
 ```
 
 Now deploy only reviews-v3 to your `remote-cluster-context` cluster:
@@ -115,11 +115,11 @@ kubectl config use-context $REMOTE_CONTEXT
 kubectl create ns bookinfo
 kubectl label namespace bookinfo istio-injection=enabled
 ​
-kubectl apply -n bookinfo -f  https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app,version in (v3)' 
-kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'service=reviews' 
-kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account=reviews' 
-kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app=ratings' 
-kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.5/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account=ratings' 
+kubectl apply -n bookinfo -f  https://raw.githubusercontent.com/istio/istio/release-1.8/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app,version in (v3)' 
+kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.8/samples/bookinfo/platform/kube/bookinfo.yaml -l 'service=reviews' 
+kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.8/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account=reviews' 
+kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.8/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app=ratings' 
+kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.8/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account=ratings' 
 ```
 
 Now you have Bookinfo demo set up for the rest of the guides. From here you can [federate]({{% versioned_link_path fromRoot="/guides/federate_identity" %}}) your two clusters, or start configuring [multi-cluster access]({{% versioned_link_path fromRoot="/guides/access_control_intro" %}}) and [traffic policy]({{% versioned_link_path fromRoot="/guides/multicluster_communication" %}}).

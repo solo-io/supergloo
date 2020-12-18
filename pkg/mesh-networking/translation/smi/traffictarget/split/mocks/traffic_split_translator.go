@@ -39,7 +39,7 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(ctx context.Context, in input.Snapshot, trafficTarget *v1alpha20.TrafficTarget, reporter reporting.Reporter) *v1alpha2.TrafficSplit {
+func (m *MockTranslator) Translate(ctx context.Context, in input.LocalSnapshot, trafficTarget *v1alpha20.TrafficTarget, reporter reporting.Reporter) *v1alpha2.TrafficSplit {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Translate", ctx, in, trafficTarget, reporter)
 	ret0, _ := ret[0].(*v1alpha2.TrafficSplit)

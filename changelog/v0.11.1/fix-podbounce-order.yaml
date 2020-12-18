@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Cert-Agent - Ensure that the istiod pods are restarted and ready before bouncing any other pods when handling PodBounceDirective. This ensures that gateway pods will get the correct TLS certificates for communicating with Istiod after new root certs are issued.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1155

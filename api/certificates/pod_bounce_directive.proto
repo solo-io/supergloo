@@ -29,5 +29,31 @@ message PodBounceDirectiveSpec {
 
         // Any labels shared by the pods.
         map<string, string> labels = 2;
+
+        // Wait for this number of replacement pods to reach be fully Ready before
+        // deleting the next set of selected pods.
+        // This is used to ensure the control plane pods are allowed to restart
+        // before sidecars and gateways are restarted.
+        uint32 wait_for_replicas = 3;
     }
+}
+
+
+/*
+    PodBounceDirectiveStatus reports the status for stateful pod bounces (when bouncing pods requires waiting for readiness)
+*/
+message PodBounceDirectiveStatus {
+
+    // A list of k8s pods to bounce (delete and cause a restart)
+    // when the certificate is issued.
+    // This will include the control plane pods as well as any pods
+    // which share a data plane with the target mesh.
+    repeated BouncedPodSet pods_bounced = 4;
+
+    // A set of Pods that were restarted.
+    message BouncedPodSet {
+        // The names of the pods that were bounced for the corresponding selector.
+        repeated string bounced_pods = 1;
+    }
+
 }

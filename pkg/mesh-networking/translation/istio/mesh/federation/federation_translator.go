@@ -58,7 +58,7 @@ type Translator interface {
 	// Output resources will be added to the istio.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
-		in input.Snapshot,
+		in input.LocalSnapshot,
 		mesh *discoveryv1alpha2.Mesh,
 		virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
 		outputs istio.Builder,
@@ -95,7 +95,7 @@ func NewTranslator(
 
 // translate the appropriate resources for the given Mesh.
 func (t *translator) Translate(
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	mesh *discoveryv1alpha2.Mesh,
 	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
 	outputs istio.Builder,
@@ -228,22 +228,16 @@ func (t *translator) Translate(
 			outputs.AddServiceEntries(se)
 
 			// Translate VirtualServices for federated TrafficTargets, can be nil
-			if vs := t.virtualServiceTranslator.Translate(
-				in, trafficTarget, clientIstio.Installation, reporter,
-			); vs != nil {
-				// Append the virtual mesh as a parent to the output virtual service
-				metautils.AppendParent(t.ctx, vs, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
-				outputs.AddVirtualServices(vs)
-			}
+			vs := t.virtualServiceTranslator.Translate(t.ctx, in, trafficTarget, clientIstio.Installation, reporter)
+			// Append the virtual mesh as a parent to the output virtual service
+			metautils.AppendParent(t.ctx, vs, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+			outputs.AddVirtualServices(vs)
 
 			// Translate DestinationRules for federated TrafficTargets, can be nil
-			if dr := t.destinationRuleTranslator.Translate(
-				t.ctx, in, trafficTarget, clientIstio.Installation, reporter,
-			); dr != nil {
-				// Append the virtual mesh as a parent to the output destination rule
-				metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
-				outputs.AddDestinationRules(dr)
-			}
+			dr := t.destinationRuleTranslator.Translate(t.ctx, in, trafficTarget, clientIstio.Installation, reporter)
+			// Append the virtual mesh as a parent to the output destination rule
+			metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+			outputs.AddDestinationRules(dr)
 		}
 	}
 

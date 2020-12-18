@@ -51,7 +51,7 @@ var _ = Describe("SmiTrafficTargetTranslator", func() {
 				},
 			},
 		}
-		in := input.NewInputSnapshotManualBuilder("").Build()
+		in := input.NewInputLocalSnapshotManualBuilder("").Build()
 
 		ts := &smisplitv1alpha2.TrafficSplit{}
 
