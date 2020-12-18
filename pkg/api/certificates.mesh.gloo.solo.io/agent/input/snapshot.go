@@ -145,6 +145,13 @@ func (s snapshot) SyncStatuses(ctx context.Context, c client.Client, opts SyncSt
 			}
 		}
 	}
+	if opts.PodBounceDirective {
+		for _, obj := range s.PodBounceDirectives().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
 
 	return errs
 }

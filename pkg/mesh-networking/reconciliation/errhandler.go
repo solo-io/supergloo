@@ -19,11 +19,11 @@ var _ output.ErrorHandler = &errHandler{}
 
 type errHandler struct {
 	ctx  context.Context
-	in   input.Snapshot
+	in   input.LocalSnapshot
 	errs *multierror.Error
 }
 
-func newErrHandler(ctx context.Context, inp input.Snapshot) *errHandler {
+func newErrHandler(ctx context.Context, inp input.LocalSnapshot) *errHandler {
 	return &errHandler{ctx, inp, &multierror.Error{}}
 }
 

@@ -37,7 +37,7 @@ func (m *MockIstioExtender) EXPECT() *MockIstioExtenderMockRecorder {
 }
 
 // PatchOutputs mocks base method
-func (m *MockIstioExtender) PatchOutputs(ctx context.Context, inputs input.Snapshot, outputs istio.Builder) error {
+func (m *MockIstioExtender) PatchOutputs(ctx context.Context, inputs input.LocalSnapshot, outputs istio.Builder) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PatchOutputs", ctx, inputs, outputs)
 	ret0, _ := ret[0].(error)

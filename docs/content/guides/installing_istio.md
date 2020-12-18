@@ -38,76 +38,11 @@ We will install Istio with a suitable configuration for a multi-cluster demonstr
 
 Let's install Istio into both the management plane **AND** the remote cluster. The configuration below assumes that you are using the Kind clusters created in the Setup guide. The contexts for those clusters should be `kind-mgmt-cluster` and `kind-remote-cluster`. Both clusters are using a NodePort to expose the ingress gateway for Istio. If you are deploying Istio on different cluster setup, update your context and gateway settings accordingly.
 
-The manifest for Istio 1.7 is different from prior versions, so be sure to select the correct tab for the version of Istio you plan to install. The manifests below were tested using Istio 1.5.2, 1.6.8, and 1.7.3.
+The manifest for Istio 1.7 is different from prior versions, so be sure to select the correct tab for the version of Istio you plan to install. The manifests below were tested using Istio 1.7.3 and 1.8.1.
 
 #### Management plane install
 
 {{< tabs >}}
-{{< tab name="Istio 1.5 and 1.6" codelang="shell" >}}
-cat << EOF | istioctl manifest apply --context kind-mgmt-cluster -f -
-apiVersion: install.istio.io/v1alpha1
-kind: IstioOperator
-metadata:
-  name: mgmt-plane-istiooperator
-  namespace: istio-system
-spec:
-  profile: minimal
-  addonComponents:
-    istiocoredns:
-      enabled: true
-  components:
-    pilot:
-      k8s:
-        env:
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-    proxy:
-      k8s:
-        env:
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-    # Istio Gateway feature
-    ingressGateways:
-    - name: istio-ingressgateway
-      enabled: true
-      k8s:
-        env:
-          - name: ISTIO_META_ROUTER_MODE
-            value: "sni-dnat"
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-        service:
-          ports:
-            - port: 80
-              targetPort: 8080
-              name: http2
-            - port: 443
-              targetPort: 8443
-              name: https
-            - port: 15443
-              targetPort: 15443
-              name: tls
-              nodePort: 32001
-  values:
-    prometheus:
-      enabled: false
-    gateways:
-      istio-ingressgateway:
-        type: NodePort
-        ports:
-          - targetPort: 15443
-            name: tls
-            nodePort: 32001
-            port: 15443
-    global:
-      pilotCertProvider: kubernetes
-      controlPlaneSecurityEnabled: true
-      mtls:
-        enabled: true
-      podDNSSearchNamespaces:
-      - global
-EOF
-{{< /tab >}}
 {{< tab name="Istio 1.7" codelang="shell" >}}
 cat << EOF | istioctl manifest install --context kind-mgmt-cluster -f -
 apiVersion: install.istio.io/v1alpha1
@@ -209,71 +144,6 @@ EOF
 #### Remote cluster install
 
 {{< tabs >}}
-{{< tab name="Istio 1.5 and 1.6" codelang="shell" >}}
-cat << EOF | istioctl manifest apply --context kind-remote-cluster -f -
-apiVersion: install.istio.io/v1alpha1
-kind: IstioOperator
-metadata:
-  name: remote-cluster-istiooperator
-  namespace: istio-system
-spec:
-  profile: minimal
-  addonComponents:
-    istiocoredns:
-      enabled: true
-  components:
-    pilot:
-      k8s:
-        env:
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-    proxy:
-      k8s:
-        env:
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-    # Istio Gateway feature
-    ingressGateways:
-    - name: istio-ingressgateway
-      enabled: true
-      k8s:
-        env:
-          - name: ISTIO_META_ROUTER_MODE
-            value: "sni-dnat"
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-        service:
-          ports:
-            - port: 80
-              targetPort: 8080
-              name: http2
-            - port: 443
-              targetPort: 8443
-              name: https
-            - port: 15443
-              targetPort: 15443
-              name: tls
-              nodePort: 32000
-  values:
-    prometheus:
-      enabled: false
-    gateways:
-      istio-ingressgateway:
-        type: NodePort
-        ports:
-          - targetPort: 15443
-            name: tls
-            nodePort: 32000
-            port: 15443
-    global:
-      pilotCertProvider: kubernetes
-      controlPlaneSecurityEnabled: true
-      mtls:
-        enabled: true
-      podDNSSearchNamespaces:
-      - global
-EOF
-{{< /tab >}}
 {{< tab name="Istio 1.7" codelang="shell" >}}
 cat << EOF | istioctl manifest install --context kind-remote-cluster -f -
 apiVersion: install.istio.io/v1alpha1
