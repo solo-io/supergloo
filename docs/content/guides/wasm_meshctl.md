@@ -16,12 +16,13 @@ In this guide we will walk through how you can use the wasm plugin for the `mesh
 1. Deploy the Wasm filter to an Istio managed instance of Envoy
 
 ## Before you begin
-To illustrate these concepts, we will assume that you have already followed the [Wasm Extension Guide for Gloo Mesh Enterprise]({{% versioned_link_path fromRoot="/guides/wasm_extension/" %}}) to get all the necessary components ready for the deploy step.
+
+To illustrate these concepts, we will assume that you have already followed the [Wasm Extension Guide for Gloo Mesh Enterprise]({{% versioned_link_path fromRoot="/guides/wasm_extension/#ensure-the-enterprise-extender-feature-is-enabled" %}}) to get all the necessary components ready for the deploy step.
 
 You will also need the wasm plugin for `meshctl`. It can be installed by running the following one-liner:
 
 ```shell
-curl solo.io/meshctl-wasm/foo/bar/install | sh
+curl -sL https://storage.googleapis.com/gloo-mesh-enterprise/meshctl-plugins/wasm/install.sh | sh
 ```
 
 We will be pushing our filter to the publicly hosted WebAssembly Hub, so you will need to sign up for a user account following [this guide](https://docs.solo.io/web-assembly-hub/latest/tutorial_code/push_tutorials/basic_push/#create-a-user-on-webassemblyhub-io-https-webassemblyhub-io).
@@ -273,10 +274,10 @@ Now we can run the `deploy` command to get our Wasm filter in place.
 
 ```shell
 meshctl wasm deploy \
-  --cluster mgmt-cluster \
+  --cluster mmt-cluster \
   --namespace meshctl \
   --labels "app=reviews" \
-  --filter-name meshctl-filter \
+  --deployment-name meshctl-filter \
   --image webassemblyhub.io/$HUB_USERNAME/add-header:v0.1 \
   --mgmt-kubecontext $MGMT_CONTEXT \
   --remote-kubecontext $MGMT_CONTEXT
