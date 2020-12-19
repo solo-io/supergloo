@@ -42,9 +42,9 @@ title: "role.proto"
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| subjects | []core.skv2.solo.io.TypedObjectRef | repeated | reference to users or groups to apply the Gloo Mesh Role to |
-| roleRef | core.skv2.solo.io.ObjectRef |  | reference to a Gloo Mesh Role |
-
+| subjects | [][core.skv2.solo.io.TypedObjectRef]({{< ref "core.md#core.skv2.solo.io.TypedObjectRef" >}}) | repeated | reference to users or groups to apply the Gloo Mesh Role to |
+  | roleRef | [core.skv2.solo.io.ObjectRef]({{< ref "core.md#core.skv2.solo.io.ObjectRef" >}}) |  | reference to a Gloo Mesh Role |
+  
 
 
 
@@ -68,12 +68,12 @@ A role represents a set of permissions for creating, updating, and deleting Gloo
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| trafficPolicyScopes | []rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope | repeated | A set of TrafficPolicy configuration permissions. Permission granularity is defined at the field level. |
-| virtualMeshScopes | []rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualMeshScope | repeated | A set of VirtualMesh configuration permissions. Permission granularity is defined at the field level. |
-| accessPolicyScopes | []rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessPolicyScope | repeated | A set of AccessPolicy configuration permissions. Permission granularity is defined at the object level. |
-| failoverServiceScopes | []rbac.enterprise.mesh.gloo.solo.io.RoleSpec.FailoverServiceScope | repeated | A set of FailoverService configuration permissions. Permission granularity is defined at the object level. |
-| wasmDeploymentScopes | []rbac.enterprise.mesh.gloo.solo.io.RoleSpec.WasmDeploymentScope | repeated | A set of WasmDeployment configuration permissions. Permission granularity is defined at the object level. |
-
+| trafficPolicyScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope]({{< ref "role.md#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope" >}}) | repeated | A set of TrafficPolicy configuration permissions. Permission granularity is defined at the field level. |
+  | virtualMeshScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualMeshScope]({{< ref "role.md#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualMeshScope" >}}) | repeated | A set of VirtualMesh configuration permissions. Permission granularity is defined at the field level. |
+  | accessPolicyScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessPolicyScope]({{< ref "role.md#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessPolicyScope" >}}) | repeated | A set of AccessPolicy configuration permissions. Permission granularity is defined at the object level. |
+  | failoverServiceScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.FailoverServiceScope]({{< ref "role.md#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.FailoverServiceScope" >}}) | repeated | A set of FailoverService configuration permissions. Permission granularity is defined at the object level. |
+  | wasmDeploymentScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.WasmDeploymentScope]({{< ref "role.md#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.WasmDeploymentScope" >}}) | repeated | A set of WasmDeployment configuration permissions. Permission granularity is defined at the object level. |
+  
 
 
 
@@ -87,9 +87,9 @@ Represents permissions for configuring AccessPolicies.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| identitySelectors | []networking.mesh.gloo.solo.io.IdentitySelector | repeated | A list of permitted identity selectors. |
-| trafficTargetSelectors | []networking.mesh.gloo.solo.io.TrafficTargetSelector | repeated | A list of permitted traffic target selectors. |
-
+| identitySelectors | [][networking.mesh.gloo.solo.io.IdentitySelector]({{< ref "selectors.md#networking.mesh.gloo.solo.io.IdentitySelector" >}}) | repeated | A list of permitted identity selectors. |
+  | trafficTargetSelectors | [][networking.mesh.gloo.solo.io.TrafficTargetSelector]({{< ref "selectors.md#networking.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | A list of permitted traffic target selectors. |
+  
 
 
 
@@ -103,9 +103,9 @@ Represents permissions for configuring FailoverServices.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| meshRefs | []core.skv2.solo.io.ObjectRef | repeated | A list of permitted mesh references. |
-| backingServices | []networking.mesh.gloo.solo.io.FailoverServiceSpec.BackingService | repeated | A list of permitted backing services. |
-
+| meshRefs | [][core.skv2.solo.io.ObjectRef]({{< ref "core.md#core.skv2.solo.io.ObjectRef" >}}) | repeated | A list of permitted mesh references. |
+  | backingServices | [][networking.mesh.gloo.solo.io.FailoverServiceSpec.BackingService]({{< ref "failover_service.md#networking.mesh.gloo.solo.io.FailoverServiceSpec.BackingService" >}}) | repeated | A list of permitted backing services. |
+  
 
 
 
@@ -119,10 +119,10 @@ Represents permissions for configuring TrafficPolicies.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| trafficPolicyActions | []rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope.TrafficPolicyActions | repeated | A list of permitted TrafficPolicy configuration actions. |
-| trafficTargetSelectors | []networking.mesh.gloo.solo.io.TrafficTargetSelector | repeated | A list of permitted traffic target selectors. |
-| workloadSelectors | []networking.mesh.gloo.solo.io.WorkloadSelector | repeated | A list of permitted workload selectors. |
-
+| trafficPolicyActions | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope.TrafficPolicyActions]({{< ref "role.md#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope.TrafficPolicyActions" >}}) | repeated | A list of permitted TrafficPolicy configuration actions. |
+  | trafficTargetSelectors | [][networking.mesh.gloo.solo.io.TrafficTargetSelector]({{< ref "selectors.md#networking.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | A list of permitted traffic target selectors. |
+  | workloadSelectors | [][networking.mesh.gloo.solo.io.WorkloadSelector]({{< ref "selectors.md#networking.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | A list of permitted workload selectors. |
+  
 
 
 
@@ -136,9 +136,9 @@ Represents permissions for configuring VirtualMeshes.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| virtualMeshActions | []rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualMeshScope.VirtualMeshActions | repeated | A list of permitted VirtualMesh configuration actions. |
-| meshRefs | []core.skv2.solo.io.ObjectRef | repeated | A list of permitted mesh references. |
-
+| virtualMeshActions | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualMeshScope.VirtualMeshActions]({{< ref "role.md#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualMeshScope.VirtualMeshActions" >}}) | repeated | A list of permitted VirtualMesh configuration actions. |
+  | meshRefs | [][core.skv2.solo.io.ObjectRef]({{< ref "core.md#core.skv2.solo.io.ObjectRef" >}}) | repeated | A list of permitted mesh references. |
+  
 
 
 
@@ -152,8 +152,8 @@ Represents permissions for configuring WasmDeployments.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| workloadSelectors | []networking.mesh.gloo.solo.io.WorkloadSelector | repeated | A list of permitted workload selectors. |
-
+| workloadSelectors | [][networking.mesh.gloo.solo.io.WorkloadSelector]({{< ref "selectors.md#networking.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | A list of permitted workload selectors. |
+  
 
 
 
@@ -168,7 +168,7 @@ Represents permissions for configuring WasmDeployments.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  |  |
-
+  
 
 
 

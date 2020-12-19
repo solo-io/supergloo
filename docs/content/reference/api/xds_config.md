@@ -35,9 +35,9 @@ XdsConfigs are used to issue XDS Configuration Resources to running Envoy instan
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| workloads | []core.skv2.solo.io.ObjectRef | repeated | The Workloads that will receive this XDS Configuration. |
-| types | []xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.TypedResources | repeated | the xDS resources to serve to the nodes. mapped by type URL. |
-
+| workloads | [][core.skv2.solo.io.ObjectRef]({{< ref "core.md#core.skv2.solo.io.ObjectRef" >}}) | repeated | The Workloads that will receive this XDS Configuration. |
+  | types | [][xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.TypedResources]({{< ref "xds_config.md#xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.TypedResources" >}}) | repeated | the xDS resources to serve to the nodes. mapped by type URL. |
+  
 
 
 
@@ -52,8 +52,8 @@ a single named resource
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | string |  | name of the resource, as referenced by xDS |
-| compressedData | bytes |  | stored as compressed, base-64 encoded raw bytes. |
-
+  | compressedData | bytes |  | stored as compressed, base-64 encoded raw bytes. |
+  
 
 
 
@@ -68,8 +68,8 @@ a set of resources of a single type (typeURL)
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | typeUrl | string |  | the type URL of the resources in the given set |
-| resources | []xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.Resource | repeated | stored as compressed, base-64 encoded raw bytes. |
-
+  | resources | [][xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.Resource]({{< ref "xds_config.md#xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.Resource" >}}) | repeated | stored as compressed, base-64 encoded raw bytes. |
+  
 
 
 
@@ -84,8 +84,8 @@ The XdsConfig status is written by the CertificateRequesting agent.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the XdsConfig metadata. If the observedGeneration does not match generation, the XDS Agent has not processed the most recent version of this XdsConfig. |
-| error | string |  | Any error observed which prevented the CertificateRequest from being processed. If the error is empty, the request has been processed successfully. |
-
+  | error | string |  | Any error observed which prevented the CertificateRequest from being processed. If the error is empty, the request has been processed successfully. |
+  
 
 
 

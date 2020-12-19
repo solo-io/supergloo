@@ -41,11 +41,11 @@ A VirtualMesh represents a logical grouping of meshes for shared configuration a
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| meshes | []core.skv2.solo.io.ObjectRef | repeated | The meshes contained in this virtual mesh. |
-| mtlsConfig | networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig |  | Configuration options for managing Mutual-TLS mTLS in a virtual mesh.Sets a shared Certificate Authority across the defined meshes. |
-| federation | networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation |  | Determine how to expose traffic targets to cross-mesh traffic using Service Federation. |
-| globalAccessPolicy | networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy |  | Sets an Access Policy for the whole mesh. |
-
+| meshes | [][core.skv2.solo.io.ObjectRef]({{< ref "core.md#core.skv2.solo.io.ObjectRef" >}}) | repeated | The meshes contained in this virtual mesh. |
+  | mtlsConfig | [networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig]({{< ref "virtual_mesh.md#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig" >}}) |  | Configuration options for managing Mutual-TLS mTLS in a virtual mesh.Sets a shared Certificate Authority across the defined meshes. |
+  | federation | [networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation]({{< ref "virtual_mesh.md#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation" >}}) |  | Determine how to expose traffic targets to cross-mesh traffic using Service Federation. |
+  | globalAccessPolicy | [networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy]({{< ref "virtual_mesh.md#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy" >}}) |  | Sets an Access Policy for the whole mesh. |
+  
 
 
 
@@ -59,8 +59,8 @@ In Gloo Mesh, "federation" refers to the ability to expose traffic targets with 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| permissive | google.protobuf.Empty |  | Select permissive mode to expose all traffic targets in a VirtualMesh to cross-cluster traffic from all workloads in that Virtual Mesh. |
-
+| permissive | [google.protobuf.Empty]({{< ref "empty.md#google.protobuf.Empty" >}}) |  | Select permissive mode to expose all traffic targets in a VirtualMesh to cross-cluster traffic from all workloads in that Virtual Mesh. |
+  
 
 
 
@@ -74,10 +74,10 @@ Mutual TLS Config for a Virtual Mesh. This includes options for configuring Mutu
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| shared | networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust |  | Shared trust (allow communication between any workloads and traffic targets in the grouped Meshes). |
-| limited | networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust |  | Limited trust (selectively allow communication between workloads and traffic targets in the grouped Meshes). |
-| autoRestartPods | bool |  | Allow Gloo Mesh to restart mesh pods when certificates are rotated. If this option is not explicitly enabled, users must restart the pods manually for the new certificates to be picked up. `meshctl` provides the command `meshctl mesh restart` to simplify this process. |
-
+| shared | [networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust]({{< ref "virtual_mesh.md#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust" >}}) |  | Shared trust (allow communication between any workloads and traffic targets in the grouped Meshes). |
+  | limited | [networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust]({{< ref "virtual_mesh.md#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust" >}}) |  | Limited trust (selectively allow communication between workloads and traffic targets in the grouped Meshes). |
+  | autoRestartPods | bool |  | Allow Gloo Mesh to restart mesh pods when certificates are rotated. If this option is not explicitly enabled, users must restart the pods manually for the new certificates to be picked up. `meshctl` provides the command `meshctl mesh restart` to simplify this process. |
+  
 
 
 
@@ -101,8 +101,8 @@ Shared trust is a virtual mesh trust model requiring a shared root certificate, 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| rootCertificateAuthority | networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority |  | Configure a Root Certificate Authority which will be shared by the members of the virtual mesh. If this is not provided, a self-signed certificate will be used by Gloo Mesh to establish shared trust for the purposes of failover and federation. |
-
+| rootCertificateAuthority | [networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority]({{< ref "virtual_mesh.md#networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority" >}}) |  | Configure a Root Certificate Authority which will be shared by the members of the virtual mesh. If this is not provided, a self-signed certificate will be used by Gloo Mesh to establish shared trust for the purposes of failover and federation. |
+  
 
 
 
@@ -116,9 +116,9 @@ RootCertificateAuthority defines parameters for configuring the root CA for a Vi
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| generated | networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority.SelfSignedCert |  | Generate a self-signed root certificate with the given options. |
-| secret | core.skv2.solo.io.ObjectRef |  | Use a root certificate provided in a Kubernetes Secret. [Secrets provided in this way must follow a specified format, documented here.]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}) |
-
+| generated | [networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority.SelfSignedCert]({{< ref "virtual_mesh.md#networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority.SelfSignedCert" >}}) |  | Generate a self-signed root certificate with the given options. |
+  | secret | [core.skv2.solo.io.ObjectRef]({{< ref "core.md#core.skv2.solo.io.ObjectRef" >}}) |  | Use a root certificate provided in a Kubernetes Secret. [Secrets provided in this way must follow a specified format, documented here.]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}) |
+  
 
 
 
@@ -133,9 +133,9 @@ Configuration for generating a self-signed root certificate. Uses the X.509 form
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | ttlDays | uint32 |  | Number of days before root cert expires. Defaults to 365. |
-| rsaKeySizeBytes | uint32 |  | Size in bytes of the root cert's private key. Defaults to 4096. |
-| orgName | string |  | Root cert organization name. Defaults to "gloo-mesh". |
-
+  | rsaKeySizeBytes | uint32 |  | Size in bytes of the root cert's private key. Defaults to 4096. |
+  | orgName | string |  | Root cert organization name. Defaults to "gloo-mesh". |
+  
 
 
 
@@ -150,10 +150,10 @@ Configuration for generating a self-signed root certificate. Uses the X.509 form
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the VirtualMesh metadata. If the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
-| state | networking.mesh.gloo.solo.io.ApprovalState |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all target meshes. |
-| errors | []string | repeated | Any errors found while processing this generation of the resource. |
-| meshes | []networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry | repeated | The status of the VirtualMesh for each Mesh to which it has been applied. A VirtualMesh may be Accepted for some Meshes and rejected for others. |
-
+  | state | [networking.mesh.gloo.solo.io.ApprovalState]({{< ref "validation_state.md#networking.mesh.gloo.solo.io.ApprovalState" >}}) |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all target meshes. |
+  | errors | []string | repeated | Any errors found while processing this generation of the resource. |
+  | meshes | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry]({{< ref "virtual_mesh.md#networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry" >}}) | repeated | The status of the VirtualMesh for each Mesh to which it has been applied. A VirtualMesh may be Accepted for some Meshes and rejected for others. |
+  
 
 
 
@@ -168,8 +168,8 @@ Configuration for generating a self-signed root certificate. Uses the X.509 form
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
-| value | networking.mesh.gloo.solo.io.ApprovalStatus |  |  |
-
+  | value | [networking.mesh.gloo.solo.io.ApprovalStatus]({{< ref "validation_state.md#networking.mesh.gloo.solo.io.ApprovalStatus" >}}) |  |  |
+  
 
 
 

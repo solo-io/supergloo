@@ -46,13 +46,13 @@ Meshes represent a currently registered service mesh.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| istio | discovery.mesh.gloo.solo.io.MeshSpec.Istio |  |  |
-| awsAppMesh | discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh |  |  |
-| linkerd | discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh |  |  |
-| consulConnect | discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh |  |  |
-| osm | discovery.mesh.gloo.solo.io.MeshSpec.OSM |  |  |
-| agentInfo | discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo |  | Information about the Gloo Mesh certificate agent if it has been installed to the remote cluster. |
-
+| istio | [discovery.mesh.gloo.solo.io.MeshSpec.Istio]({{< ref "mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.Istio" >}}) |  |  |
+  | awsAppMesh | [discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh]({{< ref "mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh" >}}) |  |  |
+  | linkerd | [discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh]({{< ref "mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh" >}}) |  |  |
+  | consulConnect | [discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh]({{< ref "mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh" >}}) |  |  |
+  | osm | [discovery.mesh.gloo.solo.io.MeshSpec.OSM]({{< ref "mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.OSM" >}}) |  |  |
+  | agentInfo | [discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo]({{< ref "mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo" >}}) |  | Information about the Gloo Mesh certificate agent if it has been installed to the remote cluster. |
+  
 
 
 
@@ -67,7 +67,7 @@ information about the Gloo Mesh Cert-Agent which may be installed to the remote 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | agentNamespace | string |  | the namespace in which the agent is installed |
-
+  
 
 
 
@@ -82,11 +82,11 @@ Mesh object representing AWS AppMesh.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | awsName | string |  | AWS name for the AppMesh instance, must be unique across the AWS account. |
-| region | string |  | The AWS region the AWS App Mesh control plane resources exist in. |
-| awsAccountId | string |  | The AWS Account ID associated with the Mesh. Populated at REST API registration time. |
-| arn | string |  | The unique AWS ARN associated with the Mesh. |
-| clusters | []string | repeated | The k8s clusters on which sidecars for this AppMesh instance have been discovered. |
-
+  | region | string |  | The AWS region the AWS App Mesh control plane resources exist in. |
+  | awsAccountId | string |  | The AWS Account ID associated with the Mesh. Populated at REST API registration time. |
+  | arn | string |  | The unique AWS ARN associated with the Mesh. |
+  | clusters | []string | repeated | The k8s clusters on which sidecars for this AppMesh instance have been discovered. |
+  
 
 
 
@@ -100,8 +100,8 @@ Mesh object representing an installed ConsulConnect control plane.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation |  |  |
-
+| installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< ref "mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  |  |
+  
 
 
 
@@ -115,10 +115,10 @@ Mesh object representing an installed Istio control plane
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation |  | Configuration metadata about the istio control plane installation. |
-| citadelInfo | discovery.mesh.gloo.solo.io.MeshSpec.Istio.CitadelInfo |  | Configuration metadata for Istio Citadel (Istio's security component). |
-| ingressGateways | []discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo | repeated | Configuration metadata for Istio IngressGateway (the Istio Ingress). |
-
+| installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< ref "mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  | Configuration metadata about the istio control plane installation. |
+  | citadelInfo | [discovery.mesh.gloo.solo.io.MeshSpec.Istio.CitadelInfo]({{< ref "mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.Istio.CitadelInfo" >}}) |  | Configuration metadata for Istio Citadel (Istio's security component). |
+  | ingressGateways | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo]({{< ref "mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo" >}}) | repeated | Configuration metadata for Istio IngressGateway (the Istio Ingress). |
+  
 
 
 
@@ -133,8 +133,8 @@ Configuration metadata for Istio Citadel (Istio's security component).
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | trustDomain | string |  | Istio trust domain used for https/spiffe identity. https://spiffe.io/spiffe/concepts/#trust-domain https://istio.io/docs/reference/glossary/#identity<br>If empty will default to "cluster.local". |
-| citadelServiceAccount | string |  | istio-citadel service account, used to determine identity for the Istio CA cert. If empty will default to "istio-citadel". |
-
+  | citadelServiceAccount | string |  | istio-citadel service account, used to determine identity for the Istio CA cert. If empty will default to "istio-citadel". |
+  
 
 
 
@@ -148,11 +148,11 @@ Configuration metadata for Istio Citadel (Istio's security component).
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| workloadLabels | []discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry | repeated | Labels matching the workload which backs the gateway, defaults to `{"istio": "ingressgateway"}`. |
-| externalAddress | string |  | The externally-reachable address on which the gateway is listening for TLS connections. This will be the address used for cross-cluster connectivity. Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes Service (depending on its type). |
-| externalTlsPort | uint32 |  | The externally-reachable port on which the gateway is listening for TLS connections. This will be the port used for cross-cluster connectivity. List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio. Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type). |
-| tlsContainerPort | uint32 |  | Container port on which the gateway is listening for TLS connections. Defaults to 15443. |
-
+| workloadLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry]({{< ref "mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry" >}}) | repeated | Labels matching the workload which backs the gateway, defaults to `{"istio": "ingressgateway"}`. |
+  | externalAddress | string |  | The externally-reachable address on which the gateway is listening for TLS connections. This will be the address used for cross-cluster connectivity. Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes Service (depending on its type). |
+  | externalTlsPort | uint32 |  | The externally-reachable port on which the gateway is listening for TLS connections. This will be the port used for cross-cluster connectivity. List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio. Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type). |
+  | tlsContainerPort | uint32 |  | Container port on which the gateway is listening for TLS connections. Defaults to 15443. |
+  
 
 
 
@@ -167,8 +167,8 @@ Configuration metadata for Istio Citadel (Istio's security component).
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
-| value | string |  |  |
-
+  | value | string |  |  |
+  
 
 
 
@@ -182,9 +182,9 @@ Mesh object representing an installed Linkerd control plane.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation |  |  |
-| clusterDomain | string |  | The cluster domain suffix this Linkerd mesh is configured with. See https://linkerd.io/2/tasks/using-custom-domain/ for info. |
-
+| installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< ref "mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  |  |
+  | clusterDomain | string |  | The cluster domain suffix this Linkerd mesh is configured with. See https://linkerd.io/2/tasks/using-custom-domain/ for info. |
+  
 
 
 
@@ -199,10 +199,10 @@ The cluster on which the control plane for this mesh is deployed. Not all MeshTy
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | namespace | string |  | Namespace in which the control plane has been installed. |
-| cluster | string |  | Cluster in which the control plane has been installed. |
-| podLabels | []discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry | repeated | the labels on the control plane pods (read from the deployment) |
-| version | string |  | Version of the Mesh that has been installed. Determined using the image tag on the Mesh's primary control plane image (e.g. the istio-pilot image tag). |
-
+  | cluster | string |  | Cluster in which the control plane has been installed. |
+  | podLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry]({{< ref "mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry" >}}) | repeated | the labels on the control plane pods (read from the deployment) |
+  | version | string |  | Version of the Mesh that has been installed. Determined using the image tag on the Mesh's primary control plane image (e.g. the istio-pilot image tag). |
+  
 
 
 
@@ -217,8 +217,8 @@ The cluster on which the control plane for this mesh is deployed. Not all MeshTy
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
-| value | string |  |  |
-
+  | value | string |  |  |
+  
 
 
 
@@ -232,8 +232,8 @@ https://github.com/openservicemesh/osm
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation |  | Information about where OSM is installed in a managed Kubernetes Cluster. |
-
+| installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< ref "mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  | Information about where OSM is installed in a managed Kubernetes Cluster. |
+  
 
 
 
@@ -248,9 +248,9 @@ https://github.com/openservicemesh/osm
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that mesh-networking has reconciled the latest version of the Mesh. |
-| appliedVirtualMesh | discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh |  | The VirtualMesh, if any, which contains this mesh. |
-| appliedFailoverServices | []discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService | repeated | The FailoverServices, if any, which applies to this mesh. |
-
+  | appliedVirtualMesh | [discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh]({{< ref "mesh.md#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh" >}}) |  | The VirtualMesh, if any, which contains this mesh. |
+  | appliedFailoverServices | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService]({{< ref "mesh.md#discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService" >}}) | repeated | The FailoverServices, if any, which applies to this mesh. |
+  
 
 
 
@@ -264,10 +264,10 @@ AppliedFailoverService represents a FailoverService that has been applied to thi
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ref | core.skv2.solo.io.ObjectRef |  | Reference to the FailoverService. |
-| observedGeneration | int64 |  | The observed generation of the accepted FailoverService. |
-| spec | networking.mesh.gloo.solo.io.FailoverServiceSpec |  | The last known valid spec of the FailoverService. |
-
+| ref | [core.skv2.solo.io.ObjectRef]({{< ref "core.md#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the FailoverService. |
+  | observedGeneration | int64 |  | The observed generation of the accepted FailoverService. |
+  | spec | [networking.mesh.gloo.solo.io.FailoverServiceSpec]({{< ref "failover_service.md#networking.mesh.gloo.solo.io.FailoverServiceSpec" >}}) |  | The last known valid spec of the FailoverService. |
+  
 
 
 
@@ -281,10 +281,10 @@ AppliedVirtualMesh represents a VirtualMesh that has been applied to this Mesh. 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ref | core.skv2.solo.io.ObjectRef |  | Reference to the VirtualMesh. |
-| observedGeneration | int64 |  | The observed generation of the accepted VirtualMesh. |
-| spec | networking.mesh.gloo.solo.io.VirtualMeshSpec |  | The last known valid spec of the VirtualMesh. |
-
+| ref | [core.skv2.solo.io.ObjectRef]({{< ref "core.md#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the VirtualMesh. |
+  | observedGeneration | int64 |  | The observed generation of the accepted VirtualMesh. |
+  | spec | [networking.mesh.gloo.solo.io.VirtualMeshSpec]({{< ref "virtual_mesh.md#networking.mesh.gloo.solo.io.VirtualMeshSpec" >}}) |  | The last known valid spec of the VirtualMesh. |
+  
 
 
 
