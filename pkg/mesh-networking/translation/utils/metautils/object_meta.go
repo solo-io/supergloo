@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
@@ -88,6 +89,11 @@ func AppendParent(
 	parentId ezkube.ResourceId,
 	parentGVK schema.GroupVersionKind,
 ) {
+
+	if reflect.ValueOf(child).IsNil() {
+		return
+	}
+
 	annotations := child.GetAnnotations()
 	if annotations == nil {
 		annotations = make(map[string]string)
