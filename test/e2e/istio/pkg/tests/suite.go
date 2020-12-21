@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"log"
 	"os"
 	"time"
 
@@ -56,8 +57,11 @@ func federateClusters(dynamicClient client.Client) {
 
 	err = VirtualMeshManifest.AppendResources(VirtualMesh)
 	Expect(err).NotTo(HaveOccurred())
-	err = VirtualMeshManifest.KubeApply(BookinfoNamespace)
-	Expect(err).NotTo(HaveOccurred())
+
+	Eventually(func() error {
+		// retry for the case where we're running against rbac-webhook
+		return VirtualMeshManifest.KubeApply(BookinfoNamespace)
+	}, "60s", "1s").ShouldNot(HaveOccurred())
 
 	// ensure status is updated
 	utils.AssertVirtualMeshStatuses(dynamicClient, BookinfoNamespace)
@@ -70,7 +74,10 @@ func federateClusters(dynamicClient client.Client) {
 
 func TeardownFederationAndClusters() {
 	err = VirtualMeshManifest.KubeDelete(BookinfoNamespace)
-	Expect(err).NotTo(HaveOccurred())
+	if err != nil {
+		// this is expected to fail in gloo-mesh-enterprise-helm tests as they run the rbac webhook which disables ability to delete this manifest
+		log.Printf("warn: %v", err)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
