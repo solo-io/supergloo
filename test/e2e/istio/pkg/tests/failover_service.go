@@ -1,4 +1,4 @@
-package istio_test
+package tests
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = Describe("FailoverService", func() {
+func FailoverServiceTest() {
 	var (
 		err                    error
 		manifest               utils.Manifest
@@ -198,4 +198,4 @@ var _ = Describe("FailoverService", func() {
 			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring("200 OK"))
 		})
 	})
-})
+}

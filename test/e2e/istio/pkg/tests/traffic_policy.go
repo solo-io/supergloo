@@ -1,4 +1,4 @@
-package istio_test
+package tests
 
 import (
 	"context"
@@ -20,7 +20,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("TrafficPolicy", func() {
+func TrafficPolicyTest() {
 	var (
 		err      error
 		manifest utils.Manifest
@@ -144,4 +144,4 @@ var _ = Describe("TrafficPolicy", func() {
 			}, "30s", "1s").ShouldNot(BeNil())
 		})
 	})
-})
+}
