@@ -111,7 +111,7 @@ func (i Installer) InstallChart(ctx context.Context) error {
 
 		release, err := client.Run(chartObj, parsedValues)
 		// ignore missing CRD error due to known Helm limitation, https://github.com/helm/helm/issues/7449
-		if err != nil && !strings.Contains(err.Error(), "unable to recognize \"\": no matches for kind") {
+		if err != nil && !(client.DryRun && strings.Contains(err.Error(), "unable to recognize \"\": no matches for kind")) {
 			return eris.Wrapf(err, "installing helm chart")
 		}
 
