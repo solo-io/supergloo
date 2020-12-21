@@ -18,18 +18,25 @@ const (
 	perm = 0644
 )
 
+// if TestManifestDir is set, manifests will be created here
+var TestManifestDir string
+
 type Manifest struct {
 	filename string
 }
 
 func NewManifest(filename string) (Manifest, error) {
-	_, callerFile, _, ok := runtime.Caller(1)
-	if !ok {
-		return Manifest{}, fmt.Errorf("failed to get runtime.Caller")
+	testManifestDir := TestManifestDir
+	if testManifestDir == "" {
+		// default to the directory of the caller
+		_, callerFile, _, ok := runtime.Caller(1)
+		if !ok {
+			return Manifest{}, fmt.Errorf("failed to get runtime.Caller")
+		}
+		testManifestDir = filepath.Dir(callerFile)
 	}
-	callerDir := filepath.Dir(callerFile)
 
-	manifest := Manifest{filename: filepath.Join(callerDir, filename)}
+	manifest := Manifest{filename: filepath.Join(testManifestDir, filename)}
 	err := manifest.CreateOrTruncate()
 	if err != nil {
 		return Manifest{}, err

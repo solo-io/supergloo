@@ -1,4 +1,4 @@
-package istio_test
+package tests
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Istio Networking Extensions", func() {
+func NetworkingExtensionsTest() {
 	var (
 		err               error
 		manifest          utils.Manifest
@@ -94,4 +94,4 @@ var _ = Describe("Istio Networking Extensions", func() {
 			Eventually(curlHelloServer, "30s", "1s").Should(ContainSubstring(helloMsg))
 		})
 	})
-})
+}

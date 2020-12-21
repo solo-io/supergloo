@@ -1,4 +1,4 @@
-package istio_test
+package tests
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -9,7 +9,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var _ = Describe("AccessPolicy", func() {
+// run tests for AccessPolicy CRD functionality
+func AccessPolicyTest() {
 	var (
 		err      error
 		manifest utils.Manifest
@@ -95,4 +96,4 @@ var _ = Describe("AccessPolicy", func() {
 			Eventually(curlRatings, "1m", "1s").Should(ContainSubstring("200 OK"))
 		})
 	})
-})
+}
