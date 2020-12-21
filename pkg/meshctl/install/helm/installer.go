@@ -110,11 +110,12 @@ func (i Installer) InstallChart(ctx context.Context) error {
 		client.DryRun = dryRun
 
 		release, err := client.Run(chartObj, parsedValues)
-		if err != nil {
+		// ignore missing CRD error due to known Helm limitation, https://github.com/helm/helm/issues/7449
+		if err != nil && !strings.Contains(err.Error(), "unable to recognize \"\": no matches for kind") {
 			return eris.Wrapf(err, "installing helm chart")
 		}
 
-		logrus.Infof("finished installing chart as release: %s", release.Name)
+		logrus.Infof("finished installing chart as release: %s", releaseName)
 		logrus.Debugf("%+v", release)
 	}
 
