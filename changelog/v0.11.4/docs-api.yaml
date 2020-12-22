@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1153
+    description: Add docs for all dependent API objects. Add links between API objects. Improve API index page using generated page.
