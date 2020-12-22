@@ -146,10 +146,13 @@ metadata:
   name: example-istiooperator
   namespace: istio-system
 spec:
-  profile: minimal
-  addonComponents:
-    istiocoredns:
-      enabled: true
+  profile: preview
+  meshConfig:
+    defaultConfig:
+      proxyMetadata:
+        # Enable Istio agent to handle DNS requests for known hosts
+        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
+        ISTIO_META_DNS_CAPTURE: "true"
   components:
     # Istio Gateway feature
     ingressGateways:
@@ -177,27 +180,15 @@ spec:
   values:
     global:
       pilotCertProvider: kubernetes
-      podDNSSearchNamespaces:
-      - global
 EOF
 }
 
-function install_istio() {
+# Operator spec for istio 1.8.x
+function install_istio_coredns() {
+
   cluster=$1
   port=$2
   K="kubectl --context=kind-${cluster}"
-
-  if istioctl version | grep -E -- '1.7'
-  then
-    install_istio_1_7 $cluster $port
-  elif istioctl version | grep -E -- '1.8'
-  then
-    install_istio_1_8 $cluster $port
-  else
-    echo "Encountered unsupported version of Istio: $(istioctl version)"
-    exit 1
-  fi
-
   # enable istio dns for .global stub domain:
   ISTIO_COREDNS=$(${K} get svc -n istio-system istiocoredns -o jsonpath={.spec.clusterIP})
   ${K} apply -f - <<EOF
@@ -230,6 +221,25 @@ data:
         forward . ${ISTIO_COREDNS}:53
     }
 EOF
+}
+
+function install_istio() {
+  cluster=$1
+  port=$2
+  K="kubectl --context=kind-${cluster}"
+
+  if istioctl version | grep -E -- '1.7'
+  then
+    install_istio_1_7 $cluster $port
+    install_istio_coredns $cluster $port
+  elif istioctl version | grep -E -- '1.8'
+  then
+    install_istio_1_8 $cluster $port
+  else
+    echo "Encountered unsupported version of Istio: $(istioctl version)"
+    exit 1
+  fi
+
 
   printf "\n\n---\n"
   echo "Finished setting up cluster ${cluster}"

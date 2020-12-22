@@ -105,9 +105,12 @@ metadata:
   namespace: istio-system
 spec:
   profile: minimal
-  addonComponents:
-    istiocoredns:
-      enabled: true
+  meshConfig:
+    defaultConfig:
+      proxyMetadata:
+        # Enable Istio agent to handle DNS requests for known hosts
+        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
+        ISTIO_META_DNS_CAPTURE: "true"
   components:
     # Istio Gateway feature
     ingressGateways:
@@ -135,8 +138,6 @@ spec:
   values:
     global:
       pilotCertProvider: kubernetes
-      podDNSSearchNamespaces:
-      - global
 EOF
 {{< /tab >}}
 {{< /tabs >}}
@@ -206,9 +207,12 @@ metadata:
   namespace: istio-system
 spec:
   profile: minimal
-  addonComponents:
-    istiocoredns:
-      enabled: true
+  meshConfig:
+    defaultConfig:
+      proxyMetadata:
+        # Enable Istio agent to handle DNS requests for known hosts
+        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
+        ISTIO_META_DNS_CAPTURE: "true"
   components:
     # Istio Gateway feature
     ingressGateways:
@@ -236,8 +240,6 @@ spec:
   values:
     global:
       pilotCertProvider: kubernetes
-      podDNSSearchNamespaces:
-      - global
 EOF
 {{< /tab >}}
 {{< /tabs >}}
