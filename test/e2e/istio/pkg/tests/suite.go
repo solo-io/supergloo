@@ -92,8 +92,8 @@ func TeardownFederationAndClusters() {
 func InitializeTests() bool {
 	var (
 		_ = Describe("AccessPolicy", AccessPolicyTest)
-		_ = Describe("FailoverService", FailoverServiceTest)
-		_ = XDescribe("Federation", FederationTest)
+		_ = XDescribe("FailoverService", FailoverServiceTest)
+		_ = Describe("Federation", FederationTest)
 		_ = Describe("Networking Extensions", NetworkingExtensionsTest)
 		_ = Describe("TrafficPolicy", TrafficPolicyTest)
 	)
