@@ -27,6 +27,7 @@ func FailoverServiceTest() {
 	)
 
 	BeforeEach(func() {
+		// TODO(EItanya): re-enable once segfault is fixed
 		if strings.Contains(os.Getenv("ISTIOCTL_BINARY"), "1.8") {
 			Skip("Skipping failover test for istio 1.8 until upstream envoy fixes segfault")
 		}
