@@ -260,7 +260,14 @@ istiocoredns-7ffc9b7fcf-crhr2           2/2     Running   0          5d23h
 istiod-7795ccf9dc-vr4cq                 1/1     Running   0          5d22h
 ```
 
-We also have to enable Istio DNS for the `.global` stub domain for when we want to use multicluster communication. The following two blocks will enable Istio DNS for both clusters.
+{{% notice note %}}
+The following section of the doc describes how to modify `coredns` to enable Istio DNS for the `.global` stub domain. This is not necessary when running Istio > 1.8.x
+with Istio's new Smart DNS enabled. More information on this new DNS can be found in the following [blog post](https://istio.io/latest/blog/2020/dns-proxy/).
+If you have installed Istio using the operator specs outlined above, this new DNS will be enabled by default.
+
+When running Istio < 1.8.x the following changes add the `.global` stub domain for multicluster communication.
+The following two blocks will enable Istio DNS for both clusters.
+{{% /notice %}}
 
 ```shell
 ISTIO_COREDNS=$(kubectl --context kind-mgmt-cluster -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
