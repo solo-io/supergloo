@@ -46,13 +46,13 @@ We also assume you've [registered]({{% versioned_link_path fromRoot="/setup/#reg
 ```shell
 meshctl cluster register \
   --cluster-name mgmt-cluster \
-  --remote-context mgmt-cluster-context
+  --remote-context $MGMT_CONTEXT
 ```
 
 ```shell
 meshctl cluster register \
   --cluster-name remote-cluster \
-  --remote-context remote-cluster-context
+  --remote-context $REMOTE_CONTEXT
 ```
 
 At this point we have two clusters, `mgmt-cluster` and `remote-cluster` both registered with Gloo Mesh which happens to be installed on the `mgmt-cluster` cluster.
@@ -64,7 +64,7 @@ Kubernetes in Docker makes it easy to stand up Kubernetes clusters on your local
 Once you have Kind installed, you can create the two clusters in question by running the following:
 
 ```bash
-meshctl demo init
+meshctl demo istio-multicluster init
 ```
 
 The command will do the following:
@@ -115,7 +115,7 @@ kubectl config use-context $REMOTE_CONTEXT
 kubectl create ns bookinfo
 kubectl label namespace bookinfo istio-injection=enabled
 ​
-kubectl apply -n bookinfo -f  https://raw.githubusercontent.com/istio/istio/release-1.8/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app,version in (v3)' 
+kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.8/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app,version in (v3)' 
 kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.8/samples/bookinfo/platform/kube/bookinfo.yaml -l 'service=reviews' 
 kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.8/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account=reviews' 
 kubectl apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/release-1.8/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app=ratings' 
