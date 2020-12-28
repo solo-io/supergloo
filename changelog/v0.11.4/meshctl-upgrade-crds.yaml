@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    description: meshctl's `install` and `cluster register` will update CRD definitions.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1079
+    resolvesIssue: false
