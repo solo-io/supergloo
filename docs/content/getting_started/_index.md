@@ -80,14 +80,14 @@ kubectl cluster-info --context kind-remote-cluster
 To connect to each of the clusters, run the following:
 
 ```shell
-export MGMT_PLANE_CTX=kind-mgmt-cluster
-export REMOTE_CTX=kind-remote-cluster
+export MGMT_CONTEXT=kind-mgmt-cluster
+export REMOTE_CONTEXT=kind-remote-cluster
 ```
 
 Then you can run the following to connect to the mgmt-cluster cluster:
 
 ```shell
-kubectl --context $MGMT_PLANE_CTX get po -n gloo-mesh
+kubectl --context $MGMT_CONTEXT get po -n gloo-mesh
 ```
 
 You should see Gloo Mesh installed:
@@ -106,22 +106,16 @@ meshctl check
 ```
 
 
-You should see something similar:
+You should see something similar to the following:
 
 ```shell
-✅ Kubernetes API
------------------
-✅ Kubernetes API server is reachable
-✅ running the minimum supported Kubernetes version (required: >=1.13)
+Gloo Mesh
+-------------------
+✅ Gloo Mesh pods are running
 
-
-✅ Gloo Mesh Management Plane
-------------------------------------
-✅ installation namespace exists
-✅ components are running
-
-
-✅ Gloo Mesh check found no errors
+Management Configuration
+---------------------------
+✅ Gloo Mesh networking configuration resources are in a valid state
 ```
 
 Setting up Kind and multiple clusters on your machine isn't always the easiest, and there may be some issues/hurdles you run into, especially on "company laptops" with extra security constraints. If you ran into any issues in the previous steps, please join us on the [Solo.io slack](https://slack.solo.io) and we'll be more than happy to help troubleshoot. 

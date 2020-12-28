@@ -40,11 +40,17 @@ Let's install Istio into both the management plane **AND** the remote cluster. T
 
 The manifest for Istio 1.7 is different from prior versions, so be sure to select the correct tab for the version of Istio you plan to install. The manifests below were tested using Istio 1.7.3 and 1.8.1.
 
+Before running the following, make sure your context names are set as environment variables:
+```shell
+MGMT_CONTEXT=your_management_plane_context
+REMOTE_CONTEXT=your_remote_context
+```
+
 #### Management plane install
 
 {{< tabs >}}
 {{< tab name="Istio 1.7" codelang="shell" >}}
-cat << EOF | istioctl manifest install --context kind-mgmt-cluster -f -
+cat << EOF | istioctl manifest install --context $MGMT_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -97,7 +103,7 @@ spec:
 EOF
 {{< /tab >}}
 {{< tab name="Istio 1.8" codelang="shell" >}}
-cat << EOF | istioctl manifest install -y --context kind-mgmt-cluster -f -
+cat << EOF | istioctl manifest install -y --context $MGMT_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -146,7 +152,7 @@ EOF
 
 {{< tabs >}}
 {{< tab name="Istio 1.7" codelang="shell" >}}
-cat << EOF | istioctl manifest install --context kind-remote-cluster -f -
+cat << EOF | istioctl manifest install --context $REMOTE_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -199,7 +205,7 @@ spec:
 EOF
 {{< /tab >}}
 {{< tab name="Istio 1.8" codelang="shell" >}}
-cat << EOF | istioctl manifest install -y --context kind-remote-cluster -f -
+cat << EOF | istioctl manifest install -y --context $REMOTE_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -270,8 +276,8 @@ The following two blocks will enable Istio DNS for both clusters.
 {{% /notice %}}
 
 ```shell
-ISTIO_COREDNS=$(kubectl --context kind-mgmt-cluster -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
-kubectl --context kind-mgmt-cluster apply -f - <<EOF
+ISTIO_COREDNS=$(kubectl --context $MGMT_CONTEXT -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
+kubectl --context $MGMT_CONTEXT apply -f - <<EOF
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -304,8 +310,8 @@ EOF
 ```
 
 ```shell
-ISTIO_COREDNS=$(kubectl --context kind-remote-cluster -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
-kubectl --context kind-remote-cluster apply -f - <<EOF
+ISTIO_COREDNS=$(kubectl --context $REMOTE_CONTEXT -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
+kubectl --context $REMOTE_CONTEXT apply -f - <<EOF
 apiVersion: v1
 kind: ConfigMap
 metadata:

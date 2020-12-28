@@ -71,7 +71,7 @@ meshctl install enterprise --license LICENSE_KEY_STRING
 If you're not using the context for the `mgmt-cluster`, you can explicitly specify it using the `--kubecontext` option:
 
 ```shell
-meshctl install --kubecontext mgmt-cluster-context
+meshctl install --kubecontext $MGMT_CONTEXT
 ```
 
 You should see output similar to this:
