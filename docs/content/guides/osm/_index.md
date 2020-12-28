@@ -55,8 +55,10 @@ deployment "osm-controller" successfully rolled out
 Next we will install Gloo Mesh, as outlined in the Setup guide for Gloo Mesh. Be sure to replace the `cluster-name` and `remote-context` values with the correct values for your environment.
 
 ```shell
+MGMT_CONTEXT=your_management_plane_context
+
 meshctl install
-meshctl cluster register --cluster-name mgmt-cluster --remote-context mgmt-cluster-context
+meshctl cluster register --cluster-name mgmt-cluster --remote-context $MGMT_CONTEXT
 ```
 
 Finally, we will deploy the sample application.
@@ -72,7 +74,7 @@ osm namespace add bookthief --enable-sidecar-injection
 osm namespace add bookwarehouse --enable-sidecar-injection
 osm namespace add bookbuyer --enable-sidecar-injection
 
-kubectl apply -f https://raw.githubusercontent.com/solo-io/gloo-mesh/v0.7.2/ci/osm-demo.yaml
+kubectl apply -f https://raw.githubusercontent.com/solo-io/gloo-mesh/v0.11.3/ci/osm-demo.yaml
 
 kubectl rollout status deployment --timeout 300s -n bookstore bookstore-v1
 kubectl rollout status deployment --timeout 300s -n bookstore bookstore-v2
@@ -118,29 +120,34 @@ as we have not enabled the bookthief or bookbuyer to interact with the bookstore
 
 ## Configuring OSM
 
-In order to configure OSM to allow traffic between the various services, and properly split traffic between the two bookstores, we need to apply the following two resources. Be sure to update the `cluster_name` value as needed.
+In order to configure OSM to allow traffic between the various services, and properly split traffic between the two bookstores, we need to apply the following two resources.
+
+First, set the cluster name on which OSM is installed as an environment variable. If you installed OSM using `meshctl demo`, the cluster name would be `mgmt-cluster`.
+```shell
+OSM_CLUSTER=osm_installation_cluster_name
+```
 
 ```shell script
 kubectl apply -f - <<EOF
 apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: AccessPolicy
 metadata:
-  name: my-policy
+  name: osm-access-policy
   namespace: gloo-mesh
 spec:
-  destination_selector:
-  - kube_service_refs:
+  destinationSelector:
+  - kubeServiceRefs:
       services:
-      - cluster_name: mgmt-cluster
+      - clusterName: $OSM_CLUSTER
         name: bookstore-v1
         namespace: bookstore
-      - cluster_name: mgmt-cluster
+      - clusterName: $OSM_CLUSTER
         name: bookstore-v2
         namespace: bookstore
-  source_selector:
-  - kube_service_account_refs:
-      service_accounts:
-      - cluster_name: mgmt-cluster
+  sourceSelector:
+  - kubeServiceAccountRefs:
+      serviceAccounts:
+      - clusterName: $OSM_CLUSTER
         name: bookthief
         namespace: bookthief
 
@@ -149,25 +156,25 @@ spec:
 apiVersion: networking.mesh.gloo.solo.io/v1alpha2
 kind: TrafficPolicy
 metadata:
-  name: my-policy
+  name: osm-traffic-policy
   namespace: gloo-mesh
 spec:
-  traffic_shift:
+  trafficShift:
     destinations:
-    - kube_service:
-        cluster_name: mgmt-cluster
+    - kubeService:
+        clusterName: $OSM_CLUSTER
         name: bookstore-v1
         namespace: bookstore
       weight: 50
-    - kube_service:
-        cluster_name: mgmt-cluster
+    - kubeService:
+        clusterName: $OSM_CLUSTER
         name: bookstore-v2
         namespace: bookstore
       weight: 50
-  destination_selector:
-  - kube_service_refs:
+  destinationSelector:
+  - kubeServiceRefs:
       services:
-      - cluster_name: mgmt-cluster
+      - clusterName: $OSM_CLUSTER
         name: bookstore
         namespace: bookstore
 EOF
