@@ -1,6 +1,8 @@
 
 ---
+{{if include_in_menu .Package }}
 title: "{{ cleanFileName .Name}}"
+{{end}}
 ---
 
 ## Package : `{{ .Package }}`

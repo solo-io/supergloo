@@ -38,7 +38,9 @@ func generateApiDocs(root string, opts ProtoOptions) error {
 }
 
 func buildCompleteFilename(destDir string, file *gendoc.File) string {
-	filename := filepath.Join(destDir, filepath.Base(file.Name))
+	// qualify file name with proto package to avoid collisions
+	// locate all generated files in same directory for easier linking
+	filename := filepath.Join(destDir, strings.ReplaceAll(file.Name, "/", "."))
 	return strings.TrimSuffix(filename, ".proto") + ".md"
 }
 
@@ -72,15 +74,33 @@ func generateProtoDocs(protoDir, templateFile, destDir string) error {
 			return err
 		}
 		defer destFile.Close()
+		removeDescriptions(file)
 		if err := tmpl.Execute(destFile, file); err != nil {
 			return err
 		}
-
-		tabsetHack(destFile)
 	}
 
 	// generate index page
 	return generateProtoDocsIndex(docsTemplate, links, destDir)
+}
+
+// Remove description from imported protos to avoid incorrectly rendering non-solo Hugo themes
+func removeDescriptions(file *gendoc.File) {
+	if strings.Contains(file.Package, constants.GlooMeshApiGroupSuffix) {
+		return
+	}
+	for _, msg := range file.Messages {
+		msg.Description = ""
+	}
+	for _, enum := range file.Enums {
+		enum.Description = ""
+	}
+	for _, service := range file.Services {
+		service.Description = ""
+	}
+	for _, extension := range file.Extensions {
+		extension.Description = ""
+	}
 }
 
 // generate proto docs index page
@@ -152,23 +172,6 @@ func collectIndexData(template *gendoc.Template, links map[string]string) map[st
 		}
 	}
 	return indexData
-}
-
-// in generated markdown files for Istio protos, replace occurrences of the "tabset" shortcode with "tabs"
-// because solo-io/hugo-theme-soloio doesn't support the "tabset" shortcode
-// TODO fix code highlighting of tabsets
-func tabsetHack(file *os.File) {
-	input, err := ioutil.ReadFile(file.Name())
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	replaced := strings.ReplaceAll(string(input), "tabset", "tabs")
-
-	err = ioutil.WriteFile(file.Name(), []byte(replaced), 0644)
-	if err != nil {
-		log.Fatalln(err)
-	}
 }
 
 // iterate gendoc template files and construct mapping from proto message name to relative link
@@ -250,6 +253,12 @@ func templateFuncs(links map[string]string) template.FuncMap {
 				}
 			}
 			return ""
+		},
+		"include_in_menu": func(pkg interface{}) bool {
+			if strings.Contains(pkg.(string), constants.GlooMeshApiGroupSuffix) {
+				return true
+			}
+			return false
 		},
 	}
 }
