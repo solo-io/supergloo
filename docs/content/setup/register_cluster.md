@@ -5,9 +5,9 @@ description: Registering a cluster with Gloo Mesh's management plane
 weight: 30
 ---
 
-Once you have Gloo Mesh or Gloo Mesh Enterprise installed, the next step is to register Kubernetes clusters that will have service mesh's you want to manage. The registration process creates a service account, cluster-role, and cluster-role association on the target cluster granting the service account the necessary permissions to monitor and make changes to the cluster. The current cluster-role definition is documented in the References section of the documentation.
+Once you have Gloo Mesh or Gloo Mesh Enterprise installed, the next step is to register Kubernetes clusters that will have service meshes you want to manage. The registration process creates a service account, cluster-role, and cluster-role association on the target cluster granting the service account the necessary permissions to monitor and make changes to the cluster. The current cluster-role definition is documented in the [References]({{% versioned_link_path fromRoot="/reference/cluster_role" %}}) section of the documentation.
 
-This guide will walk you through the basics of registering clusters using the `meshctl` tool. We will be using the two cluster contexts mentioned in the Gloo Mesh installation guide, `mgmt-cluster` and `remote-cluster`. Your cluster context names will likely differ, so please substitute the proper values.
+This guide will walk you through the basics of registering clusters using the `meshctl` tool. We will be using the two cluster contexts mentioned in the Gloo Mesh installation guide, `mgmt-cluster-context` and `remote-cluster-context`. Your cluster context names will likely differ, so please substitute the proper values.
 
 ## Register A Cluster
 
@@ -20,7 +20,7 @@ We will start by registering a remote cluster, i.e. a cluster not running the Gl
 ```shell
 REMOTE_CONTEXT=your_remote_context
 ```
-We will register the cluster with the `meshctl cluster register` command. The kubeconfig context we want to use for the registration process is specified with the `-remote-context` flag. If you are using Kind for your clusters, you will need to specify the `--api-server-address` flag along with the IP address and port of the Kubernetes API server. Select the Kind tab for the commands.
+We will register the cluster with the `meshctl cluster register` command. The kubeconfig context we want to use for the registration process is specified with the `--remote-context` flag. If you are using Kind for your clusters, you will need to specify the `--api-server-address` flag along with the IP address and port of the Kubernetes API server. Select the Kind tab for the commands.
 
 {{< tabs >}}
 {{< tab name="Kubernetes" codelang="shell" >}}
@@ -85,10 +85,16 @@ remote-cluster-gloomesh-remote-access-clusterrole-binding   13m
 
 #### Register the management cluster
 
-You can automatically register the cluster on which you deploy Gloo Mesh (for example, if you have a mesh running there as well) with the `--register` CLI flag when you're first installing with `meshctl`:
+There are multiple ways to register the management cluster. Again, let's store the name of the cluster context in a variable:
 
 ```shell
-meshctl install --register --context mgmt-cluster-context
+MGMT_CONTEXT=your_management_plane_context
+```
+
+You can automatically register the cluster on which you deploy Gloo Mesh (for example, if you have a mesh running there as well) with the `--register` CLI flag when you're first installing with `meshctl`.
+
+```shell
+meshctl install --register --context $MGMT_CONTEXT
 ```
 
 By default, when you register like this, the cluster name will be `mgmt-cluster`. If you run the following, you should see the cluster registered:
@@ -101,10 +107,6 @@ gloo-mesh          mgmt-cluster       10s
 ```
 
 If you choose not to register the management cluster during installation, you can always register the cluster using the `meshctl cluster register` command we used in the previous section.
-
-```shell
-MGMT_CONTEXT=your_management_plane_context
-```
 
 Select the *Kind* tab if you are running Kubernetes in Docker.
 
