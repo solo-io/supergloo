@@ -183,7 +183,7 @@ spec:
 EOF
 }
 
-# Operator spec for istio 1.8.x
+# updates the kube-system/coredns configmap in order to resolve hostnames with a ".global" suffix, needed for istio < 1.8
 function install_istio_coredns() {
 
   cluster=$1
