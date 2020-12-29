@@ -77,6 +77,7 @@ require (
 	istio.io/client-go v0.0.0-20200812230733-f5504d568313
 	istio.io/istio v0.0.0-20200821180042-b0e61d10cbae
 	k8s.io/api v0.18.8
+	k8s.io/apiextensions-apiserver v0.18.8
 	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v8.0.0+incompatible
 	k8s.io/kubernetes v1.13.0
