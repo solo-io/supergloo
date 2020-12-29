@@ -136,7 +136,7 @@ func (i Installer) InstallChart(ctx context.Context) error {
 }
 
 // Helm does not update CRDs upon upgrade, https://github.com/helm/helm/issues/7735
-// so we need to delete the existing CRDs before invoking Helm install/upgrade
+// so we need to update the CRDs ourselves
 func upsertCrds(ctx context.Context, kubeClient client.Client, chartObj *chart.Chart) error {
 	// unmarshal CRD definitions from Helm manifests
 	decoder := yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
