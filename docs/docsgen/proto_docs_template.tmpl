@@ -1,6 +1,8 @@
 
 ---
+{{if include_in_menu .Package }}
 title: "{{ cleanFileName .Name}}"
+{{end}}
 ---
 
 ## Package : `{{ .Package }}`
@@ -36,7 +38,12 @@ title: "{{ cleanFileName .Name}}"
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 {{range .Fields -}}
+  {{$link := link_to_type . -}}
+  {{if eq $link "" -}}
   | {{lowerCamel .Name }} | {{ if eq .Label "repeated" }}[]{{- end }}{{.FullType}} | {{.Label}} | {{ replaceNewLine .Description }}{{if .DefaultValue}} Default: {{.DefaultValue}}{{end}} |
+  {{else -}}
+  | {{lowerCamel .Name }} | {{ if eq .Label "repeated" }}[]{{- end }}[{{.FullType}}]({{ $link }}) | {{.Label}} | {{ replaceNewLine .Description }}{{if .DefaultValue}} Default: {{.DefaultValue}}{{end}} |
+  {{end -}}
 {{end}}
 {{end}}
 
