@@ -1,6 +1,8 @@
 
 ---
+
 title: "networking_extensions.proto"
+
 ---
 
 ## Package : `extensions.networking.mesh.gloo.solo.io`
@@ -46,10 +48,10 @@ a Protobuf representation of the set of Discovery objects used to produce the Ne
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| meshes | []extensions.networking.mesh.gloo.solo.io.MeshObject | repeated | all meshes in the discovery snapshot |
-| trafficTargets | []extensions.networking.mesh.gloo.solo.io.TrafficTargetObject | repeated | all traffic targets in the discovery snapshot |
-| workloads | []extensions.networking.mesh.gloo.solo.io.WorkloadObject | repeated | all workloads in the discovery snapshot |
-
+| meshes | [][extensions.networking.mesh.gloo.solo.io.MeshObject]({{< ref "github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions.md#extensions.networking.mesh.gloo.solo.io.MeshObject" >}}) | repeated | all meshes in the discovery snapshot |
+  | trafficTargets | [][extensions.networking.mesh.gloo.solo.io.TrafficTargetObject]({{< ref "github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions.md#extensions.networking.mesh.gloo.solo.io.TrafficTargetObject" >}}) | repeated | all traffic targets in the discovery snapshot |
+  | workloads | [][extensions.networking.mesh.gloo.solo.io.WorkloadObject]({{< ref "github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions.md#extensions.networking.mesh.gloo.solo.io.WorkloadObject" >}}) | repeated | all workloads in the discovery snapshot |
+  
 
 
 
@@ -63,9 +65,9 @@ the parameters provided to the Extensions server when requesting patches
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| inputs | extensions.networking.mesh.gloo.solo.io.DiscoverySnapshot |  | the set of discovery objects provided as inputs for the Gloo Mesh translation |
-| outputs | []extensions.networking.mesh.gloo.solo.io.GeneratedObject | repeated | the base set of output objects translated by Gloo Mesh. these may have been operated upon by a previous Extension server if multiple servers have been configured. |
-
+| inputs | [extensions.networking.mesh.gloo.solo.io.DiscoverySnapshot]({{< ref "github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions.md#extensions.networking.mesh.gloo.solo.io.DiscoverySnapshot" >}}) |  | the set of discovery objects provided as inputs for the Gloo Mesh translation |
+  | outputs | [][extensions.networking.mesh.gloo.solo.io.GeneratedObject]({{< ref "github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions.md#extensions.networking.mesh.gloo.solo.io.GeneratedObject" >}}) | repeated | the base set of output objects translated by Gloo Mesh. these may have been operated upon by a previous Extension server if multiple servers have been configured. |
+  
 
 
 
@@ -79,8 +81,8 @@ the set of patches the server wishes to apply to the Gloo Mesh Networking output
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| patchedOutputs | []extensions.networking.mesh.gloo.solo.io.GeneratedObject | repeated | the set of modified/added output objects desired by the Extension server. |
-
+| patchedOutputs | [][extensions.networking.mesh.gloo.solo.io.GeneratedObject]({{< ref "github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions.md#extensions.networking.mesh.gloo.solo.io.GeneratedObject" >}}) | repeated | the set of modified/added output objects desired by the Extension server. |
+  
 
 
 
@@ -94,14 +96,14 @@ a generated object can be of any output type supported by Gloo Mesh. the content
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| metadata | extensions.networking.mesh.gloo.solo.io.ObjectMeta |  | metadata of the object |
-| destinationRule | istio.networking.v1alpha3.DestinationRule |  |  |
-| envoyFilter | istio.networking.v1alpha3.EnvoyFilter |  |  |
-| serviceEntry | istio.networking.v1alpha3.ServiceEntry |  |  |
-| virtualService | istio.networking.v1alpha3.VirtualService |  |  |
-| configMap | extensions.networking.mesh.gloo.solo.io.GeneratedObject.ConfigMap |  |  |
-| xdsConfig | xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec |  | TODO(ilackarms): add more types here. note that we may need to support non-proto resourecs here in the future, in which case we will probably use a proto Struct to represent the object. |
-
+| metadata | [extensions.networking.mesh.gloo.solo.io.ObjectMeta]({{< ref "github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions.md#extensions.networking.mesh.gloo.solo.io.ObjectMeta" >}}) |  | metadata of the object |
+  | destinationRule | [istio.networking.v1alpha3.DestinationRule]({{< ref "istio.io.api.networking.v1alpha3.destination_rule.md#istio.networking.v1alpha3.DestinationRule" >}}) |  |  |
+  | envoyFilter | [istio.networking.v1alpha3.EnvoyFilter]({{< ref "istio.io.api.networking.v1alpha3.envoy_filter.md#istio.networking.v1alpha3.EnvoyFilter" >}}) |  |  |
+  | serviceEntry | [istio.networking.v1alpha3.ServiceEntry]({{< ref "istio.io.api.networking.v1alpha3.service_entry.md#istio.networking.v1alpha3.ServiceEntry" >}}) |  |  |
+  | virtualService | [istio.networking.v1alpha3.VirtualService]({{< ref "istio.io.api.networking.v1alpha3.virtual_service.md#istio.networking.v1alpha3.VirtualService" >}}) |  |  |
+  | configMap | [extensions.networking.mesh.gloo.solo.io.GeneratedObject.ConfigMap]({{< ref "github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions.md#extensions.networking.mesh.gloo.solo.io.GeneratedObject.ConfigMap" >}}) |  |  |
+  | xdsConfig | [xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec]({{< ref "github.com.solo-io.gloo-mesh.api.xds.v1alpha1.xds_config.md#xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec" >}}) |  | TODO(ilackarms): add more types here. note that we may need to support non-proto resourecs here in the future, in which case we will probably use a proto Struct to represent the object. |
+  
 
 
 
@@ -115,8 +117,8 @@ a generated object can be of any output type supported by Gloo Mesh. the content
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| data | []extensions.networking.mesh.gloo.solo.io.GeneratedObject.ConfigMap.DataEntry | repeated |  |
-
+| data | [][extensions.networking.mesh.gloo.solo.io.GeneratedObject.ConfigMap.DataEntry]({{< ref "github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions.md#extensions.networking.mesh.gloo.solo.io.GeneratedObject.ConfigMap.DataEntry" >}}) | repeated |  |
+  
 
 
 
@@ -131,8 +133,8 @@ a generated object can be of any output type supported by Gloo Mesh. the content
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
-| value | string |  |  |
-
+  | value | string |  |  |
+  
 
 
 
@@ -146,10 +148,10 @@ a proto-serializable representation of a Mesh object
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| metadata | extensions.networking.mesh.gloo.solo.io.ObjectMeta |  | metadata of the object |
-| spec | discovery.mesh.gloo.solo.io.MeshSpec |  | the spec of the object |
-| status | discovery.mesh.gloo.solo.io.MeshStatus |  | the status of the object |
-
+| metadata | [extensions.networking.mesh.gloo.solo.io.ObjectMeta]({{< ref "github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions.md#extensions.networking.mesh.gloo.solo.io.ObjectMeta" >}}) |  | metadata of the object |
+  | spec | [discovery.mesh.gloo.solo.io.MeshSpec]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshSpec" >}}) |  | the spec of the object |
+  | status | [discovery.mesh.gloo.solo.io.MeshStatus]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshStatus" >}}) |  | the status of the object |
+  
 
 
 
@@ -164,11 +166,11 @@ ObjectMeta is a simplified clone of the kubernetes ObjectMeta used to represent 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | string |  | the kubernetes name of the object |
-| namespace | string |  | the kubernetes namespace of the object |
-| clusterName | string |  | the kubernetes clusterName of the object (used internally by Gloo Mesh) |
-| labels | []extensions.networking.mesh.gloo.solo.io.ObjectMeta.LabelsEntry | repeated | the kubernetes labels on the object |
-| annotations | []extensions.networking.mesh.gloo.solo.io.ObjectMeta.AnnotationsEntry | repeated | the kubernetes annotations on the object |
-
+  | namespace | string |  | the kubernetes namespace of the object |
+  | clusterName | string |  | the kubernetes clusterName of the object (used internally by Gloo Mesh) |
+  | labels | [][extensions.networking.mesh.gloo.solo.io.ObjectMeta.LabelsEntry]({{< ref "github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions.md#extensions.networking.mesh.gloo.solo.io.ObjectMeta.LabelsEntry" >}}) | repeated | the kubernetes labels on the object |
+  | annotations | [][extensions.networking.mesh.gloo.solo.io.ObjectMeta.AnnotationsEntry]({{< ref "github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions.md#extensions.networking.mesh.gloo.solo.io.ObjectMeta.AnnotationsEntry" >}}) | repeated | the kubernetes annotations on the object |
+  
 
 
 
@@ -183,8 +185,8 @@ ObjectMeta is a simplified clone of the kubernetes ObjectMeta used to represent 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
-| value | string |  |  |
-
+  | value | string |  |  |
+  
 
 
 
@@ -199,8 +201,8 @@ ObjectMeta is a simplified clone of the kubernetes ObjectMeta used to represent 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
-| value | string |  |  |
-
+  | value | string |  |  |
+  
 
 
 
@@ -224,10 +226,10 @@ a proto-serializable representation of a TrafficTarget object
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| metadata | extensions.networking.mesh.gloo.solo.io.ObjectMeta |  | metadata of the object |
-| spec | discovery.mesh.gloo.solo.io.TrafficTargetSpec |  | the spec of the object |
-| status | discovery.mesh.gloo.solo.io.TrafficTargetStatus |  | the status of the object |
-
+| metadata | [extensions.networking.mesh.gloo.solo.io.ObjectMeta]({{< ref "github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions.md#extensions.networking.mesh.gloo.solo.io.ObjectMeta" >}}) |  | metadata of the object |
+  | spec | [discovery.mesh.gloo.solo.io.TrafficTargetSpec]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target.md#discovery.mesh.gloo.solo.io.TrafficTargetSpec" >}}) |  | the spec of the object |
+  | status | [discovery.mesh.gloo.solo.io.TrafficTargetStatus]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target.md#discovery.mesh.gloo.solo.io.TrafficTargetStatus" >}}) |  | the status of the object |
+  
 
 
 
@@ -251,10 +253,10 @@ a proto-serializable representation of a Workload object
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| metadata | extensions.networking.mesh.gloo.solo.io.ObjectMeta |  | metadata of the object |
-| spec | discovery.mesh.gloo.solo.io.WorkloadSpec |  | the spec of the object |
-| status | discovery.mesh.gloo.solo.io.WorkloadStatus |  | the status of the object |
-
+| metadata | [extensions.networking.mesh.gloo.solo.io.ObjectMeta]({{< ref "github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions.md#extensions.networking.mesh.gloo.solo.io.ObjectMeta" >}}) |  | metadata of the object |
+  | spec | [discovery.mesh.gloo.solo.io.WorkloadSpec]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload.md#discovery.mesh.gloo.solo.io.WorkloadSpec" >}}) |  | the spec of the object |
+  | status | [discovery.mesh.gloo.solo.io.WorkloadStatus]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload.md#discovery.mesh.gloo.solo.io.WorkloadStatus" >}}) |  | the status of the object |
+  
 
 
 
