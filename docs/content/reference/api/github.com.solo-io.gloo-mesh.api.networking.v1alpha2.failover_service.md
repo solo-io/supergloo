@@ -39,9 +39,9 @@ A FailoverService creates a new hostname to which services can send requests. Re
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | hostname | string |  | The DNS name of the FailoverService. Must be unique within the service mesh instance since it is used as the hostname with which clients communicate. |
-  | port | [networking.mesh.gloo.solo.io.FailoverServiceSpec.Port]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.failover_service.md#networking.mesh.gloo.solo.io.FailoverServiceSpec.Port" >}}) |  | The port on which the FailoverService listens. |
-  | meshes | [][core.skv2.solo.io.ObjectRef]({{< ref "github.com.solo-io.skv2.api.core.v1.core.md#core.skv2.solo.io.ObjectRef" >}}) | repeated | The meshes that this FailoverService will be visible to. |
-  | backingServices | [][networking.mesh.gloo.solo.io.FailoverServiceSpec.BackingService]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.failover_service.md#networking.mesh.gloo.solo.io.FailoverServiceSpec.BackingService" >}}) | repeated | The list of services backing the FailoverService, ordered by decreasing priority. All services must be backed by either the same service mesh instance or backed by service meshes that are grouped under a common VirtualMesh. |
+  | port | [networking.mesh.gloo.solo.io.FailoverServiceSpec.Port](.././github.com.solo-io.gloo-mesh.api.networking.v1alpha2.failover_service#networking.mesh.gloo.solo.io.FailoverServiceSpec.Port) |  | The port on which the FailoverService listens. |
+  | meshes | [][core.skv2.solo.io.ObjectRef](.././github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef) | repeated | The meshes that this FailoverService will be visible to. |
+  | backingServices | [][networking.mesh.gloo.solo.io.FailoverServiceSpec.BackingService](.././github.com.solo-io.gloo-mesh.api.networking.v1alpha2.failover_service#networking.mesh.gloo.solo.io.FailoverServiceSpec.BackingService) | repeated | The list of services backing the FailoverService, ordered by decreasing priority. All services must be backed by either the same service mesh instance or backed by service meshes that are grouped under a common VirtualMesh. |
   
 
 
@@ -56,7 +56,7 @@ The traffic targets that comprise the FailoverService.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeService | [core.skv2.solo.io.ClusterObjectRef]({{< ref "github.com.solo-io.skv2.api.core.v1.core.md#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Name/namespace/cluster of a kubernetes service. |
+| kubeService | [core.skv2.solo.io.ClusterObjectRef](.././github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef) |  | Name/namespace/cluster of a kubernetes service. |
   
 
 
@@ -88,8 +88,8 @@ The port on which the FailoverService listens.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the FailoverService metadata. If the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
-  | state | [networking.mesh.gloo.solo.io.ApprovalState]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state.md#networking.mesh.gloo.solo.io.ApprovalState" >}}) |  | The state of the overall resource, will only show accepted if it has been successfully applied to all target meshes. |
-  | meshes | [][networking.mesh.gloo.solo.io.FailoverServiceStatus.MeshesEntry]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.failover_service.md#networking.mesh.gloo.solo.io.FailoverServiceStatus.MeshesEntry" >}}) | repeated | The status of the FailoverService for each Mesh to which it has been applied. |
+  | state | [networking.mesh.gloo.solo.io.ApprovalState](.././github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state#networking.mesh.gloo.solo.io.ApprovalState) |  | The state of the overall resource, will only show accepted if it has been successfully applied to all target meshes. |
+  | meshes | [][networking.mesh.gloo.solo.io.FailoverServiceStatus.MeshesEntry](.././github.com.solo-io.gloo-mesh.api.networking.v1alpha2.failover_service#networking.mesh.gloo.solo.io.FailoverServiceStatus.MeshesEntry) | repeated | The status of the FailoverService for each Mesh to which it has been applied. |
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
   
 
@@ -106,7 +106,7 @@ The port on which the FailoverService listens.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
-  | value | [networking.mesh.gloo.solo.io.ApprovalStatus]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state.md#networking.mesh.gloo.solo.io.ApprovalStatus" >}}) |  |  |
+  | value | [networking.mesh.gloo.solo.io.ApprovalStatus](.././github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state#networking.mesh.gloo.solo.io.ApprovalStatus) |  |  |
   
 
 

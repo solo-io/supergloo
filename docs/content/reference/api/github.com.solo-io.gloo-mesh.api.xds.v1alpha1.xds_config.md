@@ -37,8 +37,8 @@ XdsConfigs are used to issue XDS Configuration Resources to running Envoy instan
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| workloads | [][core.skv2.solo.io.ObjectRef]({{< ref "github.com.solo-io.skv2.api.core.v1.core.md#core.skv2.solo.io.ObjectRef" >}}) | repeated | The Workloads that will receive this XDS Configuration. |
-  | types | [][xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.TypedResources]({{< ref "github.com.solo-io.gloo-mesh.api.xds.v1alpha1.xds_config.md#xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.TypedResources" >}}) | repeated | the xDS resources to serve to the nodes. mapped by type URL. |
+| workloads | [][core.skv2.solo.io.ObjectRef](.././github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef) | repeated | The Workloads that will receive this XDS Configuration. |
+  | types | [][xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.TypedResources](.././github.com.solo-io.gloo-mesh.api.xds.v1alpha1.xds_config#xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.TypedResources) | repeated | the xDS resources to serve to the nodes. mapped by type URL. |
   
 
 
@@ -70,7 +70,7 @@ a set of resources of a single type (typeURL)
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | typeUrl | string |  | the type URL of the resources in the given set |
-  | resources | [][xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.Resource]({{< ref "github.com.solo-io.gloo-mesh.api.xds.v1alpha1.xds_config.md#xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.Resource" >}}) | repeated | stored as compressed, base-64 encoded raw bytes. |
+  | resources | [][xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.Resource](.././github.com.solo-io.gloo-mesh.api.xds.v1alpha1.xds_config#xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec.Resource) | repeated | stored as compressed, base-64 encoded raw bytes. |
   
 
 

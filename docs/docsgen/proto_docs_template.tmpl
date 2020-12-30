@@ -42,7 +42,7 @@ title: "{{ cleanFileName .Name}}"
   {{if eq $link "" -}}
   | {{lowerCamel .Name }} | {{ if eq .Label "repeated" }}[]{{- end }}{{.FullType}} | {{.Label}} | {{ replaceNewLine .Description }}{{if .DefaultValue}} Default: {{.DefaultValue}}{{end}} |
   {{else -}}
-  | {{lowerCamel .Name }} | {{ if eq .Label "repeated" }}[]{{- end }}[{{.FullType}}]({{ $link }}) | {{.Label}} | {{ replaceNewLine .Description }}{{if .DefaultValue}} Default: {{.DefaultValue}}{{end}} |
+  | {{lowerCamel .Name }} | {{ if eq .Label "repeated" }}[]{{- end }}[{{.FullType}}](../{{ $link }}) | {{.Label}} | {{ replaceNewLine .Description }}{{if .DefaultValue}} Default: {{.DefaultValue}}{{end}} |
   {{end -}}
 {{end}}
 {{end}}
