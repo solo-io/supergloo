@@ -64,7 +64,7 @@ Copyright 2018 Istio Authors
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| mode | [istio.networking.v1alpha3.ClientTLSSettings.TLSmode](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ClientTLSSettings.TLSmode) |  | Indicates whether connections to this port should be secured using TLS. The value of this field determines how TLS is enforced. |
+| mode | [istio.networking.v1alpha3.ClientTLSSettings.TLSmode]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ClientTLSSettings.TLSmode" >}}) |  | Indicates whether connections to this port should be secured using TLS. The value of this field determines how TLS is enforced. |
   | clientCertificate | string |  | REQUIRED if mode is `MUTUAL`. The path to the file holding the client-side TLS certificate to use. Should be empty if mode is `ISTIO_MUTUAL`. |
   | privateKey | string |  | REQUIRED if mode is `MUTUAL`. The path to the file holding the client's private key. Should be empty if mode is `ISTIO_MUTUAL`. |
   | caCertificates | string |  | OPTIONAL: The path to the file containing certificate authority certificates to use in verifying a presented server certificate. If omitted, the proxy will not verify the server's certificate. Should be empty if mode is `ISTIO_MUTUAL`. |
@@ -85,8 +85,8 @@ Copyright 2018 Istio Authors
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| tcp | [istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings) |  | Settings common to both HTTP and TCP upstream connections. |
-  | http | [istio.networking.v1alpha3.ConnectionPoolSettings.HTTPSettings](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ConnectionPoolSettings.HTTPSettings) |  | HTTP connection pool settings. |
+| tcp | [istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings" >}}) |  | Settings common to both HTTP and TCP upstream connections. |
+  | http | [istio.networking.v1alpha3.ConnectionPoolSettings.HTTPSettings]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ConnectionPoolSettings.HTTPSettings" >}}) |  | HTTP connection pool settings. |
   
 
 
@@ -105,8 +105,8 @@ Copyright 2018 Istio Authors
   | http2MaxRequests | int32 |  | Maximum number of requests to a backend. Default 2^32-1. |
   | maxRequestsPerConnection | int32 |  | Maximum number of requests per connection to a backend. Setting this parameter to 1 disables keep alive. Default 0, meaning "unlimited", up to 2^29. |
   | maxRetries | int32 |  | Maximum number of retries that can be outstanding to all hosts in a cluster at a given time. Defaults to 2^32-1. |
-  | idleTimeout | [google.protobuf.Duration](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration) |  | The idle timeout for upstream connection pool connections. The idle timeout is defined as the period in which there are no active requests. If not set, the default is 1 hour. When the idle timeout is reached the connection will be closed. Note that request based timeouts mean that HTTP/2 PINGs will not keep the connection alive. Applies to both HTTP1.1 and HTTP2 connections. |
-  | h2UpgradePolicy | [istio.networking.v1alpha3.ConnectionPoolSettings.HTTPSettings.H2UpgradePolicy](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ConnectionPoolSettings.HTTPSettings.H2UpgradePolicy) |  | Specify if http1.1 connection should be upgraded to http2 for the associated destination. |
+  | idleTimeout | [google.protobuf.Duration]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | The idle timeout for upstream connection pool connections. The idle timeout is defined as the period in which there are no active requests. If not set, the default is 1 hour. When the idle timeout is reached the connection will be closed. Note that request based timeouts mean that HTTP/2 PINGs will not keep the connection alive. Applies to both HTTP1.1 and HTTP2 connections. |
+  | h2UpgradePolicy | [istio.networking.v1alpha3.ConnectionPoolSettings.HTTPSettings.H2UpgradePolicy]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ConnectionPoolSettings.HTTPSettings.H2UpgradePolicy" >}}) |  | Specify if http1.1 connection should be upgraded to http2 for the associated destination. |
   
 
 
@@ -122,8 +122,8 @@ Copyright 2018 Istio Authors
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | maxConnections | int32 |  | Maximum number of HTTP1 /TCP connections to a destination host. Default 2^32-1. |
-  | connectTimeout | [google.protobuf.Duration](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration) |  | TCP connection timeout. format: 1h/1m/1s/1ms. MUST BE >=1ms. Default is 10s. |
-  | tcpKeepalive | [istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings.TcpKeepalive](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings.TcpKeepalive) |  | If set then set SO_KEEPALIVE on the socket to enable TCP Keepalives. |
+  | connectTimeout | [google.protobuf.Duration]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | TCP connection timeout. format: 1h/1m/1s/1ms. MUST BE >=1ms. Default is 10s. |
+  | tcpKeepalive | [istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings.TcpKeepalive]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings.TcpKeepalive" >}}) |  | If set then set SO_KEEPALIVE on the socket to enable TCP Keepalives. |
   
 
 
@@ -139,8 +139,8 @@ Copyright 2018 Istio Authors
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | probes | uint32 |  | Maximum number of keepalive probes to send without response before deciding the connection is dead. Default is to use the OS level configuration (unless overridden, Linux defaults to 9.) |
-  | time | [google.protobuf.Duration](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration) |  | The time duration a connection needs to be idle before keep-alive probes start being sent. Default is to use the OS level configuration (unless overridden, Linux defaults to 7200s (ie 2 hours.) |
-  | interval | [google.protobuf.Duration](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration) |  | The time duration between keep-alive probes. Default is to use the OS level configuration (unless overridden, Linux defaults to 75s.) |
+  | time | [google.protobuf.Duration]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | The time duration a connection needs to be idle before keep-alive probes start being sent. Default is to use the OS level configuration (unless overridden, Linux defaults to 7200s (ie 2 hours.) |
+  | interval | [google.protobuf.Duration]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | The time duration between keep-alive probes. Default is to use the OS level configuration (unless overridden, Linux defaults to 75s.) |
   
 
 
@@ -156,8 +156,8 @@ Copyright 2018 Istio Authors
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | host | string |  | The name of a service from the service registry. Service names are looked up from the platform's service registry (e.g., Kubernetes services, Consul services, etc.) and from the hosts declared by [ServiceEntries](https://istio.io/docs/reference/config/networking/service-entry/#ServiceEntry). Rules defined for services that do not exist in the service registry will be ignored.<br>*Note for Kubernetes users*: When short names are used (e.g. "reviews" instead of "reviews.default.svc.cluster.local"), Istio will interpret the short name based on the namespace of the rule, not the service. A rule in the "default" namespace containing a host "reviews" will be interpreted as "reviews.default.svc.cluster.local", irrespective of the actual namespace associated with the reviews service. _To avoid potential misconfigurations, it is recommended to always use fully qualified domain names over short names._<br>Note that the host field applies to both HTTP and TCP services. |
-  | trafficPolicy | [istio.networking.v1alpha3.TrafficPolicy](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.TrafficPolicy) |  | Traffic policies to apply (load balancing policy, connection pool sizes, outlier detection). |
-  | subsets | [][istio.networking.v1alpha3.Subset](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.Subset) | repeated | One or more named sets that represent individual versions of a service. Traffic policies can be overridden at subset level. |
+  | trafficPolicy | [istio.networking.v1alpha3.TrafficPolicy]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.TrafficPolicy" >}}) |  | Traffic policies to apply (load balancing policy, connection pool sizes, outlier detection). |
+  | subsets | [][istio.networking.v1alpha3.Subset]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.Subset" >}}) | repeated | One or more named sets that represent individual versions of a service. Traffic policies can be overridden at subset level. |
   | exportTo | []string | repeated | A list of namespaces to which this destination rule is exported. The resolution of a destination rule to apply to a service occurs in the context of a hierarchy of namespaces. Exporting a destination rule allows it to be included in the resolution hierarchy for services in other namespaces. This feature provides a mechanism for service owners and mesh administrators to control the visibility of destination rules across namespace boundaries.<br>If no namespaces are specified then the destination rule is exported to all namespaces by default.<br>The value "." is reserved and defines an export to the same namespace that the destination rule is declared in. Similarly, the value "*" is reserved and defines an export to all namespaces.<br>NOTE: in the current release, the `exportTo` value is restricted to "." or "*" (i.e., the current namespace or all namespaces). |
   
 
@@ -173,9 +173,9 @@ Copyright 2018 Istio Authors
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| simple | [istio.networking.v1alpha3.LoadBalancerSettings.SimpleLB](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LoadBalancerSettings.SimpleLB) |  |  |
-  | consistentHash | [istio.networking.v1alpha3.LoadBalancerSettings.ConsistentHashLB](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LoadBalancerSettings.ConsistentHashLB) |  |  |
-  | localityLbSetting | [istio.networking.v1alpha3.LocalityLoadBalancerSetting](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LocalityLoadBalancerSetting) |  | Locality load balancer settings, this will override mesh wide settings in entirety, meaning no merging would be performed between this object and the object one in MeshConfig |
+| simple | [istio.networking.v1alpha3.LoadBalancerSettings.SimpleLB]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LoadBalancerSettings.SimpleLB" >}}) |  |  |
+  | consistentHash | [istio.networking.v1alpha3.LoadBalancerSettings.ConsistentHashLB]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LoadBalancerSettings.ConsistentHashLB" >}}) |  |  |
+  | localityLbSetting | [istio.networking.v1alpha3.LocalityLoadBalancerSetting]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LocalityLoadBalancerSetting" >}}) |  | Locality load balancer settings, this will override mesh wide settings in entirety, meaning no merging would be performed between this object and the object one in MeshConfig |
   
 
 
@@ -191,7 +191,7 @@ Copyright 2018 Istio Authors
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | httpHeaderName | string |  | Hash based on a specific HTTP header. |
-  | httpCookie | [istio.networking.v1alpha3.LoadBalancerSettings.ConsistentHashLB.HTTPCookie](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LoadBalancerSettings.ConsistentHashLB.HTTPCookie) |  | Hash based on HTTP cookie. |
+  | httpCookie | [istio.networking.v1alpha3.LoadBalancerSettings.ConsistentHashLB.HTTPCookie]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LoadBalancerSettings.ConsistentHashLB.HTTPCookie" >}}) |  | Hash based on HTTP cookie. |
   | useSourceIp | bool |  | Hash based on the source IP address. |
   | httpQueryParameterName | string |  | Hash based on a specific HTTP query parameter. |
   | minimumRingSize | uint64 |  | The minimum number of virtual nodes to use for the hash ring. Defaults to 1024. Larger ring sizes result in more granular load distributions. If the number of hosts in the load balancing pool is larger than the ring size, each host will be assigned a single virtual node. |
@@ -211,7 +211,7 @@ Copyright 2018 Istio Authors
 | ----- | ---- | ----- | ----------- |
 | name | string |  | Name of the cookie. |
   | path | string |  | Path to set for the cookie. |
-  | ttl | [google.protobuf.Duration](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration) |  | Lifetime of the cookie. |
+  | ttl | [google.protobuf.Duration]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | Lifetime of the cookie. |
   
 
 
@@ -226,9 +226,9 @@ Copyright 2018 Istio Authors
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| distribute | [][istio.networking.v1alpha3.LocalityLoadBalancerSetting.Distribute](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LocalityLoadBalancerSetting.Distribute) | repeated | Optional: only one of distribute or failover can be set. Explicitly specify loadbalancing weight across different zones and geographical locations. Refer to [Locality weighted load balancing](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/locality_weight) If empty, the locality weight is set according to the endpoints number within it. |
-  | failover | [][istio.networking.v1alpha3.LocalityLoadBalancerSetting.Failover](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LocalityLoadBalancerSetting.Failover) | repeated | Optional: only failover or distribute can be set. Explicitly specify the region traffic will land on when endpoints in local region becomes unhealthy. Should be used together with OutlierDetection to detect unhealthy endpoints. Note: if no OutlierDetection specified, this will not take effect. |
-  | enabled | [google.protobuf.BoolValue](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.BoolValue) |  | enable locality load balancing, this is DestinationRule-level and will override mesh wide settings in entirety. e.g. true means that turn on locality load balancing for this DestinationRule no matter what mesh wide settings is. |
+| distribute | [][istio.networking.v1alpha3.LocalityLoadBalancerSetting.Distribute]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LocalityLoadBalancerSetting.Distribute" >}}) | repeated | Optional: only one of distribute or failover can be set. Explicitly specify loadbalancing weight across different zones and geographical locations. Refer to [Locality weighted load balancing](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/locality_weight) If empty, the locality weight is set according to the endpoints number within it. |
+  | failover | [][istio.networking.v1alpha3.LocalityLoadBalancerSetting.Failover]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LocalityLoadBalancerSetting.Failover" >}}) | repeated | Optional: only failover or distribute can be set. Explicitly specify the region traffic will land on when endpoints in local region becomes unhealthy. Should be used together with OutlierDetection to detect unhealthy endpoints. Note: if no OutlierDetection specified, this will not take effect. |
+  | enabled | [google.protobuf.BoolValue]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.BoolValue" >}}) |  | enable locality load balancing, this is DestinationRule-level and will override mesh wide settings in entirety. e.g. true means that turn on locality load balancing for this DestinationRule no matter what mesh wide settings is. |
   
 
 
@@ -244,7 +244,7 @@ Copyright 2018 Istio Authors
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | from | string |  | Originating locality, '/' separated, e.g. 'region/zone/sub_zone'. |
-  | to | [][istio.networking.v1alpha3.LocalityLoadBalancerSetting.Distribute.ToEntry](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LocalityLoadBalancerSetting.Distribute.ToEntry) | repeated | Map of upstream localities to traffic distribution weights. The sum of all weights should be 100. Any locality not present will receive no traffic. |
+  | to | [][istio.networking.v1alpha3.LocalityLoadBalancerSetting.Distribute.ToEntry]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LocalityLoadBalancerSetting.Distribute.ToEntry" >}}) | repeated | Map of upstream localities to traffic distribution weights. The sum of all weights should be 100. Any locality not present will receive no traffic. |
   
 
 
@@ -292,10 +292,10 @@ Copyright 2018 Istio Authors
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | consecutiveErrors | int32 |  | Number of errors before a host is ejected from the connection pool. Defaults to 5. When the upstream host is accessed over HTTP, a 502, 503, or 504 return code qualifies as an error. When the upstream host is accessed over an opaque TCP connection, connect timeouts and connection error/failure events qualify as an error. $hide_from_docs |
-  | consecutiveGatewayErrors | [google.protobuf.UInt32Value](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.UInt32Value) |  | Number of gateway errors before a host is ejected from the connection pool. When the upstream host is accessed over HTTP, a 502, 503, or 504 return code qualifies as a gateway error. When the upstream host is accessed over an opaque TCP connection, connect timeouts and connection error/failure events qualify as a gateway error. This feature is disabled by default or when set to the value 0.<br>Note that consecutive_gateway_errors and consecutive_5xx_errors can be used separately or together. Because the errors counted by consecutive_gateway_errors are also included in consecutive_5xx_errors, if the value of consecutive_gateway_errors is greater than or equal to the value of consecutive_5xx_errors, consecutive_gateway_errors will have no effect. |
-  | consecutive5xxErrors | [google.protobuf.UInt32Value](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.UInt32Value) |  | Number of 5xx errors before a host is ejected from the connection pool. When the upstream host is accessed over an opaque TCP connection, connect timeouts, connection error/failure and request failure events qualify as a 5xx error. This feature defaults to 5 but can be disabled by setting the value to 0.<br>Note that consecutive_gateway_errors and consecutive_5xx_errors can be used separately or together. Because the errors counted by consecutive_gateway_errors are also included in consecutive_5xx_errors, if the value of consecutive_gateway_errors is greater than or equal to the value of consecutive_5xx_errors, consecutive_gateway_errors will have no effect. |
-  | interval | [google.protobuf.Duration](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration) |  | Time interval between ejection sweep analysis. format: 1h/1m/1s/1ms. MUST BE >=1ms. Default is 10s. |
-  | baseEjectionTime | [google.protobuf.Duration](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration) |  | Minimum ejection duration. A host will remain ejected for a period equal to the product of minimum ejection duration and the number of times the host has been ejected. This technique allows the system to automatically increase the ejection period for unhealthy upstream servers. format: 1h/1m/1s/1ms. MUST BE >=1ms. Default is 30s. |
+  | consecutiveGatewayErrors | [google.protobuf.UInt32Value]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.UInt32Value" >}}) |  | Number of gateway errors before a host is ejected from the connection pool. When the upstream host is accessed over HTTP, a 502, 503, or 504 return code qualifies as a gateway error. When the upstream host is accessed over an opaque TCP connection, connect timeouts and connection error/failure events qualify as a gateway error. This feature is disabled by default or when set to the value 0.<br>Note that consecutive_gateway_errors and consecutive_5xx_errors can be used separately or together. Because the errors counted by consecutive_gateway_errors are also included in consecutive_5xx_errors, if the value of consecutive_gateway_errors is greater than or equal to the value of consecutive_5xx_errors, consecutive_gateway_errors will have no effect. |
+  | consecutive5xxErrors | [google.protobuf.UInt32Value]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.UInt32Value" >}}) |  | Number of 5xx errors before a host is ejected from the connection pool. When the upstream host is accessed over an opaque TCP connection, connect timeouts, connection error/failure and request failure events qualify as a 5xx error. This feature defaults to 5 but can be disabled by setting the value to 0.<br>Note that consecutive_gateway_errors and consecutive_5xx_errors can be used separately or together. Because the errors counted by consecutive_gateway_errors are also included in consecutive_5xx_errors, if the value of consecutive_gateway_errors is greater than or equal to the value of consecutive_5xx_errors, consecutive_gateway_errors will have no effect. |
+  | interval | [google.protobuf.Duration]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | Time interval between ejection sweep analysis. format: 1h/1m/1s/1ms. MUST BE >=1ms. Default is 10s. |
+  | baseEjectionTime | [google.protobuf.Duration]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | Minimum ejection duration. A host will remain ejected for a period equal to the product of minimum ejection duration and the number of times the host has been ejected. This technique allows the system to automatically increase the ejection period for unhealthy upstream servers. format: 1h/1m/1s/1ms. MUST BE >=1ms. Default is 30s. |
   | maxEjectionPercent | int32 |  | Maximum % of hosts in the load balancing pool for the upstream service that can be ejected. Defaults to 10%. |
   | minHealthPercent | int32 |  | Outlier detection will be enabled as long as the associated load balancing pool has at least min_health_percent hosts in healthy mode. When the percentage of healthy hosts in the load balancing pool drops below this threshold, outlier detection will be disabled and the proxy will load balance across all hosts in the pool (healthy and unhealthy). The threshold can be disabled by setting it to 0%. The default is 0% as it's not typically applicable in k8s environments with few pods per service. |
   
@@ -313,8 +313,8 @@ Copyright 2018 Istio Authors
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | string |  | Name of the subset. The service name and the subset name can be used for traffic splitting in a route rule. |
-  | labels | [][istio.networking.v1alpha3.Subset.LabelsEntry](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.Subset.LabelsEntry) | repeated | Labels apply a filter over the endpoints of a service in the service registry. See route rules for examples of usage. |
-  | trafficPolicy | [istio.networking.v1alpha3.TrafficPolicy](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.TrafficPolicy) |  | Traffic policies that apply to this subset. Subsets inherit the traffic policies specified at the DestinationRule level. Settings specified at the subset level will override the corresponding settings specified at the DestinationRule level. |
+  | labels | [][istio.networking.v1alpha3.Subset.LabelsEntry]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.Subset.LabelsEntry" >}}) | repeated | Labels apply a filter over the endpoints of a service in the service registry. See route rules for examples of usage. |
+  | trafficPolicy | [istio.networking.v1alpha3.TrafficPolicy]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.TrafficPolicy" >}}) |  | Traffic policies that apply to this subset. Subsets inherit the traffic policies specified at the DestinationRule level. Settings specified at the subset level will override the corresponding settings specified at the DestinationRule level. |
   
 
 
@@ -345,11 +345,11 @@ Copyright 2018 Istio Authors
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| loadBalancer | [istio.networking.v1alpha3.LoadBalancerSettings](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LoadBalancerSettings) |  | Settings controlling the load balancer algorithms. |
-  | connectionPool | [istio.networking.v1alpha3.ConnectionPoolSettings](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ConnectionPoolSettings) |  | Settings controlling the volume of connections to an upstream service |
-  | outlierDetection | [istio.networking.v1alpha3.OutlierDetection](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.OutlierDetection) |  | Settings controlling eviction of unhealthy hosts from the load balancing pool |
-  | tls | [istio.networking.v1alpha3.ClientTLSSettings](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ClientTLSSettings) |  | TLS related settings for connections to the upstream service. |
-  | portLevelSettings | [][istio.networking.v1alpha3.TrafficPolicy.PortTrafficPolicy](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.TrafficPolicy.PortTrafficPolicy) | repeated | Traffic policies specific to individual ports. Note that port level settings will override the destination-level settings. Traffic settings specified at the destination-level will not be inherited when overridden by port-level settings, i.e. default values will be applied to fields omitted in port-level traffic policies. |
+| loadBalancer | [istio.networking.v1alpha3.LoadBalancerSettings]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LoadBalancerSettings" >}}) |  | Settings controlling the load balancer algorithms. |
+  | connectionPool | [istio.networking.v1alpha3.ConnectionPoolSettings]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ConnectionPoolSettings" >}}) |  | Settings controlling the volume of connections to an upstream service |
+  | outlierDetection | [istio.networking.v1alpha3.OutlierDetection]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.OutlierDetection" >}}) |  | Settings controlling eviction of unhealthy hosts from the load balancing pool |
+  | tls | [istio.networking.v1alpha3.ClientTLSSettings]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ClientTLSSettings" >}}) |  | TLS related settings for connections to the upstream service. |
+  | portLevelSettings | [][istio.networking.v1alpha3.TrafficPolicy.PortTrafficPolicy]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.TrafficPolicy.PortTrafficPolicy" >}}) | repeated | Traffic policies specific to individual ports. Note that port level settings will override the destination-level settings. Traffic settings specified at the destination-level will not be inherited when overridden by port-level settings, i.e. default values will be applied to fields omitted in port-level traffic policies. |
   
 
 
@@ -364,11 +364,11 @@ Copyright 2018 Istio Authors
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| port | [istio.networking.v1alpha3.PortSelector](.././istio.io.api.networking.v1alpha3.virtual_service#istio.networking.v1alpha3.PortSelector) |  | Specifies the number of a port on the destination service on which this policy is being applied. |
-  | loadBalancer | [istio.networking.v1alpha3.LoadBalancerSettings](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LoadBalancerSettings) |  | Settings controlling the load balancer algorithms. |
-  | connectionPool | [istio.networking.v1alpha3.ConnectionPoolSettings](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ConnectionPoolSettings) |  | Settings controlling the volume of connections to an upstream service |
-  | outlierDetection | [istio.networking.v1alpha3.OutlierDetection](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.OutlierDetection) |  | Settings controlling eviction of unhealthy hosts from the load balancing pool |
-  | tls | [istio.networking.v1alpha3.ClientTLSSettings](.././istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ClientTLSSettings) |  | TLS related settings for connections to the upstream service. |
+| port | [istio.networking.v1alpha3.PortSelector]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.virtual_service#istio.networking.v1alpha3.PortSelector" >}}) |  | Specifies the number of a port on the destination service on which this policy is being applied. |
+  | loadBalancer | [istio.networking.v1alpha3.LoadBalancerSettings]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.LoadBalancerSettings" >}}) |  | Settings controlling the load balancer algorithms. |
+  | connectionPool | [istio.networking.v1alpha3.ConnectionPoolSettings]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ConnectionPoolSettings" >}}) |  | Settings controlling the volume of connections to an upstream service |
+  | outlierDetection | [istio.networking.v1alpha3.OutlierDetection]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.OutlierDetection" >}}) |  | Settings controlling eviction of unhealthy hosts from the load balancing pool |
+  | tls | [istio.networking.v1alpha3.ClientTLSSettings]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.destination_rule#istio.networking.v1alpha3.ClientTLSSettings" >}}) |  | TLS related settings for connections to the upstream service. |
   
 
 

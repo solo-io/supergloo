@@ -40,10 +40,10 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | string |  | Enum type name. |
-  | enumvalue | [][google.protobuf.EnumValue](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.EnumValue) | repeated | Enum value definitions. |
-  | options | [][google.protobuf.Option](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Option) | repeated | Protocol buffer options. |
-  | sourceContext | [google.protobuf.SourceContext](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.source_context#google.protobuf.SourceContext) |  | The source context. |
-  | syntax | [google.protobuf.Syntax](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Syntax) |  | The source syntax. |
+  | enumvalue | [][google.protobuf.EnumValue]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.EnumValue" >}}) | repeated | Enum value definitions. |
+  | options | [][google.protobuf.Option]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Option" >}}) | repeated | Protocol buffer options. |
+  | sourceContext | [google.protobuf.SourceContext]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.source_context#google.protobuf.SourceContext" >}}) |  | The source context. |
+  | syntax | [google.protobuf.Syntax]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Syntax" >}}) |  | The source syntax. |
   
 
 
@@ -60,7 +60,7 @@
 | ----- | ---- | ----- | ----------- |
 | name | string |  | Enum value name. |
   | number | int32 |  | Enum value number. |
-  | options | [][google.protobuf.Option](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Option) | repeated | Protocol buffer options. |
+  | options | [][google.protobuf.Option]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Option" >}}) | repeated | Protocol buffer options. |
   
 
 
@@ -75,14 +75,14 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kind | [google.protobuf.Field.Kind](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Field.Kind) |  | The field type. |
-  | cardinality | [google.protobuf.Field.Cardinality](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Field.Cardinality) |  | The field cardinality. |
+| kind | [google.protobuf.Field.Kind]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Field.Kind" >}}) |  | The field type. |
+  | cardinality | [google.protobuf.Field.Cardinality]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Field.Cardinality" >}}) |  | The field cardinality. |
   | number | int32 |  | The field number. |
   | name | string |  | The field name. |
   | typeUrl | string |  | The field type URL, without the scheme, for message or enumeration types. Example: `"type.googleapis.com/google.protobuf.Timestamp"`. |
   | oneofIndex | int32 |  | The index of the field type in `Type.oneofs`, for message or enumeration types. The first type has index 1; zero means the type is not in the list. |
   | packed | bool |  | Whether to use alternative packed wire representation. |
-  | options | [][google.protobuf.Option](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Option) | repeated | The protocol buffer options. |
+  | options | [][google.protobuf.Option]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Option" >}}) | repeated | The protocol buffer options. |
   | jsonName | string |  | The field JSON name. |
   | defaultValue | string |  | The string value of the default value of this field. Proto2 syntax only. |
   
@@ -100,7 +100,7 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | string |  | The option's name. For protobuf built-in options (options defined in descriptor.proto), this is the short name. For example, `"map_entry"`. For custom options, it should be the fully-qualified name. For example, `"google.api.http"`. |
-  | value | [google.protobuf.Any](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.any#google.protobuf.Any) |  | The option's value packed in an Any message. If the value is a primitive, the corresponding wrapper type defined in google/protobuf/wrappers.proto should be used. If the value is an enum, it should be stored as an int32 value using the google.protobuf.Int32Value type. |
+  | value | [google.protobuf.Any]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.any#google.protobuf.Any" >}}) |  | The option's value packed in an Any message. If the value is a primitive, the corresponding wrapper type defined in google/protobuf/wrappers.proto should be used. If the value is an enum, it should be stored as an int32 value using the google.protobuf.Int32Value type. |
   
 
 
@@ -116,11 +116,11 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | string |  | The fully qualified message name. |
-  | fields | [][google.protobuf.Field](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Field) | repeated | The list of fields. |
+  | fields | [][google.protobuf.Field]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Field" >}}) | repeated | The list of fields. |
   | oneofs | []string | repeated | The list of types appearing in `oneof` definitions in this type. |
-  | options | [][google.protobuf.Option](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Option) | repeated | The protocol buffer options. |
-  | sourceContext | [google.protobuf.SourceContext](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.source_context#google.protobuf.SourceContext) |  | The source context. |
-  | syntax | [google.protobuf.Syntax](.././github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Syntax) |  | The source syntax. |
+  | options | [][google.protobuf.Option]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Option" >}}) | repeated | The protocol buffer options. |
+  | sourceContext | [google.protobuf.SourceContext]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.source_context#google.protobuf.SourceContext" >}}) |  | The source context. |
+  | syntax | [google.protobuf.Syntax]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.type#google.protobuf.Syntax" >}}) |  | The source syntax. |
   
 
 
