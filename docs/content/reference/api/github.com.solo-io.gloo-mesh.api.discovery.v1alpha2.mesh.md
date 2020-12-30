@@ -48,12 +48,12 @@ Meshes represent a currently registered service mesh.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| istio | [discovery.mesh.gloo.solo.io.MeshSpec.Istio]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.Istio" >}}) |  |  |
-  | awsAppMesh | [discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh" >}}) |  |  |
-  | linkerd | [discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh" >}}) |  |  |
-  | consulConnect | [discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh" >}}) |  |  |
-  | osm | [discovery.mesh.gloo.solo.io.MeshSpec.OSM]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.OSM" >}}) |  |  |
-  | agentInfo | [discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo" >}}) |  | Information about the Gloo Mesh certificate agent if it has been installed to the remote cluster. |
+| istio | [discovery.mesh.gloo.solo.io.MeshSpec.Istio]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio" >}}) |  |  |
+  | awsAppMesh | [discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh" >}}) |  |  |
+  | linkerd | [discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh" >}}) |  |  |
+  | consulConnect | [discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh" >}}) |  |  |
+  | osm | [discovery.mesh.gloo.solo.io.MeshSpec.OSM]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.OSM" >}}) |  |  |
+  | agentInfo | [discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo" >}}) |  | Information about the Gloo Mesh certificate agent if it has been installed to the remote cluster. |
   
 
 
@@ -102,7 +102,7 @@ Mesh object representing an installed ConsulConnect control plane.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  |  |
+| installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  |  |
   
 
 
@@ -117,9 +117,9 @@ Mesh object representing an installed Istio control plane
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  | Configuration metadata about the istio control plane installation. |
-  | citadelInfo | [discovery.mesh.gloo.solo.io.MeshSpec.Istio.CitadelInfo]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.Istio.CitadelInfo" >}}) |  | Configuration metadata for Istio Citadel (Istio's security component). |
-  | ingressGateways | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo" >}}) | repeated | Configuration metadata for Istio IngressGateway (the Istio Ingress). |
+| installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  | Configuration metadata about the istio control plane installation. |
+  | citadelInfo | [discovery.mesh.gloo.solo.io.MeshSpec.Istio.CitadelInfo]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.CitadelInfo" >}}) |  | Configuration metadata for Istio Citadel (Istio's security component). |
+  | ingressGateways | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo" >}}) | repeated | Configuration metadata for Istio IngressGateway (the Istio Ingress). |
   
 
 
@@ -150,7 +150,7 @@ Configuration metadata for Istio Citadel (Istio's security component).
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| workloadLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry" >}}) | repeated | Labels matching the workload which backs the gateway, defaults to `{"istio": "ingressgateway"}`. |
+| workloadLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry" >}}) | repeated | Labels matching the workload which backs the gateway, defaults to `{"istio": "ingressgateway"}`. |
   | externalAddress | string |  | The externally-reachable address on which the gateway is listening for TLS connections. This will be the address used for cross-cluster connectivity. Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes Service (depending on its type). |
   | externalTlsPort | uint32 |  | The externally-reachable port on which the gateway is listening for TLS connections. This will be the port used for cross-cluster connectivity. List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio. Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type). |
   | tlsContainerPort | uint32 |  | Container port on which the gateway is listening for TLS connections. Defaults to 15443. |
@@ -184,7 +184,7 @@ Mesh object representing an installed Linkerd control plane.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  |  |
+| installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  |  |
   | clusterDomain | string |  | The cluster domain suffix this Linkerd mesh is configured with. See https://linkerd.io/2/tasks/using-custom-domain/ for info. |
   
 
@@ -202,7 +202,7 @@ The cluster on which the control plane for this mesh is deployed. Not all MeshTy
 | ----- | ---- | ----- | ----------- |
 | namespace | string |  | Namespace in which the control plane has been installed. |
   | cluster | string |  | Cluster in which the control plane has been installed. |
-  | podLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry" >}}) | repeated | the labels on the control plane pods (read from the deployment) |
+  | podLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry" >}}) | repeated | the labels on the control plane pods (read from the deployment) |
   | version | string |  | Version of the Mesh that has been installed. Determined using the image tag on the Mesh's primary control plane image (e.g. the istio-pilot image tag). |
   
 
@@ -234,7 +234,7 @@ https://github.com/openservicemesh/osm
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  | Information about where OSM is installed in a managed Kubernetes Cluster. |
+| installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  | Information about where OSM is installed in a managed Kubernetes Cluster. |
   
 
 
@@ -250,8 +250,8 @@ https://github.com/openservicemesh/osm
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that mesh-networking has reconciled the latest version of the Mesh. |
-  | appliedVirtualMesh | [discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh" >}}) |  | The VirtualMesh, if any, which contains this mesh. |
-  | appliedFailoverServices | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh.md#discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService" >}}) | repeated | The FailoverServices, if any, which applies to this mesh. |
+  | appliedVirtualMesh | [discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh" >}}) |  | The VirtualMesh, if any, which contains this mesh. |
+  | appliedFailoverServices | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService" >}}) | repeated | The FailoverServices, if any, which applies to this mesh. |
   
 
 
@@ -266,9 +266,9 @@ AppliedFailoverService represents a FailoverService that has been applied to thi
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ref | [core.skv2.solo.io.ObjectRef]({{< ref "github.com.solo-io.skv2.api.core.v1.core.md#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the FailoverService. |
+| ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the FailoverService. |
   | observedGeneration | int64 |  | The observed generation of the accepted FailoverService. |
-  | spec | [networking.mesh.gloo.solo.io.FailoverServiceSpec]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.failover_service.md#networking.mesh.gloo.solo.io.FailoverServiceSpec" >}}) |  | The last known valid spec of the FailoverService. |
+  | spec | [networking.mesh.gloo.solo.io.FailoverServiceSpec]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.failover_service#networking.mesh.gloo.solo.io.FailoverServiceSpec" >}}) |  | The last known valid spec of the FailoverService. |
   
 
 
@@ -283,9 +283,9 @@ AppliedVirtualMesh represents a VirtualMesh that has been applied to this Mesh. 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ref | [core.skv2.solo.io.ObjectRef]({{< ref "github.com.solo-io.skv2.api.core.v1.core.md#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the VirtualMesh. |
+| ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the VirtualMesh. |
   | observedGeneration | int64 |  | The observed generation of the accepted VirtualMesh. |
-  | spec | [networking.mesh.gloo.solo.io.VirtualMeshSpec]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh.md#networking.mesh.gloo.solo.io.VirtualMeshSpec" >}}) |  | The last known valid spec of the VirtualMesh. |
+  | spec | [networking.mesh.gloo.solo.io.VirtualMeshSpec]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec" >}}) |  | The last known valid spec of the VirtualMesh. |
   
 
 

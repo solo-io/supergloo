@@ -70,11 +70,11 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| state | [core.skv2.solo.io.Status.State]({{< ref "github.com.solo-io.skv2.api.core.v1.core.md#core.skv2.solo.io.Status.State" >}}) |  | The current state of the resource |
+| state | [core.skv2.solo.io.Status.State]({{< versioned_link_path fromRoot="github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.Status.State" >}}) |  | The current state of the resource |
   | message | string |  | A human readable message about the current state of the object |
   | observedGeneration | int64 |  | The most recently observed generation of the resource. This value corresponds to the `metadata.generation` of a kubernetes resource |
-  | processingTime | [google.protobuf.Timestamp]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.timestamp.md#google.protobuf.Timestamp" >}}) |  | The time at which this status was recorded |
-  | owner | [google.protobuf.StringValue]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers.md#google.protobuf.StringValue" >}}) |  | (optional) The owner of the status, this value can be used to identify the entity which wrote this status. This is useful in situations where a given resource may have multiple owners. |
+  | processingTime | [google.protobuf.Timestamp]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.timestamp#google.protobuf.Timestamp" >}}) |  | The time at which this status was recorded |
+  | owner | [google.protobuf.StringValue]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.StringValue" >}}) |  | (optional) The owner of the status, this value can be used to identify the entity which wrote this status. This is useful in situations where a given resource may have multiple owners. |
   
 
 
@@ -89,8 +89,8 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| apiGroup | [google.protobuf.StringValue]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers.md#google.protobuf.StringValue" >}}) |  | API group of the resource being referenced |
-  | kind | [google.protobuf.StringValue]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers.md#google.protobuf.StringValue" >}}) |  | Kind of the resource being referenced |
+| apiGroup | [google.protobuf.StringValue]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.StringValue" >}}) |  | API group of the resource being referenced |
+  | kind | [google.protobuf.StringValue]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.StringValue" >}}) |  | Kind of the resource being referenced |
   | name | string |  | name of the resource being referenced |
   | namespace | string |  | namespace of the resource being referenced |
   | clusterName | string |  | name of the cluster in which the resource exists |
@@ -108,8 +108,8 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| apiGroup | [google.protobuf.StringValue]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers.md#google.protobuf.StringValue" >}}) |  | API group of the resource being referenced |
-  | kind | [google.protobuf.StringValue]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers.md#google.protobuf.StringValue" >}}) |  | Kind of the resource being referenced |
+| apiGroup | [google.protobuf.StringValue]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.StringValue" >}}) |  | API group of the resource being referenced |
+  | kind | [google.protobuf.StringValue]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.StringValue" >}}) |  | Kind of the resource being referenced |
   | name | string |  | name of the resource being referenced |
   | namespace | string |  | namespace of the resource being referenced |
   

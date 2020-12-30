@@ -39,9 +39,9 @@ The Workload is an abstraction for a workload/client which mesh-discovery has di
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubernetes | [discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload.md#discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload" >}}) |  | Information describing workloads backed by Kubernetes Pods. |
-  | mesh | [core.skv2.solo.io.ObjectRef]({{< ref "github.com.solo-io.skv2.api.core.v1.core.md#core.skv2.solo.io.ObjectRef" >}}) |  | The mesh with which this workload is associated. |
-  | appMesh | [discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload.md#discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh" >}}) |  | Appmesh specific metadata. |
+| kubernetes | [discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload#discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload" >}}) |  | Information describing workloads backed by Kubernetes Pods. |
+  | mesh | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The mesh with which this workload is associated. |
+  | appMesh | [discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload#discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh" >}}) |  | Appmesh specific metadata. |
   
 
 
@@ -57,7 +57,7 @@ Information relevant to AppMesh-injected workloads.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | virtualNodeName | string |  | The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container. |
-  | ports | [][discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh.ContainerPort]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload.md#discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh.ContainerPort" >}}) | repeated | Needed for declaring Appmesh VirtualNode listeners. |
+  | ports | [][discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh.ContainerPort]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload#discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh.ContainerPort" >}}) | repeated | Needed for declaring Appmesh VirtualNode listeners. |
   
 
 
@@ -88,8 +88,8 @@ Information describing a Kubernetes-based workload (e.g. a Deployment or DaemonS
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| controller | [core.skv2.solo.io.ClusterObjectRef]({{< ref "github.com.solo-io.skv2.api.core.v1.core.md#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads. It has the generic name controller as it can represent a deployment, daemonset, or statefulset. |
-  | podLabels | [][discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.PodLabelsEntry]({{< ref "github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload.md#discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.PodLabelsEntry" >}}) | repeated | These are the labels directly from the pods that this controller owns. NB: these labels are read directly from the pod template metadata.labels defined in the workload spec. We need these to determine which services are backed by this workload. |
+| controller | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads. It has the generic name controller as it can represent a deployment, daemonset, or statefulset. |
+  | podLabels | [][discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.PodLabelsEntry]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload#discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.PodLabelsEntry" >}}) | repeated | These are the labels directly from the pods that this controller owns. NB: these labels are read directly from the pod template metadata.labels defined in the workload spec. We need these to determine which services are backed by this workload. |
   | serviceAccountName | string |  | Service account attached to the pods owned by this controller. |
   
 

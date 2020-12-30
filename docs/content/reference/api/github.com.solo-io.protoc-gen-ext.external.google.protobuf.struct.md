@@ -36,7 +36,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| values | [][google.protobuf.Value]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.struct.md#google.protobuf.Value" >}}) | repeated | Repeated field of dynamically typed values. |
+| values | [][google.protobuf.Value]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.struct#google.protobuf.Value" >}}) | repeated | Repeated field of dynamically typed values. |
   
 
 
@@ -51,7 +51,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| fields | [][google.protobuf.Struct.FieldsEntry]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.struct.md#google.protobuf.Struct.FieldsEntry" >}}) | repeated | Unordered map of dynamically typed values. |
+| fields | [][google.protobuf.Struct.FieldsEntry]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.struct#google.protobuf.Struct.FieldsEntry" >}}) | repeated | Unordered map of dynamically typed values. |
   
 
 
@@ -67,7 +67,7 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
-  | value | [google.protobuf.Value]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.struct.md#google.protobuf.Value" >}}) |  |  |
+  | value | [google.protobuf.Value]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.struct#google.protobuf.Value" >}}) |  |  |
   
 
 
@@ -82,12 +82,12 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| nullValue | [google.protobuf.NullValue]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.struct.md#google.protobuf.NullValue" >}}) |  | Represents a null value. |
+| nullValue | [google.protobuf.NullValue]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.struct#google.protobuf.NullValue" >}}) |  | Represents a null value. |
   | numberValue | double |  | Represents a double value. |
   | stringValue | string |  | Represents a string value. |
   | boolValue | bool |  | Represents a boolean value. |
-  | structValue | [google.protobuf.Struct]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.struct.md#google.protobuf.Struct" >}}) |  | Represents a structured value. |
-  | listValue | [google.protobuf.ListValue]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.struct.md#google.protobuf.ListValue" >}}) |  | Represents a repeated `Value`. |
+  | structValue | [google.protobuf.Struct]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.struct#google.protobuf.Struct" >}}) |  | Represents a structured value. |
+  | listValue | [google.protobuf.ListValue]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.struct#google.protobuf.ListValue" >}}) |  | Represents a repeated `Value`. |
   
 
 
