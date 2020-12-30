@@ -75,7 +75,7 @@ var _ = Describe("Translator", func() {
 			daemonSets,
 			statefulSets,
 		)
-		settings := &settingsv1alpha2.Settings{}
+		settings := &settingsv1alpha2.DiscoverySettings{}
 
 		mockDependencyFactory.EXPECT().MakeMeshTranslator(ctx).Return(mockMeshTranslator)
 		mockDependencyFactory.EXPECT().MakeWorkloadTranslator(ctx, inRemote).Return(mockWorkloadTranslator)
