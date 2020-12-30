@@ -184,28 +184,32 @@ func collectLinks(destDir string, template *gendoc.Template) map[string]string {
 			if a, ok := links[msg.FullName]; ok && a != msg.FullName {
 				log.Printf("warning: found multiple definitions of proto msg %s: %+v", msg.FullName, []string{a, filepath.Base(filename) + "#" + msg.FullName})
 			}
-			links[msg.FullName] = fmt.Sprintf("{{< ref \"%s\" >}}", filepath.Base(filename)+"#"+msg.FullName)
+			links[msg.FullName] = buildLink(filename, msg.FullName)
 		}
 		for _, enum := range file.Enums {
 			if a, ok := links[enum.FullName]; ok && a != enum.FullName {
 				log.Printf("warning: found multiple definitions of proto enum %s: %+v", enum.FullName, []string{a, filepath.Base(filename) + "#" + enum.FullName})
 			}
-			links[enum.FullName] = fmt.Sprintf("{{< ref \"%s\" >}}", filepath.Base(filename)+"#"+enum.FullName)
+			links[enum.FullName] = buildLink(filename, enum.FullName)
 		}
 		for _, service := range file.Services {
 			if a, ok := links[service.FullName]; ok && a != service.FullName {
 				log.Printf("warning: found multiple definitions of proto service %s: %+v", service.FullName, []string{a, filepath.Base(filename) + "#" + service.FullName})
 			}
-			links[service.FullName] = fmt.Sprintf("{{< ref \"%s\" >}}", filepath.Base(filename)+"#"+service.FullName)
+			links[service.FullName] = buildLink(filename, service.FullName)
 		}
 		for _, extension := range file.Extensions {
 			if a, ok := links[extension.FullName]; ok && a != extension.FullName {
 				log.Printf("warning: found multiple definitions of proto extension %s: %+v", extension.FullName, []string{a, filepath.Base(filename) + "#" + extension.FullName})
 			}
-			links[extension.FullName] = fmt.Sprintf("{{< ref \"%s\" >}}", filepath.Base(filename)+"#"+extension.FullName)
+			links[extension.FullName] = buildLink(filename, extension.FullName)
 		}
 	}
 	return links
+}
+
+func buildLink(filename, protoTypeFullName string) string {
+	return fmt.Sprintf("{{< versioned_link_path fromRoot=\"%s\" >}}", strings.ReplaceAll(filepath.Base(filename), ".md", "")+"#"+protoTypeFullName)
 }
 
 func collectDescriptors(protoDir, outDir string, customImports ...string) (*gendoc.Template, error) {

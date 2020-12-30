@@ -41,7 +41,7 @@ title: "settings.proto"
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| istio | [settings.mesh.gloo.solo.io.DiscoverySettings.Istio]({{< ref "github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings.md#settings.mesh.gloo.solo.io.DiscoverySettings.Istio" >}}) |  | Istio-specific discovery settings |
+| istio | [settings.mesh.gloo.solo.io.DiscoverySettings.Istio]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.DiscoverySettings.Istio" >}}) |  | Istio-specific discovery settings |
   
 
 
@@ -56,7 +56,7 @@ title: "settings.proto"
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ingressGatewayDetectors | [][settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetectorsEntry]({{< ref "github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings.md#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetectorsEntry" >}}) | repeated | Ingress gateway detectors for each cluster. The key to the map is either a k8s cluster name or the wildcard `*` meaning all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the wildcard entry will be used if it exists. Lastly, we will fall back to the default values. |
+| ingressGatewayDetectors | [][settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetectorsEntry]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetectorsEntry" >}}) | repeated | Ingress gateway detectors for each cluster. The key to the map is either a k8s cluster name or the wildcard `*` meaning all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the wildcard entry will be used if it exists. Lastly, we will fall back to the default values. |
   
 
 
@@ -71,7 +71,7 @@ Workload labels and TLS port name used during discovery to detect ingress gatewa
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| gatewayWorkloadLabels | [][settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetector.GatewayWorkloadLabelsEntry]({{< ref "github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings.md#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetector.GatewayWorkloadLabelsEntry" >}}) | repeated | The workload labels used during discovery to detect ingress gateways for a mesh. If not specified, will default to `{"istio": "ingressgateway"}`. |
+| gatewayWorkloadLabels | [][settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetector.GatewayWorkloadLabelsEntry]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetector.GatewayWorkloadLabelsEntry" >}}) | repeated | The workload labels used during discovery to detect ingress gateways for a mesh. If not specified, will default to `{"istio": "ingressgateway"}`. |
   | gatewayTlsPortName | string |  | The name of the TLS port used to detect ingress gateways. Services must have a port with this name in order to be recognized as an ingress gateway during discovery. If not specified, will default to `tls`. |
   
 
@@ -104,7 +104,7 @@ Workload labels and TLS port name used during discovery to detect ingress gatewa
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
-  | value | [settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetector]({{< ref "github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings.md#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetector" >}}) |  |  |
+  | value | [settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetector]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetector" >}}) |  |  |
   
 
 
@@ -136,9 +136,9 @@ Configure global settings and defaults.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| mtls | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS" >}}) |  | Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence) |
-  | networkingExtensionServers | [][settings.mesh.gloo.solo.io.NetworkingExtensionsServer]({{< ref "github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings.md#settings.mesh.gloo.solo.io.NetworkingExtensionsServer" >}}) | repeated | Configure Gloo Mesh networking to communicate with one or more external gRPC NetworkingExtensions servers. Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence). Note: Extension Servers have full write access to the output objects written by Gloo Mesh. |
-  | discovery | [settings.mesh.gloo.solo.io.DiscoverySettings]({{< ref "github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings.md#settings.mesh.gloo.solo.io.DiscoverySettings" >}}) |  | Settings specific to the discovery controller. |
+| mtls | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS" >}}) |  | Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence) |
+  | networkingExtensionServers | [][settings.mesh.gloo.solo.io.NetworkingExtensionsServer]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.NetworkingExtensionsServer" >}}) | repeated | Configure Gloo Mesh networking to communicate with one or more external gRPC NetworkingExtensions servers. Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence). Note: Extension Servers have full write access to the output objects written by Gloo Mesh. |
+  | discovery | [settings.mesh.gloo.solo.io.DiscoverySettings]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.DiscoverySettings" >}}) |  | Settings specific to the discovery controller. |
   
 
 
@@ -154,7 +154,7 @@ Configure global settings and defaults.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the Settings metadata. If the observedGeneration does not match generation, the controller has not processed the most recent version of this resource. |
-  | state | [networking.mesh.gloo.solo.io.ApprovalState]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state.md#networking.mesh.gloo.solo.io.ApprovalState" >}}) |  | The state of the overall resource. It will only show accepted if no processing errors encountered. |
+  | state | [networking.mesh.gloo.solo.io.ApprovalState]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state#networking.mesh.gloo.solo.io.ApprovalState" >}}) |  | The state of the overall resource. It will only show accepted if no processing errors encountered. |
   | errors | []string | repeated | Any errors encountered while processing Settings object. |
   
 

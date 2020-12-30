@@ -59,18 +59,18 @@ A Traffic Policy applies some L7 routing features to an existing mesh. Traffic P
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sourceSelector | [][networking.mesh.gloo.solo.io.WorkloadSelector]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors.md#networking.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Requests originating from these workloads will have the rule applied. Leave empty to have all workloads in the mesh apply these rules.<br>Note: Source Selectors are ignored when TrafficPolicies are applied to pods in a Linkerd mesh. TrafficPolicies will apply to all selected destinations in Linkerd, regardless of the source.<br>Note: If using the TrafficTargetSelector.Matcher, specifying clusters is currently not supported in Istio. |
-  | destinationSelector | [][networking.mesh.gloo.solo.io.TrafficTargetSelector]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors.md#networking.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | Requests destined for these k8s services will have the rule applied. Leave empty to apply to all destination k8s services in the mesh. |
-  | httpRequestMatchers | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher" >}}) | repeated | If specified, this rule will only apply to http requests matching these conditions. Within a single matcher, all conditions must be satisfied for a match to occur. Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply. NB: Linkerd only supports matching on Request Path and Method. |
-  | trafficShift | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination" >}}) |  | Enables traffic shifting, i.e. to reroute requests to a different service, to a subset of pods based on their label, and/or split traffic between multiple services. |
-  | faultInjection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.FaultInjection]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.FaultInjection" >}}) |  | Enable fault injection on requests. |
-  | requestTimeout | [google.protobuf.Duration]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration.md#google.protobuf.Duration" >}}) |  | Set a timeout on requests. |
-  | retries | [networking.mesh.gloo.solo.io.TrafficPolicySpec.RetryPolicy]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.RetryPolicy" >}}) |  | Set a retry policy on requests. |
-  | corsPolicy | [networking.mesh.gloo.solo.io.TrafficPolicySpec.CorsPolicy]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.CorsPolicy" >}}) |  | Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS for further details about cross origin resource sharing. |
-  | mirror | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Mirror]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.Mirror" >}}) |  | Mirror HTTP traffic to a another destination. Traffic will still be sent to its original destination as normal. |
-  | headerManipulation | [networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderManipulation]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderManipulation" >}}) |  | Manipulate request and response headers. |
-  | outlierDetection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.OutlierDetection]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.OutlierDetection" >}}) |  | Configure outlier detection on the targeted services. Setting this field requires an empty source_selector because it must apply to all traffic. |
-  | mtls | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS" >}}) |  | Configure mTLS settings. If specified will override global default defined in Settings. |
+| sourceSelector | [][networking.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Requests originating from these workloads will have the rule applied. Leave empty to have all workloads in the mesh apply these rules.<br>Note: Source Selectors are ignored when TrafficPolicies are applied to pods in a Linkerd mesh. TrafficPolicies will apply to all selected destinations in Linkerd, regardless of the source.<br>Note: If using the TrafficTargetSelector.Matcher, specifying clusters is currently not supported in Istio. |
+  | destinationSelector | [][networking.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | Requests destined for these k8s services will have the rule applied. Leave empty to apply to all destination k8s services in the mesh. |
+  | httpRequestMatchers | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher" >}}) | repeated | If specified, this rule will only apply to http requests matching these conditions. Within a single matcher, all conditions must be satisfied for a match to occur. Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply. NB: Linkerd only supports matching on Request Path and Method. |
+  | trafficShift | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination" >}}) |  | Enables traffic shifting, i.e. to reroute requests to a different service, to a subset of pods based on their label, and/or split traffic between multiple services. |
+  | faultInjection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.FaultInjection]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.FaultInjection" >}}) |  | Enable fault injection on requests. |
+  | requestTimeout | [google.protobuf.Duration]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | Set a timeout on requests. |
+  | retries | [networking.mesh.gloo.solo.io.TrafficPolicySpec.RetryPolicy]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.RetryPolicy" >}}) |  | Set a retry policy on requests. |
+  | corsPolicy | [networking.mesh.gloo.solo.io.TrafficPolicySpec.CorsPolicy]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.CorsPolicy" >}}) |  | Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS for further details about cross origin resource sharing. |
+  | mirror | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Mirror]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Mirror" >}}) |  | Mirror HTTP traffic to a another destination. Traffic will still be sent to its original destination as normal. |
+  | headerManipulation | [networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderManipulation]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderManipulation" >}}) |  | Manipulate request and response headers. |
+  | outlierDetection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.OutlierDetection]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.OutlierDetection" >}}) |  | Configure outlier detection on the targeted services. Setting this field requires an empty source_selector because it must apply to all traffic. |
+  | mtls | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS" >}}) |  | Configure mTLS settings. If specified will override global default defined in Settings. |
   
 
 
@@ -85,12 +85,12 @@ A Traffic Policy applies some L7 routing features to an existing mesh. Traffic P
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| allowOrigins | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.StringMatch]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.StringMatch" >}}) | repeated | String patterns that match allowed origins. An origin is allowed if any of the string matchers match. If a match is found, then the outgoing Access-Control-Allow-Origin would be set to the origin as provided by the client. |
+| allowOrigins | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.StringMatch]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.StringMatch" >}}) | repeated | String patterns that match allowed origins. An origin is allowed if any of the string matchers match. If a match is found, then the outgoing Access-Control-Allow-Origin would be set to the origin as provided by the client. |
   | allowMethods | []string | repeated | List of HTTP methods allowed to access the resource. The content will be serialized into the Access-Control-Allow-Methods header. |
   | allowHeaders | []string | repeated | List of HTTP headers that can be used when requesting the resource. Serialized to Access-Control-Allow-Headers header. |
   | exposeHeaders | []string | repeated | A white list of HTTP headers that the browsers are allowed to access. Serialized into Access-Control-Expose-Headers header. |
-  | maxAge | [google.protobuf.Duration]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration.md#google.protobuf.Duration" >}}) |  | Specifies how long the results of a preflight request can be cached. Translates to the `Access-Control-Max-Age` header. |
-  | allowCredentials | [google.protobuf.BoolValue]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers.md#google.protobuf.BoolValue" >}}) |  | Indicates whether the caller is allowed to send the actual request (not the preflight) using credentials. Translates to `Access-Control-Allow-Credentials` header. |
+  | maxAge | [google.protobuf.Duration]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | Specifies how long the results of a preflight request can be cached. Translates to the `Access-Control-Max-Age` header. |
+  | allowCredentials | [google.protobuf.BoolValue]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.wrappers#google.protobuf.BoolValue" >}}) |  | Indicates whether the caller is allowed to send the actual request (not the preflight) using credentials. Translates to `Access-Control-Allow-Credentials` header. |
   
 
 
@@ -105,9 +105,9 @@ FaultInjection can be used to specify one or more faults to inject while forward
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| fixedDelay | [google.protobuf.Duration]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration.md#google.protobuf.Duration" >}}) |  | Add a fixed delay before forwarding the request. Format: 1h/1m/1s/1ms. MUST be >=1ms. |
-  | exponentialDelay | [google.protobuf.Duration]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration.md#google.protobuf.Duration" >}}) |  | $hide_from_docs |
-  | abort | [networking.mesh.gloo.solo.io.TrafficPolicySpec.FaultInjection.Abort]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.FaultInjection.Abort" >}}) |  | Abort Http request attempts and return error codes back to downstream service, giving the impression that the upstream service is faulty. |
+| fixedDelay | [google.protobuf.Duration]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | Add a fixed delay before forwarding the request. Format: 1h/1m/1s/1ms. MUST be >=1ms. |
+  | exponentialDelay | [google.protobuf.Duration]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | $hide_from_docs |
+  | abort | [networking.mesh.gloo.solo.io.TrafficPolicySpec.FaultInjection.Abort]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.FaultInjection.Abort" >}}) |  | Abort Http request attempts and return error codes back to downstream service, giving the impression that the upstream service is faulty. |
   | percentage | double |  | Percentage of requests to be faulted with the error code provided. Values range between 0 and 100 |
   
 
@@ -139,9 +139,9 @@ Manipulate request and response headers.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | removeResponseHeaders | []string | repeated | HTTP headers to remove before returning a response to the caller. |
-  | appendResponseHeaders | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderManipulation.AppendResponseHeadersEntry]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderManipulation.AppendResponseHeadersEntry" >}}) | repeated | Additional HTTP headers to add before returning a response to the caller. |
+  | appendResponseHeaders | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderManipulation.AppendResponseHeadersEntry]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderManipulation.AppendResponseHeadersEntry" >}}) | repeated | Additional HTTP headers to add before returning a response to the caller. |
   | removeRequestHeaders | []string | repeated | HTTP headers to remove before forwarding a request to the destination service. |
-  | appendRequestHeaders | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderManipulation.AppendRequestHeadersEntry]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderManipulation.AppendRequestHeadersEntry" >}}) | repeated | Additional HTTP headers to add before forwarding a request to the destination service. |
+  | appendRequestHeaders | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderManipulation.AppendRequestHeadersEntry]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderManipulation.AppendRequestHeadersEntry" >}}) | repeated | Additional HTTP headers to add before forwarding a request to the destination service. |
   
 
 
@@ -209,9 +209,9 @@ Parameters for matching routes. All specified conditions must be satisfied for a
 | prefix | string |  | If specified, the route is a prefix rule meaning that the prefix must match the beginning of the *:path* header. |
   | exact | string |  | If specified, the route is an exact path rule meaning that the path must exactly match the *:path* header once the query string is removed. |
   | regex | string |  | If specified, the route is a regular expression rule meaning that the regex must match the *:path* header once the query string is removed. The entire path (without the query string) must match the regex. The rule will not match if only a sub-sequence of the *:path* header matches the regex. The regex grammar is defined `here <http://en.cppreference.com/w/cpp/regex/ecmascript>`_. |
-  | headers | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderMatcher]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderMatcher" >}}) | repeated | Specifies a set of headers which requests must match in entirety (all headers must match). |
-  | queryParameters | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.QueryParameterMatcher]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.QueryParameterMatcher" >}}) | repeated | Specifies a set of URL query parameters which requests must match in entirety (all query params must match). The router will check the query string from the *path* header against all the specified query parameters |
-  | method | [networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMethod]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMethod" >}}) |  | HTTP Method/Verb to match on. If none specified, the matcher will ignore the HTTP Method |
+  | headers | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderMatcher]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderMatcher" >}}) | repeated | Specifies a set of headers which requests must match in entirety (all headers must match). |
+  | queryParameters | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.QueryParameterMatcher]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.QueryParameterMatcher" >}}) | repeated | Specifies a set of URL query parameters which requests must match in entirety (all query params must match). The router will check the query string from the *path* header against all the specified query parameters |
+  | method | [networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMethod]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMethod" >}}) |  | HTTP Method/Verb to match on. If none specified, the matcher will ignore the HTTP Method |
   
 
 
@@ -226,7 +226,7 @@ Express an optional HttpMethod by wrapping it in a nillable message.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| method | [networking.mesh.gloo.solo.io.HttpMethodValue]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.http.md#networking.mesh.gloo.solo.io.HttpMethodValue" >}}) |  |  |
+| method | [networking.mesh.gloo.solo.io.HttpMethodValue]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.http#networking.mesh.gloo.solo.io.HttpMethodValue" >}}) |  |  |
   
 
 
@@ -241,7 +241,7 @@ Configure mTLS settings on traffic targets. If specified this overrides the glob
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| istio | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS.Istio]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS.Istio" >}}) |  | Istio TLS settings |
+| istio | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS.Istio]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS.Istio" >}}) |  | Istio TLS settings |
   
 
 
@@ -256,7 +256,7 @@ Istio TLS settings Map onto the enums defined here https://github.com/istio/api/
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| tlsMode | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS.Istio.TLSmode]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS.Istio.TLSmode" >}}) |  | TLS connection mode |
+| tlsMode | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS.Istio.TLSmode]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS.Istio.TLSmode" >}}) |  | TLS connection mode |
   
 
 
@@ -271,7 +271,7 @@ Istio TLS settings Map onto the enums defined here https://github.com/istio/api/
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeService | [core.skv2.solo.io.ClusterObjectRef]({{< ref "github.com.solo-io.skv2.api.core.v1.core.md#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Name/namespace/cluster of a kubernetes service. |
+| kubeService | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Name/namespace/cluster of a kubernetes service. |
   | percentage | double |  | Percentage of traffic to mirror. If absent, 100% will be mirrored. Values range between 0 and 100 |
   | port | uint32 |  | Port on the destination k8s service to receive traffic. If multiple are found, and none are specified, then the configuration will be considered invalid. |
   
@@ -288,7 +288,7 @@ Istio TLS settings Map onto the enums defined here https://github.com/istio/api/
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| destinations | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination" >}}) | repeated | A traffic shift destination. |
+| destinations | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination" >}}) | repeated | A traffic shift destination. |
   
 
 
@@ -303,8 +303,8 @@ Istio TLS settings Map onto the enums defined here https://github.com/istio/api/
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeService | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination" >}}) |  | The use kubeService to shift traffic a Kubernetes Service/subset. |
-  | failoverService | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination" >}}) |  | A traffic shift destination targeting a FailoverService. |
+| kubeService | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination" >}}) |  | The use kubeService to shift traffic a Kubernetes Service/subset. |
+  | failoverService | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination" >}}) |  | A traffic shift destination targeting a FailoverService. |
   | weight | uint32 |  | Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100. |
   
 
@@ -322,7 +322,7 @@ A traffic shift destination that references a FailoverService.
 | ----- | ---- | ----- | ----------- |
 | name | string |  | The name of the FailoverService. |
   | namespace | string |  | The namespace of the FailoverService. |
-  | subset | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry" >}}) | repeated | Subset routing is currently only supported for Istio backing services. |
+  | subset | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry" >}}) | repeated | Subset routing is currently only supported for Istio backing services. |
   
 
 
@@ -356,7 +356,7 @@ A traffic shift destination which lives in kubernetes.
 | name | string |  | The name of the destination service. |
   | namespace | string |  | The namespace of the destination service. |
   | clusterName | string |  | The cluster of the destination k8s service (as it is registered with Gloo Mesh). |
-  | subset | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry" >}}) | repeated | Subset routing is currently only supported on Istio. |
+  | subset | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry" >}}) | repeated | Subset routing is currently only supported on Istio. |
   | port | uint32 |  | Port on the destination k8s service to receive traffic. Required if the service exposes more than one port. |
   
 
@@ -389,8 +389,8 @@ Configure outlier detection settings on targeted services. If set, source select
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | consecutiveErrors | uint32 |  | Number of errors before a host is ejected from the connection pool. Defaults to 5. |
-  | interval | [google.protobuf.Duration]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration.md#google.protobuf.Duration" >}}) |  | Time interval between ejection sweep analysis. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 10s. |
-  | baseEjectionTime | [google.protobuf.Duration]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration.md#google.protobuf.Duration" >}}) |  | Minimum ejection duration. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 30s. |
+  | interval | [google.protobuf.Duration]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | Time interval between ejection sweep analysis. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 10s. |
+  | baseEjectionTime | [google.protobuf.Duration]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | Minimum ejection duration. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 30s. |
   | maxEjectionPercent | uint32 |  | Maximum % of hosts in the load balancing pool for the upstream service that can be ejected, but will eject at least one host regardless of the value. MUST BE >= 0 and <= 100. Defaults to 100%, allowing all hosts to be ejected from the pool. |
   
 
@@ -424,7 +424,7 @@ RetryPolicy contains mesh-specific retry configuration. Different meshes support
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | attempts | int32 |  | Number of retries for a given request |
-  | perTryTimeout | [google.protobuf.Duration]({{< ref "github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration.md#google.protobuf.Duration" >}}) |  | Timeout per retry attempt for a given request. format: 1h/1m/1s/1ms. MUST BE >=1ms. |
+  | perTryTimeout | [google.protobuf.Duration]({{< versioned_link_path fromRoot="github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | Timeout per retry attempt for a given request. format: 1h/1m/1s/1ms. MUST BE >=1ms. |
   
 
 
@@ -457,8 +457,8 @@ Describes how to match a given string in HTTP headers. Match is case-sensitive.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the TrafficPolicy metadata. if the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
-  | state | [networking.mesh.gloo.solo.io.ApprovalState]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state.md#networking.mesh.gloo.solo.io.ApprovalState" >}}) |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all target meshes. |
-  | trafficTargets | [][networking.mesh.gloo.solo.io.TrafficPolicyStatus.TrafficTargetsEntry]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy.md#networking.mesh.gloo.solo.io.TrafficPolicyStatus.TrafficTargetsEntry" >}}) | repeated | The status of the TrafficPolicy for each TrafficTarget to which it has been applied. A TrafficPolicy may be Accepted for some TrafficTargets and rejected for others. |
+  | state | [networking.mesh.gloo.solo.io.ApprovalState]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state#networking.mesh.gloo.solo.io.ApprovalState" >}}) |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all target meshes. |
+  | trafficTargets | [][networking.mesh.gloo.solo.io.TrafficPolicyStatus.TrafficTargetsEntry]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicyStatus.TrafficTargetsEntry" >}}) | repeated | The status of the TrafficPolicy for each TrafficTarget to which it has been applied. A TrafficPolicy may be Accepted for some TrafficTargets and rejected for others. |
   | workloads | []string | repeated | The list of Workloads to which this policy has been applied. |
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
   
@@ -476,7 +476,7 @@ Describes how to match a given string in HTTP headers. Match is case-sensitive.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
-  | value | [networking.mesh.gloo.solo.io.ApprovalStatus]({{< ref "github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state.md#networking.mesh.gloo.solo.io.ApprovalStatus" >}}) |  |  |
+  | value | [networking.mesh.gloo.solo.io.ApprovalStatus]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state#networking.mesh.gloo.solo.io.ApprovalStatus" >}}) |  |  |
   
 
 
