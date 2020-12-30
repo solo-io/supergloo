@@ -159,7 +159,7 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 		return false, err
 	}
 
-	outputSnap, err := r.translator.Translate(ctx, remoteInputSnap, settings)
+	outputSnap, err := r.translator.Translate(ctx, remoteInputSnap, settings.Spec.GetDiscovery())
 	if err != nil {
 		// internal translator errors should never happen
 		return false, err
