@@ -209,7 +209,7 @@ func collectLinks(destDir string, template *gendoc.Template) map[string]string {
 }
 
 func buildLink(filename, protoTypeFullName string) string {
-	return fmt.Sprintf("{{< versioned_link_path fromRoot=\"%s\" >}}", strings.ReplaceAll(filepath.Base(filename), ".md", "")+"#"+protoTypeFullName)
+	return fmt.Sprintf("{{< versioned_link_path fromRoot=\"/reference/api/%s\" >}}", strings.ReplaceAll(filepath.Base(filename), ".md", "")+"#"+protoTypeFullName)
 }
 
 func collectDescriptors(protoDir, outDir string, customImports ...string) (*gendoc.Template, error) {
