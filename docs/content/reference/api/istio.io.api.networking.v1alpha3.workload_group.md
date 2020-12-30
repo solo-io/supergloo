@@ -35,8 +35,8 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| metadata | [istio.networking.v1alpha3.WorkloadGroup.ObjectMeta]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.workload_group#istio.networking.v1alpha3.WorkloadGroup.ObjectMeta" >}}) |  | Metadata that will be used for all corresponding `WorkloadEntries`. User labels for a workload group should be set here in `metadata` rather than in `template`. |
-  | template | [istio.networking.v1alpha3.WorkloadEntry]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.workload_entry#istio.networking.v1alpha3.WorkloadEntry" >}}) |  | Template to be used for the generation of `WorkloadEntry` resources that belong to this `WorkloadGroup`. Please note that `address` and `labels` fields should not be set in the template, and an empty `serviceAccount` should default to `default`. The workload identities (mTLS certificates) will be bootstrapped using the specified service account's token. Workload entries in this group will be in the same namespace as the workload group, and inherit the labels and annotations from the above `metadata` field. |
+| metadata | [istio.networking.v1alpha3.WorkloadGroup.ObjectMeta]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.workload_group#istio.networking.v1alpha3.WorkloadGroup.ObjectMeta" >}}) |  | Metadata that will be used for all corresponding `WorkloadEntries`. User labels for a workload group should be set here in `metadata` rather than in `template`. |
+  | template | [istio.networking.v1alpha3.WorkloadEntry]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.workload_entry#istio.networking.v1alpha3.WorkloadEntry" >}}) |  | Template to be used for the generation of `WorkloadEntry` resources that belong to this `WorkloadGroup`. Please note that `address` and `labels` fields should not be set in the template, and an empty `serviceAccount` should default to `default`. The workload identities (mTLS certificates) will be bootstrapped using the specified service account's token. Workload entries in this group will be in the same namespace as the workload group, and inherit the labels and annotations from the above `metadata` field. |
   
 
 
@@ -51,8 +51,8 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| labels | [][istio.networking.v1alpha3.WorkloadGroup.ObjectMeta.LabelsEntry]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.workload_group#istio.networking.v1alpha3.WorkloadGroup.ObjectMeta.LabelsEntry" >}}) | repeated | Labels to attach |
-  | annotations | [][istio.networking.v1alpha3.WorkloadGroup.ObjectMeta.AnnotationsEntry]({{< versioned_link_path fromRoot="istio.io.api.networking.v1alpha3.workload_group#istio.networking.v1alpha3.WorkloadGroup.ObjectMeta.AnnotationsEntry" >}}) | repeated | Annotations to attach |
+| labels | [][istio.networking.v1alpha3.WorkloadGroup.ObjectMeta.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.workload_group#istio.networking.v1alpha3.WorkloadGroup.ObjectMeta.LabelsEntry" >}}) | repeated | Labels to attach |
+  | annotations | [][istio.networking.v1alpha3.WorkloadGroup.ObjectMeta.AnnotationsEntry]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.workload_group#istio.networking.v1alpha3.WorkloadGroup.ObjectMeta.AnnotationsEntry" >}}) | repeated | Annotations to attach |
   
 
 

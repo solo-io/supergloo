@@ -42,8 +42,8 @@ Selector capable of selecting specific service identities. Useful for binding po
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeIdentityMatcher | [networking.mesh.gloo.solo.io.IdentitySelector.KubeIdentityMatcher]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.IdentitySelector.KubeIdentityMatcher" >}}) |  | A KubeIdentityMatcher matches request identities based on the k8s namespace and cluster. |
-  | kubeServiceAccountRefs | [networking.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs" >}}) |  | KubeServiceAccountRefs matches request identities based on the k8s service account of request. |
+| kubeIdentityMatcher | [networking.mesh.gloo.solo.io.IdentitySelector.KubeIdentityMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.IdentitySelector.KubeIdentityMatcher" >}}) |  | A KubeIdentityMatcher matches request identities based on the k8s namespace and cluster. |
+  | kubeServiceAccountRefs | [networking.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs" >}}) |  | KubeServiceAccountRefs matches request identities based on the k8s service account of request. |
   
 
 
@@ -74,7 +74,7 @@ Selector capable of selecting specific service identities. Useful for binding po
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| serviceAccounts | [][core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) | repeated | Match k8s ServiceAccounts by direct reference. When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field. When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field. |
+| serviceAccounts | [][core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) | repeated | Match k8s ServiceAccounts by direct reference. When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field. When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field. |
   
 
 
@@ -89,8 +89,8 @@ Select TrafficTargets using one or more platform-specific selection objects.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeServiceMatcher | [networking.mesh.gloo.solo.io.TrafficTargetSelector.KubeServiceMatcher]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.TrafficTargetSelector.KubeServiceMatcher" >}}) |  | A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters. |
-  | kubeServiceRefs | [networking.mesh.gloo.solo.io.TrafficTargetSelector.KubeServiceRefs]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.TrafficTargetSelector.KubeServiceRefs" >}}) |  | Match individual k8s Services by direct reference. |
+| kubeServiceMatcher | [networking.mesh.gloo.solo.io.TrafficTargetSelector.KubeServiceMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.TrafficTargetSelector.KubeServiceMatcher" >}}) |  | A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters. |
+  | kubeServiceRefs | [networking.mesh.gloo.solo.io.TrafficTargetSelector.KubeServiceRefs]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.TrafficTargetSelector.KubeServiceRefs" >}}) |  | Match individual k8s Services by direct reference. |
   
 
 
@@ -105,7 +105,7 @@ Select TrafficTargets using one or more platform-specific selection objects.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| labels | [][networking.mesh.gloo.solo.io.TrafficTargetSelector.KubeServiceMatcher.LabelsEntry]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.TrafficTargetSelector.KubeServiceMatcher.LabelsEntry" >}}) | repeated | If specified, all labels must exist on k8s Service. When used in a networking policy, omission matches any labels. When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value. |
+| labels | [][networking.mesh.gloo.solo.io.TrafficTargetSelector.KubeServiceMatcher.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.TrafficTargetSelector.KubeServiceMatcher.LabelsEntry" >}}) | repeated | If specified, all labels must exist on k8s Service. When used in a networking policy, omission matches any labels. When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value. |
   | namespaces | []string | repeated | If specified, match k8s Services if they exist in one of the specified namespaces. When used in a networking policy, omission matches any namespace. When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace. |
   | clusters | []string | repeated | If specified, match k8s Services if they exist in one of the specified clusters. When used in a networking policy, omission matches any cluster. When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster. |
   
@@ -138,7 +138,7 @@ Select TrafficTargets using one or more platform-specific selection objects.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| services | [][core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) | repeated | Match k8s Services by direct reference. When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field. When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field. |
+| services | [][core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) | repeated | Match k8s Services by direct reference. When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field. When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field. |
   
 
 
@@ -153,7 +153,7 @@ Select Kubernetes workloads directly using label namespace and/or cluster criter
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| labels | [][networking.mesh.gloo.solo.io.WorkloadSelector.LabelsEntry]({{< versioned_link_path fromRoot="github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.WorkloadSelector.LabelsEntry" >}}) | repeated | If specified, all labels must exist on k8s workload. When used in a networking policy, omission matches any labels. When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value. |
+| labels | [][networking.mesh.gloo.solo.io.WorkloadSelector.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.WorkloadSelector.LabelsEntry" >}}) | repeated | If specified, all labels must exist on k8s workload. When used in a networking policy, omission matches any labels. When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value. |
   | namespaces | []string | repeated | If specified, match k8s workloads if they exist in one of the specified namespaces. When used in a networking policy, omission matches any namespace. When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace. |
   | clusters | []string | repeated | If specified, match k8s workloads if they exist in one of the specified clusters. When used in a networking policy, omission matches any cluster. When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster. |
   
