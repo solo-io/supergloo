@@ -12,6 +12,9 @@ import (
 	xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1"
 	xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 
+	appmesh_k8s_aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
+	appmesh_k8s_aws_v1beta2_sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
+
 	networking_istio_io_v1alpha3_sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	networking_istio_io_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 
@@ -25,40 +28,48 @@ import (
 type InputRemoteSnapshotManualBuilder struct {
 	name string
 
-	issuedCertificates  certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
-	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates  certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
+	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 
-	xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
 
-	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet
-	envoyFilters     networking_istio_io_v1alpha3_sets.EnvoyFilterSet
-	gateways         networking_istio_io_v1alpha3_sets.GatewaySet
-	serviceEntries   networking_istio_io_v1alpha3_sets.ServiceEntrySet
-	virtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
+	appmeshK8SAwsv1Beta2VirtualServices appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet
+	appmeshK8SAwsv1Beta2VirtualNodes    appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
+	appmeshK8SAwsv1Beta2VirtualRouters  appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet
 
-	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
+	networkingIstioIov1Alpha3DestinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet
+	networkingIstioIov1Alpha3EnvoyFilters     networking_istio_io_v1alpha3_sets.EnvoyFilterSet
+	networkingIstioIov1Alpha3Gateways         networking_istio_io_v1alpha3_sets.GatewaySet
+	networkingIstioIov1Alpha3ServiceEntries   networking_istio_io_v1alpha3_sets.ServiceEntrySet
+	networkingIstioIov1Alpha3VirtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
 
-	configMaps v1_sets.ConfigMapSet
+	securityIstioIov1Beta1AuthorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
+
+	v1ConfigMaps v1_sets.ConfigMapSet
 }
 
 func NewInputRemoteSnapshotManualBuilder(name string) *InputRemoteSnapshotManualBuilder {
 	return &InputRemoteSnapshotManualBuilder{
 		name: name,
 
-		issuedCertificates:  certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet(),
-		podBounceDirectives: certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet(),
+		certificatesMeshGlooSoloIov1Alpha2IssuedCertificates:  certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet(),
+		certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives: certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet(),
 
-		xdsConfigs: xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet(),
+		xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs: xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet(),
 
-		destinationRules: networking_istio_io_v1alpha3_sets.NewDestinationRuleSet(),
-		envoyFilters:     networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet(),
-		gateways:         networking_istio_io_v1alpha3_sets.NewGatewaySet(),
-		serviceEntries:   networking_istio_io_v1alpha3_sets.NewServiceEntrySet(),
-		virtualServices:  networking_istio_io_v1alpha3_sets.NewVirtualServiceSet(),
+		appmeshK8SAwsv1Beta2VirtualServices: appmesh_k8s_aws_v1beta2_sets.NewVirtualServiceSet(),
+		appmeshK8SAwsv1Beta2VirtualNodes:    appmesh_k8s_aws_v1beta2_sets.NewVirtualNodeSet(),
+		appmeshK8SAwsv1Beta2VirtualRouters:  appmesh_k8s_aws_v1beta2_sets.NewVirtualRouterSet(),
 
-		authorizationPolicies: security_istio_io_v1beta1_sets.NewAuthorizationPolicySet(),
+		networkingIstioIov1Alpha3DestinationRules: networking_istio_io_v1alpha3_sets.NewDestinationRuleSet(),
+		networkingIstioIov1Alpha3EnvoyFilters:     networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet(),
+		networkingIstioIov1Alpha3Gateways:         networking_istio_io_v1alpha3_sets.NewGatewaySet(),
+		networkingIstioIov1Alpha3ServiceEntries:   networking_istio_io_v1alpha3_sets.NewServiceEntrySet(),
+		networkingIstioIov1Alpha3VirtualServices:  networking_istio_io_v1alpha3_sets.NewVirtualServiceSet(),
 
-		configMaps: v1_sets.NewConfigMapSet(),
+		securityIstioIov1Beta1AuthorizationPolicies: security_istio_io_v1beta1_sets.NewAuthorizationPolicySet(),
+
+		v1ConfigMaps: v1_sets.NewConfigMapSet(),
 	}
 }
 
@@ -66,59 +77,75 @@ func (i *InputRemoteSnapshotManualBuilder) Build() RemoteSnapshot {
 	return NewRemoteSnapshot(
 		i.name,
 
-		i.issuedCertificates,
-		i.podBounceDirectives,
+		i.certificatesMeshGlooSoloIov1Alpha2IssuedCertificates,
+		i.certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives,
 
-		i.xdsConfigs,
+		i.xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs,
 
-		i.destinationRules,
-		i.envoyFilters,
-		i.gateways,
-		i.serviceEntries,
-		i.virtualServices,
+		i.appmeshK8SAwsv1Beta2VirtualServices,
+		i.appmeshK8SAwsv1Beta2VirtualNodes,
+		i.appmeshK8SAwsv1Beta2VirtualRouters,
 
-		i.authorizationPolicies,
+		i.networkingIstioIov1Alpha3DestinationRules,
+		i.networkingIstioIov1Alpha3EnvoyFilters,
+		i.networkingIstioIov1Alpha3Gateways,
+		i.networkingIstioIov1Alpha3ServiceEntries,
+		i.networkingIstioIov1Alpha3VirtualServices,
 
-		i.configMaps,
+		i.securityIstioIov1Beta1AuthorizationPolicies,
+
+		i.v1ConfigMaps,
 	)
 }
-func (i *InputRemoteSnapshotManualBuilder) AddIssuedCertificates(issuedCertificates []*certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate) *InputRemoteSnapshotManualBuilder {
-	i.issuedCertificates.Insert(issuedCertificates...)
+func (i *InputRemoteSnapshotManualBuilder) AddCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates(certificatesMeshGlooSoloIov1Alpha2IssuedCertificates []*certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate) *InputRemoteSnapshotManualBuilder {
+	i.certificatesMeshGlooSoloIov1Alpha2IssuedCertificates.Insert(certificatesMeshGlooSoloIov1Alpha2IssuedCertificates...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddPodBounceDirectives(podBounceDirectives []*certificates_mesh_gloo_solo_io_v1alpha2.PodBounceDirective) *InputRemoteSnapshotManualBuilder {
-	i.podBounceDirectives.Insert(podBounceDirectives...)
+func (i *InputRemoteSnapshotManualBuilder) AddCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives(certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives []*certificates_mesh_gloo_solo_io_v1alpha2.PodBounceDirective) *InputRemoteSnapshotManualBuilder {
+	i.certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives.Insert(certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddXdsConfigs(xdsConfigs []*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig) *InputRemoteSnapshotManualBuilder {
-	i.xdsConfigs.Insert(xdsConfigs...)
+func (i *InputRemoteSnapshotManualBuilder) AddXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs(xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs []*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig) *InputRemoteSnapshotManualBuilder {
+	i.xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs.Insert(xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddDestinationRules(destinationRules []*networking_istio_io_v1alpha3.DestinationRule) *InputRemoteSnapshotManualBuilder {
-	i.destinationRules.Insert(destinationRules...)
+func (i *InputRemoteSnapshotManualBuilder) AddAppmeshK8SAwsv1Beta2VirtualServices(appmeshK8SAwsv1Beta2VirtualServices []*appmesh_k8s_aws_v1beta2.VirtualService) *InputRemoteSnapshotManualBuilder {
+	i.appmeshK8SAwsv1Beta2VirtualServices.Insert(appmeshK8SAwsv1Beta2VirtualServices...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddEnvoyFilters(envoyFilters []*networking_istio_io_v1alpha3.EnvoyFilter) *InputRemoteSnapshotManualBuilder {
-	i.envoyFilters.Insert(envoyFilters...)
+func (i *InputRemoteSnapshotManualBuilder) AddAppmeshK8SAwsv1Beta2VirtualNodes(appmeshK8SAwsv1Beta2VirtualNodes []*appmesh_k8s_aws_v1beta2.VirtualNode) *InputRemoteSnapshotManualBuilder {
+	i.appmeshK8SAwsv1Beta2VirtualNodes.Insert(appmeshK8SAwsv1Beta2VirtualNodes...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddGateways(gateways []*networking_istio_io_v1alpha3.Gateway) *InputRemoteSnapshotManualBuilder {
-	i.gateways.Insert(gateways...)
+func (i *InputRemoteSnapshotManualBuilder) AddAppmeshK8SAwsv1Beta2VirtualRouters(appmeshK8SAwsv1Beta2VirtualRouters []*appmesh_k8s_aws_v1beta2.VirtualRouter) *InputRemoteSnapshotManualBuilder {
+	i.appmeshK8SAwsv1Beta2VirtualRouters.Insert(appmeshK8SAwsv1Beta2VirtualRouters...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddServiceEntries(serviceEntries []*networking_istio_io_v1alpha3.ServiceEntry) *InputRemoteSnapshotManualBuilder {
-	i.serviceEntries.Insert(serviceEntries...)
+func (i *InputRemoteSnapshotManualBuilder) AddNetworkingIstioIov1Alpha3DestinationRules(networkingIstioIov1Alpha3DestinationRules []*networking_istio_io_v1alpha3.DestinationRule) *InputRemoteSnapshotManualBuilder {
+	i.networkingIstioIov1Alpha3DestinationRules.Insert(networkingIstioIov1Alpha3DestinationRules...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddVirtualServices(virtualServices []*networking_istio_io_v1alpha3.VirtualService) *InputRemoteSnapshotManualBuilder {
-	i.virtualServices.Insert(virtualServices...)
+func (i *InputRemoteSnapshotManualBuilder) AddNetworkingIstioIov1Alpha3EnvoyFilters(networkingIstioIov1Alpha3EnvoyFilters []*networking_istio_io_v1alpha3.EnvoyFilter) *InputRemoteSnapshotManualBuilder {
+	i.networkingIstioIov1Alpha3EnvoyFilters.Insert(networkingIstioIov1Alpha3EnvoyFilters...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddAuthorizationPolicies(authorizationPolicies []*security_istio_io_v1beta1.AuthorizationPolicy) *InputRemoteSnapshotManualBuilder {
-	i.authorizationPolicies.Insert(authorizationPolicies...)
+func (i *InputRemoteSnapshotManualBuilder) AddNetworkingIstioIov1Alpha3Gateways(networkingIstioIov1Alpha3Gateways []*networking_istio_io_v1alpha3.Gateway) *InputRemoteSnapshotManualBuilder {
+	i.networkingIstioIov1Alpha3Gateways.Insert(networkingIstioIov1Alpha3Gateways...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddConfigMaps(configMaps []*v1.ConfigMap) *InputRemoteSnapshotManualBuilder {
-	i.configMaps.Insert(configMaps...)
+func (i *InputRemoteSnapshotManualBuilder) AddNetworkingIstioIov1Alpha3ServiceEntries(networkingIstioIov1Alpha3ServiceEntries []*networking_istio_io_v1alpha3.ServiceEntry) *InputRemoteSnapshotManualBuilder {
+	i.networkingIstioIov1Alpha3ServiceEntries.Insert(networkingIstioIov1Alpha3ServiceEntries...)
+	return i
+}
+func (i *InputRemoteSnapshotManualBuilder) AddNetworkingIstioIov1Alpha3VirtualServices(networkingIstioIov1Alpha3VirtualServices []*networking_istio_io_v1alpha3.VirtualService) *InputRemoteSnapshotManualBuilder {
+	i.networkingIstioIov1Alpha3VirtualServices.Insert(networkingIstioIov1Alpha3VirtualServices...)
+	return i
+}
+func (i *InputRemoteSnapshotManualBuilder) AddSecurityIstioIov1Beta1AuthorizationPolicies(securityIstioIov1Beta1AuthorizationPolicies []*security_istio_io_v1beta1.AuthorizationPolicy) *InputRemoteSnapshotManualBuilder {
+	i.securityIstioIov1Beta1AuthorizationPolicies.Insert(securityIstioIov1Beta1AuthorizationPolicies...)
+	return i
+}
+func (i *InputRemoteSnapshotManualBuilder) AddV1ConfigMaps(v1ConfigMaps []*v1.ConfigMap) *InputRemoteSnapshotManualBuilder {
+	i.v1ConfigMaps.Insert(v1ConfigMaps...)
 	return i
 }

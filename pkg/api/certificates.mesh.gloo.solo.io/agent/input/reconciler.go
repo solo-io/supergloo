@@ -4,11 +4,11 @@
 
 // The Input Reconciler calls a simple func() error whenever a
 // storage event is received for any of:
-// * IssuedCertificates
-// * CertificateRequests
-// * PodBounceDirectives
-// * Secrets
-// * Pods
+// * CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates
+// * CertificatesMeshGlooSoloIov1Alpha2CertificateRequests
+// * CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives
+// * V1Secrets
+// * V1Pods
 // for a given cluster or set of clusters.
 //
 // Input Reconcilers can be be constructed from either a single Manager (watch events in a single cluster)
@@ -54,17 +54,17 @@ type multiClusterReconcilerImpl struct {
 // Options for reconcileing a snapshot
 type ReconcileOptions struct {
 
-	// Options for reconciling IssuedCertificates
-	IssuedCertificates reconcile.Options
-	// Options for reconciling CertificateRequests
-	CertificateRequests reconcile.Options
-	// Options for reconciling PodBounceDirectives
-	PodBounceDirectives reconcile.Options
+	// Options for reconciling CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates
+	CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates reconcile.Options
+	// Options for reconciling CertificatesMeshGlooSoloIov1Alpha2CertificateRequests
+	CertificatesMeshGlooSoloIov1Alpha2CertificateRequests reconcile.Options
+	// Options for reconciling CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives
+	CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives reconcile.Options
 
-	// Options for reconciling Secrets
-	Secrets reconcile.Options
-	// Options for reconciling Pods
-	Pods reconcile.Options
+	// Options for reconciling V1Secrets
+	V1Secrets reconcile.Options
+	// Options for reconciling V1Pods
+	V1Pods reconcile.Options
 }
 
 // register the reconcile func with the cluster watcher
@@ -92,15 +92,15 @@ func RegisterMultiClusterReconciler(
 
 	// initialize reconcile loops
 
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterIssuedCertificateReconcileLoop("IssuedCertificate", clusters, options.IssuedCertificates).AddMulticlusterIssuedCertificateReconciler(ctx, r, predicates...)
+	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterIssuedCertificateReconcileLoop("IssuedCertificate", clusters, options.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates).AddMulticlusterIssuedCertificateReconciler(ctx, r, predicates...)
 
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterCertificateRequestReconcileLoop("CertificateRequest", clusters, options.CertificateRequests).AddMulticlusterCertificateRequestReconciler(ctx, r, predicates...)
+	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterCertificateRequestReconcileLoop("CertificateRequest", clusters, options.CertificatesMeshGlooSoloIov1Alpha2CertificateRequests).AddMulticlusterCertificateRequestReconciler(ctx, r, predicates...)
 
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterPodBounceDirectiveReconcileLoop("PodBounceDirective", clusters, options.PodBounceDirectives).AddMulticlusterPodBounceDirectiveReconciler(ctx, r, predicates...)
+	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterPodBounceDirectiveReconcileLoop("PodBounceDirective", clusters, options.CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives).AddMulticlusterPodBounceDirectiveReconciler(ctx, r, predicates...)
 
-	v1_controllers.NewMulticlusterSecretReconcileLoop("Secret", clusters, options.Secrets).AddMulticlusterSecretReconciler(ctx, r, predicates...)
+	v1_controllers.NewMulticlusterSecretReconcileLoop("Secret", clusters, options.V1Secrets).AddMulticlusterSecretReconciler(ctx, r, predicates...)
 
-	v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters, options.Pods).AddMulticlusterPodReconciler(ctx, r, predicates...)
+	v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters, options.V1Pods).AddMulticlusterPodReconciler(ctx, r, predicates...)
 	return r.base
 }
 

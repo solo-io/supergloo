@@ -33,8 +33,8 @@ func init() {
 func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
 	return NewTrafficShiftDecorator(
 		params.ClusterDomains,
-		params.Snapshot.TrafficTargets(),
-		params.Snapshot.FailoverServices(),
+		params.Snapshot.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(),
+		params.Snapshot.NetworkingMeshGlooSoloIov1Alpha2FailoverServices(),
 	)
 }
 

@@ -45,7 +45,7 @@ func (t *translator) Translate(
 	outputs appmesh.Builder,
 	reporter reporting.Reporter,
 ) {
-	// Only translate appmesh TrafficTargets.
+	// Only translate appmesh DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets.
 	if !isAppmeshTrafficTarget(ctx, trafficTarget, in.Meshes()) {
 		return
 	}

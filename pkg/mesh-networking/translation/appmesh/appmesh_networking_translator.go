@@ -47,13 +47,13 @@ func (t *appmeshTranslator) Translate(
 ) {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("appmesh-translator-%v", t.totalTranslates))
 
-	for _, trafficTarget := range in.TrafficTargets().List() {
+	for _, trafficTarget := range in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List() {
 		trafficTarget := trafficTarget
 
 		t.trafficTargetTranslator.Translate(ctx, in, trafficTarget, appmeshOutputs, reporter)
 	}
 
-	for _, discoveryMesh := range in.Meshes().List() {
+	for _, discoveryMesh := range in.DiscoveryMeshGlooSoloIov1Alpha2Meshes().List() {
 		discoveryMesh := discoveryMesh
 
 		t.meshTranslator.Translate(ctx, in, discoveryMesh, appmeshOutputs, reporter)

@@ -78,19 +78,19 @@ func (t *translator) Translate(
 		return
 	}
 
-	// If validation fails, report the errors to the Meshes and do not translate.
+	// If validation fails, report the errors to the DiscoveryMeshGlooSoloIov1Alpha2Meshes and do not translate.
 	validationErrors := t.validator.Validate(failoverservice.Inputs{
-		TrafficTargets: in.TrafficTargets(),
-		KubeClusters:   in.KubernetesClusters(),
-		Meshes:         in.Meshes(),
-		VirtualMeshes:  in.VirtualMeshes(),
+		TrafficTargets: in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(),
+		KubeClusters:   in.MulticlusterSoloIov1Alpha1KubernetesClusters(),
+		Meshes:         in.DiscoveryMeshGlooSoloIov1Alpha2Meshes(),
+		VirtualMeshes:  in.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes(),
 	}, failoverService.Spec)
 	if validationErrors != nil {
 		reporter.ReportFailoverService(failoverService.Ref, validationErrors)
 		return
 	}
 
-	serviceEntries, destinationRules, envoyFilters := t.translate(failoverService, in.TrafficTargets(), in.Meshes(), reporter)
+	serviceEntries, destinationRules, envoyFilters := t.translate(failoverService, in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(), in.DiscoveryMeshGlooSoloIov1Alpha2Meshes(), reporter)
 
 	// Append failover service as a parent to each output resource
 	for _, se := range serviceEntries {
@@ -171,7 +171,7 @@ func (t *translator) translate(
 }
 
 /*
-	Collect, in priority order as declared in the FailoverService, the relevant TrafficTargets.
+	Collect, in priority order as declared in the FailoverService, the relevant DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets.
 	The first TrafficTarget is guaranteed to be the FailoverService's target service.
 	If a TrafficTarget cannot be found, return an error
 */
@@ -403,7 +403,7 @@ func (t *translator) buildEnvoyFailoverPatch(
 	}, nil
 }
 
-// Convert list of TrafficTargets corresponding to FailoverService.Spec.services to
+// Convert list of DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets corresponding to FailoverService.Spec.services to
 // an envoy ClusterConfig consisting of the list of Envoy cluster strings.
 func (t *translator) buildEnvoyAggregateClusterConfig(
 	trafficTargets []*discoveryv1alpha2.TrafficTarget,

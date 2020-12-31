@@ -19,36 +19,36 @@ import (
 type InputRemoteSnapshotManualBuilder struct {
 	name string
 
-	meshes       appmesh_k8s_aws_v1beta2_sets.MeshSet
-	virtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
+	appmeshK8SAwsv1Beta2Meshes       appmesh_k8s_aws_v1beta2_sets.MeshSet
+	appmeshK8SAwsv1Beta2VirtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
 
-	configMaps v1_sets.ConfigMapSet
-	services   v1_sets.ServiceSet
-	pods       v1_sets.PodSet
-	nodes      v1_sets.NodeSet
+	v1ConfigMaps v1_sets.ConfigMapSet
+	v1Services   v1_sets.ServiceSet
+	v1Pods       v1_sets.PodSet
+	v1Nodes      v1_sets.NodeSet
 
-	deployments  apps_v1_sets.DeploymentSet
-	replicaSets  apps_v1_sets.ReplicaSetSet
-	daemonSets   apps_v1_sets.DaemonSetSet
-	statefulSets apps_v1_sets.StatefulSetSet
+	appsv1Deployments  apps_v1_sets.DeploymentSet
+	appsv1ReplicaSets  apps_v1_sets.ReplicaSetSet
+	appsv1DaemonSets   apps_v1_sets.DaemonSetSet
+	appsv1StatefulSets apps_v1_sets.StatefulSetSet
 }
 
 func NewInputRemoteSnapshotManualBuilder(name string) *InputRemoteSnapshotManualBuilder {
 	return &InputRemoteSnapshotManualBuilder{
 		name: name,
 
-		meshes:       appmesh_k8s_aws_v1beta2_sets.NewMeshSet(),
-		virtualNodes: appmesh_k8s_aws_v1beta2_sets.NewVirtualNodeSet(),
+		appmeshK8SAwsv1Beta2Meshes:       appmesh_k8s_aws_v1beta2_sets.NewMeshSet(),
+		appmeshK8SAwsv1Beta2VirtualNodes: appmesh_k8s_aws_v1beta2_sets.NewVirtualNodeSet(),
 
-		configMaps: v1_sets.NewConfigMapSet(),
-		services:   v1_sets.NewServiceSet(),
-		pods:       v1_sets.NewPodSet(),
-		nodes:      v1_sets.NewNodeSet(),
+		v1ConfigMaps: v1_sets.NewConfigMapSet(),
+		v1Services:   v1_sets.NewServiceSet(),
+		v1Pods:       v1_sets.NewPodSet(),
+		v1Nodes:      v1_sets.NewNodeSet(),
 
-		deployments:  apps_v1_sets.NewDeploymentSet(),
-		replicaSets:  apps_v1_sets.NewReplicaSetSet(),
-		daemonSets:   apps_v1_sets.NewDaemonSetSet(),
-		statefulSets: apps_v1_sets.NewStatefulSetSet(),
+		appsv1Deployments:  apps_v1_sets.NewDeploymentSet(),
+		appsv1ReplicaSets:  apps_v1_sets.NewReplicaSetSet(),
+		appsv1DaemonSets:   apps_v1_sets.NewDaemonSetSet(),
+		appsv1StatefulSets: apps_v1_sets.NewStatefulSetSet(),
 	}
 }
 
@@ -56,57 +56,57 @@ func (i *InputRemoteSnapshotManualBuilder) Build() RemoteSnapshot {
 	return NewRemoteSnapshot(
 		i.name,
 
-		i.meshes,
-		i.virtualNodes,
+		i.appmeshK8SAwsv1Beta2Meshes,
+		i.appmeshK8SAwsv1Beta2VirtualNodes,
 
-		i.configMaps,
-		i.services,
-		i.pods,
-		i.nodes,
+		i.v1ConfigMaps,
+		i.v1Services,
+		i.v1Pods,
+		i.v1Nodes,
 
-		i.deployments,
-		i.replicaSets,
-		i.daemonSets,
-		i.statefulSets,
+		i.appsv1Deployments,
+		i.appsv1ReplicaSets,
+		i.appsv1DaemonSets,
+		i.appsv1StatefulSets,
 	)
 }
-func (i *InputRemoteSnapshotManualBuilder) AddMeshes(meshes []*appmesh_k8s_aws_v1beta2.Mesh) *InputRemoteSnapshotManualBuilder {
-	i.meshes.Insert(meshes...)
+func (i *InputRemoteSnapshotManualBuilder) AddAppmeshK8SAwsv1Beta2Meshes(appmeshK8SAwsv1Beta2Meshes []*appmesh_k8s_aws_v1beta2.Mesh) *InputRemoteSnapshotManualBuilder {
+	i.appmeshK8SAwsv1Beta2Meshes.Insert(appmeshK8SAwsv1Beta2Meshes...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddVirtualNodes(virtualNodes []*appmesh_k8s_aws_v1beta2.VirtualNode) *InputRemoteSnapshotManualBuilder {
-	i.virtualNodes.Insert(virtualNodes...)
+func (i *InputRemoteSnapshotManualBuilder) AddAppmeshK8SAwsv1Beta2VirtualNodes(appmeshK8SAwsv1Beta2VirtualNodes []*appmesh_k8s_aws_v1beta2.VirtualNode) *InputRemoteSnapshotManualBuilder {
+	i.appmeshK8SAwsv1Beta2VirtualNodes.Insert(appmeshK8SAwsv1Beta2VirtualNodes...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddConfigMaps(configMaps []*v1.ConfigMap) *InputRemoteSnapshotManualBuilder {
-	i.configMaps.Insert(configMaps...)
+func (i *InputRemoteSnapshotManualBuilder) AddV1ConfigMaps(v1ConfigMaps []*v1.ConfigMap) *InputRemoteSnapshotManualBuilder {
+	i.v1ConfigMaps.Insert(v1ConfigMaps...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddServices(services []*v1.Service) *InputRemoteSnapshotManualBuilder {
-	i.services.Insert(services...)
+func (i *InputRemoteSnapshotManualBuilder) AddV1Services(v1Services []*v1.Service) *InputRemoteSnapshotManualBuilder {
+	i.v1Services.Insert(v1Services...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddPods(pods []*v1.Pod) *InputRemoteSnapshotManualBuilder {
-	i.pods.Insert(pods...)
+func (i *InputRemoteSnapshotManualBuilder) AddV1Pods(v1Pods []*v1.Pod) *InputRemoteSnapshotManualBuilder {
+	i.v1Pods.Insert(v1Pods...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddNodes(nodes []*v1.Node) *InputRemoteSnapshotManualBuilder {
-	i.nodes.Insert(nodes...)
+func (i *InputRemoteSnapshotManualBuilder) AddV1Nodes(v1Nodes []*v1.Node) *InputRemoteSnapshotManualBuilder {
+	i.v1Nodes.Insert(v1Nodes...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddDeployments(deployments []*apps_v1.Deployment) *InputRemoteSnapshotManualBuilder {
-	i.deployments.Insert(deployments...)
+func (i *InputRemoteSnapshotManualBuilder) AddAppsv1Deployments(appsv1Deployments []*apps_v1.Deployment) *InputRemoteSnapshotManualBuilder {
+	i.appsv1Deployments.Insert(appsv1Deployments...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddReplicaSets(replicaSets []*apps_v1.ReplicaSet) *InputRemoteSnapshotManualBuilder {
-	i.replicaSets.Insert(replicaSets...)
+func (i *InputRemoteSnapshotManualBuilder) AddAppsv1ReplicaSets(appsv1ReplicaSets []*apps_v1.ReplicaSet) *InputRemoteSnapshotManualBuilder {
+	i.appsv1ReplicaSets.Insert(appsv1ReplicaSets...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddDaemonSets(daemonSets []*apps_v1.DaemonSet) *InputRemoteSnapshotManualBuilder {
-	i.daemonSets.Insert(daemonSets...)
+func (i *InputRemoteSnapshotManualBuilder) AddAppsv1DaemonSets(appsv1DaemonSets []*apps_v1.DaemonSet) *InputRemoteSnapshotManualBuilder {
+	i.appsv1DaemonSets.Insert(appsv1DaemonSets...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddStatefulSets(statefulSets []*apps_v1.StatefulSet) *InputRemoteSnapshotManualBuilder {
-	i.statefulSets.Insert(statefulSets...)
+func (i *InputRemoteSnapshotManualBuilder) AddAppsv1StatefulSets(appsv1StatefulSets []*apps_v1.StatefulSet) *InputRemoteSnapshotManualBuilder {
+	i.appsv1StatefulSets.Insert(appsv1StatefulSets...)
 	return i
 }

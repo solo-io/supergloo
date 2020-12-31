@@ -551,7 +551,7 @@ var _ = Describe("Validation", func() {
 		// Mesh without parent VirtualMesh
 		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(
 			failoverservice.MeshWithoutParentVM(inputSnapshot.Meshes.List()[2]))))
-		// Multiple parent VirtualMeshes
+		// Multiple parent NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
 		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(failoverservice.MultipleParentVirtualMeshes(inputSnapshot.VirtualMeshes.List()))))
 	})
 })

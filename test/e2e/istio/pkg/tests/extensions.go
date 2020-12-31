@@ -27,7 +27,7 @@ func NetworkingExtensionsTest() {
 		// update settings to remove our extensions server
 		err = manifest.AppendResources(&v1alpha2.Settings{
 			TypeMeta: metav1.TypeMeta{
-				Kind:       "Settings",
+				Kind:       "SettingsMeshGlooSoloIov1Alpha2Settings",
 				APIVersion: v1alpha2.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: metav1.ObjectMeta{
@@ -66,7 +66,7 @@ func NetworkingExtensionsTest() {
 			// update settings to connect our extensions server
 			err = manifest.AppendResources(&v1alpha2.Settings{
 				TypeMeta: metav1.TypeMeta{
-					Kind:       "Settings",
+					Kind:       "SettingsMeshGlooSoloIov1Alpha2Settings",
 					APIVersion: v1alpha2.SchemeGroupVersion.String(),
 				},
 				ObjectMeta: metav1.ObjectMeta{

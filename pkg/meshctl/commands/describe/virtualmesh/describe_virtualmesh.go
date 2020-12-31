@@ -68,7 +68,7 @@ func describeVirtualMeshes(ctx context.Context, c client.Client, searchTerms []s
 
 	buf := new(bytes.Buffer)
 	table := tablewriter.NewWriter(buf)
-	table.SetHeader([]string{"Metadata", "Net", "Meshes"})
+	table.SetHeader([]string{"Metadata", "Net", "DiscoveryMeshGlooSoloIov1Alpha2Meshes"})
 	table.SetRowLine(true)
 	table.SetAutoWrapText(false)
 

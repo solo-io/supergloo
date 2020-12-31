@@ -13,6 +13,16 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+func init() {
+	NetworkingRemoteInputTypes = Snapshot{}
+	for k, v := range IstioNetworkingOutputTypes.Snapshot {
+		NetworkingRemoteInputTypes[k] = v
+	}
+	for k, v := range AppMeshNetworkingOutputTypes.Snapshot {
+		NetworkingRemoteInputTypes[k] = v
+	}
+}
+
 var (
 	NetworkingLocalInputTypes = Snapshot{
 		schema.GroupVersion{
@@ -44,11 +54,9 @@ var (
 		corev1.SchemeGroupVersion: {
 			"Secret",
 		},
-		appmeshv1beta2.GroupVersion: {
-			"VirtualRouter",
-			"VirtualService",
-		},
 	}
+
+	NetworkingRemoteInputTypes Snapshot
 
 	IstioNetworkingOutputTypes = OutputSnapshot{
 		Name: "istio",

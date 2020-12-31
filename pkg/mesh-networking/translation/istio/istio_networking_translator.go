@@ -58,26 +58,26 @@ func (t *istioTranslator) Translate(
 	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator(
 		ctx,
 		userSupplied,
-		in.KubernetesClusters(),
-		in.TrafficTargets(),
-		in.FailoverServices(),
+		in.MulticlusterSoloIov1Alpha1KubernetesClusters(),
+		in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(),
+		in.NetworkingMeshGlooSoloIov1Alpha2FailoverServices(),
 	)
 
-	for _, trafficTarget := range in.TrafficTargets().List() {
+	for _, trafficTarget := range in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List() {
 		trafficTargetTranslator.Translate(in, trafficTarget, istioOutputs, reporter)
 	}
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(
 		ctx,
 		userSupplied,
-		in.KubernetesClusters(),
-		in.Secrets(),
-		in.Workloads(),
-		in.TrafficTargets(),
-		in.FailoverServices(),
+		in.MulticlusterSoloIov1Alpha1KubernetesClusters(),
+		in.V1Secrets(),
+		in.DiscoveryMeshGlooSoloIov1Alpha2Workloads(),
+		in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(),
+		in.NetworkingMeshGlooSoloIov1Alpha2FailoverServices(),
 	)
 
-	for _, mesh := range in.Meshes().List() {
+	for _, mesh := range in.DiscoveryMeshGlooSoloIov1Alpha2Meshes().List() {
 		meshTranslator.Translate(in, mesh, istioOutputs, localOutputs, reporter)
 	}
 

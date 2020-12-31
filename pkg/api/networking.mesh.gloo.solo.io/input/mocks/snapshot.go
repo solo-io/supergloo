@@ -42,116 +42,116 @@ func (m *MockSnapshot) EXPECT() *MockSnapshotMockRecorder {
 	return m.recorder
 }
 
-// Settings mocks base method
+// SettingsMeshGlooSoloIov1Alpha2Settings mocks base method
 func (m *MockSnapshot) Settings() v1alpha2sets1.SettingsSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Settings")
+	ret := m.ctrl.Call(m, "SettingsMeshGlooSoloIov1Alpha2Settings")
 	ret0, _ := ret[0].(v1alpha2sets1.SettingsSet)
 	return ret0
 }
 
-// Settings indicates an expected call of Settings
+// SettingsMeshGlooSoloIov1Alpha2Settings indicates an expected call of SettingsMeshGlooSoloIov1Alpha2Settings
 func (mr *MockSnapshotMockRecorder) Settings() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Settings", reflect.TypeOf((*MockSnapshot)(nil).Settings))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SettingsMeshGlooSoloIov1Alpha2Settings", reflect.TypeOf((*MockSnapshot)(nil).Settings))
 }
 
-// TrafficTargets mocks base method
+// DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets mocks base method
 func (m *MockSnapshot) TrafficTargets() v1alpha2sets.TrafficTargetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TrafficTargets")
+	ret := m.ctrl.Call(m, "DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets")
 	ret0, _ := ret[0].(v1alpha2sets.TrafficTargetSet)
 	return ret0
 }
 
-// TrafficTargets indicates an expected call of TrafficTargets
+// DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets indicates an expected call of DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets
 func (mr *MockSnapshotMockRecorder) TrafficTargets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrafficTargets", reflect.TypeOf((*MockSnapshot)(nil).TrafficTargets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets", reflect.TypeOf((*MockSnapshot)(nil).TrafficTargets))
 }
 
-// Workloads mocks base method
+// DiscoveryMeshGlooSoloIov1Alpha2Workloads mocks base method
 func (m *MockSnapshot) Workloads() v1alpha2sets.WorkloadSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Workloads")
+	ret := m.ctrl.Call(m, "DiscoveryMeshGlooSoloIov1Alpha2Workloads")
 	ret0, _ := ret[0].(v1alpha2sets.WorkloadSet)
 	return ret0
 }
 
-// Workloads indicates an expected call of Workloads
+// DiscoveryMeshGlooSoloIov1Alpha2Workloads indicates an expected call of DiscoveryMeshGlooSoloIov1Alpha2Workloads
 func (mr *MockSnapshotMockRecorder) Workloads() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Workloads", reflect.TypeOf((*MockSnapshot)(nil).Workloads))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoveryMeshGlooSoloIov1Alpha2Workloads", reflect.TypeOf((*MockSnapshot)(nil).Workloads))
 }
 
-// Meshes mocks base method
+// DiscoveryMeshGlooSoloIov1Alpha2Meshes mocks base method
 func (m *MockSnapshot) Meshes() v1alpha2sets.MeshSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Meshes")
+	ret := m.ctrl.Call(m, "DiscoveryMeshGlooSoloIov1Alpha2Meshes")
 	ret0, _ := ret[0].(v1alpha2sets.MeshSet)
 	return ret0
 }
 
-// Meshes indicates an expected call of Meshes
+// DiscoveryMeshGlooSoloIov1Alpha2Meshes indicates an expected call of DiscoveryMeshGlooSoloIov1Alpha2Meshes
 func (mr *MockSnapshotMockRecorder) Meshes() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Meshes", reflect.TypeOf((*MockSnapshot)(nil).Meshes))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoveryMeshGlooSoloIov1Alpha2Meshes", reflect.TypeOf((*MockSnapshot)(nil).Meshes))
 }
 
-// TrafficPolicies mocks base method
+// NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies mocks base method
 func (m *MockSnapshot) TrafficPolicies() v1alpha2sets0.TrafficPolicySet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TrafficPolicies")
+	ret := m.ctrl.Call(m, "NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies")
 	ret0, _ := ret[0].(v1alpha2sets0.TrafficPolicySet)
 	return ret0
 }
 
-// TrafficPolicies indicates an expected call of TrafficPolicies
+// NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies indicates an expected call of NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies
 func (mr *MockSnapshotMockRecorder) TrafficPolicies() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrafficPolicies", reflect.TypeOf((*MockSnapshot)(nil).TrafficPolicies))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies", reflect.TypeOf((*MockSnapshot)(nil).TrafficPolicies))
 }
 
-// AccessPolicies mocks base method
+// NetworkingMeshGlooSoloIov1Alpha2AccessPolicies mocks base method
 func (m *MockSnapshot) AccessPolicies() v1alpha2sets0.AccessPolicySet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccessPolicies")
+	ret := m.ctrl.Call(m, "NetworkingMeshGlooSoloIov1Alpha2AccessPolicies")
 	ret0, _ := ret[0].(v1alpha2sets0.AccessPolicySet)
 	return ret0
 }
 
-// AccessPolicies indicates an expected call of AccessPolicies
+// NetworkingMeshGlooSoloIov1Alpha2AccessPolicies indicates an expected call of NetworkingMeshGlooSoloIov1Alpha2AccessPolicies
 func (mr *MockSnapshotMockRecorder) AccessPolicies() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccessPolicies", reflect.TypeOf((*MockSnapshot)(nil).AccessPolicies))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingMeshGlooSoloIov1Alpha2AccessPolicies", reflect.TypeOf((*MockSnapshot)(nil).AccessPolicies))
 }
 
-// VirtualMeshes mocks base method
+// NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes mocks base method
 func (m *MockSnapshot) VirtualMeshes() v1alpha2sets0.VirtualMeshSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VirtualMeshes")
+	ret := m.ctrl.Call(m, "NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes")
 	ret0, _ := ret[0].(v1alpha2sets0.VirtualMeshSet)
 	return ret0
 }
 
-// VirtualMeshes indicates an expected call of VirtualMeshes
+// NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes indicates an expected call of NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
 func (mr *MockSnapshotMockRecorder) VirtualMeshes() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualMeshes", reflect.TypeOf((*MockSnapshot)(nil).VirtualMeshes))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes", reflect.TypeOf((*MockSnapshot)(nil).VirtualMeshes))
 }
 
-// FailoverServices mocks base method
+// NetworkingMeshGlooSoloIov1Alpha2FailoverServices mocks base method
 func (m *MockSnapshot) FailoverServices() v1alpha2sets0.FailoverServiceSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FailoverServices")
+	ret := m.ctrl.Call(m, "NetworkingMeshGlooSoloIov1Alpha2FailoverServices")
 	ret0, _ := ret[0].(v1alpha2sets0.FailoverServiceSet)
 	return ret0
 }
 
-// FailoverServices indicates an expected call of FailoverServices
+// NetworkingMeshGlooSoloIov1Alpha2FailoverServices indicates an expected call of NetworkingMeshGlooSoloIov1Alpha2FailoverServices
 func (mr *MockSnapshotMockRecorder) FailoverServices() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FailoverServices", reflect.TypeOf((*MockSnapshot)(nil).FailoverServices))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingMeshGlooSoloIov1Alpha2FailoverServices", reflect.TypeOf((*MockSnapshot)(nil).FailoverServices))
 }
 
 // VirtualServices mocks base method
@@ -182,32 +182,32 @@ func (mr *MockSnapshotMockRecorder) VirtualRouters() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualRouters", reflect.TypeOf((*MockSnapshot)(nil).VirtualRouters))
 }
 
-// Secrets mocks base method
+// V1Secrets mocks base method
 func (m *MockSnapshot) Secrets() v1sets.SecretSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Secrets")
+	ret := m.ctrl.Call(m, "V1Secrets")
 	ret0, _ := ret[0].(v1sets.SecretSet)
 	return ret0
 }
 
-// Secrets indicates an expected call of Secrets
+// V1Secrets indicates an expected call of V1Secrets
 func (mr *MockSnapshotMockRecorder) Secrets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Secrets", reflect.TypeOf((*MockSnapshot)(nil).Secrets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1Secrets", reflect.TypeOf((*MockSnapshot)(nil).Secrets))
 }
 
-// KubernetesClusters mocks base method
+// MulticlusterSoloIov1Alpha1KubernetesClusters mocks base method
 func (m *MockSnapshot) KubernetesClusters() v1alpha1sets.KubernetesClusterSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "KubernetesClusters")
+	ret := m.ctrl.Call(m, "MulticlusterSoloIov1Alpha1KubernetesClusters")
 	ret0, _ := ret[0].(v1alpha1sets.KubernetesClusterSet)
 	return ret0
 }
 
-// KubernetesClusters indicates an expected call of KubernetesClusters
+// MulticlusterSoloIov1Alpha1KubernetesClusters indicates an expected call of MulticlusterSoloIov1Alpha1KubernetesClusters
 func (mr *MockSnapshotMockRecorder) KubernetesClusters() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KubernetesClusters", reflect.TypeOf((*MockSnapshot)(nil).KubernetesClusters))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MulticlusterSoloIov1Alpha1KubernetesClusters", reflect.TypeOf((*MockSnapshot)(nil).KubernetesClusters))
 }
 
 // SyncStatuses mocks base method

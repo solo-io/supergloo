@@ -181,7 +181,7 @@ func (t *translator) Translate(
 }
 
 // ensure that only a single VirtualService HTTPRoute gets created per TrafficPolicy request matcher
-// by first grouping TrafficPolicies by semantically equivalent request matchers
+// by first grouping NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies by semantically equivalent request matchers
 func groupAppliedTpsByRequestMatcher(
 	appliedTps []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
 ) [][]*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy {

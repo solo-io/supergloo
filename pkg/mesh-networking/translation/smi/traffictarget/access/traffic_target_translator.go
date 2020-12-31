@@ -26,7 +26,7 @@ import (
 
 // the SMI Access translator translates a TrafficTarget into sets of SMI access resources.
 type Translator interface {
-	// Translate translates the appropriate TrafficTargets and HTTPRoutesGroups for the given TrafficTarget.
+	// Translate translates the appropriate DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets and HTTPRoutesGroups for the given TrafficTarget.
 	// returns empty lists if none are required
 	//
 	// Errors caused by invalid user config will be reported using the Reporter.
@@ -73,7 +73,7 @@ func (t *translator) Translate(
 	var trafficTargets []*smiaccessv1alpha2.TrafficTarget
 	var httpRouteGroups []*smispecsv1alpha3.HTTPRouteGroup
 
-	backingWorkloads := workloadutils.FindBackingWorkloads(target.Spec.GetKubeService(), in.Workloads())
+	backingWorkloads := workloadutils.FindBackingWorkloads(target.Spec.GetKubeService(), in.DiscoveryMeshGlooSoloIov1Alpha2Workloads())
 	for _, ap := range target.Status.GetAppliedAccessPolicies() {
 
 		if len(backingWorkloads) == 0 {

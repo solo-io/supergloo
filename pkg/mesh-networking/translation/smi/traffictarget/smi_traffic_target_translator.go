@@ -51,7 +51,7 @@ func (t *translator) Translate(
 	// Translate TrafficSplit for TrafficTarget, can be nil if non-kube service or no applied traffic policy
 	trafficSplit := t.trafficSplit.Translate(ctx, in, trafficTarget, reporter)
 
-	// Translate output TrafficTargets and HttpRouteGroups for discovered TrafficTarget
+	// Translate output DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets and HttpRouteGroups for discovered TrafficTarget
 	trafficTargets, httpRouteGroups := t.trafficTarget.Translate(ctx, in, trafficTarget, reporter)
 
 	outputs.AddTrafficSplits(trafficSplit)

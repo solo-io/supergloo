@@ -44,7 +44,7 @@ func (d *meshDetector) DetectMeshes(in input.RemoteSnapshot, _ *settingsv1alpha2
 	awsMeshByArn := make(map[string][]*aws_v1beta2.Mesh)
 	for _, awsMesh := range in.Meshes().List() {
 		if awsMesh.Status.MeshARN == nil {
-			// Meshes that lack an ARN have not been processed by the App Mesh controller; ignore.
+			// DiscoveryMeshGlooSoloIov1Alpha2Meshes that lack an ARN have not been processed by the App Mesh controller; ignore.
 			continue
 		}
 

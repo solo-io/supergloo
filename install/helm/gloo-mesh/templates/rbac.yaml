@@ -97,15 +97,6 @@ rules:
   - list
   - watch
 - apiGroups:
-  - appmesh.k8s.aws
-  resources:
-  - virtualrouters
-  - virtualservices
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
   - discovery.mesh.gloo.solo.io
   resources:
   - meshes
@@ -146,14 +137,6 @@ rules:
   - ""
   resources:
   - secrets/status
-  verbs:
-  - get
-  - update
-- apiGroups:
-  - appmesh.k8s.aws
-  resources:
-  - virtualrouters/status
-  - virtualservices/status
   verbs:
   - get
   - update

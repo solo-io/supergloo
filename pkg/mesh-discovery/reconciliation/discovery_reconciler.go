@@ -139,7 +139,7 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 	}
 
 	localInputSnap, err := r.localBuilder.BuildSnapshot(ctx, "mesh-discovery-local", input.LocalBuildOptions{
-		Settings: input.ResourceLocalBuildOptions{
+		SettingsMeshGlooSoloIov1Alpha2Settings: input.ResourceLocalBuildOptions{
 			// Ensure that only declared Settings object exists in snapshot.
 			ListOptions: []client.ListOption{
 				client.InNamespace(r.settingsRef.Namespace),

@@ -118,7 +118,7 @@ func (t *translator) Translate(
 	// Currently, we just default to using the first one in the list.
 	ingressGateway := istioMesh.IngressGateways[0]
 
-	trafficTargets := servicesForMesh(mesh, in.TrafficTargets())
+	trafficTargets := servicesForMesh(mesh, in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets())
 
 	if len(trafficTargets) == 0 {
 		contextutils.LoggerFrom(t.ctx).Debugf("no services found in istio mesh %v", sets.Key(mesh))
@@ -127,7 +127,7 @@ func (t *translator) Translate(
 
 	istioCluster := istioMesh.Installation.Cluster
 
-	kubeCluster, err := in.KubernetesClusters().Find(&v1.ObjectRef{
+	kubeCluster, err := in.MulticlusterSoloIov1Alpha1KubernetesClusters().Find(&v1.ObjectRef{
 		Name:      istioCluster,
 		Namespace: defaults.GetPodNamespace(),
 	})
@@ -194,7 +194,7 @@ func (t *translator) Translate(
 			if ezkube.RefsMatch(ref, mesh) {
 				continue
 			}
-			clientMesh, err := in.Meshes().Find(ref)
+			clientMesh, err := in.DiscoveryMeshGlooSoloIov1Alpha2Meshes().Find(ref)
 			if err != nil {
 				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, err)
 				continue
@@ -227,13 +227,13 @@ func (t *translator) Translate(
 
 			outputs.AddServiceEntries(se)
 
-			// Translate VirtualServices for federated TrafficTargets, can be nil
+			// Translate VirtualServices for federated DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets, can be nil
 			vs := t.virtualServiceTranslator.Translate(t.ctx, in, trafficTarget, clientIstio.Installation, reporter)
 			// Append the virtual mesh as a parent to the output virtual service
 			metautils.AppendParent(t.ctx, vs, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 			outputs.AddVirtualServices(vs)
 
-			// Translate DestinationRules for federated TrafficTargets, can be nil
+			// Translate DestinationRules for federated DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets, can be nil
 			dr := t.destinationRuleTranslator.Translate(t.ctx, in, trafficTarget, clientIstio.Installation, reporter)
 			// Append the virtual mesh as a parent to the output destination rule
 			metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())

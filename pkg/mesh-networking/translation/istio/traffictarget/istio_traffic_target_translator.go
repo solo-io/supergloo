@@ -75,22 +75,22 @@ func (t *translator) Translate(
 	reporter reporting.Reporter,
 ) {
 	// only translate istio trafficTargets
-	if !t.isIstioTrafficTarget(t.ctx, trafficTarget, in.Meshes()) {
+	if !t.isIstioTrafficTarget(t.ctx, trafficTarget, in.DiscoveryMeshGlooSoloIov1Alpha2Meshes()) {
 		return
 	}
 
-	// Translate VirtualServices for TrafficTargets, can be nil if there is no service or applied traffic policies
+	// Translate VirtualServices for DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets, can be nil if there is no service or applied traffic policies
 	// Pass nil sourceMeshInstallation to translate VirtualService local to trafficTarget
 	vs := t.virtualServices.Translate(t.ctx, in, trafficTarget, nil, reporter)
 	// Append the traffic target as a parent to the virtual service
 	metautils.AppendParent(t.ctx, vs, trafficTarget, trafficTarget.GVK())
 	outputs.AddVirtualServices(vs)
-	// Translate DestinationRules for TrafficTargets, can be nil if there is no service or applied traffic policies
+	// Translate DestinationRules for DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets, can be nil if there is no service or applied traffic policies
 	dr := t.destinationRules.Translate(t.ctx, in, trafficTarget, nil, reporter)
 	// Append the traffic target as a parent to the destination rule
 	metautils.AppendParent(t.ctx, dr, trafficTarget, trafficTarget.GVK())
 	outputs.AddDestinationRules(dr)
-	// Translate AuthorizationPolicies for TrafficTargets, can be nil if there is no service or applied traffic policies
+	// Translate AuthorizationPolicies for DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets, can be nil if there is no service or applied traffic policies
 	ap := t.authorizationPolicies.Translate(in, trafficTarget, reporter)
 	// Append the traffic target as a parent to the authorization policy
 	metautils.AppendParent(t.ctx, ap, trafficTarget, trafficTarget.GVK())

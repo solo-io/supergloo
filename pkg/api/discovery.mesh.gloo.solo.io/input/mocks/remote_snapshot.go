@@ -38,144 +38,144 @@ func (m *MockRemoteSnapshot) EXPECT() *MockRemoteSnapshotMockRecorder {
 	return m.recorder
 }
 
-// Meshes mocks base method
-func (m *MockRemoteSnapshot) Meshes() v1beta2sets.MeshSet {
+// AppmeshK8SAwsv1Beta2Meshes mocks base method
+func (m *MockRemoteSnapshot) AppmeshK8SAwsv1Beta2Meshes() v1beta2sets.MeshSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Meshes")
+	ret := m.ctrl.Call(m, "AppmeshK8SAwsv1Beta2Meshes")
 	ret0, _ := ret[0].(v1beta2sets.MeshSet)
 	return ret0
 }
 
-// Meshes indicates an expected call of Meshes
-func (mr *MockRemoteSnapshotMockRecorder) Meshes() *gomock.Call {
+// AppmeshK8SAwsv1Beta2Meshes indicates an expected call of AppmeshK8SAwsv1Beta2Meshes
+func (mr *MockRemoteSnapshotMockRecorder) AppmeshK8SAwsv1Beta2Meshes() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Meshes", reflect.TypeOf((*MockRemoteSnapshot)(nil).Meshes))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppmeshK8SAwsv1Beta2Meshes", reflect.TypeOf((*MockRemoteSnapshot)(nil).AppmeshK8SAwsv1Beta2Meshes))
 }
 
-// VirtualNodes mocks base method
-func (m *MockRemoteSnapshot) VirtualNodes() v1beta2sets.VirtualNodeSet {
+// AppmeshK8SAwsv1Beta2VirtualNodes mocks base method
+func (m *MockRemoteSnapshot) AppmeshK8SAwsv1Beta2VirtualNodes() v1beta2sets.VirtualNodeSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VirtualNodes")
+	ret := m.ctrl.Call(m, "AppmeshK8SAwsv1Beta2VirtualNodes")
 	ret0, _ := ret[0].(v1beta2sets.VirtualNodeSet)
 	return ret0
 }
 
-// VirtualNodes indicates an expected call of VirtualNodes
-func (mr *MockRemoteSnapshotMockRecorder) VirtualNodes() *gomock.Call {
+// AppmeshK8SAwsv1Beta2VirtualNodes indicates an expected call of AppmeshK8SAwsv1Beta2VirtualNodes
+func (mr *MockRemoteSnapshotMockRecorder) AppmeshK8SAwsv1Beta2VirtualNodes() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualNodes", reflect.TypeOf((*MockRemoteSnapshot)(nil).VirtualNodes))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppmeshK8SAwsv1Beta2VirtualNodes", reflect.TypeOf((*MockRemoteSnapshot)(nil).AppmeshK8SAwsv1Beta2VirtualNodes))
 }
 
-// ConfigMaps mocks base method
-func (m *MockRemoteSnapshot) ConfigMaps() v1sets0.ConfigMapSet {
+// V1ConfigMaps mocks base method
+func (m *MockRemoteSnapshot) V1ConfigMaps() v1sets0.ConfigMapSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConfigMaps")
+	ret := m.ctrl.Call(m, "V1ConfigMaps")
 	ret0, _ := ret[0].(v1sets0.ConfigMapSet)
 	return ret0
 }
 
-// ConfigMaps indicates an expected call of ConfigMaps
-func (mr *MockRemoteSnapshotMockRecorder) ConfigMaps() *gomock.Call {
+// V1ConfigMaps indicates an expected call of V1ConfigMaps
+func (mr *MockRemoteSnapshotMockRecorder) V1ConfigMaps() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigMaps", reflect.TypeOf((*MockRemoteSnapshot)(nil).ConfigMaps))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1ConfigMaps", reflect.TypeOf((*MockRemoteSnapshot)(nil).V1ConfigMaps))
 }
 
-// Services mocks base method
-func (m *MockRemoteSnapshot) Services() v1sets0.ServiceSet {
+// V1Services mocks base method
+func (m *MockRemoteSnapshot) V1Services() v1sets0.ServiceSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Services")
+	ret := m.ctrl.Call(m, "V1Services")
 	ret0, _ := ret[0].(v1sets0.ServiceSet)
 	return ret0
 }
 
-// Services indicates an expected call of Services
-func (mr *MockRemoteSnapshotMockRecorder) Services() *gomock.Call {
+// V1Services indicates an expected call of V1Services
+func (mr *MockRemoteSnapshotMockRecorder) V1Services() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Services", reflect.TypeOf((*MockRemoteSnapshot)(nil).Services))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1Services", reflect.TypeOf((*MockRemoteSnapshot)(nil).V1Services))
 }
 
-// Pods mocks base method
-func (m *MockRemoteSnapshot) Pods() v1sets0.PodSet {
+// V1Pods mocks base method
+func (m *MockRemoteSnapshot) V1Pods() v1sets0.PodSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Pods")
+	ret := m.ctrl.Call(m, "V1Pods")
 	ret0, _ := ret[0].(v1sets0.PodSet)
 	return ret0
 }
 
-// Pods indicates an expected call of Pods
-func (mr *MockRemoteSnapshotMockRecorder) Pods() *gomock.Call {
+// V1Pods indicates an expected call of V1Pods
+func (mr *MockRemoteSnapshotMockRecorder) V1Pods() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pods", reflect.TypeOf((*MockRemoteSnapshot)(nil).Pods))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1Pods", reflect.TypeOf((*MockRemoteSnapshot)(nil).V1Pods))
 }
 
-// Nodes mocks base method
-func (m *MockRemoteSnapshot) Nodes() v1sets0.NodeSet {
+// V1Nodes mocks base method
+func (m *MockRemoteSnapshot) V1Nodes() v1sets0.NodeSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Nodes")
+	ret := m.ctrl.Call(m, "V1Nodes")
 	ret0, _ := ret[0].(v1sets0.NodeSet)
 	return ret0
 }
 
-// Nodes indicates an expected call of Nodes
-func (mr *MockRemoteSnapshotMockRecorder) Nodes() *gomock.Call {
+// V1Nodes indicates an expected call of V1Nodes
+func (mr *MockRemoteSnapshotMockRecorder) V1Nodes() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Nodes", reflect.TypeOf((*MockRemoteSnapshot)(nil).Nodes))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1Nodes", reflect.TypeOf((*MockRemoteSnapshot)(nil).V1Nodes))
 }
 
-// Deployments mocks base method
-func (m *MockRemoteSnapshot) Deployments() v1sets.DeploymentSet {
+// Appsv1Deployments mocks base method
+func (m *MockRemoteSnapshot) Appsv1Deployments() v1sets.DeploymentSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Deployments")
+	ret := m.ctrl.Call(m, "Appsv1Deployments")
 	ret0, _ := ret[0].(v1sets.DeploymentSet)
 	return ret0
 }
 
-// Deployments indicates an expected call of Deployments
-func (mr *MockRemoteSnapshotMockRecorder) Deployments() *gomock.Call {
+// Appsv1Deployments indicates an expected call of Appsv1Deployments
+func (mr *MockRemoteSnapshotMockRecorder) Appsv1Deployments() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deployments", reflect.TypeOf((*MockRemoteSnapshot)(nil).Deployments))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Appsv1Deployments", reflect.TypeOf((*MockRemoteSnapshot)(nil).Appsv1Deployments))
 }
 
-// ReplicaSets mocks base method
-func (m *MockRemoteSnapshot) ReplicaSets() v1sets.ReplicaSetSet {
+// Appsv1ReplicaSets mocks base method
+func (m *MockRemoteSnapshot) Appsv1ReplicaSets() v1sets.ReplicaSetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReplicaSets")
+	ret := m.ctrl.Call(m, "Appsv1ReplicaSets")
 	ret0, _ := ret[0].(v1sets.ReplicaSetSet)
 	return ret0
 }
 
-// ReplicaSets indicates an expected call of ReplicaSets
-func (mr *MockRemoteSnapshotMockRecorder) ReplicaSets() *gomock.Call {
+// Appsv1ReplicaSets indicates an expected call of Appsv1ReplicaSets
+func (mr *MockRemoteSnapshotMockRecorder) Appsv1ReplicaSets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReplicaSets", reflect.TypeOf((*MockRemoteSnapshot)(nil).ReplicaSets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Appsv1ReplicaSets", reflect.TypeOf((*MockRemoteSnapshot)(nil).Appsv1ReplicaSets))
 }
 
-// DaemonSets mocks base method
-func (m *MockRemoteSnapshot) DaemonSets() v1sets.DaemonSetSet {
+// Appsv1DaemonSets mocks base method
+func (m *MockRemoteSnapshot) Appsv1DaemonSets() v1sets.DaemonSetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DaemonSets")
+	ret := m.ctrl.Call(m, "Appsv1DaemonSets")
 	ret0, _ := ret[0].(v1sets.DaemonSetSet)
 	return ret0
 }
 
-// DaemonSets indicates an expected call of DaemonSets
-func (mr *MockRemoteSnapshotMockRecorder) DaemonSets() *gomock.Call {
+// Appsv1DaemonSets indicates an expected call of Appsv1DaemonSets
+func (mr *MockRemoteSnapshotMockRecorder) Appsv1DaemonSets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DaemonSets", reflect.TypeOf((*MockRemoteSnapshot)(nil).DaemonSets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Appsv1DaemonSets", reflect.TypeOf((*MockRemoteSnapshot)(nil).Appsv1DaemonSets))
 }
 
-// StatefulSets mocks base method
-func (m *MockRemoteSnapshot) StatefulSets() v1sets.StatefulSetSet {
+// Appsv1StatefulSets mocks base method
+func (m *MockRemoteSnapshot) Appsv1StatefulSets() v1sets.StatefulSetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StatefulSets")
+	ret := m.ctrl.Call(m, "Appsv1StatefulSets")
 	ret0, _ := ret[0].(v1sets.StatefulSetSet)
 	return ret0
 }
 
-// StatefulSets indicates an expected call of StatefulSets
-func (mr *MockRemoteSnapshotMockRecorder) StatefulSets() *gomock.Call {
+// Appsv1StatefulSets indicates an expected call of Appsv1StatefulSets
+func (mr *MockRemoteSnapshotMockRecorder) Appsv1StatefulSets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StatefulSets", reflect.TypeOf((*MockRemoteSnapshot)(nil).StatefulSets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Appsv1StatefulSets", reflect.TypeOf((*MockRemoteSnapshot)(nil).Appsv1StatefulSets))
 }
 
 // MarshalJSON mocks base method

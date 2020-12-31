@@ -68,7 +68,7 @@ func describeFailoverServices(ctx context.Context, c client.Client, searchTerms 
 
 	buf := new(bytes.Buffer)
 	table := tablewriter.NewWriter(buf)
-	table.SetHeader([]string{"Metadata", "Net", "Meshes", "Backing_Services"})
+	table.SetHeader([]string{"Metadata", "Net", "DiscoveryMeshGlooSoloIov1Alpha2Meshes", "Backing_Services"})
 	table.SetRowLine(true)
 	table.SetAutoWrapText(false)
 

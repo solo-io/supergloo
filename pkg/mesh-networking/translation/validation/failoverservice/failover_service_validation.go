@@ -27,10 +27,10 @@ A valid FailoverService must satisfy the following constraints:
 4. All declared failover services must be owned by a supported Mesh type (currently only Istio).
 5. All declared failover services must exist in the same VirtualMesh, or belong to a common parent Mesh.
 6. All declared failover services must have OutlierDetection settings declared in a TP (grab this from the TrafficTarget status).
-7. All targeted Meshes must be of a supported type.
+7. All targeted DiscoveryMeshGlooSoloIov1Alpha2Meshes must be of a supported type.
 */
 type FailoverServiceValidator interface {
-	// Set the validation status for FailoverServices in the Inputs
+	// Set the validation status for NetworkingMeshGlooSoloIov1Alpha2FailoverServices in the Inputs
 	Validate(inputs Inputs, failoverService *networkingv1alpha2.FailoverServiceSpec) []error
 }
 
@@ -82,10 +82,10 @@ var (
 		for _, vm := range virtualMeshes {
 			virtualMeshNames = append(virtualMeshNames, fmt.Sprintf("%s.%s", vm.GetName(), vm.GetNamespace()))
 		}
-		return eris.Errorf("Services belong to multiple different parent VirtualMeshes: [%s]", strings.Join(virtualMeshNames, ", "))
+		return eris.Errorf("Services belong to multiple different parent NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes: [%s]", strings.Join(virtualMeshNames, ", "))
 	}
 	MissingOutlierDetection = func(trafficTarget *discoveryv1alpha2.TrafficTarget) error {
-		return eris.Errorf("Service %s.%s.%s does not have any TrafficPolicies that apply OutlierDetection settings.",
+		return eris.Errorf("Service %s.%s.%s does not have any NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies that apply OutlierDetection settings.",
 			trafficTarget.Spec.GetKubeService().GetRef().GetName(),
 			trafficTarget.Spec.GetKubeService().GetRef().GetNamespace(),
 			trafficTarget.Spec.GetKubeService().GetRef().GetClusterName())
@@ -252,7 +252,7 @@ func (f *failoverServiceValidator) validateFederation(
 		}
 		referencedMeshes.Insert(mesh)
 	}
-	// Compute referenced VirtualMeshes
+	// Compute referenced NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
 	for _, mesh := range referencedMeshes.List() {
 		appliedVirtualMesh := mesh.Status.AppliedVirtualMesh
 		if appliedVirtualMesh == nil {

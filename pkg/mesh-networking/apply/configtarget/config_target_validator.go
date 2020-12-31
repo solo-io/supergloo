@@ -18,23 +18,23 @@ import (
 	any errors (i.e. references to non-existent discovery entities) to the offending resource status.
 */
 type ConfigTargetValidator interface {
-	// Validate mesh references declared on FailoverServices.
+	// Validate mesh references declared on NetworkingMeshGlooSoloIov1Alpha2FailoverServices.
 	ValidateFailoverServices(
 		failoverServices v1alpha2.FailoverServiceSlice,
 	)
 
-	// Validate traffic target references declared on TrafficPolicies.
+	// Validate traffic target references declared on NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies.
 	ValidateTrafficPolicies(
 		trafficPolicies v1alpha2.TrafficPolicySlice,
 	)
 
-	// Validate mesh references declared on VirtualMeshes.
+	// Validate mesh references declared on NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes.
 	// Also validate that all referenced meshes are contained in at most one virtual mesh.
 	ValidateVirtualMeshes(
 		virtualMeshes v1alpha2.VirtualMeshSlice,
 	)
 
-	// Validate traffic target references declared on AccessPolicies.
+	// Validate traffic target references declared on NetworkingMeshGlooSoloIov1Alpha2AccessPolicies.
 	ValidateAccessPolicies(
 		accessPolicies v1alpha2.AccessPolicySlice,
 	)

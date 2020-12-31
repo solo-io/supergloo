@@ -11,7 +11,7 @@ import (
 
 //go:generate mockgen -source ./appmesh_mesh_translator.go -destination mocks/appmesh_mesh_translator.go
 
-// Translator translates Meshes into appmesh outputs.
+// Translator translates DiscoveryMeshGlooSoloIov1Alpha2Meshes into appmesh outputs.
 type Translator interface {
 	// Translate translates the appropriate resources to apply the VirtualMesh to the given Mesh.
 	// Output resources will be added to the appmesh.Builder

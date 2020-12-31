@@ -13,14 +13,14 @@ import (
 type InputLocalSnapshotManualBuilder struct {
 	name string
 
-	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+	settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 }
 
 func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBuilder {
 	return &InputLocalSnapshotManualBuilder{
 		name: name,
 
-		settings: settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet(),
+		settingsMeshGlooSoloIov1Alpha2Settings: settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet(),
 	}
 }
 
@@ -28,10 +28,10 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 	return NewLocalSnapshot(
 		i.name,
 
-		i.settings,
+		i.settingsMeshGlooSoloIov1Alpha2Settings,
 	)
 }
-func (i *InputLocalSnapshotManualBuilder) AddSettings(settings []*settings_mesh_gloo_solo_io_v1alpha2.Settings) *InputLocalSnapshotManualBuilder {
-	i.settings.Insert(settings...)
+func (i *InputLocalSnapshotManualBuilder) AddSettingsMeshGlooSoloIov1Alpha2Settings(settingsMeshGlooSoloIov1Alpha2Settings []*settings_mesh_gloo_solo_io_v1alpha2.Settings) *InputLocalSnapshotManualBuilder {
+	i.settingsMeshGlooSoloIov1Alpha2Settings.Insert(settingsMeshGlooSoloIov1Alpha2Settings...)
 	return i
 }

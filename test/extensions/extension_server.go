@@ -44,7 +44,7 @@ func (t *testExtensionsServer) GetExtensionPatches(ctx context.Context, request 
 	inputs := extensionutils.InputSnapshotFromProto("test-server", request.Inputs)
 
 	var patches []*v1alpha1.GeneratedObject
-	for _, mesh := range inputs.Meshes().List() {
+	for _, mesh := range inputs.DiscoveryMeshGlooSoloIov1Alpha2Meshes().List() {
 		mesh := mesh // shadow for pointer
 		outputs, err := t.createMeshPatches(ctx, &mesh.Spec)
 		if err != nil {

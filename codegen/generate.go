@@ -35,9 +35,9 @@ type topLevelComponent struct {
 	generatedCodeRoot string
 
 	// the set of input resources for which to generate a snapshot and reconciler
-	// local inptus are read from the local cluster where the controller runs
+	// local inputs are read from the local cluster where the controller runs
 	localInputResources io.Snapshot
-	// remote inptus are read from managed cluster registered to the controller cluster
+	// remote inputs are read from managed cluster registered to the controller cluster
 	remoteInputResources io.Snapshot
 
 	// the set of output resources for which to generate a snapshot
@@ -151,7 +151,7 @@ var (
 		{
 			generatedCodeRoot:    "pkg/api/networking.mesh.gloo.solo.io",
 			localInputResources:  io.NetworkingLocalInputTypes,
-			remoteInputResources: io.IstioNetworkingOutputTypes.Snapshot,
+			remoteInputResources: io.NetworkingRemoteInputTypes,
 			outputResources: []io.OutputSnapshot{
 				io.IstioNetworkingOutputTypes,
 				io.SmiNetworkingOutputTypes,

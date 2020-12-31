@@ -2,7 +2,7 @@ package secrets
 
 const (
 	/*
-		TODO(ilackarms): document the expected structure of secrets (required for VirtualMeshes  using a user-provided root CA)
+		TODO(ilackarms): document the expected structure of secrets (required for NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes  using a user-provided root CA)
 	*/
 	// CaCertID is the CA certificate chain file.
 	CaCertID = "ca-cert.pem"

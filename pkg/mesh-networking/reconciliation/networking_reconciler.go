@@ -209,11 +209,11 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 		//VirtualServices: input.ResourceBuildOptions{
 		//	Verifier: r.verifier,
 		//},
-		//VirtualMeshes: input.ResourceBuildOptions{
+		//NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes: input.ResourceBuildOptions{
 		//	Verifier: r.verifier,
 		//},
 		Settings: input.ResourceLocalBuildOptions{
-			// Ensure that only declared Settings object exists in snapshot.
+			// Ensure that only declared SettingsMeshGlooSoloIov1Alpha2Settings object exists in snapshot.
 			ListOptions: []client.ListOption{
 				client.InNamespace(r.settingsRef.Namespace),
 				client.MatchingFields(map[string]string{
@@ -357,8 +357,7 @@ func isIgnoredConfigMap(obj metav1.Object) bool {
 // we expect these errors on clusters on which that mesh is not deployed
 func buildRemoteResourceVerifier(ctx context.Context) verifier.ServerResourceVerifier {
 	options := map[schema.GroupVersionKind]verifier.ServerVerifyOption{}
-	// TODO joekelley replace with remote input
-	for groupVersion, kinds := range io.IstioNetworkingOutputTypes.Snapshot {
+	for groupVersion, kinds := range io.NetworkingRemoteInputTypes {
 		for _, kind := range kinds {
 			gvk := schema.GroupVersionKind{
 				Group:   groupVersion.Group,

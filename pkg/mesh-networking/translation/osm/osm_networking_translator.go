@@ -47,7 +47,7 @@ func (s *osmTranslator) Translate(
 
 	meshTranslator := s.dependencies.MakeMeshTranslator()
 
-	for _, mesh := range in.Meshes().List() {
+	for _, mesh := range in.DiscoveryMeshGlooSoloIov1Alpha2Meshes().List() {
 		mesh := mesh
 
 		meshTranslator.Translate(ctx, in, mesh, outputs, reporter)
@@ -55,7 +55,7 @@ func (s *osmTranslator) Translate(
 
 	trafficTargetTranslator := s.dependencies.MakeTrafficTargetTranslator()
 
-	for _, trafficTarget := range in.TrafficTargets().List() {
+	for _, trafficTarget := range in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List() {
 		trafficTarget := trafficTarget
 
 		trafficTargetTranslator.Translate(ctx, in, trafficTarget, outputs, reporter)

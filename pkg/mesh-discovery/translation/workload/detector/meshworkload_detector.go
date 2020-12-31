@@ -20,7 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// the WorkloadDetector detects Workloads from workloads
+// the WorkloadDetector detects DiscoveryMeshGlooSoloIov1Alpha2Workloads from workloads
 // whose backing pods are injected with a Mesh sidecar.
 // If no mesh is detected for the workload, nil is returned
 type WorkloadDetector interface {
