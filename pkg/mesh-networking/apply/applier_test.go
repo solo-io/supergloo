@@ -82,7 +82,7 @@ var _ = Describe("Applier", func() {
 				},
 			}
 
-			snap = input.NewInputSnapshotManualBuilder("").
+			snap = input.NewInputLocalSnapshotManualBuilder("").
 				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
 				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy1, trafficPolicy2}).
 				AddWorkloads(discoveryv1alpha2.WorkloadSlice{workload}).
@@ -95,7 +95,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap)
+			applier.Apply(context.TODO(), snap, nil)
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy1.Status.TrafficTargets).To(HaveKey(sets.Key(trafficTarget)))
@@ -139,7 +139,7 @@ var _ = Describe("Applier", func() {
 				},
 			}
 
-			snap = input.NewInputSnapshotManualBuilder("").
+			snap = input.NewInputLocalSnapshotManualBuilder("").
 				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
 				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy}).
 				Build()
@@ -151,7 +151,7 @@ var _ = Describe("Applier", func() {
 				reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, trafficPolicy, errors.New("did an oopsie"))
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap)
+			applier.Apply(context.TODO(), snap, nil)
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy.Status.TrafficTargets).To(HaveKey(sets.Key(trafficTarget)))
@@ -243,7 +243,7 @@ var _ = Describe("Applier", func() {
 		)
 
 		It("sets policy workloads using mesh", func() {
-			snap := input.NewInputSnapshotManualBuilder("").
+			snap := input.NewInputLocalSnapshotManualBuilder("").
 				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy}).
 				AddAccessPolicies(v1alpha2.AccessPolicySlice{accessPolicy}).
 				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
@@ -254,7 +254,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap)
+			applier.Apply(context.TODO(), snap, nil)
 
 			// trafficTarget and workload1 are both in mesh1
 			Expect(trafficPolicy.Status.Workloads).To(HaveLen(1))
@@ -263,7 +263,7 @@ var _ = Describe("Applier", func() {
 			Expect(accessPolicy.Status.Workloads[0]).To(Equal(sets.Key(workload1)))
 		})
 		It("sets policy workloads using virtual mesh", func() {
-			snap := input.NewInputSnapshotManualBuilder("").
+			snap := input.NewInputLocalSnapshotManualBuilder("").
 				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy}).
 				AddAccessPolicies(v1alpha2.AccessPolicySlice{accessPolicy}).
 				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
@@ -275,7 +275,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap)
+			applier.Apply(context.TODO(), snap, nil)
 
 			// trafficTarget is in mesh1, workload1 is in mesh1, and workload2 is in mesh2.
 			// since mesh1 and mesh2 are in the same virtual mesh, both workloads are returned
@@ -288,7 +288,7 @@ var _ = Describe("Applier", func() {
 		})
 		It("sets no policy workloads when there is no matching mesh", func() {
 			workload1.Spec.Mesh.Name = "mesh2"
-			snap := input.NewInputSnapshotManualBuilder("").
+			snap := input.NewInputLocalSnapshotManualBuilder("").
 				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy}).
 				AddAccessPolicies(v1alpha2.AccessPolicySlice{accessPolicy}).
 				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
@@ -299,7 +299,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap)
+			applier.Apply(context.TODO(), snap, nil)
 
 			// trafficTarget is in mesh1, but both workloads are in mesh2
 			Expect(trafficPolicy.Status.Workloads).To(BeNil())
@@ -314,7 +314,12 @@ type testIstioTranslator struct {
 	callReporter func(reporter reporting.Reporter)
 }
 
-func (t testIstioTranslator) Translate(ctx context.Context, in input.Snapshot, reporter reporting.Reporter) (translation.OutputSnapshots, error) {
+func (t testIstioTranslator) Translate(
+	ctx context.Context,
+	in input.LocalSnapshot,
+	existingIstioResources input.RemoteSnapshot,
+	reporter reporting.Reporter,
+) (translation.OutputSnapshots, error) {
 	t.callReporter(reporter)
 	return translation.OutputSnapshots{}, nil
 }

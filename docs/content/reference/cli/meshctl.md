@@ -13,7 +13,8 @@ The Command Line Interface for managing Gloo Mesh.
 ### Options
 
 ```
-  -h, --help   help for meshctl
+  -h, --help      help for meshctl
+  -v, --verbose   enable verbose logging
 ```
 
 ### SEE ALSO

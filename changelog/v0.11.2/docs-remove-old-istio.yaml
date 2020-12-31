@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Remove references to Istio 1.5 and 1.6 in docs.

@@ -4,10 +4,10 @@ package extensions.networking.mesh.gloo.solo.io;
 
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1";
 
-import "gloo-mesh/api/discovery/v1alpha2/mesh.proto";
-import "gloo-mesh/api/discovery/v1alpha2/traffic_target.proto";
-import "gloo-mesh/api/discovery/v1alpha2/workload.proto";
-import "gloo-mesh/api/xds/v1alpha1/xds_config.proto";
+import "github.com/solo-io/gloo-mesh/api/discovery/v1alpha2/mesh.proto";
+import "github.com/solo-io/gloo-mesh/api/discovery/v1alpha2/traffic_target.proto";
+import "github.com/solo-io/gloo-mesh/api/discovery/v1alpha2/workload.proto";
+import "github.com/solo-io/gloo-mesh/api/xds/v1alpha1/xds_config.proto";
 
 import "networking/v1alpha3/destination_rule.proto";
 import "networking/v1alpha3/envoy_filter.proto";
@@ -110,7 +110,7 @@ message GeneratedObject {
         .istio.networking.v1alpha3.ServiceEntry service_entry = 4;
         .istio.networking.v1alpha3.VirtualService virtual_service = 5;
         ConfigMap config_map = 6;
-        .xds.enterprise.agent.mesh.gloo.solo.io.XdsConfigSpec xds_config = 7;
+        .xds.agent.enterprise.mesh.gloo.solo.io.XdsConfigSpec xds_config = 7;
         // TODO(ilackarms): add more types here. note that we may need to support non-proto resourecs here in the future,
         // in which case we will probably use a proto Struct to represent the object.
     }

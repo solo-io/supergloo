@@ -16,6 +16,12 @@ Demo Gloo Mesh functionality one OSM control plane deployed
   -h, --help   help for osm
 ```
 
+### Options inherited from parent commands
+
+```
+  -v, --verbose   enable verbose logging
+```
+
 ### SEE ALSO
 
 * [meshctl demo](../meshctl_demo)	 - Bootstrap environments for various demos demonstrating Gloo Mesh functionality.

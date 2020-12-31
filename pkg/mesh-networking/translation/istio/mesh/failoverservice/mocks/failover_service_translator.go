@@ -38,7 +38,7 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(in input.Snapshot, mesh *v1alpha2.Mesh, failoverService *v1alpha2.MeshStatus_AppliedFailoverService, outputs istio.Builder, reporter reporting.Reporter) {
+func (m *MockTranslator) Translate(in input.LocalSnapshot, mesh *v1alpha2.Mesh, failoverService *v1alpha2.MeshStatus_AppliedFailoverService, outputs istio.Builder, reporter reporting.Reporter) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Translate", in, mesh, failoverService, outputs, reporter)
 }

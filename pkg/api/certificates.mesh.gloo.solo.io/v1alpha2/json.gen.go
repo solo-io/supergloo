@@ -9,9 +9,9 @@ import (
 	fmt "fmt"
 	math "math"
 
-	proto "github.com/gogo/protobuf/proto"
-	_ "github.com/gogo/protobuf/types"
-	skv2jsonpb "github.com/solo-io/skv2/pkg/jsonpb"
+	jsonpb "github.com/golang/protobuf/jsonpb"
+	proto "github.com/golang/protobuf/proto"
+	skv2jsonpb "github.com/solo-io/skv2/pkg/kube_jsonpb"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -21,7 +21,7 @@ var _ = math.Inf
 
 var (
 	marshaller   = &skv2jsonpb.Marshaler{}
-	unmarshaller = &skv2jsonpb.Unmarshaler{}
+	unmarshaller = &jsonpb.Unmarshaler{}
 )
 
 // MarshalJSON is a custom marshaler for IssuedCertificateSpec
@@ -76,5 +76,16 @@ func (this *PodBounceDirectiveSpec) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a custom unmarshaler for PodBounceDirectiveSpec
 func (this *PodBounceDirectiveSpec) UnmarshalJSON(b []byte) error {
+	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for PodBounceDirectiveStatus
+func (this *PodBounceDirectiveStatus) MarshalJSON() ([]byte, error) {
+	str, err := marshaller.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for PodBounceDirectiveStatus
+func (this *PodBounceDirectiveStatus) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }

@@ -1,13 +1,19 @@
 package virtualservice_test
 
 import (
+	"context"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/rotisserie/eris"
+	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/types"
+	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	mock_decorators "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/mocks"
@@ -15,7 +21,10 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
 	mock_hostutils "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils/mocks"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,7 +38,8 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockReporter              *mock_reporting.MockReporter
 		mockDecorator             *mock_trafficpolicy.MockTrafficPolicyVirtualServiceDecorator
 		virtualServiceTranslator  virtualservice.Translator
-		in                        input.Snapshot
+		in                        input.LocalSnapshot
+		ctx                       = context.TODO()
 	)
 
 	BeforeEach(func() {
@@ -38,15 +48,15 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockDecoratorFactory = mock_decorators.NewMockFactory(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockDecorator = mock_trafficpolicy.NewMockTrafficPolicyVirtualServiceDecorator(ctrl)
-		virtualServiceTranslator = virtualservice.NewTranslator(mockClusterDomainRegistry, mockDecoratorFactory)
-		in = input.NewInputSnapshotManualBuilder("").Build()
+		virtualServiceTranslator = virtualservice.NewTranslator(nil, mockClusterDomainRegistry, mockDecoratorFactory)
+		in = input.NewInputLocalSnapshotManualBuilder("").AddSettings(settingsv1alpha2.SettingsSlice{{}}).Build()
 	})
 
 	AfterEach(func() {
 		ctrl.Finish()
 	})
 
-	It("should translate", func() {
+	It("should translate and merge traffic policies by request matcher", func() {
 		sourceSelectorLabels := map[string]string{"env": "dev"}
 		sourceSelectorNamespaces := []string{"n1", "n2"}
 
@@ -115,6 +125,47 @@ var _ = Describe("VirtualServiceTranslator", func() {
 							},
 						},
 					},
+					{
+						Ref: &v1.ObjectRef{
+							Name:      "tp-2",
+							Namespace: "tp-namespace-2",
+						},
+						Spec: &networkingv1alpha2.TrafficPolicySpec{
+							SourceSelector: []*networkingv1alpha2.WorkloadSelector{
+								{
+									Labels:     sourceSelectorLabels,
+									Namespaces: sourceSelectorNamespaces,
+								},
+							},
+							HttpRequestMatchers: []*networkingv1alpha2.TrafficPolicySpec_HttpMatcher{
+								{
+									PathSpecifier: &networkingv1alpha2.TrafficPolicySpec_HttpMatcher_Exact{
+										Exact: "path",
+									},
+									Method: &networkingv1alpha2.TrafficPolicySpec_HttpMethod{Method: types.HttpMethodValue_GET},
+								},
+								{
+									Headers: []*networkingv1alpha2.TrafficPolicySpec_HeaderMatcher{
+										{
+											Name:        "name3",
+											Value:       "[a-z]+",
+											Regex:       true,
+											InvertMatch: true,
+										},
+									},
+									Method: &networkingv1alpha2.TrafficPolicySpec_HttpMethod{Method: types.HttpMethodValue_POST},
+								},
+							},
+							FaultInjection: &networkingv1alpha2.TrafficPolicySpec_FaultInjection{
+								FaultInjectionType: &networkingv1alpha2.TrafficPolicySpec_FaultInjection_Abort_{
+									Abort: &networkingv1alpha2.TrafficPolicySpec_FaultInjection_Abort{
+										HttpStatus: 500,
+									},
+								},
+								Percentage: 50,
+							},
+						},
+					},
 				},
 			},
 		}
@@ -167,6 +218,14 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		httpRetry := &networkingv1alpha3spec.HTTPRetry{
 			Attempts: 5,
 		}
+		faultInjection := &networkingv1alpha3spec.HTTPFaultInjection{
+			Abort: &networkingv1alpha3spec.HTTPFaultInjection_Abort{
+				ErrorType: &networkingv1alpha3spec.HTTPFaultInjection_Abort_HttpStatus{
+					HttpStatus: 500,
+				},
+				Percentage: &networkingv1alpha3spec.Percent{Value: 50},
+			},
+		}
 
 		expectedHttpRoutes := []*networkingv1alpha3spec.HTTPRoute{
 			{
@@ -188,6 +247,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				}},
 				Retries: httpRetry,
+				Fault:   faultInjection,
 			},
 			{
 				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
@@ -208,6 +268,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				}},
 				Retries: httpRetry,
+				Fault:   faultInjection,
 			},
 			{
 				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
@@ -228,6 +289,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				}},
 				Retries: httpRetry,
+				Fault:   faultInjection,
 			},
 			{
 				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
@@ -248,6 +310,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				}},
 				Retries: httpRetry,
+				Fault:   faultInjection,
 			},
 			{
 				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
@@ -270,6 +333,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				}},
 				Retries: httpRetry,
+				Fault:   faultInjection,
 			},
 			{
 				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
@@ -292,6 +356,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				}},
 				Retries: httpRetry,
+				Fault:   faultInjection,
 			},
 			{
 				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
@@ -314,6 +379,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				}},
 				Retries: httpRetry,
+				Fault:   faultInjection,
 			},
 			{
 				Match: []*networkingv1alpha3spec.HTTPMatchRequest{
@@ -336,6 +402,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				}},
 				Retries: httpRetry,
+				Fault:   faultInjection,
 			},
 		}
 
@@ -373,7 +440,31 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			}).
 			Return(nil)
 
-		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, nil, mockReporter)
+		mockDecorator.
+			EXPECT().
+			ApplyTrafficPolicyToVirtualService(
+				trafficTarget.Status.AppliedTrafficPolicies[1],
+				trafficTarget,
+				nil,
+				&networkingv1alpha3spec.HTTPRoute{
+					Match:   initializedMatchRequests,
+					Retries: httpRetry,
+				},
+				gomock.Any(),
+			).DoAndReturn(
+			func(
+				appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+				service *discoveryv1alpha2.TrafficTarget,
+				sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+				output *networkingv1alpha3spec.HTTPRoute,
+				registerField decorators.RegisterField,
+			) error {
+				output.Fault = faultInjection
+				return nil
+			}).
+			Return(nil)
+
+		virtualService := virtualServiceTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
 		Expect(virtualService).To(Equal(expectedVirtualService))
 	})
 
@@ -711,6 +802,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			Return(nil)
 
 		virtualService := virtualServiceTranslator.Translate(
+			ctx,
 			in,
 			trafficTarget,
 			meshInstallation,
@@ -783,7 +875,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			).
 			Return(nil)
 
-		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, nil, mockReporter)
+		virtualService := virtualServiceTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
 		Expect(virtualService).To(BeNil())
 	})
 
@@ -845,7 +937,133 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			}).
 			Return([]decorators.Decorator{mockDecorator})
 
-		virtualService := virtualServiceTranslator.Translate(in, trafficTarget, nil, mockReporter)
+		virtualService := virtualServiceTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
 		Expect(virtualService).To(BeNil())
+	})
+
+	It("should not output a VirtualService if it contains a host that is already configured by an existing VirtualService not owned by Gloo Mesh", func() {
+		trafficTarget := &discoveryv1alpha2.TrafficTarget{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "traffic-target",
+			},
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+						Ref: &v1.ClusterObjectRef{
+							Name:        "traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-cluster",
+						},
+						Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+							{
+								Port:     8080,
+								Name:     "http1",
+								Protocol: "http",
+							},
+						},
+					},
+				},
+			},
+			Status: discoveryv1alpha2.TrafficTargetStatus{
+				AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+					{
+						Ref: &v1.ObjectRef{
+							Name:      "tp-1",
+							Namespace: "tp-namespace-1",
+						},
+						Spec: &networkingv1alpha2.TrafficPolicySpec{
+							SourceSelector: []*networkingv1alpha2.WorkloadSelector{
+								{
+									Clusters: []string{"traffic-target-cluster"},
+								},
+							},
+							Retries: &networkingv1alpha2.TrafficPolicySpec_RetryPolicy{
+								Attempts: 5,
+							},
+						},
+					},
+				},
+			},
+		}
+
+		in = input.NewInputLocalSnapshotManualBuilder("").
+			AddSettings(settingsv1alpha2.SettingsSlice{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      defaults.DefaultSettingsName,
+						Namespace: defaults.DefaultPodNamespace,
+					},
+					Spec: settingsv1alpha2.SettingsSpec{},
+				},
+			}).
+			Build()
+
+		existingVirtualServices := v1alpha3sets.NewVirtualServiceSet(
+			// user-supplied, should yield conflict error
+			&networkingv1alpha3.VirtualService{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "user-provided-vs",
+					Namespace: "foo",
+				},
+				Spec: networkingv1alpha3spec.VirtualService{
+					Hosts: []string{"*-hostname"},
+				},
+			},
+		)
+
+		mockClusterDomainRegistry.
+			EXPECT().
+			GetDestinationServiceFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
+			Return("local-hostname").
+			Times(2)
+
+		mockDecoratorFactory.
+			EXPECT().
+			MakeDecorators(decorators.Parameters{
+				ClusterDomains: mockClusterDomainRegistry,
+				Snapshot:       in,
+			}).
+			Return([]decorators.Decorator{mockDecorator})
+
+		mockDecorator.
+			EXPECT().
+			ApplyTrafficPolicyToVirtualService(
+				trafficTarget.Status.AppliedTrafficPolicies[0],
+				trafficTarget,
+				nil,
+				gomock.Any(),
+				gomock.Any(),
+			).DoAndReturn(
+			func(
+				appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+				service *discoveryv1alpha2.TrafficTarget,
+				sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+				output *networkingv1alpha3spec.HTTPRoute,
+				registerField decorators.RegisterField,
+			) error {
+				output.Retries = &networkingv1alpha3spec.HTTPRetry{
+					Attempts: 5,
+				}
+				return nil
+			}).
+			Return(nil)
+
+		mockReporter.
+			EXPECT().
+			ReportTrafficPolicyToTrafficTarget(
+				trafficTarget,
+				trafficTarget.Status.AppliedTrafficPolicies[0].Ref,
+				gomock.Any()).
+			DoAndReturn(func(trafficTarget *discoveryv1alpha2.TrafficTarget, trafficPolicy ezkube.ResourceId, err error) {
+				Expect(err).To(testutils.HaveInErrorChain(
+					eris.Errorf("Unable to translate AppliedTrafficPolicies to VirtualService, applies to hosts %+v that are already configured by the existing VirtualService %s",
+						[]string{"local-hostname"},
+						sets.Key(existingVirtualServices.List()[0])),
+				),
+				)
+			})
+
+		virtualServiceTranslator = virtualservice.NewTranslator(existingVirtualServices, mockClusterDomainRegistry, mockDecoratorFactory)
+		_ = virtualServiceTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
 	})
 })

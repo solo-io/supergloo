@@ -84,6 +84,7 @@ func discoveryOperator() model.Operator {
 	var rbacPolicies []rbacv1.PolicyRule
 
 	rbacPolicies = append(rbacPolicies, io.ClusterWatcherInputTypes.RbacPoliciesWatch()...)
+	rbacPolicies = append(rbacPolicies, io.DiscoveryLocalInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.DiscoveryOutputTypes.Snapshot.RbacPoliciesWrite()...)
 
 	return model.Operator{
@@ -132,8 +133,8 @@ func networkingOperator() model.Operator {
 	var rbacPolicies []rbacv1.PolicyRule
 
 	rbacPolicies = append(rbacPolicies, io.ClusterWatcherInputTypes.RbacPoliciesWatch()...)
-	rbacPolicies = append(rbacPolicies, io.NetworkingInputTypes.RbacPoliciesWatch()...)
-	rbacPolicies = append(rbacPolicies, io.NetworkingInputTypes.RbacPoliciesUpdateStatus()...)
+	rbacPolicies = append(rbacPolicies, io.NetworkingLocalInputTypes.RbacPoliciesWatch()...)
+	rbacPolicies = append(rbacPolicies, io.NetworkingLocalInputTypes.RbacPoliciesUpdateStatus()...)
 	rbacPolicies = append(rbacPolicies, io.LocalNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	rbacPolicies = append(rbacPolicies, io.IstioNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	rbacPolicies = append(rbacPolicies, io.SmiNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
@@ -167,6 +168,8 @@ func networkingOperator() model.Operator {
 			"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
 			"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
 			"--verbose",
+			"--disallow-intersecting-config={{ $.Values.disallowIntersectingConfig }}",
+			"--watch-output-types={{ $.Values.watchOutputTypes }}",
 		},
 		Env: []v1.EnvVar{
 			{

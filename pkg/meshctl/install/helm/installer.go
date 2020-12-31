@@ -11,12 +11,17 @@ import (
 
 	"github.com/sirupsen/logrus"
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"helm.sh/helm/v3/pkg/getter"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -56,8 +61,12 @@ func (i Installer) InstallChart(ctx context.Context) error {
 		kubeConfig = clientcmd.RecommendedHomeFile
 	}
 
-	err := ensureNamespace(ctx, kubeConfig, kubeContext, namespace)
+	kubeClient, err := utils.BuildClient(kubeConfig, kubeContext)
 	if err != nil {
+		return err
+	}
+
+	if err = ensureNamespace(ctx, kubeClient, namespace); err != nil {
 		return eris.Wrapf(err, "creating namespace")
 	}
 
@@ -72,6 +81,10 @@ func (i Installer) InstallChart(ctx context.Context) error {
 	chartObj, err := downloadChart(chartUri)
 	if err != nil {
 		return eris.Wrapf(err, "loading chart file")
+	}
+
+	if err = upsertCrds(ctx, kubeClient, chartObj); err != nil {
+		return eris.Wrapf(err, "updating CRDs")
 	}
 
 	// Merge values provided via the '--values' flag
@@ -98,7 +111,8 @@ func (i Installer) InstallChart(ctx context.Context) error {
 			return eris.Wrapf(err, "installing helm chart")
 		}
 
-		logrus.Infof("finished upgrading chart as release: %+v", release)
+		logrus.Infof("finished upgrading chart as release %s", release.Name)
+		logrus.Debugf("%+v", release)
 
 	} else {
 		// release does not exist, perform install
@@ -109,30 +123,60 @@ func (i Installer) InstallChart(ctx context.Context) error {
 		client.DryRun = dryRun
 
 		release, err := client.Run(chartObj, parsedValues)
-		if err != nil {
+		// ignore missing CRD error due to known Helm limitation, https://github.com/helm/helm/issues/7449
+		if err != nil && !(client.DryRun && strings.Contains(err.Error(), "unable to recognize \"\": no matches for kind")) {
 			return eris.Wrapf(err, "installing helm chart")
 		}
 
-		logrus.Infof("finished installing chart as release: %+v", release)
+		logrus.Infof("finished installing chart as release: %s", releaseName)
+		logrus.Debugf("%+v", release)
 	}
 
 	return nil
 }
 
-func ensureNamespace(ctx context.Context, kubeConfig, kubeContext, namespace string) error {
-	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	loadingRules.ExplicitPath = kubeConfig
-	configOverrides := &clientcmd.ConfigOverrides{CurrentContext: kubeContext}
+// Helm does not update CRDs upon upgrade, https://github.com/helm/helm/issues/7735
+// so we need to update the CRDs ourselves
+func upsertCrds(ctx context.Context, kubeClient client.Client, chartObj *chart.Chart) error {
+	// unmarshal CRD definitions from Helm manifests
+	decoder := yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
+	crdManifests := chartObj.CRDObjects()
+	for _, crdManifest := range crdManifests {
+		var crds []*unstructured.Unstructured
+		crdsRaw := strings.Split(string(crdManifest.File.Data), "\n---")
 
-	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides).ClientConfig()
-	if err != nil {
-		return err
+		for _, crdRaw := range crdsRaw {
+			crd := &unstructured.Unstructured{}
+			if _, _, err := decoder.Decode([]byte(crdRaw), nil, crd); err != nil {
+				return err
+			}
+			crds = append(crds, crd)
+		}
+
+		// upsert each CRD
+		for _, crd := range crds {
+			crd := crd
+			err := kubeClient.Create(ctx, crd)
+			if errors.IsAlreadyExists(err) {
+				// update requires manually setting the resource version
+				existingCrd := &v1beta1.CustomResourceDefinition{}
+				if err := kubeClient.Get(ctx, client.ObjectKey{Name: crd.GetName()}, existingCrd); err != nil {
+					return err
+				}
+				crd.SetResourceVersion(existingCrd.GetResourceVersion())
+				if err = kubeClient.Update(ctx, crd); err != nil {
+					return err
+				}
+			} else if err != nil {
+				return err
+			}
+		}
 	}
-	c, err := client.New(cfg, client.Options{})
-	if err != nil {
-		return err
-	}
-	namespaces := v1.NewNamespaceClient(c)
+	return nil
+}
+
+func ensureNamespace(ctx context.Context, kubeClient client.Client, namespace string) error {
+	namespaces := v1.NewNamespaceClient(kubeClient)
 	return namespaces.UpsertNamespace(ctx, &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: namespace,

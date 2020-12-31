@@ -1,18 +1,21 @@
 package initialize
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
 
 	"github.com/rotisserie/eris"
 
 	"github.com/gobuffalo/packr"
 	"github.com/spf13/cobra"
+
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/demo/internal/flags"
 )
 
 func IstioCommand(ctx context.Context, mgmtCluster, remoteCluster string) *cobra.Command {
+	opts := &flags.Options{}
 	cmd := &cobra.Command{
 		Use:   "init",
 		Short: "Bootstrap a multicluster Istio demo with Gloo Mesh",
@@ -27,15 +30,26 @@ This command will bootstrap 2 clusters, one of which will run the Gloo Mesh
 management-plane as well as Istio, and the other will just run Istio.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return initIstioCmd(ctx, mgmtCluster, remoteCluster)
+			return initIstioCmd(ctx, mgmtCluster, remoteCluster, opts)
 		},
 	}
+	opts.AddToFlags(cmd.Flags())
+
 	cmd.SilenceUsage = true
 	return cmd
 }
 
-func initIstioCmd(ctx context.Context, mgmtCluster, remoteCluster string) error {
+func initIstioCmd(ctx context.Context, mgmtCluster, remoteCluster string, opts *flags.Options) error {
+	if err := opts.Validate(); err != nil {
+		return err
+	}
+
 	box := packr.NewBox("./scripts")
+
+	// make sure istio version is supported
+	if err := checkIstioVersion(box); err != nil {
+		return err
+	}
 
 	// management cluster
 	if err := createKindCluster(mgmtCluster, managementPort, box); err != nil {
@@ -59,8 +73,20 @@ func initIstioCmd(ctx context.Context, mgmtCluster, remoteCluster string) error 
 		return err
 	}
 
+	// install GlooMesh Enterprise to management cluster, if enabled
+	if opts.Enterprise {
+		if err := installGlooMeshEnterprise(ctx, mgmtCluster, opts.EnterpriseVersion, opts.LicenseKey, box); err != nil {
+			return err
+		}
+	}
+
+	// register management cluster
+	if err := registerCluster(ctx, mgmtCluster, mgmtCluster, opts.Enterprise, box); err != nil {
+		return err
+	}
+
 	// register remote cluster
-	if err := registerCluster(ctx, mgmtCluster, remoteCluster, box); err != nil {
+	if err := registerCluster(ctx, mgmtCluster, remoteCluster, opts.Enterprise, box); err != nil {
 		return err
 	}
 
@@ -70,19 +96,19 @@ func initIstioCmd(ctx context.Context, mgmtCluster, remoteCluster string) error 
 
 func installIstio(cluster string, port string, box packr.Box) error {
 	fmt.Printf("Installing Istio to cluster %s\n", cluster)
-
-	script, err := box.FindString("install_istio.sh")
-	if err != nil {
-		return eris.Wrap(err, "Error loading script")
-	}
-	cmd := exec.Command("bash", "-c", script, cluster, port)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
+	if err := runScript(box, os.Stdout, "install_istio.sh", cluster, port); err != nil {
 		return eris.Wrapf(err, "Error installing Istio on cluster %s", cluster)
 	}
 
 	fmt.Printf("Successfully installed Istio on cluster %s\n", cluster)
+	return nil
+}
+
+func checkIstioVersion(box packr.Box) error {
+	var buf bytes.Buffer
+	if err := runScript(box, &buf, "check_istio_version.sh"); err != nil {
+		return eris.Wrap(err, buf.String())
+	}
+
 	return nil
 }

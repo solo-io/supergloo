@@ -12,7 +12,7 @@ import (
 // parameters for initializing decorators
 type Parameters struct {
 	ClusterDomains hostutils.ClusterDomainRegistry
-	Snapshot       input.Snapshot
+	Snapshot       input.LocalSnapshot
 }
 
 func Register(constructor Constructor) {

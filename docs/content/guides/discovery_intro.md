@@ -25,7 +25,7 @@ To illustrate these concepts, we will assume that:
 * Gloo Mesh is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
 * Istio is [installed on both the `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}})
 * Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
-* The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
+* The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployment" %}})
 
 
 {{% notice note %}}
@@ -69,13 +69,13 @@ meshctl describe mesh
 | Namespace: istio-system     |                |                   |
 | Cluster: mgmt-cluster       |                |                   |
 | Type: istio                 |                |                   |
-| Version: 1.5.2              |                |                   |
+| Version: 1.8.1              |                |                   |
 |                             |                |                   |
 +-----------------------------+----------------+-------------------+
 | Namespace: istio-system     |                |                   |
 | Cluster: remote-cluster     |                |                   |
 | Type: istio                 |                |                   |
-| Version: 1.5.2              |                |                   |
+| Version: 1.8.1              |                |                   |
 |                             |                |                   |
 +-----------------------------+----------------+-------------------+
 ```
@@ -91,26 +91,29 @@ kubectl -n gloo-mesh get mesh istiod-istio-system-remote-cluster -oyaml
 {{< highlight yaml >}}
 apiVersion: discovery.mesh.gloo.solo.io/v1alpha2
 kind: Mesh
-metadata:  
-  ... 
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    [...]
+  generation: 2
   labels:
     cluster.discovery.mesh.gloo.solo.io: remote-cluster
     cluster.multicluster.solo.io: ""
     owner.discovery.mesh.gloo.solo.io: gloo-mesh
   name: istiod-istio-system-remote-cluster
   namespace: gloo-mesh
-  resourceVersion: "2649"
+  resourceVersion: "3218"
   selfLink: /apis/discovery.mesh.gloo.solo.io/v1alpha2/namespaces/gloo-mesh/meshes/istiod-istio-system-remote-cluster
-  uid: e7dfed16-7f29-40ac-896c-db24a7c05321
+  uid: 7c079983-3ece-4aed-b71a-bf56c8cd6267
 spec:
   agentInfo:
     agentNamespace: gloo-mesh
   istio:
     citadelInfo:
-      citadelServiceAccount: istio-pilot-service-account
+      citadelServiceAccount: istiod-service-account
       trustDomain: cluster.local
     ingressGateways:
-    - externalAddress: 172.18.0.3
+    - externalAddress: 172.20.0.3
       externalTlsPort: 32000
       tlsContainerPort: 15443
       workloadLabels:
@@ -120,9 +123,9 @@ spec:
       namespace: istio-system
       podLabels:
         istio: pilot
-      version: 1.5.2
+      version: 1.8.1
 status:
-  observedGeneration: "1"
+  observedGeneration: 2
 
 {{< /highlight >}}
 
@@ -136,15 +139,14 @@ kubectl -n gloo-mesh get workloads
 
 ```
 NAME                                                            AGE
-NAME                                                            AGE
-details-v1-bookinfo-mgmt-cluster-deployment                 3m54s
-istio-ingressgateway-istio-system-mgmt-cluster-deployment   23h
+details-v1-bookinfo-mgmt-cluster-deployment                     3m54s
+istio-ingressgateway-istio-system-mgmt-cluster-deployment       23h
 istio-ingressgateway-istio-system-remote-cluster-deployment     23h
-productpage-v1-bookinfo-mgmt-cluster-deployment             3m54s
-ratings-v1-bookinfo-mgmt-cluster-deployment                 3m53s
+productpage-v1-bookinfo-mgmt-cluster-deployment                 3m54s
+ratings-v1-bookinfo-mgmt-cluster-deployment                     3m53s
 ratings-v1-bookinfo-remote-cluster-deployment                   3m25s
-reviews-v1-bookinfo-mgmt-cluster-deployment                 3m53s
-reviews-v2-bookinfo-mgmt-cluster-deployment                 3m53s
+reviews-v1-bookinfo-mgmt-cluster-deployment                     3m53s
+reviews-v2-bookinfo-mgmt-cluster-deployment                     3m53s
 reviews-v3-bookinfo-remote-cluster-deployment                   2m
 ```
 
@@ -158,13 +160,13 @@ kubectl -n gloo-mesh get traffictargets
 
 ```
 NAME                                                 AGE
-details-bookinfo-mgmt-cluster                    4m23s
-istio-ingressgateway-istio-system-mgmt-cluster   23h
+details-bookinfo-mgmt-cluster                        4m23s
+istio-ingressgateway-istio-system-mgmt-cluster       23h
 istio-ingressgateway-istio-system-remote-cluster     23h
-productpage-bookinfo-mgmt-cluster                4m23s
-ratings-bookinfo-mgmt-cluster                    4m22s
+productpage-bookinfo-mgmt-cluster                    4m23s
+ratings-bookinfo-mgmt-cluster                        4m22s
 ratings-bookinfo-remote-cluster                      3m54s
-reviews-bookinfo-mgmt-cluster                    4m22s
+reviews-bookinfo-mgmt-cluster                        4m22s
 reviews-bookinfo-remote-cluster                      2m29s
 ```
 

@@ -3,10 +3,9 @@ package osm_test
 import (
 	"context"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector/osm"
@@ -69,10 +68,10 @@ var _ = Describe("OsmMeshDetector", func() {
 			ctx,
 		)
 
-		in := input.NewInputSnapshotManualBuilder("")
+		in := input.NewInputRemoteSnapshotManualBuilder("")
 		in.AddDeployments([]*appsv1.Deployment{deployment})
 
-		meshes, err := detector.DetectMeshes(in.Build())
+		meshes, err := detector.DetectMeshes(in.Build(), nil)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshes).To(BeNil())
 	})
@@ -104,10 +103,10 @@ var _ = Describe("OsmMeshDetector", func() {
 			},
 		}
 
-		in := input.NewInputSnapshotManualBuilder("")
+		in := input.NewInputRemoteSnapshotManualBuilder("")
 		in.AddDeployments([]*appsv1.Deployment{deployment})
 
-		meshes, err := detector.DetectMeshes(in.Build())
+		meshes, err := detector.DetectMeshes(in.Build(), nil)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshes).To(HaveLen(1))
 		Expect(meshes[0]).To(Equal(expected))

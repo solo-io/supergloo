@@ -4,12 +4,16 @@ menuTitle: Introductory Guides
 weight: 10
 ---
 
-We can use `istioctl` CLI to easily install Istio in our registered cluster. You can find `istioctl` on the [Getting Started page](https://istio.io/latest/docs/setup/getting-started/) of the Istio site. Currently, Gloo Mesh supports Istio versions 1.5, 1.6, and 1.7.
+We can use `istioctl` CLI to easily install Istio in our registered cluster. You can find `istioctl` on the [Getting Started page](https://istio.io/latest/docs/setup/getting-started/) of the Istio site. Currently, Gloo Mesh supports Istio versions 1.7 and 1.8.
 
 {{% notice note %}}
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document. If you used the `meshctl demo init` command, Istio has already been installed for you.
 {{% /notice %}}
 
+{{% notice note %}}
+Istio 1.8.0 has a [known issue](https://github.com/istio/istio/issues/28620) where sidecar proxies may fail to start
+under specific circumstances. This bug may surface in sidecars configured by Failover Services.
+{{% /notice %}}
 
 In this guide we will walk you through two options for installing Istio for use with Gloo Mesh in a single cluster and multi-cluster setting. The instructions here are for reference only, and your installation process for Istio will likely be different depending on your organization's policies and procedures.
 
@@ -34,78 +38,19 @@ We will install Istio with a suitable configuration for a multi-cluster demonstr
 
 Let's install Istio into both the management plane **AND** the remote cluster. The configuration below assumes that you are using the Kind clusters created in the Setup guide. The contexts for those clusters should be `kind-mgmt-cluster` and `kind-remote-cluster`. Both clusters are using a NodePort to expose the ingress gateway for Istio. If you are deploying Istio on different cluster setup, update your context and gateway settings accordingly.
 
-The manifest for Istio 1.7 is different from prior versions, so be sure to select the correct tab for the version of Istio you plan to install. The manifests below were tested using Istio 1.5.2, 1.6.8, and 1.7.3.
+The manifest for Istio 1.7 is different from prior versions, so be sure to select the correct tab for the version of Istio you plan to install. The manifests below were tested using Istio 1.7.3 and 1.8.1.
+
+Before running the following, make sure your context names are set as environment variables:
+```shell
+MGMT_CONTEXT=your_management_plane_context
+REMOTE_CONTEXT=your_remote_context
+```
 
 #### Management plane install
 
 {{< tabs >}}
-{{< tab name="Istio 1.5 and 1.6" codelang="shell" >}}
-cat << EOF | istioctl manifest apply --context kind-mgmt-cluster -f -
-apiVersion: install.istio.io/v1alpha1
-kind: IstioOperator
-metadata:
-  name: mgmt-plane-istiooperator
-  namespace: istio-system
-spec:
-  profile: minimal
-  addonComponents:
-    istiocoredns:
-      enabled: true
-  components:
-    pilot:
-      k8s:
-        env:
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-    proxy:
-      k8s:
-        env:
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-    # Istio Gateway feature
-    ingressGateways:
-    - name: istio-ingressgateway
-      enabled: true
-      k8s:
-        env:
-          - name: ISTIO_META_ROUTER_MODE
-            value: "sni-dnat"
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-        service:
-          ports:
-            - port: 80
-              targetPort: 8080
-              name: http2
-            - port: 443
-              targetPort: 8443
-              name: https
-            - port: 15443
-              targetPort: 15443
-              name: tls
-              nodePort: 32001
-  values:
-    prometheus:
-      enabled: false
-    gateways:
-      istio-ingressgateway:
-        type: NodePort
-        ports:
-          - targetPort: 15443
-            name: tls
-            nodePort: 32001
-            port: 15443
-    global:
-      pilotCertProvider: kubernetes
-      controlPlaneSecurityEnabled: true
-      mtls:
-        enabled: true
-      podDNSSearchNamespaces:
-      - global
-EOF
-{{< /tab >}}
 {{< tab name="Istio 1.7" codelang="shell" >}}
-cat << EOF | istioctl manifest install --context kind-mgmt-cluster -f -
+cat << EOF | istioctl manifest install --context $MGMT_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -153,6 +98,49 @@ spec:
     global:
       pilotCertProvider: kubernetes
       controlPlaneSecurityEnabled: true
+      podDNSSearchNamespaces:
+      - global
+EOF
+{{< /tab >}}
+{{< tab name="Istio 1.8" codelang="shell" >}}
+cat << EOF | istioctl manifest install -y --context $MGMT_CONTEXT -f -
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: example-istiooperator
+  namespace: istio-system
+spec:
+  profile: minimal
+  addonComponents:
+    istiocoredns:
+      enabled: true
+  components:
+    # Istio Gateway feature
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        env:
+          - name: ISTIO_META_ROUTER_MODE
+            value: "sni-dnat"
+        service:
+          type: NodePort
+          ports:
+            - port: 80
+              targetPort: 8080
+              name: http2
+            - port: 443
+              targetPort: 8443
+              name: https
+            - port: 15443
+              targetPort: 15443
+              name: tls
+              nodePort: 32001
+  meshConfig:
+    enableAutoMtls: true
+  values:
+    global:
+      pilotCertProvider: kubernetes
       podDNSSearchNamespaces:
       - global
 EOF
@@ -162,73 +150,8 @@ EOF
 #### Remote cluster install
 
 {{< tabs >}}
-{{< tab name="Istio 1.5 and 1.6" codelang="shell" >}}
-cat << EOF | istioctl manifest apply --context kind-remote-cluster -f -
-apiVersion: install.istio.io/v1alpha1
-kind: IstioOperator
-metadata:
-  name: remote-cluster-istiooperator
-  namespace: istio-system
-spec:
-  profile: minimal
-  addonComponents:
-    istiocoredns:
-      enabled: true
-  components:
-    pilot:
-      k8s:
-        env:
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-    proxy:
-      k8s:
-        env:
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-    # Istio Gateway feature
-    ingressGateways:
-    - name: istio-ingressgateway
-      enabled: true
-      k8s:
-        env:
-          - name: ISTIO_META_ROUTER_MODE
-            value: "sni-dnat"
-          - name: PILOT_CERT_PROVIDER
-            value: "kubernetes"
-        service:
-          ports:
-            - port: 80
-              targetPort: 8080
-              name: http2
-            - port: 443
-              targetPort: 8443
-              name: https
-            - port: 15443
-              targetPort: 15443
-              name: tls
-              nodePort: 32000
-  values:
-    prometheus:
-      enabled: false
-    gateways:
-      istio-ingressgateway:
-        type: NodePort
-        ports:
-          - targetPort: 15443
-            name: tls
-            nodePort: 32000
-            port: 15443
-    global:
-      pilotCertProvider: kubernetes
-      controlPlaneSecurityEnabled: true
-      mtls:
-        enabled: true
-      podDNSSearchNamespaces:
-      - global
-EOF
-{{< /tab >}}
 {{< tab name="Istio 1.7" codelang="shell" >}}
-cat << EOF | istioctl manifest install --context kind-remote-cluster -f -
+cat << EOF | istioctl manifest install --context $REMOTE_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -276,6 +199,49 @@ spec:
     global:
       pilotCertProvider: kubernetes
       controlPlaneSecurityEnabled: true
+      podDNSSearchNamespaces:
+      - global
+EOF
+{{< /tab >}}
+{{< tab name="Istio 1.8" codelang="shell" >}}
+cat << EOF | istioctl manifest install -y --context $REMOTE_CONTEXT -f -
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: example-istiooperator
+  namespace: istio-system
+spec:
+  profile: minimal
+  addonComponents:
+    istiocoredns:
+      enabled: true
+  components:
+    # Istio Gateway feature
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        env:
+          - name: ISTIO_META_ROUTER_MODE
+            value: "sni-dnat"
+        service:
+          type: NodePort
+          ports:
+            - port: 80
+              targetPort: 8080
+              name: http2
+            - port: 443
+              targetPort: 8443
+              name: https
+            - port: 15443
+              targetPort: 15443
+              name: tls
+              nodePort: 32000
+  meshConfig:
+    enableAutoMtls: true
+  values:
+    global:
+      pilotCertProvider: kubernetes
       podDNSSearchNamespaces:
       - global
 EOF
@@ -301,8 +267,8 @@ istiod-7795ccf9dc-vr4cq                 1/1     Running   0          5d22h
 We also have to enable Istio DNS for the `.global` stub domain for when we want to use multicluster communication. The following two blocks will enable Istio DNS for both clusters.
 
 ```shell
-ISTIO_COREDNS=$(kubectl --context kind-mgmt-cluster -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
-kubectl --context kind-mgmt-cluster apply -f - <<EOF
+ISTIO_COREDNS=$(kubectl --context $MGMT_CONTEXT -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
+kubectl --context $MGMT_CONTEXT apply -f - <<EOF
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -335,8 +301,8 @@ EOF
 ```
 
 ```shell
-ISTIO_COREDNS=$(kubectl --context kind-remote-cluster -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
-kubectl --context kind-remote-cluster apply -f - <<EOF
+ISTIO_COREDNS=$(kubectl --context $REMOTE_CONTEXT -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
+kubectl --context $REMOTE_CONTEXT apply -f - <<EOF
 apiVersion: v1
 kind: ConfigMap
 metadata:

@@ -24,7 +24,7 @@ import (
 // Note that the Applier also updates the statuses of objects contained in the input Snapshot.
 // The Input Snapshot's SyncStatuses method should usually be called after running the Applier.
 type Applier interface {
-	Apply(ctx context.Context, input input.Snapshot)
+	Apply(ctx context.Context, input input.LocalSnapshot, userSupplied input.RemoteSnapshot)
 }
 
 type applier struct {
@@ -40,7 +40,7 @@ func NewApplier(
 	}
 }
 
-func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
+func (v *applier) Apply(ctx context.Context, input input.LocalSnapshot, userSupplied input.RemoteSnapshot) {
 	ctx = contextutils.WithLogger(ctx, "validation")
 	reporter := newApplyReporter()
 
@@ -52,7 +52,7 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 
 	applyPoliciesToConfigTargets(input)
 
-	_, err := v.translator.Translate(ctx, input, reporter)
+	_, err := v.translator.Translate(ctx, input, userSupplied, reporter)
 	if err != nil {
 		// should never happen
 		contextutils.LoggerFrom(ctx).DPanicf("internal error: failed to run translator: %v", err)
@@ -62,7 +62,7 @@ func (v *applier) Apply(ctx context.Context, input input.Snapshot) {
 }
 
 // Optimistically initialize policy statuses to accepted, which may be set to invalid or failed pending subsequent validation.
-func initializePolicyStatuses(input input.Snapshot) {
+func initializePolicyStatuses(input input.LocalSnapshot) {
 
 	trafficPolicies := input.TrafficPolicies().List()
 	accessPolicies := input.AccessPolicies().List()
@@ -74,7 +74,7 @@ func initializePolicyStatuses(input input.Snapshot) {
 		trafficPolicy.Status = networkingv1alpha2.TrafficPolicyStatus{
 			State:              networkingv1alpha2.ApprovalState_ACCEPTED,
 			ObservedGeneration: trafficPolicy.Generation,
-			TrafficTargets:     map[string]*networkingv1alpha2.ApprovalStatus{},
+			TrafficTargets:     trafficPolicy.Status.TrafficTargets,
 		}
 	}
 
@@ -107,7 +107,7 @@ func initializePolicyStatuses(input input.Snapshot) {
 }
 
 // Append status metadata to relevant discovery resources.
-func setDiscoveryStatusMetadata(input input.Snapshot) {
+func setDiscoveryStatusMetadata(input input.LocalSnapshot) {
 	clusterDomains := hostutils.NewClusterDomainRegistry(input.KubernetesClusters())
 	for _, trafficTarget := range input.TrafficTargets().List() {
 		if trafficTarget.Spec.GetKubeService() != nil {
@@ -119,7 +119,7 @@ func setDiscoveryStatusMetadata(input input.Snapshot) {
 }
 
 // Validate that configuration target references.
-func validateConfigTargetReferences(input input.Snapshot) {
+func validateConfigTargetReferences(input input.LocalSnapshot) {
 	configTargetValidator := configtarget.NewConfigTargetValidator(input.Meshes(), input.TrafficTargets())
 	configTargetValidator.ValidateAccessPolicies(input.AccessPolicies().List())
 	configTargetValidator.ValidateFailoverServices(input.FailoverServices().List())
@@ -128,7 +128,7 @@ func validateConfigTargetReferences(input input.Snapshot) {
 }
 
 // Apply networking configuration policies to relevant discovery entities.
-func applyPoliciesToConfigTargets(input input.Snapshot) {
+func applyPoliciesToConfigTargets(input input.LocalSnapshot) {
 	for _, trafficTarget := range input.TrafficTargets().List() {
 		trafficTarget.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), trafficTarget)
 		trafficTarget.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), trafficTarget)
@@ -142,7 +142,7 @@ func applyPoliciesToConfigTargets(input input.Snapshot) {
 
 // For all discovery entities, update status with any translation errors.
 // Also update observed generation to indicate that it's been processed.
-func reportTranslationErrors(ctx context.Context, reporter *applyReporter, input input.Snapshot) {
+func reportTranslationErrors(ctx context.Context, reporter *applyReporter, input input.LocalSnapshot) {
 	for _, workload := range input.Workloads().List() {
 		// TODO: validate config applied to workloads when introduced
 		workload.Status.ObservedGeneration = workload.Generation
@@ -234,7 +234,7 @@ func setWorkloadsForAccessPolicies(
 
 // this function both validates the status of TrafficPolicies (sets error or accepted state)
 // as well as returns a list of accepted traffic policies for the traffic target status
-func validateAndReturnApprovedTrafficPolicies(ctx context.Context, input input.Snapshot, reporter *applyReporter, trafficTarget *discoveryv1alpha2.TrafficTarget) []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy {
+func validateAndReturnApprovedTrafficPolicies(ctx context.Context, input input.LocalSnapshot, reporter *applyReporter, trafficTarget *discoveryv1alpha2.TrafficTarget) []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy {
 	var validatedTrafficPolicies []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy
 
 	// track accepted index
@@ -247,6 +247,10 @@ func validateAndReturnApprovedTrafficPolicies(ctx context.Context, input input.S
 			// should never happen
 			contextutils.LoggerFrom(ctx).Errorf("internal error: failed to look up applied traffic policy %v: %v", appliedTrafficPolicy.Ref, err)
 			continue
+		}
+
+		if trafficPolicy.Status.TrafficTargets == nil {
+			trafficPolicy.Status.TrafficTargets = map[string]*networkingv1alpha2.ApprovalStatus{}
 		}
 
 		if len(errsForTrafficPolicy) == 0 {
@@ -276,7 +280,7 @@ func validateAndReturnApprovedTrafficPolicies(ctx context.Context, input input.S
 // as well as returns a list of accepted AccessPolicies for the traffic target status
 func validateAndReturnApprovedAccessPolicies(
 	ctx context.Context,
-	input input.Snapshot,
+	input input.LocalSnapshot,
 	reporter *applyReporter,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 ) []*discoveryv1alpha2.TrafficTargetStatus_AppliedAccessPolicy {
@@ -319,7 +323,7 @@ func validateAndReturnApprovedAccessPolicies(
 
 func validateAndReturnApprovedFailoverServices(
 	ctx context.Context,
-	input input.Snapshot,
+	input input.LocalSnapshot,
 	reporter *applyReporter,
 	mesh *discoveryv1alpha2.Mesh,
 ) []*discoveryv1alpha2.MeshStatus_AppliedFailoverService {
@@ -362,7 +366,7 @@ func validateAndReturnApprovedFailoverServices(
 
 func validateAndReturnVirtualMesh(
 	ctx context.Context,
-	input input.Snapshot,
+	input input.LocalSnapshot,
 	reporter *applyReporter,
 	mesh *discoveryv1alpha2.Mesh,
 ) *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh {
@@ -586,7 +590,7 @@ func sortTrafficPoliciesByAcceptedDate(trafficTarget *discoveryv1alpha2.TrafficT
 			// and should get sorted after an accepted status.
 			return status1 != nil
 		} else if status1 == nil {
-			return true
+			return false
 		}
 
 		switch {

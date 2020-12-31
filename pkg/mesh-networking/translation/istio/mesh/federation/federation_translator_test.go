@@ -111,6 +111,11 @@ var _ = Describe("FederationTranslator", func() {
 							Protocol: "TCP",
 						},
 						{
+							Port:     5555,
+							Name:     "status-port",
+							Protocol: "TCP",
+						},
+						{
 							Port:     5678,
 							Name:     "grpc",
 							Protocol: "TCP",
@@ -149,7 +154,7 @@ var _ = Describe("FederationTranslator", func() {
 			},
 		}
 
-		in := input.NewInputSnapshotManualBuilder("ignored").
+		in := input.NewInputLocalSnapshotManualBuilder("ignored").
 			AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget1}).
 			AddMeshes(discoveryv1alpha2.MeshSlice{mesh, clientMesh}).
 			AddKubernetesClusters(skv1alpha1.KubernetesClusterSlice{kubeCluster}).
@@ -158,7 +163,7 @@ var _ = Describe("FederationTranslator", func() {
 		expectedVS := &networkingv1alpha3.VirtualService{}
 		mockVirtualServiceTranslator.
 			EXPECT().
-			Translate(in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
+			Translate(ctx, in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
 			Return(expectedVS)
 
 		expectedDR := &networkingv1alpha3.DestinationRule{}
@@ -317,6 +322,11 @@ var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1a
 				Name:     "http",
 			},
 			{
+				Number:   5555,
+				Protocol: string(protocol.TCP),
+				Name:     "status-port",
+			},
+			{
 				Number:   5678,
 				Protocol: string(protocol.GRPC),
 				Name:     "grpc",
@@ -328,8 +338,9 @@ var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1a
 			{
 				Address: "mesh-gateway.dns.name",
 				Ports: map[string]uint32{
-					"http": 8181,
-					"grpc": 8181,
+					"http":        8181,
+					"grpc":        8181,
+					"status-port": 8181,
 				},
 				Labels: map[string]string{"cluster": "cluster"},
 			},

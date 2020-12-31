@@ -53,7 +53,7 @@ func (mr *MockDependencyFactoryMockRecorder) MakeMeshTranslator(ctx interface{})
 }
 
 // MakeWorkloadTranslator mocks base method
-func (m *MockDependencyFactory) MakeWorkloadTranslator(ctx context.Context, in input.Snapshot) workload.Translator {
+func (m *MockDependencyFactory) MakeWorkloadTranslator(ctx context.Context, in input.RemoteSnapshot) workload.Translator {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MakeWorkloadTranslator", ctx, in)
 	ret0, _ := ret[0].(workload.Translator)

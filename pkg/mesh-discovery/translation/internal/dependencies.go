@@ -34,7 +34,7 @@ type DependencyFactory interface {
 
 	MakeWorkloadTranslator(
 		ctx context.Context,
-		in input.Snapshot,
+		in input.RemoteSnapshot,
 	) workload.Translator
 
 	MakeTrafficTargetTranslator(ctx context.Context) traffictarget.Translator
@@ -57,7 +57,7 @@ func (d DependencyFactoryImpl) MakeMeshTranslator(
 
 func (d DependencyFactoryImpl) MakeWorkloadTranslator(
 	ctx context.Context,
-	in input.Snapshot,
+	in input.RemoteSnapshot,
 ) workload.Translator {
 	sidecarDetectors := workloaddetector.SidecarDetectors{
 		istiosidecar.NewSidecarDetector(ctx),

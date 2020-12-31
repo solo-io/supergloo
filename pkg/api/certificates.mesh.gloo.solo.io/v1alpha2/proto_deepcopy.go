@@ -5,7 +5,7 @@
 package v1alpha2
 
 import (
-	proto "github.com/gogo/protobuf/proto"
+	proto "github.com/golang/protobuf/proto"
 )
 
 // DeepCopyInto for the IssuedCertificate.Spec
@@ -35,5 +35,11 @@ func (in *CertificateRequestStatus) DeepCopyInto(out *CertificateRequestStatus) 
 // DeepCopyInto for the PodBounceDirective.Spec
 func (in *PodBounceDirectiveSpec) DeepCopyInto(out *PodBounceDirectiveSpec) {
 	p := proto.Clone(in).(*PodBounceDirectiveSpec)
+	*out = *p
+}
+
+// DeepCopyInto for the PodBounceDirective.Status
+func (in *PodBounceDirectiveStatus) DeepCopyInto(out *PodBounceDirectiveStatus) {
+	p := proto.Clone(in).(*PodBounceDirectiveStatus)
 	*out = *p
 }
