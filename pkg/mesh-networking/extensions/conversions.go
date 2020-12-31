@@ -57,7 +57,7 @@ func InputSnapshotFromProto(name string, in *v1alpha1.DiscoverySnapshot) input.L
 			Status:     *mesh.Status,
 		})
 	}
-	builder.AddMeshes(meshes)
+	builder.AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(meshes)
 
 	// insert trafficTargets
 	var trafficTargets discoveryv1alpha2.TrafficTargetSlice
@@ -68,7 +68,7 @@ func InputSnapshotFromProto(name string, in *v1alpha1.DiscoverySnapshot) input.L
 			Status:     *trafficTarget.Status,
 		})
 	}
-	builder.AddTrafficTargets(trafficTargets)
+	builder.AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(trafficTargets)
 
 	// insert workloads
 	var workloads discoveryv1alpha2.WorkloadSlice
@@ -79,7 +79,7 @@ func InputSnapshotFromProto(name string, in *v1alpha1.DiscoverySnapshot) input.L
 			Status:     *workload.Status,
 		})
 	}
-	builder.AddWorkloads(workloads)
+	builder.AddAddDiscoveryMeshGlooSoloIov1Alpha2WorkloadsWorkloads(workloads)
 
 	return builder.Build()
 }

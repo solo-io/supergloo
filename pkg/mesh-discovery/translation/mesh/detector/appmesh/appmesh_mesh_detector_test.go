@@ -96,7 +96,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 		}
 
 		builder := input.NewInputRemoteSnapshotManualBuilder("app mesh test")
-		builder.AddMeshes([]*aws_v1beta2.Mesh{&awsMesh1, &awsMesh2})
+		builder.AddAppmeshK8SAwsv1Beta2Meshes([]*aws_v1beta2.Mesh{&awsMesh1, &awsMesh2})
 
 		actual, err := meshDetector.DetectMeshes(builder.Build(), nil)
 		Expect(err).NotTo(HaveOccurred())
@@ -191,7 +191,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 		}
 
 		builder := input.NewInputRemoteSnapshotManualBuilder("app mesh test")
-		builder.AddMeshes([]*aws_v1beta2.Mesh{&awsMesh1, &awsMesh2})
+		builder.AddAppmeshK8SAwsv1Beta2Meshes([]*aws_v1beta2.Mesh{&awsMesh1, &awsMesh2})
 
 		actual, err := meshDetector.DetectMeshes(builder.Build(), nil)
 		Expect(err).NotTo(HaveOccurred())
@@ -217,7 +217,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 		}
 
 		builder := input.NewInputRemoteSnapshotManualBuilder("app mesh test")
-		builder.AddMeshes([]*aws_v1beta2.Mesh{&awsMesh})
+		builder.AddAppmeshK8SAwsv1Beta2Meshes([]*aws_v1beta2.Mesh{&awsMesh})
 
 		actual, err := meshDetector.DetectMeshes(builder.Build(), nil)
 		Expect(err).NotTo(HaveOccurred())
@@ -245,7 +245,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 		}
 
 		builder := input.NewInputRemoteSnapshotManualBuilder("app mesh test")
-		builder.AddMeshes([]*aws_v1beta2.Mesh{&awsMesh})
+		builder.AddAppmeshK8SAwsv1Beta2Meshes([]*aws_v1beta2.Mesh{&awsMesh})
 
 		_, err := meshDetector.DetectMeshes(builder.Build(), nil)
 		Expect(err).To(HaveOccurred())

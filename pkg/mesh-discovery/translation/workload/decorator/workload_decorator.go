@@ -6,6 +6,8 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/types"
 )
 
+//go:generate mockgen -source ./workload_decorator.go -destination mocks/workload_director.go
+
 type WorkloadDecorator interface {
 	DecorateWorkload(
 		discoveredWorkload *v1alpha2.Workload,
@@ -16,10 +18,6 @@ type WorkloadDecorator interface {
 }
 
 type WorkloadDecorators []WorkloadDecorator
-
-func NewWorkloadDecorator(decorators ...WorkloadDecorator) WorkloadDecorator {
-	return WorkloadDecorators(decorators)
-}
 
 func (w WorkloadDecorators) DecorateWorkload(discoveredWorkload *v1alpha2.Workload, kubeWorkload types.Workload, mesh *v1alpha2.Mesh, pods v1sets.PodSet) {
 	for _, workloadDecorator := range w {

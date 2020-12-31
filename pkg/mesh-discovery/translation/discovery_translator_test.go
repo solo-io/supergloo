@@ -55,6 +55,7 @@ var _ = Describe("Translator", func() {
 		t := NewTranslator(mockDependencyFactory)
 
 		appMeshes := v1beta2sets.NewMeshSet(&v1beta2.Mesh{})
+		appNodes := v1beta2sets.NewVirtualNodeSet(&v1beta2.VirtualNode{})
 		configMaps := corev1sets.NewConfigMapSet(&corev1.ConfigMap{})
 		services := corev1sets.NewServiceSet(&corev1.Service{})
 		pods := corev1sets.NewPodSet(&corev1.Pod{})
@@ -66,6 +67,7 @@ var _ = Describe("Translator", func() {
 		inRemote := input.NewRemoteSnapshot(
 			"mesh-discovery-remote",
 			appMeshes,
+			appNodes,
 			configMaps,
 			services,
 			pods,

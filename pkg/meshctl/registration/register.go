@@ -20,6 +20,7 @@ var gloomeshRbacRequirements = func() []rbacv1.PolicyRule {
 	var policyRules []rbacv1.PolicyRule
 	policyRules = append(policyRules, io.DiscoveryRemoteInputTypes.RbacPoliciesWatch()...)
 	policyRules = append(policyRules, io.LocalNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
+	policyRules = append(policyRules, io.NetworkingRemoteInputTypes.RbacPoliciesWrite()...)
 	policyRules = append(policyRules, io.IstioNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	policyRules = append(policyRules, io.SmiNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	policyRules = append(policyRules, io.CertificateIssuerInputTypes.RbacPoliciesWatch()...)

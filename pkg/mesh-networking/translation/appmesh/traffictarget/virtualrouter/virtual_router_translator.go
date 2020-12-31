@@ -15,7 +15,8 @@ import (
 type Translator interface {
 	Translate(
 		ctx context.Context,
-		in input.Snapshot,
+		localSnapshot input.LocalSnapshot,
+		remoteSnapshot input.RemoteSnapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		reporter reporting.Reporter,
 	) *appmeshv1beta2.VirtualRouter
@@ -29,7 +30,8 @@ func NewVirtualRouterTranslator() Translator {
 
 func (t *translator) Translate(
 	ctx context.Context,
-	in input.Snapshot,
+	localSnapshot input.LocalSnapshot,
+	remoteSnapshot input.RemoteSnapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	reporter reporting.Reporter,
 ) *appmeshv1beta2.VirtualRouter {
@@ -40,7 +42,7 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	routeTranslator := newRouteTranslator(reporter, in.TrafficTargets(), in.Workloads())
+	routeTranslator := newRouteTranslator(reporter, localSnapshot.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(), localSnapshot.DiscoveryMeshGlooSoloIov1Alpha2Workloads())
 	routes := routeTranslator.getRoutes(trafficTarget)
 	if len(routes) == 0 {
 		// There are no routes, so we don't need to create a virtual router
@@ -50,7 +52,7 @@ func (t *translator) Translate(
 	listenerTranslator := newListenerTranslator()
 	listeners := listenerTranslator.getListeners(trafficTarget)
 
-	meshRef, err := utils.GetAppMeshMeshRef(trafficTarget, in.Meshes())
+	meshRef, err := utils.GetAppMeshMeshRef(trafficTarget, localSnapshot.DiscoveryMeshGlooSoloIov1Alpha2Meshes())
 	if err != nil {
 		// TODO joekelley
 		return nil
@@ -66,8 +68,7 @@ func (t *translator) Translate(
 	// If the router exists, we must set the mesh ref on the virtual router.
 	// If it does not exist, we must not set the mesh ref on the virtual router,
 	// as the app mesh controller's admission controller will block the write.
-	// TODO blocker need the hybrid snapshot for this
-	existingRouter, _ := in.VirtualRouters().Find(&meta)
+	existingRouter, _ := remoteSnapshot.AppmeshK8SAwsv1Beta2VirtualRouters().Find(&meta)
 	if existingRouter == nil {
 		meshRef = nil
 	}

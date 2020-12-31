@@ -42,7 +42,7 @@ func (d *meshDetector) DetectMeshes(in input.RemoteSnapshot, _ *settingsv1alpha2
 
 	// Group meshes by ARN because meshes that share an ARN are backed by the same AWS resources.
 	awsMeshByArn := make(map[string][]*aws_v1beta2.Mesh)
-	for _, awsMesh := range in.Meshes().List() {
+	for _, awsMesh := range in.AppmeshK8SAwsv1Beta2Meshes().List() {
 		if awsMesh.Status.MeshARN == nil {
 			// DiscoveryMeshGlooSoloIov1Alpha2Meshes that lack an ARN have not been processed by the App Mesh controller; ignore.
 			continue

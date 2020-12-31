@@ -19,7 +19,8 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		ctx context.Context,
-		in input.LocalSnapshot,
+		localSnapshot input.LocalSnapshot,
+		remoteSnapshot input.RemoteSnapshot,
 		appmeshOutputs appmesh.Builder,
 		reporter reporting.Reporter,
 	)
@@ -41,22 +42,23 @@ func NewAppmeshTranslator() Translator {
 
 func (t *appmeshTranslator) Translate(
 	ctx context.Context,
-	in input.LocalSnapshot,
+	localSnapshot input.LocalSnapshot,
+	remoteSnapshot input.RemoteSnapshot,
 	appmeshOutputs appmesh.Builder,
 	reporter reporting.Reporter,
 ) {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("appmesh-translator-%v", t.totalTranslates))
 
-	for _, trafficTarget := range in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List() {
+	for _, trafficTarget := range localSnapshot.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List() {
 		trafficTarget := trafficTarget
 
-		t.trafficTargetTranslator.Translate(ctx, in, trafficTarget, appmeshOutputs, reporter)
+		t.trafficTargetTranslator.Translate(ctx, localSnapshot, remoteSnapshot, trafficTarget, appmeshOutputs, reporter)
 	}
 
-	for _, discoveryMesh := range in.DiscoveryMeshGlooSoloIov1Alpha2Meshes().List() {
+	for _, discoveryMesh := range localSnapshot.DiscoveryMeshGlooSoloIov1Alpha2Meshes().List() {
 		discoveryMesh := discoveryMesh
 
-		t.meshTranslator.Translate(ctx, in, discoveryMesh, appmeshOutputs, reporter)
+		t.meshTranslator.Translate(ctx, localSnapshot, discoveryMesh, appmeshOutputs, reporter)
 	}
 
 	t.totalTranslates++

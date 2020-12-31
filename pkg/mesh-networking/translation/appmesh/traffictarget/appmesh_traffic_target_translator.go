@@ -24,7 +24,8 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		ctx context.Context,
-		in input.Snapshot,
+		localSnapshot input.LocalSnapshot,
+		remoteSnapshot input.RemoteSnapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		outputs appmesh.Builder,
 		reporter reporting.Reporter,
@@ -40,13 +41,14 @@ func NewTranslator() Translator {
 // translate the appropriate resources for the given TrafficTarget.
 func (t *translator) Translate(
 	ctx context.Context,
-	in input.Snapshot,
+	localSnapshot input.LocalSnapshot,
+	remoteSnapshot input.RemoteSnapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	outputs appmesh.Builder,
 	reporter reporting.Reporter,
 ) {
-	// Only translate appmesh DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets.
-	if !isAppmeshTrafficTarget(ctx, trafficTarget, in.Meshes()) {
+	// Only translate appmesh TrafficTargets.
+	if !isAppmeshTrafficTarget(ctx, trafficTarget, localSnapshot.DiscoveryMeshGlooSoloIov1Alpha2Meshes()) {
 		return
 	}
 
@@ -55,8 +57,8 @@ func (t *translator) Translate(
 		report(tp, trafficTarget, reporter)
 	}
 
-	virtualRouter := virtualrouter.NewVirtualRouterTranslator().Translate(ctx, in, trafficTarget, reporter)
-	virtualServices := virtualservice.NewVirtualServiceTranslator().Translate(ctx, in, trafficTarget, virtualRouter, reporter)
+	virtualRouter := virtualrouter.NewVirtualRouterTranslator().Translate(ctx, localSnapshot, remoteSnapshot, trafficTarget, reporter)
+	virtualServices := virtualservice.NewVirtualServiceTranslator().Translate(ctx, localSnapshot, remoteSnapshot, trafficTarget, virtualRouter, reporter)
 
 	outputs.AddVirtualServices(virtualServices...)
 	outputs.AddVirtualRouters(virtualRouter)

@@ -3,6 +3,7 @@ package detector_test
 import (
 	"context"
 
+	mock_decorator "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/decorator/mocks"
 	"github.com/solo-io/skv2/pkg/ezkube"
 
 	"github.com/golang/mock/gomock"
@@ -26,12 +27,14 @@ import (
 var _ = Describe("WorkloadDetector", func() {
 
 	var (
-		ctrl                *gomock.Controller
-		mockSidecarDetector *mock_detector.MockSidecarDetector
+		ctrl                  *gomock.Controller
+		mockSidecarDetector   *mock_detector.MockSidecarDetector
+		mockWorkloadDecorator *mock_decorator.MockWorkloadDecorator
 	)
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		mockSidecarDetector = mock_detector.NewMockSidecarDetector(ctrl)
+		mockWorkloadDecorator = mock_decorator.NewMockWorkloadDecorator(ctrl)
 	})
 
 	AfterEach(func() {
@@ -115,6 +118,7 @@ var _ = Describe("WorkloadDetector", func() {
 			pods,
 			replicaSets,
 			mockSidecarDetector,
+			mockWorkloadDecorator,
 		)
 
 		meshes := v1alpha2sets.NewMeshSet()

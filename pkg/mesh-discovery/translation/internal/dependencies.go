@@ -66,13 +66,13 @@ func (d DependencyFactoryImpl) MakeWorkloadTranslator(
 	}
 
 	workloadDecorators := decorator.WorkloadDecorators{
-		appmesh2.NewAppMeshWorkloadDecorator(ctx, in.VirtualNodes()),
+		appmesh2.NewAppMeshWorkloadDecorator(ctx, in.AppmeshK8SAwsv1Beta2VirtualNodes()),
 	}
 
 	workloadDetector := workloaddetector.NewWorkloadDetector(
 		ctx,
-		in.Pods(),
-		in.ReplicaSets(),
+		in.V1Pods(),
+		in.Appsv1ReplicaSets(),
 		sidecarDetectors,
 		workloadDecorators,
 	)

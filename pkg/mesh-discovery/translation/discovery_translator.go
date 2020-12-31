@@ -42,13 +42,13 @@ func (t translator) Translate(ctx context.Context, in input.RemoteSnapshot, sett
 	meshes := meshTranslator.TranslateMeshes(in, settings)
 
 	workloads := workloadTranslator.TranslateWorkloads(
-		in.Deployments(),
-		in.DaemonSets(),
-		in.StatefulSets(),
+		in.Appsv1Deployments(),
+		in.Appsv1DaemonSets(),
+		in.Appsv1StatefulSets(),
 		meshes,
 	)
 
-	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(in.Services(), workloads, meshes)
+	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(in.V1Services(), workloads, meshes)
 
 	t.totalTranslates++
 

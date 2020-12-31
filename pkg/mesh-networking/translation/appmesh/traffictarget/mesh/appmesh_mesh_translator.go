@@ -18,7 +18,7 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		ctx context.Context,
-		in input.Snapshot,
+		in input.LocalSnapshot,
 		mesh *discoveryv1alpha2.Mesh,
 		outputs appmesh.Builder,
 		reporter reporting.Reporter,
@@ -36,7 +36,7 @@ func NewTranslator() Translator {
 // translate the appropriate resources for the given Mesh.
 func (t *translator) Translate(
 	ctx context.Context,
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	mesh *discoveryv1alpha2.Mesh,
 	outputs appmesh.Builder,
 	reporter reporting.Reporter,

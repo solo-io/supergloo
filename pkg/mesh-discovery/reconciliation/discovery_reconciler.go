@@ -98,7 +98,7 @@ func Start(
 		r.reconcileLocal,
 		input.ReconcileOptions{
 			Remote: input.RemoteReconcileOptions{
-				Meshes: reconcile.Options{
+				AppmeshK8SAwsv1Beta2Meshes: reconcile.Options{
 					Verifier: verifier,
 				},
 				Predicates: []predicate.Predicate{filterDiscoveryEvents},
@@ -129,7 +129,7 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 		// ignore NoKindMatchError for AppMesh Mesh CRs
 		// (only clusters with AppMesh Controller installed will
 		// have this kind registered)
-		Meshes: input.ResourceRemoteBuildOptions{
+		AppmeshK8SAwsv1Beta2Meshes: input.ResourceRemoteBuildOptions{
 			Verifier: r.verifier,
 		},
 	})

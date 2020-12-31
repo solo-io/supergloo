@@ -82,8 +82,8 @@ func (d dependencyFactoryImpl) MakeMeshTranslator(
 	var existingVirtualServices v1alpha3sets.VirtualServiceSet
 	var existingDestinationRules v1alpha3sets.DestinationRuleSet
 	if userSupplied != nil {
-		existingVirtualServices = userSupplied.VirtualServices()
-		existingDestinationRules = userSupplied.DestinationRules()
+		existingVirtualServices = userSupplied.NetworkingIstioIov1Alpha3VirtualServices()
+		existingDestinationRules = userSupplied.NetworkingIstioIov1Alpha3DestinationRules()
 	}
 
 	federationTranslator := federation.NewTranslator(

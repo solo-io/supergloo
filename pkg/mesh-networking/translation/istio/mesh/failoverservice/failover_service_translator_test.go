@@ -180,17 +180,17 @@ var _ = Describe("FailoverServiceTranslator", func() {
 		}
 
 		in := input.NewInputLocalSnapshotManualBuilder("").
-			AddTrafficTargets(allTrafficTargets).
-			AddMeshes(allMeshes).
-			AddKubernetesClusters([]*v1alpha1.KubernetesCluster{{ObjectMeta: metav1.ObjectMeta{Name: "kube-cluster"}}}).
-			AddVirtualMeshes([]*networkingv1alpha2.VirtualMesh{{ObjectMeta: metav1.ObjectMeta{Name: "virtual-mesh"}}}).
+			AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(allTrafficTargets).
+			AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(allMeshes).
+			AddMulticlusterSoloIov1Alpha1KubernetesClusters([]*v1alpha1.KubernetesCluster{{ObjectMeta: metav1.ObjectMeta{Name: "kube-cluster"}}}).
+			AddNetworkingMeshGlooSoloIov1Alpha2VirtualMeshes([]*networkingv1alpha2.VirtualMesh{{ObjectMeta: metav1.ObjectMeta{Name: "virtual-mesh"}}}).
 			Build()
 
 		mockValidator.EXPECT().Validate(failoverservice.Inputs{
-			TrafficTargets: in.TrafficTargets(),
-			KubeClusters:   in.KubernetesClusters(),
-			Meshes:         in.Meshes(),
-			VirtualMeshes:  in.VirtualMeshes(),
+			TrafficTargets: in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(),
+			KubeClusters:   in.MulticlusterSoloIov1Alpha1KubernetesClusters(),
+			Meshes:         in.DiscoveryMeshGlooSoloIov1Alpha2Meshes(),
+			VirtualMeshes:  in.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes(),
 		}, failoverService.Spec).Return(nil)
 
 		for _, trafficTarget := range allTrafficTargets {

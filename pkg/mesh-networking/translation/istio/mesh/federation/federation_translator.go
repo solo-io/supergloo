@@ -227,13 +227,13 @@ func (t *translator) Translate(
 
 			outputs.AddServiceEntries(se)
 
-			// Translate VirtualServices for federated DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets, can be nil
+			// Translate VirtualServices for federated TrafficTargets, can be nil
 			vs := t.virtualServiceTranslator.Translate(t.ctx, in, trafficTarget, clientIstio.Installation, reporter)
 			// Append the virtual mesh as a parent to the output virtual service
 			metautils.AppendParent(t.ctx, vs, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 			outputs.AddVirtualServices(vs)
 
-			// Translate DestinationRules for federated DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets, can be nil
+			// Translate DestinationRules for federated TrafficTargets, can be nil
 			dr := t.destinationRuleTranslator.Translate(t.ctx, in, trafficTarget, clientIstio.Installation, reporter)
 			// Append the virtual mesh as a parent to the output destination rule
 			metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())

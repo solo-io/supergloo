@@ -69,7 +69,7 @@ var _ = Describe("OsmMeshDetector", func() {
 		)
 
 		in := input.NewInputRemoteSnapshotManualBuilder("")
-		in.AddDeployments([]*appsv1.Deployment{deployment})
+		in.AddAppsv1Deployments([]*appsv1.Deployment{deployment})
 
 		meshes, err := detector.DetectMeshes(in.Build(), nil)
 		Expect(err).NotTo(HaveOccurred())
@@ -104,7 +104,7 @@ var _ = Describe("OsmMeshDetector", func() {
 		}
 
 		in := input.NewInputRemoteSnapshotManualBuilder("")
-		in.AddDeployments([]*appsv1.Deployment{deployment})
+		in.AddAppsv1Deployments([]*appsv1.Deployment{deployment})
 
 		meshes, err := detector.DetectMeshes(in.Build(), nil)
 		Expect(err).NotTo(HaveOccurred())

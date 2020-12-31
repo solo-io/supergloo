@@ -155,9 +155,9 @@ var _ = Describe("FederationTranslator", func() {
 		}
 
 		in := input.NewInputLocalSnapshotManualBuilder("ignored").
-			AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget1}).
-			AddMeshes(discoveryv1alpha2.MeshSlice{mesh, clientMesh}).
-			AddKubernetesClusters(skv1alpha1.KubernetesClusterSlice{kubeCluster}).
+			AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget1}).
+			AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(discoveryv1alpha2.MeshSlice{mesh, clientMesh}).
+			AddMulticlusterSoloIov1Alpha1KubernetesClusters(skv1alpha1.KubernetesClusterSlice{kubeCluster}).
 			Build()
 
 		expectedVS := &networkingv1alpha3.VirtualService{}
@@ -175,8 +175,8 @@ var _ = Describe("FederationTranslator", func() {
 		t := NewTranslator(
 			ctx,
 			clusterDomains,
-			in.TrafficTargets(),
-			in.FailoverServices(),
+			in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(),
+			in.NetworkingMeshGlooSoloIov1Alpha2FailoverServices(),
 			mockVirtualServiceTranslator,
 			mockDestinationRuleTranslator,
 		)

@@ -13,7 +13,7 @@ import (
 // TODO this is copied from networking snapshot_utils. remove this when functionality is added to skv2
 // Safely fetch the single SettingsMeshGlooSoloIov1Alpha2Settings object from snapshot. Log and error if not singleton.
 func GetSingletonSettings(ctx context.Context, inLocal input.LocalSnapshot) (*settingsv1alpha2.Settings, error) {
-	settings := inLocal.Settings().List()
+	settings := inLocal.SettingsMeshGlooSoloIov1Alpha2Settings().List()
 	n := len(settings)
 	if n != 1 {
 		err := eris.Errorf("Snapshot does not contain single SettingsMeshGlooSoloIov1Alpha2Settings object, %d found.", n)

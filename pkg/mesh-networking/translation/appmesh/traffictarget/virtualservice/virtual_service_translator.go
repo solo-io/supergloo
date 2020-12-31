@@ -23,7 +23,8 @@ import (
 type Translator interface {
 	Translate(
 		ctx context.Context,
-		in input.Snapshot,
+		localSnapshot input.LocalSnapshot,
+		remoteSnapshot input.RemoteSnapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		virtualRouter *appmeshv1beta2.VirtualRouter,
 		reporter reporting.Reporter,
@@ -38,7 +39,8 @@ func NewVirtualServiceTranslator() Translator {
 
 func (t *translator) Translate(
 	ctx context.Context,
-	in input.Snapshot,
+	localSnapshot input.LocalSnapshot,
+	remoteSnapshot input.RemoteSnapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	virtualRouter *appmeshv1beta2.VirtualRouter,
 	reporter reporting.Reporter,
@@ -50,7 +52,7 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	backingWorkloads := workloadutils.FindBackingWorkloads(trafficTarget.Spec.GetKubeService(), in.Workloads())
+	backingWorkloads := workloadutils.FindBackingWorkloads(trafficTarget.Spec.GetKubeService(), localSnapshot.DiscoveryMeshGlooSoloIov1Alpha2Workloads())
 	if len(backingWorkloads) == 0 {
 		contextutils.LoggerFrom(ctx).Warnf("Found no backing workloads for traffic target %s", sets.Key(trafficTarget))
 		return nil
@@ -70,12 +72,12 @@ func (t *translator) Translate(
 			trafficTarget.Annotations,
 		)
 
-		awsMeshRef, err := utils.GetAppMeshMeshRef(trafficTarget, in.Meshes())
+		awsMeshRef, err := utils.GetAppMeshMeshRef(trafficTarget, localSnapshot.DiscoveryMeshGlooSoloIov1Alpha2Meshes())
 		if err != nil {
 			// TODO joekelley
 		}
 
-		virtualServices = append(virtualServices, getVirtualService(meta, in.VirtualServices(), virtualRouter, awsMeshRef, arn))
+		virtualServices = append(virtualServices, getVirtualService(meta, remoteSnapshot.AppmeshK8SAwsv1Beta2VirtualServices(), virtualRouter, awsMeshRef, arn))
 	}
 
 	return virtualServices
@@ -109,7 +111,6 @@ func getVirtualService(
 	// If the virtual service exists, we must set the mesh ref on the virtual service.
 	// If it does not exist, we must not set the mesh ref on the virtual router,
 	// as the app mesh controller's admission controller will block the write.
-	// TODO blocker need the hybrid snapshot for this
 	existingVirtualService, _ := virtualServices.Find(&meta)
 	if existingVirtualService == nil {
 		meshRef = nil

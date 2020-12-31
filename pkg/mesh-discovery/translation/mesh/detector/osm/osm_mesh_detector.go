@@ -38,7 +38,7 @@ func NewMeshDetector(
 func (d *meshDetector) DetectMeshes(in input.RemoteSnapshot, _ *settingsv1alpha2.DiscoverySettings) (v1alpha2.MeshSlice, error) {
 	var meshes v1alpha2.MeshSlice
 	var errs error
-	for _, deployment := range in.Deployments().List() {
+	for _, deployment := range in.Appsv1Deployments().List() {
 		mesh, err := d.detectMesh(deployment)
 		if err != nil {
 			errs = multierror.Append(errs, err)

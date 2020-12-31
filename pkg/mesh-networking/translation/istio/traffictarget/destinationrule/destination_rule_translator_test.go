@@ -70,7 +70,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 	It("should translate respecting default mTLS Settings", func() {
 		in = input.NewInputLocalSnapshotManualBuilder("").
-			AddSettings(settingsv1alpha2.SettingsSlice{
+			AddSettingsMeshGlooSoloIov1Alpha2Settings(settingsv1alpha2.SettingsSlice{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      defaults.DefaultSettingsName,
@@ -257,7 +257,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 	It("should not output DestinationRule when DestinationRule has no effect", func() {
 		in = input.NewInputLocalSnapshotManualBuilder("").
-			AddSettings(settingsv1alpha2.SettingsSlice{
+			AddSettingsMeshGlooSoloIov1Alpha2Settings(settingsv1alpha2.SettingsSlice{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      defaults.DefaultSettingsName,
@@ -446,7 +446,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		}
 
 		in = input.NewInputLocalSnapshotManualBuilder("").
-			AddSettings(settingsv1alpha2.SettingsSlice{
+			AddSettingsMeshGlooSoloIov1Alpha2Settings(settingsv1alpha2.SettingsSlice{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      defaults.DefaultSettingsName,
@@ -555,7 +555,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 	It("should report error if translated DestinationRule applies to host already configured by existing DestinationRule", func() {
 		in = input.NewInputLocalSnapshotManualBuilder("").
-			AddSettings(settingsv1alpha2.SettingsSlice{
+			AddSettingsMeshGlooSoloIov1Alpha2Settings(settingsv1alpha2.SettingsSlice{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      defaults.DefaultSettingsName,

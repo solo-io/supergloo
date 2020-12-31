@@ -68,8 +68,8 @@ type Translator interface {
 	// errors reflect an internal translation error and should never happen
 	Translate(
 		ctx context.Context,
-		in input.LocalSnapshot,
-		userSupplied input.RemoteSnapshot,
+		localSnapshot input.LocalSnapshot,
+		remoteSnapshot input.RemoteSnapshot,
 		reporter reporting.Reporter,
 	) (OutputSnapshots, error)
 }
@@ -95,8 +95,8 @@ func NewTranslator(
 
 func (t *translator) Translate(
 	ctx context.Context,
-	in input.LocalSnapshot,
-	userSupplied input.RemoteSnapshot,
+	localSnapshot input.LocalSnapshot,
+	remoteSnapshot input.RemoteSnapshot,
 	reporter reporting.Reporter,
 ) (OutputSnapshots, error) {
 	t.totalTranslates++
@@ -107,11 +107,11 @@ func (t *translator) Translate(
 	smiOutputs := smioutput.NewBuilder(ctx, fmt.Sprintf("networking-smi-%v", t.totalTranslates))
 	localOutputs := localoutput.NewBuilder(ctx, fmt.Sprintf("networking-local-%v", t.totalTranslates))
 
-	t.istioTranslator.Translate(ctx, in, userSupplied, istioOutputs, localOutputs, reporter)
+	t.istioTranslator.Translate(ctx, localSnapshot, remoteSnapshot, istioOutputs, localOutputs, reporter)
 
-	t.appmeshTranslator.Translate(ctx, in, appmeshOutputs, reporter)
+	t.appmeshTranslator.Translate(ctx, localSnapshot, remoteSnapshot, appmeshOutputs, reporter)
 
-	t.osmTranslator.Translate(ctx, in, smiOutputs, reporter)
+	t.osmTranslator.Translate(ctx, localSnapshot, smiOutputs, reporter)
 
 	istioSnapshot, err := istioOutputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
 	if err != nil {
@@ -128,7 +128,7 @@ func (t *translator) Translate(
 		return OutputSnapshots{}, err
 	}
 
-	localSnapshot, err := localOutputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
+	localOutputSnapshot, err := localOutputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
 	if err != nil {
 		return OutputSnapshots{}, err
 	}
@@ -137,6 +137,6 @@ func (t *translator) Translate(
 		istio:   istioSnapshot,
 		appmesh: appmeshSnapshot,
 		smi:     smiSnapshot,
-		local:   localSnapshot,
+		local:   localOutputSnapshot,
 	}, nil
 }

@@ -80,13 +80,13 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 	outputs := certagent.NewBuilder(r.ctx, "agent")
 
 	// process issued certificates
-	for _, issuedCertificate := range inputSnap.IssuedCertificates().List() {
+	for _, issuedCertificate := range inputSnap.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates().List() {
 		if err := r.reconcileIssuedCertificate(
 			issuedCertificate,
-			inputSnap.Secrets(),
-			inputSnap.Pods(),
-			inputSnap.CertificateRequests(),
-			inputSnap.PodBounceDirectives(),
+			inputSnap.V1Secrets(),
+			inputSnap.V1Pods(),
+			inputSnap.CertificatesMeshGlooSoloIov1Alpha2CertificateRequests(),
+			inputSnap.CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives(),
 			outputs,
 		); err != nil {
 			issuedCertificate.Status.Error = err.Error()
@@ -103,8 +103,8 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 
 	errs := errHandler.Errors()
 	if err := inputSnap.SyncStatuses(r.ctx, r.localClient, input.SyncStatusOptions{
-		IssuedCertificate:  true,
-		PodBounceDirective: true,
+		CertificatesMeshGlooSoloIov1Alpha2IssuedCertificate:  true,
+		CertificatesMeshGlooSoloIov1Alpha2PodBounceDirective: true,
 	}); err != nil {
 		errs = multierror.Append(errs, err)
 	}

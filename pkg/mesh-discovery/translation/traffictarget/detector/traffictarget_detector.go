@@ -31,7 +31,7 @@ var (
 	)
 )
 
-// the TrafficTargetDetector detects DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets from services
+// the TrafficTargetDetector detects TrafficTargets from services
 // whose backing pods are injected with a Mesh sidecar.
 // If no Mesh is detected, nil is returned
 type TrafficTargetDetector interface {

@@ -54,7 +54,7 @@ var _ = Describe("SmiTrafficTargetTranslator", func() {
 			},
 		}
 		in := input.NewInputLocalSnapshotManualBuilder("").
-			AddMeshes([]*v1alpha2.Mesh{
+			AddDiscoveryMeshGlooSoloIov1Alpha2Meshes([]*v1alpha2.Mesh{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      trafficTarget.Spec.GetMesh().GetName(),

@@ -171,7 +171,7 @@ func (t *translator) translate(
 }
 
 /*
-	Collect, in priority order as declared in the FailoverService, the relevant DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets.
+	Collect, in priority order as declared in the FailoverService, the relevant TrafficTargets.
 	The first TrafficTarget is guaranteed to be the FailoverService's target service.
 	If a TrafficTarget cannot be found, return an error
 */
@@ -403,7 +403,7 @@ func (t *translator) buildEnvoyFailoverPatch(
 	}, nil
 }
 
-// Convert list of DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets corresponding to FailoverService.Spec.services to
+// Convert list of TrafficTargets corresponding to FailoverService.Spec.services to
 // an envoy ClusterConfig consisting of the list of Envoy cluster strings.
 func (t *translator) buildEnvoyAggregateClusterConfig(
 	trafficTargets []*discoveryv1alpha2.TrafficTarget,

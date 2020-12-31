@@ -20,7 +20,7 @@ import (
 )
 
 // the Applier validates user-applied configuration
-// and produces a snapshot that is ready for translation (i.e. with accepted policies applied to all the Status of all targeted DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets)
+// and produces a snapshot that is ready for translation (i.e. with accepted policies applied to all the Status of all targeted TrafficTargets)
 // Note that the Applier also updates the statuses of objects contained in the input Snapshot.
 // The Input Snapshot's SyncStatuses method should usually be called after running the Applier.
 type Applier interface {
