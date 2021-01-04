@@ -1,20 +1,20 @@
 package docsgen
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"text/template"
 
-	"github.com/google/go-github/github"
 	"github.com/pkg/errors"
+	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/changelogutils"
 	"github.com/solo-io/go-utils/clidoc"
 	"github.com/solo-io/skv2/codegen/util"
 	"github.com/spf13/cobra"
-	"golang.org/x/oauth2"
 )
 
 var (
@@ -89,9 +89,7 @@ description: |
   Changelogs for {{.Name}}
 weight: {{.Weight}}
 ---
-
 {{.Body}}
-
 `
 )
 
@@ -113,7 +111,6 @@ type ChangelogConfig struct {
 }
 
 type ChangelogOptions struct {
-	Generate  bool
 	Repos     []ChangelogConfig
 	OutputDir string
 }
@@ -125,7 +122,7 @@ type Options struct {
 	DocsRoot  string // Will default to docs if empty
 }
 
-func Execute(opts Options) error {
+func Execute(ctx context.Context, opts Options) error {
 	rootDir := filepath.Join(moduleRoot, opts.DocsRoot)
 	if err := generateCliReference(rootDir, opts.Cli); err != nil {
 		return err
@@ -133,7 +130,7 @@ func Execute(opts Options) error {
 	if err := generateApiDocs(rootDir, opts.Proto); err != nil {
 		return err
 	}
-	if err := generateChangelog(rootDir, opts.Changelog); err != nil {
+	if err := generateChangelog(ctx, rootDir, opts.Changelog); err != nil {
 		return err
 	}
 	return nil
@@ -153,9 +150,9 @@ func generateCliReference(root string, opts CliOptions) error {
 	return ioutil.WriteFile(filepath.Join(cliDocsDir, "_index.md"), []byte(cliIndex), 0644)
 }
 
-func generateChangelog(root string, opts ChangelogOptions) error {
-	if !opts.Generate {
-		fmt.Println("skipping changelog generation, pass --changelog to enable")
+func generateChangelog(ctx context.Context, root string, opts ChangelogOptions) error {
+	if os.Getenv("SKIP_CHANGELOG_GENERATION") != "" {
+		fmt.Println("skipping changelog generation")
 		return nil
 	}
 
@@ -163,6 +160,12 @@ func generateChangelog(root string, opts ChangelogOptions) error {
 	changelogDir := filepath.Join(root, opts.OutputDir)
 	os.RemoveAll(changelogDir)
 	os.MkdirAll(changelogDir, 0755)
+
+	changelog, err := readChangelog(ctx, "gloo-mesh") // TODO(ryantking): Un-hardcode once we have multiple repos
+	if err != nil {
+		return eris.Wrap(err, "building changelog from local files")
+	}
+
 	type tplParams struct {
 		ChangelogConfig
 		Body   string
@@ -170,17 +173,13 @@ func generateChangelog(root string, opts ChangelogOptions) error {
 	}
 	tmpl := template.Must(template.New("changelog").Parse(changelogTmpl))
 	for i, cfg := range opts.Repos {
-		body, err := generateChangelogMD(cfg.Repo, cfg.Version)
-		if err != nil {
-			return err
-		}
 		if err := func() error {
 			f, err := os.Create(filepath.Join(changelogDir, cfg.Path+".md"))
 			if err != nil {
 				return err
 			}
 			defer f.Close()
-			return tmpl.Execute(f, tplParams{ChangelogConfig: cfg, Body: body, Weight: 7 + i})
+			return tmpl.Execute(f, tplParams{ChangelogConfig: cfg, Body: changelog, Weight: 7 + i})
 		}(); err != nil {
 			return err
 		}
@@ -194,52 +193,19 @@ func generateChangelog(root string, opts ChangelogOptions) error {
 	return ioutil.WriteFile(filepath.Join(changelogDir, "_index.md"), []byte(changelogIndex), 0644)
 }
 
-var (
-	githubClient            *github.Client
-	MissingGithubTokenError = errors.New("Must set GITHUB_TOKEN environment variable")
-)
-
-func getGithubClient() (*github.Client, error) {
-	if githubClient != nil {
-		return githubClient, nil
+// returns the changelog represented as a map of versions to the rendered body
+func readChangelog(ctx context.Context, repo string) (string, error) {
+	var buf bytes.Buffer
+	if err := changelogutils.GenerateChangelogFromLocalDirectory(
+		ctx,
+		"./",
+		"solo-io",
+		repo,
+		"changelog/",
+		&buf,
+	); err != nil {
+		return "", nil
 	}
 
-	token := os.Getenv("GITHUB_TOKEN")
-	if token == "" {
-		return nil, MissingGithubTokenError
-	}
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-	tc := oauth2.NewClient(context.Background(), ts)
-	githubClient = github.NewClient(tc)
-	return githubClient, nil
-}
-
-func generateChangelogMD(repo, version string) (string, error) {
-	client, err := getGithubClient()
-	if err != nil {
-		return "", err
-	}
-
-	releases, _, err := client.Repositories.ListReleases(context.Background(), "solo-io", repo, &github.ListOptions{Page: 0, PerPage: 1000000})
-	if err != nil {
-		return "", err
-	}
-
-	var (
-		sb           strings.Builder
-		foundVersion = version == "" // Include all versions if none specified
-	)
-	for _, release := range releases {
-		// Do not include versions after the provided version
-		if !foundVersion && release.GetTagName() == version {
-			foundVersion = true
-		} else if !foundVersion {
-			continue
-		}
-
-		sb.WriteString("### " + *release.TagName + "\n\n")
-		sb.WriteString(*release.Body + "\n")
-	}
-
-	return sb.String(), nil
+	return buf.String(), nil
 }

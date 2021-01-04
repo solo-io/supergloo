@@ -1,0 +1,11 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1182
+    description: |
+      Build the changelog site from the local folder instead of the GitHub release so latest version notes are present,
+      including changes on main that are not yet released.
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/545
+    description: |
+      Dynamically generate versions.json file so a second commit to main after a tag is not required to build the
+      latest version's site.
