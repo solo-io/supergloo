@@ -373,20 +373,20 @@ func (mr *MockBuilderMockRecorder) GetTrafficSplits() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrafficSplits", reflect.TypeOf((*MockBuilder)(nil).GetTrafficSplits))
 }
 
-// AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets mocks base method
+// AddTrafficTargets mocks base method
 func (m *MockBuilder) AddTrafficTargets(trafficTargets ...*v1alpha2.TrafficTarget) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range trafficTargets {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets", varargs...)
+	m.ctrl.Call(m, "AddTrafficTargets", varargs...)
 }
 
-// AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets indicates an expected call of AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets
+// AddTrafficTargets indicates an expected call of AddTrafficTargets
 func (mr *MockBuilderMockRecorder) AddTrafficTargets(trafficTargets ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets", reflect.TypeOf((*MockBuilder)(nil).AddTrafficTargets), trafficTargets...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTrafficTargets", reflect.TypeOf((*MockBuilder)(nil).AddTrafficTargets), trafficTargets...)
 }
 
 // GetTrafficTargets mocks base method

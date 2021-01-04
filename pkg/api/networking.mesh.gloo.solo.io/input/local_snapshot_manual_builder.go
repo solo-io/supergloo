@@ -90,7 +90,7 @@ func (i *InputLocalSnapshotManualBuilder) AddDiscoveryMeshGlooSoloIov1Alpha2Traf
 	i.discoveryMeshGlooSoloIov1Alpha2TrafficTargets.Insert(discoveryMeshGlooSoloIov1Alpha2TrafficTargets...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddAddDiscoveryMeshGlooSoloIov1Alpha2WorkloadsWorkloads(discoveryMeshGlooSoloIov1Alpha2Workloads []*discovery_mesh_gloo_solo_io_v1alpha2.Workload) *InputLocalSnapshotManualBuilder {
+func (i *InputLocalSnapshotManualBuilder) AddDiscoveryMeshGlooSoloIov1Alpha2Workloads(discoveryMeshGlooSoloIov1Alpha2Workloads []*discovery_mesh_gloo_solo_io_v1alpha2.Workload) *InputLocalSnapshotManualBuilder {
 	i.discoveryMeshGlooSoloIov1Alpha2Workloads.Insert(discoveryMeshGlooSoloIov1Alpha2Workloads...)
 	return i
 }

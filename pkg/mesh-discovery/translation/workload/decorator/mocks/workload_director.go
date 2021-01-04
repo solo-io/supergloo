@@ -5,11 +5,12 @@
 package mock_decorator
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	types "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/types"
-	reflect "reflect"
 )
 
 // MockWorkloadDecorator is a mock of WorkloadDecorator interface

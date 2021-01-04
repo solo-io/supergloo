@@ -75,7 +75,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 					},
 				},
 			}).
-			AddAddDiscoveryMeshGlooSoloIov1Alpha2WorkloadsWorkloads([]*discoveryv1alpha2.Workload{
+			AddDiscoveryMeshGlooSoloIov1Alpha2Workloads([]*discoveryv1alpha2.Workload{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:   "mesh-workload-1",

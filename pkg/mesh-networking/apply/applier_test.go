@@ -85,7 +85,7 @@ var _ = Describe("Applier", func() {
 			snap = input.NewInputLocalSnapshotManualBuilder("").
 				AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
 				AddNetworkingMeshGlooSoloIov1Alpha2TrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy1, trafficPolicy2}).
-				AddAddDiscoveryMeshGlooSoloIov1Alpha2WorkloadsWorkloads(discoveryv1alpha2.WorkloadSlice{workload}).
+				AddDiscoveryMeshGlooSoloIov1Alpha2Workloads(discoveryv1alpha2.WorkloadSlice{workload}).
 				AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(discoveryv1alpha2.MeshSlice{mesh}).
 				Build()
 		)
@@ -247,7 +247,7 @@ var _ = Describe("Applier", func() {
 				AddNetworkingMeshGlooSoloIov1Alpha2TrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy}).
 				AddNetworkingMeshGlooSoloIov1Alpha2AccessPolicies(v1alpha2.AccessPolicySlice{accessPolicy}).
 				AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
-				AddAddDiscoveryMeshGlooSoloIov1Alpha2WorkloadsWorkloads(discoveryv1alpha2.WorkloadSlice{workload1, workload2}).
+				AddDiscoveryMeshGlooSoloIov1Alpha2Workloads(discoveryv1alpha2.WorkloadSlice{workload1, workload2}).
 				AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(discoveryv1alpha2.MeshSlice{mesh1, mesh2}).
 				Build()
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
@@ -267,7 +267,7 @@ var _ = Describe("Applier", func() {
 				AddNetworkingMeshGlooSoloIov1Alpha2TrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy}).
 				AddNetworkingMeshGlooSoloIov1Alpha2AccessPolicies(v1alpha2.AccessPolicySlice{accessPolicy}).
 				AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
-				AddAddDiscoveryMeshGlooSoloIov1Alpha2WorkloadsWorkloads(discoveryv1alpha2.WorkloadSlice{workload1, workload2}).
+				AddDiscoveryMeshGlooSoloIov1Alpha2Workloads(discoveryv1alpha2.WorkloadSlice{workload1, workload2}).
 				AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(discoveryv1alpha2.MeshSlice{mesh1, mesh2}).
 				AddNetworkingMeshGlooSoloIov1Alpha2VirtualMeshes(v1alpha2.VirtualMeshSlice{virtualMesh}).
 				Build()
@@ -292,7 +292,7 @@ var _ = Describe("Applier", func() {
 				AddNetworkingMeshGlooSoloIov1Alpha2TrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy}).
 				AddNetworkingMeshGlooSoloIov1Alpha2AccessPolicies(v1alpha2.AccessPolicySlice{accessPolicy}).
 				AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
-				AddAddDiscoveryMeshGlooSoloIov1Alpha2WorkloadsWorkloads(discoveryv1alpha2.WorkloadSlice{workload1, workload2}).
+				AddDiscoveryMeshGlooSoloIov1Alpha2Workloads(discoveryv1alpha2.WorkloadSlice{workload1, workload2}).
 				AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(discoveryv1alpha2.MeshSlice{mesh1, mesh2}).
 				Build()
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {

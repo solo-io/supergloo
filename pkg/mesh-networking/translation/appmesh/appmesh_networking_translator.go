@@ -7,8 +7,8 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/appmesh"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/appmesh/mesh"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/appmesh/traffictarget"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/appmesh/traffictarget/mesh"
 	"github.com/solo-io/go-utils/contextutils"
 )
 
@@ -49,10 +49,12 @@ func (t *appmeshTranslator) Translate(
 ) {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("appmesh-translator-%v", t.totalTranslates))
 
-	for _, trafficTarget := range localSnapshot.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List() {
-		trafficTarget := trafficTarget
+	if remoteSnapshot != nil {
+		for _, trafficTarget := range localSnapshot.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List() {
+			trafficTarget := trafficTarget
 
-		t.trafficTargetTranslator.Translate(ctx, localSnapshot, remoteSnapshot, trafficTarget, appmeshOutputs, reporter)
+			t.trafficTargetTranslator.Translate(ctx, localSnapshot, remoteSnapshot, trafficTarget, appmeshOutputs, reporter)
+		}
 	}
 
 	for _, discoveryMesh := range localSnapshot.DiscoveryMeshGlooSoloIov1Alpha2Meshes().List() {

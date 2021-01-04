@@ -79,7 +79,7 @@ func InputSnapshotFromProto(name string, in *v1alpha1.DiscoverySnapshot) input.L
 			Status:     *workload.Status,
 		})
 	}
-	builder.AddAddDiscoveryMeshGlooSoloIov1Alpha2WorkloadsWorkloads(workloads)
+	builder.AddDiscoveryMeshGlooSoloIov1Alpha2Workloads(workloads)
 
 	return builder.Build()
 }

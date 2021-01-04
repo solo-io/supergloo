@@ -31,8 +31,6 @@ import (
 	"github.com/solo-io/skv2/pkg/multicluster"
 	skv2predicate "github.com/solo-io/skv2/pkg/predicate"
 	"github.com/solo-io/skv2/pkg/reconcile"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/selection"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -138,7 +136,7 @@ func Start(
 		NetworkingIstioIov1Alpha3EnvoyFilters:                 remoteReconcileOptions,
 		NetworkingIstioIov1Alpha3Gateways:                     remoteReconcileOptions,
 		NetworkingIstioIov1Alpha3ServiceEntries:               remoteReconcileOptions,
-		AppmeshK8SAwsv1Beta2VirtualServices:                   remoteReconcileOptions,
+		NetworkingIstioIov1Alpha3VirtualServices:              remoteReconcileOptions,
 		SecurityIstioIov1Beta1AuthorizationPolicies:           remoteReconcileOptions,
 		Predicates: []predicate.Predicate{
 			skv2predicate.SimplePredicate{
@@ -229,39 +227,39 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 
 	// nil istioInputSnap signals to downstream translators that intersecting config should not be detected
 	var userSupplied input.RemoteSnapshot
-	if r.disallowIntersectingConfig {
-		selector := labels.NewSelector()
-		for k := range metautils.TranslatedObjectLabels() {
-			// select objects without the translated object label key
-			requirement, err := labels.NewRequirement(k, selection.DoesNotExist, nil)
-			if err != nil {
-				// shouldn't happen
-				return false, err
-			}
-			selector = selector.Add([]labels.Requirement{*requirement}...)
-		}
-		resourceBuildOptions := input.ResourceRemoteBuildOptions{
-			ListOptions: []client.ListOption{
-				&client.ListOptions{LabelSelector: selector},
-			},
-			Verifier: r.remoteResourceVerifier,
-		}
-		userSupplied, err = r.remoteBuilder.BuildSnapshot(ctx, "mesh-networking-istio-inputs", input.RemoteBuildOptions{
-			CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates:  resourceBuildOptions,
-			CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives: resourceBuildOptions,
-			XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs:    resourceBuildOptions,
-			NetworkingIstioIov1Alpha3DestinationRules:             resourceBuildOptions,
-			NetworkingIstioIov1Alpha3EnvoyFilters:                 resourceBuildOptions,
-			NetworkingIstioIov1Alpha3Gateways:                     resourceBuildOptions,
-			NetworkingIstioIov1Alpha3ServiceEntries:               resourceBuildOptions,
-			NetworkingIstioIov1Alpha3VirtualServices:              resourceBuildOptions,
-			SecurityIstioIov1Beta1AuthorizationPolicies:           resourceBuildOptions,
-		})
-		if err != nil {
-			// failed to read from cache; should never happen
-			return false, err
-		}
+	//if r.disallowIntersectingConfig {
+	//selector := labels.NewSelector()
+	//for k := range metautils.TranslatedObjectLabels() {
+	//	// select objects without the translated object label key
+	//	requirement, err := labels.NewRequirement(k, selection.DoesNotExist, nil)
+	//	if err != nil {
+	//		// shouldn't happen
+	//		return false, err
+	//	}
+	//	selector = selector.Add([]labels.Requirement{*requirement}...)
+	//}
+	resourceBuildOptions := input.ResourceRemoteBuildOptions{
+		//ListOptions: []client.ListOption{
+		//	&client.ListOptions{LabelSelector: selector},
+		//},
+		Verifier: r.remoteResourceVerifier,
 	}
+	userSupplied, err = r.remoteBuilder.BuildSnapshot(ctx, "mesh-networking-istio-inputs", input.RemoteBuildOptions{
+		CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates:  resourceBuildOptions,
+		CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives: resourceBuildOptions,
+		XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs:    resourceBuildOptions,
+		NetworkingIstioIov1Alpha3DestinationRules:             resourceBuildOptions,
+		NetworkingIstioIov1Alpha3EnvoyFilters:                 resourceBuildOptions,
+		NetworkingIstioIov1Alpha3Gateways:                     resourceBuildOptions,
+		NetworkingIstioIov1Alpha3ServiceEntries:               resourceBuildOptions,
+		NetworkingIstioIov1Alpha3VirtualServices:              resourceBuildOptions,
+		SecurityIstioIov1Beta1AuthorizationPolicies:           resourceBuildOptions,
+	})
+	if err != nil {
+		// failed to read from cache; should never happen
+		return false, err
+	}
+	//}
 
 	// apply policies to the discovery resources they target
 	r.applier.Apply(ctx, inputSnap, userSupplied)

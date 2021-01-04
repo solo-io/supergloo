@@ -346,13 +346,13 @@ func (m *MockBuilder) AddTrafficTargets(trafficTargets ...*v1alpha2.TrafficTarge
 	for _, a := range trafficTargets {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets", varargs...)
+	m.ctrl.Call(m, "AddTrafficTargets", varargs...)
 }
 
-// AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets indicates an expected call of AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets
+// AddTrafficTargets indicates an expected call of AddTrafficTargets
 func (mr *MockBuilderMockRecorder) AddTrafficTargets(trafficTargets ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets", reflect.TypeOf((*MockBuilder)(nil).AddTrafficTargets), trafficTargets...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTrafficTargets", reflect.TypeOf((*MockBuilder)(nil).AddTrafficTargets), trafficTargets...)
 }
 
 // GetTrafficTargets mocks base method
@@ -369,20 +369,20 @@ func (mr *MockBuilderMockRecorder) GetTrafficTargets() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrafficTargets", reflect.TypeOf((*MockBuilder)(nil).GetTrafficTargets))
 }
 
-// AddAddDiscoveryMeshGlooSoloIov1Alpha2WorkloadsWorkloads mocks base method
+// AddWorkloads mocks base method
 func (m *MockBuilder) AddWorkloads(workloads ...*v1alpha2.Workload) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range workloads {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddAddDiscoveryMeshGlooSoloIov1Alpha2WorkloadsWorkloads", varargs...)
+	m.ctrl.Call(m, "AddWorkloads", varargs...)
 }
 
-// AddAddDiscoveryMeshGlooSoloIov1Alpha2WorkloadsWorkloads indicates an expected call of AddAddDiscoveryMeshGlooSoloIov1Alpha2WorkloadsWorkloads
+// AddWorkloads indicates an expected call of AddWorkloads
 func (mr *MockBuilderMockRecorder) AddWorkloads(workloads ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAddDiscoveryMeshGlooSoloIov1Alpha2WorkloadsWorkloads", reflect.TypeOf((*MockBuilder)(nil).AddWorkloads), workloads...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddWorkloads", reflect.TypeOf((*MockBuilder)(nil).AddWorkloads), workloads...)
 }
 
 // GetWorkloads mocks base method
@@ -399,20 +399,20 @@ func (mr *MockBuilderMockRecorder) GetWorkloads() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkloads", reflect.TypeOf((*MockBuilder)(nil).GetWorkloads))
 }
 
-// AddDiscoveryMeshGlooSoloIov1Alpha2Meshes mocks base method
+// AddMeshes mocks base method
 func (m *MockBuilder) AddMeshes(meshes ...*v1alpha2.Mesh) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range meshes {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddDiscoveryMeshGlooSoloIov1Alpha2Meshes", varargs...)
+	m.ctrl.Call(m, "AddMeshes", varargs...)
 }
 
-// AddDiscoveryMeshGlooSoloIov1Alpha2Meshes indicates an expected call of AddDiscoveryMeshGlooSoloIov1Alpha2Meshes
+// AddMeshes indicates an expected call of AddMeshes
 func (mr *MockBuilderMockRecorder) AddMeshes(meshes ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDiscoveryMeshGlooSoloIov1Alpha2Meshes", reflect.TypeOf((*MockBuilder)(nil).AddMeshes), meshes...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMeshes", reflect.TypeOf((*MockBuilder)(nil).AddMeshes), meshes...)
 }
 
 // GetMeshes mocks base method
