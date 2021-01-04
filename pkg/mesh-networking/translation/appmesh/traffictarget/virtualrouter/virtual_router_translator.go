@@ -62,8 +62,6 @@ func (t *translator) Translate(
 		trafficTarget.Spec.GetKubeService().Ref,
 		trafficTarget.Annotations,
 	)
-	// TODO undo
-	meta.Name = meta.Name + "-test"
 
 	// If the router exists, we must set the mesh ref on the virtual router.
 	// If it does not exist, we must not set the mesh ref on the virtual router,

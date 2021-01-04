@@ -132,7 +132,7 @@ func getVirtualService(
 
 func myRef(ref ezkube.ClusterResourceId) ezkube.ClusterResourceId {
 	output := &v1.ClusterObjectRef{
-		Name:        ref.GetName() + "-test",
+		Name:        ref.GetName(),
 		Namespace:   ref.GetNamespace(),
 		ClusterName: ref.GetClusterName(),
 	}
