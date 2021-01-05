@@ -1305,6 +1305,7 @@ spec:
                           description: |-
                             Configure the suffix for hostnames of traffic targets federated within this virtual mesh.
                             Currently this is only supported for Istio with smart DNS proxying enabled.
+                            If any meshes do not have smart DNS proxying enabled, setting this field results in an error.
                           type: string
                         permissive:
                           description: |-

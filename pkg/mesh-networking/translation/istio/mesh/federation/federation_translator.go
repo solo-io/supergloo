@@ -207,6 +207,14 @@ func (t *translator) Translate(
 				continue
 			}
 
+			if federatedHostnameSuffix != "" && !clientIstio.SmartDnsProxyingEnabled {
+				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, eris.Errorf(
+					"mesh %v does not have smart DNS proxying enabled (hostname suffix can only be specified if all istio meshes have it enabled)",
+					sets.Key(clientMesh),
+				))
+				continue
+			}
+
 			se := &networkingv1alpha3.ServiceEntry{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        federatedHostname,
