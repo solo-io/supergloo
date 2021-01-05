@@ -1,0 +1,4 @@
+changelog:
+  - type: BREAKING_CHANGE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1179
+    description: Support customizable DNS suffixes for Istio meshes with smart DNS proxying enabled.
