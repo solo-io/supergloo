@@ -48,32 +48,32 @@ func (mr *MockClusterDomainRegistryMockRecorder) GetClusterDomain(clusterName in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClusterDomain", reflect.TypeOf((*MockClusterDomainRegistry)(nil).GetClusterDomain), clusterName)
 }
 
-// GetServiceLocalFQDN mocks base method
-func (m *MockClusterDomainRegistry) GetServiceLocalFQDN(serviceRef ezkube.ClusterResourceId) string {
+// GetLocalFQDN mocks base method
+func (m *MockClusterDomainRegistry) GetLocalFQDN(serviceRef ezkube.ClusterResourceId) string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetServiceLocalFQDN", serviceRef)
+	ret := m.ctrl.Call(m, "GetLocalFQDN", serviceRef)
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// GetServiceLocalFQDN indicates an expected call of GetServiceLocalFQDN
-func (mr *MockClusterDomainRegistryMockRecorder) GetServiceLocalFQDN(serviceRef interface{}) *gomock.Call {
+// GetLocalFQDN indicates an expected call of GetLocalFQDN
+func (mr *MockClusterDomainRegistryMockRecorder) GetLocalFQDN(serviceRef interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceLocalFQDN", reflect.TypeOf((*MockClusterDomainRegistry)(nil).GetServiceLocalFQDN), serviceRef)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLocalFQDN", reflect.TypeOf((*MockClusterDomainRegistry)(nil).GetLocalFQDN), serviceRef)
 }
 
-// GetServiceGlobalFQDN mocks base method
-func (m *MockClusterDomainRegistry) GetServiceGlobalFQDN(serviceRef ezkube.ClusterResourceId) string {
+// GetFederatedFQDN mocks base method
+func (m *MockClusterDomainRegistry) GetFederatedFQDN(serviceRef ezkube.ClusterResourceId) string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetServiceGlobalFQDN", serviceRef)
+	ret := m.ctrl.Call(m, "GetFederatedFQDN", serviceRef)
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// GetServiceGlobalFQDN indicates an expected call of GetServiceGlobalFQDN
-func (mr *MockClusterDomainRegistryMockRecorder) GetServiceGlobalFQDN(serviceRef interface{}) *gomock.Call {
+// GetFederatedFQDN indicates an expected call of GetFederatedFQDN
+func (mr *MockClusterDomainRegistryMockRecorder) GetFederatedFQDN(serviceRef interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceGlobalFQDN", reflect.TypeOf((*MockClusterDomainRegistry)(nil).GetServiceGlobalFQDN), serviceRef)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFederatedFQDN", reflect.TypeOf((*MockClusterDomainRegistry)(nil).GetFederatedFQDN), serviceRef)
 }
 
 // GetDestinationServiceFQDN mocks base method

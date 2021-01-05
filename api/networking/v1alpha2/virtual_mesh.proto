@@ -127,7 +127,7 @@ message VirtualMeshSpec {
         };
 
         // Configure the suffix for hostnames of traffic targets federated within this virtual mesh.
-        // Note that if any of the member meshes are running istio < 1.8
+        // Currently this is only supported for Istio with smart DNS proxying enabled.
         string hostname_suffix = 2;
     }
 

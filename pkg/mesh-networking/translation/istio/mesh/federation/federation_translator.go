@@ -47,8 +47,6 @@ const (
 
 	envoySniClusterFilterName        = "envoy.filters.network.sni_cluster"
 	envoyTcpClusterRewriteFilterName = "envoy.filters.network.tcp_cluster_rewrite"
-
-	globalHostnameMatch = "*." + hostutils.GlobalHostnameSuffix
 )
 
 // the VirtualService translator translates a Mesh into a VirtualService.
@@ -68,7 +66,6 @@ type Translator interface {
 
 type translator struct {
 	ctx                       context.Context
-	clusterDomains            hostutils.ClusterDomainRegistry
 	trafficTargets            discoveryv1alpha2sets.TrafficTargetSet
 	failoverServices          v1alpha2sets.FailoverServiceSet
 	virtualServiceTranslator  virtualservice.Translator
@@ -77,7 +74,6 @@ type translator struct {
 
 func NewTranslator(
 	ctx context.Context,
-	clusterDomains hostutils.ClusterDomainRegistry,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
 	virtualServiceTranslator virtualservice.Translator,
@@ -85,7 +81,6 @@ func NewTranslator(
 ) Translator {
 	return &translator{
 		ctx:                       ctx,
-		clusterDomains:            clusterDomains,
 		trafficTargets:            trafficTargets,
 		failoverServices:          failoverServices,
 		virtualServiceTranslator:  virtualServiceTranslator,
@@ -138,10 +133,13 @@ func (t *translator) Translate(
 
 	istioNamespace := istioMesh.Installation.Namespace
 
+	federatedHostnameSuffix := hostutils.GetFederatedHostnameSuffix(virtualMesh.Spec)
+
 	tcpRewritePatch, err := buildTcpRewritePatch(
 		istioMesh,
 		istioCluster,
 		kubeCluster.Spec.ClusterDomain,
+		federatedHostnameSuffix,
 	)
 	if err != nil {
 		// should never happen
@@ -163,7 +161,11 @@ func (t *translator) Translate(
 			contextutils.LoggerFrom(t.ctx).Errorf("unexpected error: failed to generate service entry ip: %v", err)
 			continue
 		}
-		federatedHostname := t.clusterDomains.GetServiceGlobalFQDN(meshKubeService.GetRef())
+
+		federatedHostname := hostutils.BuildFederatedFQDN(
+			meshKubeService.GetRef(),
+			virtualMesh.Spec,
+		)
 
 		endpointPorts := make(map[string]uint32)
 		var ports []*networkingv1alpha3spec.Port
@@ -238,6 +240,9 @@ func (t *translator) Translate(
 			// Append the virtual mesh as a parent to the output destination rule
 			metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 			outputs.AddDestinationRules(dr)
+
+			// Update AppliedFederation data on TrafficTarget's status
+			updateTrafficTargetFederationStatus(trafficTarget, federatedHostname, ezkube.MakeObjectRef(mesh), virtualMesh.Spec.Meshes)
 		}
 	}
 
@@ -258,7 +263,7 @@ func (t *translator) Translate(
 					Protocol: defaultGatewayProtocol,
 					Name:     defaultGatewayPortName,
 				},
-				Hosts: []string{globalHostnameMatch},
+				Hosts: []string{"*." + federatedHostnameSuffix},
 				Tls: &networkingv1alpha3spec.ServerTLSSettings{
 					Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
 				},
@@ -308,6 +313,28 @@ func (t *translator) Translate(
 	outputs.AddEnvoyFilters(ef)
 }
 
+func updateTrafficTargetFederationStatus(
+	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	federatedHostname string,
+	mesh *v1.ObjectRef,
+	groupedMeshes []*v1.ObjectRef,
+) {
+	var federatedToMeshes []*v1.ObjectRef
+
+	// don't include the mesh of the traffic target itself in the list of federated meshes
+	for _, ref := range groupedMeshes {
+		if ezkube.RefsMatch(ref, mesh) {
+			continue
+		}
+		federatedToMeshes = append(federatedToMeshes, mesh)
+	}
+
+	trafficTarget.Status.AppliedFederation = &discoveryv1alpha2.TrafficTargetStatus_AppliedFederation{
+		FederatedHostname: federatedHostname,
+		FederatedToMeshes: federatedToMeshes,
+	}
+}
+
 func servicesForMesh(
 	mesh *discoveryv1alpha2.Mesh,
 	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
@@ -321,6 +348,7 @@ func buildTcpRewritePatch(
 	istioMesh *discoveryv1alpha2.MeshSpec_Istio,
 	clusterName string,
 	clusterDomain string,
+	federatedHostnameSuffix string,
 ) (*types.Struct, error) {
 	version, err := semver.NewVersion(istioMesh.Installation.Version)
 	if err != nil {
@@ -332,18 +360,18 @@ func buildTcpRewritePatch(
 	}
 	// If Istio version less than 1.7.x, use untyped config
 	if constraint.Check(version) {
-		return buildTcpRewritePatchAsConfig(clusterName, clusterDomain)
+		return buildTcpRewritePatchAsConfig(clusterName, clusterDomain, federatedHostnameSuffix)
 	}
 	// If Istio version >= 1.7.x, used typed config
-	return buildTcpRewritePatchAsTypedConfig(clusterName, clusterDomain)
+	return buildTcpRewritePatchAsTypedConfig(clusterName, clusterDomain, federatedHostnameSuffix)
 }
 
-func buildTcpRewritePatchAsTypedConfig(clusterName, clusterDomain string) (*types.Struct, error) {
+func buildTcpRewritePatchAsTypedConfig(clusterName, clusterDomain, federatedHostnameSuffix string) (*types.Struct, error) {
 	if clusterDomain == "" {
 		clusterDomain = defaults.DefaultClusterDomain
 	}
 	tcpClusterRewrite, err := protoutils.MessageToAnyWithError(&v2alpha1.TcpClusterRewrite{
-		ClusterPattern:     fmt.Sprintf("\\.%s.%s$", clusterName, hostutils.GlobalHostnameSuffix),
+		ClusterPattern:     fmt.Sprintf("\\.%s.%s$", clusterName, federatedHostnameSuffix),
 		ClusterReplacement: "." + clusterDomain,
 	})
 	if err != nil {
@@ -357,12 +385,12 @@ func buildTcpRewritePatchAsTypedConfig(clusterName, clusterDomain string) (*type
 	})
 }
 
-func buildTcpRewritePatchAsConfig(clusterName, clusterDomain string) (*types.Struct, error) {
+func buildTcpRewritePatchAsConfig(clusterName, clusterDomain, federatedHostnameSuffix string) (*types.Struct, error) {
 	if clusterDomain == "" {
 		clusterDomain = defaults.DefaultClusterDomain
 	}
 	tcpRewrite, err := protoutils.GogoMessageToGolangStruct(&v2alpha1.TcpClusterRewrite{
-		ClusterPattern:     fmt.Sprintf("\\.%s.%s$", clusterName, hostutils.GlobalHostnameSuffix),
+		ClusterPattern:     fmt.Sprintf("\\.%s.%s$", clusterName, federatedHostnameSuffix),
 		ClusterReplacement: "." + clusterDomain,
 	})
 	if err != nil {

@@ -417,10 +417,10 @@ func (t *translator) buildEnvoyAggregateClusterConfig(
 			var hostname string
 			if kubeService.Ref.ClusterName == failoverServiceClusterName {
 				// Local k8s DNS
-				hostname = t.clusterDomains.GetServiceLocalFQDN(kubeService.Ref)
+				hostname = t.clusterDomains.GetLocalFQDN(kubeService.Ref)
 			} else {
 				// Multicluster global DNS
-				hostname = t.clusterDomains.GetServiceGlobalFQDN(kubeService.Ref)
+				hostname = t.clusterDomains.GetFederatedFQDN(kubeService.Ref)
 			}
 			failoverCluster := buildIstioEnvoyClusterName(port.GetPort(), subsetName, hostname)
 			orderedFailoverList = append(orderedFailoverList, failoverCluster)

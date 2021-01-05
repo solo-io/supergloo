@@ -349,8 +349,11 @@ func getMeshConfig(
 // Reference for Istio's "smart DNS proxying" feature, https://istio.io/latest/blog/2020/dns-proxy/
 // Reference for ISTIO_META_DNS_CAPTURE env var: https://preliminary.istio.io/latest/docs/reference/commands/pilot-agent/#envvars
 func isSmartDnsProxyingEnabled(meshConfig *istiov1alpha1.MeshConfig) bool {
-	enabled, ok := meshConfig.DefaultConfig.ProxyMetadata["ISTIO_META_DNS_CAPTURE"]
-	return ok && enabled == "true"
+	proxyMetadata := meshConfig.GetDefaultConfig().GetProxyMetadata()
+	if proxyMetadata == nil {
+		return false
+	}
+	return proxyMetadata["ISTIO_META_DNS_CAPTURE"] == "true"
 }
 
 type Agent struct {

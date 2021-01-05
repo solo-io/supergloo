@@ -253,7 +253,7 @@ func templateFuncs(links map[string]string) template.FuncMap {
 				if ok {
 					return link
 				} else if strings.Contains(fieldType.FullType, ".") {
-					log.Printf("link not found for %s", fieldType)
+					log.Printf("link not found for %v", fieldType)
 				}
 			}
 			return ""
