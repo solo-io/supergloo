@@ -74,7 +74,7 @@ func NetworkingExtensionsTest() {
 					Name:      "settings", // the default/expected name
 				},
 				Spec: v1alpha2.SettingsSpec{
-					NetworkingExtensionServers: []*v1alpha2.NetworkingExtensionsServer{{
+					NetworkingExtensionServers: []*v1alpha2.GrpcServer{{
 						// use the machine's docker host address
 						Address:                    fmt.Sprintf("%v:%v", extensions.DockerHostAddress, extensions.ExtensionsServerPort),
 						Insecure:                   true,
