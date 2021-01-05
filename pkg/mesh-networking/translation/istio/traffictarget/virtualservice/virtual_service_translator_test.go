@@ -173,8 +173,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockClusterDomainRegistry.
 			EXPECT().
 			GetDestinationFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
-			Return("local-hostname").
-			Times(2)
+			Return("local-hostname")
 
 		mockDecoratorFactory.
 			EXPECT().
@@ -549,8 +548,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockClusterDomainRegistry.
 			EXPECT().
 			GetDestinationFQDN(meshInstallation.Cluster, trafficTarget.Spec.GetKubeService().Ref).
-			Return("local-hostname").
-			Times(2)
+			Return("local-hostname")
 
 		mockDecoratorFactory.
 			EXPECT().
@@ -1014,8 +1012,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockClusterDomainRegistry.
 			EXPECT().
 			GetDestinationFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
-			Return("local-hostname").
-			Times(2)
+			Return("local-hostname")
 
 		mockDecoratorFactory.
 			EXPECT().

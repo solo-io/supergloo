@@ -92,7 +92,9 @@ func (t *translator) Translate(
 		sourceCluster = sourceMeshInstallation.Cluster
 	}
 
-	virtualService := t.initializeVirtualService(trafficTarget, sourceMeshInstallation)
+	destinationFQDN := t.clusterDomains.GetDestinationFQDN(sourceCluster, trafficTarget.Spec.GetKubeService().Ref)
+
+	virtualService := t.initializeVirtualService(trafficTarget, sourceMeshInstallation, destinationFQDN)
 	// register the owners of the virtualservice fields
 	virtualServiceFields := fieldutils.NewOwnershipRegistry()
 	vsDecorators := t.decoratorFactory.MakeDecorators(decorators.Parameters{
@@ -137,7 +139,7 @@ func (t *translator) Translate(
 
 		// set a default destination for the route (to the target traffictarget)
 		// if a decorator has not already set it
-		t.setDefaultDestination(baseRoute, trafficTarget, sourceCluster)
+		t.setDefaultDestination(baseRoute, destinationFQDN)
 
 		// construct a copy of a route for each service port
 		// required because Istio needs the destination port for every route
@@ -282,6 +284,7 @@ func registerFieldFunc(
 func (t *translator) initializeVirtualService(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	destinationFQDN string,
 ) *networkingv1alpha3.VirtualService {
 	var meta metav1.ObjectMeta
 	if sourceMeshInstallation != nil {
@@ -297,12 +300,10 @@ func (t *translator) initializeVirtualService(
 		)
 	}
 
-	hosts := []string{t.clusterDomains.GetDestinationFQDN(meta.ClusterName, trafficTarget.Spec.GetKubeService().Ref)}
-
 	return &networkingv1alpha3.VirtualService{
 		ObjectMeta: meta,
 		Spec: networkingv1alpha3spec.VirtualService{
-			Hosts: hosts,
+			Hosts: []string{destinationFQDN},
 		},
 	}
 }
@@ -319,8 +320,7 @@ func initializeBaseRoute(trafficPolicy *v1alpha2.TrafficPolicySpec, sourceCluste
 
 func (t *translator) setDefaultDestination(
 	baseRoute *networkingv1alpha3spec.HTTPRoute,
-	trafficTarget *discoveryv1alpha2.TrafficTarget,
-	sourceClusterName string,
+	destinationFQDN string,
 ) {
 	// if a route destination is already set, we don't need to modify the route
 	if baseRoute.Route != nil {
@@ -329,7 +329,7 @@ func (t *translator) setDefaultDestination(
 
 	baseRoute.Route = []*networkingv1alpha3spec.HTTPRouteDestination{{
 		Destination: &networkingv1alpha3spec.Destination{
-			Host: t.clusterDomains.GetDestinationFQDN(sourceClusterName, trafficTarget.Spec.GetKubeService().GetRef()),
+			Host: destinationFQDN,
 		},
 	}}
 }
