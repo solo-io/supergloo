@@ -83,6 +83,54 @@ func (m *SettingsSpec) Equal(that interface{}) bool {
 		}
 	}
 
+	if h, ok := interface{}(m.GetRelay()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRelay()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRelay(), target.GetRelay()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *RelaySettings) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*RelaySettings)
+	if !ok {
+		that2, ok := that.(RelaySettings)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if m.GetEnabled() != target.GetEnabled() {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetServer()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetServer()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetServer(), target.GetServer()) {
+			return false
+		}
+	}
+
 	return true
 }
 
@@ -121,14 +169,14 @@ func (m *DiscoverySettings) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *NetworkingExtensionsServer) Equal(that interface{}) bool {
+func (m *GrpcServer) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*NetworkingExtensionsServer)
+	target, ok := that.(*GrpcServer)
 	if !ok {
-		that2, ok := that.(NetworkingExtensionsServer)
+		that2, ok := that.(GrpcServer)
 		if ok {
 			target = &that2
 		} else {
