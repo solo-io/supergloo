@@ -80,17 +80,15 @@ func (c *clusterDomainRegistry) GetLocalFQDN(trafficTargetRef ezkube.ClusterReso
 }
 
 func (c *clusterDomainRegistry) GetFederatedFQDN(trafficTargetRef ezkube.ClusterResourceId) string {
-	var hostnameSuffix string
 	trafficTarget, err := c.trafficTargets.Find(&skv1.ObjectRef{
 		Name:      utils.DiscoveredResourceName(trafficTargetRef),
 		Namespace: defaults.GetPodNamespace(),
 	})
 	if err != nil || trafficTarget.Status.GetAppliedFederation().GetFederatedHostname() == "" {
-		hostnameSuffix = defaultHostnameSuffix
+		return fmt.Sprintf("%s.%s.svc.%s.%v", trafficTargetRef.GetName(), trafficTargetRef.GetNamespace(), trafficTargetRef.GetClusterName(), defaultHostnameSuffix)
 	} else {
-		hostnameSuffix = trafficTarget.Status.GetAppliedFederation().GetFederatedHostname()
+		return trafficTarget.Status.GetAppliedFederation().GetFederatedHostname()
 	}
-	return fmt.Sprintf("%s.%s.svc.%s.%v", trafficTargetRef.GetName(), trafficTargetRef.GetNamespace(), trafficTargetRef.GetClusterName(), hostnameSuffix)
 }
 
 func (c *clusterDomainRegistry) GetDestinationFQDN(originatingCluster string, destination ezkube.ClusterResourceId) string {

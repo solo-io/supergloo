@@ -3,10 +3,13 @@ package tests
 import (
 	"context"
 	"fmt"
+	"os"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/test/e2e"
 	"github.com/solo-io/gloo-mesh/test/utils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -24,7 +27,18 @@ func FailoverServiceTest() {
 		}
 	)
 
+	BeforeEach(func() {
+		// TODO(EItanya): re-enable once segfault is fixed
+		if strings.Contains(os.Getenv("ISTIOCTL_BINARY"), "1.8") {
+			Skip("Skipping failover test for istio 1.8 until upstream envoy fixes segfault")
+		}
+	})
+
 	AfterEach(func() {
+		if strings.Contains(os.Getenv("ISTIOCTL_BINARY"), "1.8") {
+			return
+		}
+
 		manifest.Cleanup(BookinfoNamespace)
 		// Ensure restoring bookinfo containers if test fails.
 		env := e2e.GetEnv()
@@ -39,7 +53,7 @@ func FailoverServiceTest() {
 		Expect(err).ToNot(HaveOccurred())
 		env := e2e.GetEnv()
 
-		failoverServiceHostname := "reviews-failover.bookinfo.global"
+		failoverServiceHostname := fmt.Sprintf("reviews-failover.bookinfo.%s", hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec))
 		curlFailoverService := func() string {
 			return curlFromProductpage(fmt.Sprintf("http://%s:9080/reviews/1", failoverServiceHostname))
 		}
