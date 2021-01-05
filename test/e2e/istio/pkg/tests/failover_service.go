@@ -3,6 +3,8 @@ package tests
 import (
 	"context"
 	"fmt"
+	"os"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -24,7 +26,18 @@ func FailoverServiceTest() {
 		}
 	)
 
+	BeforeEach(func() {
+		// TODO(EItanya): re-enable once segfault is fixed
+		if strings.Contains(os.Getenv("ISTIOCTL_BINARY"), "1.8") {
+			Skip("Skipping failover test for istio 1.8 until upstream envoy fixes segfault")
+		}
+	})
+
 	AfterEach(func() {
+		if strings.Contains(os.Getenv("ISTIOCTL_BINARY"), "1.8") {
+			return
+		}
+
 		manifest.Cleanup(BookinfoNamespace)
 		// Ensure restoring bookinfo containers if test fails.
 		env := e2e.GetEnv()
