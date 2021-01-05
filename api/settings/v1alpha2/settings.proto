@@ -19,8 +19,13 @@ message SettingsSpec {
     // Note: Extension Servers have full write access to the output objects written by Gloo Mesh.
     repeated NetworkingExtensionsServer networking_extension_servers = 2;
 
+    // Settings specific to the discovery controller.
+    DiscoverySettings discovery = 3;
+}
+
+message DiscoverySettings {
     // Istio-specific discovery settings
-    Istio istio = 3;
+    Istio istio = 1;
 
     message Istio {
         // Ingress gateway detectors for each cluster. The key to the map is either a k8s cluster name or the wildcard

@@ -4,14 +4,15 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
 
 	"github.com/gobuffalo/packr"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/demo/internal/flags"
 	"github.com/spf13/cobra"
 )
 
 func OsmCommand(ctx context.Context, mgmtCluster string) *cobra.Command {
+	opts := &flags.Options{}
 	cmd := &cobra.Command{
 		Use:   "init",
 		Short: "Bootstrap an OSM demo with Gloo Mesh",
@@ -28,14 +29,20 @@ It will also install Gloo Mesh, which includes the discovery, networking, and ce
 deployments.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return initOSMCmd(ctx, mgmtCluster)
+			return initOSMCmd(ctx, mgmtCluster, opts)
 		},
 	}
+	opts.AddToFlags(cmd.Flags())
+
 	cmd.SilenceUsage = true
 	return cmd
 }
 
-func initOSMCmd(ctx context.Context, mgmtCluster string) error {
+func initOSMCmd(ctx context.Context, mgmtCluster string, opts *flags.Options) error {
+	if err := opts.Validate(); err != nil {
+		return err
+	}
+
 	box := packr.NewBox("./scripts")
 
 	// management cluster
@@ -51,22 +58,26 @@ func initOSMCmd(ctx context.Context, mgmtCluster string) error {
 	if err := installGlooMesh(ctx, mgmtCluster, box); err != nil {
 		return err
 	}
+
+	// install GlooMesh Enterprise to management cluster, if enabled
+	if opts.Enterprise {
+		if err := installGlooMeshEnterprise(ctx, mgmtCluster, opts.EnterpriseVersion, opts.LicenseKey, box); err != nil {
+			return err
+		}
+	}
+
+	// register management cluster
+	if err := registerCluster(ctx, mgmtCluster, mgmtCluster, opts.Enterprise, box); err != nil {
+		return err
+	}
+
 	// set context to management cluster
 	return switchContext(mgmtCluster, box)
 }
 
 func installOSM(cluster string, box packr.Box) error {
 	fmt.Printf("Installing OSM to cluster %s\n", cluster)
-
-	script, err := box.FindString("install_osm.sh")
-	if err != nil {
-		return eris.Wrap(err, "Error loading script")
-	}
-	cmd := exec.Command("bash", "-c", script, cluster)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
+	if err := runScript(box, os.Stdout, "install_osm.sh", cluster); err != nil {
 		return eris.Wrapf(err, "Error installing Istio on cluster %s", cluster)
 	}
 

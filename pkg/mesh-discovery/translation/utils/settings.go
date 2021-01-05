@@ -24,11 +24,11 @@ func GetSingletonSettings(ctx context.Context, inLocal input.LocalSnapshot) (*se
 }
 
 // Get the workload labels and TLS port name used to detect ingress gateways in the given cluster.
-func GetIngressGatewayDetector(settings *settingsv1alpha2.Settings, clusterName string) (*settingsv1alpha2.SettingsSpec_Istio_IngressGatewayDetector, error) {
+func GetIngressGatewayDetector(settings *settingsv1alpha2.DiscoverySettings, clusterName string) (*settingsv1alpha2.DiscoverySettings_Istio_IngressGatewayDetector, error) {
 	var labels map[string]string
 	var portName string
 
-	gatewayDetectors := settings.Spec.GetIstio().GetIngressGatewayDetectors()
+	gatewayDetectors := settings.GetIstio().GetIngressGatewayDetectors()
 	if gatewayDetectors != nil {
 		// First, check if cluster-specific values are set
 		if gatewayDetectors[clusterName] != nil {
@@ -55,7 +55,7 @@ func GetIngressGatewayDetector(settings *settingsv1alpha2.Settings, clusterName 
 		portName = defaults.DefaultGatewayPortName
 	}
 
-	return &settingsv1alpha2.SettingsSpec_Istio_IngressGatewayDetector{
+	return &settingsv1alpha2.DiscoverySettings_Istio_IngressGatewayDetector{
 		GatewayWorkloadLabels: labels,
 		GatewayTlsPortName:    portName,
 	}, nil

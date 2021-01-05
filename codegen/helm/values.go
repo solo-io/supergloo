@@ -49,7 +49,9 @@ func defaultValues() ChartValues {
 				},
 			},
 			// needed to ensure that generated yaml uses "{}" for empty message instead of "null", which causes a schema validation error
-			Istio: &settingsv1alpha2.SettingsSpec_Istio{},
+			Discovery: &settingsv1alpha2.DiscoverySettings{
+				Istio: &settingsv1alpha2.DiscoverySettings_Istio{},
+			},
 		},
 		DisallowIntersectingConfig: false,
 		WatchOutputTypes:           true,

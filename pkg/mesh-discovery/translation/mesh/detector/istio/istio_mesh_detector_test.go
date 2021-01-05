@@ -67,7 +67,7 @@ var _ = Describe("IstioMeshDetector", func() {
 		})
 	}
 
-	settings := &settingsv1alpha2.Settings{}
+	settings := &settingsv1alpha2.DiscoverySettings{}
 
 	It("does not detect Istio when it is not there", func() {
 
@@ -341,17 +341,15 @@ var _ = Describe("IstioMeshDetector", func() {
 		inRemote.AddServices(services.List())
 		inRemote.AddPods(pods.List())
 		inRemote.AddNodes(nodes.List())
-		settings := &settingsv1alpha2.Settings{
-			Spec: settingsv1alpha2.SettingsSpec{
-				Istio: &settingsv1alpha2.SettingsSpec_Istio{
-					IngressGatewayDetectors: map[string]*settingsv1alpha2.SettingsSpec_Istio_IngressGatewayDetector{
-						"*": {
-							GatewayWorkloadLabels: map[string]string{"mykey": "myvalue"},
-							GatewayTlsPortName:    "myport",
-						},
-						clusterName: {
-							GatewayTlsPortName: "specialport",
-						},
+		settings := &settingsv1alpha2.DiscoverySettings{
+			Istio: &settingsv1alpha2.DiscoverySettings_Istio{
+				IngressGatewayDetectors: map[string]*settingsv1alpha2.DiscoverySettings_Istio_IngressGatewayDetector{
+					"*": {
+						GatewayWorkloadLabels: map[string]string{"mykey": "myvalue"},
+						GatewayTlsPortName:    "myport",
+					},
+					clusterName: {
+						GatewayTlsPortName: "specialport",
 					},
 				},
 			},

@@ -73,6 +73,40 @@ func (m *SettingsSpec) Equal(that interface{}) bool {
 
 	}
 
+	if h, ok := interface{}(m.GetDiscovery()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetDiscovery()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetDiscovery(), target.GetDiscovery()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *DiscoverySettings) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DiscoverySettings)
+	if !ok {
+		that2, ok := that.(DiscoverySettings)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
 	if h, ok := interface{}(m.GetIstio()).(equality.Equalizer); ok {
 		if !h.Equal(target.GetIstio()) {
 			return false
@@ -166,14 +200,14 @@ func (m *SettingsStatus) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *SettingsSpec_Istio) Equal(that interface{}) bool {
+func (m *DiscoverySettings_Istio) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*SettingsSpec_Istio)
+	target, ok := that.(*DiscoverySettings_Istio)
 	if !ok {
-		that2, ok := that.(SettingsSpec_Istio)
+		that2, ok := that.(DiscoverySettings_Istio)
 		if ok {
 			target = &that2
 		} else {
@@ -207,14 +241,14 @@ func (m *SettingsSpec_Istio) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *SettingsSpec_Istio_IngressGatewayDetector) Equal(that interface{}) bool {
+func (m *DiscoverySettings_Istio_IngressGatewayDetector) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*SettingsSpec_Istio_IngressGatewayDetector)
+	target, ok := that.(*DiscoverySettings_Istio_IngressGatewayDetector)
 	if !ok {
-		that2, ok := that.(SettingsSpec_Istio_IngressGatewayDetector)
+		that2, ok := that.(DiscoverySettings_Istio_IngressGatewayDetector)
 		if ok {
 			target = &that2
 		} else {
