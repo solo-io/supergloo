@@ -904,6 +904,11 @@ spec:
               - required:
                 - permissive
               properties:
+                hostnameSuffix:
+                  description: |-
+                    Configure the suffix for hostnames of traffic targets federated within this virtual mesh.
+                    Note that if any of the member meshes are running istio < 1.8
+                  type: string
                 permissive:
                   description: |-
                     Select permissive mode to expose all traffic targets in a

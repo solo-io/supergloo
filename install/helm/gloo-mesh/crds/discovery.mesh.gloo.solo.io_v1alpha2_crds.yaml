@@ -1111,6 +1111,9 @@ spec:
                         Mesh's primary control plane image (e.g. the istio-pilot image tag).
                       type: string
                   type: object
+                smartDnsProxyingEnabled:
+                  description: True if smart DNS proxying is enabled, which allows for arbitrary DNS domains.
+                  type: boolean
               type: object
             linkerd:
               properties:
@@ -1279,6 +1282,11 @@ spec:
                       - required:
                         - permissive
                       properties:
+                        hostnameSuffix:
+                          description: |-
+                            Configure the suffix for hostnames of traffic targets federated within this virtual mesh.
+                            Note that if any of the member meshes are running istio < 1.8
+                          type: string
                         permissive:
                           description: |-
                             Select permissive mode to expose all traffic targets in a
