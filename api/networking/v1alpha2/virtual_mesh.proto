@@ -125,6 +125,10 @@ message VirtualMeshSpec {
             // in that Virtual Mesh.
             .google.protobuf.Empty permissive = 1;
         };
+
+        // Configure the suffix for hostnames of traffic targets federated within this virtual mesh.
+        // Note that if any of the member meshes are running istio < 1.8
+        string hostname_suffix = 2;
     }
 
     /*
