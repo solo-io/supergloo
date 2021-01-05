@@ -44,8 +44,10 @@ var (
 		return curlFromProductpage(fmt.Sprintf("http://%v:%v/", extensions.HelloServerHostname, extensions.HelloServerPort))
 	}
 
-	curlRemoteReviews = func() string {
-		return curlFromProductpage(fmt.Sprintf("http://reviews.%v.svc.%v.global:9080/reviews/1", BookinfoNamespace, remoteClusterName))
+	curlRemoteReviews = func(federatedSuffix string) func() string {
+		return func() string {
+			return curlFromProductpage(fmt.Sprintf("http://reviews.%v.svc.%v.%s:9080/reviews/1", BookinfoNamespace, remoteClusterName, federatedSuffix))
+		}
 	}
 
 	curlRatings = func() string {

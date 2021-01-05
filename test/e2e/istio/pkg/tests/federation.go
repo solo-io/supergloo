@@ -7,6 +7,7 @@ import (
 
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/gloo-mesh/test/data"
 	"github.com/solo-io/gloo-mesh/test/e2e"
@@ -107,13 +108,12 @@ func FederationTest() {
 			// ensure status is updated
 			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
 
-			Eventually(curlRemoteReviews, "30s", "1s").Should(ContainSubstring("418"))
+			Eventually(curlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec)), "30s", "1s").Should(ContainSubstring("418"))
 
 			// Delete TrafficPolicy so it doesn't interfere with subsequent tests
 			manifest.KubeDelete(BookinfoNamespace)
 		})
 
-		// TODO(harveyxia) move this to a unit test if possible
 		By("traffic mirrors and shifts should use correct hostname for federated ServiceEntry", func() {
 			manifest, err = utils.NewManifest("federation-trafficpolicies.yaml")
 			Expect(err).NotTo(HaveOccurred())

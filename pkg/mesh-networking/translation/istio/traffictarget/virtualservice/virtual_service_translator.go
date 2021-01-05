@@ -297,7 +297,7 @@ func (t *translator) initializeVirtualService(
 		)
 	}
 
-	hosts := []string{t.clusterDomains.GetDestinationServiceFQDN(meta.ClusterName, trafficTarget.Spec.GetKubeService().Ref)}
+	hosts := []string{t.clusterDomains.GetDestinationFQDN(meta.ClusterName, trafficTarget.Spec.GetKubeService().Ref)}
 
 	return &networkingv1alpha3.VirtualService{
 		ObjectMeta: meta,
@@ -329,7 +329,7 @@ func (t *translator) setDefaultDestination(
 
 	baseRoute.Route = []*networkingv1alpha3spec.HTTPRouteDestination{{
 		Destination: &networkingv1alpha3spec.Destination{
-			Host: t.clusterDomains.GetDestinationServiceFQDN(sourceClusterName, trafficTarget.Spec.GetKubeService().GetRef()),
+			Host: t.clusterDomains.GetDestinationFQDN(sourceClusterName, trafficTarget.Spec.GetKubeService().GetRef()),
 		},
 	}}
 }

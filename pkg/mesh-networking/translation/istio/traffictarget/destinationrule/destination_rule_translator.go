@@ -211,7 +211,7 @@ func (t *translator) initializeDestinationRule(
 			trafficTarget.Annotations,
 		)
 	}
-	hostname := t.clusterDomains.GetDestinationServiceFQDN(meta.ClusterName, trafficTarget.Spec.GetKubeService().Ref)
+	hostname := t.clusterDomains.GetDestinationFQDN(meta.ClusterName, trafficTarget.Spec.GetKubeService().Ref)
 
 	destinationRule := &networkingv1alpha3.DestinationRule{
 		ObjectMeta: meta,

@@ -1,12 +1,20 @@
 package data
 
 import (
+	"context"
+
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2core "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func SelfSignedVirtualMesh(name, namespace string, meshes []*v1.ObjectRef) *v1alpha2.VirtualMesh {
+func SelfSignedVirtualMesh(dynamicClient client.Client, name, namespace string, meshes []*skv2core.ObjectRef) (*v1alpha2.VirtualMesh, error) {
+	hostnameSuffix, err := getTestHostnameSuffix(dynamicClient, meshes)
+	if err != nil {
+		return nil, err
+	}
 	return &v1alpha2.VirtualMesh{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -28,7 +36,23 @@ func SelfSignedVirtualMesh(name, namespace string, meshes []*v1.ObjectRef) *v1al
 				}},
 				AutoRestartPods: true,
 			},
-			Federation: &v1alpha2.VirtualMeshSpec_Federation{},
+			Federation: &v1alpha2.VirtualMeshSpec_Federation{
+				HostnameSuffix: hostnameSuffix,
+			},
 		},
+	}, nil
+}
+
+// use a custom hostname suffix when testing against istio >= 1.8
+func getTestHostnameSuffix(dynamicClient client.Client, meshes []*skv2core.ObjectRef) (string, error) {
+	meshClient := discoveryv1alpha2.NewMeshClient(dynamicClient)
+	// assume that all meshes are using the same istio version
+	mesh, err := meshClient.GetMesh(context.TODO(), client.ObjectKey{Name: meshes[0].Name, Namespace: meshes[0].Namespace})
+	if err != nil {
+		return "", err
 	}
+	if mesh.Spec.GetIstio().GetSmartDnsProxyingEnabled() {
+		return "soloio", nil
+	}
+	return "", nil
 }

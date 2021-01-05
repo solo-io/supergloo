@@ -6,6 +6,7 @@ import (
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -41,7 +42,7 @@ type ClusterDomainRegistry interface {
 	// destination, e.g. for a traffic split or mirror policy.
 	// this will either be the Local or Remote FQDN, depending on the
 	// originating cluster.
-	GetDestinationServiceFQDN(originatingCluster string, serviceRef ezkube.ClusterResourceId) string
+	GetDestinationFQDN(originatingCluster string, serviceRef ezkube.ClusterResourceId) string
 }
 
 type clusterDomainRegistry struct {
@@ -60,7 +61,7 @@ func NewClusterDomainRegistry(
 }
 
 func (c *clusterDomainRegistry) GetClusterDomain(clusterName string) string {
-	cluster, err := c.clusters.Find(&skv1.ClusterObjectRef{
+	cluster, err := c.clusters.Find(&skv1.ObjectRef{
 		Name:      clusterName,
 		Namespace: defaults.GetPodNamespace(),
 	})
@@ -80,7 +81,10 @@ func (c *clusterDomainRegistry) GetLocalFQDN(trafficTargetRef ezkube.ClusterReso
 
 func (c *clusterDomainRegistry) GetFederatedFQDN(trafficTargetRef ezkube.ClusterResourceId) string {
 	var hostnameSuffix string
-	trafficTarget, err := c.trafficTargets.Find(trafficTargetRef)
+	trafficTarget, err := c.trafficTargets.Find(&skv1.ObjectRef{
+		Name:      utils.DiscoveredResourceName(trafficTargetRef),
+		Namespace: defaults.GetPodNamespace(),
+	})
 	if err != nil || trafficTarget.Status.GetAppliedFederation().GetFederatedHostname() == "" {
 		hostnameSuffix = defaultHostnameSuffix
 	} else {
@@ -89,7 +93,7 @@ func (c *clusterDomainRegistry) GetFederatedFQDN(trafficTargetRef ezkube.Cluster
 	return fmt.Sprintf("%s.%s.svc.%s.%v", trafficTargetRef.GetName(), trafficTargetRef.GetNamespace(), trafficTargetRef.GetClusterName(), hostnameSuffix)
 }
 
-func (c *clusterDomainRegistry) GetDestinationServiceFQDN(originatingCluster string, destination ezkube.ClusterResourceId) string {
+func (c *clusterDomainRegistry) GetDestinationFQDN(originatingCluster string, destination ezkube.ClusterResourceId) string {
 	if destination.GetClusterName() == originatingCluster {
 		// hostname will use the cluster local domain if the destination is in the same cluster as the target TrafficTarget
 		return c.GetLocalFQDN(destination)
