@@ -271,7 +271,7 @@ The following section of the doc describes how to modify `coredns` to enable Ist
 with Istio's new Smart DNS enabled. More information on this new DNS can be found in the following [blog post](https://istio.io/latest/blog/2020/dns-proxy/).
 If you have installed Istio using the operator specs outlined above, this new DNS will be enabled by default.
 
-When running Istio < 1.8.x the following changes add the `.global` stub domain for multicluster communication.
+When running Istio < 1.8.x, or when not using Istio DNS, the following changes add the `.global` stub domain for multicluster communication.
 The following two blocks will enable Istio DNS for both clusters.
 {{% /notice %}}
 
