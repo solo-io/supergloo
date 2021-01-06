@@ -191,35 +191,38 @@ func (t *translator) Translate(
 			Labels:  clusterLabels,
 		}}
 
-		// list all client meshes
+		// list all meshes in the virtual mesh
 		for _, ref := range virtualMesh.Spec.Meshes {
-			if ezkube.RefsMatch(ref, mesh) {
-				continue
-			}
-			clientMesh, err := in.Meshes().Find(ref)
+			groupedMesh, err := in.Meshes().Find(ref)
+			istioMesh := groupedMesh.Spec.GetIstio()
 			if err != nil {
 				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, err)
 				continue
 			}
-			clientIstio := clientMesh.Spec.GetIstio()
-			if clientIstio == nil {
-				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, eris.Errorf("non-istio mesh %v cannot be used in virtual mesh", sets.Key(clientMesh)))
+
+			if federatedHostnameSuffix != "" && !istioMesh.SmartDnsProxyingEnabled {
+				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, eris.Errorf(
+					"mesh %v does not have smart DNS proxying enabled (hostname suffix can only be specified if all grouped istio meshes have it enabled)",
+					sets.Key(groupedMesh),
+				))
 				continue
 			}
 
-			if federatedHostnameSuffix != "" && !clientIstio.SmartDnsProxyingEnabled {
-				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, eris.Errorf(
-					"mesh %v does not have smart DNS proxying enabled (hostname suffix can only be specified if all istio meshes have it enabled)",
-					sets.Key(clientMesh),
-				))
+			// only translate output resources for client meshes
+			if ezkube.RefsMatch(ref, mesh) {
+				continue
+			}
+
+			if istioMesh == nil {
+				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, eris.Errorf("non-istio mesh %v cannot be used in virtual mesh", sets.Key(groupedMesh)))
 				continue
 			}
 
 			se := &networkingv1alpha3.ServiceEntry{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        federatedHostname,
-					Namespace:   clientIstio.Installation.Namespace,
-					ClusterName: clientIstio.Installation.Cluster,
+					Namespace:   istioMesh.Installation.Namespace,
+					ClusterName: istioMesh.Installation.Cluster,
 					Labels:      metautils.TranslatedObjectLabels(),
 				},
 				Spec: networkingv1alpha3spec.ServiceEntry{
@@ -232,25 +235,25 @@ func (t *translator) Translate(
 				},
 			}
 
-			// Append the virtual mesh as a parent to the output service entry
+			// Append the virtual groupedMesh as a parent to the output service entry
 			metautils.AppendParent(t.ctx, se, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 
 			outputs.AddServiceEntries(se)
 
 			// Translate VirtualServices for federated TrafficTargets, can be nil
-			vs := t.virtualServiceTranslator.Translate(t.ctx, in, trafficTarget, clientIstio.Installation, reporter)
-			// Append the virtual mesh as a parent to the output virtual service
+			vs := t.virtualServiceTranslator.Translate(t.ctx, in, trafficTarget, istioMesh.Installation, reporter)
+			// Append the virtual groupedMesh as a parent to the output virtual service
 			metautils.AppendParent(t.ctx, vs, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 			outputs.AddVirtualServices(vs)
 
 			// Translate DestinationRules for federated TrafficTargets, can be nil
-			dr := t.destinationRuleTranslator.Translate(t.ctx, in, trafficTarget, clientIstio.Installation, reporter)
-			// Append the virtual mesh as a parent to the output destination rule
+			dr := t.destinationRuleTranslator.Translate(t.ctx, in, trafficTarget, istioMesh.Installation, reporter)
+			// Append the virtual groupedMesh as a parent to the output destination rule
 			metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 			outputs.AddDestinationRules(dr)
 
 			// Update AppliedFederation data on TrafficTarget's status
-			updateTrafficTargetFederationStatus(trafficTarget, federatedHostname, ezkube.MakeObjectRef(mesh), virtualMesh.Spec.Meshes)
+			updateTrafficTargetFederationStatus(trafficTarget, federatedHostname, ezkube.MakeObjectRef(groupedMesh), virtualMesh.Spec.Meshes)
 		}
 	}
 

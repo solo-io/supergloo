@@ -46,10 +46,11 @@ var _ = Describe("FederationTranslator", func() {
 			},
 			Spec: discoveryv1alpha2.MeshSpec{
 				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+					SmartDnsProxyingEnabled: true,
 					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: namespace,
 						Cluster:   clusterName,
-						Version:   "1.7.0-rc1",
+						Version:   "1.8.1",
 					},
 					IngressGateways: []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo{{
 						ExternalAddress:  "mesh-gateway.dns.name",
@@ -68,6 +69,7 @@ var _ = Describe("FederationTranslator", func() {
 			},
 			Spec: discoveryv1alpha2.MeshSpec{
 				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+					SmartDnsProxyingEnabled: true,
 					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: "remote-namespace",
 						Cluster:   "remote-cluster",
