@@ -18,7 +18,7 @@ const (
 	// this suffix is used as the default for federated fqdns; this is due to the
 	// fact that istio Coredns comes with the *.global suffix already configured:
 	// https://istio.io/latest/docs/setup/install/multicluster/gateways/
-	defaultHostnameSuffix = "global"
+	DefaultHostnameSuffix = "global"
 )
 
 // ClusterDomainRegistry retrieves known cluster domain suffixes for
@@ -85,7 +85,7 @@ func (c *clusterDomainRegistry) GetFederatedFQDN(trafficTargetRef ezkube.Cluster
 		Namespace: defaults.GetPodNamespace(),
 	})
 	if err != nil || trafficTarget.Status.GetAppliedFederation().GetFederatedHostname() == "" {
-		return fmt.Sprintf("%s.%s.svc.%s.%v", trafficTargetRef.GetName(), trafficTargetRef.GetNamespace(), trafficTargetRef.GetClusterName(), defaultHostnameSuffix)
+		return fmt.Sprintf("%s.%s.svc.%s.%v", trafficTargetRef.GetName(), trafficTargetRef.GetNamespace(), trafficTargetRef.GetClusterName(), DefaultHostnameSuffix)
 	} else {
 		return trafficTarget.Status.GetAppliedFederation().GetFederatedHostname()
 	}
@@ -115,7 +115,7 @@ func BuildFederatedFQDN(serviceRef ezkube.ClusterResourceId, virtualMeshSpec *v1
 func GetFederatedHostnameSuffix(virtualMeshSpec *v1alpha2.VirtualMeshSpec) string {
 	federatedHostnameSuffix := virtualMeshSpec.GetFederation().GetHostnameSuffix()
 	if federatedHostnameSuffix == "" {
-		federatedHostnameSuffix = defaultHostnameSuffix
+		federatedHostnameSuffix = DefaultHostnameSuffix
 	}
 	return federatedHostnameSuffix
 }
