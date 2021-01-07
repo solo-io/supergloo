@@ -94,6 +94,20 @@ func (mr *MockRemoteSnapshotMockRecorder) Pods() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pods", reflect.TypeOf((*MockRemoteSnapshot)(nil).Pods))
 }
 
+// Endpoints mocks base method
+func (m *MockRemoteSnapshot) Endpoints() v1sets0.EndpointsSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Endpoints")
+	ret0, _ := ret[0].(v1sets0.EndpointsSet)
+	return ret0
+}
+
+// Endpoints indicates an expected call of Endpoints
+func (mr *MockRemoteSnapshotMockRecorder) Endpoints() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Endpoints", reflect.TypeOf((*MockRemoteSnapshot)(nil).Endpoints))
+}
+
 // Nodes mocks base method
 func (m *MockRemoteSnapshot) Nodes() v1sets0.NodeSet {
 	m.ctrl.T.Helper()

@@ -8,12 +8,17 @@ package input
 import (
 	settings_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	settings_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
+
+	networking_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networking_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 )
 
 type InputLocalSnapshotManualBuilder struct {
 	name string
 
 	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+
+	virtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 }
 
 func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBuilder {
@@ -21,6 +26,8 @@ func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBu
 		name: name,
 
 		settings: settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet(),
+
+		virtualMeshes: networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet(),
 	}
 }
 
@@ -29,9 +36,15 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 		i.name,
 
 		i.settings,
+
+		i.virtualMeshes,
 	)
 }
 func (i *InputLocalSnapshotManualBuilder) AddSettings(settings []*settings_mesh_gloo_solo_io_v1alpha2.Settings) *InputLocalSnapshotManualBuilder {
 	i.settings.Insert(settings...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddVirtualMeshes(virtualMeshes []*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh) *InputLocalSnapshotManualBuilder {
+	i.virtualMeshes.Insert(virtualMeshes...)
 	return i
 }

@@ -24,6 +24,7 @@ type InputRemoteSnapshotManualBuilder struct {
 	configMaps v1_sets.ConfigMapSet
 	services   v1_sets.ServiceSet
 	pods       v1_sets.PodSet
+	endpoints  v1_sets.EndpointsSet
 	nodes      v1_sets.NodeSet
 
 	deployments  apps_v1_sets.DeploymentSet
@@ -41,6 +42,7 @@ func NewInputRemoteSnapshotManualBuilder(name string) *InputRemoteSnapshotManual
 		configMaps: v1_sets.NewConfigMapSet(),
 		services:   v1_sets.NewServiceSet(),
 		pods:       v1_sets.NewPodSet(),
+		endpoints:  v1_sets.NewEndpointsSet(),
 		nodes:      v1_sets.NewNodeSet(),
 
 		deployments:  apps_v1_sets.NewDeploymentSet(),
@@ -59,6 +61,7 @@ func (i *InputRemoteSnapshotManualBuilder) Build() RemoteSnapshot {
 		i.configMaps,
 		i.services,
 		i.pods,
+		i.endpoints,
 		i.nodes,
 
 		i.deployments,
@@ -81,6 +84,10 @@ func (i *InputRemoteSnapshotManualBuilder) AddServices(services []*v1.Service) *
 }
 func (i *InputRemoteSnapshotManualBuilder) AddPods(pods []*v1.Pod) *InputRemoteSnapshotManualBuilder {
 	i.pods.Insert(pods...)
+	return i
+}
+func (i *InputRemoteSnapshotManualBuilder) AddEndpoints(endpoints []*v1.Endpoints) *InputRemoteSnapshotManualBuilder {
+	i.endpoints.Insert(endpoints...)
 	return i
 }
 func (i *InputRemoteSnapshotManualBuilder) AddNodes(nodes []*v1.Node) *InputRemoteSnapshotManualBuilder {

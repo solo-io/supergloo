@@ -7,6 +7,7 @@
 // * ConfigMaps
 // * Services
 // * Pods
+// * Endpoints
 // * Nodes
 // * Deployments
 // * ReplicaSets
@@ -56,6 +57,8 @@ type RemoteSnapshot interface {
 	Services() v1_sets.ServiceSet
 	// return the set of input Pods
 	Pods() v1_sets.PodSet
+	// return the set of input Endpoints
+	Endpoints() v1_sets.EndpointsSet
 	// return the set of input Nodes
 	Nodes() v1_sets.NodeSet
 
@@ -83,6 +86,8 @@ type RemoteSyncStatusOptions struct {
 	Service bool
 	// sync status of Pod objects
 	Pod bool
+	// sync status of Endpoints objects
+	Endpoints bool
 	// sync status of Node objects
 	Node bool
 
@@ -104,6 +109,7 @@ type snapshotRemote struct {
 	configMaps v1_sets.ConfigMapSet
 	services   v1_sets.ServiceSet
 	pods       v1_sets.PodSet
+	endpoints  v1_sets.EndpointsSet
 	nodes      v1_sets.NodeSet
 
 	deployments  apps_v1_sets.DeploymentSet
@@ -120,6 +126,7 @@ func NewRemoteSnapshot(
 	configMaps v1_sets.ConfigMapSet,
 	services v1_sets.ServiceSet,
 	pods v1_sets.PodSet,
+	endpoints v1_sets.EndpointsSet,
 	nodes v1_sets.NodeSet,
 
 	deployments apps_v1_sets.DeploymentSet,
@@ -135,6 +142,7 @@ func NewRemoteSnapshot(
 		configMaps:   configMaps,
 		services:     services,
 		pods:         pods,
+		endpoints:    endpoints,
 		nodes:        nodes,
 		deployments:  deployments,
 		replicaSets:  replicaSets,
@@ -157,6 +165,10 @@ func (s snapshotRemote) Services() v1_sets.ServiceSet {
 
 func (s snapshotRemote) Pods() v1_sets.PodSet {
 	return s.pods
+}
+
+func (s snapshotRemote) Endpoints() v1_sets.EndpointsSet {
+	return s.endpoints
 }
 
 func (s snapshotRemote) Nodes() v1_sets.NodeSet {
@@ -186,6 +198,7 @@ func (s snapshotRemote) MarshalJSON() ([]byte, error) {
 	snapshotMap["configMaps"] = s.configMaps.List()
 	snapshotMap["services"] = s.services.List()
 	snapshotMap["pods"] = s.pods.List()
+	snapshotMap["endpoints"] = s.endpoints.List()
 	snapshotMap["nodes"] = s.nodes.List()
 	snapshotMap["deployments"] = s.deployments.List()
 	snapshotMap["replicaSets"] = s.replicaSets.List()
@@ -211,6 +224,8 @@ type RemoteBuildOptions struct {
 	Services ResourceRemoteBuildOptions
 	// List options for composing a snapshot from Pods
 	Pods ResourceRemoteBuildOptions
+	// List options for composing a snapshot from Endpoints
+	Endpoints ResourceRemoteBuildOptions
 	// List options for composing a snapshot from Nodes
 	Nodes ResourceRemoteBuildOptions
 
@@ -258,6 +273,7 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 	configMaps := v1_sets.NewConfigMapSet()
 	services := v1_sets.NewServiceSet()
 	pods := v1_sets.NewPodSet()
+	endpoints := v1_sets.NewEndpointsSet()
 	nodes := v1_sets.NewNodeSet()
 
 	deployments := apps_v1_sets.NewDeploymentSet()
@@ -279,6 +295,9 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertPodsFromCluster(ctx, cluster, pods, opts.Pods); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertEndpointsFromCluster(ctx, cluster, endpoints, opts.Endpoints); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertNodesFromCluster(ctx, cluster, nodes, opts.Nodes); err != nil {
@@ -306,6 +325,7 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 		configMaps,
 		services,
 		pods,
+		endpoints,
 		nodes,
 		deployments,
 		replicaSets,
@@ -481,6 +501,48 @@ func (b *multiClusterRemoteBuilder) insertPodsFromCluster(ctx context.Context, c
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
 		pods.Insert(&item)
+	}
+
+	return nil
+}
+func (b *multiClusterRemoteBuilder) insertEndpointsFromCluster(ctx context.Context, cluster string, endpoints v1_sets.EndpointsSet, opts ResourceRemoteBuildOptions) error {
+	endpointsClient, err := v1.NewMulticlusterEndpointsClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Endpoints",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	endpointsList, err := endpointsClient.ListEndpoints(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range endpointsList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		endpoints.Insert(&item)
 	}
 
 	return nil

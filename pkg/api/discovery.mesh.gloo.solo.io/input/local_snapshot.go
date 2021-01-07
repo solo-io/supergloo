@@ -4,6 +4,7 @@
 
 // The Input LocalSnapshot contains the set of all:
 // * Settings
+// * VirtualMeshes
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
@@ -29,6 +30,9 @@ import (
 
 	settings_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	settings_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
+
+	networking_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networking_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 )
 
 // the snapshot of input resources consumed by translation
@@ -36,6 +40,9 @@ type LocalSnapshot interface {
 
 	// return the set of input Settings
 	Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+
+	// return the set of input VirtualMeshes
+	VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 	// update the status of all input objects which support
 	// the Status subresource (in the local cluster)
 	SyncStatuses(ctx context.Context, c client.Client, opts LocalSyncStatusOptions) error
@@ -48,12 +55,17 @@ type LocalSyncStatusOptions struct {
 
 	// sync status of Settings objects
 	Settings bool
+
+	// sync status of VirtualMesh objects
+	VirtualMesh bool
 }
 
 type snapshotLocal struct {
 	name string
 
 	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+
+	virtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 }
 
 func NewLocalSnapshot(
@@ -61,16 +73,23 @@ func NewLocalSnapshot(
 
 	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet,
 
+	virtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet,
+
 ) LocalSnapshot {
 	return &snapshotLocal{
 		name: name,
 
-		settings: settings,
+		settings:      settings,
+		virtualMeshes: virtualMeshes,
 	}
 }
 
 func (s snapshotLocal) Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet {
 	return s.settings
+}
+
+func (s snapshotLocal) VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet {
+	return s.virtualMeshes
 }
 
 func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts LocalSyncStatusOptions) error {
@@ -83,6 +102,14 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 			}
 		}
 	}
+
+	if opts.VirtualMesh {
+		for _, obj := range s.VirtualMeshes().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
 	return errs
 }
 
@@ -90,6 +117,7 @@ func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
 	snapshotMap["settings"] = s.settings.List()
+	snapshotMap["virtualMeshes"] = s.virtualMeshes.List()
 	return json.Marshal(snapshotMap)
 }
 
@@ -103,6 +131,9 @@ type LocalBuildOptions struct {
 
 	// List options for composing a snapshot from Settings
 	Settings ResourceLocalBuildOptions
+
+	// List options for composing a snapshot from VirtualMeshes
+	VirtualMeshes ResourceLocalBuildOptions
 }
 
 // Options for reading resources of a given type
@@ -133,9 +164,14 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 
 	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
+	virtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
+
 	var errs error
 
 	if err := b.insertSettings(ctx, settings, opts.Settings); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertVirtualMeshes(ctx, virtualMeshes, opts.VirtualMeshes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -143,6 +179,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 		name,
 
 		settings,
+		virtualMeshes,
 	)
 
 	return outputSnap, errs
@@ -176,6 +213,39 @@ func (b *singleClusterLocalBuilder) insertSettings(ctx context.Context, settings
 	for _, item := range settingsList.Items {
 		item := item // pike
 		settings.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterLocalBuilder) insertVirtualMeshes(ctx context.Context, virtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "VirtualMesh",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	virtualMeshList, err := networking_mesh_gloo_solo_io_v1alpha2.NewVirtualMeshClient(b.mgr.GetClient()).ListVirtualMesh(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range virtualMeshList.Items {
+		item := item // pike
+		virtualMeshes.Insert(&item)
 	}
 
 	return nil
