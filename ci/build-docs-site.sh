@@ -8,8 +8,8 @@
 set -ex
 
 # Update this array with all versions of GlooMesh to include in the versioned docs website.
-readarray -t versions < <(jq -r '.versions[]' docs/version.json)
-latestVersion=$(jq -r '.latest_version' docs/version.json)
+declare -a versions=($(cat docs/version.json | jq -rc '."versions" | join(" ")'))
+latestVersion=$(cat docs/version.json | jq -r ."latest")
 
 # Firebase configuration
 firebaseJson=$(cat <<EOF
@@ -42,60 +42,62 @@ workingDir=$(pwd)
 docsSiteDir=$workingDir/ci/docs-site
 repoDir=$workingDir/ci/gloo-mesh-temp
 
-mkdir "$docsSiteDir"
-echo "$firebaseJson" > "$docsSiteDir/firebase.json"
+mkdir $docsSiteDir
+echo $firebaseJson > $docsSiteDir/firebase.json
 
-git clone https://github.com/solo-io/gloo-mesh.git "$repoDir"
+git clone https://github.com/solo-io/gloo-mesh.git $repoDir
 
 export PATH=$workingDir/_output/.bin:$PATH
 
 # install go tools to sub-repo
-make -C "$repoDir" install-go-tools
+make -C $repoDir install-go-tools
 
 # Generates a data/Solo.yaml file with $1 being the specified version.
 function generateHugoVersionsYaml() {
   yamlFile=$repoDir/docs/data/Solo.yaml
   # Truncate file first.
-
-  {
-    echo "LatestVersion: $latestVersion"
-    # /gloo-mesh prefix is needed because the site is hosted under a domain name with suffix /gloo-mesh
-    echo "DocsVersion: /gloo-mesh/$1"
-    echo "CodeVersion: $1"
-    echo "DocsVersions:"
-    for hugoVersion in "${versions[@]}"; do
-      echo "  - $hugoVersion"
-    done
-  } >> "$yamlFile"
+  echo "LatestVersion: $latestVersion" > $yamlFile
+  # /gloo-mesh prefix is needed because the site is hosted under a domain name with suffix /gloo-mesh
+  echo "DocsVersion: /gloo-mesh/$1" >> $yamlFile
+  echo "CodeVersion: $1" >> $yamlFile
+  echo "DocsVersions:" >> $yamlFile
+  for hugoVersion in "${versions[@]}"
+  do
+    echo "  - $hugoVersion" >> $yamlFile
+  done
 }
 
 
-for version in "${versions[@]}"; do
+for version in "${versions[@]}"
+do
   echo "Generating site for version $version"
-  cd "$repoDir"
-  if [[ "$version" == "main" ]]; then
+  cd $repoDir
+  changelogVersion=$version
+  if [[ "$version" == "main" ]]
+  then
+    changelogVersion=""
     git checkout main
   else
     git checkout tags/v"$version"
   fi
-
   # Replace version with "latest" if it's the latest version. This enables URLs with "/latest/..."
-  if [[ "$version" ==  "$latestVersion" ]]; then
+  if [[ "$version" ==  "$latestVersion" ]]
+  then
     version="latest"
   fi
-  go run codegen/docs/docsgen.go
+  go run codegen/docs/docsgen.go --changelog --version="$changelogVersion"
   cd docs
   # Generate data/Solo.yaml file with version info populated.
   generateHugoVersionsYaml $version
   # Use nav bar as defined in main, not the checked out temp repo.
-  cp -f "$workingDir/docs/layouts/partials/versionnavigation.html" layouts/partials/versionnavigation.html
+  cp -f $workingDir/docs/layouts/partials/versionnavigation.html layouts/partials/versionnavigation.html
   # Generate the versioned static site.
   make site-release
   # Copy over versioned static site to firebase content folder.
-  mkdir -p "$docsSiteDir/public/gloo-mesh/$version"
-  cp -a site-latest/. "$docsSiteDir/public/gloo-mesh/$version/"
+  mkdir -p $docsSiteDir/public/gloo-mesh/$version
+  cp -a site-latest/. $docsSiteDir/public/gloo-mesh/$version/
   # Discard git changes and vendor_any for subsequent checkouts
-  cd "$repoDir"
+  cd $repoDir
   git reset --hard
   rm -fr vendor_any
 done

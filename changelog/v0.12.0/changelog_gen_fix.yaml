@@ -1,4 +1,0 @@
-changelog:
-  - type: FIX
-    issueLink: https://github.com/solo-io/gloo-mesh/issues/1182
-    description: Don't generate changelog on release to avoid blank site for latest.
