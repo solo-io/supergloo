@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ###################################################################################
 # This script generates a versioned docs website for Gloo Mesh and
@@ -9,7 +9,7 @@ set -ex
 
 # Update this array with all versions of GlooMesh to include in the versioned docs website.
 readarray -t versions < <(jq -r '.versions[]' docs/version.json)
-latestVersion=$(jq -r '.latest_version' docs/version.json)
+latestVersion=$(jq -r '.latest' docs/version.json)
 
 # Firebase configuration
 firebaseJson=$(cat <<EOF
@@ -55,8 +55,6 @@ make -C "$repoDir" install-go-tools
 # Generates a data/Solo.yaml file with $1 being the specified version.
 function generateHugoVersionsYaml() {
   yamlFile=$repoDir/docs/data/Solo.yaml
-  # Truncate file first.
-
   {
     echo "LatestVersion: $latestVersion"
     # /gloo-mesh prefix is needed because the site is hosted under a domain name with suffix /gloo-mesh
@@ -66,9 +64,8 @@ function generateHugoVersionsYaml() {
     for hugoVersion in "${versions[@]}"; do
       echo "  - $hugoVersion"
     done
-  } >> "$yamlFile"
+  } > "$yamlFile"
 }
-
 
 for version in "${versions[@]}"; do
   echo "Generating site for version $version"
