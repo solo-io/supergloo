@@ -64,9 +64,6 @@ func Start(
 		discoveryInputBuilder = input.NewMultiClusterDiscoveryInputBuilder(clusters, mcClient)
 	} else {
 		// run in agent mode;  I/O wired up to local cluster only
-		if agentCluster == "" {
-			return eris.Errorf("must provide --agent-cluster when running in agent mode")
-		}
 		discoveryInputBuilder = input.NewSingleClusterDiscoveryInputBuilderWithClusterName(masterMgr, agentCluster)
 	}
 

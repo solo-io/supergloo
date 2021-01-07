@@ -46,7 +46,7 @@ type topLevelComponent struct {
 	// name of the remote snapshot, if the component is hybrid. defaults to Remote
 	remoteSnapshotName string
 
-	// if this component can run in agent mode, generate
+	// if this component can run in agent mode, generate a homogenous reconciler which combines both the local and remote resources
 	agentMode bool
 
 	// the set of output resources for which to generate a snapshot
@@ -166,7 +166,7 @@ var (
 	appName = "gloo-mesh"
 
 	topLevelComponents = []topLevelComponent{
-		// discovery management component
+		// discovery component
 		{
 			generatedCodeRoot:    "pkg/api/discovery.mesh.gloo.solo.io",
 			remoteInputResources: io.DiscoveryInputTypes,

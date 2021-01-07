@@ -1,3 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Initialize API for configuring use of Relay for config distribution (Enterprise).

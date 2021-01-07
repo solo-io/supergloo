@@ -51,6 +51,7 @@ func discoveryCommand(ctx context.Context, bs *bootstrap.Options) *cobra.Command
 			return startDiscovery(ctx, opts)
 		},
 	}
+	opts.AddToFlags(cmd.Flags())
 	return cmd
 }
 
