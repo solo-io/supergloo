@@ -29,6 +29,7 @@ require (
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.9.7-0.20200811182123-112a4904c4b0
 	github.com/gertd/go-pluralize v0.1.1
+	github.com/go-git/go-git/v5 v5.2.0
 	github.com/go-logr/zapr v0.1.1
 	github.com/go-openapi/spec v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.6 // indirect
