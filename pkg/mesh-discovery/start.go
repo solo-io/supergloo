@@ -3,33 +3,43 @@ package mesh_discovery
 import (
 	"context"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
+	"github.com/spf13/pflag"
+
 	"github.com/solo-io/gloo-mesh/pkg/common/bootstrap"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/reconciliation"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation"
 )
+
+type DiscoveryOpts struct {
+	*bootstrap.Options
+	agentMode    bool
+	agentCluster string
+}
+
+func (opts *DiscoveryOpts) AddToFlags(flags *pflag.FlagSet) {
+	flags.BoolVar(&opts.agentMode, "agent", false, "if enabled, Discovery will run in *agent mode*, in which discovery resources will only be generated for the local cluster. Agent mode does not require the local cluster to be registered.")
+	flags.StringVar(&opts.agentCluster, "agent-cluster", "", "if Agent Mode is enabled, Discovery will run in *agent mode*, in which discovery resources will only be generated for the local cluster. Agent mode does not require the local cluster to be registered.")
+}
 
 // the mesh-discovery controller is the Kubernetes Controller/Operator
 // which processes k8s storage events to produce
 // discovered resources.
-func Start(ctx context.Context, opts bootstrap.Options) error {
-	return bootstrap.Start(ctx, "discovery", startReconciler, opts)
+func Start(ctx context.Context, opts DiscoveryOpts) error {
+	return bootstrap.Start(ctx, "discovery", func(parameters bootstrap.StartParameters) error {
+		return startReconciler(opts.agentCluster, parameters)
+	}, *opts.Options, opts.agentMode)
 }
 
 // start the main reconcile loop
 func startReconciler(
+	agentCluster string,
 	parameters bootstrap.StartParameters,
 ) error {
-	remoteSnapshotBuilder := input.NewMultiClusterRemoteBuilder(parameters.Clusters, parameters.McClient)
-	localSnapshotBuilder := input.NewSingleClusterLocalBuilder(parameters.MasterManager)
-	translator := translation.NewTranslator(translation.DefaultDependencyFactory)
 	return reconciliation.Start(
 		parameters.Ctx,
-		remoteSnapshotBuilder,
-		localSnapshotBuilder,
-		translator,
+		agentCluster,
 		parameters.MasterManager,
 		parameters.Clusters,
+		parameters.McClient,
 		parameters.SnapshotHistory,
 		parameters.VerboseMode,
 		parameters.SettingsRef,

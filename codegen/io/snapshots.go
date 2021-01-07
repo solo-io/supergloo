@@ -13,6 +13,17 @@ import (
 // a Snapshot is a group of individual resources from one or more GroupVersions
 type Snapshot map[schema.GroupVersion][]string
 
+func (this Snapshot) Join(that Snapshot) Snapshot {
+	s := Snapshot{}
+	for groupVersion, resources := range this {
+		s[groupVersion] = resources
+	}
+	for groupVersion, resources := range that {
+		s[groupVersion] = resources
+	}
+	return s
+}
+
 type OutputSnapshot struct {
 	// Snapshot to be used as an output snapshot
 	Snapshot Snapshot

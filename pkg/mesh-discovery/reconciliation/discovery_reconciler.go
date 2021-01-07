@@ -34,30 +34,42 @@ import (
 )
 
 type discoveryReconciler struct {
-	ctx             context.Context
-	remoteBuilder   input.RemoteBuilder
-	localBuilder    input.LocalBuilder
-	translator      translation.Translator
-	masterClient    client.Client
-	managers        multicluster.ManagerSet
-	history         *stats.SnapshotHistory
-	verboseMode     bool
-	settingsRef     v1.ObjectRef
-	verifier        verifier.ServerResourceVerifier
-	totalReconciles int
+	ctx                   context.Context
+	discoveryInputBuilder input.DiscoveryInputBuilder
+	settingsBuilder       input.SettingsBuilder
+	translator            translation.Translator
+	masterClient          client.Client
+	history               *stats.SnapshotHistory
+	verboseMode           bool
+	settingsRef           v1.ObjectRef
+	verifier              verifier.ServerResourceVerifier
+	totalReconciles       int
 }
 
 func Start(
 	ctx context.Context,
-	remoteBuilder input.RemoteBuilder,
-	localBuilder input.LocalBuilder,
-	translator translation.Translator,
+	agentCluster string,
 	masterMgr manager.Manager,
-	clusters multicluster.ClusterWatcher,
+	clusters multicluster.Interface,
+	mcClient multicluster.Client,
 	history *stats.SnapshotHistory,
 	verboseMode bool,
 	settingsRef v1.ObjectRef,
 ) error {
+	settingsBuilder := input.NewSingleClusterSettingsBuilder(masterMgr)
+
+	var discoveryInputBuilder input.DiscoveryInputBuilder
+	if clusters != nil {
+		// run in master mode; I/O wired up to local and remote clusters
+		discoveryInputBuilder = input.NewMultiClusterDiscoveryInputBuilder(clusters, mcClient)
+	} else {
+		// run in agent mode;  I/O wired up to local cluster only
+		if agentCluster == "" {
+			return eris.Errorf("must provide --agent-cluster when running in agent mode")
+		}
+		discoveryInputBuilder = input.NewSingleClusterDiscoveryInputBuilderWithClusterName(masterMgr, agentCluster)
+	}
+
 	verifier := verifier.NewVerifier(ctx, map[schema.GroupVersionKind]verifier.ServerVerifyOption{
 		// only warn (avoids error) if appmesh Mesh resource is not available on cluster
 		schema.GroupVersionKind{
@@ -67,15 +79,15 @@ func Start(
 		}: verifier.ServerVerifyOption_WarnIfNotPresent,
 	})
 	r := &discoveryReconciler{
-		ctx:           ctx,
-		remoteBuilder: remoteBuilder,
-		localBuilder:  localBuilder,
-		translator:    translator,
-		masterClient:  masterMgr.GetClient(),
-		history:       history,
-		verboseMode:   verboseMode,
-		verifier:      verifier,
-		settingsRef:   settingsRef,
+		ctx:                   ctx,
+		discoveryInputBuilder: discoveryInputBuilder,
+		settingsBuilder:       settingsBuilder,
+		translator:            translation.NewTranslator(translation.DefaultDependencyFactory),
+		masterClient:          masterMgr.GetClient(),
+		history:               history,
+		verboseMode:           verboseMode,
+		verifier:              verifier,
+		settingsRef:           settingsRef,
 	}
 
 	filterDiscoveryEvents := skpredicate.SimplePredicate{
@@ -90,23 +102,42 @@ func Start(
 		return err
 	}
 
-	input.RegisterInputReconciler(
-		ctx,
-		clusters,
-		r.reconcile,
-		masterMgr,
-		r.reconcileLocal,
-		input.ReconcileOptions{
-			Remote: input.RemoteReconcileOptions{
-				Meshes: reconcile.Options{
-					Verifier: verifier,
+	if clusters != nil {
+		// running in master mode; our reconciler should watch local and remote resources
+		if _, err := input.RegisterInputReconciler(
+			ctx,
+			clusters,
+			r.reconcile,
+			masterMgr,
+			r.reconcileLocal,
+			input.ReconcileOptions{
+				Remote: input.RemoteReconcileOptions{
+					Meshes: reconcile.Options{
+						Verifier: verifier,
+					},
+					Predicates: []predicate.Predicate{filterDiscoveryEvents},
 				},
-				Predicates: []predicate.Predicate{filterDiscoveryEvents},
+				Local:             input.LocalReconcileOptions{},
+				ReconcileInterval: time.Second / 2,
 			},
-			Local:             input.LocalReconcileOptions{},
-			ReconcileInterval: time.Second / 2,
-		},
-	)
+		); err != nil {
+			return err
+		}
+	} else {
+		// running in agent mode; our reconciler should watch only local resources
+		if _, err := input.RegisterSingleClusterAgentReconciler(
+			ctx,
+			masterMgr,
+			r.reconcileLocal,
+			time.Second/2,
+			reconcile.Options{
+				Verifier: verifier,
+			},
+			filterDiscoveryEvents,
+		); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -125,11 +156,11 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 
 	contextutils.LoggerFrom(ctx).Debugf("object triggered resync: %T<%v>", obj, sets.Key(obj))
 
-	remoteInputSnap, err := r.remoteBuilder.BuildSnapshot(ctx, "mesh-discovery-remote", input.RemoteBuildOptions{
+	remoteInputSnap, err := r.discoveryInputBuilder.BuildSnapshot(ctx, "mesh-discovery-remote", input.DiscoveryInputBuildOptions{
 		// ignore NoKindMatchError for AppMesh Mesh CRs
 		// (only clusters with AppMesh Controller installed will
 		// have this kind registered)
-		Meshes: input.ResourceRemoteBuildOptions{
+		Meshes: input.ResourceDiscoveryInputBuildOptions{
 			Verifier: r.verifier,
 		},
 	})
@@ -138,8 +169,8 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 		return false, err
 	}
 
-	localInputSnap, err := r.localBuilder.BuildSnapshot(ctx, "mesh-discovery-local", input.LocalBuildOptions{
-		Settings: input.ResourceLocalBuildOptions{
+	localInputSnap, err := r.settingsBuilder.BuildSnapshot(ctx, "mesh-discovery-local", input.SettingsBuildOptions{
+		Settings: input.ResourceSettingsBuildOptions{
 			// Ensure that only declared Settings object exists in snapshot.
 			ListOptions: []client.ListOption{
 				client.InNamespace(r.settingsRef.Namespace),
