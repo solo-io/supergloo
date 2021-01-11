@@ -328,14 +328,14 @@ func (m *TrafficTargetSpec_KubeService_Subset) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *TrafficTargetSpec_KubeService_EndpointSubsets) Equal(that interface{}) bool {
+func (m *TrafficTargetSpec_KubeService_EndpointsSubset) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*TrafficTargetSpec_KubeService_EndpointSubsets)
+	target, ok := that.(*TrafficTargetSpec_KubeService_EndpointsSubset)
 	if !ok {
-		that2, ok := that.(TrafficTargetSpec_KubeService_EndpointSubsets)
+		that2, ok := that.(TrafficTargetSpec_KubeService_EndpointsSubset)
 		if ok {
 			target = &that2
 		} else {

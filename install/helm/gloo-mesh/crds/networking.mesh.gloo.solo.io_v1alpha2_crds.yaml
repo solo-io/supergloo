@@ -905,6 +905,11 @@ spec:
                 - permissive
               properties:
                 flatNetwork:
+                  description: |-
+                    Whether or not the virtual mesh is part of a flat network or not. If true, then all multicluster
+                    traffic will be routed directly to the Service Endpoints of the target workloads, rather than
+                    routing through an ingress gateway.
+                    NOTE: This feature will not work if the clusters are not pre-configured to live on the same network.
                   type: boolean
                 permissive:
                   description: |-

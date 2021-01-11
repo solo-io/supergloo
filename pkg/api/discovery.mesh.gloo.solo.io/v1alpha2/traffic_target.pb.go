@@ -211,8 +211,11 @@ type TrafficTargetSpec_KubeService struct {
 	// The ports exposed by the underlying service.
 	Ports []*TrafficTargetSpec_KubeService_KubeServicePort `protobuf:"bytes,4,rep,name=ports,proto3" json:"ports,omitempty"`
 	// Subsets for routing, based on labels.
-	Subsets   map[string]*TrafficTargetSpec_KubeService_Subset `protobuf:"bytes,5,rep,name=subsets,proto3" json:"subsets,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	Endpoints []*TrafficTargetSpec_KubeService_EndpointSubsets `protobuf:"bytes,6,rep,name=endpoints,proto3" json:"endpoints,omitempty"`
+	Subsets map[string]*TrafficTargetSpec_KubeService_Subset `protobuf:"bytes,5,rep,name=subsets,proto3" json:"subsets,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs.
+	// This API mirrors the kubernetes Endpoints API.
+	// https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
+	Endpoints []*TrafficTargetSpec_KubeService_EndpointsSubset `protobuf:"bytes,6,rep,name=endpoints,proto3" json:"endpoints,omitempty"`
 }
 
 func (x *TrafficTargetSpec_KubeService) Reset() {
@@ -282,7 +285,7 @@ func (x *TrafficTargetSpec_KubeService) GetSubsets() map[string]*TrafficTargetSp
 	return nil
 }
 
-func (x *TrafficTargetSpec_KubeService) GetEndpoints() []*TrafficTargetSpec_KubeService_EndpointSubsets {
+func (x *TrafficTargetSpec_KubeService) GetEndpoints() []*TrafficTargetSpec_KubeService_EndpointsSubset {
 	if x != nil {
 		return x.Endpoints
 	}
@@ -412,7 +415,7 @@ func (x *TrafficTargetSpec_KubeService_Subset) GetValues() []string {
 
 // A series of IP addresses and their associated ports.
 // The list of ip + port pairs is the cartesian product of the following lists
-type TrafficTargetSpec_KubeService_EndpointSubsets struct {
+type TrafficTargetSpec_KubeService_EndpointsSubset struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -421,8 +424,8 @@ type TrafficTargetSpec_KubeService_EndpointSubsets struct {
 	Ports       []*TrafficTargetSpec_KubeService_KubeServicePort `protobuf:"bytes,2,rep,name=ports,proto3" json:"ports,omitempty"`
 }
 
-func (x *TrafficTargetSpec_KubeService_EndpointSubsets) Reset() {
-	*x = TrafficTargetSpec_KubeService_EndpointSubsets{}
+func (x *TrafficTargetSpec_KubeService_EndpointsSubset) Reset() {
+	*x = TrafficTargetSpec_KubeService_EndpointsSubset{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_traffic_target_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -430,13 +433,13 @@ func (x *TrafficTargetSpec_KubeService_EndpointSubsets) Reset() {
 	}
 }
 
-func (x *TrafficTargetSpec_KubeService_EndpointSubsets) String() string {
+func (x *TrafficTargetSpec_KubeService_EndpointsSubset) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*TrafficTargetSpec_KubeService_EndpointSubsets) ProtoMessage() {}
+func (*TrafficTargetSpec_KubeService_EndpointsSubset) ProtoMessage() {}
 
-func (x *TrafficTargetSpec_KubeService_EndpointSubsets) ProtoReflect() protoreflect.Message {
+func (x *TrafficTargetSpec_KubeService_EndpointsSubset) ProtoReflect() protoreflect.Message {
 	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_traffic_target_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -448,19 +451,19 @@ func (x *TrafficTargetSpec_KubeService_EndpointSubsets) ProtoReflect() protorefl
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use TrafficTargetSpec_KubeService_EndpointSubsets.ProtoReflect.Descriptor instead.
-func (*TrafficTargetSpec_KubeService_EndpointSubsets) Descriptor() ([]byte, []int) {
+// Deprecated: Use TrafficTargetSpec_KubeService_EndpointsSubset.ProtoReflect.Descriptor instead.
+func (*TrafficTargetSpec_KubeService_EndpointsSubset) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_traffic_target_proto_rawDescGZIP(), []int{0, 0, 5}
 }
 
-func (x *TrafficTargetSpec_KubeService_EndpointSubsets) GetIpAddresses() []string {
+func (x *TrafficTargetSpec_KubeService_EndpointsSubset) GetIpAddresses() []string {
 	if x != nil {
 		return x.IpAddresses
 	}
 	return nil
 }
 
-func (x *TrafficTargetSpec_KubeService_EndpointSubsets) GetPorts() []*TrafficTargetSpec_KubeService_KubeServicePort {
+func (x *TrafficTargetSpec_KubeService_EndpointsSubset) GetPorts() []*TrafficTargetSpec_KubeService_KubeServicePort {
 	if x != nil {
 		return x.Ports
 	}
@@ -738,7 +741,7 @@ var file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_traffic_target_prot
 	0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x54, 0x72, 0x61, 0x66, 0x66, 0x69,
 	0x63, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x53, 0x70, 0x65, 0x63, 0x2e, 0x4b, 0x75, 0x62, 0x65,
 	0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x45, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74,
-	0x53, 0x75, 0x62, 0x73, 0x65, 0x74, 0x73, 0x52, 0x09, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e,
+	0x73, 0x53, 0x75, 0x62, 0x73, 0x65, 0x74, 0x52, 0x09, 0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e,
 	0x74, 0x73, 0x1a, 0x78, 0x0a, 0x0f, 0x4b, 0x75, 0x62, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63,
 	0x65, 0x50, 0x6f, 0x72, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x6f, 0x72, 0x74, 0x18, 0x01, 0x20,
 	0x01, 0x28, 0x0d, 0x52, 0x04, 0x70, 0x6f, 0x72, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d,
@@ -766,7 +769,7 @@ var file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_traffic_target_prot
 	0x01, 0x1a, 0x20, 0x0a, 0x06, 0x53, 0x75, 0x62, 0x73, 0x65, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x76,
 	0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x06, 0x76, 0x61, 0x6c,
 	0x75, 0x65, 0x73, 0x1a, 0x96, 0x01, 0x0a, 0x0f, 0x45, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74,
-	0x53, 0x75, 0x62, 0x73, 0x65, 0x74, 0x73, 0x12, 0x21, 0x0a, 0x0c, 0x69, 0x70, 0x5f, 0x61, 0x64,
+	0x73, 0x53, 0x75, 0x62, 0x73, 0x65, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x69, 0x70, 0x5f, 0x61, 0x64,
 	0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0b, 0x69,
 	0x70, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x12, 0x60, 0x0a, 0x05, 0x70, 0x6f,
 	0x72, 0x74, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x4a, 0x2e, 0x64, 0x69, 0x73, 0x63,
@@ -863,7 +866,7 @@ var file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_traffic_target_prot
 	nil, // 5: discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.LabelsEntry
 	nil, // 6: discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.SubsetsEntry
 	(*TrafficTargetSpec_KubeService_Subset)(nil),          // 7: discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.Subset
-	(*TrafficTargetSpec_KubeService_EndpointSubsets)(nil), // 8: discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointSubsets
+	(*TrafficTargetSpec_KubeService_EndpointsSubset)(nil), // 8: discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset
 	(*TrafficTargetStatus_AppliedTrafficPolicy)(nil),      // 9: discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedTrafficPolicy
 	(*TrafficTargetStatus_AppliedAccessPolicy)(nil),       // 10: discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedAccessPolicy
 	(*TrafficTargetStatus_AppliedFederation)(nil),         // 11: discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedFederation
@@ -882,9 +885,9 @@ var file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_traffic_target_prot
 	5,  // 6: discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.labels:type_name -> discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.LabelsEntry
 	3,  // 7: discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.ports:type_name -> discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort
 	6,  // 8: discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.subsets:type_name -> discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.SubsetsEntry
-	8,  // 9: discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.endpoints:type_name -> discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointSubsets
+	8,  // 9: discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.endpoints:type_name -> discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset
 	7,  // 10: discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.SubsetsEntry.value:type_name -> discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.Subset
-	3,  // 11: discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointSubsets.ports:type_name -> discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort
+	3,  // 11: discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.ports:type_name -> discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort
 	12, // 12: discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedTrafficPolicy.ref:type_name -> core.skv2.solo.io.ObjectRef
 	14, // 13: discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedTrafficPolicy.spec:type_name -> networking.mesh.gloo.solo.io.TrafficPolicySpec
 	12, // 14: discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedAccessPolicy.ref:type_name -> core.skv2.solo.io.ObjectRef
@@ -964,7 +967,7 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_traffic_target_pro
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_traffic_target_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TrafficTargetSpec_KubeService_EndpointSubsets); i {
+			switch v := v.(*TrafficTargetSpec_KubeService_EndpointsSubset); i {
 			case 0:
 				return &v.state
 			case 1:

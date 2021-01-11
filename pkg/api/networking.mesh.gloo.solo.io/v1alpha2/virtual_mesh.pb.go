@@ -449,8 +449,12 @@ type VirtualMeshSpec_Federation struct {
 	//
 	// Types that are assignable to Mode:
 	//	*VirtualMeshSpec_Federation_Permissive
-	Mode        isVirtualMeshSpec_Federation_Mode `protobuf_oneof:"mode"`
-	FlatNetwork bool                              `protobuf:"varint,2,opt,name=flat_network,json=flatNetwork,proto3" json:"flat_network,omitempty"`
+	Mode isVirtualMeshSpec_Federation_Mode `protobuf_oneof:"mode"`
+	// Whether or not the virtual mesh is part of a flat network or not. If true, then all multicluster
+	// traffic will be routed directly to the Service Endpoints of the target workloads, rather than
+	// routing through an ingress gateway.
+	// NOTE: This feature will not work if the clusters are not pre-configured to live on the same network.
+	FlatNetwork bool `protobuf:"varint,2,opt,name=flat_network,json=flatNetwork,proto3" json:"flat_network,omitempty"`
 }
 
 func (x *VirtualMeshSpec_Federation) Reset() {
