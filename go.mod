@@ -9,6 +9,7 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.0.0+incompatible
 	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
+	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.0
 
 	// https://github.com/ory/dockertest/issues/208#issuecomment-686820414
 	golang.org/x/sys => golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6
@@ -38,6 +39,7 @@ require (
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.3
 	github.com/google/go-github v17.0.0+incompatible
+	github.com/googleapis/gnostic v0.4.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.0
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
@@ -77,9 +79,9 @@ require (
 	istio.io/api v0.0.0-20200819225923-c78f387f78a2
 	istio.io/client-go v0.0.0-20200812230733-f5504d568313
 	istio.io/istio v0.0.0-20200821180042-b0e61d10cbae
-	k8s.io/api v0.18.8
+	k8s.io/api v0.18.14
 	k8s.io/apiextensions-apiserver v0.18.8
-	k8s.io/apimachinery v0.18.8
+	k8s.io/apimachinery v0.18.14
 	k8s.io/client-go v8.0.0+incompatible
 	k8s.io/kubernetes v1.13.0
 	k8s.io/utils v0.0.0-20201027101359-01387209bb0d
