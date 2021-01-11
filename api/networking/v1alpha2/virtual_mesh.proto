@@ -125,6 +125,8 @@ message VirtualMeshSpec {
             // in that Virtual Mesh.
             .google.protobuf.Empty permissive = 1;
         };
+
+        bool flat_network = 2;
     }
 
     /*

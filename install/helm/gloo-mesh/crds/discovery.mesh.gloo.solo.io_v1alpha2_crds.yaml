@@ -36,6 +36,32 @@ spec:
             kubeService:
               description: Metadata about the kube-native traffic target backing this TrafficTarget.
               properties:
+                endpoints:
+                  items:
+                    properties:
+                      ipAddresses:
+                        items:
+                          type: string
+                        type: array
+                      ports:
+                        items:
+                          properties:
+                            appProtocol:
+                              description: Available in k8s 1.18+, specifies the application protocol.
+                              type: string
+                            name:
+                              type: string
+                            port:
+                              description: External-facing port for this k8s service (NOT the service's target port on the backing pods).
+                              maximum: 4294967295
+                              minimum: 0
+                              type: integer
+                            protocol:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  type: array
                 labels:
                   additionalProperties:
                     type: string
@@ -1279,6 +1305,8 @@ spec:
                       - required:
                         - permissive
                       properties:
+                        flatNetwork:
+                          type: boolean
                         permissive:
                           description: |-
                             Select permissive mode to expose all traffic targets in a

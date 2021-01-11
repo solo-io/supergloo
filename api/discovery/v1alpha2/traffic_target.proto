@@ -5,6 +5,7 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.so
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/traffic_policy.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/access_policy.proto";
+import "google/protobuf/wrappers.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -24,6 +25,7 @@ message TrafficTargetSpec {
     .core.skv2.solo.io.ObjectRef mesh = 2;
 
     message KubeService {
+
         message KubeServicePort {
             // External-facing port for this k8s service (NOT the service's target port on the backing pods).
             uint32 port = 1;
@@ -52,6 +54,15 @@ message TrafficTargetSpec {
         message Subset {
             repeated string values = 1;
         }
+
+        message EndpointSubsets {
+
+            repeated string ip_addresses = 1;
+
+            repeated KubeServicePort ports = 2;
+        }
+
+        repeated EndpointSubsets endpoints = 6;
 
     }
 
