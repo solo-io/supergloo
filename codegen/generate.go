@@ -14,6 +14,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/common/version"
 	skv1alpha1 "github.com/solo-io/skv2/api/multicluster/v1alpha1"
 	"github.com/solo-io/skv2/codegen"
+	"github.com/solo-io/skv2/codegen/collector"
 	"github.com/solo-io/skv2/codegen/model"
 	"github.com/solo-io/skv2/contrib"
 )
@@ -53,25 +54,25 @@ func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 			contrib.InputSnapshot,
 			"Local",
 			t.generatedCodeRoot+"/input/local_snapshot.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources, MultiCluster: false},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshot,
 			"Remote",
 			t.generatedCodeRoot+"/input/remote_snapshot.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources, MultiCluster: true},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshotManualBuilder,
 			"Local",
 			t.generatedCodeRoot+"/input/local_snapshot_manual_builder.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources, MultiCluster: false},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshotManualBuilder,
 			"Remote",
 			t.generatedCodeRoot+"/input/remote_snapshot_manual_builder.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources, MultiCluster: true},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
 		))
 
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
@@ -88,38 +89,38 @@ func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 			contrib.InputSnapshot,
 			"",
 			t.generatedCodeRoot+"/input/snapshot.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources, MultiCluster: false},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshotManualBuilder,
 			"",
 			t.generatedCodeRoot+"/input/snapshot_manual_builder.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources, MultiCluster: false},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputReconciler,
 			"",
 			t.generatedCodeRoot+"/input/reconciler.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources, MultiCluster: false},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
 		))
 	case t.remoteInputResources != nil:
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshot,
 			"",
 			t.generatedCodeRoot+"/input/snapshot.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources, MultiCluster: true},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshotManualBuilder,
 			"",
 			t.generatedCodeRoot+"/input/snapshot_manual_builder.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources, MultiCluster: true},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputReconciler,
 			"",
 			t.generatedCodeRoot+"/input/reconciler.go",
-			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources, MultiCluster: true},
+			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
 		))
 	}
 
@@ -194,6 +195,12 @@ var (
 		return allTemplates
 	}()
 
+	protocOptions = collector.ProtocOptions{
+		GoPackage: map[string]string{
+			"envoy/config/accesslog/v3/accesslog.proto": "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3",
+		},
+	}
+
 	anyvendorImports = anyvendor.AnyVendorImports()
 )
 
@@ -244,6 +251,7 @@ func makeGlooMeshCommand(chartOnly bool) codegen.Command {
 		TopLevelTemplates: topLevelTemplates,
 		Groups:            groups.GlooMeshGroups,
 		RenderProtos:      true,
+		ProtocOptions:     protocOptions,
 		Chart:             helm.Chart,
 	}
 }
@@ -263,6 +271,7 @@ func makeCertAgentCommand(chartOnly bool) codegen.Command {
 		ManifestRoot:      certAgentManifestRoot,
 		TopLevelTemplates: topLevelTemplates,
 		RenderProtos:      true,
+		ProtocOptions:     protocOptions,
 		Chart:             helm.CertAgentChart,
 	}
 }
@@ -274,6 +283,7 @@ func makeAgentCrdsCommand() codegen.Command {
 		ManifestRoot:    agentCrdsManifestRoot,
 		Groups:          append(groups.CertAgentGroups, groups.XdsAgentGroup),
 		RenderProtos:    true,
+		ProtocOptions:   protocOptions,
 		Chart:           helm.AgentCrdsChart,
 	}
 }

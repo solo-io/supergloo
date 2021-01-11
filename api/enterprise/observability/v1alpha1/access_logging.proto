@@ -1,0 +1,18 @@
+syntax = "proto3";
+package observability.enterprise.mesh.gloo.solo.io;
+
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1";
+
+import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
+import "envoy/config/accesslog/v3/accesslog.proto";
+
+message AccessLogCollectionSpec {
+
+    // Select the workloads to be configured to emit access logs.
+    // Leave empty to apply to all workloads managed by Gloo Mesh.
+    repeated .networking.mesh.gloo.solo.io.WorkloadSelector source_selector = 1;
+
+    // Configure the criteria for determining which access logs will be emitted.
+    // Leave empty to emit all access logs.
+    repeated .envoy.config.accesslog.v3.AccessLogFilter access_log_filter = 2;
+}

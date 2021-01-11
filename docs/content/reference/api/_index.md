@@ -56,6 +56,12 @@ These docs describe Gloo Mesh CRDs.
 
 
 
+### observability.enterprise.mesh.gloo.solo.io
+
+  - [AccessLogCollection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.observability.v1alpha1.access_logging#observability.enterprise.mesh.gloo.solo.io.AccessLogCollectionSpec" >}})
+
+
+
 ### rbac.enterprise.mesh.gloo.solo.io
 
   - [Role]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec" >}})
