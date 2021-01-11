@@ -74,15 +74,14 @@ require (
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.3.0
 	helm.sh/helm/v3 v3.2.4
-	istio.io/api v0.0.0-20210107192247-a205c627e4b9
+	istio.io/api v0.0.0-20200819225923-c78f387f78a2
 	istio.io/client-go v0.0.0-20200812230733-f5504d568313
-	istio.io/gogo-genproto v0.0.0-20210107204948-697d6f912366 // indirect
 	istio.io/istio v0.0.0-20200821180042-b0e61d10cbae
 	k8s.io/api v0.18.8
 	k8s.io/apiextensions-apiserver v0.18.8
-	k8s.io/apimachinery v0.20.1
+	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v8.0.0+incompatible
 	k8s.io/kubernetes v1.13.0
-	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
+	k8s.io/utils v0.0.0-20201027101359-01387209bb0d
 	sigs.k8s.io/controller-runtime v0.6.2
 )
