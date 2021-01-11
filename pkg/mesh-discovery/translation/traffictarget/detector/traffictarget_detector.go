@@ -3,8 +3,11 @@ package detector
 import (
 	"context"
 
+	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networkingv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/workloadutils"
 	"github.com/solo-io/go-utils/contextutils"
@@ -36,8 +39,10 @@ var (
 type TrafficTargetDetector interface {
 	DetectTrafficTarget(
 		service *corev1.Service,
-		workloads v1alpha2sets.WorkloadSet,
-		meshes v1alpha2sets.MeshSet,
+		endpoints corev1sets.EndpointsSet,
+		workloads discoveryv1alpha2sets.WorkloadSet,
+		meshes discoveryv1alpha2sets.MeshSet,
+		virtualMeshes networkingv1alpha2sets.VirtualMeshSet,
 	) *v1alpha2.TrafficTarget
 }
 
@@ -51,8 +56,10 @@ func NewTrafficTargetDetector(ctx context.Context) TrafficTargetDetector {
 
 func (t *trafficTargetDetector) DetectTrafficTarget(
 	service *corev1.Service,
-	meshWorkloads v1alpha2sets.WorkloadSet,
-	meshes v1alpha2sets.MeshSet,
+	endpoints corev1sets.EndpointsSet,
+	meshWorkloads discoveryv1alpha2sets.WorkloadSet,
+	meshes discoveryv1alpha2sets.MeshSet,
+	virtualMeshes networkingv1alpha2sets.VirtualMeshSet,
 ) *v1alpha2.TrafficTarget {
 	kubeService := &v1alpha2.TrafficTargetSpec_KubeService{
 		Ref:                    ezkube.MakeClusterObjectRef(service),
@@ -86,7 +93,7 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 
 		if validMesh == nil {
 			contextutils.LoggerFrom(t.ctx).Errorf(
-				"mesh could not be found for annotateed service %s",
+				"mesh could not be found for annotated service %s",
 				sets2.TypedKey(service),
 			)
 		}
@@ -101,10 +108,42 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 		}
 
 		// all backing workloads should be in the same mesh
-		validMesh = backingWorkloads[0].Spec.Mesh
+		validMesh = backingWorkloads[0].Spec.GetMesh()
 
 		// derive subsets from backing workloads
 		kubeService.Subsets = findSubsets(backingWorkloads)
+	}
+
+	// Flat network is enabled for this particular virtual mesh
+	// so we will add all of the service endpoints to the traffic target
+	if vm := findRelatedVirtualMesh(validMesh, virtualMeshes); vm.Spec.GetFederation().GetFlatNetwork() {
+		ep, err := endpoints.Find(kubeService.GetRef())
+		if err != nil {
+			contextutils.LoggerFrom(t.ctx).Errorf(
+				"endpoints could not be found for kube service %s",
+				sets2.TypedKey(kubeService.GetRef()),
+			)
+		}
+
+		for _, epSub := range ep.Subsets {
+			sub := &v1alpha2.TrafficTargetSpec_KubeService_EndpointSubsets{}
+			for _, addr := range epSub.Addresses {
+				sub.IpAddresses = append(sub.IpAddresses, addr.IP)
+			}
+			for _, port := range epSub.Ports {
+				svcPort := &v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+					Port:     uint32(port.Port),
+					Name:     port.Name,
+					Protocol: string(port.Protocol),
+				}
+				if port.AppProtocol != nil {
+					svcPort.AppProtocol = *port.AppProtocol
+				}
+				sub.Ports = append(sub.Ports, svcPort)
+			}
+			kubeService.Endpoints = append(kubeService.Endpoints, sub)
+		}
+
 	}
 
 	return &v1alpha2.TrafficTarget{
@@ -116,6 +155,20 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 			Mesh: validMesh,
 		},
 	}
+}
+
+func findRelatedVirtualMesh(
+	meshRef *v1.ObjectRef,
+	virtualMeshes networkingv1alpha2sets.VirtualMeshSet,
+) *networkingv1alpha2.VirtualMesh {
+	for _, vm := range virtualMeshes.List() {
+		for _, vmMeshRef := range vm.Spec.GetMeshes() {
+			if vmMeshRef.Equal(meshRef) {
+				return vm
+			}
+		}
+	}
+	return nil
 }
 
 // expects a list of just the workloads that back the service you're finding subsets for

@@ -118,7 +118,7 @@ func (t *translator) Translate(
 	// Currently, we just default to using the first one in the list.
 	ingressGateway := istioMesh.IngressGateways[0]
 
-	trafficTargets := servicesForMesh(mesh, in.TrafficTargets())
+	trafficTargets := ServicesForMesh(mesh, in.TrafficTargets())
 
 	if len(trafficTargets) == 0 {
 		contextutils.LoggerFrom(t.ctx).Debugf("no services found in istio mesh %v", sets.Key(mesh))
@@ -170,7 +170,7 @@ func (t *translator) Translate(
 		for _, port := range trafficTarget.Spec.GetKubeService().GetPorts() {
 			ports = append(ports, &networkingv1alpha3spec.Port{
 				Number:   port.Port,
-				Protocol: convertKubePortProtocol(port),
+				Protocol: ConvertKubePortProtocol(port),
 				Name:     port.Name,
 			})
 			endpointPorts[port.Name] = ingressGateway.ExternalTlsPort
@@ -308,7 +308,7 @@ func (t *translator) Translate(
 	outputs.AddEnvoyFilters(ef)
 }
 
-func servicesForMesh(
+func ServicesForMesh(
 	mesh *discoveryv1alpha2.Mesh,
 	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 ) []*discoveryv1alpha2.TrafficTarget {
@@ -376,8 +376,8 @@ func buildTcpRewritePatchAsConfig(clusterName, clusterDomain string) (*types.Str
 	})
 }
 
-// Convert protocol of k8s Service port to application level protocol
-func convertKubePortProtocol(port *discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort) string {
+// ConvertKubePortProtocol converts protocol of k8s Service port to application level protocol
+func ConvertKubePortProtocol(port *discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort) string {
 	var appProtocol *string
 	if port.AppProtocol != "" {
 		appProtocol = pointer.StringPtr(port.AppProtocol)

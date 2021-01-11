@@ -48,7 +48,7 @@ func (t translator) Translate(ctx context.Context, in input.RemoteSnapshot, sett
 		meshes,
 	)
 
-	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(in.Services(), workloads, meshes)
+	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(in.Services(), in.Endpoints(), workloads, meshes)
 
 	t.totalTranslates++
 

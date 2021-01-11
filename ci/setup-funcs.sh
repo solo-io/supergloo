@@ -15,6 +15,8 @@ function create_kind_cluster() {
 
   cluster=$1
   port=$2
+  # Set the network  to the 1 or 2 for flat networking purposes
+  ((net=$port%32000+1))
 
   echo "creating cluster ${cluster} with ingress port ${port}"
 
@@ -64,6 +66,9 @@ kubeadmConfigPatches:
   controllerManager:
     extraArgs:
       "feature-gates": "EphemeralContainers=true"
+  networking:
+    serviceSubnet: "10.96.$net.0/24"
+    podSubnet: "192.168.$net.0/24"
 EOF
 
   # NOTE: we delete the local-path-storage ns to free up CPU for ci

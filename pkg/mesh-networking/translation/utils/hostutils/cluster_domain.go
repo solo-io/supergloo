@@ -66,7 +66,7 @@ func (c *clusterDomainRegistry) GetClusterDomain(clusterName string) string {
 }
 
 func (c *clusterDomainRegistry) GetServiceLocalFQDN(serviceRef ezkube.ClusterResourceId) string {
-	return fmt.Sprintf("%s.%s.svc.%s", serviceRef.GetName(), serviceRef.GetNamespace(), c.GetClusterDomain(serviceRef.GetClusterName()))
+	return GetServiceGlobalFQDN(serviceRef)
 }
 
 func (c *clusterDomainRegistry) GetServiceGlobalFQDN(serviceRef ezkube.ClusterResourceId) string {
@@ -81,4 +81,8 @@ func (c *clusterDomainRegistry) GetDestinationServiceFQDN(originatingCluster str
 		// hostname will use the cross-cluster domain if the destination is in a different cluster than the target TrafficTarget
 		return c.GetServiceGlobalFQDN(destination)
 	}
+}
+
+func GetServiceGlobalFQDN(serviceRef ezkube.ClusterResourceId) string {
+	return fmt.Sprintf("%s.%s.svc.%s.%v", serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetClusterName(), GlobalHostnameSuffix)
 }
