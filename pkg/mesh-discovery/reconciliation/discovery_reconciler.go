@@ -38,7 +38,7 @@ type discoveryReconciler struct {
 	discoveryInputBuilder input.DiscoveryInputBuilder
 	settingsBuilder       input.SettingsBuilder
 	translator            translation.Translator
-	masterClient          client.Client
+	localClient           client.Client
 	history               *stats.SnapshotHistory
 	verboseMode           bool
 	settingsRef           v1.ObjectRef
@@ -49,14 +49,14 @@ type discoveryReconciler struct {
 func Start(
 	ctx context.Context,
 	agentCluster string,
-	masterMgr manager.Manager,
+	localMgr manager.Manager,
 	clusters multicluster.Interface,
 	mcClient multicluster.Client,
 	history *stats.SnapshotHistory,
 	verboseMode bool,
 	settingsRef v1.ObjectRef,
 ) error {
-	settingsBuilder := input.NewSingleClusterSettingsBuilder(masterMgr)
+	settingsBuilder := input.NewSingleClusterSettingsBuilder(localMgr)
 
 	var discoveryInputBuilder input.DiscoveryInputBuilder
 	if clusters != nil {
@@ -64,7 +64,7 @@ func Start(
 		discoveryInputBuilder = input.NewMultiClusterDiscoveryInputBuilder(clusters, mcClient)
 	} else {
 		// run in agent mode;  I/O wired up to local cluster only
-		discoveryInputBuilder = input.NewSingleClusterDiscoveryInputBuilderWithClusterName(masterMgr, agentCluster)
+		discoveryInputBuilder = input.NewSingleClusterDiscoveryInputBuilderWithClusterName(localMgr, agentCluster)
 	}
 
 	verifier := verifier.NewVerifier(ctx, map[schema.GroupVersionKind]verifier.ServerVerifyOption{
@@ -80,7 +80,7 @@ func Start(
 		discoveryInputBuilder: discoveryInputBuilder,
 		settingsBuilder:       settingsBuilder,
 		translator:            translation.NewTranslator(translation.DefaultDependencyFactory),
-		masterClient:          masterMgr.GetClient(),
+		localClient:           localMgr.GetClient(),
 		history:               history,
 		verboseMode:           verboseMode,
 		verifier:              verifier,
@@ -92,7 +92,7 @@ func Start(
 	}
 
 	// Needed in order to use field selector on metadata.name for Settings CRD.
-	if err := masterMgr.GetFieldIndexer().IndexField(ctx, &settingsv1alpha2.Settings{}, "metadata.name", func(object runtime.Object) []string {
+	if err := localMgr.GetFieldIndexer().IndexField(ctx, &settingsv1alpha2.Settings{}, "metadata.name", func(object runtime.Object) []string {
 		settings := object.(*settingsv1alpha2.Settings)
 		return []string{settings.Name}
 	}); err != nil {
@@ -105,7 +105,7 @@ func Start(
 			ctx,
 			clusters,
 			r.reconcile,
-			masterMgr,
+			localMgr,
 			r.reconcileLocal,
 			input.ReconcileOptions{
 				Remote: input.RemoteReconcileOptions{
@@ -124,7 +124,7 @@ func Start(
 		// running in agent mode; our reconciler should watch only local resources
 		if _, err := input.RegisterSingleClusterAgentReconciler(
 			ctx,
-			masterMgr,
+			localMgr,
 			r.reconcileLocal,
 			time.Second/2,
 			reconcile.Options{
@@ -194,7 +194,7 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 	}
 
 	var errs error
-	outputSnap.ApplyLocalCluster(ctx, r.masterClient, output.ErrorHandlerFuncs{
+	outputSnap.ApplyLocalCluster(ctx, r.localClient, output.ErrorHandlerFuncs{
 		HandleWriteErrorFunc: func(resource ezkube.Object, err error) {
 			errs = multierror.Append(errs, eris.Wrapf(err, "writing resource %v failed", sets.Key(resource)))
 		},
