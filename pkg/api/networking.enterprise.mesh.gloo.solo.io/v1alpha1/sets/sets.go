@@ -38,6 +38,10 @@ type WasmDeploymentSet interface {
 	Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another WasmDeploymentSet
+	Delta(newSet WasmDeploymentSet) sksets.ResourceDelta
 }
 
 func makeGenericWasmDeploymentSet(wasmDeploymentList []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment) sksets.ResourceSet {
@@ -68,7 +72,7 @@ func (s *wasmDeploymentSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *wasmDeploymentSet) List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment) bool) []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment {
@@ -83,7 +87,7 @@ func (s *wasmDeploymentSet) List(filterResource ...func(*networking_enterprise_m
 	}
 
 	var wasmDeploymentList []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		wasmDeploymentList = append(wasmDeploymentList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment))
 	}
 	return wasmDeploymentList
@@ -95,7 +99,7 @@ func (s *wasmDeploymentSet) Map() map[string]*networking_enterprise_mesh_gloo_so
 	}
 
 	newMap := map[string]*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment)
 	}
 	return newMap
@@ -109,7 +113,7 @@ func (s *wasmDeploymentSet) Insert(
 	}
 
 	for _, obj := range wasmDeploymentList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -117,7 +121,7 @@ func (s *wasmDeploymentSet) Has(wasmDeployment ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(wasmDeployment)
+	return s.Generic().Has(wasmDeployment)
 }
 
 func (s *wasmDeploymentSet) Equal(
@@ -126,14 +130,14 @@ func (s *wasmDeploymentSet) Equal(
 	if s == nil {
 		return wasmDeploymentSet == nil
 	}
-	return s.set.Equal(makeGenericWasmDeploymentSet(wasmDeploymentSet.List()))
+	return s.Generic().Equal(wasmDeploymentSet.Generic())
 }
 
 func (s *wasmDeploymentSet) Delete(WasmDeployment ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(WasmDeployment)
+	s.Generic().Delete(WasmDeployment)
 }
 
 func (s *wasmDeploymentSet) Union(set WasmDeploymentSet) WasmDeploymentSet {
@@ -147,7 +151,7 @@ func (s *wasmDeploymentSet) Difference(set WasmDeploymentSet) WasmDeploymentSet 
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericWasmDeploymentSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &wasmDeploymentSet{set: newSet}
 }
 
@@ -155,7 +159,7 @@ func (s *wasmDeploymentSet) Intersection(set WasmDeploymentSet) WasmDeploymentSe
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericWasmDeploymentSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var wasmDeploymentList []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment
 	for _, obj := range newSet.List() {
 		wasmDeploymentList = append(wasmDeploymentList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment))
@@ -167,7 +171,7 @@ func (s *wasmDeploymentSet) Find(id ezkube.ResourceId) (*networking_enterprise_m
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find WasmDeployment %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment{}, id)
+	obj, err := s.Generic().Find(&networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -179,5 +183,21 @@ func (s *wasmDeploymentSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *wasmDeploymentSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.Generic()
+}
+
+func (s *wasmDeploymentSet) Delta(newSet WasmDeploymentSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }

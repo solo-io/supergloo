@@ -38,6 +38,10 @@ type XdsConfigSet interface {
 	Find(id ezkube.ResourceId) (*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another XdsConfigSet
+	Delta(newSet XdsConfigSet) sksets.ResourceDelta
 }
 
 func makeGenericXdsConfigSet(xdsConfigList []*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig) sksets.ResourceSet {
@@ -68,7 +72,7 @@ func (s *xdsConfigSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *xdsConfigSet) List(filterResource ...func(*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig) bool) []*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig {
@@ -83,7 +87,7 @@ func (s *xdsConfigSet) List(filterResource ...func(*xds_agent_enterprise_mesh_gl
 	}
 
 	var xdsConfigList []*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		xdsConfigList = append(xdsConfigList, obj.(*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig))
 	}
 	return xdsConfigList
@@ -95,7 +99,7 @@ func (s *xdsConfigSet) Map() map[string]*xds_agent_enterprise_mesh_gloo_solo_io_
 	}
 
 	newMap := map[string]*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig)
 	}
 	return newMap
@@ -109,7 +113,7 @@ func (s *xdsConfigSet) Insert(
 	}
 
 	for _, obj := range xdsConfigList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -117,7 +121,7 @@ func (s *xdsConfigSet) Has(xdsConfig ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(xdsConfig)
+	return s.Generic().Has(xdsConfig)
 }
 
 func (s *xdsConfigSet) Equal(
@@ -126,14 +130,14 @@ func (s *xdsConfigSet) Equal(
 	if s == nil {
 		return xdsConfigSet == nil
 	}
-	return s.set.Equal(makeGenericXdsConfigSet(xdsConfigSet.List()))
+	return s.Generic().Equal(xdsConfigSet.Generic())
 }
 
 func (s *xdsConfigSet) Delete(XdsConfig ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(XdsConfig)
+	s.Generic().Delete(XdsConfig)
 }
 
 func (s *xdsConfigSet) Union(set XdsConfigSet) XdsConfigSet {
@@ -147,7 +151,7 @@ func (s *xdsConfigSet) Difference(set XdsConfigSet) XdsConfigSet {
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericXdsConfigSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &xdsConfigSet{set: newSet}
 }
 
@@ -155,7 +159,7 @@ func (s *xdsConfigSet) Intersection(set XdsConfigSet) XdsConfigSet {
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericXdsConfigSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var xdsConfigList []*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig
 	for _, obj := range newSet.List() {
 		xdsConfigList = append(xdsConfigList, obj.(*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig))
@@ -167,7 +171,7 @@ func (s *xdsConfigSet) Find(id ezkube.ResourceId) (*xds_agent_enterprise_mesh_gl
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find XdsConfig %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig{}, id)
+	obj, err := s.Generic().Find(&xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -179,5 +183,21 @@ func (s *xdsConfigSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *xdsConfigSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.Generic()
+}
+
+func (s *xdsConfigSet) Delta(newSet XdsConfigSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }

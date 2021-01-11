@@ -13,6 +13,13 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for TrafficPolicy
+var TrafficPolicyGVK = schema.GroupVersionKind{
+	Group:   "networking.mesh.gloo.solo.io",
+	Version: "v1alpha2",
+	Kind:    "TrafficPolicy",
+}
+
 // TrafficPolicy is the Schema for the trafficPolicy API
 type TrafficPolicy struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -24,11 +31,7 @@ type TrafficPolicy struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (TrafficPolicy) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "networking.mesh.gloo.solo.io",
-		Version: "v1alpha2",
-		Kind:    "TrafficPolicy",
-	}
+	return TrafficPolicyGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -45,6 +48,13 @@ type TrafficPolicyList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for AccessPolicy
+var AccessPolicyGVK = schema.GroupVersionKind{
+	Group:   "networking.mesh.gloo.solo.io",
+	Version: "v1alpha2",
+	Kind:    "AccessPolicy",
+}
+
 // AccessPolicy is the Schema for the accessPolicy API
 type AccessPolicy struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -56,11 +66,7 @@ type AccessPolicy struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (AccessPolicy) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "networking.mesh.gloo.solo.io",
-		Version: "v1alpha2",
-		Kind:    "AccessPolicy",
-	}
+	return AccessPolicyGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -77,6 +83,13 @@ type AccessPolicyList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for VirtualMesh
+var VirtualMeshGVK = schema.GroupVersionKind{
+	Group:   "networking.mesh.gloo.solo.io",
+	Version: "v1alpha2",
+	Kind:    "VirtualMesh",
+}
+
 // VirtualMesh is the Schema for the virtualMesh API
 type VirtualMesh struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -88,11 +101,7 @@ type VirtualMesh struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (VirtualMesh) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "networking.mesh.gloo.solo.io",
-		Version: "v1alpha2",
-		Kind:    "VirtualMesh",
-	}
+	return VirtualMeshGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -109,6 +118,13 @@ type VirtualMeshList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for FailoverService
+var FailoverServiceGVK = schema.GroupVersionKind{
+	Group:   "networking.mesh.gloo.solo.io",
+	Version: "v1alpha2",
+	Kind:    "FailoverService",
+}
+
 // FailoverService is the Schema for the failoverService API
 type FailoverService struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -120,11 +136,7 @@ type FailoverService struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (FailoverService) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "networking.mesh.gloo.solo.io",
-		Version: "v1alpha2",
-		Kind:    "FailoverService",
-	}
+	return FailoverServiceGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

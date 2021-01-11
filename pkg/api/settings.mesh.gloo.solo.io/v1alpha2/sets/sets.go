@@ -38,6 +38,10 @@ type SettingsSet interface {
 	Find(id ezkube.ResourceId) (*settings_mesh_gloo_solo_io_v1alpha2.Settings, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another SettingsSet
+	Delta(newSet SettingsSet) sksets.ResourceDelta
 }
 
 func makeGenericSettingsSet(settingsList []*settings_mesh_gloo_solo_io_v1alpha2.Settings) sksets.ResourceSet {
@@ -68,7 +72,7 @@ func (s *settingsSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *settingsSet) List(filterResource ...func(*settings_mesh_gloo_solo_io_v1alpha2.Settings) bool) []*settings_mesh_gloo_solo_io_v1alpha2.Settings {
@@ -83,7 +87,7 @@ func (s *settingsSet) List(filterResource ...func(*settings_mesh_gloo_solo_io_v1
 	}
 
 	var settingsList []*settings_mesh_gloo_solo_io_v1alpha2.Settings
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		settingsList = append(settingsList, obj.(*settings_mesh_gloo_solo_io_v1alpha2.Settings))
 	}
 	return settingsList
@@ -95,7 +99,7 @@ func (s *settingsSet) Map() map[string]*settings_mesh_gloo_solo_io_v1alpha2.Sett
 	}
 
 	newMap := map[string]*settings_mesh_gloo_solo_io_v1alpha2.Settings{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*settings_mesh_gloo_solo_io_v1alpha2.Settings)
 	}
 	return newMap
@@ -109,7 +113,7 @@ func (s *settingsSet) Insert(
 	}
 
 	for _, obj := range settingsList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -117,7 +121,7 @@ func (s *settingsSet) Has(settings ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(settings)
+	return s.Generic().Has(settings)
 }
 
 func (s *settingsSet) Equal(
@@ -126,14 +130,14 @@ func (s *settingsSet) Equal(
 	if s == nil {
 		return settingsSet == nil
 	}
-	return s.set.Equal(makeGenericSettingsSet(settingsSet.List()))
+	return s.Generic().Equal(settingsSet.Generic())
 }
 
 func (s *settingsSet) Delete(Settings ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(Settings)
+	s.Generic().Delete(Settings)
 }
 
 func (s *settingsSet) Union(set SettingsSet) SettingsSet {
@@ -147,7 +151,7 @@ func (s *settingsSet) Difference(set SettingsSet) SettingsSet {
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericSettingsSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &settingsSet{set: newSet}
 }
 
@@ -155,7 +159,7 @@ func (s *settingsSet) Intersection(set SettingsSet) SettingsSet {
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericSettingsSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var settingsList []*settings_mesh_gloo_solo_io_v1alpha2.Settings
 	for _, obj := range newSet.List() {
 		settingsList = append(settingsList, obj.(*settings_mesh_gloo_solo_io_v1alpha2.Settings))
@@ -167,7 +171,7 @@ func (s *settingsSet) Find(id ezkube.ResourceId) (*settings_mesh_gloo_solo_io_v1
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find Settings %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&settings_mesh_gloo_solo_io_v1alpha2.Settings{}, id)
+	obj, err := s.Generic().Find(&settings_mesh_gloo_solo_io_v1alpha2.Settings{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -179,5 +183,21 @@ func (s *settingsSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *settingsSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.Generic()
+}
+
+func (s *settingsSet) Delta(newSet SettingsSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }
