@@ -55,6 +55,8 @@ message TrafficTargetSpec {
             repeated string values = 1;
         }
 
+        // A series of IP addresses and their associated ports.
+        // The list of ip + port pairs is the cartesian product of the following lists
         message EndpointSubsets {
 
             repeated string ip_addresses = 1;

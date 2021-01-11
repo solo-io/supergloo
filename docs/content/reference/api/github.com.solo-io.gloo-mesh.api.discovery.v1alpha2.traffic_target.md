@@ -76,7 +76,7 @@ The TrafficTarget is an abstraction for a traffic target which we have discovere
 <a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointSubsets"></a>
 
 ### TrafficTargetSpec.KubeService.EndpointSubsets
-
+A series of IP addresses and their associated ports. The list of ip + port pairs is the cartesian product of the following lists
 
 
 | Field | Type | Label | Description |

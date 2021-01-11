@@ -410,6 +410,8 @@ func (x *TrafficTargetSpec_KubeService_Subset) GetValues() []string {
 	return nil
 }
 
+// A series of IP addresses and their associated ports.
+// The list of ip + port pairs is the cartesian product of the following lists
 type TrafficTargetSpec_KubeService_EndpointSubsets struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
