@@ -14,10 +14,10 @@ jobs:
       - uses: actions/checkout@v2
       - run: |
           git fetch --prune --unshallow
-      - name: Set up Go 1.14
+      - name: Set up Go 1.15.5
         uses: actions/setup-go@v1
         with:
-          go-version: 1.14
+          go-version: 1.15.5
       - uses: actions/cache@v1
         with:
           path: ~/go/pkg/mod
@@ -40,10 +40,10 @@ jobs:
       - uses: actions/checkout@v2
       - run: |
           git fetch --prune --unshallow
-      - name: Set up Go 1.14
+      - name: Set up Go 1.15.5
         uses: actions/setup-go@v1
         with:
-          go-version: 1.14
+          go-version: 1.15.5
       - uses: actions/cache@v1
         with:
           path: ~/go/pkg/mod
@@ -73,10 +73,10 @@ jobs:
       - uses: actions/checkout@v2
       - run: |
           git fetch --prune --unshallow
-      - name: Set up Go 1.14
+      - name: Set up Go 1.15.5
         uses: actions/setup-go@v1
         with:
-          go-version: 1.14
+          go-version: 1.15.5
       - uses: engineerd/setup-kind@v0.5.0
         with:
           skipClusterCreation: "true"
@@ -129,10 +129,10 @@ jobs:
       - uses: actions/checkout@v2
       - run: |
           git fetch --prune --unshallow
-      - name: Set up Go 1.14
+      - name: Set up Go 1.15.5
         uses: actions/setup-go@v1
         with:
-          go-version: 1.14
+          go-version: 1.15.5
       - uses: engineerd/setup-kind@v0.5.0
         with:
           skipClusterCreation: "true"
