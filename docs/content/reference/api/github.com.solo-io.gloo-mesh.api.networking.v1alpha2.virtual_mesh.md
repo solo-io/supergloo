@@ -62,7 +62,7 @@ In Gloo Mesh, "federation" refers to the ability to expose traffic targets with 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | permissive | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  | Select permissive mode to expose all traffic targets in a VirtualMesh to cross-cluster traffic from all workloads in that Virtual Mesh. |
-  | flatNetwork | bool |  | Whether or not the virtual mesh is part of a flat network or not. If true, then all multicluster traffic will be routed directly to the Service Endpoints of the target workloads, rather than routing through an ingress gateway. NOTE: This feature will not work if the clusters are not pre-configured to live on the same network. |
+  | flatNetwork | bool |  | If true, all multicluster traffic will be routed directly to the service endpoints of the traffic targets, rather than through an ingress gateway. NOTE: This feature will not work if the clusters are not pre-configured to live on the same network. |
   
 
 
