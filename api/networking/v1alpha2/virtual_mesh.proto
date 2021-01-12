@@ -125,6 +125,11 @@ message VirtualMeshSpec {
             // in that Virtual Mesh.
             .google.protobuf.Empty permissive = 1;
         };
+
+        // If true, all multicluster traffic will be routed directly to the service endpoints of the traffic targets,
+        // rather than through an ingress gateway.
+        // NOTE: This feature will not work if the clusters are not pre-configured to live on the same network.
+        bool flat_network = 2;
     }
 
     /*
