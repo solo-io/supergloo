@@ -39,6 +39,10 @@ var GlooMeshEnterpriseNetworkingGroup = makeGroup("networking.enterprise", "v1al
 	{Kind: "WasmDeployment"},
 })
 
+var GlooMeshEnterpriseObservabilityGroup = makeGroup("observability.enterprise", "v1alpha1", []ResourceToGenerate{
+	{Kind: "AccessLogCollection"},
+})
+
 var GlooMeshEnterpriseRbacGroup = makeGroup("rbac.enterprise", "v1alpha1", []ResourceToGenerate{
 	{Kind: "Role", ShortNames: []string{"gmrole", "gmroles"}},
 	{Kind: "RoleBinding", ShortNames: []string{"gmrolebinding", "gmrolebindings"}},
@@ -49,6 +53,7 @@ var GlooMeshGroups = []model.Group{
 	GlooMeshDiscoveryGroup,
 	GlooMeshNetworkingGroup,
 	GlooMeshEnterpriseNetworkingGroup,
+	GlooMeshEnterpriseObservabilityGroup,
 	GlooMeshEnterpriseRbacGroup,
 }
 
@@ -103,7 +108,7 @@ func MakeGroup(module, apiRoot, groupPrefix, version string, resourcesToGenerate
 		resources = append(resources, res)
 	}
 
-	return model.Group{
+	group := model.Group{
 		GroupVersion: schema.GroupVersion{
 			Group:   groupPrefix + "." + constants.GlooMeshApiGroupSuffix,
 			Version: version,
@@ -119,4 +124,9 @@ func MakeGroup(module, apiRoot, groupPrefix, version string, resourcesToGenerate
 		CustomTemplates:         contrib.AllGroupCustomTemplates,
 		ApiRoot:                 apiRoot,
 	}
+	// TODO(harveyxia) revisit generating validation schemas for these groups once cuelang resolves this issue: https://github.com/cuelang/cue/issues/635
+	if groupPrefix == "observability.enterprise" {
+		group.RenderValidationSchemas = false
+	}
+	return group
 }
