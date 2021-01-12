@@ -9,6 +9,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/google/go-github/github"
 	"github.com/pkg/errors"
 	"github.com/solo-io/go-utils/clidoc"
@@ -106,14 +108,12 @@ type ProtoOptions struct {
 }
 
 type ChangelogConfig struct {
-	Name    string
-	Repo    string
-	Path    string
-	Version string
+	Name string
+	Repo string
+	Path string
 }
 
 type ChangelogOptions struct {
-	Generate  bool
 	Repos     []ChangelogConfig
 	OutputDir string
 }
@@ -154,8 +154,8 @@ func generateCliReference(root string, opts CliOptions) error {
 }
 
 func generateChangelog(root string, opts ChangelogOptions) error {
-	if !opts.Generate {
-		fmt.Println("skipping changelog generation, pass --changelog to enable")
+	if os.Getenv("SKIP_CHANGELOG_GENERATION") != "" {
+		fmt.Println("skipping changelog generation")
 		return nil
 	}
 
@@ -163,6 +163,17 @@ func generateChangelog(root string, opts ChangelogOptions) error {
 	changelogDir := filepath.Join(root, opts.OutputDir)
 	os.RemoveAll(changelogDir)
 	os.MkdirAll(changelogDir, 0755)
+
+	version, err := getGitVersion()
+	if err != nil {
+		return err
+	}
+
+	client, err := buildGithubClient()
+	if err != nil {
+		return err
+	}
+
 	type tplParams struct {
 		ChangelogConfig
 		Body   string
@@ -170,7 +181,7 @@ func generateChangelog(root string, opts ChangelogOptions) error {
 	}
 	tmpl := template.Must(template.New("changelog").Parse(changelogTmpl))
 	for i, cfg := range opts.Repos {
-		body, err := generateChangelogMD(cfg.Repo, cfg.Version)
+		body, err := generateChangelogMD(client, cfg.Repo, version)
 		if err != nil {
 			return err
 		}
@@ -194,33 +205,23 @@ func generateChangelog(root string, opts ChangelogOptions) error {
 	return ioutil.WriteFile(filepath.Join(changelogDir, "_index.md"), []byte(changelogIndex), 0644)
 }
 
-var (
-	githubClient            *github.Client
-	MissingGithubTokenError = errors.New("Must set GITHUB_TOKEN environment variable")
-)
-
-func getGithubClient() (*github.Client, error) {
-	if githubClient != nil {
-		return githubClient, nil
-	}
-
+func buildGithubClient() (*github.Client, error) {
 	token := os.Getenv("GITHUB_TOKEN")
 	if token == "" {
-		return nil, MissingGithubTokenError
+		return nil, errors.New("must set GITHUB_TOKEN environment variable")
 	}
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	tc := oauth2.NewClient(context.Background(), ts)
-	githubClient = github.NewClient(tc)
-	return githubClient, nil
+	client := github.NewClient(tc)
+	return client, nil
 }
 
-func generateChangelogMD(repo, version string) (string, error) {
-	client, err := getGithubClient()
-	if err != nil {
-		return "", err
-	}
-
-	releases, _, err := client.Repositories.ListReleases(context.Background(), "solo-io", repo, &github.ListOptions{Page: 0, PerPage: 1000000})
+func generateChangelogMD(client *github.Client, repo, version string) (string, error) {
+	releases, _, err := client.Repositories.ListReleases(
+		context.Background(),
+		"solo-io", repo,
+		&github.ListOptions{Page: 0, PerPage: 1000000},
+	)
 	if err != nil {
 		return "", err
 	}
@@ -242,4 +243,43 @@ func generateChangelogMD(repo, version string) (string, error) {
 	}
 
 	return sb.String(), nil
+}
+
+// getGitVersion finds the current version via the checked out git reference
+func getGitVersion() (string, error) {
+	repo, err := git.PlainOpen("./")
+	if err != nil {
+		return "", err
+	}
+	headRef, err := repo.Head()
+	if err != nil {
+		return "", err
+	}
+	if headRef.Name().IsBranch() {
+		return "", nil
+	}
+
+	tagRefs, err := repo.Tags()
+	if err != nil {
+		return "", err
+	}
+
+	var version string
+	if err := tagRefs.ForEach(func(tagRef *plumbing.Reference) error {
+		if version != "" {
+			return nil
+		}
+		if tagRef.Hash() == headRef.Hash() {
+			version = tagRef.Name().Short()
+		}
+
+		return nil
+	}); err != nil {
+		return "", err
+	}
+	if version == "" {
+		return "", fmt.Errorf("could not find version for revision %s", headRef.Hash().String())
+	}
+
+	return version, nil
 }
