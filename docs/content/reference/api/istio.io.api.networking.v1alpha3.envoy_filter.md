@@ -50,7 +50,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| workloadSelector | [istio.networking.v1alpha3.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.sidecar#istio.networking.v1alpha3.WorkloadSelector" >}}) |  | Criteria used to select the specific set of pods/VMs on which this patch configuration should be applied. If omitted, the set of patches in this configuration will be applied to all workload instances in the same namespace.  If omitted, the EnvoyFilter patches will be applied to all workloads in the same namespace. If the EnvoyFilter is present in the config root namespace, it will be applied to all applicable workloads in any namespace. |
+| workloadSelector | [istio.networking.v1alpha3.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.sidecar#istio.networking.v1alpha3.WorkloadSelector" >}}) |  | Criteria used to select the specific set of pods/VMs on which this patch configuration should be applied. If omitted, the set of patches in this configuration will be applied to all workload instances in the same namespace.  If omitted, the `EnvoyFilter` patches will be applied to all workloads in the same namespace. If the `EnvoyFilter` is present in the config root namespace, it will be applied to all applicable workloads in any namespace. |
   | configPatches | [][istio.networking.v1alpha3.EnvoyFilter.EnvoyConfigObjectPatch]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.envoy_filter#istio.networking.v1alpha3.EnvoyFilter.EnvoyConfigObjectPatch" >}}) | repeated | One or more patches with match conditions. |
   
 
@@ -69,7 +69,7 @@
 | portNumber | uint32 |  | The service port for which this cluster was generated.  If omitted, applies to clusters for any port. |
   | service | string |  | The fully qualified service name for this cluster. If omitted, applies to clusters for any service. For services defined through service entries, the service name is same as the hosts defined in the service entry. |
   | subset | string |  | The subset associated with the service. If omitted, applies to clusters for any subset of a service. |
-  | name | string |  | The exact name of the cluster to match. To match a specific cluster by name, such as the internally generated "Passthrough" cluster, leave all fields in clusterMatch empty, except the name. |
+  | name | string |  | The exact name of the cluster to match. To match a specific cluster by name, such as the internally generated `Passthrough` cluster, leave all fields in clusterMatch empty, except the name. |
   
 
 
@@ -103,7 +103,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| applyTo | [istio.networking.v1alpha3.EnvoyFilter.ApplyTo]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.envoy_filter#istio.networking.v1alpha3.EnvoyFilter.ApplyTo" >}}) |  | Specifies where in the Envoy configuration, the patch should be applied.  The match is expected to select the appropriate object based on applyTo.  For example, an applyTo with HTTP_FILTER is expected to have a match condition on the listeners, with a network filter selection on envoy.filters.network.http_connection_manager and a sub filter selection on the HTTP filter relative to which the insertion should be performed. Similarly, an applyTo on CLUSTER should have a match (if provided) on the cluster and not on a listener. |
+| applyTo | [istio.networking.v1alpha3.EnvoyFilter.ApplyTo]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.envoy_filter#istio.networking.v1alpha3.EnvoyFilter.ApplyTo" >}}) |  | Specifies where in the Envoy configuration, the patch should be applied.  The match is expected to select the appropriate object based on applyTo.  For example, an applyTo with `HTTP_FILTER` is expected to have a match condition on the listeners, with a network filter selection on `envoy.filters.network.http_connection_manager` and a sub filter selection on the HTTP filter relative to which the insertion should be performed. Similarly, an applyTo on `CLUSTER` should have a match (if provided) on the cluster and not on a listener. |
   | match | [istio.networking.v1alpha3.EnvoyFilter.EnvoyConfigObjectMatch]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.envoy_filter#istio.networking.v1alpha3.EnvoyFilter.EnvoyConfigObjectMatch" >}}) |  | Match on listener/route configuration/cluster. |
   | patch | [istio.networking.v1alpha3.EnvoyFilter.Patch]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.envoy_filter#istio.networking.v1alpha3.EnvoyFilter.Patch" >}}) |  | The patch to apply along with the operation. |
   
@@ -140,9 +140,10 @@
 | ----- | ---- | ----- | ----------- |
 | name | string |  | The name assigned to the filter chain. |
   | sni | string |  | The SNI value used by a filter chain's match condition.  This condition will evaluate to false if the filter chain has no sni match. |
-  | transportProtocol | string |  | Applies only to SIDECAR_INBOUND context. If non-empty, a transport protocol to consider when determining a filter chain match.  This value will be compared against the transport protocol of a new connection, when it's detected by the tls_inspector listener filter.<br>Accepted values include:<br>* `raw_buffer` - default, used when no transport protocol is detected. * `tls` - set when TLS protocol is detected by the TLS inspector. |
-  | applicationProtocols | string |  | Applies only to sidecars. If non-empty, a comma separated set of application protocols to consider when determining a filter chain match.  This value will be compared against the application protocols of a new connection, when it's detected by one of the listener filters such as the http_inspector.<br>Accepted values include: h2,http/1.1,http/1.0 |
-  | filter | [istio.networking.v1alpha3.EnvoyFilter.ListenerMatch.FilterMatch]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.envoy_filter#istio.networking.v1alpha3.EnvoyFilter.ListenerMatch.FilterMatch" >}}) |  | The name of a specific filter to apply the patch to. Set this to envoy.filters.network.http_connection_manager to add a filter or apply a patch to the HTTP connection manager. |
+  | transportProtocol | string |  | Applies only to `SIDECAR_INBOUND` context. If non-empty, a transport protocol to consider when determining a filter chain match.  This value will be compared against the transport protocol of a new connection, when it's detected by the `tls_inspector` listener filter.<br>Accepted values include:<br>* `raw_buffer` - default, used when no transport protocol is detected. * `tls` - set when TLS protocol is detected by the TLS inspector. |
+  | applicationProtocols | string |  | Applies only to sidecars. If non-empty, a comma separated set of application protocols to consider when determining a filter chain match.  This value will be compared against the application protocols of a new connection, when it's detected by one of the listener filters such as the `http_inspector`.<br>Accepted values include: h2, http/1.1, http/1.0 |
+  | filter | [istio.networking.v1alpha3.EnvoyFilter.ListenerMatch.FilterMatch]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.envoy_filter#istio.networking.v1alpha3.EnvoyFilter.ListenerMatch.FilterMatch" >}}) |  | The name of a specific filter to apply the patch to. Set this to `envoy.filters.network.http_connection_manager` to add a filter or apply a patch to the HTTP connection manager. |
+  | destinationPort | uint32 |  | The destination_port value used by a filter chain's match condition.  This condition will evaluate to false if the filter chain has no destination_port match. |
   
 
 
@@ -157,7 +158,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| name | string |  | The filter name to match on. For standard Envoy filters, canonical filter names should be used. Refer to https://www.envoyproxy.io/docs/envoy/latest/version_history/v1.14.0#deprecated for canonical names. |
+| name | string |  | The filter name to match on. For standard Envoy filters, [canonical filter](https://www.envoyproxy.io/docs/envoy/latest/version_history/v1.14.0#deprecated) names should be used. |
   | subFilter | [istio.networking.v1alpha3.EnvoyFilter.ListenerMatch.SubFilterMatch]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.envoy_filter#istio.networking.v1alpha3.EnvoyFilter.ListenerMatch.SubFilterMatch" >}}) |  | The next level filter within this filter to match upon. Typically used for HTTP Connection Manager filters and Thrift filters. |
   
 
@@ -205,7 +206,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| proxyVersion | string |  | A regular expression in golang regex format (RE2) that can be used to select proxies using a specific version of istio proxy. The Istio version for a given proxy is obtained from the node metadata field ISTIO_VERSION supplied by the proxy when connecting to Pilot. This value is embedded as an environment variable (ISTIO_META_ISTIO_VERSION) in the Istio proxy docker image. Custom proxy implementations should provide this metadata variable to take advantage of the Istio version check option. |
+| proxyVersion | string |  | A regular expression in golang regex format (RE2) that can be used to select proxies using a specific version of istio proxy. The Istio version for a given proxy is obtained from the node metadata field `ISTIO_VERSION` supplied by the proxy when connecting to Pilot. This value is embedded as an environment variable (`ISTIO_META_ISTIO_VERSION`) in the Istio proxy docker image. Custom proxy implementations should provide this metadata variable to take advantage of the Istio version check option. |
   | metadata | [][istio.networking.v1alpha3.EnvoyFilter.ProxyMatch.MetadataEntry]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.envoy_filter#istio.networking.v1alpha3.EnvoyFilter.ProxyMatch.MetadataEntry" >}}) | repeated | Match on the node metadata supplied by a proxy when connecting to Istio Pilot. Note that while Envoy's node metadata is of type Struct, only string key-value pairs are processed by Pilot. All keys specified in the metadata must match with exact values. The match will fail if any of the specified keys are absent or the values fail to match. |
   
 
@@ -239,9 +240,9 @@
 | ----- | ---- | ----- | ----------- |
 | portNumber | uint32 |  | The service port number or gateway server port number for which this route configuration was generated. If omitted, applies to route configurations for all ports. |
   | portName | string |  | Applicable only for GATEWAY context. The gateway server port name for which this route configuration was generated. |
-  | gateway | string |  | The Istio gateway config's namespace/name for which this route configuration was generated. Applies only if the context is GATEWAY. Should be in the namespace/name format. Use this field in conjunction with the portNumber and portName to accurately select the Envoy route configuration for a specific HTTPS server within a gateway config object. |
+  | gateway | string |  | The Istio gateway config's namespace/name for which this route configuration was generated. Applies only if the context is GATEWAY. Should be in the namespace/name format. Use this field in conjunction with the `portNumber` and `portName` to accurately select the Envoy route configuration for a specific HTTPS server within a gateway config object. |
   | vhost | [istio.networking.v1alpha3.EnvoyFilter.RouteConfigurationMatch.VirtualHostMatch]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.envoy_filter#istio.networking.v1alpha3.EnvoyFilter.RouteConfigurationMatch.VirtualHostMatch" >}}) |  | Match a specific virtual host in a route configuration and apply the patch to the virtual host. |
-  | name | string |  | Route configuration name to match on. Can be used to match a specific route configuration by name, such as the internally generated "http_proxy" route configuration for all sidecars. |
+  | name | string |  | Route configuration name to match on. Can be used to match a specific route configuration by name, such as the internally generated `http_proxy` route configuration for all sidecars. |
   
 
 
@@ -256,7 +257,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| name | string |  | The Route objects generated by default are named as "default".  Route objects generated using a virtual service will carry the name used in the virtual service's HTTP routes. |
+| name | string |  | The Route objects generated by default are named as default.  Route objects generated using a virtual service will carry the name used in the virtual service's HTTP routes. |
   | action | [istio.networking.v1alpha3.EnvoyFilter.RouteConfigurationMatch.RouteMatch.Action]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.envoy_filter#istio.networking.v1alpha3.EnvoyFilter.RouteConfigurationMatch.RouteMatch.Action" >}}) |  | Match a route with specific action type. |
   
 
@@ -294,10 +295,11 @@
 | FILTER_CHAIN | 2 | Applies the patch to the filter chain. |
 | NETWORK_FILTER | 3 | Applies the patch to the network filter chain, to modify an existing filter or add a new filter. |
 | HTTP_FILTER | 4 | Applies the patch to the HTTP filter chain in the http connection manager, to modify an existing filter or add a new filter. |
-| ROUTE_CONFIGURATION | 5 | Applies the patch to the Route configuration (rds output) inside a HTTP connection manager. This does not apply to the virtual host. Currently, only MERGE operation is allowed on the route configuration objects. |
+| ROUTE_CONFIGURATION | 5 | Applies the patch to the Route configuration (rds output) inside a HTTP connection manager. This does not apply to the virtual host. Currently, only `MERGE` operation is allowed on the route configuration objects. |
 | VIRTUAL_HOST | 6 | Applies the patch to a virtual host inside a route configuration. |
-| HTTP_ROUTE | 7 | Applies the patch to a route object inside the matched virtual host in a route configuration. Currently, only MERGE operation is allowed on the route objects. |
+| HTTP_ROUTE | 7 | Applies the patch to a route object inside the matched virtual host in a route configuration. |
 | CLUSTER | 8 | Applies the patch to a cluster in a CDS output. Also used to add new clusters. |
+| EXTENSION_CONFIG | 9 | Applies the patch to or adds an extension config in ECDS output. Note that ECDS is only supported by HTTP filters. |
 
 
 
@@ -308,7 +310,7 @@
 
 | Name | Number | Description |
 | ---- | ------ | ----------- |
-| UNSPECIFIED | 0 | Control plane decides where to insert the filter. Do not specify FilterClass if the filter is independent of others. |
+| UNSPECIFIED | 0 | Control plane decides where to insert the filter. Do not specify `FilterClass` if the filter is independent of others. |
 | AUTHN | 1 | Insert filter after Istio authentication filters. |
 | AUTHZ | 2 | Insert filter after Istio authorization filters. |
 | STATS | 3 | Insert filter before Istio stats filters. |
@@ -323,13 +325,13 @@
 | Name | Number | Description |
 | ---- | ------ | ----------- |
 | INVALID | 0 |  |
-| MERGE | 1 | Merge the provided config with the generated config using proto merge semantics. If you are specifying config in its entirity, use REPLACE instead. |
-| ADD | 2 | Add the provided config to an existing list (of listeners, clusters, virtual hosts, network filters, or http filters). This operation will be ignored when applyTo is set to ROUTE_CONFIGURATION, or HTTP_ROUTE. |
-| REMOVE | 3 | Remove the selected object from the list (of listeners, clusters, virtual hosts, network filters, or http filters). Does not require a value to be specified. This operation will be ignored when applyTo is set to ROUTE_CONFIGURATION, or HTTP_ROUTE. |
-| INSERT_BEFORE | 4 | Insert operation on an array of named objects. This operation is typically useful only in the context of filters, where the order of filters matter. For clusters and virtual hosts, order of the element in the array does not matter. Insert before the selected filter or sub filter. If no filter is selected, the specified filter will be inserted at the front of the list. |
-| INSERT_AFTER | 5 | Insert operation on an array of named objects. This operation is typically useful only in the context of filters, where the order of filters matter. For clusters and virtual hosts, order of the element in the array does not matter. Insert after the selected filter or sub filter. If no filter is selected, the specified filter will be inserted at the end of the list. |
-| INSERT_FIRST | 6 | Insert operation on an array of named objects. This operation is typically useful only in the context of filters, where the order of filters matter. For clusters and virtual hosts, order of the element in the array does not matter. Insert first in the list based on the presence of selected filter or not. This is specifically useful when you want your filter first in the list based on a match condition specified in Match clause. |
-| REPLACE | 7 | Replace contents of a named filter with new contents. REPLACE operation is only valid for HTTP_FILTER and NETWORK_FILTER. If the named filter is not found, this operation has no effect. |
+| MERGE | 1 | Merge the provided config with the generated config using proto merge semantics. If you are specifying config in its entirity, use `REPLACE` instead. |
+| ADD | 2 | Add the provided config to an existing list (of listeners, clusters, virtual hosts, network filters, or http filters). This operation will be ignored when `applyTo` is set to `ROUTE_CONFIGURATION`, or `HTTP_ROUTE`. |
+| REMOVE | 3 | Remove the selected object from the list (of listeners, clusters, virtual hosts, network filters, routes, or http filters). Does not require a value to be specified. This operation will be ignored when `applyTo` is set to `ROUTE_CONFIGURATION`, or `HTTP_ROUTE`. |
+| INSERT_BEFORE | 4 | Insert operation on an array of named objects. This operation is typically useful only in the context of filters or routes, where the order of elements matter. Routes should be ordered  based on most to least specific matching criteria since the  first matching element is selected. For clusters and virtual hosts, order of the element in the array does not matter. Insert before the selected filter or sub filter. If no filter is selected, the specified filter will be inserted at the front of the list. |
+| INSERT_AFTER | 5 | Insert operation on an array of named objects. This operation is typically useful only in the context of filters or routes, where the order of elements matter. Routes should be ordered  based on most to least specific matching criteria since the  first matching element is selected. For clusters and virtual hosts, order of the element in the array does not matter. Insert after the selected filter or sub filter. If no filter is selected, the specified filter will be inserted at the end of the list. |
+| INSERT_FIRST | 6 | Insert operation on an array of named objects. This operation is typically useful only in the context of filters or routes, where the order of elements matter. Routes should be ordered  based on most to least specific matching criteria since the  first matching element is selected. For clusters and virtual hosts, order of the element in the array does not matter. Insert first in the list based on the presence of selected filter or not. This is specifically useful when you want your filter first in the list based on a match condition specified in Match clause. |
+| REPLACE | 7 | Replace contents of a named filter with new contents. `REPLACE` operation is only valid for `HTTP_FILTER` and `NETWORK_FILTER`. If the named filter is not found, this operation has no effect. |
 
 
 
