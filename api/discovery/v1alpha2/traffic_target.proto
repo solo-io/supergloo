@@ -55,14 +55,19 @@ message TrafficTargetSpec {
             repeated string values = 1;
         }
 
-        message EndpointSubsets {
+        // A series of IP addresses and their associated ports.
+        // The list of ip + port pairs is the cartesian product of the following lists
+        message EndpointsSubset {
 
             repeated string ip_addresses = 1;
 
             repeated KubeServicePort ports = 2;
         }
 
-        repeated EndpointSubsets endpoints = 6;
+        // Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs.
+        // This API mirrors the kubernetes Endpoints API.
+        // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
+        repeated EndpointsSubset endpoints = 6;
 
     }
 
