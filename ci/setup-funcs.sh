@@ -15,7 +15,7 @@ function create_kind_cluster() {
 
   cluster=$1
   port=$2
-  # Set the network  to the 1 or 2 for flat networking purposes
+  # Set the network to the 1 or 2 for flat networking purposes
   ((net=$port%32000+1))
 
   echo "creating cluster ${cluster} with ingress port ${port}"
@@ -26,9 +26,15 @@ function create_kind_cluster() {
   cat <<EOF | kind create cluster --name "${cluster}" --image $kindImage --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  serviceSubnet: "10.96.${net}.0/24"
+  podSubnet: "192.168.${net}.0/24"
+  disableDefaultCNI: true
 nodes:
 - role: control-plane
   extraPortMappings:
+  - containerPort: 6443
+    hostPort: ${net}000
   - containerPort: ${port}
     hostPort: ${port}
     protocol: TCP
@@ -66,13 +72,15 @@ kubeadmConfigPatches:
   controllerManager:
     extraArgs:
       "feature-gates": "EphemeralContainers=true"
-  networking:
-    serviceSubnet: "10.96.$net.0/24"
-    podSubnet: "192.168.$net.0/24"
 EOF
 
   # NOTE: we delete the local-path-storage ns to free up CPU for ci
   ${K} delete ns local-path-storage
+
+  # Apply calico networking CNI
+  ${K} apply -f https://docs.projectcalico.org/v3.15/manifests/calico.yaml
+  ${K} -n kube-system set env daemonset/calico-node FELIX_IGNORELOOSERPF=true
+
 }
 
 # Operator spec for istio 1.7.x

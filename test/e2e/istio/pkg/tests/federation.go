@@ -35,7 +35,7 @@ func FederationTest() {
 		These tests assume that federation has been established between mgmt and remote clusters.
 	*/
 
-	It("enables communication across clusters using global dns names", func() {
+	FIt("enables communication across clusters using global dns names", func() {
 		manifest, err = utils.NewManifest("federation-trafficpolicies.yaml")
 		Expect(err).NotTo(HaveOccurred())
 

@@ -116,7 +116,7 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 
 	// Flat network is enabled for this particular virtual mesh
 	// so we will add all of the service endpoints to the traffic target
-	if vm := findRelatedVirtualMesh(validMesh, virtualMeshes); vm.Spec.GetFederation().GetFlatNetwork() {
+	if vm := findRelatedVirtualMesh(validMesh, virtualMeshes); vm != nil && vm.Spec.GetFederation().GetFlatNetwork() {
 		ep, err := endpoints.Find(kubeService.GetRef())
 		if err != nil {
 			contextutils.LoggerFrom(t.ctx).Errorf(
@@ -126,7 +126,7 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 		}
 
 		for _, epSub := range ep.Subsets {
-			sub := &v1alpha2.TrafficTargetSpec_KubeService_EndpointSubsets{}
+			sub := &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{}
 			for _, addr := range epSub.Addresses {
 				sub.IpAddresses = append(sub.IpAddresses, addr.IP)
 			}

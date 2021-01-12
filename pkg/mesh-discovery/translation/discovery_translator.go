@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
@@ -17,7 +18,12 @@ var DefaultDependencyFactory = internal.DependencyFactoryImpl{}
 // the translator "reconciles the entire state of the world"
 type Translator interface {
 	// translates the Input Snapshot to an Output Snapshot
-	Translate(ctx context.Context, in input.RemoteSnapshot, settings *settingsv1alpha2.DiscoverySettings) (discovery.Snapshot, error)
+	Translate(
+		ctx context.Context,
+		in input.RemoteSnapshot,
+		settings *settingsv1alpha2.DiscoverySettings,
+		virtualMeshes v1alpha2sets.VirtualMeshSet,
+	) (discovery.Snapshot, error)
 }
 
 type translator struct {
@@ -31,7 +37,12 @@ func NewTranslator(dependencyFactory internal.DependencyFactory) Translator {
 	}
 }
 
-func (t translator) Translate(ctx context.Context, in input.RemoteSnapshot, settings *settingsv1alpha2.DiscoverySettings) (discovery.Snapshot, error) {
+func (t translator) Translate(
+	ctx context.Context,
+	in input.RemoteSnapshot,
+	settings *settingsv1alpha2.DiscoverySettings,
+	virtualMeshes v1alpha2sets.VirtualMeshSet,
+) (discovery.Snapshot, error) {
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(ctx)
 
@@ -48,7 +59,13 @@ func (t translator) Translate(ctx context.Context, in input.RemoteSnapshot, sett
 		meshes,
 	)
 
-	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(in.Services(), in.Endpoints(), workloads, meshes)
+	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(
+		in.Services(),
+		in.Endpoints(),
+		workloads,
+		meshes,
+		virtualMeshes,
+	)
 
 	t.totalTranslates++
 
