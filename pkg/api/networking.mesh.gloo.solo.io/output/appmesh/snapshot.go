@@ -10,6 +10,8 @@ import (
 	"encoding/json"
 	"sort"
 
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
 
@@ -620,6 +622,9 @@ type Builder interface {
 
 	// create a clone of this builder (deepcopying all resources)
 	Clone() Builder
+
+	// return the difference between the snapshot in this builder's and another
+	Delta(newSnap Builder) output.SnapshotDelta
 }
 
 func (b *builder) AddVirtualServices(virtualServices ...*appmesh_k8s_aws_v1beta2.VirtualService) {
@@ -724,4 +729,40 @@ func (b *builder) Clone() Builder {
 		clone.AddCluster(cluster)
 	}
 	return clone
+}
+
+func (b *builder) Delta(other Builder) output.SnapshotDelta {
+	delta := output.SnapshotDelta{}
+	if b == nil {
+		return delta
+	}
+
+	// calcualte delta between VirtualServices
+	virtualServiceDelta := b.GetVirtualServices().Delta(other.GetVirtualServices())
+	virtualServiceGvk := schema.GroupVersionKind{
+		Group:   "appmesh.k8s.aws",
+		Version: "v1beta2",
+		Kind:    "VirtualService",
+	}
+	delta.AddInserted(virtualServiceGvk, virtualServiceDelta.Inserted)
+	delta.AddRemoved(virtualServiceGvk, virtualServiceDelta.Removed)
+	// calcualte delta between VirtualNodes
+	virtualNodeDelta := b.GetVirtualNodes().Delta(other.GetVirtualNodes())
+	virtualNodeGvk := schema.GroupVersionKind{
+		Group:   "appmesh.k8s.aws",
+		Version: "v1beta2",
+		Kind:    "VirtualNode",
+	}
+	delta.AddInserted(virtualNodeGvk, virtualNodeDelta.Inserted)
+	delta.AddRemoved(virtualNodeGvk, virtualNodeDelta.Removed)
+	// calcualte delta between VirtualRouters
+	virtualRouterDelta := b.GetVirtualRouters().Delta(other.GetVirtualRouters())
+	virtualRouterGvk := schema.GroupVersionKind{
+		Group:   "appmesh.k8s.aws",
+		Version: "v1beta2",
+		Kind:    "VirtualRouter",
+	}
+	delta.AddInserted(virtualRouterGvk, virtualRouterDelta.Inserted)
+	delta.AddRemoved(virtualRouterGvk, virtualRouterDelta.Removed)
+	return delta
 }

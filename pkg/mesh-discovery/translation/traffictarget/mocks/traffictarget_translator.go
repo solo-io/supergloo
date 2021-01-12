@@ -10,6 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1alpha2sets0 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 )
 
 // MockTranslator is a mock of Translator interface
@@ -36,15 +37,15 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // TranslateTrafficTargets mocks base method
-func (m *MockTranslator) TranslateTrafficTargets(services v1sets.ServiceSet, endpoints v1sets.EndpointsSet, workloads v1alpha2sets.WorkloadSet, meshes v1alpha2sets.MeshSet) v1alpha2sets.TrafficTargetSet {
+func (m *MockTranslator) TranslateTrafficTargets(services v1sets.ServiceSet, endpoints v1sets.EndpointsSet, workloads v1alpha2sets.WorkloadSet, meshes v1alpha2sets.MeshSet, virtualMeshes v1alpha2sets0.VirtualMeshSet) v1alpha2sets.TrafficTargetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranslateTrafficTargets", services, endpoints, workloads, meshes)
+	ret := m.ctrl.Call(m, "TranslateTrafficTargets", services, endpoints, workloads, meshes, virtualMeshes)
 	ret0, _ := ret[0].(v1alpha2sets.TrafficTargetSet)
 	return ret0
 }
 
 // TranslateTrafficTargets indicates an expected call of TranslateTrafficTargets
-func (mr *MockTranslatorMockRecorder) TranslateTrafficTargets(services, endpoints, workloads, meshes interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) TranslateTrafficTargets(services, endpoints, workloads, meshes, virtualMeshes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateTrafficTargets", reflect.TypeOf((*MockTranslator)(nil).TranslateTrafficTargets), services, endpoints, workloads, meshes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateTrafficTargets", reflect.TypeOf((*MockTranslator)(nil).TranslateTrafficTargets), services, endpoints, workloads, meshes, virtualMeshes)
 }
