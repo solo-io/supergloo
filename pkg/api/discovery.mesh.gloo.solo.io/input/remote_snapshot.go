@@ -33,6 +33,7 @@ import (
 
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	appmesh_k8s_aws_v1beta2 "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2"
 	appmesh_k8s_aws_v1beta2_sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
@@ -691,6 +692,392 @@ func (b *multiClusterRemoteBuilder) insertStatefulSetsFromCluster(ctx context.Co
 	for _, item := range statefulSetList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
+		statefulSets.Insert(&item)
+	}
+
+	return nil
+}
+
+// build a snapshot from resources in a single cluster
+type singleClusterRemoteBuilder struct {
+	mgr         manager.Manager
+	clusterName string
+}
+
+// Produces snapshots of resources read from the manager for the given cluster
+func NewSingleClusterRemoteBuilder(
+	mgr manager.Manager,
+) RemoteBuilder {
+	return NewSingleClusterRemoteBuilderWithClusterName(mgr, "")
+}
+
+// Produces snapshots of resources read from the manager for the given cluster.
+// Snapshot resources will be marked with the given ClusterName.
+func NewSingleClusterRemoteBuilderWithClusterName(
+	mgr manager.Manager,
+	clusterName string,
+) RemoteBuilder {
+	return &singleClusterRemoteBuilder{
+		mgr:         mgr,
+		clusterName: clusterName,
+	}
+}
+
+func (b *singleClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name string, opts RemoteBuildOptions) (RemoteSnapshot, error) {
+
+	meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
+
+	configMaps := v1_sets.NewConfigMapSet()
+	services := v1_sets.NewServiceSet()
+	pods := v1_sets.NewPodSet()
+	nodes := v1_sets.NewNodeSet()
+
+	deployments := apps_v1_sets.NewDeploymentSet()
+	replicaSets := apps_v1_sets.NewReplicaSetSet()
+	daemonSets := apps_v1_sets.NewDaemonSetSet()
+	statefulSets := apps_v1_sets.NewStatefulSetSet()
+
+	var errs error
+
+	if err := b.insertMeshes(ctx, meshes, opts.Meshes); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertConfigMaps(ctx, configMaps, opts.ConfigMaps); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertServices(ctx, services, opts.Services); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertPods(ctx, pods, opts.Pods); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertNodes(ctx, nodes, opts.Nodes); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertDeployments(ctx, deployments, opts.Deployments); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertReplicaSets(ctx, replicaSets, opts.ReplicaSets); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertDaemonSets(ctx, daemonSets, opts.DaemonSets); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertStatefulSets(ctx, statefulSets, opts.StatefulSets); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+
+	outputSnap := NewRemoteSnapshot(
+		name,
+
+		meshes,
+		configMaps,
+		services,
+		pods,
+		nodes,
+		deployments,
+		replicaSets,
+		daemonSets,
+		statefulSets,
+	)
+
+	return outputSnap, errs
+}
+
+func (b *singleClusterRemoteBuilder) insertMeshes(ctx context.Context, meshes appmesh_k8s_aws_v1beta2_sets.MeshSet, opts ResourceRemoteBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "appmesh.k8s.aws",
+			Version: "v1beta2",
+			Kind:    "Mesh",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	meshList, err := appmesh_k8s_aws_v1beta2.NewMeshClient(b.mgr.GetClient()).ListMesh(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range meshList.Items {
+		item := item // pike
+		item.ClusterName = b.clusterName
+		meshes.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterRemoteBuilder) insertConfigMaps(ctx context.Context, configMaps v1_sets.ConfigMapSet, opts ResourceRemoteBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "ConfigMap",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	configMapList, err := v1.NewConfigMapClient(b.mgr.GetClient()).ListConfigMap(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range configMapList.Items {
+		item := item // pike
+		item.ClusterName = b.clusterName
+		configMaps.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterRemoteBuilder) insertServices(ctx context.Context, services v1_sets.ServiceSet, opts ResourceRemoteBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Service",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	serviceList, err := v1.NewServiceClient(b.mgr.GetClient()).ListService(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range serviceList.Items {
+		item := item // pike
+		item.ClusterName = b.clusterName
+		services.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterRemoteBuilder) insertPods(ctx context.Context, pods v1_sets.PodSet, opts ResourceRemoteBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Pod",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	podList, err := v1.NewPodClient(b.mgr.GetClient()).ListPod(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range podList.Items {
+		item := item // pike
+		item.ClusterName = b.clusterName
+		pods.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterRemoteBuilder) insertNodes(ctx context.Context, nodes v1_sets.NodeSet, opts ResourceRemoteBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Node",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	nodeList, err := v1.NewNodeClient(b.mgr.GetClient()).ListNode(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range nodeList.Items {
+		item := item // pike
+		item.ClusterName = b.clusterName
+		nodes.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterRemoteBuilder) insertDeployments(ctx context.Context, deployments apps_v1_sets.DeploymentSet, opts ResourceRemoteBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "apps",
+			Version: "v1",
+			Kind:    "Deployment",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	deploymentList, err := apps_v1.NewDeploymentClient(b.mgr.GetClient()).ListDeployment(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range deploymentList.Items {
+		item := item // pike
+		item.ClusterName = b.clusterName
+		deployments.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterRemoteBuilder) insertReplicaSets(ctx context.Context, replicaSets apps_v1_sets.ReplicaSetSet, opts ResourceRemoteBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "apps",
+			Version: "v1",
+			Kind:    "ReplicaSet",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	replicaSetList, err := apps_v1.NewReplicaSetClient(b.mgr.GetClient()).ListReplicaSet(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range replicaSetList.Items {
+		item := item // pike
+		item.ClusterName = b.clusterName
+		replicaSets.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterRemoteBuilder) insertDaemonSets(ctx context.Context, daemonSets apps_v1_sets.DaemonSetSet, opts ResourceRemoteBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "apps",
+			Version: "v1",
+			Kind:    "DaemonSet",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	daemonSetList, err := apps_v1.NewDaemonSetClient(b.mgr.GetClient()).ListDaemonSet(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range daemonSetList.Items {
+		item := item // pike
+		item.ClusterName = b.clusterName
+		daemonSets.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterRemoteBuilder) insertStatefulSets(ctx context.Context, statefulSets apps_v1_sets.StatefulSetSet, opts ResourceRemoteBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "apps",
+			Version: "v1",
+			Kind:    "StatefulSet",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	statefulSetList, err := apps_v1.NewStatefulSetClient(b.mgr.GetClient()).ListStatefulSet(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range statefulSetList.Items {
+		item := item // pike
+		item.ClusterName = b.clusterName
 		statefulSets.Insert(&item)
 	}
 

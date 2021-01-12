@@ -190,7 +190,7 @@ func (s *trafficTargetSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *trafficTargetSet) Delta(newSet TrafficTargetSet) sksets.ResourceDelta {
@@ -379,7 +379,7 @@ func (s *workloadSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *workloadSet) Delta(newSet WorkloadSet) sksets.ResourceDelta {
@@ -568,7 +568,7 @@ func (s *meshSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *meshSet) Delta(newSet MeshSet) sksets.ResourceDelta {

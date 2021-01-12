@@ -190,7 +190,7 @@ func (s *xdsConfigSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *xdsConfigSet) Delta(newSet XdsConfigSet) sksets.ResourceDelta {

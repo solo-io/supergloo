@@ -190,7 +190,7 @@ func (s *issuedCertificateSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *issuedCertificateSet) Delta(newSet IssuedCertificateSet) sksets.ResourceDelta {
@@ -379,7 +379,7 @@ func (s *certificateRequestSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *certificateRequestSet) Delta(newSet CertificateRequestSet) sksets.ResourceDelta {
@@ -568,7 +568,7 @@ func (s *podBounceDirectiveSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *podBounceDirectiveSet) Delta(newSet PodBounceDirectiveSet) sksets.ResourceDelta {

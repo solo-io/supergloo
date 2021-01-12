@@ -190,7 +190,7 @@ func (s *trafficPolicySet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *trafficPolicySet) Delta(newSet TrafficPolicySet) sksets.ResourceDelta {
@@ -379,7 +379,7 @@ func (s *accessPolicySet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *accessPolicySet) Delta(newSet AccessPolicySet) sksets.ResourceDelta {
@@ -568,7 +568,7 @@ func (s *virtualMeshSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *virtualMeshSet) Delta(newSet VirtualMeshSet) sksets.ResourceDelta {
@@ -757,7 +757,7 @@ func (s *failoverServiceSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *failoverServiceSet) Delta(newSet FailoverServiceSet) sksets.ResourceDelta {

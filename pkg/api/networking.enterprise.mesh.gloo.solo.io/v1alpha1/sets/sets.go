@@ -190,7 +190,7 @@ func (s *wasmDeploymentSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
-	return s.Generic()
+	return s.set
 }
 
 func (s *wasmDeploymentSet) Delta(newSet WasmDeploymentSet) sksets.ResourceDelta {
