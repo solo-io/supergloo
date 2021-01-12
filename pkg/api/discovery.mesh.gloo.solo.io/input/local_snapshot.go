@@ -24,6 +24,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 
 	"github.com/solo-io/skv2/pkg/controllerutils"
+	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -36,6 +37,9 @@ type LocalSnapshot interface {
 
 	// return the set of input Settings
 	Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+	// update the status of all input objects which support
+	// the Status subresource (across multiple clusters)
+	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts LocalSyncStatusOptions) error
 	// update the status of all input objects which support
 	// the Status subresource (in the local cluster)
 	SyncStatuses(ctx context.Context, c client.Client, opts LocalSyncStatusOptions) error
@@ -71,6 +75,24 @@ func NewLocalSnapshot(
 
 func (s snapshotLocal) Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet {
 	return s.settings
+}
+
+func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts LocalSyncStatusOptions) error {
+	var errs error
+
+	if opts.Settings {
+		for _, obj := range s.Settings().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	return errs
 }
 
 func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts LocalSyncStatusOptions) error {
@@ -115,17 +137,111 @@ type ResourceLocalBuildOptions struct {
 	Verifier verifier.ServerResourceVerifier
 }
 
-// build a snapshot from resources in a single cluster
-type singleClusterLocalBuilder struct {
-	mgr manager.Manager
+// build a snapshot from resources across multiple clusters
+type multiClusterLocalBuilder struct {
+	clusters multicluster.Interface
+	client   multicluster.Client
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
+func NewMultiClusterLocalBuilder(
+	clusters multicluster.Interface,
+	client multicluster.Client,
+) LocalBuilder {
+	return &multiClusterLocalBuilder{
+		clusters: clusters,
+		client:   client,
+	}
+}
+
+func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name string, opts LocalBuildOptions) (LocalSnapshot, error) {
+
+	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+
+	var errs error
+
+	for _, cluster := range b.clusters.ListClusters() {
+
+		if err := b.insertSettingsFromCluster(ctx, cluster, settings, opts.Settings); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+
+	}
+
+	outputSnap := NewLocalSnapshot(
+		name,
+
+		settings,
+	)
+
+	return outputSnap, errs
+}
+
+func (b *multiClusterLocalBuilder) insertSettingsFromCluster(ctx context.Context, cluster string, settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceLocalBuildOptions) error {
+	settingsClient, err := settings_mesh_gloo_solo_io_v1alpha2.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "settings.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Settings",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	settingsList, err := settingsClient.ListSettings(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range settingsList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		settings.Insert(&item)
+	}
+
+	return nil
+}
+
+// build a snapshot from resources in a single cluster
+type singleClusterLocalBuilder struct {
+	mgr         manager.Manager
+	clusterName string
+}
+
+// Produces snapshots of resources read from the manager for the given cluster
 func NewSingleClusterLocalBuilder(
 	mgr manager.Manager,
 ) LocalBuilder {
+	return NewSingleClusterLocalBuilderWithClusterName(mgr, "")
+}
+
+// Produces snapshots of resources read from the manager for the given cluster.
+// Snapshot resources will be marked with the given ClusterName.
+func NewSingleClusterLocalBuilderWithClusterName(
+	mgr manager.Manager,
+	clusterName string,
+) LocalBuilder {
 	return &singleClusterLocalBuilder{
-		mgr: mgr,
+		mgr:         mgr,
+		clusterName: clusterName,
 	}
 }
 
@@ -175,6 +291,7 @@ func (b *singleClusterLocalBuilder) insertSettings(ctx context.Context, settings
 
 	for _, item := range settingsList.Items {
 		item := item // pike
+		item.ClusterName = b.clusterName
 		settings.Insert(&item)
 	}
 

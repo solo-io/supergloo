@@ -10,6 +10,8 @@ import (
 	"encoding/json"
 	"sort"
 
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
 
@@ -620,6 +622,9 @@ type Builder interface {
 
 	// create a clone of this builder (deepcopying all resources)
 	Clone() Builder
+
+	// return the difference between the snapshot in this builder's and another
+	Delta(newSnap Builder) output.SnapshotDelta
 }
 
 func (b *builder) AddTrafficTargets(trafficTargets ...*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) {
@@ -724,4 +729,40 @@ func (b *builder) Clone() Builder {
 		clone.AddCluster(cluster)
 	}
 	return clone
+}
+
+func (b *builder) Delta(other Builder) output.SnapshotDelta {
+	delta := output.SnapshotDelta{}
+	if b == nil {
+		return delta
+	}
+
+	// calcualte delta between TrafficTargets
+	trafficTargetDelta := b.GetTrafficTargets().Delta(other.GetTrafficTargets())
+	trafficTargetGvk := schema.GroupVersionKind{
+		Group:   "discovery.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "TrafficTarget",
+	}
+	delta.AddInserted(trafficTargetGvk, trafficTargetDelta.Inserted)
+	delta.AddRemoved(trafficTargetGvk, trafficTargetDelta.Removed)
+	// calcualte delta between Workloads
+	workloadDelta := b.GetWorkloads().Delta(other.GetWorkloads())
+	workloadGvk := schema.GroupVersionKind{
+		Group:   "discovery.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "Workload",
+	}
+	delta.AddInserted(workloadGvk, workloadDelta.Inserted)
+	delta.AddRemoved(workloadGvk, workloadDelta.Removed)
+	// calcualte delta between Meshes
+	meshDelta := b.GetMeshes().Delta(other.GetMeshes())
+	meshGvk := schema.GroupVersionKind{
+		Group:   "discovery.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "Mesh",
+	}
+	delta.AddInserted(meshGvk, meshDelta.Inserted)
+	delta.AddRemoved(meshGvk, meshDelta.Removed)
+	return delta
 }
