@@ -60,7 +60,7 @@
 | port | [istio.networking.v1alpha3.Port]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.gateway#istio.networking.v1alpha3.Port" >}}) |  | The port associated with the listener. |
   | bind | string |  | The IP to which the listener should be bound. Must be in the format `x.x.x.x`. Unix domain socket addresses are not allowed in the bind field for ingress listeners. If omitted, Istio will automatically configure the defaults based on imported services and the workload instances to which this configuration is applied to. |
   | captureMode | [istio.networking.v1alpha3.CaptureMode]({{< versioned_link_path fromRoot="/reference/api/istio.io.api.networking.v1alpha3.sidecar#istio.networking.v1alpha3.CaptureMode" >}}) |  | The captureMode option dictates how traffic to the listener is expected to be captured (or not). |
-  | defaultEndpoint | string |  | The loopback IP endpoint or Unix domain socket to which traffic should be forwarded to. This configuration can be used to redirect traffic arriving at the bind `IP:Port` on the sidecar to a `localhost:port` or Unix domain socket where the application workload instance is listening for connections. Format should be `127.0.0.1:PORT` or `unix:///path/to/socket` |
+  | defaultEndpoint | string |  | The IP endpoint or Unix domain socket to which traffic should be forwarded to. This configuration can be used to redirect traffic arriving at the bind `IP:Port` on the sidecar to a `localhost:port` or Unix domain socket where the application workload instance is listening for connections. Arbitrary IPs are not supported. Format should be one of `127.0.0.1:PORT`, `0.0.0.0:PORT` (which will forward to the instance IP), or `unix:///path/to/socket` |
   
 
 

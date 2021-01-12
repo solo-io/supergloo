@@ -904,6 +904,12 @@ spec:
               - required:
                 - permissive
               properties:
+                flatNetwork:
+                  description: |-
+                    If true, all multicluster traffic will be routed directly to the service endpoints of the traffic targets,
+                    rather than through an ingress gateway.
+                    NOTE: This feature will not work if the clusters are not pre-configured to live on the same network.
+                  type: boolean
                 permissive:
                   description: |-
                     Select permissive mode to expose all traffic targets in a
