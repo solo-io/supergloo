@@ -66,6 +66,20 @@ func (mr *MockSettingsSnapshotMockRecorder) SyncStatusesMultiCluster(ctx, mcClie
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatusesMultiCluster", reflect.TypeOf((*MockSettingsSnapshot)(nil).SyncStatusesMultiCluster), ctx, mcClient, opts)
 }
 
+// SyncStatusesMultiCluster mocks base method
+func (m *MockLocalSnapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts input.LocalSyncStatusOptions) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SyncStatusesMultiCluster", ctx, mcClient, opts)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SyncStatusesMultiCluster indicates an expected call of SyncStatusesMultiCluster
+func (mr *MockLocalSnapshotMockRecorder) SyncStatusesMultiCluster(ctx, mcClient, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatusesMultiCluster", reflect.TypeOf((*MockLocalSnapshot)(nil).SyncStatusesMultiCluster), ctx, mcClient, opts)
+}
+
 // SyncStatuses mocks base method
 func (m *MockSettingsSnapshot) SyncStatuses(ctx context.Context, c client.Client, opts input.SettingsSyncStatusOptions) error {
 	m.ctrl.T.Helper()
