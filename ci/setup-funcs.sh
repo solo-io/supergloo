@@ -22,6 +22,11 @@ function create_kind_cluster() {
 
   K="kubectl --context=kind-${cluster}"
 
+  disableDefaultCNI=false
+  if [ ! -z ${FLAT_NETWORKING_ENABLED} ]; then
+    disableDefaultCNI=false
+  fi
+
   # This config is roughly based on: https://kind.sigs.k8s.io/docs/user/ingress/
   cat <<EOF | kind create cluster --name "${cluster}" --image $kindImage --config=-
 kind: Cluster
@@ -29,7 +34,7 @@ apiVersion: kind.x-k8s.io/v1alpha4
 networking:
   serviceSubnet: "10.96.${net}.0/24"
   podSubnet: "192.168.${net}.0/24"
-  disableDefaultCNI: true
+  disableDefaultCNI: ${disableDefaultCNI}
 nodes:
 - role: control-plane
   extraPortMappings:
