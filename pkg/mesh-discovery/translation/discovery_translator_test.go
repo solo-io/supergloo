@@ -94,7 +94,7 @@ var _ = Describe("Translator", func() {
 
 		mockMeshTranslator.EXPECT().TranslateMeshes(inRemote, settings).Return(meshes)
 		mockWorkloadTranslator.EXPECT().TranslateWorkloads(deployments, daemonSets, statefulSets, meshes).Return(workloads)
-		mockTrafficTargetTranslator.EXPECT().TranslateTrafficTargets(services, workloads, meshes, virtualMeshes).Return(trafficTargets)
+		mockTrafficTargetTranslator.EXPECT().TranslateTrafficTargets(services, endpoints, workloads, meshes, virtualMeshes).Return(trafficTargets)
 
 		out, err := t.Translate(ctx, inRemote, settings, virtualMeshes)
 		Expect(err).NotTo(HaveOccurred())
