@@ -23,7 +23,8 @@ title: "settings.proto"
   - [DiscoverySettings.Istio.IngressGatewayDetector](#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetector)
   - [DiscoverySettings.Istio.IngressGatewayDetector.GatewayWorkloadLabelsEntry](#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetector.GatewayWorkloadLabelsEntry)
   - [DiscoverySettings.Istio.IngressGatewayDetectorsEntry](#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetectorsEntry)
-  - [NetworkingExtensionsServer](#settings.mesh.gloo.solo.io.NetworkingExtensionsServer)
+  - [GrpcServer](#settings.mesh.gloo.solo.io.GrpcServer)
+  - [RelaySettings](#settings.mesh.gloo.solo.io.RelaySettings)
   - [SettingsSpec](#settings.mesh.gloo.solo.io.SettingsSpec)
   - [SettingsStatus](#settings.mesh.gloo.solo.io.SettingsStatus)
 
@@ -111,17 +112,33 @@ Workload labels and TLS port name used during discovery to detect ingress gatewa
 
 
 
-<a name="settings.mesh.gloo.solo.io.NetworkingExtensionsServer"></a>
+<a name="settings.mesh.gloo.solo.io.GrpcServer"></a>
 
-### NetworkingExtensionsServer
-Options for connecting to an external gRPC NetworkingExtensions server
+### GrpcServer
+Options for connecting to an external gRPC server
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| address | string |  | TCP address of the Networking Extensions Server (including port) |
+| address | string |  | TCP address of the gRPC Server (including port) |
   | insecure | bool |  | Communicate over HTTP rather than HTTPS |
   | reconnectOnNetworkFailures | bool |  | Instruct Gloo Mesh to automatically reconnect to the server on network failures |
+  
+
+
+
+
+
+<a name="settings.mesh.gloo.solo.io.RelaySettings"></a>
+
+### RelaySettings
+Relay provides a way for connecting Gloo Mesh to remote Kubernetes Clusters without the need to share credentials and access to remote Kube API Servers from the management cluster (the Gloo Mesh controllers).<br>Relay instead uses a streaming gRPC API to pass discovery data from remote clusters to the management cluster, and push configuration from the management cluster to the remote clusters.<br>Architecturally, it includes a Relay-agent which is installed to remote Kube clusters at registration time, which then connects directly to the Relay Server in the management cluster. to push its discovery data and pull its mesh configuration.<br>RelaySettings contains options for configuring Gloo Mesh to use Relay for cluster management.<br>To configure Gloo Mesh to use Relay, make sure to read the [Installation guide for use with Relay]({{< versioned_link_path fromRoot="/guides/setup/insatll_gloo_mesh" >}}) and [Cluster Registration guide for use with Relay]({{< versioned_link_path fromRoot="/guides/setup/register_cluster" >}}).
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| enabled | bool |  | enable the use of Relay for cluster management. If relay is enabled, make sure to follow the [Cluster Registration guide for Relay]({{< versioned_link_path fromRoot="/guides/setup/register_cluster#relay" >}}) for registering your clusters. |
+  | server | [settings.mesh.gloo.solo.io.GrpcServer]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.GrpcServer" >}}) |  | Connection info for the Relay Server. Gloo Mesh will fetch discovery resources from this server and push translated outputs to this server. |
   
 
 
@@ -137,8 +154,9 @@ Configure global settings and defaults.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | mtls | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS" >}}) |  | Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence) |
-  | networkingExtensionServers | [][settings.mesh.gloo.solo.io.NetworkingExtensionsServer]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.NetworkingExtensionsServer" >}}) | repeated | Configure Gloo Mesh networking to communicate with one or more external gRPC NetworkingExtensions servers. Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence). Note: Extension Servers have full write access to the output objects written by Gloo Mesh. |
+  | networkingExtensionServers | [][settings.mesh.gloo.solo.io.GrpcServer]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.GrpcServer" >}}) | repeated | Configure Gloo Mesh networking to communicate with one or more external gRPC NetworkingExtensions servers. Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence). Note: Extension Servers have full write access to the output objects written by Gloo Mesh. |
   | discovery | [settings.mesh.gloo.solo.io.DiscoverySettings]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.DiscoverySettings" >}}) |  | Settings specific to the discovery controller. |
+  | relay | [settings.mesh.gloo.solo.io.RelaySettings]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.RelaySettings" >}}) |  | Enable and configure use of Relay to communicate with remote clusters. This is an Enterprise-only feature. |
   
 
 
