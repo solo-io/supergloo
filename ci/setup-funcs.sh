@@ -81,6 +81,9 @@ EOF
   ${K} apply -f https://docs.projectcalico.org/v3.15/manifests/calico.yaml
   ${K} -n kube-system set env daemonset/calico-node FELIX_IGNORELOOSERPF=true
 
+  # Ensure calico node is ready before installing istio
+  ${K} -n kube-system rollout status daemonset/calico-node --timeout=300s
+
 }
 
 # Operator spec for istio 1.7.x
