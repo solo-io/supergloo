@@ -10,6 +10,8 @@ import (
 	"encoding/json"
 	"sort"
 
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
 
@@ -316,6 +318,9 @@ type Builder interface {
 
 	// create a clone of this builder (deepcopying all resources)
 	Clone() Builder
+
+	// return the difference between the snapshot in this builder's and another
+	Delta(newSnap Builder) output.SnapshotDelta
 }
 
 func (b *builder) AddSecrets(secrets ...*v1.Secret) {
@@ -384,4 +389,22 @@ func (b *builder) Clone() Builder {
 		clone.AddCluster(cluster)
 	}
 	return clone
+}
+
+func (b *builder) Delta(other Builder) output.SnapshotDelta {
+	delta := output.SnapshotDelta{}
+	if b == nil {
+		return delta
+	}
+
+	// calcualte delta between Secrets
+	secretDelta := b.GetSecrets().Delta(other.GetSecrets())
+	secretGvk := schema.GroupVersionKind{
+		Group:   "",
+		Version: "v1",
+		Kind:    "Secret",
+	}
+	delta.AddInserted(secretGvk, secretDelta.Inserted)
+	delta.AddRemoved(secretGvk, secretDelta.Removed)
+	return delta
 }

@@ -16,7 +16,7 @@ import (
 	apps_v1 "k8s.io/api/apps/v1"
 )
 
-type InputRemoteSnapshotManualBuilder struct {
+type InputDiscoveryInputSnapshotManualBuilder struct {
 	name string
 
 	meshes appmesh_k8s_aws_v1beta2_sets.MeshSet
@@ -32,8 +32,8 @@ type InputRemoteSnapshotManualBuilder struct {
 	statefulSets apps_v1_sets.StatefulSetSet
 }
 
-func NewInputRemoteSnapshotManualBuilder(name string) *InputRemoteSnapshotManualBuilder {
-	return &InputRemoteSnapshotManualBuilder{
+func NewInputDiscoveryInputSnapshotManualBuilder(name string) *InputDiscoveryInputSnapshotManualBuilder {
+	return &InputDiscoveryInputSnapshotManualBuilder{
 		name: name,
 
 		meshes: appmesh_k8s_aws_v1beta2_sets.NewMeshSet(),
@@ -50,8 +50,8 @@ func NewInputRemoteSnapshotManualBuilder(name string) *InputRemoteSnapshotManual
 	}
 }
 
-func (i *InputRemoteSnapshotManualBuilder) Build() RemoteSnapshot {
-	return NewRemoteSnapshot(
+func (i *InputDiscoveryInputSnapshotManualBuilder) Build() DiscoveryInputSnapshot {
+	return NewDiscoveryInputSnapshot(
 		i.name,
 
 		i.meshes,
@@ -67,39 +67,39 @@ func (i *InputRemoteSnapshotManualBuilder) Build() RemoteSnapshot {
 		i.statefulSets,
 	)
 }
-func (i *InputRemoteSnapshotManualBuilder) AddMeshes(meshes []*appmesh_k8s_aws_v1beta2.Mesh) *InputRemoteSnapshotManualBuilder {
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddMeshes(meshes []*appmesh_k8s_aws_v1beta2.Mesh) *InputDiscoveryInputSnapshotManualBuilder {
 	i.meshes.Insert(meshes...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddConfigMaps(configMaps []*v1.ConfigMap) *InputRemoteSnapshotManualBuilder {
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddConfigMaps(configMaps []*v1.ConfigMap) *InputDiscoveryInputSnapshotManualBuilder {
 	i.configMaps.Insert(configMaps...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddServices(services []*v1.Service) *InputRemoteSnapshotManualBuilder {
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddServices(services []*v1.Service) *InputDiscoveryInputSnapshotManualBuilder {
 	i.services.Insert(services...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddPods(pods []*v1.Pod) *InputRemoteSnapshotManualBuilder {
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddPods(pods []*v1.Pod) *InputDiscoveryInputSnapshotManualBuilder {
 	i.pods.Insert(pods...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddNodes(nodes []*v1.Node) *InputRemoteSnapshotManualBuilder {
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddNodes(nodes []*v1.Node) *InputDiscoveryInputSnapshotManualBuilder {
 	i.nodes.Insert(nodes...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddDeployments(deployments []*apps_v1.Deployment) *InputRemoteSnapshotManualBuilder {
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddDeployments(deployments []*apps_v1.Deployment) *InputDiscoveryInputSnapshotManualBuilder {
 	i.deployments.Insert(deployments...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddReplicaSets(replicaSets []*apps_v1.ReplicaSet) *InputRemoteSnapshotManualBuilder {
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddReplicaSets(replicaSets []*apps_v1.ReplicaSet) *InputDiscoveryInputSnapshotManualBuilder {
 	i.replicaSets.Insert(replicaSets...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddDaemonSets(daemonSets []*apps_v1.DaemonSet) *InputRemoteSnapshotManualBuilder {
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddDaemonSets(daemonSets []*apps_v1.DaemonSet) *InputDiscoveryInputSnapshotManualBuilder {
 	i.daemonSets.Insert(daemonSets...)
 	return i
 }
-func (i *InputRemoteSnapshotManualBuilder) AddStatefulSets(statefulSets []*apps_v1.StatefulSet) *InputRemoteSnapshotManualBuilder {
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddStatefulSets(statefulSets []*apps_v1.StatefulSet) *InputDiscoveryInputSnapshotManualBuilder {
 	i.statefulSets.Insert(statefulSets...)
 	return i
 }

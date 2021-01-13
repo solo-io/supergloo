@@ -38,6 +38,10 @@ type AccessLogCollectionSet interface {
 	Find(id ezkube.ResourceId) (*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another AccessLogCollectionSet
+	Delta(newSet AccessLogCollectionSet) sksets.ResourceDelta
 }
 
 func makeGenericAccessLogCollectionSet(accessLogCollectionList []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) sksets.ResourceSet {
@@ -68,7 +72,7 @@ func (s *accessLogCollectionSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *accessLogCollectionSet) List(filterResource ...func(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) bool) []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection {
@@ -83,7 +87,7 @@ func (s *accessLogCollectionSet) List(filterResource ...func(*observability_ente
 	}
 
 	var accessLogCollectionList []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		accessLogCollectionList = append(accessLogCollectionList, obj.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection))
 	}
 	return accessLogCollectionList
@@ -95,7 +99,7 @@ func (s *accessLogCollectionSet) Map() map[string]*observability_enterprise_mesh
 	}
 
 	newMap := map[string]*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection)
 	}
 	return newMap
@@ -109,7 +113,7 @@ func (s *accessLogCollectionSet) Insert(
 	}
 
 	for _, obj := range accessLogCollectionList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -117,7 +121,7 @@ func (s *accessLogCollectionSet) Has(accessLogCollection ezkube.ResourceId) bool
 	if s == nil {
 		return false
 	}
-	return s.set.Has(accessLogCollection)
+	return s.Generic().Has(accessLogCollection)
 }
 
 func (s *accessLogCollectionSet) Equal(
@@ -126,14 +130,14 @@ func (s *accessLogCollectionSet) Equal(
 	if s == nil {
 		return accessLogCollectionSet == nil
 	}
-	return s.set.Equal(makeGenericAccessLogCollectionSet(accessLogCollectionSet.List()))
+	return s.Generic().Equal(accessLogCollectionSet.Generic())
 }
 
 func (s *accessLogCollectionSet) Delete(AccessLogCollection ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(AccessLogCollection)
+	s.Generic().Delete(AccessLogCollection)
 }
 
 func (s *accessLogCollectionSet) Union(set AccessLogCollectionSet) AccessLogCollectionSet {
@@ -147,7 +151,7 @@ func (s *accessLogCollectionSet) Difference(set AccessLogCollectionSet) AccessLo
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericAccessLogCollectionSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &accessLogCollectionSet{set: newSet}
 }
 
@@ -155,7 +159,7 @@ func (s *accessLogCollectionSet) Intersection(set AccessLogCollectionSet) Access
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericAccessLogCollectionSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var accessLogCollectionList []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection
 	for _, obj := range newSet.List() {
 		accessLogCollectionList = append(accessLogCollectionList, obj.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection))
@@ -167,7 +171,7 @@ func (s *accessLogCollectionSet) Find(id ezkube.ResourceId) (*observability_ente
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find AccessLogCollection %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection{}, id)
+	obj, err := s.Generic().Find(&observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -179,5 +183,21 @@ func (s *accessLogCollectionSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *accessLogCollectionSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *accessLogCollectionSet) Delta(newSet AccessLogCollectionSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }

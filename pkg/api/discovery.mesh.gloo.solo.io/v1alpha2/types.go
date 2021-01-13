@@ -13,6 +13,13 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for TrafficTarget
+var TrafficTargetGVK = schema.GroupVersionKind{
+	Group:   "discovery.mesh.gloo.solo.io",
+	Version: "v1alpha2",
+	Kind:    "TrafficTarget",
+}
+
 // TrafficTarget is the Schema for the trafficTarget API
 type TrafficTarget struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -24,11 +31,7 @@ type TrafficTarget struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (TrafficTarget) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "discovery.mesh.gloo.solo.io",
-		Version: "v1alpha2",
-		Kind:    "TrafficTarget",
-	}
+	return TrafficTargetGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -45,6 +48,13 @@ type TrafficTargetList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for Workload
+var WorkloadGVK = schema.GroupVersionKind{
+	Group:   "discovery.mesh.gloo.solo.io",
+	Version: "v1alpha2",
+	Kind:    "Workload",
+}
+
 // Workload is the Schema for the workload API
 type Workload struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -56,11 +66,7 @@ type Workload struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (Workload) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "discovery.mesh.gloo.solo.io",
-		Version: "v1alpha2",
-		Kind:    "Workload",
-	}
+	return WorkloadGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -77,6 +83,13 @@ type WorkloadList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for Mesh
+var MeshGVK = schema.GroupVersionKind{
+	Group:   "discovery.mesh.gloo.solo.io",
+	Version: "v1alpha2",
+	Kind:    "Mesh",
+}
+
 // Mesh is the Schema for the mesh API
 type Mesh struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -88,11 +101,7 @@ type Mesh struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (Mesh) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "discovery.mesh.gloo.solo.io",
-		Version: "v1alpha2",
-		Kind:    "Mesh",
-	}
+	return MeshGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

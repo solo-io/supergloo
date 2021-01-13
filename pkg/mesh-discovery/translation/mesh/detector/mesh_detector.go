@@ -13,14 +13,14 @@ import (
 // If no mesh is detected, an empty list is returned
 // Separate Detectors are implemented for different Mesh types / versions.
 type MeshDetector interface {
-	DetectMeshes(in input.RemoteSnapshot, settings *settingsv1alpha2.DiscoverySettings) (v1alpha2.MeshSlice, error)
+	DetectMeshes(in input.DiscoveryInputSnapshot, settings *settingsv1alpha2.DiscoverySettings) (v1alpha2.MeshSlice, error)
 }
 
 // wrapper for multiple mesh detectors.
 // returns all detected meshes
 type MeshDetectors []MeshDetector
 
-func (d MeshDetectors) DetectMeshes(in input.RemoteSnapshot, settings *settingsv1alpha2.DiscoverySettings) (v1alpha2.MeshSlice, error) {
+func (d MeshDetectors) DetectMeshes(in input.DiscoveryInputSnapshot, settings *settingsv1alpha2.DiscoverySettings) (v1alpha2.MeshSlice, error) {
 	var allMeshes v1alpha2.MeshSlice
 	var errs error
 	for _, detector := range d {

@@ -13,6 +13,13 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for IssuedCertificate
+var IssuedCertificateGVK = schema.GroupVersionKind{
+	Group:   "certificates.mesh.gloo.solo.io",
+	Version: "v1alpha2",
+	Kind:    "IssuedCertificate",
+}
+
 // IssuedCertificate is the Schema for the issuedCertificate API
 type IssuedCertificate struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -24,11 +31,7 @@ type IssuedCertificate struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (IssuedCertificate) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "certificates.mesh.gloo.solo.io",
-		Version: "v1alpha2",
-		Kind:    "IssuedCertificate",
-	}
+	return IssuedCertificateGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -45,6 +48,13 @@ type IssuedCertificateList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for CertificateRequest
+var CertificateRequestGVK = schema.GroupVersionKind{
+	Group:   "certificates.mesh.gloo.solo.io",
+	Version: "v1alpha2",
+	Kind:    "CertificateRequest",
+}
+
 // CertificateRequest is the Schema for the certificateRequest API
 type CertificateRequest struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -56,11 +66,7 @@ type CertificateRequest struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (CertificateRequest) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "certificates.mesh.gloo.solo.io",
-		Version: "v1alpha2",
-		Kind:    "CertificateRequest",
-	}
+	return CertificateRequestGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -77,6 +83,13 @@ type CertificateRequestList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for PodBounceDirective
+var PodBounceDirectiveGVK = schema.GroupVersionKind{
+	Group:   "certificates.mesh.gloo.solo.io",
+	Version: "v1alpha2",
+	Kind:    "PodBounceDirective",
+}
+
 // PodBounceDirective is the Schema for the podBounceDirective API
 type PodBounceDirective struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -88,11 +101,7 @@ type PodBounceDirective struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (PodBounceDirective) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "certificates.mesh.gloo.solo.io",
-		Version: "v1alpha2",
-		Kind:    "PodBounceDirective",
-	}
+	return PodBounceDirectiveGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

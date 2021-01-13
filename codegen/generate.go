@@ -41,6 +41,15 @@ type topLevelComponent struct {
 	// remote inptus are read from managed cluster registered to the controller cluster
 	remoteInputResources io.Snapshot
 
+	// name of the local snapshot, if the component is hybrid. defaults to Local
+	localSnapshotName string
+
+	// name of the remote snapshot, if the component is hybrid. defaults to Remote
+	remoteSnapshotName string
+
+	// if this component can run in agent mode, generate a homogenous reconciler which combines both the local and remote resources
+	agentMode bool
+
 	// the set of output resources for which to generate a snapshot
 	outputResources []io.OutputSnapshot
 }
@@ -50,27 +59,33 @@ func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 
 	switch {
 	case t.localInputResources != nil && t.remoteInputResources != nil:
+		if t.localSnapshotName == "" {
+			t.localSnapshotName = "Local"
+		}
+		if t.remoteSnapshotName == "" {
+			t.remoteSnapshotName = "Remote"
+		}
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshot,
-			"Local",
+			t.localSnapshotName,
 			t.generatedCodeRoot+"/input/local_snapshot.go",
 			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshot,
-			"Remote",
+			t.remoteSnapshotName,
 			t.generatedCodeRoot+"/input/remote_snapshot.go",
 			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshotManualBuilder,
-			"Local",
+			t.localSnapshotName,
 			t.generatedCodeRoot+"/input/local_snapshot_manual_builder.go",
 			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.localInputResources},
 		))
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshotManualBuilder,
-			"Remote",
+			t.remoteSnapshotName,
 			t.generatedCodeRoot+"/input/remote_snapshot_manual_builder.go",
 			contrib.HomogenousSnapshotResources{ResourcesToSelect: t.remoteInputResources},
 		))
@@ -84,6 +99,17 @@ func (t topLevelComponent) makeCodegenTemplates() []model.CustomTemplates {
 				RemoteResourcesToSelect: t.remoteInputResources,
 			},
 		))
+
+		if t.agentMode {
+			topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
+				contrib.InputReconciler,
+				"Agent",
+				t.generatedCodeRoot+"/input/agent_reconciler.go",
+				contrib.HomogenousSnapshotResources{
+					ResourcesToSelect: t.localInputResources.Join(t.remoteInputResources),
+				},
+			))
+		}
 	case t.localInputResources != nil:
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
 			contrib.InputSnapshot,
@@ -144,9 +170,12 @@ var (
 		// discovery component
 		{
 			generatedCodeRoot:    "pkg/api/discovery.mesh.gloo.solo.io",
-			remoteInputResources: io.DiscoveryRemoteInputTypes,
-			localInputResources:  io.DiscoveryLocalInputTypes,
+			remoteInputResources: io.DiscoveryInputTypes,
+			remoteSnapshotName:   "DiscoveryInput",
+			localInputResources:  io.DiscoverySettingsTypes,
+			localSnapshotName:    "Settings",
 			outputResources:      []io.OutputSnapshot{io.DiscoveryOutputTypes},
+			agentMode:            true,
 		},
 		// networking snapshot
 		{

@@ -13,6 +13,13 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for WasmDeployment
+var WasmDeploymentGVK = schema.GroupVersionKind{
+	Group:   "networking.enterprise.mesh.gloo.solo.io",
+	Version: "v1alpha1",
+	Kind:    "WasmDeployment",
+}
+
 // WasmDeployment is the Schema for the wasmDeployment API
 type WasmDeployment struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -24,11 +31,7 @@ type WasmDeployment struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (WasmDeployment) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "networking.enterprise.mesh.gloo.solo.io",
-		Version: "v1alpha1",
-		Kind:    "WasmDeployment",
-	}
+	return WasmDeploymentGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

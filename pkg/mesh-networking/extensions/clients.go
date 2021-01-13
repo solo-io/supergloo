@@ -22,7 +22,7 @@ type PushFunc func(notification *v1alpha1.PushNotification)
 // Clients provides a convenience wrapper for a set of clients to communicate with multiple Extension Servers
 type Clients []v1alpha1.NetworkingExtensionsClient
 
-func NewClientsFromSettings(ctx context.Context, extensionsServerOptions []*v1alpha2.NetworkingExtensionsServer) (Clients, error) {
+func NewClientsFromSettings(ctx context.Context, extensionsServerOptions []*v1alpha2.GrpcServer) (Clients, error) {
 	var extensionsClients Clients
 	for _, extensionsServer := range extensionsServerOptions {
 		extensionsServerAddr := extensionsServer.GetAddress()
@@ -91,7 +91,7 @@ func startNotificationWatch(ctx context.Context, exClient v1alpha1.NetworkingExt
 type Clientset interface {
 	// ConfigureServers updates the set of servers this Clientset is configured with.
 	// Restarts the notification watches if servers were updated, using the new pushFn to handle notification pushes.
-	ConfigureServers(extensionsServerOptions []*v1alpha2.NetworkingExtensionsServer, pushFn PushFunc) error
+	ConfigureServers(extensionsServerOptions []*v1alpha2.GrpcServer, pushFn PushFunc) error
 
 	// GetClients returns the set of Extension clients that are cached with this Clientset.
 	// Must be called after UpdateServers
@@ -115,7 +115,7 @@ type cachedClients struct {
 	clients     Clients
 }
 
-func (c *clientset) ConfigureServers(extensionsServerOptions []*v1alpha2.NetworkingExtensionsServer, pushFn PushFunc) error {
+func (c *clientset) ConfigureServers(extensionsServerOptions []*v1alpha2.GrpcServer, pushFn PushFunc) error {
 	optionsHash, err := hashutils.HashAllSafe(nil, extensionsServerOptions)
 	if err != nil {
 		return err

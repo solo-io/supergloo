@@ -10,6 +10,8 @@ import (
 	"encoding/json"
 	"sort"
 
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
 
@@ -636,6 +638,9 @@ type Builder interface {
 
 	// create a clone of this builder (deepcopying all resources)
 	Clone() Builder
+
+	// return the difference between the snapshot in this builder's and another
+	Delta(newSnap Builder) output.SnapshotDelta
 }
 
 func (b *builder) AddTrafficSplits(trafficSplits ...*split_smi_spec_io_v1alpha2.TrafficSplit) {
@@ -750,4 +755,42 @@ func (b *builder) Clone() Builder {
 		clone.AddCluster(cluster)
 	}
 	return clone
+}
+
+func (b *builder) Delta(other Builder) output.SnapshotDelta {
+	delta := output.SnapshotDelta{}
+	if b == nil {
+		return delta
+	}
+
+	// calcualte delta between TrafficSplits
+	trafficSplitDelta := b.GetTrafficSplits().Delta(other.GetTrafficSplits())
+	trafficSplitGvk := schema.GroupVersionKind{
+		Group:   "split.smi-spec.io",
+		Version: "v1alpha2",
+		Kind:    "TrafficSplit",
+	}
+	delta.AddInserted(trafficSplitGvk, trafficSplitDelta.Inserted)
+	delta.AddRemoved(trafficSplitGvk, trafficSplitDelta.Removed)
+
+	// calcualte delta between TrafficTargets
+	trafficTargetDelta := b.GetTrafficTargets().Delta(other.GetTrafficTargets())
+	trafficTargetGvk := schema.GroupVersionKind{
+		Group:   "access.smi-spec.io",
+		Version: "v1alpha2",
+		Kind:    "TrafficTarget",
+	}
+	delta.AddInserted(trafficTargetGvk, trafficTargetDelta.Inserted)
+	delta.AddRemoved(trafficTargetGvk, trafficTargetDelta.Removed)
+
+	// calcualte delta between HTTPRouteGroups
+	hTTPRouteGroupDelta := b.GetHTTPRouteGroups().Delta(other.GetHTTPRouteGroups())
+	hTTPRouteGroupGvk := schema.GroupVersionKind{
+		Group:   "specs.smi-spec.io",
+		Version: "v1alpha3",
+		Kind:    "HTTPRouteGroup",
+	}
+	delta.AddInserted(hTTPRouteGroupGvk, hTTPRouteGroupDelta.Inserted)
+	delta.AddRemoved(hTTPRouteGroupGvk, hTTPRouteGroupDelta.Removed)
+	return delta
 }

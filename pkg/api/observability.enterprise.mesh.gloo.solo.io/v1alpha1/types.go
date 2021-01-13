@@ -13,6 +13,13 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for AccessLogCollection
+var AccessLogCollectionGVK = schema.GroupVersionKind{
+	Group:   "observability.enterprise.mesh.gloo.solo.io",
+	Version: "v1alpha1",
+	Kind:    "AccessLogCollection",
+}
+
 // AccessLogCollection is the Schema for the accessLogCollection API
 type AccessLogCollection struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -24,11 +31,7 @@ type AccessLogCollection struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (AccessLogCollection) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "observability.enterprise.mesh.gloo.solo.io",
-		Version: "v1alpha1",
-		Kind:    "AccessLogCollection",
-	}
+	return AccessLogCollectionGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

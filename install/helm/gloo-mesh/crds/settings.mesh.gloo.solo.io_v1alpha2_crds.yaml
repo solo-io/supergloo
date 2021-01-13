@@ -77,7 +77,7 @@ spec:
               items:
                 properties:
                   address:
-                    description: TCP address of the Networking Extensions Server (including port)
+                    description: TCP address of the gRPC Server (including port)
                     type: string
                   insecure:
                     description: Communicate over HTTP rather than HTTPS
@@ -87,6 +87,33 @@ spec:
                     type: boolean
                 type: object
               type: array
+            relay:
+              description: |-
+                Enable and configure use of Relay to communicate with remote clusters.
+                This is an Enterprise-only feature.
+              properties:
+                enabled:
+                  description: |-
+                    enable the use of Relay for cluster management.
+                    If relay is enabled, make sure to follow the [Cluster Registration guide for Relay]({{< versioned_link_path fromRoot="/guides/setup/register_cluster#relay" >}})
+                    for registering your clusters.
+                  type: boolean
+                server:
+                  description: |-
+                    Connection info for the Relay Server. Gloo Mesh will fetch discovery resources from this server
+                    and push translated outputs to this server.
+                  properties:
+                    address:
+                      description: TCP address of the gRPC Server (including port)
+                      type: string
+                    insecure:
+                      description: Communicate over HTTP rather than HTTPS
+                      type: boolean
+                    reconnectOnNetworkFailures:
+                      description: Instruct Gloo Mesh to automatically reconnect to the server on network failures
+                      type: boolean
+                  type: object
+              type: object
           type: object
         status:
           properties:
