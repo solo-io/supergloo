@@ -123,27 +123,26 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 				"endpoints could not be found for kube service %s",
 				sets2.TypedKey(kubeService.GetRef()),
 			)
-		}
-
-		for _, epSub := range ep.Subsets {
-			sub := &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{}
-			for _, addr := range epSub.Addresses {
-				sub.IpAddresses = append(sub.IpAddresses, addr.IP)
-			}
-			for _, port := range epSub.Ports {
-				svcPort := &v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
-					Port:     uint32(port.Port),
-					Name:     port.Name,
-					Protocol: string(port.Protocol),
+		} else {
+			for _, epSub := range ep.Subsets {
+				sub := &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{}
+				for _, addr := range epSub.Addresses {
+					sub.IpAddresses = append(sub.IpAddresses, addr.IP)
 				}
-				if port.AppProtocol != nil {
-					svcPort.AppProtocol = *port.AppProtocol
+				for _, port := range epSub.Ports {
+					svcPort := &v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+						Port:     uint32(port.Port),
+						Name:     port.Name,
+						Protocol: string(port.Protocol),
+					}
+					if port.AppProtocol != nil {
+						svcPort.AppProtocol = *port.AppProtocol
+					}
+					sub.Ports = append(sub.Ports, svcPort)
 				}
-				sub.Ports = append(sub.Ports, svcPort)
+				kubeService.Endpoints = append(kubeService.Endpoints, sub)
 			}
-			kubeService.Endpoints = append(kubeService.Endpoints, sub)
 		}
-
 	}
 
 	return &v1alpha2.TrafficTarget{
