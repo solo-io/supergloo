@@ -34,8 +34,8 @@ title: "access_logging.proto"
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| sourceSelector | [][networking.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Select the workloads to be configured to emit access logs. Leave empty to apply to all workloads managed by Gloo Mesh. |
-  | accessLogFilter | [][envoy.config.accesslog.v3.AccessLogFilter]({{< versioned_link_path fromRoot="/reference/api/envoy.config.accesslog.v3.accesslog#envoy.config.accesslog.v3.AccessLogFilter" >}}) | repeated | Configure the criteria for determining which access logs will be emitted. Leave empty to emit all access logs. |
+| workloadSelectors | [][networking.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Select the workloads to be configured to emit access logs. Leave empty to apply to all workloads managed by Gloo Mesh. |
+  | accessLogFilters | [][envoy.config.accesslog.v3.AccessLogFilter]({{< versioned_link_path fromRoot="/reference/api/envoy.config.accesslog.v3.accesslog#envoy.config.accesslog.v3.AccessLogFilter" >}}) | repeated | Configure the criteria for determining which access logs will be emitted. Leave empty to emit all access logs. |
   
 
 

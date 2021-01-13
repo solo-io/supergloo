@@ -10,9 +10,9 @@ message AccessLogCollectionSpec {
 
     // Select the workloads to be configured to emit access logs.
     // Leave empty to apply to all workloads managed by Gloo Mesh.
-    repeated .networking.mesh.gloo.solo.io.WorkloadSelector source_selector = 1;
+    repeated .networking.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 1;
 
     // Configure the criteria for determining which access logs will be emitted.
     // Leave empty to emit all access logs.
-    repeated .envoy.config.accesslog.v3.AccessLogFilter access_log_filter = 2;
+    repeated .envoy.config.accesslog.v3.AccessLogFilter access_log_filters = 2;
 }
