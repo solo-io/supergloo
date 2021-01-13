@@ -270,251 +270,274 @@ var _ = Describe("Validation", func() {
 			}
 	}
 
-	// Snapshot with invalid FailoverService.
-	var invalidInputSnapshot = func() (failoverservice.Inputs, *networkingv1alpha2.FailoverServiceSpec) {
-		return failoverservice.Inputs{
-				TrafficTargets: discoveryv1alpha2sets.NewTrafficTargetSet(
-					&discoveryv1alpha2.TrafficTarget{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:        "traffictarget1",
-							Namespace:   "namespace1",
-							ClusterName: "cluster1",
-						},
-						Spec: discoveryv1alpha2.TrafficTargetSpec{
-							Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
-								KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
-									Ref: &corev1.ClusterObjectRef{
-										Name:        "service1",
-										Namespace:   "namespace1",
-										ClusterName: "cluster1",
-									},
-								},
-							},
-							Mesh: &corev1.ObjectRef{
-								Name:      "mesh1",
-								Namespace: "namespace1",
-							},
-						},
-						Status: trafficTargetStatusWithOutlierDetection(),
-					},
-					&discoveryv1alpha2.TrafficTarget{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:        "traffictarget1",
-							Namespace:   "namespace1",
-							ClusterName: "cluster2",
-						},
-						Spec: discoveryv1alpha2.TrafficTargetSpec{
-							Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
-								KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
-									Ref: &corev1.ClusterObjectRef{
-										Name:        "service1",
-										Namespace:   "namespace1",
-										ClusterName: "cluster2",
-									},
-								},
-							},
-							Mesh: &corev1.ObjectRef{
-								Name:      "mesh2",
-								Namespace: "namespace1",
-							},
-						},
-						Status: trafficTargetStatusWithOutlierDetection(),
-					},
-					&discoveryv1alpha2.TrafficTarget{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:        "traffictarget1",
-							Namespace:   "namespace1",
-							ClusterName: "cluster3",
-						},
-						Spec: discoveryv1alpha2.TrafficTargetSpec{
-							Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
-								KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
-									Ref: &corev1.ClusterObjectRef{
-										Name:        "service1",
-										Namespace:   "namespace1",
-										ClusterName: "cluster3",
-									},
-								},
-							},
-							Mesh: &corev1.ObjectRef{
-								Name:      "mesh3",
-								Namespace: "namespace1",
-							},
-						},
-						Status: trafficTargetStatusWithOutlierDetection(),
-					},
-					&discoveryv1alpha2.TrafficTarget{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:        "traffictarget1",
-							Namespace:   "namespace1",
-							ClusterName: "cluster4",
-						},
-						Spec: discoveryv1alpha2.TrafficTargetSpec{
-							Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
-								KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
-									Ref: &corev1.ClusterObjectRef{
-										Name:        "service1",
-										Namespace:   "namespace1",
-										ClusterName: "cluster4",
-									},
-								},
-							},
-							Mesh: &corev1.ObjectRef{
-								Name:      "mesh3",
-								Namespace: "namespace1",
-							},
-						},
-						Status: discoveryv1alpha2.TrafficTargetStatus{
-							AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
-								{
-									// Missing OutlierDetection
-									Spec: &networkingv1alpha2.TrafficPolicySpec{},
-								},
-							},
-						},
-					},
-				),
-				KubeClusters: multiclusterv1alpha1sets.NewKubernetesClusterSet(),
-				Meshes: discoveryv1alpha2sets.NewMeshSet(
-					&discoveryv1alpha2.Mesh{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "mesh1",
-							Namespace: "namespace1",
-						},
-						Spec: discoveryv1alpha2.MeshSpec{
-							MeshType: &discoveryv1alpha2.MeshSpec_Istio_{
-								Istio: &discoveryv1alpha2.MeshSpec_Istio{
-									Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
-										Cluster: "cluster1",
-									},
-								},
-							},
-						},
-						Status: discoveryv1alpha2.MeshStatus{
-							AppliedVirtualMesh: &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
-								Ref: &corev1.ObjectRef{
-									Name:      "vm1",
-									Namespace: "namespace1",
-								},
-							},
-						},
-					},
-					&discoveryv1alpha2.Mesh{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "mesh2",
-							Namespace: "namespace1",
-						},
-						Spec: discoveryv1alpha2.MeshSpec{
-							MeshType: &discoveryv1alpha2.MeshSpec_Istio_{
-								Istio: &discoveryv1alpha2.MeshSpec_Istio{
-									Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
-										Cluster: "cluster2",
-									},
-								},
-							},
-						},
-						Status: discoveryv1alpha2.MeshStatus{
-							AppliedVirtualMesh: &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
-								Ref: &corev1.ObjectRef{
-									Name:      "vm2",
-									Namespace: "namespace1",
-								},
-							},
-						},
-					},
-					&discoveryv1alpha2.Mesh{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "mesh3",
-							Namespace: "namespace1",
-						},
-						Spec: discoveryv1alpha2.MeshSpec{
-							MeshType: &discoveryv1alpha2.MeshSpec_Istio_{
-								Istio: &discoveryv1alpha2.MeshSpec_Istio{
-									Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
-										Cluster: "cluster3",
-									},
-								},
-							},
-						},
-					},
-				),
-				VirtualMeshes: networkingv1alpha2sets.NewVirtualMeshSet(
-					&networkingv1alpha2.VirtualMesh{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vm1",
-							Namespace: "namespace1",
-						},
-						Spec: networkingv1alpha2.VirtualMeshSpec{
-							Meshes: []*corev1.ObjectRef{
-								{
-									Name:      "mesh1",
-									Namespace: "namespace1",
-								},
-							},
-						},
-					},
-					&networkingv1alpha2.VirtualMesh{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "vm2",
-							Namespace: "namespace1",
-						},
-						Spec: networkingv1alpha2.VirtualMeshSpec{
-							Meshes: []*corev1.ObjectRef{
-								{
-									Name:      "mesh2",
-									Namespace: "namespace1",
-								},
-							},
-						},
-					},
-				),
-			}, &networkingv1alpha2.FailoverServiceSpec{
-				Hostname: "invalidDNS@Q#$@%",
-				Meshes: []*corev1.ObjectRef{
-					{
-						Name:      "mesh1",
-						Namespace: "namespace1",
-					},
+	var invalidInputSnapshot = failoverservice.Inputs{
+		TrafficTargets: discoveryv1alpha2sets.NewTrafficTargetSet(
+			&discoveryv1alpha2.TrafficTarget{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        "traffictarget1",
+					Namespace:   "namespace1",
+					ClusterName: "cluster1",
 				},
-				BackingServices: []*networkingv1alpha2.FailoverServiceSpec_BackingService{
-					{
-						BackingServiceType: &networkingv1alpha2.FailoverServiceSpec_BackingService_KubeService{
-							KubeService: &corev1.ClusterObjectRef{
+				Spec: discoveryv1alpha2.TrafficTargetSpec{
+					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+							Ref: &corev1.ClusterObjectRef{
 								Name:        "service1",
 								Namespace:   "namespace1",
 								ClusterName: "cluster1",
 							},
 						},
 					},
-					{
-						BackingServiceType: &networkingv1alpha2.FailoverServiceSpec_BackingService_KubeService{
-							KubeService: &corev1.ClusterObjectRef{
+					Mesh: &corev1.ObjectRef{
+						Name:      "mesh1",
+						Namespace: "namespace1",
+					},
+				},
+				Status: trafficTargetStatusWithOutlierDetection(),
+			},
+			&discoveryv1alpha2.TrafficTarget{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        "traffictarget1",
+					Namespace:   "namespace1",
+					ClusterName: "cluster2",
+				},
+				Spec: discoveryv1alpha2.TrafficTargetSpec{
+					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+							Ref: &corev1.ClusterObjectRef{
 								Name:        "service1",
 								Namespace:   "namespace1",
 								ClusterName: "cluster2",
 							},
 						},
 					},
-					{
-						BackingServiceType: &networkingv1alpha2.FailoverServiceSpec_BackingService_KubeService{
-							KubeService: &corev1.ClusterObjectRef{
+					Mesh: &corev1.ObjectRef{
+						Name:      "mesh2",
+						Namespace: "namespace1",
+					},
+				},
+				Status: trafficTargetStatusWithOutlierDetection(),
+			},
+			&discoveryv1alpha2.TrafficTarget{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        "traffictarget1",
+					Namespace:   "namespace1",
+					ClusterName: "cluster3",
+				},
+				Spec: discoveryv1alpha2.TrafficTargetSpec{
+					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+							Ref: &corev1.ClusterObjectRef{
 								Name:        "service1",
 								Namespace:   "namespace1",
 								ClusterName: "cluster3",
 							},
 						},
 					},
-					{
-						BackingServiceType: &networkingv1alpha2.FailoverServiceSpec_BackingService_KubeService{
-							KubeService: &corev1.ClusterObjectRef{
+					Mesh: &corev1.ObjectRef{
+						Name:      "mesh3",
+						Namespace: "namespace1",
+					},
+				},
+				Status: trafficTargetStatusWithOutlierDetection(),
+			},
+			&discoveryv1alpha2.TrafficTarget{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        "traffictarget1",
+					Namespace:   "namespace1",
+					ClusterName: "cluster4",
+				},
+				Spec: discoveryv1alpha2.TrafficTargetSpec{
+					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+							Ref: &corev1.ClusterObjectRef{
 								Name:        "service1",
 								Namespace:   "namespace1",
 								ClusterName: "cluster4",
 							},
 						},
 					},
+					Mesh: &corev1.ObjectRef{
+						Name:      "mesh3",
+						Namespace: "namespace1",
+					},
 				},
-			}
+				Status: discoveryv1alpha2.TrafficTargetStatus{
+					AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+						{
+							// Missing OutlierDetection
+							Spec: &networkingv1alpha2.TrafficPolicySpec{},
+						},
+					},
+				},
+			},
+		),
+		KubeClusters: multiclusterv1alpha1sets.NewKubernetesClusterSet(),
+		Meshes: discoveryv1alpha2sets.NewMeshSet(
+			&discoveryv1alpha2.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mesh1",
+					Namespace: "namespace1",
+				},
+				Spec: discoveryv1alpha2.MeshSpec{
+					MeshType: &discoveryv1alpha2.MeshSpec_Istio_{
+						Istio: &discoveryv1alpha2.MeshSpec_Istio{
+							Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+								Cluster: "cluster1",
+							},
+						},
+					},
+				},
+				Status: discoveryv1alpha2.MeshStatus{
+					AppliedVirtualMesh: &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
+						Ref: &corev1.ObjectRef{
+							Name:      "vm1",
+							Namespace: "namespace1",
+						},
+					},
+				},
+			},
+			&discoveryv1alpha2.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mesh2",
+					Namespace: "namespace1",
+				},
+				Spec: discoveryv1alpha2.MeshSpec{
+					MeshType: &discoveryv1alpha2.MeshSpec_Istio_{
+						Istio: &discoveryv1alpha2.MeshSpec_Istio{
+							Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+								Cluster: "cluster2",
+							},
+						},
+					},
+				},
+				Status: discoveryv1alpha2.MeshStatus{
+					AppliedVirtualMesh: &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
+						Ref: &corev1.ObjectRef{
+							Name:      "vm2",
+							Namespace: "namespace1",
+						},
+					},
+				},
+			},
+			&discoveryv1alpha2.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mesh3",
+					Namespace: "namespace1",
+				},
+				Spec: discoveryv1alpha2.MeshSpec{
+					MeshType: &discoveryv1alpha2.MeshSpec_Istio_{
+						Istio: &discoveryv1alpha2.MeshSpec_Istio{
+							Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+								Cluster: "cluster3",
+							},
+						},
+					},
+				},
+			},
+		),
+		VirtualMeshes: networkingv1alpha2sets.NewVirtualMeshSet(
+			&networkingv1alpha2.VirtualMesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "vm1",
+					Namespace: "namespace1",
+				},
+				Spec: networkingv1alpha2.VirtualMeshSpec{
+					Meshes: []*corev1.ObjectRef{
+						{
+							Name:      "mesh1",
+							Namespace: "namespace1",
+						},
+					},
+					Federation: &networkingv1alpha2.VirtualMeshSpec_Federation{
+						HostnameSuffix: "vm1suffix",
+					},
+				},
+			},
+			&networkingv1alpha2.VirtualMesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "vm2",
+					Namespace: "namespace1",
+				},
+				Spec: networkingv1alpha2.VirtualMeshSpec{
+					Meshes: []*corev1.ObjectRef{
+						{
+							Name:      "mesh2",
+							Namespace: "namespace1",
+						},
+					},
+				},
+			},
+		),
+	}
+
+	invalidFailoverService1 := &networkingv1alpha2.FailoverServiceSpec{
+		Hostname: "invalidDNS@Q#$@%",
+		Meshes: []*corev1.ObjectRef{
+			{
+				Name:      "mesh1",
+				Namespace: "namespace1",
+			},
+		},
+		BackingServices: []*networkingv1alpha2.FailoverServiceSpec_BackingService{
+			{
+				BackingServiceType: &networkingv1alpha2.FailoverServiceSpec_BackingService_KubeService{
+					KubeService: &corev1.ClusterObjectRef{
+						Name:        "service1",
+						Namespace:   "namespace1",
+						ClusterName: "cluster1",
+					},
+				},
+			},
+			{
+				BackingServiceType: &networkingv1alpha2.FailoverServiceSpec_BackingService_KubeService{
+					KubeService: &corev1.ClusterObjectRef{
+						Name:        "service1",
+						Namespace:   "namespace1",
+						ClusterName: "cluster2",
+					},
+				},
+			},
+			{
+				BackingServiceType: &networkingv1alpha2.FailoverServiceSpec_BackingService_KubeService{
+					KubeService: &corev1.ClusterObjectRef{
+						Name:        "service1",
+						Namespace:   "namespace1",
+						ClusterName: "cluster3",
+					},
+				},
+			},
+			{
+				BackingServiceType: &networkingv1alpha2.FailoverServiceSpec_BackingService_KubeService{
+					KubeService: &corev1.ClusterObjectRef{
+						Name:        "service1",
+						Namespace:   "namespace1",
+						ClusterName: "cluster4",
+					},
+				},
+			},
+		},
+	}
+
+	invalidFailoverService2 := &networkingv1alpha2.FailoverServiceSpec{
+		Hostname: "invalid.hostname.suffix",
+		Meshes: []*corev1.ObjectRef{
+			{
+				Name:      "mesh1",
+				Namespace: "namespace1",
+			},
+		},
+		BackingServices: []*networkingv1alpha2.FailoverServiceSpec_BackingService{
+			{
+				BackingServiceType: &networkingv1alpha2.FailoverServiceSpec_BackingService_KubeService{
+					KubeService: &corev1.ClusterObjectRef{
+						Name:        "service1",
+						Namespace:   "namespace1",
+						ClusterName: "cluster1",
+					},
+				},
+			},
+		},
 	}
 
 	It("should return no errors for valid FailoverService", func() {
@@ -539,19 +562,31 @@ var _ = Describe("Validation", func() {
 	}
 
 	It("should return errors for invalid FailoverService", func() {
-		inputSnapshot, failoverServiceSpec := invalidInputSnapshot()
+		inputSnapshot := invalidInputSnapshot
+		failoverServiceSpec := invalidFailoverService1
 		errs := validator.Validate(inputSnapshot, failoverServiceSpec)
+		Expect(errs).To(HaveLen(5))
 		// Missing port
 		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(failoverservice.MissingPort)))
 		// Invalid DNS hostname
 		Expect(containsErrorString(errs, "a DNS-1123 subdomain must consist of lower case alphanumeric characters")).To(BeTrue())
 		// Service without OutlierDetection
-		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(failoverservice.HostnameMissingGlobalSuffix(failoverServiceSpec.Hostname))))
 		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(failoverservice.MissingOutlierDetection(inputSnapshot.TrafficTargets.List()[3]))))
 		// Mesh without parent VirtualMesh
 		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(
 			failoverservice.MeshWithoutParentVM(inputSnapshot.Meshes.List()[2]))))
 		// Multiple parent VirtualMeshes
 		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(failoverservice.MultipleParentVirtualMeshes(inputSnapshot.VirtualMeshes.List()))))
+	})
+
+	It("should return errors for invalid FailoverService", func() {
+		inputSnapshot := invalidInputSnapshot
+		failoverServiceSpec := invalidFailoverService2
+		errs := validator.Validate(inputSnapshot, failoverServiceSpec)
+		Expect(errs).To(HaveLen(2))
+		// Missing port
+		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(failoverservice.MissingPort)))
+		// Invalid DNS hostname
+		Expect(errs).To(ContainElement(testutils.HaveInErrorChain(failoverservice.InvalidHostnameSuffix(failoverServiceSpec.Hostname, inputSnapshot.VirtualMeshes.List()[0].Spec.Federation.HostnameSuffix))))
 	})
 })

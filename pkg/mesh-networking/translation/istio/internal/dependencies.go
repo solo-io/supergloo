@@ -62,7 +62,7 @@ func (d dependencyFactoryImpl) MakeTrafficTargetTranslator(
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
 ) traffictarget.Translator {
-	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
+	clusterDomains := hostutils.NewClusterDomainRegistry(clusters, trafficTargets)
 	decoratorFactory := decorators.NewFactory()
 
 	return traffictarget.NewTranslator(ctx, userSupplied, clusterDomains, decoratorFactory, trafficTargets, failoverServices)
@@ -77,7 +77,7 @@ func (d dependencyFactoryImpl) MakeMeshTranslator(
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
 ) mesh.Translator {
-	clusterDomains := hostutils.NewClusterDomainRegistry(clusters)
+	clusterDomains := hostutils.NewClusterDomainRegistry(clusters, trafficTargets)
 
 	var existingVirtualServices v1alpha3sets.VirtualServiceSet
 	var existingDestinationRules v1alpha3sets.DestinationRuleSet
@@ -88,7 +88,6 @@ func (d dependencyFactoryImpl) MakeMeshTranslator(
 
 	federationTranslator := federation.NewTranslator(
 		ctx,
-		clusterDomains,
 		trafficTargets,
 		failoverServices,
 		virtualservice.NewTranslator(existingVirtualServices, clusterDomains, decorators.NewFactory()),

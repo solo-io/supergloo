@@ -163,7 +163,7 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 		sourceClusterName = trafficTarget.Spec.GetKubeService().GetRef().GetClusterName()
 	}
 
-	destinationHost := d.clusterDomains.GetDestinationServiceFQDN(sourceClusterName, svcRef)
+	destinationHost := d.clusterDomains.GetDestinationFQDN(sourceClusterName, svcRef)
 
 	var destinationPort *networkingv1alpha3spec.PortSelector
 	if port := kubeDest.GetPort(); port != 0 {

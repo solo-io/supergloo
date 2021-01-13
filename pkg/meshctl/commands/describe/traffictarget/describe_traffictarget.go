@@ -89,7 +89,7 @@ func (m trafficTargetMetadata) string() string {
 	s.WriteString(printing.FormattedField("Namespace", m.Namespace))
 	s.WriteString(printing.FormattedField("Cluster", m.Cluster))
 	s.WriteString(printing.FormattedField("Type", m.Type))
-	s.WriteString(printing.FormattedField("Federated DNS Name", m.FederatedDnSName))
+	s.WriteString(printing.FormattedField("Federated DNS Name", m.FederatedDnsName))
 	return s.String()
 }
 
@@ -100,11 +100,12 @@ type trafficTargetDescription struct {
 }
 
 type trafficTargetMetadata struct {
-	Type             string
-	Name             string
-	Namespace        string
-	Cluster          string
-	FederatedDnSName string
+	Type              string
+	Name              string
+	Namespace         string
+	Cluster           string
+	FederatedDnsName  string
+	FederatedToMeshes []*v1.ObjectRef
 }
 
 func matchTrafficTarget(trafficTarget discoveryv1alpha2.TrafficTarget, searchTerms []string) bool {
@@ -146,11 +147,12 @@ func getTrafficTargetMetadata(trafficTarget *discoveryv1alpha2.TrafficTarget) tr
 	case *discoveryv1alpha2.TrafficTargetSpec_KubeService_:
 		kubeServiceRef := trafficTarget.Spec.GetKubeService().Ref
 		return trafficTargetMetadata{
-			Type:             "kubernetes service",
-			Name:             kubeServiceRef.Name,
-			Namespace:        kubeServiceRef.Namespace,
-			Cluster:          kubeServiceRef.ClusterName,
-			FederatedDnSName: trafficTarget.Status.GetRemoteFqdn(),
+			Type:              "kubernetes service",
+			Name:              kubeServiceRef.Name,
+			Namespace:         kubeServiceRef.Namespace,
+			Cluster:           kubeServiceRef.ClusterName,
+			FederatedDnsName:  trafficTarget.Status.GetAppliedFederation().GetFederatedHostname(),
+			FederatedToMeshes: trafficTarget.Status.GetAppliedFederation().GetFederatedToMeshes(),
 		}
 	}
 	return trafficTargetMetadata{}

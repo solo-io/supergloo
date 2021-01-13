@@ -311,6 +311,28 @@ spec:
                     type: object
                 type: object
               type: array
+            appliedFederation:
+              description: Federation metadata. Only populated if this traffic target is federated through a VirtualMesh.
+              properties:
+                federatedHostname:
+                  description: |-
+                    For any workload that this traffic target has federated to (i.e., any Workload controlled by a mesh whose ref appears in `federated_to_meshes`),
+                               a client in that workload will be able to reach this traffic target at this DNS name. This includes workloads on clusters other than
+                               the one hosting this service.
+                  type: string
+                federatedToMeshes:
+                  description: The list of Meshes which are able to resolve this service's `multicluster_dns_name`.
+                  items:
+                    properties:
+                      name:
+                        description: name of the resource being referenced
+                        type: string
+                      namespace:
+                        description: namespace of the resource being referenced
+                        type: string
+                    type: object
+                  type: array
+              type: object
             appliedTrafficPolicies:
               description: The set of Traffic Policies that have been applied to this TrafficTarget
               items:
@@ -847,9 +869,6 @@ spec:
                 recent version of this resource.
               format: int64
               type: integer
-            remoteFqdn:
-              description: The remote fully qualified domain
-              type: string
           type: object
       type: object
   versions:
@@ -1141,6 +1160,9 @@ spec:
                         Mesh's primary control plane image (e.g. the istio-pilot image tag).
                       type: string
                   type: object
+                smartDnsProxyingEnabled:
+                  description: True if smart DNS proxying is enabled, which allows for arbitrary DNS domains.
+                  type: boolean
               type: object
             linkerd:
               properties:
@@ -1315,6 +1337,13 @@ spec:
                             rather than through an ingress gateway.
                             NOTE: This feature will not work if the clusters are not pre-configured to live on the same network.
                           type: boolean
+                        hostnameSuffix:
+                          description: |-
+                            Configure the suffix for hostnames of traffic targets federated within this virtual mesh.
+                            Currently this is only supported for Istio with smart DNS proxying enabled.
+                            If any meshes do not have smart DNS proxying enabled, setting this field results in an error.
+                            If omitted, the hostname suffix defaults to "global".
+                          type: string
                         permissive:
                           description: |-
                             Select permissive mode to expose all traffic targets in a

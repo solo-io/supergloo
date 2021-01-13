@@ -2,9 +2,11 @@ package istio_test
 
 import (
 	"context"
-	"fmt"
+	"strconv"
 
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
+	istiov1alpha1 "istio.io/api/mesh/v1alpha1"
+	"istio.io/istio/pkg/util/protomarshal"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -54,7 +56,18 @@ var _ = Describe("IstioMeshDetector", func() {
 	}
 
 	trustDomain := "cluster.local"
+	smartDnsProxyingEnabled := true
 	istioConfigMap := func() corev1sets.ConfigMapSet {
+		meshConfig := &istiov1alpha1.MeshConfig{
+			DefaultConfig: &istiov1alpha1.ProxyConfig{
+				ProxyMetadata: map[string]string{
+					"ISTIO_META_DNS_CAPTURE": strconv.FormatBool(smartDnsProxyingEnabled),
+				},
+			},
+			TrustDomain: trustDomain,
+		}
+		yaml, err := protomarshal.ToYAML(meshConfig)
+		Expect(err).To(BeNil())
 		return corev1sets.NewConfigMapSet(&corev1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace:   meshNs,
@@ -62,7 +75,7 @@ var _ = Describe("IstioMeshDetector", func() {
 				ClusterName: clusterName,
 			},
 			Data: map[string]string{
-				"mesh": fmt.Sprintf("trustDomain: \"%s\"", trustDomain),
+				"mesh": yaml,
 			},
 		})
 	}
@@ -121,6 +134,7 @@ var _ = Describe("IstioMeshDetector", func() {
 			},
 			Spec: discoveryv1alpha2.MeshSpec{
 				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
 					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
 						Cluster:   clusterName,
@@ -159,6 +173,7 @@ var _ = Describe("IstioMeshDetector", func() {
 			},
 			Spec: discoveryv1alpha2.MeshSpec{
 				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
 					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
 						Cluster:   clusterName,
@@ -253,6 +268,7 @@ var _ = Describe("IstioMeshDetector", func() {
 			},
 			Spec: discoveryv1alpha2.MeshSpec{
 				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
 					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
 						Cluster:   clusterName,
@@ -366,6 +382,7 @@ var _ = Describe("IstioMeshDetector", func() {
 			},
 			Spec: discoveryv1alpha2.MeshSpec{
 				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
 					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
 						Cluster:   clusterName,
