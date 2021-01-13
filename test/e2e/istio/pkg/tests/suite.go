@@ -93,7 +93,7 @@ func InitializeTests() bool {
 	var (
 		_ = Describe("AccessPolicy", AccessPolicyTest)
 		_ = Describe("FailoverService", FailoverServiceTest)
-		_ = FDescribe("Federation", FederationTest)
+		_ = Describe("Federation", FederationTest)
 		_ = Describe("Networking Extensions", NetworkingExtensionsTest)
 		_ = Describe("TrafficPolicy", TrafficPolicyTest)
 	)
