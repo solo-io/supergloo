@@ -2,12 +2,12 @@
 
 //go:generate mockgen -source ./local_snapshot.go -destination mocks/local_snapshot.go
 
-// The Input LocalSnapshot contains the set of all:
+// The Input SettingsSnapshot contains the set of all:
 // * Settings
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
-// or a ClusterWatcher (for multiple clusters) using the LocalSnapshotBuilder.
+// or a ClusterWatcher (for multiple clusters) using the SettingsSnapshotBuilder.
 //
 // Resources in a MultiCluster snapshot will have their ClusterName set to the
 // name of the cluster from which the resource was read.
@@ -24,6 +24,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 
 	"github.com/solo-io/skv2/pkg/controllerutils"
+	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -32,48 +33,69 @@ import (
 )
 
 // the snapshot of input resources consumed by translation
-type LocalSnapshot interface {
+type SettingsSnapshot interface {
 
 	// return the set of input Settings
 	Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 	// update the status of all input objects which support
+	// the Status subresource (across multiple clusters)
+	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts SettingsSyncStatusOptions) error
+	// update the status of all input objects which support
 	// the Status subresource (in the local cluster)
-	SyncStatuses(ctx context.Context, c client.Client, opts LocalSyncStatusOptions) error
+	SyncStatuses(ctx context.Context, c client.Client, opts SettingsSyncStatusOptions) error
 	// serialize the entire snapshot as JSON
 	MarshalJSON() ([]byte, error)
 }
 
 // options for syncing input object statuses
-type LocalSyncStatusOptions struct {
+type SettingsSyncStatusOptions struct {
 
 	// sync status of Settings objects
 	Settings bool
 }
 
-type snapshotLocal struct {
+type snapshotSettings struct {
 	name string
 
 	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 }
 
-func NewLocalSnapshot(
+func NewSettingsSnapshot(
 	name string,
 
 	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet,
 
-) LocalSnapshot {
-	return &snapshotLocal{
+) SettingsSnapshot {
+	return &snapshotSettings{
 		name: name,
 
 		settings: settings,
 	}
 }
 
-func (s snapshotLocal) Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet {
+func (s snapshotSettings) Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet {
 	return s.settings
 }
 
-func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts LocalSyncStatusOptions) error {
+func (s snapshotSettings) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts SettingsSyncStatusOptions) error {
+	var errs error
+
+	if opts.Settings {
+		for _, obj := range s.Settings().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	return errs
+}
+
+func (s snapshotSettings) SyncStatuses(ctx context.Context, c client.Client, opts SettingsSyncStatusOptions) error {
 	var errs error
 
 	if opts.Settings {
@@ -86,7 +108,7 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 	return errs
 }
 
-func (s snapshotLocal) MarshalJSON() ([]byte, error) {
+func (s snapshotSettings) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
 	snapshotMap["settings"] = s.settings.List()
@@ -94,19 +116,19 @@ func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 }
 
 // builds the input snapshot from API Clients.
-type LocalBuilder interface {
-	BuildSnapshot(ctx context.Context, name string, opts LocalBuildOptions) (LocalSnapshot, error)
+type SettingsBuilder interface {
+	BuildSnapshot(ctx context.Context, name string, opts SettingsBuildOptions) (SettingsSnapshot, error)
 }
 
 // Options for building a snapshot
-type LocalBuildOptions struct {
+type SettingsBuildOptions struct {
 
 	// List options for composing a snapshot from Settings
-	Settings ResourceLocalBuildOptions
+	Settings ResourceSettingsBuildOptions
 }
 
 // Options for reading resources of a given type
-type ResourceLocalBuildOptions struct {
+type ResourceSettingsBuildOptions struct {
 
 	// List options for composing a snapshot from a resource type
 	ListOptions []client.ListOption
@@ -115,21 +137,115 @@ type ResourceLocalBuildOptions struct {
 	Verifier verifier.ServerResourceVerifier
 }
 
-// build a snapshot from resources in a single cluster
-type singleClusterLocalBuilder struct {
-	mgr manager.Manager
+// build a snapshot from resources across multiple clusters
+type multiClusterSettingsBuilder struct {
+	clusters multicluster.Interface
+	client   multicluster.Client
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
-func NewSingleClusterLocalBuilder(
-	mgr manager.Manager,
-) LocalBuilder {
-	return &singleClusterLocalBuilder{
-		mgr: mgr,
+func NewMultiClusterSettingsBuilder(
+	clusters multicluster.Interface,
+	client multicluster.Client,
+) SettingsBuilder {
+	return &multiClusterSettingsBuilder{
+		clusters: clusters,
+		client:   client,
 	}
 }
 
-func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name string, opts LocalBuildOptions) (LocalSnapshot, error) {
+func (b *multiClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name string, opts SettingsBuildOptions) (SettingsSnapshot, error) {
+
+	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+
+	var errs error
+
+	for _, cluster := range b.clusters.ListClusters() {
+
+		if err := b.insertSettingsFromCluster(ctx, cluster, settings, opts.Settings); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+
+	}
+
+	outputSnap := NewSettingsSnapshot(
+		name,
+
+		settings,
+	)
+
+	return outputSnap, errs
+}
+
+func (b *multiClusterSettingsBuilder) insertSettingsFromCluster(ctx context.Context, cluster string, settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceSettingsBuildOptions) error {
+	settingsClient, err := settings_mesh_gloo_solo_io_v1alpha2.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "settings.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Settings",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	settingsList, err := settingsClient.ListSettings(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range settingsList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		settings.Insert(&item)
+	}
+
+	return nil
+}
+
+// build a snapshot from resources in a single cluster
+type singleClusterSettingsBuilder struct {
+	mgr         manager.Manager
+	clusterName string
+}
+
+// Produces snapshots of resources read from the manager for the given cluster
+func NewSingleClusterSettingsBuilder(
+	mgr manager.Manager,
+) SettingsBuilder {
+	return NewSingleClusterSettingsBuilderWithClusterName(mgr, "")
+}
+
+// Produces snapshots of resources read from the manager for the given cluster.
+// Snapshot resources will be marked with the given ClusterName.
+func NewSingleClusterSettingsBuilderWithClusterName(
+	mgr manager.Manager,
+	clusterName string,
+) SettingsBuilder {
+	return &singleClusterSettingsBuilder{
+		mgr:         mgr,
+		clusterName: clusterName,
+	}
+}
+
+func (b *singleClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name string, opts SettingsBuildOptions) (SettingsSnapshot, error) {
 
 	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
@@ -139,7 +255,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 		errs = multierror.Append(errs, err)
 	}
 
-	outputSnap := NewLocalSnapshot(
+	outputSnap := NewSettingsSnapshot(
 		name,
 
 		settings,
@@ -148,7 +264,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	return outputSnap, errs
 }
 
-func (b *singleClusterLocalBuilder) insertSettings(ctx context.Context, settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterSettingsBuilder) insertSettings(ctx context.Context, settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceSettingsBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -175,6 +291,7 @@ func (b *singleClusterLocalBuilder) insertSettings(ctx context.Context, settings
 
 	for _, item := range settingsList.Items {
 		item := item // pike
+		item.ClusterName = b.clusterName
 		settings.Insert(&item)
 	}
 

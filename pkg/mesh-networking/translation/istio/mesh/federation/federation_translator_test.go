@@ -19,11 +19,9 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/federation"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	skv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
-	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -33,7 +31,6 @@ import (
 var _ = Describe("FederationTranslator", func() {
 	ctx := context.TODO()
 	ctrl := gomock.NewController(GinkgoT())
-	clusterDomains := hostutils.NewClusterDomainRegistry(skv1alpha1sets.NewKubernetesClusterSet())
 	mockVirtualServiceTranslator := mock_virtualservice.NewMockTranslator(ctrl)
 	mockDestinationRuleTranslator := mock_destinationrule.NewMockTranslator(ctrl)
 
@@ -49,10 +46,11 @@ var _ = Describe("FederationTranslator", func() {
 			},
 			Spec: discoveryv1alpha2.MeshSpec{
 				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+					SmartDnsProxyingEnabled: true,
 					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: namespace,
 						Cluster:   clusterName,
-						Version:   "1.7.0-rc1",
+						Version:   "1.8.1",
 					},
 					IngressGateways: []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo{{
 						ExternalAddress:  "mesh-gateway.dns.name",
@@ -71,6 +69,7 @@ var _ = Describe("FederationTranslator", func() {
 			},
 			Spec: discoveryv1alpha2.MeshSpec{
 				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+					SmartDnsProxyingEnabled: true,
 					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: "remote-namespace",
 						Cluster:   "remote-cluster",
@@ -144,6 +143,9 @@ var _ = Describe("FederationTranslator", func() {
 					meshRef,
 					clientMeshRef,
 				},
+				Federation: &v1alpha2.VirtualMeshSpec_Federation{
+					HostnameSuffix: "soloio",
+				},
 			},
 		}
 
@@ -174,7 +176,6 @@ var _ = Describe("FederationTranslator", func() {
 
 		t := NewTranslator(
 			ctx,
-			clusterDomains,
 			in.TrafficTargets(),
 			in.FailoverServices(),
 			mockVirtualServiceTranslator,
@@ -219,7 +220,7 @@ var expectedGateway = &networkingv1alpha3.Gateway{
 					Name:     "tls",
 				},
 				Hosts: []string{
-					"*.global",
+					"*.soloio",
 				},
 				Tls: &networkingv1alpha3spec.ServerTLSSettings{
 					Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
@@ -284,7 +285,7 @@ var expectedEnvoyFilter = &networkingv1alpha3.EnvoyFilter{
 											},
 											"cluster_pattern": {
 												Kind: &types.Value_StringValue{
-													StringValue: "\\.cluster.global$",
+													StringValue: "\\.cluster.soloio$",
 												},
 											},
 										},
@@ -300,7 +301,7 @@ var expectedEnvoyFilter = &networkingv1alpha3.EnvoyFilter{
 }
 var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1alpha3.ServiceEntry{
 	ObjectMeta: metav1.ObjectMeta{
-		Name:        "some-svc.some-ns.svc.cluster.global",
+		Name:        "some-svc.some-ns.svc.cluster.soloio",
 		Namespace:   "remote-namespace",
 		ClusterName: "remote-cluster",
 		Labels:      metautils.TranslatedObjectLabels(),
@@ -310,7 +311,7 @@ var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1a
 	},
 	Spec: networkingv1alpha3spec.ServiceEntry{
 		Hosts: []string{
-			"some-svc.some-ns.svc.cluster.global",
+			"some-svc.some-ns.svc.cluster.soloio",
 		},
 		Addresses: []string{
 			"243.21.204.125",

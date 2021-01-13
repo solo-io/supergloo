@@ -279,6 +279,14 @@ func (m *VirtualMeshSpec_Federation) Equal(that interface{}) bool {
 		return false
 	}
 
+	if m.GetFlatNetwork() != target.GetFlatNetwork() {
+		return false
+	}
+
+	if strings.Compare(m.GetHostnameSuffix(), target.GetHostnameSuffix()) != 0 {
+		return false
+	}
+
 	switch m.Mode.(type) {
 
 	case *VirtualMeshSpec_Federation_Permissive:

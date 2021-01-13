@@ -13,6 +13,13 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for XdsConfig
+var XdsConfigGVK = schema.GroupVersionKind{
+	Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
+	Version: "v1alpha1",
+	Kind:    "XdsConfig",
+}
+
 // XdsConfig is the Schema for the xdsConfig API
 type XdsConfig struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -24,11 +31,7 @@ type XdsConfig struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (XdsConfig) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
-		Version: "v1alpha1",
-		Kind:    "XdsConfig",
-	}
+	return XdsConfigGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

@@ -40,11 +40,17 @@ Let's install Istio into both the management plane **AND** the remote cluster. T
 
 The manifest for Istio 1.7 is different from prior versions, so be sure to select the correct tab for the version of Istio you plan to install. The manifests below were tested using Istio 1.7.3 and 1.8.1.
 
+Before running the following, make sure your context names are set as environment variables:
+```shell
+MGMT_CONTEXT=your_management_plane_context
+REMOTE_CONTEXT=your_remote_context
+```
+
 #### Management plane install
 
 {{< tabs >}}
 {{< tab name="Istio 1.7" codelang="shell" >}}
-cat << EOF | istioctl manifest install --context kind-mgmt-cluster -f -
+cat << EOF | istioctl manifest install --context $MGMT_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -97,7 +103,7 @@ spec:
 EOF
 {{< /tab >}}
 {{< tab name="Istio 1.8" codelang="shell" >}}
-cat << EOF | istioctl manifest install -y --context kind-mgmt-cluster -f -
+cat << EOF | istioctl manifest install -y --context $MGMT_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -105,9 +111,12 @@ metadata:
   namespace: istio-system
 spec:
   profile: minimal
-  addonComponents:
-    istiocoredns:
-      enabled: true
+  meshConfig:
+    defaultConfig:
+      proxyMetadata:
+        # Enable Istio agent to handle DNS requests for known hosts
+        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
+        ISTIO_META_DNS_CAPTURE: "true"
   components:
     # Istio Gateway feature
     ingressGateways:
@@ -135,8 +144,6 @@ spec:
   values:
     global:
       pilotCertProvider: kubernetes
-      podDNSSearchNamespaces:
-      - global
 EOF
 {{< /tab >}}
 {{< /tabs >}}
@@ -145,7 +152,7 @@ EOF
 
 {{< tabs >}}
 {{< tab name="Istio 1.7" codelang="shell" >}}
-cat << EOF | istioctl manifest install --context kind-remote-cluster -f -
+cat << EOF | istioctl manifest install --context $REMOTE_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -198,7 +205,7 @@ spec:
 EOF
 {{< /tab >}}
 {{< tab name="Istio 1.8" codelang="shell" >}}
-cat << EOF | istioctl manifest install -y --context kind-remote-cluster -f -
+cat << EOF | istioctl manifest install -y --context $REMOTE_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -206,9 +213,12 @@ metadata:
   namespace: istio-system
 spec:
   profile: minimal
-  addonComponents:
-    istiocoredns:
-      enabled: true
+  meshConfig:
+    defaultConfig:
+      proxyMetadata:
+        # Enable Istio agent to handle DNS requests for known hosts
+        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
+        ISTIO_META_DNS_CAPTURE: "true"
   components:
     # Istio Gateway feature
     ingressGateways:
@@ -236,8 +246,6 @@ spec:
   values:
     global:
       pilotCertProvider: kubernetes
-      podDNSSearchNamespaces:
-      - global
 EOF
 {{< /tab >}}
 {{< /tabs >}}
@@ -258,11 +266,18 @@ istiocoredns-7ffc9b7fcf-crhr2           2/2     Running   0          5d23h
 istiod-7795ccf9dc-vr4cq                 1/1     Running   0          5d22h
 ```
 
-We also have to enable Istio DNS for the `.global` stub domain for when we want to use multicluster communication. The following two blocks will enable Istio DNS for both clusters.
+{{% notice note %}}
+The following section of the doc describes how to modify `coredns` to enable Istio DNS for the `.global` stub domain. This is not necessary when running Istio > 1.8.x
+with Istio's new Smart DNS enabled. More information on this new DNS can be found in the following [blog post](https://istio.io/latest/blog/2020/dns-proxy/).
+If you have installed Istio using the operator specs outlined above, this new DNS will be enabled by default.
+
+When running Istio < 1.8.x, or when not using Istio DNS, the following changes add the `.global` stub domain for multicluster communication.
+The following two blocks will enable Istio DNS for both clusters.
+{{% /notice %}}
 
 ```shell
-ISTIO_COREDNS=$(kubectl --context kind-mgmt-cluster -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
-kubectl --context kind-mgmt-cluster apply -f - <<EOF
+ISTIO_COREDNS=$(kubectl --context $MGMT_CONTEXT -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
+kubectl --context $MGMT_CONTEXT apply -f - <<EOF
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -295,8 +310,8 @@ EOF
 ```
 
 ```shell
-ISTIO_COREDNS=$(kubectl --context kind-remote-cluster -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
-kubectl --context kind-remote-cluster apply -f - <<EOF
+ISTIO_COREDNS=$(kubectl --context $REMOTE_CONTEXT -n istio-system get svc istiocoredns -o jsonpath={.spec.clusterIP})
+kubectl --context $REMOTE_CONTEXT apply -f - <<EOF
 apiVersion: v1
 kind: ConfigMap
 metadata:

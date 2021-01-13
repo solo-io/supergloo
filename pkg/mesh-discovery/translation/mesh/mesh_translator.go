@@ -17,7 +17,7 @@ import (
 
 // the mesh translator converts deployments with control plane images into Mesh CRs
 type Translator interface {
-	TranslateMeshes(in input.RemoteSnapshot, settings *settingsv1alpha2.Settings) v1alpha2sets.MeshSet
+	TranslateMeshes(in input.DiscoveryInputSnapshot, settings *settingsv1alpha2.DiscoverySettings) v1alpha2sets.MeshSet
 }
 
 type translator struct {
@@ -33,7 +33,7 @@ func NewTranslator(
 	return &translator{ctx: ctx, meshDetector: meshDetector}
 }
 
-func (t *translator) TranslateMeshes(in input.RemoteSnapshot, settings *settingsv1alpha2.Settings) v1alpha2sets.MeshSet {
+func (t *translator) TranslateMeshes(in input.DiscoveryInputSnapshot, settings *settingsv1alpha2.DiscoverySettings) v1alpha2sets.MeshSet {
 	meshSet := v1alpha2sets.NewMeshSet()
 	meshes, err := t.meshDetector.DetectMeshes(in, settings)
 	if err != nil {

@@ -84,16 +84,21 @@ else
 
   echo successfully set up clusters.
 
-  # install gloo mesh
-  install_gloomesh ${mgmtCluster}
+  # skip installing and registering gloomesh components from source (just leaves clusters set up with istio+bookinfo)
+  if [ "$SKIP_DEPLOY_FROM_SOURCE" == "1" ]; then
+    echo "skipping deploy of gloomesh components."
+  else
+    # install gloo mesh
+    install_gloomesh ${mgmtCluster}
 
-  # sleep to allow crds to register
-  sleep 4
+    # sleep to allow crds to register
+    sleep 4
 
-  # register remote cluster
-  register_cluster ${remoteCluster} &
+    # register remote cluster
+    register_cluster ${remoteCluster} &
 
-  wait
+    wait
+  fi
 
 fi
 # set current context to management cluster

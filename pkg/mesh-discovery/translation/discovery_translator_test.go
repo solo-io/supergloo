@@ -63,7 +63,7 @@ var _ = Describe("Translator", func() {
 		replicaSets := appsv1sets.NewReplicaSetSet(&appsv1.ReplicaSet{})
 		daemonSets := appsv1sets.NewDaemonSetSet(&appsv1.DaemonSet{})
 		statefulSets := appsv1sets.NewStatefulSetSet(&appsv1.StatefulSet{})
-		inRemote := input.NewRemoteSnapshot(
+		inRemote := input.NewDiscoveryInputSnapshot(
 			"mesh-discovery-remote",
 			appMeshes,
 			configMaps,
@@ -75,7 +75,7 @@ var _ = Describe("Translator", func() {
 			daemonSets,
 			statefulSets,
 		)
-		settings := &settingsv1alpha2.Settings{}
+		settings := &settingsv1alpha2.DiscoverySettings{}
 
 		mockDependencyFactory.EXPECT().MakeMeshTranslator(ctx).Return(mockMeshTranslator)
 		mockDependencyFactory.EXPECT().MakeWorkloadTranslator(ctx, inRemote).Return(mockWorkloadTranslator)

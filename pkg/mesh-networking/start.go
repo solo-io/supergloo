@@ -41,7 +41,7 @@ func Start(ctx context.Context, opts *NetworkingOpts) error {
 		watchOutputTypes:           opts.watchOutputTypes,
 	}
 
-	return bootstrap.Start(ctx, "networking", starter.startReconciler, *opts.Options)
+	return bootstrap.Start(ctx, "networking", starter.startReconciler, *opts.Options, false)
 }
 
 type networkingStarter struct {

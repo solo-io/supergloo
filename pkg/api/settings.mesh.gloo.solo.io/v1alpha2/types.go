@@ -13,6 +13,13 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for Settings
+var SettingsGVK = schema.GroupVersionKind{
+	Group:   "settings.mesh.gloo.solo.io",
+	Version: "v1alpha2",
+	Kind:    "Settings",
+}
+
 // Settings is the Schema for the settings API
 type Settings struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -24,11 +31,7 @@ type Settings struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (Settings) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "settings.mesh.gloo.solo.io",
-		Version: "v1alpha2",
-		Kind:    "Settings",
-	}
+	return SettingsGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

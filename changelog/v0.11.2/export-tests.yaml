@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Export e2e tests as functions which can be called from external test suites. Also updates setup-kind script to be usable by enterpise-helm e2e test suite.

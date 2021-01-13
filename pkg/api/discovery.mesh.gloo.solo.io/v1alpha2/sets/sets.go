@@ -38,6 +38,10 @@ type TrafficTargetSet interface {
 	Find(id ezkube.ResourceId) (*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another TrafficTargetSet
+	Delta(newSet TrafficTargetSet) sksets.ResourceDelta
 }
 
 func makeGenericTrafficTargetSet(trafficTargetList []*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) sksets.ResourceSet {
@@ -68,7 +72,7 @@ func (s *trafficTargetSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *trafficTargetSet) List(filterResource ...func(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) bool) []*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget {
@@ -83,7 +87,7 @@ func (s *trafficTargetSet) List(filterResource ...func(*discovery_mesh_gloo_solo
 	}
 
 	var trafficTargetList []*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		trafficTargetList = append(trafficTargetList, obj.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget))
 	}
 	return trafficTargetList
@@ -95,7 +99,7 @@ func (s *trafficTargetSet) Map() map[string]*discovery_mesh_gloo_solo_io_v1alpha
 	}
 
 	newMap := map[string]*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget)
 	}
 	return newMap
@@ -109,7 +113,7 @@ func (s *trafficTargetSet) Insert(
 	}
 
 	for _, obj := range trafficTargetList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -117,7 +121,7 @@ func (s *trafficTargetSet) Has(trafficTarget ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(trafficTarget)
+	return s.Generic().Has(trafficTarget)
 }
 
 func (s *trafficTargetSet) Equal(
@@ -126,14 +130,14 @@ func (s *trafficTargetSet) Equal(
 	if s == nil {
 		return trafficTargetSet == nil
 	}
-	return s.set.Equal(makeGenericTrafficTargetSet(trafficTargetSet.List()))
+	return s.Generic().Equal(trafficTargetSet.Generic())
 }
 
 func (s *trafficTargetSet) Delete(TrafficTarget ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(TrafficTarget)
+	s.Generic().Delete(TrafficTarget)
 }
 
 func (s *trafficTargetSet) Union(set TrafficTargetSet) TrafficTargetSet {
@@ -147,7 +151,7 @@ func (s *trafficTargetSet) Difference(set TrafficTargetSet) TrafficTargetSet {
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericTrafficTargetSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &trafficTargetSet{set: newSet}
 }
 
@@ -155,7 +159,7 @@ func (s *trafficTargetSet) Intersection(set TrafficTargetSet) TrafficTargetSet {
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericTrafficTargetSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var trafficTargetList []*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget
 	for _, obj := range newSet.List() {
 		trafficTargetList = append(trafficTargetList, obj.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget))
@@ -167,7 +171,7 @@ func (s *trafficTargetSet) Find(id ezkube.ResourceId) (*discovery_mesh_gloo_solo
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find TrafficTarget %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget{}, id)
+	obj, err := s.Generic().Find(&discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +183,23 @@ func (s *trafficTargetSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *trafficTargetSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *trafficTargetSet) Delta(newSet TrafficTargetSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }
 
 type WorkloadSet interface {
@@ -207,6 +227,10 @@ type WorkloadSet interface {
 	Find(id ezkube.ResourceId) (*discovery_mesh_gloo_solo_io_v1alpha2.Workload, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another WorkloadSet
+	Delta(newSet WorkloadSet) sksets.ResourceDelta
 }
 
 func makeGenericWorkloadSet(workloadList []*discovery_mesh_gloo_solo_io_v1alpha2.Workload) sksets.ResourceSet {
@@ -237,7 +261,7 @@ func (s *workloadSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *workloadSet) List(filterResource ...func(*discovery_mesh_gloo_solo_io_v1alpha2.Workload) bool) []*discovery_mesh_gloo_solo_io_v1alpha2.Workload {
@@ -252,7 +276,7 @@ func (s *workloadSet) List(filterResource ...func(*discovery_mesh_gloo_solo_io_v
 	}
 
 	var workloadList []*discovery_mesh_gloo_solo_io_v1alpha2.Workload
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		workloadList = append(workloadList, obj.(*discovery_mesh_gloo_solo_io_v1alpha2.Workload))
 	}
 	return workloadList
@@ -264,7 +288,7 @@ func (s *workloadSet) Map() map[string]*discovery_mesh_gloo_solo_io_v1alpha2.Wor
 	}
 
 	newMap := map[string]*discovery_mesh_gloo_solo_io_v1alpha2.Workload{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*discovery_mesh_gloo_solo_io_v1alpha2.Workload)
 	}
 	return newMap
@@ -278,7 +302,7 @@ func (s *workloadSet) Insert(
 	}
 
 	for _, obj := range workloadList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -286,7 +310,7 @@ func (s *workloadSet) Has(workload ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(workload)
+	return s.Generic().Has(workload)
 }
 
 func (s *workloadSet) Equal(
@@ -295,14 +319,14 @@ func (s *workloadSet) Equal(
 	if s == nil {
 		return workloadSet == nil
 	}
-	return s.set.Equal(makeGenericWorkloadSet(workloadSet.List()))
+	return s.Generic().Equal(workloadSet.Generic())
 }
 
 func (s *workloadSet) Delete(Workload ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(Workload)
+	s.Generic().Delete(Workload)
 }
 
 func (s *workloadSet) Union(set WorkloadSet) WorkloadSet {
@@ -316,7 +340,7 @@ func (s *workloadSet) Difference(set WorkloadSet) WorkloadSet {
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericWorkloadSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &workloadSet{set: newSet}
 }
 
@@ -324,7 +348,7 @@ func (s *workloadSet) Intersection(set WorkloadSet) WorkloadSet {
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericWorkloadSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var workloadList []*discovery_mesh_gloo_solo_io_v1alpha2.Workload
 	for _, obj := range newSet.List() {
 		workloadList = append(workloadList, obj.(*discovery_mesh_gloo_solo_io_v1alpha2.Workload))
@@ -336,7 +360,7 @@ func (s *workloadSet) Find(id ezkube.ResourceId) (*discovery_mesh_gloo_solo_io_v
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find Workload %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&discovery_mesh_gloo_solo_io_v1alpha2.Workload{}, id)
+	obj, err := s.Generic().Find(&discovery_mesh_gloo_solo_io_v1alpha2.Workload{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -348,7 +372,23 @@ func (s *workloadSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *workloadSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *workloadSet) Delta(newSet WorkloadSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }
 
 type MeshSet interface {
@@ -376,6 +416,10 @@ type MeshSet interface {
 	Find(id ezkube.ResourceId) (*discovery_mesh_gloo_solo_io_v1alpha2.Mesh, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another MeshSet
+	Delta(newSet MeshSet) sksets.ResourceDelta
 }
 
 func makeGenericMeshSet(meshList []*discovery_mesh_gloo_solo_io_v1alpha2.Mesh) sksets.ResourceSet {
@@ -406,7 +450,7 @@ func (s *meshSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *meshSet) List(filterResource ...func(*discovery_mesh_gloo_solo_io_v1alpha2.Mesh) bool) []*discovery_mesh_gloo_solo_io_v1alpha2.Mesh {
@@ -421,7 +465,7 @@ func (s *meshSet) List(filterResource ...func(*discovery_mesh_gloo_solo_io_v1alp
 	}
 
 	var meshList []*discovery_mesh_gloo_solo_io_v1alpha2.Mesh
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		meshList = append(meshList, obj.(*discovery_mesh_gloo_solo_io_v1alpha2.Mesh))
 	}
 	return meshList
@@ -433,7 +477,7 @@ func (s *meshSet) Map() map[string]*discovery_mesh_gloo_solo_io_v1alpha2.Mesh {
 	}
 
 	newMap := map[string]*discovery_mesh_gloo_solo_io_v1alpha2.Mesh{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*discovery_mesh_gloo_solo_io_v1alpha2.Mesh)
 	}
 	return newMap
@@ -447,7 +491,7 @@ func (s *meshSet) Insert(
 	}
 
 	for _, obj := range meshList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -455,7 +499,7 @@ func (s *meshSet) Has(mesh ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(mesh)
+	return s.Generic().Has(mesh)
 }
 
 func (s *meshSet) Equal(
@@ -464,14 +508,14 @@ func (s *meshSet) Equal(
 	if s == nil {
 		return meshSet == nil
 	}
-	return s.set.Equal(makeGenericMeshSet(meshSet.List()))
+	return s.Generic().Equal(meshSet.Generic())
 }
 
 func (s *meshSet) Delete(Mesh ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(Mesh)
+	s.Generic().Delete(Mesh)
 }
 
 func (s *meshSet) Union(set MeshSet) MeshSet {
@@ -485,7 +529,7 @@ func (s *meshSet) Difference(set MeshSet) MeshSet {
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericMeshSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &meshSet{set: newSet}
 }
 
@@ -493,7 +537,7 @@ func (s *meshSet) Intersection(set MeshSet) MeshSet {
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericMeshSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var meshList []*discovery_mesh_gloo_solo_io_v1alpha2.Mesh
 	for _, obj := range newSet.List() {
 		meshList = append(meshList, obj.(*discovery_mesh_gloo_solo_io_v1alpha2.Mesh))
@@ -505,7 +549,7 @@ func (s *meshSet) Find(id ezkube.ResourceId) (*discovery_mesh_gloo_solo_io_v1alp
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find Mesh %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&discovery_mesh_gloo_solo_io_v1alpha2.Mesh{}, id)
+	obj, err := s.Generic().Find(&discovery_mesh_gloo_solo_io_v1alpha2.Mesh{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -517,5 +561,21 @@ func (s *meshSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *meshSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *meshSet) Delta(newSet MeshSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }

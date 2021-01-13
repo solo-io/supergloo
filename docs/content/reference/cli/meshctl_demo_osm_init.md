@@ -28,7 +28,10 @@ meshctl demo osm init [flags]
 ### Options
 
 ```
-  -h, --help   help for init
+      --enterprise                  install the enterprise features, requires a license key
+      --enterprise-version string   Gloo Mesh Enterprise version (defaults to latest)
+  -h, --help                        help for init
+      --license string              Gloo Mesh Enterprise license key
 ```
 
 ### Options inherited from parent commands

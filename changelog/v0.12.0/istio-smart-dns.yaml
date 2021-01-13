@@ -1,0 +1,7 @@
+changelog:
+  - type: NEW_FEATURE
+    resolvesIssue: false
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1179
+    description: > 
+      Ensure that gloo-mesh works properly with new Istio Smart DNS, and update documentation 
+      and various scripts to make use of the feature when deploying relevant versions of Istio.
