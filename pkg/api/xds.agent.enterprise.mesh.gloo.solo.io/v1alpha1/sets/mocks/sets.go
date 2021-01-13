@@ -10,8 +10,9 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1"
 	v1alpha1sets "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
+	sets "github.com/solo-io/skv2/contrib/pkg/sets"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
-	sets "k8s.io/apimachinery/pkg/util/sets"
+	sets0 "k8s.io/apimachinery/pkg/util/sets"
 )
 
 // MockXdsConfigSet is a mock of XdsConfigSet interface
@@ -38,10 +39,10 @@ func (m *MockXdsConfigSet) EXPECT() *MockXdsConfigSetMockRecorder {
 }
 
 // Keys mocks base method
-func (m *MockXdsConfigSet) Keys() sets.String {
+func (m *MockXdsConfigSet) Keys() sets0.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
-	ret0, _ := ret[0].(sets.String)
+	ret0, _ := ret[0].(sets0.String)
 	return ret0
 }
 
@@ -208,4 +209,32 @@ func (m *MockXdsConfigSet) Length() int {
 func (mr *MockXdsConfigSetMockRecorder) Length() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockXdsConfigSet)(nil).Length))
+}
+
+// Generic mocks base method
+func (m *MockXdsConfigSet) Generic() sets.ResourceSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(sets.ResourceSet)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic
+func (mr *MockXdsConfigSetMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockXdsConfigSet)(nil).Generic))
+}
+
+// Delta mocks base method
+func (m *MockXdsConfigSet) Delta(newSet v1alpha1sets.XdsConfigSet) sets.ResourceDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSet)
+	ret0, _ := ret[0].(sets.ResourceDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta
+func (mr *MockXdsConfigSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockXdsConfigSet)(nil).Delta), newSet)
 }

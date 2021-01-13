@@ -38,6 +38,10 @@ type RoleSet interface {
 	Find(id ezkube.ResourceId) (*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.Role, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another RoleSet
+	Delta(newSet RoleSet) sksets.ResourceDelta
 }
 
 func makeGenericRoleSet(roleList []*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.Role) sksets.ResourceSet {
@@ -68,7 +72,7 @@ func (s *roleSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *roleSet) List(filterResource ...func(*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.Role) bool) []*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.Role {
@@ -83,7 +87,7 @@ func (s *roleSet) List(filterResource ...func(*rbac_enterprise_mesh_gloo_solo_io
 	}
 
 	var roleList []*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.Role
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		roleList = append(roleList, obj.(*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.Role))
 	}
 	return roleList
@@ -95,7 +99,7 @@ func (s *roleSet) Map() map[string]*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.R
 	}
 
 	newMap := map[string]*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.Role{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.Role)
 	}
 	return newMap
@@ -109,7 +113,7 @@ func (s *roleSet) Insert(
 	}
 
 	for _, obj := range roleList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -117,7 +121,7 @@ func (s *roleSet) Has(role ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(role)
+	return s.Generic().Has(role)
 }
 
 func (s *roleSet) Equal(
@@ -126,14 +130,14 @@ func (s *roleSet) Equal(
 	if s == nil {
 		return roleSet == nil
 	}
-	return s.set.Equal(makeGenericRoleSet(roleSet.List()))
+	return s.Generic().Equal(roleSet.Generic())
 }
 
 func (s *roleSet) Delete(Role ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(Role)
+	s.Generic().Delete(Role)
 }
 
 func (s *roleSet) Union(set RoleSet) RoleSet {
@@ -147,7 +151,7 @@ func (s *roleSet) Difference(set RoleSet) RoleSet {
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericRoleSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &roleSet{set: newSet}
 }
 
@@ -155,7 +159,7 @@ func (s *roleSet) Intersection(set RoleSet) RoleSet {
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericRoleSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var roleList []*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.Role
 	for _, obj := range newSet.List() {
 		roleList = append(roleList, obj.(*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.Role))
@@ -167,7 +171,7 @@ func (s *roleSet) Find(id ezkube.ResourceId) (*rbac_enterprise_mesh_gloo_solo_io
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find Role %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&rbac_enterprise_mesh_gloo_solo_io_v1alpha1.Role{}, id)
+	obj, err := s.Generic().Find(&rbac_enterprise_mesh_gloo_solo_io_v1alpha1.Role{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +183,23 @@ func (s *roleSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *roleSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *roleSet) Delta(newSet RoleSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }
 
 type RoleBindingSet interface {
@@ -207,6 +227,10 @@ type RoleBindingSet interface {
 	Find(id ezkube.ResourceId) (*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.RoleBinding, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another RoleBindingSet
+	Delta(newSet RoleBindingSet) sksets.ResourceDelta
 }
 
 func makeGenericRoleBindingSet(roleBindingList []*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.RoleBinding) sksets.ResourceSet {
@@ -237,7 +261,7 @@ func (s *roleBindingSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *roleBindingSet) List(filterResource ...func(*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.RoleBinding) bool) []*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.RoleBinding {
@@ -252,7 +276,7 @@ func (s *roleBindingSet) List(filterResource ...func(*rbac_enterprise_mesh_gloo_
 	}
 
 	var roleBindingList []*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.RoleBinding
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		roleBindingList = append(roleBindingList, obj.(*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.RoleBinding))
 	}
 	return roleBindingList
@@ -264,7 +288,7 @@ func (s *roleBindingSet) Map() map[string]*rbac_enterprise_mesh_gloo_solo_io_v1a
 	}
 
 	newMap := map[string]*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.RoleBinding{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.RoleBinding)
 	}
 	return newMap
@@ -278,7 +302,7 @@ func (s *roleBindingSet) Insert(
 	}
 
 	for _, obj := range roleBindingList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -286,7 +310,7 @@ func (s *roleBindingSet) Has(roleBinding ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(roleBinding)
+	return s.Generic().Has(roleBinding)
 }
 
 func (s *roleBindingSet) Equal(
@@ -295,14 +319,14 @@ func (s *roleBindingSet) Equal(
 	if s == nil {
 		return roleBindingSet == nil
 	}
-	return s.set.Equal(makeGenericRoleBindingSet(roleBindingSet.List()))
+	return s.Generic().Equal(roleBindingSet.Generic())
 }
 
 func (s *roleBindingSet) Delete(RoleBinding ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(RoleBinding)
+	s.Generic().Delete(RoleBinding)
 }
 
 func (s *roleBindingSet) Union(set RoleBindingSet) RoleBindingSet {
@@ -316,7 +340,7 @@ func (s *roleBindingSet) Difference(set RoleBindingSet) RoleBindingSet {
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericRoleBindingSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &roleBindingSet{set: newSet}
 }
 
@@ -324,7 +348,7 @@ func (s *roleBindingSet) Intersection(set RoleBindingSet) RoleBindingSet {
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericRoleBindingSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var roleBindingList []*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.RoleBinding
 	for _, obj := range newSet.List() {
 		roleBindingList = append(roleBindingList, obj.(*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.RoleBinding))
@@ -336,7 +360,7 @@ func (s *roleBindingSet) Find(id ezkube.ResourceId) (*rbac_enterprise_mesh_gloo_
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find RoleBinding %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&rbac_enterprise_mesh_gloo_solo_io_v1alpha1.RoleBinding{}, id)
+	obj, err := s.Generic().Find(&rbac_enterprise_mesh_gloo_solo_io_v1alpha1.RoleBinding{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -348,5 +372,21 @@ func (s *roleBindingSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *roleBindingSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *roleBindingSet) Delta(newSet RoleBindingSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }

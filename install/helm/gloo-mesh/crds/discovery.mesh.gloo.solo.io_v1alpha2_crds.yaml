@@ -36,6 +36,36 @@ spec:
             kubeService:
               description: Metadata about the kube-native traffic target backing this TrafficTarget.
               properties:
+                endpoints:
+                  description: |-
+                    Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs.
+                    This API mirrors the kubernetes Endpoints API.
+                    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
+                  items:
+                    properties:
+                      ipAddresses:
+                        items:
+                          type: string
+                        type: array
+                      ports:
+                        items:
+                          properties:
+                            appProtocol:
+                              description: Available in k8s 1.18+, specifies the application protocol.
+                              type: string
+                            name:
+                              type: string
+                            port:
+                              description: External-facing port for this k8s service (NOT the service's target port on the backing pods).
+                              maximum: 4294967295
+                              minimum: 0
+                              type: integer
+                            protocol:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  type: array
                 labels:
                   additionalProperties:
                     type: string
@@ -1301,6 +1331,12 @@ spec:
                       - required:
                         - permissive
                       properties:
+                        flatNetwork:
+                          description: |-
+                            If true, all multicluster traffic will be routed directly to the service endpoints of the traffic targets,
+                            rather than through an ingress gateway.
+                            NOTE: This feature will not work if the clusters are not pre-configured to live on the same network.
+                          type: boolean
                         hostnameSuffix:
                           description: |-
                             Configure the suffix for hostnames of traffic targets federated within this virtual mesh.

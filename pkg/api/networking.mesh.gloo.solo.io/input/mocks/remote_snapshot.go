@@ -16,6 +16,7 @@ import (
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	v1alpha1sets "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
+	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MockRemoteSnapshot is a mock of RemoteSnapshot interface
@@ -193,6 +194,20 @@ func (m *MockRemoteSnapshot) SyncStatusesMultiCluster(ctx context.Context, mcCli
 func (mr *MockRemoteSnapshotMockRecorder) SyncStatusesMultiCluster(ctx, mcClient, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatusesMultiCluster", reflect.TypeOf((*MockRemoteSnapshot)(nil).SyncStatusesMultiCluster), ctx, mcClient, opts)
+}
+
+// SyncStatuses mocks base method
+func (m *MockRemoteSnapshot) SyncStatuses(ctx context.Context, c client.Client, opts input.RemoteSyncStatusOptions) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SyncStatuses", ctx, c, opts)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SyncStatuses indicates an expected call of SyncStatuses
+func (mr *MockRemoteSnapshotMockRecorder) SyncStatuses(ctx, c, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncStatuses", reflect.TypeOf((*MockRemoteSnapshot)(nil).SyncStatuses), ctx, c, opts)
 }
 
 // MarshalJSON mocks base method

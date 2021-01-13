@@ -13,6 +13,13 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for Role
+var RoleGVK = schema.GroupVersionKind{
+	Group:   "rbac.enterprise.mesh.gloo.solo.io",
+	Version: "v1alpha1",
+	Kind:    "Role",
+}
+
 // Role is the Schema for the role API
 type Role struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -24,11 +31,7 @@ type Role struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (Role) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "rbac.enterprise.mesh.gloo.solo.io",
-		Version: "v1alpha1",
-		Kind:    "Role",
-	}
+	return RoleGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -45,6 +48,13 @@ type RoleList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
+// GroupVersionKind for RoleBinding
+var RoleBindingGVK = schema.GroupVersionKind{
+	Group:   "rbac.enterprise.mesh.gloo.solo.io",
+	Version: "v1alpha1",
+	Kind:    "RoleBinding",
+}
+
 // RoleBinding is the Schema for the roleBinding API
 type RoleBinding struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -56,11 +66,7 @@ type RoleBinding struct {
 
 // GVK returns the GroupVersionKind associated with the resource type.
 func (RoleBinding) GVK() schema.GroupVersionKind {
-	return schema.GroupVersionKind{
-		Group:   "rbac.enterprise.mesh.gloo.solo.io",
-		Version: "v1alpha1",
-		Kind:    "RoleBinding",
-	}
+	return RoleBindingGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

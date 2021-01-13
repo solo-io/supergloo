@@ -62,6 +62,7 @@ In Gloo Mesh, "federation" refers to the ability to expose traffic targets with 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | permissive | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  | Select permissive mode to expose all traffic targets in a VirtualMesh to cross-cluster traffic from all workloads in that Virtual Mesh. |
+  | flatNetwork | bool |  | If true, all multicluster traffic will be routed directly to the service endpoints of the traffic targets, rather than through an ingress gateway. NOTE: This feature will not work if the clusters are not pre-configured to live on the same network. |
   | hostnameSuffix | string |  | Configure the suffix for hostnames of traffic targets federated within this virtual mesh. Currently this is only supported for Istio with smart DNS proxying enabled. If any meshes do not have smart DNS proxying enabled, setting this field results in an error. |
   
 
