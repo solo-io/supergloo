@@ -66,11 +66,11 @@ func (c *clusterDomainRegistry) GetClusterDomain(clusterName string) string {
 }
 
 func (c *clusterDomainRegistry) GetServiceLocalFQDN(serviceRef ezkube.ClusterResourceId) string {
-	return GetServiceGlobalFQDN(serviceRef)
+	return fmt.Sprintf("%s.%s.svc.%s", serviceRef.GetName(), serviceRef.GetNamespace(), c.GetClusterDomain(serviceRef.GetClusterName()))
 }
 
 func (c *clusterDomainRegistry) GetServiceGlobalFQDN(serviceRef ezkube.ClusterResourceId) string {
-	return fmt.Sprintf("%s.%s.svc.%s.%v", serviceRef.GetName(), serviceRef.GetNamespace(), serviceRef.GetClusterName(), GlobalHostnameSuffix)
+	return GetServiceGlobalFQDN(serviceRef)
 }
 
 func (c *clusterDomainRegistry) GetDestinationServiceFQDN(originatingCluster string, destination ezkube.ClusterResourceId) string {
