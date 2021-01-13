@@ -11,6 +11,10 @@ Be sure to review the assumptions and satisfy the pre-requisites from the [Guide
 {{% /notice %}}
 
 {{% notice note %}}
+Gloo Mesh Enterprise users may be interested in [installing Gloo Mesh Istio]({{% versioned_link_path fromRoot="/setup/gloo_mesh_istio" %}}).
+{{% /notice %}}
+
+{{% notice note %}}
 Istio 1.8.0 has a [known issue](https://github.com/istio/istio/issues/28620) where sidecar proxies may fail to start
 under specific circumstances. This bug may surface in sidecars configured by Failover Services.
 {{% /notice %}}
