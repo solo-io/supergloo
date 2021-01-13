@@ -24,6 +24,7 @@ title: "workload.proto"
   - [WorkloadSpec.KubernetesWorkload](#discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload)
   - [WorkloadSpec.KubernetesWorkload.PodLabelsEntry](#discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.PodLabelsEntry)
   - [WorkloadStatus](#discovery.mesh.gloo.solo.io.WorkloadStatus)
+  - [WorkloadStatus.AppliedAccessLogCollection](#discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogCollection)
 
 
 
@@ -122,6 +123,23 @@ Information describing a Kubernetes-based workload (e.g. a Deployment or DaemonS
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The observed generation of the Workload. When this matches the Workload's metadata.generation it indicates that mesh-networking has reconciled the latest version of the Workload. |
+  | appliedAccessLogCollections | [][discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogCollection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload#discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogCollection" >}}) | repeated | The set of AccessLogCollections that have been applied to this Workload. |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogCollection"></a>
+
+### WorkloadStatus.AppliedAccessLogCollection
+AppliedAccessLogCollection represents an AccessLogCollection that has been applied to this Workload.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | reference to the AccessLogCollection object. |
+  | observedGeneration | int64 |  | the observed generation of the accepted AccessLogCollection. |
   
 
 

@@ -127,6 +127,8 @@ type WorkloadStatus struct {
 	// When this matches the Workload's metadata.generation it indicates that mesh-networking
 	// has reconciled the latest version of the Workload.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
+	// The set of AccessLogCollections that have been applied to this Workload.
+	AppliedAccessLogCollections []*WorkloadStatus_AppliedAccessLogCollection `protobuf:"bytes,2,rep,name=applied_access_log_collections,json=appliedAccessLogCollections,proto3" json:"applied_access_log_collections,omitempty"`
 }
 
 func (x *WorkloadStatus) Reset() {
@@ -166,6 +168,13 @@ func (x *WorkloadStatus) GetObservedGeneration() int64 {
 		return x.ObservedGeneration
 	}
 	return 0
+}
+
+func (x *WorkloadStatus) GetAppliedAccessLogCollections() []*WorkloadStatus_AppliedAccessLogCollection {
+	if x != nil {
+		return x.AppliedAccessLogCollections
+	}
+	return nil
 }
 
 // Information describing a Kubernetes-based workload (e.g. a Deployment or DaemonSet).
@@ -355,6 +364,64 @@ func (x *WorkloadSpec_AppMesh_ContainerPort) GetProtocol() string {
 	return ""
 }
 
+// AppliedAccessLogCollection represents an AccessLogCollection that has been applied to this Workload.
+type WorkloadStatus_AppliedAccessLogCollection struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// reference to the AccessLogCollection object.
+	Ref *v1.ObjectRef `protobuf:"bytes,1,opt,name=ref,proto3" json:"ref,omitempty"`
+	// the observed generation of the accepted AccessLogCollection.
+	ObservedGeneration int64 `protobuf:"varint,2,opt,name=observedGeneration,proto3" json:"observedGeneration,omitempty"`
+}
+
+func (x *WorkloadStatus_AppliedAccessLogCollection) Reset() {
+	*x = WorkloadStatus_AppliedAccessLogCollection{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *WorkloadStatus_AppliedAccessLogCollection) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WorkloadStatus_AppliedAccessLogCollection) ProtoMessage() {}
+
+func (x *WorkloadStatus_AppliedAccessLogCollection) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WorkloadStatus_AppliedAccessLogCollection.ProtoReflect.Descriptor instead.
+func (*WorkloadStatus_AppliedAccessLogCollection) Descriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_rawDescGZIP(), []int{1, 0}
+}
+
+func (x *WorkloadStatus_AppliedAccessLogCollection) GetRef() *v1.ObjectRef {
+	if x != nil {
+		return x.Ref
+	}
+	return nil
+}
+
+func (x *WorkloadStatus_AppliedAccessLogCollection) GetObservedGeneration() int64 {
+	if x != nil {
+		return x.ObservedGeneration
+	}
+	return 0
+}
+
 var File_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto protoreflect.FileDescriptor
 
 var file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_rawDesc = []byte{
@@ -417,16 +484,33 @@ var file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_rawD
 	0x72, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x18, 0x02,
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x42, 0x0f,
 	0x0a, 0x0d, 0x77, 0x6f, 0x72, 0x6b, 0x6c, 0x6f, 0x61, 0x64, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x22,
-	0x41, 0x0a, 0x0e, 0x57, 0x6f, 0x72, 0x6b, 0x6c, 0x6f, 0x61, 0x64, 0x53, 0x74, 0x61, 0x74, 0x75,
-	0x73, 0x12, 0x2f, 0x0a, 0x13, 0x6f, 0x62, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64, 0x5f, 0x67, 0x65,
-	0x6e, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x12,
-	0x6f, 0x62, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64, 0x47, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x42, 0x4f, 0x5a, 0x49, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65,
-	0x73, 0x68, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x64, 0x69, 0x73, 0x63, 0x6f,
-	0x76, 0x65, 0x72, 0x79, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73,
-	0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x32, 0xc0,
-	0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0xcd, 0x02, 0x0a, 0x0e, 0x57, 0x6f, 0x72, 0x6b, 0x6c, 0x6f, 0x61, 0x64, 0x53, 0x74, 0x61, 0x74,
+	0x75, 0x73, 0x12, 0x2f, 0x0a, 0x13, 0x6f, 0x62, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64, 0x5f, 0x67,
+	0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52,
+	0x12, 0x6f, 0x62, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64, 0x47, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74,
+	0x69, 0x6f, 0x6e, 0x12, 0x8b, 0x01, 0x0a, 0x1e, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x65, 0x64, 0x5f,
+	0x61, 0x63, 0x63, 0x65, 0x73, 0x73, 0x5f, 0x6c, 0x6f, 0x67, 0x5f, 0x63, 0x6f, 0x6c, 0x6c, 0x65,
+	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x46, 0x2e, 0x64,
+	0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c,
+	0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x57, 0x6f, 0x72, 0x6b, 0x6c,
+	0x6f, 0x61, 0x64, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x65,
+	0x64, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x4c, 0x6f, 0x67, 0x43, 0x6f, 0x6c, 0x6c, 0x65, 0x63,
+	0x74, 0x69, 0x6f, 0x6e, 0x52, 0x1b, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x65, 0x64, 0x41, 0x63, 0x63,
+	0x65, 0x73, 0x73, 0x4c, 0x6f, 0x67, 0x43, 0x6f, 0x6c, 0x6c, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e,
+	0x73, 0x1a, 0x7c, 0x0a, 0x1a, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x65, 0x64, 0x41, 0x63, 0x63, 0x65,
+	0x73, 0x73, 0x4c, 0x6f, 0x67, 0x43, 0x6f, 0x6c, 0x6c, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12,
+	0x2e, 0x0a, 0x03, 0x72, 0x65, 0x66, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x63,
+	0x6f, 0x72, 0x65, 0x2e, 0x73, 0x6b, 0x76, 0x32, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f,
+	0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65, 0x66, 0x52, 0x03, 0x72, 0x65, 0x66, 0x12,
+	0x2e, 0x0a, 0x12, 0x6f, 0x62, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64, 0x47, 0x65, 0x6e, 0x65, 0x72,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x12, 0x6f, 0x62, 0x73,
+	0x65, 0x72, 0x76, 0x65, 0x64, 0x47, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x42,
+	0x4f, 0x5a, 0x49, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f,
+	0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f,
+	0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72,
+	0x79, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f,
+	0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x32, 0xc0, 0xf5, 0x04, 0x01,
+	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -441,29 +525,32 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_raw
 	return file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_rawDescData
 }
 
-var file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_goTypes = []interface{}{
-	(*WorkloadSpec)(nil),                       // 0: discovery.mesh.gloo.solo.io.WorkloadSpec
-	(*WorkloadStatus)(nil),                     // 1: discovery.mesh.gloo.solo.io.WorkloadStatus
-	(*WorkloadSpec_KubernetesWorkload)(nil),    // 2: discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload
-	(*WorkloadSpec_AppMesh)(nil),               // 3: discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh
-	nil,                                        // 4: discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.PodLabelsEntry
-	(*WorkloadSpec_AppMesh_ContainerPort)(nil), // 5: discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh.ContainerPort
-	(*v1.ObjectRef)(nil),                       // 6: core.skv2.solo.io.ObjectRef
-	(*v1.ClusterObjectRef)(nil),                // 7: core.skv2.solo.io.ClusterObjectRef
+	(*WorkloadSpec)(nil),                              // 0: discovery.mesh.gloo.solo.io.WorkloadSpec
+	(*WorkloadStatus)(nil),                            // 1: discovery.mesh.gloo.solo.io.WorkloadStatus
+	(*WorkloadSpec_KubernetesWorkload)(nil),           // 2: discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload
+	(*WorkloadSpec_AppMesh)(nil),                      // 3: discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh
+	nil,                                               // 4: discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.PodLabelsEntry
+	(*WorkloadSpec_AppMesh_ContainerPort)(nil),        // 5: discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh.ContainerPort
+	(*WorkloadStatus_AppliedAccessLogCollection)(nil), // 6: discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogCollection
+	(*v1.ObjectRef)(nil),                              // 7: core.skv2.solo.io.ObjectRef
+	(*v1.ClusterObjectRef)(nil),                       // 8: core.skv2.solo.io.ClusterObjectRef
 }
 var file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_depIdxs = []int32{
 	2, // 0: discovery.mesh.gloo.solo.io.WorkloadSpec.kubernetes:type_name -> discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload
-	6, // 1: discovery.mesh.gloo.solo.io.WorkloadSpec.mesh:type_name -> core.skv2.solo.io.ObjectRef
+	7, // 1: discovery.mesh.gloo.solo.io.WorkloadSpec.mesh:type_name -> core.skv2.solo.io.ObjectRef
 	3, // 2: discovery.mesh.gloo.solo.io.WorkloadSpec.app_mesh:type_name -> discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh
-	7, // 3: discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.controller:type_name -> core.skv2.solo.io.ClusterObjectRef
-	4, // 4: discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.pod_labels:type_name -> discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.PodLabelsEntry
-	5, // 5: discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh.ports:type_name -> discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh.ContainerPort
-	6, // [6:6] is the sub-list for method output_type
-	6, // [6:6] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	6, // 3: discovery.mesh.gloo.solo.io.WorkloadStatus.applied_access_log_collections:type_name -> discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogCollection
+	8, // 4: discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.controller:type_name -> core.skv2.solo.io.ClusterObjectRef
+	4, // 5: discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.pod_labels:type_name -> discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.PodLabelsEntry
+	5, // 6: discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh.ports:type_name -> discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh.ContainerPort
+	7, // 7: discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogCollection.ref:type_name -> core.skv2.solo.io.ObjectRef
+	8, // [8:8] is the sub-list for method output_type
+	8, // [8:8] is the sub-list for method input_type
+	8, // [8:8] is the sub-list for extension type_name
+	8, // [8:8] is the sub-list for extension extendee
+	0, // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_init() }
@@ -532,6 +619,18 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_ini
 				return nil
 			}
 		}
+		file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*WorkloadStatus_AppliedAccessLogCollection); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_msgTypes[0].OneofWrappers = []interface{}{
 		(*WorkloadSpec_Kubernetes)(nil),
@@ -542,7 +641,7 @@ func file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_ini
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_solo_io_gloo_mesh_api_discovery_v1alpha2_workload_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

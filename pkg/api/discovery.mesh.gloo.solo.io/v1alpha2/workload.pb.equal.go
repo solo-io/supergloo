@@ -110,6 +110,23 @@ func (m *WorkloadStatus) Equal(that interface{}) bool {
 		return false
 	}
 
+	if len(m.GetAppliedAccessLogCollections()) != len(target.GetAppliedAccessLogCollections()) {
+		return false
+	}
+	for idx, v := range m.GetAppliedAccessLogCollections() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAppliedAccessLogCollections()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetAppliedAccessLogCollections()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	return true
 }
 
@@ -233,6 +250,44 @@ func (m *WorkloadSpec_AppMesh_ContainerPort) Equal(that interface{}) bool {
 	}
 
 	if strings.Compare(m.GetProtocol(), target.GetProtocol()) != 0 {
+		return false
+	}
+
+	return true
+}
+
+// Equal function
+func (m *WorkloadStatus_AppliedAccessLogCollection) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*WorkloadStatus_AppliedAccessLogCollection)
+	if !ok {
+		that2, ok := that.(WorkloadStatus_AppliedAccessLogCollection)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetRef()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRef()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRef(), target.GetRef()) {
+			return false
+		}
+	}
+
+	if m.GetObservedGeneration() != target.GetObservedGeneration() {
 		return false
 	}
 

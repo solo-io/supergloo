@@ -70,4 +70,22 @@ message WorkloadStatus {
     // has reconciled the latest version of the Workload.
     int64 observed_generation = 1;
 
+    // The set of AccessLogCollections that have been applied to this Workload.
+    repeated AppliedAccessLogCollection applied_access_log_collections = 2;
+
+    // TODO(harveyxia) add wasm filter
+
+    // AppliedAccessLogCollection represents an AccessLogCollection that has been applied to this Workload.
+    message AppliedAccessLogCollection {
+        // reference to the AccessLogCollection object.
+        .core.skv2.solo.io.ObjectRef ref = 1;
+
+        // the observed generation of the accepted AccessLogCollection.
+        int64 observedGeneration = 2;
+
+        // TODO(harveyxia) can't generate validation schemas for AccessLogCollectionSpec because of a cuelang issue: https://github.com/cuelang/cue/issues/635
+        // for now the workaround is to have the translator simply fetch the AccessLogCollection using the ref above
+        // the last known valid spec of the AccessLogCollection
+        // .observability.enterprise.mesh.gloo.solo.io.AccessLogCollectionSpec spec = 3;
+    }
 }

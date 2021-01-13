@@ -954,6 +954,26 @@ spec:
           type: object
         status:
           properties:
+            appliedAccessLogCollections:
+              description: The set of AccessLogCollections that have been applied to this Workload.
+              items:
+                properties:
+                  observedGeneration:
+                    description: the observed generation of the accepted AccessLogCollection.
+                    format: int64
+                    type: integer
+                  ref:
+                    description: reference to the AccessLogCollection object.
+                    properties:
+                      name:
+                        description: name of the resource being referenced
+                        type: string
+                      namespace:
+                        description: namespace of the resource being referenced
+                        type: string
+                    type: object
+                type: object
+              type: array
             observedGeneration:
               description: |-
                 The observed generation of the Workload.
