@@ -74,15 +74,48 @@ kubeadmConfigPatches:
       "feature-gates": "EphemeralContainers=true"
 EOF
 
+
   # NOTE: we delete the local-path-storage ns to free up CPU for ci
   ${K} delete ns local-path-storage
 
-  # Apply calico networking CNI
-  ${K} apply -f https://docs.projectcalico.org/v3.15/manifests/calico.yaml
-  ${K} -n kube-system set env daemonset/calico-node FELIX_IGNORELOOSERPF=true
+  # Only setup kind clusters with flat networking if ENV var is set
+  if [ ! -z ${FLAT_NETWORKING_ENABLED} ]; then
+    # Apply calico networking CNI
+    ${K} apply -f https://docs.projectcalico.org/v3.15/manifests/calico.yaml
+    ${K} -n kube-system set env daemonset/calico-node FELIX_IGNORELOOSERPF=true
 
-  # Ensure calico node is ready before installing istio
-  ${K} -n kube-system rollout status daemonset/calico-node --timeout=300s
+    # Ensure calico node is ready before installing istio
+    ${K} -n kube-system rollout status daemonset/calico-node --timeout=300s
+
+    ${K} apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/namespace.yaml
+    ${K} apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/metallb.yaml
+    ${K} -n metallb-system create secret generic memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+
+
+    if hostname -i; then
+      myip=$(hostname -i)
+    else
+      myip=$(ipconfig getifaddr en0)
+    fi
+    ipkind=$(docker inspect ${cluster}-control-plane | jq -r '.[0].NetworkSettings.Networks[].IPAddress')
+    networkkind=$(echo ${ipkind} | sed 's/.$//')
+
+    cat << EOF | ${K} apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: metallb-system
+  name: config
+data:
+  config: |
+    address-pools:
+    - name: default
+      protocol: layer2
+      addresses:
+      - ${networkkind}2${net}0-${networkkind}2${net}9
+EOF
+
+  fi
 
 }
 
