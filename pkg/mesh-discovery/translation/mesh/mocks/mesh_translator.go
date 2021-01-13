@@ -37,7 +37,7 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // TranslateMeshes mocks base method
-func (m *MockTranslator) TranslateMeshes(in input.RemoteSnapshot, settings *v1alpha2.DiscoverySettings) v1alpha2sets.MeshSet {
+func (m *MockTranslator) TranslateMeshes(in input.DiscoveryInputSnapshot, settings *v1alpha2.DiscoverySettings) v1alpha2sets.MeshSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranslateMeshes", in, settings)
 	ret0, _ := ret[0].(v1alpha2sets.MeshSet)
