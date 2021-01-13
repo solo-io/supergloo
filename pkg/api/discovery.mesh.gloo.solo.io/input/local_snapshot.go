@@ -2,13 +2,13 @@
 
 //go:generate mockgen -source ./local_snapshot.go -destination mocks/local_snapshot.go
 
-// The Input LocalSnapshot contains the set of all:
+// The Input SettingsSnapshot contains the set of all:
 // * Settings
 // * VirtualMeshes
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
-// or a ClusterWatcher (for multiple clusters) using the LocalSnapshotBuilder.
+// or a ClusterWatcher (for multiple clusters) using the SettingsSnapshotBuilder.
 //
 // Resources in a MultiCluster snapshot will have their ClusterName set to the
 // name of the cluster from which the resource was read.
@@ -37,7 +37,7 @@ import (
 )
 
 // the snapshot of input resources consumed by translation
-type LocalSnapshot interface {
+type SettingsSnapshot interface {
 
 	// return the set of input Settings
 	Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
@@ -46,16 +46,16 @@ type LocalSnapshot interface {
 	VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 	// update the status of all input objects which support
 	// the Status subresource (across multiple clusters)
-	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts LocalSyncStatusOptions) error
+	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts SettingsSyncStatusOptions) error
 	// update the status of all input objects which support
 	// the Status subresource (in the local cluster)
-	SyncStatuses(ctx context.Context, c client.Client, opts LocalSyncStatusOptions) error
+	SyncStatuses(ctx context.Context, c client.Client, opts SettingsSyncStatusOptions) error
 	// serialize the entire snapshot as JSON
 	MarshalJSON() ([]byte, error)
 }
 
 // options for syncing input object statuses
-type LocalSyncStatusOptions struct {
+type SettingsSyncStatusOptions struct {
 
 	// sync status of Settings objects
 	Settings bool
@@ -64,7 +64,7 @@ type LocalSyncStatusOptions struct {
 	VirtualMesh bool
 }
 
-type snapshotLocal struct {
+type snapshotSettings struct {
 	name string
 
 	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
@@ -72,15 +72,15 @@ type snapshotLocal struct {
 	virtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 }
 
-func NewLocalSnapshot(
+func NewSettingsSnapshot(
 	name string,
 
 	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet,
 
 	virtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet,
 
-) LocalSnapshot {
-	return &snapshotLocal{
+) SettingsSnapshot {
+	return &snapshotSettings{
 		name: name,
 
 		settings:      settings,
@@ -88,15 +88,15 @@ func NewLocalSnapshot(
 	}
 }
 
-func (s snapshotLocal) Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet {
+func (s snapshotSettings) Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet {
 	return s.settings
 }
 
-func (s snapshotLocal) VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet {
+func (s snapshotSettings) VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet {
 	return s.virtualMeshes
 }
 
-func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts LocalSyncStatusOptions) error {
+func (s snapshotSettings) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts SettingsSyncStatusOptions) error {
 	var errs error
 
 	if opts.Settings {
@@ -127,7 +127,7 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 	return errs
 }
 
-func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts LocalSyncStatusOptions) error {
+func (s snapshotSettings) SyncStatuses(ctx context.Context, c client.Client, opts SettingsSyncStatusOptions) error {
 	var errs error
 
 	if opts.Settings {
@@ -148,7 +148,7 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 	return errs
 }
 
-func (s snapshotLocal) MarshalJSON() ([]byte, error) {
+func (s snapshotSettings) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
 	snapshotMap["settings"] = s.settings.List()
@@ -157,22 +157,22 @@ func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 }
 
 // builds the input snapshot from API Clients.
-type LocalBuilder interface {
-	BuildSnapshot(ctx context.Context, name string, opts LocalBuildOptions) (LocalSnapshot, error)
+type SettingsBuilder interface {
+	BuildSnapshot(ctx context.Context, name string, opts SettingsBuildOptions) (SettingsSnapshot, error)
 }
 
 // Options for building a snapshot
-type LocalBuildOptions struct {
+type SettingsBuildOptions struct {
 
 	// List options for composing a snapshot from Settings
-	Settings ResourceLocalBuildOptions
+	Settings ResourceSettingsBuildOptions
 
 	// List options for composing a snapshot from VirtualMeshes
-	VirtualMeshes ResourceLocalBuildOptions
+	VirtualMeshes ResourceSettingsBuildOptions
 }
 
 // Options for reading resources of a given type
-type ResourceLocalBuildOptions struct {
+type ResourceSettingsBuildOptions struct {
 
 	// List options for composing a snapshot from a resource type
 	ListOptions []client.ListOption
@@ -182,23 +182,23 @@ type ResourceLocalBuildOptions struct {
 }
 
 // build a snapshot from resources across multiple clusters
-type multiClusterLocalBuilder struct {
+type multiClusterSettingsBuilder struct {
 	clusters multicluster.Interface
 	client   multicluster.Client
 }
 
 // Produces snapshots of resources across all clusters defined in the ClusterSet
-func NewMultiClusterLocalBuilder(
+func NewMultiClusterSettingsBuilder(
 	clusters multicluster.Interface,
 	client multicluster.Client,
-) LocalBuilder {
-	return &multiClusterLocalBuilder{
+) SettingsBuilder {
+	return &multiClusterSettingsBuilder{
 		clusters: clusters,
 		client:   client,
 	}
 }
 
-func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name string, opts LocalBuildOptions) (LocalSnapshot, error) {
+func (b *multiClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name string, opts SettingsBuildOptions) (SettingsSnapshot, error) {
 
 	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
@@ -217,7 +217,7 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 
 	}
 
-	outputSnap := NewLocalSnapshot(
+	outputSnap := NewSettingsSnapshot(
 		name,
 
 		settings,
@@ -227,7 +227,7 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 	return outputSnap, errs
 }
 
-func (b *multiClusterLocalBuilder) insertSettingsFromCluster(ctx context.Context, cluster string, settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceLocalBuildOptions) error {
+func (b *multiClusterSettingsBuilder) insertSettingsFromCluster(ctx context.Context, cluster string, settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceSettingsBuildOptions) error {
 	settingsClient, err := settings_mesh_gloo_solo_io_v1alpha2.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
@@ -270,7 +270,7 @@ func (b *multiClusterLocalBuilder) insertSettingsFromCluster(ctx context.Context
 	return nil
 }
 
-func (b *multiClusterLocalBuilder) insertVirtualMeshesFromCluster(ctx context.Context, cluster string, virtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceLocalBuildOptions) error {
+func (b *multiClusterSettingsBuilder) insertVirtualMeshesFromCluster(ctx context.Context, cluster string, virtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceSettingsBuildOptions) error {
 	virtualMeshClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterVirtualMeshClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
@@ -314,31 +314,31 @@ func (b *multiClusterLocalBuilder) insertVirtualMeshesFromCluster(ctx context.Co
 }
 
 // build a snapshot from resources in a single cluster
-type singleClusterLocalBuilder struct {
+type singleClusterSettingsBuilder struct {
 	mgr         manager.Manager
 	clusterName string
 }
 
 // Produces snapshots of resources read from the manager for the given cluster
-func NewSingleClusterLocalBuilder(
+func NewSingleClusterSettingsBuilder(
 	mgr manager.Manager,
-) LocalBuilder {
-	return NewSingleClusterLocalBuilderWithClusterName(mgr, "")
+) SettingsBuilder {
+	return NewSingleClusterSettingsBuilderWithClusterName(mgr, "")
 }
 
 // Produces snapshots of resources read from the manager for the given cluster.
 // Snapshot resources will be marked with the given ClusterName.
-func NewSingleClusterLocalBuilderWithClusterName(
+func NewSingleClusterSettingsBuilderWithClusterName(
 	mgr manager.Manager,
 	clusterName string,
-) LocalBuilder {
-	return &singleClusterLocalBuilder{
+) SettingsBuilder {
+	return &singleClusterSettingsBuilder{
 		mgr:         mgr,
 		clusterName: clusterName,
 	}
 }
 
-func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name string, opts LocalBuildOptions) (LocalSnapshot, error) {
+func (b *singleClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name string, opts SettingsBuildOptions) (SettingsSnapshot, error) {
 
 	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
@@ -353,7 +353,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 		errs = multierror.Append(errs, err)
 	}
 
-	outputSnap := NewLocalSnapshot(
+	outputSnap := NewSettingsSnapshot(
 		name,
 
 		settings,
@@ -363,7 +363,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	return outputSnap, errs
 }
 
-func (b *singleClusterLocalBuilder) insertSettings(ctx context.Context, settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterSettingsBuilder) insertSettings(ctx context.Context, settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceSettingsBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -397,7 +397,7 @@ func (b *singleClusterLocalBuilder) insertSettings(ctx context.Context, settings
 	return nil
 }
 
-func (b *singleClusterLocalBuilder) insertVirtualMeshes(ctx context.Context, virtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterSettingsBuilder) insertVirtualMeshes(ctx context.Context, virtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceSettingsBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{

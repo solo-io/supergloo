@@ -15,31 +15,31 @@ import (
 	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 )
 
-// MockRemoteSnapshot is a mock of RemoteSnapshot interface
-type MockRemoteSnapshot struct {
+// MockDiscoveryInputSnapshot is a mock of DiscoveryInputSnapshot interface
+type MockDiscoveryInputSnapshot struct {
 	ctrl     *gomock.Controller
-	recorder *MockRemoteSnapshotMockRecorder
+	recorder *MockDiscoveryInputSnapshotMockRecorder
 }
 
-// MockRemoteSnapshotMockRecorder is the mock recorder for MockRemoteSnapshot
-type MockRemoteSnapshotMockRecorder struct {
-	mock *MockRemoteSnapshot
+// MockDiscoveryInputSnapshotMockRecorder is the mock recorder for MockDiscoveryInputSnapshot
+type MockDiscoveryInputSnapshotMockRecorder struct {
+	mock *MockDiscoveryInputSnapshot
 }
 
-// NewMockRemoteSnapshot creates a new mock instance
-func NewMockRemoteSnapshot(ctrl *gomock.Controller) *MockRemoteSnapshot {
-	mock := &MockRemoteSnapshot{ctrl: ctrl}
-	mock.recorder = &MockRemoteSnapshotMockRecorder{mock}
+// NewMockDiscoveryInputSnapshot creates a new mock instance
+func NewMockDiscoveryInputSnapshot(ctrl *gomock.Controller) *MockDiscoveryInputSnapshot {
+	mock := &MockDiscoveryInputSnapshot{ctrl: ctrl}
+	mock.recorder = &MockDiscoveryInputSnapshotMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockRemoteSnapshot) EXPECT() *MockRemoteSnapshotMockRecorder {
+func (m *MockDiscoveryInputSnapshot) EXPECT() *MockDiscoveryInputSnapshotMockRecorder {
 	return m.recorder
 }
 
 // Meshes mocks base method
-func (m *MockRemoteSnapshot) Meshes() v1beta2sets.MeshSet {
+func (m *MockDiscoveryInputSnapshot) Meshes() v1beta2sets.MeshSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Meshes")
 	ret0, _ := ret[0].(v1beta2sets.MeshSet)
@@ -47,13 +47,13 @@ func (m *MockRemoteSnapshot) Meshes() v1beta2sets.MeshSet {
 }
 
 // Meshes indicates an expected call of Meshes
-func (mr *MockRemoteSnapshotMockRecorder) Meshes() *gomock.Call {
+func (mr *MockDiscoveryInputSnapshotMockRecorder) Meshes() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Meshes", reflect.TypeOf((*MockRemoteSnapshot)(nil).Meshes))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Meshes", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Meshes))
 }
 
 // ConfigMaps mocks base method
-func (m *MockRemoteSnapshot) ConfigMaps() v1sets0.ConfigMapSet {
+func (m *MockDiscoveryInputSnapshot) ConfigMaps() v1sets0.ConfigMapSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConfigMaps")
 	ret0, _ := ret[0].(v1sets0.ConfigMapSet)
@@ -61,13 +61,13 @@ func (m *MockRemoteSnapshot) ConfigMaps() v1sets0.ConfigMapSet {
 }
 
 // ConfigMaps indicates an expected call of ConfigMaps
-func (mr *MockRemoteSnapshotMockRecorder) ConfigMaps() *gomock.Call {
+func (mr *MockDiscoveryInputSnapshotMockRecorder) ConfigMaps() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigMaps", reflect.TypeOf((*MockRemoteSnapshot)(nil).ConfigMaps))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigMaps", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).ConfigMaps))
 }
 
 // Services mocks base method
-func (m *MockRemoteSnapshot) Services() v1sets0.ServiceSet {
+func (m *MockDiscoveryInputSnapshot) Services() v1sets0.ServiceSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Services")
 	ret0, _ := ret[0].(v1sets0.ServiceSet)
@@ -75,13 +75,13 @@ func (m *MockRemoteSnapshot) Services() v1sets0.ServiceSet {
 }
 
 // Services indicates an expected call of Services
-func (mr *MockRemoteSnapshotMockRecorder) Services() *gomock.Call {
+func (mr *MockDiscoveryInputSnapshotMockRecorder) Services() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Services", reflect.TypeOf((*MockRemoteSnapshot)(nil).Services))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Services", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Services))
 }
 
 // Pods mocks base method
-func (m *MockRemoteSnapshot) Pods() v1sets0.PodSet {
+func (m *MockDiscoveryInputSnapshot) Pods() v1sets0.PodSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Pods")
 	ret0, _ := ret[0].(v1sets0.PodSet)
@@ -89,13 +89,13 @@ func (m *MockRemoteSnapshot) Pods() v1sets0.PodSet {
 }
 
 // Pods indicates an expected call of Pods
-func (mr *MockRemoteSnapshotMockRecorder) Pods() *gomock.Call {
+func (mr *MockDiscoveryInputSnapshotMockRecorder) Pods() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pods", reflect.TypeOf((*MockRemoteSnapshot)(nil).Pods))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pods", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Pods))
 }
 
 // Endpoints mocks base method
-func (m *MockRemoteSnapshot) Endpoints() v1sets0.EndpointsSet {
+func (m *MockDiscoveryInputSnapshot) Endpoints() v1sets0.EndpointsSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Endpoints")
 	ret0, _ := ret[0].(v1sets0.EndpointsSet)
@@ -103,13 +103,13 @@ func (m *MockRemoteSnapshot) Endpoints() v1sets0.EndpointsSet {
 }
 
 // Endpoints indicates an expected call of Endpoints
-func (mr *MockRemoteSnapshotMockRecorder) Endpoints() *gomock.Call {
+func (mr *MockDiscoveryInputSnapshotMockRecorder) Endpoints() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Endpoints", reflect.TypeOf((*MockRemoteSnapshot)(nil).Endpoints))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Endpoints", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Endpoints))
 }
 
 // Nodes mocks base method
-func (m *MockRemoteSnapshot) Nodes() v1sets0.NodeSet {
+func (m *MockDiscoveryInputSnapshot) Nodes() v1sets0.NodeSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Nodes")
 	ret0, _ := ret[0].(v1sets0.NodeSet)
@@ -117,13 +117,13 @@ func (m *MockRemoteSnapshot) Nodes() v1sets0.NodeSet {
 }
 
 // Nodes indicates an expected call of Nodes
-func (mr *MockRemoteSnapshotMockRecorder) Nodes() *gomock.Call {
+func (mr *MockDiscoveryInputSnapshotMockRecorder) Nodes() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Nodes", reflect.TypeOf((*MockRemoteSnapshot)(nil).Nodes))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Nodes", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Nodes))
 }
 
 // Deployments mocks base method
-func (m *MockRemoteSnapshot) Deployments() v1sets.DeploymentSet {
+func (m *MockDiscoveryInputSnapshot) Deployments() v1sets.DeploymentSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Deployments")
 	ret0, _ := ret[0].(v1sets.DeploymentSet)
@@ -131,13 +131,13 @@ func (m *MockRemoteSnapshot) Deployments() v1sets.DeploymentSet {
 }
 
 // Deployments indicates an expected call of Deployments
-func (mr *MockRemoteSnapshotMockRecorder) Deployments() *gomock.Call {
+func (mr *MockDiscoveryInputSnapshotMockRecorder) Deployments() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deployments", reflect.TypeOf((*MockRemoteSnapshot)(nil).Deployments))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deployments", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Deployments))
 }
 
 // ReplicaSets mocks base method
-func (m *MockRemoteSnapshot) ReplicaSets() v1sets.ReplicaSetSet {
+func (m *MockDiscoveryInputSnapshot) ReplicaSets() v1sets.ReplicaSetSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReplicaSets")
 	ret0, _ := ret[0].(v1sets.ReplicaSetSet)
@@ -145,13 +145,13 @@ func (m *MockRemoteSnapshot) ReplicaSets() v1sets.ReplicaSetSet {
 }
 
 // ReplicaSets indicates an expected call of ReplicaSets
-func (mr *MockRemoteSnapshotMockRecorder) ReplicaSets() *gomock.Call {
+func (mr *MockDiscoveryInputSnapshotMockRecorder) ReplicaSets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReplicaSets", reflect.TypeOf((*MockRemoteSnapshot)(nil).ReplicaSets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReplicaSets", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).ReplicaSets))
 }
 
 // DaemonSets mocks base method
-func (m *MockRemoteSnapshot) DaemonSets() v1sets.DaemonSetSet {
+func (m *MockDiscoveryInputSnapshot) DaemonSets() v1sets.DaemonSetSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DaemonSets")
 	ret0, _ := ret[0].(v1sets.DaemonSetSet)
@@ -159,13 +159,13 @@ func (m *MockRemoteSnapshot) DaemonSets() v1sets.DaemonSetSet {
 }
 
 // DaemonSets indicates an expected call of DaemonSets
-func (mr *MockRemoteSnapshotMockRecorder) DaemonSets() *gomock.Call {
+func (mr *MockDiscoveryInputSnapshotMockRecorder) DaemonSets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DaemonSets", reflect.TypeOf((*MockRemoteSnapshot)(nil).DaemonSets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DaemonSets", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).DaemonSets))
 }
 
 // StatefulSets mocks base method
-func (m *MockRemoteSnapshot) StatefulSets() v1sets.StatefulSetSet {
+func (m *MockDiscoveryInputSnapshot) StatefulSets() v1sets.StatefulSetSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StatefulSets")
 	ret0, _ := ret[0].(v1sets.StatefulSetSet)
@@ -173,13 +173,13 @@ func (m *MockRemoteSnapshot) StatefulSets() v1sets.StatefulSetSet {
 }
 
 // StatefulSets indicates an expected call of StatefulSets
-func (mr *MockRemoteSnapshotMockRecorder) StatefulSets() *gomock.Call {
+func (mr *MockDiscoveryInputSnapshotMockRecorder) StatefulSets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StatefulSets", reflect.TypeOf((*MockRemoteSnapshot)(nil).StatefulSets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StatefulSets", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).StatefulSets))
 }
 
 // MarshalJSON mocks base method
-func (m *MockRemoteSnapshot) MarshalJSON() ([]byte, error) {
+func (m *MockDiscoveryInputSnapshot) MarshalJSON() ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MarshalJSON")
 	ret0, _ := ret[0].([]byte)
@@ -188,45 +188,45 @@ func (m *MockRemoteSnapshot) MarshalJSON() ([]byte, error) {
 }
 
 // MarshalJSON indicates an expected call of MarshalJSON
-func (mr *MockRemoteSnapshotMockRecorder) MarshalJSON() *gomock.Call {
+func (mr *MockDiscoveryInputSnapshotMockRecorder) MarshalJSON() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarshalJSON", reflect.TypeOf((*MockRemoteSnapshot)(nil).MarshalJSON))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarshalJSON", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).MarshalJSON))
 }
 
-// MockRemoteBuilder is a mock of RemoteBuilder interface
-type MockRemoteBuilder struct {
+// MockDiscoveryInputBuilder is a mock of DiscoveryInputBuilder interface
+type MockDiscoveryInputBuilder struct {
 	ctrl     *gomock.Controller
-	recorder *MockRemoteBuilderMockRecorder
+	recorder *MockDiscoveryInputBuilderMockRecorder
 }
 
-// MockRemoteBuilderMockRecorder is the mock recorder for MockRemoteBuilder
-type MockRemoteBuilderMockRecorder struct {
-	mock *MockRemoteBuilder
+// MockDiscoveryInputBuilderMockRecorder is the mock recorder for MockDiscoveryInputBuilder
+type MockDiscoveryInputBuilderMockRecorder struct {
+	mock *MockDiscoveryInputBuilder
 }
 
-// NewMockRemoteBuilder creates a new mock instance
-func NewMockRemoteBuilder(ctrl *gomock.Controller) *MockRemoteBuilder {
-	mock := &MockRemoteBuilder{ctrl: ctrl}
-	mock.recorder = &MockRemoteBuilderMockRecorder{mock}
+// NewMockDiscoveryInputBuilder creates a new mock instance
+func NewMockDiscoveryInputBuilder(ctrl *gomock.Controller) *MockDiscoveryInputBuilder {
+	mock := &MockDiscoveryInputBuilder{ctrl: ctrl}
+	mock.recorder = &MockDiscoveryInputBuilderMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockRemoteBuilder) EXPECT() *MockRemoteBuilderMockRecorder {
+func (m *MockDiscoveryInputBuilder) EXPECT() *MockDiscoveryInputBuilderMockRecorder {
 	return m.recorder
 }
 
 // BuildSnapshot mocks base method
-func (m *MockRemoteBuilder) BuildSnapshot(ctx context.Context, name string, opts input.RemoteBuildOptions) (input.RemoteSnapshot, error) {
+func (m *MockDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, name string, opts input.DiscoveryInputBuildOptions) (input.DiscoveryInputSnapshot, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BuildSnapshot", ctx, name, opts)
-	ret0, _ := ret[0].(input.RemoteSnapshot)
+	ret0, _ := ret[0].(input.DiscoveryInputSnapshot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // BuildSnapshot indicates an expected call of BuildSnapshot
-func (mr *MockRemoteBuilderMockRecorder) BuildSnapshot(ctx, name, opts interface{}) *gomock.Call {
+func (mr *MockDiscoveryInputBuilderMockRecorder) BuildSnapshot(ctx, name, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildSnapshot", reflect.TypeOf((*MockRemoteBuilder)(nil).BuildSnapshot), ctx, name, opts)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildSnapshot", reflect.TypeOf((*MockDiscoveryInputBuilder)(nil).BuildSnapshot), ctx, name, opts)
 }

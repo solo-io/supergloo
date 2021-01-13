@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	DiscoveryRemoteInputTypes = Snapshot{
+	DiscoveryInputTypes = Snapshot{
 		corev1.SchemeGroupVersion: {
 			"Pod",
 			"Service",
@@ -28,7 +28,7 @@ var (
 		},
 	}
 
-	DiscoveryLocalInputTypes = Snapshot{
+	DiscoverySettingsTypes = Snapshot{
 		schema.GroupVersion{
 			Group:   "settings." + constants.GlooMeshApiGroupSuffix,
 			Version: "v1alpha2",

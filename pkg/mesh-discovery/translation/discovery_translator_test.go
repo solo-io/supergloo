@@ -67,7 +67,7 @@ var _ = Describe("Translator", func() {
 		statefulSets := appsv1sets.NewStatefulSetSet(&appsv1.StatefulSet{})
 		endpoints := corev1sets.NewEndpointsSet(&corev1.Endpoints{})
 		virtualMeshes := v1alpha2sets2.NewVirtualMeshSet(&v1alpha22.VirtualMesh{})
-		inRemote := input.NewRemoteSnapshot(
+		inRemote := input.NewDiscoveryInputSnapshot(
 			"mesh-discovery-remote",
 			appMeshes,
 			configMaps,

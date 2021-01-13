@@ -52,6 +52,10 @@ func defaultValues() ChartValues {
 			Discovery: &settingsv1alpha2.DiscoverySettings{
 				Istio: &settingsv1alpha2.DiscoverySettings_Istio{},
 			},
+			Relay: &settingsv1alpha2.RelaySettings{
+				Enabled: false,
+				Server:  &settingsv1alpha2.GrpcServer{},
+			},
 		},
 		DisallowIntersectingConfig: false,
 		WatchOutputTypes:           true,
