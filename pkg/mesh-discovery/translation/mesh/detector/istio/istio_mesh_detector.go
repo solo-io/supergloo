@@ -30,6 +30,7 @@ const (
 	pilotContainerKeyword     = "pilot"
 	istioConfigMapName        = "istio"
 	istioConfigMapMeshDataKey = "mesh"
+	istioMetaDnsCaptureKey    = "ISTIO_META_DNS_CAPTURE"
 )
 
 var (
@@ -78,7 +79,7 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Discov
 		return nil, nil
 	}
 
-	trustDomain, err := getTrustDomain(in.ConfigMaps(), deployment.ClusterName, deployment.Namespace)
+	meshConfig, err := getMeshConfig(in.ConfigMaps(), deployment.ClusterName, deployment.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -115,8 +116,9 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Discov
 						PodLabels: deployment.Spec.Selector.MatchLabels,
 						Version:   version,
 					},
+					SmartDnsProxyingEnabled: isSmartDnsProxyingEnabled(meshConfig),
 					CitadelInfo: &v1alpha2.MeshSpec_Istio_CitadelInfo{
-						TrustDomain: trustDomain,
+						TrustDomain: meshConfig.TrustDomain,
 						// This assumes that the istiod deployment is the cert provider
 						CitadelServiceAccount: deployment.Spec.Template.Spec.ServiceAccountName,
 					},
@@ -319,30 +321,40 @@ func isIstiod(deployment *appsv1.Deployment, container *corev1.Container) bool {
 		strings.Contains(container.Image, pilotContainerKeyword)
 }
 
-func getTrustDomain(
+func getMeshConfig(
 	configMaps corev1sets.ConfigMapSet,
 	cluster,
 	namespace string,
-) (string, error) {
+) (*istiov1alpha1.MeshConfig, error) {
 	istioConfigMap, err := configMaps.Find(&skv1.ClusterObjectRef{
 		Name:        istioConfigMapName,
 		Namespace:   namespace,
 		ClusterName: cluster,
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	meshConfigString, ok := istioConfigMap.Data[istioConfigMapMeshDataKey]
 	if !ok {
-		return "", eris.Errorf("Failed to find 'mesh' entry in ConfigMap with name/namespace/cluster %s/%s/%s", istioConfigMapName, namespace, cluster)
+		return nil, eris.Errorf("Failed to find 'mesh' entry in ConfigMap with name/namespace/cluster %s/%s/%s", istioConfigMapName, namespace, cluster)
 	}
 	var meshConfig istiov1alpha1.MeshConfig
 	err = gogoprotomarshal.ApplyYAML(meshConfigString, &meshConfig)
 	if err != nil {
-		return "", eris.Errorf("Failed to find 'mesh' entry in ConfigMap with name/namespace/cluster %s/%s/%s", istioConfigMapName, namespace, cluster)
+		return nil, eris.Errorf("Failed to find 'mesh' entry in ConfigMap with name/namespace/cluster %s/%s/%s", istioConfigMapName, namespace, cluster)
 	}
-	return meshConfig.TrustDomain, nil
+	return &meshConfig, nil
+}
+
+// Reference for Istio's "smart DNS proxying" feature, https://istio.io/latest/blog/2020/dns-proxy/
+// Reference for ISTIO_META_DNS_CAPTURE env var: https://preliminary.istio.io/latest/docs/reference/commands/pilot-agent/#envvars
+func isSmartDnsProxyingEnabled(meshConfig *istiov1alpha1.MeshConfig) bool {
+	proxyMetadata := meshConfig.GetDefaultConfig().GetProxyMetadata()
+	if proxyMetadata == nil {
+		return false
+	}
+	return proxyMetadata[istioMetaDnsCaptureKey] == "true"
 }
 
 type Agent struct {

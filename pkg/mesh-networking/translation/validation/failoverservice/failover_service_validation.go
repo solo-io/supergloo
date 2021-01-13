@@ -9,6 +9,7 @@ import (
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	networkingv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	skv2core "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	v1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
@@ -42,14 +43,10 @@ type Inputs struct {
 	VirtualMeshes networkingv1alpha2sets.VirtualMeshSet
 }
 
-const (
-	GlobalDnsSuffix = ".global"
-)
-
 var (
-	MissingHostname             = eris.New("Missing required field \"hostname\".")
-	HostnameMissingGlobalSuffix = func(hostname string) error {
-		return eris.Errorf("Provided hostname %s is missing required suffix \"%s\".", hostname, GlobalDnsSuffix)
+	MissingHostname       = eris.New("Missing required field \"hostname\".")
+	InvalidHostnameSuffix = func(hostname, federatedSuffix string) error {
+		return eris.Errorf("Provided hostname %s is missing required suffix \"%s\".", hostname, federatedSuffix)
 	}
 	MissingPort            = eris.New("Missing required field \"port\".")
 	MissingMeshes          = eris.New("Missing required field \"meshes\".")
@@ -101,9 +98,6 @@ func NewFailoverServiceValidator() FailoverServiceValidator {
 
 func (f *failoverServiceValidator) Validate(inputs Inputs, failoverService *networkingv1alpha2.FailoverServiceSpec) []error {
 	var errs []error
-	if hostnameErrs := f.validateHostname(failoverService); hostnameErrs != nil {
-		errs = append(errs, hostnameErrs...)
-	}
 	if portErrs := f.validatePort(failoverService); portErrs != nil {
 		errs = append(errs, portErrs...)
 	}
@@ -266,7 +260,7 @@ func (f *failoverServiceValidator) validateFederation(
 		}
 		referencedVMs.Insert(vm)
 	}
-	// Apply that there's only one common parent mesh, else that there's only a single common parent VirtualMesh
+	// Assert that there's only one common parent mesh, else that there's only a single common parent VirtualMesh
 	if len(referencedMeshes.List()) > 1 {
 		// Surface meshes without parent meshes as errors
 		for _, err := range missingParentVMErrors {
@@ -276,21 +270,33 @@ func (f *failoverServiceValidator) validateFederation(
 			errs = append(errs, MultipleParentVirtualMeshes(referencedVMs.List()))
 		}
 	}
+	if hostnameErrs := f.validateHostname(failoverService, referencedVMs.List()); hostnameErrs != nil {
+		errs = append(errs, hostnameErrs...)
+	}
 	return errs
 }
 
-func (f *failoverServiceValidator) validateHostname(failoverService *networkingv1alpha2.FailoverServiceSpec) []error {
+func (f *failoverServiceValidator) validateHostname(
+	failoverService *networkingv1alpha2.FailoverServiceSpec,
+	virtualMeshes []*networkingv1alpha2.VirtualMesh,
+) []error {
 	hostname := failoverService.GetHostname()
 	var errs []error
+	// hostname exists
 	if hostname == "" {
 		return []error{MissingHostname}
 	}
-	if !strings.HasSuffix(hostname, GlobalDnsSuffix) {
-		errs = append(errs, HostnameMissingGlobalSuffix(hostname))
-	}
+	// hostname is DNS-1123 compliant
 	errStrings := validation.IsDNS1123Subdomain(hostname)
 	if len(errStrings) > 0 {
 		errs = append(errs, eris.New(strings.Join(errStrings, ", ")))
+	}
+	// hostname has valid suffix (only applies if FailoverService is visible to a VirtualMesh)
+	if len(virtualMeshes) == 1 {
+		federatedSuffix := hostutils.GetFederatedHostnameSuffix(&virtualMeshes[0].Spec)
+		if !strings.HasSuffix(hostname, federatedSuffix) {
+			errs = append(errs, InvalidHostnameSuffix(hostname, federatedSuffix))
+		}
 	}
 	return errs
 }
@@ -308,20 +314,4 @@ func (f *failoverServiceValidator) validatePort(failoverService *networkingv1alp
 		errs = append(errs, eris.Errorf("Invalid protocol for port: %s", port.GetProtocol()))
 	}
 	return errs
-}
-
-func (f *failoverServiceValidator) findVirtualMeshForMesh(
-	mesh *discoveryv1alpha2.Mesh,
-	allVirtualMeshes networkingv1alpha2sets.VirtualMeshSet,
-) *networkingv1alpha2.VirtualMesh {
-	virtualMeshes := allVirtualMeshes.List()
-	for _, vm := range virtualMeshes {
-		for _, meshRef := range vm.Spec.GetMeshes() {
-			// A Mesh can be grouped into at most one VirtualMesh.
-			if ezkube.RefsMatch(mesh, meshRef) {
-				return vm
-			}
-		}
-	}
-	return nil
 }

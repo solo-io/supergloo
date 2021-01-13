@@ -40,6 +40,9 @@ message MeshSpec {
         // Configuration metadata for Istio IngressGateway (the Istio Ingress).
         repeated IngressGatewayInfo ingress_gateways = 3;
 
+        // True if smart DNS proxying is enabled, which allows for arbitrary DNS domains.
+        bool smart_dns_proxying_enabled = 4;
+
         // Configuration metadata for Istio Citadel (Istio's security component).
         message CitadelInfo {
             /*

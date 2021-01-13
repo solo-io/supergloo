@@ -97,7 +97,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		trafficShiftHostname := "name.namespace.svc.cluster.local"
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(originalService.Spec.GetKubeService().Ref.ClusterName,
+			GetDestinationFQDN(originalService.Spec.GetKubeService().Ref.ClusterName,
 				&v1.ClusterObjectRef{
 					Name:        appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Name,
 					Namespace:   appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Namespace,
@@ -190,7 +190,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		globalTrafficShiftHostname := "name.namespace.svc.local-cluster.global"
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(
+			GetDestinationFQDN(
 				sourceMeshInstallation.GetCluster(),
 				&v1.ClusterObjectRef{
 					Name:        appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Name,
@@ -305,7 +305,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		trafficShiftHostname := "name.namespace.svc.cluster.local"
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(originalService.Spec.GetKubeService().Ref.ClusterName,
+			GetDestinationFQDN(originalService.Spec.GetKubeService().Ref.ClusterName,
 				&v1.ClusterObjectRef{
 					Name:        appliedPolicyMissingPort.Spec.TrafficShift.Destinations[0].GetKubeService().Name,
 					Namespace:   appliedPolicyMissingPort.Spec.TrafficShift.Destinations[0].GetKubeService().Namespace,
@@ -387,7 +387,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		trafficShiftHostname := "name.namespace.svc.cluster.local"
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(originalService.Spec.GetKubeService().Ref.ClusterName,
+			GetDestinationFQDN(originalService.Spec.GetKubeService().Ref.ClusterName,
 				&v1.ClusterObjectRef{
 					Name:        appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Name,
 					Namespace:   appliedPolicy.Spec.TrafficShift.Destinations[0].GetKubeService().Namespace,

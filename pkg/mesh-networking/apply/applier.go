@@ -108,12 +108,11 @@ func initializePolicyStatuses(input input.LocalSnapshot) {
 
 // Append status metadata to relevant discovery resources.
 func setDiscoveryStatusMetadata(input input.LocalSnapshot) {
-	clusterDomains := hostutils.NewClusterDomainRegistry(input.KubernetesClusters())
+	clusterDomains := hostutils.NewClusterDomainRegistry(input.KubernetesClusters(), input.TrafficTargets())
 	for _, trafficTarget := range input.TrafficTargets().List() {
 		if trafficTarget.Spec.GetKubeService() != nil {
 			ref := trafficTarget.Spec.GetKubeService().GetRef()
-			trafficTarget.Status.LocalFqdn = clusterDomains.GetServiceLocalFQDN(ref)
-			trafficTarget.Status.RemoteFqdn = clusterDomains.GetServiceGlobalFQDN(ref)
+			trafficTarget.Status.LocalFqdn = clusterDomains.GetLocalFQDN(ref)
 		}
 	}
 }

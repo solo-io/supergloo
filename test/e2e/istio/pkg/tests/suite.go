@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/test/data"
 	. "github.com/solo-io/gloo-mesh/test/e2e"
 	"github.com/solo-io/gloo-mesh/test/utils"
@@ -47,13 +48,15 @@ func SetupClustersAndFederation(customDeployFuc func()) {
 }
 
 func federateClusters(dynamicClient client.Client) {
-	VirtualMesh = data.SelfSignedVirtualMesh(
+	VirtualMesh, err = data.SelfSignedVirtualMesh(
+		dynamicClient,
 		"bookinfo-federation",
 		BookinfoNamespace,
 		[]*v1.ObjectRef{
 			masterMesh,
 			remoteMesh,
 		})
+	Expect(err).NotTo(HaveOccurred())
 
 	err = VirtualMeshManifest.AppendResources(VirtualMesh)
 	Expect(err).NotTo(HaveOccurred())
@@ -69,7 +72,7 @@ func federateClusters(dynamicClient client.Client) {
 	// check we can hit the remote service
 	// give 5 minutes because the workflow depends on restarting pods
 	// which can take several minutes
-	Eventually(curlRemoteReviews, "5m", "2s").Should(ContainSubstring("200 OK"))
+	Eventually(curlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec)), "5m", "2s").Should(ContainSubstring("200 OK"))
 }
 
 func TeardownFederationAndClusters() {

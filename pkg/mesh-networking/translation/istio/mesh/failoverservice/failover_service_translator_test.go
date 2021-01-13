@@ -193,10 +193,11 @@ var _ = Describe("FailoverServiceTranslator", func() {
 			VirtualMeshes:  in.VirtualMeshes(),
 		}, failoverService.Spec).Return(nil)
 
-		for _, trafficTarget := range allTrafficTargets {
-			kubeService := trafficTarget.Spec.GetKubeService()
-			mockClusterDomainRegistry.EXPECT().GetServiceLocalFQDN(kubeService.Ref).Return(trafficTarget.Name + "." + trafficTarget.Namespace)
-			mockClusterDomainRegistry.EXPECT().GetServiceGlobalFQDN(kubeService.Ref).Return(trafficTarget.Name + "." + trafficTarget.Namespace + ".global")
+		for _, mesh := range allMeshes {
+			for _, trafficTarget := range allTrafficTargets {
+				kubeService := trafficTarget.Spec.GetKubeService()
+				mockClusterDomainRegistry.EXPECT().GetDestinationFQDN(mesh.Spec.GetIstio().Installation.Cluster, kubeService.Ref).Return(trafficTarget.Name + "." + trafficTarget.Namespace + ".destination-suffix")
+			}
 		}
 
 		outputs := istio.NewBuilder(context.TODO(), "")
@@ -232,8 +233,8 @@ var _ = Describe("FailoverServiceTranslator", func() {
           type_url: type.googleapis.com/envoy.config.cluster.aggregate.v2alpha.ClusterConfig
           value:
             clusters:
-            - outbound|9080||traffic-target-1.default
-            - outbound|9080||traffic-target-2.default.global
+            - outbound|9080||traffic-target-1.default.destination-suffix
+            - outbound|9080||traffic-target-2.default.destination-suffix
       connect_timeout: 1s
       lb_policy: CLUSTER_PROVIDED
       name: outbound|9080||failover-1.failover-namespace.cluster1
@@ -259,8 +260,8 @@ var _ = Describe("FailoverServiceTranslator", func() {
           type_url: type.googleapis.com/envoy.config.cluster.aggregate.v2alpha.ClusterConfig
           value:
             clusters:
-            - outbound|9080||traffic-target-1.default.global
-            - outbound|9080||traffic-target-2.default
+            - outbound|9080||traffic-target-1.default.destination-suffix
+            - outbound|9080||traffic-target-2.default.destination-suffix
       connect_timeout: 1s
       lb_policy: CLUSTER_PROVIDED
       name: outbound|9080||failover-1.failover-namespace.cluster1

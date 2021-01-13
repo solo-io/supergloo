@@ -204,7 +204,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
 			Return("local-hostname")
 
 		initializedDestinatonRule := &networkingv1alpha3.DestinationRule{
@@ -331,7 +331,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
 			Return("local-hostname")
 
 		initializedDestinatonRule := &networkingv1alpha3.DestinationRule{
@@ -510,7 +510,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(sourceMeshInstallation.Cluster, trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationFQDN(sourceMeshInstallation.Cluster, trafficTarget.Spec.GetKubeService().Ref).
 			Return("global-hostname")
 
 		expectedDestinatonRule := &networkingv1alpha3.DestinationRule{
@@ -626,7 +626,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
 			Return("local-hostname")
 
 		mockDecorator.

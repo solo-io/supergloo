@@ -120,6 +120,7 @@ Mesh object representing an installed Istio control plane
 | installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  | Configuration metadata about the istio control plane installation. |
   | citadelInfo | [discovery.mesh.gloo.solo.io.MeshSpec.Istio.CitadelInfo]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.CitadelInfo" >}}) |  | Configuration metadata for Istio Citadel (Istio's security component). |
   | ingressGateways | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo" >}}) | repeated | Configuration metadata for Istio IngressGateway (the Istio Ingress). |
+  | smartDnsProxyingEnabled | bool |  | True if smart DNS proxying is enabled, which allows for arbitrary DNS domains. |
   
 
 

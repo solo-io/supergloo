@@ -121,7 +121,6 @@ var _ = Describe("Applier", func() {
 			Expect(trafficTarget.Status.AppliedTrafficPolicies[1].Ref).To(Equal(ezkube.MakeObjectRef(trafficPolicy2)))
 			Expect(trafficTarget.Status.AppliedTrafficPolicies[1].Spec).To(Equal(&trafficPolicy2.Spec))
 			Expect(trafficTarget.Status.LocalFqdn).To(Equal("svc-name.svc-namespace.svc.cluster.local"))
-			Expect(trafficTarget.Status.RemoteFqdn).To(Equal("svc-name.svc-namespace.svc.svc-cluster.global"))
 		})
 	})
 	Context("invalid traffic policies", func() {

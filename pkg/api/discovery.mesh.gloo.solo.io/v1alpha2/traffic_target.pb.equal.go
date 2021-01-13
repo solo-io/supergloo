@@ -138,8 +138,14 @@ func (m *TrafficTargetStatus) Equal(that interface{}) bool {
 		return false
 	}
 
-	if strings.Compare(m.GetRemoteFqdn(), target.GetRemoteFqdn()) != 0 {
-		return false
+	if h, ok := interface{}(m.GetAppliedFederation()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetAppliedFederation()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetAppliedFederation(), target.GetAppliedFederation()) {
+			return false
+		}
 	}
 
 	return true
@@ -496,7 +502,7 @@ func (m *TrafficTargetStatus_AppliedFederation) Equal(that interface{}) bool {
 		return false
 	}
 
-	if strings.Compare(m.GetMulticlusterDnsName(), target.GetMulticlusterDnsName()) != 0 {
+	if strings.Compare(m.GetFederatedHostname(), target.GetFederatedHostname()) != 0 {
 		return false
 	}
 
