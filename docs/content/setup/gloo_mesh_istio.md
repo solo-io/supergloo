@@ -140,3 +140,7 @@ Pilot (control plane) and Envoy (data plane) images.
 ❯ kubectl -n istio-system get deployment istiod istio-ingressgateway -oyaml | grep "image: gcr.io/istio-enterprise/proxyv2:1.8.1" | wc -l
        1
 ```
+
+## Next steps
+
+Now that we have Istio and Gloo Mesh installed ([and appropriate clusters registered]({{% versioned_link_path fromRoot="/setup/#register-a-cluster" %}})), we can continue to explore the [discovery capabilities]({{% versioned_link_path fromRoot="/guides/discovery_intro" %}}) of Gloo Mesh. 
