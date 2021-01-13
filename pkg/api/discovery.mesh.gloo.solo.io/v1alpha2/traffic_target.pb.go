@@ -614,7 +614,7 @@ type TrafficTargetStatus_AppliedFederation struct {
 	unknownFields protoimpl.UnknownFields
 
 	//*
-	//For any workload that this traffic target has federated to (i.e., any Workload whose ref appears in `federated_to_workloads`),
+	//For any workload that this traffic target has federated to (i.e., any Workload controlled by a mesh whose ref appears in `federated_to_meshes`),
 	//a client in that workload will be able to reach this traffic target at this DNS name. This includes workloads on clusters other than
 	//the one hosting this service.
 	FederatedHostname string `protobuf:"bytes,1,opt,name=federated_hostname,json=federatedHostname,proto3" json:"federated_hostname,omitempty"`

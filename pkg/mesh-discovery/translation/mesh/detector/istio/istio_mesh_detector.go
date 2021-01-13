@@ -30,6 +30,7 @@ const (
 	pilotContainerKeyword     = "pilot"
 	istioConfigMapName        = "istio"
 	istioConfigMapMeshDataKey = "mesh"
+	istioMetaDnsCaptureKey    = "ISTIO_META_DNS_CAPTURE"
 )
 
 var (
@@ -353,7 +354,7 @@ func isSmartDnsProxyingEnabled(meshConfig *istiov1alpha1.MeshConfig) bool {
 	if proxyMetadata == nil {
 		return false
 	}
-	return proxyMetadata["ISTIO_META_DNS_CAPTURE"] == "true"
+	return proxyMetadata[istioMetaDnsCaptureKey] == "true"
 }
 
 type Agent struct {

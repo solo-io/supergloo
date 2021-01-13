@@ -457,6 +457,7 @@ type VirtualMeshSpec_Federation struct {
 	// Configure the suffix for hostnames of traffic targets federated within this virtual mesh.
 	// Currently this is only supported for Istio with smart DNS proxying enabled.
 	// If any meshes do not have smart DNS proxying enabled, setting this field results in an error.
+	// If omitted, the hostname suffix defaults to "global".
 	HostnameSuffix string `protobuf:"bytes,3,opt,name=hostname_suffix,json=hostnameSuffix,proto3" json:"hostname_suffix,omitempty"`
 }
 

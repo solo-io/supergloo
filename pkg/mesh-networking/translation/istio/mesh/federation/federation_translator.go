@@ -194,9 +194,14 @@ func (t *translator) Translate(
 		// list all meshes in the virtual mesh
 		for _, ref := range virtualMesh.Spec.Meshes {
 			groupedMesh, err := in.Meshes().Find(ref)
-			istioMesh := groupedMesh.Spec.GetIstio()
 			if err != nil {
 				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, err)
+				continue
+			}
+
+			istioMesh := groupedMesh.Spec.GetIstio()
+			if istioMesh == nil {
+				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, eris.Errorf("non-istio mesh %v cannot be used in virtual mesh", sets.Key(groupedMesh)))
 				continue
 			}
 
@@ -210,11 +215,6 @@ func (t *translator) Translate(
 
 			// only translate output resources for client meshes
 			if ezkube.RefsMatch(ref, mesh) {
-				continue
-			}
-
-			if istioMesh == nil {
-				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, eris.Errorf("non-istio mesh %v cannot be used in virtual mesh", sets.Key(groupedMesh)))
 				continue
 			}
 
@@ -235,20 +235,20 @@ func (t *translator) Translate(
 				},
 			}
 
-			// Append the virtual groupedMesh as a parent to the output service entry
+			// Append the virtual mesh as a parent to the output service entry
 			metautils.AppendParent(t.ctx, se, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 
 			outputs.AddServiceEntries(se)
 
 			// Translate VirtualServices for federated TrafficTargets, can be nil
 			vs := t.virtualServiceTranslator.Translate(t.ctx, in, trafficTarget, istioMesh.Installation, reporter)
-			// Append the virtual groupedMesh as a parent to the output virtual service
+			// Append the virtual mesh as a parent to the output virtual service
 			metautils.AppendParent(t.ctx, vs, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 			outputs.AddVirtualServices(vs)
 
 			// Translate DestinationRules for federated TrafficTargets, can be nil
 			dr := t.destinationRuleTranslator.Translate(t.ctx, in, trafficTarget, istioMesh.Installation, reporter)
-			// Append the virtual groupedMesh as a parent to the output destination rule
+			// Append the virtual mesh as a parent to the output destination rule
 			metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 			outputs.AddDestinationRules(dr)
 

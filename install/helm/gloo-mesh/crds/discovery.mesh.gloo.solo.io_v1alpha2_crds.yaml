@@ -316,7 +316,7 @@ spec:
               properties:
                 federatedHostname:
                   description: |-
-                    For any workload that this traffic target has federated to (i.e., any Workload whose ref appears in `federated_to_workloads`),
+                    For any workload that this traffic target has federated to (i.e., any Workload controlled by a mesh whose ref appears in `federated_to_meshes`),
                                a client in that workload will be able to reach this traffic target at this DNS name. This includes workloads on clusters other than
                                the one hosting this service.
                   type: string
@@ -1342,6 +1342,7 @@ spec:
                             Configure the suffix for hostnames of traffic targets federated within this virtual mesh.
                             Currently this is only supported for Istio with smart DNS proxying enabled.
                             If any meshes do not have smart DNS proxying enabled, setting this field results in an error.
+                            If omitted, the hostname suffix defaults to "global".
                           type: string
                         permissive:
                           description: |-

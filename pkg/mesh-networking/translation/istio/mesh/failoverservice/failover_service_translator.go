@@ -414,15 +414,11 @@ func (t *translator) buildEnvoyAggregateClusterConfig(
 	for _, trafficTarget := range trafficTargets {
 		kubeService := trafficTarget.Spec.GetKubeService()
 		for _, port := range kubeService.Ports {
-			var hostname string
-			if kubeService.Ref.ClusterName == failoverServiceClusterName {
-				// Local k8s DNS
-				hostname = t.clusterDomains.GetLocalFQDN(kubeService.Ref)
-			} else {
-				// Multicluster global DNS
-				hostname = t.clusterDomains.GetFederatedFQDN(kubeService.Ref)
-			}
-			failoverCluster := buildIstioEnvoyClusterName(port.GetPort(), subsetName, hostname)
+			failoverCluster := buildIstioEnvoyClusterName(
+				port.GetPort(),
+				subsetName,
+				t.clusterDomains.GetDestinationFQDN(failoverServiceClusterName, kubeService.Ref),
+			)
 			orderedFailoverList = append(orderedFailoverList, failoverCluster)
 		}
 	}
