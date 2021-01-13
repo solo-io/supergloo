@@ -16,3 +16,11 @@ message AccessLogCollectionSpec {
     // Leave empty to emit all access logs.
     repeated .envoy.config.accesslog.v3.AccessLogFilter access_log_filters = 2;
 }
+
+message AccessLogCollectionStatus {
+
+    // The most recent generation observed in the the AccessLogCollection metadata.
+    // If the observedGeneration does not match generation, the controller has not processed the most
+    // recent version of this resource.
+    int64 observed_generation = 1;
+}
