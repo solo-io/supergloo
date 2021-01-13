@@ -119,11 +119,13 @@ func getVirtualService(
 	// This is the default name written back by the AWS controller.
 	// We must provide it explicitly, else the App Mesh controller's
 	// validating admission webhook will reject our changes on update.
-	awsName := fmt.Sprintf("%s.%s", meta.Name, meta.Namespace)
+	awsName := fmt.Sprintf("%s_%s", meta.Name, meta.Namespace)
+	//awsName := meta.Name
 	return &appmeshv1beta2.VirtualService{
 		ObjectMeta: meta,
 		Spec: v1beta2.VirtualServiceSpec{
-			MeshRef:  meshRef,
+			MeshRef: meshRef,
+			// NOTE: For some reason the app mesh controller seems to break when this name isn't the same as the resource name
 			AWSName:  &awsName,
 			Provider: provider,
 		},

@@ -47,11 +47,16 @@ func (r *routeTranslator) getTrafficPolicyRoutes(trafficTarget *discoveryv1alpha
 
 		var httpRouteMatches []appmeshv1beta2.HTTPRouteMatch
 		for _, nm := range networkingMatchers {
+			// TODO report any non-prefix matchers as they're not supported by app mesh
+			prefix := nm.GetPrefix()
+			if prefix == "" {
+				prefix = "/"
+			}
+
 			httpRouteMatches = append(httpRouteMatches, appmeshv1beta2.HTTPRouteMatch{
 				Headers: convertHeaders(nm.Headers),
 				Method:  convertMethod(nm.Method),
-				// TODO report any non-prefix matchers as they're not supported by app mesh
-				Prefix: nm.GetPrefix(),
+				Prefix:  prefix,
 			})
 		}
 
