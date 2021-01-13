@@ -7,7 +7,7 @@ weight: 100
 
 {{% notice note %}}
 Gloo Mesh Enterprise is required for this feature. Open source users and users who do not require the functionality
-provided by Gloo Mesh Istio can use Gloo Mesh with an upstream Istio release.
+provided by Gloo Mesh Istio can use Gloo Mesh with an upstream Istio release and should refer to our guide on [installing Istio]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}).
 {{% /notice %}}
 
 Gloo Mesh Istio consists of custom builds of both the Istio control plane and Istio data plane. These builds are available to
