@@ -23,6 +23,11 @@ source ${PROJECT_ROOT}/ci/setup-funcs.sh
 
 if [ "$1" == "cleanup" ]; then
   kind get clusters | grep -E "${mgmtCluster}|${remoteCluster}" | while read -r r; do kind delete cluster --name "${r}"; done
+
+  if [ ! -z ${FLAT_NETWORKING_ENABLED} ]; then
+    docker stop bird
+  fi
+
   exit 0
 fi
 
@@ -57,6 +62,12 @@ else
   install_istio ${remoteCluster} 32000 &
 
   wait
+
+  if [ ! -z ${FLAT_NETWORKING_ENABLED} ]; then
+    setup_flat_networking ${mgmtCluster} 32001 ${remoteCluster} 32000
+  fi
+
+
 
   # create istio-injectable namespace
   kubectl --context kind-${mgmtCluster} create namespace bookinfo

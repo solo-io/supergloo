@@ -124,6 +124,161 @@ EOF
 
 }
 
+function setup_flat_networking() {
+  mgmt_cluster=$1
+  mgmt_port=$2
+  remote_cluster=$3
+  remote_port=$4
+  K_mgmt="kubectl --context=kind-${mgmt_cluster}"
+  K_remote="kubectl --context=kind-${remote_cluster}"
+
+  # Set the network to the 1 or 2 for flat networking purposes
+  ((mgmt_net=$mgmt_port%32000+1))
+  ((remote_net=$remote_port%32000+1))
+
+  mgmt_cluster_ip=$(docker inspect ${mgmt_cluster}-control-plane | jq -r '.[0].NetworkSettings.Networks.kind.IPAddress')
+  remote_cluster_ip=$(docker inspect ${remote_cluster}-control-plane | jq -r '.[0].NetworkSettings.Networks.kind.IPAddress')
+
+  tmp=$(mktemp -d /tmp/gloo_mesh.XXXXXX)
+
+  cat << EOF > ${tmp}/bird.conf
+log syslog { debug, trace, info, remote, warning, error, auth, fatal, bug };
+log stderr all;
+router id 172.18.0.100;
+filter import_kernel {
+  if ( net != 0.0.0.0/0 ) then {
+  accept;
+  }
+reject;
+}
+debug protocols all;
+protocol device {
+  scan time 2;
+}
+protocol bgp mgmt_cluster_ip {
+  description "${mgmt_cluster_ip}";
+  local as 64513;
+  neighbor ${mgmt_cluster_ip} port 31179 as 64513;
+  multihop;
+  rr client;
+  graceful restart;
+  import all;
+  export all;
+}
+protocol bgp remote_cluster_ip {
+  description "${remote_cluster_ip}";
+  local as 64514;
+  neighbor ${remote_cluster_ip} port 32179 as 64514;
+  multihop;
+  rr client;
+  graceful restart;
+  import all;
+  export all;
+}
+EOF
+  docker run --rm -d --name bird -p 179:179 -v ${tmp}/bird.conf:/etc/bird/bird.conf --entrypoint='' --network=kind pierky/bird bird -c /etc/bird/bird.conf -d
+  bird=$(docker inspect bird | jq -r '.[0].NetworkSettings.Networks.kind.IPAddress')
+  ${K_mgmt}  -n kube-system patch ds calico-node --type=json -p='[{"op": "add", "path": "/spec/template/spec/containers/0/ports", "value": [{"containerPort": 179}]}]'
+  ${K_mgmt} apply -f - <<EOF
+apiVersion: v1
+kind: Service
+metadata:
+  name: bgp
+  namespace: kube-system
+spec:
+  selector:
+    k8s-app: calico-node
+  ports:
+    - port: 179
+      targetPort: 179
+      nodePort: 31179
+  type: NodePort
+EOF
+  kubectl config use-context kind-${mgmt_cluster}
+  # calicoctl needs to exist before using
+  calicoctl apply -f - <<EOF
+kind: BGPPeer
+apiVersion: projectcalico.org/v3
+metadata:
+  name: peer-to-rrs
+spec:
+  peerIP: ${bird}
+  asNumber: 64513
+EOF
+
+#  calicoctl delete BGPConfiguration default
+  calicoctl apply -f - <<EOF
+ apiVersion: projectcalico.org/v3
+ kind: BGPConfiguration
+ metadata:
+   name: default
+ spec:
+   asNumber: 64513
+   nodeToNodeMeshEnabled: true
+   serviceClusterIPs:
+   - cidr: 10.96.${mgmt_net}.0/24
+EOF
+
+  cat << EOF | calicoctl apply -f -
+apiVersion: projectcalico.org/v3
+kind: IPPool
+metadata:
+  name: remote-cluster-ip-pool
+spec:
+  cidr: 10.96.${remote_net}.0/24
+  disabled: true
+EOF
+  ${K_remote} -n kube-system patch ds calico-node --type=json -p='[{"op": "add", "path": "/spec/template/spec/containers/0/ports", "value": [{"containerPort": 179}]}]'
+  ${K_remote} apply -f - <<EOF
+apiVersion: v1
+kind: Service
+metadata:
+  name: bgp
+  namespace: kube-system
+spec:
+  selector:
+    k8s-app: calico-node
+  ports:
+    - port: 179
+      targetPort: 179
+      nodePort: 32179
+  type: NodePort
+EOF
+  kubectl config use-context kind-${remote_cluster}
+  calicoctl apply -f - <<EOF
+kind: BGPPeer
+apiVersion: projectcalico.org/v3
+metadata:
+  name: peer-to-rrs
+spec:
+  peerIP: ${bird}
+  asNumber: 64514
+EOF
+#  calicoctl delete BGPConfiguration default
+  calicoctl apply -f - <<EOF
+ apiVersion: projectcalico.org/v3
+ kind: BGPConfiguration
+ metadata:
+   name: default
+ spec:
+   asNumber: 64514
+   nodeToNodeMeshEnabled: true
+   serviceClusterIPs:
+   - cidr: 10.96.${remote_net}.0/24
+EOF
+  cat << EOF | calicoctl create -f -
+apiVersion: projectcalico.org/v3
+kind: IPPool
+metadata:
+  name: mgmt-cluster-ip-pool
+spec:
+  cidr: 10.96.${mgmt_net}.0/24
+  disabled: true
+EOF
+
+
+}
+
 # Operator spec for istio 1.7.x
 function install_istio_1_7() {
   cluster=$1
@@ -139,6 +294,7 @@ metadata:
   name: example-istiooperator
   namespace: istio-system
 spec:
+  hub: gcr.io/istio-release
   profile: minimal
   addonComponents:
     istiocoredns:
@@ -200,6 +356,7 @@ metadata:
   name: example-istiooperator
   namespace: istio-system
 spec:
+  hub: gcr.io/istio-release
   profile: preview
   meshConfig:
     defaultConfig:
