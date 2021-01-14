@@ -62,13 +62,13 @@ var (
 		},
 	}
 
-	glooMeshManifestRoot  = "install/helm/gloo-mesh/"
-	glooMeshCrdsManifestRoot  = "install/helm/gloo-mesh-crds/"
-	certAgentManifestRoot = "install/helm/cert-agent/"
-	agentCrdsManifestRoot = "install/helm/agent-crds/"
+	glooMeshManifestRoot     = "install/helm/gloo-mesh/"
+	glooMeshCrdsManifestRoot = "install/helm/gloo-mesh-crds/"
+	certAgentManifestRoot    = "install/helm/cert-agent/"
+	agentCrdsManifestRoot    = "install/helm/agent-crds/"
 
 	vendoredMultiClusterCRDs = "vendor_any/github.com/solo-io/skv2/crds/multicluster.solo.io_v1alpha1_crds.yaml"
-	importedMultiClusterCRDs = glooMeshManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
+	importedMultiClusterCRDs = glooMeshCrdsManifestRoot + "/crds/multicluster.solo.io_v1alpha1_crds.yaml"
 
 	snapshotApiGroups = map[string][]model.Group{
 		"":                                 groups.AllGeneratedGroups,
