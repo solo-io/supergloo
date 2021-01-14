@@ -20,7 +20,7 @@ desired tag of Gloo Mesh Istio. For example, use tag `1.7.5-fips1` to install Gl
 with Federal Information Processing Standards.
 
 The following install commands are lifted from the [Installing Istio Multicluster guide]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}),
-but the `hub` and `tag` values can be added to Istio installation manifest to install Gloo Mesh Istio.
+but the `hub` and `tag` values can be added to any Istio installation manifest to install Gloo Mesh Istio.
 
 {{< tabs >}}
 {{< tab name="Istio 1.7" codelang="shell" >}}
