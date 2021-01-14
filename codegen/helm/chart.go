@@ -37,7 +37,7 @@ var (
 var Chart = &model.Chart{
 	Operators: []model.Operator{
 		discoveryOperator(),
-		networkingOperator(),
+		NetworkingOperator(),
 	},
 	FilterTemplate: filterTemplates,
 	Data: model.Data{
@@ -49,6 +49,18 @@ var Chart = &model.Chart{
 	Values: defaultValues(),
 }
 
+var CrdsChart = &model.Chart{
+	FilterTemplate: func(outPath string) bool {
+		return strings.Contains(outPath, "templates") || outPath == "values.yaml"
+	},
+	Data: model.Data{
+		ApiVersion:  "v1",
+		Name:        "gloo-mesh-crds",
+		Description: "CRDs required by Gloo Mesh management controllers (i.e. discovery and networking).",
+		Version:     version.Version,
+	},
+}
+
 var AgentCrdsChart = &model.Chart{
 	FilterTemplate: func(outPath string) bool {
 		return strings.Contains(outPath, "templates") || outPath == "values.yaml"
@@ -56,7 +68,7 @@ var AgentCrdsChart = &model.Chart{
 	Data: model.Data{
 		ApiVersion:  "v1",
 		Name:        "agent-crds",
-		Description: "CRDs required by Gloo Mesh remote agents (i.e. cert-agent and wasm-agent.",
+		Description: "CRDs required by Gloo Mesh remote agents (i.e. cert-agent and wasm-agent).",
 		Version:     version.Version,
 	},
 }
@@ -128,7 +140,8 @@ func discoveryOperator() model.Operator {
 	}
 }
 
-func networkingOperator() model.Operator {
+// exported for use in Enterprise chart
+func NetworkingOperator() model.Operator {
 
 	var rbacPolicies []rbacv1.PolicyRule
 

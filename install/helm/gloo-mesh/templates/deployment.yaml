@@ -100,6 +100,7 @@ spec:
 # Deployment manifest for networking
 {{- $networking := $.Values.networking}}
 {{- $networkingImage := $networking.image }}
+{{ if $networking.enabled }}
 
 apiVersion: apps/v1
 kind: Deployment
