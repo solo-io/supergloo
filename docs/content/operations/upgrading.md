@@ -13,11 +13,11 @@ The following steps describe a general approach to navigating the Gloo Mesh upgr
 < 1.0.0. This process involves scaling down the Gloo Mesh control plane while various components and CRDs are updated,
 but should not introduce downtime in service-to-service communication or policy enforcement because Gloo Mesh does not
 operate in the request path and the underlying service meshes (e.g. Istio) are not impacted by this process. That said,
-while Gloo Mesh is in its initial development ahead of general availability (i.e. pre-1.0.0), there is *no guarantee*
+while Gloo Mesh is in its initial development ahead of general availability (i.e. pre-1.0.0), there is **no guarantee**
 that these steps will provide a comprehensive, zero-downtime upgrade experience. To reiterate:
 
 {{< notice warning >}}
-This upgrade process is *not guaranteed* to provide a comprehensive, zero-downtime upgrade experience.
+This upgrade process is **not guaranteed** to provide a comprehensive, zero-downtime upgrade experience.
 
 While Gloo Mesh is under initial development and in a pre-1.0.0 state, the recommended way to access new functionality
 is via a fresh install of Gloo Mesh.
@@ -34,11 +34,6 @@ component.
 These resources will be recreated when `discovery` is scaled back up later in the upgrade process. Deleting these
 resources ensures that the latest discovery implementation will recreate them with the structure it expects. 
 
-1. Using the desired version of `meshctl`, re-register all clusters registered to the Gloo Mesh management plane. This
-will ensure that all remote cluster agents and CRDs are updated to a version compatible with the version of Gloo Mesh
-you are upgrading to. Refer to the [setup guide on registering a cluster]({{% versioned_link_path fromRoot="/setup/register_cluster" %}})
-and be sure to use the same cluster names and contexts that were used at the initial cluster registration time.
-
 1. Manually update the Gloo Mesh management plane CRDs in the management cluster. These include both `discovery` and
 `networking` resources. Because of the way [Helm handles CRDs at upgrade time](https://helm.sh/docs/chart_best_practices/custom_resource_definitions/#some-caveats-and-explanations),
 this step is required to ensure the management plane CRDs have the validation schemas expected by the version of Gloo
@@ -52,6 +47,11 @@ conform to the latest APIs. Breaking changes will be highlighted in the [changel
 the [Gloo Mesh installation guide]({{% versioned_link_path fromRoot="/setup/install_gloo_mesh" %}}). Note that you
 should use `helm upgrade` rather than `helm install` if using Helm, and that `meshctl install` can be used for both
 install and upgrade operations.
+
+1. Re-register all clusters registered to the Gloo Mesh management plane. This will ensure that all remote cluster agents
+and CRDs are updated to a version compatible with the version of Gloo Mesh you are upgrading to. Refer to the 
+[setup guide on registering a cluster]({{% versioned_link_path fromRoot="/setup/register_cluster" %}})
+and be sure to use the same cluster names and contexts that were used at the initial cluster registration time.
 
 1. Scale the `discovery` deployment to one replica, and wait for all `discovery` resources such as `meshes`, `traffictargets`,
 and `workloads` to be written to the management cluster. This may take a few minutes, and will ensure that the `networking`
