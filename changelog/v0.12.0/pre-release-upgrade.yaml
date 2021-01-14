@@ -1,0 +1,4 @@
+changelog:
+  - type: DOCS
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1157
+    description: Add a pre-release upgrade guide. Note that this guide is **not guaranteed** to provide a seamless upgrade experience, and that we recommend users install a fresh instance of Gloo Mesh to access new functionality.
