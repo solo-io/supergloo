@@ -26,9 +26,17 @@ is via a fresh install of Gloo Mesh.
 1. Following the steps outlined by the [Getting Started Guide]({{% versioned_link_path fromRoot="/getting_started/" %}}),
 download the version of `meshctl` corresponding to the version of Gloo Mesh to which you would like to upgrade.
 
-1. Scale down both the `discovery` and `networking` deployments on the Gloo Mesh management cluster to zero replicas.
+1. Scale down both the `networking` and `discovery` deployments on the Gloo Mesh management cluster to zero replicas.
 This will prevent each component from processing resources structured in a way not expected by the new versions of each
 component.
+
+```shell
+kubectl scale deployment -n gloo-mesh networking --replicas 0
+```
+
+```shell
+kubectl scale deployment -n gloo-mesh discovery --replicas 0
+```
 
 1. Delete all resources in the `discovery.gloo.mesh.gloo.solo.io` API group such as `meshes`, `traffictargets`, and `workloads`.
 These resources will be recreated when `discovery` is scaled back up later in the upgrade process. Deleting these
@@ -48,6 +56,24 @@ the [Gloo Mesh installation guide]({{% versioned_link_path fromRoot="/setup/inst
 should use `helm upgrade` rather than `helm install` if using Helm, and that `meshctl install` can be used for both
 install and upgrade operations.
 
+Gloo Mesh CRDs can be updated by extracting the contents of the Helm chart, for example [https://storage.googleapis.com/gloo-mesh/gloo-mesh/gloo-mesh-0.11.3] (https://storage.googleapis.com/gloo-mesh/gloo-mesh/gloo-mesh-0.11.3)
+where `0.11.3` is replaced by the version of Gloo Mesh to which you would like to upgrade. Alternatively, CRDs can be found
+on GitHub at [https://github.com/solo-io/gloo-mesh/tree/main/install/helm/gloo-mesh/crds](https://github.com/solo-io/gloo-mesh/tree/main/install/helm/gloo-mesh/crds).
+From there, you can either download the repository and apply the CRDs at the tag of your choosing, or apply the CRDs
+directly from GitHub with:
+
+```shell
+# Add your desired version here
+UPGRADE_VERSION=v0.11.3
+
+kubectl apply -f https://raw.githubusercontent.com/solo-io/gloo-mesh/$UPGRADE_VERSION/install/helm/gloo-mesh/crds/discovery.mesh.gloo.solo.io_v1alpha2_crds.yaml
+kubectl apply -f https://raw.githubusercontent.com/solo-io/gloo-mesh/$UPGRADE_VERSION/install/helm/gloo-mesh/crds/multicluster.solo.io_v1alpha1_crds.yaml
+kubectl apply -f https://raw.githubusercontent.com/solo-io/gloo-mesh/$UPGRADE_VERSION/install/helm/gloo-mesh/crds/networking.enterprise.mesh.gloo.solo.io_v1alpha1_crds.yaml
+kubectl apply -f https://raw.githubusercontent.com/solo-io/gloo-mesh/$UPGRADE_VERSION/install/helm/gloo-mesh/crds/networking.mesh.gloo.solo.io_v1alpha2_crds.yaml
+kubectl apply -f https://raw.githubusercontent.com/solo-io/gloo-mesh/$UPGRADE_VERSION/install/helm/gloo-mesh/crds/rbac.enterprise.mesh.gloo.solo.io_v1alpha1_crds.yaml
+kubectl apply -f https://raw.githubusercontent.com/solo-io/gloo-mesh/$UPGRADE_VERSION/install/helm/gloo-mesh/crds/settings.mesh.gloo.solo.io_v1alpha2_crds.yaml
+```
+
 1. Re-register all clusters registered to the Gloo Mesh management plane. This will ensure that all remote cluster agents
 and CRDs are updated to a version compatible with the version of Gloo Mesh you are upgrading to. Refer to the 
 [setup guide on registering a cluster]({{% versioned_link_path fromRoot="/setup/register_cluster" %}})
@@ -58,9 +84,17 @@ and `workloads` to be written to the management cluster. This may take a few min
 component has access to all the data it needs to continue processing user-provided network configuration. Discovery is
 complete when the pod no longer outputs a steady stream of logs or when all expected resources can be found on the cluster.
 
+```shell
+kubectl scale deployment -n gloo-mesh discovery --replicas 1
+```
+
 1. Scale the `networking` deployment to one replica. Errors may be propagated to various `networking` resources such as
 `trafficpolicies`, `virtualmeshes`, `failoverservices`, and `accesspolicies` as it starts watches on remote clusters,
 but it will reach a steady state after a few moments.
+
+```shell
+kubectl scale deployment -n gloo-mesh networking --replicas 1
+```
 
 1. Run `meshctl check` to verify that all resources are in a healthy state. If not, check the logs on the `discovery`
 and `networking` pods as well as the `status` fields on unhealthy resources to begin debugging. Refer to our 
