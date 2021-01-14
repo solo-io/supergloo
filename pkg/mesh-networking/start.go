@@ -60,7 +60,7 @@ type ExtensionOpts struct {
 	CertIssuerReconciler CertIssuerReconcilerExtensionOpts
 }
 
-func (opts *ExtensionOpts) InitDefaults(parameters bootstrap.StartParameters) {
+func (opts *ExtensionOpts) initDefaults(parameters bootstrap.StartParameters) {
 	opts.NetworkingReconciler.initDefaults(parameters)
 	opts.CertIssuerReconciler.initDefaults(parameters)
 }
@@ -200,6 +200,7 @@ type networkingStarter struct {
 
 // start the main reconcile loop
 func (s networkingStarter) startReconciler(parameters bootstrap.StartParameters) error {
+	s.ExtensionOpts.initDefaults(parameters)
 
 	startCertIssuer(
 		parameters.Ctx,
