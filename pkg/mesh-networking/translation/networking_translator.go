@@ -23,44 +23,44 @@ import (
 )
 
 type OutputSnapshots struct {
-	istio   istiooutput.Snapshot
-	appmesh appmeshoutput.Snapshot
-	smi     smioutput.Snapshot
-	local   localoutput.Snapshot
+	Istio   istiooutput.Snapshot
+	Appmesh appmeshoutput.Snapshot
+	Smi     smioutput.Snapshot
+	Local   localoutput.Snapshot
 }
 
 func (t OutputSnapshots) MarshalJSON() ([]byte, error) {
-	istioByt, err := t.istio.MarshalJSON()
+	istioByt, err := t.Istio.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
-	appmeshByt, err := t.appmesh.MarshalJSON()
+	appmeshByt, err := t.Appmesh.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
-	smiByt, err := t.smi.MarshalJSON()
+	smiByt, err := t.Smi.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
-	localByt, err := t.local.MarshalJSON()
+	localByt, err := t.Local.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
 	return bytes.Join([][]byte{istioByt, appmeshByt, smiByt, localByt}, []byte("\n")), nil
 }
 
-func (t OutputSnapshots) Apply(
+func (t OutputSnapshots) ApplyMultiCluster(
 	ctx context.Context,
 	clusterClient client.Client,
 	multiClusterClient multicluster.Client,
 	errHandler output.ErrorHandler,
 ) {
 	// Apply mesh resources to registered clusters
-	t.istio.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
-	t.appmesh.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
-	t.smi.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
+	t.Istio.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
+	t.Appmesh.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
+	t.Smi.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
 	// Apply local resources only to management cluster
-	t.local.ApplyLocalCluster(ctx, clusterClient, errHandler)
+	t.Local.ApplyLocalCluster(ctx, clusterClient, errHandler)
 }
 
 // the networking translator translates an istio input networking snapshot to an istiooutput snapshot of mesh config resources
@@ -134,9 +134,9 @@ func (t *translator) Translate(
 	}
 
 	return OutputSnapshots{
-		istio:   istioSnapshot,
-		appmesh: appmeshSnapshot,
-		smi:     smiSnapshot,
-		local:   localSnapshot,
+		Istio:   istioSnapshot,
+		Appmesh: appmeshSnapshot,
+		Smi:     smiSnapshot,
+		Local:   localSnapshot,
 	}, nil
 }

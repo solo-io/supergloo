@@ -135,6 +135,7 @@ type RelaySettings struct {
 	Enabled bool `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	// Connection info for the Relay Server. Gloo Mesh will fetch discovery resources from this server
 	// and push translated outputs to this server.
+	// Note: currently this field has no effect as the relay server runs in-process of the networking pod.
 	Server *GrpcServer `protobuf:"bytes,2,opt,name=server,proto3" json:"server,omitempty"`
 }
 

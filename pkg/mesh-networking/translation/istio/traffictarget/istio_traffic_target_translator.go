@@ -3,6 +3,8 @@ package traffictarget
 import (
 	"context"
 
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/settingsutils"
+
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
@@ -61,7 +63,7 @@ func NewTranslator(
 
 	return &translator{
 		ctx:                   ctx,
-		destinationRules:      destinationrule.NewTranslator(existingDestinationRules, clusterDomains, decoratorFactory, trafficTargets, failoverServices),
+		destinationRules:      destinationrule.NewTranslator(settingsutils.SettingsFromContext(ctx), existingDestinationRules, clusterDomains, decoratorFactory, trafficTargets, failoverServices),
 		virtualServices:       virtualservice.NewTranslator(existingVirtualServices, clusterDomains, decoratorFactory),
 		authorizationPolicies: authorizationpolicy.NewTranslator(),
 	}
