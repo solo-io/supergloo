@@ -21,5 +21,7 @@ func (opts *NetworkingOpts) AddToFlags(flags *pflag.FlagSet) {
 // which processes k8s storage events to produce
 // discovered resources.
 func Start(ctx context.Context, opts *NetworkingOpts) error {
-	return StartExtended(ctx, opts, ExtensionOpts{})
+	return StartExtended(ctx, opts, func(_ bootstrap.StartParameters) ExtensionOpts {
+		return ExtensionOpts{}
+	}, false)
 }

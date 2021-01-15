@@ -26,13 +26,13 @@ import (
 
 // Options for extending the functionality of the Networking controller
 type ExtensionOpts struct {
-	// disable multi cluster read/write/reconcile
-	DisableMultiCluster bool
 
 	NetworkingReconciler NetworkingReconcilerExtensionOpts
 
 	CertIssuerReconciler CertIssuerReconcilerExtensionOpts
 }
+
+type MakeExtensionOpts func(parameters bootstrap.StartParameters) ExtensionOpts
 
 func (opts *ExtensionOpts) initDefaults(parameters bootstrap.StartParameters) {
 	opts.NetworkingReconciler.initDefaults(parameters)
@@ -49,7 +49,7 @@ type NetworkingReconcilerExtensionOpts struct {
 	MakeUserSnapshotBuilder func(params bootstrap.StartParameters) input.RemoteBuilder
 
 	// Hook to override Translator used by Networking Reconciler
-	MakeTranslator func(extensionClientset extensions.Clientset) translation.Translator
+	MakeTranslator func(translator translation.Translator) translation.Translator
 
 	// Hook to override how the Networking Reconciler applies output snapshots
 	SyncNetworkingOutputs reconciliation.SyncOutputsFunc
@@ -73,12 +73,8 @@ func (opts *NetworkingReconcilerExtensionOpts) initDefaults(parameters bootstrap
 	}
 	if opts.MakeTranslator == nil {
 		// use default translator
-		opts.MakeTranslator = func(extensionClientset extensions.Clientset) translation.Translator {
-			return translation.NewTranslator(
-				istio.NewIstioTranslator(extensionClientset),
-				appmesh.NewAppmeshTranslator(),
-				osm.NewOSMTranslator(),
-			)
+		opts.MakeTranslator = func(translator translation.Translator) translation.Translator {
+			return translator
 		}
 	}
 	if opts.SyncNetworkingOutputs == nil {
@@ -153,17 +149,18 @@ func (opts *CertIssuerReconcilerExtensionOpts) initDefaults(parameters bootstrap
 }
 
 // custom entryoint for the
-func StartExtended(ctx context.Context, opts *NetworkingOpts, extensions func(*) ExtensionOpts) error {
+// disableMultiCluster - disable multi cluster manager and clientset from being initialized
+func StartExtended(ctx context.Context, opts *NetworkingOpts, makeExtensions MakeExtensionOpts, disableMultiCluster bool) error {
 	starter := networkingStarter{
 		NetworkingOpts: opts,
-		ExtensionOpts:  extensions,
+		makeExtensions: makeExtensions,
 	}
 	return bootstrap.Start(
 		ctx,
 		"networking",
 		starter.startReconciler,
 		*opts.Options,
-		extensions.DisableMultiCluster,
+		disableMultiCluster,
 	)
 }
 
@@ -171,18 +168,19 @@ type networkingStarter struct {
 	*NetworkingOpts
 
 	// callback to configure extensions
-	configureExtensions func (params *bootstrap.StartParameters) ExtensionOpts
+	makeExtensions MakeExtensionOpts
 }
 
 // start the main reconcile loop
 func (s networkingStarter) startReconciler(parameters bootstrap.StartParameters) error {
-	s.ExtensionOpts.initDefaults(parameters)
+	extensionOpts := s.makeExtensions(parameters)
+	extensionOpts.initDefaults(parameters)
 
 	startCertIssuer(
 		parameters.Ctx,
-		s.CertIssuerReconciler.RegisterCertIssuerReconciler,
-		s.CertIssuerReconciler.MakeCertIssuerSnapshotBuilder(parameters),
-		s.CertIssuerReconciler.SyncCertificateIssuerInputStatuses,
+		extensionOpts.CertIssuerReconciler.RegisterCertIssuerReconciler,
+		extensionOpts.CertIssuerReconciler.MakeCertIssuerSnapshotBuilder(parameters),
+		extensionOpts.CertIssuerReconciler.SyncCertificateIssuerInputStatuses,
 		parameters.MasterManager,
 	)
 
@@ -191,12 +189,21 @@ func (s networkingStarter) startReconciler(parameters bootstrap.StartParameters)
 	inputSnapshotBuilder := input.NewSingleClusterLocalBuilder(parameters.MasterManager)
 
 	// contains output resource types read from all registered clusters
-	userProvidedSnapshotBuilder := s.NetworkingReconciler.MakeUserSnapshotBuilder(parameters)
+	userProvidedSnapshotBuilder := extensionOpts.NetworkingReconciler.MakeUserSnapshotBuilder(parameters)
 
 	reporter := reporting.NewPanickingReporter(parameters.Ctx)
 
-	translator := s.NetworkingReconciler.MakeTranslator(extensionClientset)
-	validatingTranslator := s.NetworkingReconciler.MakeTranslator(nil) // the applier should not call the extender
+
+	translator := extensionOpts.NetworkingReconciler.MakeTranslator(translation.NewTranslator(
+		istio.NewIstioTranslator(extensionClientset),
+		appmesh.NewAppmeshTranslator(),
+		osm.NewOSMTranslator(),
+	))
+	validatingTranslator := extensionOpts.NetworkingReconciler.MakeTranslator(translation.NewTranslator(
+		istio.NewIstioTranslator(nil), // the applier should not call the extender
+		appmesh.NewAppmeshTranslator(),
+		osm.NewOSMTranslator(),
+	))
 
 	applier := apply.NewApplier(validatingTranslator)
 
@@ -207,8 +214,8 @@ func (s networkingStarter) startReconciler(parameters bootstrap.StartParameters)
 		applier,
 		reporter,
 		translator,
-		s.NetworkingReconciler.RegisterNetworkingReconciler,
-		s.NetworkingReconciler.SyncNetworkingOutputs,
+		extensionOpts.NetworkingReconciler.RegisterNetworkingReconciler,
+		extensionOpts.NetworkingReconciler.SyncNetworkingOutputs,
 		parameters.MasterManager.GetClient(),
 		parameters.SnapshotHistory,
 		parameters.VerboseMode,
