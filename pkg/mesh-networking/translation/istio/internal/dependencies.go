@@ -3,6 +3,8 @@ package internal
 import (
 	"context"
 
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/settingsutils"
+
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
@@ -91,7 +93,7 @@ func (d dependencyFactoryImpl) MakeMeshTranslator(
 		trafficTargets,
 		failoverServices,
 		virtualservice.NewTranslator(existingVirtualServices, clusterDomains, decorators.NewFactory()),
-		destinationrule.NewTranslator(existingDestinationRules, clusterDomains, decorators.NewFactory(), trafficTargets, failoverServices),
+		destinationrule.NewTranslator(settingsutils.SettingsFromContext(ctx), existingDestinationRules, clusterDomains, decorators.NewFactory(), trafficTargets, failoverServices),
 	)
 	mtlsTranslator := mtls.NewTranslator(ctx, secrets, workloads)
 	accessTranslator := access.NewTranslator(ctx)

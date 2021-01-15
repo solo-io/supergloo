@@ -45,6 +45,12 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		destinationRuleTranslator destinationrule.Translator
 		in                        input.LocalSnapshot
 		ctx                       = context.TODO()
+		settings                  = &settingsv1alpha2.Settings{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      defaults.DefaultSettingsName,
+				Namespace: defaults.DefaultPodNamespace,
+			},
+		}
 	)
 
 	BeforeEach(func() {
@@ -56,6 +62,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockDecorator = mock_trafficpolicy.NewMockTrafficPolicyDestinationRuleDecorator(ctrl)
 		destinationRuleTranslator = destinationrule.NewTranslator(
+			settings,
 			nil,
 			mockClusterDomainRegistry,
 			mockDecoratorFactory,
@@ -69,23 +76,13 @@ var _ = Describe("DestinationRuleTranslator", func() {
 	})
 
 	It("should translate respecting default mTLS Settings", func() {
-		in = input.NewInputLocalSnapshotManualBuilder("").
-			AddSettings(settingsv1alpha2.SettingsSlice{
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      defaults.DefaultSettingsName,
-						Namespace: defaults.DefaultPodNamespace,
-					},
-					Spec: settingsv1alpha2.SettingsSpec{
-						Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
-							Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
-								TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
-							},
-						},
-					},
+		settings.Spec = settingsv1alpha2.SettingsSpec{
+			Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
+				Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
+					TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
 				},
-			}).
-			Build()
+			},
+		}
 
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
@@ -256,23 +253,13 @@ var _ = Describe("DestinationRuleTranslator", func() {
 	})
 
 	It("should not output DestinationRule when DestinationRule has no effect", func() {
-		in = input.NewInputLocalSnapshotManualBuilder("").
-			AddSettings(settingsv1alpha2.SettingsSlice{
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      defaults.DefaultSettingsName,
-						Namespace: defaults.DefaultPodNamespace,
-					},
-					Spec: settingsv1alpha2.SettingsSpec{
-						Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
-							Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
-								TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_DISABLE,
-							},
-						},
-					},
+		settings.Spec = settingsv1alpha2.SettingsSpec{
+			Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
+				Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
+					TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_DISABLE,
 				},
-			}).
-			Build()
+			},
+		}
 
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
@@ -434,6 +421,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		)
 
 		destinationRuleTranslator = destinationrule.NewTranslator(
+			settings,
 			nil,
 			mockClusterDomainRegistry,
 			mockDecoratorFactory,
@@ -445,23 +433,13 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			Cluster: "source-cluster",
 		}
 
-		in = input.NewInputLocalSnapshotManualBuilder("").
-			AddSettings(settingsv1alpha2.SettingsSlice{
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      defaults.DefaultSettingsName,
-						Namespace: defaults.DefaultPodNamespace,
-					},
-					Spec: settingsv1alpha2.SettingsSpec{
-						Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
-							Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
-								TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
-							},
-						},
-					},
+		settings.Spec = settingsv1alpha2.SettingsSpec{
+			Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
+				Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
+					TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
 				},
-			}).
-			Build()
+			},
+		}
 
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
@@ -554,17 +532,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 	})
 
 	It("should report error if translated DestinationRule applies to host already configured by existing DestinationRule", func() {
-		in = input.NewInputLocalSnapshotManualBuilder("").
-			AddSettings(settingsv1alpha2.SettingsSlice{
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      defaults.DefaultSettingsName,
-						Namespace: defaults.DefaultPodNamespace,
-					},
-					Spec: settingsv1alpha2.SettingsSpec{},
-				},
-			}).
-			Build()
+		settings.Spec = settingsv1alpha2.SettingsSpec{}
 
 		existingDestinationRules := v1alpha3sets.NewDestinationRuleSet(
 			// user-supplied, should yield conflict error
@@ -665,6 +633,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			})
 
 		destinationRuleTranslator = destinationrule.NewTranslator(
+			settings,
 			existingDestinationRules,
 			mockClusterDomainRegistry,
 			mockDecoratorFactory,

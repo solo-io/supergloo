@@ -21,7 +21,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/common/utils/stats"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -41,7 +40,7 @@ type discoveryReconciler struct {
 	localClient           client.Client
 	history               *stats.SnapshotHistory
 	verboseMode           bool
-	settingsRef           v1.ObjectRef
+	settingsRef           *v1.ObjectRef
 	verifier              verifier.ServerResourceVerifier
 	totalReconciles       int
 }
@@ -54,7 +53,7 @@ func Start(
 	mcClient multicluster.Client,
 	history *stats.SnapshotHistory,
 	verboseMode bool,
-	settingsRef v1.ObjectRef,
+	settingsRef *v1.ObjectRef,
 ) error {
 	settingsBuilder := input.NewSingleClusterSettingsBuilder(localMgr)
 
@@ -182,7 +181,7 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 		return false, err
 	}
 
-	settings, err := utils.GetSingletonSettings(ctx, localInputSnap)
+	settings, err := localInputSnap.Settings().Find(r.settingsRef)
 	if err != nil {
 		return false, err
 	}
