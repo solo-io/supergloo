@@ -26,7 +26,6 @@ import (
 
 // Options for extending the functionality of the Networking controller
 type ExtensionOpts struct {
-
 	NetworkingReconciler NetworkingReconcilerExtensionOpts
 
 	CertIssuerReconciler CertIssuerReconcilerExtensionOpts
@@ -192,7 +191,6 @@ func (s networkingStarter) startReconciler(parameters bootstrap.StartParameters)
 	userProvidedSnapshotBuilder := extensionOpts.NetworkingReconciler.MakeUserSnapshotBuilder(parameters)
 
 	reporter := reporting.NewPanickingReporter(parameters.Ctx)
-
 
 	translator := extensionOpts.NetworkingReconciler.MakeTranslator(translation.NewTranslator(
 		istio.NewIstioTranslator(extensionClientset),
