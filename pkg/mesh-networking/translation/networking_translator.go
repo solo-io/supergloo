@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/appmesh"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	appmeshoutput "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/appmesh"
@@ -15,52 +16,102 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type OutputSnapshots struct {
-	Istio   istiooutput.Snapshot
-	Appmesh appmeshoutput.Snapshot
-	Smi     smioutput.Snapshot
-	Local   localoutput.Snapshot
+type Outputs struct {
+	Istio   istiooutput.Builder
+	Appmesh appmeshoutput.Builder
+	Smi     smioutput.Builder
+	Local   localoutput.Builder
 }
 
-func (t OutputSnapshots) MarshalJSON() ([]byte, error) {
-	istioByt, err := t.Istio.MarshalJSON()
+type outputSnapshots struct {
+	istio   istiooutput.Snapshot
+	appmesh appmeshoutput.Snapshot
+	smi     smioutput.Snapshot
+	local   localoutput.Snapshot
+}
+
+func (t Outputs) snapshots() (outputSnapshots, error) {
+	istioSnapshot, err := t.Istio.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
+	if err != nil {
+		return outputSnapshots{}, err
+	}
+
+	appmeshSnapshot, err := t.Appmesh.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
+	if err != nil {
+		return outputSnapshots{}, err
+	}
+
+	smiSnapshot, err := t.Smi.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
+	if err != nil {
+		return outputSnapshots{}, err
+	}
+
+	localSnapshot, err := t.Local.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
+	if err != nil {
+		return outputSnapshots{}, err
+	}
+
+	return outputSnapshots{
+		istio:   istioSnapshot,
+		appmesh: appmeshSnapshot,
+		smi:     smiSnapshot,
+		local:   localSnapshot,
+	}, nil
+}
+
+func (t Outputs) MarshalJSON() ([]byte, error) {
+	snaps, err := t.snapshots()
 	if err != nil {
 		return nil, err
 	}
-	appmeshByt, err := t.Appmesh.MarshalJSON()
+	return snaps.MarshalJSON()
+}
+
+func (t outputSnapshots) MarshalJSON() ([]byte, error) {
+
+	istioByt, err := t.istio.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
-	smiByt, err := t.Smi.MarshalJSON()
+	appmeshByt, err := t.appmesh.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
-	localByt, err := t.Local.MarshalJSON()
+	smiByt, err := t.smi.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	localByt, err := t.local.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
 	return bytes.Join([][]byte{istioByt, appmeshByt, smiByt, localByt}, []byte("\n")), nil
 }
 
-func (t OutputSnapshots) ApplyMultiCluster(
+func (t Outputs) ApplyMultiCluster(
 	ctx context.Context,
 	clusterClient client.Client,
 	multiClusterClient multicluster.Client,
 	errHandler output.ErrorHandler,
-) {
+) error {
+	snaps, err := t.snapshots()
+	if err != nil {
+		return err
+	}
 	// Apply mesh resources to registered clusters
-	t.Istio.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
-	t.Appmesh.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
-	t.Smi.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
+	snaps.istio.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
+	snaps.appmesh.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
+	snaps.smi.ApplyMultiCluster(ctx, multiClusterClient, errHandler)
 	// Apply local resources only to management cluster
-	t.Local.ApplyLocalCluster(ctx, clusterClient, errHandler)
+	snaps.local.ApplyLocalCluster(ctx, clusterClient, errHandler)
+
+	return nil
 }
 
 // the networking translator translates an istio input networking snapshot to an istiooutput snapshot of mesh config resources
@@ -71,7 +122,7 @@ type Translator interface {
 		in input.LocalSnapshot,
 		userSupplied input.RemoteSnapshot,
 		reporter reporting.Reporter,
-	) (OutputSnapshots, error)
+	) (Outputs, error)
 }
 
 type translator struct {
@@ -98,7 +149,7 @@ func (t *translator) Translate(
 	in input.LocalSnapshot,
 	userSupplied input.RemoteSnapshot,
 	reporter reporting.Reporter,
-) (OutputSnapshots, error) {
+) (Outputs, error) {
 	t.totalTranslates++
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("translation-%v", t.totalTranslates))
 
@@ -113,30 +164,10 @@ func (t *translator) Translate(
 
 	t.osmTranslator.Translate(ctx, in, smiOutputs, reporter)
 
-	istioSnapshot, err := istioOutputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
-	if err != nil {
-		return OutputSnapshots{}, err
-	}
-
-	appmeshSnapshot, err := appmeshOutputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
-	if err != nil {
-		return OutputSnapshots{}, err
-	}
-
-	smiSnapshot, err := smiOutputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
-	if err != nil {
-		return OutputSnapshots{}, err
-	}
-
-	localSnapshot, err := localOutputs.BuildSinglePartitionedSnapshot(metautils.TranslatedObjectLabels())
-	if err != nil {
-		return OutputSnapshots{}, err
-	}
-
-	return OutputSnapshots{
-		Istio:   istioSnapshot,
-		Appmesh: appmeshSnapshot,
-		Smi:     smiSnapshot,
-		Local:   localSnapshot,
+	return Outputs{
+		Istio:   istioOutputs,
+		Appmesh: appmeshOutputs,
+		Smi:     smiOutputs,
+		Local:   localOutputs,
 	}, nil
 }
