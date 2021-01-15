@@ -86,7 +86,7 @@ var _ = Describe("MirrorDecorator", func() {
 		localHostname := "name.namespace.svc.cluster.local"
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(originalService.Spec.GetKubeService().Ref.ClusterName, appliedPolicy.Spec.Mirror.GetKubeService()).
+			GetDestinationFQDN(originalService.Spec.GetKubeService().Ref.ClusterName, appliedPolicy.Spec.Mirror.GetKubeService()).
 			Return(localHostname)
 
 		expectedMirror := &v1alpha3.Destination{
@@ -161,7 +161,7 @@ var _ = Describe("MirrorDecorator", func() {
 		globalHostname := "name.namespace.svc.local-cluster.global"
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(sourceMeshInstallation.GetCluster(), appliedPolicy.Spec.Mirror.GetKubeService()).
+			GetDestinationFQDN(sourceMeshInstallation.GetCluster(), appliedPolicy.Spec.Mirror.GetKubeService()).
 			Return(globalHostname)
 
 		expectedMirror := &v1alpha3.Destination{
@@ -259,7 +259,7 @@ var _ = Describe("MirrorDecorator", func() {
 		localHostname := "name.namespace.svc.cluster.local"
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(originalService.Spec.GetKubeService().Ref.ClusterName, appliedPolicyMissingPort.Spec.Mirror.GetKubeService()).
+			GetDestinationFQDN(originalService.Spec.GetKubeService().Ref.ClusterName, appliedPolicyMissingPort.Spec.Mirror.GetKubeService()).
 			Return(localHostname).
 			Times(2)
 
@@ -327,7 +327,7 @@ var _ = Describe("MirrorDecorator", func() {
 		localHostname := "name.namespace.svc.cluster.local"
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(originalService.Spec.GetKubeService().Ref.ClusterName, appliedPolicy.Spec.Mirror.GetKubeService()).
+			GetDestinationFQDN(originalService.Spec.GetKubeService().Ref.ClusterName, appliedPolicy.Spec.Mirror.GetKubeService()).
 			Return(localHostname)
 
 		err := mirrorDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, originalService, nil, output, registerField)

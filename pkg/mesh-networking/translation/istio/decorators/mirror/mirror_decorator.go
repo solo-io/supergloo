@@ -124,7 +124,7 @@ func (d *mirrorDecorator) makeKubeDestinationMirror(
 		sourceClusterName = trafficTarget.Spec.GetKubeService().GetRef().GetClusterName()
 	}
 
-	destinationHostname := d.clusterDomains.GetDestinationServiceFQDN(
+	destinationHostname := d.clusterDomains.GetDestinationFQDN(
 		sourceClusterName,
 		destinationRef,
 	)

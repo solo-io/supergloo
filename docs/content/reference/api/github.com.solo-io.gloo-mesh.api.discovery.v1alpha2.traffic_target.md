@@ -182,7 +182,7 @@ Subsets for routing, based on labels.
   | appliedTrafficPolicies | [][discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedTrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedTrafficPolicy" >}}) | repeated | The set of Traffic Policies that have been applied to this TrafficTarget |
   | appliedAccessPolicies | [][discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedAccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedAccessPolicy" >}}) | repeated | The set of Access Policies that have been applied to this TrafficTarget |
   | localFqdn | string |  | The local fully qualified domain |
-  | remoteFqdn | string |  | The remote fully qualified domain |
+  | appliedFederation | [discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedFederation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedFederation" >}}) |  | Federation metadata. Only populated if this traffic target is federated through a VirtualMesh. |
   
 
 
@@ -214,7 +214,7 @@ Federation policy applied to this TrafficTarget, allowing access to the traffic 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| multiclusterDnsName | string |  | For any workload that this traffic target has federated to (i.e., any Workload whose ref appears in `federated_to_workloads`), a client in that workload will be able to reach this traffic target at this DNS name. This includes workloads on clusters other than the one hosting this service. |
+| federatedHostname | string |  | For any workload that this traffic target has federated to (i.e., any Workload controlled by a mesh whose ref appears in `federated_to_meshes`), a client in that workload will be able to reach this traffic target at this DNS name. This includes workloads on clusters other than the one hosting this service. |
   | federatedToMeshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The list of Meshes which are able to resolve this service's `multicluster_dns_name`. |
   
 

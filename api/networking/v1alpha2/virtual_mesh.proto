@@ -130,6 +130,12 @@ message VirtualMeshSpec {
         // rather than through an ingress gateway.
         // NOTE: This feature will not work if the clusters are not pre-configured to live on the same network.
         bool flat_network = 2;
+
+        // Configure the suffix for hostnames of traffic targets federated within this virtual mesh.
+        // Currently this is only supported for Istio with smart DNS proxying enabled.
+        // If any meshes do not have smart DNS proxying enabled, setting this field results in an error.
+        // If omitted, the hostname suffix defaults to "global".
+        string hostname_suffix = 3;
     }
 
     /*

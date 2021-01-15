@@ -236,6 +236,10 @@ func (m *MeshSpec_Istio) Equal(that interface{}) bool {
 
 	}
 
+	if m.GetSmartDnsProxyingEnabled() != target.GetSmartDnsProxyingEnabled() {
+		return false
+	}
+
 	return true
 }
 
