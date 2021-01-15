@@ -1,6 +1,7 @@
 package helm
 
 import (
+	"github.com/iancoleman/strcase"
 	"os"
 	"strings"
 
@@ -37,7 +38,7 @@ var (
 var Chart = &model.Chart{
 	Operators: []model.Operator{
 		discoveryOperator(),
-		NetworkingOperator(),
+		NetworkingOperator("networking"),
 	},
 	FilterTemplate: filterTemplates,
 	Data: model.Data{
@@ -141,7 +142,7 @@ func discoveryOperator() model.Operator {
 }
 
 // exported for use in Enterprise chart
-func NetworkingOperator() model.Operator {
+func NetworkingOperator(name string) model.Operator {
 
 	var rbacPolicies []rbacv1.PolicyRule
 
@@ -155,7 +156,7 @@ func NetworkingOperator() model.Operator {
 	rbacPolicies = append(rbacPolicies, io.CertificateIssuerInputTypes.RbacPoliciesUpdateStatus()...)
 
 	return model.Operator{
-		Name: "networking",
+		Name: name,
 		Deployment: model.Deployment{
 			Image: glooMeshImage(),
 			Resources: &v1.ResourceRequirements{
@@ -177,7 +178,7 @@ func NetworkingOperator() model.Operator {
 		Rbac: rbacPolicies,
 		Args: []string{
 			"networking",
-			"--metrics-port={{ $.Values.networking.ports.metrics }}",
+			"--metrics-port={{ $.Values."+strcase.ToLowerCamel(name)+".ports.metrics }}",
 			"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
 			"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
 			"--verbose",
