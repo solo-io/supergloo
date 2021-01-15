@@ -1,9 +1,10 @@
 package helm
 
 import (
-	"github.com/iancoleman/strcase"
 	"os"
 	"strings"
+
+	"github.com/iancoleman/strcase"
 
 	"github.com/solo-io/gloo-mesh/codegen/io"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
@@ -178,7 +179,7 @@ func NetworkingOperator(name string) model.Operator {
 		Rbac: rbacPolicies,
 		Args: []string{
 			"networking",
-			"--metrics-port={{ $.Values."+strcase.ToLowerCamel(name)+".ports.metrics }}",
+			"--metrics-port={{ $.Values." + strcase.ToLowerCamel(name) + ".ports.metrics }}",
 			"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
 			"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
 			"--verbose",
