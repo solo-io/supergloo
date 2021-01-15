@@ -52,6 +52,7 @@ title: "access_logging.proto"
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the AccessLogCollection metadata. If the observedGeneration does not match generation, the controller has not processed the most recent version of this resource. |
+  | state | [networking.mesh.gloo.solo.io.ApprovalState]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state#networking.mesh.gloo.solo.io.ApprovalState" >}}) |  | The state of the overall resource, will only show accepted if it has been successfully applied to all target meshes. |
   | errors | []string | repeated | Any errors encountered during processing. Also reported to any Workloads that this object applies to. |
   
 

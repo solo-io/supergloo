@@ -4,6 +4,7 @@ package observability.enterprise.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1";
 
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
 import "envoy/config/accesslog/v3/accesslog.proto";
 
 message AccessLogCollectionSpec {
@@ -24,6 +25,10 @@ message AccessLogCollectionStatus {
     // recent version of this resource.
     int64 observed_generation = 1;
 
+    // The state of the overall resource, will only show accepted if it has been successfully
+    // applied to all target meshes.
+    .networking.mesh.gloo.solo.io.ApprovalState state = 2;
+
     // Any errors encountered during processing. Also reported to any Workloads that this object applies to.
-    repeated string errors = 2;
+    repeated string errors = 3;
 }
