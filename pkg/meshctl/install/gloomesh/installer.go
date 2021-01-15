@@ -11,12 +11,14 @@ import (
 const (
 	GlooMeshRepoURI                    = "https://storage.googleapis.com/gloo-mesh"
 	GlooMeshChartUriTemplate           = GlooMeshRepoURI + "/gloo-mesh/gloo-mesh-%s.tgz"
+	GlooMeshCRDsChartUriTemplate       = GlooMeshRepoURI + "/gloo-mesh-crds/gloo-mesh-crds-%s.tgz"
 	AgentCrdsChartUriTemplate          = GlooMeshRepoURI + "/agent-crds/agent-crds-%s.tgz"
 	CertAgentChartUriTemplate          = GlooMeshRepoURI + "/cert-agent/cert-agent-%s.tgz"
 	GlooMeshEnterpriseRepoURI          = "https://storage.googleapis.com/gloo-mesh-enterprise"
 	GlooMeshEnterpriseChartUriTemplate = GlooMeshEnterpriseRepoURI + "/gloo-mesh-enterprise/gloo-mesh-enterprise-%s.tgz"
 	WasmAgentChartUriTemplate          = GlooMeshEnterpriseRepoURI + "/wasm-agent/wasm-agent-%s.tgz"
 	GlooMeshReleaseName                = "gloo-mesh"
+	GlooMeshCRDsReleaseName            = "gloo-mesh-crds"
 	GlooMeshEnterpriseReleaseName      = "gloo-mesh-enterprise"
 	agentCrdsReleaseName               = "agent-crds"
 	certAgentReleaseName               = "cert-agent"
@@ -39,6 +41,12 @@ func (i Installer) InstallGlooMesh(
 	ctx context.Context,
 ) error {
 	return i.install(ctx, GlooMeshChartUriTemplate, GlooMeshReleaseName)
+}
+
+func (i Installer) InstallGlooMeshCRDs(
+	ctx context.Context,
+) error {
+	return i.install(ctx, GlooMeshCRDsChartUriTemplate, GlooMeshCRDsReleaseName)
 }
 
 func (i Installer) InstallGlooMeshEnterprise(

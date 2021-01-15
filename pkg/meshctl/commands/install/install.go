@@ -43,7 +43,10 @@ func install(ctx context.Context, opts *flags.Options) error {
 		}
 		opts.Version = version
 	}
-	if err := opts.GetInstaller(gloomesh.GlooMeshChartUriTemplate).InstallGlooMesh(ctx); err != nil {
+	if err := opts.GetInstaller(gloomesh.GlooMeshCRDsChartUriTemplate, true).InstallGlooMeshCRDs(ctx); err != nil {
+		return eris.Wrap(err, "installing gloo-mesh-crds")
+	}
+	if err := opts.GetInstaller(gloomesh.GlooMeshChartUriTemplate, false).InstallGlooMesh(ctx); err != nil {
 		return eris.Wrap(err, "installing gloo-mesh")
 	}
 

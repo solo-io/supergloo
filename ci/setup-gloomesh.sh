@@ -30,6 +30,7 @@ agentCrdsChart=${AGENT_CRDS_CHART}
 agentChart=${AGENT_CHART}
 agentImage=${AGENT_IMAGE}
 gloomeshChart=${GLOOMESH_CHART}
+gloomeshCrdsChart=${GLOOMESH_CRDS_CHART}
 
 # load GlooMesh discovery and networking images
 grep "image:" "${DEFAULT_MANIFEST}" \
@@ -45,6 +46,7 @@ kind load docker-image --name "${cluster}" "${agentImage}"
 go run "${PROJECT_ROOT}/cmd/meshctl/main.go" install \
   --kubecontext kind-"${cluster}" \
   --chart-file "${gloomeshChart}" \
+  --crds-chart-file "${gloomeshCrdsChart}" \
   --namespace gloo-mesh \
   --register \
   --cluster-name "${cluster}" \
