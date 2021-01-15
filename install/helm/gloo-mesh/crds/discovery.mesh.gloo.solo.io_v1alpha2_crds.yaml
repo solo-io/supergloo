@@ -958,6 +958,11 @@ spec:
               description: The set of AccessLogCollections that have been applied to this Workload.
               items:
                 properties:
+                  errors:
+                    description: any errors encountered while processing the referenced AccessLogCollection object
+                    items:
+                      type: string
+                    type: array
                   observedGeneration:
                     description: the observed generation of the accepted AccessLogCollection.
                     format: int64

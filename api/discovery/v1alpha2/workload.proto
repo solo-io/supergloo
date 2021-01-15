@@ -83,9 +83,7 @@ message WorkloadStatus {
         // the observed generation of the accepted AccessLogCollection.
         int64 observedGeneration = 2;
 
-        // TODO(harveyxia) can't generate validation schemas for AccessLogCollectionSpec because of a cuelang issue: https://github.com/cuelang/cue/issues/635
-        // for now the workaround is to have the translator simply fetch the AccessLogCollection using the ref above
-        // the last known valid spec of the AccessLogCollection
-        // .observability.enterprise.mesh.gloo.solo.io.AccessLogCollectionSpec spec = 3;
+        // any errors encountered while processing the referenced AccessLogCollection object
+        repeated string errors = 3;
     }
 }

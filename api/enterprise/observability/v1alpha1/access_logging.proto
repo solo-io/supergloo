@@ -23,4 +23,7 @@ message AccessLogCollectionStatus {
     // If the observedGeneration does not match generation, the controller has not processed the most
     // recent version of this resource.
     int64 observed_generation = 1;
+
+    // Any errors encountered during processing. Also reported to any Workloads that this object applies to.
+    repeated string errors = 2;
 }

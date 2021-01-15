@@ -291,5 +291,16 @@ func (m *WorkloadStatus_AppliedAccessLogCollection) Equal(that interface{}) bool
 		return false
 	}
 
+	if len(m.GetErrors()) != len(target.GetErrors()) {
+		return false
+	}
+	for idx, v := range m.GetErrors() {
+
+		if strings.Compare(v, target.GetErrors()[idx]) != 0 {
+			return false
+		}
+
+	}
+
 	return true
 }

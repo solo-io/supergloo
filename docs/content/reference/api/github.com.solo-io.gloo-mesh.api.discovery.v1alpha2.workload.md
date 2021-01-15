@@ -140,6 +140,7 @@ AppliedAccessLogCollection represents an AccessLogCollection that has been appli
 | ----- | ---- | ----- | ----------- |
 | ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | reference to the AccessLogCollection object. |
   | observedGeneration | int64 |  | the observed generation of the accepted AccessLogCollection. |
+  | errors | []string | repeated | any errors encountered while processing the referenced AccessLogCollection object |
   
 
 

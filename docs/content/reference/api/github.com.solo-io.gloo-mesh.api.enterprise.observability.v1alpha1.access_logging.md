@@ -52,6 +52,7 @@ title: "access_logging.proto"
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the AccessLogCollection metadata. If the observedGeneration does not match generation, the controller has not processed the most recent version of this resource. |
+  | errors | []string | repeated | Any errors encountered during processing. Also reported to any Workloads that this object applies to. |
   
 
 
