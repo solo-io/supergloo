@@ -47,7 +47,7 @@ var Chart = &model.Chart{
 		Description: "Helm chart for Gloo Mesh.",
 		Version:     version.Version,
 	},
-	Values: defaultValues(),
+	Values: DefaultValues(),
 }
 
 var CrdsChart = &model.Chart{
