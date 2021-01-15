@@ -8,25 +8,16 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 
 	certissuerinput "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	certissuerreconciliation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/reconciliation"
 	"github.com/solo-io/gloo-mesh/pkg/common/bootstrap"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/appmesh"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm"
-	skinput "github.com/solo-io/skv2/contrib/pkg/input"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reconciliation"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
+	skinput "github.com/solo-io/skv2/contrib/pkg/input"
 )
 
 // Options for extending the functionality of the Networking controller
 type ExtensionOpts struct {
-
 	NetworkingReconciler NetworkingReconcilerExtensionOpts
 
 	CertIssuerReconciler CertIssuerReconcilerExtensionOpts
@@ -146,98 +137,4 @@ func (opts *CertIssuerReconcilerExtensionOpts) initDefaults(parameters bootstrap
 			})
 		}
 	}
-}
-
-// custom entryoint for the
-// disableMultiCluster - disable multi cluster manager and clientset from being initialized
-func StartExtended(ctx context.Context, opts *NetworkingOpts, makeExtensions MakeExtensionOpts, disableMultiCluster bool) error {
-	starter := networkingStarter{
-		NetworkingOpts: opts,
-		makeExtensions: makeExtensions,
-	}
-	return bootstrap.Start(
-		ctx,
-		"networking",
-		starter.startReconciler,
-		*opts.Options,
-		disableMultiCluster,
-	)
-}
-
-type networkingStarter struct {
-	*NetworkingOpts
-
-	// callback to configure extensions
-	makeExtensions MakeExtensionOpts
-}
-
-// start the main reconcile loop
-func (s networkingStarter) startReconciler(parameters bootstrap.StartParameters) error {
-	extensionOpts := s.makeExtensions(parameters)
-	extensionOpts.initDefaults(parameters)
-
-	startCertIssuer(
-		parameters.Ctx,
-		extensionOpts.CertIssuerReconciler.RegisterCertIssuerReconciler,
-		extensionOpts.CertIssuerReconciler.MakeCertIssuerSnapshotBuilder(parameters),
-		extensionOpts.CertIssuerReconciler.SyncCertificateIssuerInputStatuses,
-		parameters.MasterManager,
-	)
-
-	extensionClientset := extensions.NewClientset(parameters.Ctx)
-
-	inputSnapshotBuilder := input.NewSingleClusterLocalBuilder(parameters.MasterManager)
-
-	// contains output resource types read from all registered clusters
-	userProvidedSnapshotBuilder := extensionOpts.NetworkingReconciler.MakeUserSnapshotBuilder(parameters)
-
-	reporter := reporting.NewPanickingReporter(parameters.Ctx)
-
-
-	translator := extensionOpts.NetworkingReconciler.MakeTranslator(translation.NewTranslator(
-		istio.NewIstioTranslator(extensionClientset),
-		appmesh.NewAppmeshTranslator(),
-		osm.NewOSMTranslator(),
-	))
-	validatingTranslator := extensionOpts.NetworkingReconciler.MakeTranslator(translation.NewTranslator(
-		istio.NewIstioTranslator(nil), // the applier should not call the extender
-		appmesh.NewAppmeshTranslator(),
-		osm.NewOSMTranslator(),
-	))
-
-	applier := apply.NewApplier(validatingTranslator)
-
-	return reconciliation.Start(
-		parameters.Ctx,
-		inputSnapshotBuilder,
-		userProvidedSnapshotBuilder,
-		applier,
-		reporter,
-		translator,
-		extensionOpts.NetworkingReconciler.RegisterNetworkingReconciler,
-		extensionOpts.NetworkingReconciler.SyncNetworkingOutputs,
-		parameters.MasterManager.GetClient(),
-		parameters.SnapshotHistory,
-		parameters.VerboseMode,
-		&parameters.SettingsRef,
-		extensionClientset,
-		s.disallowIntersectingConfig,
-		s.watchOutputTypes,
-	)
-}
-
-func startCertIssuer(
-	ctx context.Context,
-	registerReconciler certissuerreconciliation.RegisterReconcilerFunc,
-	builder certissuerinput.Builder,
-	syncInputStatuses certissuerreconciliation.SyncStatusFunc,
-	masterManager manager.Manager,
-) {
-	certissuerreconciliation.Start(
-		ctx,
-		registerReconciler,
-		builder,
-		syncInputStatuses,
-		masterManager.GetClient(),
-	)
 }
