@@ -16,9 +16,18 @@ clean-helm:
 	rm -f $(GLOOMESH_CRDS_CHART_DIR)/Chart.yaml
 	rm -f $(AGENT_CRDS_CHART_DIR)/Chart.yaml
 
-.PHONY: package-helm
-package-helm: chart-gen fmt
+.PHONY: publish-crd-chart
+publish-crd-chart: chart-gen fmt
 	helm package --destination $(CHART_OUTPUT_DIR)/gloo-mesh-crds $(GLOOMESH_CRDS_CHART_DIR)
+	helm repo index $(CHART_OUTPUT_DIR)/gloo-mesh-crds
+ifeq ($(RELEASE),"true")
+	gsutil -h "Cache-Control:no-cache,max-age=0" -m rsync -r $(CHART_OUTPUT_DIR)/gloo-mesh-crds gs://gloo-mesh/gloo-mesh-crds
+else
+	@echo "Not a release, skipping chart upload to GCS"
+endif
+
+.PHONY: package-helm
+package-helm: publish-crd-chart chart-gen fmt
 	helm package --destination $(CHART_OUTPUT_DIR)/agent-crds $(AGENT_CRDS_CHART_DIR)
 	helm package --destination $(CHART_OUTPUT_DIR)/gloo-mesh $(GLOOMESH_CHART_DIR)
 	helm package --destination $(CHART_OUTPUT_DIR)/cert-agent $(CA_CHART_DIR)
@@ -41,7 +50,6 @@ index-helm: package-helm fetch-helm
 publish-chart: index-helm
 ifeq ($(RELEASE),"true")
 	gsutil -h "Cache-Control:no-cache,max-age=0" -m rsync -r $(CHART_OUTPUT_DIR)/gloo-mesh gs://gloo-mesh/gloo-mesh
-	gsutil -h "Cache-Control:no-cache,max-age=0" -m rsync -r $(CHART_OUTPUT_DIR)/gloo-mesh-crds gs://gloo-mesh/gloo-mesh-crds
 	gsutil -h "Cache-Control:no-cache,max-age=0" -m rsync -r $(CHART_OUTPUT_DIR)/cert-agent gs://gloo-mesh/cert-agent
 	gsutil -h "Cache-Control:no-cache,max-age=0" -m rsync -r $(CHART_OUTPUT_DIR)/agent-crds gs://gloo-mesh/agent-crds
 else

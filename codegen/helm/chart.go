@@ -47,8 +47,24 @@ var Chart = &model.Chart{
 		Name:        "gloo-mesh",
 		Description: "Helm chart for Gloo Mesh.",
 		Version:     version.Version,
+		Dependencies: []model.Dependency{{
+			Name:       "gloo-mesh-crds",
+			Version:    version.Version,
+			Repository: GetHelmRepository() + "gloo-mesh-crds",
+		}},
 	},
 	Values: DefaultValues(),
+}
+
+// return the Helm repository where Gloo Mesh charts are stored.
+// will point to public url on releases, else install/helm/_output/charts/
+func GetHelmRepository() string {
+	// WARNING: hard-coupled with makefile convention
+	if os.Getenv("RELEASE") == "true" {
+		return "https://storage.googleapis.com/gloo-mesh/"
+	}
+	// file path must be relative to repo root
+	return "file://../"
 }
 
 var CrdsChart = &model.Chart{
