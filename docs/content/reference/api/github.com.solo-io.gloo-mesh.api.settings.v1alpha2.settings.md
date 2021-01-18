@@ -138,7 +138,7 @@ Relay provides a way for connecting Gloo Mesh to remote Kubernetes Clusters with
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | enabled | bool |  | enable the use of Relay for cluster management. If relay is enabled, make sure to follow the [Cluster Registration guide for Relay]({{< versioned_link_path fromRoot="/guides/setup/register_cluster#relay" >}}) for registering your clusters. |
-  | server | [settings.mesh.gloo.solo.io.GrpcServer]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.GrpcServer" >}}) |  | Connection info for the Relay Server. Gloo Mesh will fetch discovery resources from this server and push translated outputs to this server. |
+  | server | [settings.mesh.gloo.solo.io.GrpcServer]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.GrpcServer" >}}) |  | Connection info for the Relay Server. Gloo Mesh will fetch discovery resources from this server and push translated outputs to this server. Note: currently this field has no effect as the relay server runs in-process of the networking pod. |
   
 
 

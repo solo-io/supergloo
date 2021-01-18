@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	skinput "github.com/solo-io/skv2/contrib/pkg/input"
+
 	"github.com/rotisserie/eris"
 	corev1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
@@ -14,32 +16,41 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// function which defines how the cert issuer reconciler should be registered with internal components.
+type RegisterReconcilerFunc func(
+	ctx context.Context,
+	reconcile skinput.MultiClusterReconcileFunc,
+	reconcileInterval time.Duration,
+)
+
+// function which defines how the cert issuer should update the statuses of objects in its input snapshot
+type SyncStatusFunc func(ctx context.Context, snapshot input.Snapshot) error
+
 type certIssuerReconciler struct {
-	ctx           context.Context
-	builder       input.Builder
-	mcClient      multicluster.Client
-	masterSecrets corev1.SecretClient
+	ctx               context.Context
+	builder           input.Builder
+	syncInputStatuses SyncStatusFunc
+	masterSecrets     corev1.SecretClient
 }
 
 func Start(
 	ctx context.Context,
+	registerReconciler RegisterReconcilerFunc,
 	builder input.Builder,
-	mcClient multicluster.Client,
-	clusters multicluster.ClusterWatcher,
+	syncInputStatuses SyncStatusFunc,
 	masterClient client.Client,
 ) {
 	r := &certIssuerReconciler{
-		ctx:           ctx,
-		builder:       builder,
-		mcClient:      mcClient,
-		masterSecrets: corev1.NewSecretClient(masterClient),
+		ctx:               ctx,
+		builder:           builder,
+		syncInputStatuses: syncInputStatuses,
+		masterSecrets:     corev1.NewSecretClient(masterClient),
 	}
 
-	input.RegisterMultiClusterReconciler(ctx, clusters, r.reconcile, time.Second/2, input.ReconcileOptions{})
+	registerReconciler(ctx, r.reconcile, time.Second/2)
 }
 
 // reconcile global state
@@ -57,9 +68,7 @@ func (r *certIssuerReconciler) reconcile(_ ezkube.ClusterResourceId) (bool, erro
 		}
 	}
 
-	return false, inputSnap.SyncStatusesMultiCluster(r.ctx, r.mcClient, input.SyncStatusOptions{
-		CertificateRequest: true,
-	})
+	return false, r.syncInputStatuses(r.ctx, inputSnap)
 }
 
 func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v1alpha2.CertificateRequest, issuedCertificates v1alpha2sets.IssuedCertificateSet) error {

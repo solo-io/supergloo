@@ -75,8 +75,8 @@ func (opts *Options) AddToFlags(flags *pflag.FlagSet) {
 }
 
 // Start a controller with the given reconciler. Handles bootstrapping local manager + multicluster watches.
-// agentMode will start the controller as an "agent" only configured to do i/o to local cluster.
-func Start(ctx context.Context, rootLogger string, start StartReconciler, opts Options, agentMode bool) error {
+// localMode will start the controller as an "local" only configured to do i/o to local cluster.
+func Start(ctx context.Context, rootLogger string, start StartReconciler, opts Options, localMode bool) error {
 	setupLogging(opts.VerboseMode)
 
 	ctx = contextutils.WithLogger(ctx, rootLogger)
@@ -94,7 +94,7 @@ func Start(ctx context.Context, rootLogger string, start StartReconciler, opts O
 		mcClient       multicluster.Client
 	)
 
-	if !agentMode {
+	if !localMode {
 		// construct multicluster watcher and client
 		clusterWatcher = watch.NewClusterWatcher(ctx, manager.Options{
 			Namespace: "", // TODO (ilackarms): support configuring specific watch namespaces on remote clusters

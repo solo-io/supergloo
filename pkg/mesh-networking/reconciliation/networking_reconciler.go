@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/settingsutils"
+	"github.com/solo-io/skv2/contrib/pkg/output"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/gloo-mesh/codegen/io"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
@@ -19,13 +22,11 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/mtls"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/snapshotutils"
 	"github.com/solo-io/go-utils/contextutils"
 	skinput "github.com/solo-io/skv2/contrib/pkg/input"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/skv2/pkg/multicluster"
 	skv2predicate "github.com/solo-io/skv2/pkg/predicate"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	"github.com/solo-io/skv2/pkg/verifier"
@@ -33,12 +34,24 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/selection"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+)
+
+// function which defines how the Networking reconciler should be registered with internal components.
+type RegisterReconcilerFunc func(
+	ctx context.Context,
+	reconcile skinput.SingleClusterReconcileFunc,
+	reconcileOpts input.ReconcileOptions,
+) (skinput.InputReconciler, error)
+
+// function which defines how the Networking reconciler should apply its output snapshots
+type SyncOutputsFunc func(
+	ctx context.Context,
+	outputSnap translation.OutputSnapshots,
+	errHandler output.ErrorHandler,
 )
 
 type networkingReconciler struct {
@@ -48,22 +61,33 @@ type networkingReconciler struct {
 	applier                    apply.Applier
 	reporter                   reporting.Reporter
 	translator                 translation.Translator
+	registerReconciler         RegisterReconcilerFunc
+	syncOutputs                SyncOutputsFunc
 	mgmtClient                 client.Client
-	multiClusterClient         multicluster.Client
 	history                    *stats.SnapshotHistory
 	totalReconciles            int
 	verboseMode                bool
-	settingsRef                v1.ObjectRef
+	settingsRef                *v1.ObjectRef
 	extensionClients           extensions.Clientset
 	reconciler                 skinput.InputReconciler
 	remoteResourceVerifier     verifier.ServerResourceVerifier
 	disallowIntersectingConfig bool
 }
 
-// pushNotificationId is a special identifier for a reconcile event triggered by an extension server pushing a notification
-var pushNotificationId = &v1.ObjectRef{
-	Name: "push-notification-event",
-}
+var (
+	// pushNotificationId is a special identifier for a reconcile event triggered by an extension server pushing a notification
+	pushNotificationId = &v1.ObjectRef{
+		Name: "push-notification-event",
+	}
+
+	// predicates use by the networking reconciler.
+	// exported for use in Enterprise.
+	NetworkingReconcilePredicates = []predicate.Predicate{
+		skv2predicate.SimplePredicate{
+			Filter: skv2predicate.SimpleEventFilterFunc(isIgnoredSecret),
+		},
+	}
+)
 
 func Start(
 	ctx context.Context,
@@ -72,12 +96,12 @@ func Start(
 	applier apply.Applier,
 	reporter reporting.Reporter,
 	translator translation.Translator,
-	clusters multicluster.ClusterWatcher,
-	multiClusterClient multicluster.Client,
-	mgr manager.Manager,
+	registerReconciler RegisterReconcilerFunc,
+	syncOutputs SyncOutputsFunc,
+	mgmtClient client.Client,
 	history *stats.SnapshotHistory,
 	verboseMode bool,
-	settingsRef v1.ObjectRef,
+	settingsRef *v1.ObjectRef,
 	extensionClients extensions.Clientset,
 	disallowIntersectingConfig bool,
 	watchOutputTypes bool,
@@ -92,23 +116,14 @@ func Start(
 		applier:                    applier,
 		reporter:                   reporter,
 		translator:                 translator,
-		mgmtClient:                 mgr.GetClient(),
-		multiClusterClient:         multiClusterClient,
+		mgmtClient:                 mgmtClient,
 		history:                    history,
 		verboseMode:                verboseMode,
+		syncOutputs:                syncOutputs,
 		settingsRef:                settingsRef,
 		extensionClients:           extensionClients,
 		disallowIntersectingConfig: disallowIntersectingConfig,
 		remoteResourceVerifier:     remoteResourceVerifier,
-	}
-
-	// TODO extend skv2 snapshots with singleton object utilities
-	// Needed in order to use field selector on metadata.name for Settings CRD.
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &settingsv1alpha2.Settings{}, "metadata.name", func(object runtime.Object) []string {
-		settings := object.(*settingsv1alpha2.Settings)
-		return []string{settings.Name}
-	}); err != nil {
-		return err
 	}
 
 	// watch local input types for changes
@@ -145,21 +160,12 @@ func Start(
 		)
 	}
 
-	reconciler, err := input.RegisterInputReconciler(
+	reconciler, err := registerReconciler(
 		ctx,
-		clusters,
-		func(id ezkube.ClusterResourceId) (bool, error) {
-			return r.reconcile(id)
-		},
-		mgr,
 		r.reconcile,
 		input.ReconcileOptions{
 			Local: input.LocalReconcileOptions{
-				Predicates: []predicate.Predicate{
-					skv2predicate.SimplePredicate{
-						Filter: skv2predicate.SimpleEventFilterFunc(isIgnoredSecret),
-					},
-				},
+				Predicates: NetworkingReconcilePredicates,
 			},
 			Remote:            remoteReconcileOpts,
 			ReconcileInterval: time.Second / 2,
@@ -188,18 +194,14 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 		KubernetesClusters: input.ResourceLocalBuildOptions{
 			ListOptions: []client.ListOption{client.InNamespace(defaults.GetPodNamespace())},
 		},
-		Settings: input.ResourceLocalBuildOptions{
-			// Ensure that only declared Settings object exists in snapshot.
-			ListOptions: []client.ListOption{
-				client.InNamespace(r.settingsRef.Namespace),
-				client.MatchingFields(map[string]string{
-					"metadata.name": r.settingsRef.Name,
-				}),
-			},
-		},
 	})
 	if err != nil {
 		// failed to read from cache; should never happen
+		return false, err
+	}
+
+	if err := r.syncSettings(&ctx, inputSnap); err != nil {
+		// fail early if settings failed to sync
 		return false, err
 	}
 
@@ -268,10 +270,6 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 }
 
 func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.LocalSnapshot, userSupplied input.RemoteSnapshot) error {
-	if err := r.syncSettings(ctx, in); err != nil {
-		// fail early if settings failed to sync
-		return err
-	}
 
 	outputSnap, err := r.translator.Translate(ctx, in, userSupplied, r.reporter)
 	if err != nil {
@@ -279,24 +277,24 @@ func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Lo
 		return err
 	}
 
-	errHandler := newErrHandler(ctx, in)
-
-	outputSnap.Apply(ctx, r.mgmtClient, r.multiClusterClient, errHandler)
-
 	r.history.SetInput(in)
 	r.history.SetOutput(outputSnap)
+
+	errHandler := newErrHandler(ctx, in)
+	r.syncOutputs(ctx, outputSnap, errHandler)
 
 	return errHandler.Errors()
 }
 
-// validate and process the settings stored in the input snapshot.
-// exactly one should be present.
-// processing/validation errors will be reported to the settings status
-func (r *networkingReconciler) syncSettings(ctx context.Context, in input.LocalSnapshot) error {
-	settings, err := snapshotutils.GetSingletonSettings(ctx, in)
+// stores settings inside the context and initiates connections to extension servers.
+// processing/validation errors will be reported to the settings status.
+func (r *networkingReconciler) syncSettings(ctx *context.Context, in input.LocalSnapshot) error {
+	settings, err := in.Settings().Find(r.settingsRef)
 	if err != nil {
 		return err
 	}
+
+	*ctx = settingsutils.ContextWithSettings(*ctx, settings)
 
 	settings.Status = settingsv1alpha2.SettingsStatus{
 		ObservedGeneration: settings.Generation,
