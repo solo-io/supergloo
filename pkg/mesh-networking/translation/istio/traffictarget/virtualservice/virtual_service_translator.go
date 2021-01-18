@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/common.matchers.mesh.gloo.solo.io/v1alpha1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
@@ -443,7 +444,7 @@ func translateRequestMatchers(
 	return translatedRequestMatchers
 }
 
-func translateRequestMatcherHeaders(matchers []*v1alpha2.TrafficPolicySpec_HeaderMatcher) (
+func translateRequestMatcherHeaders(matchers []*v1alpha1.HeaderMatcher) (
 	map[string]*networkingv1alpha3spec.StringMatch, map[string]*networkingv1alpha3spec.StringMatch,
 ) {
 	headerMatchers := map[string]*networkingv1alpha3spec.StringMatch{}
