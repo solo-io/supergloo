@@ -25,6 +25,8 @@ ifeq ($(RELEASE),"true")
 else
 	@echo "Not a release, skipping chart upload to GCS"
 endif
+	# bump the dependency in gloo-mesh chart
+	helm dependency update $(GLOOMESH_CHART_DIR)
 
 .PHONY: package-helm
 package-helm: publish-crd-chart chart-gen fmt
