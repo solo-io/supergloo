@@ -48,13 +48,6 @@ func createKindCluster(cluster string, port string, box packr.Box) error {
 
 func installGlooMesh(ctx context.Context, cluster string, box packr.Box) error {
 	fmt.Printf("Deploying Gloo Mesh to %s from images\n", cluster)
-	if err := getGlooMeshCRDsInstaller(
-		cluster, gloomesh.GlooMeshCRDsChartUriTemplate,
-		version.Version,
-		nil,
-	).InstallGlooMeshCRDs(ctx); err != nil {
-		return eris.Wrap(err, "Error installing Gloo Mesh")
-	}
 	if err := getGlooMeshInstaller(
 		cluster, gloomesh.GlooMeshChartUriTemplate,
 		version.Version,
@@ -101,19 +94,6 @@ func getGlooMeshInstaller(cluster, chartTemplate, chartVersion string, values ma
 		KubeContext:    fmt.Sprintf("kind-%s", cluster),
 		Namespace:      defaults.DefaultPodNamespace,
 		ReleaseName:    helm.Chart.Data.Name,
-		Values:         values,
-		Verbose:        true,
-		DryRun:         false,
-	}
-}
-func getGlooMeshCRDsInstaller(cluster, chartTemplate, chartVersion string, values map[string]string) gloomesh.Installer {
-	return gloomesh.Installer{
-		HelmChartPath:  fmt.Sprintf(chartTemplate, chartVersion),
-		HelmValuesPath: "",
-		KubeConfig:     "",
-		KubeContext:    fmt.Sprintf("kind-%s", cluster),
-		Namespace:      defaults.DefaultPodNamespace,
-		ReleaseName:    helm.CrdsChart.Data.Name,
 		Values:         values,
 		Verbose:        true,
 		DryRun:         false,

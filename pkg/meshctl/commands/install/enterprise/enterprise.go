@@ -61,7 +61,7 @@ func install(ctx context.Context, opts *options) error {
 		opts.Version = version
 	}
 
-	installer := opts.GetInstaller(gloomesh.GlooMeshEnterpriseChartUriTemplate, false)
+	installer := opts.GetInstaller(gloomesh.GlooMeshEnterpriseChartUriTemplate)
 	installer.Values["licenseKey"] = opts.licenseKey
 	if opts.skipUI {
 		installer.Values["gloo-mesh-ui.enabled"] = "false"

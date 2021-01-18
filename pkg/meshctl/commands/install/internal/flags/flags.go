@@ -17,7 +17,6 @@ type Options struct {
 	KubeContext     string
 	Namespace       string
 	ChartPath       string
-	CRDsChartPath   string
 	ChartValuesFile string
 	ReleaseName     string
 	Version         string
@@ -41,7 +40,6 @@ func (o *Options) AddToFlags(flags *pflag.FlagSet) {
 	flags.BoolVarP(&o.DryRun, "dry-run", "d", false, "Output installation manifest")
 	flags.StringVar(&o.Namespace, "namespace", defaults.DefaultPodNamespace, "namespace in which to install Gloo Mesh")
 	flags.StringVar(&o.ChartPath, "chart-file", "", "Path to a local Helm chart for installing Gloo Mesh. If unset, this command will install Gloo Mesh from the publicly released Helm chart.")
-	flags.StringVar(&o.CRDsChartPath, "crds-chart-file", "", "Path to a local Helm chart for installing Gloo Mesh CRDs. If unset, this command will install Gloo Mesh CRDs from the publicly released Helm chart.")
 	flags.StringVarP(&o.ChartValuesFile, "chart-values-file", "", "", "File containing value overrides for the Gloo Mesh Helm chart")
 	flags.StringVar(&o.ReleaseName, "release-name", helm.Chart.Data.Name, "Helm release name")
 	flags.StringVar(&o.Version, "version", "", "Version to install, defaults to latest if omitted")
@@ -56,21 +54,13 @@ func (o *Options) AddToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.CertAgentValuesPath, "cert-agent-chart-values", "", "Path to a Helm values.yaml file for customizing the installation of the Certificate Agent. If unset, this command will install the Certificate Agent with default Helm values.")
 }
 
-// TODO(ilackarms): clean up / decouple this constructor from the options
-func (o *Options) GetInstaller(chartUriTemplate string, crds bool) gloomesh.Installer {
+func (o *Options) GetInstaller(chartUriTemplate string) gloomesh.Installer {
 	// User-specified chartPath takes precedence over specified version.
-	var chartPath string
-	if !crds {
-		chartPath = o.ChartPath
-	} else {
-		chartPath = o.CRDsChartPath
+	if o.ChartPath == "" {
+		o.ChartPath = fmt.Sprintf(chartUriTemplate, o.Version)
 	}
-	if chartPath == "" {
-		chartPath = fmt.Sprintf(chartUriTemplate, o.Version)
-	}
-
 	return gloomesh.Installer{
-		HelmChartPath:  chartPath,
+		HelmChartPath:  o.ChartPath,
 		HelmValuesPath: o.ChartValuesFile,
 		KubeConfig:     o.KubeCfgPath,
 		KubeContext:    o.KubeContext,
