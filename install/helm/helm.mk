@@ -28,8 +28,6 @@ endif
 
 .PHONY: package-helm
 package-helm: publish-crd-chart chart-gen fmt
-	$(shell sudo find $(HELM_ROOTDIR))
-	$(shell sudo cat $(GLOOMESH_CHART_DIR)/Chart.yaml)
 	helm package --destination $(CHART_OUTPUT_DIR)/agent-crds $(AGENT_CRDS_CHART_DIR)
 	helm package --destination $(CHART_OUTPUT_DIR)/gloo-mesh $(GLOOMESH_CHART_DIR)
 	helm package --destination $(CHART_OUTPUT_DIR)/cert-agent $(CA_CHART_DIR)
