@@ -344,7 +344,7 @@ function register_cluster() {
   # expects the following env set:
   # INSTALL_WASM_AGENT=1
   # WASM_AGENT_CHART=<path to chart>
-  if [ ${INSTALL_WASM_AGENT} == "1" ]; then
+  if [ "${INSTALL_WASM_AGENT}" == "1" ]; then
     EXTRA_FLAGS="--install-wasm-agent --wasm-agent-chart-file=${WASM_AGENT_CHART}"
   fi
 

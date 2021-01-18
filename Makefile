@@ -224,6 +224,7 @@ manifest-gen: install/gloo-mesh-default.yaml
 	goimports -w $(shell ls -d */ | grep -v vendor)
 	go mod tidy
 install/gloo-mesh-default.yaml: chart-gen
+	helm dependency update $(HELM_ROOTDIR)/gloo-mesh
 	helm template --include-crds --namespace gloo-mesh $(HELM_ROOTDIR)/gloo-mesh > $@
 
 #----------------------------------------------------------------------------------
