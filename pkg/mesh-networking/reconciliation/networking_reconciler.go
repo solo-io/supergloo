@@ -50,7 +50,7 @@ type RegisterReconcilerFunc func(
 // function which defines how the Networking reconciler should apply its output snapshots
 type SyncOutputsFunc func(
 	ctx context.Context,
-	outputSnap translation.Outputs,
+	outputSnap *translation.Outputs,
 	errHandler output.ErrorHandler,
 ) error
 

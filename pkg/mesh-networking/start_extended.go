@@ -72,7 +72,7 @@ func (opts *NetworkingReconcilerExtensionOpts) initDefaults(parameters bootstrap
 		// sync outputs to multicluster clients (default)
 		opts.SyncNetworkingOutputs = func(
 			ctx context.Context,
-			outputSnap translation.Outputs,
+			outputSnap *translation.Outputs,
 			errHandler output.ErrorHandler,
 		) error {
 			return outputSnap.ApplyMultiCluster(ctx, parameters.MasterManager.GetClient(), parameters.McClient, errHandler)

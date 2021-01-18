@@ -318,7 +318,6 @@ function setChartVariables() {
   export GLOOMESH_VALUES=${INSTALL_DIR}/helm/gloo-mesh/values.yaml
   export GLOOMESH_IMAGE_TAG=$(cat ${GLOOMESH_VALUES} | grep -m 1 "tag: " | awk '{print $2}' | sed 's/"//g')
   export GLOOMESH_CHART=${INSTALL_DIR}/helm/_output/charts/gloo-mesh/gloo-mesh-${GLOOMESH_IMAGE_TAG}.tgz
-  export GLOOMESH_CRDS_CHART=${INSTALL_DIR}/helm/_output/charts/gloo-mesh/gloo-mesh-crds-${GLOOMESH_IMAGE_TAG}.tgz
 
   export AGENT_CRDS_CHART_YAML=${INSTALL_DIR}/helm/agent-crds/Chart.yaml
   export AGENT_CRDS_VERSION=$(cat ${AGENT_CRDS_CHART_YAML} | grep "version: " | awk '{print $2}' | sed 's/"//g')
