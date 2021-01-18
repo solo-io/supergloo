@@ -9,7 +9,9 @@ CHART_OUTPUT_DIR := $(HELM_OUTPUT_DIR)/charts
 .PHONY: clean-helm
 clean-helm:
 	rm -rf $(HELM_OUTPUT_DIR)
+	rm -rf $(GLOOMESH_CHART_DIR)/charts
 	rm -f $(GLOOMESH_CHART_DIR)/Chart.yaml
+	rm -f $(GLOOMESH_CHART_DIR)/requirements.lock
 	rm -f $(GLOOMESH_CHART_DIR)/values.yaml
 	rm -f $(CA_CHART_DIR)/Chart.yaml
 	rm -f $(CA_CHART_DIR)/values.yaml

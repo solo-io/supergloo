@@ -60,7 +60,7 @@ var Chart = &model.Chart{
 // will point to public url on releases, else install/helm/_output/charts/
 func GetHelmRepository() string {
 	// WARNING: hard-coupled with makefile convention
-	if os.Getenv("RELEASE") == "true" {
+	if os.Getenv("RELEASE") == "\"true\"" {
 		return "https://storage.googleapis.com/gloo-mesh/"
 	}
 	// file path must be relative to repo root
