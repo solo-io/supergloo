@@ -26,45 +26,68 @@ spec:
             Describes a collection of access logs sourced from a set of workloads and optionally
                filtered based on request criteria.
           properties:
-            accessLogFilters:
+            filters:
               description: |-
-                Configure request criteria for determining which access logs will be collected.
+                Configure criteria for determining which access logs will be collected.
                 The list is disjunctive, a request will be collected if it matches any filter.
                 Leave empty to emit all access logs.
               items:
                 properties:
-                  headerMatchers:
-                    description: Matches a request if it matches any of the header matchers below. Omit to match any header(s).
-                    items:
-                      properties:
-                        invertMatch:
-                          description: |-
-                            If set to true, the result of the match will be inverted. Defaults to false.
+                  headerMatcher:
+                    description: Matches against a request or response header. Omit to match any headers.
+                    properties:
+                      invertMatch:
+                        description: |-
+                          If set to true, the result of the match will be inverted. Defaults to false.
 
-                                       Examples:
-                                       * name=foo, invert_match=true: matches if no header named `foo` is present
-                                       * name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
-                                       * name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present
-                          type: boolean
-                        name:
-                          description: Specifies the name of the header in the request.
-                          type: string
-                        regex:
-                          description: Specifies whether the header value should be treated as regex or not.
-                          type: boolean
-                        value:
-                          description: |-
-                            Specifies the value of the header. If the value is absent a request that
-                                       has the name header will match, regardless of the header’s value.
-                          type: string
-                      type: object
-                    type: array
-                  httpStatusCodes:
-                    description: Matches a request if it contains any of the specified status codes. Omit to match any status code.
-                    items:
-                      format: int32
-                      type: integer
-                    type: array
+                                 Examples:
+                                 * name=foo, invert_match=true: matches if no header named `foo` is present
+                                 * name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
+                                 * name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present
+                        type: boolean
+                      name:
+                        description: Specifies the name of the header in the request.
+                        type: string
+                      regex:
+                        description: Specifies whether the header value should be treated as regex or not.
+                        type: boolean
+                      value:
+                        description: |-
+                          Specifies the value of the header. If the value is absent a request that
+                                 has the name header will match, regardless of the header’s value.
+                        type: string
+                    type: object
+                  statusCodeMatcher:
+                    description: Matches against a response status code. Omit to match any status code.
+                    oneOf:
+                    - not:
+                        anyOf:
+                        - required:
+                          - exact
+                        - required:
+                          - range
+                    - required:
+                      - exact
+                    - required:
+                      - range
+                    properties:
+                      exact:
+                        description: Matches the status code exactly.
+                        maximum: 4294967295
+                        minimum: 0
+                        type: integer
+                      range:
+                        properties:
+                          isLte:
+                            description: If true, treat the value as an inclusive upper bound. Otherwise, as an inclusive lower bound.
+                            type: boolean
+                          value:
+                            description: The inclusive boundary value.
+                            maximum: 4294967295
+                            minimum: 0
+                            type: integer
+                        type: object
+                    type: object
                 type: object
               type: array
             workloadSelectors:

@@ -1,0 +1,47 @@
+syntax = "proto3";
+package common.matchers.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/common.matchers.mesh.gloo.solo.io/v1alpha1";
+
+// Describes a matcher against HTTP request headers.
+message HeaderMatcher {
+    // Specifies the name of the header in the request.
+    string name = 1;
+
+    /*
+        Specifies the value of the header. If the value is absent a request that
+        has the name header will match, regardless of the header’s value.
+    */
+    string value = 2;
+
+    // Specifies whether the header value should be treated as regex or not.
+    bool regex = 3;
+
+    /*
+        If set to true, the result of the match will be inverted. Defaults to false.
+
+        Examples:
+        * name=foo, invert_match=true: matches if no header named `foo` is present
+        * name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
+        * name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present
+    */
+    bool invert_match = 4;
+}
+
+// Describes a matchers against HTTP response status codes.
+message StatusCodeMatcher {
+    oneof match_type {
+        // Matches the status code exactly.
+        uint32 exact = 1;
+
+        Range range = 2;
+    }
+
+    // Describes a range matcher against HTTP response status codes. Boundaries are inclusive.
+    message Range {
+        // The inclusive boundary value.
+        uint32 value = 1;
+
+        // If true, treat the value as an inclusive upper bound. Otherwise, as an inclusive lower bound.
+        bool is_lte = 2;
+    }
+}

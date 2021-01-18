@@ -707,46 +707,6 @@ func (m *TrafficPolicySpec_StringMatch) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *TrafficPolicySpec_HeaderMatcher) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*TrafficPolicySpec_HeaderMatcher)
-	if !ok {
-		that2, ok := that.(TrafficPolicySpec_HeaderMatcher)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if strings.Compare(m.GetName(), target.GetName()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetValue(), target.GetValue()) != 0 {
-		return false
-	}
-
-	if m.GetRegex() != target.GetRegex() {
-		return false
-	}
-
-	if m.GetInvertMatch() != target.GetInvertMatch() {
-		return false
-	}
-
-	return true
-}
-
-// Equal function
 func (m *TrafficPolicySpec_QueryParameterMatcher) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
