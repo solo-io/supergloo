@@ -1,27 +1,9 @@
 package utils
 
 import (
-	"context"
-
-	"github.com/rotisserie/eris"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
-	"github.com/solo-io/go-utils/contextutils"
 )
-
-// TODO this is copied from networking snapshot_utils. remove this when functionality is added to skv2
-// Safely fetch the single Settings object from snapshot. Log and error if not singleton.
-func GetSingletonSettings(ctx context.Context, inLocal input.SettingsSnapshot) (*settingsv1alpha2.Settings, error) {
-	settings := inLocal.Settings().List()
-	n := len(settings)
-	if n != 1 {
-		err := eris.Errorf("Snapshot does not contain single Settings object, %d found.", n)
-		contextutils.LoggerFrom(ctx).Errorf("%+v", err)
-		return nil, err
-	}
-	return settings[0], nil
-}
 
 // Get the workload labels and TLS port name used to detect ingress gateways in the given cluster.
 func GetIngressGatewayDetector(settings *settingsv1alpha2.DiscoverySettings, clusterName string) (*settingsv1alpha2.DiscoverySettings_Istio_IngressGatewayDetector, error) {

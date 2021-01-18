@@ -4,6 +4,8 @@ import (
 	"context"
 	"reflect"
 
+	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
@@ -11,7 +13,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/snapshotutils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -51,6 +52,7 @@ type Translator interface {
 }
 
 type translator struct {
+	settings             *settingsv1alpha2.Settings
 	userDestinationRules v1alpha3sets.DestinationRuleSet
 	clusterDomains       hostutils.ClusterDomainRegistry
 	decoratorFactory     decorators.Factory
@@ -59,6 +61,7 @@ type translator struct {
 }
 
 func NewTranslator(
+	settings *settingsv1alpha2.Settings,
 	userDestinationRules v1alpha3sets.DestinationRuleSet,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
@@ -66,6 +69,7 @@ func NewTranslator(
 	failoverServices v1alpha2sets.FailoverServiceSet,
 ) Translator {
 	return &translator{
+		settings:             settings,
 		userDestinationRules: userDestinationRules,
 		clusterDomains:       clusterDomains,
 		decoratorFactory:     decoratorFactory,
@@ -84,13 +88,6 @@ func (t *translator) Translate(
 	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	reporter reporting.Reporter,
 ) *networkingv1alpha3.DestinationRule {
-	settings, err := snapshotutils.GetSingletonSettings(ctx, in)
-	if err != nil {
-		// should be caught earlier in the reconciliation loop
-		contextutils.LoggerFrom(ctx).DPanicf("%+v", err)
-		return nil
-	}
-
 	kubeService := trafficTarget.Spec.GetKubeService()
 
 	if kubeService == nil {
@@ -103,7 +100,7 @@ func (t *translator) Translate(
 		sourceClusterName = sourceMeshInstallation.Cluster
 	}
 
-	destinationRule, err := t.initializeDestinationRule(trafficTarget, settings.Spec.Mtls, sourceMeshInstallation)
+	destinationRule, err := t.initializeDestinationRule(trafficTarget, t.settings.Spec.Mtls, sourceMeshInstallation)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Error(err)
 		return nil

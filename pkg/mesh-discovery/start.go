@@ -40,6 +40,6 @@ func startReconciler(
 		parameters.McClient,
 		parameters.SnapshotHistory,
 		parameters.VerboseMode,
-		parameters.SettingsRef,
+		&parameters.SettingsRef,
 	)
 }
