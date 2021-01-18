@@ -32,8 +32,6 @@ func rootCommand(ctx context.Context) *cobra.Command {
 		},
 	}
 
-	opts.AddToFlags(cmd.PersistentFlags())
-
 	cmd.AddCommand(
 		discoveryCommand(ctx, opts),
 		networkingCommand(ctx, opts),
