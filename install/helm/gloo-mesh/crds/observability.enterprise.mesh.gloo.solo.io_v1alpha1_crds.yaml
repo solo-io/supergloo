@@ -14,9 +14,118 @@ spec:
     listKind: AccessLogCollectionList
     plural: accesslogcollections
     singular: accesslogcollection
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          description: |-
+            Describes a collection of access logs sourced from a set of workloads and optionally
+               filtered based on request criteria.
+          properties:
+            accessLogFilters:
+              description: |-
+                Configure request criteria for determining which access logs will be collected.
+                The list is disjunctive, a request will be collected if it matches any filter.
+                Leave empty to emit all access logs.
+              items:
+                properties:
+                  headerMatchers:
+                    description: Matches a request if it matches any of the header matchers below. Omit to match any header(s).
+                    items:
+                      properties:
+                        invertMatch:
+                          description: |-
+                            If set to true, the result of the match will be inverted. Defaults to false.
+
+                                       Examples:
+                                       * name=foo, invert_match=true: matches if no header named `foo` is present
+                                       * name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
+                                       * name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present
+                          type: boolean
+                        name:
+                          description: Specifies the name of the header in the request.
+                          type: string
+                        regex:
+                          description: Specifies whether the header value should be treated as regex or not.
+                          type: boolean
+                        value:
+                          description: |-
+                            Specifies the value of the header. If the value is absent a request that
+                                       has the name header will match, regardless of the header’s value.
+                          type: string
+                      type: object
+                    type: array
+                  httpStatusCodes:
+                    description: Matches a request if it contains any of the specified status codes. Omit to match any status code.
+                    items:
+                      format: int32
+                      type: integer
+                    type: array
+                type: object
+              type: array
+            workloadSelectors:
+              description: |-
+                Select the workloads to be configured to emit access logs.
+                Leave empty to apply to all workloads managed by Gloo Mesh.
+              items:
+                properties:
+                  clusters:
+                    description: |-
+                      If specified, match k8s workloads if they exist in one of the specified clusters.
+                             When used in a networking policy, omission matches any cluster.
+                             When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                    items:
+                      type: string
+                    type: array
+                  labels:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      If specified, all labels must exist on k8s workload.
+                             When used in a networking policy, omission matches any labels.
+                             When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                    type: object
+                  namespaces:
+                    description: |-
+                      If specified, match k8s workloads if they exist in one of the specified namespaces.
+                             When used in a networking policy, omission matches any namespace.
+                             When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                    items:
+                      type: string
+                    type: array
+                type: object
+              type: array
+          type: object
+        status:
+          properties:
+            errors:
+              description: Any errors encountered during processing. Also reported to any Workloads that this object applies to.
+              items:
+                type: string
+              type: array
+            observedGeneration:
+              description: |-
+                The most recent generation observed in the the AccessLogCollection metadata.
+                If the observedGeneration does not match generation, the controller has not processed the most
+                recent version of this resource.
+              format: int64
+              type: integer
+            state:
+              description: |-
+                The state of the overall resource, will only show accepted if it has been successfully
+                applied to all target meshes.
+              enum:
+              - PENDING
+              - ACCEPTED
+              - INVALID
+              - FAILED
+              type: string
+          type: object
+      type: object
   versions:
   - name: v1alpha1
     served: true

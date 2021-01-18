@@ -19,6 +19,7 @@ title: "access_logging.proto"
 
 ## Table of Contents
   - [AccessLogCollectionSpec](#observability.enterprise.mesh.gloo.solo.io.AccessLogCollectionSpec)
+  - [AccessLogCollectionSpec.Filter](#observability.enterprise.mesh.gloo.solo.io.AccessLogCollectionSpec.Filter)
   - [AccessLogCollectionStatus](#observability.enterprise.mesh.gloo.solo.io.AccessLogCollectionStatus)
 
 
@@ -30,13 +31,29 @@ title: "access_logging.proto"
 <a name="observability.enterprise.mesh.gloo.solo.io.AccessLogCollectionSpec"></a>
 
 ### AccessLogCollectionSpec
-
+Describes a collection of access logs sourced from a set of workloads and optionally filtered based on request criteria.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | workloadSelectors | [][networking.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Select the workloads to be configured to emit access logs. Leave empty to apply to all workloads managed by Gloo Mesh. |
-  | accessLogFilters | [][envoy.config.accesslog.v3.AccessLogFilter]({{< versioned_link_path fromRoot="/reference/api/envoy.config.accesslog.v3.accesslog#envoy.config.accesslog.v3.AccessLogFilter" >}}) | repeated | Configure the criteria for determining which access logs will be emitted. Leave empty to emit all access logs. |
+  | accessLogFilters | [][observability.enterprise.mesh.gloo.solo.io.AccessLogCollectionSpec.Filter]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.observability.v1alpha1.access_logging#observability.enterprise.mesh.gloo.solo.io.AccessLogCollectionSpec.Filter" >}}) | repeated | Configure request criteria for determining which access logs will be collected. The list is disjunctive, a request will be collected if it matches any filter. Leave empty to emit all access logs. |
+  
+
+
+
+
+
+<a name="observability.enterprise.mesh.gloo.solo.io.AccessLogCollectionSpec.Filter"></a>
+
+### AccessLogCollectionSpec.Filter
+Specify request criteria for collecting access logs. A request must match all specified criteria to be collected.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| httpStatusCodes | []int32 | repeated | Matches a request if it contains any of the specified status codes. Omit to match any status code. |
+  | headerMatchers | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderMatcher" >}}) | repeated | Matches a request if it matches any of the header matchers below. Omit to match any header(s). |
   
 
 

@@ -5,17 +5,31 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/observability.enterpri
 
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
-import "envoy/config/accesslog/v3/accesslog.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/traffic_policy.proto";
 
+/*
+    Describes a collection of access logs sourced from a set of workloads and optionally
+    filtered based on request criteria.
+*/
 message AccessLogCollectionSpec {
 
     // Select the workloads to be configured to emit access logs.
     // Leave empty to apply to all workloads managed by Gloo Mesh.
     repeated .networking.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 1;
 
-    // Configure the criteria for determining which access logs will be emitted.
+    // Configure request criteria for determining which access logs will be collected.
+    // The list is disjunctive, a request will be collected if it matches any filter.
     // Leave empty to emit all access logs.
-    repeated .envoy.config.accesslog.v3.AccessLogFilter access_log_filters = 2;
+    repeated Filter access_log_filters = 2;
+
+    // Specify request criteria for collecting access logs. A request must match all specified criteria to be collected.
+    message Filter {
+        // Matches a request if it contains any of the specified status codes. Omit to match any status code.
+        repeated int32 http_status_codes = 1;
+
+        // Matches a request if it matches any of the header matchers below. Omit to match any header(s).
+        repeated .networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderMatcher header_matchers = 2;
+    }
 }
 
 message AccessLogCollectionStatus {

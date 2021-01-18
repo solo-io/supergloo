@@ -108,7 +108,7 @@ func MakeGroup(module, apiRoot, groupPrefix, version string, resourcesToGenerate
 		resources = append(resources, res)
 	}
 
-	group := model.Group{
+	return model.Group{
 		GroupVersion: schema.GroupVersion{
 			Group:   groupPrefix + "." + constants.GlooMeshApiGroupSuffix,
 			Version: version,
@@ -124,9 +124,4 @@ func MakeGroup(module, apiRoot, groupPrefix, version string, resourcesToGenerate
 		CustomTemplates:         contrib.AllGroupCustomTemplates,
 		ApiRoot:                 apiRoot,
 	}
-	// TODO(harveyxia) revisit generating validation schemas for these groups once cuelang resolves this issue: https://github.com/cuelang/cue/issues/635
-	if groupPrefix == "observability.enterprise" {
-		group.RenderValidationSchemas = false
-	}
-	return group
 }
