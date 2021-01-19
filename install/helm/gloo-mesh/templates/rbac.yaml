@@ -115,6 +115,14 @@ rules:
   - list
   - watch
 - apiGroups:
+  - networking.enterprise.mesh.gloo.solo.io
+  resources:
+  - wasmdeployments
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - networking.mesh.gloo.solo.io
   resources:
   - trafficpolicies
@@ -153,6 +161,13 @@ rules:
   - multicluster.solo.io
   resources:
   - kubernetesclusters/status
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - networking.enterprise.mesh.gloo.solo.io
+  resources:
+  - wasmdeployments/status
   verbs:
   - get
   - update

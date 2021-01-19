@@ -99,18 +99,18 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 
 	// Users can opt out of installing the Wasm Agent since it's only required for the WasmDeployment API.
 	if r.WasmAgent.Install {
-		extenderVersion, err := enterprise.GetEnterpriseExtenderVersion(ctx, r.KubeConfigPath, r.MgmtContext)
+		enterpriseNetworkingVersion, err := enterprise.GetEnterpriseNetworkingVersion(ctx, r.KubeConfigPath, r.MgmtContext)
 		if err != nil {
 			return err
 		}
 
-		// If the Enterprise Extender is present or the user explicitly provided a chart path, install the agent.
-		if extenderVersion != "" || r.WasmAgent.ChartPath != "" {
-			if err := r.installWasmAgent(ctx, extenderVersion); err != nil {
+		// If Enterprise Networking is present or the user explicitly provided a chart path, install the agent.
+		if enterpriseNetworkingVersion != "" || r.WasmAgent.ChartPath != "" {
+			if err := r.installWasmAgent(ctx, enterpriseNetworkingVersion); err != nil {
 				return err
 			}
 		} else {
-			logrus.Debug("Enterprise Extender not found in management cluster, skipping Wasm Agent install.")
+			logrus.Debug("Enterprise Networking not found in management cluster, skipping Wasm Agent install.")
 		}
 	}
 
@@ -191,17 +191,17 @@ func (r *Registrant) uninstallCertAgent(ctx context.Context) error {
 	)
 }
 
-func (r *Registrant) installWasmAgent(ctx context.Context, enterpriseExtenderVersion string) error {
+func (r *Registrant) installWasmAgent(ctx context.Context, enterpriseNetworkingVersion string) error {
 	if r.WasmAgent.ChartPath == "" {
-		if enterpriseExtenderVersion != "" {
-			// If we know the user's Enterprise Extender version, install the corresponding Wasm Agent.
-			r.WasmAgent.ChartPath = fmt.Sprintf(gloomesh.WasmAgentChartUriTemplate, enterpriseExtenderVersion)
+		if enterpriseNetworkingVersion != "" {
+			// If we know the user's Enterprise Networking version, install the corresponding Wasm Agent.
+			r.WasmAgent.ChartPath = fmt.Sprintf(gloomesh.WasmAgentChartUriTemplate, enterpriseNetworkingVersion)
 		} else {
-			return eris.New("Failed to install Wasm Agent: no Enterprise Extender detected and no chart override provided.")
+			return eris.New("Failed to install Wasm Agent: no Enterprise Networking detected and no chart override provided.")
 		}
-	} else if enterpriseExtenderVersion == "" {
-		logrus.Warn("Gloo Mesh Enterprise Extender not detected. Wasm Agent installation will proceed because a chart " +
-			"override was provided, but Wasm features depend on the presence of the Extender.")
+	} else if enterpriseNetworkingVersion == "" {
+		logrus.Warn("Gloo Mesh Enterprise Networking not detected. Wasm Agent installation will proceed because a chart " +
+			"override was provided, but Wasm features depend on the presence of Enterprise Networking.")
 	}
 
 	return gloomesh.Installer{

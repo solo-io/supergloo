@@ -46,7 +46,7 @@ func (opts *registrationOptions) addToFlags(set *pflag.FlagSet) {
 	set.StringVar(&opts.AgentCrdsChartPath, "agent-crds-chart-file", "", "Path to a local Helm chart for installing CRDs needed by remote agents. If unset, this command will install the agent CRDs from the publicly released Helm chart.")
 	set.StringVar(&opts.CertAgent.ChartPath, "cert-agent-chart-file", "", "Path to a local Helm chart for installing the Certificate Agent. If unset, this command will install the Certificate Agent from the publicly released Helm chart.")
 	set.StringVar(&opts.CertAgent.ChartValues, "cert-agent-chart-values", "", "Path to a Helm values.yaml file for customizing the installation of the Certificate Agent. If unset, this command will install the Certificate Agent with default Helm values.")
-	set.BoolVar(&opts.WasmAgent.Install, "install-wasm-agent", true, "If true, install the wasm-agent on the cluster being registered if the Enterprise Extender is detected.")
+	set.BoolVar(&opts.WasmAgent.Install, "install-wasm-agent", true, "If true, install the wasm-agent on the cluster being registered if Enterprise Networking is detected.")
 	set.StringVar(&opts.WasmAgent.ChartPath, "wasm-agent-chart-file", "", "Path to a local Helm chart for installing the Wasm Agent. If unset, this command will install the Wasm Agent from the publicly released Helm chart.")
 	set.StringVar(&opts.WasmAgent.ChartValues, "wasm-agent-chart-values", "", "Path to a Helm values.yaml file for customizing the installation of the Wasm Agent. If unset, this command will install the Wasm Agent with default Helm values.")
 }

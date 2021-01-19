@@ -9,10 +9,10 @@ GLOOMESH_IMAGE ?= $(DOCKER_REPO)/gloo-mesh
 CA_IMAGE ?= $(DOCKER_REPO)/cert-agent
 
 SOURCES := $(shell find . -name "*.go" | grep -v test.go)
-RELEASE := "true"
+export RELEASE := "true"
 ifeq ($(TAGGED_VERSION),)
 	TAGGED_VERSION := $(shell git describe --tags --dirty --always)
-	RELEASE := "false"
+	export RELEASE := "false"
 endif
 
 VERSION ?= $(shell echo $(TAGGED_VERSION) | cut -c 2-)
@@ -224,6 +224,7 @@ manifest-gen: install/gloo-mesh-default.yaml
 	goimports -w $(shell ls -d */ | grep -v vendor)
 	go mod tidy
 install/gloo-mesh-default.yaml: chart-gen
+	helm dependency update $(HELM_ROOTDIR)/gloo-mesh
 	helm template --include-crds --namespace gloo-mesh $(HELM_ROOTDIR)/gloo-mesh > $@
 
 #----------------------------------------------------------------------------------
