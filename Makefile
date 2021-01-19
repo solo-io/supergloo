@@ -9,7 +9,7 @@ GLOOMESH_IMAGE ?= $(DOCKER_REPO)/gloo-mesh
 CA_IMAGE ?= $(DOCKER_REPO)/cert-agent
 
 SOURCES := $(shell find . -name "*.go" | grep -v test.go)
-export RELEASE := "true"
+export RELEASE ?= "true"
 ifeq ($(TAGGED_VERSION),)
 	TAGGED_VERSION := $(shell git describe --tags --dirty --always)
 	export RELEASE := "false"
@@ -64,6 +64,7 @@ install-go-tools: mod-download
 	go install github.com/gobuffalo/packr/packr
 	# protoc-gen-gogo is only needed for generating our versioned docs site, since older versions of the repo (<= 0.10.7) use gogo
 	go install github.com/gogo/protobuf/protoc-gen-gogo
+	go mod tidy
 
 # Call all generated code targets
 .PHONY: generated-code
