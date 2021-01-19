@@ -24,7 +24,7 @@ function create_kind_cluster() {
 
   disableDefaultCNI=false
   if [ ! -z ${FLAT_NETWORKING_ENABLED} ]; then
-    disableDefaultCNI=false
+    disableDefaultCNI=true
   fi
 
   # This config is roughly based on: https://kind.sigs.k8s.io/docs/user/ingress/
