@@ -5,16 +5,17 @@
 package v1alpha1
 
 import (
-    proto "github.com/golang/protobuf/proto"
+	proto "github.com/golang/protobuf/proto"
 )
 
 // DeepCopyInto for the WasmDeployment.Spec
 func (in *WasmDeploymentSpec) DeepCopyInto(out *WasmDeploymentSpec) {
-    p := proto.Clone(in).(*WasmDeploymentSpec)
-    *out = *p
+	p := proto.Clone(in).(*WasmDeploymentSpec)
+	*out = *p
 }
+
 // DeepCopyInto for the WasmDeployment.Status
 func (in *WasmDeploymentStatus) DeepCopyInto(out *WasmDeploymentStatus) {
-    p := proto.Clone(in).(*WasmDeploymentStatus)
-    *out = *p
+	p := proto.Clone(in).(*WasmDeploymentStatus)
+	*out = *p
 }

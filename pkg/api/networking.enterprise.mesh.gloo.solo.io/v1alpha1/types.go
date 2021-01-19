@@ -4,8 +4,9 @@
 package v1alpha1
 
 import (
-    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-    "k8s.io/apimachinery/pkg/runtime/schema")
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+)
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -14,22 +15,22 @@ import (
 
 // GroupVersionKind for WasmDeployment
 var WasmDeploymentGVK = schema.GroupVersionKind{
-    Group: "networking.enterprise.mesh.gloo.solo.io",
-    Version: "v1alpha1",
-    Kind: "WasmDeployment",
+	Group:   "networking.enterprise.mesh.gloo.solo.io",
+	Version: "v1alpha1",
+	Kind:    "WasmDeployment",
 }
 
 // WasmDeployment is the Schema for the wasmDeployment API
 type WasmDeployment struct {
-    metav1.TypeMeta   `json:",inline"`
-    metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-    Spec WasmDeploymentSpec `json:"spec,omitempty"`
-    Status WasmDeploymentStatus `json:"status,omitempty"`
+	Spec   WasmDeploymentSpec   `json:"spec,omitempty"`
+	Status WasmDeploymentStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (WasmDeployment)  GVK() schema.GroupVersionKind {
+func (WasmDeployment) GVK() schema.GroupVersionKind {
 	return WasmDeploymentGVK
 }
 
@@ -37,11 +38,11 @@ func (WasmDeployment)  GVK() schema.GroupVersionKind {
 
 // WasmDeploymentList contains a list of WasmDeployment
 type WasmDeploymentList struct {
-    metav1.TypeMeta `json:",inline"`
-    metav1.ListMeta `json:"metadata,omitempty"`
-    Items           []WasmDeployment `json:"items"`
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []WasmDeployment `json:"items"`
 }
 
 func init() {
-    SchemeBuilder.Register(&WasmDeployment{}, &WasmDeploymentList{})
+	SchemeBuilder.Register(&WasmDeployment{}, &WasmDeploymentList{})
 }
