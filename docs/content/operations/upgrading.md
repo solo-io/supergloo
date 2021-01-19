@@ -42,13 +42,16 @@ kubectl scale deployment -n gloo-mesh discovery --replicas 0
 These resources will be recreated when `discovery` is scaled back up later in the upgrade process. Deleting these
 resources ensures that the latest discovery implementation will recreate them with the structure it expects. 
 
-4\. Manually update the Gloo Mesh management plane CRDs in the management cluster. These include both `discovery` and
-`networking` resources. Because of the way [Helm handles CRDs at upgrade time](https://helm.sh/docs/chart_best_practices/custom_resource_definitions/#some-caveats-and-explanations),
+4\. Update the Gloo Mesh management plane CRDs in the management cluster. **Note** that if you will be upgrading your
+control plane with `meshctl install`, you can skip this step. Meshctl will apply the latest CRDs at upgrade time. If you
+will be upgrading using Helm, read on.
+
+Because of the way [Helm handles CRDs at upgrade time](https://helm.sh/docs/chart_best_practices/custom_resource_definitions/#some-caveats-and-explanations),
 this step is required to ensure the management plane CRDs have the validation schemas expected by the version of Gloo
 Mesh you are upgrading to. This will prevent errors in the management plane and ensure that configuration leveraging
 the latest APIs on each Gloo Mesh are not rejected.
 
-Gloo Mesh CRDs can be updated by extracting the contents of the Helm chart, for example [https://storage.googleapis.com/gloo-mesh/gloo-mesh/gloo-mesh-0.11.3] (https://storage.googleapis.com/gloo-mesh/gloo-mesh/gloo-mesh-0.11.3)
+Gloo Mesh CRDs can be updated by extracting the contents of the Helm chart, for example [https://storage.googleapis.com/gloo-mesh/gloo-mesh/gloo-mesh-0.11.3](https://storage.googleapis.com/gloo-mesh/gloo-mesh/gloo-mesh-0.11.3)
 where `0.11.3` is replaced by the version of Gloo Mesh to which you would like to upgrade. Alternatively, CRDs can be found
 on GitHub at [https://github.com/solo-io/gloo-mesh/tree/main/install/helm/gloo-mesh/crds](https://github.com/solo-io/gloo-mesh/tree/main/install/helm/gloo-mesh/crds).
 From there, you can either download the repository and apply the CRDs at the tag of your choosing, or apply the CRDs
@@ -66,13 +69,13 @@ kubectl apply -f https://raw.githubusercontent.com/solo-io/gloo-mesh/$UPGRADE_VE
 kubectl apply -f https://raw.githubusercontent.com/solo-io/gloo-mesh/$UPGRADE_VERSION/install/helm/gloo-mesh/crds/settings.mesh.gloo.solo.io_v1alpha2_crds.yaml
 ```
 
-5\. Ensure that all `networking` resources such as `trafficpolicies`, `virtualmeshes`, `failoverservices`, or `accesspolicies`
-conform to the latest APIs. Breaking changes will be highlighted in the [changelog]({{% versioned_link_path fromRoot="/reference/changelog" %}}).
-
-6\. Upgrade the Gloo Mesh management plane components using either Helm or `meshctl`, following the steps described in
+5\. Upgrade the Gloo Mesh management plane components using either Helm or `meshctl`, following the steps described in
 the [Gloo Mesh installation guide]({{% versioned_link_path fromRoot="/setup/install_gloo_mesh" %}}). Note that you
 should use `helm upgrade` rather than `helm install` if using Helm, and that `meshctl install` can be used for both
 install and upgrade operations.
+
+6\. Ensure that all `networking` resources such as `trafficpolicies`, `virtualmeshes`, `failoverservices`, or `accesspolicies`
+conform to the latest APIs. Breaking changes will be highlighted in the [changelog]({{% versioned_link_path fromRoot="/reference/changelog" %}}).
 
 7\. Re-register all clusters registered to the Gloo Mesh management plane. This will ensure that all remote cluster agents
 and CRDs are updated to a version compatible with the version of Gloo Mesh you are upgrading to. Refer to the 

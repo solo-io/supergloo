@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1106
+    description: Make `install --dry-run` output a pipe-able k8s manifest.

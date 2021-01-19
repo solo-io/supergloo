@@ -52,15 +52,14 @@ func AddDebugSnapshotFlags(flags *pflag.FlagSet, opts *DebugSnapshotOpts) {
 	flags.StringVarP(&opts.namespace, "namespace", "n", defaults.GetPodNamespace(), "gloo-mesh namespace")
 }
 
-func Command(ctx context.Context, globalFlags utils.GlobalFlags) *cobra.Command {
-	opts := &DebugSnapshotOpts{
-		verbose: globalFlags.Verbose,
-	}
+func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command {
+	opts := &DebugSnapshotOpts{}
 
 	cmd := &cobra.Command{
 		Use:   "snapshot",
 		Short: "Input and Output snapshots for the discovery and networking pod. Requires jq to be installed if the --json flag is not being used.",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.verbose = globalFlags.Verbose
 			return debugSnapshot(ctx, opts, []string{discovery, networking}, []string{input, output})
 		},
 	}
