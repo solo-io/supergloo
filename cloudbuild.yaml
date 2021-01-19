@@ -69,7 +69,6 @@ steps:
   args: ['-c', 'docker login --username soloiobot --password $$CI_ADMIN_DOCKER_HUB_PASSWORD']
   secretEnv: ['CI_ADMIN_DOCKER_HUB_PASSWORD']
   id: 'docker-login'
-  waitFor: ['test']
 
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'
   args: ['push-all-images']
