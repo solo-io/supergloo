@@ -67,7 +67,7 @@ jobs:
       matrix:
         istioctl-binary: [
           'https://github.com/istio/istio/releases/download/1.7.6/istio-1.7.6-linux-amd64.tar.gz',
-          'https://github.com/istio/istio/releases/download/1.8.1/istio-1.8.1-linux-amd64.tar.gz'
+          'https://github.com/istio/istio/releases/download/1.8.2/istio-1.8.2-linux-amd64.tar.gz'
         ]
     steps:
       - uses: actions/checkout@v2
