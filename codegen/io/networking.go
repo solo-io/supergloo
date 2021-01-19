@@ -38,6 +38,12 @@ var (
 		}: {
 			"Settings",
 		},
+		schema.GroupVersion{
+			Group:   "networking.enterprise." + constants.GlooMeshApiGroupSuffix,
+			Version: "v1alpha1",
+		}: {
+			"WasmDeployment",
+		},
 		skv1alpha1.SchemeGroupVersion: {
 			"KubernetesCluster",
 		},

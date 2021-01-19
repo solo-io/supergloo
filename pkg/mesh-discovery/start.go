@@ -15,6 +15,7 @@ type DiscoveryOpts struct {
 }
 
 func (opts *DiscoveryOpts) AddToFlags(flags *pflag.FlagSet) {
+	opts.Options.AddToFlags(flags)
 	flags.StringVar(&opts.agentCluster, "agent-cluster", "", "If set, Discovery will run in *agent mode*, in which discovery resources will only be generated for the local cluster. Agent mode does not require the local cluster to be registered. The value of --agent-cluster should be equal to the name of the cluster as it was registered with Gloo Mesh.")
 }
 

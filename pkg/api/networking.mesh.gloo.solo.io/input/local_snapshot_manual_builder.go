@@ -15,6 +15,9 @@ import (
 	networking_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	networking_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 
+	networking_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
+	networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
+
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1 "k8s.io/api/core/v1"
 
@@ -36,6 +39,8 @@ type InputLocalSnapshotManualBuilder struct {
 	virtualMeshes    networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 	failoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
 
+	wasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
+
 	secrets v1_sets.SecretSet
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
@@ -55,6 +60,8 @@ func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBu
 		accessPolicies:   networking_mesh_gloo_solo_io_v1alpha2_sets.NewAccessPolicySet(),
 		virtualMeshes:    networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet(),
 		failoverServices: networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet(),
+
+		wasmDeployments: networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet(),
 
 		secrets: v1_sets.NewSecretSet(),
 
@@ -76,6 +83,8 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 		i.accessPolicies,
 		i.virtualMeshes,
 		i.failoverServices,
+
+		i.wasmDeployments,
 
 		i.secrets,
 
@@ -112,6 +121,10 @@ func (i *InputLocalSnapshotManualBuilder) AddVirtualMeshes(virtualMeshes []*netw
 }
 func (i *InputLocalSnapshotManualBuilder) AddFailoverServices(failoverServices []*networking_mesh_gloo_solo_io_v1alpha2.FailoverService) *InputLocalSnapshotManualBuilder {
 	i.failoverServices.Insert(failoverServices...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddWasmDeployments(wasmDeployments []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment) *InputLocalSnapshotManualBuilder {
+	i.wasmDeployments.Insert(wasmDeployments...)
 	return i
 }
 func (i *InputLocalSnapshotManualBuilder) AddSecrets(secrets []*v1.Secret) *InputLocalSnapshotManualBuilder {

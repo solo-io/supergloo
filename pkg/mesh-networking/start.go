@@ -27,6 +27,7 @@ type NetworkingOpts struct {
 }
 
 func (opts *NetworkingOpts) AddToFlags(flags *pflag.FlagSet) {
+	opts.Options.AddToFlags(flags)
 	flags.BoolVar(&opts.disallowIntersectingConfig, "disallow-intersecting-config", false, "if true, Gloo Mesh will detect and report errors when outputting service mesh configuration that overlaps with existing config not managed by Gloo Mesh")
 	flags.BoolVar(&opts.watchOutputTypes, "watch-output-types", true, "if true, Gloo Mesh will resync upon changes to the service mesh config output by Gloo Mesh")
 }

@@ -318,7 +318,7 @@ func (t testIstioTranslator) Translate(
 	in input.LocalSnapshot,
 	existingIstioResources input.RemoteSnapshot,
 	reporter reporting.Reporter,
-) (translation.OutputSnapshots, error) {
+) (*translation.Outputs, error) {
 	t.callReporter(reporter)
-	return translation.OutputSnapshots{}, nil
+	return &translation.Outputs{}, nil
 }
