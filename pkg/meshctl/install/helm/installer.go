@@ -199,10 +199,11 @@ func upsertCrds(ctx context.Context, kubeClient client.Client, chartObj *chart.C
 }
 
 func updateReleaseManifestWithCrds(chartObj *chart.Chart, release *release.Release) {
-	manifest := bytes.NewBuffer([]byte(release.Manifest))
+	manifest := bytes.NewBuffer([]byte{})
 	for _, crd := range chartObj.CRDObjects() {
 		fmt.Fprintf(manifest, "---\n# Source: %s\n%s\n", crd.Name, string(crd.File.Data[:]))
 	}
+	fmt.Fprintf(manifest, release.Manifest)
 	release.Manifest = manifest.String()
 }
 
