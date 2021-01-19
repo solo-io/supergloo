@@ -101,7 +101,7 @@ func InitializeTests() bool {
 		_ = Describe("Federation", FederationTest)
 		_ = Describe("Networking Extensions", NetworkingExtensionsTest)
 		_ = Describe("TrafficPolicy", TrafficPolicyTest)
-		_ = FDescribe("DiscoveryRegression", DiscoveryRegressionTest)
+		_ = Describe("DiscoveryRegression", DiscoveryRegressionTest)
 	)
 	return true
 }
