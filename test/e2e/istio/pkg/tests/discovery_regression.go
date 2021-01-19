@@ -45,23 +45,12 @@ func DiscoveryRegressionTest() {
 
 				env := e2e.GetEnv()
 				trafficTargetMgmtClient := env.Management.TrafficTargetClient
-				trafficTargetRemoteClient := env.Remote.TrafficTargetClient
 
 				Eventually(func() error {
 					var multiErr *multierror.Error
 					mgmtTrafficTargets, err := trafficTargetMgmtClient.ListTrafficTarget(ctx)
 					Expect(err).NotTo(HaveOccurred())
 					for _, v := range mgmtTrafficTargets.Items {
-						if len(v.Spec.GetKubeService().GetEndpoints()) == 0 {
-							multiErr = multierror.Append(multiErr, eris.Errorf(
-								"%s has no endpoints",
-								sets.TypedKey(&v)),
-							)
-						}
-					}
-					remoteTrafficTargets, err := trafficTargetRemoteClient.ListTrafficTarget(ctx)
-					Expect(err).NotTo(HaveOccurred())
-					for _, v := range remoteTrafficTargets.Items {
 						if len(v.Spec.GetKubeService().GetEndpoints()) == 0 {
 							multiErr = multierror.Append(multiErr, eris.Errorf(
 								"%s has no endpoints",
