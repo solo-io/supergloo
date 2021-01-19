@@ -5,22 +5,24 @@
 // Definitions for the Kubernetes Controllers
 package controller
 
+
+
 import (
 	"context"
 
-	networking_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
+    networking_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
 
-	"github.com/pkg/errors"
-	"github.com/solo-io/skv2/pkg/ezkube"
-	"github.com/solo-io/skv2/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
+    "github.com/pkg/errors"
+    "github.com/solo-io/skv2/pkg/ezkube"
+    "github.com/solo-io/skv2/pkg/reconcile"
+    "sigs.k8s.io/controller-runtime/pkg/manager"
+    "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // Reconcile Upsert events for the WasmDeployment Resource.
 // implemented by the user
 type WasmDeploymentReconciler interface {
-	ReconcileWasmDeployment(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment) (reconcile.Result, error)
+    ReconcileWasmDeployment(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment) (reconcile.Result, error)
 }
 
 // Reconcile deletion events for the WasmDeployment Resource.
@@ -28,108 +30,109 @@ type WasmDeploymentReconciler interface {
 // before being deleted.
 // implemented by the user
 type WasmDeploymentDeletionReconciler interface {
-	ReconcileWasmDeploymentDeletion(req reconcile.Request) error
+    ReconcileWasmDeploymentDeletion(req reconcile.Request) error
 }
 
 type WasmDeploymentReconcilerFuncs struct {
-	OnReconcileWasmDeployment         func(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment) (reconcile.Result, error)
-	OnReconcileWasmDeploymentDeletion func(req reconcile.Request) error
+    OnReconcileWasmDeployment func(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment) (reconcile.Result, error)
+    OnReconcileWasmDeploymentDeletion func(req reconcile.Request) error
 }
 
 func (f *WasmDeploymentReconcilerFuncs) ReconcileWasmDeployment(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment) (reconcile.Result, error) {
-	if f.OnReconcileWasmDeployment == nil {
-		return reconcile.Result{}, nil
-	}
-	return f.OnReconcileWasmDeployment(obj)
+    if f.OnReconcileWasmDeployment == nil {
+        return reconcile.Result{}, nil
+    }
+    return f.OnReconcileWasmDeployment(obj)
 }
 
 func (f *WasmDeploymentReconcilerFuncs) ReconcileWasmDeploymentDeletion(req reconcile.Request) error {
-	if f.OnReconcileWasmDeploymentDeletion == nil {
-		return nil
-	}
-	return f.OnReconcileWasmDeploymentDeletion(req)
+    if f.OnReconcileWasmDeploymentDeletion == nil {
+        return nil
+    }
+    return f.OnReconcileWasmDeploymentDeletion(req)
 }
 
 // Reconcile and finalize the WasmDeployment Resource
 // implemented by the user
 type WasmDeploymentFinalizer interface {
-	WasmDeploymentReconciler
+    WasmDeploymentReconciler
 
-	// name of the finalizer used by this handler.
-	// finalizer names should be unique for a single task
-	WasmDeploymentFinalizerName() string
+    // name of the finalizer used by this handler.
+    // finalizer names should be unique for a single task
+    WasmDeploymentFinalizerName() string
 
-	// finalize the object before it is deleted.
-	// Watchers created with a finalizing handler will a
-	FinalizeWasmDeployment(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment) error
+    // finalize the object before it is deleted.
+    // Watchers created with a finalizing handler will a
+    FinalizeWasmDeployment(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment) error
 }
 
 type WasmDeploymentReconcileLoop interface {
-	RunWasmDeploymentReconciler(ctx context.Context, rec WasmDeploymentReconciler, predicates ...predicate.Predicate) error
+    RunWasmDeploymentReconciler(ctx context.Context, rec WasmDeploymentReconciler, predicates ...predicate.Predicate) error
 }
 
 type wasmDeploymentReconcileLoop struct {
-	loop reconcile.Loop
+    loop reconcile.Loop
 }
 
 func NewWasmDeploymentReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) WasmDeploymentReconcileLoop {
-	return &wasmDeploymentReconcileLoop{
-		// empty cluster indicates this reconciler is built for the local cluster
-		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment{}, options),
-	}
+    return &wasmDeploymentReconcileLoop{
+    	// empty cluster indicates this reconciler is built for the local cluster
+        loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment{}, options),
+    }
 }
 
 func (c *wasmDeploymentReconcileLoop) RunWasmDeploymentReconciler(ctx context.Context, reconciler WasmDeploymentReconciler, predicates ...predicate.Predicate) error {
-	genericReconciler := genericWasmDeploymentReconciler{
-		reconciler: reconciler,
-	}
+    genericReconciler := genericWasmDeploymentReconciler{
+        reconciler: reconciler,
+    }
 
 	var reconcilerWrapper reconcile.Reconciler
 	if finalizingReconciler, ok := reconciler.(WasmDeploymentFinalizer); ok {
-		reconcilerWrapper = genericWasmDeploymentFinalizer{
-			genericWasmDeploymentReconciler: genericReconciler,
-			finalizingReconciler:            finalizingReconciler,
-		}
-	} else {
-		reconcilerWrapper = genericReconciler
-	}
+        reconcilerWrapper = genericWasmDeploymentFinalizer{
+            genericWasmDeploymentReconciler: genericReconciler,
+            finalizingReconciler: finalizingReconciler,
+        }
+    } else {
+        reconcilerWrapper = genericReconciler
+    }
 	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
 }
 
 // genericWasmDeploymentHandler implements a generic reconcile.Reconciler
 type genericWasmDeploymentReconciler struct {
-	reconciler WasmDeploymentReconciler
+    reconciler WasmDeploymentReconciler
 }
 
 func (r genericWasmDeploymentReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment)
-	if !ok {
-		return reconcile.Result{}, errors.Errorf("internal error: WasmDeployment handler received event for %T", object)
-	}
-	return r.reconciler.ReconcileWasmDeployment(obj)
+    obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment)
+    if !ok {
+        return reconcile.Result{}, errors.Errorf("internal error: WasmDeployment handler received event for %T", object)
+    }
+    return r.reconciler.ReconcileWasmDeployment(obj)
 }
 
 func (r genericWasmDeploymentReconciler) ReconcileDeletion(request reconcile.Request) error {
-	if deletionReconciler, ok := r.reconciler.(WasmDeploymentDeletionReconciler); ok {
-		return deletionReconciler.ReconcileWasmDeploymentDeletion(request)
-	}
-	return nil
+    if deletionReconciler, ok := r.reconciler.(WasmDeploymentDeletionReconciler); ok {
+        return deletionReconciler.ReconcileWasmDeploymentDeletion(request)
+    }
+    return nil
 }
 
 // genericWasmDeploymentFinalizer implements a generic reconcile.FinalizingReconciler
 type genericWasmDeploymentFinalizer struct {
-	genericWasmDeploymentReconciler
-	finalizingReconciler WasmDeploymentFinalizer
+    genericWasmDeploymentReconciler
+    finalizingReconciler WasmDeploymentFinalizer
 }
 
+
 func (r genericWasmDeploymentFinalizer) FinalizerName() string {
-	return r.finalizingReconciler.WasmDeploymentFinalizerName()
+    return r.finalizingReconciler.WasmDeploymentFinalizerName()
 }
 
 func (r genericWasmDeploymentFinalizer) Finalize(object ezkube.Object) error {
-	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment)
-	if !ok {
-		return errors.Errorf("internal error: WasmDeployment handler received event for %T", object)
-	}
-	return r.finalizingReconciler.FinalizeWasmDeployment(obj)
+    obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment)
+    if !ok {
+        return errors.Errorf("internal error: WasmDeployment handler received event for %T", object)
+    }
+    return r.finalizingReconciler.FinalizeWasmDeployment(obj)
 }

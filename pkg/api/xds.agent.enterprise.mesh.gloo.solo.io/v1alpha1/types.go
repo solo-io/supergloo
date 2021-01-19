@@ -4,9 +4,8 @@
 package v1alpha1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-)
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    "k8s.io/apimachinery/pkg/runtime/schema")
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -15,22 +14,22 @@ import (
 
 // GroupVersionKind for XdsConfig
 var XdsConfigGVK = schema.GroupVersionKind{
-	Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
-	Version: "v1alpha1",
-	Kind:    "XdsConfig",
+    Group: "xds.agent.enterprise.mesh.gloo.solo.io",
+    Version: "v1alpha1",
+    Kind: "XdsConfig",
 }
 
 // XdsConfig is the Schema for the xdsConfig API
 type XdsConfig struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+    metav1.TypeMeta   `json:",inline"`
+    metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   XdsConfigSpec   `json:"spec,omitempty"`
-	Status XdsConfigStatus `json:"status,omitempty"`
+    Spec XdsConfigSpec `json:"spec,omitempty"`
+    Status XdsConfigStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (XdsConfig) GVK() schema.GroupVersionKind {
+func (XdsConfig)  GVK() schema.GroupVersionKind {
 	return XdsConfigGVK
 }
 
@@ -38,11 +37,11 @@ func (XdsConfig) GVK() schema.GroupVersionKind {
 
 // XdsConfigList contains a list of XdsConfig
 type XdsConfigList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []XdsConfig `json:"items"`
+    metav1.TypeMeta `json:",inline"`
+    metav1.ListMeta `json:"metadata,omitempty"`
+    Items           []XdsConfig `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&XdsConfig{}, &XdsConfigList{})
+    SchemeBuilder.Register(&XdsConfig{}, &XdsConfigList{})
 }

@@ -2,11 +2,13 @@
 
 package v1alpha1
 
-import (
-	networking_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
 
-	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+import (
+    networking_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
+
+    "k8s.io/client-go/rest"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 /*
@@ -19,28 +21,28 @@ import (
 
 // Provider for WasmDeploymentClient from Clientset
 func WasmDeploymentClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1alpha1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeploymentClient {
-	return clients.WasmDeployments()
+    return clients.WasmDeployments()
 }
 
 // Provider for WasmDeployment Client from Client
 func WasmDeploymentClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeploymentClient {
-	return networking_enterprise_mesh_gloo_solo_io_v1alpha1.NewWasmDeploymentClient(client)
+    return networking_enterprise_mesh_gloo_solo_io_v1alpha1.NewWasmDeploymentClient(client)
 }
 
 type WasmDeploymentClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeploymentClient
 
 func WasmDeploymentClientFactoryProvider() WasmDeploymentClientFactory {
-	return WasmDeploymentClientProvider
+    return WasmDeploymentClientProvider
 }
 
 type WasmDeploymentClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeploymentClient, error)
 
 func WasmDeploymentClientFromConfigFactoryProvider() WasmDeploymentClientFromConfigFactory {
-	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeploymentClient, error) {
-		clients, err := networking_enterprise_mesh_gloo_solo_io_v1alpha1.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.WasmDeployments(), nil
-	}
+    return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeploymentClient, error) {
+        clients, err := networking_enterprise_mesh_gloo_solo_io_v1alpha1.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.WasmDeployments(), nil
+    }
 }

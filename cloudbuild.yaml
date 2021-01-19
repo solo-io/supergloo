@@ -64,16 +64,6 @@ steps:
   waitFor: ['prepare-workspace']
   id: 'make-helm-dir'
 
-- name: 'gcr.io/$PROJECT_ID/go-mod-ginkgo:0.2.6'
-  args: ['-r', '-p', '-failFast', '-trace', '-progress', '-race', '-compilers=4', '-failOnPending',  '-noColor', '-randomizeAllSpecs', '-randomizeSuites']
-  env:
-  - 'PROJECT_ROOT=github.com/solo-io/gloo-mesh'
-  - 'TAGGED_VERSION=$TAG_NAME'
-  - 'HELM_HOME=/root/.helm'
-  secretEnv: ["GITHUB_TOKEN"]
-  dir: *dir
-  id: 'test'
-
 - name: 'gcr.io/cloud-builders/docker'
   entrypoint: 'bash'
   args: ['-c', 'docker login --username soloiobot --password $$CI_ADMIN_DOCKER_HUB_PASSWORD']

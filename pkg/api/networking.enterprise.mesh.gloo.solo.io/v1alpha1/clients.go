@@ -4,79 +4,82 @@
 
 package v1alpha1
 
-import (
-	"context"
 
-	"github.com/solo-io/skv2/pkg/controllerutils"
-	"github.com/solo-io/skv2/pkg/multicluster"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+
+import (
+    "context"
+
+    "github.com/solo-io/skv2/pkg/controllerutils"
+    "github.com/solo-io/skv2/pkg/multicluster"
+    "k8s.io/apimachinery/pkg/runtime"
+    "k8s.io/client-go/kubernetes/scheme"
+    "k8s.io/client-go/rest"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // MulticlusterClientset for the networking.enterprise.mesh.gloo.solo.io/v1alpha1 APIs
 type MulticlusterClientset interface {
-	// Cluster returns a Clientset for the given cluster
-	Cluster(cluster string) (Clientset, error)
+    // Cluster returns a Clientset for the given cluster
+    Cluster(cluster string) (Clientset, error)
 }
 
 type multiclusterClientset struct {
-	client multicluster.Client
+    client multicluster.Client
 }
 
 func NewMulticlusterClientset(client multicluster.Client) MulticlusterClientset {
-	return &multiclusterClientset{client: client}
+    return &multiclusterClientset{client: client}
 }
 
 func (m *multiclusterClientset) Cluster(cluster string) (Clientset, error) {
-	client, err := m.client.Cluster(cluster)
-	if err != nil {
-		return nil, err
-	}
-	return NewClientset(client), nil
+    client, err := m.client.Cluster(cluster)
+    if err != nil {
+        return nil, err
+    }
+    return NewClientset(client), nil
 }
 
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1alpha1 APIs
 type Clientset interface {
-	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1alpha1/v1alpha1 APIs
-	WasmDeployments() WasmDeploymentClient
+    // clienset for the networking.enterprise.mesh.gloo.solo.io/v1alpha1/v1alpha1 APIs
+    WasmDeployments() WasmDeploymentClient
 }
 
 type clientSet struct {
-	client client.Client
+    client client.Client
 }
 
 func NewClientsetFromConfig(cfg *rest.Config) (Clientset, error) {
-	scheme := scheme.Scheme
-	if err := AddToScheme(scheme); err != nil {
-		return nil, err
-	}
-	client, err := client.New(cfg, client.Options{
-		Scheme: scheme,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return NewClientset(client), nil
+    scheme := scheme.Scheme
+    if err := AddToScheme(scheme); err != nil{
+        return nil, err
+    }
+    client, err := client.New(cfg, client.Options{
+        Scheme: scheme,
+    })
+    if err != nil {
+        return nil, err
+    }
+    return NewClientset(client), nil
 }
 
 func NewClientset(client client.Client) Clientset {
-	return &clientSet{client: client}
+    return &clientSet{client: client}
 }
 
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1alpha1/v1alpha1 APIs
 func (c *clientSet) WasmDeployments() WasmDeploymentClient {
-	return NewWasmDeploymentClient(c.client)
+    return NewWasmDeploymentClient(c.client)
 }
 
 // Reader knows how to read and list WasmDeployments.
 type WasmDeploymentReader interface {
-	// Get retrieves a WasmDeployment for the given object key
-	GetWasmDeployment(ctx context.Context, key client.ObjectKey) (*WasmDeployment, error)
+    // Get retrieves a WasmDeployment for the given object key
+    GetWasmDeployment(ctx context.Context, key client.ObjectKey) (*WasmDeployment, error)
 
-	// List retrieves list of WasmDeployments for a given namespace and list options.
-	ListWasmDeployment(ctx context.Context, opts ...client.ListOption) (*WasmDeploymentList, error)
+    // List retrieves list of WasmDeployments for a given namespace and list options.
+    ListWasmDeployment(ctx context.Context, opts ...client.ListOption) (*WasmDeploymentList, error)
 }
 
 // WasmDeploymentTransitionFunction instructs the WasmDeploymentWriter how to transition between an existing
@@ -85,129 +88,131 @@ type WasmDeploymentTransitionFunction func(existing, desired *WasmDeployment) er
 
 // Writer knows how to create, delete, and update WasmDeployments.
 type WasmDeploymentWriter interface {
-	// Create saves the WasmDeployment object.
-	CreateWasmDeployment(ctx context.Context, obj *WasmDeployment, opts ...client.CreateOption) error
+    // Create saves the WasmDeployment object.
+    CreateWasmDeployment(ctx context.Context, obj *WasmDeployment, opts ...client.CreateOption) error
 
-	// Delete deletes the WasmDeployment object.
-	DeleteWasmDeployment(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+    // Delete deletes the WasmDeployment object.
+    DeleteWasmDeployment(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
 
-	// Update updates the given WasmDeployment object.
-	UpdateWasmDeployment(ctx context.Context, obj *WasmDeployment, opts ...client.UpdateOption) error
+    // Update updates the given WasmDeployment object.
+    UpdateWasmDeployment(ctx context.Context, obj *WasmDeployment, opts ...client.UpdateOption) error
 
-	// Patch patches the given WasmDeployment object.
-	PatchWasmDeployment(ctx context.Context, obj *WasmDeployment, patch client.Patch, opts ...client.PatchOption) error
+    // Patch patches the given WasmDeployment object.
+    PatchWasmDeployment(ctx context.Context, obj *WasmDeployment, patch client.Patch, opts ...client.PatchOption) error
 
-	// DeleteAllOf deletes all WasmDeployment objects matching the given options.
-	DeleteAllOfWasmDeployment(ctx context.Context, opts ...client.DeleteAllOfOption) error
+    // DeleteAllOf deletes all WasmDeployment objects matching the given options.
+    DeleteAllOfWasmDeployment(ctx context.Context, opts ...client.DeleteAllOfOption) error
 
-	// Create or Update the WasmDeployment object.
-	UpsertWasmDeployment(ctx context.Context, obj *WasmDeployment, transitionFuncs ...WasmDeploymentTransitionFunction) error
+    // Create or Update the WasmDeployment object.
+    UpsertWasmDeployment(ctx context.Context, obj *WasmDeployment, transitionFuncs ...WasmDeploymentTransitionFunction) error
 }
 
 // StatusWriter knows how to update status subresource of a WasmDeployment object.
 type WasmDeploymentStatusWriter interface {
-	// Update updates the fields corresponding to the status subresource for the
-	// given WasmDeployment object.
-	UpdateWasmDeploymentStatus(ctx context.Context, obj *WasmDeployment, opts ...client.UpdateOption) error
+    // Update updates the fields corresponding to the status subresource for the
+    // given WasmDeployment object.
+    UpdateWasmDeploymentStatus(ctx context.Context, obj *WasmDeployment, opts ...client.UpdateOption) error
 
-	// Patch patches the given WasmDeployment object's subresource.
-	PatchWasmDeploymentStatus(ctx context.Context, obj *WasmDeployment, patch client.Patch, opts ...client.PatchOption) error
+    // Patch patches the given WasmDeployment object's subresource.
+    PatchWasmDeploymentStatus(ctx context.Context, obj *WasmDeployment, patch client.Patch, opts ...client.PatchOption) error
 }
 
 // Client knows how to perform CRUD operations on WasmDeployments.
 type WasmDeploymentClient interface {
-	WasmDeploymentReader
-	WasmDeploymentWriter
-	WasmDeploymentStatusWriter
+    WasmDeploymentReader
+    WasmDeploymentWriter
+    WasmDeploymentStatusWriter
 }
 
 type wasmDeploymentClient struct {
-	client client.Client
+    client client.Client
 }
 
 func NewWasmDeploymentClient(client client.Client) *wasmDeploymentClient {
-	return &wasmDeploymentClient{client: client}
+    return &wasmDeploymentClient{client: client}
 }
 
+
 func (c *wasmDeploymentClient) GetWasmDeployment(ctx context.Context, key client.ObjectKey) (*WasmDeployment, error) {
-	obj := &WasmDeployment{}
-	if err := c.client.Get(ctx, key, obj); err != nil {
-		return nil, err
-	}
-	return obj, nil
+    obj := &WasmDeployment{}
+    if err := c.client.Get(ctx, key, obj); err != nil {
+        return nil, err
+    }
+    return obj, nil
 }
 
 func (c *wasmDeploymentClient) ListWasmDeployment(ctx context.Context, opts ...client.ListOption) (*WasmDeploymentList, error) {
-	list := &WasmDeploymentList{}
-	if err := c.client.List(ctx, list, opts...); err != nil {
-		return nil, err
-	}
-	return list, nil
+    list := &WasmDeploymentList{}
+    if err := c.client.List(ctx, list, opts...); err != nil {
+        return nil, err
+    }
+    return list, nil
 }
 
 func (c *wasmDeploymentClient) CreateWasmDeployment(ctx context.Context, obj *WasmDeployment, opts ...client.CreateOption) error {
-	return c.client.Create(ctx, obj, opts...)
+    return c.client.Create(ctx, obj, opts...)
 }
 
+
 func (c *wasmDeploymentClient) DeleteWasmDeployment(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &WasmDeployment{}
-	obj.SetName(key.Name)
-	obj.SetNamespace(key.Namespace)
-	return c.client.Delete(ctx, obj, opts...)
+    obj := &WasmDeployment{}
+    obj.SetName(key.Name)
+    obj.SetNamespace(key.Namespace)
+    return c.client.Delete(ctx, obj, opts...)
 }
 
 func (c *wasmDeploymentClient) UpdateWasmDeployment(ctx context.Context, obj *WasmDeployment, opts ...client.UpdateOption) error {
-	return c.client.Update(ctx, obj, opts...)
+    return c.client.Update(ctx, obj, opts...)
 }
 
 func (c *wasmDeploymentClient) PatchWasmDeployment(ctx context.Context, obj *WasmDeployment, patch client.Patch, opts ...client.PatchOption) error {
-	return c.client.Patch(ctx, obj, patch, opts...)
+    return c.client.Patch(ctx, obj, patch, opts...)
 }
 
 func (c *wasmDeploymentClient) DeleteAllOfWasmDeployment(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &WasmDeployment{}
-	return c.client.DeleteAllOf(ctx, obj, opts...)
+    obj := &WasmDeployment{}
+    return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
 func (c *wasmDeploymentClient) UpsertWasmDeployment(ctx context.Context, obj *WasmDeployment, transitionFuncs ...WasmDeploymentTransitionFunction) error {
-	genericTxFunc := func(existing, desired runtime.Object) error {
-		for _, txFunc := range transitionFuncs {
-			if err := txFunc(existing.(*WasmDeployment), desired.(*WasmDeployment)); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
-	return err
+    genericTxFunc := func(existing, desired runtime.Object) error {
+        for _, txFunc := range transitionFuncs {
+            if err := txFunc(existing.(*WasmDeployment), desired.(*WasmDeployment)); err != nil {
+                return err
+            }
+        }
+        return nil
+    }
+    _, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+    return err
 }
 
 func (c *wasmDeploymentClient) UpdateWasmDeploymentStatus(ctx context.Context, obj *WasmDeployment, opts ...client.UpdateOption) error {
-	return c.client.Status().Update(ctx, obj, opts...)
+    return c.client.Status().Update(ctx, obj, opts...)
 }
 
 func (c *wasmDeploymentClient) PatchWasmDeploymentStatus(ctx context.Context, obj *WasmDeployment, patch client.Patch, opts ...client.PatchOption) error {
-	return c.client.Status().Patch(ctx, obj, patch, opts...)
+    return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
 // Provides WasmDeploymentClients for multiple clusters.
 type MulticlusterWasmDeploymentClient interface {
-	// Cluster returns a WasmDeploymentClient for the given cluster
-	Cluster(cluster string) (WasmDeploymentClient, error)
+    // Cluster returns a WasmDeploymentClient for the given cluster
+    Cluster(cluster string) (WasmDeploymentClient, error)
 }
 
 type multiclusterWasmDeploymentClient struct {
-	client multicluster.Client
+    client multicluster.Client
 }
 
 func NewMulticlusterWasmDeploymentClient(client multicluster.Client) MulticlusterWasmDeploymentClient {
-	return &multiclusterWasmDeploymentClient{client: client}
+    return &multiclusterWasmDeploymentClient{client: client}
 }
 
 func (m *multiclusterWasmDeploymentClient) Cluster(cluster string) (WasmDeploymentClient, error) {
-	client, err := m.client.Cluster(cluster)
-	if err != nil {
-		return nil, err
-	}
-	return NewWasmDeploymentClient(client), nil
+    client, err := m.client.Cluster(cluster)
+    if err != nil {
+        return nil, err
+    }
+    return  NewWasmDeploymentClient(client), nil
 }
