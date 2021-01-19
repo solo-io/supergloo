@@ -1,7 +1,9 @@
 package helm
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -16,6 +18,7 @@ import (
 	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"helm.sh/helm/v3/pkg/getter"
+	"helm.sh/helm/v3/pkg/release"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -83,10 +86,6 @@ func (i Installer) InstallChart(ctx context.Context) error {
 		return eris.Wrapf(err, "loading chart file")
 	}
 
-	if err = upsertCrds(ctx, kubeClient, chartObj); err != nil {
-		return eris.Wrapf(err, "updating CRDs")
-	}
-
 	// Merge values provided via the '--values' flag
 	valueOpts := &values.Options{}
 	if valuesFile != "" {
@@ -100,20 +99,27 @@ func (i Installer) InstallChart(ctx context.Context) error {
 		return eris.Wrapf(err, "parsing values")
 	}
 
+	// must apply CRDs before installing since the Helm chart will apply CRD objects
+	if !dryRun {
+		if err = upsertCrds(ctx, kubeClient, chartObj); err != nil {
+			return eris.Wrapf(err, "updating CRDs")
+		}
+	}
+
+	isUpgrade := false
+	var release *release.Release
+
 	h, err := actionConfig.Releases.History(releaseName)
 	if err == nil && len(h) > 0 {
 		client := action.NewUpgrade(actionConfig)
 		client.Namespace = namespace
 		client.DryRun = dryRun
+		isUpgrade = true
 
-		release, err := client.Run(releaseName, chartObj, parsedValues)
+		release, err = client.Run(releaseName, chartObj, parsedValues)
 		if err != nil {
-			return eris.Wrapf(err, "installing helm chart")
+			return eris.Wrapf(err, "upgrading helm chart")
 		}
-
-		logrus.Infof("finished upgrading chart as release %s", release.Name)
-		logrus.Debugf("%+v", release)
-
 	} else {
 		// release does not exist, perform install
 
@@ -121,22 +127,39 @@ func (i Installer) InstallChart(ctx context.Context) error {
 		client.ReleaseName = releaseName
 		client.Namespace = namespace
 		client.DryRun = dryRun
-
-		release, err := client.Run(chartObj, parsedValues)
-		// ignore missing CRD error due to known Helm limitation, https://github.com/helm/helm/issues/7449
-		if err != nil && !(client.DryRun && strings.Contains(err.Error(), "unable to recognize \"\": no matches for kind")) {
-			return eris.Wrapf(err, "installing helm chart")
+		if dryRun {
+			client.ClientOnly = true
 		}
 
-		logrus.Infof("finished installing chart as release: %s", releaseName)
-		logrus.Debugf("%+v", release)
+		release, err = client.Run(chartObj, parsedValues)
+		if err != nil {
+			return eris.Wrapf(err, "installing helm chart")
+		}
 	}
+
+	updateReleaseManifestWithCrds(chartObj, release)
+	// output to stdout
+	output(release, dryRun, isUpgrade)
 
 	return nil
 }
 
+func output(release *release.Release, dryRun bool, isUpgrade bool) {
+	if dryRun {
+		// dry run should only output a pipe-able manifest
+		fmt.Printf("%v", release.Manifest)
+	} else {
+		verb := "installing"
+		if isUpgrade {
+			verb = "upgrading"
+		}
+		logrus.Infof("finished %s chart %s as release", verb, release.Chart.Name())
+		logrus.Debugf("%v", release.Manifest)
+	}
+}
+
 // Helm does not update CRDs upon upgrade, https://github.com/helm/helm/issues/7735
-// so we need to update the CRDs ourselves
+// so we need to update the CRDs ourselves, during both install and upgrade
 func upsertCrds(ctx context.Context, kubeClient client.Client, chartObj *chart.Chart) error {
 	// unmarshal CRD definitions from Helm manifests
 	decoder := yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
@@ -173,6 +196,14 @@ func upsertCrds(ctx context.Context, kubeClient client.Client, chartObj *chart.C
 		}
 	}
 	return nil
+}
+
+func updateReleaseManifestWithCrds(chartObj *chart.Chart, release *release.Release) {
+	manifest := bytes.NewBuffer([]byte(release.Manifest))
+	for _, crd := range chartObj.CRDObjects() {
+		fmt.Fprintf(manifest, "---\n# Source: %s\n%s\n", crd.Name, string(crd.File.Data[:]))
+	}
+	release.Manifest = manifest.String()
 }
 
 func ensureNamespace(ctx context.Context, kubeClient client.Client, namespace string) error {
