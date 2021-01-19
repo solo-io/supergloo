@@ -44,10 +44,10 @@ func SetupClustersAndFederation(customDeployFuc func()) {
 	dynamicClient, err = client.New(GetEnv().Management.Config, client.Options{})
 	Expect(err).NotTo(HaveOccurred())
 
-	federateClusters(dynamicClient)
+	FederateClusters(dynamicClient)
 }
 
-func federateClusters(dynamicClient client.Client) {
+func FederateClusters(dynamicClient client.Client) {
 	VirtualMesh, err = data.SelfSignedVirtualMesh(
 		dynamicClient,
 		"bookinfo-federation",
@@ -99,6 +99,7 @@ func InitializeTests() bool {
 		_ = Describe("Federation", FederationTest)
 		_ = Describe("Networking Extensions", NetworkingExtensionsTest)
 		_ = Describe("TrafficPolicy", TrafficPolicyTest)
+		_ = FDescribe("DiscoveryRegression", DiscoveryRegressionTest)
 	)
 	return true
 }
