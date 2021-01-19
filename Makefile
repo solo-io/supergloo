@@ -9,7 +9,7 @@ GLOOMESH_IMAGE ?= $(DOCKER_REPO)/gloo-mesh
 CA_IMAGE ?= $(DOCKER_REPO)/cert-agent
 
 SOURCES := $(shell find . -name "*.go" | grep -v test.go)
-export RELEASE := "true"
+export RELEASE ?= "true"
 ifeq ($(TAGGED_VERSION),)
 	TAGGED_VERSION := $(shell git describe --tags --dirty --always)
 	export RELEASE := "false"
