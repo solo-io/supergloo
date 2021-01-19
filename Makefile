@@ -64,6 +64,7 @@ install-go-tools: mod-download
 	go install github.com/gobuffalo/packr/packr
 	# protoc-gen-gogo is only needed for generating our versioned docs site, since older versions of the repo (<= 0.10.7) use gogo
 	go install github.com/gogo/protobuf/protoc-gen-gogo
+	go mod tidy
 
 # Call all generated code targets
 .PHONY: generated-code
