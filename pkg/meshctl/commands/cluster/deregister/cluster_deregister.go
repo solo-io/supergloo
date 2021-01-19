@@ -10,14 +10,13 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func Command(ctx context.Context, globalFlags utils.GlobalFlags) *cobra.Command {
-	opts := deregistrationOptions{
-		Verbose: globalFlags.Verbose,
-	}
+func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command {
+	opts := deregistrationOptions{}
 	cmd := &cobra.Command{
 		Use:   "deregister",
 		Short: "Deregister a Kubernetes cluster from Gloo Mesh, cleaning up any associated resources",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.Verbose = globalFlags.Verbose
 			registrantOptions := registration.RegistrantOptions(opts)
 			registrant, err := registration.NewRegistrant(&registrantOptions)
 			if err != nil {

@@ -28,7 +28,7 @@ import (
 const binaryName = "meshctl"
 
 func RootCommand(ctx context.Context) *cobra.Command {
-	globalFlags := utils.GlobalFlags{}
+	globalFlags := &utils.GlobalFlags{}
 
 	cmd := &cobra.Command{
 		Use:   "meshctl [command]",

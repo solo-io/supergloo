@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func Command(ctx context.Context, globalFlags utils.GlobalFlags) *cobra.Command {
+func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "debug",
 		Short: "Debug Gloo Mesh resources",
