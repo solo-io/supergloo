@@ -134,6 +134,14 @@ rules:
   - list
   - watch
 - apiGroups:
+  - observability.enterprise.mesh.gloo.solo.io
+  resources:
+  - accesslogcollections
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - settings.mesh.gloo.solo.io
   resources:
   - settings
@@ -178,6 +186,13 @@ rules:
   - accesspolicies/status
   - virtualmeshes/status
   - failoverservices/status
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - observability.enterprise.mesh.gloo.solo.io
+  resources:
+  - accesslogcollections/status
   verbs:
   - get
   - update

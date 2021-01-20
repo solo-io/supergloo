@@ -18,6 +18,9 @@ import (
 	networking_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
 	networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 
+	observability_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1"
+	observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
+
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1 "k8s.io/api/core/v1"
 
@@ -41,6 +44,8 @@ type InputLocalSnapshotManualBuilder struct {
 
 	wasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
 
+	accessLogCollections observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogCollectionSet
+
 	secrets v1_sets.SecretSet
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
@@ -62,6 +67,8 @@ func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBu
 		failoverServices: networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet(),
 
 		wasmDeployments: networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet(),
+
+		accessLogCollections: observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogCollectionSet(),
 
 		secrets: v1_sets.NewSecretSet(),
 
@@ -85,6 +92,8 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 		i.failoverServices,
 
 		i.wasmDeployments,
+
+		i.accessLogCollections,
 
 		i.secrets,
 
@@ -125,6 +134,10 @@ func (i *InputLocalSnapshotManualBuilder) AddFailoverServices(failoverServices [
 }
 func (i *InputLocalSnapshotManualBuilder) AddWasmDeployments(wasmDeployments []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment) *InputLocalSnapshotManualBuilder {
 	i.wasmDeployments.Insert(wasmDeployments...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddAccessLogCollections(accessLogCollections []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) *InputLocalSnapshotManualBuilder {
+	i.accessLogCollections.Insert(accessLogCollections...)
 	return i
 }
 func (i *InputLocalSnapshotManualBuilder) AddSecrets(secrets []*v1.Secret) *InputLocalSnapshotManualBuilder {
