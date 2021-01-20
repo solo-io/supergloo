@@ -12,7 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/events"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -88,7 +88,7 @@ type genericTrafficTargetHandler struct {
 	handler TrafficTargetEventHandler
 }
 
-func (h genericTrafficTargetHandler) Create(object runtime.Object) error {
+func (h genericTrafficTargetHandler) Create(object client.Object) error {
 	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget)
 	if !ok {
 		return errors.Errorf("internal error: TrafficTarget handler received event for %T", object)
@@ -96,7 +96,7 @@ func (h genericTrafficTargetHandler) Create(object runtime.Object) error {
 	return h.handler.CreateTrafficTarget(obj)
 }
 
-func (h genericTrafficTargetHandler) Delete(object runtime.Object) error {
+func (h genericTrafficTargetHandler) Delete(object client.Object) error {
 	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget)
 	if !ok {
 		return errors.Errorf("internal error: TrafficTarget handler received event for %T", object)
@@ -104,7 +104,7 @@ func (h genericTrafficTargetHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteTrafficTarget(obj)
 }
 
-func (h genericTrafficTargetHandler) Update(old, new runtime.Object) error {
+func (h genericTrafficTargetHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget)
 	if !ok {
 		return errors.Errorf("internal error: TrafficTarget handler received event for %T", old)
@@ -116,7 +116,7 @@ func (h genericTrafficTargetHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateTrafficTarget(objOld, objNew)
 }
 
-func (h genericTrafficTargetHandler) Generic(object runtime.Object) error {
+func (h genericTrafficTargetHandler) Generic(object client.Object) error {
 	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget)
 	if !ok {
 		return errors.Errorf("internal error: TrafficTarget handler received event for %T", object)
@@ -195,7 +195,7 @@ type genericWorkloadHandler struct {
 	handler WorkloadEventHandler
 }
 
-func (h genericWorkloadHandler) Create(object runtime.Object) error {
+func (h genericWorkloadHandler) Create(object client.Object) error {
 	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1alpha2.Workload)
 	if !ok {
 		return errors.Errorf("internal error: Workload handler received event for %T", object)
@@ -203,7 +203,7 @@ func (h genericWorkloadHandler) Create(object runtime.Object) error {
 	return h.handler.CreateWorkload(obj)
 }
 
-func (h genericWorkloadHandler) Delete(object runtime.Object) error {
+func (h genericWorkloadHandler) Delete(object client.Object) error {
 	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1alpha2.Workload)
 	if !ok {
 		return errors.Errorf("internal error: Workload handler received event for %T", object)
@@ -211,7 +211,7 @@ func (h genericWorkloadHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteWorkload(obj)
 }
 
-func (h genericWorkloadHandler) Update(old, new runtime.Object) error {
+func (h genericWorkloadHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*discovery_mesh_gloo_solo_io_v1alpha2.Workload)
 	if !ok {
 		return errors.Errorf("internal error: Workload handler received event for %T", old)
@@ -223,7 +223,7 @@ func (h genericWorkloadHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateWorkload(objOld, objNew)
 }
 
-func (h genericWorkloadHandler) Generic(object runtime.Object) error {
+func (h genericWorkloadHandler) Generic(object client.Object) error {
 	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1alpha2.Workload)
 	if !ok {
 		return errors.Errorf("internal error: Workload handler received event for %T", object)
@@ -302,7 +302,7 @@ type genericMeshHandler struct {
 	handler MeshEventHandler
 }
 
-func (h genericMeshHandler) Create(object runtime.Object) error {
+func (h genericMeshHandler) Create(object client.Object) error {
 	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1alpha2.Mesh)
 	if !ok {
 		return errors.Errorf("internal error: Mesh handler received event for %T", object)
@@ -310,7 +310,7 @@ func (h genericMeshHandler) Create(object runtime.Object) error {
 	return h.handler.CreateMesh(obj)
 }
 
-func (h genericMeshHandler) Delete(object runtime.Object) error {
+func (h genericMeshHandler) Delete(object client.Object) error {
 	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1alpha2.Mesh)
 	if !ok {
 		return errors.Errorf("internal error: Mesh handler received event for %T", object)
@@ -318,7 +318,7 @@ func (h genericMeshHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteMesh(obj)
 }
 
-func (h genericMeshHandler) Update(old, new runtime.Object) error {
+func (h genericMeshHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*discovery_mesh_gloo_solo_io_v1alpha2.Mesh)
 	if !ok {
 		return errors.Errorf("internal error: Mesh handler received event for %T", old)
@@ -330,7 +330,7 @@ func (h genericMeshHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateMesh(objOld, objNew)
 }
 
-func (h genericMeshHandler) Generic(object runtime.Object) error {
+func (h genericMeshHandler) Generic(object client.Object) error {
 	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1alpha2.Mesh)
 	if !ok {
 		return errors.Errorf("internal error: Mesh handler received event for %T", object)
