@@ -13,17 +13,14 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func Command(ctx context.Context, globalFlags utils.GlobalFlags) *cobra.Command {
-	opts := &options{
-		Options: flags.Options{
-			Verbose: globalFlags.Verbose,
-		},
-	}
+func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command {
+	opts := &options{}
 
 	cmd := &cobra.Command{
 		Use:   "enterprise",
 		Short: "Install Gloo Mesh enterprise",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.Verbose = globalFlags.Verbose
 			return install(ctx, opts)
 		},
 	}

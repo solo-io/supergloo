@@ -19,6 +19,9 @@ set -o xtrace
 PROJECT_ROOT=$( cd "$( dirname "${0}" )" >/dev/null 2>&1 && pwd )/..
 echo "Using project root ${PROJECT_ROOT}"
 
+# print build info
+make -C ${PROJECT_ROOT} print-info
+
 source ${PROJECT_ROOT}/ci/setup-funcs.sh
 
 if [ "$1" == "cleanup" ]; then

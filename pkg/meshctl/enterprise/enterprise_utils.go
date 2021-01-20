@@ -10,9 +10,9 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 )
 
-// GetEnterpriseExtenderVersion returns the Enterprise Extender version if the Gloo Mesh Enterprise Extender is
+// GetEnterpriseNetworkingVersion returns the Enterprise Extender version if the Gloo Mesh Enterprise Extender is
 // detected without error and is determined to be installed.
-func GetEnterpriseExtenderVersion(ctx context.Context, kubeConfigPath, kubeContext string) (string, error) {
+func GetEnterpriseNetworkingVersion(ctx context.Context, kubeConfigPath, kubeContext string) (string, error) {
 	kubeClient, err := utils.BuildClient(kubeConfigPath, kubeContext)
 	if err != nil {
 		return "", err
@@ -26,7 +26,7 @@ func GetEnterpriseExtenderVersion(ctx context.Context, kubeConfigPath, kubeConte
 
 	for _, deployment := range deployments.Items {
 		for _, container := range deployment.Spec.Template.Spec.Containers {
-			if strings.Contains(container.Image, "enterprise-extender") {
+			if strings.Contains(container.Image, "enterprise-networking") {
 				image, err := dockerutils.ParseImageName(container.Image)
 				if err != nil {
 					return "", err

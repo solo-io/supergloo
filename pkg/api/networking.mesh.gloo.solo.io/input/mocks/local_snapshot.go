@@ -11,10 +11,11 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1alpha1sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	v1alpha2sets0 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	v1alpha2sets1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
-	v1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
+	v1alpha1sets0 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -154,6 +155,20 @@ func (mr *MockLocalSnapshotMockRecorder) FailoverServices() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FailoverServices", reflect.TypeOf((*MockLocalSnapshot)(nil).FailoverServices))
 }
 
+// WasmDeployments mocks base method
+func (m *MockLocalSnapshot) WasmDeployments() v1alpha1sets.WasmDeploymentSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WasmDeployments")
+	ret0, _ := ret[0].(v1alpha1sets.WasmDeploymentSet)
+	return ret0
+}
+
+// WasmDeployments indicates an expected call of WasmDeployments
+func (mr *MockLocalSnapshotMockRecorder) WasmDeployments() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WasmDeployments", reflect.TypeOf((*MockLocalSnapshot)(nil).WasmDeployments))
+}
+
 // Secrets mocks base method
 func (m *MockLocalSnapshot) Secrets() v1sets.SecretSet {
 	m.ctrl.T.Helper()
@@ -169,10 +184,10 @@ func (mr *MockLocalSnapshotMockRecorder) Secrets() *gomock.Call {
 }
 
 // KubernetesClusters mocks base method
-func (m *MockLocalSnapshot) KubernetesClusters() v1alpha1sets.KubernetesClusterSet {
+func (m *MockLocalSnapshot) KubernetesClusters() v1alpha1sets0.KubernetesClusterSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "KubernetesClusters")
-	ret0, _ := ret[0].(v1alpha1sets.KubernetesClusterSet)
+	ret0, _ := ret[0].(v1alpha1sets0.KubernetesClusterSet)
 	return ret0
 }
 

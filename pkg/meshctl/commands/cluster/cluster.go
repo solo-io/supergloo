@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func Command(ctx context.Context, globalFlags utils.GlobalFlags) *cobra.Command {
+func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "cluster",
 		Short: "Interacting with remote Kubernetes clusters registered to Gloo Mesh",

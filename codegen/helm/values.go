@@ -34,7 +34,7 @@ func (v SettingsValues) MarshalJSON() ([]byte, error) {
 }
 
 // The default chart values
-func defaultValues() ChartValues {
+func DefaultValues() ChartValues {
 	return ChartValues{
 		GlooMeshOperatorArgs: GlooMeshOperatorArgs{
 			SettingsRef: SettingsRef{

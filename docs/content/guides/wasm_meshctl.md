@@ -17,8 +17,8 @@ In this guide we will walk through how you can use the wasm plugin for the `mesh
 
 ## Before you begin
 
-To illustrate these concepts, we will assume that you have already followed the [Wasm Extension Guide for Gloo Mesh Enterprise]({{% versioned_link_path fromRoot="/guides/wasm_extension/#ensure-the-enterprise-extender-feature-is-enabled" %}}) to get all the necessary components ready for the deploy step.
-In particular, you will need to have installed Gloo Mesh Enterprise and registered your clusters such that the `enterprise-extender` is running on the management cluster and `wasm-agent` is available on registered clusters; `meshctl-wasm` will take care of the rest.
+To illustrate these concepts, we will assume that you have already followed the [Wasm Extension Guide for Gloo Mesh Enterprise]({{% versioned_link_path fromRoot="/guides/wasm_extension/#ensure-the-enterprise-networking-feature-is-enabled" %}}) to get all the necessary components ready for the deploy step.
+In particular, you will need to have installed Gloo Mesh Enterprise and registered your clusters such that `enterprise-networking` is running on the management cluster and `wasm-agent` is available on registered clusters; `meshctl-wasm` will take care of the rest.
 
 You will also need the wasm plugin for `meshctl`. It can be installed by running the following one-liner:
 

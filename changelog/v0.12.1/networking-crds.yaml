@@ -1,0 +1,10 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1210
+    description: Extract the manifests for enterprise CRDs to their own chart.
+  - type: NON_USER_FACING
+    description: Add WasmDeployments to input snapshot.
+  - type: NON_USER_FACING
+    description: Rename isntances of Enterprise Extender to Enterprise Networking.
+  - type: NON_USER_FACING
+    description: Make Networking Chartgen code importable.

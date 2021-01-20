@@ -13,15 +13,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func Command(ctx context.Context, globalFlags utils.GlobalFlags) *cobra.Command {
-	opts := &flags.Options{
-		Verbose: globalFlags.Verbose,
-	}
+func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command {
+	opts := &flags.Options{}
 
 	cmd := &cobra.Command{
 		Use:   "install",
 		Short: "Install Gloo Mesh",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.Verbose = globalFlags.Verbose
 			return install(ctx, opts)
 		},
 	}
