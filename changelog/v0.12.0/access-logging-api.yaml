@@ -1,3 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Initialize API for configuring collection of Envoy access logs.
