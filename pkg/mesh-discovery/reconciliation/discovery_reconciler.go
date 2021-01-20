@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
-
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
@@ -87,18 +85,6 @@ func Start(
 
 	filterDiscoveryEvents := skpredicate.SimplePredicate{
 		Filter: skpredicate.SimpleEventFilterFunc(isLeaderElectionObject),
-	}
-
-	// Needed in order to use field selector on metadata.name for Settings CRD.
-	if err := localMgr.GetFieldIndexer().IndexField(
-		ctx,
-		&settingsv1alpha2.Settings{},
-		"metadata.name",
-		func(object client.Object) []string {
-			settings := object.(*settingsv1alpha2.Settings)
-			return []string{settings.Name}
-		}); err != nil {
-		return err
 	}
 
 	if clusters != nil {
