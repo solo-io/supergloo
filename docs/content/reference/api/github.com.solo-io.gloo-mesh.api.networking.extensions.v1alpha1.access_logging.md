@@ -36,7 +36,8 @@ title: "access_logging.proto"
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| httpAccessLog | [envoy.data.accesslog.v3.HTTPAccessLogEntry]({{< versioned_link_path fromRoot="/reference/api/envoy.data.accesslog.v3.accesslog#envoy.data.accesslog.v3.HTTPAccessLogEntry" >}}) |  | An Envoy access log. |
+| workloadRef | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Reference to the workload that emitted this access log. |
+  | httpAccessLog | [envoy.data.accesslog.v3.HTTPAccessLogEntry]({{< versioned_link_path fromRoot="/reference/api/envoy.data.accesslog.v3.accesslog#envoy.data.accesslog.v3.HTTPAccessLogEntry" >}}) |  | An Envoy access log. |
   
 
 

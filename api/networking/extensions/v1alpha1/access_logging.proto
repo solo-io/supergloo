@@ -3,6 +3,7 @@ package extensions.networking.mesh.gloo.solo.io;
 
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1";
 
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
 import "envoy/data/accesslog/v3/accesslog.proto";
 
@@ -20,6 +21,9 @@ message WatchAccessLogsRequest {
 }
 
 message AccessLog {
+    // Reference to the workload that emitted this access log.
+    .core.skv2.solo.io.ClusterObjectRef workloadRef = 1;
+
     // An Envoy access log.
-    .envoy.data.accesslog.v3.HTTPAccessLogEntry http_access_log = 1;
+    .envoy.data.accesslog.v3.HTTPAccessLogEntry http_access_log = 2;
 }
