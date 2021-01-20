@@ -41,6 +41,7 @@ require (
 	github.com/golang/protobuf v1.4.3
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/gofuzz v1.2.0 // indirect
+	github.com/gophercloud/gophercloud v0.2.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
 	github.com/hashicorp/go-multierror v1.1.0
@@ -62,7 +63,7 @@ require (
 	github.com/servicemeshinterface/smi-sdk-go v0.4.1
 	github.com/sirupsen/logrus v1.7.0
 	github.com/solo-io/anyvendor v0.0.1
-	github.com/solo-io/external-apis v0.1.3
+	github.com/solo-io/external-apis v0.1.4-0.20210120150713-9913962b0ec8
 	github.com/solo-io/go-utils v0.20.0
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.13
