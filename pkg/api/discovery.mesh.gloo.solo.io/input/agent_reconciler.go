@@ -69,7 +69,7 @@ type multiClusterAgentReconcilerImpl struct {
 	base input.InputReconciler
 }
 
-// Options for reconcileing a snapshot
+// Options for reconciling a snapshot
 type AgentReconcileOptions struct {
 
 	// Options for reconciling Settings

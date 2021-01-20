@@ -28,8 +28,10 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/aws/aws-app-mesh-controller-for-k8s v1.1.1
 	github.com/aws/aws-sdk-go v1.35.11
+	github.com/cncf/udpa v0.0.2-0.20201211205326-cc1b757b3edd
 	github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403
 	github.com/docker/distribution v2.7.1+incompatible
+	github.com/envoyproxy/data-plane-api v0.0.0-20210110221212-8c6115ddd1b8
 	github.com/envoyproxy/go-control-plane v0.9.9-0.20210110222040-c850101e02b6
 	github.com/envoyproxy/protoc-gen-validate v0.4.1 // indirect
 	github.com/gertd/go-pluralize v0.1.1
@@ -67,7 +69,7 @@ require (
 	github.com/solo-io/go-utils v0.20.0
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.13
-	github.com/solo-io/skv2 v0.16.0
+	github.com/solo-io/skv2 v0.16.2
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.3.4
 	github.com/spf13/cobra v1.0.0
