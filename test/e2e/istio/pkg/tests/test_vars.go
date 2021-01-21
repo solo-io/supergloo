@@ -13,7 +13,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/gloo-mesh/test/e2e"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // Shared test vars
@@ -32,10 +31,6 @@ var (
 		Name:      "istiod-istio-system-remote-cluster",
 		Namespace: "gloo-mesh",
 	}
-
-	// Initialize in BeforeSuite
-	// Expose to be used in other repo tests
-	DynamicClient client.Client
 
 	curlReviews = func() string {
 		return curlFromProductpage("http://reviews:9080/reviews/1")

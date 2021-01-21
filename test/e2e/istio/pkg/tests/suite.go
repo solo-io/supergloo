@@ -40,11 +40,10 @@ func SetupClustersAndFederation(customDeployFuc func()) {
 		customDeployFuc()
 	}
 
-	var err error
-	DynamicClient, err = client.New(GetEnv().Management.Config, client.Options{})
+	dynamicClient, err := client.New(GetEnv().Management.Config, client.Options{})
 	Expect(err).NotTo(HaveOccurred())
 
-	FederateClusters(DynamicClient, false)
+	FederateClusters(dynamicClient, false)
 }
 
 func FederateClusters(dynamicClient client.Client, flatNetwork bool) {
@@ -69,7 +68,7 @@ func FederateClusters(dynamicClient client.Client, flatNetwork bool) {
 	}, "60s", "1s").ShouldNot(HaveOccurred())
 
 	// ensure status is updated
-	utils.AssertVirtualMeshStatuses(dynamicClient, BookinfoNamespace)
+	utils.AssertVirtualMeshStatuses(context.Background(), GetEnv().Management.VirtualMeshClient, BookinfoNamespace)
 
 	// check we can hit the remote service
 	// give 5 minutes because the workflow depends on restarting pods
