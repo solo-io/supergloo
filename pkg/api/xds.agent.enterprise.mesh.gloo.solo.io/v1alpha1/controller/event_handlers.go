@@ -12,7 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/events"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -88,7 +88,7 @@ type genericXdsConfigHandler struct {
 	handler XdsConfigEventHandler
 }
 
-func (h genericXdsConfigHandler) Create(object runtime.Object) error {
+func (h genericXdsConfigHandler) Create(object client.Object) error {
 	obj, ok := object.(*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig)
 	if !ok {
 		return errors.Errorf("internal error: XdsConfig handler received event for %T", object)
@@ -96,7 +96,7 @@ func (h genericXdsConfigHandler) Create(object runtime.Object) error {
 	return h.handler.CreateXdsConfig(obj)
 }
 
-func (h genericXdsConfigHandler) Delete(object runtime.Object) error {
+func (h genericXdsConfigHandler) Delete(object client.Object) error {
 	obj, ok := object.(*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig)
 	if !ok {
 		return errors.Errorf("internal error: XdsConfig handler received event for %T", object)
@@ -104,7 +104,7 @@ func (h genericXdsConfigHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteXdsConfig(obj)
 }
 
-func (h genericXdsConfigHandler) Update(old, new runtime.Object) error {
+func (h genericXdsConfigHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig)
 	if !ok {
 		return errors.Errorf("internal error: XdsConfig handler received event for %T", old)
@@ -116,7 +116,7 @@ func (h genericXdsConfigHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateXdsConfig(objOld, objNew)
 }
 
-func (h genericXdsConfigHandler) Generic(object runtime.Object) error {
+func (h genericXdsConfigHandler) Generic(object client.Object) error {
 	obj, ok := object.(*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig)
 	if !ok {
 		return errors.Errorf("internal error: XdsConfig handler received event for %T", object)

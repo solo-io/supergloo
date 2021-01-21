@@ -51,7 +51,7 @@ type multiClusterReconcilerImpl struct {
 	base input.InputReconciler
 }
 
-// Options for reconcileing a snapshot
+// Options for reconciling a snapshot
 type ReconcileOptions struct {
 
 	// Options for reconciling IssuedCertificates
