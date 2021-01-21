@@ -74,7 +74,7 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 	inputSnap, err := r.builder.BuildSnapshot(r.ctx, "cert-agent", input.BuildOptions{})
 	if err != nil {
 		// failed to read from cache; should never happen
-		return false, err
+		return true, err
 	}
 
 	outputs := certagent.NewBuilder(r.ctx, "agent")
@@ -95,7 +95,7 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 	}
 	outSnap, err := outputs.BuildSinglePartitionedSnapshot(agentLabels)
 	if err != nil {
-		return false, err
+		return true, err
 	}
 
 	errHandler := errhandlers.AppendingErrHandler{}
@@ -109,7 +109,7 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 		errs = multierror.Append(errs, err)
 	}
 
-	return false, errs
+	return true, errs
 }
 
 func (r *certAgentReconciler) reconcileIssuedCertificate(
