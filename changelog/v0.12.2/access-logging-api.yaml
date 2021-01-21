@@ -1,5 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Initial API for configuring collection of Envoy access logs.
-  - type: NON_USER_FACING
-    description: Initial gRPC API for access log retrieval.
