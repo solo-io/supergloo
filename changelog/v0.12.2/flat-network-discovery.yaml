@@ -1,6 +1,0 @@
-changelog:
-- type: NEW_FEATURE
-  resolvesIssue: false
-  issueLink: https://github.com/solo-io/gloo-mesh/issues/1176
-  description: >
-    Add endpoint discovery for flat networking.
