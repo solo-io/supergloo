@@ -54,7 +54,7 @@ func FederationTest() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// ensure status is updated
-			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
+			utils.AssertTrafficPolicyStatuses(DynamicClient, BookinfoNamespace)
 
 			// check we can eventually hit the v3 subset
 			Eventually(curlReviews, "30s", "1s").Should(ContainSubstring(`"color": "red"`))
@@ -106,7 +106,7 @@ func FederationTest() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// ensure status is updated
-			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
+			utils.AssertTrafficPolicyStatuses(DynamicClient, BookinfoNamespace)
 
 			Eventually(curlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec)), "30s", "1s").Should(ContainSubstring("418"))
 
@@ -175,7 +175,7 @@ func FederationTest() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// ensure status is updated
-			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
+			utils.AssertTrafficPolicyStatuses(DynamicClient, BookinfoNamespace)
 
 			var getFederatedVirtualService = func() (*istionetworkingv1alpha3.VirtualService, error) {
 				env := e2e.GetEnv()

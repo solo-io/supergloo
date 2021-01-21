@@ -135,7 +135,7 @@ func FailoverServiceTest() {
 			err = manifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
 			// Wait for TrafficPolicy with outlier detection to be processed before creating FailoverService.
-			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
+			utils.AssertTrafficPolicyStatuses(DynamicClient, BookinfoNamespace)
 
 			err = manifest.AppendResources(failoverService)
 			Expect(err).NotTo(HaveOccurred())
@@ -195,7 +195,7 @@ func FailoverServiceTest() {
 			Expect(err).NotTo(HaveOccurred())
 			err = manifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
-			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
+			utils.AssertTrafficPolicyStatuses(DynamicClient, BookinfoNamespace)
 
 			// reviews-v3 is only deployed on remote cluster, so receiving a response proves that the FailoverService is working
 			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "red"`))

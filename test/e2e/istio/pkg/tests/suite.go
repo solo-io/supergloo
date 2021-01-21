@@ -41,10 +41,10 @@ func SetupClustersAndFederation(customDeployFuc func()) {
 	}
 
 	var err error
-	dynamicClient, err = client.New(GetEnv().Management.Config, client.Options{})
+	DynamicClient, err = client.New(GetEnv().Management.Config, client.Options{})
 	Expect(err).NotTo(HaveOccurred())
 
-	FederateClusters(dynamicClient, false)
+	FederateClusters(DynamicClient, false)
 }
 
 func FederateClusters(dynamicClient client.Client, flatNetwork bool) {

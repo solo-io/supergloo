@@ -56,7 +56,7 @@ func TrafficPolicyTest() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// ensure status is updated
-			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
+			utils.AssertTrafficPolicyStatuses(DynamicClient, BookinfoNamespace)
 
 			// insert a sleep because we can't effectively use an Eventually here to ensure config has propagated to envoy
 			time.Sleep(time.Second * 5)
@@ -125,7 +125,7 @@ func TrafficPolicyTest() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// ensure status is updated
-			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
+			utils.AssertTrafficPolicyStatuses(DynamicClient, BookinfoNamespace)
 
 			// Check that DestinationRule for reviews no longer exists
 			Eventually(func() bool {
