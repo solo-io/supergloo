@@ -27,6 +27,7 @@ source ${PROJECT_ROOT}/ci/setup-funcs.sh
 if [ "$1" == "cleanup" ]; then
   kind get clusters | grep -E "${mgmtCluster}|${remoteCluster}" | while read -r r; do kind delete cluster --name "${r}"; done
 
+  # Only cleanup bird container if running with flat-networking
   if [ ! -z ${FLAT_NETWORKING_ENABLED} ]; then
     docker stop bird
   fi

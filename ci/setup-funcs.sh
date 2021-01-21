@@ -22,6 +22,9 @@ function create_kind_cluster() {
 
   K="kubectl --context=kind-${cluster}"
 
+  # When running multi cluster kind with flat-networking, kind must be configured with a custom CNI.
+  # https://kind.sigs.k8s.io/docs/user/configuration/#disable-default-cni
+  # This allows us to use our own CNI, namely calico.
   disableDefaultCNI=false
   if [ ! -z ${FLAT_NETWORKING_ENABLED} ]; then
     disableDefaultCNI=true
@@ -92,6 +95,8 @@ EOF
     # Ensure calico node is ready before installing istio
     ${K} -n kube-system rollout status daemonset/calico-node --timeout=300s
 
+    # Install metallb to each cluster. This is a bit of a "hack" to enable LoadBalancers in kind so that
+    # the 2 clusters can directly communicate with each other.
     ${K} apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/namespace.yaml
     ${K} apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/metallb.yaml
     ${K} -n metallb-system create secret generic memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
