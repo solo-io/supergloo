@@ -12,7 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/events"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -88,7 +88,7 @@ type genericIssuedCertificateHandler struct {
 	handler IssuedCertificateEventHandler
 }
 
-func (h genericIssuedCertificateHandler) Create(object runtime.Object) error {
+func (h genericIssuedCertificateHandler) Create(object client.Object) error {
 	obj, ok := object.(*certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate)
 	if !ok {
 		return errors.Errorf("internal error: IssuedCertificate handler received event for %T", object)
@@ -96,7 +96,7 @@ func (h genericIssuedCertificateHandler) Create(object runtime.Object) error {
 	return h.handler.CreateIssuedCertificate(obj)
 }
 
-func (h genericIssuedCertificateHandler) Delete(object runtime.Object) error {
+func (h genericIssuedCertificateHandler) Delete(object client.Object) error {
 	obj, ok := object.(*certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate)
 	if !ok {
 		return errors.Errorf("internal error: IssuedCertificate handler received event for %T", object)
@@ -104,7 +104,7 @@ func (h genericIssuedCertificateHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteIssuedCertificate(obj)
 }
 
-func (h genericIssuedCertificateHandler) Update(old, new runtime.Object) error {
+func (h genericIssuedCertificateHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate)
 	if !ok {
 		return errors.Errorf("internal error: IssuedCertificate handler received event for %T", old)
@@ -116,7 +116,7 @@ func (h genericIssuedCertificateHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateIssuedCertificate(objOld, objNew)
 }
 
-func (h genericIssuedCertificateHandler) Generic(object runtime.Object) error {
+func (h genericIssuedCertificateHandler) Generic(object client.Object) error {
 	obj, ok := object.(*certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate)
 	if !ok {
 		return errors.Errorf("internal error: IssuedCertificate handler received event for %T", object)
@@ -195,7 +195,7 @@ type genericCertificateRequestHandler struct {
 	handler CertificateRequestEventHandler
 }
 
-func (h genericCertificateRequestHandler) Create(object runtime.Object) error {
+func (h genericCertificateRequestHandler) Create(object client.Object) error {
 	obj, ok := object.(*certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequest)
 	if !ok {
 		return errors.Errorf("internal error: CertificateRequest handler received event for %T", object)
@@ -203,7 +203,7 @@ func (h genericCertificateRequestHandler) Create(object runtime.Object) error {
 	return h.handler.CreateCertificateRequest(obj)
 }
 
-func (h genericCertificateRequestHandler) Delete(object runtime.Object) error {
+func (h genericCertificateRequestHandler) Delete(object client.Object) error {
 	obj, ok := object.(*certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequest)
 	if !ok {
 		return errors.Errorf("internal error: CertificateRequest handler received event for %T", object)
@@ -211,7 +211,7 @@ func (h genericCertificateRequestHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteCertificateRequest(obj)
 }
 
-func (h genericCertificateRequestHandler) Update(old, new runtime.Object) error {
+func (h genericCertificateRequestHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequest)
 	if !ok {
 		return errors.Errorf("internal error: CertificateRequest handler received event for %T", old)
@@ -223,7 +223,7 @@ func (h genericCertificateRequestHandler) Update(old, new runtime.Object) error 
 	return h.handler.UpdateCertificateRequest(objOld, objNew)
 }
 
-func (h genericCertificateRequestHandler) Generic(object runtime.Object) error {
+func (h genericCertificateRequestHandler) Generic(object client.Object) error {
 	obj, ok := object.(*certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequest)
 	if !ok {
 		return errors.Errorf("internal error: CertificateRequest handler received event for %T", object)
@@ -302,7 +302,7 @@ type genericPodBounceDirectiveHandler struct {
 	handler PodBounceDirectiveEventHandler
 }
 
-func (h genericPodBounceDirectiveHandler) Create(object runtime.Object) error {
+func (h genericPodBounceDirectiveHandler) Create(object client.Object) error {
 	obj, ok := object.(*certificates_mesh_gloo_solo_io_v1alpha2.PodBounceDirective)
 	if !ok {
 		return errors.Errorf("internal error: PodBounceDirective handler received event for %T", object)
@@ -310,7 +310,7 @@ func (h genericPodBounceDirectiveHandler) Create(object runtime.Object) error {
 	return h.handler.CreatePodBounceDirective(obj)
 }
 
-func (h genericPodBounceDirectiveHandler) Delete(object runtime.Object) error {
+func (h genericPodBounceDirectiveHandler) Delete(object client.Object) error {
 	obj, ok := object.(*certificates_mesh_gloo_solo_io_v1alpha2.PodBounceDirective)
 	if !ok {
 		return errors.Errorf("internal error: PodBounceDirective handler received event for %T", object)
@@ -318,7 +318,7 @@ func (h genericPodBounceDirectiveHandler) Delete(object runtime.Object) error {
 	return h.handler.DeletePodBounceDirective(obj)
 }
 
-func (h genericPodBounceDirectiveHandler) Update(old, new runtime.Object) error {
+func (h genericPodBounceDirectiveHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*certificates_mesh_gloo_solo_io_v1alpha2.PodBounceDirective)
 	if !ok {
 		return errors.Errorf("internal error: PodBounceDirective handler received event for %T", old)
@@ -330,7 +330,7 @@ func (h genericPodBounceDirectiveHandler) Update(old, new runtime.Object) error 
 	return h.handler.UpdatePodBounceDirective(objOld, objNew)
 }
 
-func (h genericPodBounceDirectiveHandler) Generic(object runtime.Object) error {
+func (h genericPodBounceDirectiveHandler) Generic(object client.Object) error {
 	obj, ok := object.(*certificates_mesh_gloo_solo_io_v1alpha2.PodBounceDirective)
 	if !ok {
 		return errors.Errorf("internal error: PodBounceDirective handler received event for %T", object)

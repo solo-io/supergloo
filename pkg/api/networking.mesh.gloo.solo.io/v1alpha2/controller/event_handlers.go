@@ -12,7 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/events"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -88,7 +88,7 @@ type genericTrafficPolicyHandler struct {
 	handler TrafficPolicyEventHandler
 }
 
-func (h genericTrafficPolicyHandler) Create(object runtime.Object) error {
+func (h genericTrafficPolicyHandler) Create(object client.Object) error {
 	obj, ok := object.(*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy)
 	if !ok {
 		return errors.Errorf("internal error: TrafficPolicy handler received event for %T", object)
@@ -96,7 +96,7 @@ func (h genericTrafficPolicyHandler) Create(object runtime.Object) error {
 	return h.handler.CreateTrafficPolicy(obj)
 }
 
-func (h genericTrafficPolicyHandler) Delete(object runtime.Object) error {
+func (h genericTrafficPolicyHandler) Delete(object client.Object) error {
 	obj, ok := object.(*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy)
 	if !ok {
 		return errors.Errorf("internal error: TrafficPolicy handler received event for %T", object)
@@ -104,7 +104,7 @@ func (h genericTrafficPolicyHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteTrafficPolicy(obj)
 }
 
-func (h genericTrafficPolicyHandler) Update(old, new runtime.Object) error {
+func (h genericTrafficPolicyHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy)
 	if !ok {
 		return errors.Errorf("internal error: TrafficPolicy handler received event for %T", old)
@@ -116,7 +116,7 @@ func (h genericTrafficPolicyHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateTrafficPolicy(objOld, objNew)
 }
 
-func (h genericTrafficPolicyHandler) Generic(object runtime.Object) error {
+func (h genericTrafficPolicyHandler) Generic(object client.Object) error {
 	obj, ok := object.(*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy)
 	if !ok {
 		return errors.Errorf("internal error: TrafficPolicy handler received event for %T", object)
@@ -195,7 +195,7 @@ type genericAccessPolicyHandler struct {
 	handler AccessPolicyEventHandler
 }
 
-func (h genericAccessPolicyHandler) Create(object runtime.Object) error {
+func (h genericAccessPolicyHandler) Create(object client.Object) error {
 	obj, ok := object.(*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy)
 	if !ok {
 		return errors.Errorf("internal error: AccessPolicy handler received event for %T", object)
@@ -203,7 +203,7 @@ func (h genericAccessPolicyHandler) Create(object runtime.Object) error {
 	return h.handler.CreateAccessPolicy(obj)
 }
 
-func (h genericAccessPolicyHandler) Delete(object runtime.Object) error {
+func (h genericAccessPolicyHandler) Delete(object client.Object) error {
 	obj, ok := object.(*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy)
 	if !ok {
 		return errors.Errorf("internal error: AccessPolicy handler received event for %T", object)
@@ -211,7 +211,7 @@ func (h genericAccessPolicyHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteAccessPolicy(obj)
 }
 
-func (h genericAccessPolicyHandler) Update(old, new runtime.Object) error {
+func (h genericAccessPolicyHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy)
 	if !ok {
 		return errors.Errorf("internal error: AccessPolicy handler received event for %T", old)
@@ -223,7 +223,7 @@ func (h genericAccessPolicyHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateAccessPolicy(objOld, objNew)
 }
 
-func (h genericAccessPolicyHandler) Generic(object runtime.Object) error {
+func (h genericAccessPolicyHandler) Generic(object client.Object) error {
 	obj, ok := object.(*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy)
 	if !ok {
 		return errors.Errorf("internal error: AccessPolicy handler received event for %T", object)
@@ -302,7 +302,7 @@ type genericVirtualMeshHandler struct {
 	handler VirtualMeshEventHandler
 }
 
-func (h genericVirtualMeshHandler) Create(object runtime.Object) error {
+func (h genericVirtualMeshHandler) Create(object client.Object) error {
 	obj, ok := object.(*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh)
 	if !ok {
 		return errors.Errorf("internal error: VirtualMesh handler received event for %T", object)
@@ -310,7 +310,7 @@ func (h genericVirtualMeshHandler) Create(object runtime.Object) error {
 	return h.handler.CreateVirtualMesh(obj)
 }
 
-func (h genericVirtualMeshHandler) Delete(object runtime.Object) error {
+func (h genericVirtualMeshHandler) Delete(object client.Object) error {
 	obj, ok := object.(*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh)
 	if !ok {
 		return errors.Errorf("internal error: VirtualMesh handler received event for %T", object)
@@ -318,7 +318,7 @@ func (h genericVirtualMeshHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteVirtualMesh(obj)
 }
 
-func (h genericVirtualMeshHandler) Update(old, new runtime.Object) error {
+func (h genericVirtualMeshHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh)
 	if !ok {
 		return errors.Errorf("internal error: VirtualMesh handler received event for %T", old)
@@ -330,7 +330,7 @@ func (h genericVirtualMeshHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateVirtualMesh(objOld, objNew)
 }
 
-func (h genericVirtualMeshHandler) Generic(object runtime.Object) error {
+func (h genericVirtualMeshHandler) Generic(object client.Object) error {
 	obj, ok := object.(*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh)
 	if !ok {
 		return errors.Errorf("internal error: VirtualMesh handler received event for %T", object)
@@ -409,7 +409,7 @@ type genericFailoverServiceHandler struct {
 	handler FailoverServiceEventHandler
 }
 
-func (h genericFailoverServiceHandler) Create(object runtime.Object) error {
+func (h genericFailoverServiceHandler) Create(object client.Object) error {
 	obj, ok := object.(*networking_mesh_gloo_solo_io_v1alpha2.FailoverService)
 	if !ok {
 		return errors.Errorf("internal error: FailoverService handler received event for %T", object)
@@ -417,7 +417,7 @@ func (h genericFailoverServiceHandler) Create(object runtime.Object) error {
 	return h.handler.CreateFailoverService(obj)
 }
 
-func (h genericFailoverServiceHandler) Delete(object runtime.Object) error {
+func (h genericFailoverServiceHandler) Delete(object client.Object) error {
 	obj, ok := object.(*networking_mesh_gloo_solo_io_v1alpha2.FailoverService)
 	if !ok {
 		return errors.Errorf("internal error: FailoverService handler received event for %T", object)
@@ -425,7 +425,7 @@ func (h genericFailoverServiceHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteFailoverService(obj)
 }
 
-func (h genericFailoverServiceHandler) Update(old, new runtime.Object) error {
+func (h genericFailoverServiceHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*networking_mesh_gloo_solo_io_v1alpha2.FailoverService)
 	if !ok {
 		return errors.Errorf("internal error: FailoverService handler received event for %T", old)
@@ -437,7 +437,7 @@ func (h genericFailoverServiceHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateFailoverService(objOld, objNew)
 }
 
-func (h genericFailoverServiceHandler) Generic(object runtime.Object) error {
+func (h genericFailoverServiceHandler) Generic(object client.Object) error {
 	obj, ok := object.(*networking_mesh_gloo_solo_io_v1alpha2.FailoverService)
 	if !ok {
 		return errors.Errorf("internal error: FailoverService handler received event for %T", object)

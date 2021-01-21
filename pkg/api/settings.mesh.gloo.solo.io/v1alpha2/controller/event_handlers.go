@@ -12,7 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/events"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -88,7 +88,7 @@ type genericSettingsHandler struct {
 	handler SettingsEventHandler
 }
 
-func (h genericSettingsHandler) Create(object runtime.Object) error {
+func (h genericSettingsHandler) Create(object client.Object) error {
 	obj, ok := object.(*settings_mesh_gloo_solo_io_v1alpha2.Settings)
 	if !ok {
 		return errors.Errorf("internal error: Settings handler received event for %T", object)
@@ -96,7 +96,7 @@ func (h genericSettingsHandler) Create(object runtime.Object) error {
 	return h.handler.CreateSettings(obj)
 }
 
-func (h genericSettingsHandler) Delete(object runtime.Object) error {
+func (h genericSettingsHandler) Delete(object client.Object) error {
 	obj, ok := object.(*settings_mesh_gloo_solo_io_v1alpha2.Settings)
 	if !ok {
 		return errors.Errorf("internal error: Settings handler received event for %T", object)
@@ -104,7 +104,7 @@ func (h genericSettingsHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteSettings(obj)
 }
 
-func (h genericSettingsHandler) Update(old, new runtime.Object) error {
+func (h genericSettingsHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*settings_mesh_gloo_solo_io_v1alpha2.Settings)
 	if !ok {
 		return errors.Errorf("internal error: Settings handler received event for %T", old)
@@ -116,7 +116,7 @@ func (h genericSettingsHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateSettings(objOld, objNew)
 }
 
-func (h genericSettingsHandler) Generic(object runtime.Object) error {
+func (h genericSettingsHandler) Generic(object client.Object) error {
 	obj, ok := object.(*settings_mesh_gloo_solo_io_v1alpha2.Settings)
 	if !ok {
 		return errors.Errorf("internal error: Settings handler received event for %T", object)
