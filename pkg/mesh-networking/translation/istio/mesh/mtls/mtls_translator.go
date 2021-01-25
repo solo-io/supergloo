@@ -275,7 +275,7 @@ func (t *translator) constructIssuedCertificate(
 
 	clusterName := istioMesh.GetInstallation().GetCluster()
 	issuedCertificateMeta := metav1.ObjectMeta{
-		Name: mesh.Name + "-" + clusterName, // prevent relay collisions
+		Name: mesh.Name,
 		// write to the agent namespace
 		Namespace: agentNamespace,
 		// write to the mesh cluster
