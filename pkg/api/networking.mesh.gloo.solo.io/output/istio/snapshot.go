@@ -14,7 +14,6 @@ import (
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/resource"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/contrib/pkg/output"
@@ -2153,11 +2152,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 			Version: "v1alpha2",
 			Kind:    "IssuedCertificate",
 		}
-		ref := types.NamespacedName{
-			Name:      obj.GetName(),
-			Namespace: obj.GetNamespace(),
-		}
-		clusterSnapshots.Insert(cluster, gvk, ref, obj)
+		clusterSnapshots.Insert(cluster, gvk, obj)
 	}
 	for _, obj := range b.GetPodBounceDirectives().List() {
 		cluster := obj.GetClusterName()
@@ -2166,11 +2161,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 			Version: "v1alpha2",
 			Kind:    "PodBounceDirective",
 		}
-		ref := types.NamespacedName{
-			Name:      obj.GetName(),
-			Namespace: obj.GetNamespace(),
-		}
-		clusterSnapshots.Insert(cluster, gvk, ref, obj)
+		clusterSnapshots.Insert(cluster, gvk, obj)
 	}
 
 	for _, obj := range b.GetXdsConfigs().List() {
@@ -2180,11 +2171,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 			Version: "v1alpha1",
 			Kind:    "XdsConfig",
 		}
-		ref := types.NamespacedName{
-			Name:      obj.GetName(),
-			Namespace: obj.GetNamespace(),
-		}
-		clusterSnapshots.Insert(cluster, gvk, ref, obj)
+		clusterSnapshots.Insert(cluster, gvk, obj)
 	}
 
 	for _, obj := range b.GetDestinationRules().List() {
@@ -2194,11 +2181,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 			Version: "v1alpha3",
 			Kind:    "DestinationRule",
 		}
-		ref := types.NamespacedName{
-			Name:      obj.GetName(),
-			Namespace: obj.GetNamespace(),
-		}
-		clusterSnapshots.Insert(cluster, gvk, ref, obj)
+		clusterSnapshots.Insert(cluster, gvk, obj)
 	}
 	for _, obj := range b.GetEnvoyFilters().List() {
 		cluster := obj.GetClusterName()
@@ -2207,11 +2190,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 			Version: "v1alpha3",
 			Kind:    "EnvoyFilter",
 		}
-		ref := types.NamespacedName{
-			Name:      obj.GetName(),
-			Namespace: obj.GetNamespace(),
-		}
-		clusterSnapshots.Insert(cluster, gvk, ref, obj)
+		clusterSnapshots.Insert(cluster, gvk, obj)
 	}
 	for _, obj := range b.GetGateways().List() {
 		cluster := obj.GetClusterName()
@@ -2220,11 +2199,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 			Version: "v1alpha3",
 			Kind:    "Gateway",
 		}
-		ref := types.NamespacedName{
-			Name:      obj.GetName(),
-			Namespace: obj.GetNamespace(),
-		}
-		clusterSnapshots.Insert(cluster, gvk, ref, obj)
+		clusterSnapshots.Insert(cluster, gvk, obj)
 	}
 	for _, obj := range b.GetServiceEntries().List() {
 		cluster := obj.GetClusterName()
@@ -2233,11 +2208,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 			Version: "v1alpha3",
 			Kind:    "ServiceEntry",
 		}
-		ref := types.NamespacedName{
-			Name:      obj.GetName(),
-			Namespace: obj.GetNamespace(),
-		}
-		clusterSnapshots.Insert(cluster, gvk, ref, obj)
+		clusterSnapshots.Insert(cluster, gvk, obj)
 	}
 	for _, obj := range b.GetVirtualServices().List() {
 		cluster := obj.GetClusterName()
@@ -2246,11 +2217,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 			Version: "v1alpha3",
 			Kind:    "VirtualService",
 		}
-		ref := types.NamespacedName{
-			Name:      obj.GetName(),
-			Namespace: obj.GetNamespace(),
-		}
-		clusterSnapshots.Insert(cluster, gvk, ref, obj)
+		clusterSnapshots.Insert(cluster, gvk, obj)
 	}
 
 	for _, obj := range b.GetAuthorizationPolicies().List() {
@@ -2260,11 +2227,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 			Version: "v1beta1",
 			Kind:    "AuthorizationPolicy",
 		}
-		ref := types.NamespacedName{
-			Name:      obj.GetName(),
-			Namespace: obj.GetNamespace(),
-		}
-		clusterSnapshots.Insert(cluster, gvk, ref, obj)
+		clusterSnapshots.Insert(cluster, gvk, obj)
 	}
 
 	for _, obj := range b.GetConfigMaps().List() {
@@ -2274,11 +2237,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 			Version: "v1",
 			Kind:    "ConfigMap",
 		}
-		ref := types.NamespacedName{
-			Name:      obj.GetName(),
-			Namespace: obj.GetNamespace(),
-		}
-		clusterSnapshots.Insert(cluster, gvk, ref, obj)
+		clusterSnapshots.Insert(cluster, gvk, obj)
 	}
 
 	return clusterSnapshots

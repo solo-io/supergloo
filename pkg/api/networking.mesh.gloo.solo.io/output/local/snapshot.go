@@ -14,7 +14,6 @@ import (
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/resource"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/contrib/pkg/output"
@@ -437,11 +436,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 			Version: "v1",
 			Kind:    "Secret",
 		}
-		ref := types.NamespacedName{
-			Name:      obj.GetName(),
-			Namespace: obj.GetNamespace(),
-		}
-		clusterSnapshots.Insert(cluster, gvk, ref, obj)
+		clusterSnapshots.Insert(cluster, gvk, obj)
 	}
 
 	return clusterSnapshots

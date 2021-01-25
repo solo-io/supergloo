@@ -25,18 +25,19 @@ func (opts *DiscoveryOpts) AddToFlags(flags *pflag.FlagSet) {
 // which processes k8s storage events to produce
 // discovered resources.
 func Start(ctx context.Context, opts DiscoveryOpts) error {
-	return bootstrap.Start(ctx, "discovery", func(parameters bootstrap.StartParameters) error {
-		return startReconciler(opts.agentCluster, parameters)
+	return bootstrap.Start(ctx, "discovery", func(ctx context.Context, parameters bootstrap.StartParameters) error {
+		return startReconciler(ctx, opts.agentCluster, parameters)
 	}, *opts.Options, schemes.SchemeBuilder, opts.agentCluster != "")
 }
 
 // start the main reconcile loop
 func startReconciler(
+	ctx context.Context,
 	agentCluster string,
 	parameters bootstrap.StartParameters,
 ) error {
 	return reconciliation.Start(
-		parameters.Ctx,
+		ctx,
 		agentCluster,
 		parameters.MasterManager,
 		parameters.Clusters,

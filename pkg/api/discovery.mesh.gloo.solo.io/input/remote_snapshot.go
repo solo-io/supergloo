@@ -30,8 +30,6 @@ import (
 	"github.com/solo-io/skv2/pkg/verifier"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"k8s.io/apimachinery/pkg/types"
-
 	"github.com/hashicorp/go-multierror"
 
 	"github.com/solo-io/skv2/pkg/multicluster"
@@ -1292,7 +1290,7 @@ func (i *inMemoryDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, name 
 	daemonSets := apps_v1_sets.NewDaemonSetSet()
 	statefulSets := apps_v1_sets.NewStatefulSetSet()
 
-	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, ref types.NamespacedName, obj client.Object) {
+	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj client.Object) {
 		switch obj := obj.(type) {
 		// insert Meshes
 		case *appmesh_k8s_aws_v1beta2_types.Mesh:

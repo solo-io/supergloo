@@ -22,8 +22,6 @@ import (
 	"github.com/solo-io/skv2/pkg/verifier"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"k8s.io/apimachinery/pkg/types"
-
 	"github.com/hashicorp/go-multierror"
 
 	"github.com/solo-io/skv2/pkg/controllerutils"
@@ -360,7 +358,7 @@ func (i *inMemorySettingsBuilder) BuildSnapshot(ctx context.Context, name string
 
 	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
-	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, ref types.NamespacedName, obj client.Object) {
+	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj client.Object) {
 		switch obj := obj.(type) {
 		// insert Settings
 		case *settings_mesh_gloo_solo_io_v1alpha2_types.Settings:

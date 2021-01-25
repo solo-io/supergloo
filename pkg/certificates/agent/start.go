@@ -20,13 +20,14 @@ func Start(ctx context.Context, opts bootstrap.Options) error {
 
 // start the main reconcile loop
 func startReconciler(
+	ctx context.Context,
 	parameters bootstrap.StartParameters,
 ) error {
 
 	snapshotBuilder := input.NewSingleClusterBuilder(parameters.MasterManager)
 
 	return reconciliation.Start(
-		parameters.Ctx,
+		ctx,
 		snapshotBuilder,
 		parameters.MasterManager,
 	)

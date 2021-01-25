@@ -68,12 +68,12 @@ type networkingStarter struct {
 }
 
 // start the main reconcile loop
-func (s networkingStarter) startReconciler(parameters bootstrap.StartParameters) error {
+func (s networkingStarter) startReconciler(ctx context.Context,parameters bootstrap.StartParameters) error {
 	extensionOpts := s.makeExtensions(parameters)
 	extensionOpts.initDefaults(parameters)
 
 	if err := startCertIssuer(
-		parameters.Ctx,
+		ctx,
 		extensionOpts.CertIssuerReconciler.RegisterCertIssuerReconciler,
 		extensionOpts.CertIssuerReconciler.MakeCertIssuerSnapshotBuilder(parameters),
 		extensionOpts.CertIssuerReconciler.SyncCertificateIssuerInputStatuses,
@@ -82,14 +82,14 @@ func (s networkingStarter) startReconciler(parameters bootstrap.StartParameters)
 		return err
 	}
 
-	extensionClientset := extensions.NewClientset(parameters.Ctx)
+	extensionClientset := extensions.NewClientset(ctx)
 
 	inputSnapshotBuilder := input.NewSingleClusterLocalBuilder(parameters.MasterManager)
 
 	// contains output resource types read from all registered clusters
 	userProvidedSnapshotBuilder := extensionOpts.NetworkingReconciler.MakeUserSnapshotBuilder(parameters)
 
-	reporter := reporting.NewPanickingReporter(parameters.Ctx)
+	reporter := reporting.NewPanickingReporter(ctx)
 
 	translator := extensionOpts.NetworkingReconciler.MakeTranslator(translation.NewTranslator(
 		istio.NewIstioTranslator(extensionClientset),
@@ -105,7 +105,7 @@ func (s networkingStarter) startReconciler(parameters bootstrap.StartParameters)
 	applier := apply.NewApplier(validatingTranslator)
 
 	return reconciliation.Start(
-		parameters.Ctx,
+		ctx,
 		inputSnapshotBuilder,
 		userProvidedSnapshotBuilder,
 		applier,

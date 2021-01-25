@@ -26,8 +26,6 @@ import (
 	"github.com/solo-io/skv2/pkg/verifier"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"k8s.io/apimachinery/pkg/types"
-
 	"github.com/hashicorp/go-multierror"
 
 	"github.com/solo-io/skv2/pkg/controllerutils"
@@ -885,7 +883,7 @@ func (i *inMemoryBuilder) BuildSnapshot(ctx context.Context, name string, opts B
 	secrets := v1_sets.NewSecretSet()
 	pods := v1_sets.NewPodSet()
 
-	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, ref types.NamespacedName, obj client.Object) {
+	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj client.Object) {
 		switch obj := obj.(type) {
 		// insert IssuedCertificates
 		case *certificates_mesh_gloo_solo_io_v1alpha2_types.IssuedCertificate:
