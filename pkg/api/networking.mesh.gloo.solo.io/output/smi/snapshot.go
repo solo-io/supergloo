@@ -763,34 +763,34 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
 		return delta
 	}
 
-	// calcualte delta between TrafficSplits
-	trafficSplitDelta := b.GetTrafficSplits().Delta(other.GetTrafficSplits())
-	trafficSplitGvk := schema.GroupVersionKind{
+	// calculate delta between TrafficSplits
+	splitSmiSpecIov1Alpha2TrafficSplitDelta := b.GetSplitSmiSpecIov1Alpha2TrafficSplits().Delta(other.GetSplitSmiSpecIov1Alpha2TrafficSplits())
+	splitSmiSpecIov1Alpha2TrafficSplitGvk := schema.GroupVersionKind{
 		Group:   "split.smi-spec.io",
 		Version: "v1alpha2",
 		Kind:    "TrafficSplit",
 	}
-	delta.AddInserted(trafficSplitGvk, trafficSplitDelta.Inserted)
-	delta.AddRemoved(trafficSplitGvk, trafficSplitDelta.Removed)
+	delta.AddInserted(splitSmiSpecIov1Alpha2TrafficSplitGvk, splitSmiSpecIov1Alpha2TrafficSplitDelta.Inserted)
+	delta.AddRemoved(splitSmiSpecIov1Alpha2TrafficSplitGvk, splitSmiSpecIov1Alpha2TrafficSplitDelta.Removed)
 
-	// calcualte delta between TrafficTargets
-	trafficTargetDelta := b.GetTrafficTargets().Delta(other.GetTrafficTargets())
-	trafficTargetGvk := schema.GroupVersionKind{
+	// calculate delta between TrafficTargets
+	accessSmiSpecIov1Alpha2TrafficTargetDelta := b.GetAccessSmiSpecIov1Alpha2TrafficTargets().Delta(other.GetAccessSmiSpecIov1Alpha2TrafficTargets())
+	accessSmiSpecIov1Alpha2TrafficTargetGvk := schema.GroupVersionKind{
 		Group:   "access.smi-spec.io",
 		Version: "v1alpha2",
 		Kind:    "TrafficTarget",
 	}
-	delta.AddInserted(trafficTargetGvk, trafficTargetDelta.Inserted)
-	delta.AddRemoved(trafficTargetGvk, trafficTargetDelta.Removed)
+	delta.AddInserted(accessSmiSpecIov1Alpha2TrafficTargetGvk, accessSmiSpecIov1Alpha2TrafficTargetDelta.Inserted)
+	delta.AddRemoved(accessSmiSpecIov1Alpha2TrafficTargetGvk, accessSmiSpecIov1Alpha2TrafficTargetDelta.Removed)
 
-	// calcualte delta between HTTPRouteGroups
-	hTTPRouteGroupDelta := b.GetHTTPRouteGroups().Delta(other.GetHTTPRouteGroups())
-	hTTPRouteGroupGvk := schema.GroupVersionKind{
+	// calculate delta between HTTPRouteGroups
+	specsSmiSpecIov1Alpha3HTTPRouteGroupDelta := b.GetSpecsSmiSpecIov1Alpha3HTTPRouteGroups().Delta(other.GetSpecsSmiSpecIov1Alpha3HTTPRouteGroups())
+	specsSmiSpecIov1Alpha3HTTPRouteGroupGvk := schema.GroupVersionKind{
 		Group:   "specs.smi-spec.io",
 		Version: "v1alpha3",
 		Kind:    "HTTPRouteGroup",
 	}
-	delta.AddInserted(hTTPRouteGroupGvk, hTTPRouteGroupDelta.Inserted)
-	delta.AddRemoved(hTTPRouteGroupGvk, hTTPRouteGroupDelta.Removed)
+	delta.AddInserted(specsSmiSpecIov1Alpha3HTTPRouteGroupGvk, specsSmiSpecIov1Alpha3HTTPRouteGroupDelta.Inserted)
+	delta.AddRemoved(specsSmiSpecIov1Alpha3HTTPRouteGroupGvk, specsSmiSpecIov1Alpha3HTTPRouteGroupDelta.Removed)
 	return delta
 }

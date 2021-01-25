@@ -1979,99 +1979,99 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
 		return delta
 	}
 
-	// calcualte delta between IssuedCertificates
-	issuedCertificateDelta := b.GetIssuedCertificates().Delta(other.GetIssuedCertificates())
-	issuedCertificateGvk := schema.GroupVersionKind{
+	// calculate delta between IssuedCertificates
+	certificatesMeshGlooSoloIov1Alpha2IssuedCertificateDelta := b.GetCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates().Delta(other.GetCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates())
+	certificatesMeshGlooSoloIov1Alpha2IssuedCertificateGvk := schema.GroupVersionKind{
 		Group:   "certificates.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "IssuedCertificate",
 	}
-	delta.AddInserted(issuedCertificateGvk, issuedCertificateDelta.Inserted)
-	delta.AddRemoved(issuedCertificateGvk, issuedCertificateDelta.Removed)
-	// calcualte delta between PodBounceDirectives
-	podBounceDirectiveDelta := b.GetPodBounceDirectives().Delta(other.GetPodBounceDirectives())
-	podBounceDirectiveGvk := schema.GroupVersionKind{
+	delta.AddInserted(certificatesMeshGlooSoloIov1Alpha2IssuedCertificateGvk, certificatesMeshGlooSoloIov1Alpha2IssuedCertificateDelta.Inserted)
+	delta.AddRemoved(certificatesMeshGlooSoloIov1Alpha2IssuedCertificateGvk, certificatesMeshGlooSoloIov1Alpha2IssuedCertificateDelta.Removed)
+	// calculate delta between PodBounceDirectives
+	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveDelta := b.GetCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives().Delta(other.GetCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives())
+	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveGvk := schema.GroupVersionKind{
 		Group:   "certificates.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "PodBounceDirective",
 	}
-	delta.AddInserted(podBounceDirectiveGvk, podBounceDirectiveDelta.Inserted)
-	delta.AddRemoved(podBounceDirectiveGvk, podBounceDirectiveDelta.Removed)
+	delta.AddInserted(certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveGvk, certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveDelta.Inserted)
+	delta.AddRemoved(certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveGvk, certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveDelta.Removed)
 
-	// calcualte delta between XdsConfigs
-	xdsConfigDelta := b.GetXdsConfigs().Delta(other.GetXdsConfigs())
-	xdsConfigGvk := schema.GroupVersionKind{
+	// calculate delta between XdsConfigs
+	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigDelta := b.GetXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs().Delta(other.GetXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs())
+	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigGvk := schema.GroupVersionKind{
 		Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
 		Version: "v1alpha1",
 		Kind:    "XdsConfig",
 	}
-	delta.AddInserted(xdsConfigGvk, xdsConfigDelta.Inserted)
-	delta.AddRemoved(xdsConfigGvk, xdsConfigDelta.Removed)
+	delta.AddInserted(xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigGvk, xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigDelta.Inserted)
+	delta.AddRemoved(xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigGvk, xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigDelta.Removed)
 
-	// calcualte delta between DestinationRules
-	destinationRuleDelta := b.GetDestinationRules().Delta(other.GetDestinationRules())
-	destinationRuleGvk := schema.GroupVersionKind{
+	// calculate delta between DestinationRules
+	networkingIstioIov1Alpha3DestinationRuleDelta := b.GetNetworkingIstioIov1Alpha3DestinationRules().Delta(other.GetNetworkingIstioIov1Alpha3DestinationRules())
+	networkingIstioIov1Alpha3DestinationRuleGvk := schema.GroupVersionKind{
 		Group:   "networking.istio.io",
 		Version: "v1alpha3",
 		Kind:    "DestinationRule",
 	}
-	delta.AddInserted(destinationRuleGvk, destinationRuleDelta.Inserted)
-	delta.AddRemoved(destinationRuleGvk, destinationRuleDelta.Removed)
-	// calcualte delta between EnvoyFilters
-	envoyFilterDelta := b.GetEnvoyFilters().Delta(other.GetEnvoyFilters())
-	envoyFilterGvk := schema.GroupVersionKind{
+	delta.AddInserted(networkingIstioIov1Alpha3DestinationRuleGvk, networkingIstioIov1Alpha3DestinationRuleDelta.Inserted)
+	delta.AddRemoved(networkingIstioIov1Alpha3DestinationRuleGvk, networkingIstioIov1Alpha3DestinationRuleDelta.Removed)
+	// calculate delta between EnvoyFilters
+	networkingIstioIov1Alpha3EnvoyFilterDelta := b.GetNetworkingIstioIov1Alpha3EnvoyFilters().Delta(other.GetNetworkingIstioIov1Alpha3EnvoyFilters())
+	networkingIstioIov1Alpha3EnvoyFilterGvk := schema.GroupVersionKind{
 		Group:   "networking.istio.io",
 		Version: "v1alpha3",
 		Kind:    "EnvoyFilter",
 	}
-	delta.AddInserted(envoyFilterGvk, envoyFilterDelta.Inserted)
-	delta.AddRemoved(envoyFilterGvk, envoyFilterDelta.Removed)
-	// calcualte delta between Gateways
-	gatewayDelta := b.GetGateways().Delta(other.GetGateways())
-	gatewayGvk := schema.GroupVersionKind{
+	delta.AddInserted(networkingIstioIov1Alpha3EnvoyFilterGvk, networkingIstioIov1Alpha3EnvoyFilterDelta.Inserted)
+	delta.AddRemoved(networkingIstioIov1Alpha3EnvoyFilterGvk, networkingIstioIov1Alpha3EnvoyFilterDelta.Removed)
+	// calculate delta between Gateways
+	networkingIstioIov1Alpha3GatewayDelta := b.GetNetworkingIstioIov1Alpha3Gateways().Delta(other.GetNetworkingIstioIov1Alpha3Gateways())
+	networkingIstioIov1Alpha3GatewayGvk := schema.GroupVersionKind{
 		Group:   "networking.istio.io",
 		Version: "v1alpha3",
 		Kind:    "Gateway",
 	}
-	delta.AddInserted(gatewayGvk, gatewayDelta.Inserted)
-	delta.AddRemoved(gatewayGvk, gatewayDelta.Removed)
-	// calcualte delta between ServiceEntries
-	serviceEntryDelta := b.GetServiceEntries().Delta(other.GetServiceEntries())
-	serviceEntryGvk := schema.GroupVersionKind{
+	delta.AddInserted(networkingIstioIov1Alpha3GatewayGvk, networkingIstioIov1Alpha3GatewayDelta.Inserted)
+	delta.AddRemoved(networkingIstioIov1Alpha3GatewayGvk, networkingIstioIov1Alpha3GatewayDelta.Removed)
+	// calculate delta between ServiceEntries
+	networkingIstioIov1Alpha3ServiceEntryDelta := b.GetNetworkingIstioIov1Alpha3ServiceEntries().Delta(other.GetNetworkingIstioIov1Alpha3ServiceEntries())
+	networkingIstioIov1Alpha3ServiceEntryGvk := schema.GroupVersionKind{
 		Group:   "networking.istio.io",
 		Version: "v1alpha3",
 		Kind:    "ServiceEntry",
 	}
-	delta.AddInserted(serviceEntryGvk, serviceEntryDelta.Inserted)
-	delta.AddRemoved(serviceEntryGvk, serviceEntryDelta.Removed)
-	// calcualte delta between VirtualServices
-	virtualServiceDelta := b.GetVirtualServices().Delta(other.GetVirtualServices())
-	virtualServiceGvk := schema.GroupVersionKind{
+	delta.AddInserted(networkingIstioIov1Alpha3ServiceEntryGvk, networkingIstioIov1Alpha3ServiceEntryDelta.Inserted)
+	delta.AddRemoved(networkingIstioIov1Alpha3ServiceEntryGvk, networkingIstioIov1Alpha3ServiceEntryDelta.Removed)
+	// calculate delta between VirtualServices
+	networkingIstioIov1Alpha3VirtualServiceDelta := b.GetNetworkingIstioIov1Alpha3VirtualServices().Delta(other.GetNetworkingIstioIov1Alpha3VirtualServices())
+	networkingIstioIov1Alpha3VirtualServiceGvk := schema.GroupVersionKind{
 		Group:   "networking.istio.io",
 		Version: "v1alpha3",
 		Kind:    "VirtualService",
 	}
-	delta.AddInserted(virtualServiceGvk, virtualServiceDelta.Inserted)
-	delta.AddRemoved(virtualServiceGvk, virtualServiceDelta.Removed)
+	delta.AddInserted(networkingIstioIov1Alpha3VirtualServiceGvk, networkingIstioIov1Alpha3VirtualServiceDelta.Inserted)
+	delta.AddRemoved(networkingIstioIov1Alpha3VirtualServiceGvk, networkingIstioIov1Alpha3VirtualServiceDelta.Removed)
 
-	// calcualte delta between AuthorizationPolicies
-	authorizationPolicyDelta := b.GetAuthorizationPolicies().Delta(other.GetAuthorizationPolicies())
-	authorizationPolicyGvk := schema.GroupVersionKind{
+	// calculate delta between AuthorizationPolicies
+	securityIstioIov1Beta1AuthorizationPolicyDelta := b.GetSecurityIstioIov1Beta1AuthorizationPolicies().Delta(other.GetSecurityIstioIov1Beta1AuthorizationPolicies())
+	securityIstioIov1Beta1AuthorizationPolicyGvk := schema.GroupVersionKind{
 		Group:   "security.istio.io",
 		Version: "v1beta1",
 		Kind:    "AuthorizationPolicy",
 	}
-	delta.AddInserted(authorizationPolicyGvk, authorizationPolicyDelta.Inserted)
-	delta.AddRemoved(authorizationPolicyGvk, authorizationPolicyDelta.Removed)
+	delta.AddInserted(securityIstioIov1Beta1AuthorizationPolicyGvk, securityIstioIov1Beta1AuthorizationPolicyDelta.Inserted)
+	delta.AddRemoved(securityIstioIov1Beta1AuthorizationPolicyGvk, securityIstioIov1Beta1AuthorizationPolicyDelta.Removed)
 
-	// calcualte delta between ConfigMaps
-	configMapDelta := b.GetConfigMaps().Delta(other.GetConfigMaps())
-	configMapGvk := schema.GroupVersionKind{
+	// calculate delta between ConfigMaps
+	v1ConfigMapDelta := b.GetV1ConfigMaps().Delta(other.GetV1ConfigMaps())
+	v1ConfigMapGvk := schema.GroupVersionKind{
 		Group:   "",
 		Version: "v1",
 		Kind:    "ConfigMap",
 	}
-	delta.AddInserted(configMapGvk, configMapDelta.Inserted)
-	delta.AddRemoved(configMapGvk, configMapDelta.Removed)
+	delta.AddInserted(v1ConfigMapGvk, v1ConfigMapDelta.Inserted)
+	delta.AddRemoved(v1ConfigMapGvk, v1ConfigMapDelta.Removed)
 	return delta
 }

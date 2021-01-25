@@ -737,32 +737,32 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
 		return delta
 	}
 
-	// calcualte delta between TrafficTargets
-	trafficTargetDelta := b.GetTrafficTargets().Delta(other.GetTrafficTargets())
-	trafficTargetGvk := schema.GroupVersionKind{
+	// calculate delta between TrafficTargets
+	discoveryMeshGlooSoloIov1Alpha2TrafficTargetDelta := b.GetDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().Delta(other.GetDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets())
+	discoveryMeshGlooSoloIov1Alpha2TrafficTargetGvk := schema.GroupVersionKind{
 		Group:   "discovery.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "TrafficTarget",
 	}
-	delta.AddInserted(trafficTargetGvk, trafficTargetDelta.Inserted)
-	delta.AddRemoved(trafficTargetGvk, trafficTargetDelta.Removed)
-	// calcualte delta between Workloads
-	workloadDelta := b.GetWorkloads().Delta(other.GetWorkloads())
-	workloadGvk := schema.GroupVersionKind{
+	delta.AddInserted(discoveryMeshGlooSoloIov1Alpha2TrafficTargetGvk, discoveryMeshGlooSoloIov1Alpha2TrafficTargetDelta.Inserted)
+	delta.AddRemoved(discoveryMeshGlooSoloIov1Alpha2TrafficTargetGvk, discoveryMeshGlooSoloIov1Alpha2TrafficTargetDelta.Removed)
+	// calculate delta between Workloads
+	discoveryMeshGlooSoloIov1Alpha2WorkloadDelta := b.GetDiscoveryMeshGlooSoloIov1Alpha2Workloads().Delta(other.GetDiscoveryMeshGlooSoloIov1Alpha2Workloads())
+	discoveryMeshGlooSoloIov1Alpha2WorkloadGvk := schema.GroupVersionKind{
 		Group:   "discovery.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "Workload",
 	}
-	delta.AddInserted(workloadGvk, workloadDelta.Inserted)
-	delta.AddRemoved(workloadGvk, workloadDelta.Removed)
-	// calcualte delta between Meshes
-	meshDelta := b.GetMeshes().Delta(other.GetMeshes())
-	meshGvk := schema.GroupVersionKind{
+	delta.AddInserted(discoveryMeshGlooSoloIov1Alpha2WorkloadGvk, discoveryMeshGlooSoloIov1Alpha2WorkloadDelta.Inserted)
+	delta.AddRemoved(discoveryMeshGlooSoloIov1Alpha2WorkloadGvk, discoveryMeshGlooSoloIov1Alpha2WorkloadDelta.Removed)
+	// calculate delta between Meshes
+	discoveryMeshGlooSoloIov1Alpha2MeshDelta := b.GetDiscoveryMeshGlooSoloIov1Alpha2Meshes().Delta(other.GetDiscoveryMeshGlooSoloIov1Alpha2Meshes())
+	discoveryMeshGlooSoloIov1Alpha2MeshGvk := schema.GroupVersionKind{
 		Group:   "discovery.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "Mesh",
 	}
-	delta.AddInserted(meshGvk, meshDelta.Inserted)
-	delta.AddRemoved(meshGvk, meshDelta.Removed)
+	delta.AddInserted(discoveryMeshGlooSoloIov1Alpha2MeshGvk, discoveryMeshGlooSoloIov1Alpha2MeshDelta.Inserted)
+	delta.AddRemoved(discoveryMeshGlooSoloIov1Alpha2MeshGvk, discoveryMeshGlooSoloIov1Alpha2MeshDelta.Removed)
 	return delta
 }

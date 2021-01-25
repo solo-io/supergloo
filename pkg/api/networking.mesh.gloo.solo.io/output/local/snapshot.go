@@ -397,14 +397,14 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
 		return delta
 	}
 
-	// calcualte delta between Secrets
-	secretDelta := b.GetSecrets().Delta(other.GetSecrets())
-	secretGvk := schema.GroupVersionKind{
+	// calculate delta between Secrets
+	v1SecretDelta := b.GetV1Secrets().Delta(other.GetV1Secrets())
+	v1SecretGvk := schema.GroupVersionKind{
 		Group:   "",
 		Version: "v1",
 		Kind:    "Secret",
 	}
-	delta.AddInserted(secretGvk, secretDelta.Inserted)
-	delta.AddRemoved(secretGvk, secretDelta.Removed)
+	delta.AddInserted(v1SecretGvk, v1SecretDelta.Inserted)
+	delta.AddRemoved(v1SecretGvk, v1SecretDelta.Removed)
 	return delta
 }

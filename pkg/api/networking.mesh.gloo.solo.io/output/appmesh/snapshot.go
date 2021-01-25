@@ -737,32 +737,32 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
 		return delta
 	}
 
-	// calcualte delta between VirtualServices
-	virtualServiceDelta := b.GetVirtualServices().Delta(other.GetVirtualServices())
-	virtualServiceGvk := schema.GroupVersionKind{
+	// calculate delta between VirtualServices
+	appmeshK8SAwsv1Beta2VirtualServiceDelta := b.GetAppmeshK8SAwsv1Beta2VirtualServices().Delta(other.GetAppmeshK8SAwsv1Beta2VirtualServices())
+	appmeshK8SAwsv1Beta2VirtualServiceGvk := schema.GroupVersionKind{
 		Group:   "appmesh.k8s.aws",
 		Version: "v1beta2",
 		Kind:    "VirtualService",
 	}
-	delta.AddInserted(virtualServiceGvk, virtualServiceDelta.Inserted)
-	delta.AddRemoved(virtualServiceGvk, virtualServiceDelta.Removed)
-	// calcualte delta between VirtualNodes
-	virtualNodeDelta := b.GetVirtualNodes().Delta(other.GetVirtualNodes())
-	virtualNodeGvk := schema.GroupVersionKind{
+	delta.AddInserted(appmeshK8SAwsv1Beta2VirtualServiceGvk, appmeshK8SAwsv1Beta2VirtualServiceDelta.Inserted)
+	delta.AddRemoved(appmeshK8SAwsv1Beta2VirtualServiceGvk, appmeshK8SAwsv1Beta2VirtualServiceDelta.Removed)
+	// calculate delta between VirtualNodes
+	appmeshK8SAwsv1Beta2VirtualNodeDelta := b.GetAppmeshK8SAwsv1Beta2VirtualNodes().Delta(other.GetAppmeshK8SAwsv1Beta2VirtualNodes())
+	appmeshK8SAwsv1Beta2VirtualNodeGvk := schema.GroupVersionKind{
 		Group:   "appmesh.k8s.aws",
 		Version: "v1beta2",
 		Kind:    "VirtualNode",
 	}
-	delta.AddInserted(virtualNodeGvk, virtualNodeDelta.Inserted)
-	delta.AddRemoved(virtualNodeGvk, virtualNodeDelta.Removed)
-	// calcualte delta between VirtualRouters
-	virtualRouterDelta := b.GetVirtualRouters().Delta(other.GetVirtualRouters())
-	virtualRouterGvk := schema.GroupVersionKind{
+	delta.AddInserted(appmeshK8SAwsv1Beta2VirtualNodeGvk, appmeshK8SAwsv1Beta2VirtualNodeDelta.Inserted)
+	delta.AddRemoved(appmeshK8SAwsv1Beta2VirtualNodeGvk, appmeshK8SAwsv1Beta2VirtualNodeDelta.Removed)
+	// calculate delta between VirtualRouters
+	appmeshK8SAwsv1Beta2VirtualRouterDelta := b.GetAppmeshK8SAwsv1Beta2VirtualRouters().Delta(other.GetAppmeshK8SAwsv1Beta2VirtualRouters())
+	appmeshK8SAwsv1Beta2VirtualRouterGvk := schema.GroupVersionKind{
 		Group:   "appmesh.k8s.aws",
 		Version: "v1beta2",
 		Kind:    "VirtualRouter",
 	}
-	delta.AddInserted(virtualRouterGvk, virtualRouterDelta.Inserted)
-	delta.AddRemoved(virtualRouterGvk, virtualRouterDelta.Removed)
+	delta.AddInserted(appmeshK8SAwsv1Beta2VirtualRouterGvk, appmeshK8SAwsv1Beta2VirtualRouterDelta.Inserted)
+	delta.AddRemoved(appmeshK8SAwsv1Beta2VirtualRouterGvk, appmeshK8SAwsv1Beta2VirtualRouterDelta.Removed)
 	return delta
 }

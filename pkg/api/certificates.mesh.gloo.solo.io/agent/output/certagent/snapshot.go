@@ -580,24 +580,24 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
 		return delta
 	}
 
-	// calcualte delta between CertificateRequests
-	certificateRequestDelta := b.GetCertificateRequests().Delta(other.GetCertificateRequests())
-	certificateRequestGvk := schema.GroupVersionKind{
+	// calculate delta between CertificateRequests
+	certificatesMeshGlooSoloIov1Alpha2CertificateRequestDelta := b.GetCertificatesMeshGlooSoloIov1Alpha2CertificateRequests().Delta(other.GetCertificatesMeshGlooSoloIov1Alpha2CertificateRequests())
+	certificatesMeshGlooSoloIov1Alpha2CertificateRequestGvk := schema.GroupVersionKind{
 		Group:   "certificates.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "CertificateRequest",
 	}
-	delta.AddInserted(certificateRequestGvk, certificateRequestDelta.Inserted)
-	delta.AddRemoved(certificateRequestGvk, certificateRequestDelta.Removed)
+	delta.AddInserted(certificatesMeshGlooSoloIov1Alpha2CertificateRequestGvk, certificatesMeshGlooSoloIov1Alpha2CertificateRequestDelta.Inserted)
+	delta.AddRemoved(certificatesMeshGlooSoloIov1Alpha2CertificateRequestGvk, certificatesMeshGlooSoloIov1Alpha2CertificateRequestDelta.Removed)
 
-	// calcualte delta between Secrets
-	secretDelta := b.GetSecrets().Delta(other.GetSecrets())
-	secretGvk := schema.GroupVersionKind{
+	// calculate delta between Secrets
+	v1SecretDelta := b.GetV1Secrets().Delta(other.GetV1Secrets())
+	v1SecretGvk := schema.GroupVersionKind{
 		Group:   "",
 		Version: "v1",
 		Kind:    "Secret",
 	}
-	delta.AddInserted(secretGvk, secretDelta.Inserted)
-	delta.AddRemoved(secretGvk, secretDelta.Removed)
+	delta.AddInserted(v1SecretGvk, v1SecretDelta.Inserted)
+	delta.AddRemoved(v1SecretGvk, v1SecretDelta.Removed)
 	return delta
 }
