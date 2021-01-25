@@ -52,8 +52,8 @@ Specify criteria for collecting access logs. A request must match all specified 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| statusCodeMatcher | [common.matchers.mesh.gloo.solo.io.StatusCodeMatcher]({{< versioned_link_path fromRoot="/reference/api/api.common.matchers.v1alpha1.request_matchers#common.matchers.mesh.gloo.solo.io.StatusCodeMatcher" >}}) |  | Matches against a response status code. Omit to match any status code. |
-  | headerMatcher | [common.matchers.mesh.gloo.solo.io.HeaderMatcher]({{< versioned_link_path fromRoot="/reference/api/api.common.matchers.v1alpha1.request_matchers#common.matchers.mesh.gloo.solo.io.HeaderMatcher" >}}) |  | Matches against a request or response header. Omit to match any headers. |
+| statusCodeMatcher | [common.mesh.gloo.solo.io.StatusCodeMatcher]({{< versioned_link_path fromRoot="/reference/api/api.common.v1alpha1.request_matchers#common.mesh.gloo.solo.io.StatusCodeMatcher" >}}) |  | Matches against a response status code. Omit to match any status code. |
+  | headerMatcher | [common.mesh.gloo.solo.io.HeaderMatcher]({{< versioned_link_path fromRoot="/reference/api/api.common.v1alpha1.request_matchers#common.mesh.gloo.solo.io.HeaderMatcher" >}}) |  | Matches against a request or response header. Omit to match any headers. |
   
 
 

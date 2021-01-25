@@ -20,7 +20,7 @@ These docs describe Gloo Mesh CRDs.
 
 
 
-### common.matchers.mesh.gloo.solo.io
+### common.mesh.gloo.solo.io
 
 
 
@@ -35,8 +35,6 @@ These docs describe Gloo Mesh CRDs.
 
 
 ### extensions.networking.mesh.gloo.solo.io
-
-  - [extensions.networking.mesh.gloo.solo.io.Logging]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.access_logging#extensions.networking.mesh.gloo.solo.io.Logging" >}})
 
   - [extensions.networking.mesh.gloo.solo.io.NetworkingExtensions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions#extensions.networking.mesh.gloo.solo.io.NetworkingExtensions" >}})
 

@@ -5,7 +5,7 @@ title: "request_matchers.proto"
 
 ---
 
-## Package : `common.matchers.mesh.gloo.solo.io`
+## Package : `common.mesh.gloo.solo.io`
 
 
 
@@ -18,17 +18,17 @@ title: "request_matchers.proto"
 
 
 ## Table of Contents
-  - [HeaderMatcher](#common.matchers.mesh.gloo.solo.io.HeaderMatcher)
-  - [StatusCodeMatcher](#common.matchers.mesh.gloo.solo.io.StatusCodeMatcher)
+  - [HeaderMatcher](#common.mesh.gloo.solo.io.HeaderMatcher)
+  - [StatusCodeMatcher](#common.mesh.gloo.solo.io.StatusCodeMatcher)
 
-  - [StatusCodeMatcher.Comparator](#common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.Comparator)
-
-
+  - [StatusCodeMatcher.Comparator](#common.mesh.gloo.solo.io.StatusCodeMatcher.Comparator)
 
 
 
 
-<a name="common.matchers.mesh.gloo.solo.io.HeaderMatcher"></a>
+
+
+<a name="common.mesh.gloo.solo.io.HeaderMatcher"></a>
 
 ### HeaderMatcher
 Describes a matcher against HTTP request headers.
@@ -46,7 +46,7 @@ Describes a matcher against HTTP request headers.
 
 
 
-<a name="common.matchers.mesh.gloo.solo.io.StatusCodeMatcher"></a>
+<a name="common.mesh.gloo.solo.io.StatusCodeMatcher"></a>
 
 ### StatusCodeMatcher
 Describes a matcher against HTTP response status codes.
@@ -55,7 +55,7 @@ Describes a matcher against HTTP response status codes.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | value | uint32 |  | the status code value to match against |
-  | comparator | [common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.Comparator]({{< versioned_link_path fromRoot="/reference/api/api.common.matchers.v1alpha1.request_matchers#common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.Comparator" >}}) |  | the comparison type used for matching |
+  | comparator | [common.mesh.gloo.solo.io.StatusCodeMatcher.Comparator]({{< versioned_link_path fromRoot="/reference/api/api.common.v1alpha1.request_matchers#common.mesh.gloo.solo.io.StatusCodeMatcher.Comparator" >}}) |  | the comparison type used for matching |
   
 
 
@@ -64,7 +64,7 @@ Describes a matcher against HTTP response status codes.
  <!-- end messages -->
 
 
-<a name="common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.Comparator"></a>
+<a name="common.mesh.gloo.solo.io.StatusCodeMatcher.Comparator"></a>
 
 ### StatusCodeMatcher.Comparator
 

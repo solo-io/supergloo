@@ -7,7 +7,7 @@ import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/traffic_policy.proto";
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "api/common/matchers/v1alpha1/request_matchers.proto";
+import "api/common/v1alpha1/request_matchers.proto";
 
 /*
     Describes a collection of access logs sourced from a set of workloads and optionally
@@ -27,10 +27,10 @@ message AccessLogCollectionSpec {
     // Specify criteria for collecting access logs. A request must match all specified criteria to be collected.
     message Filter {
         // Matches against a response status code. Omit to match any status code.
-        .common.matchers.mesh.gloo.solo.io.StatusCodeMatcher status_code_matcher = 1;
+        .common.mesh.gloo.solo.io.StatusCodeMatcher status_code_matcher = 1;
 
         // Matches against a request or response header. Omit to match any headers.
-        .common.matchers.mesh.gloo.solo.io.HeaderMatcher header_matcher = 2;
+        .common.mesh.gloo.solo.io.HeaderMatcher header_matcher = 2;
     }
 }
 

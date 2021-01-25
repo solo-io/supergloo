@@ -14,7 +14,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/common/version"
 	skv1alpha1 "github.com/solo-io/skv2/api/multicluster/v1alpha1"
 	"github.com/solo-io/skv2/codegen"
-	"github.com/solo-io/skv2/codegen/collector"
 	"github.com/solo-io/skv2/codegen/model"
 )
 
@@ -82,12 +81,6 @@ var (
 		TopLevelComponents: topLevelComponents,
 	}
 
-	protocOptions = collector.ProtocOptions{
-		GoPackage: map[string]string{
-			"envoy/data/accesslog/v3/accesslog.proto": "github.com/envoyproxy/go-control-plane/envoy/data/accesslog/v3",
-		},
-	}
-
 	anyvendorImports = anyvendor.AnyVendorImports()
 )
 
@@ -140,7 +133,6 @@ func makeGlooMeshCommand(chartOnly bool) codegen.Command {
 		AnyVendorConfig:   anyvendorImports,
 		ManifestRoot:      glooMeshManifestRoot,
 		TopLevelTemplates: project.TopLevelTemplates(),
-		ProtocOptions:     protocOptions,
 		Chart:             helm.Chart,
 	}
 }
@@ -152,7 +144,6 @@ func makeGlooMeshCrdsCommand() codegen.Command {
 		ManifestRoot:    glooMeshCrdsManifestRoot,
 		Groups:          groups.GlooMeshGroups,
 		RenderProtos:    true,
-		ProtocOptions:   protocOptions,
 		Chart:           helm.CrdsChart,
 	}
 }
@@ -171,7 +162,6 @@ func makeCertAgentCommand(chartOnly bool) codegen.Command {
 		AnyVendorConfig: anyvendorImports,
 		ManifestRoot:    certAgentManifestRoot,
 		RenderProtos:    true,
-		ProtocOptions:   protocOptions,
 		Chart:           helm.CertAgentChart,
 	}
 }
@@ -183,7 +173,6 @@ func makeAgentCrdsCommand() codegen.Command {
 		ManifestRoot:    agentCrdsManifestRoot,
 		Groups:          append(groups.CertAgentGroups, groups.XdsAgentGroup),
 		RenderProtos:    true,
-		ProtocOptions:   protocOptions,
 		Chart:           helm.AgentCrdsChart,
 	}
 }
