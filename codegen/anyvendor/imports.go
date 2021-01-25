@@ -1,6 +1,8 @@
 package anyvendor
 
-import "github.com/solo-io/skv2/codegen/skv2_anyvendor"
+import (
+	"github.com/solo-io/skv2/codegen/skv2_anyvendor"
+)
 
 func AnyVendorImports() *skv2_anyvendor.Imports {
 	anyVendorImports := skv2_anyvendor.CreateDefaultMatchOptions([]string{

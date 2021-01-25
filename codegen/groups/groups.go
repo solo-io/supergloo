@@ -39,6 +39,10 @@ var GlooMeshEnterpriseNetworkingGroup = makeGroup("networking.enterprise", "v1al
 	{Kind: "WasmDeployment"},
 })
 
+var GlooMeshEnterpriseObservabilityGroup = makeGroup("observability.enterprise", "v1alpha1", []ResourceToGenerate{
+	{Kind: "AccessLogRecord"},
+})
+
 var GlooMeshEnterpriseRbacGroup = makeGroup("rbac.enterprise", "v1alpha1", []ResourceToGenerate{
 	{Kind: "Role", ShortNames: []string{"gmrole", "gmroles"}},
 	{Kind: "RoleBinding", ShortNames: []string{"gmrolebinding", "gmrolebindings"}},
@@ -49,6 +53,7 @@ var GlooMeshGroups = []model.Group{
 	GlooMeshDiscoveryGroup,
 	GlooMeshNetworkingGroup,
 	GlooMeshEnterpriseNetworkingGroup,
+	GlooMeshEnterpriseObservabilityGroup,
 	GlooMeshEnterpriseRbacGroup,
 }
 

@@ -586,10 +586,10 @@ spec:
                                     description: |-
                                       If set to true, the result of the match will be inverted. Defaults to false.
 
-                                                 Examples:
-                                                 * name=foo, invert_match=true: matches if no header named `foo` is present
-                                                 * name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
-                                                 * name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present
+                                             Examples:
+                                             * name=foo, invert_match=true: matches if no header named `foo` is present
+                                             * name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
+                                             * name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present
                                     type: boolean
                                   name:
                                     description: Specifies the name of the header in the request.
@@ -600,7 +600,7 @@ spec:
                                   value:
                                     description: |-
                                       Specifies the value of the header. If the value is absent a request that
-                                                 has the name header will match, regardless of the header’s value.
+                                             has the name header will match, regardless of the header’s value.
                                     type: string
                                 type: object
                               type: array
@@ -973,6 +973,56 @@ spec:
           type: object
         status:
           properties:
+            appliedAccessLogRecords:
+              description: The set of AccessLogRecords that have been applied to this Workload.
+              items:
+                properties:
+                  errors:
+                    description: any errors encountered while processing the referenced AccessLogRecord object
+                    items:
+                      type: string
+                    type: array
+                  observedGeneration:
+                    description: the observed generation of the accepted AccessLogRecord.
+                    format: int64
+                    type: integer
+                  ref:
+                    description: reference to the AccessLogRecord object.
+                    properties:
+                      name:
+                        description: name of the resource being referenced
+                        type: string
+                      namespace:
+                        description: namespace of the resource being referenced
+                        type: string
+                    type: object
+                type: object
+              type: array
+            appliedWasmDeployments:
+              description: The set of WasmDeployments that have been applied to this Workload.
+              items:
+                properties:
+                  errors:
+                    description: any errors encountered while processing the referenced WasmDeployment object
+                    items:
+                      type: string
+                    type: array
+                  observedGeneration:
+                    description: the observed generation of the accepted WasmDeployment.
+                    format: int64
+                    type: integer
+                  ref:
+                    description: reference to the WasmDeployment object.
+                    properties:
+                      name:
+                        description: name of the resource being referenced
+                        type: string
+                      namespace:
+                        description: namespace of the resource being referenced
+                        type: string
+                    type: object
+                type: object
+              type: array
             observedGeneration:
               description: |-
                 The observed generation of the Workload.

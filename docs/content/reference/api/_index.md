@@ -20,6 +20,10 @@ These docs describe Gloo Mesh CRDs.
 
 
 
+### common.mesh.gloo.solo.io
+
+
+
 ### discovery.mesh.gloo.solo.io
 
   - [Mesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec" >}})
@@ -53,6 +57,12 @@ These docs describe Gloo Mesh CRDs.
   - [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec" >}})
 
   - [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec" >}})
+
+
+
+### observability.enterprise.mesh.gloo.solo.io
+
+  - [AccessLogRecord]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.observability.v1alpha1.access_logging#observability.enterprise.mesh.gloo.solo.io.AccessLogRecordSpec" >}})
 
 
 
