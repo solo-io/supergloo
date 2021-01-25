@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/solo-io/skv2/pkg/stats"
+
 	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -18,7 +20,6 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/common/utils/stats"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/output"

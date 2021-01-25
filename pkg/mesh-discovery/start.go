@@ -3,10 +3,12 @@ package mesh_discovery
 import (
 	"context"
 
+	"github.com/solo-io/gloo-mesh/pkg/common/schemes"
+
 	"github.com/spf13/pflag"
 
-	"github.com/solo-io/gloo-mesh/pkg/common/bootstrap"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/reconciliation"
+	"github.com/solo-io/skv2/pkg/bootstrap"
 )
 
 type DiscoveryOpts struct {
@@ -25,7 +27,7 @@ func (opts *DiscoveryOpts) AddToFlags(flags *pflag.FlagSet) {
 func Start(ctx context.Context, opts DiscoveryOpts) error {
 	return bootstrap.Start(ctx, "discovery", func(parameters bootstrap.StartParameters) error {
 		return startReconciler(opts.agentCluster, parameters)
-	}, *opts.Options, opts.agentCluster != "")
+	}, *opts.Options, schemes.SchemeBuilder, opts.agentCluster != "")
 }
 
 // start the main reconcile loop

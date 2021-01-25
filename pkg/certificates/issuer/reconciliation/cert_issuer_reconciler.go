@@ -24,7 +24,7 @@ type RegisterReconcilerFunc func(
 	ctx context.Context,
 	reconcile skinput.MultiClusterReconcileFunc,
 	reconcileInterval time.Duration,
-)
+) error
 
 // function which defines how the cert issuer should update the statuses of objects in its input snapshot
 type SyncStatusFunc func(ctx context.Context, snapshot input.Snapshot) error
@@ -42,7 +42,7 @@ func Start(
 	builder input.Builder,
 	syncInputStatuses SyncStatusFunc,
 	masterClient client.Client,
-) {
+) error {
 	r := &certIssuerReconciler{
 		ctx:               ctx,
 		builder:           builder,
@@ -50,7 +50,7 @@ func Start(
 		masterSecrets:     corev1.NewSecretClient(masterClient),
 	}
 
-	registerReconciler(ctx, r.reconcile, time.Second/2)
+	return registerReconciler(ctx, r.reconcile, time.Second/2)
 }
 
 // reconcile global state

@@ -34,7 +34,7 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v0.4.1 // indirect
 	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-git/go-git/v5 v5.2.0
-	github.com/go-logr/zapr v0.3.0
+	github.com/go-logr/zapr v0.3.0 // indirect
 	github.com/gobuffalo/packr v1.30.1
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/mock v1.4.4
@@ -42,7 +42,7 @@ require (
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
-	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
+	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/kr/pretty v0.2.1 // indirect
@@ -53,7 +53,6 @@ require (
 	github.com/openservicemesh/osm v0.3.0
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.7.1
 	github.com/prometheus/common v0.14.0 // indirect
 	github.com/prometheus/procfs v0.2.0 // indirect
 	github.com/pseudomuto/protoc-gen-doc v1.3.2
@@ -63,10 +62,10 @@ require (
 	github.com/sirupsen/logrus v1.7.0
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/external-apis v0.1.4
-	github.com/solo-io/go-utils v0.20.0
+	github.com/solo-io/go-utils v0.20.2
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.13
-	github.com/solo-io/skv2 v0.17.0
+	github.com/solo-io/skv2 v0.17.1
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.3.4
 	github.com/spf13/cobra v1.0.0

@@ -1377,6 +1377,8 @@ github.com/solo-io/external-apis v0.1.4/go.mod h1:3vyADtIZj8hCD5cBUwGuA60hd8O5fa
 github.com/solo-io/go-utils v0.19.0/go.mod h1:If8NiehXROCFU65PGeDTrrZCNA5gJXvbcVoXI8Fqjko=
 github.com/solo-io/go-utils v0.20.0 h1:R6NYnFw+SOi1ThTMIlJbFnB3W0vnu8exu+raaUE26jI=
 github.com/solo-io/go-utils v0.20.0/go.mod h1:wy4um9xnqPNlASld4eSuQQqjNCXRBtDjVRLJsoGqkdE=
+github.com/solo-io/go-utils v0.20.2 h1:lJFj9MsdosKU1Z/L9FDfiB2r3BFLvzFSLLAGR3p1e4U=
+github.com/solo-io/go-utils v0.20.2/go.mod h1:6e8K1spnMWwlnJRSNp/J84GEyJbrcK4Gm7i+ehzCi8c=
 github.com/solo-io/k8s-utils v0.0.1 h1:e2alFsqTT7GU10d6cFDX2y+86J142DrsRwy5itvvZOI=
 github.com/solo-io/k8s-utils v0.0.1/go.mod h1:53N9+9Gl2MwqIZJ7/ocA9gKvWt+6z7MPD2qKQix7oFE=
 github.com/solo-io/k8s-utils v0.0.3 h1:gEDUIuhHQAmaLUfi8b7cteywhXaTD6iw+kahFmzlM40=
@@ -1386,6 +1388,8 @@ github.com/solo-io/protoc-gen-ext v0.0.13 h1:grQ41RRAiMzl1zMzXNug1hoXl2QRETGmXyR
 github.com/solo-io/protoc-gen-ext v0.0.13/go.mod h1:/U/jMDtVI7R6N323sfaUXK9Mmo54D7SY3pP7JtI/kMo=
 github.com/solo-io/skv2 v0.17.0 h1:vvVEOhJbWv/MXaMEahf68PQU+nct1EOOMAOFeHcZxy4=
 github.com/solo-io/skv2 v0.17.0/go.mod h1:52/0ETq6fkr/abuoUYd3qgV8DEFBI72Sd5frl2dFGJs=
+github.com/solo-io/skv2 v0.17.1 h1:qYEYxk61Fu19Pf1GZSenUpC8gr5ZIJnlEeNqorK+mUw=
+github.com/solo-io/skv2 v0.17.1/go.mod h1:YYp5ZMXNoLJtH8Ry2tg9r6kcx6i2xPXCsisUKhhsn+Y=
 github.com/solo-io/solo-kit v0.16.0 h1:76nw9KQwgbgBwuocJ4xSdp81K49SqHn9WmE59VeI7VY=
 github.com/solo-io/solo-kit v0.16.0/go.mod h1:zf+vof9HAavbFKRgL80jJ24SeE9PvoB8ooQ7DACtK8I=
 github.com/sonatard/noctx v0.0.1 h1:VC1Qhl6Oxx9vvWo3UDgrGXYCeKCe3Wbw7qAWL6FrmTY=

@@ -10,10 +10,10 @@ import (
 	certissuerinput "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	certissuerreconciliation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/reconciliation"
-	"github.com/solo-io/gloo-mesh/pkg/common/bootstrap"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reconciliation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
 	skinput "github.com/solo-io/skv2/contrib/pkg/input"
+	"github.com/solo-io/skv2/pkg/bootstrap"
 )
 
 // Options for extending the functionality of the Networking controller
@@ -118,7 +118,7 @@ func (opts *CertIssuerReconcilerExtensionOpts) initDefaults(parameters bootstrap
 			ctx context.Context,
 			reconcile skinput.MultiClusterReconcileFunc,
 			reconcileInterval time.Duration,
-		) {
+		) error {
 			certissuerinput.RegisterMultiClusterReconciler(
 				ctx,
 				parameters.Clusters,
@@ -126,7 +126,7 @@ func (opts *CertIssuerReconcilerExtensionOpts) initDefaults(parameters bootstrap
 				reconcileInterval,
 				certissuerinput.ReconcileOptions{},
 			)
-
+			return nil
 		}
 	}
 	if opts.SyncCertificateIssuerInputStatuses == nil {
