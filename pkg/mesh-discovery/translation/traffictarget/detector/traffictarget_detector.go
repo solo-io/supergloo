@@ -68,7 +68,11 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 		Ports:                  convertPorts(service),
 	}
 
+	// If the service is not associated with a mesh, do not create a traffic target
 	validMesh := getMeshForKubeService(ctx, service, kubeService, meshWorkloads, meshes)
+	if validMesh == nil {
+		return nil
+	}
 
 	kubeService.Endpoints = getEndpointsForService(ctx, validMesh, endpoints, kubeService, virtualMeshes)
 
