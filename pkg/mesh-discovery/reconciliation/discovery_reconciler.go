@@ -110,7 +110,7 @@ func Start(
 			r.reconcileLocal,
 			input.ReconcileOptions{
 				Remote: input.RemoteReconcileOptions{
-					Meshes: reconcile.Options{
+					AppmeshK8SAwsv1Beta2Meshes: reconcile.Options{
 						Verifier: verifier,
 					},
 					Predicates: []predicate.Predicate{filterDiscoveryEvents},
@@ -158,7 +158,7 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 		// ignore NoKindMatchError for AppMesh Mesh CRs
 		// (only clusters with AppMesh Controller installed will
 		// have this kind registered)
-		Meshes: input.ResourceDiscoveryInputBuildOptions{
+		AppmeshK8SAwsv1Beta2Meshes: input.ResourceDiscoveryInputBuildOptions{
 			Verifier: r.verifier,
 		},
 	})
@@ -168,7 +168,7 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 	}
 
 	localInputSnap, err := r.settingsBuilder.BuildSnapshot(ctx, "mesh-discovery-local", input.SettingsBuildOptions{
-		Settings: input.ResourceSettingsBuildOptions{
+		SettingsMeshGlooSoloIov1Alpha2Settings: input.ResourceSettingsBuildOptions{
 			// Ensure that only declared Settings object exists in snapshot.
 			ListOptions: []client.ListOption{
 				client.InNamespace(r.settingsRef.Namespace),
@@ -183,7 +183,7 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 		return false, err
 	}
 
-	settings, err := localInputSnap.Settings().Find(r.settingsRef)
+	settings, err := localInputSnap.SettingsMeshGlooSoloIov1Alpha2Settings().Find(r.settingsRef)
 	if err != nil {
 		return false, err
 	}

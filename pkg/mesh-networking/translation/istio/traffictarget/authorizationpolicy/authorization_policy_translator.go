@@ -66,7 +66,7 @@ func (t *translator) Translate(
 	authPolicy := t.initializeAuthorizationPolicy(trafficTarget)
 
 	for _, policy := range trafficTarget.Status.AppliedAccessPolicies {
-		rule, err := t.translateAccessPolicy(policy.Spec, in.Meshes())
+		rule, err := t.translateAccessPolicy(policy.Spec, in.DiscoveryMeshGlooSoloIov1Alpha2Meshes())
 		if err != nil {
 			reporter.ReportAccessPolicyToTrafficTarget(trafficTarget, policy.Ref, eris.Wrapf(err, "%v", translatorName))
 			continue

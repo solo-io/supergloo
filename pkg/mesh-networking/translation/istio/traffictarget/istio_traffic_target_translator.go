@@ -57,8 +57,8 @@ func NewTranslator(
 	var existingVirtualServices v1alpha3sets.VirtualServiceSet
 	var existingDestinationRules v1alpha3sets.DestinationRuleSet
 	if userSupplied != nil {
-		existingVirtualServices = userSupplied.VirtualServices()
-		existingDestinationRules = userSupplied.DestinationRules()
+		existingVirtualServices = userSupplied.NetworkingIstioIov1Alpha3VirtualServices()
+		existingDestinationRules = userSupplied.NetworkingIstioIov1Alpha3DestinationRules()
 	}
 
 	return &translator{
@@ -77,7 +77,7 @@ func (t *translator) Translate(
 	reporter reporting.Reporter,
 ) {
 	// only translate istio trafficTargets
-	if !t.isIstioTrafficTarget(t.ctx, trafficTarget, in.Meshes()) {
+	if !t.isIstioTrafficTarget(t.ctx, trafficTarget, in.DiscoveryMeshGlooSoloIov1Alpha2Meshes()) {
 		return
 	}
 
@@ -86,17 +86,17 @@ func (t *translator) Translate(
 	vs := t.virtualServices.Translate(t.ctx, in, trafficTarget, nil, reporter)
 	// Append the traffic target as a parent to the virtual service
 	metautils.AppendParent(t.ctx, vs, trafficTarget, trafficTarget.GVK())
-	outputs.AddVirtualServices(vs)
+	outputs.AddNetworkingIstioIov1Alpha3VirtualServices(vs)
 	// Translate DestinationRules for TrafficTargets, can be nil if there is no service or applied traffic policies
 	dr := t.destinationRules.Translate(t.ctx, in, trafficTarget, nil, reporter)
 	// Append the traffic target as a parent to the destination rule
 	metautils.AppendParent(t.ctx, dr, trafficTarget, trafficTarget.GVK())
-	outputs.AddDestinationRules(dr)
+	outputs.AddNetworkingIstioIov1Alpha3DestinationRules(dr)
 	// Translate AuthorizationPolicies for TrafficTargets, can be nil if there is no service or applied traffic policies
 	ap := t.authorizationPolicies.Translate(in, trafficTarget, reporter)
 	// Append the traffic target as a parent to the authorization policy
 	metautils.AppendParent(t.ctx, ap, trafficTarget, trafficTarget.GVK())
-	outputs.AddAuthorizationPolicies(ap)
+	outputs.AddSecurityIstioIov1Beta1AuthorizationPolicies(ap)
 }
 
 func (t *translator) isIstioTrafficTarget(

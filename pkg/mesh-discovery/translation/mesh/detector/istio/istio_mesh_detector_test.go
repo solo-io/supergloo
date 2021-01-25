@@ -104,7 +104,7 @@ var _ = Describe("IstioMeshDetector", func() {
 		)
 
 		inRemote := input.NewInputDiscoveryInputSnapshotManualBuilder("")
-		inRemote.AddDeployments([]*appsv1.Deployment{deployment})
+		inRemote.AddAppsv1Deployments([]*appsv1.Deployment{deployment})
 
 		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
@@ -120,8 +120,8 @@ var _ = Describe("IstioMeshDetector", func() {
 		)
 
 		inRemote := input.NewInputDiscoveryInputSnapshotManualBuilder("")
-		inRemote.AddDeployments([]*appsv1.Deployment{deployment})
-		inRemote.AddConfigMaps(configMaps.List())
+		inRemote.AddAppsv1Deployments([]*appsv1.Deployment{deployment})
+		inRemote.AddV1ConfigMaps(configMaps.List())
 
 		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
@@ -155,8 +155,8 @@ var _ = Describe("IstioMeshDetector", func() {
 		deployment := istioDeployment(istiodDeploymentName)
 
 		inRemote := input.NewInputDiscoveryInputSnapshotManualBuilder("")
-		inRemote.AddDeployments([]*appsv1.Deployment{deployment})
-		inRemote.AddConfigMaps(configMaps.List())
+		inRemote.AddAppsv1Deployments([]*appsv1.Deployment{deployment})
+		inRemote.AddV1ConfigMaps(configMaps.List())
 
 		detector := NewMeshDetector(
 			ctx,
@@ -251,11 +251,11 @@ var _ = Describe("IstioMeshDetector", func() {
 		deployment := istioDeployment(istiodDeploymentName)
 
 		inRemote := input.NewInputDiscoveryInputSnapshotManualBuilder("")
-		inRemote.AddDeployments([]*appsv1.Deployment{deployment})
-		inRemote.AddConfigMaps(configMaps.List())
-		inRemote.AddServices(services.List())
-		inRemote.AddPods(pods.List())
-		inRemote.AddNodes(nodes.List())
+		inRemote.AddAppsv1Deployments([]*appsv1.Deployment{deployment})
+		inRemote.AddV1ConfigMaps(configMaps.List())
+		inRemote.AddV1Services(services.List())
+		inRemote.AddV1Pods(pods.List())
+		inRemote.AddV1Nodes(nodes.List())
 
 		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
@@ -352,11 +352,11 @@ var _ = Describe("IstioMeshDetector", func() {
 		deployment := istioDeployment(istiodDeploymentName)
 
 		inRemote := input.NewInputDiscoveryInputSnapshotManualBuilder("")
-		inRemote.AddDeployments([]*appsv1.Deployment{deployment})
-		inRemote.AddConfigMaps(configMaps.List())
-		inRemote.AddServices(services.List())
-		inRemote.AddPods(pods.List())
-		inRemote.AddNodes(nodes.List())
+		inRemote.AddAppsv1Deployments([]*appsv1.Deployment{deployment})
+		inRemote.AddV1ConfigMaps(configMaps.List())
+		inRemote.AddV1Services(services.List())
+		inRemote.AddV1Pods(pods.List())
+		inRemote.AddV1Nodes(nodes.List())
 		settings := &settingsv1alpha2.DiscoverySettings{
 			Istio: &settingsv1alpha2.DiscoverySettings_Istio{
 				IngressGatewayDetectors: map[string]*settingsv1alpha2.DiscoverySettings_Istio_IngressGatewayDetector{

@@ -61,8 +61,8 @@ func (r *certIssuerReconciler) reconcile(_ ezkube.ClusterResourceId) (bool, erro
 		return false, err
 	}
 
-	for _, certificateRequest := range inputSnap.CertificateRequests().List() {
-		if err := r.reconcileCertificateRequest(certificateRequest, inputSnap.IssuedCertificates()); err != nil {
+	for _, certificateRequest := range inputSnap.CertificatesMeshGlooSoloIov1Alpha2CertificateRequests().List() {
+		if err := r.reconcileCertificateRequest(certificateRequest, inputSnap.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates()); err != nil {
 			certificateRequest.Status.Error = err.Error()
 			certificateRequest.Status.State = v1alpha2.CertificateRequestStatus_FAILED
 		}

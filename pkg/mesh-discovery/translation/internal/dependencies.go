@@ -65,8 +65,8 @@ func (d DependencyFactoryImpl) MakeWorkloadTranslator(
 
 	workloadDetector := workloaddetector.NewWorkloadDetector(
 		ctx,
-		in.Pods(),
-		in.ReplicaSets(),
+		in.V1Pods(),
+		in.Appsv1ReplicaSets(),
 		sidecarDetectors,
 	)
 	return workload.NewTranslator(ctx, workloadDetector)

@@ -80,17 +80,17 @@ func (t *translator) Translate(
 
 	// If validation fails, report the errors to the Meshes and do not translate.
 	validationErrors := t.validator.Validate(failoverservice.Inputs{
-		TrafficTargets: in.TrafficTargets(),
-		KubeClusters:   in.KubernetesClusters(),
-		Meshes:         in.Meshes(),
-		VirtualMeshes:  in.VirtualMeshes(),
+		TrafficTargets: in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(),
+		KubeClusters:   in.MulticlusterSoloIov1Alpha1KubernetesClusters(),
+		Meshes:         in.DiscoveryMeshGlooSoloIov1Alpha2Meshes(),
+		VirtualMeshes:  in.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes(),
 	}, failoverService.Spec)
 	if validationErrors != nil {
 		reporter.ReportFailoverService(failoverService.Ref, validationErrors)
 		return
 	}
 
-	serviceEntries, destinationRules, envoyFilters := t.translate(failoverService, in.TrafficTargets(), in.Meshes(), reporter)
+	serviceEntries, destinationRules, envoyFilters := t.translate(failoverService, in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(), in.DiscoveryMeshGlooSoloIov1Alpha2Meshes(), reporter)
 
 	// Append failover service as a parent to each output resource
 	for _, se := range serviceEntries {
@@ -103,9 +103,9 @@ func (t *translator) Translate(
 		metautils.AppendParent(t.ctx, ef, failoverService.GetRef(), v1alpha2.FailoverService{}.GVK())
 	}
 
-	outputs.AddServiceEntries(serviceEntries...)
-	outputs.AddDestinationRules(destinationRules...)
-	outputs.AddEnvoyFilters(envoyFilters...)
+	outputs.AddNetworkingIstioIov1Alpha3ServiceEntries(serviceEntries...)
+	outputs.AddNetworkingIstioIov1Alpha3DestinationRules(destinationRules...)
+	outputs.AddNetworkingIstioIov1Alpha3EnvoyFilters(envoyFilters...)
 }
 
 // Translate FailoverService into ServiceEntry and EnvoyFilter.

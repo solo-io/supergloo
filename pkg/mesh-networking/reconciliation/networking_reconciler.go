@@ -131,15 +131,15 @@ func Start(
 	// this should eventually reach a steady state since Gloo Mesh performs equality checks before updating existing objects
 	remoteReconcileOptions := reconcile.Options{Verifier: remoteResourceVerifier}
 	remoteReconcileOpts := input.RemoteReconcileOptions{
-		IssuedCertificates:    remoteReconcileOptions,
-		PodBounceDirectives:   remoteReconcileOptions,
-		XdsConfigs:            remoteReconcileOptions,
-		DestinationRules:      remoteReconcileOptions,
-		EnvoyFilters:          remoteReconcileOptions,
-		Gateways:              remoteReconcileOptions,
-		ServiceEntries:        remoteReconcileOptions,
-		VirtualServices:       remoteReconcileOptions,
-		AuthorizationPolicies: remoteReconcileOptions,
+		CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates:  remoteReconcileOptions,
+		CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives: remoteReconcileOptions,
+		XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs:    remoteReconcileOptions,
+		NetworkingIstioIov1Alpha3DestinationRules:             remoteReconcileOptions,
+		NetworkingIstioIov1Alpha3EnvoyFilters:                 remoteReconcileOptions,
+		NetworkingIstioIov1Alpha3Gateways:                     remoteReconcileOptions,
+		NetworkingIstioIov1Alpha3ServiceEntries:               remoteReconcileOptions,
+		NetworkingIstioIov1Alpha3VirtualServices:              remoteReconcileOptions,
+		SecurityIstioIov1Beta1AuthorizationPolicies:           remoteReconcileOptions,
 		Predicates: []predicate.Predicate{
 			skv2predicate.SimplePredicate{
 				Filter: skv2predicate.SimpleEventFilterFunc(isIgnoredConfigMap),
@@ -191,7 +191,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	// build the input snapshot from the caches
 	inputSnap, err := r.localBuilder.BuildSnapshot(ctx, "mesh-networking", input.LocalBuildOptions{
 		// only look at kube clusters in our own namespace
-		KubernetesClusters: input.ResourceLocalBuildOptions{
+		MulticlusterSoloIov1Alpha1KubernetesClusters: input.ResourceLocalBuildOptions{
 			ListOptions: []client.ListOption{client.InNamespace(defaults.GetPodNamespace())},
 		},
 	})
@@ -225,15 +225,15 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 			Verifier: r.remoteResourceVerifier,
 		}
 		userSupplied, err = r.remoteBuilder.BuildSnapshot(ctx, "mesh-networking-istio-inputs", input.RemoteBuildOptions{
-			IssuedCertificates:    resourceBuildOptions,
-			PodBounceDirectives:   resourceBuildOptions,
-			XdsConfigs:            resourceBuildOptions,
-			DestinationRules:      resourceBuildOptions,
-			EnvoyFilters:          resourceBuildOptions,
-			Gateways:              resourceBuildOptions,
-			ServiceEntries:        resourceBuildOptions,
-			VirtualServices:       resourceBuildOptions,
-			AuthorizationPolicies: resourceBuildOptions,
+			CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates:  resourceBuildOptions,
+			CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives: resourceBuildOptions,
+			XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs:    resourceBuildOptions,
+			NetworkingIstioIov1Alpha3DestinationRules:             resourceBuildOptions,
+			NetworkingIstioIov1Alpha3EnvoyFilters:                 resourceBuildOptions,
+			NetworkingIstioIov1Alpha3Gateways:                     resourceBuildOptions,
+			NetworkingIstioIov1Alpha3ServiceEntries:               resourceBuildOptions,
+			NetworkingIstioIov1Alpha3VirtualServices:              resourceBuildOptions,
+			SecurityIstioIov1Beta1AuthorizationPolicies:           resourceBuildOptions,
 		})
 		if err != nil {
 			// failed to read from cache; should never happen
@@ -254,14 +254,14 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 
 	// update statuses of input objects
 	if err := inputSnap.SyncStatuses(ctx, r.mgmtClient, input.LocalSyncStatusOptions{
-		Settings:        true,
-		TrafficTarget:   true,
-		Workload:        true,
-		Mesh:            true,
-		TrafficPolicy:   true,
-		AccessPolicy:    true,
-		VirtualMesh:     true,
-		FailoverService: true,
+		SettingsMeshGlooSoloIov1Alpha2Settings:          true,
+		DiscoveryMeshGlooSoloIov1Alpha2TrafficTarget:    true,
+		DiscoveryMeshGlooSoloIov1Alpha2Workload:         true,
+		DiscoveryMeshGlooSoloIov1Alpha2Mesh:             true,
+		NetworkingMeshGlooSoloIov1Alpha2TrafficPolicy:   true,
+		NetworkingMeshGlooSoloIov1Alpha2AccessPolicy:    true,
+		NetworkingMeshGlooSoloIov1Alpha2VirtualMesh:     true,
+		NetworkingMeshGlooSoloIov1Alpha2FailoverService: true,
 	}); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -289,7 +289,7 @@ func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Lo
 // stores settings inside the context and initiates connections to extension servers.
 // processing/validation errors will be reported to the settings status.
 func (r *networkingReconciler) syncSettings(ctx *context.Context, in input.LocalSnapshot) error {
-	settings, err := in.Settings().Find(r.settingsRef)
+	settings, err := in.SettingsMeshGlooSoloIov1Alpha2Settings().Find(r.settingsRef)
 	if err != nil {
 		return err
 	}

@@ -19,34 +19,34 @@ import (
 type InputDiscoveryInputSnapshotManualBuilder struct {
 	name string
 
-	meshes appmesh_k8s_aws_v1beta2_sets.MeshSet
+	appmeshK8SAwsv1Beta2Meshes appmesh_k8s_aws_v1beta2_sets.MeshSet
 
-	configMaps v1_sets.ConfigMapSet
-	services   v1_sets.ServiceSet
-	pods       v1_sets.PodSet
-	nodes      v1_sets.NodeSet
+	v1ConfigMaps v1_sets.ConfigMapSet
+	v1Services   v1_sets.ServiceSet
+	v1Pods       v1_sets.PodSet
+	v1Nodes      v1_sets.NodeSet
 
-	deployments  apps_v1_sets.DeploymentSet
-	replicaSets  apps_v1_sets.ReplicaSetSet
-	daemonSets   apps_v1_sets.DaemonSetSet
-	statefulSets apps_v1_sets.StatefulSetSet
+	appsv1Deployments  apps_v1_sets.DeploymentSet
+	appsv1ReplicaSets  apps_v1_sets.ReplicaSetSet
+	appsv1DaemonSets   apps_v1_sets.DaemonSetSet
+	appsv1StatefulSets apps_v1_sets.StatefulSetSet
 }
 
 func NewInputDiscoveryInputSnapshotManualBuilder(name string) *InputDiscoveryInputSnapshotManualBuilder {
 	return &InputDiscoveryInputSnapshotManualBuilder{
 		name: name,
 
-		meshes: appmesh_k8s_aws_v1beta2_sets.NewMeshSet(),
+		appmeshK8SAwsv1Beta2Meshes: appmesh_k8s_aws_v1beta2_sets.NewMeshSet(),
 
-		configMaps: v1_sets.NewConfigMapSet(),
-		services:   v1_sets.NewServiceSet(),
-		pods:       v1_sets.NewPodSet(),
-		nodes:      v1_sets.NewNodeSet(),
+		v1ConfigMaps: v1_sets.NewConfigMapSet(),
+		v1Services:   v1_sets.NewServiceSet(),
+		v1Pods:       v1_sets.NewPodSet(),
+		v1Nodes:      v1_sets.NewNodeSet(),
 
-		deployments:  apps_v1_sets.NewDeploymentSet(),
-		replicaSets:  apps_v1_sets.NewReplicaSetSet(),
-		daemonSets:   apps_v1_sets.NewDaemonSetSet(),
-		statefulSets: apps_v1_sets.NewStatefulSetSet(),
+		appsv1Deployments:  apps_v1_sets.NewDeploymentSet(),
+		appsv1ReplicaSets:  apps_v1_sets.NewReplicaSetSet(),
+		appsv1DaemonSets:   apps_v1_sets.NewDaemonSetSet(),
+		appsv1StatefulSets: apps_v1_sets.NewStatefulSetSet(),
 	}
 }
 
@@ -54,52 +54,52 @@ func (i *InputDiscoveryInputSnapshotManualBuilder) Build() DiscoveryInputSnapsho
 	return NewDiscoveryInputSnapshot(
 		i.name,
 
-		i.meshes,
+		i.appmeshK8SAwsv1Beta2Meshes,
 
-		i.configMaps,
-		i.services,
-		i.pods,
-		i.nodes,
+		i.v1ConfigMaps,
+		i.v1Services,
+		i.v1Pods,
+		i.v1Nodes,
 
-		i.deployments,
-		i.replicaSets,
-		i.daemonSets,
-		i.statefulSets,
+		i.appsv1Deployments,
+		i.appsv1ReplicaSets,
+		i.appsv1DaemonSets,
+		i.appsv1StatefulSets,
 	)
 }
-func (i *InputDiscoveryInputSnapshotManualBuilder) AddMeshes(meshes []*appmesh_k8s_aws_v1beta2.Mesh) *InputDiscoveryInputSnapshotManualBuilder {
-	i.meshes.Insert(meshes...)
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddAppmeshK8SAwsv1Beta2Meshes(appmeshK8SAwsv1Beta2Meshes []*appmesh_k8s_aws_v1beta2.Mesh) *InputDiscoveryInputSnapshotManualBuilder {
+	i.appmeshK8SAwsv1Beta2Meshes.Insert(appmeshK8SAwsv1Beta2Meshes...)
 	return i
 }
-func (i *InputDiscoveryInputSnapshotManualBuilder) AddConfigMaps(configMaps []*v1.ConfigMap) *InputDiscoveryInputSnapshotManualBuilder {
-	i.configMaps.Insert(configMaps...)
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddV1ConfigMaps(v1ConfigMaps []*v1.ConfigMap) *InputDiscoveryInputSnapshotManualBuilder {
+	i.v1ConfigMaps.Insert(v1ConfigMaps...)
 	return i
 }
-func (i *InputDiscoveryInputSnapshotManualBuilder) AddServices(services []*v1.Service) *InputDiscoveryInputSnapshotManualBuilder {
-	i.services.Insert(services...)
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddV1Services(v1Services []*v1.Service) *InputDiscoveryInputSnapshotManualBuilder {
+	i.v1Services.Insert(v1Services...)
 	return i
 }
-func (i *InputDiscoveryInputSnapshotManualBuilder) AddPods(pods []*v1.Pod) *InputDiscoveryInputSnapshotManualBuilder {
-	i.pods.Insert(pods...)
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddV1Pods(v1Pods []*v1.Pod) *InputDiscoveryInputSnapshotManualBuilder {
+	i.v1Pods.Insert(v1Pods...)
 	return i
 }
-func (i *InputDiscoveryInputSnapshotManualBuilder) AddNodes(nodes []*v1.Node) *InputDiscoveryInputSnapshotManualBuilder {
-	i.nodes.Insert(nodes...)
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddV1Nodes(v1Nodes []*v1.Node) *InputDiscoveryInputSnapshotManualBuilder {
+	i.v1Nodes.Insert(v1Nodes...)
 	return i
 }
-func (i *InputDiscoveryInputSnapshotManualBuilder) AddDeployments(deployments []*apps_v1.Deployment) *InputDiscoveryInputSnapshotManualBuilder {
-	i.deployments.Insert(deployments...)
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddAppsv1Deployments(appsv1Deployments []*apps_v1.Deployment) *InputDiscoveryInputSnapshotManualBuilder {
+	i.appsv1Deployments.Insert(appsv1Deployments...)
 	return i
 }
-func (i *InputDiscoveryInputSnapshotManualBuilder) AddReplicaSets(replicaSets []*apps_v1.ReplicaSet) *InputDiscoveryInputSnapshotManualBuilder {
-	i.replicaSets.Insert(replicaSets...)
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddAppsv1ReplicaSets(appsv1ReplicaSets []*apps_v1.ReplicaSet) *InputDiscoveryInputSnapshotManualBuilder {
+	i.appsv1ReplicaSets.Insert(appsv1ReplicaSets...)
 	return i
 }
-func (i *InputDiscoveryInputSnapshotManualBuilder) AddDaemonSets(daemonSets []*apps_v1.DaemonSet) *InputDiscoveryInputSnapshotManualBuilder {
-	i.daemonSets.Insert(daemonSets...)
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddAppsv1DaemonSets(appsv1DaemonSets []*apps_v1.DaemonSet) *InputDiscoveryInputSnapshotManualBuilder {
+	i.appsv1DaemonSets.Insert(appsv1DaemonSets...)
 	return i
 }
-func (i *InputDiscoveryInputSnapshotManualBuilder) AddStatefulSets(statefulSets []*apps_v1.StatefulSet) *InputDiscoveryInputSnapshotManualBuilder {
-	i.statefulSets.Insert(statefulSets...)
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddAppsv1StatefulSets(appsv1StatefulSets []*apps_v1.StatefulSet) *InputDiscoveryInputSnapshotManualBuilder {
+	i.appsv1StatefulSets.Insert(appsv1StatefulSets...)
 	return i
 }

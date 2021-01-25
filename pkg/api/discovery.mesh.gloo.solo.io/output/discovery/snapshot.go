@@ -34,12 +34,12 @@ var MissingRequiredLabelError = func(labelKey, resourceKind string, obj ezkube.R
 // the snapshot of output resources produced by a translation
 type Snapshot interface {
 
-	// return the set of TrafficTargets with a given set of labels
-	TrafficTargets() []LabeledTrafficTargetSet
-	// return the set of Workloads with a given set of labels
-	Workloads() []LabeledWorkloadSet
-	// return the set of Meshes with a given set of labels
-	Meshes() []LabeledMeshSet
+	// return the set of DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets with a given set of labels
+	DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets() []LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet
+	// return the set of DiscoveryMeshGlooSoloIov1Alpha2Workloads with a given set of labels
+	DiscoveryMeshGlooSoloIov1Alpha2Workloads() []LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet
+	// return the set of DiscoveryMeshGlooSoloIov1Alpha2Meshes with a given set of labels
+	DiscoveryMeshGlooSoloIov1Alpha2Meshes() []LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet
 
 	// apply the snapshot to the local cluster, garbage collecting stale resources
 	ApplyLocalCluster(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
@@ -54,27 +54,27 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
-	trafficTargets []LabeledTrafficTargetSet
-	workloads      []LabeledWorkloadSet
-	meshes         []LabeledMeshSet
-	clusters       []string
+	discoveryMeshGlooSoloIov1Alpha2TrafficTargets []LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetsSet
+	discoveryMeshGlooSoloIov1Alpha2Workloads      []LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadsSet
+	discoveryMeshGlooSoloIov1Alpha2Meshes         []LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshesSet
+	clusters                                      []string
 }
 
 func NewSnapshot(
 	name string,
 
-	trafficTargets []LabeledTrafficTargetSet,
-	workloads []LabeledWorkloadSet,
-	meshes []LabeledMeshSet,
+	discoveryMeshGlooSoloIov1Alpha2TrafficTargets []LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetsSet,
+	discoveryMeshGlooSoloIov1Alpha2Workloads []LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadsSet,
+	discoveryMeshGlooSoloIov1Alpha2Meshes []LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshesSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{
 		name: name,
 
-		trafficTargets: trafficTargets,
-		workloads:      workloads,
-		meshes:         meshes,
-		clusters:       clusters,
+		discoveryMeshGlooSoloIov1Alpha2TrafficTargets: discoveryMeshGlooSoloIov1Alpha2TrafficTargets,
+		discoveryMeshGlooSoloIov1Alpha2Workloads:      discoveryMeshGlooSoloIov1Alpha2Workloads,
+		discoveryMeshGlooSoloIov1Alpha2Meshes:         discoveryMeshGlooSoloIov1Alpha2Meshes,
+		clusters:                                      clusters,
 	}
 }
 
@@ -84,21 +84,21 @@ func NewLabelPartitionedSnapshot(
 	name,
 	labelKey string, // the key by which to partition the resources
 
-	trafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet,
-	workloads discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet,
-	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
+	discoveryMeshGlooSoloIov1Alpha2TrafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet,
+	discoveryMeshGlooSoloIov1Alpha2Workloads discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet,
+	discoveryMeshGlooSoloIov1Alpha2Meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
-	partitionedTrafficTargets, err := partitionTrafficTargetsByLabel(labelKey, trafficTargets)
+	partitionedDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets, err := partitionDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetsByLabel(labelKey, discoveryMeshGlooSoloIov1Alpha2TrafficTargets)
 	if err != nil {
 		return nil, err
 	}
-	partitionedWorkloads, err := partitionWorkloadsByLabel(labelKey, workloads)
+	partitionedDiscoveryMeshGlooSoloIov1Alpha2Workloads, err := partitionDiscoveryMeshGlooSoloIov1Alpha2WorkloadsByLabel(labelKey, discoveryMeshGlooSoloIov1Alpha2Workloads)
 	if err != nil {
 		return nil, err
 	}
-	partitionedMeshes, err := partitionMeshesByLabel(labelKey, meshes)
+	partitionedDiscoveryMeshGlooSoloIov1Alpha2Meshes, err := partitionDiscoveryMeshGlooSoloIov1Alpha2MeshesByLabel(labelKey, discoveryMeshGlooSoloIov1Alpha2Meshes)
 	if err != nil {
 		return nil, err
 	}
@@ -106,9 +106,9 @@ func NewLabelPartitionedSnapshot(
 	return NewSnapshot(
 		name,
 
-		partitionedTrafficTargets,
-		partitionedWorkloads,
-		partitionedMeshes,
+		partitionedDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets,
+		partitionedDiscoveryMeshGlooSoloIov1Alpha2Workloads,
+		partitionedDiscoveryMeshGlooSoloIov1Alpha2Meshes,
 		clusters...,
 	), nil
 }
@@ -119,21 +119,21 @@ func NewSinglePartitionedSnapshot(
 	name string,
 	snapshotLabels map[string]string, // a single set of labels shared by all resources
 
-	trafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet,
-	workloads discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet,
-	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
+	discoveryMeshGlooSoloIov1Alpha2TrafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet,
+	discoveryMeshGlooSoloIov1Alpha2Workloads discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet,
+	discoveryMeshGlooSoloIov1Alpha2Meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
-	labeledTrafficTargets, err := NewLabeledTrafficTargetSet(trafficTargets, snapshotLabels)
+	labeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTarget, err := NewLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet(discoveryMeshGlooSoloIov1Alpha2TrafficTargets, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
-	labeledWorkloads, err := NewLabeledWorkloadSet(workloads, snapshotLabels)
+	labeledDiscoveryMeshGlooSoloIov1Alpha2Workload, err := NewLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet(discoveryMeshGlooSoloIov1Alpha2Workloads, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
-	labeledMeshes, err := NewLabeledMeshSet(meshes, snapshotLabels)
+	labeledDiscoveryMeshGlooSoloIov1Alpha2Mesh, err := NewLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet(discoveryMeshGlooSoloIov1Alpha2Meshes, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
@@ -141,9 +141,9 @@ func NewSinglePartitionedSnapshot(
 	return NewSnapshot(
 		name,
 
-		[]LabeledTrafficTargetSet{labeledTrafficTargets},
-		[]LabeledWorkloadSet{labeledWorkloads},
-		[]LabeledMeshSet{labeledMeshes},
+		[]LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet{labeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTarget},
+		[]LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet{labeledDiscoveryMeshGlooSoloIov1Alpha2Workload},
+		[]LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet{labeledDiscoveryMeshGlooSoloIov1Alpha2Mesh},
 		clusters...,
 	), nil
 }
@@ -152,13 +152,13 @@ func NewSinglePartitionedSnapshot(
 func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, errHandler output.ErrorHandler) {
 	var genericLists []output.ResourceList
 
-	for _, outputSet := range s.trafficTargets {
+	for _, outputSet := range s.discoveryMeshGlooSoloIov1Alpha2TrafficTargets {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.workloads {
+	for _, outputSet := range s.discoveryMeshGlooSoloIov1Alpha2Workloads {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.meshes {
+	for _, outputSet := range s.discoveryMeshGlooSoloIov1Alpha2Meshes {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -172,13 +172,13 @@ func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, err
 func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler) {
 	var genericLists []output.ResourceList
 
-	for _, outputSet := range s.trafficTargets {
+	for _, outputSet := range s.discoveryMeshGlooSoloIov1Alpha2TrafficTargets {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.workloads {
+	for _, outputSet := range s.discoveryMeshGlooSoloIov1Alpha2Workloads {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.meshes {
+	for _, outputSet := range s.discoveryMeshGlooSoloIov1Alpha2Meshes {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -189,16 +189,16 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 	}.SyncMultiCluster(ctx, multiClusterClient, errHandler)
 }
 
-func partitionTrafficTargetsByLabel(labelKey string, set discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet) ([]LabeledTrafficTargetSet, error) {
+func partitionDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetsByLabel(labelKey string, set discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet) ([]LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet, error) {
 	setsByLabel := map[string]discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "TrafficTarget", obj)
+			return nil, MissingRequiredLabelError(labelKey, "DiscoveryMeshGlooSoloIov1Alpha2TrafficTarget", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "TrafficTarget", obj)
+			return nil, MissingRequiredLabelError(labelKey, "DiscoveryMeshGlooSoloIov1Alpha2TrafficTarget", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -210,39 +210,39 @@ func partitionTrafficTargetsByLabel(labelKey string, set discovery_mesh_gloo_sol
 	}
 
 	// partition by label key
-	var partitionedTrafficTargets []LabeledTrafficTargetSet
+	var partitionedDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets []LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledTrafficTargetSet(setForValue, labels)
+		partitionedSet, err := NewLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedTrafficTargets = append(partitionedTrafficTargets, partitionedSet)
+		partitionedDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets = append(partitionedDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedTrafficTargets, func(i, j int) bool {
-		leftLabelValue := partitionedTrafficTargets[i].Labels()[labelKey]
-		rightLabelValue := partitionedTrafficTargets[j].Labels()[labelKey]
+	sort.SliceStable(partitionedDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets, func(i, j int) bool {
+		leftLabelValue := partitionedDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets[i].Labels()[labelKey]
+		rightLabelValue := partitionedDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedTrafficTargets, nil
+	return partitionedDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets, nil
 }
 
-func partitionWorkloadsByLabel(labelKey string, set discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet) ([]LabeledWorkloadSet, error) {
+func partitionDiscoveryMeshGlooSoloIov1Alpha2WorkloadsByLabel(labelKey string, set discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet) ([]LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet, error) {
 	setsByLabel := map[string]discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "Workload", obj)
+			return nil, MissingRequiredLabelError(labelKey, "DiscoveryMeshGlooSoloIov1Alpha2Workload", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "Workload", obj)
+			return nil, MissingRequiredLabelError(labelKey, "DiscoveryMeshGlooSoloIov1Alpha2Workload", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -254,39 +254,39 @@ func partitionWorkloadsByLabel(labelKey string, set discovery_mesh_gloo_solo_io_
 	}
 
 	// partition by label key
-	var partitionedWorkloads []LabeledWorkloadSet
+	var partitionedDiscoveryMeshGlooSoloIov1Alpha2Workloads []LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledWorkloadSet(setForValue, labels)
+		partitionedSet, err := NewLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedWorkloads = append(partitionedWorkloads, partitionedSet)
+		partitionedDiscoveryMeshGlooSoloIov1Alpha2Workloads = append(partitionedDiscoveryMeshGlooSoloIov1Alpha2Workloads, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedWorkloads, func(i, j int) bool {
-		leftLabelValue := partitionedWorkloads[i].Labels()[labelKey]
-		rightLabelValue := partitionedWorkloads[j].Labels()[labelKey]
+	sort.SliceStable(partitionedDiscoveryMeshGlooSoloIov1Alpha2Workloads, func(i, j int) bool {
+		leftLabelValue := partitionedDiscoveryMeshGlooSoloIov1Alpha2Workloads[i].Labels()[labelKey]
+		rightLabelValue := partitionedDiscoveryMeshGlooSoloIov1Alpha2Workloads[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedWorkloads, nil
+	return partitionedDiscoveryMeshGlooSoloIov1Alpha2Workloads, nil
 }
 
-func partitionMeshesByLabel(labelKey string, set discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet) ([]LabeledMeshSet, error) {
+func partitionDiscoveryMeshGlooSoloIov1Alpha2MeshesByLabel(labelKey string, set discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet) ([]LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet, error) {
 	setsByLabel := map[string]discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "Mesh", obj)
+			return nil, MissingRequiredLabelError(labelKey, "DiscoveryMeshGlooSoloIov1Alpha2Mesh", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "Mesh", obj)
+			return nil, MissingRequiredLabelError(labelKey, "DiscoveryMeshGlooSoloIov1Alpha2Mesh", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -298,70 +298,70 @@ func partitionMeshesByLabel(labelKey string, set discovery_mesh_gloo_solo_io_v1a
 	}
 
 	// partition by label key
-	var partitionedMeshes []LabeledMeshSet
+	var partitionedDiscoveryMeshGlooSoloIov1Alpha2Meshes []LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledMeshSet(setForValue, labels)
+		partitionedSet, err := NewLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedMeshes = append(partitionedMeshes, partitionedSet)
+		partitionedDiscoveryMeshGlooSoloIov1Alpha2Meshes = append(partitionedDiscoveryMeshGlooSoloIov1Alpha2Meshes, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedMeshes, func(i, j int) bool {
-		leftLabelValue := partitionedMeshes[i].Labels()[labelKey]
-		rightLabelValue := partitionedMeshes[j].Labels()[labelKey]
+	sort.SliceStable(partitionedDiscoveryMeshGlooSoloIov1Alpha2Meshes, func(i, j int) bool {
+		leftLabelValue := partitionedDiscoveryMeshGlooSoloIov1Alpha2Meshes[i].Labels()[labelKey]
+		rightLabelValue := partitionedDiscoveryMeshGlooSoloIov1Alpha2Meshes[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedMeshes, nil
+	return partitionedDiscoveryMeshGlooSoloIov1Alpha2Meshes, nil
 }
 
-func (s snapshot) TrafficTargets() []LabeledTrafficTargetSet {
-	return s.trafficTargets
+func (s snapshot) DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets() []LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet {
+	return s.discoveryMeshGlooSoloIov1Alpha2TrafficTargets
 }
 
-func (s snapshot) Workloads() []LabeledWorkloadSet {
-	return s.workloads
+func (s snapshot) DiscoveryMeshGlooSoloIov1Alpha2Workloads() []LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet {
+	return s.discoveryMeshGlooSoloIov1Alpha2Workloads
 }
 
-func (s snapshot) Meshes() []LabeledMeshSet {
-	return s.meshes
+func (s snapshot) DiscoveryMeshGlooSoloIov1Alpha2Meshes() []LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet {
+	return s.discoveryMeshGlooSoloIov1Alpha2Meshes
 }
 
 func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
-	trafficTargetSet := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet()
-	for _, set := range s.trafficTargets {
-		trafficTargetSet = trafficTargetSet.Union(set.Set())
+	discoveryMeshGlooSoloIov1Alpha2TrafficTargetSet := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet()
+	for _, set := range s.discoveryMeshGlooSoloIov1Alpha2TrafficTargets {
+		discoveryMeshGlooSoloIov1Alpha2TrafficTargetSet = discoveryMeshGlooSoloIov1Alpha2TrafficTargetSet.Union(set.Set())
 	}
-	snapshotMap["trafficTargets"] = trafficTargetSet.List()
-	workloadSet := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet()
-	for _, set := range s.workloads {
-		workloadSet = workloadSet.Union(set.Set())
+	snapshotMap["discoveryMeshGlooSoloIov1Alpha2TrafficTargets"] = discoveryMeshGlooSoloIov1Alpha2TrafficTargetSet.List()
+	discoveryMeshGlooSoloIov1Alpha2WorkloadSet := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet()
+	for _, set := range s.discoveryMeshGlooSoloIov1Alpha2Workloads {
+		discoveryMeshGlooSoloIov1Alpha2WorkloadSet = discoveryMeshGlooSoloIov1Alpha2WorkloadSet.Union(set.Set())
 	}
-	snapshotMap["workloads"] = workloadSet.List()
-	meshSet := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet()
-	for _, set := range s.meshes {
-		meshSet = meshSet.Union(set.Set())
+	snapshotMap["discoveryMeshGlooSoloIov1Alpha2Workloads"] = discoveryMeshGlooSoloIov1Alpha2WorkloadSet.List()
+	discoveryMeshGlooSoloIov1Alpha2MeshSet := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet()
+	for _, set := range s.discoveryMeshGlooSoloIov1Alpha2Meshes {
+		discoveryMeshGlooSoloIov1Alpha2MeshSet = discoveryMeshGlooSoloIov1Alpha2MeshSet.Union(set.Set())
 	}
-	snapshotMap["meshes"] = meshSet.List()
+	snapshotMap["discoveryMeshGlooSoloIov1Alpha2Meshes"] = discoveryMeshGlooSoloIov1Alpha2MeshSet.List()
 
 	snapshotMap["clusters"] = s.clusters
 
 	return json.Marshal(snapshotMap)
 }
 
-// LabeledTrafficTargetSet represents a set of trafficTargets
+// LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet represents a set of discoveryMeshGlooSoloIov1Alpha2TrafficTargets
 // which share a common set of labels.
-// These labels are used to find diffs between TrafficTargetSets.
-type LabeledTrafficTargetSet interface {
-	// returns the set of Labels shared by this TrafficTargetSet
+// These labels are used to find diffs between DiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSets.
+type LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet interface {
+	// returns the set of Labels shared by this DiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet
 	Labels() map[string]string
 
 	// returns the set of TrafficTargetes with the given labels
@@ -371,34 +371,34 @@ type LabeledTrafficTargetSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledTrafficTargetSet struct {
+type labeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet struct {
 	set    discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet
 	labels map[string]string
 }
 
-func NewLabeledTrafficTargetSet(set discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet, labels map[string]string) (LabeledTrafficTargetSet, error) {
-	// validate that each TrafficTarget contains the labels, else this is not a valid LabeledTrafficTargetSet
+func NewLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet(set discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet, labels map[string]string) (LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet, error) {
+	// validate that each TrafficTarget contains the labels, else this is not a valid LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on TrafficTarget %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on DiscoveryMeshGlooSoloIov1Alpha2TrafficTarget %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledTrafficTargetSet{set: set, labels: labels}, nil
+	return &labeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledTrafficTargetSet) Labels() map[string]string {
+func (l *labeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledTrafficTargetSet) Set() discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet {
+func (l *labeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet) Set() discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet {
 	return l.set
 }
 
-func (l labeledTrafficTargetSet) Generic() output.ResourceList {
+func (l labeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -425,11 +425,11 @@ func (l labeledTrafficTargetSet) Generic() output.ResourceList {
 	}
 }
 
-// LabeledWorkloadSet represents a set of workloads
+// LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet represents a set of discoveryMeshGlooSoloIov1Alpha2Workloads
 // which share a common set of labels.
-// These labels are used to find diffs between WorkloadSets.
-type LabeledWorkloadSet interface {
-	// returns the set of Labels shared by this WorkloadSet
+// These labels are used to find diffs between DiscoveryMeshGlooSoloIov1Alpha2WorkloadSets.
+type LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet interface {
+	// returns the set of Labels shared by this DiscoveryMeshGlooSoloIov1Alpha2WorkloadSet
 	Labels() map[string]string
 
 	// returns the set of Workloades with the given labels
@@ -439,34 +439,34 @@ type LabeledWorkloadSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledWorkloadSet struct {
+type labeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet struct {
 	set    discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
 	labels map[string]string
 }
 
-func NewLabeledWorkloadSet(set discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet, labels map[string]string) (LabeledWorkloadSet, error) {
-	// validate that each Workload contains the labels, else this is not a valid LabeledWorkloadSet
+func NewLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet(set discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet, labels map[string]string) (LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet, error) {
+	// validate that each Workload contains the labels, else this is not a valid LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on Workload %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on DiscoveryMeshGlooSoloIov1Alpha2Workload %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledWorkloadSet{set: set, labels: labels}, nil
+	return &labeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledWorkloadSet) Labels() map[string]string {
+func (l *labeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledWorkloadSet) Set() discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet {
+func (l *labeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet) Set() discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet {
 	return l.set
 }
 
-func (l labeledWorkloadSet) Generic() output.ResourceList {
+func (l labeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -493,11 +493,11 @@ func (l labeledWorkloadSet) Generic() output.ResourceList {
 	}
 }
 
-// LabeledMeshSet represents a set of meshes
+// LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet represents a set of discoveryMeshGlooSoloIov1Alpha2Meshes
 // which share a common set of labels.
-// These labels are used to find diffs between MeshSets.
-type LabeledMeshSet interface {
-	// returns the set of Labels shared by this MeshSet
+// These labels are used to find diffs between DiscoveryMeshGlooSoloIov1Alpha2MeshSets.
+type LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet interface {
+	// returns the set of Labels shared by this DiscoveryMeshGlooSoloIov1Alpha2MeshSet
 	Labels() map[string]string
 
 	// returns the set of Meshes with the given labels
@@ -507,34 +507,34 @@ type LabeledMeshSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledMeshSet struct {
+type labeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet struct {
 	set    discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
 	labels map[string]string
 }
 
-func NewLabeledMeshSet(set discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet, labels map[string]string) (LabeledMeshSet, error) {
-	// validate that each Mesh contains the labels, else this is not a valid LabeledMeshSet
+func NewLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet(set discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet, labels map[string]string) (LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet, error) {
+	// validate that each Mesh contains the labels, else this is not a valid LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on Mesh %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on DiscoveryMeshGlooSoloIov1Alpha2Mesh %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledMeshSet{set: set, labels: labels}, nil
+	return &labeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledMeshSet) Labels() map[string]string {
+func (l *labeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledMeshSet) Set() discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet {
+func (l *labeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet) Set() discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet {
 	return l.set
 }
 
-func (l labeledMeshSet) Generic() output.ResourceList {
+func (l labeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -566,9 +566,9 @@ type builder struct {
 	name     string
 	clusters []string
 
-	trafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet
-	workloads      discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
-	meshes         discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
+	discoveryMeshGlooSoloIov1Alpha2TrafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet
+	discoveryMeshGlooSoloIov1Alpha2Workloads      discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
+	discoveryMeshGlooSoloIov1Alpha2Meshes         discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
 }
 
 func NewBuilder(ctx context.Context, name string) *builder {
@@ -576,9 +576,9 @@ func NewBuilder(ctx context.Context, name string) *builder {
 		ctx:  ctx,
 		name: name,
 
-		trafficTargets: discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet(),
-		workloads:      discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet(),
-		meshes:         discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet(),
+		discoveryMeshGlooSoloIov1Alpha2TrafficTargets: discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet(),
+		discoveryMeshGlooSoloIov1Alpha2Workloads:      discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet(),
+		discoveryMeshGlooSoloIov1Alpha2Meshes:         discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet(),
 	}
 }
 
@@ -586,23 +586,23 @@ func NewBuilder(ctx context.Context, name string) *builder {
 // iteratively collecting outputs before producing a final snapshot
 type Builder interface {
 
-	// add TrafficTargets to the collected outputs
-	AddTrafficTargets(trafficTargets ...*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget)
+	// add DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets to the collected outputs
+	AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(discoveryMeshGlooSoloIov1Alpha2TrafficTargets ...*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget)
 
-	// get the collected TrafficTargets
-	GetTrafficTargets() discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet
+	// get the collected DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets
+	GetDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets() discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet
 
-	// add Workloads to the collected outputs
-	AddWorkloads(workloads ...*discovery_mesh_gloo_solo_io_v1alpha2.Workload)
+	// add DiscoveryMeshGlooSoloIov1Alpha2Workloads to the collected outputs
+	AddDiscoveryMeshGlooSoloIov1Alpha2Workloads(discoveryMeshGlooSoloIov1Alpha2Workloads ...*discovery_mesh_gloo_solo_io_v1alpha2.Workload)
 
-	// get the collected Workloads
-	GetWorkloads() discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
+	// get the collected DiscoveryMeshGlooSoloIov1Alpha2Workloads
+	GetDiscoveryMeshGlooSoloIov1Alpha2Workloads() discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
 
-	// add Meshes to the collected outputs
-	AddMeshes(meshes ...*discovery_mesh_gloo_solo_io_v1alpha2.Mesh)
+	// add DiscoveryMeshGlooSoloIov1Alpha2Meshes to the collected outputs
+	AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(discoveryMeshGlooSoloIov1Alpha2Meshes ...*discovery_mesh_gloo_solo_io_v1alpha2.Mesh)
 
-	// get the collected Meshes
-	GetMeshes() discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
+	// get the collected DiscoveryMeshGlooSoloIov1Alpha2Meshes
+	GetDiscoveryMeshGlooSoloIov1Alpha2Meshes() discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
 
 	// build the collected outputs into a label-partitioned snapshot
 	BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error)
@@ -627,42 +627,42 @@ type Builder interface {
 	Delta(newSnap Builder) output.SnapshotDelta
 }
 
-func (b *builder) AddTrafficTargets(trafficTargets ...*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) {
-	for _, obj := range trafficTargets {
+func (b *builder) AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(discoveryMeshGlooSoloIov1Alpha2TrafficTargets ...*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) {
+	for _, obj := range discoveryMeshGlooSoloIov1Alpha2TrafficTargets {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output TrafficTarget %v", sets.Key(obj))
-		b.trafficTargets.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output DiscoveryMeshGlooSoloIov1Alpha2TrafficTarget %v", sets.Key(obj))
+		b.discoveryMeshGlooSoloIov1Alpha2TrafficTargets.Insert(obj)
 	}
 }
-func (b *builder) AddWorkloads(workloads ...*discovery_mesh_gloo_solo_io_v1alpha2.Workload) {
-	for _, obj := range workloads {
+func (b *builder) AddDiscoveryMeshGlooSoloIov1Alpha2Workloads(discoveryMeshGlooSoloIov1Alpha2Workloads ...*discovery_mesh_gloo_solo_io_v1alpha2.Workload) {
+	for _, obj := range discoveryMeshGlooSoloIov1Alpha2Workloads {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output Workload %v", sets.Key(obj))
-		b.workloads.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output DiscoveryMeshGlooSoloIov1Alpha2Workload %v", sets.Key(obj))
+		b.discoveryMeshGlooSoloIov1Alpha2Workloads.Insert(obj)
 	}
 }
-func (b *builder) AddMeshes(meshes ...*discovery_mesh_gloo_solo_io_v1alpha2.Mesh) {
-	for _, obj := range meshes {
+func (b *builder) AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(discoveryMeshGlooSoloIov1Alpha2Meshes ...*discovery_mesh_gloo_solo_io_v1alpha2.Mesh) {
+	for _, obj := range discoveryMeshGlooSoloIov1Alpha2Meshes {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output Mesh %v", sets.Key(obj))
-		b.meshes.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output DiscoveryMeshGlooSoloIov1Alpha2Mesh %v", sets.Key(obj))
+		b.discoveryMeshGlooSoloIov1Alpha2Meshes.Insert(obj)
 	}
 }
 
-func (b *builder) GetTrafficTargets() discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet {
-	return b.trafficTargets
+func (b *builder) GetDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets() discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet {
+	return b.discoveryMeshGlooSoloIov1Alpha2TrafficTargets
 }
-func (b *builder) GetWorkloads() discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet {
-	return b.workloads
+func (b *builder) GetDiscoveryMeshGlooSoloIov1Alpha2Workloads() discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet {
+	return b.discoveryMeshGlooSoloIov1Alpha2Workloads
 }
-func (b *builder) GetMeshes() discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet {
-	return b.meshes
+func (b *builder) GetDiscoveryMeshGlooSoloIov1Alpha2Meshes() discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet {
+	return b.discoveryMeshGlooSoloIov1Alpha2Meshes
 }
 
 func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
@@ -670,9 +670,9 @@ func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
 		b.name,
 		labelKey,
 
-		b.trafficTargets,
-		b.workloads,
-		b.meshes,
+		b.discoveryMeshGlooSoloIov1Alpha2TrafficTargets,
+		b.discoveryMeshGlooSoloIov1Alpha2Workloads,
+		b.discoveryMeshGlooSoloIov1Alpha2Meshes,
 		b.clusters...,
 	)
 }
@@ -682,9 +682,9 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 		b.name,
 		snapshotLabels,
 
-		b.trafficTargets,
-		b.workloads,
-		b.meshes,
+		b.discoveryMeshGlooSoloIov1Alpha2TrafficTargets,
+		b.discoveryMeshGlooSoloIov1Alpha2Workloads,
+		b.discoveryMeshGlooSoloIov1Alpha2Meshes,
 		b.clusters...,
 	)
 }
@@ -702,9 +702,9 @@ func (b *builder) Merge(other Builder) {
 		return
 	}
 
-	b.AddTrafficTargets(other.GetTrafficTargets().List()...)
-	b.AddWorkloads(other.GetWorkloads().List()...)
-	b.AddMeshes(other.GetMeshes().List()...)
+	b.AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(other.GetDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List()...)
+	b.AddDiscoveryMeshGlooSoloIov1Alpha2Workloads(other.GetDiscoveryMeshGlooSoloIov1Alpha2Workloads().List()...)
+	b.AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(other.GetDiscoveryMeshGlooSoloIov1Alpha2Meshes().List()...)
 	for _, cluster := range other.Clusters() {
 		b.AddCluster(cluster)
 	}
@@ -716,14 +716,14 @@ func (b *builder) Clone() Builder {
 	}
 	clone := NewBuilder(b.ctx, b.name)
 
-	for _, trafficTarget := range b.GetTrafficTargets().List() {
-		clone.AddTrafficTargets(trafficTarget.DeepCopy())
+	for _, discoveryMeshGlooSoloIov1Alpha2TrafficTarget := range b.GetDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List() {
+		clone.AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(discoveryMeshGlooSoloIov1Alpha2TrafficTarget.DeepCopy())
 	}
-	for _, workload := range b.GetWorkloads().List() {
-		clone.AddWorkloads(workload.DeepCopy())
+	for _, discoveryMeshGlooSoloIov1Alpha2Workload := range b.GetDiscoveryMeshGlooSoloIov1Alpha2Workloads().List() {
+		clone.AddDiscoveryMeshGlooSoloIov1Alpha2Workloads(discoveryMeshGlooSoloIov1Alpha2Workload.DeepCopy())
 	}
-	for _, mesh := range b.GetMeshes().List() {
-		clone.AddMeshes(mesh.DeepCopy())
+	for _, discoveryMeshGlooSoloIov1Alpha2Mesh := range b.GetDiscoveryMeshGlooSoloIov1Alpha2Meshes().List() {
+		clone.AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(discoveryMeshGlooSoloIov1Alpha2Mesh.DeepCopy())
 	}
 	for _, cluster := range b.Clusters() {
 		clone.AddCluster(cluster)

@@ -55,7 +55,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 
 	It("should translate", func() {
 		in := input.NewInputLocalSnapshotManualBuilder("").
-			AddKubernetesClusters([]*multiclusterv1alpha1.KubernetesCluster{
+			AddMulticlusterSoloIov1Alpha1KubernetesClusters([]*multiclusterv1alpha1.KubernetesCluster{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "kube-cluster",
@@ -63,7 +63,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 					},
 				},
 			}).
-			AddMeshes([]*discoveryv1alpha2.Mesh{
+			AddDiscoveryMeshGlooSoloIov1Alpha2Meshes([]*discoveryv1alpha2.Mesh{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "mesh-1",
@@ -75,7 +75,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 					},
 				},
 			}).
-			AddWorkloads([]*discoveryv1alpha2.Workload{
+			AddDiscoveryMeshGlooSoloIov1Alpha2Workloads([]*discoveryv1alpha2.Workload{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:   "mesh-workload-1",
@@ -89,7 +89,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 					},
 				},
 			}).
-			AddTrafficTargets([]*discoveryv1alpha2.TrafficTarget{
+			AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets([]*discoveryv1alpha2.TrafficTarget{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:   "traffic-target-1",
@@ -107,10 +107,10 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		contextMatcher := gomock.Any()
 		mockDependencyFactory.
 			EXPECT().
-			MakeTrafficTargetTranslator(contextMatcher, nil, in.KubernetesClusters(), in.TrafficTargets(), in.FailoverServices()).
+			MakeTrafficTargetTranslator(contextMatcher, nil, in.MulticlusterSoloIov1Alpha1KubernetesClusters(), in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(), in.NetworkingMeshGlooSoloIov1Alpha2FailoverServices()).
 			Return(mockTrafficTargetTranslator)
 
-		for _, trafficTarget := range in.TrafficTargets().List() {
+		for _, trafficTarget := range in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List() {
 			mockTrafficTargetTranslator.
 				EXPECT().
 				Translate(in, trafficTarget, mockIstioOutputs, mockReporter)
@@ -118,9 +118,9 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 
 		mockDependencyFactory.
 			EXPECT().
-			MakeMeshTranslator(ctxWithValue, nil, in.KubernetesClusters(), in.Secrets(), in.Workloads(), in.TrafficTargets(), in.FailoverServices()).
+			MakeMeshTranslator(ctxWithValue, nil, in.MulticlusterSoloIov1Alpha1KubernetesClusters(), in.V1Secrets(), in.DiscoveryMeshGlooSoloIov1Alpha2Workloads(), in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(), in.NetworkingMeshGlooSoloIov1Alpha2FailoverServices()).
 			Return(mockMeshTranslator)
-		for _, mesh := range in.Meshes().List() {
+		for _, mesh := range in.DiscoveryMeshGlooSoloIov1Alpha2Meshes().List() {
 			mockMeshTranslator.
 				EXPECT().
 				Translate(in, mesh, mockIstioOutputs, mockLocalOutputs, mockReporter)

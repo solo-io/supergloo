@@ -73,7 +73,7 @@ func (t *translator) Translate(
 	var trafficTargets []*smiaccessv1alpha2.TrafficTarget
 	var httpRouteGroups []*smispecsv1alpha3.HTTPRouteGroup
 
-	backingWorkloads := workloadutils.FindBackingWorkloads(target.Spec.GetKubeService(), in.Workloads())
+	backingWorkloads := workloadutils.FindBackingWorkloads(target.Spec.GetKubeService(), in.DiscoveryMeshGlooSoloIov1Alpha2Workloads())
 	for _, ap := range target.Status.GetAppliedAccessPolicies() {
 
 		if len(backingWorkloads) == 0 {

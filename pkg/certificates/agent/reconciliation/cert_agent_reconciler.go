@@ -80,13 +80,13 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 	outputs := certagent.NewBuilder(r.ctx, "agent")
 
 	// process issued certificates
-	for _, issuedCertificate := range inputSnap.IssuedCertificates().List() {
+	for _, issuedCertificate := range inputSnap.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates().List() {
 		if err := r.reconcileIssuedCertificate(
 			issuedCertificate,
-			inputSnap.Secrets(),
-			inputSnap.Pods(),
-			inputSnap.CertificateRequests(),
-			inputSnap.PodBounceDirectives(),
+			inputSnap.V1Secrets(),
+			inputSnap.V1Pods(),
+			inputSnap.CertificatesMeshGlooSoloIov1Alpha2CertificateRequests(),
+			inputSnap.CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives(),
 			outputs,
 		); err != nil {
 			issuedCertificate.Status.Error = err.Error()
@@ -103,8 +103,8 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 
 	errs := errHandler.Errors()
 	if err := inputSnap.SyncStatuses(r.ctx, r.localClient, input.SyncStatusOptions{
-		IssuedCertificate:  true,
-		PodBounceDirective: true,
+		CertificatesMeshGlooSoloIov1Alpha2IssuedCertificate:  true,
+		CertificatesMeshGlooSoloIov1Alpha2PodBounceDirective: true,
 	}); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -135,7 +135,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		// ensure issued cert secret exists, nothing to do for this issued certificate
 		if issuedCertificateSecret, err := inputSecrets.Find(issuedCertificate.Spec.IssuedCertificateSecret); err == nil {
 			// add secret output to prevent it from being GC'ed
-			outputs.AddSecrets(issuedCertificateSecret)
+			outputs.AddV1Secrets(issuedCertificateSecret)
 			return nil
 		}
 		// otherwise, restart the workflow from PENDING
@@ -149,7 +149,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		if err != nil {
 			return err
 		}
-		outputs.AddSecrets(&corev1.Secret{
+		outputs.AddV1Secrets(&corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      issuedCertificate.Name,
 				Namespace: issuedCertificate.Namespace,
@@ -178,7 +178,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 				CertificateSigningRequest: csrBytes,
 			},
 		}
-		outputs.AddCertificateRequests(certificateRequest)
+		outputs.AddCertificatesMeshGlooSoloIov1Alpha2CertificateRequests(certificateRequest)
 
 		// set status to REQUESTED
 		issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_REQUESTED
@@ -206,8 +206,8 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			contextutils.LoggerFrom(r.ctx).Infof("waiting for certificate request %v to be signed by Issuer", sets.Key(certificateRequest))
 
 			// add secret and certrequest to output to prevent them from being GC'ed
-			outputs.AddSecrets(privateKeySecret)
-			outputs.AddCertificateRequests(certificateRequest)
+			outputs.AddV1Secrets(privateKeySecret)
+			outputs.AddCertificatesMeshGlooSoloIov1Alpha2CertificateRequests(certificateRequest)
 
 			// if the certificate signing request has not been
 			// fulfilled, return and wait for the next reconcile
@@ -238,7 +238,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			Data: issuedCertificateData.ToSecretData(),
 			Type: issuedCertificateSecretType,
 		}
-		outputs.AddSecrets(issuedCertificateSecret)
+		outputs.AddV1Secrets(issuedCertificateSecret)
 
 		// mark issued certificate as ISSUED
 		issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_ISSUED
@@ -248,7 +248,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			return err
 		} else {
 			// add secret output to prevent it from being GC'ed
-			outputs.AddSecrets(issuedCertificateSecret)
+			outputs.AddV1Secrets(issuedCertificateSecret)
 		}
 
 		// see if we need to bounce pods

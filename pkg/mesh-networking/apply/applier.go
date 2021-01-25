@@ -64,10 +64,10 @@ func (v *applier) Apply(ctx context.Context, input input.LocalSnapshot, userSupp
 // Optimistically initialize policy statuses to accepted, which may be set to invalid or failed pending subsequent validation.
 func initializePolicyStatuses(input input.LocalSnapshot) {
 
-	trafficPolicies := input.TrafficPolicies().List()
-	accessPolicies := input.AccessPolicies().List()
-	failoverServices := input.FailoverServices().List()
-	virtualMeshes := input.VirtualMeshes().List()
+	trafficPolicies := input.NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies().List()
+	accessPolicies := input.NetworkingMeshGlooSoloIov1Alpha2AccessPolicies().List()
+	failoverServices := input.NetworkingMeshGlooSoloIov1Alpha2FailoverServices().List()
+	virtualMeshes := input.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes().List()
 
 	// initialize traffic policy statuses
 	for _, trafficPolicy := range trafficPolicies {
@@ -108,8 +108,8 @@ func initializePolicyStatuses(input input.LocalSnapshot) {
 
 // Append status metadata to relevant discovery resources.
 func setDiscoveryStatusMetadata(input input.LocalSnapshot) {
-	clusterDomains := hostutils.NewClusterDomainRegistry(input.KubernetesClusters(), input.TrafficTargets())
-	for _, trafficTarget := range input.TrafficTargets().List() {
+	clusterDomains := hostutils.NewClusterDomainRegistry(input.MulticlusterSoloIov1Alpha1KubernetesClusters(), input.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets())
+	for _, trafficTarget := range input.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List() {
 		if trafficTarget.Spec.GetKubeService() != nil {
 			ref := trafficTarget.Spec.GetKubeService().GetRef()
 			trafficTarget.Status.LocalFqdn = clusterDomains.GetLocalFQDN(ref)
@@ -119,48 +119,48 @@ func setDiscoveryStatusMetadata(input input.LocalSnapshot) {
 
 // Validate that configuration target references.
 func validateConfigTargetReferences(input input.LocalSnapshot) {
-	configTargetValidator := configtarget.NewConfigTargetValidator(input.Meshes(), input.TrafficTargets())
-	configTargetValidator.ValidateAccessPolicies(input.AccessPolicies().List())
-	configTargetValidator.ValidateFailoverServices(input.FailoverServices().List())
-	configTargetValidator.ValidateTrafficPolicies(input.TrafficPolicies().List())
-	configTargetValidator.ValidateVirtualMeshes(input.VirtualMeshes().List())
+	configTargetValidator := configtarget.NewConfigTargetValidator(input.DiscoveryMeshGlooSoloIov1Alpha2Meshes(), input.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets())
+	configTargetValidator.ValidateAccessPolicies(input.NetworkingMeshGlooSoloIov1Alpha2AccessPolicies().List())
+	configTargetValidator.ValidateFailoverServices(input.NetworkingMeshGlooSoloIov1Alpha2FailoverServices().List())
+	configTargetValidator.ValidateTrafficPolicies(input.NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies().List())
+	configTargetValidator.ValidateVirtualMeshes(input.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes().List())
 }
 
 // Apply networking configuration policies to relevant discovery entities.
 func applyPoliciesToConfigTargets(input input.LocalSnapshot) {
-	for _, trafficTarget := range input.TrafficTargets().List() {
-		trafficTarget.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), trafficTarget)
-		trafficTarget.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), trafficTarget)
+	for _, trafficTarget := range input.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List() {
+		trafficTarget.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies().List(), trafficTarget)
+		trafficTarget.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.NetworkingMeshGlooSoloIov1Alpha2AccessPolicies().List(), trafficTarget)
 	}
 
-	for _, mesh := range input.Meshes().List() {
-		mesh.Status.AppliedVirtualMesh = getAppliedVirtualMesh(input.VirtualMeshes().List(), mesh)
-		mesh.Status.AppliedFailoverServices = getAppliedFailoverServices(input.FailoverServices().List(), mesh)
+	for _, mesh := range input.DiscoveryMeshGlooSoloIov1Alpha2Meshes().List() {
+		mesh.Status.AppliedVirtualMesh = getAppliedVirtualMesh(input.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes().List(), mesh)
+		mesh.Status.AppliedFailoverServices = getAppliedFailoverServices(input.NetworkingMeshGlooSoloIov1Alpha2FailoverServices().List(), mesh)
 	}
 }
 
 // For all discovery entities, update status with any translation errors.
 // Also update observed generation to indicate that it's been processed.
 func reportTranslationErrors(ctx context.Context, reporter *applyReporter, input input.LocalSnapshot) {
-	for _, workload := range input.Workloads().List() {
+	for _, workload := range input.DiscoveryMeshGlooSoloIov1Alpha2Workloads().List() {
 		// TODO: validate config applied to workloads when introduced
 		workload.Status.ObservedGeneration = workload.Generation
 	}
 
-	for _, trafficTarget := range input.TrafficTargets().List() {
+	for _, trafficTarget := range input.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List() {
 		trafficTarget.Status.ObservedGeneration = trafficTarget.Generation
 		trafficTarget.Status.AppliedTrafficPolicies = validateAndReturnApprovedTrafficPolicies(ctx, input, reporter, trafficTarget)
 		trafficTarget.Status.AppliedAccessPolicies = validateAndReturnApprovedAccessPolicies(ctx, input, reporter, trafficTarget)
 	}
 
-	for _, mesh := range input.Meshes().List() {
+	for _, mesh := range input.DiscoveryMeshGlooSoloIov1Alpha2Meshes().List() {
 		mesh.Status.ObservedGeneration = mesh.Generation
 		mesh.Status.AppliedFailoverServices = validateAndReturnApprovedFailoverServices(ctx, input, reporter, mesh)
 		mesh.Status.AppliedVirtualMesh = validateAndReturnVirtualMesh(ctx, input, reporter, mesh)
 	}
 
-	setWorkloadsForTrafficPolicies(ctx, input.TrafficPolicies().List(), input.Workloads().List(), input.TrafficTargets(), input.Meshes())
-	setWorkloadsForAccessPolicies(ctx, input.AccessPolicies().List(), input.Workloads().List(), input.TrafficTargets(), input.Meshes())
+	setWorkloadsForTrafficPolicies(ctx, input.NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies().List(), input.DiscoveryMeshGlooSoloIov1Alpha2Workloads().List(), input.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(), input.DiscoveryMeshGlooSoloIov1Alpha2Meshes())
+	setWorkloadsForAccessPolicies(ctx, input.NetworkingMeshGlooSoloIov1Alpha2AccessPolicies().List(), input.DiscoveryMeshGlooSoloIov1Alpha2Workloads().List(), input.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(), input.DiscoveryMeshGlooSoloIov1Alpha2Meshes())
 }
 
 // A workload is associated with a traffic policy if the workload matches the policy's workload selector
@@ -241,7 +241,7 @@ func validateAndReturnApprovedTrafficPolicies(ctx context.Context, input input.L
 	for _, appliedTrafficPolicy := range trafficTarget.Status.AppliedTrafficPolicies {
 		errsForTrafficPolicy := reporter.getTrafficPolicyErrors(trafficTarget, appliedTrafficPolicy.Ref)
 
-		trafficPolicy, err := input.TrafficPolicies().Find(appliedTrafficPolicy.Ref)
+		trafficPolicy, err := input.NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies().Find(appliedTrafficPolicy.Ref)
 		if err != nil {
 			// should never happen
 			contextutils.LoggerFrom(ctx).Errorf("internal error: failed to look up applied traffic policy %v: %v", appliedTrafficPolicy.Ref, err)
@@ -290,7 +290,7 @@ func validateAndReturnApprovedAccessPolicies(
 	for _, appliedAccessPolicy := range trafficTarget.Status.AppliedAccessPolicies {
 		errsForAccessPolicy := reporter.getAccessPolicyErrors(trafficTarget, appliedAccessPolicy.Ref)
 
-		accessPolicy, err := input.AccessPolicies().Find(appliedAccessPolicy.Ref)
+		accessPolicy, err := input.NetworkingMeshGlooSoloIov1Alpha2AccessPolicies().Find(appliedAccessPolicy.Ref)
 		if err != nil {
 			// should never happen
 			contextutils.LoggerFrom(ctx).Errorf("internal error: failed to look up applied AccessPolicy %v: %v", appliedAccessPolicy.Ref, err)
@@ -333,7 +333,7 @@ func validateAndReturnApprovedFailoverServices(
 	for _, appliedFailoverService := range mesh.Status.AppliedFailoverServices {
 		errsForFailoverService := reporter.getFailoverServiceErrors(mesh, appliedFailoverService.Ref)
 
-		failoverService, err := input.FailoverServices().Find(appliedFailoverService.Ref)
+		failoverService, err := input.NetworkingMeshGlooSoloIov1Alpha2FailoverServices().Find(appliedFailoverService.Ref)
 		if err != nil {
 			// should never happen
 			contextutils.LoggerFrom(ctx).Errorf("internal error: failed to look up applied FailoverService %v: %v", appliedFailoverService.Ref, err)
@@ -375,7 +375,7 @@ func validateAndReturnVirtualMesh(
 	}
 	errsForVirtualMesh := reporter.getVirtualMeshErrors(mesh, appliedVirtualMesh.Ref)
 
-	virtualMesh, err := input.VirtualMeshes().Find(appliedVirtualMesh.Ref)
+	virtualMesh, err := input.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes().Find(appliedVirtualMesh.Ref)
 	if err != nil {
 		// should never happen
 		contextutils.LoggerFrom(ctx).Errorf("internal error: failed to look up applied VirtualMesh %v: %v", appliedVirtualMesh.Ref, err)

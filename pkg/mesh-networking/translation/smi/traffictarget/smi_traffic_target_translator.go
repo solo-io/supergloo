@@ -54,7 +54,7 @@ func (t *translator) Translate(
 	// Translate output TrafficTargets and HttpRouteGroups for discovered TrafficTarget
 	trafficTargets, httpRouteGroups := t.trafficTarget.Translate(ctx, in, trafficTarget, reporter)
 
-	outputs.AddTrafficSplits(trafficSplit)
-	outputs.AddTrafficTargets(trafficTargets...)
-	outputs.AddHTTPRouteGroups(httpRouteGroups...)
+	outputs.AddSplitSmiSpecIov1Alpha2TrafficSplits(trafficSplit)
+	outputs.AddAccessSmiSpecIov1Alpha2TrafficTargets(trafficTargets...)
+	outputs.AddSpecsSmiSpecIov1Alpha3HTTPRouteGroups(httpRouteGroups...)
 }

@@ -3,8 +3,8 @@
 //go:generate mockgen -source ./snapshot.go -destination mocks/snapshot.go
 
 // The Input Snapshot contains the set of all:
-// * IssuedCertificates
-// * CertificateRequests
+// * CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates
+// * CertificatesMeshGlooSoloIov1Alpha2CertificateRequests
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
@@ -36,10 +36,10 @@ import (
 // the snapshot of input resources consumed by translation
 type Snapshot interface {
 
-	// return the set of input IssuedCertificates
-	IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
-	// return the set of input CertificateRequests
-	CertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
+	// return the set of input CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates
+	CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
+	// return the set of input CertificatesMeshGlooSoloIov1Alpha2CertificateRequests
+	CertificatesMeshGlooSoloIov1Alpha2CertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
 	// update the status of all input objects which support
 	// the Status subresource (across multiple clusters)
 	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts SyncStatusOptions) error
@@ -53,47 +53,47 @@ type Snapshot interface {
 // options for syncing input object statuses
 type SyncStatusOptions struct {
 
-	// sync status of IssuedCertificate objects
-	IssuedCertificate bool
-	// sync status of CertificateRequest objects
-	CertificateRequest bool
+	// sync status of CertificatesMeshGlooSoloIov1Alpha2IssuedCertificate objects
+	CertificatesMeshGlooSoloIov1Alpha2IssuedCertificate bool
+	// sync status of CertificatesMeshGlooSoloIov1Alpha2CertificateRequest objects
+	CertificatesMeshGlooSoloIov1Alpha2CertificateRequest bool
 }
 
 type snapshot struct {
 	name string
 
-	issuedCertificates  certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
-	certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
+	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates  certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
+	certificatesMeshGlooSoloIov1Alpha2CertificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
 }
 
 func NewSnapshot(
 	name string,
 
-	issuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet,
-	certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet,
+	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet,
+	certificatesMeshGlooSoloIov1Alpha2CertificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet,
 
 ) Snapshot {
 	return &snapshot{
 		name: name,
 
-		issuedCertificates:  issuedCertificates,
-		certificateRequests: certificateRequests,
+		certificatesMeshGlooSoloIov1Alpha2IssuedCertificates:  certificatesMeshGlooSoloIov1Alpha2IssuedCertificates,
+		certificatesMeshGlooSoloIov1Alpha2CertificateRequests: certificatesMeshGlooSoloIov1Alpha2CertificateRequests,
 	}
 }
 
-func (s snapshot) IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet {
-	return s.issuedCertificates
+func (s snapshot) CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet {
+	return s.certificatesMeshGlooSoloIov1Alpha2IssuedCertificates
 }
 
-func (s snapshot) CertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet {
-	return s.certificateRequests
+func (s snapshot) CertificatesMeshGlooSoloIov1Alpha2CertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet {
+	return s.certificatesMeshGlooSoloIov1Alpha2CertificateRequests
 }
 
 func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts SyncStatusOptions) error {
 	var errs error
 
-	if opts.IssuedCertificate {
-		for _, obj := range s.IssuedCertificates().List() {
+	if opts.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificate {
+		for _, obj := range s.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -104,8 +104,8 @@ func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicl
 			}
 		}
 	}
-	if opts.CertificateRequest {
-		for _, obj := range s.CertificateRequests().List() {
+	if opts.CertificatesMeshGlooSoloIov1Alpha2CertificateRequest {
+		for _, obj := range s.CertificatesMeshGlooSoloIov1Alpha2CertificateRequests().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -122,15 +122,15 @@ func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicl
 func (s snapshot) SyncStatuses(ctx context.Context, c client.Client, opts SyncStatusOptions) error {
 	var errs error
 
-	if opts.IssuedCertificate {
-		for _, obj := range s.IssuedCertificates().List() {
+	if opts.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificate {
+		for _, obj := range s.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
-	if opts.CertificateRequest {
-		for _, obj := range s.CertificateRequests().List() {
+	if opts.CertificatesMeshGlooSoloIov1Alpha2CertificateRequest {
+		for _, obj := range s.CertificatesMeshGlooSoloIov1Alpha2CertificateRequests().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
@@ -142,8 +142,8 @@ func (s snapshot) SyncStatuses(ctx context.Context, c client.Client, opts SyncSt
 func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
-	snapshotMap["issuedCertificates"] = s.issuedCertificates.List()
-	snapshotMap["certificateRequests"] = s.certificateRequests.List()
+	snapshotMap["certificatesMeshGlooSoloIov1Alpha2IssuedCertificates"] = s.certificatesMeshGlooSoloIov1Alpha2IssuedCertificates.List()
+	snapshotMap["certificatesMeshGlooSoloIov1Alpha2CertificateRequests"] = s.certificatesMeshGlooSoloIov1Alpha2CertificateRequests.List()
 	return json.Marshal(snapshotMap)
 }
 
@@ -155,10 +155,10 @@ type Builder interface {
 // Options for building a snapshot
 type BuildOptions struct {
 
-	// List options for composing a snapshot from IssuedCertificates
-	IssuedCertificates ResourceBuildOptions
-	// List options for composing a snapshot from CertificateRequests
-	CertificateRequests ResourceBuildOptions
+	// List options for composing a snapshot from CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates
+	CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates ResourceBuildOptions
+	// List options for composing a snapshot from CertificatesMeshGlooSoloIov1Alpha2CertificateRequests
+	CertificatesMeshGlooSoloIov1Alpha2CertificateRequests ResourceBuildOptions
 }
 
 // Options for reading resources of a given type
@@ -190,17 +190,17 @@ func NewMultiClusterBuilder(
 
 func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
-	issuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
-	certificateRequests := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
+	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
+	certificatesMeshGlooSoloIov1Alpha2CertificateRequests := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
 
 	var errs error
 
 	for _, cluster := range b.clusters.ListClusters() {
 
-		if err := b.insertIssuedCertificatesFromCluster(ctx, cluster, issuedCertificates, opts.IssuedCertificates); err != nil {
+		if err := b.insertCertificatesMeshGlooSoloIov1Alpha2IssuedCertificatesFromCluster(ctx, cluster, certificatesMeshGlooSoloIov1Alpha2IssuedCertificates, opts.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertCertificateRequestsFromCluster(ctx, cluster, certificateRequests, opts.CertificateRequests); err != nil {
+		if err := b.insertCertificatesMeshGlooSoloIov1Alpha2CertificateRequestsFromCluster(ctx, cluster, certificatesMeshGlooSoloIov1Alpha2CertificateRequests, opts.CertificatesMeshGlooSoloIov1Alpha2CertificateRequests); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 
@@ -209,15 +209,15 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	outputSnap := NewSnapshot(
 		name,
 
-		issuedCertificates,
-		certificateRequests,
+		certificatesMeshGlooSoloIov1Alpha2IssuedCertificates,
+		certificatesMeshGlooSoloIov1Alpha2CertificateRequests,
 	)
 
 	return outputSnap, errs
 }
 
-func (b *multiClusterBuilder) insertIssuedCertificatesFromCluster(ctx context.Context, cluster string, issuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ResourceBuildOptions) error {
-	issuedCertificateClient, err := certificates_mesh_gloo_solo_io_v1alpha2.NewMulticlusterIssuedCertificateClient(b.client).Cluster(cluster)
+func (b *multiClusterBuilder) insertCertificatesMeshGlooSoloIov1Alpha2IssuedCertificatesFromCluster(ctx context.Context, cluster string, certificatesMeshGlooSoloIov1Alpha2IssuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ResourceBuildOptions) error {
+	certificatesMeshGlooSoloIov1Alpha2IssuedCertificateClient, err := certificates_mesh_gloo_solo_io_v1alpha2.NewMulticlusterIssuedCertificateClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -245,21 +245,21 @@ func (b *multiClusterBuilder) insertIssuedCertificatesFromCluster(ctx context.Co
 		}
 	}
 
-	issuedCertificateList, err := issuedCertificateClient.ListIssuedCertificate(ctx, opts.ListOptions...)
+	certificatesMeshGlooSoloIov1Alpha2IssuedCertificateList, err := certificatesMeshGlooSoloIov1Alpha2IssuedCertificateClient.ListIssuedCertificate(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range issuedCertificateList.Items {
+	for _, item := range certificatesMeshGlooSoloIov1Alpha2IssuedCertificateList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		issuedCertificates.Insert(&item)
+		certificatesMeshGlooSoloIov1Alpha2IssuedCertificates.Insert(&item)
 	}
 
 	return nil
 }
-func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.Context, cluster string, certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet, opts ResourceBuildOptions) error {
-	certificateRequestClient, err := certificates_mesh_gloo_solo_io_v1alpha2.NewMulticlusterCertificateRequestClient(b.client).Cluster(cluster)
+func (b *multiClusterBuilder) insertCertificatesMeshGlooSoloIov1Alpha2CertificateRequestsFromCluster(ctx context.Context, cluster string, certificatesMeshGlooSoloIov1Alpha2CertificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet, opts ResourceBuildOptions) error {
+	certificatesMeshGlooSoloIov1Alpha2CertificateRequestClient, err := certificates_mesh_gloo_solo_io_v1alpha2.NewMulticlusterCertificateRequestClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -287,15 +287,15 @@ func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.C
 		}
 	}
 
-	certificateRequestList, err := certificateRequestClient.ListCertificateRequest(ctx, opts.ListOptions...)
+	certificatesMeshGlooSoloIov1Alpha2CertificateRequestList, err := certificatesMeshGlooSoloIov1Alpha2CertificateRequestClient.ListCertificateRequest(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range certificateRequestList.Items {
+	for _, item := range certificatesMeshGlooSoloIov1Alpha2CertificateRequestList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		certificateRequests.Insert(&item)
+		certificatesMeshGlooSoloIov1Alpha2CertificateRequests.Insert(&item)
 	}
 
 	return nil
@@ -328,29 +328,29 @@ func NewSingleClusterBuilderWithClusterName(
 
 func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
-	issuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
-	certificateRequests := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
+	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
+	certificatesMeshGlooSoloIov1Alpha2CertificateRequests := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
 
 	var errs error
 
-	if err := b.insertIssuedCertificates(ctx, issuedCertificates, opts.IssuedCertificates); err != nil {
+	if err := b.insertCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates(ctx, certificatesMeshGlooSoloIov1Alpha2IssuedCertificates, opts.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertCertificateRequests(ctx, certificateRequests, opts.CertificateRequests); err != nil {
+	if err := b.insertCertificatesMeshGlooSoloIov1Alpha2CertificateRequests(ctx, certificatesMeshGlooSoloIov1Alpha2CertificateRequests, opts.CertificatesMeshGlooSoloIov1Alpha2CertificateRequests); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
 	outputSnap := NewSnapshot(
 		name,
 
-		issuedCertificates,
-		certificateRequests,
+		certificatesMeshGlooSoloIov1Alpha2IssuedCertificates,
+		certificatesMeshGlooSoloIov1Alpha2CertificateRequests,
 	)
 
 	return outputSnap, errs
 }
 
-func (b *singleClusterBuilder) insertIssuedCertificates(ctx context.Context, issuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ResourceBuildOptions) error {
+func (b *singleClusterBuilder) insertCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates(ctx context.Context, certificatesMeshGlooSoloIov1Alpha2IssuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ResourceBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -370,20 +370,20 @@ func (b *singleClusterBuilder) insertIssuedCertificates(ctx context.Context, iss
 		}
 	}
 
-	issuedCertificateList, err := certificates_mesh_gloo_solo_io_v1alpha2.NewIssuedCertificateClient(b.mgr.GetClient()).ListIssuedCertificate(ctx, opts.ListOptions...)
+	certificatesMeshGlooSoloIov1Alpha2IssuedCertificateList, err := certificates_mesh_gloo_solo_io_v1alpha2.NewIssuedCertificateClient(b.mgr.GetClient()).ListIssuedCertificate(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range issuedCertificateList.Items {
+	for _, item := range certificatesMeshGlooSoloIov1Alpha2IssuedCertificateList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		issuedCertificates.Insert(&item)
+		certificatesMeshGlooSoloIov1Alpha2IssuedCertificates.Insert(&item)
 	}
 
 	return nil
 }
-func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet, opts ResourceBuildOptions) error {
+func (b *singleClusterBuilder) insertCertificatesMeshGlooSoloIov1Alpha2CertificateRequests(ctx context.Context, certificatesMeshGlooSoloIov1Alpha2CertificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet, opts ResourceBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -403,15 +403,15 @@ func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, ce
 		}
 	}
 
-	certificateRequestList, err := certificates_mesh_gloo_solo_io_v1alpha2.NewCertificateRequestClient(b.mgr.GetClient()).ListCertificateRequest(ctx, opts.ListOptions...)
+	certificatesMeshGlooSoloIov1Alpha2CertificateRequestList, err := certificates_mesh_gloo_solo_io_v1alpha2.NewCertificateRequestClient(b.mgr.GetClient()).ListCertificateRequest(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range certificateRequestList.Items {
+	for _, item := range certificatesMeshGlooSoloIov1Alpha2CertificateRequestList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		certificateRequests.Insert(&item)
+		certificatesMeshGlooSoloIov1Alpha2CertificateRequests.Insert(&item)
 	}
 
 	return nil

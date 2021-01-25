@@ -71,8 +71,8 @@ func (t *translator) Translate(
 		metautils.AppendParent(t.ctx, ap, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 	}
 
-	outputs.AddAuthorizationPolicies(globalAuthPolicy)
-	outputs.AddAuthorizationPolicies(ingressGatewayAuthPolicies...)
+	outputs.AddSecurityIstioIov1Beta1AuthorizationPolicies(globalAuthPolicy)
+	outputs.AddSecurityIstioIov1Beta1AuthorizationPolicies(ingressGatewayAuthPolicies...)
 }
 
 // Creates an AuthorizationPolicy that allows all traffic into the service

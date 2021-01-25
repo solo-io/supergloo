@@ -22,7 +22,7 @@ func init() {
 }
 
 func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
-	return NewMirrorDecorator(params.ClusterDomains, params.Snapshot.TrafficTargets())
+	return NewMirrorDecorator(params.ClusterDomains, params.Snapshot.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets())
 }
 
 // handles setting Mirror on a VirtualService

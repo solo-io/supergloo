@@ -77,7 +77,7 @@ var _ = Describe("TrafficTargetTranslator", func() {
 		ns := "default"
 		podLabels := map[string]string{"we": "match"}
 		in := input.NewInputLocalSnapshotManualBuilder("").
-			AddWorkloads([]*discoveryv1alpha2.Workload{
+			AddDiscoveryMeshGlooSoloIov1Alpha2Workloads([]*discoveryv1alpha2.Workload{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "one",
@@ -154,7 +154,7 @@ var _ = Describe("TrafficTargetTranslator", func() {
 		ns := "default"
 		podLabels := map[string]string{"we": "match"}
 		in := input.NewInputLocalSnapshotManualBuilder("").
-			AddWorkloads([]*discoveryv1alpha2.Workload{
+			AddDiscoveryMeshGlooSoloIov1Alpha2Workloads([]*discoveryv1alpha2.Workload{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "one",

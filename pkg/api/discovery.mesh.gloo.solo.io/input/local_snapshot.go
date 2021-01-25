@@ -3,7 +3,7 @@
 //go:generate mockgen -source ./local_snapshot.go -destination mocks/local_snapshot.go
 
 // The Input SettingsSnapshot contains the set of all:
-// * Settings
+// * SettingsMeshGlooSoloIov1Alpha2Settings
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
@@ -35,8 +35,8 @@ import (
 // the snapshot of input resources consumed by translation
 type SettingsSnapshot interface {
 
-	// return the set of input Settings
-	Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+	// return the set of input SettingsMeshGlooSoloIov1Alpha2Settings
+	SettingsMeshGlooSoloIov1Alpha2Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 	// update the status of all input objects which support
 	// the Status subresource (across multiple clusters)
 	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts SettingsSyncStatusOptions) error
@@ -50,38 +50,38 @@ type SettingsSnapshot interface {
 // options for syncing input object statuses
 type SettingsSyncStatusOptions struct {
 
-	// sync status of Settings objects
-	Settings bool
+	// sync status of SettingsMeshGlooSoloIov1Alpha2Settings objects
+	SettingsMeshGlooSoloIov1Alpha2Settings bool
 }
 
 type snapshotSettings struct {
 	name string
 
-	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+	settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 }
 
 func NewSettingsSnapshot(
 	name string,
 
-	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet,
+	settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet,
 
 ) SettingsSnapshot {
 	return &snapshotSettings{
 		name: name,
 
-		settings: settings,
+		settingsMeshGlooSoloIov1Alpha2Settings: settingsMeshGlooSoloIov1Alpha2Settings,
 	}
 }
 
-func (s snapshotSettings) Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet {
-	return s.settings
+func (s snapshotSettings) SettingsMeshGlooSoloIov1Alpha2Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet {
+	return s.settingsMeshGlooSoloIov1Alpha2Settings
 }
 
 func (s snapshotSettings) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts SettingsSyncStatusOptions) error {
 	var errs error
 
-	if opts.Settings {
-		for _, obj := range s.Settings().List() {
+	if opts.SettingsMeshGlooSoloIov1Alpha2Settings {
+		for _, obj := range s.SettingsMeshGlooSoloIov1Alpha2Settings().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -98,8 +98,8 @@ func (s snapshotSettings) SyncStatusesMultiCluster(ctx context.Context, mcClient
 func (s snapshotSettings) SyncStatuses(ctx context.Context, c client.Client, opts SettingsSyncStatusOptions) error {
 	var errs error
 
-	if opts.Settings {
-		for _, obj := range s.Settings().List() {
+	if opts.SettingsMeshGlooSoloIov1Alpha2Settings {
+		for _, obj := range s.SettingsMeshGlooSoloIov1Alpha2Settings().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
@@ -111,7 +111,7 @@ func (s snapshotSettings) SyncStatuses(ctx context.Context, c client.Client, opt
 func (s snapshotSettings) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
-	snapshotMap["settings"] = s.settings.List()
+	snapshotMap["settingsMeshGlooSoloIov1Alpha2Settings"] = s.settingsMeshGlooSoloIov1Alpha2Settings.List()
 	return json.Marshal(snapshotMap)
 }
 
@@ -123,8 +123,8 @@ type SettingsBuilder interface {
 // Options for building a snapshot
 type SettingsBuildOptions struct {
 
-	// List options for composing a snapshot from Settings
-	Settings ResourceSettingsBuildOptions
+	// List options for composing a snapshot from SettingsMeshGlooSoloIov1Alpha2Settings
+	SettingsMeshGlooSoloIov1Alpha2Settings ResourceSettingsBuildOptions
 }
 
 // Options for reading resources of a given type
@@ -156,13 +156,13 @@ func NewMultiClusterSettingsBuilder(
 
 func (b *multiClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name string, opts SettingsBuildOptions) (SettingsSnapshot, error) {
 
-	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+	settingsMeshGlooSoloIov1Alpha2Settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
 	var errs error
 
 	for _, cluster := range b.clusters.ListClusters() {
 
-		if err := b.insertSettingsFromCluster(ctx, cluster, settings, opts.Settings); err != nil {
+		if err := b.insertSettingsMeshGlooSoloIov1Alpha2SettingsFromCluster(ctx, cluster, settingsMeshGlooSoloIov1Alpha2Settings, opts.SettingsMeshGlooSoloIov1Alpha2Settings); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 
@@ -171,14 +171,14 @@ func (b *multiClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name st
 	outputSnap := NewSettingsSnapshot(
 		name,
 
-		settings,
+		settingsMeshGlooSoloIov1Alpha2Settings,
 	)
 
 	return outputSnap, errs
 }
 
-func (b *multiClusterSettingsBuilder) insertSettingsFromCluster(ctx context.Context, cluster string, settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceSettingsBuildOptions) error {
-	settingsClient, err := settings_mesh_gloo_solo_io_v1alpha2.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
+func (b *multiClusterSettingsBuilder) insertSettingsMeshGlooSoloIov1Alpha2SettingsFromCluster(ctx context.Context, cluster string, settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceSettingsBuildOptions) error {
+	settingsMeshGlooSoloIov1Alpha2SettingsClient, err := settings_mesh_gloo_solo_io_v1alpha2.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -206,15 +206,15 @@ func (b *multiClusterSettingsBuilder) insertSettingsFromCluster(ctx context.Cont
 		}
 	}
 
-	settingsList, err := settingsClient.ListSettings(ctx, opts.ListOptions...)
+	settingsMeshGlooSoloIov1Alpha2SettingsList, err := settingsMeshGlooSoloIov1Alpha2SettingsClient.ListSettings(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range settingsList.Items {
+	for _, item := range settingsMeshGlooSoloIov1Alpha2SettingsList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		settings.Insert(&item)
+		settingsMeshGlooSoloIov1Alpha2Settings.Insert(&item)
 	}
 
 	return nil
@@ -247,24 +247,24 @@ func NewSingleClusterSettingsBuilderWithClusterName(
 
 func (b *singleClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name string, opts SettingsBuildOptions) (SettingsSnapshot, error) {
 
-	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+	settingsMeshGlooSoloIov1Alpha2Settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
 	var errs error
 
-	if err := b.insertSettings(ctx, settings, opts.Settings); err != nil {
+	if err := b.insertSettingsMeshGlooSoloIov1Alpha2Settings(ctx, settingsMeshGlooSoloIov1Alpha2Settings, opts.SettingsMeshGlooSoloIov1Alpha2Settings); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
 	outputSnap := NewSettingsSnapshot(
 		name,
 
-		settings,
+		settingsMeshGlooSoloIov1Alpha2Settings,
 	)
 
 	return outputSnap, errs
 }
 
-func (b *singleClusterSettingsBuilder) insertSettings(ctx context.Context, settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceSettingsBuildOptions) error {
+func (b *singleClusterSettingsBuilder) insertSettingsMeshGlooSoloIov1Alpha2Settings(ctx context.Context, settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceSettingsBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -284,15 +284,15 @@ func (b *singleClusterSettingsBuilder) insertSettings(ctx context.Context, setti
 		}
 	}
 
-	settingsList, err := settings_mesh_gloo_solo_io_v1alpha2.NewSettingsClient(b.mgr.GetClient()).ListSettings(ctx, opts.ListOptions...)
+	settingsMeshGlooSoloIov1Alpha2SettingsList, err := settings_mesh_gloo_solo_io_v1alpha2.NewSettingsClient(b.mgr.GetClient()).ListSettings(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range settingsList.Items {
+	for _, item := range settingsMeshGlooSoloIov1Alpha2SettingsList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		settings.Insert(&item)
+		settingsMeshGlooSoloIov1Alpha2Settings.Insert(&item)
 	}
 
 	return nil

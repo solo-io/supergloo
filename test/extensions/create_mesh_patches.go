@@ -109,8 +109,8 @@ func getCreateMeshPatchesFunc() func(ctx context.Context, mesh *v1alpha2.MeshSpe
 			},
 		}
 
-		outputs.AddServiceEntries(serviceEntry)
-		outputs.AddVirtualServices(virtualService)
+		outputs.AddNetworkingIstioIov1Alpha3ServiceEntries(serviceEntry)
+		outputs.AddNetworkingIstioIov1Alpha3VirtualServices(virtualService)
 
 		return outputs, nil
 	}

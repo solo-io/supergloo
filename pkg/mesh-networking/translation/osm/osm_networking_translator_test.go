@@ -44,14 +44,14 @@ var _ = Describe("SmiNetworkingTranslator", func() {
 
 	It("should translate all meshes and traffictargets", func() {
 		in := input.NewInputLocalSnapshotManualBuilder("").
-			AddMeshes([]*discoveryv1alpha2.Mesh{
+			AddDiscoveryMeshGlooSoloIov1Alpha2Meshes([]*discoveryv1alpha2.Mesh{
 				{
 					ObjectMeta: metav1.ObjectMeta{},
 					Spec:       discoveryv1alpha2.MeshSpec{},
 					Status:     discoveryv1alpha2.MeshStatus{},
 				},
 			}).
-			AddTrafficTargets([]*discoveryv1alpha2.TrafficTarget{
+			AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets([]*discoveryv1alpha2.TrafficTarget{
 				{
 					ObjectMeta: metav1.ObjectMeta{},
 					Spec:       discoveryv1alpha2.TrafficTargetSpec{},
@@ -70,16 +70,16 @@ var _ = Describe("SmiNetworkingTranslator", func() {
 			MakeTrafficTargetTranslator().
 			Return(mockTrafficTargetTranslator)
 
-		for i := range in.Meshes().List() {
+		for i := range in.DiscoveryMeshGlooSoloIov1Alpha2Meshes().List() {
 			mockMeshTranslator.
 				EXPECT().
-				Translate(gomock.Any(), in, in.Meshes().List()[i], mockOutputs, mockReporter)
+				Translate(gomock.Any(), in, in.DiscoveryMeshGlooSoloIov1Alpha2Meshes().List()[i], mockOutputs, mockReporter)
 		}
 
-		for i := range in.TrafficTargets().List() {
+		for i := range in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List() {
 			mockTrafficTargetTranslator.
 				EXPECT().
-				Translate(gomock.Any(), in, in.TrafficTargets().List()[i], mockOutputs, mockReporter)
+				Translate(gomock.Any(), in, in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List()[i], mockOutputs, mockReporter)
 		}
 
 		translator.Translate(ctx, in, mockOutputs, mockReporter)

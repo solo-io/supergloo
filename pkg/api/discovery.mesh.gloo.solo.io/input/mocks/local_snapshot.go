@@ -38,18 +38,18 @@ func (m *MockSettingsSnapshot) EXPECT() *MockSettingsSnapshotMockRecorder {
 	return m.recorder
 }
 
-// Settings mocks base method
-func (m *MockSettingsSnapshot) Settings() v1alpha2sets.SettingsSet {
+// SettingsMeshGlooSoloIov1Alpha2Settings mocks base method
+func (m *MockSettingsSnapshot) SettingsMeshGlooSoloIov1Alpha2Settings() v1alpha2sets.SettingsSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Settings")
+	ret := m.ctrl.Call(m, "SettingsMeshGlooSoloIov1Alpha2Settings")
 	ret0, _ := ret[0].(v1alpha2sets.SettingsSet)
 	return ret0
 }
 
-// Settings indicates an expected call of Settings
-func (mr *MockSettingsSnapshotMockRecorder) Settings() *gomock.Call {
+// SettingsMeshGlooSoloIov1Alpha2Settings indicates an expected call of SettingsMeshGlooSoloIov1Alpha2Settings
+func (mr *MockSettingsSnapshotMockRecorder) SettingsMeshGlooSoloIov1Alpha2Settings() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Settings", reflect.TypeOf((*MockSettingsSnapshot)(nil).Settings))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SettingsMeshGlooSoloIov1Alpha2Settings", reflect.TypeOf((*MockSettingsSnapshot)(nil).SettingsMeshGlooSoloIov1Alpha2Settings))
 }
 
 // SyncStatusesMultiCluster mocks base method

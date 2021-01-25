@@ -10,7 +10,7 @@ import (
 // InputSnapshotToProto constructs a proto-compatible Discovery Snapshot from a networking input snapshot
 func InputSnapshotToProto(in input.LocalSnapshot) *v1alpha1.DiscoverySnapshot {
 	var meshes []*v1alpha1.MeshObject
-	for _, mesh := range in.Meshes().List() {
+	for _, mesh := range in.DiscoveryMeshGlooSoloIov1Alpha2Meshes().List() {
 		mesh := mesh
 		meshes = append(meshes, &v1alpha1.MeshObject{
 			Metadata: ObjectMetaToProto(mesh.ObjectMeta),
@@ -19,7 +19,7 @@ func InputSnapshotToProto(in input.LocalSnapshot) *v1alpha1.DiscoverySnapshot {
 		})
 	}
 	var trafficTargets []*v1alpha1.TrafficTargetObject
-	for _, trafficTarget := range in.TrafficTargets().List() {
+	for _, trafficTarget := range in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List() {
 		trafficTarget := trafficTarget
 		trafficTargets = append(trafficTargets, &v1alpha1.TrafficTargetObject{
 			Metadata: ObjectMetaToProto(trafficTarget.ObjectMeta),
@@ -28,7 +28,7 @@ func InputSnapshotToProto(in input.LocalSnapshot) *v1alpha1.DiscoverySnapshot {
 		})
 	}
 	var workloads []*v1alpha1.WorkloadObject
-	for _, workload := range in.Workloads().List() {
+	for _, workload := range in.DiscoveryMeshGlooSoloIov1Alpha2Workloads().List() {
 		workload := workload
 		workloads = append(workloads, &v1alpha1.WorkloadObject{
 			Metadata: ObjectMetaToProto(workload.ObjectMeta),
@@ -57,7 +57,7 @@ func InputSnapshotFromProto(name string, in *v1alpha1.DiscoverySnapshot) input.L
 			Status:     *mesh.Status,
 		})
 	}
-	builder.AddMeshes(meshes)
+	builder.AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(meshes)
 
 	// insert trafficTargets
 	var trafficTargets discoveryv1alpha2.TrafficTargetSlice
@@ -68,7 +68,7 @@ func InputSnapshotFromProto(name string, in *v1alpha1.DiscoverySnapshot) input.L
 			Status:     *trafficTarget.Status,
 		})
 	}
-	builder.AddTrafficTargets(trafficTargets)
+	builder.AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(trafficTargets)
 
 	// insert workloads
 	var workloads discoveryv1alpha2.WorkloadSlice
@@ -79,7 +79,7 @@ func InputSnapshotFromProto(name string, in *v1alpha1.DiscoverySnapshot) input.L
 			Status:     *workload.Status,
 		})
 	}
-	builder.AddWorkloads(workloads)
+	builder.AddDiscoveryMeshGlooSoloIov1Alpha2Workloads(workloads)
 
 	return builder.Build()
 }

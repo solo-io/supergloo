@@ -57,7 +57,7 @@ func (e *errHandler) handleError(resource ezkube.Object, err error) {
 		switch gvk {
 		case v1alpha2.VirtualMesh{}.GVK().String():
 			for _, parentVMesh := range parents {
-				vmesh, findErr := e.in.VirtualMeshes().Find(parentVMesh)
+				vmesh, findErr := e.in.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes().Find(parentVMesh)
 				if findErr != nil {
 					contextutils.LoggerFrom(e.ctx).Errorf("internal error: resource for parent not found: %s", parentVMesh.String())
 					continue
@@ -68,7 +68,7 @@ func (e *errHandler) handleError(resource ezkube.Object, err error) {
 			}
 		case v1alpha2.AccessPolicy{}.GVK().String():
 			for _, parentAP := range parents {
-				ap, findErr := e.in.VirtualMeshes().Find(parentAP)
+				ap, findErr := e.in.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes().Find(parentAP)
 				if findErr != nil {
 					contextutils.LoggerFrom(e.ctx).Errorf("internal error: resource for parent not found: %s", parentAP.String())
 					continue
@@ -79,7 +79,7 @@ func (e *errHandler) handleError(resource ezkube.Object, err error) {
 			}
 		case v1alpha2.TrafficPolicy{}.GVK().String():
 			for _, parentTP := range parents {
-				tp, findErr := e.in.VirtualMeshes().Find(parentTP)
+				tp, findErr := e.in.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes().Find(parentTP)
 				if findErr != nil {
 					contextutils.LoggerFrom(e.ctx).Errorf("internal error: resource for parent not found: %s", parentTP.String())
 					continue
@@ -90,7 +90,7 @@ func (e *errHandler) handleError(resource ezkube.Object, err error) {
 			}
 		case v1alpha2.FailoverService{}.GVK().String():
 			for _, parentFS := range parents {
-				fs, findErr := e.in.VirtualMeshes().Find(parentFS)
+				fs, findErr := e.in.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes().Find(parentFS)
 				if findErr != nil {
 					contextutils.LoggerFrom(e.ctx).Errorf("internal error: resource for parent not found: %s", parentFS.String())
 					continue

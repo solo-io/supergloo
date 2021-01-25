@@ -67,13 +67,13 @@ var _ = Describe("IstioNetworkingExtender", func() {
 		}
 
 		inputs := input.NewInputLocalSnapshotManualBuilder("istio-extender-test").
-			AddMeshes([]*discoveryv1alpha2.Mesh{mesh}).
-			AddWorkloads([]*discoveryv1alpha2.Workload{workload}).
-			AddTrafficTargets([]*discoveryv1alpha2.TrafficTarget{trafficTarget}).
+			AddDiscoveryMeshGlooSoloIov1Alpha2Meshes([]*discoveryv1alpha2.Mesh{mesh}).
+			AddDiscoveryMeshGlooSoloIov1Alpha2Workloads([]*discoveryv1alpha2.Workload{workload}).
+			AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets([]*discoveryv1alpha2.TrafficTarget{trafficTarget}).
 			Build()
 
 		outputs := istio.NewBuilder(ctx, "test")
-		outputs.AddVirtualServices(&istionetworkingv1alpha3.VirtualService{
+		outputs.AddNetworkingIstioIov1Alpha3VirtualServices(&istionetworkingv1alpha3.VirtualService{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "bar",
@@ -81,7 +81,7 @@ var _ = Describe("IstioNetworkingExtender", func() {
 		})
 		expectedOutputs := outputs.Clone()
 		// modify
-		expectedOutputs.AddVirtualServices(&istionetworkingv1alpha3.VirtualService{
+		expectedOutputs.AddNetworkingIstioIov1Alpha3VirtualServices(&istionetworkingv1alpha3.VirtualService{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "bar",
@@ -91,7 +91,7 @@ var _ = Describe("IstioNetworkingExtender", func() {
 			},
 		})
 		// add
-		expectedOutputs.AddDestinationRules(&istionetworkingv1alpha3.DestinationRule{
+		expectedOutputs.AddNetworkingIstioIov1Alpha3DestinationRules(&istionetworkingv1alpha3.DestinationRule{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "bar",

@@ -180,17 +180,17 @@ var _ = Describe("FailoverServiceTranslator", func() {
 		}
 
 		in := input.NewInputLocalSnapshotManualBuilder("").
-			AddTrafficTargets(allTrafficTargets).
-			AddMeshes(allMeshes).
-			AddKubernetesClusters([]*v1alpha1.KubernetesCluster{{ObjectMeta: metav1.ObjectMeta{Name: "kube-cluster"}}}).
-			AddVirtualMeshes([]*networkingv1alpha2.VirtualMesh{{ObjectMeta: metav1.ObjectMeta{Name: "virtual-mesh"}}}).
+			AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(allTrafficTargets).
+			AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(allMeshes).
+			AddMulticlusterSoloIov1Alpha1KubernetesClusters([]*v1alpha1.KubernetesCluster{{ObjectMeta: metav1.ObjectMeta{Name: "kube-cluster"}}}).
+			AddNetworkingMeshGlooSoloIov1Alpha2VirtualMeshes([]*networkingv1alpha2.VirtualMesh{{ObjectMeta: metav1.ObjectMeta{Name: "virtual-mesh"}}}).
 			Build()
 
 		mockValidator.EXPECT().Validate(failoverservice.Inputs{
-			TrafficTargets: in.TrafficTargets(),
-			KubeClusters:   in.KubernetesClusters(),
-			Meshes:         in.Meshes(),
-			VirtualMeshes:  in.VirtualMeshes(),
+			TrafficTargets: in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(),
+			KubeClusters:   in.MulticlusterSoloIov1Alpha1KubernetesClusters(),
+			Meshes:         in.DiscoveryMeshGlooSoloIov1Alpha2Meshes(),
+			VirtualMeshes:  in.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes(),
 		}, failoverService.Spec).Return(nil)
 
 		for _, mesh := range allMeshes {
@@ -335,13 +335,13 @@ resolution: DNS
 		var envoyFilterObjectMetas []metav1.ObjectMeta
 		var serviceEntryYamls []string
 		var serviceEntryObjectMetas []metav1.ObjectMeta
-		for _, envoyFilter := range outputs.GetEnvoyFilters().List() {
+		for _, envoyFilter := range outputs.GetNetworkingIstioIov1Alpha3EnvoyFilters().List() {
 			envoyFilterYaml, err := protomarshal.ToYAML(&envoyFilter.Spec)
 			Expect(err).ToNot(HaveOccurred())
 			envoyFilterYamls = append(envoyFilterYamls, envoyFilterYaml)
 			envoyFilterObjectMetas = append(envoyFilterObjectMetas, envoyFilter.ObjectMeta)
 		}
-		for _, serviceEntry := range outputs.GetServiceEntries().List() {
+		for _, serviceEntry := range outputs.GetNetworkingIstioIov1Alpha3ServiceEntries().List() {
 			serviceEntryYaml, err := protomarshal.ToYAML(&serviceEntry.Spec)
 			Expect(err).ToNot(HaveOccurred())
 			serviceEntryYamls = append(serviceEntryYamls, serviceEntryYaml)

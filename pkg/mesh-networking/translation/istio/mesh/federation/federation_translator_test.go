@@ -157,9 +157,9 @@ var _ = Describe("FederationTranslator", func() {
 		}
 
 		in := input.NewInputLocalSnapshotManualBuilder("ignored").
-			AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget1}).
-			AddMeshes(discoveryv1alpha2.MeshSlice{mesh, clientMesh}).
-			AddKubernetesClusters(skv1alpha1.KubernetesClusterSlice{kubeCluster}).
+			AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget1}).
+			AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(discoveryv1alpha2.MeshSlice{mesh, clientMesh}).
+			AddMulticlusterSoloIov1Alpha1KubernetesClusters(skv1alpha1.KubernetesClusterSlice{kubeCluster}).
 			Build()
 
 		expectedVS := &networkingv1alpha3.VirtualService{}
@@ -176,8 +176,8 @@ var _ = Describe("FederationTranslator", func() {
 
 		t := NewTranslator(
 			ctx,
-			in.TrafficTargets(),
-			in.FailoverServices(),
+			in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(),
+			in.NetworkingMeshGlooSoloIov1Alpha2FailoverServices(),
 			mockVirtualServiceTranslator,
 			mockDestinationRuleTranslator,
 		)
@@ -191,13 +191,13 @@ var _ = Describe("FederationTranslator", func() {
 			nil, // no reports expected
 		)
 
-		Expect(outputs.GetGateways().Length()).To(Equal(1))
-		Expect(outputs.GetGateways().List()[0]).To(Equal(expectedGateway))
-		Expect(outputs.GetEnvoyFilters().Length()).To(Equal(1))
-		Expect(outputs.GetEnvoyFilters().List()[0]).To(Equal(expectedEnvoyFilter))
-		Expect(outputs.GetDestinationRules()).To(Equal(istiov1alpha3sets.NewDestinationRuleSet(expectedDR)))
-		Expect(outputs.GetServiceEntries()).To(Equal(expectedServiceEntries))
-		Expect(outputs.GetVirtualServices()).To(Equal(istiov1alpha3sets.NewVirtualServiceSet(expectedVS)))
+		Expect(outputs.GetNetworkingIstioIov1Alpha3Gateways().Length()).To(Equal(1))
+		Expect(outputs.GetNetworkingIstioIov1Alpha3Gateways().List()[0]).To(Equal(expectedGateway))
+		Expect(outputs.GetNetworkingIstioIov1Alpha3EnvoyFilters().Length()).To(Equal(1))
+		Expect(outputs.GetNetworkingIstioIov1Alpha3EnvoyFilters().List()[0]).To(Equal(expectedEnvoyFilter))
+		Expect(outputs.GetNetworkingIstioIov1Alpha3DestinationRules()).To(Equal(istiov1alpha3sets.NewDestinationRuleSet(expectedDR)))
+		Expect(outputs.GetNetworkingIstioIov1Alpha3ServiceEntries()).To(Equal(expectedServiceEntries))
+		Expect(outputs.GetNetworkingIstioIov1Alpha3VirtualServices()).To(Equal(istiov1alpha3sets.NewVirtualServiceSet(expectedVS)))
 	})
 })
 

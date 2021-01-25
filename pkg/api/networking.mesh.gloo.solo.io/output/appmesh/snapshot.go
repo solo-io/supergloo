@@ -34,12 +34,12 @@ var MissingRequiredLabelError = func(labelKey, resourceKind string, obj ezkube.R
 // the snapshot of output resources produced by a translation
 type Snapshot interface {
 
-	// return the set of VirtualServices with a given set of labels
-	VirtualServices() []LabeledVirtualServiceSet
-	// return the set of VirtualNodes with a given set of labels
-	VirtualNodes() []LabeledVirtualNodeSet
-	// return the set of VirtualRouters with a given set of labels
-	VirtualRouters() []LabeledVirtualRouterSet
+	// return the set of AppmeshK8SAwsv1Beta2VirtualServices with a given set of labels
+	AppmeshK8SAwsv1Beta2VirtualServices() []LabeledAppmeshK8SAwsv1Beta2VirtualServiceSet
+	// return the set of AppmeshK8SAwsv1Beta2VirtualNodes with a given set of labels
+	AppmeshK8SAwsv1Beta2VirtualNodes() []LabeledAppmeshK8SAwsv1Beta2VirtualNodeSet
+	// return the set of AppmeshK8SAwsv1Beta2VirtualRouters with a given set of labels
+	AppmeshK8SAwsv1Beta2VirtualRouters() []LabeledAppmeshK8SAwsv1Beta2VirtualRouterSet
 
 	// apply the snapshot to the local cluster, garbage collecting stale resources
 	ApplyLocalCluster(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
@@ -54,27 +54,27 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
-	virtualServices []LabeledVirtualServiceSet
-	virtualNodes    []LabeledVirtualNodeSet
-	virtualRouters  []LabeledVirtualRouterSet
-	clusters        []string
+	appmeshK8SAwsv1Beta2VirtualServices []LabeledAppmeshK8SAwsv1Beta2VirtualServicesSet
+	appmeshK8SAwsv1Beta2VirtualNodes    []LabeledAppmeshK8SAwsv1Beta2VirtualNodesSet
+	appmeshK8SAwsv1Beta2VirtualRouters  []LabeledAppmeshK8SAwsv1Beta2VirtualRoutersSet
+	clusters                            []string
 }
 
 func NewSnapshot(
 	name string,
 
-	virtualServices []LabeledVirtualServiceSet,
-	virtualNodes []LabeledVirtualNodeSet,
-	virtualRouters []LabeledVirtualRouterSet,
+	appmeshK8SAwsv1Beta2VirtualServices []LabeledAppmeshK8SAwsv1Beta2VirtualServicesSet,
+	appmeshK8SAwsv1Beta2VirtualNodes []LabeledAppmeshK8SAwsv1Beta2VirtualNodesSet,
+	appmeshK8SAwsv1Beta2VirtualRouters []LabeledAppmeshK8SAwsv1Beta2VirtualRoutersSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{
 		name: name,
 
-		virtualServices: virtualServices,
-		virtualNodes:    virtualNodes,
-		virtualRouters:  virtualRouters,
-		clusters:        clusters,
+		appmeshK8SAwsv1Beta2VirtualServices: appmeshK8SAwsv1Beta2VirtualServices,
+		appmeshK8SAwsv1Beta2VirtualNodes:    appmeshK8SAwsv1Beta2VirtualNodes,
+		appmeshK8SAwsv1Beta2VirtualRouters:  appmeshK8SAwsv1Beta2VirtualRouters,
+		clusters:                            clusters,
 	}
 }
 
@@ -84,21 +84,21 @@ func NewLabelPartitionedSnapshot(
 	name,
 	labelKey string, // the key by which to partition the resources
 
-	virtualServices appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet,
-	virtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet,
-	virtualRouters appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet,
+	appmeshK8SAwsv1Beta2VirtualServices appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet,
+	appmeshK8SAwsv1Beta2VirtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet,
+	appmeshK8SAwsv1Beta2VirtualRouters appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
-	partitionedVirtualServices, err := partitionVirtualServicesByLabel(labelKey, virtualServices)
+	partitionedAppmeshK8SAwsv1Beta2VirtualServices, err := partitionAppmeshK8SAwsv1Beta2VirtualServicesByLabel(labelKey, appmeshK8SAwsv1Beta2VirtualServices)
 	if err != nil {
 		return nil, err
 	}
-	partitionedVirtualNodes, err := partitionVirtualNodesByLabel(labelKey, virtualNodes)
+	partitionedAppmeshK8SAwsv1Beta2VirtualNodes, err := partitionAppmeshK8SAwsv1Beta2VirtualNodesByLabel(labelKey, appmeshK8SAwsv1Beta2VirtualNodes)
 	if err != nil {
 		return nil, err
 	}
-	partitionedVirtualRouters, err := partitionVirtualRoutersByLabel(labelKey, virtualRouters)
+	partitionedAppmeshK8SAwsv1Beta2VirtualRouters, err := partitionAppmeshK8SAwsv1Beta2VirtualRoutersByLabel(labelKey, appmeshK8SAwsv1Beta2VirtualRouters)
 	if err != nil {
 		return nil, err
 	}
@@ -106,9 +106,9 @@ func NewLabelPartitionedSnapshot(
 	return NewSnapshot(
 		name,
 
-		partitionedVirtualServices,
-		partitionedVirtualNodes,
-		partitionedVirtualRouters,
+		partitionedAppmeshK8SAwsv1Beta2VirtualServices,
+		partitionedAppmeshK8SAwsv1Beta2VirtualNodes,
+		partitionedAppmeshK8SAwsv1Beta2VirtualRouters,
 		clusters...,
 	), nil
 }
@@ -119,21 +119,21 @@ func NewSinglePartitionedSnapshot(
 	name string,
 	snapshotLabels map[string]string, // a single set of labels shared by all resources
 
-	virtualServices appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet,
-	virtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet,
-	virtualRouters appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet,
+	appmeshK8SAwsv1Beta2VirtualServices appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet,
+	appmeshK8SAwsv1Beta2VirtualNodes appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet,
+	appmeshK8SAwsv1Beta2VirtualRouters appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
-	labeledVirtualServices, err := NewLabeledVirtualServiceSet(virtualServices, snapshotLabels)
+	labeledAppmeshK8SAwsv1Beta2VirtualService, err := NewLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet(appmeshK8SAwsv1Beta2VirtualServices, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
-	labeledVirtualNodes, err := NewLabeledVirtualNodeSet(virtualNodes, snapshotLabels)
+	labeledAppmeshK8SAwsv1Beta2VirtualNode, err := NewLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet(appmeshK8SAwsv1Beta2VirtualNodes, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
-	labeledVirtualRouters, err := NewLabeledVirtualRouterSet(virtualRouters, snapshotLabels)
+	labeledAppmeshK8SAwsv1Beta2VirtualRouter, err := NewLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet(appmeshK8SAwsv1Beta2VirtualRouters, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
@@ -141,9 +141,9 @@ func NewSinglePartitionedSnapshot(
 	return NewSnapshot(
 		name,
 
-		[]LabeledVirtualServiceSet{labeledVirtualServices},
-		[]LabeledVirtualNodeSet{labeledVirtualNodes},
-		[]LabeledVirtualRouterSet{labeledVirtualRouters},
+		[]LabeledAppmeshK8SAwsv1Beta2VirtualServiceSet{labeledAppmeshK8SAwsv1Beta2VirtualService},
+		[]LabeledAppmeshK8SAwsv1Beta2VirtualNodeSet{labeledAppmeshK8SAwsv1Beta2VirtualNode},
+		[]LabeledAppmeshK8SAwsv1Beta2VirtualRouterSet{labeledAppmeshK8SAwsv1Beta2VirtualRouter},
 		clusters...,
 	), nil
 }
@@ -152,13 +152,13 @@ func NewSinglePartitionedSnapshot(
 func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, errHandler output.ErrorHandler) {
 	var genericLists []output.ResourceList
 
-	for _, outputSet := range s.virtualServices {
+	for _, outputSet := range s.appmeshK8SAwsv1Beta2VirtualServices {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.virtualNodes {
+	for _, outputSet := range s.appmeshK8SAwsv1Beta2VirtualNodes {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.virtualRouters {
+	for _, outputSet := range s.appmeshK8SAwsv1Beta2VirtualRouters {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -172,13 +172,13 @@ func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, err
 func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler) {
 	var genericLists []output.ResourceList
 
-	for _, outputSet := range s.virtualServices {
+	for _, outputSet := range s.appmeshK8SAwsv1Beta2VirtualServices {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.virtualNodes {
+	for _, outputSet := range s.appmeshK8SAwsv1Beta2VirtualNodes {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.virtualRouters {
+	for _, outputSet := range s.appmeshK8SAwsv1Beta2VirtualRouters {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -189,16 +189,16 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 	}.SyncMultiCluster(ctx, multiClusterClient, errHandler)
 }
 
-func partitionVirtualServicesByLabel(labelKey string, set appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet) ([]LabeledVirtualServiceSet, error) {
+func partitionAppmeshK8SAwsv1Beta2VirtualServicesByLabel(labelKey string, set appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet) ([]LabeledAppmeshK8SAwsv1Beta2VirtualServiceSet, error) {
 	setsByLabel := map[string]appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "VirtualService", obj)
+			return nil, MissingRequiredLabelError(labelKey, "AppmeshK8SAwsv1Beta2VirtualService", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "VirtualService", obj)
+			return nil, MissingRequiredLabelError(labelKey, "AppmeshK8SAwsv1Beta2VirtualService", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -210,39 +210,39 @@ func partitionVirtualServicesByLabel(labelKey string, set appmesh_k8s_aws_v1beta
 	}
 
 	// partition by label key
-	var partitionedVirtualServices []LabeledVirtualServiceSet
+	var partitionedAppmeshK8SAwsv1Beta2VirtualServices []LabeledAppmeshK8SAwsv1Beta2VirtualServiceSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledVirtualServiceSet(setForValue, labels)
+		partitionedSet, err := NewLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedVirtualServices = append(partitionedVirtualServices, partitionedSet)
+		partitionedAppmeshK8SAwsv1Beta2VirtualServices = append(partitionedAppmeshK8SAwsv1Beta2VirtualServices, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedVirtualServices, func(i, j int) bool {
-		leftLabelValue := partitionedVirtualServices[i].Labels()[labelKey]
-		rightLabelValue := partitionedVirtualServices[j].Labels()[labelKey]
+	sort.SliceStable(partitionedAppmeshK8SAwsv1Beta2VirtualServices, func(i, j int) bool {
+		leftLabelValue := partitionedAppmeshK8SAwsv1Beta2VirtualServices[i].Labels()[labelKey]
+		rightLabelValue := partitionedAppmeshK8SAwsv1Beta2VirtualServices[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedVirtualServices, nil
+	return partitionedAppmeshK8SAwsv1Beta2VirtualServices, nil
 }
 
-func partitionVirtualNodesByLabel(labelKey string, set appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet) ([]LabeledVirtualNodeSet, error) {
+func partitionAppmeshK8SAwsv1Beta2VirtualNodesByLabel(labelKey string, set appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet) ([]LabeledAppmeshK8SAwsv1Beta2VirtualNodeSet, error) {
 	setsByLabel := map[string]appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "VirtualNode", obj)
+			return nil, MissingRequiredLabelError(labelKey, "AppmeshK8SAwsv1Beta2VirtualNode", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "VirtualNode", obj)
+			return nil, MissingRequiredLabelError(labelKey, "AppmeshK8SAwsv1Beta2VirtualNode", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -254,39 +254,39 @@ func partitionVirtualNodesByLabel(labelKey string, set appmesh_k8s_aws_v1beta2_s
 	}
 
 	// partition by label key
-	var partitionedVirtualNodes []LabeledVirtualNodeSet
+	var partitionedAppmeshK8SAwsv1Beta2VirtualNodes []LabeledAppmeshK8SAwsv1Beta2VirtualNodeSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledVirtualNodeSet(setForValue, labels)
+		partitionedSet, err := NewLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedVirtualNodes = append(partitionedVirtualNodes, partitionedSet)
+		partitionedAppmeshK8SAwsv1Beta2VirtualNodes = append(partitionedAppmeshK8SAwsv1Beta2VirtualNodes, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedVirtualNodes, func(i, j int) bool {
-		leftLabelValue := partitionedVirtualNodes[i].Labels()[labelKey]
-		rightLabelValue := partitionedVirtualNodes[j].Labels()[labelKey]
+	sort.SliceStable(partitionedAppmeshK8SAwsv1Beta2VirtualNodes, func(i, j int) bool {
+		leftLabelValue := partitionedAppmeshK8SAwsv1Beta2VirtualNodes[i].Labels()[labelKey]
+		rightLabelValue := partitionedAppmeshK8SAwsv1Beta2VirtualNodes[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedVirtualNodes, nil
+	return partitionedAppmeshK8SAwsv1Beta2VirtualNodes, nil
 }
 
-func partitionVirtualRoutersByLabel(labelKey string, set appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet) ([]LabeledVirtualRouterSet, error) {
+func partitionAppmeshK8SAwsv1Beta2VirtualRoutersByLabel(labelKey string, set appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet) ([]LabeledAppmeshK8SAwsv1Beta2VirtualRouterSet, error) {
 	setsByLabel := map[string]appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "VirtualRouter", obj)
+			return nil, MissingRequiredLabelError(labelKey, "AppmeshK8SAwsv1Beta2VirtualRouter", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "VirtualRouter", obj)
+			return nil, MissingRequiredLabelError(labelKey, "AppmeshK8SAwsv1Beta2VirtualRouter", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -298,70 +298,70 @@ func partitionVirtualRoutersByLabel(labelKey string, set appmesh_k8s_aws_v1beta2
 	}
 
 	// partition by label key
-	var partitionedVirtualRouters []LabeledVirtualRouterSet
+	var partitionedAppmeshK8SAwsv1Beta2VirtualRouters []LabeledAppmeshK8SAwsv1Beta2VirtualRouterSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledVirtualRouterSet(setForValue, labels)
+		partitionedSet, err := NewLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedVirtualRouters = append(partitionedVirtualRouters, partitionedSet)
+		partitionedAppmeshK8SAwsv1Beta2VirtualRouters = append(partitionedAppmeshK8SAwsv1Beta2VirtualRouters, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedVirtualRouters, func(i, j int) bool {
-		leftLabelValue := partitionedVirtualRouters[i].Labels()[labelKey]
-		rightLabelValue := partitionedVirtualRouters[j].Labels()[labelKey]
+	sort.SliceStable(partitionedAppmeshK8SAwsv1Beta2VirtualRouters, func(i, j int) bool {
+		leftLabelValue := partitionedAppmeshK8SAwsv1Beta2VirtualRouters[i].Labels()[labelKey]
+		rightLabelValue := partitionedAppmeshK8SAwsv1Beta2VirtualRouters[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedVirtualRouters, nil
+	return partitionedAppmeshK8SAwsv1Beta2VirtualRouters, nil
 }
 
-func (s snapshot) VirtualServices() []LabeledVirtualServiceSet {
-	return s.virtualServices
+func (s snapshot) AppmeshK8SAwsv1Beta2VirtualServices() []LabeledAppmeshK8SAwsv1Beta2VirtualServiceSet {
+	return s.appmeshK8SAwsv1Beta2VirtualServices
 }
 
-func (s snapshot) VirtualNodes() []LabeledVirtualNodeSet {
-	return s.virtualNodes
+func (s snapshot) AppmeshK8SAwsv1Beta2VirtualNodes() []LabeledAppmeshK8SAwsv1Beta2VirtualNodeSet {
+	return s.appmeshK8SAwsv1Beta2VirtualNodes
 }
 
-func (s snapshot) VirtualRouters() []LabeledVirtualRouterSet {
-	return s.virtualRouters
+func (s snapshot) AppmeshK8SAwsv1Beta2VirtualRouters() []LabeledAppmeshK8SAwsv1Beta2VirtualRouterSet {
+	return s.appmeshK8SAwsv1Beta2VirtualRouters
 }
 
 func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
-	virtualServiceSet := appmesh_k8s_aws_v1beta2_sets.NewVirtualServiceSet()
-	for _, set := range s.virtualServices {
-		virtualServiceSet = virtualServiceSet.Union(set.Set())
+	appmeshK8SAwsv1Beta2VirtualServiceSet := appmesh_k8s_aws_v1beta2_sets.NewVirtualServiceSet()
+	for _, set := range s.appmeshK8SAwsv1Beta2VirtualServices {
+		appmeshK8SAwsv1Beta2VirtualServiceSet = appmeshK8SAwsv1Beta2VirtualServiceSet.Union(set.Set())
 	}
-	snapshotMap["virtualServices"] = virtualServiceSet.List()
-	virtualNodeSet := appmesh_k8s_aws_v1beta2_sets.NewVirtualNodeSet()
-	for _, set := range s.virtualNodes {
-		virtualNodeSet = virtualNodeSet.Union(set.Set())
+	snapshotMap["appmeshK8SAwsv1Beta2VirtualServices"] = appmeshK8SAwsv1Beta2VirtualServiceSet.List()
+	appmeshK8SAwsv1Beta2VirtualNodeSet := appmesh_k8s_aws_v1beta2_sets.NewVirtualNodeSet()
+	for _, set := range s.appmeshK8SAwsv1Beta2VirtualNodes {
+		appmeshK8SAwsv1Beta2VirtualNodeSet = appmeshK8SAwsv1Beta2VirtualNodeSet.Union(set.Set())
 	}
-	snapshotMap["virtualNodes"] = virtualNodeSet.List()
-	virtualRouterSet := appmesh_k8s_aws_v1beta2_sets.NewVirtualRouterSet()
-	for _, set := range s.virtualRouters {
-		virtualRouterSet = virtualRouterSet.Union(set.Set())
+	snapshotMap["appmeshK8SAwsv1Beta2VirtualNodes"] = appmeshK8SAwsv1Beta2VirtualNodeSet.List()
+	appmeshK8SAwsv1Beta2VirtualRouterSet := appmesh_k8s_aws_v1beta2_sets.NewVirtualRouterSet()
+	for _, set := range s.appmeshK8SAwsv1Beta2VirtualRouters {
+		appmeshK8SAwsv1Beta2VirtualRouterSet = appmeshK8SAwsv1Beta2VirtualRouterSet.Union(set.Set())
 	}
-	snapshotMap["virtualRouters"] = virtualRouterSet.List()
+	snapshotMap["appmeshK8SAwsv1Beta2VirtualRouters"] = appmeshK8SAwsv1Beta2VirtualRouterSet.List()
 
 	snapshotMap["clusters"] = s.clusters
 
 	return json.Marshal(snapshotMap)
 }
 
-// LabeledVirtualServiceSet represents a set of virtualServices
+// LabeledAppmeshK8SAwsv1Beta2VirtualServiceSet represents a set of appmeshK8SAwsv1Beta2VirtualServices
 // which share a common set of labels.
-// These labels are used to find diffs between VirtualServiceSets.
-type LabeledVirtualServiceSet interface {
-	// returns the set of Labels shared by this VirtualServiceSet
+// These labels are used to find diffs between AppmeshK8SAwsv1Beta2VirtualServiceSets.
+type LabeledAppmeshK8SAwsv1Beta2VirtualServiceSet interface {
+	// returns the set of Labels shared by this AppmeshK8SAwsv1Beta2VirtualServiceSet
 	Labels() map[string]string
 
 	// returns the set of VirtualServicees with the given labels
@@ -371,34 +371,34 @@ type LabeledVirtualServiceSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledVirtualServiceSet struct {
+type labeledAppmeshK8SAwsv1Beta2VirtualServiceSet struct {
 	set    appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet
 	labels map[string]string
 }
 
-func NewLabeledVirtualServiceSet(set appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet, labels map[string]string) (LabeledVirtualServiceSet, error) {
-	// validate that each VirtualService contains the labels, else this is not a valid LabeledVirtualServiceSet
+func NewLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet(set appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet, labels map[string]string) (LabeledAppmeshK8SAwsv1Beta2VirtualServiceSet, error) {
+	// validate that each VirtualService contains the labels, else this is not a valid LabeledAppmeshK8SAwsv1Beta2VirtualServiceSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on VirtualService %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on AppmeshK8SAwsv1Beta2VirtualService %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledVirtualServiceSet{set: set, labels: labels}, nil
+	return &labeledAppmeshK8SAwsv1Beta2VirtualServiceSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledVirtualServiceSet) Labels() map[string]string {
+func (l *labeledAppmeshK8SAwsv1Beta2VirtualServiceSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledVirtualServiceSet) Set() appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet {
+func (l *labeledAppmeshK8SAwsv1Beta2VirtualServiceSet) Set() appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet {
 	return l.set
 }
 
-func (l labeledVirtualServiceSet) Generic() output.ResourceList {
+func (l labeledAppmeshK8SAwsv1Beta2VirtualServiceSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -425,11 +425,11 @@ func (l labeledVirtualServiceSet) Generic() output.ResourceList {
 	}
 }
 
-// LabeledVirtualNodeSet represents a set of virtualNodes
+// LabeledAppmeshK8SAwsv1Beta2VirtualNodeSet represents a set of appmeshK8SAwsv1Beta2VirtualNodes
 // which share a common set of labels.
-// These labels are used to find diffs between VirtualNodeSets.
-type LabeledVirtualNodeSet interface {
-	// returns the set of Labels shared by this VirtualNodeSet
+// These labels are used to find diffs between AppmeshK8SAwsv1Beta2VirtualNodeSets.
+type LabeledAppmeshK8SAwsv1Beta2VirtualNodeSet interface {
+	// returns the set of Labels shared by this AppmeshK8SAwsv1Beta2VirtualNodeSet
 	Labels() map[string]string
 
 	// returns the set of VirtualNodees with the given labels
@@ -439,34 +439,34 @@ type LabeledVirtualNodeSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledVirtualNodeSet struct {
+type labeledAppmeshK8SAwsv1Beta2VirtualNodeSet struct {
 	set    appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
 	labels map[string]string
 }
 
-func NewLabeledVirtualNodeSet(set appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet, labels map[string]string) (LabeledVirtualNodeSet, error) {
-	// validate that each VirtualNode contains the labels, else this is not a valid LabeledVirtualNodeSet
+func NewLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet(set appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet, labels map[string]string) (LabeledAppmeshK8SAwsv1Beta2VirtualNodeSet, error) {
+	// validate that each VirtualNode contains the labels, else this is not a valid LabeledAppmeshK8SAwsv1Beta2VirtualNodeSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on VirtualNode %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on AppmeshK8SAwsv1Beta2VirtualNode %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledVirtualNodeSet{set: set, labels: labels}, nil
+	return &labeledAppmeshK8SAwsv1Beta2VirtualNodeSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledVirtualNodeSet) Labels() map[string]string {
+func (l *labeledAppmeshK8SAwsv1Beta2VirtualNodeSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledVirtualNodeSet) Set() appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet {
+func (l *labeledAppmeshK8SAwsv1Beta2VirtualNodeSet) Set() appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet {
 	return l.set
 }
 
-func (l labeledVirtualNodeSet) Generic() output.ResourceList {
+func (l labeledAppmeshK8SAwsv1Beta2VirtualNodeSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -493,11 +493,11 @@ func (l labeledVirtualNodeSet) Generic() output.ResourceList {
 	}
 }
 
-// LabeledVirtualRouterSet represents a set of virtualRouters
+// LabeledAppmeshK8SAwsv1Beta2VirtualRouterSet represents a set of appmeshK8SAwsv1Beta2VirtualRouters
 // which share a common set of labels.
-// These labels are used to find diffs between VirtualRouterSets.
-type LabeledVirtualRouterSet interface {
-	// returns the set of Labels shared by this VirtualRouterSet
+// These labels are used to find diffs between AppmeshK8SAwsv1Beta2VirtualRouterSets.
+type LabeledAppmeshK8SAwsv1Beta2VirtualRouterSet interface {
+	// returns the set of Labels shared by this AppmeshK8SAwsv1Beta2VirtualRouterSet
 	Labels() map[string]string
 
 	// returns the set of VirtualRouteres with the given labels
@@ -507,34 +507,34 @@ type LabeledVirtualRouterSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledVirtualRouterSet struct {
+type labeledAppmeshK8SAwsv1Beta2VirtualRouterSet struct {
 	set    appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet
 	labels map[string]string
 }
 
-func NewLabeledVirtualRouterSet(set appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet, labels map[string]string) (LabeledVirtualRouterSet, error) {
-	// validate that each VirtualRouter contains the labels, else this is not a valid LabeledVirtualRouterSet
+func NewLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet(set appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet, labels map[string]string) (LabeledAppmeshK8SAwsv1Beta2VirtualRouterSet, error) {
+	// validate that each VirtualRouter contains the labels, else this is not a valid LabeledAppmeshK8SAwsv1Beta2VirtualRouterSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on VirtualRouter %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on AppmeshK8SAwsv1Beta2VirtualRouter %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledVirtualRouterSet{set: set, labels: labels}, nil
+	return &labeledAppmeshK8SAwsv1Beta2VirtualRouterSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledVirtualRouterSet) Labels() map[string]string {
+func (l *labeledAppmeshK8SAwsv1Beta2VirtualRouterSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledVirtualRouterSet) Set() appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet {
+func (l *labeledAppmeshK8SAwsv1Beta2VirtualRouterSet) Set() appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet {
 	return l.set
 }
 
-func (l labeledVirtualRouterSet) Generic() output.ResourceList {
+func (l labeledAppmeshK8SAwsv1Beta2VirtualRouterSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -566,9 +566,9 @@ type builder struct {
 	name     string
 	clusters []string
 
-	virtualServices appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet
-	virtualNodes    appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
-	virtualRouters  appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet
+	appmeshK8SAwsv1Beta2VirtualServices appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet
+	appmeshK8SAwsv1Beta2VirtualNodes    appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
+	appmeshK8SAwsv1Beta2VirtualRouters  appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet
 }
 
 func NewBuilder(ctx context.Context, name string) *builder {
@@ -576,9 +576,9 @@ func NewBuilder(ctx context.Context, name string) *builder {
 		ctx:  ctx,
 		name: name,
 
-		virtualServices: appmesh_k8s_aws_v1beta2_sets.NewVirtualServiceSet(),
-		virtualNodes:    appmesh_k8s_aws_v1beta2_sets.NewVirtualNodeSet(),
-		virtualRouters:  appmesh_k8s_aws_v1beta2_sets.NewVirtualRouterSet(),
+		appmeshK8SAwsv1Beta2VirtualServices: appmesh_k8s_aws_v1beta2_sets.NewVirtualServiceSet(),
+		appmeshK8SAwsv1Beta2VirtualNodes:    appmesh_k8s_aws_v1beta2_sets.NewVirtualNodeSet(),
+		appmeshK8SAwsv1Beta2VirtualRouters:  appmesh_k8s_aws_v1beta2_sets.NewVirtualRouterSet(),
 	}
 }
 
@@ -586,23 +586,23 @@ func NewBuilder(ctx context.Context, name string) *builder {
 // iteratively collecting outputs before producing a final snapshot
 type Builder interface {
 
-	// add VirtualServices to the collected outputs
-	AddVirtualServices(virtualServices ...*appmesh_k8s_aws_v1beta2.VirtualService)
+	// add AppmeshK8SAwsv1Beta2VirtualServices to the collected outputs
+	AddAppmeshK8SAwsv1Beta2VirtualServices(appmeshK8SAwsv1Beta2VirtualServices ...*appmesh_k8s_aws_v1beta2.VirtualService)
 
-	// get the collected VirtualServices
-	GetVirtualServices() appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet
+	// get the collected AppmeshK8SAwsv1Beta2VirtualServices
+	GetAppmeshK8SAwsv1Beta2VirtualServices() appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet
 
-	// add VirtualNodes to the collected outputs
-	AddVirtualNodes(virtualNodes ...*appmesh_k8s_aws_v1beta2.VirtualNode)
+	// add AppmeshK8SAwsv1Beta2VirtualNodes to the collected outputs
+	AddAppmeshK8SAwsv1Beta2VirtualNodes(appmeshK8SAwsv1Beta2VirtualNodes ...*appmesh_k8s_aws_v1beta2.VirtualNode)
 
-	// get the collected VirtualNodes
-	GetVirtualNodes() appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
+	// get the collected AppmeshK8SAwsv1Beta2VirtualNodes
+	GetAppmeshK8SAwsv1Beta2VirtualNodes() appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet
 
-	// add VirtualRouters to the collected outputs
-	AddVirtualRouters(virtualRouters ...*appmesh_k8s_aws_v1beta2.VirtualRouter)
+	// add AppmeshK8SAwsv1Beta2VirtualRouters to the collected outputs
+	AddAppmeshK8SAwsv1Beta2VirtualRouters(appmeshK8SAwsv1Beta2VirtualRouters ...*appmesh_k8s_aws_v1beta2.VirtualRouter)
 
-	// get the collected VirtualRouters
-	GetVirtualRouters() appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet
+	// get the collected AppmeshK8SAwsv1Beta2VirtualRouters
+	GetAppmeshK8SAwsv1Beta2VirtualRouters() appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet
 
 	// build the collected outputs into a label-partitioned snapshot
 	BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error)
@@ -627,42 +627,42 @@ type Builder interface {
 	Delta(newSnap Builder) output.SnapshotDelta
 }
 
-func (b *builder) AddVirtualServices(virtualServices ...*appmesh_k8s_aws_v1beta2.VirtualService) {
-	for _, obj := range virtualServices {
+func (b *builder) AddAppmeshK8SAwsv1Beta2VirtualServices(appmeshK8SAwsv1Beta2VirtualServices ...*appmesh_k8s_aws_v1beta2.VirtualService) {
+	for _, obj := range appmeshK8SAwsv1Beta2VirtualServices {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output VirtualService %v", sets.Key(obj))
-		b.virtualServices.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output AppmeshK8SAwsv1Beta2VirtualService %v", sets.Key(obj))
+		b.appmeshK8SAwsv1Beta2VirtualServices.Insert(obj)
 	}
 }
-func (b *builder) AddVirtualNodes(virtualNodes ...*appmesh_k8s_aws_v1beta2.VirtualNode) {
-	for _, obj := range virtualNodes {
+func (b *builder) AddAppmeshK8SAwsv1Beta2VirtualNodes(appmeshK8SAwsv1Beta2VirtualNodes ...*appmesh_k8s_aws_v1beta2.VirtualNode) {
+	for _, obj := range appmeshK8SAwsv1Beta2VirtualNodes {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output VirtualNode %v", sets.Key(obj))
-		b.virtualNodes.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output AppmeshK8SAwsv1Beta2VirtualNode %v", sets.Key(obj))
+		b.appmeshK8SAwsv1Beta2VirtualNodes.Insert(obj)
 	}
 }
-func (b *builder) AddVirtualRouters(virtualRouters ...*appmesh_k8s_aws_v1beta2.VirtualRouter) {
-	for _, obj := range virtualRouters {
+func (b *builder) AddAppmeshK8SAwsv1Beta2VirtualRouters(appmeshK8SAwsv1Beta2VirtualRouters ...*appmesh_k8s_aws_v1beta2.VirtualRouter) {
+	for _, obj := range appmeshK8SAwsv1Beta2VirtualRouters {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output VirtualRouter %v", sets.Key(obj))
-		b.virtualRouters.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output AppmeshK8SAwsv1Beta2VirtualRouter %v", sets.Key(obj))
+		b.appmeshK8SAwsv1Beta2VirtualRouters.Insert(obj)
 	}
 }
 
-func (b *builder) GetVirtualServices() appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet {
-	return b.virtualServices
+func (b *builder) GetAppmeshK8SAwsv1Beta2VirtualServices() appmesh_k8s_aws_v1beta2_sets.VirtualServiceSet {
+	return b.appmeshK8SAwsv1Beta2VirtualServices
 }
-func (b *builder) GetVirtualNodes() appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet {
-	return b.virtualNodes
+func (b *builder) GetAppmeshK8SAwsv1Beta2VirtualNodes() appmesh_k8s_aws_v1beta2_sets.VirtualNodeSet {
+	return b.appmeshK8SAwsv1Beta2VirtualNodes
 }
-func (b *builder) GetVirtualRouters() appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet {
-	return b.virtualRouters
+func (b *builder) GetAppmeshK8SAwsv1Beta2VirtualRouters() appmesh_k8s_aws_v1beta2_sets.VirtualRouterSet {
+	return b.appmeshK8SAwsv1Beta2VirtualRouters
 }
 
 func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
@@ -670,9 +670,9 @@ func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
 		b.name,
 		labelKey,
 
-		b.virtualServices,
-		b.virtualNodes,
-		b.virtualRouters,
+		b.appmeshK8SAwsv1Beta2VirtualServices,
+		b.appmeshK8SAwsv1Beta2VirtualNodes,
+		b.appmeshK8SAwsv1Beta2VirtualRouters,
 		b.clusters...,
 	)
 }
@@ -682,9 +682,9 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 		b.name,
 		snapshotLabels,
 
-		b.virtualServices,
-		b.virtualNodes,
-		b.virtualRouters,
+		b.appmeshK8SAwsv1Beta2VirtualServices,
+		b.appmeshK8SAwsv1Beta2VirtualNodes,
+		b.appmeshK8SAwsv1Beta2VirtualRouters,
 		b.clusters...,
 	)
 }
@@ -702,9 +702,9 @@ func (b *builder) Merge(other Builder) {
 		return
 	}
 
-	b.AddVirtualServices(other.GetVirtualServices().List()...)
-	b.AddVirtualNodes(other.GetVirtualNodes().List()...)
-	b.AddVirtualRouters(other.GetVirtualRouters().List()...)
+	b.AddAppmeshK8SAwsv1Beta2VirtualServices(other.GetAppmeshK8SAwsv1Beta2VirtualServices().List()...)
+	b.AddAppmeshK8SAwsv1Beta2VirtualNodes(other.GetAppmeshK8SAwsv1Beta2VirtualNodes().List()...)
+	b.AddAppmeshK8SAwsv1Beta2VirtualRouters(other.GetAppmeshK8SAwsv1Beta2VirtualRouters().List()...)
 	for _, cluster := range other.Clusters() {
 		b.AddCluster(cluster)
 	}
@@ -716,14 +716,14 @@ func (b *builder) Clone() Builder {
 	}
 	clone := NewBuilder(b.ctx, b.name)
 
-	for _, virtualService := range b.GetVirtualServices().List() {
-		clone.AddVirtualServices(virtualService.DeepCopy())
+	for _, appmeshK8SAwsv1Beta2VirtualService := range b.GetAppmeshK8SAwsv1Beta2VirtualServices().List() {
+		clone.AddAppmeshK8SAwsv1Beta2VirtualServices(appmeshK8SAwsv1Beta2VirtualService.DeepCopy())
 	}
-	for _, virtualNode := range b.GetVirtualNodes().List() {
-		clone.AddVirtualNodes(virtualNode.DeepCopy())
+	for _, appmeshK8SAwsv1Beta2VirtualNode := range b.GetAppmeshK8SAwsv1Beta2VirtualNodes().List() {
+		clone.AddAppmeshK8SAwsv1Beta2VirtualNodes(appmeshK8SAwsv1Beta2VirtualNode.DeepCopy())
 	}
-	for _, virtualRouter := range b.GetVirtualRouters().List() {
-		clone.AddVirtualRouters(virtualRouter.DeepCopy())
+	for _, appmeshK8SAwsv1Beta2VirtualRouter := range b.GetAppmeshK8SAwsv1Beta2VirtualRouters().List() {
+		clone.AddAppmeshK8SAwsv1Beta2VirtualRouters(appmeshK8SAwsv1Beta2VirtualRouter.DeepCopy())
 	}
 	for _, cluster := range b.Clusters() {
 		clone.AddCluster(cluster)

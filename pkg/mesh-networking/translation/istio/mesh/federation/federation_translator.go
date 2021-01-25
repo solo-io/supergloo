@@ -113,7 +113,7 @@ func (t *translator) Translate(
 	// Currently, we just default to using the first one in the list.
 	ingressGateway := istioMesh.IngressGateways[0]
 
-	trafficTargets := servicesForMesh(mesh, in.TrafficTargets())
+	trafficTargets := servicesForMesh(mesh, in.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets())
 
 	if len(trafficTargets) == 0 {
 		contextutils.LoggerFrom(t.ctx).Debugf("no services found in istio mesh %v", sets.Key(mesh))
@@ -122,7 +122,7 @@ func (t *translator) Translate(
 
 	istioCluster := istioMesh.Installation.Cluster
 
-	kubeCluster, err := in.KubernetesClusters().Find(&v1.ObjectRef{
+	kubeCluster, err := in.MulticlusterSoloIov1Alpha1KubernetesClusters().Find(&v1.ObjectRef{
 		Name:      istioCluster,
 		Namespace: defaults.GetPodNamespace(),
 	})
@@ -193,7 +193,7 @@ func (t *translator) Translate(
 
 		// list all meshes in the virtual mesh
 		for _, ref := range virtualMesh.Spec.Meshes {
-			groupedMesh, err := in.Meshes().Find(ref)
+			groupedMesh, err := in.DiscoveryMeshGlooSoloIov1Alpha2Meshes().Find(ref)
 			if err != nil {
 				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, err)
 				continue
@@ -238,19 +238,19 @@ func (t *translator) Translate(
 			// Append the virtual mesh as a parent to the output service entry
 			metautils.AppendParent(t.ctx, se, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 
-			outputs.AddServiceEntries(se)
+			outputs.AddNetworkingIstioIov1Alpha3ServiceEntries(se)
 
 			// Translate VirtualServices for federated TrafficTargets, can be nil
 			vs := t.virtualServiceTranslator.Translate(t.ctx, in, trafficTarget, istioMesh.Installation, reporter)
 			// Append the virtual mesh as a parent to the output virtual service
 			metautils.AppendParent(t.ctx, vs, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
-			outputs.AddVirtualServices(vs)
+			outputs.AddNetworkingIstioIov1Alpha3VirtualServices(vs)
 
 			// Translate DestinationRules for federated TrafficTargets, can be nil
 			dr := t.destinationRuleTranslator.Translate(t.ctx, in, trafficTarget, istioMesh.Installation, reporter)
 			// Append the virtual mesh as a parent to the output destination rule
 			metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
-			outputs.AddDestinationRules(dr)
+			outputs.AddNetworkingIstioIov1Alpha3DestinationRules(dr)
 
 			// Update AppliedFederation data on TrafficTarget's status
 			updateTrafficTargetFederationStatus(trafficTarget, federatedHostname, ezkube.MakeObjectRef(groupedMesh), virtualMesh.Spec.Meshes)
@@ -320,8 +320,8 @@ func (t *translator) Translate(
 	metautils.AppendParent(t.ctx, gw, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 	metautils.AppendParent(t.ctx, ef, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 
-	outputs.AddGateways(gw)
-	outputs.AddEnvoyFilters(ef)
+	outputs.AddNetworkingIstioIov1Alpha3Gateways(gw)
+	outputs.AddNetworkingIstioIov1Alpha3EnvoyFilters(ef)
 }
 
 func updateTrafficTargetFederationStatus(

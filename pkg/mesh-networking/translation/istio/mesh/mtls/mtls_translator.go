@@ -185,8 +185,8 @@ func (t *translator) configureSharedTrust(
 	metautils.AppendParent(t.ctx, issuedCertificate, virtualMeshRef, v1alpha2.VirtualMesh{}.GVK())
 	metautils.AppendParent(t.ctx, podBounceDirective, virtualMeshRef, v1alpha2.VirtualMesh{}.GVK())
 
-	istioOutputs.AddIssuedCertificates(issuedCertificate)
-	istioOutputs.AddPodBounceDirectives(podBounceDirective)
+	istioOutputs.AddCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates(issuedCertificate)
+	istioOutputs.AddCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives(podBounceDirective)
 	return nil
 }
 
@@ -237,7 +237,7 @@ func (t *translator) getOrCreateRootCaSecret(
 		// Append the virtual mesh as a parent to the output secret
 		metautils.AppendParent(t.ctx, selfSignedCertSecret, virtualMeshRef, v1alpha2.VirtualMesh{}.GVK())
 
-		localOutputs.AddSecrets(selfSignedCertSecret)
+		localOutputs.AddV1Secrets(selfSignedCertSecret)
 	case *v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Secret:
 		rootCaSecret = caType.Secret
 	}

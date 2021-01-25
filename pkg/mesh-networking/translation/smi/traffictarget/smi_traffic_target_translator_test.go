@@ -62,7 +62,7 @@ var _ = Describe("SmiTrafficTargetTranslator", func() {
 
 		mockOutputs.
 			EXPECT().
-			AddTrafficSplits(ts)
+			AddSplitSmiSpecIov1Alpha2TrafficSplits(ts)
 
 		tt := &smiaccessv1alpha2.TrafficTarget{}
 		hrg := &smispecsv1alpha3.HTTPRouteGroup{}
@@ -73,11 +73,11 @@ var _ = Describe("SmiTrafficTargetTranslator", func() {
 
 		mockOutputs.
 			EXPECT().
-			AddTrafficTargets(tt)
+			AddAccessSmiSpecIov1Alpha2TrafficTargets(tt)
 
 		mockOutputs.
 			EXPECT().
-			AddHTTPRouteGroups(hrg)
+			AddSpecsSmiSpecIov1Alpha3HTTPRouteGroups(hrg)
 
 		smiTrafficTargetTranslator.Translate(ctx, in, trafficTarget, mockOutputs, mockReporter)
 	})

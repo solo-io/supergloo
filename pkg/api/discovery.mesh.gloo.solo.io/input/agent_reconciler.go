@@ -4,16 +4,16 @@
 
 // The Input Reconciler calls a simple func() error whenever a
 // storage event is received for any of:
-// * Settings
-// * Meshes
-// * ConfigMaps
-// * Services
-// * Pods
-// * Nodes
-// * Deployments
-// * ReplicaSets
-// * DaemonSets
-// * StatefulSets
+// * SettingsMeshGlooSoloIov1Alpha2Settings
+// * AppmeshK8SAwsv1Beta2Meshes
+// * V1ConfigMaps
+// * V1Services
+// * V1Pods
+// * V1Nodes
+// * Appsv1Deployments
+// * Appsv1ReplicaSets
+// * Appsv1DaemonSets
+// * Appsv1StatefulSets
 // for a given cluster or set of clusters.
 //
 // Input Reconcilers can be be constructed from either a single Manager (watch events in a single cluster)
@@ -72,29 +72,29 @@ type multiClusterAgentReconcilerImpl struct {
 // Options for reconciling a snapshot
 type AgentReconcileOptions struct {
 
-	// Options for reconciling Settings
-	Settings reconcile.Options
+	// Options for reconciling SettingsMeshGlooSoloIov1Alpha2Settings
+	SettingsMeshGlooSoloIov1Alpha2Settings reconcile.Options
 
-	// Options for reconciling Meshes
-	Meshes reconcile.Options
+	// Options for reconciling AppmeshK8SAwsv1Beta2Meshes
+	AppmeshK8SAwsv1Beta2Meshes reconcile.Options
 
-	// Options for reconciling ConfigMaps
-	ConfigMaps reconcile.Options
-	// Options for reconciling Services
-	Services reconcile.Options
-	// Options for reconciling Pods
-	Pods reconcile.Options
-	// Options for reconciling Nodes
-	Nodes reconcile.Options
+	// Options for reconciling V1ConfigMaps
+	V1ConfigMaps reconcile.Options
+	// Options for reconciling V1Services
+	V1Services reconcile.Options
+	// Options for reconciling V1Pods
+	V1Pods reconcile.Options
+	// Options for reconciling V1Nodes
+	V1Nodes reconcile.Options
 
-	// Options for reconciling Deployments
-	Deployments reconcile.Options
-	// Options for reconciling ReplicaSets
-	ReplicaSets reconcile.Options
-	// Options for reconciling DaemonSets
-	DaemonSets reconcile.Options
-	// Options for reconciling StatefulSets
-	StatefulSets reconcile.Options
+	// Options for reconciling Appsv1Deployments
+	Appsv1Deployments reconcile.Options
+	// Options for reconciling Appsv1ReplicaSets
+	Appsv1ReplicaSets reconcile.Options
+	// Options for reconciling Appsv1DaemonSets
+	Appsv1DaemonSets reconcile.Options
+	// Options for reconciling Appsv1StatefulSets
+	Appsv1StatefulSets reconcile.Options
 }
 
 // register the reconcile func with the cluster watcher
@@ -122,25 +122,25 @@ func RegisterMultiClusterAgentReconciler(
 
 	// initialize reconcile loops
 
-	settings_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterSettingsReconcileLoop("Settings", clusters, options.Settings).AddMulticlusterSettingsReconciler(ctx, r, predicates...)
+	settings_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterSettingsReconcileLoop("Settings", clusters, options.SettingsMeshGlooSoloIov1Alpha2Settings).AddMulticlusterSettingsReconciler(ctx, r, predicates...)
 
-	appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterMeshReconcileLoop("Mesh", clusters, options.Meshes).AddMulticlusterMeshReconciler(ctx, r, predicates...)
+	appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterMeshReconcileLoop("Mesh", clusters, options.AppmeshK8SAwsv1Beta2Meshes).AddMulticlusterMeshReconciler(ctx, r, predicates...)
 
-	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters, options.ConfigMaps).AddMulticlusterConfigMapReconciler(ctx, r, predicates...)
+	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters, options.V1ConfigMaps).AddMulticlusterConfigMapReconciler(ctx, r, predicates...)
 
-	v1_controllers.NewMulticlusterServiceReconcileLoop("Service", clusters, options.Services).AddMulticlusterServiceReconciler(ctx, r, predicates...)
+	v1_controllers.NewMulticlusterServiceReconcileLoop("Service", clusters, options.V1Services).AddMulticlusterServiceReconciler(ctx, r, predicates...)
 
-	v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters, options.Pods).AddMulticlusterPodReconciler(ctx, r, predicates...)
+	v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters, options.V1Pods).AddMulticlusterPodReconciler(ctx, r, predicates...)
 
-	v1_controllers.NewMulticlusterNodeReconcileLoop("Node", clusters, options.Nodes).AddMulticlusterNodeReconciler(ctx, r, predicates...)
+	v1_controllers.NewMulticlusterNodeReconcileLoop("Node", clusters, options.V1Nodes).AddMulticlusterNodeReconciler(ctx, r, predicates...)
 
-	apps_v1_controllers.NewMulticlusterDeploymentReconcileLoop("Deployment", clusters, options.Deployments).AddMulticlusterDeploymentReconciler(ctx, r, predicates...)
+	apps_v1_controllers.NewMulticlusterDeploymentReconcileLoop("Deployment", clusters, options.Appsv1Deployments).AddMulticlusterDeploymentReconciler(ctx, r, predicates...)
 
-	apps_v1_controllers.NewMulticlusterReplicaSetReconcileLoop("ReplicaSet", clusters, options.ReplicaSets).AddMulticlusterReplicaSetReconciler(ctx, r, predicates...)
+	apps_v1_controllers.NewMulticlusterReplicaSetReconcileLoop("ReplicaSet", clusters, options.Appsv1ReplicaSets).AddMulticlusterReplicaSetReconciler(ctx, r, predicates...)
 
-	apps_v1_controllers.NewMulticlusterDaemonSetReconcileLoop("DaemonSet", clusters, options.DaemonSets).AddMulticlusterDaemonSetReconciler(ctx, r, predicates...)
+	apps_v1_controllers.NewMulticlusterDaemonSetReconcileLoop("DaemonSet", clusters, options.Appsv1DaemonSets).AddMulticlusterDaemonSetReconciler(ctx, r, predicates...)
 
-	apps_v1_controllers.NewMulticlusterStatefulSetReconcileLoop("StatefulSet", clusters, options.StatefulSets).AddMulticlusterStatefulSetReconciler(ctx, r, predicates...)
+	apps_v1_controllers.NewMulticlusterStatefulSetReconcileLoop("StatefulSet", clusters, options.Appsv1StatefulSets).AddMulticlusterStatefulSetReconciler(ctx, r, predicates...)
 	return r.base
 }
 

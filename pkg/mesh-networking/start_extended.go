@@ -133,7 +133,7 @@ func (opts *CertIssuerReconcilerExtensionOpts) initDefaults(parameters bootstrap
 		// sync statuses to multicluster clients (default)
 		opts.SyncCertificateIssuerInputStatuses = func(ctx context.Context, snapshot certissuerinput.Snapshot) error {
 			return snapshot.SyncStatusesMultiCluster(ctx, parameters.McClient, certissuerinput.SyncStatusOptions{
-				CertificateRequest: true,
+				CertificatesMeshGlooSoloIov1Alpha2CertificateRequest: true,
 			})
 		}
 	}

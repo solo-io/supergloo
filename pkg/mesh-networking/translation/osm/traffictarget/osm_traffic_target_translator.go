@@ -49,7 +49,7 @@ func (t *translator) Translate(
 	reporter reporting.Reporter,
 ) {
 	// only translate osm trafficTargets
-	if !t.isOSMTrafficTarget(ctx, trafficTarget, in.Meshes()) {
+	if !t.isOSMTrafficTarget(ctx, trafficTarget, in.DiscoveryMeshGlooSoloIov1Alpha2Meshes()) {
 		return
 	}
 

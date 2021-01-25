@@ -125,7 +125,7 @@ var _ = Describe("AccessPolicyTranslator", func() {
 		)
 		outputs := istio.NewBuilder(context.TODO(), "")
 		translator.Translate(mesh, mesh.Status.AppliedVirtualMesh, outputs)
-		Expect(outputs.GetAuthorizationPolicies()).To(Equal(expectedAuthPolicies))
+		Expect(outputs.GetSecurityIstioIov1Beta1AuthorizationPolicies()).To(Equal(expectedAuthPolicies))
 	})
 
 	It("should not translate any AuthorizationPolicies", func() {
@@ -149,6 +149,6 @@ var _ = Describe("AccessPolicyTranslator", func() {
 		}
 		outputs := istio.NewBuilder(context.TODO(), "")
 		translator.Translate(mesh, mesh.Status.AppliedVirtualMesh, outputs)
-		Expect(outputs.GetAuthorizationPolicies().Length()).To(Equal(0))
+		Expect(outputs.GetSecurityIstioIov1Beta1AuthorizationPolicies().Length()).To(Equal(0))
 	})
 })

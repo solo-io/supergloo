@@ -49,7 +49,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockDecorator = mock_trafficpolicy.NewMockTrafficPolicyVirtualServiceDecorator(ctrl)
 		virtualServiceTranslator = virtualservice.NewTranslator(nil, mockClusterDomainRegistry, mockDecoratorFactory)
-		in = input.NewInputLocalSnapshotManualBuilder("").AddSettings(settingsv1alpha2.SettingsSlice{{}}).Build()
+		in = input.NewInputLocalSnapshotManualBuilder("").AddSettingsMeshGlooSoloIov1Alpha2Settings(settingsv1alpha2.SettingsSlice{{}}).Build()
 	})
 
 	AfterEach(func() {
@@ -985,7 +985,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		}
 
 		in = input.NewInputLocalSnapshotManualBuilder("").
-			AddSettings(settingsv1alpha2.SettingsSlice{
+			AddSettingsMeshGlooSoloIov1Alpha2Settings(settingsv1alpha2.SettingsSlice{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      defaults.DefaultSettingsName,

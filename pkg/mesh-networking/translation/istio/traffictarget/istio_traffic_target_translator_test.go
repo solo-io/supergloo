@@ -60,7 +60,7 @@ var _ = Describe("IstioTrafficTargetTranslator", func() {
 		}
 
 		in := input.NewInputLocalSnapshotManualBuilder("").
-			AddMeshes([]*v1alpha2.Mesh{
+			AddDiscoveryMeshGlooSoloIov1Alpha2Meshes([]*v1alpha2.Mesh{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      trafficTarget.Spec.GetMesh().GetName(),
@@ -93,13 +93,13 @@ var _ = Describe("IstioTrafficTargetTranslator", func() {
 			Return(ap)
 		mockOutputs.
 			EXPECT().
-			AddVirtualServices(vs)
+			AddNetworkingIstioIov1Alpha3VirtualServices(vs)
 		mockOutputs.
 			EXPECT().
-			AddDestinationRules(dr)
+			AddNetworkingIstioIov1Alpha3DestinationRules(dr)
 		mockOutputs.
 			EXPECT().
-			AddAuthorizationPolicies(ap)
+			AddSecurityIstioIov1Beta1AuthorizationPolicies(ap)
 
 		istioTrafficTargetTranslator.Translate(in, trafficTarget, mockOutputs, mockReporter)
 	})

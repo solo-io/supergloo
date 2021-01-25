@@ -56,7 +56,7 @@ func NewMeshDetector(
 func (d *meshDetector) DetectMeshes(in input.DiscoveryInputSnapshot, settings *settingsv1alpha2.DiscoverySettings) (v1alpha2.MeshSlice, error) {
 	var meshes v1alpha2.MeshSlice
 	var errs error
-	for _, deployment := range in.Deployments().List() {
+	for _, deployment := range in.Appsv1Deployments().List() {
 		mesh, err := d.detectMesh(deployment, in, settings)
 		if err != nil {
 			errs = multierror.Append(errs, err)
@@ -79,7 +79,7 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Discov
 		return nil, nil
 	}
 
-	meshConfig, err := getMeshConfig(in.ConfigMaps(), deployment.ClusterName, deployment.Namespace)
+	meshConfig, err := getMeshConfig(in.V1ConfigMaps(), deployment.ClusterName, deployment.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -95,14 +95,14 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Discov
 		deployment.ClusterName,
 		ingressGatewayDetector.GetGatewayWorkloadLabels(),
 		ingressGatewayDetector.GetGatewayTlsPortName(),
-		in.Services(),
-		in.Pods(),
-		in.Nodes(),
+		in.V1Services(),
+		in.V1Pods(),
+		in.V1Nodes(),
 	)
 
 	agent := getAgent(
 		deployment.ClusterName,
-		in.Pods(),
+		in.V1Pods(),
 	)
 
 	mesh := &v1alpha2.Mesh{

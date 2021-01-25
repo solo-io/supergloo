@@ -62,7 +62,7 @@ func OutputsToProto(outputs istio.Builder) []*v1alpha1.GeneratedObject {
 	}
 	var generatedObjects []*v1alpha1.GeneratedObject
 
-	for _, object := range outputs.GetDestinationRules().List() {
+	for _, object := range outputs.GetNetworkingIstioIov1Alpha3DestinationRules().List() {
 		object := object // pike
 		generatedObjects = append(generatedObjects, &v1alpha1.GeneratedObject{
 			Metadata: extensions.ObjectMetaToProto(object.ObjectMeta),
@@ -70,7 +70,7 @@ func OutputsToProto(outputs istio.Builder) []*v1alpha1.GeneratedObject {
 		})
 	}
 
-	for _, object := range outputs.GetEnvoyFilters().List() {
+	for _, object := range outputs.GetNetworkingIstioIov1Alpha3EnvoyFilters().List() {
 		object := object // pike
 		generatedObjects = append(generatedObjects, &v1alpha1.GeneratedObject{
 			Metadata: extensions.ObjectMetaToProto(object.ObjectMeta),
@@ -78,7 +78,7 @@ func OutputsToProto(outputs istio.Builder) []*v1alpha1.GeneratedObject {
 		})
 	}
 
-	for _, object := range outputs.GetServiceEntries().List() {
+	for _, object := range outputs.GetNetworkingIstioIov1Alpha3ServiceEntries().List() {
 		object := object // pike
 		generatedObjects = append(generatedObjects, &v1alpha1.GeneratedObject{
 			Metadata: extensions.ObjectMetaToProto(object.ObjectMeta),
@@ -86,7 +86,7 @@ func OutputsToProto(outputs istio.Builder) []*v1alpha1.GeneratedObject {
 		})
 	}
 
-	for _, object := range outputs.GetVirtualServices().List() {
+	for _, object := range outputs.GetNetworkingIstioIov1Alpha3VirtualServices().List() {
 		object := object // pike
 		generatedObjects = append(generatedObjects, &v1alpha1.GeneratedObject{
 			Metadata: extensions.ObjectMetaToProto(object.ObjectMeta),
@@ -94,7 +94,7 @@ func OutputsToProto(outputs istio.Builder) []*v1alpha1.GeneratedObject {
 		})
 	}
 
-	for _, object := range outputs.GetXdsConfigs().List() {
+	for _, object := range outputs.GetXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs().List() {
 		object := object // pike
 		generatedObjects = append(generatedObjects, &v1alpha1.GeneratedObject{
 			Metadata: extensions.ObjectMetaToProto(object.ObjectMeta),
@@ -102,7 +102,7 @@ func OutputsToProto(outputs istio.Builder) []*v1alpha1.GeneratedObject {
 		})
 	}
 
-	for _, object := range outputs.GetConfigMaps().List() {
+	for _, object := range outputs.GetV1ConfigMaps().List() {
 		object := object // pike
 		generatedObjects = append(generatedObjects, &v1alpha1.GeneratedObject{
 			Metadata: extensions.ObjectMetaToProto(object.ObjectMeta),
@@ -135,36 +135,36 @@ func applyPatches(ctx context.Context, outputs istio.Builder, patches []*v1alpha
 		switch objectType := patchedObject.Type.(type) {
 		case *v1alpha1.GeneratedObject_DestinationRule:
 			contextutils.LoggerFrom(ctx).Debugf("applied patched DestinationRule %v", sets.Key(patchedObject.Metadata))
-			outputs.AddDestinationRules(&istionetworkingv1alpha3.DestinationRule{
+			outputs.AddNetworkingIstioIov1Alpha3DestinationRules(&istionetworkingv1alpha3.DestinationRule{
 				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
 				Spec:       *objectType.DestinationRule,
 			})
 		case *v1alpha1.GeneratedObject_EnvoyFilter:
 			contextutils.LoggerFrom(ctx).Debugf("applied patched EnvoyFilter %v", sets.Key(patchedObject.Metadata))
-			outputs.AddEnvoyFilters(&istionetworkingv1alpha3.EnvoyFilter{
+			outputs.AddNetworkingIstioIov1Alpha3EnvoyFilters(&istionetworkingv1alpha3.EnvoyFilter{
 				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
 				Spec:       *objectType.EnvoyFilter,
 			})
 		case *v1alpha1.GeneratedObject_ServiceEntry:
 			contextutils.LoggerFrom(ctx).Debugf("applied patched ServiceEntry %v", sets.Key(patchedObject.Metadata))
-			outputs.AddServiceEntries(&istionetworkingv1alpha3.ServiceEntry{
+			outputs.AddNetworkingIstioIov1Alpha3ServiceEntries(&istionetworkingv1alpha3.ServiceEntry{
 				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
 				Spec:       *objectType.ServiceEntry,
 			})
 		case *v1alpha1.GeneratedObject_VirtualService:
 			contextutils.LoggerFrom(ctx).Debugf("applied patched VirtualService %v", sets.Key(patchedObject.Metadata))
-			outputs.AddVirtualServices(&istionetworkingv1alpha3.VirtualService{
+			outputs.AddNetworkingIstioIov1Alpha3VirtualServices(&istionetworkingv1alpha3.VirtualService{
 				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
 				Spec:       *objectType.VirtualService,
 			})
 		case *v1alpha1.GeneratedObject_XdsConfig:
 			contextutils.LoggerFrom(ctx).Debugf("applied patched XdsConfig %v", sets.Key(patchedObject.Metadata))
-			outputs.AddXdsConfigs(&xdsv1alpha1.XdsConfig{
+			outputs.AddXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs(&xdsv1alpha1.XdsConfig{
 				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
 				Spec:       *objectType.XdsConfig,
 			})
 		case *v1alpha1.GeneratedObject_ConfigMap_:
-			outputs.AddConfigMaps(&corev1.ConfigMap{
+			outputs.AddV1ConfigMaps(&corev1.ConfigMap{
 				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
 				Data:       objectType.ConfigMap.Data,
 			})
