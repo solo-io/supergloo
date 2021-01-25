@@ -75,7 +75,7 @@ func Cli() *cobra.Command {
 }
 
 func run(licenses map[string]interface{}) error {
-	glooOptions := &license.Options{
+	meshOptions := &license.Options{
 		RunAll:             false,
 		Words:              false,
 		PrintConfidence:    false,
@@ -89,7 +89,7 @@ func run(licenses map[string]interface{}) error {
 		},
 		Product: NewGlooProductLicenseHandler(linuxTarget, licenses),
 	}
-	return license.PrintLicensesWithOptions(glooOptions)
+	return license.PrintLicensesWithOptions(meshOptions)
 }
 
 const (
@@ -97,40 +97,40 @@ const (
 	macTarget   = "mac"
 )
 
-type GlooProductLicenseHandler struct {
+type GlooMeshLicenseHandler struct {
 	TargetOs          string
 	LicensesToProcess map[string]interface{}
 }
 
-func NewGlooProductLicenseHandler(targetOs string, licensesToProcess map[string]interface{}) *GlooProductLicenseHandler {
-	return &GlooProductLicenseHandler{
+func NewGlooProductLicenseHandler(targetOs string, licensesToProcess map[string]interface{}) *GlooMeshLicenseHandler {
+	return &GlooMeshLicenseHandler{
 		TargetOs:          targetOs,
 		LicensesToProcess: licensesToProcess,
 	}
 }
 
-func (lh *GlooProductLicenseHandler) SkipLicense(l license.License) bool {
+func (lh *GlooMeshLicenseHandler) SkipLicense(l license.License) bool {
 	// explicitly don't process this license
 	if l.Template != nil && lh.LicensesToProcess[l.Template.Title] == nil {
 		return true
 	}
 	// only present on mac
-	if lh.TargetOs == linuxTarget && l.Package == "github.com/solo-io/gloo/vendor/github.com/mitchellh/go-homedir" {
+	if lh.TargetOs == linuxTarget {
 		return true
 	}
 	return false
 }
 
-func (lh *GlooProductLicenseHandler) ExtraLicenses() []license.License {
+func (lh *GlooMeshLicenseHandler) ExtraLicenses() []license.License {
 	return nonDepGlooDependencyLicenses
 }
 
-func (lh *GlooProductLicenseHandler) ReplacementList() []string {
+func (lh *GlooMeshLicenseHandler) ReplacementList() []string {
 	// the common list is fine for now, but as we introduce more dependencies we may want to break away from this list
 	return license.CommonReplacements
 }
 
-func (lh *GlooProductLicenseHandler) OverrideLicense(pkg, licenseCandidate string) string {
+func (lh *GlooMeshLicenseHandler) OverrideLicense(pkg, licenseCandidate string) string {
 	return license.CommonOverrides(pkg, licenseCandidate)
 }
 
