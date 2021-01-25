@@ -50,14 +50,14 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
-	v1Secrets []LabeledV1SecretsSet
+	v1Secrets []LabeledV1SecretSet
 	clusters  []string
 }
 
 func NewSnapshot(
 	name string,
 
-	v1Secrets []LabeledV1SecretsSet,
+	v1Secrets []LabeledV1SecretSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{

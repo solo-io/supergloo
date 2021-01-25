@@ -55,16 +55,16 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
-	certificatesMeshGlooSoloIov1Alpha2CertificateRequests []LabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestsSet
-	v1Secrets                                             []LabeledV1SecretsSet
+	certificatesMeshGlooSoloIov1Alpha2CertificateRequests []LabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet
+	v1Secrets                                             []LabeledV1SecretSet
 	clusters                                              []string
 }
 
 func NewSnapshot(
 	name string,
 
-	certificatesMeshGlooSoloIov1Alpha2CertificateRequests []LabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestsSet,
-	v1Secrets []LabeledV1SecretsSet,
+	certificatesMeshGlooSoloIov1Alpha2CertificateRequests []LabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet,
+	v1Secrets []LabeledV1SecretSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{

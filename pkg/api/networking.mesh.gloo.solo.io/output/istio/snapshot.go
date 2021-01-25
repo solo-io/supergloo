@@ -80,32 +80,32 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates  []LabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificatesSet
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives []LabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectivesSet
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs    []LabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigsSet
-	networkingIstioIov1Alpha3DestinationRules             []LabeledNetworkingIstioIov1Alpha3DestinationRulesSet
-	networkingIstioIov1Alpha3EnvoyFilters                 []LabeledNetworkingIstioIov1Alpha3EnvoyFiltersSet
-	networkingIstioIov1Alpha3Gateways                     []LabeledNetworkingIstioIov1Alpha3GatewaysSet
-	networkingIstioIov1Alpha3ServiceEntries               []LabeledNetworkingIstioIov1Alpha3ServiceEntriesSet
-	networkingIstioIov1Alpha3VirtualServices              []LabeledNetworkingIstioIov1Alpha3VirtualServicesSet
-	securityIstioIov1Beta1AuthorizationPolicies           []LabeledSecurityIstioIov1Beta1AuthorizationPoliciesSet
-	v1ConfigMaps                                          []LabeledV1ConfigMapsSet
+	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates  []LabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet
+	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives []LabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet
+	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs    []LabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet
+	networkingIstioIov1Alpha3DestinationRules             []LabeledNetworkingIstioIov1Alpha3DestinationRuleSet
+	networkingIstioIov1Alpha3EnvoyFilters                 []LabeledNetworkingIstioIov1Alpha3EnvoyFilterSet
+	networkingIstioIov1Alpha3Gateways                     []LabeledNetworkingIstioIov1Alpha3GatewaySet
+	networkingIstioIov1Alpha3ServiceEntries               []LabeledNetworkingIstioIov1Alpha3ServiceEntrySet
+	networkingIstioIov1Alpha3VirtualServices              []LabeledNetworkingIstioIov1Alpha3VirtualServiceSet
+	securityIstioIov1Beta1AuthorizationPolicies           []LabeledSecurityIstioIov1Beta1AuthorizationPolicySet
+	v1ConfigMaps                                          []LabeledV1ConfigMapSet
 	clusters                                              []string
 }
 
 func NewSnapshot(
 	name string,
 
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates []LabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificatesSet,
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives []LabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectivesSet,
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs []LabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigsSet,
-	networkingIstioIov1Alpha3DestinationRules []LabeledNetworkingIstioIov1Alpha3DestinationRulesSet,
-	networkingIstioIov1Alpha3EnvoyFilters []LabeledNetworkingIstioIov1Alpha3EnvoyFiltersSet,
-	networkingIstioIov1Alpha3Gateways []LabeledNetworkingIstioIov1Alpha3GatewaysSet,
-	networkingIstioIov1Alpha3ServiceEntries []LabeledNetworkingIstioIov1Alpha3ServiceEntriesSet,
-	networkingIstioIov1Alpha3VirtualServices []LabeledNetworkingIstioIov1Alpha3VirtualServicesSet,
-	securityIstioIov1Beta1AuthorizationPolicies []LabeledSecurityIstioIov1Beta1AuthorizationPoliciesSet,
-	v1ConfigMaps []LabeledV1ConfigMapsSet,
+	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates []LabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet,
+	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives []LabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet,
+	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs []LabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet,
+	networkingIstioIov1Alpha3DestinationRules []LabeledNetworkingIstioIov1Alpha3DestinationRuleSet,
+	networkingIstioIov1Alpha3EnvoyFilters []LabeledNetworkingIstioIov1Alpha3EnvoyFilterSet,
+	networkingIstioIov1Alpha3Gateways []LabeledNetworkingIstioIov1Alpha3GatewaySet,
+	networkingIstioIov1Alpha3ServiceEntries []LabeledNetworkingIstioIov1Alpha3ServiceEntrySet,
+	networkingIstioIov1Alpha3VirtualServices []LabeledNetworkingIstioIov1Alpha3VirtualServiceSet,
+	securityIstioIov1Beta1AuthorizationPolicies []LabeledSecurityIstioIov1Beta1AuthorizationPolicySet,
+	v1ConfigMaps []LabeledV1ConfigMapSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{

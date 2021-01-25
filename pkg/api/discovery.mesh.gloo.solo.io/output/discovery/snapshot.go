@@ -54,18 +54,18 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
-	discoveryMeshGlooSoloIov1Alpha2TrafficTargets []LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetsSet
-	discoveryMeshGlooSoloIov1Alpha2Workloads      []LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadsSet
-	discoveryMeshGlooSoloIov1Alpha2Meshes         []LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshesSet
+	discoveryMeshGlooSoloIov1Alpha2TrafficTargets []LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet
+	discoveryMeshGlooSoloIov1Alpha2Workloads      []LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet
+	discoveryMeshGlooSoloIov1Alpha2Meshes         []LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet
 	clusters                                      []string
 }
 
 func NewSnapshot(
 	name string,
 
-	discoveryMeshGlooSoloIov1Alpha2TrafficTargets []LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetsSet,
-	discoveryMeshGlooSoloIov1Alpha2Workloads []LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadsSet,
-	discoveryMeshGlooSoloIov1Alpha2Meshes []LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshesSet,
+	discoveryMeshGlooSoloIov1Alpha2TrafficTargets []LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet,
+	discoveryMeshGlooSoloIov1Alpha2Workloads []LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet,
+	discoveryMeshGlooSoloIov1Alpha2Meshes []LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{

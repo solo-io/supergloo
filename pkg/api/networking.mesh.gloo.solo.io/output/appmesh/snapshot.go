@@ -54,18 +54,18 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
-	appmeshK8SAwsv1Beta2VirtualServices []LabeledAppmeshK8SAwsv1Beta2VirtualServicesSet
-	appmeshK8SAwsv1Beta2VirtualNodes    []LabeledAppmeshK8SAwsv1Beta2VirtualNodesSet
-	appmeshK8SAwsv1Beta2VirtualRouters  []LabeledAppmeshK8SAwsv1Beta2VirtualRoutersSet
+	appmeshK8SAwsv1Beta2VirtualServices []LabeledAppmeshK8SAwsv1Beta2VirtualServiceSet
+	appmeshK8SAwsv1Beta2VirtualNodes    []LabeledAppmeshK8SAwsv1Beta2VirtualNodeSet
+	appmeshK8SAwsv1Beta2VirtualRouters  []LabeledAppmeshK8SAwsv1Beta2VirtualRouterSet
 	clusters                            []string
 }
 
 func NewSnapshot(
 	name string,
 
-	appmeshK8SAwsv1Beta2VirtualServices []LabeledAppmeshK8SAwsv1Beta2VirtualServicesSet,
-	appmeshK8SAwsv1Beta2VirtualNodes []LabeledAppmeshK8SAwsv1Beta2VirtualNodesSet,
-	appmeshK8SAwsv1Beta2VirtualRouters []LabeledAppmeshK8SAwsv1Beta2VirtualRoutersSet,
+	appmeshK8SAwsv1Beta2VirtualServices []LabeledAppmeshK8SAwsv1Beta2VirtualServiceSet,
+	appmeshK8SAwsv1Beta2VirtualNodes []LabeledAppmeshK8SAwsv1Beta2VirtualNodeSet,
+	appmeshK8SAwsv1Beta2VirtualRouters []LabeledAppmeshK8SAwsv1Beta2VirtualRouterSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{
