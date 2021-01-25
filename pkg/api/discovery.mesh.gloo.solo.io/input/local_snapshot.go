@@ -18,8 +18,11 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/solo-io/skv2/pkg/resource"
 	"github.com/solo-io/skv2/pkg/verifier"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/hashicorp/go-multierror"
 
@@ -29,8 +32,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	settings_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	settings_mesh_gloo_solo_io_v1alpha2_types "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	settings_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
 )
+
+// SnapshotGVKs is a list of the GVKs included in this snapshot
+var SettingsSnapshotGVKs = []schema.GroupVersionKind{
+
+	schema.GroupVersionKind{
+		Group:   "settings.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "Settings",
+	},
+}
 
 // the snapshot of input resources consumed by translation
 type SettingsSnapshot interface {
@@ -71,6 +85,32 @@ func NewSettingsSnapshot(
 
 		settings: settings,
 	}
+}
+
+func NewSettingsSnapshotFromGeneric(
+	name string,
+	genericSnapshot resource.ClusterSnapshot,
+) SettingsSnapshot {
+
+	settingsSet := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+
+	for _, snapshot := range genericSnapshot {
+
+		settings := snapshot[schema.GroupVersionKind{
+			Group:   "settings.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Settings",
+		}]
+
+		for _, settings := range settings {
+			settingsSet.Insert(settings.(*settings_mesh_gloo_solo_io_v1alpha2_types.Settings))
+		}
+
+	}
+	return NewSettingsSnapshot(
+		name,
+		settingsSet,
+	)
 }
 
 func (s snapshotSettings) Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet {
@@ -296,4 +336,41 @@ func (b *singleClusterSettingsBuilder) insertSettings(ctx context.Context, setti
 	}
 
 	return nil
+}
+
+// build a snapshot from resources in a single cluster
+type inMemorySettingsBuilder struct {
+	getSnapshot func() (resource.ClusterSnapshot, error)
+}
+
+// Produces snapshots of resources read from the manager for the given cluster
+func NewInMemorySettingsBuilder(
+	getSnapshot func() (resource.ClusterSnapshot, error),
+) SettingsBuilder {
+	return &inMemorySettingsBuilder{
+		getSnapshot: getSnapshot,
+	}
+}
+
+func (i *inMemorySettingsBuilder) BuildSnapshot(ctx context.Context, name string, opts SettingsBuildOptions) (SettingsSnapshot, error) {
+	genericSnap, err := i.getSnapshot()
+	if err != nil {
+		return nil, err
+	}
+
+	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+
+	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, ref types.NamespacedName, obj client.Object) {
+		switch obj := obj.(type) {
+		// insert Settings
+		case *settings_mesh_gloo_solo_io_v1alpha2_types.Settings:
+			settings.Insert(obj)
+		}
+	})
+
+	return NewSettingsSnapshot(
+		name,
+
+		settings,
+	), nil
 }
