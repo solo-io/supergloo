@@ -6,8 +6,9 @@ import (
 	"github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	v1beta2sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
+	networkinginput "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	v1alpha22 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
+	networkingv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -66,7 +67,21 @@ var _ = Describe("Translator", func() {
 		daemonSets := appsv1sets.NewDaemonSetSet(&appsv1.DaemonSet{})
 		statefulSets := appsv1sets.NewStatefulSetSet(&appsv1.StatefulSet{})
 		endpoints := corev1sets.NewEndpointsSet(&corev1.Endpoints{})
-		virtualMeshes := v1alpha2sets2.NewVirtualMeshSet(&v1alpha22.VirtualMesh{})
+		virtualMeshes := networkingv1alpha2sets.NewVirtualMeshSet(&v1alpha22.VirtualMesh{})
+		inLocal := networkinginput.NewLocalSnapshot(
+			"",
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			virtualMeshes,
+			nil,
+			nil,
+			nil,
+			nil,
+		)
 		inRemote := input.NewDiscoveryInputSnapshot(
 			"mesh-discovery-remote",
 			appMeshes,
@@ -96,7 +111,7 @@ var _ = Describe("Translator", func() {
 		mockWorkloadTranslator.EXPECT().TranslateWorkloads(deployments, daemonSets, statefulSets, meshes).Return(workloads)
 		mockTrafficTargetTranslator.EXPECT().TranslateTrafficTargets(services, endpoints, workloads, meshes, virtualMeshes).Return(trafficTargets)
 
-		out, err := t.Translate(ctx, inRemote, settings, virtualMeshes)
+		out, err := t.Translate(ctx, inRemote, settings, inLocal)
 		Expect(err).NotTo(HaveOccurred())
 
 		expectedOut, err := discovery.NewSinglePartitionedSnapshot(

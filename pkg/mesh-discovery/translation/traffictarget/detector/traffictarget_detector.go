@@ -38,6 +38,7 @@ var (
 // If no Mesh is detected, nil is returned
 type TrafficTargetDetector interface {
 	DetectTrafficTarget(
+		ctx context.Context,
 		service *corev1.Service,
 		endpoints corev1sets.EndpointsSet,
 		workloads discoveryv1alpha2sets.WorkloadSet,
@@ -46,15 +47,14 @@ type TrafficTargetDetector interface {
 	) *v1alpha2.TrafficTarget
 }
 
-type trafficTargetDetector struct {
-	ctx context.Context
-}
+type trafficTargetDetector struct{}
 
-func NewTrafficTargetDetector(ctx context.Context) TrafficTargetDetector {
-	return &trafficTargetDetector{ctx: ctx}
+func NewTrafficTargetDetector() TrafficTargetDetector {
+	return &trafficTargetDetector{}
 }
 
 func (t *trafficTargetDetector) DetectTrafficTarget(
+	ctx context.Context,
 	service *corev1.Service,
 	endpoints corev1sets.EndpointsSet,
 	meshWorkloads discoveryv1alpha2sets.WorkloadSet,
@@ -67,6 +67,29 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 		Labels:                 service.Labels,
 		Ports:                  convertPorts(service),
 	}
+
+	validMesh := getMeshForKubeService(ctx, service, kubeService, meshWorkloads, meshes)
+
+	kubeService.Endpoints = getEndpointsForService(ctx, validMesh, endpoints, kubeService, virtualMeshes)
+
+	return &v1alpha2.TrafficTarget{
+		ObjectMeta: utils.DiscoveredObjectMeta(service),
+		Spec: v1alpha2.TrafficTargetSpec{
+			Type: &v1alpha2.TrafficTargetSpec_KubeService_{
+				KubeService: kubeService,
+			},
+			Mesh: validMesh,
+		},
+	}
+}
+
+func getMeshForKubeService(
+	ctx context.Context,
+	service *corev1.Service,
+	kubeService *v1alpha2.TrafficTargetSpec_KubeService,
+	meshWorkloads discoveryv1alpha2sets.WorkloadSet,
+	meshes discoveryv1alpha2sets.MeshSet,
+) *v1.ObjectRef {
 
 	var validMesh *v1.ObjectRef
 
@@ -92,7 +115,7 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 		}
 
 		if validMesh == nil {
-			contextutils.LoggerFrom(t.ctx).Errorf(
+			contextutils.LoggerFrom(ctx).Errorf(
 				"mesh could not be found for annotated service %s",
 				sets2.TypedKey(service),
 			)
@@ -113,13 +136,23 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 		// derive subsets from backing workloads
 		kubeService.Subsets = findSubsets(backingWorkloads)
 	}
+	return validMesh
+}
 
+func getEndpointsForService(
+	ctx context.Context,
+	validMesh *v1.ObjectRef,
+	endpoints corev1sets.EndpointsSet,
+	kubeService *v1alpha2.TrafficTargetSpec_KubeService,
+	virtualMeshes networkingv1alpha2sets.VirtualMeshSet,
+) []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset {
+	var result []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset
 	// Flat network is enabled for this particular virtual mesh
 	// so we will add all of the service endpoints to the traffic target
 	if vm := findRelatedVirtualMesh(validMesh, virtualMeshes); vm != nil && vm.Spec.GetFederation().GetFlatNetwork() {
 		ep, err := endpoints.Find(kubeService.GetRef())
 		if err != nil {
-			contextutils.LoggerFrom(t.ctx).Errorf(
+			contextutils.LoggerFrom(ctx).Errorf(
 				"endpoints could not be found for kube service %s",
 				sets2.TypedKey(kubeService.GetRef()),
 			)
@@ -140,20 +173,11 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 					}
 					sub.Ports = append(sub.Ports, svcPort)
 				}
-				kubeService.Endpoints = append(kubeService.Endpoints, sub)
+				result = append(result, sub)
 			}
 		}
 	}
-
-	return &v1alpha2.TrafficTarget{
-		ObjectMeta: utils.DiscoveredObjectMeta(service),
-		Spec: v1alpha2.TrafficTargetSpec{
-			Type: &v1alpha2.TrafficTargetSpec_KubeService_{
-				KubeService: kubeService,
-			},
-			Mesh: validMesh,
-		},
-	}
+	return result
 }
 
 func findRelatedVirtualMesh(

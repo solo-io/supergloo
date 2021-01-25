@@ -16,6 +16,7 @@ import (
 // the traffic-target translator converts deployments with injected sidecars into TrafficTarget CRs
 type Translator interface {
 	TranslateTrafficTargets(
+		ctx context.Context,
 		services corev1sets.ServiceSet,
 		endpoints corev1sets.EndpointsSet,
 		workloads v1alpha2sets.WorkloadSet,
@@ -29,11 +30,12 @@ type translator struct {
 	trafficTargetDetector detector.TrafficTargetDetector
 }
 
-func NewTranslator(ctx context.Context, trafficTargetDetector detector.TrafficTargetDetector) Translator {
-	return &translator{ctx: ctx, trafficTargetDetector: trafficTargetDetector}
+func NewTranslator(trafficTargetDetector detector.TrafficTargetDetector) Translator {
+	return &translator{trafficTargetDetector: trafficTargetDetector}
 }
 
 func (t *translator) TranslateTrafficTargets(
+	ctx context.Context,
 	services corev1sets.ServiceSet,
 	endpoints corev1sets.EndpointsSet,
 	workloads v1alpha2sets.WorkloadSet,
@@ -44,7 +46,14 @@ func (t *translator) TranslateTrafficTargets(
 	trafficTargetSet := v1alpha2sets.NewTrafficTargetSet()
 
 	for _, service := range services.List() {
-		trafficTarget := t.trafficTargetDetector.DetectTrafficTarget(service, endpoints, workloads, meshes, virtualMeshes)
+		trafficTarget := t.trafficTargetDetector.DetectTrafficTarget(
+			ctx,
+			service,
+			endpoints,
+			workloads,
+			meshes,
+			virtualMeshes,
+		)
 		if trafficTarget == nil {
 			continue
 		}

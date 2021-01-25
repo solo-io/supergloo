@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 )
 
-// run tests for AccessPolicy CRD functionality
+// run Enterprise Discovery regression tests
 func DiscoveryRegressionTest() {
 	var (
 		ctx context.Context
