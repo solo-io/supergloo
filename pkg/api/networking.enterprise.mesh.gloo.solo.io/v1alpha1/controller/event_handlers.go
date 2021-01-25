@@ -12,7 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/events"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -88,7 +88,7 @@ type genericWasmDeploymentHandler struct {
 	handler WasmDeploymentEventHandler
 }
 
-func (h genericWasmDeploymentHandler) Create(object runtime.Object) error {
+func (h genericWasmDeploymentHandler) Create(object client.Object) error {
 	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment)
 	if !ok {
 		return errors.Errorf("internal error: WasmDeployment handler received event for %T", object)
@@ -96,7 +96,7 @@ func (h genericWasmDeploymentHandler) Create(object runtime.Object) error {
 	return h.handler.CreateWasmDeployment(obj)
 }
 
-func (h genericWasmDeploymentHandler) Delete(object runtime.Object) error {
+func (h genericWasmDeploymentHandler) Delete(object client.Object) error {
 	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment)
 	if !ok {
 		return errors.Errorf("internal error: WasmDeployment handler received event for %T", object)
@@ -104,7 +104,7 @@ func (h genericWasmDeploymentHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteWasmDeployment(obj)
 }
 
-func (h genericWasmDeploymentHandler) Update(old, new runtime.Object) error {
+func (h genericWasmDeploymentHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment)
 	if !ok {
 		return errors.Errorf("internal error: WasmDeployment handler received event for %T", old)
@@ -116,7 +116,7 @@ func (h genericWasmDeploymentHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateWasmDeployment(objOld, objNew)
 }
 
-func (h genericWasmDeploymentHandler) Generic(object runtime.Object) error {
+func (h genericWasmDeploymentHandler) Generic(object client.Object) error {
 	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment)
 	if !ok {
 		return errors.Errorf("internal error: WasmDeployment handler received event for %T", object)

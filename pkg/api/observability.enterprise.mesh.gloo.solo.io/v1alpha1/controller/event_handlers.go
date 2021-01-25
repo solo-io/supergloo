@@ -12,7 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/events"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -88,7 +88,7 @@ type genericAccessLogCollectionHandler struct {
 	handler AccessLogCollectionEventHandler
 }
 
-func (h genericAccessLogCollectionHandler) Create(object runtime.Object) error {
+func (h genericAccessLogCollectionHandler) Create(object client.Object) error {
 	obj, ok := object.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection)
 	if !ok {
 		return errors.Errorf("internal error: AccessLogCollection handler received event for %T", object)
@@ -96,7 +96,7 @@ func (h genericAccessLogCollectionHandler) Create(object runtime.Object) error {
 	return h.handler.CreateAccessLogCollection(obj)
 }
 
-func (h genericAccessLogCollectionHandler) Delete(object runtime.Object) error {
+func (h genericAccessLogCollectionHandler) Delete(object client.Object) error {
 	obj, ok := object.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection)
 	if !ok {
 		return errors.Errorf("internal error: AccessLogCollection handler received event for %T", object)
@@ -104,7 +104,7 @@ func (h genericAccessLogCollectionHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteAccessLogCollection(obj)
 }
 
-func (h genericAccessLogCollectionHandler) Update(old, new runtime.Object) error {
+func (h genericAccessLogCollectionHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection)
 	if !ok {
 		return errors.Errorf("internal error: AccessLogCollection handler received event for %T", old)
@@ -116,7 +116,7 @@ func (h genericAccessLogCollectionHandler) Update(old, new runtime.Object) error
 	return h.handler.UpdateAccessLogCollection(objOld, objNew)
 }
 
-func (h genericAccessLogCollectionHandler) Generic(object runtime.Object) error {
+func (h genericAccessLogCollectionHandler) Generic(object client.Object) error {
 	obj, ok := object.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection)
 	if !ok {
 		return errors.Errorf("internal error: AccessLogCollection handler received event for %T", object)

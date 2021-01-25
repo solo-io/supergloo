@@ -126,7 +126,7 @@ func Start(ctx context.Context, rootLogger string, start StartReconciler, opts O
 	}
 
 	contextutils.LoggerFrom(ctx).Infof("starting manager with options %+v", opts)
-	return mgr.Start(ctx.Done())
+	return mgr.Start(ctx)
 }
 
 // get the manager for the local cluster; we will use this as our "master" cluster

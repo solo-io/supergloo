@@ -12,7 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/solo-io/skv2/pkg/events"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
@@ -88,7 +88,7 @@ type genericRoleHandler struct {
 	handler RoleEventHandler
 }
 
-func (h genericRoleHandler) Create(object runtime.Object) error {
+func (h genericRoleHandler) Create(object client.Object) error {
 	obj, ok := object.(*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.Role)
 	if !ok {
 		return errors.Errorf("internal error: Role handler received event for %T", object)
@@ -96,7 +96,7 @@ func (h genericRoleHandler) Create(object runtime.Object) error {
 	return h.handler.CreateRole(obj)
 }
 
-func (h genericRoleHandler) Delete(object runtime.Object) error {
+func (h genericRoleHandler) Delete(object client.Object) error {
 	obj, ok := object.(*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.Role)
 	if !ok {
 		return errors.Errorf("internal error: Role handler received event for %T", object)
@@ -104,7 +104,7 @@ func (h genericRoleHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteRole(obj)
 }
 
-func (h genericRoleHandler) Update(old, new runtime.Object) error {
+func (h genericRoleHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.Role)
 	if !ok {
 		return errors.Errorf("internal error: Role handler received event for %T", old)
@@ -116,7 +116,7 @@ func (h genericRoleHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateRole(objOld, objNew)
 }
 
-func (h genericRoleHandler) Generic(object runtime.Object) error {
+func (h genericRoleHandler) Generic(object client.Object) error {
 	obj, ok := object.(*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.Role)
 	if !ok {
 		return errors.Errorf("internal error: Role handler received event for %T", object)
@@ -195,7 +195,7 @@ type genericRoleBindingHandler struct {
 	handler RoleBindingEventHandler
 }
 
-func (h genericRoleBindingHandler) Create(object runtime.Object) error {
+func (h genericRoleBindingHandler) Create(object client.Object) error {
 	obj, ok := object.(*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.RoleBinding)
 	if !ok {
 		return errors.Errorf("internal error: RoleBinding handler received event for %T", object)
@@ -203,7 +203,7 @@ func (h genericRoleBindingHandler) Create(object runtime.Object) error {
 	return h.handler.CreateRoleBinding(obj)
 }
 
-func (h genericRoleBindingHandler) Delete(object runtime.Object) error {
+func (h genericRoleBindingHandler) Delete(object client.Object) error {
 	obj, ok := object.(*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.RoleBinding)
 	if !ok {
 		return errors.Errorf("internal error: RoleBinding handler received event for %T", object)
@@ -211,7 +211,7 @@ func (h genericRoleBindingHandler) Delete(object runtime.Object) error {
 	return h.handler.DeleteRoleBinding(obj)
 }
 
-func (h genericRoleBindingHandler) Update(old, new runtime.Object) error {
+func (h genericRoleBindingHandler) Update(old, new client.Object) error {
 	objOld, ok := old.(*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.RoleBinding)
 	if !ok {
 		return errors.Errorf("internal error: RoleBinding handler received event for %T", old)
@@ -223,7 +223,7 @@ func (h genericRoleBindingHandler) Update(old, new runtime.Object) error {
 	return h.handler.UpdateRoleBinding(objOld, objNew)
 }
 
-func (h genericRoleBindingHandler) Generic(object runtime.Object) error {
+func (h genericRoleBindingHandler) Generic(object client.Object) error {
 	obj, ok := object.(*rbac_enterprise_mesh_gloo_solo_io_v1alpha1.RoleBinding)
 	if !ok {
 		return errors.Errorf("internal error: RoleBinding handler received event for %T", object)
