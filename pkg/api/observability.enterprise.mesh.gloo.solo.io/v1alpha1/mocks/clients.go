@@ -74,520 +74,520 @@ func (m *MockClientset) EXPECT() *MockClientsetMockRecorder {
 	return m.recorder
 }
 
-// AccessLogCollections mocks base method
-func (m *MockClientset) AccessLogCollections() v1alpha1.AccessLogCollectionClient {
+// AccessLogRecords mocks base method
+func (m *MockClientset) AccessLogRecords() v1alpha1.AccessLogRecordClient {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccessLogCollections")
-	ret0, _ := ret[0].(v1alpha1.AccessLogCollectionClient)
+	ret := m.ctrl.Call(m, "AccessLogRecords")
+	ret0, _ := ret[0].(v1alpha1.AccessLogRecordClient)
 	return ret0
 }
 
-// AccessLogCollections indicates an expected call of AccessLogCollections
-func (mr *MockClientsetMockRecorder) AccessLogCollections() *gomock.Call {
+// AccessLogRecords indicates an expected call of AccessLogRecords
+func (mr *MockClientsetMockRecorder) AccessLogRecords() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccessLogCollections", reflect.TypeOf((*MockClientset)(nil).AccessLogCollections))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccessLogRecords", reflect.TypeOf((*MockClientset)(nil).AccessLogRecords))
 }
 
-// MockAccessLogCollectionReader is a mock of AccessLogCollectionReader interface
-type MockAccessLogCollectionReader struct {
+// MockAccessLogRecordReader is a mock of AccessLogRecordReader interface
+type MockAccessLogRecordReader struct {
 	ctrl     *gomock.Controller
-	recorder *MockAccessLogCollectionReaderMockRecorder
+	recorder *MockAccessLogRecordReaderMockRecorder
 }
 
-// MockAccessLogCollectionReaderMockRecorder is the mock recorder for MockAccessLogCollectionReader
-type MockAccessLogCollectionReaderMockRecorder struct {
-	mock *MockAccessLogCollectionReader
+// MockAccessLogRecordReaderMockRecorder is the mock recorder for MockAccessLogRecordReader
+type MockAccessLogRecordReaderMockRecorder struct {
+	mock *MockAccessLogRecordReader
 }
 
-// NewMockAccessLogCollectionReader creates a new mock instance
-func NewMockAccessLogCollectionReader(ctrl *gomock.Controller) *MockAccessLogCollectionReader {
-	mock := &MockAccessLogCollectionReader{ctrl: ctrl}
-	mock.recorder = &MockAccessLogCollectionReaderMockRecorder{mock}
+// NewMockAccessLogRecordReader creates a new mock instance
+func NewMockAccessLogRecordReader(ctrl *gomock.Controller) *MockAccessLogRecordReader {
+	mock := &MockAccessLogRecordReader{ctrl: ctrl}
+	mock.recorder = &MockAccessLogRecordReaderMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockAccessLogCollectionReader) EXPECT() *MockAccessLogCollectionReaderMockRecorder {
+func (m *MockAccessLogRecordReader) EXPECT() *MockAccessLogRecordReaderMockRecorder {
 	return m.recorder
 }
 
-// GetAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionReader) GetAccessLogCollection(ctx context.Context, key client.ObjectKey) (*v1alpha1.AccessLogCollection, error) {
+// GetAccessLogRecord mocks base method
+func (m *MockAccessLogRecordReader) GetAccessLogRecord(ctx context.Context, key client.ObjectKey) (*v1alpha1.AccessLogRecord, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAccessLogCollection", ctx, key)
-	ret0, _ := ret[0].(*v1alpha1.AccessLogCollection)
+	ret := m.ctrl.Call(m, "GetAccessLogRecord", ctx, key)
+	ret0, _ := ret[0].(*v1alpha1.AccessLogRecord)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAccessLogCollection indicates an expected call of GetAccessLogCollection
-func (mr *MockAccessLogCollectionReaderMockRecorder) GetAccessLogCollection(ctx, key interface{}) *gomock.Call {
+// GetAccessLogRecord indicates an expected call of GetAccessLogRecord
+func (mr *MockAccessLogRecordReaderMockRecorder) GetAccessLogRecord(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionReader)(nil).GetAccessLogCollection), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordReader)(nil).GetAccessLogRecord), ctx, key)
 }
 
-// ListAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionReader) ListAccessLogCollection(ctx context.Context, opts ...client.ListOption) (*v1alpha1.AccessLogCollectionList, error) {
+// ListAccessLogRecord mocks base method
+func (m *MockAccessLogRecordReader) ListAccessLogRecord(ctx context.Context, opts ...client.ListOption) (*v1alpha1.AccessLogRecordList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "ListAccessLogCollection", varargs...)
-	ret0, _ := ret[0].(*v1alpha1.AccessLogCollectionList)
+	ret := m.ctrl.Call(m, "ListAccessLogRecord", varargs...)
+	ret0, _ := ret[0].(*v1alpha1.AccessLogRecordList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListAccessLogCollection indicates an expected call of ListAccessLogCollection
-func (mr *MockAccessLogCollectionReaderMockRecorder) ListAccessLogCollection(ctx interface{}, opts ...interface{}) *gomock.Call {
+// ListAccessLogRecord indicates an expected call of ListAccessLogRecord
+func (mr *MockAccessLogRecordReaderMockRecorder) ListAccessLogRecord(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionReader)(nil).ListAccessLogCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordReader)(nil).ListAccessLogRecord), varargs...)
 }
 
-// MockAccessLogCollectionWriter is a mock of AccessLogCollectionWriter interface
-type MockAccessLogCollectionWriter struct {
+// MockAccessLogRecordWriter is a mock of AccessLogRecordWriter interface
+type MockAccessLogRecordWriter struct {
 	ctrl     *gomock.Controller
-	recorder *MockAccessLogCollectionWriterMockRecorder
+	recorder *MockAccessLogRecordWriterMockRecorder
 }
 
-// MockAccessLogCollectionWriterMockRecorder is the mock recorder for MockAccessLogCollectionWriter
-type MockAccessLogCollectionWriterMockRecorder struct {
-	mock *MockAccessLogCollectionWriter
+// MockAccessLogRecordWriterMockRecorder is the mock recorder for MockAccessLogRecordWriter
+type MockAccessLogRecordWriterMockRecorder struct {
+	mock *MockAccessLogRecordWriter
 }
 
-// NewMockAccessLogCollectionWriter creates a new mock instance
-func NewMockAccessLogCollectionWriter(ctrl *gomock.Controller) *MockAccessLogCollectionWriter {
-	mock := &MockAccessLogCollectionWriter{ctrl: ctrl}
-	mock.recorder = &MockAccessLogCollectionWriterMockRecorder{mock}
+// NewMockAccessLogRecordWriter creates a new mock instance
+func NewMockAccessLogRecordWriter(ctrl *gomock.Controller) *MockAccessLogRecordWriter {
+	mock := &MockAccessLogRecordWriter{ctrl: ctrl}
+	mock.recorder = &MockAccessLogRecordWriterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockAccessLogCollectionWriter) EXPECT() *MockAccessLogCollectionWriterMockRecorder {
+func (m *MockAccessLogRecordWriter) EXPECT() *MockAccessLogRecordWriterMockRecorder {
 	return m.recorder
 }
 
-// CreateAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionWriter) CreateAccessLogCollection(ctx context.Context, obj *v1alpha1.AccessLogCollection, opts ...client.CreateOption) error {
+// CreateAccessLogRecord mocks base method
+func (m *MockAccessLogRecordWriter) CreateAccessLogRecord(ctx context.Context, obj *v1alpha1.AccessLogRecord, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "CreateAccessLogCollection", varargs...)
+	ret := m.ctrl.Call(m, "CreateAccessLogRecord", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateAccessLogCollection indicates an expected call of CreateAccessLogCollection
-func (mr *MockAccessLogCollectionWriterMockRecorder) CreateAccessLogCollection(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// CreateAccessLogRecord indicates an expected call of CreateAccessLogRecord
+func (mr *MockAccessLogRecordWriterMockRecorder) CreateAccessLogRecord(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionWriter)(nil).CreateAccessLogCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordWriter)(nil).CreateAccessLogRecord), varargs...)
 }
 
-// DeleteAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionWriter) DeleteAccessLogCollection(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+// DeleteAccessLogRecord mocks base method
+func (m *MockAccessLogRecordWriter) DeleteAccessLogRecord(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, key}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteAccessLogCollection", varargs...)
+	ret := m.ctrl.Call(m, "DeleteAccessLogRecord", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteAccessLogCollection indicates an expected call of DeleteAccessLogCollection
-func (mr *MockAccessLogCollectionWriterMockRecorder) DeleteAccessLogCollection(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+// DeleteAccessLogRecord indicates an expected call of DeleteAccessLogRecord
+func (mr *MockAccessLogRecordWriterMockRecorder) DeleteAccessLogRecord(ctx, key interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionWriter)(nil).DeleteAccessLogCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordWriter)(nil).DeleteAccessLogRecord), varargs...)
 }
 
-// UpdateAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionWriter) UpdateAccessLogCollection(ctx context.Context, obj *v1alpha1.AccessLogCollection, opts ...client.UpdateOption) error {
+// UpdateAccessLogRecord mocks base method
+func (m *MockAccessLogRecordWriter) UpdateAccessLogRecord(ctx context.Context, obj *v1alpha1.AccessLogRecord, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateAccessLogCollection", varargs...)
+	ret := m.ctrl.Call(m, "UpdateAccessLogRecord", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateAccessLogCollection indicates an expected call of UpdateAccessLogCollection
-func (mr *MockAccessLogCollectionWriterMockRecorder) UpdateAccessLogCollection(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateAccessLogRecord indicates an expected call of UpdateAccessLogRecord
+func (mr *MockAccessLogRecordWriterMockRecorder) UpdateAccessLogRecord(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionWriter)(nil).UpdateAccessLogCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordWriter)(nil).UpdateAccessLogRecord), varargs...)
 }
 
-// PatchAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionWriter) PatchAccessLogCollection(ctx context.Context, obj *v1alpha1.AccessLogCollection, patch client.Patch, opts ...client.PatchOption) error {
+// PatchAccessLogRecord mocks base method
+func (m *MockAccessLogRecordWriter) PatchAccessLogRecord(ctx context.Context, obj *v1alpha1.AccessLogRecord, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchAccessLogCollection", varargs...)
+	ret := m.ctrl.Call(m, "PatchAccessLogRecord", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchAccessLogCollection indicates an expected call of PatchAccessLogCollection
-func (mr *MockAccessLogCollectionWriterMockRecorder) PatchAccessLogCollection(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchAccessLogRecord indicates an expected call of PatchAccessLogRecord
+func (mr *MockAccessLogRecordWriterMockRecorder) PatchAccessLogRecord(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionWriter)(nil).PatchAccessLogCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordWriter)(nil).PatchAccessLogRecord), varargs...)
 }
 
-// DeleteAllOfAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionWriter) DeleteAllOfAccessLogCollection(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+// DeleteAllOfAccessLogRecord mocks base method
+func (m *MockAccessLogRecordWriter) DeleteAllOfAccessLogRecord(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteAllOfAccessLogCollection", varargs...)
+	ret := m.ctrl.Call(m, "DeleteAllOfAccessLogRecord", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteAllOfAccessLogCollection indicates an expected call of DeleteAllOfAccessLogCollection
-func (mr *MockAccessLogCollectionWriterMockRecorder) DeleteAllOfAccessLogCollection(ctx interface{}, opts ...interface{}) *gomock.Call {
+// DeleteAllOfAccessLogRecord indicates an expected call of DeleteAllOfAccessLogRecord
+func (mr *MockAccessLogRecordWriterMockRecorder) DeleteAllOfAccessLogRecord(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionWriter)(nil).DeleteAllOfAccessLogCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordWriter)(nil).DeleteAllOfAccessLogRecord), varargs...)
 }
 
-// UpsertAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionWriter) UpsertAccessLogCollection(ctx context.Context, obj *v1alpha1.AccessLogCollection, transitionFuncs ...v1alpha1.AccessLogCollectionTransitionFunction) error {
+// UpsertAccessLogRecord mocks base method
+func (m *MockAccessLogRecordWriter) UpsertAccessLogRecord(ctx context.Context, obj *v1alpha1.AccessLogRecord, transitionFuncs ...v1alpha1.AccessLogRecordTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range transitionFuncs {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertAccessLogCollection", varargs...)
+	ret := m.ctrl.Call(m, "UpsertAccessLogRecord", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertAccessLogCollection indicates an expected call of UpsertAccessLogCollection
-func (mr *MockAccessLogCollectionWriterMockRecorder) UpsertAccessLogCollection(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+// UpsertAccessLogRecord indicates an expected call of UpsertAccessLogRecord
+func (mr *MockAccessLogRecordWriterMockRecorder) UpsertAccessLogRecord(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionWriter)(nil).UpsertAccessLogCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordWriter)(nil).UpsertAccessLogRecord), varargs...)
 }
 
-// MockAccessLogCollectionStatusWriter is a mock of AccessLogCollectionStatusWriter interface
-type MockAccessLogCollectionStatusWriter struct {
+// MockAccessLogRecordStatusWriter is a mock of AccessLogRecordStatusWriter interface
+type MockAccessLogRecordStatusWriter struct {
 	ctrl     *gomock.Controller
-	recorder *MockAccessLogCollectionStatusWriterMockRecorder
+	recorder *MockAccessLogRecordStatusWriterMockRecorder
 }
 
-// MockAccessLogCollectionStatusWriterMockRecorder is the mock recorder for MockAccessLogCollectionStatusWriter
-type MockAccessLogCollectionStatusWriterMockRecorder struct {
-	mock *MockAccessLogCollectionStatusWriter
+// MockAccessLogRecordStatusWriterMockRecorder is the mock recorder for MockAccessLogRecordStatusWriter
+type MockAccessLogRecordStatusWriterMockRecorder struct {
+	mock *MockAccessLogRecordStatusWriter
 }
 
-// NewMockAccessLogCollectionStatusWriter creates a new mock instance
-func NewMockAccessLogCollectionStatusWriter(ctrl *gomock.Controller) *MockAccessLogCollectionStatusWriter {
-	mock := &MockAccessLogCollectionStatusWriter{ctrl: ctrl}
-	mock.recorder = &MockAccessLogCollectionStatusWriterMockRecorder{mock}
+// NewMockAccessLogRecordStatusWriter creates a new mock instance
+func NewMockAccessLogRecordStatusWriter(ctrl *gomock.Controller) *MockAccessLogRecordStatusWriter {
+	mock := &MockAccessLogRecordStatusWriter{ctrl: ctrl}
+	mock.recorder = &MockAccessLogRecordStatusWriterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockAccessLogCollectionStatusWriter) EXPECT() *MockAccessLogCollectionStatusWriterMockRecorder {
+func (m *MockAccessLogRecordStatusWriter) EXPECT() *MockAccessLogRecordStatusWriterMockRecorder {
 	return m.recorder
 }
 
-// UpdateAccessLogCollectionStatus mocks base method
-func (m *MockAccessLogCollectionStatusWriter) UpdateAccessLogCollectionStatus(ctx context.Context, obj *v1alpha1.AccessLogCollection, opts ...client.UpdateOption) error {
+// UpdateAccessLogRecordStatus mocks base method
+func (m *MockAccessLogRecordStatusWriter) UpdateAccessLogRecordStatus(ctx context.Context, obj *v1alpha1.AccessLogRecord, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateAccessLogCollectionStatus", varargs...)
+	ret := m.ctrl.Call(m, "UpdateAccessLogRecordStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateAccessLogCollectionStatus indicates an expected call of UpdateAccessLogCollectionStatus
-func (mr *MockAccessLogCollectionStatusWriterMockRecorder) UpdateAccessLogCollectionStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateAccessLogRecordStatus indicates an expected call of UpdateAccessLogRecordStatus
+func (mr *MockAccessLogRecordStatusWriterMockRecorder) UpdateAccessLogRecordStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAccessLogCollectionStatus", reflect.TypeOf((*MockAccessLogCollectionStatusWriter)(nil).UpdateAccessLogCollectionStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAccessLogRecordStatus", reflect.TypeOf((*MockAccessLogRecordStatusWriter)(nil).UpdateAccessLogRecordStatus), varargs...)
 }
 
-// PatchAccessLogCollectionStatus mocks base method
-func (m *MockAccessLogCollectionStatusWriter) PatchAccessLogCollectionStatus(ctx context.Context, obj *v1alpha1.AccessLogCollection, patch client.Patch, opts ...client.PatchOption) error {
+// PatchAccessLogRecordStatus mocks base method
+func (m *MockAccessLogRecordStatusWriter) PatchAccessLogRecordStatus(ctx context.Context, obj *v1alpha1.AccessLogRecord, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchAccessLogCollectionStatus", varargs...)
+	ret := m.ctrl.Call(m, "PatchAccessLogRecordStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchAccessLogCollectionStatus indicates an expected call of PatchAccessLogCollectionStatus
-func (mr *MockAccessLogCollectionStatusWriterMockRecorder) PatchAccessLogCollectionStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchAccessLogRecordStatus indicates an expected call of PatchAccessLogRecordStatus
+func (mr *MockAccessLogRecordStatusWriterMockRecorder) PatchAccessLogRecordStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchAccessLogCollectionStatus", reflect.TypeOf((*MockAccessLogCollectionStatusWriter)(nil).PatchAccessLogCollectionStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchAccessLogRecordStatus", reflect.TypeOf((*MockAccessLogRecordStatusWriter)(nil).PatchAccessLogRecordStatus), varargs...)
 }
 
-// MockAccessLogCollectionClient is a mock of AccessLogCollectionClient interface
-type MockAccessLogCollectionClient struct {
+// MockAccessLogRecordClient is a mock of AccessLogRecordClient interface
+type MockAccessLogRecordClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockAccessLogCollectionClientMockRecorder
+	recorder *MockAccessLogRecordClientMockRecorder
 }
 
-// MockAccessLogCollectionClientMockRecorder is the mock recorder for MockAccessLogCollectionClient
-type MockAccessLogCollectionClientMockRecorder struct {
-	mock *MockAccessLogCollectionClient
+// MockAccessLogRecordClientMockRecorder is the mock recorder for MockAccessLogRecordClient
+type MockAccessLogRecordClientMockRecorder struct {
+	mock *MockAccessLogRecordClient
 }
 
-// NewMockAccessLogCollectionClient creates a new mock instance
-func NewMockAccessLogCollectionClient(ctrl *gomock.Controller) *MockAccessLogCollectionClient {
-	mock := &MockAccessLogCollectionClient{ctrl: ctrl}
-	mock.recorder = &MockAccessLogCollectionClientMockRecorder{mock}
+// NewMockAccessLogRecordClient creates a new mock instance
+func NewMockAccessLogRecordClient(ctrl *gomock.Controller) *MockAccessLogRecordClient {
+	mock := &MockAccessLogRecordClient{ctrl: ctrl}
+	mock.recorder = &MockAccessLogRecordClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockAccessLogCollectionClient) EXPECT() *MockAccessLogCollectionClientMockRecorder {
+func (m *MockAccessLogRecordClient) EXPECT() *MockAccessLogRecordClientMockRecorder {
 	return m.recorder
 }
 
-// GetAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionClient) GetAccessLogCollection(ctx context.Context, key client.ObjectKey) (*v1alpha1.AccessLogCollection, error) {
+// GetAccessLogRecord mocks base method
+func (m *MockAccessLogRecordClient) GetAccessLogRecord(ctx context.Context, key client.ObjectKey) (*v1alpha1.AccessLogRecord, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAccessLogCollection", ctx, key)
-	ret0, _ := ret[0].(*v1alpha1.AccessLogCollection)
+	ret := m.ctrl.Call(m, "GetAccessLogRecord", ctx, key)
+	ret0, _ := ret[0].(*v1alpha1.AccessLogRecord)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAccessLogCollection indicates an expected call of GetAccessLogCollection
-func (mr *MockAccessLogCollectionClientMockRecorder) GetAccessLogCollection(ctx, key interface{}) *gomock.Call {
+// GetAccessLogRecord indicates an expected call of GetAccessLogRecord
+func (mr *MockAccessLogRecordClientMockRecorder) GetAccessLogRecord(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionClient)(nil).GetAccessLogCollection), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordClient)(nil).GetAccessLogRecord), ctx, key)
 }
 
-// ListAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionClient) ListAccessLogCollection(ctx context.Context, opts ...client.ListOption) (*v1alpha1.AccessLogCollectionList, error) {
+// ListAccessLogRecord mocks base method
+func (m *MockAccessLogRecordClient) ListAccessLogRecord(ctx context.Context, opts ...client.ListOption) (*v1alpha1.AccessLogRecordList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "ListAccessLogCollection", varargs...)
-	ret0, _ := ret[0].(*v1alpha1.AccessLogCollectionList)
+	ret := m.ctrl.Call(m, "ListAccessLogRecord", varargs...)
+	ret0, _ := ret[0].(*v1alpha1.AccessLogRecordList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListAccessLogCollection indicates an expected call of ListAccessLogCollection
-func (mr *MockAccessLogCollectionClientMockRecorder) ListAccessLogCollection(ctx interface{}, opts ...interface{}) *gomock.Call {
+// ListAccessLogRecord indicates an expected call of ListAccessLogRecord
+func (mr *MockAccessLogRecordClientMockRecorder) ListAccessLogRecord(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionClient)(nil).ListAccessLogCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordClient)(nil).ListAccessLogRecord), varargs...)
 }
 
-// CreateAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionClient) CreateAccessLogCollection(ctx context.Context, obj *v1alpha1.AccessLogCollection, opts ...client.CreateOption) error {
+// CreateAccessLogRecord mocks base method
+func (m *MockAccessLogRecordClient) CreateAccessLogRecord(ctx context.Context, obj *v1alpha1.AccessLogRecord, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "CreateAccessLogCollection", varargs...)
+	ret := m.ctrl.Call(m, "CreateAccessLogRecord", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateAccessLogCollection indicates an expected call of CreateAccessLogCollection
-func (mr *MockAccessLogCollectionClientMockRecorder) CreateAccessLogCollection(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// CreateAccessLogRecord indicates an expected call of CreateAccessLogRecord
+func (mr *MockAccessLogRecordClientMockRecorder) CreateAccessLogRecord(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionClient)(nil).CreateAccessLogCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordClient)(nil).CreateAccessLogRecord), varargs...)
 }
 
-// DeleteAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionClient) DeleteAccessLogCollection(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+// DeleteAccessLogRecord mocks base method
+func (m *MockAccessLogRecordClient) DeleteAccessLogRecord(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, key}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteAccessLogCollection", varargs...)
+	ret := m.ctrl.Call(m, "DeleteAccessLogRecord", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteAccessLogCollection indicates an expected call of DeleteAccessLogCollection
-func (mr *MockAccessLogCollectionClientMockRecorder) DeleteAccessLogCollection(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+// DeleteAccessLogRecord indicates an expected call of DeleteAccessLogRecord
+func (mr *MockAccessLogRecordClientMockRecorder) DeleteAccessLogRecord(ctx, key interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionClient)(nil).DeleteAccessLogCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordClient)(nil).DeleteAccessLogRecord), varargs...)
 }
 
-// UpdateAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionClient) UpdateAccessLogCollection(ctx context.Context, obj *v1alpha1.AccessLogCollection, opts ...client.UpdateOption) error {
+// UpdateAccessLogRecord mocks base method
+func (m *MockAccessLogRecordClient) UpdateAccessLogRecord(ctx context.Context, obj *v1alpha1.AccessLogRecord, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateAccessLogCollection", varargs...)
+	ret := m.ctrl.Call(m, "UpdateAccessLogRecord", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateAccessLogCollection indicates an expected call of UpdateAccessLogCollection
-func (mr *MockAccessLogCollectionClientMockRecorder) UpdateAccessLogCollection(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateAccessLogRecord indicates an expected call of UpdateAccessLogRecord
+func (mr *MockAccessLogRecordClientMockRecorder) UpdateAccessLogRecord(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionClient)(nil).UpdateAccessLogCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordClient)(nil).UpdateAccessLogRecord), varargs...)
 }
 
-// PatchAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionClient) PatchAccessLogCollection(ctx context.Context, obj *v1alpha1.AccessLogCollection, patch client.Patch, opts ...client.PatchOption) error {
+// PatchAccessLogRecord mocks base method
+func (m *MockAccessLogRecordClient) PatchAccessLogRecord(ctx context.Context, obj *v1alpha1.AccessLogRecord, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchAccessLogCollection", varargs...)
+	ret := m.ctrl.Call(m, "PatchAccessLogRecord", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchAccessLogCollection indicates an expected call of PatchAccessLogCollection
-func (mr *MockAccessLogCollectionClientMockRecorder) PatchAccessLogCollection(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchAccessLogRecord indicates an expected call of PatchAccessLogRecord
+func (mr *MockAccessLogRecordClientMockRecorder) PatchAccessLogRecord(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionClient)(nil).PatchAccessLogCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordClient)(nil).PatchAccessLogRecord), varargs...)
 }
 
-// DeleteAllOfAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionClient) DeleteAllOfAccessLogCollection(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+// DeleteAllOfAccessLogRecord mocks base method
+func (m *MockAccessLogRecordClient) DeleteAllOfAccessLogRecord(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteAllOfAccessLogCollection", varargs...)
+	ret := m.ctrl.Call(m, "DeleteAllOfAccessLogRecord", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteAllOfAccessLogCollection indicates an expected call of DeleteAllOfAccessLogCollection
-func (mr *MockAccessLogCollectionClientMockRecorder) DeleteAllOfAccessLogCollection(ctx interface{}, opts ...interface{}) *gomock.Call {
+// DeleteAllOfAccessLogRecord indicates an expected call of DeleteAllOfAccessLogRecord
+func (mr *MockAccessLogRecordClientMockRecorder) DeleteAllOfAccessLogRecord(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionClient)(nil).DeleteAllOfAccessLogCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordClient)(nil).DeleteAllOfAccessLogRecord), varargs...)
 }
 
-// UpsertAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionClient) UpsertAccessLogCollection(ctx context.Context, obj *v1alpha1.AccessLogCollection, transitionFuncs ...v1alpha1.AccessLogCollectionTransitionFunction) error {
+// UpsertAccessLogRecord mocks base method
+func (m *MockAccessLogRecordClient) UpsertAccessLogRecord(ctx context.Context, obj *v1alpha1.AccessLogRecord, transitionFuncs ...v1alpha1.AccessLogRecordTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range transitionFuncs {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertAccessLogCollection", varargs...)
+	ret := m.ctrl.Call(m, "UpsertAccessLogRecord", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertAccessLogCollection indicates an expected call of UpsertAccessLogCollection
-func (mr *MockAccessLogCollectionClientMockRecorder) UpsertAccessLogCollection(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+// UpsertAccessLogRecord indicates an expected call of UpsertAccessLogRecord
+func (mr *MockAccessLogRecordClientMockRecorder) UpsertAccessLogRecord(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionClient)(nil).UpsertAccessLogCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordClient)(nil).UpsertAccessLogRecord), varargs...)
 }
 
-// UpdateAccessLogCollectionStatus mocks base method
-func (m *MockAccessLogCollectionClient) UpdateAccessLogCollectionStatus(ctx context.Context, obj *v1alpha1.AccessLogCollection, opts ...client.UpdateOption) error {
+// UpdateAccessLogRecordStatus mocks base method
+func (m *MockAccessLogRecordClient) UpdateAccessLogRecordStatus(ctx context.Context, obj *v1alpha1.AccessLogRecord, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateAccessLogCollectionStatus", varargs...)
+	ret := m.ctrl.Call(m, "UpdateAccessLogRecordStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateAccessLogCollectionStatus indicates an expected call of UpdateAccessLogCollectionStatus
-func (mr *MockAccessLogCollectionClientMockRecorder) UpdateAccessLogCollectionStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateAccessLogRecordStatus indicates an expected call of UpdateAccessLogRecordStatus
+func (mr *MockAccessLogRecordClientMockRecorder) UpdateAccessLogRecordStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAccessLogCollectionStatus", reflect.TypeOf((*MockAccessLogCollectionClient)(nil).UpdateAccessLogCollectionStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAccessLogRecordStatus", reflect.TypeOf((*MockAccessLogRecordClient)(nil).UpdateAccessLogRecordStatus), varargs...)
 }
 
-// PatchAccessLogCollectionStatus mocks base method
-func (m *MockAccessLogCollectionClient) PatchAccessLogCollectionStatus(ctx context.Context, obj *v1alpha1.AccessLogCollection, patch client.Patch, opts ...client.PatchOption) error {
+// PatchAccessLogRecordStatus mocks base method
+func (m *MockAccessLogRecordClient) PatchAccessLogRecordStatus(ctx context.Context, obj *v1alpha1.AccessLogRecord, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchAccessLogCollectionStatus", varargs...)
+	ret := m.ctrl.Call(m, "PatchAccessLogRecordStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchAccessLogCollectionStatus indicates an expected call of PatchAccessLogCollectionStatus
-func (mr *MockAccessLogCollectionClientMockRecorder) PatchAccessLogCollectionStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchAccessLogRecordStatus indicates an expected call of PatchAccessLogRecordStatus
+func (mr *MockAccessLogRecordClientMockRecorder) PatchAccessLogRecordStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchAccessLogCollectionStatus", reflect.TypeOf((*MockAccessLogCollectionClient)(nil).PatchAccessLogCollectionStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchAccessLogRecordStatus", reflect.TypeOf((*MockAccessLogRecordClient)(nil).PatchAccessLogRecordStatus), varargs...)
 }
 
-// MockMulticlusterAccessLogCollectionClient is a mock of MulticlusterAccessLogCollectionClient interface
-type MockMulticlusterAccessLogCollectionClient struct {
+// MockMulticlusterAccessLogRecordClient is a mock of MulticlusterAccessLogRecordClient interface
+type MockMulticlusterAccessLogRecordClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockMulticlusterAccessLogCollectionClientMockRecorder
+	recorder *MockMulticlusterAccessLogRecordClientMockRecorder
 }
 
-// MockMulticlusterAccessLogCollectionClientMockRecorder is the mock recorder for MockMulticlusterAccessLogCollectionClient
-type MockMulticlusterAccessLogCollectionClientMockRecorder struct {
-	mock *MockMulticlusterAccessLogCollectionClient
+// MockMulticlusterAccessLogRecordClientMockRecorder is the mock recorder for MockMulticlusterAccessLogRecordClient
+type MockMulticlusterAccessLogRecordClientMockRecorder struct {
+	mock *MockMulticlusterAccessLogRecordClient
 }
 
-// NewMockMulticlusterAccessLogCollectionClient creates a new mock instance
-func NewMockMulticlusterAccessLogCollectionClient(ctrl *gomock.Controller) *MockMulticlusterAccessLogCollectionClient {
-	mock := &MockMulticlusterAccessLogCollectionClient{ctrl: ctrl}
-	mock.recorder = &MockMulticlusterAccessLogCollectionClientMockRecorder{mock}
+// NewMockMulticlusterAccessLogRecordClient creates a new mock instance
+func NewMockMulticlusterAccessLogRecordClient(ctrl *gomock.Controller) *MockMulticlusterAccessLogRecordClient {
+	mock := &MockMulticlusterAccessLogRecordClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterAccessLogRecordClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMulticlusterAccessLogCollectionClient) EXPECT() *MockMulticlusterAccessLogCollectionClientMockRecorder {
+func (m *MockMulticlusterAccessLogRecordClient) EXPECT() *MockMulticlusterAccessLogRecordClientMockRecorder {
 	return m.recorder
 }
 
 // Cluster mocks base method
-func (m *MockMulticlusterAccessLogCollectionClient) Cluster(cluster string) (v1alpha1.AccessLogCollectionClient, error) {
+func (m *MockMulticlusterAccessLogRecordClient) Cluster(cluster string) (v1alpha1.AccessLogRecordClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Cluster", cluster)
-	ret0, _ := ret[0].(v1alpha1.AccessLogCollectionClient)
+	ret0, _ := ret[0].(v1alpha1.AccessLogRecordClient)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Cluster indicates an expected call of Cluster
-func (mr *MockMulticlusterAccessLogCollectionClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+func (mr *MockMulticlusterAccessLogRecordClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterAccessLogCollectionClient)(nil).Cluster), cluster)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterAccessLogRecordClient)(nil).Cluster), cluster)
 }

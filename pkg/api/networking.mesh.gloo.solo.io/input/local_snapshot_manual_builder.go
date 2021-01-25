@@ -44,7 +44,7 @@ type InputLocalSnapshotManualBuilder struct {
 
 	wasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
 
-	accessLogCollections observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogCollectionSet
+	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet
 
 	secrets v1_sets.SecretSet
 
@@ -68,7 +68,7 @@ func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBu
 
 		wasmDeployments: networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet(),
 
-		accessLogCollections: observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogCollectionSet(),
+		accessLogRecords: observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet(),
 
 		secrets: v1_sets.NewSecretSet(),
 
@@ -93,7 +93,7 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 
 		i.wasmDeployments,
 
-		i.accessLogCollections,
+		i.accessLogRecords,
 
 		i.secrets,
 
@@ -136,8 +136,8 @@ func (i *InputLocalSnapshotManualBuilder) AddWasmDeployments(wasmDeployments []*
 	i.wasmDeployments.Insert(wasmDeployments...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddAccessLogCollections(accessLogCollections []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) *InputLocalSnapshotManualBuilder {
-	i.accessLogCollections.Insert(accessLogCollections...)
+func (i *InputLocalSnapshotManualBuilder) AddAccessLogRecords(accessLogRecords []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) *InputLocalSnapshotManualBuilder {
+	i.accessLogRecords.Insert(accessLogRecords...)
 	return i
 }
 func (i *InputLocalSnapshotManualBuilder) AddSecrets(secrets []*v1.Secret) *InputLocalSnapshotManualBuilder {

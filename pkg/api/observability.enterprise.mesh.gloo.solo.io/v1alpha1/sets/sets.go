@@ -13,187 +13,187 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-type AccessLogCollectionSet interface {
+type AccessLogRecordSet interface {
 	// Get the set stored keys
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	List(filterResource ...func(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) bool) []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection
+	List(filterResource ...func(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) bool) []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord
 	// Return the Set as a map of key to resource.
-	Map() map[string]*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection
+	Map() map[string]*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord
 	// Insert a resource into the set.
-	Insert(accessLogCollection ...*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection)
+	Insert(accessLogRecord ...*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord)
 	// Compare the equality of the keys in two sets (not the resources themselves)
-	Equal(accessLogCollectionSet AccessLogCollectionSet) bool
+	Equal(accessLogRecordSet AccessLogRecordSet) bool
 	// Check if the set contains a key matching the resource (not the resource itself)
-	Has(accessLogCollection ezkube.ResourceId) bool
+	Has(accessLogRecord ezkube.ResourceId) bool
 	// Delete the key matching the resource
-	Delete(accessLogCollection ezkube.ResourceId)
+	Delete(accessLogRecord ezkube.ResourceId)
 	// Return the union with the provided set
-	Union(set AccessLogCollectionSet) AccessLogCollectionSet
+	Union(set AccessLogRecordSet) AccessLogRecordSet
 	// Return the difference with the provided set
-	Difference(set AccessLogCollectionSet) AccessLogCollectionSet
+	Difference(set AccessLogRecordSet) AccessLogRecordSet
 	// Return the intersection with the provided set
-	Intersection(set AccessLogCollectionSet) AccessLogCollectionSet
+	Intersection(set AccessLogRecordSet) AccessLogRecordSet
 	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection, error)
+	Find(id ezkube.ResourceId) (*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord, error)
 	// Get the length of the set
 	Length() int
 	// returns the generic implementation of the set
 	Generic() sksets.ResourceSet
-	// returns the delta between this and and another AccessLogCollectionSet
-	Delta(newSet AccessLogCollectionSet) sksets.ResourceDelta
+	// returns the delta between this and and another AccessLogRecordSet
+	Delta(newSet AccessLogRecordSet) sksets.ResourceDelta
 }
 
-func makeGenericAccessLogCollectionSet(accessLogCollectionList []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) sksets.ResourceSet {
+func makeGenericAccessLogRecordSet(accessLogRecordList []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
-	for _, obj := range accessLogCollectionList {
+	for _, obj := range accessLogRecordList {
 		genericResources = append(genericResources, obj)
 	}
 	return sksets.NewResourceSet(genericResources...)
 }
 
-type accessLogCollectionSet struct {
+type accessLogRecordSet struct {
 	set sksets.ResourceSet
 }
 
-func NewAccessLogCollectionSet(accessLogCollectionList ...*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) AccessLogCollectionSet {
-	return &accessLogCollectionSet{set: makeGenericAccessLogCollectionSet(accessLogCollectionList)}
+func NewAccessLogRecordSet(accessLogRecordList ...*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) AccessLogRecordSet {
+	return &accessLogRecordSet{set: makeGenericAccessLogRecordSet(accessLogRecordList)}
 }
 
-func NewAccessLogCollectionSetFromList(accessLogCollectionList *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollectionList) AccessLogCollectionSet {
-	list := make([]*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection, 0, len(accessLogCollectionList.Items))
-	for idx := range accessLogCollectionList.Items {
-		list = append(list, &accessLogCollectionList.Items[idx])
+func NewAccessLogRecordSetFromList(accessLogRecordList *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecordList) AccessLogRecordSet {
+	list := make([]*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord, 0, len(accessLogRecordList.Items))
+	for idx := range accessLogRecordList.Items {
+		list = append(list, &accessLogRecordList.Items[idx])
 	}
-	return &accessLogCollectionSet{set: makeGenericAccessLogCollectionSet(list)}
+	return &accessLogRecordSet{set: makeGenericAccessLogRecordSet(list)}
 }
 
-func (s *accessLogCollectionSet) Keys() sets.String {
+func (s *accessLogRecordSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
 	return s.Generic().Keys()
 }
 
-func (s *accessLogCollectionSet) List(filterResource ...func(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) bool) []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection {
+func (s *accessLogRecordSet) List(filterResource ...func(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) bool) []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord {
 	if s == nil {
 		return nil
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection))
+			return filter(obj.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord))
 		})
 	}
 
-	var accessLogCollectionList []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection
+	var accessLogRecordList []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord
 	for _, obj := range s.Generic().List(genericFilters...) {
-		accessLogCollectionList = append(accessLogCollectionList, obj.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection))
+		accessLogRecordList = append(accessLogRecordList, obj.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord))
 	}
-	return accessLogCollectionList
+	return accessLogRecordList
 }
 
-func (s *accessLogCollectionSet) Map() map[string]*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection {
+func (s *accessLogRecordSet) Map() map[string]*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord {
 	if s == nil {
 		return nil
 	}
 
-	newMap := map[string]*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection{}
+	newMap := map[string]*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord{}
 	for k, v := range s.Generic().Map() {
-		newMap[k] = v.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection)
+		newMap[k] = v.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord)
 	}
 	return newMap
 }
 
-func (s *accessLogCollectionSet) Insert(
-	accessLogCollectionList ...*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection,
+func (s *accessLogRecordSet) Insert(
+	accessLogRecordList ...*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord,
 ) {
 	if s == nil {
 		panic("cannot insert into nil set")
 	}
 
-	for _, obj := range accessLogCollectionList {
+	for _, obj := range accessLogRecordList {
 		s.Generic().Insert(obj)
 	}
 }
 
-func (s *accessLogCollectionSet) Has(accessLogCollection ezkube.ResourceId) bool {
+func (s *accessLogRecordSet) Has(accessLogRecord ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.Generic().Has(accessLogCollection)
+	return s.Generic().Has(accessLogRecord)
 }
 
-func (s *accessLogCollectionSet) Equal(
-	accessLogCollectionSet AccessLogCollectionSet,
+func (s *accessLogRecordSet) Equal(
+	accessLogRecordSet AccessLogRecordSet,
 ) bool {
 	if s == nil {
-		return accessLogCollectionSet == nil
+		return accessLogRecordSet == nil
 	}
-	return s.Generic().Equal(accessLogCollectionSet.Generic())
+	return s.Generic().Equal(accessLogRecordSet.Generic())
 }
 
-func (s *accessLogCollectionSet) Delete(AccessLogCollection ezkube.ResourceId) {
+func (s *accessLogRecordSet) Delete(AccessLogRecord ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.Generic().Delete(AccessLogCollection)
+	s.Generic().Delete(AccessLogRecord)
 }
 
-func (s *accessLogCollectionSet) Union(set AccessLogCollectionSet) AccessLogCollectionSet {
+func (s *accessLogRecordSet) Union(set AccessLogRecordSet) AccessLogRecordSet {
 	if s == nil {
 		return set
 	}
-	return NewAccessLogCollectionSet(append(s.List(), set.List()...)...)
+	return NewAccessLogRecordSet(append(s.List(), set.List()...)...)
 }
 
-func (s *accessLogCollectionSet) Difference(set AccessLogCollectionSet) AccessLogCollectionSet {
+func (s *accessLogRecordSet) Difference(set AccessLogRecordSet) AccessLogRecordSet {
 	if s == nil {
 		return set
 	}
 	newSet := s.Generic().Difference(set.Generic())
-	return &accessLogCollectionSet{set: newSet}
+	return &accessLogRecordSet{set: newSet}
 }
 
-func (s *accessLogCollectionSet) Intersection(set AccessLogCollectionSet) AccessLogCollectionSet {
+func (s *accessLogRecordSet) Intersection(set AccessLogRecordSet) AccessLogRecordSet {
 	if s == nil {
 		return nil
 	}
 	newSet := s.Generic().Intersection(set.Generic())
-	var accessLogCollectionList []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection
+	var accessLogRecordList []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord
 	for _, obj := range newSet.List() {
-		accessLogCollectionList = append(accessLogCollectionList, obj.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection))
+		accessLogRecordList = append(accessLogRecordList, obj.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord))
 	}
-	return NewAccessLogCollectionSet(accessLogCollectionList...)
+	return NewAccessLogRecordSet(accessLogRecordList...)
 }
 
-func (s *accessLogCollectionSet) Find(id ezkube.ResourceId) (*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection, error) {
+func (s *accessLogRecordSet) Find(id ezkube.ResourceId) (*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord, error) {
 	if s == nil {
-		return nil, eris.Errorf("empty set, cannot find AccessLogCollection %v", sksets.Key(id))
+		return nil, eris.Errorf("empty set, cannot find AccessLogRecord %v", sksets.Key(id))
 	}
-	obj, err := s.Generic().Find(&observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection{}, id)
+	obj, err := s.Generic().Find(&observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord{}, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return obj.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection), nil
+	return obj.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord), nil
 }
 
-func (s *accessLogCollectionSet) Length() int {
+func (s *accessLogRecordSet) Length() int {
 	if s == nil {
 		return 0
 	}
 	return s.Generic().Length()
 }
 
-func (s *accessLogCollectionSet) Generic() sksets.ResourceSet {
+func (s *accessLogRecordSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
 	return s.set
 }
 
-func (s *accessLogCollectionSet) Delta(newSet AccessLogCollectionSet) sksets.ResourceDelta {
+func (s *accessLogRecordSet) Delta(newSet AccessLogRecordSet) sksets.ResourceDelta {
 	if s == nil {
 		return sksets.ResourceDelta{
 			Inserted: newSet.Generic(),

@@ -24,24 +24,24 @@ var (
 	unmarshaller = &jsonpb.Unmarshaler{}
 )
 
-// MarshalJSON is a custom marshaler for AccessLogCollectionSpec
-func (this *AccessLogCollectionSpec) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for AccessLogRecordSpec
+func (this *AccessLogRecordSpec) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for AccessLogCollectionSpec
-func (this *AccessLogCollectionSpec) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for AccessLogRecordSpec
+func (this *AccessLogRecordSpec) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for AccessLogCollectionStatus
-func (this *AccessLogCollectionStatus) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for AccessLogRecordStatus
+func (this *AccessLogRecordStatus) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for AccessLogCollectionStatus
-func (this *AccessLogCollectionStatus) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for AccessLogRecordStatus
+func (this *AccessLogRecordStatus) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }

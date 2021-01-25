@@ -15,31 +15,31 @@ import (
 	sets0 "k8s.io/apimachinery/pkg/util/sets"
 )
 
-// MockAccessLogCollectionSet is a mock of AccessLogCollectionSet interface
-type MockAccessLogCollectionSet struct {
+// MockAccessLogRecordSet is a mock of AccessLogRecordSet interface
+type MockAccessLogRecordSet struct {
 	ctrl     *gomock.Controller
-	recorder *MockAccessLogCollectionSetMockRecorder
+	recorder *MockAccessLogRecordSetMockRecorder
 }
 
-// MockAccessLogCollectionSetMockRecorder is the mock recorder for MockAccessLogCollectionSet
-type MockAccessLogCollectionSetMockRecorder struct {
-	mock *MockAccessLogCollectionSet
+// MockAccessLogRecordSetMockRecorder is the mock recorder for MockAccessLogRecordSet
+type MockAccessLogRecordSetMockRecorder struct {
+	mock *MockAccessLogRecordSet
 }
 
-// NewMockAccessLogCollectionSet creates a new mock instance
-func NewMockAccessLogCollectionSet(ctrl *gomock.Controller) *MockAccessLogCollectionSet {
-	mock := &MockAccessLogCollectionSet{ctrl: ctrl}
-	mock.recorder = &MockAccessLogCollectionSetMockRecorder{mock}
+// NewMockAccessLogRecordSet creates a new mock instance
+func NewMockAccessLogRecordSet(ctrl *gomock.Controller) *MockAccessLogRecordSet {
+	mock := &MockAccessLogRecordSet{ctrl: ctrl}
+	mock.recorder = &MockAccessLogRecordSetMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockAccessLogCollectionSet) EXPECT() *MockAccessLogCollectionSetMockRecorder {
+func (m *MockAccessLogRecordSet) EXPECT() *MockAccessLogRecordSetMockRecorder {
 	return m.recorder
 }
 
 // Keys mocks base method
-func (m *MockAccessLogCollectionSet) Keys() sets0.String {
+func (m *MockAccessLogRecordSet) Keys() sets0.String {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Keys")
 	ret0, _ := ret[0].(sets0.String)
@@ -47,158 +47,158 @@ func (m *MockAccessLogCollectionSet) Keys() sets0.String {
 }
 
 // Keys indicates an expected call of Keys
-func (mr *MockAccessLogCollectionSetMockRecorder) Keys() *gomock.Call {
+func (mr *MockAccessLogRecordSetMockRecorder) Keys() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockAccessLogCollectionSet)(nil).Keys))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Keys", reflect.TypeOf((*MockAccessLogRecordSet)(nil).Keys))
 }
 
 // List mocks base method
-func (m *MockAccessLogCollectionSet) List(filterResource ...func(*v1alpha1.AccessLogCollection) bool) []*v1alpha1.AccessLogCollection {
+func (m *MockAccessLogRecordSet) List(filterResource ...func(*v1alpha1.AccessLogRecord) bool) []*v1alpha1.AccessLogRecord {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range filterResource {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "List", varargs...)
-	ret0, _ := ret[0].([]*v1alpha1.AccessLogCollection)
+	ret0, _ := ret[0].([]*v1alpha1.AccessLogRecord)
 	return ret0
 }
 
 // List indicates an expected call of List
-func (mr *MockAccessLogCollectionSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
+func (mr *MockAccessLogRecordSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockAccessLogCollectionSet)(nil).List), filterResource...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockAccessLogRecordSet)(nil).List), filterResource...)
 }
 
 // Map mocks base method
-func (m *MockAccessLogCollectionSet) Map() map[string]*v1alpha1.AccessLogCollection {
+func (m *MockAccessLogRecordSet) Map() map[string]*v1alpha1.AccessLogRecord {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Map")
-	ret0, _ := ret[0].(map[string]*v1alpha1.AccessLogCollection)
+	ret0, _ := ret[0].(map[string]*v1alpha1.AccessLogRecord)
 	return ret0
 }
 
 // Map indicates an expected call of Map
-func (mr *MockAccessLogCollectionSetMockRecorder) Map() *gomock.Call {
+func (mr *MockAccessLogRecordSetMockRecorder) Map() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockAccessLogCollectionSet)(nil).Map))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Map", reflect.TypeOf((*MockAccessLogRecordSet)(nil).Map))
 }
 
 // Insert mocks base method
-func (m *MockAccessLogCollectionSet) Insert(accessLogCollection ...*v1alpha1.AccessLogCollection) {
+func (m *MockAccessLogRecordSet) Insert(accessLogRecord ...*v1alpha1.AccessLogRecord) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
-	for _, a := range accessLogCollection {
+	for _, a := range accessLogRecord {
 		varargs = append(varargs, a)
 	}
 	m.ctrl.Call(m, "Insert", varargs...)
 }
 
 // Insert indicates an expected call of Insert
-func (mr *MockAccessLogCollectionSetMockRecorder) Insert(accessLogCollection ...interface{}) *gomock.Call {
+func (mr *MockAccessLogRecordSetMockRecorder) Insert(accessLogRecord ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockAccessLogCollectionSet)(nil).Insert), accessLogCollection...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*MockAccessLogRecordSet)(nil).Insert), accessLogRecord...)
 }
 
 // Equal mocks base method
-func (m *MockAccessLogCollectionSet) Equal(accessLogCollectionSet v1alpha1sets.AccessLogCollectionSet) bool {
+func (m *MockAccessLogRecordSet) Equal(accessLogRecordSet v1alpha1sets.AccessLogRecordSet) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Equal", accessLogCollectionSet)
+	ret := m.ctrl.Call(m, "Equal", accessLogRecordSet)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // Equal indicates an expected call of Equal
-func (mr *MockAccessLogCollectionSetMockRecorder) Equal(accessLogCollectionSet interface{}) *gomock.Call {
+func (mr *MockAccessLogRecordSetMockRecorder) Equal(accessLogRecordSet interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockAccessLogCollectionSet)(nil).Equal), accessLogCollectionSet)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Equal", reflect.TypeOf((*MockAccessLogRecordSet)(nil).Equal), accessLogRecordSet)
 }
 
 // Has mocks base method
-func (m *MockAccessLogCollectionSet) Has(accessLogCollection ezkube.ResourceId) bool {
+func (m *MockAccessLogRecordSet) Has(accessLogRecord ezkube.ResourceId) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Has", accessLogCollection)
+	ret := m.ctrl.Call(m, "Has", accessLogRecord)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // Has indicates an expected call of Has
-func (mr *MockAccessLogCollectionSetMockRecorder) Has(accessLogCollection interface{}) *gomock.Call {
+func (mr *MockAccessLogRecordSetMockRecorder) Has(accessLogRecord interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockAccessLogCollectionSet)(nil).Has), accessLogCollection)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockAccessLogRecordSet)(nil).Has), accessLogRecord)
 }
 
 // Delete mocks base method
-func (m *MockAccessLogCollectionSet) Delete(accessLogCollection ezkube.ResourceId) {
+func (m *MockAccessLogRecordSet) Delete(accessLogRecord ezkube.ResourceId) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Delete", accessLogCollection)
+	m.ctrl.Call(m, "Delete", accessLogRecord)
 }
 
 // Delete indicates an expected call of Delete
-func (mr *MockAccessLogCollectionSetMockRecorder) Delete(accessLogCollection interface{}) *gomock.Call {
+func (mr *MockAccessLogRecordSetMockRecorder) Delete(accessLogRecord interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockAccessLogCollectionSet)(nil).Delete), accessLogCollection)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockAccessLogRecordSet)(nil).Delete), accessLogRecord)
 }
 
 // Union mocks base method
-func (m *MockAccessLogCollectionSet) Union(set v1alpha1sets.AccessLogCollectionSet) v1alpha1sets.AccessLogCollectionSet {
+func (m *MockAccessLogRecordSet) Union(set v1alpha1sets.AccessLogRecordSet) v1alpha1sets.AccessLogRecordSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Union", set)
-	ret0, _ := ret[0].(v1alpha1sets.AccessLogCollectionSet)
+	ret0, _ := ret[0].(v1alpha1sets.AccessLogRecordSet)
 	return ret0
 }
 
 // Union indicates an expected call of Union
-func (mr *MockAccessLogCollectionSetMockRecorder) Union(set interface{}) *gomock.Call {
+func (mr *MockAccessLogRecordSetMockRecorder) Union(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockAccessLogCollectionSet)(nil).Union), set)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Union", reflect.TypeOf((*MockAccessLogRecordSet)(nil).Union), set)
 }
 
 // Difference mocks base method
-func (m *MockAccessLogCollectionSet) Difference(set v1alpha1sets.AccessLogCollectionSet) v1alpha1sets.AccessLogCollectionSet {
+func (m *MockAccessLogRecordSet) Difference(set v1alpha1sets.AccessLogRecordSet) v1alpha1sets.AccessLogRecordSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Difference", set)
-	ret0, _ := ret[0].(v1alpha1sets.AccessLogCollectionSet)
+	ret0, _ := ret[0].(v1alpha1sets.AccessLogRecordSet)
 	return ret0
 }
 
 // Difference indicates an expected call of Difference
-func (mr *MockAccessLogCollectionSetMockRecorder) Difference(set interface{}) *gomock.Call {
+func (mr *MockAccessLogRecordSetMockRecorder) Difference(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockAccessLogCollectionSet)(nil).Difference), set)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Difference", reflect.TypeOf((*MockAccessLogRecordSet)(nil).Difference), set)
 }
 
 // Intersection mocks base method
-func (m *MockAccessLogCollectionSet) Intersection(set v1alpha1sets.AccessLogCollectionSet) v1alpha1sets.AccessLogCollectionSet {
+func (m *MockAccessLogRecordSet) Intersection(set v1alpha1sets.AccessLogRecordSet) v1alpha1sets.AccessLogRecordSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Intersection", set)
-	ret0, _ := ret[0].(v1alpha1sets.AccessLogCollectionSet)
+	ret0, _ := ret[0].(v1alpha1sets.AccessLogRecordSet)
 	return ret0
 }
 
 // Intersection indicates an expected call of Intersection
-func (mr *MockAccessLogCollectionSetMockRecorder) Intersection(set interface{}) *gomock.Call {
+func (mr *MockAccessLogRecordSetMockRecorder) Intersection(set interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockAccessLogCollectionSet)(nil).Intersection), set)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Intersection", reflect.TypeOf((*MockAccessLogRecordSet)(nil).Intersection), set)
 }
 
 // Find mocks base method
-func (m *MockAccessLogCollectionSet) Find(id ezkube.ResourceId) (*v1alpha1.AccessLogCollection, error) {
+func (m *MockAccessLogRecordSet) Find(id ezkube.ResourceId) (*v1alpha1.AccessLogRecord, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Find", id)
-	ret0, _ := ret[0].(*v1alpha1.AccessLogCollection)
+	ret0, _ := ret[0].(*v1alpha1.AccessLogRecord)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Find indicates an expected call of Find
-func (mr *MockAccessLogCollectionSetMockRecorder) Find(id interface{}) *gomock.Call {
+func (mr *MockAccessLogRecordSetMockRecorder) Find(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockAccessLogCollectionSet)(nil).Find), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockAccessLogRecordSet)(nil).Find), id)
 }
 
 // Length mocks base method
-func (m *MockAccessLogCollectionSet) Length() int {
+func (m *MockAccessLogRecordSet) Length() int {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Length")
 	ret0, _ := ret[0].(int)
@@ -206,13 +206,13 @@ func (m *MockAccessLogCollectionSet) Length() int {
 }
 
 // Length indicates an expected call of Length
-func (mr *MockAccessLogCollectionSetMockRecorder) Length() *gomock.Call {
+func (mr *MockAccessLogRecordSetMockRecorder) Length() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockAccessLogCollectionSet)(nil).Length))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Length", reflect.TypeOf((*MockAccessLogRecordSet)(nil).Length))
 }
 
 // Generic mocks base method
-func (m *MockAccessLogCollectionSet) Generic() sets.ResourceSet {
+func (m *MockAccessLogRecordSet) Generic() sets.ResourceSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
 	ret0, _ := ret[0].(sets.ResourceSet)
@@ -220,13 +220,13 @@ func (m *MockAccessLogCollectionSet) Generic() sets.ResourceSet {
 }
 
 // Generic indicates an expected call of Generic
-func (mr *MockAccessLogCollectionSetMockRecorder) Generic() *gomock.Call {
+func (mr *MockAccessLogRecordSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockAccessLogCollectionSet)(nil).Generic))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockAccessLogRecordSet)(nil).Generic))
 }
 
 // Delta mocks base method
-func (m *MockAccessLogCollectionSet) Delta(newSet v1alpha1sets.AccessLogCollectionSet) sets.ResourceDelta {
+func (m *MockAccessLogRecordSet) Delta(newSet v1alpha1sets.AccessLogRecordSet) sets.ResourceDelta {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delta", newSet)
 	ret0, _ := ret[0].(sets.ResourceDelta)
@@ -234,7 +234,7 @@ func (m *MockAccessLogCollectionSet) Delta(newSet v1alpha1sets.AccessLogCollecti
 }
 
 // Delta indicates an expected call of Delta
-func (mr *MockAccessLogCollectionSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
+func (mr *MockAccessLogRecordSetMockRecorder) Delta(newSet interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockAccessLogCollectionSet)(nil).Delta), newSet)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockAccessLogRecordSet)(nil).Delta), newSet)
 }

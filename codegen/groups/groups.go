@@ -40,7 +40,7 @@ var GlooMeshEnterpriseNetworkingGroup = makeGroup("networking.enterprise", "v1al
 })
 
 var GlooMeshEnterpriseObservabilityGroup = makeGroup("observability.enterprise", "v1alpha1", []ResourceToGenerate{
-	{Kind: "AccessLogCollection"},
+	{Kind: "AccessLogRecord"},
 })
 
 var GlooMeshEnterpriseRbacGroup = makeGroup("rbac.enterprise", "v1alpha1", []ResourceToGenerate{

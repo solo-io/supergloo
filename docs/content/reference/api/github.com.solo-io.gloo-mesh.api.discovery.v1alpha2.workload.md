@@ -24,7 +24,7 @@ title: "workload.proto"
   - [WorkloadSpec.KubernetesWorkload](#discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload)
   - [WorkloadSpec.KubernetesWorkload.PodLabelsEntry](#discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.PodLabelsEntry)
   - [WorkloadStatus](#discovery.mesh.gloo.solo.io.WorkloadStatus)
-  - [WorkloadStatus.AppliedAccessLogCollection](#discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogCollection)
+  - [WorkloadStatus.AppliedAccessLogRecord](#discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogRecord)
   - [WorkloadStatus.AppliedWasmDeployment](#discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedWasmDeployment)
 
 
@@ -124,7 +124,7 @@ Information describing a Kubernetes-based workload (e.g. a Deployment or DaemonS
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The observed generation of the Workload. When this matches the Workload's metadata.generation it indicates that mesh-networking has reconciled the latest version of the Workload. |
-  | appliedAccessLogCollections | [][discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogCollection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload#discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogCollection" >}}) | repeated | The set of AccessLogCollections that have been applied to this Workload. |
+  | appliedAccessLogRecords | [][discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogRecord]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload#discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogRecord" >}}) | repeated | The set of AccessLogRecords that have been applied to this Workload. |
   | appliedWasmDeployments | [][discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedWasmDeployment]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload#discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedWasmDeployment" >}}) | repeated | The set of WasmDeployments that have been applied to this Workload. |
   
 
@@ -132,17 +132,17 @@ Information describing a Kubernetes-based workload (e.g. a Deployment or DaemonS
 
 
 
-<a name="discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogCollection"></a>
+<a name="discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogRecord"></a>
 
-### WorkloadStatus.AppliedAccessLogCollection
-AppliedAccessLogCollection represents an AccessLogCollection that has been applied to this Workload.
+### WorkloadStatus.AppliedAccessLogRecord
+AppliedAccessLogRecord represents an AccessLogRecord that has been applied to this Workload.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | reference to the AccessLogCollection object. |
-  | observedGeneration | int64 |  | the observed generation of the accepted AccessLogCollection. |
-  | errors | []string | repeated | any errors encountered while processing the referenced AccessLogCollection object |
+| ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | reference to the AccessLogRecord object. |
+  | observedGeneration | int64 |  | the observed generation of the accepted AccessLogRecord. |
+  | errors | []string | repeated | any errors encountered while processing the referenced AccessLogRecord object |
   
 
 

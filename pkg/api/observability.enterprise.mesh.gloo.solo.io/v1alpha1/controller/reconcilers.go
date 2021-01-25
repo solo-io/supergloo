@@ -17,78 +17,78 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// Reconcile Upsert events for the AccessLogCollection Resource.
+// Reconcile Upsert events for the AccessLogRecord Resource.
 // implemented by the user
-type AccessLogCollectionReconciler interface {
-	ReconcileAccessLogCollection(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) (reconcile.Result, error)
+type AccessLogRecordReconciler interface {
+	ReconcileAccessLogRecord(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) (reconcile.Result, error)
 }
 
-// Reconcile deletion events for the AccessLogCollection Resource.
+// Reconcile deletion events for the AccessLogRecord Resource.
 // Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
 // before being deleted.
 // implemented by the user
-type AccessLogCollectionDeletionReconciler interface {
-	ReconcileAccessLogCollectionDeletion(req reconcile.Request) error
+type AccessLogRecordDeletionReconciler interface {
+	ReconcileAccessLogRecordDeletion(req reconcile.Request) error
 }
 
-type AccessLogCollectionReconcilerFuncs struct {
-	OnReconcileAccessLogCollection         func(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) (reconcile.Result, error)
-	OnReconcileAccessLogCollectionDeletion func(req reconcile.Request) error
+type AccessLogRecordReconcilerFuncs struct {
+	OnReconcileAccessLogRecord         func(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) (reconcile.Result, error)
+	OnReconcileAccessLogRecordDeletion func(req reconcile.Request) error
 }
 
-func (f *AccessLogCollectionReconcilerFuncs) ReconcileAccessLogCollection(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) (reconcile.Result, error) {
-	if f.OnReconcileAccessLogCollection == nil {
+func (f *AccessLogRecordReconcilerFuncs) ReconcileAccessLogRecord(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) (reconcile.Result, error) {
+	if f.OnReconcileAccessLogRecord == nil {
 		return reconcile.Result{}, nil
 	}
-	return f.OnReconcileAccessLogCollection(obj)
+	return f.OnReconcileAccessLogRecord(obj)
 }
 
-func (f *AccessLogCollectionReconcilerFuncs) ReconcileAccessLogCollectionDeletion(req reconcile.Request) error {
-	if f.OnReconcileAccessLogCollectionDeletion == nil {
+func (f *AccessLogRecordReconcilerFuncs) ReconcileAccessLogRecordDeletion(req reconcile.Request) error {
+	if f.OnReconcileAccessLogRecordDeletion == nil {
 		return nil
 	}
-	return f.OnReconcileAccessLogCollectionDeletion(req)
+	return f.OnReconcileAccessLogRecordDeletion(req)
 }
 
-// Reconcile and finalize the AccessLogCollection Resource
+// Reconcile and finalize the AccessLogRecord Resource
 // implemented by the user
-type AccessLogCollectionFinalizer interface {
-	AccessLogCollectionReconciler
+type AccessLogRecordFinalizer interface {
+	AccessLogRecordReconciler
 
 	// name of the finalizer used by this handler.
 	// finalizer names should be unique for a single task
-	AccessLogCollectionFinalizerName() string
+	AccessLogRecordFinalizerName() string
 
 	// finalize the object before it is deleted.
 	// Watchers created with a finalizing handler will a
-	FinalizeAccessLogCollection(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) error
+	FinalizeAccessLogRecord(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) error
 }
 
-type AccessLogCollectionReconcileLoop interface {
-	RunAccessLogCollectionReconciler(ctx context.Context, rec AccessLogCollectionReconciler, predicates ...predicate.Predicate) error
+type AccessLogRecordReconcileLoop interface {
+	RunAccessLogRecordReconciler(ctx context.Context, rec AccessLogRecordReconciler, predicates ...predicate.Predicate) error
 }
 
-type accessLogCollectionReconcileLoop struct {
+type accessLogRecordReconcileLoop struct {
 	loop reconcile.Loop
 }
 
-func NewAccessLogCollectionReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) AccessLogCollectionReconcileLoop {
-	return &accessLogCollectionReconcileLoop{
+func NewAccessLogRecordReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) AccessLogRecordReconcileLoop {
+	return &accessLogRecordReconcileLoop{
 		// empty cluster indicates this reconciler is built for the local cluster
-		loop: reconcile.NewLoop(name, "", mgr, &observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection{}, options),
+		loop: reconcile.NewLoop(name, "", mgr, &observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord{}, options),
 	}
 }
 
-func (c *accessLogCollectionReconcileLoop) RunAccessLogCollectionReconciler(ctx context.Context, reconciler AccessLogCollectionReconciler, predicates ...predicate.Predicate) error {
-	genericReconciler := genericAccessLogCollectionReconciler{
+func (c *accessLogRecordReconcileLoop) RunAccessLogRecordReconciler(ctx context.Context, reconciler AccessLogRecordReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericAccessLogRecordReconciler{
 		reconciler: reconciler,
 	}
 
 	var reconcilerWrapper reconcile.Reconciler
-	if finalizingReconciler, ok := reconciler.(AccessLogCollectionFinalizer); ok {
-		reconcilerWrapper = genericAccessLogCollectionFinalizer{
-			genericAccessLogCollectionReconciler: genericReconciler,
-			finalizingReconciler:                 finalizingReconciler,
+	if finalizingReconciler, ok := reconciler.(AccessLogRecordFinalizer); ok {
+		reconcilerWrapper = genericAccessLogRecordFinalizer{
+			genericAccessLogRecordReconciler: genericReconciler,
+			finalizingReconciler:             finalizingReconciler,
 		}
 	} else {
 		reconcilerWrapper = genericReconciler
@@ -96,40 +96,40 @@ func (c *accessLogCollectionReconcileLoop) RunAccessLogCollectionReconciler(ctx 
 	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
 }
 
-// genericAccessLogCollectionHandler implements a generic reconcile.Reconciler
-type genericAccessLogCollectionReconciler struct {
-	reconciler AccessLogCollectionReconciler
+// genericAccessLogRecordHandler implements a generic reconcile.Reconciler
+type genericAccessLogRecordReconciler struct {
+	reconciler AccessLogRecordReconciler
 }
 
-func (r genericAccessLogCollectionReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection)
+func (r genericAccessLogRecordReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord)
 	if !ok {
-		return reconcile.Result{}, errors.Errorf("internal error: AccessLogCollection handler received event for %T", object)
+		return reconcile.Result{}, errors.Errorf("internal error: AccessLogRecord handler received event for %T", object)
 	}
-	return r.reconciler.ReconcileAccessLogCollection(obj)
+	return r.reconciler.ReconcileAccessLogRecord(obj)
 }
 
-func (r genericAccessLogCollectionReconciler) ReconcileDeletion(request reconcile.Request) error {
-	if deletionReconciler, ok := r.reconciler.(AccessLogCollectionDeletionReconciler); ok {
-		return deletionReconciler.ReconcileAccessLogCollectionDeletion(request)
+func (r genericAccessLogRecordReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(AccessLogRecordDeletionReconciler); ok {
+		return deletionReconciler.ReconcileAccessLogRecordDeletion(request)
 	}
 	return nil
 }
 
-// genericAccessLogCollectionFinalizer implements a generic reconcile.FinalizingReconciler
-type genericAccessLogCollectionFinalizer struct {
-	genericAccessLogCollectionReconciler
-	finalizingReconciler AccessLogCollectionFinalizer
+// genericAccessLogRecordFinalizer implements a generic reconcile.FinalizingReconciler
+type genericAccessLogRecordFinalizer struct {
+	genericAccessLogRecordReconciler
+	finalizingReconciler AccessLogRecordFinalizer
 }
 
-func (r genericAccessLogCollectionFinalizer) FinalizerName() string {
-	return r.finalizingReconciler.AccessLogCollectionFinalizerName()
+func (r genericAccessLogRecordFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.AccessLogRecordFinalizerName()
 }
 
-func (r genericAccessLogCollectionFinalizer) Finalize(object ezkube.Object) error {
-	obj, ok := object.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection)
+func (r genericAccessLogRecordFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord)
 	if !ok {
-		return errors.Errorf("internal error: AccessLogCollection handler received event for %T", object)
+		return errors.Errorf("internal error: AccessLogRecord handler received event for %T", object)
 	}
-	return r.finalizingReconciler.FinalizeAccessLogCollection(obj)
+	return r.finalizingReconciler.FinalizeAccessLogRecord(obj)
 }

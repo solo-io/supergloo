@@ -15,185 +15,185 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockAccessLogCollectionReconciler is a mock of AccessLogCollectionReconciler interface
-type MockAccessLogCollectionReconciler struct {
+// MockAccessLogRecordReconciler is a mock of AccessLogRecordReconciler interface
+type MockAccessLogRecordReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockAccessLogCollectionReconcilerMockRecorder
+	recorder *MockAccessLogRecordReconcilerMockRecorder
 }
 
-// MockAccessLogCollectionReconcilerMockRecorder is the mock recorder for MockAccessLogCollectionReconciler
-type MockAccessLogCollectionReconcilerMockRecorder struct {
-	mock *MockAccessLogCollectionReconciler
+// MockAccessLogRecordReconcilerMockRecorder is the mock recorder for MockAccessLogRecordReconciler
+type MockAccessLogRecordReconcilerMockRecorder struct {
+	mock *MockAccessLogRecordReconciler
 }
 
-// NewMockAccessLogCollectionReconciler creates a new mock instance
-func NewMockAccessLogCollectionReconciler(ctrl *gomock.Controller) *MockAccessLogCollectionReconciler {
-	mock := &MockAccessLogCollectionReconciler{ctrl: ctrl}
-	mock.recorder = &MockAccessLogCollectionReconcilerMockRecorder{mock}
+// NewMockAccessLogRecordReconciler creates a new mock instance
+func NewMockAccessLogRecordReconciler(ctrl *gomock.Controller) *MockAccessLogRecordReconciler {
+	mock := &MockAccessLogRecordReconciler{ctrl: ctrl}
+	mock.recorder = &MockAccessLogRecordReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockAccessLogCollectionReconciler) EXPECT() *MockAccessLogCollectionReconcilerMockRecorder {
+func (m *MockAccessLogRecordReconciler) EXPECT() *MockAccessLogRecordReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionReconciler) ReconcileAccessLogCollection(obj *v1alpha1.AccessLogCollection) (reconcile.Result, error) {
+// ReconcileAccessLogRecord mocks base method
+func (m *MockAccessLogRecordReconciler) ReconcileAccessLogRecord(obj *v1alpha1.AccessLogRecord) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileAccessLogCollection", obj)
+	ret := m.ctrl.Call(m, "ReconcileAccessLogRecord", obj)
 	ret0, _ := ret[0].(reconcile.Result)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ReconcileAccessLogCollection indicates an expected call of ReconcileAccessLogCollection
-func (mr *MockAccessLogCollectionReconcilerMockRecorder) ReconcileAccessLogCollection(obj interface{}) *gomock.Call {
+// ReconcileAccessLogRecord indicates an expected call of ReconcileAccessLogRecord
+func (mr *MockAccessLogRecordReconcilerMockRecorder) ReconcileAccessLogRecord(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionReconciler)(nil).ReconcileAccessLogCollection), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordReconciler)(nil).ReconcileAccessLogRecord), obj)
 }
 
-// MockAccessLogCollectionDeletionReconciler is a mock of AccessLogCollectionDeletionReconciler interface
-type MockAccessLogCollectionDeletionReconciler struct {
+// MockAccessLogRecordDeletionReconciler is a mock of AccessLogRecordDeletionReconciler interface
+type MockAccessLogRecordDeletionReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockAccessLogCollectionDeletionReconcilerMockRecorder
+	recorder *MockAccessLogRecordDeletionReconcilerMockRecorder
 }
 
-// MockAccessLogCollectionDeletionReconcilerMockRecorder is the mock recorder for MockAccessLogCollectionDeletionReconciler
-type MockAccessLogCollectionDeletionReconcilerMockRecorder struct {
-	mock *MockAccessLogCollectionDeletionReconciler
+// MockAccessLogRecordDeletionReconcilerMockRecorder is the mock recorder for MockAccessLogRecordDeletionReconciler
+type MockAccessLogRecordDeletionReconcilerMockRecorder struct {
+	mock *MockAccessLogRecordDeletionReconciler
 }
 
-// NewMockAccessLogCollectionDeletionReconciler creates a new mock instance
-func NewMockAccessLogCollectionDeletionReconciler(ctrl *gomock.Controller) *MockAccessLogCollectionDeletionReconciler {
-	mock := &MockAccessLogCollectionDeletionReconciler{ctrl: ctrl}
-	mock.recorder = &MockAccessLogCollectionDeletionReconcilerMockRecorder{mock}
+// NewMockAccessLogRecordDeletionReconciler creates a new mock instance
+func NewMockAccessLogRecordDeletionReconciler(ctrl *gomock.Controller) *MockAccessLogRecordDeletionReconciler {
+	mock := &MockAccessLogRecordDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockAccessLogRecordDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockAccessLogCollectionDeletionReconciler) EXPECT() *MockAccessLogCollectionDeletionReconcilerMockRecorder {
+func (m *MockAccessLogRecordDeletionReconciler) EXPECT() *MockAccessLogRecordDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileAccessLogCollectionDeletion mocks base method
-func (m *MockAccessLogCollectionDeletionReconciler) ReconcileAccessLogCollectionDeletion(req reconcile.Request) error {
+// ReconcileAccessLogRecordDeletion mocks base method
+func (m *MockAccessLogRecordDeletionReconciler) ReconcileAccessLogRecordDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileAccessLogCollectionDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileAccessLogRecordDeletion", req)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ReconcileAccessLogCollectionDeletion indicates an expected call of ReconcileAccessLogCollectionDeletion
-func (mr *MockAccessLogCollectionDeletionReconcilerMockRecorder) ReconcileAccessLogCollectionDeletion(req interface{}) *gomock.Call {
+// ReconcileAccessLogRecordDeletion indicates an expected call of ReconcileAccessLogRecordDeletion
+func (mr *MockAccessLogRecordDeletionReconcilerMockRecorder) ReconcileAccessLogRecordDeletion(req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAccessLogCollectionDeletion", reflect.TypeOf((*MockAccessLogCollectionDeletionReconciler)(nil).ReconcileAccessLogCollectionDeletion), req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAccessLogRecordDeletion", reflect.TypeOf((*MockAccessLogRecordDeletionReconciler)(nil).ReconcileAccessLogRecordDeletion), req)
 }
 
-// MockAccessLogCollectionFinalizer is a mock of AccessLogCollectionFinalizer interface
-type MockAccessLogCollectionFinalizer struct {
+// MockAccessLogRecordFinalizer is a mock of AccessLogRecordFinalizer interface
+type MockAccessLogRecordFinalizer struct {
 	ctrl     *gomock.Controller
-	recorder *MockAccessLogCollectionFinalizerMockRecorder
+	recorder *MockAccessLogRecordFinalizerMockRecorder
 }
 
-// MockAccessLogCollectionFinalizerMockRecorder is the mock recorder for MockAccessLogCollectionFinalizer
-type MockAccessLogCollectionFinalizerMockRecorder struct {
-	mock *MockAccessLogCollectionFinalizer
+// MockAccessLogRecordFinalizerMockRecorder is the mock recorder for MockAccessLogRecordFinalizer
+type MockAccessLogRecordFinalizerMockRecorder struct {
+	mock *MockAccessLogRecordFinalizer
 }
 
-// NewMockAccessLogCollectionFinalizer creates a new mock instance
-func NewMockAccessLogCollectionFinalizer(ctrl *gomock.Controller) *MockAccessLogCollectionFinalizer {
-	mock := &MockAccessLogCollectionFinalizer{ctrl: ctrl}
-	mock.recorder = &MockAccessLogCollectionFinalizerMockRecorder{mock}
+// NewMockAccessLogRecordFinalizer creates a new mock instance
+func NewMockAccessLogRecordFinalizer(ctrl *gomock.Controller) *MockAccessLogRecordFinalizer {
+	mock := &MockAccessLogRecordFinalizer{ctrl: ctrl}
+	mock.recorder = &MockAccessLogRecordFinalizerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockAccessLogCollectionFinalizer) EXPECT() *MockAccessLogCollectionFinalizerMockRecorder {
+func (m *MockAccessLogRecordFinalizer) EXPECT() *MockAccessLogRecordFinalizerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionFinalizer) ReconcileAccessLogCollection(obj *v1alpha1.AccessLogCollection) (reconcile.Result, error) {
+// ReconcileAccessLogRecord mocks base method
+func (m *MockAccessLogRecordFinalizer) ReconcileAccessLogRecord(obj *v1alpha1.AccessLogRecord) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileAccessLogCollection", obj)
+	ret := m.ctrl.Call(m, "ReconcileAccessLogRecord", obj)
 	ret0, _ := ret[0].(reconcile.Result)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ReconcileAccessLogCollection indicates an expected call of ReconcileAccessLogCollection
-func (mr *MockAccessLogCollectionFinalizerMockRecorder) ReconcileAccessLogCollection(obj interface{}) *gomock.Call {
+// ReconcileAccessLogRecord indicates an expected call of ReconcileAccessLogRecord
+func (mr *MockAccessLogRecordFinalizerMockRecorder) ReconcileAccessLogRecord(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionFinalizer)(nil).ReconcileAccessLogCollection), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordFinalizer)(nil).ReconcileAccessLogRecord), obj)
 }
 
-// AccessLogCollectionFinalizerName mocks base method
-func (m *MockAccessLogCollectionFinalizer) AccessLogCollectionFinalizerName() string {
+// AccessLogRecordFinalizerName mocks base method
+func (m *MockAccessLogRecordFinalizer) AccessLogRecordFinalizerName() string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccessLogCollectionFinalizerName")
+	ret := m.ctrl.Call(m, "AccessLogRecordFinalizerName")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// AccessLogCollectionFinalizerName indicates an expected call of AccessLogCollectionFinalizerName
-func (mr *MockAccessLogCollectionFinalizerMockRecorder) AccessLogCollectionFinalizerName() *gomock.Call {
+// AccessLogRecordFinalizerName indicates an expected call of AccessLogRecordFinalizerName
+func (mr *MockAccessLogRecordFinalizerMockRecorder) AccessLogRecordFinalizerName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccessLogCollectionFinalizerName", reflect.TypeOf((*MockAccessLogCollectionFinalizer)(nil).AccessLogCollectionFinalizerName))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccessLogRecordFinalizerName", reflect.TypeOf((*MockAccessLogRecordFinalizer)(nil).AccessLogRecordFinalizerName))
 }
 
-// FinalizeAccessLogCollection mocks base method
-func (m *MockAccessLogCollectionFinalizer) FinalizeAccessLogCollection(obj *v1alpha1.AccessLogCollection) error {
+// FinalizeAccessLogRecord mocks base method
+func (m *MockAccessLogRecordFinalizer) FinalizeAccessLogRecord(obj *v1alpha1.AccessLogRecord) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FinalizeAccessLogCollection", obj)
+	ret := m.ctrl.Call(m, "FinalizeAccessLogRecord", obj)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// FinalizeAccessLogCollection indicates an expected call of FinalizeAccessLogCollection
-func (mr *MockAccessLogCollectionFinalizerMockRecorder) FinalizeAccessLogCollection(obj interface{}) *gomock.Call {
+// FinalizeAccessLogRecord indicates an expected call of FinalizeAccessLogRecord
+func (mr *MockAccessLogRecordFinalizerMockRecorder) FinalizeAccessLogRecord(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeAccessLogCollection", reflect.TypeOf((*MockAccessLogCollectionFinalizer)(nil).FinalizeAccessLogCollection), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeAccessLogRecord", reflect.TypeOf((*MockAccessLogRecordFinalizer)(nil).FinalizeAccessLogRecord), obj)
 }
 
-// MockAccessLogCollectionReconcileLoop is a mock of AccessLogCollectionReconcileLoop interface
-type MockAccessLogCollectionReconcileLoop struct {
+// MockAccessLogRecordReconcileLoop is a mock of AccessLogRecordReconcileLoop interface
+type MockAccessLogRecordReconcileLoop struct {
 	ctrl     *gomock.Controller
-	recorder *MockAccessLogCollectionReconcileLoopMockRecorder
+	recorder *MockAccessLogRecordReconcileLoopMockRecorder
 }
 
-// MockAccessLogCollectionReconcileLoopMockRecorder is the mock recorder for MockAccessLogCollectionReconcileLoop
-type MockAccessLogCollectionReconcileLoopMockRecorder struct {
-	mock *MockAccessLogCollectionReconcileLoop
+// MockAccessLogRecordReconcileLoopMockRecorder is the mock recorder for MockAccessLogRecordReconcileLoop
+type MockAccessLogRecordReconcileLoopMockRecorder struct {
+	mock *MockAccessLogRecordReconcileLoop
 }
 
-// NewMockAccessLogCollectionReconcileLoop creates a new mock instance
-func NewMockAccessLogCollectionReconcileLoop(ctrl *gomock.Controller) *MockAccessLogCollectionReconcileLoop {
-	mock := &MockAccessLogCollectionReconcileLoop{ctrl: ctrl}
-	mock.recorder = &MockAccessLogCollectionReconcileLoopMockRecorder{mock}
+// NewMockAccessLogRecordReconcileLoop creates a new mock instance
+func NewMockAccessLogRecordReconcileLoop(ctrl *gomock.Controller) *MockAccessLogRecordReconcileLoop {
+	mock := &MockAccessLogRecordReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockAccessLogRecordReconcileLoopMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockAccessLogCollectionReconcileLoop) EXPECT() *MockAccessLogCollectionReconcileLoopMockRecorder {
+func (m *MockAccessLogRecordReconcileLoop) EXPECT() *MockAccessLogRecordReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// RunAccessLogCollectionReconciler mocks base method
-func (m *MockAccessLogCollectionReconcileLoop) RunAccessLogCollectionReconciler(ctx context.Context, rec controller.AccessLogCollectionReconciler, predicates ...predicate.Predicate) error {
+// RunAccessLogRecordReconciler mocks base method
+func (m *MockAccessLogRecordReconcileLoop) RunAccessLogRecordReconciler(ctx context.Context, rec controller.AccessLogRecordReconciler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
 	for _, a := range predicates {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "RunAccessLogCollectionReconciler", varargs...)
+	ret := m.ctrl.Call(m, "RunAccessLogRecordReconciler", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// RunAccessLogCollectionReconciler indicates an expected call of RunAccessLogCollectionReconciler
-func (mr *MockAccessLogCollectionReconcileLoopMockRecorder) RunAccessLogCollectionReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+// RunAccessLogRecordReconciler indicates an expected call of RunAccessLogRecordReconciler
+func (mr *MockAccessLogRecordReconcileLoopMockRecorder) RunAccessLogRecordReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunAccessLogCollectionReconciler", reflect.TypeOf((*MockAccessLogCollectionReconcileLoop)(nil).RunAccessLogCollectionReconciler), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunAccessLogRecordReconciler", reflect.TypeOf((*MockAccessLogRecordReconcileLoop)(nil).RunAccessLogRecordReconciler), varargs...)
 }

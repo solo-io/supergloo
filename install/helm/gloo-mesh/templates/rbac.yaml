@@ -136,7 +136,7 @@ rules:
 - apiGroups:
   - observability.enterprise.mesh.gloo.solo.io
   resources:
-  - accesslogcollections
+  - accesslogrecords
   verbs:
   - get
   - list
@@ -192,7 +192,7 @@ rules:
 - apiGroups:
   - observability.enterprise.mesh.gloo.solo.io
   resources:
-  - accesslogcollections/status
+  - accesslogrecords/status
   verbs:
   - get
   - update

@@ -170,18 +170,18 @@ func (mr *MockLocalSnapshotMockRecorder) WasmDeployments() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WasmDeployments", reflect.TypeOf((*MockLocalSnapshot)(nil).WasmDeployments))
 }
 
-// AccessLogCollections mocks base method
-func (m *MockLocalSnapshot) AccessLogCollections() v1alpha1sets0.AccessLogCollectionSet {
+// AccessLogRecords mocks base method
+func (m *MockLocalSnapshot) AccessLogRecords() v1alpha1sets0.AccessLogRecordSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccessLogCollections")
-	ret0, _ := ret[0].(v1alpha1sets0.AccessLogCollectionSet)
+	ret := m.ctrl.Call(m, "AccessLogRecords")
+	ret0, _ := ret[0].(v1alpha1sets0.AccessLogRecordSet)
 	return ret0
 }
 
-// AccessLogCollections indicates an expected call of AccessLogCollections
-func (mr *MockLocalSnapshotMockRecorder) AccessLogCollections() *gomock.Call {
+// AccessLogRecords indicates an expected call of AccessLogRecords
+func (mr *MockLocalSnapshotMockRecorder) AccessLogRecords() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccessLogCollections", reflect.TypeOf((*MockLocalSnapshot)(nil).AccessLogCollections))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccessLogRecords", reflect.TypeOf((*MockLocalSnapshot)(nil).AccessLogRecords))
 }
 
 // Secrets mocks base method

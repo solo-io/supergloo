@@ -17,30 +17,30 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
-// Provider for AccessLogCollectionClient from Clientset
-func AccessLogCollectionClientFromClientsetProvider(clients observability_enterprise_mesh_gloo_solo_io_v1alpha1.Clientset) observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollectionClient {
-	return clients.AccessLogCollections()
+// Provider for AccessLogRecordClient from Clientset
+func AccessLogRecordClientFromClientsetProvider(clients observability_enterprise_mesh_gloo_solo_io_v1alpha1.Clientset) observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecordClient {
+	return clients.AccessLogRecords()
 }
 
-// Provider for AccessLogCollection Client from Client
-func AccessLogCollectionClientProvider(client client.Client) observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollectionClient {
-	return observability_enterprise_mesh_gloo_solo_io_v1alpha1.NewAccessLogCollectionClient(client)
+// Provider for AccessLogRecord Client from Client
+func AccessLogRecordClientProvider(client client.Client) observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecordClient {
+	return observability_enterprise_mesh_gloo_solo_io_v1alpha1.NewAccessLogRecordClient(client)
 }
 
-type AccessLogCollectionClientFactory func(client client.Client) observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollectionClient
+type AccessLogRecordClientFactory func(client client.Client) observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecordClient
 
-func AccessLogCollectionClientFactoryProvider() AccessLogCollectionClientFactory {
-	return AccessLogCollectionClientProvider
+func AccessLogRecordClientFactoryProvider() AccessLogRecordClientFactory {
+	return AccessLogRecordClientProvider
 }
 
-type AccessLogCollectionClientFromConfigFactory func(cfg *rest.Config) (observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollectionClient, error)
+type AccessLogRecordClientFromConfigFactory func(cfg *rest.Config) (observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecordClient, error)
 
-func AccessLogCollectionClientFromConfigFactoryProvider() AccessLogCollectionClientFromConfigFactory {
-	return func(cfg *rest.Config) (observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollectionClient, error) {
+func AccessLogRecordClientFromConfigFactoryProvider() AccessLogRecordClientFromConfigFactory {
+	return func(cfg *rest.Config) (observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecordClient, error) {
 		clients, err := observability_enterprise_mesh_gloo_solo_io_v1alpha1.NewClientsetFromConfig(cfg)
 		if err != nil {
 			return nil, err
 		}
-		return clients.AccessLogCollections(), nil
+		return clients.AccessLogRecords(), nil
 	}
 }

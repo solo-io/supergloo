@@ -17,109 +17,109 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// Handle events for the AccessLogCollection Resource
+// Handle events for the AccessLogRecord Resource
 // DEPRECATED: Prefer reconciler pattern.
-type AccessLogCollectionEventHandler interface {
-	CreateAccessLogCollection(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) error
-	UpdateAccessLogCollection(old, new *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) error
-	DeleteAccessLogCollection(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) error
-	GenericAccessLogCollection(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) error
+type AccessLogRecordEventHandler interface {
+	CreateAccessLogRecord(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) error
+	UpdateAccessLogRecord(old, new *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) error
+	DeleteAccessLogRecord(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) error
+	GenericAccessLogRecord(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) error
 }
 
-type AccessLogCollectionEventHandlerFuncs struct {
-	OnCreate  func(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) error
-	OnUpdate  func(old, new *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) error
-	OnDelete  func(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) error
-	OnGeneric func(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) error
+type AccessLogRecordEventHandlerFuncs struct {
+	OnCreate  func(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) error
+	OnUpdate  func(old, new *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) error
+	OnDelete  func(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) error
+	OnGeneric func(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) error
 }
 
-func (f *AccessLogCollectionEventHandlerFuncs) CreateAccessLogCollection(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) error {
+func (f *AccessLogRecordEventHandlerFuncs) CreateAccessLogRecord(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) error {
 	if f.OnCreate == nil {
 		return nil
 	}
 	return f.OnCreate(obj)
 }
 
-func (f *AccessLogCollectionEventHandlerFuncs) DeleteAccessLogCollection(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) error {
+func (f *AccessLogRecordEventHandlerFuncs) DeleteAccessLogRecord(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) error {
 	if f.OnDelete == nil {
 		return nil
 	}
 	return f.OnDelete(obj)
 }
 
-func (f *AccessLogCollectionEventHandlerFuncs) UpdateAccessLogCollection(objOld, objNew *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) error {
+func (f *AccessLogRecordEventHandlerFuncs) UpdateAccessLogRecord(objOld, objNew *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) error {
 	if f.OnUpdate == nil {
 		return nil
 	}
 	return f.OnUpdate(objOld, objNew)
 }
 
-func (f *AccessLogCollectionEventHandlerFuncs) GenericAccessLogCollection(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) error {
+func (f *AccessLogRecordEventHandlerFuncs) GenericAccessLogRecord(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) error {
 	if f.OnGeneric == nil {
 		return nil
 	}
 	return f.OnGeneric(obj)
 }
 
-type AccessLogCollectionEventWatcher interface {
-	AddEventHandler(ctx context.Context, h AccessLogCollectionEventHandler, predicates ...predicate.Predicate) error
+type AccessLogRecordEventWatcher interface {
+	AddEventHandler(ctx context.Context, h AccessLogRecordEventHandler, predicates ...predicate.Predicate) error
 }
 
-type accessLogCollectionEventWatcher struct {
+type accessLogRecordEventWatcher struct {
 	watcher events.EventWatcher
 }
 
-func NewAccessLogCollectionEventWatcher(name string, mgr manager.Manager) AccessLogCollectionEventWatcher {
-	return &accessLogCollectionEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection{}),
+func NewAccessLogRecordEventWatcher(name string, mgr manager.Manager) AccessLogRecordEventWatcher {
+	return &accessLogRecordEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord{}),
 	}
 }
 
-func (c *accessLogCollectionEventWatcher) AddEventHandler(ctx context.Context, h AccessLogCollectionEventHandler, predicates ...predicate.Predicate) error {
-	handler := genericAccessLogCollectionHandler{handler: h}
+func (c *accessLogRecordEventWatcher) AddEventHandler(ctx context.Context, h AccessLogRecordEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericAccessLogRecordHandler{handler: h}
 	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
 		return err
 	}
 	return nil
 }
 
-// genericAccessLogCollectionHandler implements a generic events.EventHandler
-type genericAccessLogCollectionHandler struct {
-	handler AccessLogCollectionEventHandler
+// genericAccessLogRecordHandler implements a generic events.EventHandler
+type genericAccessLogRecordHandler struct {
+	handler AccessLogRecordEventHandler
 }
 
-func (h genericAccessLogCollectionHandler) Create(object client.Object) error {
-	obj, ok := object.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection)
+func (h genericAccessLogRecordHandler) Create(object client.Object) error {
+	obj, ok := object.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord)
 	if !ok {
-		return errors.Errorf("internal error: AccessLogCollection handler received event for %T", object)
+		return errors.Errorf("internal error: AccessLogRecord handler received event for %T", object)
 	}
-	return h.handler.CreateAccessLogCollection(obj)
+	return h.handler.CreateAccessLogRecord(obj)
 }
 
-func (h genericAccessLogCollectionHandler) Delete(object client.Object) error {
-	obj, ok := object.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection)
+func (h genericAccessLogRecordHandler) Delete(object client.Object) error {
+	obj, ok := object.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord)
 	if !ok {
-		return errors.Errorf("internal error: AccessLogCollection handler received event for %T", object)
+		return errors.Errorf("internal error: AccessLogRecord handler received event for %T", object)
 	}
-	return h.handler.DeleteAccessLogCollection(obj)
+	return h.handler.DeleteAccessLogRecord(obj)
 }
 
-func (h genericAccessLogCollectionHandler) Update(old, new client.Object) error {
-	objOld, ok := old.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection)
+func (h genericAccessLogRecordHandler) Update(old, new client.Object) error {
+	objOld, ok := old.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord)
 	if !ok {
-		return errors.Errorf("internal error: AccessLogCollection handler received event for %T", old)
+		return errors.Errorf("internal error: AccessLogRecord handler received event for %T", old)
 	}
-	objNew, ok := new.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection)
+	objNew, ok := new.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord)
 	if !ok {
-		return errors.Errorf("internal error: AccessLogCollection handler received event for %T", new)
+		return errors.Errorf("internal error: AccessLogRecord handler received event for %T", new)
 	}
-	return h.handler.UpdateAccessLogCollection(objOld, objNew)
+	return h.handler.UpdateAccessLogRecord(objOld, objNew)
 }
 
-func (h genericAccessLogCollectionHandler) Generic(object client.Object) error {
-	obj, ok := object.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection)
+func (h genericAccessLogRecordHandler) Generic(object client.Object) error {
+	obj, ok := object.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord)
 	if !ok {
-		return errors.Errorf("internal error: AccessLogCollection handler received event for %T", object)
+		return errors.Errorf("internal error: AccessLogRecord handler received event for %T", object)
 	}
-	return h.handler.GenericAccessLogCollection(obj)
+	return h.handler.GenericAccessLogRecord(obj)
 }

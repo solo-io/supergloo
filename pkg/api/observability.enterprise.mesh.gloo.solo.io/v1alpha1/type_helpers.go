@@ -3,5 +3,5 @@
 // Definitions for the Kubernetes types
 package v1alpha1
 
-// AccessLogCollectionSlice represents a slice of *AccessLogCollection
-type AccessLogCollectionSlice []*AccessLogCollection
+// AccessLogRecordSlice represents a slice of *AccessLogRecord
+type AccessLogRecordSlice []*AccessLogRecord

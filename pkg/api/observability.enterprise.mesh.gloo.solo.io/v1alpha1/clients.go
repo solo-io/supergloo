@@ -40,7 +40,7 @@ func (m *multiclusterClientset) Cluster(cluster string) (Clientset, error) {
 // clienset for the observability.enterprise.mesh.gloo.solo.io/v1alpha1 APIs
 type Clientset interface {
 	// clienset for the observability.enterprise.mesh.gloo.solo.io/v1alpha1/v1alpha1 APIs
-	AccessLogCollections() AccessLogCollectionClient
+	AccessLogRecords() AccessLogRecordClient
 }
 
 type clientSet struct {
@@ -66,113 +66,113 @@ func NewClientset(client client.Client) Clientset {
 }
 
 // clienset for the observability.enterprise.mesh.gloo.solo.io/v1alpha1/v1alpha1 APIs
-func (c *clientSet) AccessLogCollections() AccessLogCollectionClient {
-	return NewAccessLogCollectionClient(c.client)
+func (c *clientSet) AccessLogRecords() AccessLogRecordClient {
+	return NewAccessLogRecordClient(c.client)
 }
 
-// Reader knows how to read and list AccessLogCollections.
-type AccessLogCollectionReader interface {
-	// Get retrieves a AccessLogCollection for the given object key
-	GetAccessLogCollection(ctx context.Context, key client.ObjectKey) (*AccessLogCollection, error)
+// Reader knows how to read and list AccessLogRecords.
+type AccessLogRecordReader interface {
+	// Get retrieves a AccessLogRecord for the given object key
+	GetAccessLogRecord(ctx context.Context, key client.ObjectKey) (*AccessLogRecord, error)
 
-	// List retrieves list of AccessLogCollections for a given namespace and list options.
-	ListAccessLogCollection(ctx context.Context, opts ...client.ListOption) (*AccessLogCollectionList, error)
+	// List retrieves list of AccessLogRecords for a given namespace and list options.
+	ListAccessLogRecord(ctx context.Context, opts ...client.ListOption) (*AccessLogRecordList, error)
 }
 
-// AccessLogCollectionTransitionFunction instructs the AccessLogCollectionWriter how to transition between an existing
-// AccessLogCollection object and a desired on an Upsert
-type AccessLogCollectionTransitionFunction func(existing, desired *AccessLogCollection) error
+// AccessLogRecordTransitionFunction instructs the AccessLogRecordWriter how to transition between an existing
+// AccessLogRecord object and a desired on an Upsert
+type AccessLogRecordTransitionFunction func(existing, desired *AccessLogRecord) error
 
-// Writer knows how to create, delete, and update AccessLogCollections.
-type AccessLogCollectionWriter interface {
-	// Create saves the AccessLogCollection object.
-	CreateAccessLogCollection(ctx context.Context, obj *AccessLogCollection, opts ...client.CreateOption) error
+// Writer knows how to create, delete, and update AccessLogRecords.
+type AccessLogRecordWriter interface {
+	// Create saves the AccessLogRecord object.
+	CreateAccessLogRecord(ctx context.Context, obj *AccessLogRecord, opts ...client.CreateOption) error
 
-	// Delete deletes the AccessLogCollection object.
-	DeleteAccessLogCollection(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+	// Delete deletes the AccessLogRecord object.
+	DeleteAccessLogRecord(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
 
-	// Update updates the given AccessLogCollection object.
-	UpdateAccessLogCollection(ctx context.Context, obj *AccessLogCollection, opts ...client.UpdateOption) error
+	// Update updates the given AccessLogRecord object.
+	UpdateAccessLogRecord(ctx context.Context, obj *AccessLogRecord, opts ...client.UpdateOption) error
 
-	// Patch patches the given AccessLogCollection object.
-	PatchAccessLogCollection(ctx context.Context, obj *AccessLogCollection, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given AccessLogRecord object.
+	PatchAccessLogRecord(ctx context.Context, obj *AccessLogRecord, patch client.Patch, opts ...client.PatchOption) error
 
-	// DeleteAllOf deletes all AccessLogCollection objects matching the given options.
-	DeleteAllOfAccessLogCollection(ctx context.Context, opts ...client.DeleteAllOfOption) error
+	// DeleteAllOf deletes all AccessLogRecord objects matching the given options.
+	DeleteAllOfAccessLogRecord(ctx context.Context, opts ...client.DeleteAllOfOption) error
 
-	// Create or Update the AccessLogCollection object.
-	UpsertAccessLogCollection(ctx context.Context, obj *AccessLogCollection, transitionFuncs ...AccessLogCollectionTransitionFunction) error
+	// Create or Update the AccessLogRecord object.
+	UpsertAccessLogRecord(ctx context.Context, obj *AccessLogRecord, transitionFuncs ...AccessLogRecordTransitionFunction) error
 }
 
-// StatusWriter knows how to update status subresource of a AccessLogCollection object.
-type AccessLogCollectionStatusWriter interface {
+// StatusWriter knows how to update status subresource of a AccessLogRecord object.
+type AccessLogRecordStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
-	// given AccessLogCollection object.
-	UpdateAccessLogCollectionStatus(ctx context.Context, obj *AccessLogCollection, opts ...client.UpdateOption) error
+	// given AccessLogRecord object.
+	UpdateAccessLogRecordStatus(ctx context.Context, obj *AccessLogRecord, opts ...client.UpdateOption) error
 
-	// Patch patches the given AccessLogCollection object's subresource.
-	PatchAccessLogCollectionStatus(ctx context.Context, obj *AccessLogCollection, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given AccessLogRecord object's subresource.
+	PatchAccessLogRecordStatus(ctx context.Context, obj *AccessLogRecord, patch client.Patch, opts ...client.PatchOption) error
 }
 
-// Client knows how to perform CRUD operations on AccessLogCollections.
-type AccessLogCollectionClient interface {
-	AccessLogCollectionReader
-	AccessLogCollectionWriter
-	AccessLogCollectionStatusWriter
+// Client knows how to perform CRUD operations on AccessLogRecords.
+type AccessLogRecordClient interface {
+	AccessLogRecordReader
+	AccessLogRecordWriter
+	AccessLogRecordStatusWriter
 }
 
-type accessLogCollectionClient struct {
+type accessLogRecordClient struct {
 	client client.Client
 }
 
-func NewAccessLogCollectionClient(client client.Client) *accessLogCollectionClient {
-	return &accessLogCollectionClient{client: client}
+func NewAccessLogRecordClient(client client.Client) *accessLogRecordClient {
+	return &accessLogRecordClient{client: client}
 }
 
-func (c *accessLogCollectionClient) GetAccessLogCollection(ctx context.Context, key client.ObjectKey) (*AccessLogCollection, error) {
-	obj := &AccessLogCollection{}
+func (c *accessLogRecordClient) GetAccessLogRecord(ctx context.Context, key client.ObjectKey) (*AccessLogRecord, error) {
+	obj := &AccessLogRecord{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
 	return obj, nil
 }
 
-func (c *accessLogCollectionClient) ListAccessLogCollection(ctx context.Context, opts ...client.ListOption) (*AccessLogCollectionList, error) {
-	list := &AccessLogCollectionList{}
+func (c *accessLogRecordClient) ListAccessLogRecord(ctx context.Context, opts ...client.ListOption) (*AccessLogRecordList, error) {
+	list := &AccessLogRecordList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
 	return list, nil
 }
 
-func (c *accessLogCollectionClient) CreateAccessLogCollection(ctx context.Context, obj *AccessLogCollection, opts ...client.CreateOption) error {
+func (c *accessLogRecordClient) CreateAccessLogRecord(ctx context.Context, obj *AccessLogRecord, opts ...client.CreateOption) error {
 	return c.client.Create(ctx, obj, opts...)
 }
 
-func (c *accessLogCollectionClient) DeleteAccessLogCollection(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &AccessLogCollection{}
+func (c *accessLogRecordClient) DeleteAccessLogRecord(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &AccessLogRecord{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
 }
 
-func (c *accessLogCollectionClient) UpdateAccessLogCollection(ctx context.Context, obj *AccessLogCollection, opts ...client.UpdateOption) error {
+func (c *accessLogRecordClient) UpdateAccessLogRecord(ctx context.Context, obj *AccessLogRecord, opts ...client.UpdateOption) error {
 	return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *accessLogCollectionClient) PatchAccessLogCollection(ctx context.Context, obj *AccessLogCollection, patch client.Patch, opts ...client.PatchOption) error {
+func (c *accessLogRecordClient) PatchAccessLogRecord(ctx context.Context, obj *AccessLogRecord, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, opts...)
 }
 
-func (c *accessLogCollectionClient) DeleteAllOfAccessLogCollection(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &AccessLogCollection{}
+func (c *accessLogRecordClient) DeleteAllOfAccessLogRecord(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &AccessLogRecord{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
-func (c *accessLogCollectionClient) UpsertAccessLogCollection(ctx context.Context, obj *AccessLogCollection, transitionFuncs ...AccessLogCollectionTransitionFunction) error {
+func (c *accessLogRecordClient) UpsertAccessLogRecord(ctx context.Context, obj *AccessLogRecord, transitionFuncs ...AccessLogRecordTransitionFunction) error {
 	genericTxFunc := func(existing, desired runtime.Object) error {
 		for _, txFunc := range transitionFuncs {
-			if err := txFunc(existing.(*AccessLogCollection), desired.(*AccessLogCollection)); err != nil {
+			if err := txFunc(existing.(*AccessLogRecord), desired.(*AccessLogRecord)); err != nil {
 				return err
 			}
 		}
@@ -182,32 +182,32 @@ func (c *accessLogCollectionClient) UpsertAccessLogCollection(ctx context.Contex
 	return err
 }
 
-func (c *accessLogCollectionClient) UpdateAccessLogCollectionStatus(ctx context.Context, obj *AccessLogCollection, opts ...client.UpdateOption) error {
+func (c *accessLogRecordClient) UpdateAccessLogRecordStatus(ctx context.Context, obj *AccessLogRecord, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *accessLogCollectionClient) PatchAccessLogCollectionStatus(ctx context.Context, obj *AccessLogCollection, patch client.Patch, opts ...client.PatchOption) error {
+func (c *accessLogRecordClient) PatchAccessLogRecordStatus(ctx context.Context, obj *AccessLogRecord, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
-// Provides AccessLogCollectionClients for multiple clusters.
-type MulticlusterAccessLogCollectionClient interface {
-	// Cluster returns a AccessLogCollectionClient for the given cluster
-	Cluster(cluster string) (AccessLogCollectionClient, error)
+// Provides AccessLogRecordClients for multiple clusters.
+type MulticlusterAccessLogRecordClient interface {
+	// Cluster returns a AccessLogRecordClient for the given cluster
+	Cluster(cluster string) (AccessLogRecordClient, error)
 }
 
-type multiclusterAccessLogCollectionClient struct {
+type multiclusterAccessLogRecordClient struct {
 	client multicluster.Client
 }
 
-func NewMulticlusterAccessLogCollectionClient(client multicluster.Client) MulticlusterAccessLogCollectionClient {
-	return &multiclusterAccessLogCollectionClient{client: client}
+func NewMulticlusterAccessLogRecordClient(client multicluster.Client) MulticlusterAccessLogRecordClient {
+	return &multiclusterAccessLogRecordClient{client: client}
 }
 
-func (m *multiclusterAccessLogCollectionClient) Cluster(cluster string) (AccessLogCollectionClient, error) {
+func (m *multiclusterAccessLogRecordClient) Cluster(cluster string) (AccessLogRecordClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err
 	}
-	return NewAccessLogCollectionClient(client), nil
+	return NewAccessLogRecordClient(client), nil
 }

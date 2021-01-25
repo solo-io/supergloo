@@ -6,14 +6,14 @@ metadata:
   labels:
     app: gloo-mesh
     app.kubernetes.io/name: gloo-mesh
-  name: accesslogcollections.observability.enterprise.mesh.gloo.solo.io
+  name: accesslogrecords.observability.enterprise.mesh.gloo.solo.io
 spec:
   group: observability.enterprise.mesh.gloo.solo.io
   names:
-    kind: AccessLogCollection
-    listKind: AccessLogCollectionList
-    plural: accesslogcollections
-    singular: accesslogcollection
+    kind: AccessLogRecord
+    listKind: AccessLogRecordList
+    plural: accesslogrecords
+    singular: accesslogrecord
   preserveUnknownFields: false
   scope: Namespaced
   subresources:
@@ -23,13 +23,13 @@ spec:
       properties:
         spec:
           description: |-
-            Describes a collection of access logs sourced from a set of workloads and optionally
+            Describes a record of access logs sourced from a set of workloads and optionally
                filtered based on request criteria.
           properties:
             filters:
               description: |-
-                Configure criteria for determining which access logs will be collected.
-                The list is disjunctive, a request will be collected if it matches any filter.
+                Configure criteria for determining which access logs will be recorded.
+                The list is disjunctive, a request will be recorded if it matches any filter.
                 Leave empty to emit all access logs.
               items:
                 properties:
@@ -117,7 +117,7 @@ spec:
               type: array
             observedGeneration:
               description: |-
-                The most recent generation observed in the the AccessLogCollection metadata.
+                The most recent generation observed in the the AccessLogRecord metadata.
                 If the observedGeneration does not match generation, the controller has not processed the most
                 recent version of this resource.
               format: int64
@@ -133,7 +133,7 @@ spec:
               - FAILED
               type: string
             workloads:
-              description: references to workloads that this AccessLogCollection applies to
+              description: references to workloads that this AccessLogRecord applies to
               items:
                 properties:
                   name:

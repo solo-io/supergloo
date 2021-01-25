@@ -8,14 +8,14 @@ import (
 	proto "github.com/golang/protobuf/proto"
 )
 
-// DeepCopyInto for the AccessLogCollection.Spec
-func (in *AccessLogCollectionSpec) DeepCopyInto(out *AccessLogCollectionSpec) {
-	p := proto.Clone(in).(*AccessLogCollectionSpec)
+// DeepCopyInto for the AccessLogRecord.Spec
+func (in *AccessLogRecordSpec) DeepCopyInto(out *AccessLogRecordSpec) {
+	p := proto.Clone(in).(*AccessLogRecordSpec)
 	*out = *p
 }
 
-// DeepCopyInto for the AccessLogCollection.Status
-func (in *AccessLogCollectionStatus) DeepCopyInto(out *AccessLogCollectionStatus) {
-	p := proto.Clone(in).(*AccessLogCollectionStatus)
+// DeepCopyInto for the AccessLogRecord.Status
+func (in *AccessLogRecordStatus) DeepCopyInto(out *AccessLogRecordStatus) {
+	p := proto.Clone(in).(*AccessLogRecordStatus)
 	*out = *p
 }

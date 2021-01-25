@@ -18,73 +18,73 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// Reconcile Upsert events for the AccessLogCollection Resource across clusters.
+// Reconcile Upsert events for the AccessLogRecord Resource across clusters.
 // implemented by the user
-type MulticlusterAccessLogCollectionReconciler interface {
-	ReconcileAccessLogCollection(clusterName string, obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) (reconcile.Result, error)
+type MulticlusterAccessLogRecordReconciler interface {
+	ReconcileAccessLogRecord(clusterName string, obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) (reconcile.Result, error)
 }
 
-// Reconcile deletion events for the AccessLogCollection Resource across clusters.
+// Reconcile deletion events for the AccessLogRecord Resource across clusters.
 // Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
 // before being deleted.
 // implemented by the user
-type MulticlusterAccessLogCollectionDeletionReconciler interface {
-	ReconcileAccessLogCollectionDeletion(clusterName string, req reconcile.Request) error
+type MulticlusterAccessLogRecordDeletionReconciler interface {
+	ReconcileAccessLogRecordDeletion(clusterName string, req reconcile.Request) error
 }
 
-type MulticlusterAccessLogCollectionReconcilerFuncs struct {
-	OnReconcileAccessLogCollection         func(clusterName string, obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) (reconcile.Result, error)
-	OnReconcileAccessLogCollectionDeletion func(clusterName string, req reconcile.Request) error
+type MulticlusterAccessLogRecordReconcilerFuncs struct {
+	OnReconcileAccessLogRecord         func(clusterName string, obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) (reconcile.Result, error)
+	OnReconcileAccessLogRecordDeletion func(clusterName string, req reconcile.Request) error
 }
 
-func (f *MulticlusterAccessLogCollectionReconcilerFuncs) ReconcileAccessLogCollection(clusterName string, obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection) (reconcile.Result, error) {
-	if f.OnReconcileAccessLogCollection == nil {
+func (f *MulticlusterAccessLogRecordReconcilerFuncs) ReconcileAccessLogRecord(clusterName string, obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) (reconcile.Result, error) {
+	if f.OnReconcileAccessLogRecord == nil {
 		return reconcile.Result{}, nil
 	}
-	return f.OnReconcileAccessLogCollection(clusterName, obj)
+	return f.OnReconcileAccessLogRecord(clusterName, obj)
 }
 
-func (f *MulticlusterAccessLogCollectionReconcilerFuncs) ReconcileAccessLogCollectionDeletion(clusterName string, req reconcile.Request) error {
-	if f.OnReconcileAccessLogCollectionDeletion == nil {
+func (f *MulticlusterAccessLogRecordReconcilerFuncs) ReconcileAccessLogRecordDeletion(clusterName string, req reconcile.Request) error {
+	if f.OnReconcileAccessLogRecordDeletion == nil {
 		return nil
 	}
-	return f.OnReconcileAccessLogCollectionDeletion(clusterName, req)
+	return f.OnReconcileAccessLogRecordDeletion(clusterName, req)
 }
 
-type MulticlusterAccessLogCollectionReconcileLoop interface {
-	// AddMulticlusterAccessLogCollectionReconciler adds a MulticlusterAccessLogCollectionReconciler to the MulticlusterAccessLogCollectionReconcileLoop.
-	AddMulticlusterAccessLogCollectionReconciler(ctx context.Context, rec MulticlusterAccessLogCollectionReconciler, predicates ...predicate.Predicate)
+type MulticlusterAccessLogRecordReconcileLoop interface {
+	// AddMulticlusterAccessLogRecordReconciler adds a MulticlusterAccessLogRecordReconciler to the MulticlusterAccessLogRecordReconcileLoop.
+	AddMulticlusterAccessLogRecordReconciler(ctx context.Context, rec MulticlusterAccessLogRecordReconciler, predicates ...predicate.Predicate)
 }
 
-type multiclusterAccessLogCollectionReconcileLoop struct {
+type multiclusterAccessLogRecordReconcileLoop struct {
 	loop multicluster.Loop
 }
 
-func (m *multiclusterAccessLogCollectionReconcileLoop) AddMulticlusterAccessLogCollectionReconciler(ctx context.Context, rec MulticlusterAccessLogCollectionReconciler, predicates ...predicate.Predicate) {
-	genericReconciler := genericAccessLogCollectionMulticlusterReconciler{reconciler: rec}
+func (m *multiclusterAccessLogRecordReconcileLoop) AddMulticlusterAccessLogRecordReconciler(ctx context.Context, rec MulticlusterAccessLogRecordReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericAccessLogRecordMulticlusterReconciler{reconciler: rec}
 
 	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
 }
 
-func NewMulticlusterAccessLogCollectionReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterAccessLogCollectionReconcileLoop {
-	return &multiclusterAccessLogCollectionReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection{}, options)}
+func NewMulticlusterAccessLogRecordReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterAccessLogRecordReconcileLoop {
+	return &multiclusterAccessLogRecordReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord{}, options)}
 }
 
-type genericAccessLogCollectionMulticlusterReconciler struct {
-	reconciler MulticlusterAccessLogCollectionReconciler
+type genericAccessLogRecordMulticlusterReconciler struct {
+	reconciler MulticlusterAccessLogRecordReconciler
 }
 
-func (g genericAccessLogCollectionMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
-	if deletionReconciler, ok := g.reconciler.(MulticlusterAccessLogCollectionDeletionReconciler); ok {
-		return deletionReconciler.ReconcileAccessLogCollectionDeletion(cluster, req)
+func (g genericAccessLogRecordMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterAccessLogRecordDeletionReconciler); ok {
+		return deletionReconciler.ReconcileAccessLogRecordDeletion(cluster, req)
 	}
 	return nil
 }
 
-func (g genericAccessLogCollectionMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
-	obj, ok := object.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogCollection)
+func (g genericAccessLogRecordMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord)
 	if !ok {
-		return reconcile.Result{}, errors.Errorf("internal error: AccessLogCollection handler received event for %T", object)
+		return reconcile.Result{}, errors.Errorf("internal error: AccessLogRecord handler received event for %T", object)
 	}
-	return g.reconciler.ReconcileAccessLogCollection(cluster, obj)
+	return g.reconciler.ReconcileAccessLogRecord(cluster, obj)
 }

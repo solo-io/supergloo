@@ -15,117 +15,117 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockMulticlusterAccessLogCollectionReconciler is a mock of MulticlusterAccessLogCollectionReconciler interface
-type MockMulticlusterAccessLogCollectionReconciler struct {
+// MockMulticlusterAccessLogRecordReconciler is a mock of MulticlusterAccessLogRecordReconciler interface
+type MockMulticlusterAccessLogRecordReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockMulticlusterAccessLogCollectionReconcilerMockRecorder
+	recorder *MockMulticlusterAccessLogRecordReconcilerMockRecorder
 }
 
-// MockMulticlusterAccessLogCollectionReconcilerMockRecorder is the mock recorder for MockMulticlusterAccessLogCollectionReconciler
-type MockMulticlusterAccessLogCollectionReconcilerMockRecorder struct {
-	mock *MockMulticlusterAccessLogCollectionReconciler
+// MockMulticlusterAccessLogRecordReconcilerMockRecorder is the mock recorder for MockMulticlusterAccessLogRecordReconciler
+type MockMulticlusterAccessLogRecordReconcilerMockRecorder struct {
+	mock *MockMulticlusterAccessLogRecordReconciler
 }
 
-// NewMockMulticlusterAccessLogCollectionReconciler creates a new mock instance
-func NewMockMulticlusterAccessLogCollectionReconciler(ctrl *gomock.Controller) *MockMulticlusterAccessLogCollectionReconciler {
-	mock := &MockMulticlusterAccessLogCollectionReconciler{ctrl: ctrl}
-	mock.recorder = &MockMulticlusterAccessLogCollectionReconcilerMockRecorder{mock}
+// NewMockMulticlusterAccessLogRecordReconciler creates a new mock instance
+func NewMockMulticlusterAccessLogRecordReconciler(ctrl *gomock.Controller) *MockMulticlusterAccessLogRecordReconciler {
+	mock := &MockMulticlusterAccessLogRecordReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterAccessLogRecordReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMulticlusterAccessLogCollectionReconciler) EXPECT() *MockMulticlusterAccessLogCollectionReconcilerMockRecorder {
+func (m *MockMulticlusterAccessLogRecordReconciler) EXPECT() *MockMulticlusterAccessLogRecordReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileAccessLogCollection mocks base method
-func (m *MockMulticlusterAccessLogCollectionReconciler) ReconcileAccessLogCollection(clusterName string, obj *v1alpha1.AccessLogCollection) (reconcile.Result, error) {
+// ReconcileAccessLogRecord mocks base method
+func (m *MockMulticlusterAccessLogRecordReconciler) ReconcileAccessLogRecord(clusterName string, obj *v1alpha1.AccessLogRecord) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileAccessLogCollection", clusterName, obj)
+	ret := m.ctrl.Call(m, "ReconcileAccessLogRecord", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ReconcileAccessLogCollection indicates an expected call of ReconcileAccessLogCollection
-func (mr *MockMulticlusterAccessLogCollectionReconcilerMockRecorder) ReconcileAccessLogCollection(clusterName, obj interface{}) *gomock.Call {
+// ReconcileAccessLogRecord indicates an expected call of ReconcileAccessLogRecord
+func (mr *MockMulticlusterAccessLogRecordReconcilerMockRecorder) ReconcileAccessLogRecord(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAccessLogCollection", reflect.TypeOf((*MockMulticlusterAccessLogCollectionReconciler)(nil).ReconcileAccessLogCollection), clusterName, obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAccessLogRecord", reflect.TypeOf((*MockMulticlusterAccessLogRecordReconciler)(nil).ReconcileAccessLogRecord), clusterName, obj)
 }
 
-// MockMulticlusterAccessLogCollectionDeletionReconciler is a mock of MulticlusterAccessLogCollectionDeletionReconciler interface
-type MockMulticlusterAccessLogCollectionDeletionReconciler struct {
+// MockMulticlusterAccessLogRecordDeletionReconciler is a mock of MulticlusterAccessLogRecordDeletionReconciler interface
+type MockMulticlusterAccessLogRecordDeletionReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockMulticlusterAccessLogCollectionDeletionReconcilerMockRecorder
+	recorder *MockMulticlusterAccessLogRecordDeletionReconcilerMockRecorder
 }
 
-// MockMulticlusterAccessLogCollectionDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterAccessLogCollectionDeletionReconciler
-type MockMulticlusterAccessLogCollectionDeletionReconcilerMockRecorder struct {
-	mock *MockMulticlusterAccessLogCollectionDeletionReconciler
+// MockMulticlusterAccessLogRecordDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterAccessLogRecordDeletionReconciler
+type MockMulticlusterAccessLogRecordDeletionReconcilerMockRecorder struct {
+	mock *MockMulticlusterAccessLogRecordDeletionReconciler
 }
 
-// NewMockMulticlusterAccessLogCollectionDeletionReconciler creates a new mock instance
-func NewMockMulticlusterAccessLogCollectionDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterAccessLogCollectionDeletionReconciler {
-	mock := &MockMulticlusterAccessLogCollectionDeletionReconciler{ctrl: ctrl}
-	mock.recorder = &MockMulticlusterAccessLogCollectionDeletionReconcilerMockRecorder{mock}
+// NewMockMulticlusterAccessLogRecordDeletionReconciler creates a new mock instance
+func NewMockMulticlusterAccessLogRecordDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterAccessLogRecordDeletionReconciler {
+	mock := &MockMulticlusterAccessLogRecordDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterAccessLogRecordDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMulticlusterAccessLogCollectionDeletionReconciler) EXPECT() *MockMulticlusterAccessLogCollectionDeletionReconcilerMockRecorder {
+func (m *MockMulticlusterAccessLogRecordDeletionReconciler) EXPECT() *MockMulticlusterAccessLogRecordDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileAccessLogCollectionDeletion mocks base method
-func (m *MockMulticlusterAccessLogCollectionDeletionReconciler) ReconcileAccessLogCollectionDeletion(clusterName string, req reconcile.Request) error {
+// ReconcileAccessLogRecordDeletion mocks base method
+func (m *MockMulticlusterAccessLogRecordDeletionReconciler) ReconcileAccessLogRecordDeletion(clusterName string, req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileAccessLogCollectionDeletion", clusterName, req)
+	ret := m.ctrl.Call(m, "ReconcileAccessLogRecordDeletion", clusterName, req)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ReconcileAccessLogCollectionDeletion indicates an expected call of ReconcileAccessLogCollectionDeletion
-func (mr *MockMulticlusterAccessLogCollectionDeletionReconcilerMockRecorder) ReconcileAccessLogCollectionDeletion(clusterName, req interface{}) *gomock.Call {
+// ReconcileAccessLogRecordDeletion indicates an expected call of ReconcileAccessLogRecordDeletion
+func (mr *MockMulticlusterAccessLogRecordDeletionReconcilerMockRecorder) ReconcileAccessLogRecordDeletion(clusterName, req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAccessLogCollectionDeletion", reflect.TypeOf((*MockMulticlusterAccessLogCollectionDeletionReconciler)(nil).ReconcileAccessLogCollectionDeletion), clusterName, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileAccessLogRecordDeletion", reflect.TypeOf((*MockMulticlusterAccessLogRecordDeletionReconciler)(nil).ReconcileAccessLogRecordDeletion), clusterName, req)
 }
 
-// MockMulticlusterAccessLogCollectionReconcileLoop is a mock of MulticlusterAccessLogCollectionReconcileLoop interface
-type MockMulticlusterAccessLogCollectionReconcileLoop struct {
+// MockMulticlusterAccessLogRecordReconcileLoop is a mock of MulticlusterAccessLogRecordReconcileLoop interface
+type MockMulticlusterAccessLogRecordReconcileLoop struct {
 	ctrl     *gomock.Controller
-	recorder *MockMulticlusterAccessLogCollectionReconcileLoopMockRecorder
+	recorder *MockMulticlusterAccessLogRecordReconcileLoopMockRecorder
 }
 
-// MockMulticlusterAccessLogCollectionReconcileLoopMockRecorder is the mock recorder for MockMulticlusterAccessLogCollectionReconcileLoop
-type MockMulticlusterAccessLogCollectionReconcileLoopMockRecorder struct {
-	mock *MockMulticlusterAccessLogCollectionReconcileLoop
+// MockMulticlusterAccessLogRecordReconcileLoopMockRecorder is the mock recorder for MockMulticlusterAccessLogRecordReconcileLoop
+type MockMulticlusterAccessLogRecordReconcileLoopMockRecorder struct {
+	mock *MockMulticlusterAccessLogRecordReconcileLoop
 }
 
-// NewMockMulticlusterAccessLogCollectionReconcileLoop creates a new mock instance
-func NewMockMulticlusterAccessLogCollectionReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterAccessLogCollectionReconcileLoop {
-	mock := &MockMulticlusterAccessLogCollectionReconcileLoop{ctrl: ctrl}
-	mock.recorder = &MockMulticlusterAccessLogCollectionReconcileLoopMockRecorder{mock}
+// NewMockMulticlusterAccessLogRecordReconcileLoop creates a new mock instance
+func NewMockMulticlusterAccessLogRecordReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterAccessLogRecordReconcileLoop {
+	mock := &MockMulticlusterAccessLogRecordReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterAccessLogRecordReconcileLoopMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMulticlusterAccessLogCollectionReconcileLoop) EXPECT() *MockMulticlusterAccessLogCollectionReconcileLoopMockRecorder {
+func (m *MockMulticlusterAccessLogRecordReconcileLoop) EXPECT() *MockMulticlusterAccessLogRecordReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// AddMulticlusterAccessLogCollectionReconciler mocks base method
-func (m *MockMulticlusterAccessLogCollectionReconcileLoop) AddMulticlusterAccessLogCollectionReconciler(ctx context.Context, rec controller.MulticlusterAccessLogCollectionReconciler, predicates ...predicate.Predicate) {
+// AddMulticlusterAccessLogRecordReconciler mocks base method
+func (m *MockMulticlusterAccessLogRecordReconcileLoop) AddMulticlusterAccessLogRecordReconciler(ctx context.Context, rec controller.MulticlusterAccessLogRecordReconciler, predicates ...predicate.Predicate) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
 	for _, a := range predicates {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddMulticlusterAccessLogCollectionReconciler", varargs...)
+	m.ctrl.Call(m, "AddMulticlusterAccessLogRecordReconciler", varargs...)
 }
 
-// AddMulticlusterAccessLogCollectionReconciler indicates an expected call of AddMulticlusterAccessLogCollectionReconciler
-func (mr *MockMulticlusterAccessLogCollectionReconcileLoopMockRecorder) AddMulticlusterAccessLogCollectionReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+// AddMulticlusterAccessLogRecordReconciler indicates an expected call of AddMulticlusterAccessLogRecordReconciler
+func (mr *MockMulticlusterAccessLogRecordReconcileLoopMockRecorder) AddMulticlusterAccessLogRecordReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterAccessLogCollectionReconciler", reflect.TypeOf((*MockMulticlusterAccessLogCollectionReconcileLoop)(nil).AddMulticlusterAccessLogCollectionReconciler), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterAccessLogRecordReconciler", reflect.TypeOf((*MockMulticlusterAccessLogRecordReconcileLoop)(nil).AddMulticlusterAccessLogRecordReconciler), varargs...)
 }

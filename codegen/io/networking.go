@@ -48,7 +48,7 @@ var (
 			Group:   "observability.enterprise." + constants.GlooMeshApiGroupSuffix,
 			Version: "v1alpha1",
 		}: {
-			"AccessLogCollection",
+			"AccessLogRecord",
 		},
 		skv1alpha1.SchemeGroupVersion: {
 			"KubernetesCluster",

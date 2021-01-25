@@ -973,21 +973,21 @@ spec:
           type: object
         status:
           properties:
-            appliedAccessLogCollections:
-              description: The set of AccessLogCollections that have been applied to this Workload.
+            appliedAccessLogRecords:
+              description: The set of AccessLogRecords that have been applied to this Workload.
               items:
                 properties:
                   errors:
-                    description: any errors encountered while processing the referenced AccessLogCollection object
+                    description: any errors encountered while processing the referenced AccessLogRecord object
                     items:
                       type: string
                     type: array
                   observedGeneration:
-                    description: the observed generation of the accepted AccessLogCollection.
+                    description: the observed generation of the accepted AccessLogRecord.
                     format: int64
                     type: integer
                   ref:
-                    description: reference to the AccessLogCollection object.
+                    description: reference to the AccessLogRecord object.
                     properties:
                       name:
                         description: name of the resource being referenced

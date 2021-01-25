@@ -110,17 +110,17 @@ func (m *WorkloadStatus) Equal(that interface{}) bool {
 		return false
 	}
 
-	if len(m.GetAppliedAccessLogCollections()) != len(target.GetAppliedAccessLogCollections()) {
+	if len(m.GetAppliedAccessLogRecords()) != len(target.GetAppliedAccessLogRecords()) {
 		return false
 	}
-	for idx, v := range m.GetAppliedAccessLogCollections() {
+	for idx, v := range m.GetAppliedAccessLogRecords() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetAppliedAccessLogCollections()[idx]) {
+			if !h.Equal(target.GetAppliedAccessLogRecords()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetAppliedAccessLogCollections()[idx]) {
+			if !proto.Equal(v, target.GetAppliedAccessLogRecords()[idx]) {
 				return false
 			}
 		}
@@ -274,14 +274,14 @@ func (m *WorkloadSpec_AppMesh_ContainerPort) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *WorkloadStatus_AppliedAccessLogCollection) Equal(that interface{}) bool {
+func (m *WorkloadStatus_AppliedAccessLogRecord) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*WorkloadStatus_AppliedAccessLogCollection)
+	target, ok := that.(*WorkloadStatus_AppliedAccessLogRecord)
 	if !ok {
-		that2, ok := that.(WorkloadStatus_AppliedAccessLogCollection)
+		that2, ok := that.(WorkloadStatus_AppliedAccessLogRecord)
 		if ok {
 			target = &that2
 		} else {

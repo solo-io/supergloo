@@ -8,9 +8,9 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
-// Generated Deepcopy methods for AccessLogCollection
+// Generated Deepcopy methods for AccessLogRecord
 
-func (in *AccessLogCollection) DeepCopyInto(out *AccessLogCollection) {
+func (in *AccessLogRecord) DeepCopyInto(out *AccessLogRecord) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
@@ -23,29 +23,29 @@ func (in *AccessLogCollection) DeepCopyInto(out *AccessLogCollection) {
 	return
 }
 
-func (in *AccessLogCollection) DeepCopy() *AccessLogCollection {
+func (in *AccessLogRecord) DeepCopy() *AccessLogRecord {
 	if in == nil {
 		return nil
 	}
-	out := new(AccessLogCollection)
+	out := new(AccessLogRecord)
 	in.DeepCopyInto(out)
 	return out
 }
 
-func (in *AccessLogCollection) DeepCopyObject() runtime.Object {
+func (in *AccessLogRecord) DeepCopyObject() runtime.Object {
 	if c := in.DeepCopy(); c != nil {
 		return c
 	}
 	return nil
 }
 
-func (in *AccessLogCollectionList) DeepCopyInto(out *AccessLogCollectionList) {
+func (in *AccessLogRecordList) DeepCopyInto(out *AccessLogRecordList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
-		*out = make([]AccessLogCollection, len(*in))
+		*out = make([]AccessLogRecord, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -53,16 +53,16 @@ func (in *AccessLogCollectionList) DeepCopyInto(out *AccessLogCollectionList) {
 	return
 }
 
-func (in *AccessLogCollectionList) DeepCopy() *AccessLogCollectionList {
+func (in *AccessLogRecordList) DeepCopy() *AccessLogRecordList {
 	if in == nil {
 		return nil
 	}
-	out := new(AccessLogCollectionList)
+	out := new(AccessLogRecordList)
 	in.DeepCopyInto(out)
 	return out
 }
 
-func (in *AccessLogCollectionList) DeepCopyObject() runtime.Object {
+func (in *AccessLogRecordList) DeepCopyObject() runtime.Object {
 	if c := in.DeepCopy(); c != nil {
 		return c
 	}

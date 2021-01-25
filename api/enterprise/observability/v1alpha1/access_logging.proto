@@ -10,21 +10,21 @@ import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "api/common/v1alpha1/request_matchers.proto";
 
 /*
-    Describes a collection of access logs sourced from a set of workloads and optionally
+    Describes a record of access logs sourced from a set of workloads and optionally
     filtered based on request criteria.
 */
-message AccessLogCollectionSpec {
+message AccessLogRecordSpec {
 
     // Select the workloads to be configured to emit access logs.
     // Leave empty to apply to all workloads managed by Gloo Mesh.
     repeated .networking.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 1;
 
-    // Configure criteria for determining which access logs will be collected.
-    // The list is disjunctive, a request will be collected if it matches any filter.
+    // Configure criteria for determining which access logs will be recorded.
+    // The list is disjunctive, a request will be recorded if it matches any filter.
     // Leave empty to emit all access logs.
     repeated Filter filters = 2;
 
-    // Specify criteria for collecting access logs. A request must match all specified criteria to be collected.
+    // Specify criteria for recording access logs. A request must match all specified criteria to be recorded.
     message Filter {
         // Matches against a response status code. Omit to match any status code.
         .common.mesh.gloo.solo.io.StatusCodeMatcher status_code_matcher = 1;
@@ -34,9 +34,9 @@ message AccessLogCollectionSpec {
     }
 }
 
-message AccessLogCollectionStatus {
+message AccessLogRecordStatus {
 
-    // The most recent generation observed in the the AccessLogCollection metadata.
+    // The most recent generation observed in the the AccessLogRecord metadata.
     // If the observedGeneration does not match generation, the controller has not processed the most
     // recent version of this resource.
     int64 observed_generation = 1;
@@ -48,6 +48,6 @@ message AccessLogCollectionStatus {
     // Any errors encountered during processing. Also reported to any Workloads that this object applies to.
     repeated string errors = 3;
 
-    // references to workloads that this AccessLogCollection applies to
+    // references to workloads that this AccessLogRecord applies to
     repeated .core.skv2.solo.io.ObjectRef workloads = 4;
 }

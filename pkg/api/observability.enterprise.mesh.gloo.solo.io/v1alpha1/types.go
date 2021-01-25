@@ -13,36 +13,36 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
-// GroupVersionKind for AccessLogCollection
-var AccessLogCollectionGVK = schema.GroupVersionKind{
+// GroupVersionKind for AccessLogRecord
+var AccessLogRecordGVK = schema.GroupVersionKind{
 	Group:   "observability.enterprise.mesh.gloo.solo.io",
 	Version: "v1alpha1",
-	Kind:    "AccessLogCollection",
+	Kind:    "AccessLogRecord",
 }
 
-// AccessLogCollection is the Schema for the accessLogCollection API
-type AccessLogCollection struct {
+// AccessLogRecord is the Schema for the accessLogRecord API
+type AccessLogRecord struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   AccessLogCollectionSpec   `json:"spec,omitempty"`
-	Status AccessLogCollectionStatus `json:"status,omitempty"`
+	Spec   AccessLogRecordSpec   `json:"spec,omitempty"`
+	Status AccessLogRecordStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (AccessLogCollection) GVK() schema.GroupVersionKind {
-	return AccessLogCollectionGVK
+func (AccessLogRecord) GVK() schema.GroupVersionKind {
+	return AccessLogRecordGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// AccessLogCollectionList contains a list of AccessLogCollection
-type AccessLogCollectionList struct {
+// AccessLogRecordList contains a list of AccessLogRecord
+type AccessLogRecordList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []AccessLogCollection `json:"items"`
+	Items           []AccessLogRecord `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&AccessLogCollection{}, &AccessLogCollectionList{})
+	SchemeBuilder.Register(&AccessLogRecord{}, &AccessLogRecordList{})
 }
