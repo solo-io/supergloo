@@ -15,7 +15,11 @@ function create_kind_cluster() {
 
   cluster=$1
   port=$2
-  # Set the network to the 1 or 2 for flat networking purposes
+  # Set the network suffix based on the ingress port.
+  # The ingress port params are either 32000, or 32001, so this will either be 1 or 2.
+  # This number will the be used to construct the subnet.
+  # For example: 10.96.${net}.0/24
+  # This value will be used to cordon off, and later join the different pod subnets of the multiple clusters.
   ((net=$port%32000+1))
 
   echo "creating cluster ${cluster} with ingress port ${port}"
@@ -97,8 +101,10 @@ EOF
 
     # Install metallb to each cluster. This is a bit of a "hack" to enable LoadBalancers in kind so that
     # the 2 clusters can directly communicate with each other.
+    # For more info on metallb see: https://metallb.org/
     ${K} apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/namespace.yaml
     ${K} apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/metallb.yaml
+    # Setup required memberlist config, see: https://github.com/hashicorp/memberlist
     ${K} -n metallb-system create secret generic memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
 
 
@@ -110,6 +116,7 @@ EOF
     ipkind=$(docker inspect ${cluster}-control-plane | jq -r '.[0].NetworkSettings.Networks[].IPAddress')
     networkkind=$(echo ${ipkind} | sed 's/.$//')
 
+    # Create the metallb address pool based on the cluster subnet
     cat << EOF | ${K} apply -f -
 apiVersion: v1
 kind: ConfigMap
@@ -137,7 +144,7 @@ function setup_flat_networking() {
   K_mgmt="kubectl --context=kind-${mgmt_cluster}"
   K_remote="kubectl --context=kind-${remote_cluster}"
 
-  # Set the network to the 1 or 2 for flat networking purposes
+  # Retrieve the subnets as defined by the setup_kind_cluster func above
   ((mgmt_net=$mgmt_port%32000+1))
   ((remote_net=$remote_port%32000+1))
 
@@ -146,6 +153,10 @@ function setup_flat_networking() {
 
   tmp=$(mktemp -d /tmp/gloo_mesh.XXXXXX)
 
+  # Configuration for calico bird. More info can be found here: https://github.com/BIRD/bird
+  # Example config can be found here: https://github.com/BIRD/bird/blob/master/doc/bird.conf.example
+  # Bird functions as the network "bridge" between the 2 local kind clusters, allowing the pods to communicate directly
+  # with each other
   cat << EOF > ${tmp}/bird.conf
 log syslog { debug, trace, info, remote, warning, error, auth, fatal, bug };
 log stderr all;
@@ -183,6 +194,13 @@ protocol bgp remote_cluster_ip {
 EOF
   docker run --rm -d --name bird -p 179:179 -v ${tmp}/bird.conf:/etc/bird/bird.conf --entrypoint='' --network=kind pierky/bird bird -c /etc/bird/bird.conf -d
   bird=$(docker inspect bird | jq -r '.[0].NetworkSettings.Networks.kind.IPAddress')
+
+  # The following 4 steps are done on both the management, and remote clusters to enable direct communication.
+  # In order to accomplish this they setup the routing protocol between them known as BGP, so that they are "discoverable"
+  # 1. A port is added to the calico-node
+  # 2. A BGP peer is added, which is the "discoverable" network node: https://docs.projectcalico.org/reference/resources/bgppeer
+  # 3. A BGP configuration is created with the available IPs for the cidr: https://docs.projectcalico.org/reference/resources/bgpconfig
+  # 4. An IPPool is added for the other clusters pod cidr: https://docs.projectcalico.org/reference/resources/ippool
   ${K_mgmt}  -n kube-system patch ds calico-node --type=json -p='[{"op": "add", "path": "/spec/template/spec/containers/0/ports", "value": [{"containerPort": 179}]}]'
   ${K_mgmt} apply -f - <<EOF
 apiVersion: v1
@@ -199,6 +217,7 @@ spec:
       nodePort: 31179
   type: NodePort
 EOF
+  # calicoctl doesn't support kube context as a param, so need to manually switch the context before using it.
   kubectl config use-context kind-${mgmt_cluster}
   # calicoctl needs to exist before using
   calicoctl apply -f - <<EOF
@@ -211,7 +230,6 @@ spec:
   asNumber: 64513
 EOF
 
-#  calicoctl delete BGPConfiguration default
   calicoctl apply -f - <<EOF
  apiVersion: projectcalico.org/v3
  kind: BGPConfiguration
@@ -233,6 +251,7 @@ spec:
   cidr: 10.96.${remote_net}.0/24
   disabled: true
 EOF
+
   ${K_remote} -n kube-system patch ds calico-node --type=json -p='[{"op": "add", "path": "/spec/template/spec/containers/0/ports", "value": [{"containerPort": 179}]}]'
   ${K_remote} apply -f - <<EOF
 apiVersion: v1

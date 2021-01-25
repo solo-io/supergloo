@@ -46,6 +46,7 @@ func SetupClustersAndFederation(customDeployFuc func()) {
 	FederateClusters(dynamicClient, false)
 }
 
+// exported for use in enterprise
 func FederateClusters(dynamicClient client.Client, flatNetwork bool) {
 	VirtualMesh, err = data.SelfSignedVirtualMesh(
 		dynamicClient,

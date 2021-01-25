@@ -346,6 +346,8 @@ func updateTrafficTargetFederationStatus(
 	}
 }
 
+// ServicesForMesh returns all TrafficTargets which belong to a given mesh
+// exported for use in enterprise
 func ServicesForMesh(
 	mesh *discoveryv1alpha2.Mesh,
 	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
@@ -416,6 +418,7 @@ func buildTcpRewritePatchAsConfig(clusterName, clusterDomain, federatedHostnameS
 }
 
 // ConvertKubePortProtocol converts protocol of k8s Service port to application level protocol
+// exported for use in enterprise
 func ConvertKubePortProtocol(port *discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort) string {
 	var appProtocol *string
 	if port.AppProtocol != "" {
