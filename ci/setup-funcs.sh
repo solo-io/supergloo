@@ -344,7 +344,7 @@ function register_cluster() {
   # INSTALL_WASM_AGENT=1
   # WASM_AGENT_CHART=<path to chart>
   if [ "${INSTALL_WASM_AGENT}" == "1" ]; then
-    EXTRA_FLAGS="--install-wasm-agent --wasm-agent-chart-file=${WASM_AGENT_CHART}"
+    EXTRA_FLAGS="--install-wasm-agent --wasm-agent-chart-file=${WASM_AGENT_CHART} --wasm-agent-chart-values=${WASM_AGENT_CHART_VALUES}"
   fi
 
   go run "${PROJECT_ROOT}/cmd/meshctl/main.go" cluster register \
