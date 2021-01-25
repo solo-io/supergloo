@@ -116,9 +116,9 @@ var _ = Describe("TrafficTargetDetector", func() {
 		meshes := v1alpha2sets.NewMeshSet()
 		svc := makeService()
 
-		detector := NewTrafficTargetDetector(ctx)
+		detector := NewTrafficTargetDetector()
 
-		trafficTarget := detector.DetectTrafficTarget(svc, endpoints, workloads, meshes, virtualMeshes)
+		trafficTarget := detector.DetectTrafficTarget(ctx, svc, endpoints, workloads, meshes, virtualMeshes)
 
 		Expect(trafficTarget).To(Equal(&v1alpha2.TrafficTarget{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
@@ -194,9 +194,9 @@ var _ = Describe("TrafficTargetDetector", func() {
 		meshes := v1alpha2sets.NewMeshSet()
 		svc := makeService()
 
-		detector := NewTrafficTargetDetector(ctx)
+		detector := NewTrafficTargetDetector()
 
-		trafficTarget := detector.DetectTrafficTarget(svc, endpoints, workloads, meshes, virtualMeshes)
+		trafficTarget := detector.DetectTrafficTarget(ctx, svc, endpoints, workloads, meshes, virtualMeshes)
 
 		Expect(trafficTarget).To(Equal(&v1alpha2.TrafficTarget{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
@@ -268,9 +268,9 @@ var _ = Describe("TrafficTargetDetector", func() {
 			DiscoveryMeshAnnotation: "true",
 		}
 
-		detector := NewTrafficTargetDetector(ctx)
+		detector := NewTrafficTargetDetector()
 
-		trafficTarget := detector.DetectTrafficTarget(svc, endpoints, workloads, meshes, virtualMeshes)
+		trafficTarget := detector.DetectTrafficTarget(ctx, svc, endpoints, workloads, meshes, virtualMeshes)
 
 		Expect(trafficTarget).To(Equal(&v1alpha2.TrafficTarget{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
