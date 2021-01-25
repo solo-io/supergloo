@@ -33,10 +33,10 @@ func (i Uninstaller) UninstallCertAgent(
 	return i.uninstall(ctx, certAgentReleaseName)
 }
 
-func (i Uninstaller) UninstallWasmAgent(
+func (i Uninstaller) UninstallEnterpriseAgent(
 	ctx context.Context,
 ) error {
-	return i.uninstall(ctx, wasmAgentReleaseName)
+	return i.uninstall(ctx, enterpriseAgentReleaseName)
 }
 
 func (i Uninstaller) uninstall(

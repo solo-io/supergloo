@@ -341,10 +341,10 @@ function register_cluster() {
   EXTRA_FLAGS=""
   # used by enterprise e2e test setup
   # expects the following env set:
-  # INSTALL_WASM_AGENT=1
-  # WASM_AGENT_CHART=<path to chart>
-  if [ "${INSTALL_WASM_AGENT}" == "1" ]; then
-    EXTRA_FLAGS="--install-wasm-agent --wasm-agent-chart-file=${WASM_AGENT_CHART} --wasm-agent-chart-values=${WASM_AGENT_CHART_VALUES}"
+  # INSTALL_ENTERPRISE_AGENT=1
+  # ENTERPRISE_AGENT_CHART=<path to chart>
+  if [ "${INSTALL_ENTERPRISE_AGENT}" == "1" ]; then
+    EXTRA_FLAGS="--install-enterprise-agent --enterprise-agent-chart-file=${ENTERPRISE_AGENT_CHART} --enterprise-agent-chart-values=${ENTERPRISE_AGENT_CHART_VALUES}"
   fi
 
   go run "${PROJECT_ROOT}/cmd/meshctl/main.go" cluster register \

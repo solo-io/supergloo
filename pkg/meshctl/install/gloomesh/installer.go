@@ -15,12 +15,12 @@ const (
 	CertAgentChartUriTemplate          = GlooMeshRepoURI + "/cert-agent/cert-agent-%s.tgz"
 	GlooMeshEnterpriseRepoURI          = "https://storage.googleapis.com/gloo-mesh-enterprise"
 	GlooMeshEnterpriseChartUriTemplate = GlooMeshEnterpriseRepoURI + "/gloo-mesh-enterprise/gloo-mesh-enterprise-%s.tgz"
-	WasmAgentChartUriTemplate          = GlooMeshEnterpriseRepoURI + "/wasm-agent/wasm-agent-%s.tgz"
+	EnterpriseAgentChartUriTemplate          = GlooMeshEnterpriseRepoURI + "/enterprise-agent/enterprise-agent-%s.tgz"
 	GlooMeshReleaseName                = "gloo-mesh"
 	GlooMeshEnterpriseReleaseName      = "gloo-mesh-enterprise"
 	agentCrdsReleaseName               = "agent-crds"
 	certAgentReleaseName               = "cert-agent"
-	wasmAgentReleaseName               = "wasm-agent"
+	enterpriseAgentReleaseName               = "enterprise-agent"
 )
 
 type Installer struct {
@@ -59,10 +59,10 @@ func (i Installer) InstallCertAgent(
 	return i.install(ctx, CertAgentChartUriTemplate, certAgentReleaseName)
 }
 
-func (i Installer) InstallWasmAgent(
+func (i Installer) InstallEnterpriseAgent(
 	ctx context.Context,
 ) error {
-	return i.install(ctx, WasmAgentChartUriTemplate, wasmAgentReleaseName)
+	return i.install(ctx, EnterpriseAgentChartUriTemplate, enterpriseAgentReleaseName)
 }
 
 func (i Installer) install(

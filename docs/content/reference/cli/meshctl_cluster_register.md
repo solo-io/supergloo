@@ -25,13 +25,13 @@ meshctl cluster register [flags]
       --cluster-name string              name of the cluster to register
       --federation-namespace string      namespace of the Gloo Mesh control plane in which the secret for the registered cluster will be created (default "gloo-mesh")
   -h, --help                             help for register
-      --install-wasm-agent               If true, install the wasm-agent on the cluster being registered if Enterprise Networking is detected. (default true)
+      --install-enterprise-agent               If true, install the enterprise-agent on the cluster being registered if Enterprise Networking is detected. (default true)
       --kubeconfig string                path to the kubeconfig from which the registered cluster will be accessed
       --mgmt-context string              name of the kubeconfig context to use for the management cluster
       --remote-context string            name of the kubeconfig context to use for the remote cluster
       --remote-namespace string          namespace in the target cluster where a service account enabling remote access will be created. If the namespace does not exist it will be created. (default "gloo-mesh")
-      --wasm-agent-chart-file string     Path to a local Helm chart for installing the Wasm Agent. If unset, this command will install the Wasm Agent from the publicly released Helm chart.
-      --wasm-agent-chart-values string   Path to a Helm values.yaml file for customizing the installation of the Wasm Agent. If unset, this command will install the Wasm Agent with default Helm values.
+      --enterprise-agent-chart-file string     Path to a local Helm chart for installing the Enterprise Agent. If unset, this command will install the Wasm Agent from the publicly released Helm chart.
+      --enterprise-agent-chart-values string   Path to a Helm values.yaml file for customizing the installation of the Enterprise Agent. If unset, this command will install the Wasm Agent with default Helm values.
 ```
 
 ### Options inherited from parent commands

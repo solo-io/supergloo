@@ -39,7 +39,7 @@ type RegistrantOptions struct {
 	Registration       register.RegistrationOptions
 	AgentCrdsChartPath string
 	CertAgent          AgentInstallOptions
-	WasmAgent          AgentInstallOptions
+	EnterpriseAgent          AgentInstallOptions
 	Verbose            bool
 }
 
@@ -79,7 +79,7 @@ func NewRegistrant(opts *RegistrantOptions) (*Registrant, error) {
 	return registrant, nil
 }
 
-// Options for installing agents (cert-agent, wasm-agent)
+// Options for installing agents (cert-agent, enterprise-agent)
 type AgentInstallOptions struct {
 	Install     bool // If true, install the agent
 	ChartPath   string
@@ -97,20 +97,20 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 		return err
 	}
 
-	// Users can opt out of installing the Wasm Agent since it's only required for the WasmDeployment API.
-	if r.WasmAgent.Install {
+	// Users can opt out of installing the Enterprise Agent since it's only required for the WasmDeployment API.
+	if r.EnterpriseAgent.Install {
 		enterpriseNetworkingVersion, err := enterprise.GetEnterpriseNetworkingVersion(ctx, r.KubeConfigPath, r.MgmtContext)
 		if err != nil {
 			return err
 		}
 
 		// If Enterprise Networking is present or the user explicitly provided a chart path, install the agent.
-		if enterpriseNetworkingVersion != "" || r.WasmAgent.ChartPath != "" {
-			if err := r.installWasmAgent(ctx, enterpriseNetworkingVersion); err != nil {
+		if enterpriseNetworkingVersion != "" || r.EnterpriseAgent.ChartPath != "" {
+			if err := r.installEnterpriseAgent(ctx, enterpriseNetworkingVersion); err != nil {
 				return err
 			}
 		} else {
-			logrus.Debug("Enterprise Networking not found in management cluster, skipping Wasm Agent install.")
+			logrus.Debug("Enterprise Networking not found in management cluster, skipping Enterprise Agent install.")
 		}
 	}
 
@@ -126,7 +126,7 @@ func (r *Registrant) DeregisterCluster(ctx context.Context) error {
 		return err
 	}
 
-	if err := r.uninstallWasmAgent(ctx); err != nil {
+	if err := r.uninstallEnterpriseAgent(ctx); err != nil {
 		return err
 	}
 
@@ -191,38 +191,38 @@ func (r *Registrant) uninstallCertAgent(ctx context.Context) error {
 	)
 }
 
-func (r *Registrant) installWasmAgent(ctx context.Context, enterpriseNetworkingVersion string) error {
-	if r.WasmAgent.ChartPath == "" {
+func (r *Registrant) installEnterpriseAgent(ctx context.Context, enterpriseNetworkingVersion string) error {
+	if r.EnterpriseAgent.ChartPath == "" {
 		if enterpriseNetworkingVersion != "" {
-			// If we know the user's Enterprise Networking version, install the corresponding Wasm Agent.
-			r.WasmAgent.ChartPath = fmt.Sprintf(gloomesh.WasmAgentChartUriTemplate, enterpriseNetworkingVersion)
+			// If we know the user's Enterprise Networking version, install the corresponding Enterprise Agent.
+			r.EnterpriseAgent.ChartPath = fmt.Sprintf(gloomesh.EnterpriseAgentChartUriTemplate, enterpriseNetworkingVersion)
 		} else {
-			return eris.New("Failed to install Wasm Agent: no Enterprise Networking detected and no chart override provided.")
+			return eris.New("Failed to install Enterprise Agent: no Enterprise Networking detected and no chart override provided.")
 		}
 	} else if enterpriseNetworkingVersion == "" {
-		logrus.Warn("Gloo Mesh Enterprise Networking not detected. Wasm Agent installation will proceed because a chart " +
+		logrus.Warn("Gloo Mesh Enterprise Networking not detected. Enterprise Agent installation will proceed because a chart " +
 			"override was provided, but Wasm features depend on the presence of Enterprise Networking.")
 	}
 
 	return gloomesh.Installer{
-		HelmChartPath:  r.WasmAgent.ChartPath,
-		HelmValuesPath: r.WasmAgent.ChartValues,
+		HelmChartPath:  r.EnterpriseAgent.ChartPath,
+		HelmValuesPath: r.EnterpriseAgent.ChartValues,
 		KubeConfig:     r.KubeConfigPath,
 		KubeContext:    r.RemoteContext,
 		Namespace:      r.Registration.RemoteNamespace,
 		Verbose:        r.Verbose,
-	}.InstallWasmAgent(
+	}.InstallEnterpriseAgent(
 		ctx,
 	)
 }
 
-func (r *Registrant) uninstallWasmAgent(ctx context.Context) error {
+func (r *Registrant) uninstallEnterpriseAgent(ctx context.Context) error {
 	return gloomesh.Uninstaller{
 		KubeConfig:  r.KubeConfigPath,
 		KubeContext: r.RemoteContext,
 		Namespace:   r.Registration.RemoteNamespace,
 		Verbose:     r.Verbose,
-	}.UninstallWasmAgent(
+	}.UninstallEnterpriseAgent(
 		ctx,
 	)
 }
