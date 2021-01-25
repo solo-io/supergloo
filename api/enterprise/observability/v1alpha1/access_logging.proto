@@ -6,6 +6,7 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/observability.enterpri
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/traffic_policy.proto";
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "api/common/matchers/v1alpha1/request_matchers.proto";
 
 /*
@@ -41,9 +42,12 @@ message AccessLogCollectionStatus {
     int64 observed_generation = 1;
 
     // The state of the overall resource, will only show accepted if it has been successfully
-    // applied to all target meshes.
+    // applied to all target workloads.
     .networking.mesh.gloo.solo.io.ApprovalState state = 2;
 
     // Any errors encountered during processing. Also reported to any Workloads that this object applies to.
     repeated string errors = 3;
+
+    // references to workloads that this AccessLogCollection applies to
+    repeated .core.skv2.solo.io.ObjectRef workloads = 4;
 }

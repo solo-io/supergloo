@@ -59,34 +59,19 @@ spec:
                     type: object
                   statusCodeMatcher:
                     description: Matches against a response status code. Omit to match any status code.
-                    oneOf:
-                    - not:
-                        anyOf:
-                        - required:
-                          - exact
-                        - required:
-                          - range
-                    - required:
-                      - exact
-                    - required:
-                      - range
                     properties:
-                      exact:
-                        description: Matches the status code exactly.
+                      comparator:
+                        description: the comparison type used for matching
+                        enum:
+                        - EQ
+                        - GE
+                        - LE
+                        type: string
+                      value:
+                        description: the status code value to match against
                         maximum: 4294967295
                         minimum: 0
                         type: integer
-                      range:
-                        properties:
-                          isLte:
-                            description: If true, treat the value as an inclusive upper bound. Otherwise, as an inclusive lower bound.
-                            type: boolean
-                          value:
-                            description: The inclusive boundary value.
-                            maximum: 4294967295
-                            minimum: 0
-                            type: integer
-                        type: object
                     type: object
                 type: object
               type: array
@@ -140,13 +125,25 @@ spec:
             state:
               description: |-
                 The state of the overall resource, will only show accepted if it has been successfully
-                applied to all target meshes.
+                applied to all target workloads.
               enum:
               - PENDING
               - ACCEPTED
               - INVALID
               - FAILED
               type: string
+            workloads:
+              description: references to workloads that this AccessLogCollection applies to
+              items:
+                properties:
+                  name:
+                    description: name of the resource being referenced
+                    type: string
+                  namespace:
+                    description: namespace of the resource being referenced
+                    type: string
+                type: object
+              type: array
           type: object
       type: object
   versions:

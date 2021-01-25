@@ -20,8 +20,8 @@ title: "request_matchers.proto"
 ## Table of Contents
   - [HeaderMatcher](#common.matchers.mesh.gloo.solo.io.HeaderMatcher)
   - [StatusCodeMatcher](#common.matchers.mesh.gloo.solo.io.StatusCodeMatcher)
-  - [StatusCodeMatcher.Range](#common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.Range)
 
+  - [StatusCodeMatcher.Comparator](#common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.Comparator)
 
 
 
@@ -49,35 +49,32 @@ Describes a matcher against HTTP request headers.
 <a name="common.matchers.mesh.gloo.solo.io.StatusCodeMatcher"></a>
 
 ### StatusCodeMatcher
-Describes a matchers against HTTP response status codes.
+Describes a matcher against HTTP response status codes.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| exact | uint32 |  | Matches the status code exactly. |
-  | range | [common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.Range]({{< versioned_link_path fromRoot="/reference/api/api.common.matchers.v1alpha1.request_matchers#common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.Range" >}}) |  |  |
-  
-
-
-
-
-
-<a name="common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.Range"></a>
-
-### StatusCodeMatcher.Range
-Describes a range matcher against HTTP response status codes. Boundaries are inclusive.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| value | uint32 |  | The inclusive boundary value. |
-  | isLte | bool |  | If true, treat the value as an inclusive upper bound. Otherwise, as an inclusive lower bound. |
+| value | uint32 |  | the status code value to match against |
+  | comparator | [common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.Comparator]({{< versioned_link_path fromRoot="/reference/api/api.common.matchers.v1alpha1.request_matchers#common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.Comparator" >}}) |  | the comparison type used for matching |
   
 
 
 
 
  <!-- end messages -->
+
+
+<a name="common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.Comparator"></a>
+
+### StatusCodeMatcher.Comparator
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| EQ | 0 | default, strict equality |
+| GE | 1 | greater than or equal to |
+| LE | 2 | less than or equal to |
+
 
  <!-- end enums -->
 

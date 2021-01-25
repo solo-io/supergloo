@@ -27,21 +27,24 @@ message HeaderMatcher {
     bool invert_match = 4;
 }
 
-// Describes a matchers against HTTP response status codes.
+// Describes a matcher against HTTP response status codes.
 message StatusCodeMatcher {
-    oneof match_type {
-        // Matches the status code exactly.
-        uint32 exact = 1;
 
-        Range range = 2;
-    }
+    // the status code value to match against
+    uint32 value = 1;
 
-    // Describes a range matcher against HTTP response status codes. Boundaries are inclusive.
-    message Range {
-        // The inclusive boundary value.
-        uint32 value = 1;
+    // the comparison type used for matching
+    Comparator comparator = 2;
 
-        // If true, treat the value as an inclusive upper bound. Otherwise, as an inclusive lower bound.
-        bool is_lte = 2;
+
+    enum Comparator {
+        // default, strict equality
+        EQ = 0;
+
+        // greater than or equal to
+        GE = 1;
+
+        // less than or equal to
+        LE = 2;
     }
 }

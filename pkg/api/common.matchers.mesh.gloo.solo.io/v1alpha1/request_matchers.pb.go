@@ -26,6 +26,58 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
+type StatusCodeMatcher_Comparator int32
+
+const (
+	// default, strict equality
+	StatusCodeMatcher_EQ StatusCodeMatcher_Comparator = 0
+	// greater than or equal to
+	StatusCodeMatcher_GE StatusCodeMatcher_Comparator = 1
+	// less than or equal to
+	StatusCodeMatcher_LE StatusCodeMatcher_Comparator = 2
+)
+
+// Enum value maps for StatusCodeMatcher_Comparator.
+var (
+	StatusCodeMatcher_Comparator_name = map[int32]string{
+		0: "EQ",
+		1: "GE",
+		2: "LE",
+	}
+	StatusCodeMatcher_Comparator_value = map[string]int32{
+		"EQ": 0,
+		"GE": 1,
+		"LE": 2,
+	}
+)
+
+func (x StatusCodeMatcher_Comparator) Enum() *StatusCodeMatcher_Comparator {
+	p := new(StatusCodeMatcher_Comparator)
+	*p = x
+	return p
+}
+
+func (x StatusCodeMatcher_Comparator) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (StatusCodeMatcher_Comparator) Descriptor() protoreflect.EnumDescriptor {
+	return file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_enumTypes[0].Descriptor()
+}
+
+func (StatusCodeMatcher_Comparator) Type() protoreflect.EnumType {
+	return &file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_enumTypes[0]
+}
+
+func (x StatusCodeMatcher_Comparator) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use StatusCodeMatcher_Comparator.Descriptor instead.
+func (StatusCodeMatcher_Comparator) EnumDescriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_rawDescGZIP(), []int{1, 0}
+}
+
 // Describes a matcher against HTTP request headers.
 type HeaderMatcher struct {
 	state         protoimpl.MessageState
@@ -110,16 +162,16 @@ func (x *HeaderMatcher) GetInvertMatch() bool {
 	return false
 }
 
-// Describes a matchers against HTTP response status codes.
+// Describes a matcher against HTTP response status codes.
 type StatusCodeMatcher struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Types that are assignable to MatchType:
-	//	*StatusCodeMatcher_Exact
-	//	*StatusCodeMatcher_Range_
-	MatchType isStatusCodeMatcher_MatchType `protobuf_oneof:"match_type"`
+	// the status code value to match against
+	Value uint32 `protobuf:"varint,1,opt,name=value,proto3" json:"value,omitempty"`
+	// the comparison type used for matching
+	Comparator StatusCodeMatcher_Comparator `protobuf:"varint,2,opt,name=comparator,proto3,enum=common.matchers.mesh.gloo.solo.io.StatusCodeMatcher_Comparator" json:"comparator,omitempty"`
 }
 
 func (x *StatusCodeMatcher) Reset() {
@@ -154,100 +206,18 @@ func (*StatusCodeMatcher) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_rawDescGZIP(), []int{1}
 }
 
-func (m *StatusCodeMatcher) GetMatchType() isStatusCodeMatcher_MatchType {
-	if m != nil {
-		return m.MatchType
-	}
-	return nil
-}
-
-func (x *StatusCodeMatcher) GetExact() uint32 {
-	if x, ok := x.GetMatchType().(*StatusCodeMatcher_Exact); ok {
-		return x.Exact
-	}
-	return 0
-}
-
-func (x *StatusCodeMatcher) GetRange() *StatusCodeMatcher_Range {
-	if x, ok := x.GetMatchType().(*StatusCodeMatcher_Range_); ok {
-		return x.Range
-	}
-	return nil
-}
-
-type isStatusCodeMatcher_MatchType interface {
-	isStatusCodeMatcher_MatchType()
-}
-
-type StatusCodeMatcher_Exact struct {
-	// Matches the status code exactly.
-	Exact uint32 `protobuf:"varint,1,opt,name=exact,proto3,oneof"`
-}
-
-type StatusCodeMatcher_Range_ struct {
-	Range *StatusCodeMatcher_Range `protobuf:"bytes,2,opt,name=range,proto3,oneof"`
-}
-
-func (*StatusCodeMatcher_Exact) isStatusCodeMatcher_MatchType() {}
-
-func (*StatusCodeMatcher_Range_) isStatusCodeMatcher_MatchType() {}
-
-// Describes a range matcher against HTTP response status codes. Boundaries are inclusive.
-type StatusCodeMatcher_Range struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// The inclusive boundary value.
-	Value uint32 `protobuf:"varint,1,opt,name=value,proto3" json:"value,omitempty"`
-	// If true, treat the value as an inclusive upper bound. Otherwise, as an inclusive lower bound.
-	IsLte bool `protobuf:"varint,2,opt,name=is_lte,json=isLte,proto3" json:"is_lte,omitempty"`
-}
-
-func (x *StatusCodeMatcher_Range) Reset() {
-	*x = StatusCodeMatcher_Range{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_msgTypes[2]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *StatusCodeMatcher_Range) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*StatusCodeMatcher_Range) ProtoMessage() {}
-
-func (x *StatusCodeMatcher_Range) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_msgTypes[2]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use StatusCodeMatcher_Range.ProtoReflect.Descriptor instead.
-func (*StatusCodeMatcher_Range) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_rawDescGZIP(), []int{1, 0}
-}
-
-func (x *StatusCodeMatcher_Range) GetValue() uint32 {
+func (x *StatusCodeMatcher) GetValue() uint32 {
 	if x != nil {
 		return x.Value
 	}
 	return 0
 }
 
-func (x *StatusCodeMatcher_Range) GetIsLte() bool {
+func (x *StatusCodeMatcher) GetComparator() StatusCodeMatcher_Comparator {
 	if x != nil {
-		return x.IsLte
+		return x.Comparator
 	}
-	return false
+	return StatusCodeMatcher_EQ
 }
 
 var File_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto protoreflect.FileDescriptor
@@ -267,25 +237,24 @@ var file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_match
 	0x12, 0x14, 0x0a, 0x05, 0x72, 0x65, 0x67, 0x65, 0x78, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52,
 	0x05, 0x72, 0x65, 0x67, 0x65, 0x78, 0x12, 0x21, 0x0a, 0x0c, 0x69, 0x6e, 0x76, 0x65, 0x72, 0x74,
 	0x5f, 0x6d, 0x61, 0x74, 0x63, 0x68, 0x18, 0x04, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0b, 0x69, 0x6e,
-	0x76, 0x65, 0x72, 0x74, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x22, 0xc3, 0x01, 0x0a, 0x11, 0x53, 0x74,
+	0x76, 0x65, 0x72, 0x74, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x22, 0xb0, 0x01, 0x0a, 0x11, 0x53, 0x74,
 	0x61, 0x74, 0x75, 0x73, 0x43, 0x6f, 0x64, 0x65, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x65, 0x72, 0x12,
-	0x16, 0x0a, 0x05, 0x65, 0x78, 0x61, 0x63, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x48, 0x00,
-	0x52, 0x05, 0x65, 0x78, 0x61, 0x63, 0x74, 0x12, 0x52, 0x0a, 0x05, 0x72, 0x61, 0x6e, 0x67, 0x65,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x3a, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e,
-	0x6d, 0x61, 0x74, 0x63, 0x68, 0x65, 0x72, 0x73, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c,
-	0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x75,
-	0x73, 0x43, 0x6f, 0x64, 0x65, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x65, 0x72, 0x2e, 0x52, 0x61, 0x6e,
-	0x67, 0x65, 0x48, 0x00, 0x52, 0x05, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x1a, 0x34, 0x0a, 0x05, 0x52,
-	0x61, 0x6e, 0x67, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x0d, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x15, 0x0a, 0x06, 0x69, 0x73,
-	0x5f, 0x6c, 0x74, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x05, 0x69, 0x73, 0x4c, 0x74,
-	0x65, 0x42, 0x0c, 0x0a, 0x0a, 0x6d, 0x61, 0x74, 0x63, 0x68, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x42,
-	0x51, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f,
-	0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f,
-	0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d,
-	0x61, 0x74, 0x63, 0x68, 0x65, 0x72, 0x73, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f,
-	0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68,
-	0x61, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x05,
+	0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x5f, 0x0a, 0x0a, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x72, 0x61,
+	0x74, 0x6f, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x3f, 0x2e, 0x63, 0x6f, 0x6d, 0x6d,
+	0x6f, 0x6e, 0x2e, 0x6d, 0x61, 0x74, 0x63, 0x68, 0x65, 0x72, 0x73, 0x2e, 0x6d, 0x65, 0x73, 0x68,
+	0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x53, 0x74,
+	0x61, 0x74, 0x75, 0x73, 0x43, 0x6f, 0x64, 0x65, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x65, 0x72, 0x2e,
+	0x43, 0x6f, 0x6d, 0x70, 0x61, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x52, 0x0a, 0x63, 0x6f, 0x6d, 0x70,
+	0x61, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x22, 0x24, 0x0a, 0x0a, 0x43, 0x6f, 0x6d, 0x70, 0x61, 0x72,
+	0x61, 0x74, 0x6f, 0x72, 0x12, 0x06, 0x0a, 0x02, 0x45, 0x51, 0x10, 0x00, 0x12, 0x06, 0x0a, 0x02,
+	0x47, 0x45, 0x10, 0x01, 0x12, 0x06, 0x0a, 0x02, 0x4c, 0x45, 0x10, 0x02, 0x42, 0x51, 0x5a, 0x4f,
+	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d,
+	0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x70, 0x6b, 0x67,
+	0x2f, 0x61, 0x70, 0x69, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x61, 0x74, 0x63,
+	0x68, 0x65, 0x72, 0x73, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73,
+	0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x31, 0x62,
+	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -300,14 +269,15 @@ func file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matc
 	return file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_rawDescData
 }
 
-var file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_goTypes = []interface{}{
-	(*HeaderMatcher)(nil),           // 0: common.matchers.mesh.gloo.solo.io.HeaderMatcher
-	(*StatusCodeMatcher)(nil),       // 1: common.matchers.mesh.gloo.solo.io.StatusCodeMatcher
-	(*StatusCodeMatcher_Range)(nil), // 2: common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.Range
+	(StatusCodeMatcher_Comparator)(0), // 0: common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.Comparator
+	(*HeaderMatcher)(nil),             // 1: common.matchers.mesh.gloo.solo.io.HeaderMatcher
+	(*StatusCodeMatcher)(nil),         // 2: common.matchers.mesh.gloo.solo.io.StatusCodeMatcher
 }
 var file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_depIdxs = []int32{
-	2, // 0: common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.range:type_name -> common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.Range
+	0, // 0: common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.comparator:type_name -> common.matchers.mesh.gloo.solo.io.StatusCodeMatcher.Comparator
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -347,35 +317,20 @@ func file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matc
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StatusCodeMatcher_Range); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-	}
-	file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_msgTypes[1].OneofWrappers = []interface{}{
-		(*StatusCodeMatcher_Exact)(nil),
-		(*StatusCodeMatcher_Range_)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   3,
+			NumEnums:      1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_goTypes,
 		DependencyIndexes: file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_depIdxs,
+		EnumInfos:         file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_enumTypes,
 		MessageInfos:      file_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto_msgTypes,
 	}.Build()
 	File_github_com_solo_io_gloo_mesh_api_common_matchers_v1alpha1_request_matchers_proto = out.File
