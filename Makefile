@@ -71,7 +71,7 @@ install-go-tools: mod-download
 generated-code: operator-gen \
 				manifest-gen \
 				go-generate \
-				generated-reference-docs \
+				update-licenses \
 				fmt
 	go mod tidy
 
@@ -98,7 +98,7 @@ operator-gen: clear-vendor-any
 
 # Generate Reference documentation
 .PHONY: generated-reference-docs
-generated-reference-docs: clear-vendor-any
+generated-reference-docs: clear-vendor-any update-licenses
 	SKIP_CHANGELOG_GENERATION=true go run codegen/docs/docsgen.go
 
 #----------------------------------------------------------------------------------
@@ -258,6 +258,15 @@ upload-github-release-assets: build-cli
 ifeq ($(RELEASE),"true")
 	go run ci/upload_github_release_assets.go
 endif
+
+#----------------------------------------------------------------------------------
+# Third Party License Management
+#----------------------------------------------------------------------------------
+.PHONY: update-licenses
+update-licenses:
+	cd hack/oss_compliance; GO111MODULE=on go run main.go osagen -s "Mozilla Public License 2.0,GNU General Public License v2.0,GNU General Public License v3.0,GNU Lesser General Public License v2.1,GNU Lesser General Public License v3.0,GNU Affero General Public License v3.0"> ../../docs/content/static/content/osa_provided.docgen
+	cd hack/oss_compliance; GO111MODULE=on go run main.go osagen -i "Mozilla Public License 2.0,GNU General Public License v2.0,GNU General Public License v3.0,GNU Lesser General Public License v2.1,GNU Lesser General Public License v3.0,GNU Affero General Public License v3.0"> ../../docs/content/static/content/osa_included.docgen
+
 
 #----------------------------------------------------------------------------------
 # Clean
