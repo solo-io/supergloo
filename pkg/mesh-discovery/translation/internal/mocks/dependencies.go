@@ -67,15 +67,15 @@ func (mr *MockDependencyFactoryMockRecorder) MakeWorkloadTranslator(ctx, in inte
 }
 
 // MakeTrafficTargetTranslator mocks base method
-func (m *MockDependencyFactory) MakeTrafficTargetTranslator(ctx context.Context) traffictarget.Translator {
+func (m *MockDependencyFactory) MakeTrafficTargetTranslator() traffictarget.Translator {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MakeTrafficTargetTranslator", ctx)
+	ret := m.ctrl.Call(m, "MakeTrafficTargetTranslator")
 	ret0, _ := ret[0].(traffictarget.Translator)
 	return ret0
 }
 
 // MakeTrafficTargetTranslator indicates an expected call of MakeTrafficTargetTranslator
-func (mr *MockDependencyFactoryMockRecorder) MakeTrafficTargetTranslator(ctx interface{}) *gomock.Call {
+func (mr *MockDependencyFactoryMockRecorder) MakeTrafficTargetTranslator() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeTrafficTargetTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeTrafficTargetTranslator), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeTrafficTargetTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeTrafficTargetTranslator))
 }

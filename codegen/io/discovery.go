@@ -15,6 +15,7 @@ var (
 			"Service",
 			"ConfigMap",
 			"Node",
+			"Endpoints",
 		},
 		appsv1.SchemeGroupVersion: {
 			"Deployment",
@@ -27,12 +28,18 @@ var (
 		},
 	}
 
-	DiscoverySettingsTypes = Snapshot{
+	DiscoveryLocalInputTypes = Snapshot{
 		schema.GroupVersion{
 			Group:   "settings." + constants.GlooMeshApiGroupSuffix,
 			Version: "v1alpha2",
 		}: {
 			"Settings",
+		},
+		schema.GroupVersion{
+			Group:   "networking." + constants.GlooMeshApiGroupSuffix,
+			Version: "v1alpha2",
+		}: {
+			"VirtualMesh",
 		},
 	}
 

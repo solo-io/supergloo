@@ -29,6 +29,14 @@ rules:
   - list
   - watch
 - apiGroups:
+  - networking.mesh.gloo.solo.io
+  resources:
+  - virtualmeshes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - settings.mesh.gloo.solo.io
   resources:
   - settings

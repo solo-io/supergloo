@@ -5,10 +5,12 @@
 // The Input Reconciler calls a simple func() error whenever a
 // storage event is received for any of:
 // * Settings
+// * VirtualMeshes
 // * Meshes
 // * ConfigMaps
 // * Services
 // * Pods
+// * Endpoints
 // * Nodes
 // * Deployments
 // * ReplicaSets
@@ -35,6 +37,9 @@ import (
 	settings_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	settings_mesh_gloo_solo_io_v1alpha2_controllers "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/controller"
 
+	networking_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networking_mesh_gloo_solo_io_v1alpha2_controllers "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/controller"
+
 	appmesh_k8s_aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	appmesh_k8s_aws_v1beta2_controllers "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/controller"
 
@@ -50,11 +55,14 @@ import (
 type multiClusterAgentReconciler interface {
 	settings_mesh_gloo_solo_io_v1alpha2_controllers.MulticlusterSettingsReconciler
 
+	networking_mesh_gloo_solo_io_v1alpha2_controllers.MulticlusterVirtualMeshReconciler
+
 	appmesh_k8s_aws_v1beta2_controllers.MulticlusterMeshReconciler
 
 	v1_controllers.MulticlusterConfigMapReconciler
 	v1_controllers.MulticlusterServiceReconciler
 	v1_controllers.MulticlusterPodReconciler
+	v1_controllers.MulticlusterEndpointsReconciler
 	v1_controllers.MulticlusterNodeReconciler
 
 	apps_v1_controllers.MulticlusterDeploymentReconciler
@@ -75,6 +83,9 @@ type AgentReconcileOptions struct {
 	// Options for reconciling Settings
 	Settings reconcile.Options
 
+	// Options for reconciling VirtualMeshes
+	VirtualMeshes reconcile.Options
+
 	// Options for reconciling Meshes
 	Meshes reconcile.Options
 
@@ -84,6 +95,8 @@ type AgentReconcileOptions struct {
 	Services reconcile.Options
 	// Options for reconciling Pods
 	Pods reconcile.Options
+	// Options for reconciling Endpoints
+	Endpoints reconcile.Options
 	// Options for reconciling Nodes
 	Nodes reconcile.Options
 
@@ -124,6 +137,8 @@ func RegisterMultiClusterAgentReconciler(
 
 	settings_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterSettingsReconcileLoop("Settings", clusters, options.Settings).AddMulticlusterSettingsReconciler(ctx, r, predicates...)
 
+	networking_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterVirtualMeshReconcileLoop("VirtualMesh", clusters, options.VirtualMeshes).AddMulticlusterVirtualMeshReconciler(ctx, r, predicates...)
+
 	appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterMeshReconcileLoop("Mesh", clusters, options.Meshes).AddMulticlusterMeshReconciler(ctx, r, predicates...)
 
 	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters, options.ConfigMaps).AddMulticlusterConfigMapReconciler(ctx, r, predicates...)
@@ -131,6 +146,8 @@ func RegisterMultiClusterAgentReconciler(
 	v1_controllers.NewMulticlusterServiceReconcileLoop("Service", clusters, options.Services).AddMulticlusterServiceReconciler(ctx, r, predicates...)
 
 	v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters, options.Pods).AddMulticlusterPodReconciler(ctx, r, predicates...)
+
+	v1_controllers.NewMulticlusterEndpointsReconcileLoop("Endpoints", clusters, options.Endpoints).AddMulticlusterEndpointsReconciler(ctx, r, predicates...)
 
 	v1_controllers.NewMulticlusterNodeReconcileLoop("Node", clusters, options.Nodes).AddMulticlusterNodeReconciler(ctx, r, predicates...)
 
@@ -150,6 +167,21 @@ func (r *multiClusterAgentReconcilerImpl) ReconcileSettings(clusterName string, 
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcileSettingsDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileRemoteGeneric(ref)
+	return err
+}
+
+func (r *multiClusterAgentReconcilerImpl) ReconcileVirtualMesh(clusterName string, obj *networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileRemoteGeneric(obj)
+}
+
+func (r *multiClusterAgentReconcilerImpl) ReconcileVirtualMeshDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -210,6 +242,21 @@ func (r *multiClusterAgentReconcilerImpl) ReconcilePod(clusterName string, obj *
 }
 
 func (r *multiClusterAgentReconcilerImpl) ReconcilePodDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileRemoteGeneric(ref)
+	return err
+}
+
+func (r *multiClusterAgentReconcilerImpl) ReconcileEndpoints(clusterName string, obj *v1.Endpoints) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileRemoteGeneric(obj)
+}
+
+func (r *multiClusterAgentReconcilerImpl) ReconcileEndpointsDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -299,11 +346,14 @@ func (r *multiClusterAgentReconcilerImpl) ReconcileStatefulSetDeletion(clusterNa
 type singleClusterAgentReconciler interface {
 	settings_mesh_gloo_solo_io_v1alpha2_controllers.SettingsReconciler
 
+	networking_mesh_gloo_solo_io_v1alpha2_controllers.VirtualMeshReconciler
+
 	appmesh_k8s_aws_v1beta2_controllers.MeshReconciler
 
 	v1_controllers.ConfigMapReconciler
 	v1_controllers.ServiceReconciler
 	v1_controllers.PodReconciler
+	v1_controllers.EndpointsReconciler
 	v1_controllers.NodeReconciler
 
 	apps_v1_controllers.DeploymentReconciler
@@ -347,6 +397,10 @@ func RegisterSingleClusterAgentReconciler(
 		return nil, err
 	}
 
+	if err := networking_mesh_gloo_solo_io_v1alpha2_controllers.NewVirtualMeshReconcileLoop("VirtualMesh", mgr, options).RunVirtualMeshReconciler(ctx, r, predicates...); err != nil {
+		return nil, err
+	}
+
 	if err := appmesh_k8s_aws_v1beta2_controllers.NewMeshReconcileLoop("Mesh", mgr, options).RunMeshReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
 	}
@@ -358,6 +412,9 @@ func RegisterSingleClusterAgentReconciler(
 		return nil, err
 	}
 	if err := v1_controllers.NewPodReconcileLoop("Pod", mgr, options).RunPodReconciler(ctx, r, predicates...); err != nil {
+		return nil, err
+	}
+	if err := v1_controllers.NewEndpointsReconcileLoop("Endpoints", mgr, options).RunEndpointsReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
 	}
 	if err := v1_controllers.NewNodeReconcileLoop("Node", mgr, options).RunNodeReconciler(ctx, r, predicates...); err != nil {
@@ -385,6 +442,19 @@ func (r *singleClusterAgentReconcilerImpl) ReconcileSettings(obj *settings_mesh_
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcileSettingsDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *singleClusterAgentReconcilerImpl) ReconcileVirtualMesh(obj *networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *singleClusterAgentReconcilerImpl) ReconcileVirtualMeshDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
@@ -437,6 +507,19 @@ func (r *singleClusterAgentReconcilerImpl) ReconcilePod(obj *v1.Pod) (reconcile.
 }
 
 func (r *singleClusterAgentReconcilerImpl) ReconcilePodDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *singleClusterAgentReconcilerImpl) ReconcileEndpoints(obj *v1.Endpoints) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *singleClusterAgentReconcilerImpl) ReconcileEndpointsDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

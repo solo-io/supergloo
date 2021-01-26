@@ -69,6 +69,7 @@ type KubeContext struct {
 	Clientset             *kubernetes.Clientset
 	TrafficPolicyClient   networkingv1alpha2.TrafficPolicyClient
 	MeshClient            discoveryv1alpha2.MeshClient
+	TrafficTargetClient   discoveryv1alpha2.TrafficTargetClient
 	SecretClient          kubernetes_core.SecretClient
 	VirtualMeshClient     networkingv1alpha2.VirtualMeshClient
 	DestinationRuleClient istionetworkingv1alpha3.DestinationRuleClient
@@ -106,6 +107,7 @@ func NewKubeContext(kubecontext string) KubeContext {
 		TrafficPolicyClient:   networkingClientset.TrafficPolicies(),
 		VirtualMeshClient:     networkingClientset.VirtualMeshes(),
 		MeshClient:            discoveryClientset.Meshes(),
+		TrafficTargetClient:   discoveryClientset.TrafficTargets(),
 		SecretClient:          kubeCoreClientset.Secrets(),
 		DestinationRuleClient: istioNetworkingClientset.DestinationRules(),
 		VirtualServiceClient:  istioNetworkingClientset.VirtualServices(),
