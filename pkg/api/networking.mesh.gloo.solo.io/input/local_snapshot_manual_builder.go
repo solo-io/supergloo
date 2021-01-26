@@ -18,6 +18,9 @@ import (
 	networking_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
 	networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 
+	observability_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1"
+	observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
+
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1 "k8s.io/api/core/v1"
 
@@ -41,6 +44,8 @@ type InputLocalSnapshotManualBuilder struct {
 
 	networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
 
+	observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet
+
 	v1Secrets v1_sets.SecretSet
 
 	multiclusterSoloIov1Alpha1KubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
@@ -62,6 +67,8 @@ func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBu
 		networkingMeshGlooSoloIov1Alpha2FailoverServices: networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet(),
 
 		networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments: networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet(),
+
+		observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords: observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet(),
 
 		v1Secrets: v1_sets.NewSecretSet(),
 
@@ -85,6 +92,8 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 		i.networkingMeshGlooSoloIov1Alpha2FailoverServices,
 
 		i.networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments,
+
+		i.observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords,
 
 		i.v1Secrets,
 
@@ -125,6 +134,10 @@ func (i *InputLocalSnapshotManualBuilder) AddNetworkingMeshGlooSoloIov1Alpha2Fai
 }
 func (i *InputLocalSnapshotManualBuilder) AddNetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments(networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment) *InputLocalSnapshotManualBuilder {
 	i.networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments.Insert(networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments...)
+	return i
+}
+func (i *InputLocalSnapshotManualBuilder) AddObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords(observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) *InputLocalSnapshotManualBuilder {
+	i.observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords.Insert(observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords...)
 	return i
 }
 func (i *InputLocalSnapshotManualBuilder) AddV1Secrets(v1Secrets []*v1.Secret) *InputLocalSnapshotManualBuilder {

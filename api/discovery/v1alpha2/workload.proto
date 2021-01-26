@@ -70,4 +70,32 @@ message WorkloadStatus {
     // has reconciled the latest version of the Workload.
     int64 observed_generation = 1;
 
+    // The set of AccessLogRecords that have been applied to this Workload.
+    repeated AppliedAccessLogRecord applied_access_log_records = 2;
+
+    // The set of WasmDeployments that have been applied to this Workload.
+    repeated AppliedWasmDeployment applied_wasm_deployments = 3;
+
+    // AppliedAccessLogRecord represents an AccessLogRecord that has been applied to this Workload.
+    message AppliedAccessLogRecord {
+        // reference to the AccessLogRecord object.
+        .core.skv2.solo.io.ObjectRef ref = 1;
+
+        // the observed generation of the accepted AccessLogRecord.
+        int64 observedGeneration = 2;
+
+        // any errors encountered while processing the referenced AccessLogRecord object
+        repeated string errors = 3;
+    }
+
+    message AppliedWasmDeployment {
+        // reference to the WasmDeployment object.
+        .core.skv2.solo.io.ObjectRef ref = 1;
+
+        // the observed generation of the accepted WasmDeployment.
+        int64 observedGeneration = 2;
+
+        // any errors encountered while processing the referenced WasmDeployment object
+        repeated string errors = 3;
+    }
 }

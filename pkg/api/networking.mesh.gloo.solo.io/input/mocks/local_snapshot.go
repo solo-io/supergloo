@@ -14,8 +14,9 @@ import (
 	v1alpha1sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	v1alpha2sets0 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
+	v1alpha1sets0 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 	v1alpha2sets1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
-	v1alpha1sets0 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
+	v1alpha1sets1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -169,6 +170,20 @@ func (mr *MockLocalSnapshotMockRecorder) NetworkingEnterpriseMeshGlooSoloIov1Alp
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments", reflect.TypeOf((*MockLocalSnapshot)(nil).NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments))
 }
 
+// ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords mocks base method
+func (m *MockLocalSnapshot) ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords() v1alpha1sets0.AccessLogRecordSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords")
+	ret0, _ := ret[0].(v1alpha1sets0.AccessLogRecordSet)
+	return ret0
+}
+
+// ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords indicates an expected call of ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords
+func (mr *MockLocalSnapshotMockRecorder) ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords", reflect.TypeOf((*MockLocalSnapshot)(nil).ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords))
+}
+
 // V1Secrets mocks base method
 func (m *MockLocalSnapshot) V1Secrets() v1sets.SecretSet {
 	m.ctrl.T.Helper()
@@ -184,10 +199,10 @@ func (mr *MockLocalSnapshotMockRecorder) V1Secrets() *gomock.Call {
 }
 
 // MulticlusterSoloIov1Alpha1KubernetesClusters mocks base method
-func (m *MockLocalSnapshot) MulticlusterSoloIov1Alpha1KubernetesClusters() v1alpha1sets0.KubernetesClusterSet {
+func (m *MockLocalSnapshot) MulticlusterSoloIov1Alpha1KubernetesClusters() v1alpha1sets1.KubernetesClusterSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MulticlusterSoloIov1Alpha1KubernetesClusters")
-	ret0, _ := ret[0].(v1alpha1sets0.KubernetesClusterSet)
+	ret0, _ := ret[0].(v1alpha1sets1.KubernetesClusterSet)
 	return ret0
 }
 

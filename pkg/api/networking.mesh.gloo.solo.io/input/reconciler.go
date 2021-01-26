@@ -22,6 +22,8 @@ import (
 	networking_enterprise_mesh_gloo_solo_io_v1alpha1_controllers "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1/controller"
 	networking_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	networking_mesh_gloo_solo_io_v1alpha2_controllers "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/controller"
+	observability_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1"
+	observability_enterprise_mesh_gloo_solo_io_v1alpha1_controllers "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1/controller"
 	settings_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	settings_mesh_gloo_solo_io_v1alpha2_controllers "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/controller"
 	xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1"
@@ -57,6 +59,7 @@ import (
 // * NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
 // * NetworkingMeshGlooSoloIov1Alpha2FailoverServices
 // * NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments
+// * ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords
 // * V1Secrets
 // * MulticlusterSoloIov1Alpha1KubernetesClusters
 // from the local cluster.
@@ -152,6 +155,11 @@ func RegisterInputReconciler(
 
 	// initialize NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments reconcile loop for local cluster
 	if err := networking_enterprise_mesh_gloo_solo_io_v1alpha1_controllers.NewWasmDeploymentReconcileLoop("WasmDeployment", mgr, options.Local.NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments).RunWasmDeploymentReconciler(ctx, &localNetworkingEnterpriseMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+
+	// initialize ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords reconcile loop for local cluster
+	if err := observability_enterprise_mesh_gloo_solo_io_v1alpha1_controllers.NewAccessLogRecordReconcileLoop("AccessLogRecord", mgr, options.Local.ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords).RunAccessLogRecordReconciler(ctx, &localObservabilityEnterpriseMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
@@ -395,6 +403,9 @@ type LocalReconcileOptions struct {
 	// Options for reconciling NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments
 	NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments reconcile.Options
 
+	// Options for reconciling ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords
+	ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords reconcile.Options
+
 	// Options for reconciling V1Secrets
 	V1Secrets reconcile.Options
 
@@ -530,6 +541,23 @@ func (r *localNetworkingEnterpriseMeshGlooSoloIoInputReconciler) ReconcileWasmDe
 }
 
 func (r *localNetworkingEnterpriseMeshGlooSoloIoInputReconciler) ReconcileWasmDeploymentDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+type localObservabilityEnterpriseMeshGlooSoloIoInputReconciler struct {
+	base input.InputReconciler
+}
+
+func (r *localObservabilityEnterpriseMeshGlooSoloIoInputReconciler) ReconcileAccessLogRecord(obj *observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localObservabilityEnterpriseMeshGlooSoloIoInputReconciler) ReconcileAccessLogRecordDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

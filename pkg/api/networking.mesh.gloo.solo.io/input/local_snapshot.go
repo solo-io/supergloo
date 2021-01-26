@@ -12,6 +12,7 @@
 // * NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
 // * NetworkingMeshGlooSoloIov1Alpha2FailoverServices
 // * NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments
+// * ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords
 // * V1Secrets
 // * MulticlusterSoloIov1Alpha1KubernetesClusters
 // read from a given cluster or set of clusters, across all namespaces.
@@ -50,6 +51,9 @@ import (
 	networking_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
 	networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 
+	observability_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1"
+	observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
+
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 
@@ -81,6 +85,9 @@ type LocalSnapshot interface {
 
 	// return the set of input NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments
 	NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments() networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
+
+	// return the set of input ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords
+	ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet
 
 	// return the set of input V1Secrets
 	V1Secrets() v1_sets.SecretSet
@@ -122,6 +129,9 @@ type LocalSyncStatusOptions struct {
 	// sync status of NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployment objects
 	NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployment bool
 
+	// sync status of ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecord objects
+	ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecord bool
+
 	// sync status of V1Secret objects
 	V1Secret bool
 
@@ -145,6 +155,8 @@ type snapshotLocal struct {
 
 	networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
 
+	observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet
+
 	v1Secrets v1_sets.SecretSet
 
 	multiclusterSoloIov1Alpha1KubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
@@ -166,6 +178,8 @@ func NewLocalSnapshot(
 
 	networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet,
 
+	observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet,
+
 	v1Secrets v1_sets.SecretSet,
 
 	multiclusterSoloIov1Alpha1KubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet,
@@ -174,15 +188,16 @@ func NewLocalSnapshot(
 	return &snapshotLocal{
 		name: name,
 
-		settingsMeshGlooSoloIov1Alpha2Settings:                    settingsMeshGlooSoloIov1Alpha2Settings,
-		discoveryMeshGlooSoloIov1Alpha2TrafficTargets:             discoveryMeshGlooSoloIov1Alpha2TrafficTargets,
-		discoveryMeshGlooSoloIov1Alpha2Workloads:                  discoveryMeshGlooSoloIov1Alpha2Workloads,
-		discoveryMeshGlooSoloIov1Alpha2Meshes:                     discoveryMeshGlooSoloIov1Alpha2Meshes,
-		networkingMeshGlooSoloIov1Alpha2TrafficPolicies:           networkingMeshGlooSoloIov1Alpha2TrafficPolicies,
-		networkingMeshGlooSoloIov1Alpha2AccessPolicies:            networkingMeshGlooSoloIov1Alpha2AccessPolicies,
-		networkingMeshGlooSoloIov1Alpha2VirtualMeshes:             networkingMeshGlooSoloIov1Alpha2VirtualMeshes,
-		networkingMeshGlooSoloIov1Alpha2FailoverServices:          networkingMeshGlooSoloIov1Alpha2FailoverServices,
-		networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments: networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments,
+		settingsMeshGlooSoloIov1Alpha2Settings:                        settingsMeshGlooSoloIov1Alpha2Settings,
+		discoveryMeshGlooSoloIov1Alpha2TrafficTargets:                 discoveryMeshGlooSoloIov1Alpha2TrafficTargets,
+		discoveryMeshGlooSoloIov1Alpha2Workloads:                      discoveryMeshGlooSoloIov1Alpha2Workloads,
+		discoveryMeshGlooSoloIov1Alpha2Meshes:                         discoveryMeshGlooSoloIov1Alpha2Meshes,
+		networkingMeshGlooSoloIov1Alpha2TrafficPolicies:               networkingMeshGlooSoloIov1Alpha2TrafficPolicies,
+		networkingMeshGlooSoloIov1Alpha2AccessPolicies:                networkingMeshGlooSoloIov1Alpha2AccessPolicies,
+		networkingMeshGlooSoloIov1Alpha2VirtualMeshes:                 networkingMeshGlooSoloIov1Alpha2VirtualMeshes,
+		networkingMeshGlooSoloIov1Alpha2FailoverServices:              networkingMeshGlooSoloIov1Alpha2FailoverServices,
+		networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments:     networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments,
+		observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords: observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords,
 		v1Secrets: v1Secrets,
 		multiclusterSoloIov1Alpha1KubernetesClusters: multiclusterSoloIov1Alpha1KubernetesClusters,
 	}
@@ -222,6 +237,10 @@ func (s snapshotLocal) NetworkingMeshGlooSoloIov1Alpha2FailoverServices() networ
 
 func (s snapshotLocal) NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments() networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet {
 	return s.networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments
+}
+
+func (s snapshotLocal) ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet {
+	return s.observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords
 }
 
 func (s snapshotLocal) V1Secrets() v1_sets.SecretSet {
@@ -347,6 +366,19 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 		}
 	}
 
+	if opts.ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecord {
+		for _, obj := range s.ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
 	if opts.MulticlusterSoloIov1Alpha1KubernetesCluster {
 		for _, obj := range s.MulticlusterSoloIov1Alpha1KubernetesClusters().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
@@ -432,6 +464,14 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 		}
 	}
 
+	if opts.ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecord {
+		for _, obj := range s.ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
 	if opts.MulticlusterSoloIov1Alpha1KubernetesCluster {
 		for _, obj := range s.MulticlusterSoloIov1Alpha1KubernetesClusters().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
@@ -454,6 +494,7 @@ func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 	snapshotMap["networkingMeshGlooSoloIov1Alpha2VirtualMeshes"] = s.networkingMeshGlooSoloIov1Alpha2VirtualMeshes.List()
 	snapshotMap["networkingMeshGlooSoloIov1Alpha2FailoverServices"] = s.networkingMeshGlooSoloIov1Alpha2FailoverServices.List()
 	snapshotMap["networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments"] = s.networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments.List()
+	snapshotMap["observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords"] = s.observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords.List()
 	snapshotMap["v1Secrets"] = s.v1Secrets.List()
 	snapshotMap["multiclusterSoloIov1Alpha1KubernetesClusters"] = s.multiclusterSoloIov1Alpha1KubernetesClusters.List()
 	return json.Marshal(snapshotMap)
@@ -488,6 +529,9 @@ type LocalBuildOptions struct {
 
 	// List options for composing a snapshot from NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments
 	NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments ResourceLocalBuildOptions
+
+	// List options for composing a snapshot from ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords
+	ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords ResourceLocalBuildOptions
 
 	// List options for composing a snapshot from V1Secrets
 	V1Secrets ResourceLocalBuildOptions
@@ -538,6 +582,8 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 
 	networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
 
+	observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet()
+
 	v1Secrets := v1_sets.NewSecretSet()
 
 	multiclusterSoloIov1Alpha1KubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
@@ -573,6 +619,9 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		if err := b.insertNetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeploymentsFromCluster(ctx, cluster, networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments, opts.NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecordsFromCluster(ctx, cluster, observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords, opts.ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertV1SecretsFromCluster(ctx, cluster, v1Secrets, opts.V1Secrets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -594,6 +643,7 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		networkingMeshGlooSoloIov1Alpha2VirtualMeshes,
 		networkingMeshGlooSoloIov1Alpha2FailoverServices,
 		networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments,
+		observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords,
 		v1Secrets,
 		multiclusterSoloIov1Alpha1KubernetesClusters,
 	)
@@ -983,6 +1033,49 @@ func (b *multiClusterLocalBuilder) insertNetworkingEnterpriseMeshGlooSoloIov1Alp
 	return nil
 }
 
+func (b *multiClusterLocalBuilder) insertObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecordsFromCluster(ctx context.Context, cluster string, observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet, opts ResourceLocalBuildOptions) error {
+	observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecordClient, err := observability_enterprise_mesh_gloo_solo_io_v1alpha1.NewMulticlusterAccessLogRecordClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "observability.enterprise.mesh.gloo.solo.io",
+			Version: "v1alpha1",
+			Kind:    "AccessLogRecord",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecordList, err := observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecordClient.ListAccessLogRecord(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecordList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords.Insert(&item)
+	}
+
+	return nil
+}
+
 func (b *multiClusterLocalBuilder) insertV1SecretsFromCluster(ctx context.Context, cluster string, v1Secrets v1_sets.SecretSet, opts ResourceLocalBuildOptions) error {
 	v1SecretClient, err := v1.NewMulticlusterSecretClient(b.client).Cluster(cluster)
 	if err != nil {
@@ -1109,6 +1202,8 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 
 	networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
 
+	observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet()
+
 	v1Secrets := v1_sets.NewSecretSet()
 
 	multiclusterSoloIov1Alpha1KubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
@@ -1142,6 +1237,9 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	if err := b.insertNetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments(ctx, networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments, opts.NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords(ctx, observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords, opts.ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertV1Secrets(ctx, v1Secrets, opts.V1Secrets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -1161,6 +1259,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 		networkingMeshGlooSoloIov1Alpha2VirtualMeshes,
 		networkingMeshGlooSoloIov1Alpha2FailoverServices,
 		networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments,
+		observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords,
 		v1Secrets,
 		multiclusterSoloIov1Alpha1KubernetesClusters,
 	)
@@ -1464,6 +1563,40 @@ func (b *singleClusterLocalBuilder) insertNetworkingEnterpriseMeshGlooSoloIov1Al
 		item := item // pike
 		item.ClusterName = b.clusterName
 		networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterLocalBuilder) insertObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords(ctx context.Context, observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "observability.enterprise.mesh.gloo.solo.io",
+			Version: "v1alpha1",
+			Kind:    "AccessLogRecord",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecordList, err := observability_enterprise_mesh_gloo_solo_io_v1alpha1.NewAccessLogRecordClient(b.mgr.GetClient()).ListAccessLogRecord(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecordList.Items {
+		item := item // pike
+		item.ClusterName = b.clusterName
+		observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords.Insert(&item)
 	}
 
 	return nil
