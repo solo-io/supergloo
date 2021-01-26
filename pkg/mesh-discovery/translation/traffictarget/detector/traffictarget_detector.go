@@ -135,7 +135,7 @@ func getMeshForKubeService(
 		}
 
 		// all backing workloads should be in the same mesh
-		validMesh = backingWorkloads[0].Spec.GetMesh()
+		validMesh = backingWorkloads[0].Spec.Mesh
 
 		// derive subsets from backing workloads
 		kubeService.Subsets = findSubsets(backingWorkloads)
