@@ -6,6 +6,8 @@ import (
 	"github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	v1beta2sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
+	v1alpha22 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networkingv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -63,12 +65,20 @@ var _ = Describe("Translator", func() {
 		replicaSets := appsv1sets.NewReplicaSetSet(&appsv1.ReplicaSet{})
 		daemonSets := appsv1sets.NewDaemonSetSet(&appsv1.DaemonSet{})
 		statefulSets := appsv1sets.NewStatefulSetSet(&appsv1.StatefulSet{})
+		endpoints := corev1sets.NewEndpointsSet(&corev1.Endpoints{})
+		virtualMeshes := networkingv1alpha2sets.NewVirtualMeshSet(&v1alpha22.VirtualMesh{})
+		inLocal := input.NewSettingsSnapshot(
+			"",
+			nil,
+			virtualMeshes,
+		)
 		inRemote := input.NewDiscoveryInputSnapshot(
 			"mesh-discovery-remote",
 			appMeshes,
 			configMaps,
 			services,
 			pods,
+			endpoints,
 			nodes,
 			deployments,
 			replicaSets,
@@ -79,7 +89,7 @@ var _ = Describe("Translator", func() {
 
 		mockDependencyFactory.EXPECT().MakeMeshTranslator(ctx).Return(mockMeshTranslator)
 		mockDependencyFactory.EXPECT().MakeWorkloadTranslator(ctx, inRemote).Return(mockWorkloadTranslator)
-		mockDependencyFactory.EXPECT().MakeTrafficTargetTranslator(ctx).Return(mockTrafficTargetTranslator)
+		mockDependencyFactory.EXPECT().MakeTrafficTargetTranslator().Return(mockTrafficTargetTranslator)
 
 		labeledMeta := metav1.ObjectMeta{Labels: labelutils.ClusterLabels("cluster")}
 
@@ -89,9 +99,9 @@ var _ = Describe("Translator", func() {
 
 		mockMeshTranslator.EXPECT().TranslateMeshes(inRemote, settings).Return(meshes)
 		mockWorkloadTranslator.EXPECT().TranslateWorkloads(deployments, daemonSets, statefulSets, meshes).Return(workloads)
-		mockTrafficTargetTranslator.EXPECT().TranslateTrafficTargets(services, workloads, meshes).Return(trafficTargets)
+		mockTrafficTargetTranslator.EXPECT().TranslateTrafficTargets(ctx, services, endpoints, workloads, meshes, virtualMeshes).Return(trafficTargets)
 
-		out, err := t.Translate(ctx, inRemote, settings)
+		out, err := t.Translate(ctx, inRemote, settings, inLocal)
 		Expect(err).NotTo(HaveOccurred())
 
 		expectedOut, err := discovery.NewSinglePartitionedSnapshot(

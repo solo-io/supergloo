@@ -32,7 +32,7 @@ var (
 			GeneratedCodeRoot:    "pkg/api/discovery.mesh.gloo.solo.io",
 			RemoteInputResources: io.DiscoveryInputTypes,
 			RemoteSnapshotName:   "DiscoveryInput",
-			LocalInputResources:  io.DiscoverySettingsTypes,
+			LocalInputResources:  io.DiscoveryLocalInputTypes,
 			LocalSnapshotName:    "Settings",
 			OutputResources:      []io.OutputSnapshot{io.DiscoveryOutputTypes},
 			AgentMode:            true,
