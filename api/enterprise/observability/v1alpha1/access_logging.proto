@@ -1,0 +1,53 @@
+syntax = "proto3";
+package observability.enterprise.mesh.gloo.solo.io;
+
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1";
+
+import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/traffic_policy.proto";
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "api/common/v1alpha1/request_matchers.proto";
+
+/*
+    Describes a record of access logs sourced from a set of workloads and optionally
+    filtered based on request criteria.
+*/
+message AccessLogRecordSpec {
+
+    // Select the workloads to be configured to emit access logs.
+    // Leave empty to apply to all workloads managed by Gloo Mesh.
+    repeated .networking.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 1;
+
+    // Configure criteria for determining which access logs will be recorded.
+    // The list is disjunctive, a request will be recorded if it matches any filter.
+    // Leave empty to emit all access logs.
+    repeated Filter filters = 2;
+
+    // Specify criteria for recording access logs. A request must match all specified criteria to be recorded.
+    message Filter {
+        // Matches against a response status code. Omit to match any status code.
+        .common.mesh.gloo.solo.io.StatusCodeMatcher status_code_matcher = 1;
+
+        // Matches against a request or response header. Omit to match any headers.
+        .common.mesh.gloo.solo.io.HeaderMatcher header_matcher = 2;
+    }
+}
+
+message AccessLogRecordStatus {
+
+    // The most recent generation observed in the the AccessLogRecord metadata.
+    // If the observedGeneration does not match generation, the controller has not processed the most
+    // recent version of this resource.
+    int64 observed_generation = 1;
+
+    // The state of the overall resource, will only show accepted if it has been successfully
+    // applied to all target workloads.
+    .networking.mesh.gloo.solo.io.ApprovalState state = 2;
+
+    // Any errors encountered during processing. Also reported to any Workloads that this object applies to.
+    repeated string errors = 3;
+
+    // references to workloads that this AccessLogRecord applies to
+    repeated .core.skv2.solo.io.ObjectRef workloads = 4;
+}
