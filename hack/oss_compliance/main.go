@@ -87,24 +87,17 @@ func run(licenses map[string]interface{}) error {
 			"github.com/solo-io/gloo-mesh/cmd/meshctl/",
 			"github.com/solo-io/gloo-mesh/cmd/gloo-mesh/",
 		},
-		Product: NewGlooProductLicenseHandler(linuxTarget, licenses),
+		Product: NewGlooProductLicenseHandler(licenses),
 	}
 	return license.PrintLicensesWithOptions(meshOptions)
 }
 
-const (
-	linuxTarget = "linux"
-	macTarget   = "mac"
-)
-
 type GlooMeshLicenseHandler struct {
-	TargetOs          string
 	LicensesToProcess map[string]interface{}
 }
 
-func NewGlooProductLicenseHandler(targetOs string, licensesToProcess map[string]interface{}) *GlooMeshLicenseHandler {
+func NewGlooProductLicenseHandler(licensesToProcess map[string]interface{}) *GlooMeshLicenseHandler {
 	return &GlooMeshLicenseHandler{
-		TargetOs:          targetOs,
 		LicensesToProcess: licensesToProcess,
 	}
 }
@@ -112,10 +105,6 @@ func NewGlooProductLicenseHandler(targetOs string, licensesToProcess map[string]
 func (lh *GlooMeshLicenseHandler) SkipLicense(l license.License) bool {
 	// explicitly don't process this license
 	if l.Template != nil && lh.LicensesToProcess[l.Template.Title] == nil {
-		return true
-	}
-	// only present on mac
-	if lh.TargetOs == linuxTarget {
 		return true
 	}
 	return false
