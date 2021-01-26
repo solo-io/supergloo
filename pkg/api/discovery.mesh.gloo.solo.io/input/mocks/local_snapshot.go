@@ -10,7 +10,8 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
+	v1alpha2sets0 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -39,10 +40,10 @@ func (m *MockSettingsSnapshot) EXPECT() *MockSettingsSnapshotMockRecorder {
 }
 
 // Settings mocks base method
-func (m *MockSettingsSnapshot) Settings() v1alpha2sets.SettingsSet {
+func (m *MockSettingsSnapshot) Settings() v1alpha2sets0.SettingsSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Settings")
-	ret0, _ := ret[0].(v1alpha2sets.SettingsSet)
+	ret0, _ := ret[0].(v1alpha2sets0.SettingsSet)
 	return ret0
 }
 
@@ -50,6 +51,20 @@ func (m *MockSettingsSnapshot) Settings() v1alpha2sets.SettingsSet {
 func (mr *MockSettingsSnapshotMockRecorder) Settings() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Settings", reflect.TypeOf((*MockSettingsSnapshot)(nil).Settings))
+}
+
+// VirtualMeshes mocks base method
+func (m *MockSettingsSnapshot) VirtualMeshes() v1alpha2sets.VirtualMeshSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VirtualMeshes")
+	ret0, _ := ret[0].(v1alpha2sets.VirtualMeshSet)
+	return ret0
+}
+
+// VirtualMeshes indicates an expected call of VirtualMeshes
+func (mr *MockSettingsSnapshotMockRecorder) VirtualMeshes() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualMeshes", reflect.TypeOf((*MockSettingsSnapshot)(nil).VirtualMeshes))
 }
 
 // SyncStatusesMultiCluster mocks base method

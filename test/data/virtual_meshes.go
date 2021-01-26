@@ -10,7 +10,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func SelfSignedVirtualMesh(dynamicClient client.Client, name, namespace string, meshes []*skv2core.ObjectRef) (*v1alpha2.VirtualMesh, error) {
+func SelfSignedVirtualMesh(
+	dynamicClient client.Client,
+	name, namespace string,
+	meshes []*skv2core.ObjectRef,
+	flatNetwork bool,
+) (*v1alpha2.VirtualMesh, error) {
 	hostnameSuffix, err := getTestHostnameSuffix(dynamicClient, meshes)
 	if err != nil {
 		return nil, err
@@ -38,6 +43,7 @@ func SelfSignedVirtualMesh(dynamicClient client.Client, name, namespace string, 
 			},
 			Federation: &v1alpha2.VirtualMeshSpec_Federation{
 				HostnameSuffix: hostnameSuffix,
+				FlatNetwork:    flatNetwork,
 			},
 		},
 	}, nil
