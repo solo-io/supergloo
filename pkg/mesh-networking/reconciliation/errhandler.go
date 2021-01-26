@@ -3,11 +3,14 @@ package reconciliation
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
+	v1alpha12 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/output"
@@ -54,6 +57,7 @@ func (e *errHandler) handleError(resource ezkube.Object, err error) {
 	}
 
 	for gvk, parents := range allParents {
+		// keep this list up to date with all user-facing CRDs
 		switch gvk {
 		case v1alpha2.VirtualMesh{}.GVK().String():
 			for _, parentVMesh := range parents {
@@ -68,7 +72,7 @@ func (e *errHandler) handleError(resource ezkube.Object, err error) {
 			}
 		case v1alpha2.AccessPolicy{}.GVK().String():
 			for _, parentAP := range parents {
-				ap, findErr := e.in.VirtualMeshes().Find(parentAP)
+				ap, findErr := e.in.AccessPolicies().Find(parentAP)
 				if findErr != nil {
 					contextutils.LoggerFrom(e.ctx).Errorf("internal error: resource for parent not found: %s", parentAP.String())
 					continue
@@ -79,7 +83,7 @@ func (e *errHandler) handleError(resource ezkube.Object, err error) {
 			}
 		case v1alpha2.TrafficPolicy{}.GVK().String():
 			for _, parentTP := range parents {
-				tp, findErr := e.in.VirtualMeshes().Find(parentTP)
+				tp, findErr := e.in.TrafficPolicies().Find(parentTP)
 				if findErr != nil {
 					contextutils.LoggerFrom(e.ctx).Errorf("internal error: resource for parent not found: %s", parentTP.String())
 					continue
@@ -90,9 +94,30 @@ func (e *errHandler) handleError(resource ezkube.Object, err error) {
 			}
 		case v1alpha2.FailoverService{}.GVK().String():
 			for _, parentFS := range parents {
-				fs, findErr := e.in.VirtualMeshes().Find(parentFS)
+				fs, findErr := e.in.FailoverServices().Find(parentFS)
 				if findErr != nil {
 					contextutils.LoggerFrom(e.ctx).Errorf("internal error: resource for parent not found: %s", parentFS.String())
+					continue
+				}
+
+				fs.Status.Errors = append(fs.Status.Errors, err.Error())
+				fs.Status.State = v1alpha2.ApprovalState_FAILED
+			}
+		case v1alpha12.WasmDeployment{}.GVK().String():
+			for _, parentWd := range parents {
+				fs, findErr := e.in.WasmDeployments().Find(parentWd)
+				if findErr != nil {
+					contextutils.LoggerFrom(e.ctx).Errorf("internal error: resource for parent not found: %s", parentWd.String())
+					continue
+				}
+
+				fs.Status.Error = strings.Join([]string{fs.Status.Error, err.Error()}, ", ")
+			}
+		case v1alpha1.AccessLogRecord{}.GVK().String():
+			for _, parentAlr := range parents {
+				fs, findErr := e.in.AccessLogRecords().Find(parentAlr)
+				if findErr != nil {
+					contextutils.LoggerFrom(e.ctx).Errorf("internal error: resource for parent not found: %s", parentAlr.String())
 					continue
 				}
 
