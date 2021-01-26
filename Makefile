@@ -71,7 +71,7 @@ install-go-tools: mod-download
 generated-code: operator-gen \
 				manifest-gen \
 				go-generate \
-				update-licenses \
+				generated-reference-docs \
 				fmt
 	go mod tidy
 
