@@ -254,6 +254,7 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 
 	// update statuses of input objects
 	if err := inputSnap.SyncStatuses(ctx, r.mgmtClient, input.LocalSyncStatusOptions{
+		// keep this list up to date with all networking status outputs
 		Settings:        true,
 		TrafficTarget:   true,
 		Workload:        true,
@@ -262,6 +263,8 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 		AccessPolicy:    true,
 		VirtualMesh:     true,
 		FailoverService: true,
+		WasmDeployment:  true,
+		AccessLogRecord: true,
 	}); err != nil {
 		errs = multierror.Append(errs, err)
 	}
