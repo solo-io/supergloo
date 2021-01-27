@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
-
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/output/discovery"
+	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	internal "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/internal"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/labelutils"
 )
@@ -17,7 +16,12 @@ var DefaultDependencyFactory = internal.DependencyFactoryImpl{}
 // the translator "reconciles the entire state of the world"
 type Translator interface {
 	// translates the Input Snapshot to an Output Snapshot
-	Translate(ctx context.Context, in input.DiscoveryInputSnapshot, settings *settingsv1alpha2.DiscoverySettings) (discovery.Snapshot, error)
+	Translate(
+		ctx context.Context,
+		in input.DiscoveryInputSnapshot,
+		settings *settingsv1alpha2.DiscoverySettings,
+		localSnapshot input.SettingsSnapshot,
+	) (discovery.Snapshot, error)
 }
 
 type translator struct {
@@ -31,13 +35,18 @@ func NewTranslator(dependencyFactory internal.DependencyFactory) Translator {
 	}
 }
 
-func (t translator) Translate(ctx context.Context, in input.DiscoveryInputSnapshot, settings *settingsv1alpha2.DiscoverySettings) (discovery.Snapshot, error) {
+func (t translator) Translate(
+	ctx context.Context,
+	in input.DiscoveryInputSnapshot,
+	settings *settingsv1alpha2.DiscoverySettings,
+	localSnapshot input.SettingsSnapshot,
+) (discovery.Snapshot, error) {
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(ctx)
 
 	workloadTranslator := t.dependencies.MakeWorkloadTranslator(ctx, in)
 
-	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator(ctx)
+	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator()
 
 	meshes := meshTranslator.TranslateMeshes(in, settings)
 
@@ -48,7 +57,14 @@ func (t translator) Translate(ctx context.Context, in input.DiscoveryInputSnapsh
 		meshes,
 	)
 
-	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(in.V1Services(), workloads, meshes)
+	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(
+		ctx,
+		in.V1Services(),
+		in.V1Endpoints(),
+		workloads,
+		meshes,
+		localSnapshot.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes(),
+	)
 
 	t.totalTranslates++
 

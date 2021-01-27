@@ -4,6 +4,7 @@
 
 // The Input SettingsSnapshot contains the set of all:
 // * SettingsMeshGlooSoloIov1Alpha2Settings
+// * NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
@@ -30,6 +31,9 @@ import (
 
 	settings_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	settings_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
+
+	networking_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networking_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 )
 
 // the snapshot of input resources consumed by translation
@@ -37,6 +41,9 @@ type SettingsSnapshot interface {
 
 	// return the set of input SettingsMeshGlooSoloIov1Alpha2Settings
 	SettingsMeshGlooSoloIov1Alpha2Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+
+	// return the set of input NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
+	NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 	// update the status of all input objects which support
 	// the Status subresource (across multiple clusters)
 	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts SettingsSyncStatusOptions) error
@@ -52,12 +59,17 @@ type SettingsSyncStatusOptions struct {
 
 	// sync status of SettingsMeshGlooSoloIov1Alpha2Settings objects
 	SettingsMeshGlooSoloIov1Alpha2Settings bool
+
+	// sync status of NetworkingMeshGlooSoloIov1Alpha2VirtualMesh objects
+	NetworkingMeshGlooSoloIov1Alpha2VirtualMesh bool
 }
 
 type snapshotSettings struct {
 	name string
 
 	settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+
+	networkingMeshGlooSoloIov1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 }
 
 func NewSettingsSnapshot(
@@ -65,11 +77,14 @@ func NewSettingsSnapshot(
 
 	settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet,
 
+	networkingMeshGlooSoloIov1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet,
+
 ) SettingsSnapshot {
 	return &snapshotSettings{
 		name: name,
 
-		settingsMeshGlooSoloIov1Alpha2Settings: settingsMeshGlooSoloIov1Alpha2Settings,
+		settingsMeshGlooSoloIov1Alpha2Settings:        settingsMeshGlooSoloIov1Alpha2Settings,
+		networkingMeshGlooSoloIov1Alpha2VirtualMeshes: networkingMeshGlooSoloIov1Alpha2VirtualMeshes,
 	}
 }
 
@@ -77,11 +92,28 @@ func (s snapshotSettings) SettingsMeshGlooSoloIov1Alpha2Settings() settings_mesh
 	return s.settingsMeshGlooSoloIov1Alpha2Settings
 }
 
+func (s snapshotSettings) NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet {
+	return s.networkingMeshGlooSoloIov1Alpha2VirtualMeshes
+}
+
 func (s snapshotSettings) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts SettingsSyncStatusOptions) error {
 	var errs error
 
 	if opts.SettingsMeshGlooSoloIov1Alpha2Settings {
 		for _, obj := range s.SettingsMeshGlooSoloIov1Alpha2Settings().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
+	if opts.NetworkingMeshGlooSoloIov1Alpha2VirtualMesh {
+		for _, obj := range s.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -105,6 +137,14 @@ func (s snapshotSettings) SyncStatuses(ctx context.Context, c client.Client, opt
 			}
 		}
 	}
+
+	if opts.NetworkingMeshGlooSoloIov1Alpha2VirtualMesh {
+		for _, obj := range s.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
 	return errs
 }
 
@@ -112,6 +152,7 @@ func (s snapshotSettings) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
 	snapshotMap["settingsMeshGlooSoloIov1Alpha2Settings"] = s.settingsMeshGlooSoloIov1Alpha2Settings.List()
+	snapshotMap["networkingMeshGlooSoloIov1Alpha2VirtualMeshes"] = s.networkingMeshGlooSoloIov1Alpha2VirtualMeshes.List()
 	return json.Marshal(snapshotMap)
 }
 
@@ -125,6 +166,9 @@ type SettingsBuildOptions struct {
 
 	// List options for composing a snapshot from SettingsMeshGlooSoloIov1Alpha2Settings
 	SettingsMeshGlooSoloIov1Alpha2Settings ResourceSettingsBuildOptions
+
+	// List options for composing a snapshot from NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
+	NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes ResourceSettingsBuildOptions
 }
 
 // Options for reading resources of a given type
@@ -158,11 +202,16 @@ func (b *multiClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name st
 
 	settingsMeshGlooSoloIov1Alpha2Settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
+	networkingMeshGlooSoloIov1Alpha2VirtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
+
 	var errs error
 
 	for _, cluster := range b.clusters.ListClusters() {
 
 		if err := b.insertSettingsMeshGlooSoloIov1Alpha2SettingsFromCluster(ctx, cluster, settingsMeshGlooSoloIov1Alpha2Settings, opts.SettingsMeshGlooSoloIov1Alpha2Settings); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertNetworkingMeshGlooSoloIov1Alpha2VirtualMeshesFromCluster(ctx, cluster, networkingMeshGlooSoloIov1Alpha2VirtualMeshes, opts.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 
@@ -172,6 +221,7 @@ func (b *multiClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name st
 		name,
 
 		settingsMeshGlooSoloIov1Alpha2Settings,
+		networkingMeshGlooSoloIov1Alpha2VirtualMeshes,
 	)
 
 	return outputSnap, errs
@@ -220,6 +270,49 @@ func (b *multiClusterSettingsBuilder) insertSettingsMeshGlooSoloIov1Alpha2Settin
 	return nil
 }
 
+func (b *multiClusterSettingsBuilder) insertNetworkingMeshGlooSoloIov1Alpha2VirtualMeshesFromCluster(ctx context.Context, cluster string, networkingMeshGlooSoloIov1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceSettingsBuildOptions) error {
+	networkingMeshGlooSoloIov1Alpha2VirtualMeshClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterVirtualMeshClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "VirtualMesh",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	networkingMeshGlooSoloIov1Alpha2VirtualMeshList, err := networkingMeshGlooSoloIov1Alpha2VirtualMeshClient.ListVirtualMesh(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range networkingMeshGlooSoloIov1Alpha2VirtualMeshList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		networkingMeshGlooSoloIov1Alpha2VirtualMeshes.Insert(&item)
+	}
+
+	return nil
+}
+
 // build a snapshot from resources in a single cluster
 type singleClusterSettingsBuilder struct {
 	mgr         manager.Manager
@@ -249,9 +342,14 @@ func (b *singleClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name s
 
 	settingsMeshGlooSoloIov1Alpha2Settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
+	networkingMeshGlooSoloIov1Alpha2VirtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
+
 	var errs error
 
 	if err := b.insertSettingsMeshGlooSoloIov1Alpha2Settings(ctx, settingsMeshGlooSoloIov1Alpha2Settings, opts.SettingsMeshGlooSoloIov1Alpha2Settings); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertNetworkingMeshGlooSoloIov1Alpha2VirtualMeshes(ctx, networkingMeshGlooSoloIov1Alpha2VirtualMeshes, opts.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -259,6 +357,7 @@ func (b *singleClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name s
 		name,
 
 		settingsMeshGlooSoloIov1Alpha2Settings,
+		networkingMeshGlooSoloIov1Alpha2VirtualMeshes,
 	)
 
 	return outputSnap, errs
@@ -293,6 +392,40 @@ func (b *singleClusterSettingsBuilder) insertSettingsMeshGlooSoloIov1Alpha2Setti
 		item := item // pike
 		item.ClusterName = b.clusterName
 		settingsMeshGlooSoloIov1Alpha2Settings.Insert(&item)
+	}
+
+	return nil
+}
+
+func (b *singleClusterSettingsBuilder) insertNetworkingMeshGlooSoloIov1Alpha2VirtualMeshes(ctx context.Context, networkingMeshGlooSoloIov1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceSettingsBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "VirtualMesh",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	networkingMeshGlooSoloIov1Alpha2VirtualMeshList, err := networking_mesh_gloo_solo_io_v1alpha2.NewVirtualMeshClient(b.mgr.GetClient()).ListVirtualMesh(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range networkingMeshGlooSoloIov1Alpha2VirtualMeshList.Items {
+		item := item // pike
+		item.ClusterName = b.clusterName
+		networkingMeshGlooSoloIov1Alpha2VirtualMeshes.Insert(&item)
 	}
 
 	return nil

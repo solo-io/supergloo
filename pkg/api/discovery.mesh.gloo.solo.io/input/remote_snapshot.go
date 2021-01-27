@@ -7,6 +7,7 @@
 // * V1ConfigMaps
 // * V1Services
 // * V1Pods
+// * V1Endpoints
 // * V1Nodes
 // * Appsv1Deployments
 // * Appsv1ReplicaSets
@@ -57,6 +58,8 @@ type DiscoveryInputSnapshot interface {
 	V1Services() v1_sets.ServiceSet
 	// return the set of input V1Pods
 	V1Pods() v1_sets.PodSet
+	// return the set of input V1Endpoints
+	V1Endpoints() v1_sets.EndpointsSet
 	// return the set of input V1Nodes
 	V1Nodes() v1_sets.NodeSet
 
@@ -84,6 +87,8 @@ type DiscoveryInputSyncStatusOptions struct {
 	V1Service bool
 	// sync status of V1Pod objects
 	V1Pod bool
+	// sync status of V1Endpoints objects
+	V1Endpoints bool
 	// sync status of V1Node objects
 	V1Node bool
 
@@ -105,6 +110,7 @@ type snapshotDiscoveryInput struct {
 	v1ConfigMaps v1_sets.ConfigMapSet
 	v1Services   v1_sets.ServiceSet
 	v1Pods       v1_sets.PodSet
+	v1Endpoints  v1_sets.EndpointsSet
 	v1Nodes      v1_sets.NodeSet
 
 	appsv1Deployments  apps_v1_sets.DeploymentSet
@@ -121,6 +127,7 @@ func NewDiscoveryInputSnapshot(
 	v1ConfigMaps v1_sets.ConfigMapSet,
 	v1Services v1_sets.ServiceSet,
 	v1Pods v1_sets.PodSet,
+	v1Endpoints v1_sets.EndpointsSet,
 	v1Nodes v1_sets.NodeSet,
 
 	appsv1Deployments apps_v1_sets.DeploymentSet,
@@ -136,6 +143,7 @@ func NewDiscoveryInputSnapshot(
 		v1ConfigMaps:               v1ConfigMaps,
 		v1Services:                 v1Services,
 		v1Pods:                     v1Pods,
+		v1Endpoints:                v1Endpoints,
 		v1Nodes:                    v1Nodes,
 		appsv1Deployments:          appsv1Deployments,
 		appsv1ReplicaSets:          appsv1ReplicaSets,
@@ -158,6 +166,10 @@ func (s snapshotDiscoveryInput) V1Services() v1_sets.ServiceSet {
 
 func (s snapshotDiscoveryInput) V1Pods() v1_sets.PodSet {
 	return s.v1Pods
+}
+
+func (s snapshotDiscoveryInput) V1Endpoints() v1_sets.EndpointsSet {
+	return s.v1Endpoints
 }
 
 func (s snapshotDiscoveryInput) V1Nodes() v1_sets.NodeSet {
@@ -187,6 +199,7 @@ func (s snapshotDiscoveryInput) MarshalJSON() ([]byte, error) {
 	snapshotMap["v1ConfigMaps"] = s.v1ConfigMaps.List()
 	snapshotMap["v1Services"] = s.v1Services.List()
 	snapshotMap["v1Pods"] = s.v1Pods.List()
+	snapshotMap["v1Endpoints"] = s.v1Endpoints.List()
 	snapshotMap["v1Nodes"] = s.v1Nodes.List()
 	snapshotMap["appsv1Deployments"] = s.appsv1Deployments.List()
 	snapshotMap["appsv1ReplicaSets"] = s.appsv1ReplicaSets.List()
@@ -212,6 +225,8 @@ type DiscoveryInputBuildOptions struct {
 	V1Services ResourceDiscoveryInputBuildOptions
 	// List options for composing a snapshot from V1Pods
 	V1Pods ResourceDiscoveryInputBuildOptions
+	// List options for composing a snapshot from V1Endpoints
+	V1Endpoints ResourceDiscoveryInputBuildOptions
 	// List options for composing a snapshot from V1Nodes
 	V1Nodes ResourceDiscoveryInputBuildOptions
 
@@ -259,6 +274,7 @@ func (b *multiClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, n
 	v1ConfigMaps := v1_sets.NewConfigMapSet()
 	v1Services := v1_sets.NewServiceSet()
 	v1Pods := v1_sets.NewPodSet()
+	v1Endpoints := v1_sets.NewEndpointsSet()
 	v1Nodes := v1_sets.NewNodeSet()
 
 	appsv1Deployments := apps_v1_sets.NewDeploymentSet()
@@ -280,6 +296,9 @@ func (b *multiClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, n
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertV1PodsFromCluster(ctx, cluster, v1Pods, opts.V1Pods); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertV1EndpointsFromCluster(ctx, cluster, v1Endpoints, opts.V1Endpoints); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertV1NodesFromCluster(ctx, cluster, v1Nodes, opts.V1Nodes); err != nil {
@@ -307,6 +326,7 @@ func (b *multiClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, n
 		v1ConfigMaps,
 		v1Services,
 		v1Pods,
+		v1Endpoints,
 		v1Nodes,
 		appsv1Deployments,
 		appsv1ReplicaSets,
@@ -482,6 +502,48 @@ func (b *multiClusterDiscoveryInputBuilder) insertV1PodsFromCluster(ctx context.
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
 		v1Pods.Insert(&item)
+	}
+
+	return nil
+}
+func (b *multiClusterDiscoveryInputBuilder) insertV1EndpointsFromCluster(ctx context.Context, cluster string, v1Endpoints v1_sets.EndpointsSet, opts ResourceDiscoveryInputBuildOptions) error {
+	v1EndpointsClient, err := v1.NewMulticlusterEndpointsClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Endpoints",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	v1EndpointsList, err := v1EndpointsClient.ListEndpoints(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range v1EndpointsList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		v1Endpoints.Insert(&item)
 	}
 
 	return nil
@@ -730,6 +792,7 @@ func (b *singleClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, 
 	v1ConfigMaps := v1_sets.NewConfigMapSet()
 	v1Services := v1_sets.NewServiceSet()
 	v1Pods := v1_sets.NewPodSet()
+	v1Endpoints := v1_sets.NewEndpointsSet()
 	v1Nodes := v1_sets.NewNodeSet()
 
 	appsv1Deployments := apps_v1_sets.NewDeploymentSet()
@@ -749,6 +812,9 @@ func (b *singleClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, 
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertV1Pods(ctx, v1Pods, opts.V1Pods); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertV1Endpoints(ctx, v1Endpoints, opts.V1Endpoints); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertV1Nodes(ctx, v1Nodes, opts.V1Nodes); err != nil {
@@ -774,6 +840,7 @@ func (b *singleClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, 
 		v1ConfigMaps,
 		v1Services,
 		v1Pods,
+		v1Endpoints,
 		v1Nodes,
 		appsv1Deployments,
 		appsv1ReplicaSets,
@@ -913,6 +980,39 @@ func (b *singleClusterDiscoveryInputBuilder) insertV1Pods(ctx context.Context, v
 		item := item // pike
 		item.ClusterName = b.clusterName
 		v1Pods.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterDiscoveryInputBuilder) insertV1Endpoints(ctx context.Context, v1Endpoints v1_sets.EndpointsSet, opts ResourceDiscoveryInputBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Endpoints",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	v1EndpointsList, err := v1.NewEndpointsClient(b.mgr.GetClient()).ListEndpoints(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range v1EndpointsList.Items {
+		item := item // pike
+		item.ClusterName = b.clusterName
+		v1Endpoints.Insert(&item)
 	}
 
 	return nil

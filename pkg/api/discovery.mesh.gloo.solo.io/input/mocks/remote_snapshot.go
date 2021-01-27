@@ -94,6 +94,20 @@ func (mr *MockDiscoveryInputSnapshotMockRecorder) V1Pods() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1Pods", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).V1Pods))
 }
 
+// V1Endpoints mocks base method
+func (m *MockDiscoveryInputSnapshot) V1Endpoints() v1sets0.EndpointsSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "V1Endpoints")
+	ret0, _ := ret[0].(v1sets0.EndpointsSet)
+	return ret0
+}
+
+// V1Endpoints indicates an expected call of V1Endpoints
+func (mr *MockDiscoveryInputSnapshotMockRecorder) V1Endpoints() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1Endpoints", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).V1Endpoints))
+}
+
 // V1Nodes mocks base method
 func (m *MockDiscoveryInputSnapshot) V1Nodes() v1sets0.NodeSet {
 	m.ctrl.T.Helper()

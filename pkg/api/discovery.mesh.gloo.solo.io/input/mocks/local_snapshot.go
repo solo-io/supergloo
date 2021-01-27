@@ -10,7 +10,8 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
+	v1alpha2sets0 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -39,10 +40,10 @@ func (m *MockSettingsSnapshot) EXPECT() *MockSettingsSnapshotMockRecorder {
 }
 
 // SettingsMeshGlooSoloIov1Alpha2Settings mocks base method
-func (m *MockSettingsSnapshot) SettingsMeshGlooSoloIov1Alpha2Settings() v1alpha2sets.SettingsSet {
+func (m *MockSettingsSnapshot) SettingsMeshGlooSoloIov1Alpha2Settings() v1alpha2sets0.SettingsSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SettingsMeshGlooSoloIov1Alpha2Settings")
-	ret0, _ := ret[0].(v1alpha2sets.SettingsSet)
+	ret0, _ := ret[0].(v1alpha2sets0.SettingsSet)
 	return ret0
 }
 
@@ -50,6 +51,20 @@ func (m *MockSettingsSnapshot) SettingsMeshGlooSoloIov1Alpha2Settings() v1alpha2
 func (mr *MockSettingsSnapshotMockRecorder) SettingsMeshGlooSoloIov1Alpha2Settings() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SettingsMeshGlooSoloIov1Alpha2Settings", reflect.TypeOf((*MockSettingsSnapshot)(nil).SettingsMeshGlooSoloIov1Alpha2Settings))
+}
+
+// NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes mocks base method
+func (m *MockSettingsSnapshot) NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes() v1alpha2sets.VirtualMeshSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes")
+	ret0, _ := ret[0].(v1alpha2sets.VirtualMeshSet)
+	return ret0
+}
+
+// NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes indicates an expected call of NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
+func (mr *MockSettingsSnapshotMockRecorder) NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes", reflect.TypeOf((*MockSettingsSnapshot)(nil).NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes))
 }
 
 // SyncStatusesMultiCluster mocks base method

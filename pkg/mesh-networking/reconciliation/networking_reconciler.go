@@ -254,14 +254,17 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 
 	// update statuses of input objects
 	if err := inputSnap.SyncStatuses(ctx, r.mgmtClient, input.LocalSyncStatusOptions{
-		SettingsMeshGlooSoloIov1Alpha2Settings:          true,
-		DiscoveryMeshGlooSoloIov1Alpha2TrafficTarget:    true,
-		DiscoveryMeshGlooSoloIov1Alpha2Workload:         true,
-		DiscoveryMeshGlooSoloIov1Alpha2Mesh:             true,
-		NetworkingMeshGlooSoloIov1Alpha2TrafficPolicy:   true,
-		NetworkingMeshGlooSoloIov1Alpha2AccessPolicy:    true,
-		NetworkingMeshGlooSoloIov1Alpha2VirtualMesh:     true,
-		NetworkingMeshGlooSoloIov1Alpha2FailoverService: true,
+		// keep this list up to date with all networking status outputs
+		SettingsMeshGlooSoloIov1Alpha2Settings:                       true,
+		DiscoveryMeshGlooSoloIov1Alpha2TrafficTarget:                 true,
+		DiscoveryMeshGlooSoloIov1Alpha2Workload:                      true,
+		DiscoveryMeshGlooSoloIov1Alpha2Mesh:                          true,
+		NetworkingMeshGlooSoloIov1Alpha2TrafficPolicy:                true,
+		NetworkingMeshGlooSoloIov1Alpha2AccessPolicy:                 true,
+		NetworkingMeshGlooSoloIov1Alpha2VirtualMesh:                  true,
+		NetworkingMeshGlooSoloIov1Alpha2FailoverService:              true,
+		NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployment:     true,
+		ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecord: true,
 	}); err != nil {
 		errs = multierror.Append(errs, err)
 	}

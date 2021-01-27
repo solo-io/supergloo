@@ -24,6 +24,7 @@ type InputDiscoveryInputSnapshotManualBuilder struct {
 	v1ConfigMaps v1_sets.ConfigMapSet
 	v1Services   v1_sets.ServiceSet
 	v1Pods       v1_sets.PodSet
+	v1Endpoints  v1_sets.EndpointsSet
 	v1Nodes      v1_sets.NodeSet
 
 	appsv1Deployments  apps_v1_sets.DeploymentSet
@@ -41,6 +42,7 @@ func NewInputDiscoveryInputSnapshotManualBuilder(name string) *InputDiscoveryInp
 		v1ConfigMaps: v1_sets.NewConfigMapSet(),
 		v1Services:   v1_sets.NewServiceSet(),
 		v1Pods:       v1_sets.NewPodSet(),
+		v1Endpoints:  v1_sets.NewEndpointsSet(),
 		v1Nodes:      v1_sets.NewNodeSet(),
 
 		appsv1Deployments:  apps_v1_sets.NewDeploymentSet(),
@@ -59,6 +61,7 @@ func (i *InputDiscoveryInputSnapshotManualBuilder) Build() DiscoveryInputSnapsho
 		i.v1ConfigMaps,
 		i.v1Services,
 		i.v1Pods,
+		i.v1Endpoints,
 		i.v1Nodes,
 
 		i.appsv1Deployments,
@@ -81,6 +84,10 @@ func (i *InputDiscoveryInputSnapshotManualBuilder) AddV1Services(v1Services []*v
 }
 func (i *InputDiscoveryInputSnapshotManualBuilder) AddV1Pods(v1Pods []*v1.Pod) *InputDiscoveryInputSnapshotManualBuilder {
 	i.v1Pods.Insert(v1Pods...)
+	return i
+}
+func (i *InputDiscoveryInputSnapshotManualBuilder) AddV1Endpoints(v1Endpoints []*v1.Endpoints) *InputDiscoveryInputSnapshotManualBuilder {
+	i.v1Endpoints.Insert(v1Endpoints...)
 	return i
 }
 func (i *InputDiscoveryInputSnapshotManualBuilder) AddV1Nodes(v1Nodes []*v1.Node) *InputDiscoveryInputSnapshotManualBuilder {
