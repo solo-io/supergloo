@@ -45,3 +45,25 @@ func (this *WasmDeploymentStatus) MarshalJSON() ([]byte, error) {
 func (this *WasmDeploymentStatus) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
+
+// MarshalJSON is a custom marshaler for GlobalServiceSpec
+func (this *GlobalServiceSpec) MarshalJSON() ([]byte, error) {
+	str, err := marshaller.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for GlobalServiceSpec
+func (this *GlobalServiceSpec) UnmarshalJSON(b []byte) error {
+	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for GlobalServiceStatus
+func (this *GlobalServiceStatus) MarshalJSON() ([]byte, error) {
+	str, err := marshaller.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for GlobalServiceStatus
+func (this *GlobalServiceStatus) UnmarshalJSON(b []byte) error {
+	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
+}

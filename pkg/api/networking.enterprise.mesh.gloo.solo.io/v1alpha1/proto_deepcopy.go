@@ -19,3 +19,15 @@ func (in *WasmDeploymentStatus) DeepCopyInto(out *WasmDeploymentStatus) {
 	p := proto.Clone(in).(*WasmDeploymentStatus)
 	*out = *p
 }
+
+// DeepCopyInto for the GlobalService.Spec
+func (in *GlobalServiceSpec) DeepCopyInto(out *GlobalServiceSpec) {
+	p := proto.Clone(in).(*GlobalServiceSpec)
+	*out = *p
+}
+
+// DeepCopyInto for the GlobalService.Status
+func (in *GlobalServiceStatus) DeepCopyInto(out *GlobalServiceStatus) {
+	p := proto.Clone(in).(*GlobalServiceStatus)
+	*out = *p
+}

@@ -41,6 +41,8 @@ func (m *multiclusterClientset) Cluster(cluster string) (Clientset, error) {
 type Clientset interface {
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1alpha1/v1alpha1 APIs
 	WasmDeployments() WasmDeploymentClient
+	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1alpha1/v1alpha1 APIs
+	GlobalServices() GlobalServiceClient
 }
 
 type clientSet struct {
@@ -68,6 +70,11 @@ func NewClientset(client client.Client) Clientset {
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1alpha1/v1alpha1 APIs
 func (c *clientSet) WasmDeployments() WasmDeploymentClient {
 	return NewWasmDeploymentClient(c.client)
+}
+
+// clienset for the networking.enterprise.mesh.gloo.solo.io/v1alpha1/v1alpha1 APIs
+func (c *clientSet) GlobalServices() GlobalServiceClient {
+	return NewGlobalServiceClient(c.client)
 }
 
 // Reader knows how to read and list WasmDeployments.
@@ -210,4 +217,146 @@ func (m *multiclusterWasmDeploymentClient) Cluster(cluster string) (WasmDeployme
 		return nil, err
 	}
 	return NewWasmDeploymentClient(client), nil
+}
+
+// Reader knows how to read and list GlobalServices.
+type GlobalServiceReader interface {
+	// Get retrieves a GlobalService for the given object key
+	GetGlobalService(ctx context.Context, key client.ObjectKey) (*GlobalService, error)
+
+	// List retrieves list of GlobalServices for a given namespace and list options.
+	ListGlobalService(ctx context.Context, opts ...client.ListOption) (*GlobalServiceList, error)
+}
+
+// GlobalServiceTransitionFunction instructs the GlobalServiceWriter how to transition between an existing
+// GlobalService object and a desired on an Upsert
+type GlobalServiceTransitionFunction func(existing, desired *GlobalService) error
+
+// Writer knows how to create, delete, and update GlobalServices.
+type GlobalServiceWriter interface {
+	// Create saves the GlobalService object.
+	CreateGlobalService(ctx context.Context, obj *GlobalService, opts ...client.CreateOption) error
+
+	// Delete deletes the GlobalService object.
+	DeleteGlobalService(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+	// Update updates the given GlobalService object.
+	UpdateGlobalService(ctx context.Context, obj *GlobalService, opts ...client.UpdateOption) error
+
+	// Patch patches the given GlobalService object.
+	PatchGlobalService(ctx context.Context, obj *GlobalService, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all GlobalService objects matching the given options.
+	DeleteAllOfGlobalService(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the GlobalService object.
+	UpsertGlobalService(ctx context.Context, obj *GlobalService, transitionFuncs ...GlobalServiceTransitionFunction) error
+}
+
+// StatusWriter knows how to update status subresource of a GlobalService object.
+type GlobalServiceStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given GlobalService object.
+	UpdateGlobalServiceStatus(ctx context.Context, obj *GlobalService, opts ...client.UpdateOption) error
+
+	// Patch patches the given GlobalService object's subresource.
+	PatchGlobalServiceStatus(ctx context.Context, obj *GlobalService, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on GlobalServices.
+type GlobalServiceClient interface {
+	GlobalServiceReader
+	GlobalServiceWriter
+	GlobalServiceStatusWriter
+}
+
+type globalServiceClient struct {
+	client client.Client
+}
+
+func NewGlobalServiceClient(client client.Client) *globalServiceClient {
+	return &globalServiceClient{client: client}
+}
+
+func (c *globalServiceClient) GetGlobalService(ctx context.Context, key client.ObjectKey) (*GlobalService, error) {
+	obj := &GlobalService{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *globalServiceClient) ListGlobalService(ctx context.Context, opts ...client.ListOption) (*GlobalServiceList, error) {
+	list := &GlobalServiceList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *globalServiceClient) CreateGlobalService(ctx context.Context, obj *GlobalService, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *globalServiceClient) DeleteGlobalService(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &GlobalService{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *globalServiceClient) UpdateGlobalService(ctx context.Context, obj *GlobalService, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *globalServiceClient) PatchGlobalService(ctx context.Context, obj *GlobalService, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *globalServiceClient) DeleteAllOfGlobalService(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &GlobalService{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *globalServiceClient) UpsertGlobalService(ctx context.Context, obj *GlobalService, transitionFuncs ...GlobalServiceTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*GlobalService), desired.(*GlobalService)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
+func (c *globalServiceClient) UpdateGlobalServiceStatus(ctx context.Context, obj *GlobalService, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *globalServiceClient) PatchGlobalServiceStatus(ctx context.Context, obj *GlobalService, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides GlobalServiceClients for multiple clusters.
+type MulticlusterGlobalServiceClient interface {
+	// Cluster returns a GlobalServiceClient for the given cluster
+	Cluster(cluster string) (GlobalServiceClient, error)
+}
+
+type multiclusterGlobalServiceClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterGlobalServiceClient(client multicluster.Client) MulticlusterGlobalServiceClient {
+	return &multiclusterGlobalServiceClient{client: client}
+}
+
+func (m *multiclusterGlobalServiceClient) Cluster(cluster string) (GlobalServiceClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewGlobalServiceClient(client), nil
 }

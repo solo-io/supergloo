@@ -44,3 +44,31 @@ func WasmDeploymentClientFromConfigFactoryProvider() WasmDeploymentClientFromCon
 		return clients.WasmDeployments(), nil
 	}
 }
+
+// Provider for GlobalServiceClient from Clientset
+func GlobalServiceClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1alpha1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalServiceClient {
+	return clients.GlobalServices()
+}
+
+// Provider for GlobalService Client from Client
+func GlobalServiceClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalServiceClient {
+	return networking_enterprise_mesh_gloo_solo_io_v1alpha1.NewGlobalServiceClient(client)
+}
+
+type GlobalServiceClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalServiceClient
+
+func GlobalServiceClientFactoryProvider() GlobalServiceClientFactory {
+	return GlobalServiceClientProvider
+}
+
+type GlobalServiceClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalServiceClient, error)
+
+func GlobalServiceClientFromConfigFactoryProvider() GlobalServiceClientFromConfigFactory {
+	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalServiceClient, error) {
+		clients, err := networking_enterprise_mesh_gloo_solo_io_v1alpha1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.GlobalServices(), nil
+	}
+}

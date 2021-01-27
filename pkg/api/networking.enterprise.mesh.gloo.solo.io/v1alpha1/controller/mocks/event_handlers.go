@@ -134,3 +134,124 @@ func (mr *MockWasmDeploymentEventWatcherMockRecorder) AddEventHandler(ctx, h int
 	varargs := append([]interface{}{ctx, h}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockWasmDeploymentEventWatcher)(nil).AddEventHandler), varargs...)
 }
+
+// MockGlobalServiceEventHandler is a mock of GlobalServiceEventHandler interface
+type MockGlobalServiceEventHandler struct {
+	ctrl     *gomock.Controller
+	recorder *MockGlobalServiceEventHandlerMockRecorder
+}
+
+// MockGlobalServiceEventHandlerMockRecorder is the mock recorder for MockGlobalServiceEventHandler
+type MockGlobalServiceEventHandlerMockRecorder struct {
+	mock *MockGlobalServiceEventHandler
+}
+
+// NewMockGlobalServiceEventHandler creates a new mock instance
+func NewMockGlobalServiceEventHandler(ctrl *gomock.Controller) *MockGlobalServiceEventHandler {
+	mock := &MockGlobalServiceEventHandler{ctrl: ctrl}
+	mock.recorder = &MockGlobalServiceEventHandlerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockGlobalServiceEventHandler) EXPECT() *MockGlobalServiceEventHandlerMockRecorder {
+	return m.recorder
+}
+
+// CreateGlobalService mocks base method
+func (m *MockGlobalServiceEventHandler) CreateGlobalService(obj *v1alpha1.GlobalService) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateGlobalService", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateGlobalService indicates an expected call of CreateGlobalService
+func (mr *MockGlobalServiceEventHandlerMockRecorder) CreateGlobalService(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGlobalService", reflect.TypeOf((*MockGlobalServiceEventHandler)(nil).CreateGlobalService), obj)
+}
+
+// UpdateGlobalService mocks base method
+func (m *MockGlobalServiceEventHandler) UpdateGlobalService(old, new *v1alpha1.GlobalService) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateGlobalService", old, new)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateGlobalService indicates an expected call of UpdateGlobalService
+func (mr *MockGlobalServiceEventHandlerMockRecorder) UpdateGlobalService(old, new interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateGlobalService", reflect.TypeOf((*MockGlobalServiceEventHandler)(nil).UpdateGlobalService), old, new)
+}
+
+// DeleteGlobalService mocks base method
+func (m *MockGlobalServiceEventHandler) DeleteGlobalService(obj *v1alpha1.GlobalService) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteGlobalService", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteGlobalService indicates an expected call of DeleteGlobalService
+func (mr *MockGlobalServiceEventHandlerMockRecorder) DeleteGlobalService(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGlobalService", reflect.TypeOf((*MockGlobalServiceEventHandler)(nil).DeleteGlobalService), obj)
+}
+
+// GenericGlobalService mocks base method
+func (m *MockGlobalServiceEventHandler) GenericGlobalService(obj *v1alpha1.GlobalService) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenericGlobalService", obj)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GenericGlobalService indicates an expected call of GenericGlobalService
+func (mr *MockGlobalServiceEventHandlerMockRecorder) GenericGlobalService(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenericGlobalService", reflect.TypeOf((*MockGlobalServiceEventHandler)(nil).GenericGlobalService), obj)
+}
+
+// MockGlobalServiceEventWatcher is a mock of GlobalServiceEventWatcher interface
+type MockGlobalServiceEventWatcher struct {
+	ctrl     *gomock.Controller
+	recorder *MockGlobalServiceEventWatcherMockRecorder
+}
+
+// MockGlobalServiceEventWatcherMockRecorder is the mock recorder for MockGlobalServiceEventWatcher
+type MockGlobalServiceEventWatcherMockRecorder struct {
+	mock *MockGlobalServiceEventWatcher
+}
+
+// NewMockGlobalServiceEventWatcher creates a new mock instance
+func NewMockGlobalServiceEventWatcher(ctrl *gomock.Controller) *MockGlobalServiceEventWatcher {
+	mock := &MockGlobalServiceEventWatcher{ctrl: ctrl}
+	mock.recorder = &MockGlobalServiceEventWatcherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockGlobalServiceEventWatcher) EXPECT() *MockGlobalServiceEventWatcherMockRecorder {
+	return m.recorder
+}
+
+// AddEventHandler mocks base method
+func (m *MockGlobalServiceEventWatcher) AddEventHandler(ctx context.Context, h controller.GlobalServiceEventHandler, predicates ...predicate.Predicate) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, h}
+	for _, a := range predicates {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "AddEventHandler", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddEventHandler indicates an expected call of AddEventHandler
+func (mr *MockGlobalServiceEventWatcherMockRecorder) AddEventHandler(ctx, h interface{}, predicates ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, h}, predicates...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEventHandler", reflect.TypeOf((*MockGlobalServiceEventWatcher)(nil).AddEventHandler), varargs...)
+}

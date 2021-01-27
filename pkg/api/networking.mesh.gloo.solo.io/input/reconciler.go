@@ -59,6 +59,7 @@ import (
 // * VirtualMeshes
 // * FailoverServices
 // * WasmDeployments
+// * GlobalServices
 // * AccessLogRecords
 // * Secrets
 // * KubernetesClusters
@@ -157,6 +158,10 @@ func RegisterInputReconciler(
 
 	// initialize WasmDeployments reconcile loop for local cluster
 	if err := networking_enterprise_mesh_gloo_solo_io_v1alpha1_controllers.NewWasmDeploymentReconcileLoop("WasmDeployment", mgr, options.Local.WasmDeployments).RunWasmDeploymentReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+	// initialize GlobalServices reconcile loop for local cluster
+	if err := networking_enterprise_mesh_gloo_solo_io_v1alpha1_controllers.NewGlobalServiceReconcileLoop("GlobalService", mgr, options.Local.GlobalServices).RunGlobalServiceReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
@@ -388,6 +393,8 @@ type LocalReconcileOptions struct {
 
 	// Options for reconciling WasmDeployments
 	WasmDeployments reconcile.Options
+	// Options for reconciling GlobalServices
+	GlobalServices reconcile.Options
 
 	// Options for reconciling AccessLogRecords
 	AccessLogRecords reconcile.Options
@@ -515,6 +522,19 @@ func (r *localInputReconciler) ReconcileWasmDeployment(obj *networking_enterpris
 }
 
 func (r *localInputReconciler) ReconcileWasmDeploymentDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *localInputReconciler) ReconcileGlobalService(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *localInputReconciler) ReconcileGlobalServiceDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

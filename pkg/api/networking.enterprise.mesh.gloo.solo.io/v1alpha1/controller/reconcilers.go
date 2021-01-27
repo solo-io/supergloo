@@ -133,3 +133,120 @@ func (r genericWasmDeploymentFinalizer) Finalize(object ezkube.Object) error {
 	}
 	return r.finalizingReconciler.FinalizeWasmDeployment(obj)
 }
+
+// Reconcile Upsert events for the GlobalService Resource.
+// implemented by the user
+type GlobalServiceReconciler interface {
+	ReconcileGlobalService(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the GlobalService Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type GlobalServiceDeletionReconciler interface {
+	ReconcileGlobalServiceDeletion(req reconcile.Request) error
+}
+
+type GlobalServiceReconcilerFuncs struct {
+	OnReconcileGlobalService         func(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) (reconcile.Result, error)
+	OnReconcileGlobalServiceDeletion func(req reconcile.Request) error
+}
+
+func (f *GlobalServiceReconcilerFuncs) ReconcileGlobalService(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) (reconcile.Result, error) {
+	if f.OnReconcileGlobalService == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileGlobalService(obj)
+}
+
+func (f *GlobalServiceReconcilerFuncs) ReconcileGlobalServiceDeletion(req reconcile.Request) error {
+	if f.OnReconcileGlobalServiceDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileGlobalServiceDeletion(req)
+}
+
+// Reconcile and finalize the GlobalService Resource
+// implemented by the user
+type GlobalServiceFinalizer interface {
+	GlobalServiceReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	GlobalServiceFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeGlobalService(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) error
+}
+
+type GlobalServiceReconcileLoop interface {
+	RunGlobalServiceReconciler(ctx context.Context, rec GlobalServiceReconciler, predicates ...predicate.Predicate) error
+}
+
+type globalServiceReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewGlobalServiceReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) GlobalServiceReconcileLoop {
+	return &globalServiceReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService{}, options),
+	}
+}
+
+func (c *globalServiceReconcileLoop) RunGlobalServiceReconciler(ctx context.Context, reconciler GlobalServiceReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericGlobalServiceReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(GlobalServiceFinalizer); ok {
+		reconcilerWrapper = genericGlobalServiceFinalizer{
+			genericGlobalServiceReconciler: genericReconciler,
+			finalizingReconciler:           finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericGlobalServiceHandler implements a generic reconcile.Reconciler
+type genericGlobalServiceReconciler struct {
+	reconciler GlobalServiceReconciler
+}
+
+func (r genericGlobalServiceReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: GlobalService handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileGlobalService(obj)
+}
+
+func (r genericGlobalServiceReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(GlobalServiceDeletionReconciler); ok {
+		return deletionReconciler.ReconcileGlobalServiceDeletion(request)
+	}
+	return nil
+}
+
+// genericGlobalServiceFinalizer implements a generic reconcile.FinalizingReconciler
+type genericGlobalServiceFinalizer struct {
+	genericGlobalServiceReconciler
+	finalizingReconciler GlobalServiceFinalizer
+}
+
+func (r genericGlobalServiceFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.GlobalServiceFinalizerName()
+}
+
+func (r genericGlobalServiceFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService)
+	if !ok {
+		return errors.Errorf("internal error: GlobalService handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeGlobalService(obj)
+}

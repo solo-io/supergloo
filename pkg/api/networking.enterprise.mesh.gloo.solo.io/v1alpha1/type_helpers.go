@@ -5,3 +5,6 @@ package v1alpha1
 
 // WasmDeploymentSlice represents a slice of *WasmDeployment
 type WasmDeploymentSlice []*WasmDeployment
+
+// GlobalServiceSlice represents a slice of *GlobalService
+type GlobalServiceSlice []*GlobalService

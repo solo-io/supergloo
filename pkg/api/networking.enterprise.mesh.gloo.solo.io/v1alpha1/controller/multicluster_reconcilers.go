@@ -88,3 +88,74 @@ func (g genericWasmDeploymentMulticlusterReconciler) Reconcile(cluster string, o
 	}
 	return g.reconciler.ReconcileWasmDeployment(cluster, obj)
 }
+
+// Reconcile Upsert events for the GlobalService Resource across clusters.
+// implemented by the user
+type MulticlusterGlobalServiceReconciler interface {
+	ReconcileGlobalService(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the GlobalService Resource across clusters.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type MulticlusterGlobalServiceDeletionReconciler interface {
+	ReconcileGlobalServiceDeletion(clusterName string, req reconcile.Request) error
+}
+
+type MulticlusterGlobalServiceReconcilerFuncs struct {
+	OnReconcileGlobalService         func(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) (reconcile.Result, error)
+	OnReconcileGlobalServiceDeletion func(clusterName string, req reconcile.Request) error
+}
+
+func (f *MulticlusterGlobalServiceReconcilerFuncs) ReconcileGlobalService(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) (reconcile.Result, error) {
+	if f.OnReconcileGlobalService == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileGlobalService(clusterName, obj)
+}
+
+func (f *MulticlusterGlobalServiceReconcilerFuncs) ReconcileGlobalServiceDeletion(clusterName string, req reconcile.Request) error {
+	if f.OnReconcileGlobalServiceDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileGlobalServiceDeletion(clusterName, req)
+}
+
+type MulticlusterGlobalServiceReconcileLoop interface {
+	// AddMulticlusterGlobalServiceReconciler adds a MulticlusterGlobalServiceReconciler to the MulticlusterGlobalServiceReconcileLoop.
+	AddMulticlusterGlobalServiceReconciler(ctx context.Context, rec MulticlusterGlobalServiceReconciler, predicates ...predicate.Predicate)
+}
+
+type multiclusterGlobalServiceReconcileLoop struct {
+	loop multicluster.Loop
+}
+
+func (m *multiclusterGlobalServiceReconcileLoop) AddMulticlusterGlobalServiceReconciler(ctx context.Context, rec MulticlusterGlobalServiceReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericGlobalServiceMulticlusterReconciler{reconciler: rec}
+
+	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
+}
+
+func NewMulticlusterGlobalServiceReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterGlobalServiceReconcileLoop {
+	return &multiclusterGlobalServiceReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService{}, options)}
+}
+
+type genericGlobalServiceMulticlusterReconciler struct {
+	reconciler MulticlusterGlobalServiceReconciler
+}
+
+func (g genericGlobalServiceMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterGlobalServiceDeletionReconciler); ok {
+		return deletionReconciler.ReconcileGlobalServiceDeletion(cluster, req)
+	}
+	return nil
+}
+
+func (g genericGlobalServiceMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: GlobalService handler received event for %T", object)
+	}
+	return g.reconciler.ReconcileGlobalService(cluster, obj)
+}

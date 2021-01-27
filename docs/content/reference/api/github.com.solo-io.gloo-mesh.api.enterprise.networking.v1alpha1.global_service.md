@@ -19,10 +19,10 @@ title: "global_service.proto"
 
 ## Table of Contents
   - [GlobalServiceSpec](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec)
-  - [GlobalServiceSpec.BackingService](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingService)
   - [GlobalServiceSpec.BackingServiceList](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList)
-  - [GlobalServiceSpec.Locality](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.Locality)
+  - [GlobalServiceSpec.BackingServiceList.BackingService](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService)
   - [GlobalServiceSpec.LocalityConfig](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig)
+  - [GlobalServiceSpec.LocalityConfig.Locality](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality)
   - [GlobalServiceSpec.MeshList](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.MeshList)
   - [GlobalServiceSpec.Port](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.Port)
   - [GlobalServiceStatus](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus)
@@ -55,21 +55,6 @@ A GlobalService creates a new hostname to which services can send requests. Requ
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingService"></a>
-
-### GlobalServiceSpec.BackingService
-The traffic targets that comprise the GlobalService.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| kubeService | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Name/namespace/cluster of a kubernetes service. |
-  
-
-
-
-
-
 <a name="networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList"></a>
 
 ### GlobalServiceSpec.BackingServiceList
@@ -78,23 +63,22 @@ The traffic targets that comprise the GlobalService.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| backingServices | [][networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingService" >}}) | repeated | The list of services backing the GlobalService, ordered by decreasing priority. All services must be backed by either the same service mesh instance or backed by service meshes that are grouped under a common VirtualMesh. |
+| backingServices | [][networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService" >}}) | repeated | The list of services backing the GlobalService, ordered by decreasing priority. All services must be backed by either the same service mesh instance or backed by service meshes that are grouped under a common VirtualMesh. |
   
 
 
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.Locality"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService"></a>
 
-### GlobalServiceSpec.Locality
-
+### GlobalServiceSpec.BackingServiceList.BackingService
+The traffic targets that comprise the GlobalService.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| from | string |  |  |
-  | to | []string | repeated |  |
+| kubeService | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Name/namespace/cluster of a kubernetes service. |
   
 
 
@@ -109,7 +93,23 @@ The traffic targets that comprise the GlobalService.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| localities | [][networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.Locality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.Locality" >}}) | repeated |  |
+| localities | [][networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality" >}}) | repeated |  |
+  
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality"></a>
+
+### GlobalServiceSpec.LocalityConfig.Locality
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| from | string |  |  |
+  | to | []string | repeated |  |
   
 
 

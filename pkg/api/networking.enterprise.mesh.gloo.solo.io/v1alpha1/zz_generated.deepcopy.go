@@ -68,3 +68,64 @@ func (in *WasmDeploymentList) DeepCopyObject() runtime.Object {
 	}
 	return nil
 }
+
+// Generated Deepcopy methods for GlobalService
+
+func (in *GlobalService) DeepCopyInto(out *GlobalService) {
+	*out = *in
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+
+	// deepcopy spec
+	in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy status
+	in.Status.DeepCopyInto(&out.Status)
+
+	return
+}
+
+func (in *GlobalService) DeepCopy() *GlobalService {
+	if in == nil {
+		return nil
+	}
+	out := new(GlobalService)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *GlobalService) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
+}
+
+func (in *GlobalServiceList) DeepCopyInto(out *GlobalServiceList) {
+	*out = *in
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]GlobalService, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	return
+}
+
+func (in *GlobalServiceList) DeepCopy() *GlobalServiceList {
+	if in == nil {
+		return nil
+	}
+	out := new(GlobalServiceList)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *GlobalServiceList) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
+}

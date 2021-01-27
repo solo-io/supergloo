@@ -201,3 +201,192 @@ func (s *wasmDeploymentSet) Delta(newSet WasmDeploymentSet) sksets.ResourceDelta
 	}
 	return s.Generic().Delta(newSet.Generic())
 }
+
+type GlobalServiceSet interface {
+	// Get the set stored keys
+	Keys() sets.String
+	// List of resources stored in the set. Pass an optional filter function to filter on the list.
+	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) bool) []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService
+	// Return the Set as a map of key to resource.
+	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService
+	// Insert a resource into the set.
+	Insert(globalService ...*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService)
+	// Compare the equality of the keys in two sets (not the resources themselves)
+	Equal(globalServiceSet GlobalServiceSet) bool
+	// Check if the set contains a key matching the resource (not the resource itself)
+	Has(globalService ezkube.ResourceId) bool
+	// Delete the key matching the resource
+	Delete(globalService ezkube.ResourceId)
+	// Return the union with the provided set
+	Union(set GlobalServiceSet) GlobalServiceSet
+	// Return the difference with the provided set
+	Difference(set GlobalServiceSet) GlobalServiceSet
+	// Return the intersection with the provided set
+	Intersection(set GlobalServiceSet) GlobalServiceSet
+	// Find the resource with the given ID
+	Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService, error)
+	// Get the length of the set
+	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another GlobalServiceSet
+	Delta(newSet GlobalServiceSet) sksets.ResourceDelta
+}
+
+func makeGenericGlobalServiceSet(globalServiceList []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) sksets.ResourceSet {
+	var genericResources []ezkube.ResourceId
+	for _, obj := range globalServiceList {
+		genericResources = append(genericResources, obj)
+	}
+	return sksets.NewResourceSet(genericResources...)
+}
+
+type globalServiceSet struct {
+	set sksets.ResourceSet
+}
+
+func NewGlobalServiceSet(globalServiceList ...*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) GlobalServiceSet {
+	return &globalServiceSet{set: makeGenericGlobalServiceSet(globalServiceList)}
+}
+
+func NewGlobalServiceSetFromList(globalServiceList *networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalServiceList) GlobalServiceSet {
+	list := make([]*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService, 0, len(globalServiceList.Items))
+	for idx := range globalServiceList.Items {
+		list = append(list, &globalServiceList.Items[idx])
+	}
+	return &globalServiceSet{set: makeGenericGlobalServiceSet(list)}
+}
+
+func (s *globalServiceSet) Keys() sets.String {
+	if s == nil {
+		return sets.String{}
+	}
+	return s.Generic().Keys()
+}
+
+func (s *globalServiceSet) List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) bool) []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService))
+		})
+	}
+
+	var globalServiceList []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService
+	for _, obj := range s.Generic().List(genericFilters...) {
+		globalServiceList = append(globalServiceList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService))
+	}
+	return globalServiceList
+}
+
+func (s *globalServiceSet) Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService {
+	if s == nil {
+		return nil
+	}
+
+	newMap := map[string]*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService{}
+	for k, v := range s.Generic().Map() {
+		newMap[k] = v.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService)
+	}
+	return newMap
+}
+
+func (s *globalServiceSet) Insert(
+	globalServiceList ...*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService,
+) {
+	if s == nil {
+		panic("cannot insert into nil set")
+	}
+
+	for _, obj := range globalServiceList {
+		s.Generic().Insert(obj)
+	}
+}
+
+func (s *globalServiceSet) Has(globalService ezkube.ResourceId) bool {
+	if s == nil {
+		return false
+	}
+	return s.Generic().Has(globalService)
+}
+
+func (s *globalServiceSet) Equal(
+	globalServiceSet GlobalServiceSet,
+) bool {
+	if s == nil {
+		return globalServiceSet == nil
+	}
+	return s.Generic().Equal(globalServiceSet.Generic())
+}
+
+func (s *globalServiceSet) Delete(GlobalService ezkube.ResourceId) {
+	if s == nil {
+		return
+	}
+	s.Generic().Delete(GlobalService)
+}
+
+func (s *globalServiceSet) Union(set GlobalServiceSet) GlobalServiceSet {
+	if s == nil {
+		return set
+	}
+	return NewGlobalServiceSet(append(s.List(), set.List()...)...)
+}
+
+func (s *globalServiceSet) Difference(set GlobalServiceSet) GlobalServiceSet {
+	if s == nil {
+		return set
+	}
+	newSet := s.Generic().Difference(set.Generic())
+	return &globalServiceSet{set: newSet}
+}
+
+func (s *globalServiceSet) Intersection(set GlobalServiceSet) GlobalServiceSet {
+	if s == nil {
+		return nil
+	}
+	newSet := s.Generic().Intersection(set.Generic())
+	var globalServiceList []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService
+	for _, obj := range newSet.List() {
+		globalServiceList = append(globalServiceList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService))
+	}
+	return NewGlobalServiceSet(globalServiceList...)
+}
+
+func (s *globalServiceSet) Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService, error) {
+	if s == nil {
+		return nil, eris.Errorf("empty set, cannot find GlobalService %v", sksets.Key(id))
+	}
+	obj, err := s.Generic().Find(&networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService{}, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return obj.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService), nil
+}
+
+func (s *globalServiceSet) Length() int {
+	if s == nil {
+		return 0
+	}
+	return s.Generic().Length()
+}
+
+func (s *globalServiceSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *globalServiceSet) Delta(newSet GlobalServiceSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
+}
