@@ -63,14 +63,14 @@ require (
 	github.com/sirupsen/logrus v1.7.0
 	github.com/solo-io/anyvendor v0.0.1
 	github.com/solo-io/external-apis v0.1.4
-	github.com/solo-io/go-list-licenses v0.0.1
-	github.com/solo-io/go-utils v0.20.0
+	github.com/solo-io/go-list-licenses v0.0.4-0.20210127165309-aa6ecafebecf
+	github.com/solo-io/go-utils v0.20.2
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.13
 	github.com/solo-io/skv2 v0.17.0
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.3.4
-	github.com/spf13/cobra v1.0.0
+	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	go.opencensus.io v0.22.5 // indirect
 	go.uber.org/atomic v1.7.0
