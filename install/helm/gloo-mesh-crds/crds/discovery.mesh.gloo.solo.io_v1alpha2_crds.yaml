@@ -118,6 +118,15 @@ spec:
                   description: Selectors for the set of pods targeted by the k8s Service.
                   type: object
               type: object
+            locality:
+              properties:
+                region:
+                  type: string
+                subzone:
+                  type: string
+                zone:
+                  type: string
+              type: object
             mesh:
               description: The mesh with which this traffic target is associated.
               properties:

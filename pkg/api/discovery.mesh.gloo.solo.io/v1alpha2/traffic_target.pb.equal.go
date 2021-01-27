@@ -56,6 +56,16 @@ func (m *TrafficTargetSpec) Equal(that interface{}) bool {
 		}
 	}
 
+	if h, ok := interface{}(m.GetLocality()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetLocality()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetLocality(), target.GetLocality()) {
+			return false
+		}
+	}
+
 	switch m.Type.(type) {
 
 	case *TrafficTargetSpec_KubeService_:
@@ -253,6 +263,42 @@ func (m *TrafficTargetSpec_KubeService) Equal(that interface{}) bool {
 			}
 		}
 
+	}
+
+	return true
+}
+
+// Equal function
+func (m *TrafficTargetSpec_Locality) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*TrafficTargetSpec_Locality)
+	if !ok {
+		that2, ok := that.(TrafficTargetSpec_Locality)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetRegion(), target.GetRegion()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetZone(), target.GetZone()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetSubzone(), target.GetSubzone()) != 0 {
+		return false
 	}
 
 	return true

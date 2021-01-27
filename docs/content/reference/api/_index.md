@@ -42,6 +42,8 @@ These docs describe Gloo Mesh CRDs.
 
 ### networking.enterprise.mesh.gloo.solo.io
 
+  - [GlobalService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec" >}})
+
   - [WasmDeployment]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.wasm_deployment#networking.enterprise.mesh.gloo.solo.io.WasmDeploymentSpec" >}})
 
   - [WasmFilter]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.wasm_deployment#networking.enterprise.mesh.gloo.solo.io.WasmFilterSpec" >}})
