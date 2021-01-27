@@ -21,7 +21,7 @@ Name|Version|License
 [aws/arn](https://github.com/aws/aws-sdk-go)|v1.35.11|Apache License 2.0
 [perks/quantile](https://github.com/beorn7/perks)|v1.0.1|MIT License
 [xxhash/v2](https://github.com/cespare/xxhash)|v2.1.1|MIT License
-[udpa/go](https://github.com/cncf/udpa)|v0.0.0-20201120205902-5459f2c99403|Apache License 2.0
+[go/udpa](https://github.com/cncf/udpa)|v0.0.0-20201120205902-5459f2c99403|Apache License 2.0
 [containerd/containerd](https://github.com/containerd/containerd)|v1.3.4|Apache License 2.0
 [cyphar/filepath-securejoin](https://github.com/cyphar/filepath-securejoin)|v0.2.2|BSD 3-clause "New" or "Revised" License
 [go-spew/spew](https://github.com/davecgh/go-spew)|v1.1.1|ISC License
