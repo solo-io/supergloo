@@ -18,7 +18,7 @@ IMAGE_REPO := $(IMAGE_REGISTRY)/$(IMAGE_LEAF_NAME)
 ### REPLACE with product name
 PRODUCT_SCOPE := gloo-mesh
 DOCS_VERSION := latest
-SOLO_HUGE_THEME := 5a29d20f92fabafb2e41ec0576320e284b624c5e
+SOLO_HUGO_THEME := 5a29d20f92fabafb2e41ec0576320e284b624c5e
 
 #----------------------------------------------------------------------------------
 # Docs
@@ -29,7 +29,7 @@ site-common: clean
 	# this theme is crucial (has the nested scoped short codes: protobuf and versioned_link_path - see dev-portal docs for use demos)
 	if [ ! -d themes/hugo-theme-soloio ]; then git clone https://github.com/solo-io/hugo-theme-soloio themes/hugo-theme-soloio; fi
 	# style updates for putting docs in the dev-portal repo, see details here https://github.com/solo-io/hugo-theme-soloio/commit/e0c50784a92fb7f61c635ff9a6e3a010f636f550
-	git -C themes/hugo-theme-soloio checkout $(SOLO_HUGE_THEME)
+	git -C themes/hugo-theme-soloio checkout $(SOLO_HUGO_THEME)
 
 .PHONY: site-test
 site-test: site-common
