@@ -6,10 +6,6 @@ weight: 5
 
 Input and output snapshots for the discovery pod
 
-### Synopsis
-
-Input and output snapshots for the discovery pod
-
 ```
 meshctl debug snapshot discovery [flags]
 ```

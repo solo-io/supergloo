@@ -6,10 +6,6 @@ weight: 5
 
 Port forwards the Gloo Mesh Enterprise UI and opens it in a browser if available
 
-### Synopsis
-
-Port forwards the Gloo Mesh Enterprise UI and opens it in a browser if available
-
 ```
 meshctl dashboard [flags]
 ```

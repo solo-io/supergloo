@@ -6,10 +6,6 @@ weight: 5
 
 Description of failover services
 
-### Synopsis
-
-Description of failover services
-
 ```
 meshctl describe failoverservice [flags]
 ```

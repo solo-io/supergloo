@@ -6,10 +6,6 @@ weight: 5
 
 Input and output snapshots for the networking pod
 
-### Synopsis
-
-Input and output snapshots for the networking pod
-
 ```
 meshctl debug snapshot networking [flags]
 ```
