@@ -162,6 +162,42 @@ func (m *TrafficTargetStatus) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *TrafficTargetSpec_Locality) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*TrafficTargetSpec_Locality)
+	if !ok {
+		that2, ok := that.(TrafficTargetSpec_Locality)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetRegion(), target.GetRegion()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetZone(), target.GetZone()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetSubzone(), target.GetSubzone()) != 0 {
+		return false
+	}
+
+	return true
+}
+
+// Equal function
 func (m *TrafficTargetSpec_KubeService) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -269,42 +305,6 @@ func (m *TrafficTargetSpec_KubeService) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *TrafficTargetSpec_Locality) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*TrafficTargetSpec_Locality)
-	if !ok {
-		that2, ok := that.(TrafficTargetSpec_Locality)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if strings.Compare(m.GetRegion(), target.GetRegion()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetZone(), target.GetZone()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetSubzone(), target.GetSubzone()) != 0 {
-		return false
-	}
-
-	return true
-}
-
-// Equal function
 func (m *TrafficTargetSpec_KubeService_KubeServicePort) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -405,8 +405,14 @@ func (m *TrafficTargetSpec_KubeService_EndpointsSubset) Equal(that interface{}) 
 	}
 	for idx, v := range m.GetIpAddresses() {
 
-		if strings.Compare(v, target.GetIpAddresses()[idx]) != 0 {
-			return false
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetIpAddresses()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetIpAddresses()[idx]) {
+				return false
+			}
 		}
 
 	}
@@ -426,6 +432,44 @@ func (m *TrafficTargetSpec_KubeService_EndpointsSubset) Equal(that interface{}) 
 			}
 		}
 
+	}
+
+	return true
+}
+
+// Equal function
+func (m *TrafficTargetSpec_KubeService_EndpointsSubset_LocalityIp) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*TrafficTargetSpec_KubeService_EndpointsSubset_LocalityIp)
+	if !ok {
+		that2, ok := that.(TrafficTargetSpec_KubeService_EndpointsSubset_LocalityIp)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetIp(), target.GetIp()) != 0 {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetLocality()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetLocality()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetLocality(), target.GetLocality()) {
+			return false
+		}
 	}
 
 	return true

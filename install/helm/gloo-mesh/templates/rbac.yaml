@@ -126,6 +126,7 @@ rules:
   - networking.enterprise.mesh.gloo.solo.io
   resources:
   - wasmdeployments
+  - globalservices
   verbs:
   - get
   - list
@@ -184,6 +185,7 @@ rules:
   - networking.enterprise.mesh.gloo.solo.io
   resources:
   - wasmdeployments/status
+  - globalservices/status
   verbs:
   - get
   - update

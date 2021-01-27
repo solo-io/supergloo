@@ -45,7 +45,19 @@ spec:
                     properties:
                       ipAddresses:
                         items:
-                          type: string
+                          properties:
+                            ip:
+                              type: string
+                            locality:
+                              properties:
+                                region:
+                                  type: string
+                                subzone:
+                                  type: string
+                                zone:
+                                  type: string
+                              type: object
+                          type: object
                         type: array
                       ports:
                         items:

@@ -21,6 +21,7 @@ title: "traffic_target.proto"
   - [TrafficTargetSpec](#discovery.mesh.gloo.solo.io.TrafficTargetSpec)
   - [TrafficTargetSpec.KubeService](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService)
   - [TrafficTargetSpec.KubeService.EndpointsSubset](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset)
+  - [TrafficTargetSpec.KubeService.EndpointsSubset.LocalityIp](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.LocalityIp)
   - [TrafficTargetSpec.KubeService.KubeServicePort](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort)
   - [TrafficTargetSpec.KubeService.LabelsEntry](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.LabelsEntry)
   - [TrafficTargetSpec.KubeService.Subset](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.Subset)
@@ -83,8 +84,24 @@ A series of IP addresses and their associated ports. The list of ip + port pairs
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ipAddresses | []string | repeated |  |
+| ipAddresses | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.LocalityIp]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.LocalityIp" >}}) | repeated |  |
   | ports | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort" >}}) | repeated |  |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.LocalityIp"></a>
+
+### TrafficTargetSpec.KubeService.EndpointsSubset.LocalityIp
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ip | string |  |  |
+  | locality | [discovery.mesh.gloo.solo.io.TrafficTargetSpec.Locality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.Locality" >}}) |  |  |
   
 
 
