@@ -24,14 +24,6 @@ message TrafficTargetSpec {
     // The mesh with which this traffic target is associated.
     .core.skv2.solo.io.ObjectRef mesh = 2;
 
-    message Locality {
-        string region = 1;
-        string zone = 2;
-        string subzone = 3;
-    }
-
-    Locality locality = 3;
-
     message KubeService {
 
         message KubeServicePort {
@@ -63,15 +55,24 @@ message TrafficTargetSpec {
             repeated string values = 1;
         }
 
+        // Region service is in, will always be the same for all enpoints of a service
+        string region = 6;
+
+        message SubLocality {
+            string zone = 1;
+            string subzone = 2;
+        }
+
         // A series of IP addresses and their associated ports.
         // The list of ip + port pairs is the cartesian product of the following lists
         message EndpointsSubset {
 
             message LocalityIp {
-
+                // Ip address of endpoint
                 string ip = 1;
 
-                Locality locality = 2;
+                // Each IP can potentially belong to a pod in a different zone/subzone, so need to enumerate that here.
+                SubLocality zone = 2;
             }
 
             repeated LocalityIp ip_addresses = 1;
@@ -82,7 +83,7 @@ message TrafficTargetSpec {
         // Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs.
         // This API mirrors the kubernetes Endpoints API.
         // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
-        repeated EndpointsSubset endpoints = 6;
+        repeated EndpointsSubset endpoints = 8;
 
     }
 
