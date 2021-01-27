@@ -24,6 +24,8 @@ message TrafficTargetSpec {
     // The mesh with which this traffic target is associated.
     .core.skv2.solo.io.ObjectRef mesh = 2;
 
+    Locality locality = 3;
+
     message KubeService {
 
         message KubeServicePort {
@@ -69,6 +71,12 @@ message TrafficTargetSpec {
         // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
         repeated EndpointsSubset endpoints = 6;
 
+    }
+
+    message Locality {
+        string region = 1;
+        string zone = 2;
+        string subzone = 3;
     }
 
 }
