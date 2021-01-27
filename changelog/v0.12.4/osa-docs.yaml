@@ -3,3 +3,9 @@ changelog:
     description: >
       Adds an Open Source Attribution doc, which is generated during code gen. This allows us to declare the third party software
       which we are using, as well as explicitly mention which softwares we provide and which ones are included (depending on the license).
+      In addition, also checks to make sure that none of the dependencies for gloo mesh are under a GPL License.
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: solo-io
+    dependencyRepo: go-utils
+    dependencyTag: v0.20.2
+    description: Update go-utils to v0.20.2
