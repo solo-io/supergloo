@@ -100,7 +100,7 @@ spec:
             nodePort: 32001
             port: 15443
     global:
-      pilotCertProvider: kubernetes
+      pilotCertProvider: istiod
       controlPlaneSecurityEnabled: true
       podDNSSearchNamespaces:
       - global
@@ -147,7 +147,7 @@ spec:
     enableAutoMtls: true
   values:
     global:
-      pilotCertProvider: kubernetes
+      pilotCertProvider: istiod
 EOF
 {{< /tab >}}
 {{< /tabs >}}
@@ -202,7 +202,7 @@ spec:
             nodePort: 32000
             port: 15443
     global:
-      pilotCertProvider: kubernetes
+      pilotCertProvider: istiod
       controlPlaneSecurityEnabled: true
       podDNSSearchNamespaces:
       - global
@@ -249,7 +249,7 @@ spec:
     enableAutoMtls: true
   values:
     global:
-      pilotCertProvider: kubernetes
+      pilotCertProvider: istiod
 EOF
 {{< /tab >}}
 {{< /tabs >}}
