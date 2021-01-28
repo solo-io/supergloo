@@ -226,7 +226,10 @@ var _ = Describe("TrafficTargetDetector", func() {
 						},
 						Endpoints: []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{
 							{
-								IpAddresses: []string{"1", "2"},
+								LocalityIpAddresses: []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_LocalityIp{
+									{Ip: "1"},
+									{Ip: "2"},
+								},
 								Ports: []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 									{
 										Port:        7000,

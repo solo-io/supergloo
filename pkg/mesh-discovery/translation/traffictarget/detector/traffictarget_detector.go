@@ -164,7 +164,11 @@ func getEndpointsForService(
 			for _, epSub := range ep.Subsets {
 				sub := &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{}
 				for _, addr := range epSub.Addresses {
-					sub.IpAddresses = append(sub.IpAddresses, addr.IP)
+					sub.LocalityIpAddresses = append(sub.LocalityIpAddresses,
+						&v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_LocalityIp{
+							Ip:          addr.IP,
+							SubLocality: nil,
+						})
 				}
 				for _, port := range epSub.Ports {
 					svcPort := &v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
