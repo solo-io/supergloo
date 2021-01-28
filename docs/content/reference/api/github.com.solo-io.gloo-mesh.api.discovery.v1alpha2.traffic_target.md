@@ -22,9 +22,9 @@ title: "traffic_target.proto"
   - [TrafficTargetSpec.KubeService](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService)
   - [TrafficTargetSpec.KubeService.EndpointsSubset](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset)
   - [TrafficTargetSpec.KubeService.EndpointsSubset.LocalityIp](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.LocalityIp)
+  - [TrafficTargetSpec.KubeService.EndpointsSubset.SubLocality](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.SubLocality)
   - [TrafficTargetSpec.KubeService.KubeServicePort](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort)
   - [TrafficTargetSpec.KubeService.LabelsEntry](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.LabelsEntry)
-  - [TrafficTargetSpec.KubeService.SubLocality](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.SubLocality)
   - [TrafficTargetSpec.KubeService.Subset](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.Subset)
   - [TrafficTargetSpec.KubeService.SubsetsEntry](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.SubsetsEntry)
   - [TrafficTargetSpec.KubeService.WorkloadSelectorLabelsEntry](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.WorkloadSelectorLabelsEntry)
@@ -68,7 +68,7 @@ The TrafficTarget is an abstraction for a traffic target which we have discovere
   | labels | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.LabelsEntry" >}}) | repeated | Labels on the underlying k8s Service itself. |
   | ports | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort" >}}) | repeated | The ports exposed by the underlying service. |
   | subsets | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.SubsetsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.SubsetsEntry" >}}) | repeated | Subsets for routing, based on labels. |
-  | region | string |  | Region service is in, will always be the same for all enpoints of a service |
+  | region | string |  | Region service is in. Will always be the same for all endpoints of a service. |
   | endpoints | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset" >}}) | repeated | Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs. This API mirrors the kubernetes Endpoints API. https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core |
   
 
@@ -79,12 +79,12 @@ The TrafficTarget is an abstraction for a traffic target which we have discovere
 <a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset"></a>
 
 ### TrafficTargetSpec.KubeService.EndpointsSubset
-A series of IP addresses and their associated ports. The list of ip + port pairs is the cartesian product of the following lists
+A series of IP addresses and their associated ports. The list of IP + port pairs is the cartesian product of the two lists
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ipAddresses | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.LocalityIp]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.LocalityIp" >}}) | repeated |  |
+| localityIpAddresses | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.LocalityIp]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.LocalityIp" >}}) | repeated |  |
   | ports | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort" >}}) | repeated |  |
   
 
@@ -95,13 +95,29 @@ A series of IP addresses and their associated ports. The list of ip + port pairs
 <a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.LocalityIp"></a>
 
 ### TrafficTargetSpec.KubeService.EndpointsSubset.LocalityIp
-
+An IP address along with its locality
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ip | string |  | Ip address of endpoint |
-  | zone | [discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.SubLocality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.SubLocality" >}}) |  | Each IP can potentially belong to a pod in a different zone/subzone, so need to enumerate that here. |
+| ip | string |  | IP address of endpoint |
+  | subLocality | [discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.SubLocality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.SubLocality" >}}) |  | Each IP can potentially belong to a pod in a different zone/subzone, so need to enumerate that here. |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.SubLocality"></a>
+
+### TrafficTargetSpec.KubeService.EndpointsSubset.SubLocality
+A zone/subzone within the region that the service is in.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| zone | string |  |  |
+  | subzone | string |  |  |
   
 
 
@@ -136,22 +152,6 @@ A series of IP addresses and their associated ports. The list of ip + port pairs
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
   | value | string |  |  |
-  
-
-
-
-
-
-<a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.SubLocality"></a>
-
-### TrafficTargetSpec.KubeService.SubLocality
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| zone | string |  |  |
-  | subzone | string |  |  |
   
 
 

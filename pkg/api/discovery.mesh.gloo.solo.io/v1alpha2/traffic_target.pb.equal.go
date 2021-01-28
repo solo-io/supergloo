@@ -338,38 +338,6 @@ func (m *TrafficTargetSpec_KubeService_Subset) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *TrafficTargetSpec_KubeService_SubLocality) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*TrafficTargetSpec_KubeService_SubLocality)
-	if !ok {
-		that2, ok := that.(TrafficTargetSpec_KubeService_SubLocality)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if strings.Compare(m.GetZone(), target.GetZone()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetSubzone(), target.GetSubzone()) != 0 {
-		return false
-	}
-
-	return true
-}
-
-// Equal function
 func (m *TrafficTargetSpec_KubeService_EndpointsSubset) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -390,17 +358,17 @@ func (m *TrafficTargetSpec_KubeService_EndpointsSubset) Equal(that interface{}) 
 		return false
 	}
 
-	if len(m.GetIpAddresses()) != len(target.GetIpAddresses()) {
+	if len(m.GetLocalityIpAddresses()) != len(target.GetLocalityIpAddresses()) {
 		return false
 	}
-	for idx, v := range m.GetIpAddresses() {
+	for idx, v := range m.GetLocalityIpAddresses() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetIpAddresses()[idx]) {
+			if !h.Equal(target.GetLocalityIpAddresses()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetIpAddresses()[idx]) {
+			if !proto.Equal(v, target.GetLocalityIpAddresses()[idx]) {
 				return false
 			}
 		}
@@ -452,14 +420,46 @@ func (m *TrafficTargetSpec_KubeService_EndpointsSubset_LocalityIp) Equal(that in
 		return false
 	}
 
-	if h, ok := interface{}(m.GetZone()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetZone()) {
+	if h, ok := interface{}(m.GetSubLocality()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetSubLocality()) {
 			return false
 		}
 	} else {
-		if !proto.Equal(m.GetZone(), target.GetZone()) {
+		if !proto.Equal(m.GetSubLocality(), target.GetSubLocality()) {
 			return false
 		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *TrafficTargetSpec_KubeService_EndpointsSubset_SubLocality) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*TrafficTargetSpec_KubeService_EndpointsSubset_SubLocality)
+	if !ok {
+		that2, ok := that.(TrafficTargetSpec_KubeService_EndpointsSubset_SubLocality)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetZone(), target.GetZone()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetSubzone(), target.GetSubzone()) != 0 {
+		return false
 	}
 
 	return true

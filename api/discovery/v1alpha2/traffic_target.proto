@@ -55,36 +55,36 @@ message TrafficTargetSpec {
             repeated string values = 1;
         }
 
-        // Region service is in, will always be the same for all enpoints of a service
+        // Region service is in. Will always be the same for all endpoints of a service.
         string region = 6;
 
-        message SubLocality {
-            string zone = 1;
-            string subzone = 2;
-        }
-
         // A series of IP addresses and their associated ports.
-        // The list of ip + port pairs is the cartesian product of the following lists
+        // The list of IP + port pairs is the cartesian product of the two lists
         message EndpointsSubset {
+            repeated LocalityIp locality_ip_addresses = 1;
 
+            repeated KubeServicePort ports = 2;
+
+            // An IP address along with its locality
             message LocalityIp {
-                // Ip address of endpoint
+                // IP address of endpoint
                 string ip = 1;
 
                 // Each IP can potentially belong to a pod in a different zone/subzone, so need to enumerate that here.
-                SubLocality zone = 2;
+                SubLocality sub_locality = 2;
             }
 
-            repeated LocalityIp ip_addresses = 1;
-
-            repeated KubeServicePort ports = 2;
+            // A zone/subzone within the region that the service is in.
+            message SubLocality {
+                string zone = 1;
+                string subzone = 2;
+            }
         }
 
         // Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs.
         // This API mirrors the kubernetes Endpoints API.
         // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
-        repeated EndpointsSubset endpoints = 8;
-
+        repeated EndpointsSubset endpoints = 7;
     }
 
 }

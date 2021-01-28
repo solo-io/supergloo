@@ -43,13 +43,13 @@ spec:
                     https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
                   items:
                     properties:
-                      ipAddresses:
+                      localityIpAddresses:
                         items:
                           properties:
                             ip:
-                              description: Ip address of endpoint
+                              description: IP address of endpoint
                               type: string
-                            zone:
+                            subLocality:
                               description: Each IP can potentially belong to a pod in a different zone/subzone, so need to enumerate that here.
                               properties:
                                 subzone:
@@ -115,7 +115,7 @@ spec:
                       type: string
                   type: object
                 region:
-                  description: Region service is in, will always be the same for all enpoints of a service
+                  description: Region service is in. Will always be the same for all endpoints of a service.
                   type: string
                 subsets:
                   additionalProperties:
