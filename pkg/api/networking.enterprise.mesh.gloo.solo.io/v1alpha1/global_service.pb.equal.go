@@ -84,6 +84,9 @@ func (m *GlobalServiceSpec) Equal(that interface{}) bool {
 	switch m.ExportTo.(type) {
 
 	case *GlobalServiceSpec_VirtualMesh:
+		if _, ok := target.ExportTo.(*GlobalServiceSpec_VirtualMesh); !ok {
+			return false
+		}
 
 		if h, ok := interface{}(m.GetVirtualMesh()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetVirtualMesh()) {
@@ -96,6 +99,9 @@ func (m *GlobalServiceSpec) Equal(that interface{}) bool {
 		}
 
 	case *GlobalServiceSpec_Meshes:
+		if _, ok := target.ExportTo.(*GlobalServiceSpec_Meshes); !ok {
+			return false
+		}
 
 		if h, ok := interface{}(m.GetMeshes()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetMeshes()) {
@@ -107,11 +113,19 @@ func (m *GlobalServiceSpec) Equal(that interface{}) bool {
 			}
 		}
 
+	default:
+		// m is nil but target is not nil
+		if m.ExportTo != target.ExportTo {
+			return false
+		}
 	}
 
 	switch m.FailoverConfig.(type) {
 
 	case *GlobalServiceSpec_BackingServices:
+		if _, ok := target.FailoverConfig.(*GlobalServiceSpec_BackingServices); !ok {
+			return false
+		}
 
 		if h, ok := interface{}(m.GetBackingServices()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetBackingServices()) {
@@ -124,6 +138,9 @@ func (m *GlobalServiceSpec) Equal(that interface{}) bool {
 		}
 
 	case *GlobalServiceSpec_LocalityConfig_:
+		if _, ok := target.FailoverConfig.(*GlobalServiceSpec_LocalityConfig_); !ok {
+			return false
+		}
 
 		if h, ok := interface{}(m.GetLocalityConfig()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetLocalityConfig()) {
@@ -135,6 +152,11 @@ func (m *GlobalServiceSpec) Equal(that interface{}) bool {
 			}
 		}
 
+	default:
+		// m is nil but target is not nil
+		if m.FailoverConfig != target.FailoverConfig {
+			return false
+		}
 	}
 
 	return true
@@ -379,6 +401,9 @@ func (m *GlobalServiceSpec_BackingServiceList_BackingService) Equal(that interfa
 	switch m.BackingServiceType.(type) {
 
 	case *GlobalServiceSpec_BackingServiceList_BackingService_KubeService:
+		if _, ok := target.BackingServiceType.(*GlobalServiceSpec_BackingServiceList_BackingService_KubeService); !ok {
+			return false
+		}
 
 		if h, ok := interface{}(m.GetKubeService()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetKubeService()) {
@@ -390,6 +415,11 @@ func (m *GlobalServiceSpec_BackingServiceList_BackingService) Equal(that interfa
 			}
 		}
 
+	default:
+		// m is nil but target is not nil
+		if m.BackingServiceType != target.BackingServiceType {
+			return false
+		}
 	}
 
 	return true
