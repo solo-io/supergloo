@@ -6,10 +6,6 @@ weight: 5
 
 Display the version of meshctl and installed Gloo Mesh components
 
-### Synopsis
-
-Display the version of meshctl and installed Gloo Mesh components
-
 ```
 meshctl version [flags]
 ```

@@ -6,10 +6,6 @@ weight: 5
 
 Uninstall Gloo Mesh from the referenced cluster
 
-### Synopsis
-
-Uninstall Gloo Mesh from the referenced cluster
-
 ```
 meshctl uninstall [flags]
 ```

@@ -6,10 +6,6 @@ weight: 5
 
 Description of managed meshes
 
-### Synopsis
-
-Description of managed meshes
-
 ```
 meshctl describe mesh [flags]
 ```
