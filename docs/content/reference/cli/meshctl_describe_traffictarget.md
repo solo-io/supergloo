@@ -6,10 +6,6 @@ weight: 5
 
 Description of managed traffic targets
 
-### Synopsis
-
-Description of managed traffic targets
-
 ```
 meshctl describe traffictarget [flags]
 ```

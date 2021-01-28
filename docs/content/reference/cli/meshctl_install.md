@@ -6,10 +6,6 @@ weight: 5
 
 Install Gloo Mesh
 
-### Synopsis
-
-Install Gloo Mesh
-
 ```
 meshctl install [flags]
 ```

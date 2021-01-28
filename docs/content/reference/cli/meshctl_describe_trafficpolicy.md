@@ -6,10 +6,6 @@ weight: 5
 
 Description of traffic policies
 
-### Synopsis
-
-Description of traffic policies
-
 ```
 meshctl describe trafficpolicy [flags]
 ```

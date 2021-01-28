@@ -6,10 +6,6 @@ weight: 5
 
 Restart all pods in the specified mesh
 
-### Synopsis
-
-Restart all pods in the specified mesh
-
 ```
 meshctl mesh restart [flags]
 ```
