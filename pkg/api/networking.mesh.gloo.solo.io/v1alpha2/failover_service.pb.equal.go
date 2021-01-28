@@ -213,6 +213,9 @@ func (m *FailoverServiceSpec_BackingService) Equal(that interface{}) bool {
 	switch m.BackingServiceType.(type) {
 
 	case *FailoverServiceSpec_BackingService_KubeService:
+		if _, ok := target.BackingServiceType.(*FailoverServiceSpec_BackingService_KubeService); !ok {
+			return false
+		}
 
 		if h, ok := interface{}(m.GetKubeService()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetKubeService()) {
@@ -224,6 +227,11 @@ func (m *FailoverServiceSpec_BackingService) Equal(that interface{}) bool {
 			}
 		}
 
+	default:
+		// m is nil but target is not nil
+		if m.BackingServiceType != target.BackingServiceType {
+			return false
+		}
 	}
 
 	return true
