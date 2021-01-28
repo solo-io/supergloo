@@ -4,9 +4,8 @@
 package v1alpha2
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-)
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    "k8s.io/apimachinery/pkg/runtime/schema")
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -15,22 +14,22 @@ import (
 
 // GroupVersionKind for TrafficTarget
 var TrafficTargetGVK = schema.GroupVersionKind{
-	Group:   "discovery.mesh.gloo.solo.io",
-	Version: "v1alpha2",
-	Kind:    "TrafficTarget",
+    Group: "discovery.mesh.gloo.solo.io",
+    Version: "v1alpha2",
+    Kind: "TrafficTarget",
 }
 
 // TrafficTarget is the Schema for the trafficTarget API
 type TrafficTarget struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+    metav1.TypeMeta   `json:",inline"`
+    metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   TrafficTargetSpec   `json:"spec,omitempty"`
-	Status TrafficTargetStatus `json:"status,omitempty"`
+    Spec TrafficTargetSpec `json:"spec,omitempty"`
+    Status TrafficTargetStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (TrafficTarget) GVK() schema.GroupVersionKind {
+func (TrafficTarget)  GVK() schema.GroupVersionKind {
 	return TrafficTargetGVK
 }
 
@@ -38,9 +37,9 @@ func (TrafficTarget) GVK() schema.GroupVersionKind {
 
 // TrafficTargetList contains a list of TrafficTarget
 type TrafficTargetList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []TrafficTarget `json:"items"`
+    metav1.TypeMeta `json:",inline"`
+    metav1.ListMeta `json:"metadata,omitempty"`
+    Items           []TrafficTarget `json:"items"`
 }
 
 // +genclient
@@ -50,22 +49,22 @@ type TrafficTargetList struct {
 
 // GroupVersionKind for Workload
 var WorkloadGVK = schema.GroupVersionKind{
-	Group:   "discovery.mesh.gloo.solo.io",
-	Version: "v1alpha2",
-	Kind:    "Workload",
+    Group: "discovery.mesh.gloo.solo.io",
+    Version: "v1alpha2",
+    Kind: "Workload",
 }
 
 // Workload is the Schema for the workload API
 type Workload struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+    metav1.TypeMeta   `json:",inline"`
+    metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   WorkloadSpec   `json:"spec,omitempty"`
-	Status WorkloadStatus `json:"status,omitempty"`
+    Spec WorkloadSpec `json:"spec,omitempty"`
+    Status WorkloadStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (Workload) GVK() schema.GroupVersionKind {
+func (Workload)  GVK() schema.GroupVersionKind {
 	return WorkloadGVK
 }
 
@@ -73,9 +72,9 @@ func (Workload) GVK() schema.GroupVersionKind {
 
 // WorkloadList contains a list of Workload
 type WorkloadList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Workload `json:"items"`
+    metav1.TypeMeta `json:",inline"`
+    metav1.ListMeta `json:"metadata,omitempty"`
+    Items           []Workload `json:"items"`
 }
 
 // +genclient
@@ -85,22 +84,22 @@ type WorkloadList struct {
 
 // GroupVersionKind for Mesh
 var MeshGVK = schema.GroupVersionKind{
-	Group:   "discovery.mesh.gloo.solo.io",
-	Version: "v1alpha2",
-	Kind:    "Mesh",
+    Group: "discovery.mesh.gloo.solo.io",
+    Version: "v1alpha2",
+    Kind: "Mesh",
 }
 
 // Mesh is the Schema for the mesh API
 type Mesh struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+    metav1.TypeMeta   `json:",inline"`
+    metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   MeshSpec   `json:"spec,omitempty"`
-	Status MeshStatus `json:"status,omitempty"`
+    Spec MeshSpec `json:"spec,omitempty"`
+    Status MeshStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (Mesh) GVK() schema.GroupVersionKind {
+func (Mesh)  GVK() schema.GroupVersionKind {
 	return MeshGVK
 }
 
@@ -108,13 +107,13 @@ func (Mesh) GVK() schema.GroupVersionKind {
 
 // MeshList contains a list of Mesh
 type MeshList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Mesh `json:"items"`
+    metav1.TypeMeta `json:",inline"`
+    metav1.ListMeta `json:"metadata,omitempty"`
+    Items           []Mesh `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&TrafficTarget{}, &TrafficTargetList{})
-	SchemeBuilder.Register(&Workload{}, &WorkloadList{})
-	SchemeBuilder.Register(&Mesh{}, &MeshList{})
+    SchemeBuilder.Register(&TrafficTarget{}, &TrafficTargetList{})
+    SchemeBuilder.Register(&Workload{}, &WorkloadList{})
+    SchemeBuilder.Register(&Mesh{}, &MeshList{})
 }

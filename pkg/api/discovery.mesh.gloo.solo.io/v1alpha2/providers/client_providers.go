@@ -2,11 +2,13 @@
 
 package v1alpha2
 
-import (
-	discovery_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 
-	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+import (
+    discovery_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+
+    "k8s.io/client-go/rest"
+    "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 /*
@@ -19,84 +21,84 @@ import (
 
 // Provider for TrafficTargetClient from Clientset
 func TrafficTargetClientFromClientsetProvider(clients discovery_mesh_gloo_solo_io_v1alpha2.Clientset) discovery_mesh_gloo_solo_io_v1alpha2.TrafficTargetClient {
-	return clients.TrafficTargets()
+    return clients.TrafficTargets()
 }
 
 // Provider for TrafficTarget Client from Client
 func TrafficTargetClientProvider(client client.Client) discovery_mesh_gloo_solo_io_v1alpha2.TrafficTargetClient {
-	return discovery_mesh_gloo_solo_io_v1alpha2.NewTrafficTargetClient(client)
+    return discovery_mesh_gloo_solo_io_v1alpha2.NewTrafficTargetClient(client)
 }
 
 type TrafficTargetClientFactory func(client client.Client) discovery_mesh_gloo_solo_io_v1alpha2.TrafficTargetClient
 
 func TrafficTargetClientFactoryProvider() TrafficTargetClientFactory {
-	return TrafficTargetClientProvider
+    return TrafficTargetClientProvider
 }
 
 type TrafficTargetClientFromConfigFactory func(cfg *rest.Config) (discovery_mesh_gloo_solo_io_v1alpha2.TrafficTargetClient, error)
 
 func TrafficTargetClientFromConfigFactoryProvider() TrafficTargetClientFromConfigFactory {
-	return func(cfg *rest.Config) (discovery_mesh_gloo_solo_io_v1alpha2.TrafficTargetClient, error) {
-		clients, err := discovery_mesh_gloo_solo_io_v1alpha2.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.TrafficTargets(), nil
-	}
+    return func(cfg *rest.Config) (discovery_mesh_gloo_solo_io_v1alpha2.TrafficTargetClient, error) {
+        clients, err := discovery_mesh_gloo_solo_io_v1alpha2.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.TrafficTargets(), nil
+    }
 }
 
 // Provider for WorkloadClient from Clientset
 func WorkloadClientFromClientsetProvider(clients discovery_mesh_gloo_solo_io_v1alpha2.Clientset) discovery_mesh_gloo_solo_io_v1alpha2.WorkloadClient {
-	return clients.Workloads()
+    return clients.Workloads()
 }
 
 // Provider for Workload Client from Client
 func WorkloadClientProvider(client client.Client) discovery_mesh_gloo_solo_io_v1alpha2.WorkloadClient {
-	return discovery_mesh_gloo_solo_io_v1alpha2.NewWorkloadClient(client)
+    return discovery_mesh_gloo_solo_io_v1alpha2.NewWorkloadClient(client)
 }
 
 type WorkloadClientFactory func(client client.Client) discovery_mesh_gloo_solo_io_v1alpha2.WorkloadClient
 
 func WorkloadClientFactoryProvider() WorkloadClientFactory {
-	return WorkloadClientProvider
+    return WorkloadClientProvider
 }
 
 type WorkloadClientFromConfigFactory func(cfg *rest.Config) (discovery_mesh_gloo_solo_io_v1alpha2.WorkloadClient, error)
 
 func WorkloadClientFromConfigFactoryProvider() WorkloadClientFromConfigFactory {
-	return func(cfg *rest.Config) (discovery_mesh_gloo_solo_io_v1alpha2.WorkloadClient, error) {
-		clients, err := discovery_mesh_gloo_solo_io_v1alpha2.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.Workloads(), nil
-	}
+    return func(cfg *rest.Config) (discovery_mesh_gloo_solo_io_v1alpha2.WorkloadClient, error) {
+        clients, err := discovery_mesh_gloo_solo_io_v1alpha2.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.Workloads(), nil
+    }
 }
 
 // Provider for MeshClient from Clientset
 func MeshClientFromClientsetProvider(clients discovery_mesh_gloo_solo_io_v1alpha2.Clientset) discovery_mesh_gloo_solo_io_v1alpha2.MeshClient {
-	return clients.Meshes()
+    return clients.Meshes()
 }
 
 // Provider for Mesh Client from Client
 func MeshClientProvider(client client.Client) discovery_mesh_gloo_solo_io_v1alpha2.MeshClient {
-	return discovery_mesh_gloo_solo_io_v1alpha2.NewMeshClient(client)
+    return discovery_mesh_gloo_solo_io_v1alpha2.NewMeshClient(client)
 }
 
 type MeshClientFactory func(client client.Client) discovery_mesh_gloo_solo_io_v1alpha2.MeshClient
 
 func MeshClientFactoryProvider() MeshClientFactory {
-	return MeshClientProvider
+    return MeshClientProvider
 }
 
 type MeshClientFromConfigFactory func(cfg *rest.Config) (discovery_mesh_gloo_solo_io_v1alpha2.MeshClient, error)
 
 func MeshClientFromConfigFactoryProvider() MeshClientFromConfigFactory {
-	return func(cfg *rest.Config) (discovery_mesh_gloo_solo_io_v1alpha2.MeshClient, error) {
-		clients, err := discovery_mesh_gloo_solo_io_v1alpha2.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.Meshes(), nil
-	}
+    return func(cfg *rest.Config) (discovery_mesh_gloo_solo_io_v1alpha2.MeshClient, error) {
+        clients, err := discovery_mesh_gloo_solo_io_v1alpha2.NewClientsetFromConfig(cfg)
+        if err != nil {
+            return nil, err
+        }
+        return clients.Meshes(), nil
+    }
 }

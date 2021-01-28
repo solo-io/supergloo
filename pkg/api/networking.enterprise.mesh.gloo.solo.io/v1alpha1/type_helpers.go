@@ -3,5 +3,8 @@
 // Definitions for the Kubernetes types
 package v1alpha1
 
+import (
+)
+
 // WasmDeploymentSlice represents a slice of *WasmDeployment
 type WasmDeploymentSlice []*WasmDeployment

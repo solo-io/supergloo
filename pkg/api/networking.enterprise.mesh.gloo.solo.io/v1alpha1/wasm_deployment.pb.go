@@ -7,9 +7,6 @@
 package v1alpha1
 
 import (
-	reflect "reflect"
-	sync "sync"
-
 	proto "github.com/golang/protobuf/proto"
 	any "github.com/golang/protobuf/ptypes/any"
 	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
@@ -18,6 +15,8 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	v1alpha3 "istio.io/api/networking/v1alpha3"
+	reflect "reflect"
+	sync "sync"
 )
 
 const (
@@ -498,7 +497,7 @@ type ImagePullOptions struct {
 	// * username: <username>
 	// * password: <password>
 	//
-	// the secret must live in the WASM Cache Agent namespace
+	// the secret must live in the Enterprise Agent namespace
 	// as the FilterDeployment
 	PullSecret string `protobuf:"bytes,1,opt,name=pullSecret,proto3" json:"pullSecret,omitempty"`
 	// skip verifying the image server's TLS certificate

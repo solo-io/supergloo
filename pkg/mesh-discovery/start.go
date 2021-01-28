@@ -25,25 +25,29 @@ func (opts *DiscoveryOpts) AddToFlags(flags *pflag.FlagSet) {
 // which processes k8s storage events to produce
 // discovered resources.
 func Start(ctx context.Context, opts DiscoveryOpts) error {
-	return bootstrap.Start(ctx, "discovery", func(ctx context.Context, parameters bootstrap.StartParameters) error {
-		return startReconciler(ctx, opts.agentCluster, parameters)
-	}, *opts.Options, schemes.SchemeBuilder, opts.agentCluster != "")
+	return bootstrap.Start(
+		ctx,
+		"discovery",
+		StartFunc(opts.agentCluster),
+		*opts.Options,
+		schemes.SchemeBuilder,
+		opts.agentCluster != "",
+	)
 }
 
-// start the main reconcile loop
-func startReconciler(
-	ctx context.Context,
-	agentCluster string,
-	parameters bootstrap.StartParameters,
-) error {
-	return reconciliation.Start(
-		ctx,
-		agentCluster,
-		parameters.MasterManager,
-		parameters.Clusters,
-		parameters.McClient,
-		parameters.SnapshotHistory,
-		parameters.VerboseMode,
-		&parameters.SettingsRef,
-	)
+// the mesh-discovery bootstrap.StartFunc, exposed for use in enterprise
+func StartFunc(agentCluster string) func (ctx context.Context, parameters bootstrap.StartParameters) error {
+	return func(ctx context.Context, parameters bootstrap.StartParameters) error {
+		// start the main reconcile loop
+		return reconciliation.Start(
+			ctx,
+			agentCluster,
+			parameters.MasterManager,
+			parameters.Clusters,
+			parameters.McClient,
+			parameters.SnapshotHistory,
+			parameters.VerboseMode,
+			&parameters.SettingsRef,
+		)
+	}
 }
