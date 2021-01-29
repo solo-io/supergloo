@@ -25,7 +25,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
-	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rotisserie/eris"
@@ -59,10 +58,6 @@ func (i Installer) InstallChart(ctx context.Context) error {
 	valuesFile := i.ValuesFile
 	verbose := i.Verbose
 	dryRun := i.DryRun
-
-	if kubeConfig == "" {
-		kubeConfig = clientcmd.RecommendedHomeFile
-	}
 
 	kubeClient, err := utils.BuildClient(kubeConfig, kubeContext)
 	if err != nil {
