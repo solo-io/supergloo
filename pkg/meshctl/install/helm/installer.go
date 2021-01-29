@@ -69,8 +69,10 @@ func (i Installer) InstallChart(ctx context.Context) error {
 		return err
 	}
 
-	if err = ensureNamespace(ctx, kubeClient, namespace); err != nil {
-		return eris.Wrapf(err, "creating namespace")
+	if !dryRun {
+		if err = ensureNamespace(ctx, kubeClient, namespace); err != nil {
+			return eris.Wrapf(err, "creating namespace")
+		}
 	}
 
 	actionConfig, settings, err := newActionConfig(kubeConfig, kubeContext, namespace)

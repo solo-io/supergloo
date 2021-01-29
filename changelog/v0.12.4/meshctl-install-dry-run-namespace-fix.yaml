@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1236
+    description: Do not create namespace during `meshctl install` if `--dry-run` is specified.
