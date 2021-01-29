@@ -20,7 +20,6 @@ type Translator interface {
 		ctx context.Context,
 		in input.DiscoveryInputSnapshot,
 		settings *settingsv1alpha2.DiscoverySettings,
-		localSnapshot input.SettingsSnapshot,
 	) (discovery.Snapshot, error)
 }
 
@@ -39,7 +38,6 @@ func (t translator) Translate(
 	ctx context.Context,
 	in input.DiscoveryInputSnapshot,
 	settings *settingsv1alpha2.DiscoverySettings,
-	localSnapshot input.SettingsSnapshot,
 ) (discovery.Snapshot, error) {
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(ctx)
@@ -61,9 +59,10 @@ func (t translator) Translate(
 		ctx,
 		in.Services(),
 		in.Endpoints(),
+		in.Pods(),
+		in.Nodes(),
 		workloads,
 		meshes,
-		localSnapshot.VirtualMeshes(),
 	)
 
 	t.totalTranslates++

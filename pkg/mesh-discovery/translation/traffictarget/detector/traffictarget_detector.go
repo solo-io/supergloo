@@ -6,9 +6,8 @@ import (
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
-	networkingv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/localityutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/workloadutils"
 	"github.com/solo-io/go-utils/contextutils"
 	sets2 "github.com/solo-io/skv2/contrib/pkg/sets"
@@ -41,9 +40,10 @@ type TrafficTargetDetector interface {
 		ctx context.Context,
 		service *corev1.Service,
 		endpoints corev1sets.EndpointsSet,
+		pods corev1sets.PodSet,
+		nodes corev1sets.NodeSet,
 		workloads discoveryv1alpha2sets.WorkloadSet,
 		meshes discoveryv1alpha2sets.MeshSet,
-		virtualMeshes networkingv1alpha2sets.VirtualMeshSet,
 	) *v1alpha2.TrafficTarget
 }
 
@@ -57,9 +57,10 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 	ctx context.Context,
 	service *corev1.Service,
 	endpoints corev1sets.EndpointsSet,
+	pods corev1sets.PodSet,
+	nodes corev1sets.NodeSet,
 	meshWorkloads discoveryv1alpha2sets.WorkloadSet,
 	meshes discoveryv1alpha2sets.MeshSet,
-	virtualMeshes networkingv1alpha2sets.VirtualMeshSet,
 ) *v1alpha2.TrafficTarget {
 	kubeService := &v1alpha2.TrafficTargetSpec_KubeService{
 		Ref:                    ezkube.MakeClusterObjectRef(service),
@@ -74,7 +75,15 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 		return nil
 	}
 
-	kubeService.Endpoints = getEndpointsForService(ctx, validMesh, endpoints, kubeService, virtualMeshes)
+	kubeService.Endpoints = getEndpointsForService(ctx, endpoints, nodes, kubeService)
+
+	// add locality to the traffic target
+	region, err := localityutils.GetRegion(service, pods, nodes)
+	if err != nil {
+		contextutils.LoggerFrom(ctx).Warnw("could not get region for traffic target", "error", err)
+	} else {
+		kubeService.Region = region
+	}
 
 	return &v1alpha2.TrafficTarget{
 		ObjectMeta: utils.DiscoveredObjectMeta(service),
@@ -145,61 +154,48 @@ func getMeshForKubeService(
 
 func getEndpointsForService(
 	ctx context.Context,
-	validMesh *v1.ObjectRef,
 	endpoints corev1sets.EndpointsSet,
+	nodes corev1sets.NodeSet,
 	kubeService *v1alpha2.TrafficTargetSpec_KubeService,
-	virtualMeshes networkingv1alpha2sets.VirtualMeshSet,
 ) []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset {
 	var result []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset
-	// Flat network is enabled for this particular virtual mesh
-	// so we will add all of the service endpoints to the traffic target
-	if vm := findRelatedVirtualMesh(validMesh, virtualMeshes); vm != nil && vm.Spec.GetFederation().GetFlatNetwork() {
-		ep, err := endpoints.Find(kubeService.GetRef())
-		if err != nil {
-			contextutils.LoggerFrom(ctx).Errorf(
-				"endpoints could not be found for kube service %s",
-				sets2.TypedKey(kubeService.GetRef()),
-			)
-		} else {
-			for _, epSub := range ep.Subsets {
-				sub := &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{}
-				for _, addr := range epSub.Addresses {
-					sub.LocalityIpAddresses = append(sub.LocalityIpAddresses,
-						&v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_LocalityIp{
-							Ip:          addr.IP,
-							SubLocality: nil,
-						})
+	// Add all of the service endpoints to the traffic target
+	ep, err := endpoints.Find(kubeService.GetRef())
+	if err != nil {
+		contextutils.LoggerFrom(ctx).Errorf(
+			"endpoints could not be found for kube service %s",
+			sets2.TypedKey(kubeService.GetRef()),
+		)
+	} else {
+		for _, epSub := range ep.Subsets {
+			sub := &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{}
+			for _, addr := range epSub.Addresses {
+				subLocality, err := localityutils.GetSubLocality(kubeService.GetRef().GetClusterName(), *addr.NodeName, nodes)
+				if err != nil {
+					// Log the error but continue processing. We just won't be able to get a locality for this address
+					contextutils.LoggerFrom(ctx).Warnw("could not get locality for address", "error", err)
 				}
-				for _, port := range epSub.Ports {
-					svcPort := &v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
-						Port:     uint32(port.Port),
-						Name:     port.Name,
-						Protocol: string(port.Protocol),
-					}
-					if port.AppProtocol != nil {
-						svcPort.AppProtocol = *port.AppProtocol
-					}
-					sub.Ports = append(sub.Ports, svcPort)
-				}
-				result = append(result, sub)
+				sub.LocalityIpAddresses = append(sub.LocalityIpAddresses,
+					&v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_LocalityIp{
+						Ip:          addr.IP,
+						SubLocality: subLocality,
+					})
 			}
+			for _, port := range epSub.Ports {
+				svcPort := &v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+					Port:     uint32(port.Port),
+					Name:     port.Name,
+					Protocol: string(port.Protocol),
+				}
+				if port.AppProtocol != nil {
+					svcPort.AppProtocol = *port.AppProtocol
+				}
+				sub.Ports = append(sub.Ports, svcPort)
+			}
+			result = append(result, sub)
 		}
 	}
 	return result
-}
-
-func findRelatedVirtualMesh(
-	meshRef *v1.ObjectRef,
-	virtualMeshes networkingv1alpha2sets.VirtualMeshSet,
-) *networkingv1alpha2.VirtualMesh {
-	for _, vm := range virtualMeshes.List() {
-		for _, vmMeshRef := range vm.Spec.GetMeshes() {
-			if vmMeshRef.Equal(meshRef) {
-				return vm
-			}
-		}
-	}
-	return nil
 }
 
 // expects a list of just the workloads that back the service you're finding subsets for
