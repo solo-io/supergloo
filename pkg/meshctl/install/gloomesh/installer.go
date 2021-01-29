@@ -15,12 +15,12 @@ const (
 	CertAgentChartUriTemplate          = GlooMeshRepoURI + "/cert-agent/cert-agent-%s.tgz"
 	GlooMeshEnterpriseRepoURI          = "https://storage.googleapis.com/gloo-mesh-enterprise"
 	GlooMeshEnterpriseChartUriTemplate = GlooMeshEnterpriseRepoURI + "/gloo-mesh-enterprise/gloo-mesh-enterprise-%s.tgz"
-	EnterpriseAgentChartUriTemplate          = GlooMeshEnterpriseRepoURI + "/enterprise-agent/enterprise-agent-%s.tgz"
+	EnterpriseAgentChartUriTemplate    = GlooMeshEnterpriseRepoURI + "/enterprise-agent/enterprise-agent-%s.tgz"
 	GlooMeshReleaseName                = "gloo-mesh"
 	GlooMeshEnterpriseReleaseName      = "gloo-mesh-enterprise"
 	agentCrdsReleaseName               = "agent-crds"
 	certAgentReleaseName               = "cert-agent"
-	enterpriseAgentReleaseName               = "enterprise-agent"
+	enterpriseAgentReleaseName         = "enterprise-agent"
 )
 
 type Installer struct {

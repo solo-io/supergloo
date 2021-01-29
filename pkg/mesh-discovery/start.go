@@ -36,7 +36,7 @@ func Start(ctx context.Context, opts DiscoveryOpts) error {
 }
 
 // the mesh-discovery bootstrap.StartFunc, exposed for use in enterprise
-func StartFunc(agentCluster string) func (ctx context.Context, parameters bootstrap.StartParameters) error {
+func StartFunc(agentCluster string) func(ctx context.Context, parameters bootstrap.StartParameters) error {
 	return func(ctx context.Context, parameters bootstrap.StartParameters) error {
 		// start the main reconcile loop
 		return reconciliation.Start(

@@ -39,7 +39,7 @@ type RegistrantOptions struct {
 	Registration       register.RegistrationOptions
 	AgentCrdsChartPath string
 	CertAgent          AgentInstallOptions
-	EnterpriseAgent          AgentInstallOptions
+	EnterpriseAgent    AgentInstallOptions
 	Verbose            bool
 }
 

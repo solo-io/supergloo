@@ -12,7 +12,6 @@
 // * ServiceEntries
 // * VirtualServices
 // * AuthorizationPolicies
-// * ConfigMaps
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
@@ -53,10 +52,6 @@ import (
 	security_istio_io_v1beta1 "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1"
 	security_istio_io_v1beta1_sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	security_istio_io_v1beta1_types "istio.io/client-go/pkg/apis/security/v1beta1"
-
-	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
-	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	v1_types "k8s.io/api/core/v1"
 )
 
 // SnapshotGVKs is a list of the GVKs included in this snapshot
@@ -110,12 +105,6 @@ var RemoteSnapshotGVKs = []schema.GroupVersionKind{
 		Version: "v1beta1",
 		Kind:    "AuthorizationPolicy",
 	},
-
-	schema.GroupVersionKind{
-		Group:   "",
-		Version: "v1",
-		Kind:    "ConfigMap",
-	},
 }
 
 // the snapshot of input resources consumed by translation
@@ -142,9 +131,6 @@ type RemoteSnapshot interface {
 
 	// return the set of input AuthorizationPolicies
 	AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet
-
-	// return the set of input ConfigMaps
-	ConfigMaps() v1_sets.ConfigMapSet
 	// update the status of all input objects which support
 	// the Status subresource (across multiple clusters)
 	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts RemoteSyncStatusOptions) error
@@ -179,9 +165,6 @@ type RemoteSyncStatusOptions struct {
 
 	// sync status of AuthorizationPolicy objects
 	AuthorizationPolicy bool
-
-	// sync status of ConfigMap objects
-	ConfigMap bool
 }
 
 type snapshotRemote struct {
@@ -199,8 +182,6 @@ type snapshotRemote struct {
 	virtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
-
-	configMaps v1_sets.ConfigMapSet
 }
 
 func NewRemoteSnapshot(
@@ -219,8 +200,6 @@ func NewRemoteSnapshot(
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
 
-	configMaps v1_sets.ConfigMapSet,
-
 ) RemoteSnapshot {
 	return &snapshotRemote{
 		name: name,
@@ -234,7 +213,6 @@ func NewRemoteSnapshot(
 		serviceEntries:        serviceEntries,
 		virtualServices:       virtualServices,
 		authorizationPolicies: authorizationPolicies,
-		configMaps:            configMaps,
 	}
 }
 
@@ -255,8 +233,6 @@ func NewRemoteSnapshotFromGeneric(
 	virtualServiceSet := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
 
 	authorizationPolicySet := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
-
-	configMapSet := v1_sets.NewConfigMapSet()
 
 	for _, snapshot := range genericSnapshot {
 
@@ -345,16 +321,6 @@ func NewRemoteSnapshotFromGeneric(
 			authorizationPolicySet.Insert(authorizationPolicy.(*security_istio_io_v1beta1_types.AuthorizationPolicy))
 		}
 
-		configMaps := snapshot[schema.GroupVersionKind{
-			Group:   "",
-			Version: "v1",
-			Kind:    "ConfigMap",
-		}]
-
-		for _, configMap := range configMaps {
-			configMapSet.Insert(configMap.(*v1_types.ConfigMap))
-		}
-
 	}
 	return NewRemoteSnapshot(
 		name,
@@ -367,7 +333,6 @@ func NewRemoteSnapshotFromGeneric(
 		serviceEntrySet,
 		virtualServiceSet,
 		authorizationPolicySet,
-		configMapSet,
 	)
 }
 
@@ -405,10 +370,6 @@ func (s snapshotRemote) VirtualServices() networking_istio_io_v1alpha3_sets.Virt
 
 func (s snapshotRemote) AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet {
 	return s.authorizationPolicies
-}
-
-func (s snapshotRemote) ConfigMaps() v1_sets.ConfigMapSet {
-	return s.configMaps
 }
 
 func (s snapshotRemote) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts RemoteSyncStatusOptions) error {
@@ -496,7 +457,6 @@ func (s snapshotRemote) MarshalJSON() ([]byte, error) {
 	snapshotMap["serviceEntries"] = s.serviceEntries.List()
 	snapshotMap["virtualServices"] = s.virtualServices.List()
 	snapshotMap["authorizationPolicies"] = s.authorizationPolicies.List()
-	snapshotMap["configMaps"] = s.configMaps.List()
 	return json.Marshal(snapshotMap)
 }
 
@@ -529,9 +489,6 @@ type RemoteBuildOptions struct {
 
 	// List options for composing a snapshot from AuthorizationPolicies
 	AuthorizationPolicies ResourceRemoteBuildOptions
-
-	// List options for composing a snapshot from ConfigMaps
-	ConfigMaps ResourceRemoteBuildOptions
 }
 
 // Options for reading resources of a given type
@@ -576,8 +533,6 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 
 	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
-	configMaps := v1_sets.NewConfigMapSet()
-
 	var errs error
 
 	for _, cluster := range b.clusters.ListClusters() {
@@ -609,9 +564,6 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 		if err := b.insertAuthorizationPoliciesFromCluster(ctx, cluster, authorizationPolicies, opts.AuthorizationPolicies); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertConfigMapsFromCluster(ctx, cluster, configMaps, opts.ConfigMaps); err != nil {
-			errs = multierror.Append(errs, err)
-		}
 
 	}
 
@@ -627,7 +579,6 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 		serviceEntries,
 		virtualServices,
 		authorizationPolicies,
-		configMaps,
 	)
 
 	return outputSnap, errs
@@ -1015,49 +966,6 @@ func (b *multiClusterRemoteBuilder) insertAuthorizationPoliciesFromCluster(ctx c
 	return nil
 }
 
-func (b *multiClusterRemoteBuilder) insertConfigMapsFromCluster(ctx context.Context, cluster string, configMaps v1_sets.ConfigMapSet, opts ResourceRemoteBuildOptions) error {
-	configMapClient, err := v1.NewMulticlusterConfigMapClient(b.client).Cluster(cluster)
-	if err != nil {
-		return err
-	}
-
-	if opts.Verifier != nil {
-		mgr, err := b.clusters.Cluster(cluster)
-		if err != nil {
-			return err
-		}
-
-		gvk := schema.GroupVersionKind{
-			Group:   "",
-			Version: "v1",
-			Kind:    "ConfigMap",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			cluster,
-			mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	configMapList, err := configMapClient.ListConfigMap(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range configMapList.Items {
-		item := item               // pike
-		item.ClusterName = cluster // set cluster for in-memory processing
-		configMaps.Insert(&item)
-	}
-
-	return nil
-}
-
 // build a snapshot from resources in a single cluster
 type singleClusterRemoteBuilder struct {
 	mgr         manager.Manager
@@ -1098,8 +1006,6 @@ func (b *singleClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name str
 
 	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
-	configMaps := v1_sets.NewConfigMapSet()
-
 	var errs error
 
 	if err := b.insertIssuedCertificates(ctx, issuedCertificates, opts.IssuedCertificates); err != nil {
@@ -1129,9 +1035,6 @@ func (b *singleClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name str
 	if err := b.insertAuthorizationPolicies(ctx, authorizationPolicies, opts.AuthorizationPolicies); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertConfigMaps(ctx, configMaps, opts.ConfigMaps); err != nil {
-		errs = multierror.Append(errs, err)
-	}
 
 	outputSnap := NewRemoteSnapshot(
 		name,
@@ -1145,7 +1048,6 @@ func (b *singleClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name str
 		serviceEntries,
 		virtualServices,
 		authorizationPolicies,
-		configMaps,
 	)
 
 	return outputSnap, errs
@@ -1452,40 +1354,6 @@ func (b *singleClusterRemoteBuilder) insertAuthorizationPolicies(ctx context.Con
 	return nil
 }
 
-func (b *singleClusterRemoteBuilder) insertConfigMaps(ctx context.Context, configMaps v1_sets.ConfigMapSet, opts ResourceRemoteBuildOptions) error {
-
-	if opts.Verifier != nil {
-		gvk := schema.GroupVersionKind{
-			Group:   "",
-			Version: "v1",
-			Kind:    "ConfigMap",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			"", // verify in the local cluster
-			b.mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	configMapList, err := v1.NewConfigMapClient(b.mgr.GetClient()).ListConfigMap(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range configMapList.Items {
-		item := item // pike
-		item.ClusterName = b.clusterName
-		configMaps.Insert(&item)
-	}
-
-	return nil
-}
-
 // build a snapshot from resources in a single cluster
 type inMemoryRemoteBuilder struct {
 	getSnapshot func() (resource.ClusterSnapshot, error)
@@ -1519,8 +1387,6 @@ func (i *inMemoryRemoteBuilder) BuildSnapshot(ctx context.Context, name string, 
 
 	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
-	configMaps := v1_sets.NewConfigMapSet()
-
 	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj client.Object) {
 		switch obj := obj.(type) {
 		// insert IssuedCertificates
@@ -1550,9 +1416,6 @@ func (i *inMemoryRemoteBuilder) BuildSnapshot(ctx context.Context, name string, 
 		// insert AuthorizationPolicies
 		case *security_istio_io_v1beta1_types.AuthorizationPolicy:
 			authorizationPolicies.Insert(obj)
-		// insert ConfigMaps
-		case *v1_types.ConfigMap:
-			configMaps.Insert(obj)
 		}
 	})
 
@@ -1568,6 +1431,5 @@ func (i *inMemoryRemoteBuilder) BuildSnapshot(ctx context.Context, name string, 
 		serviceEntries,
 		virtualServices,
 		authorizationPolicies,
-		configMaps,
 	), nil
 }

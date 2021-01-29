@@ -5,38 +5,41 @@
 package v1alpha2
 
 import (
-    proto "github.com/golang/protobuf/proto"
+	proto "github.com/golang/protobuf/proto"
 )
 
 // DeepCopyInto for the IssuedCertificate.Spec
 func (in *IssuedCertificateSpec) DeepCopyInto(out *IssuedCertificateSpec) {
-    p := proto.Clone(in).(*IssuedCertificateSpec)
-    *out = *p
+	p := proto.Clone(in).(*IssuedCertificateSpec)
+	*out = *p
 }
+
 // DeepCopyInto for the IssuedCertificate.Status
 func (in *IssuedCertificateStatus) DeepCopyInto(out *IssuedCertificateStatus) {
-    p := proto.Clone(in).(*IssuedCertificateStatus)
-    *out = *p
+	p := proto.Clone(in).(*IssuedCertificateStatus)
+	*out = *p
 }
 
 // DeepCopyInto for the CertificateRequest.Spec
 func (in *CertificateRequestSpec) DeepCopyInto(out *CertificateRequestSpec) {
-    p := proto.Clone(in).(*CertificateRequestSpec)
-    *out = *p
+	p := proto.Clone(in).(*CertificateRequestSpec)
+	*out = *p
 }
+
 // DeepCopyInto for the CertificateRequest.Status
 func (in *CertificateRequestStatus) DeepCopyInto(out *CertificateRequestStatus) {
-    p := proto.Clone(in).(*CertificateRequestStatus)
-    *out = *p
+	p := proto.Clone(in).(*CertificateRequestStatus)
+	*out = *p
 }
 
 // DeepCopyInto for the PodBounceDirective.Spec
 func (in *PodBounceDirectiveSpec) DeepCopyInto(out *PodBounceDirectiveSpec) {
-    p := proto.Clone(in).(*PodBounceDirectiveSpec)
-    *out = *p
+	p := proto.Clone(in).(*PodBounceDirectiveSpec)
+	*out = *p
 }
+
 // DeepCopyInto for the PodBounceDirective.Status
 func (in *PodBounceDirectiveStatus) DeepCopyInto(out *PodBounceDirectiveStatus) {
-    p := proto.Clone(in).(*PodBounceDirectiveStatus)
-    *out = *p
+	p := proto.Clone(in).(*PodBounceDirectiveStatus)
+	*out = *p
 }

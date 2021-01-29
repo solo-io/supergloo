@@ -195,12 +195,6 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - ""
-  resources:
-  - configmaps
-  verbs:
-  - '*'
-- apiGroups:
   - certificates.mesh.gloo.solo.io
   resources:
   - issuedcertificates

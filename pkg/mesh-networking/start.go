@@ -68,7 +68,7 @@ type networkingStarter struct {
 }
 
 // start the main reconcile loop
-func (s networkingStarter) startReconciler(ctx context.Context,parameters bootstrap.StartParameters) error {
+func (s networkingStarter) startReconciler(ctx context.Context, parameters bootstrap.StartParameters) error {
 	extensionOpts := s.makeExtensions(parameters)
 	extensionOpts.initDefaults(parameters)
 

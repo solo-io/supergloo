@@ -32,9 +32,6 @@ import (
 
 	security_istio_io_v1beta1_sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	security_istio_io_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
-
-	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	v1 "k8s.io/api/core/v1"
 )
 
 // this error can occur if constructing a Partitioned Snapshot from a resource
@@ -94,12 +91,6 @@ var SnapshotGVKs = []schema.GroupVersionKind{
 		Version: "v1beta1",
 		Kind:    "AuthorizationPolicy",
 	},
-
-	schema.GroupVersionKind{
-		Group:   "",
-		Version: "v1",
-		Kind:    "ConfigMap",
-	},
 }
 
 // the snapshot of output resources produced by a translation
@@ -123,8 +114,6 @@ type Snapshot interface {
 	VirtualServices() []LabeledVirtualServiceSet
 	// return the set of AuthorizationPolicies with a given set of labels
 	AuthorizationPolicies() []LabeledAuthorizationPolicySet
-	// return the set of ConfigMaps with a given set of labels
-	ConfigMaps() []LabeledConfigMapSet
 
 	// apply the snapshot to the local cluster, garbage collecting stale resources
 	ApplyLocalCluster(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
@@ -148,7 +137,6 @@ type snapshot struct {
 	serviceEntries        []LabeledServiceEntrySet
 	virtualServices       []LabeledVirtualServiceSet
 	authorizationPolicies []LabeledAuthorizationPolicySet
-	configMaps            []LabeledConfigMapSet
 	clusters              []string
 }
 
@@ -164,7 +152,6 @@ func NewSnapshot(
 	serviceEntries []LabeledServiceEntrySet,
 	virtualServices []LabeledVirtualServiceSet,
 	authorizationPolicies []LabeledAuthorizationPolicySet,
-	configMaps []LabeledConfigMapSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{
@@ -179,7 +166,6 @@ func NewSnapshot(
 		serviceEntries:        serviceEntries,
 		virtualServices:       virtualServices,
 		authorizationPolicies: authorizationPolicies,
-		configMaps:            configMaps,
 		clusters:              clusters,
 	}
 }
@@ -202,8 +188,6 @@ func NewLabelPartitionedSnapshot(
 	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
-
-	configMaps v1_sets.ConfigMapSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
@@ -243,10 +227,6 @@ func NewLabelPartitionedSnapshot(
 	if err != nil {
 		return nil, err
 	}
-	partitionedConfigMaps, err := partitionConfigMapsByLabel(labelKey, configMaps)
-	if err != nil {
-		return nil, err
-	}
 
 	return NewSnapshot(
 		name,
@@ -260,7 +240,6 @@ func NewLabelPartitionedSnapshot(
 		partitionedServiceEntries,
 		partitionedVirtualServices,
 		partitionedAuthorizationPolicies,
-		partitionedConfigMaps,
 		clusters...,
 	), nil
 }
@@ -283,8 +262,6 @@ func NewSinglePartitionedSnapshot(
 	virtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
-
-	configMaps v1_sets.ConfigMapSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
@@ -324,10 +301,6 @@ func NewSinglePartitionedSnapshot(
 	if err != nil {
 		return nil, err
 	}
-	labeledConfigMaps, err := NewLabeledConfigMapSet(configMaps, snapshotLabels)
-	if err != nil {
-		return nil, err
-	}
 
 	return NewSnapshot(
 		name,
@@ -341,7 +314,6 @@ func NewSinglePartitionedSnapshot(
 		[]LabeledServiceEntrySet{labeledServiceEntries},
 		[]LabeledVirtualServiceSet{labeledVirtualServices},
 		[]LabeledAuthorizationPolicySet{labeledAuthorizationPolicies},
-		[]LabeledConfigMapSet{labeledConfigMaps},
 		clusters...,
 	), nil
 }
@@ -375,9 +347,6 @@ func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, err
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.authorizationPolicies {
-		genericLists = append(genericLists, outputSet.Generic())
-	}
-	for _, outputSet := range s.configMaps {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -416,9 +385,6 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.authorizationPolicies {
-		genericLists = append(genericLists, outputSet.Generic())
-	}
-	for _, outputSet := range s.configMaps {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -825,50 +791,6 @@ func partitionAuthorizationPoliciesByLabel(labelKey string, set security_istio_i
 	return partitionedAuthorizationPolicies, nil
 }
 
-func partitionConfigMapsByLabel(labelKey string, set v1_sets.ConfigMapSet) ([]LabeledConfigMapSet, error) {
-	setsByLabel := map[string]v1_sets.ConfigMapSet{}
-
-	for _, obj := range set.List() {
-		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "ConfigMap", obj)
-		}
-		labelValue := obj.Labels[labelKey]
-		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "ConfigMap", obj)
-		}
-
-		setForValue, ok := setsByLabel[labelValue]
-		if !ok {
-			setForValue = v1_sets.NewConfigMapSet()
-			setsByLabel[labelValue] = setForValue
-		}
-		setForValue.Insert(obj)
-	}
-
-	// partition by label key
-	var partitionedConfigMaps []LabeledConfigMapSet
-
-	for labelValue, setForValue := range setsByLabel {
-		labels := map[string]string{labelKey: labelValue}
-
-		partitionedSet, err := NewLabeledConfigMapSet(setForValue, labels)
-		if err != nil {
-			return nil, err
-		}
-
-		partitionedConfigMaps = append(partitionedConfigMaps, partitionedSet)
-	}
-
-	// sort for idempotency
-	sort.SliceStable(partitionedConfigMaps, func(i, j int) bool {
-		leftLabelValue := partitionedConfigMaps[i].Labels()[labelKey]
-		rightLabelValue := partitionedConfigMaps[j].Labels()[labelKey]
-		return leftLabelValue < rightLabelValue
-	})
-
-	return partitionedConfigMaps, nil
-}
-
 func (s snapshot) IssuedCertificates() []LabeledIssuedCertificateSet {
 	return s.issuedCertificates
 }
@@ -903,10 +825,6 @@ func (s snapshot) VirtualServices() []LabeledVirtualServiceSet {
 
 func (s snapshot) AuthorizationPolicies() []LabeledAuthorizationPolicySet {
 	return s.authorizationPolicies
-}
-
-func (s snapshot) ConfigMaps() []LabeledConfigMapSet {
-	return s.configMaps
 }
 
 func (s snapshot) MarshalJSON() ([]byte, error) {
@@ -960,12 +878,6 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 		authorizationPolicySet = authorizationPolicySet.Union(set.Set())
 	}
 	snapshotMap["authorizationPolicies"] = authorizationPolicySet.List()
-
-	configMapSet := v1_sets.NewConfigMapSet()
-	for _, set := range s.configMaps {
-		configMapSet = configMapSet.Union(set.Set())
-	}
-	snapshotMap["configMaps"] = configMapSet.List()
 
 	snapshotMap["clusters"] = s.clusters
 
@@ -1584,74 +1496,6 @@ func (l labeledAuthorizationPolicySet) Generic() output.ResourceList {
 	}
 }
 
-// LabeledConfigMapSet represents a set of configMaps
-// which share a common set of labels.
-// These labels are used to find diffs between ConfigMapSets.
-type LabeledConfigMapSet interface {
-	// returns the set of Labels shared by this ConfigMapSet
-	Labels() map[string]string
-
-	// returns the set of ConfigMapes with the given labels
-	Set() v1_sets.ConfigMapSet
-
-	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
-	Generic() output.ResourceList
-}
-
-type labeledConfigMapSet struct {
-	set    v1_sets.ConfigMapSet
-	labels map[string]string
-}
-
-func NewLabeledConfigMapSet(set v1_sets.ConfigMapSet, labels map[string]string) (LabeledConfigMapSet, error) {
-	// validate that each ConfigMap contains the labels, else this is not a valid LabeledConfigMapSet
-	for _, item := range set.List() {
-		for k, v := range labels {
-			// k=v must be present in the item
-			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on ConfigMap %v", k, v, item.Name)
-			}
-		}
-	}
-
-	return &labeledConfigMapSet{set: set, labels: labels}, nil
-}
-
-func (l *labeledConfigMapSet) Labels() map[string]string {
-	return l.labels
-}
-
-func (l *labeledConfigMapSet) Set() v1_sets.ConfigMapSet {
-	return l.set
-}
-
-func (l labeledConfigMapSet) Generic() output.ResourceList {
-	var desiredResources []ezkube.Object
-	for _, desired := range l.set.List() {
-		desiredResources = append(desiredResources, desired)
-	}
-
-	// enable list func for garbage collection
-	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
-		var list v1.ConfigMapList
-		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
-			return nil, err
-		}
-		var items []ezkube.Object
-		for _, item := range list.Items {
-			item := item // pike
-			items = append(items, &item)
-		}
-		return items, nil
-	}
-
-	return output.ResourceList{
-		Resources:    desiredResources,
-		ListFunc:     listFunc,
-		ResourceKind: "ConfigMap",
-	}
-}
-
 type builder struct {
 	ctx      context.Context
 	name     string
@@ -1669,8 +1513,6 @@ type builder struct {
 	virtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
-
-	configMaps v1_sets.ConfigMapSet
 }
 
 func NewBuilder(ctx context.Context, name string) *builder {
@@ -1690,8 +1532,6 @@ func NewBuilder(ctx context.Context, name string) *builder {
 		virtualServices:  networking_istio_io_v1alpha3_sets.NewVirtualServiceSet(),
 
 		authorizationPolicies: security_istio_io_v1beta1_sets.NewAuthorizationPolicySet(),
-
-		configMaps: v1_sets.NewConfigMapSet(),
 	}
 }
 
@@ -1752,12 +1592,6 @@ type Builder interface {
 
 	// get the collected AuthorizationPolicies
 	GetAuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet
-
-	// add ConfigMaps to the collected outputs
-	AddConfigMaps(configMaps ...*v1.ConfigMap)
-
-	// get the collected ConfigMaps
-	GetConfigMaps() v1_sets.ConfigMapSet
 
 	// build the collected outputs into a label-partitioned snapshot
 	BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error)
@@ -1866,15 +1700,6 @@ func (b *builder) AddAuthorizationPolicies(authorizationPolicies ...*security_is
 		b.authorizationPolicies.Insert(obj)
 	}
 }
-func (b *builder) AddConfigMaps(configMaps ...*v1.ConfigMap) {
-	for _, obj := range configMaps {
-		if obj == nil {
-			continue
-		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output ConfigMap %v", sets.Key(obj))
-		b.configMaps.Insert(obj)
-	}
-}
 
 func (b *builder) GetIssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet {
 	return b.issuedCertificates
@@ -1907,10 +1732,6 @@ func (b *builder) GetAuthorizationPolicies() security_istio_io_v1beta1_sets.Auth
 	return b.authorizationPolicies
 }
 
-func (b *builder) GetConfigMaps() v1_sets.ConfigMapSet {
-	return b.configMaps
-}
-
 func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
 	return NewLabelPartitionedSnapshot(
 		b.name,
@@ -1928,8 +1749,6 @@ func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
 		b.virtualServices,
 
 		b.authorizationPolicies,
-
-		b.configMaps,
 		b.clusters...,
 	)
 }
@@ -1951,8 +1770,6 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 		b.virtualServices,
 
 		b.authorizationPolicies,
-
-		b.configMaps,
 		b.clusters...,
 	)
 }
@@ -1982,8 +1799,6 @@ func (b *builder) Merge(other Builder) {
 	b.AddVirtualServices(other.GetVirtualServices().List()...)
 
 	b.AddAuthorizationPolicies(other.GetAuthorizationPolicies().List()...)
-
-	b.AddConfigMaps(other.GetConfigMaps().List()...)
 	for _, cluster := range other.Clusters() {
 		b.AddCluster(cluster)
 	}
@@ -2024,10 +1839,6 @@ func (b *builder) Clone() Builder {
 
 	for _, authorizationPolicy := range b.GetAuthorizationPolicies().List() {
 		clone.AddAuthorizationPolicies(authorizationPolicy.DeepCopy())
-	}
-
-	for _, configMap := range b.GetConfigMaps().List() {
-		clone.AddConfigMaps(configMap.DeepCopy())
 	}
 	for _, cluster := range b.Clusters() {
 		clone.AddCluster(cluster)
@@ -2125,16 +1936,6 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
 	}
 	delta.AddInserted(authorizationPolicyGvk, authorizationPolicyDelta.Inserted)
 	delta.AddRemoved(authorizationPolicyGvk, authorizationPolicyDelta.Removed)
-
-	// calcualte delta between ConfigMaps
-	configMapDelta := b.GetConfigMaps().Delta(other.GetConfigMaps())
-	configMapGvk := schema.GroupVersionKind{
-		Group:   "",
-		Version: "v1",
-		Kind:    "ConfigMap",
-	}
-	delta.AddInserted(configMapGvk, configMapDelta.Inserted)
-	delta.AddRemoved(configMapGvk, configMapDelta.Removed)
 	return delta
 }
 
@@ -2226,16 +2027,6 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 			Group:   "security.istio.io",
 			Version: "v1beta1",
 			Kind:    "AuthorizationPolicy",
-		}
-		clusterSnapshots.Insert(cluster, gvk, obj)
-	}
-
-	for _, obj := range b.GetConfigMaps().List() {
-		cluster := obj.GetClusterName()
-		gvk := schema.GroupVersionKind{
-			Group:   "",
-			Version: "v1",
-			Kind:    "ConfigMap",
 		}
 		clusterSnapshots.Insert(cluster, gvk, obj)
 	}

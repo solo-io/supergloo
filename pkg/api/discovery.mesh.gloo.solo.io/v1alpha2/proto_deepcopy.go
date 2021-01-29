@@ -5,38 +5,41 @@
 package v1alpha2
 
 import (
-    proto "github.com/golang/protobuf/proto"
+	proto "github.com/golang/protobuf/proto"
 )
 
 // DeepCopyInto for the TrafficTarget.Spec
 func (in *TrafficTargetSpec) DeepCopyInto(out *TrafficTargetSpec) {
-    p := proto.Clone(in).(*TrafficTargetSpec)
-    *out = *p
+	p := proto.Clone(in).(*TrafficTargetSpec)
+	*out = *p
 }
+
 // DeepCopyInto for the TrafficTarget.Status
 func (in *TrafficTargetStatus) DeepCopyInto(out *TrafficTargetStatus) {
-    p := proto.Clone(in).(*TrafficTargetStatus)
-    *out = *p
+	p := proto.Clone(in).(*TrafficTargetStatus)
+	*out = *p
 }
 
 // DeepCopyInto for the Workload.Spec
 func (in *WorkloadSpec) DeepCopyInto(out *WorkloadSpec) {
-    p := proto.Clone(in).(*WorkloadSpec)
-    *out = *p
+	p := proto.Clone(in).(*WorkloadSpec)
+	*out = *p
 }
+
 // DeepCopyInto for the Workload.Status
 func (in *WorkloadStatus) DeepCopyInto(out *WorkloadStatus) {
-    p := proto.Clone(in).(*WorkloadStatus)
-    *out = *p
+	p := proto.Clone(in).(*WorkloadStatus)
+	*out = *p
 }
 
 // DeepCopyInto for the Mesh.Spec
 func (in *MeshSpec) DeepCopyInto(out *MeshSpec) {
-    p := proto.Clone(in).(*MeshSpec)
-    *out = *p
+	p := proto.Clone(in).(*MeshSpec)
+	*out = *p
 }
+
 // DeepCopyInto for the Mesh.Status
 func (in *MeshStatus) DeepCopyInto(out *MeshStatus) {
-    p := proto.Clone(in).(*MeshStatus)
-    *out = *p
+	p := proto.Clone(in).(*MeshStatus)
+	*out = *p
 }
