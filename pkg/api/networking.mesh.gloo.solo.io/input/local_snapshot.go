@@ -1792,7 +1792,7 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
 
-	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj client.Object) {
+	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject) {
 		switch obj := obj.(type) {
 		// insert Settings
 		case *settings_mesh_gloo_solo_io_v1alpha2_types.Settings:

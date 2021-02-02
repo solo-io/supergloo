@@ -3,9 +3,10 @@ package reconciliation
 import (
 	"context"
 	"fmt"
-	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"os"
 	"time"
+
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 
 	"github.com/solo-io/skv2/pkg/stats"
 

@@ -1387,7 +1387,7 @@ func (i *inMemoryRemoteBuilder) BuildSnapshot(ctx context.Context, name string, 
 
 	authorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
-	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj client.Object) {
+	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject) {
 		switch obj := obj.(type) {
 		// insert IssuedCertificates
 		case *certificates_mesh_gloo_solo_io_v1alpha2_types.IssuedCertificate:

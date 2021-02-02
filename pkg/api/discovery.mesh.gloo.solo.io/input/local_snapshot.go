@@ -358,7 +358,7 @@ func (i *inMemorySettingsBuilder) BuildSnapshot(ctx context.Context, name string
 
 	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
-	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj client.Object) {
+	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject) {
 		switch obj := obj.(type) {
 		// insert Settings
 		case *settings_mesh_gloo_solo_io_v1alpha2_types.Settings:
