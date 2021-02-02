@@ -3,6 +3,8 @@ package reconciliation
 import (
 	"context"
 	"fmt"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"os"
 	"time"
 
 	"github.com/solo-io/skv2/pkg/stats"
@@ -62,6 +64,11 @@ func Start(
 	} else {
 		// run in agent mode;  I/O wired up to local cluster only
 		discoveryInputBuilder = input.NewSingleClusterDiscoveryInputBuilderWithClusterName(localMgr, agentCluster)
+
+		// signal to other parts of Discovery that we are running in AGENT_MODE
+		if err := os.Setenv(defaults.AgentClusterEnv, agentCluster); err != nil {
+			return err
+		}
 	}
 
 	verifier := verifier.NewVerifier(ctx, map[schema.GroupVersionKind]verifier.ServerVerifyOption{
@@ -72,11 +79,12 @@ func Start(
 			Kind:    "Mesh",
 		}: verifier.ServerVerifyOption_IgnoreIfNotPresent,
 	})
+	translator := translation.NewTranslator(translation.DefaultDependencyFactory)
 	r := &discoveryReconciler{
 		ctx:                   ctx,
 		discoveryInputBuilder: discoveryInputBuilder,
 		settingsBuilder:       settingsBuilder,
-		translator:            translation.NewTranslator(translation.DefaultDependencyFactory),
+		translator:            translator,
 		localClient:           localMgr.GetClient(),
 		history:               history,
 		verboseMode:           verboseMode,
