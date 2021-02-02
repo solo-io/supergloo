@@ -190,4 +190,16 @@ message MeshStatus {
         // The last known valid spec of the FailoverService.
         .networking.mesh.gloo.solo.io.FailoverServiceSpec spec = 3;
     }
+
+    // AppliedGlobalService represents an GlobalService that has been applied to this Mesh.
+    message AppliedGlobalService {
+        // reference to the GlobalService object.
+        .core.skv2.solo.io.ObjectRef ref = 1;
+
+        // the observed generation of the accepted GlobalService.
+        int64 observedGeneration = 2;
+
+        // any errors encountered while processing the referenced GlobalService object
+        repeated string errors = 3;
+    }
 }
