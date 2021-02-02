@@ -40,46 +40,46 @@ func (m *MockSnapshot) EXPECT() *MockSnapshotMockRecorder {
 	return m.recorder
 }
 
-// DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets mocks base method
-func (m *MockSnapshot) DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets() []discovery.LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet {
+// DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets mocks base method
+func (m *MockSnapshot) DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets() []discovery.LabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets")
-	ret0, _ := ret[0].([]discovery.LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet)
+	ret := m.ctrl.Call(m, "DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets")
+	ret0, _ := ret[0].([]discovery.LabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet)
 	return ret0
 }
 
-// DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets indicates an expected call of DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets
-func (mr *MockSnapshotMockRecorder) DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets() *gomock.Call {
+// DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets indicates an expected call of DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets
+func (mr *MockSnapshotMockRecorder) DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets", reflect.TypeOf((*MockSnapshot)(nil).DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets", reflect.TypeOf((*MockSnapshot)(nil).DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets))
 }
 
-// DiscoveryMeshGlooSoloIov1Alpha2Workloads mocks base method
-func (m *MockSnapshot) DiscoveryMeshGlooSoloIov1Alpha2Workloads() []discovery.LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet {
+// DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads mocks base method
+func (m *MockSnapshot) DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads() []discovery.LabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DiscoveryMeshGlooSoloIov1Alpha2Workloads")
-	ret0, _ := ret[0].([]discovery.LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet)
+	ret := m.ctrl.Call(m, "DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads")
+	ret0, _ := ret[0].([]discovery.LabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet)
 	return ret0
 }
 
-// DiscoveryMeshGlooSoloIov1Alpha2Workloads indicates an expected call of DiscoveryMeshGlooSoloIov1Alpha2Workloads
-func (mr *MockSnapshotMockRecorder) DiscoveryMeshGlooSoloIov1Alpha2Workloads() *gomock.Call {
+// DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads indicates an expected call of DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads
+func (mr *MockSnapshotMockRecorder) DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoveryMeshGlooSoloIov1Alpha2Workloads", reflect.TypeOf((*MockSnapshot)(nil).DiscoveryMeshGlooSoloIov1Alpha2Workloads))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads", reflect.TypeOf((*MockSnapshot)(nil).DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads))
 }
 
-// DiscoveryMeshGlooSoloIov1Alpha2Meshes mocks base method
-func (m *MockSnapshot) DiscoveryMeshGlooSoloIov1Alpha2Meshes() []discovery.LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet {
+// DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes mocks base method
+func (m *MockSnapshot) DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes() []discovery.LabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DiscoveryMeshGlooSoloIov1Alpha2Meshes")
-	ret0, _ := ret[0].([]discovery.LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet)
+	ret := m.ctrl.Call(m, "DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes")
+	ret0, _ := ret[0].([]discovery.LabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet)
 	return ret0
 }
 
-// DiscoveryMeshGlooSoloIov1Alpha2Meshes indicates an expected call of DiscoveryMeshGlooSoloIov1Alpha2Meshes
-func (mr *MockSnapshotMockRecorder) DiscoveryMeshGlooSoloIov1Alpha2Meshes() *gomock.Call {
+// DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes indicates an expected call of DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes
+func (mr *MockSnapshotMockRecorder) DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoveryMeshGlooSoloIov1Alpha2Meshes", reflect.TypeOf((*MockSnapshot)(nil).DiscoveryMeshGlooSoloIov1Alpha2Meshes))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes", reflect.TypeOf((*MockSnapshot)(nil).DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes))
 }
 
 // ApplyLocalCluster mocks base method
@@ -121,31 +121,31 @@ func (mr *MockSnapshotMockRecorder) MarshalJSON() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarshalJSON", reflect.TypeOf((*MockSnapshot)(nil).MarshalJSON))
 }
 
-// MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet is a mock of LabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet interface
-type MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet struct {
+// MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet is a mock of LabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet interface
+type MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet struct {
 	ctrl     *gomock.Controller
-	recorder *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSetMockRecorder
+	recorder *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSetMockRecorder
 }
 
-// MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSetMockRecorder is the mock recorder for MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet
-type MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSetMockRecorder struct {
-	mock *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet
+// MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSetMockRecorder is the mock recorder for MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet
+type MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSetMockRecorder struct {
+	mock *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet
 }
 
-// NewMockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet creates a new mock instance
-func NewMockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet(ctrl *gomock.Controller) *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet {
-	mock := &MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet{ctrl: ctrl}
-	mock.recorder = &MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSetMockRecorder{mock}
+// NewMockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet creates a new mock instance
+func NewMockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet(ctrl *gomock.Controller) *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet {
+	mock := &MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet{ctrl: ctrl}
+	mock.recorder = &MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSetMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet) EXPECT() *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSetMockRecorder {
+func (m *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet) EXPECT() *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSetMockRecorder {
 	return m.recorder
 }
 
 // Labels mocks base method
-func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet) Labels() map[string]string {
+func (m *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
 	ret0, _ := ret[0].(map[string]string)
@@ -153,13 +153,13 @@ func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet) Labels() ma
 }
 
 // Labels indicates an expected call of Labels
-func (mr *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSetMockRecorder) Labels() *gomock.Call {
+func (mr *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet)(nil).Labels))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet)(nil).Labels))
 }
 
 // Set mocks base method
-func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet) Set() v1alpha2sets.TrafficTargetSet {
+func (m *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet) Set() v1alpha2sets.TrafficTargetSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
 	ret0, _ := ret[0].(v1alpha2sets.TrafficTargetSet)
@@ -167,13 +167,13 @@ func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet) Set() v1alp
 }
 
 // Set indicates an expected call of Set
-func (mr *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSetMockRecorder) Set() *gomock.Call {
+func (mr *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet)(nil).Set))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet)(nil).Set))
 }
 
 // Generic mocks base method
-func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet) Generic() output.ResourceList {
+func (m *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet) Generic() output.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
 	ret0, _ := ret[0].(output.ResourceList)
@@ -181,36 +181,36 @@ func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet) Generic() o
 }
 
 // Generic indicates an expected call of Generic
-func (mr *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSetMockRecorder) Generic() *gomock.Call {
+func (mr *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetSet)(nil).Generic))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetSet)(nil).Generic))
 }
 
-// MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet is a mock of LabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet interface
-type MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet struct {
+// MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet is a mock of LabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet interface
+type MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet struct {
 	ctrl     *gomock.Controller
-	recorder *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSetMockRecorder
+	recorder *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSetMockRecorder
 }
 
-// MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSetMockRecorder is the mock recorder for MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet
-type MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSetMockRecorder struct {
-	mock *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet
+// MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSetMockRecorder is the mock recorder for MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet
+type MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSetMockRecorder struct {
+	mock *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet
 }
 
-// NewMockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet creates a new mock instance
-func NewMockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet(ctrl *gomock.Controller) *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet {
-	mock := &MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet{ctrl: ctrl}
-	mock.recorder = &MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSetMockRecorder{mock}
+// NewMockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet creates a new mock instance
+func NewMockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet(ctrl *gomock.Controller) *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet {
+	mock := &MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet{ctrl: ctrl}
+	mock.recorder = &MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSetMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet) EXPECT() *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSetMockRecorder {
+func (m *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet) EXPECT() *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSetMockRecorder {
 	return m.recorder
 }
 
 // Labels mocks base method
-func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet) Labels() map[string]string {
+func (m *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
 	ret0, _ := ret[0].(map[string]string)
@@ -218,13 +218,13 @@ func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet) Labels() map[str
 }
 
 // Labels indicates an expected call of Labels
-func (mr *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSetMockRecorder) Labels() *gomock.Call {
+func (mr *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet)(nil).Labels))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet)(nil).Labels))
 }
 
 // Set mocks base method
-func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet) Set() v1alpha2sets.WorkloadSet {
+func (m *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet) Set() v1alpha2sets.WorkloadSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
 	ret0, _ := ret[0].(v1alpha2sets.WorkloadSet)
@@ -232,13 +232,13 @@ func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet) Set() v1alpha2se
 }
 
 // Set indicates an expected call of Set
-func (mr *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSetMockRecorder) Set() *gomock.Call {
+func (mr *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet)(nil).Set))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet)(nil).Set))
 }
 
 // Generic mocks base method
-func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet) Generic() output.ResourceList {
+func (m *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet) Generic() output.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
 	ret0, _ := ret[0].(output.ResourceList)
@@ -246,36 +246,36 @@ func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet) Generic() output
 }
 
 // Generic indicates an expected call of Generic
-func (mr *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSetMockRecorder) Generic() *gomock.Call {
+func (mr *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIov1Alpha2WorkloadSet)(nil).Generic))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadSet)(nil).Generic))
 }
 
-// MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet is a mock of LabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet interface
-type MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet struct {
+// MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet is a mock of LabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet interface
+type MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet struct {
 	ctrl     *gomock.Controller
-	recorder *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSetMockRecorder
+	recorder *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSetMockRecorder
 }
 
-// MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSetMockRecorder is the mock recorder for MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet
-type MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSetMockRecorder struct {
-	mock *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet
+// MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSetMockRecorder is the mock recorder for MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet
+type MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSetMockRecorder struct {
+	mock *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet
 }
 
-// NewMockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet creates a new mock instance
-func NewMockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet(ctrl *gomock.Controller) *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet {
-	mock := &MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet{ctrl: ctrl}
-	mock.recorder = &MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSetMockRecorder{mock}
+// NewMockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet creates a new mock instance
+func NewMockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet(ctrl *gomock.Controller) *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet {
+	mock := &MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet{ctrl: ctrl}
+	mock.recorder = &MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSetMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet) EXPECT() *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSetMockRecorder {
+func (m *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet) EXPECT() *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSetMockRecorder {
 	return m.recorder
 }
 
 // Labels mocks base method
-func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet) Labels() map[string]string {
+func (m *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
 	ret0, _ := ret[0].(map[string]string)
@@ -283,13 +283,13 @@ func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet) Labels() map[string]
 }
 
 // Labels indicates an expected call of Labels
-func (mr *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSetMockRecorder) Labels() *gomock.Call {
+func (mr *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet)(nil).Labels))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet)(nil).Labels))
 }
 
 // Set mocks base method
-func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet) Set() v1alpha2sets.MeshSet {
+func (m *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet) Set() v1alpha2sets.MeshSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
 	ret0, _ := ret[0].(v1alpha2sets.MeshSet)
@@ -297,13 +297,13 @@ func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet) Set() v1alpha2sets.M
 }
 
 // Set indicates an expected call of Set
-func (mr *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSetMockRecorder) Set() *gomock.Call {
+func (mr *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet)(nil).Set))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet)(nil).Set))
 }
 
 // Generic mocks base method
-func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet) Generic() output.ResourceList {
+func (m *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet) Generic() output.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
 	ret0, _ := ret[0].(output.ResourceList)
@@ -311,9 +311,9 @@ func (m *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet) Generic() output.Res
 }
 
 // Generic indicates an expected call of Generic
-func (mr *MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSetMockRecorder) Generic() *gomock.Call {
+func (mr *MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIov1Alpha2MeshSet)(nil).Generic))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledDiscoveryMeshGlooSoloIo_V1Alpha2_MeshSet)(nil).Generic))
 }
 
 // MockBuilder is a mock of Builder interface
@@ -339,94 +339,94 @@ func (m *MockBuilder) EXPECT() *MockBuilderMockRecorder {
 	return m.recorder
 }
 
-// AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets mocks base method
-func (m *MockBuilder) AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(discoveryMeshGlooSoloIov1Alpha2TrafficTargets ...*v1alpha2.TrafficTarget) {
+// AddDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets mocks base method
+func (m *MockBuilder) AddDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets(discoveryMeshGlooSoloIoV1Alpha2TrafficTargets ...*v1alpha2.TrafficTarget) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
-	for _, a := range discoveryMeshGlooSoloIov1Alpha2TrafficTargets {
+	for _, a := range discoveryMeshGlooSoloIoV1Alpha2TrafficTargets {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets", varargs...)
+	m.ctrl.Call(m, "AddDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets", varargs...)
 }
 
-// AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets indicates an expected call of AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets
-func (mr *MockBuilderMockRecorder) AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(discoveryMeshGlooSoloIov1Alpha2TrafficTargets ...interface{}) *gomock.Call {
+// AddDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets indicates an expected call of AddDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets
+func (mr *MockBuilderMockRecorder) AddDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets(discoveryMeshGlooSoloIoV1Alpha2TrafficTargets ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets", reflect.TypeOf((*MockBuilder)(nil).AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets), discoveryMeshGlooSoloIov1Alpha2TrafficTargets...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets", reflect.TypeOf((*MockBuilder)(nil).AddDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets), discoveryMeshGlooSoloIoV1Alpha2TrafficTargets...)
 }
 
-// GetDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets mocks base method
-func (m *MockBuilder) GetDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets() v1alpha2sets.TrafficTargetSet {
+// GetDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets mocks base method
+func (m *MockBuilder) GetDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets() v1alpha2sets.TrafficTargetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets")
+	ret := m.ctrl.Call(m, "GetDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets")
 	ret0, _ := ret[0].(v1alpha2sets.TrafficTargetSet)
 	return ret0
 }
 
-// GetDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets indicates an expected call of GetDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets
-func (mr *MockBuilderMockRecorder) GetDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets() *gomock.Call {
+// GetDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets indicates an expected call of GetDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets
+func (mr *MockBuilderMockRecorder) GetDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets", reflect.TypeOf((*MockBuilder)(nil).GetDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets", reflect.TypeOf((*MockBuilder)(nil).GetDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets))
 }
 
-// AddDiscoveryMeshGlooSoloIov1Alpha2Workloads mocks base method
-func (m *MockBuilder) AddDiscoveryMeshGlooSoloIov1Alpha2Workloads(discoveryMeshGlooSoloIov1Alpha2Workloads ...*v1alpha2.Workload) {
+// AddDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads mocks base method
+func (m *MockBuilder) AddDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads(discoveryMeshGlooSoloIoV1Alpha2Workloads ...*v1alpha2.Workload) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
-	for _, a := range discoveryMeshGlooSoloIov1Alpha2Workloads {
+	for _, a := range discoveryMeshGlooSoloIoV1Alpha2Workloads {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddDiscoveryMeshGlooSoloIov1Alpha2Workloads", varargs...)
+	m.ctrl.Call(m, "AddDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads", varargs...)
 }
 
-// AddDiscoveryMeshGlooSoloIov1Alpha2Workloads indicates an expected call of AddDiscoveryMeshGlooSoloIov1Alpha2Workloads
-func (mr *MockBuilderMockRecorder) AddDiscoveryMeshGlooSoloIov1Alpha2Workloads(discoveryMeshGlooSoloIov1Alpha2Workloads ...interface{}) *gomock.Call {
+// AddDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads indicates an expected call of AddDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads
+func (mr *MockBuilderMockRecorder) AddDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads(discoveryMeshGlooSoloIoV1Alpha2Workloads ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDiscoveryMeshGlooSoloIov1Alpha2Workloads", reflect.TypeOf((*MockBuilder)(nil).AddDiscoveryMeshGlooSoloIov1Alpha2Workloads), discoveryMeshGlooSoloIov1Alpha2Workloads...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads", reflect.TypeOf((*MockBuilder)(nil).AddDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads), discoveryMeshGlooSoloIoV1Alpha2Workloads...)
 }
 
-// GetDiscoveryMeshGlooSoloIov1Alpha2Workloads mocks base method
-func (m *MockBuilder) GetDiscoveryMeshGlooSoloIov1Alpha2Workloads() v1alpha2sets.WorkloadSet {
+// GetDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads mocks base method
+func (m *MockBuilder) GetDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads() v1alpha2sets.WorkloadSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDiscoveryMeshGlooSoloIov1Alpha2Workloads")
+	ret := m.ctrl.Call(m, "GetDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads")
 	ret0, _ := ret[0].(v1alpha2sets.WorkloadSet)
 	return ret0
 }
 
-// GetDiscoveryMeshGlooSoloIov1Alpha2Workloads indicates an expected call of GetDiscoveryMeshGlooSoloIov1Alpha2Workloads
-func (mr *MockBuilderMockRecorder) GetDiscoveryMeshGlooSoloIov1Alpha2Workloads() *gomock.Call {
+// GetDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads indicates an expected call of GetDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads
+func (mr *MockBuilderMockRecorder) GetDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDiscoveryMeshGlooSoloIov1Alpha2Workloads", reflect.TypeOf((*MockBuilder)(nil).GetDiscoveryMeshGlooSoloIov1Alpha2Workloads))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads", reflect.TypeOf((*MockBuilder)(nil).GetDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads))
 }
 
-// AddDiscoveryMeshGlooSoloIov1Alpha2Meshes mocks base method
-func (m *MockBuilder) AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(discoveryMeshGlooSoloIov1Alpha2Meshes ...*v1alpha2.Mesh) {
+// AddDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes mocks base method
+func (m *MockBuilder) AddDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes(discoveryMeshGlooSoloIoV1Alpha2Meshes ...*v1alpha2.Mesh) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
-	for _, a := range discoveryMeshGlooSoloIov1Alpha2Meshes {
+	for _, a := range discoveryMeshGlooSoloIoV1Alpha2Meshes {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddDiscoveryMeshGlooSoloIov1Alpha2Meshes", varargs...)
+	m.ctrl.Call(m, "AddDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes", varargs...)
 }
 
-// AddDiscoveryMeshGlooSoloIov1Alpha2Meshes indicates an expected call of AddDiscoveryMeshGlooSoloIov1Alpha2Meshes
-func (mr *MockBuilderMockRecorder) AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(discoveryMeshGlooSoloIov1Alpha2Meshes ...interface{}) *gomock.Call {
+// AddDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes indicates an expected call of AddDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes
+func (mr *MockBuilderMockRecorder) AddDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes(discoveryMeshGlooSoloIoV1Alpha2Meshes ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDiscoveryMeshGlooSoloIov1Alpha2Meshes", reflect.TypeOf((*MockBuilder)(nil).AddDiscoveryMeshGlooSoloIov1Alpha2Meshes), discoveryMeshGlooSoloIov1Alpha2Meshes...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes", reflect.TypeOf((*MockBuilder)(nil).AddDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes), discoveryMeshGlooSoloIoV1Alpha2Meshes...)
 }
 
-// GetDiscoveryMeshGlooSoloIov1Alpha2Meshes mocks base method
-func (m *MockBuilder) GetDiscoveryMeshGlooSoloIov1Alpha2Meshes() v1alpha2sets.MeshSet {
+// GetDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes mocks base method
+func (m *MockBuilder) GetDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes() v1alpha2sets.MeshSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDiscoveryMeshGlooSoloIov1Alpha2Meshes")
+	ret := m.ctrl.Call(m, "GetDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes")
 	ret0, _ := ret[0].(v1alpha2sets.MeshSet)
 	return ret0
 }
 
-// GetDiscoveryMeshGlooSoloIov1Alpha2Meshes indicates an expected call of GetDiscoveryMeshGlooSoloIov1Alpha2Meshes
-func (mr *MockBuilderMockRecorder) GetDiscoveryMeshGlooSoloIov1Alpha2Meshes() *gomock.Call {
+// GetDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes indicates an expected call of GetDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes
+func (mr *MockBuilderMockRecorder) GetDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDiscoveryMeshGlooSoloIov1Alpha2Meshes", reflect.TypeOf((*MockBuilder)(nil).GetDiscoveryMeshGlooSoloIov1Alpha2Meshes))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes", reflect.TypeOf((*MockBuilder)(nil).GetDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes))
 }
 
 // BuildLabelPartitionedSnapshot mocks base method

@@ -4,8 +4,8 @@
 
 // The Input Reconciler calls a simple func() error whenever a
 // storage event is received for any of:
-// * CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates
-// * CertificatesMeshGlooSoloIov1Alpha2CertificateRequests
+// * CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates
+// * CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests
 // for a given cluster or set of clusters.
 //
 // Input Reconcilers can be be constructed from either a single Manager (watch events in a single cluster)
@@ -44,10 +44,10 @@ type multiClusterReconcilerImpl struct {
 // Options for reconciling a snapshot
 type ReconcileOptions struct {
 
-	// Options for reconciling CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates
-	CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates reconcile.Options
-	// Options for reconciling CertificatesMeshGlooSoloIov1Alpha2CertificateRequests
-	CertificatesMeshGlooSoloIov1Alpha2CertificateRequests reconcile.Options
+	// Options for reconciling CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates
+	CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates reconcile.Options
+	// Options for reconciling CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests
+	CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests reconcile.Options
 }
 
 // register the reconcile func with the cluster watcher
@@ -75,9 +75,9 @@ func RegisterMultiClusterReconciler(
 
 	// initialize reconcile loops
 
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterIssuedCertificateReconcileLoop("IssuedCertificate", clusters, options.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates).AddMulticlusterIssuedCertificateReconciler(ctx, r, predicates...)
+	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterIssuedCertificateReconcileLoop("IssuedCertificate", clusters, options.CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates).AddMulticlusterIssuedCertificateReconciler(ctx, r, predicates...)
 
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterCertificateRequestReconcileLoop("CertificateRequest", clusters, options.CertificatesMeshGlooSoloIov1Alpha2CertificateRequests).AddMulticlusterCertificateRequestReconciler(ctx, r, predicates...)
+	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterCertificateRequestReconcileLoop("CertificateRequest", clusters, options.CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests).AddMulticlusterCertificateRequestReconciler(ctx, r, predicates...)
 	return r.base
 }
 

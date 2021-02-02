@@ -46,26 +46,26 @@ var MissingRequiredLabelError = func(labelKey, resourceKind string, obj ezkube.R
 // the snapshot of output resources produced by a translation
 type Snapshot interface {
 
-	// return the set of CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates with a given set of labels
-	CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates() []LabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet
-	// return the set of CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives with a given set of labels
-	CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives() []LabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet
-	// return the set of XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs with a given set of labels
-	XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs() []LabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet
-	// return the set of NetworkingIstioIov1Alpha3DestinationRules with a given set of labels
-	NetworkingIstioIov1Alpha3DestinationRules() []LabeledNetworkingIstioIov1Alpha3DestinationRuleSet
-	// return the set of NetworkingIstioIov1Alpha3EnvoyFilters with a given set of labels
-	NetworkingIstioIov1Alpha3EnvoyFilters() []LabeledNetworkingIstioIov1Alpha3EnvoyFilterSet
-	// return the set of NetworkingIstioIov1Alpha3Gateways with a given set of labels
-	NetworkingIstioIov1Alpha3Gateways() []LabeledNetworkingIstioIov1Alpha3GatewaySet
-	// return the set of NetworkingIstioIov1Alpha3ServiceEntries with a given set of labels
-	NetworkingIstioIov1Alpha3ServiceEntries() []LabeledNetworkingIstioIov1Alpha3ServiceEntrySet
-	// return the set of NetworkingIstioIov1Alpha3VirtualServices with a given set of labels
-	NetworkingIstioIov1Alpha3VirtualServices() []LabeledNetworkingIstioIov1Alpha3VirtualServiceSet
-	// return the set of SecurityIstioIov1Beta1AuthorizationPolicies with a given set of labels
-	SecurityIstioIov1Beta1AuthorizationPolicies() []LabeledSecurityIstioIov1Beta1AuthorizationPolicySet
-	// return the set of V1ConfigMaps with a given set of labels
-	V1ConfigMaps() []LabeledV1ConfigMapSet
+	// return the set of CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates with a given set of labels
+	CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates() []LabeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet
+	// return the set of CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives with a given set of labels
+	CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives() []LabeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet
+	// return the set of XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs with a given set of labels
+	XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs() []LabeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet
+	// return the set of NetworkingIstioIo_V1Alpha3_DestinationRules with a given set of labels
+	NetworkingIstioIo_V1Alpha3_DestinationRules() []LabeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet
+	// return the set of NetworkingIstioIo_V1Alpha3_EnvoyFilters with a given set of labels
+	NetworkingIstioIo_V1Alpha3_EnvoyFilters() []LabeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet
+	// return the set of NetworkingIstioIo_V1Alpha3_Gateways with a given set of labels
+	NetworkingIstioIo_V1Alpha3_Gateways() []LabeledNetworkingIstioIo_V1Alpha3_GatewaySet
+	// return the set of NetworkingIstioIo_V1Alpha3_ServiceEntries with a given set of labels
+	NetworkingIstioIo_V1Alpha3_ServiceEntries() []LabeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet
+	// return the set of NetworkingIstioIo_V1Alpha3_VirtualServices with a given set of labels
+	NetworkingIstioIo_V1Alpha3_VirtualServices() []LabeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet
+	// return the set of SecurityIstioIo_V1Beta1_AuthorizationPolicies with a given set of labels
+	SecurityIstioIo_V1Beta1_AuthorizationPolicies() []LabeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet
+	// return the set of V1_ConfigMaps with a given set of labels
+	V1_ConfigMaps() []LabeledV1_ConfigMapSet
 
 	// apply the snapshot to the local cluster, garbage collecting stale resources
 	ApplyLocalCluster(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
@@ -80,46 +80,46 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates  []LabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives []LabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs    []LabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet
-	networkingIstioIov1Alpha3DestinationRules             []LabeledNetworkingIstioIov1Alpha3DestinationRuleSet
-	networkingIstioIov1Alpha3EnvoyFilters                 []LabeledNetworkingIstioIov1Alpha3EnvoyFilterSet
-	networkingIstioIov1Alpha3Gateways                     []LabeledNetworkingIstioIov1Alpha3GatewaySet
-	networkingIstioIov1Alpha3ServiceEntries               []LabeledNetworkingIstioIov1Alpha3ServiceEntrySet
-	networkingIstioIov1Alpha3VirtualServices              []LabeledNetworkingIstioIov1Alpha3VirtualServiceSet
-	securityIstioIov1Beta1AuthorizationPolicies           []LabeledSecurityIstioIov1Beta1AuthorizationPolicySet
-	v1ConfigMaps                                          []LabeledV1ConfigMapSet
+	certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates  []LabeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet
+	certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives []LabeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet
+	xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs    []LabeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet
+	networkingIstioIoV1Alpha3DestinationRules             []LabeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet
+	networkingIstioIoV1Alpha3EnvoyFilters                 []LabeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet
+	networkingIstioIoV1Alpha3Gateways                     []LabeledNetworkingIstioIo_V1Alpha3_GatewaySet
+	networkingIstioIoV1Alpha3ServiceEntries               []LabeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet
+	networkingIstioIoV1Alpha3VirtualServices              []LabeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet
+	securityIstioIoV1Beta1AuthorizationPolicies           []LabeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet
+	v1ConfigMaps                                          []LabeledV1_ConfigMapSet
 	clusters                                              []string
 }
 
 func NewSnapshot(
 	name string,
 
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates []LabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet,
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives []LabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet,
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs []LabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet,
-	networkingIstioIov1Alpha3DestinationRules []LabeledNetworkingIstioIov1Alpha3DestinationRuleSet,
-	networkingIstioIov1Alpha3EnvoyFilters []LabeledNetworkingIstioIov1Alpha3EnvoyFilterSet,
-	networkingIstioIov1Alpha3Gateways []LabeledNetworkingIstioIov1Alpha3GatewaySet,
-	networkingIstioIov1Alpha3ServiceEntries []LabeledNetworkingIstioIov1Alpha3ServiceEntrySet,
-	networkingIstioIov1Alpha3VirtualServices []LabeledNetworkingIstioIov1Alpha3VirtualServiceSet,
-	securityIstioIov1Beta1AuthorizationPolicies []LabeledSecurityIstioIov1Beta1AuthorizationPolicySet,
-	v1ConfigMaps []LabeledV1ConfigMapSet,
+	certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates []LabeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet,
+	certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives []LabeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet,
+	xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs []LabeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet,
+	networkingIstioIoV1Alpha3DestinationRules []LabeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet,
+	networkingIstioIoV1Alpha3EnvoyFilters []LabeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet,
+	networkingIstioIoV1Alpha3Gateways []LabeledNetworkingIstioIo_V1Alpha3_GatewaySet,
+	networkingIstioIoV1Alpha3ServiceEntries []LabeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet,
+	networkingIstioIoV1Alpha3VirtualServices []LabeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet,
+	securityIstioIoV1Beta1AuthorizationPolicies []LabeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet,
+	v1ConfigMaps []LabeledV1_ConfigMapSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{
 		name: name,
 
-		certificatesMeshGlooSoloIov1Alpha2IssuedCertificates:  certificatesMeshGlooSoloIov1Alpha2IssuedCertificates,
-		certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives: certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives,
-		xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs:    xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs,
-		networkingIstioIov1Alpha3DestinationRules:             networkingIstioIov1Alpha3DestinationRules,
-		networkingIstioIov1Alpha3EnvoyFilters:                 networkingIstioIov1Alpha3EnvoyFilters,
-		networkingIstioIov1Alpha3Gateways:                     networkingIstioIov1Alpha3Gateways,
-		networkingIstioIov1Alpha3ServiceEntries:               networkingIstioIov1Alpha3ServiceEntries,
-		networkingIstioIov1Alpha3VirtualServices:              networkingIstioIov1Alpha3VirtualServices,
-		securityIstioIov1Beta1AuthorizationPolicies:           securityIstioIov1Beta1AuthorizationPolicies,
+		certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates:  certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates,
+		certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives: certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives,
+		xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs:    xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs,
+		networkingIstioIoV1Alpha3DestinationRules:             networkingIstioIoV1Alpha3DestinationRules,
+		networkingIstioIoV1Alpha3EnvoyFilters:                 networkingIstioIoV1Alpha3EnvoyFilters,
+		networkingIstioIoV1Alpha3Gateways:                     networkingIstioIoV1Alpha3Gateways,
+		networkingIstioIoV1Alpha3ServiceEntries:               networkingIstioIoV1Alpha3ServiceEntries,
+		networkingIstioIoV1Alpha3VirtualServices:              networkingIstioIoV1Alpha3VirtualServices,
+		securityIstioIoV1Beta1AuthorizationPolicies:           securityIstioIoV1Beta1AuthorizationPolicies,
 		v1ConfigMaps: v1ConfigMaps,
 		clusters:     clusters,
 	}
@@ -131,60 +131,60 @@ func NewLabelPartitionedSnapshot(
 	name,
 	labelKey string, // the key by which to partition the resources
 
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet,
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
+	certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet,
+	certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
 
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet,
+	xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet,
 
-	networkingIstioIov1Alpha3DestinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
-	networkingIstioIov1Alpha3EnvoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
-	networkingIstioIov1Alpha3Gateways networking_istio_io_v1alpha3_sets.GatewaySet,
-	networkingIstioIov1Alpha3ServiceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet,
-	networkingIstioIov1Alpha3VirtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
+	networkingIstioIoV1Alpha3DestinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
+	networkingIstioIoV1Alpha3EnvoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
+	networkingIstioIoV1Alpha3Gateways networking_istio_io_v1alpha3_sets.GatewaySet,
+	networkingIstioIoV1Alpha3ServiceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet,
+	networkingIstioIoV1Alpha3VirtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
 
-	securityIstioIov1Beta1AuthorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
+	securityIstioIoV1Beta1AuthorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
 
 	v1ConfigMaps v1_sets.ConfigMapSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
-	partitionedCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates, err := partitionCertificatesMeshGlooSoloIov1Alpha2IssuedCertificatesByLabel(labelKey, certificatesMeshGlooSoloIov1Alpha2IssuedCertificates)
+	partitionedCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates, err := partitionCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificatesByLabel(labelKey, certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates)
 	if err != nil {
 		return nil, err
 	}
-	partitionedCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives, err := partitionCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectivesByLabel(labelKey, certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives)
+	partitionedCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives, err := partitionCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectivesByLabel(labelKey, certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives)
 	if err != nil {
 		return nil, err
 	}
-	partitionedXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs, err := partitionXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigsByLabel(labelKey, xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs)
+	partitionedXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs, err := partitionXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigsByLabel(labelKey, xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs)
 	if err != nil {
 		return nil, err
 	}
-	partitionedNetworkingIstioIov1Alpha3DestinationRules, err := partitionNetworkingIstioIov1Alpha3DestinationRulesByLabel(labelKey, networkingIstioIov1Alpha3DestinationRules)
+	partitionedNetworkingIstioIo_V1Alpha3_DestinationRules, err := partitionNetworkingIstioIo_V1Alpha3_DestinationRulesByLabel(labelKey, networkingIstioIoV1Alpha3DestinationRules)
 	if err != nil {
 		return nil, err
 	}
-	partitionedNetworkingIstioIov1Alpha3EnvoyFilters, err := partitionNetworkingIstioIov1Alpha3EnvoyFiltersByLabel(labelKey, networkingIstioIov1Alpha3EnvoyFilters)
+	partitionedNetworkingIstioIo_V1Alpha3_EnvoyFilters, err := partitionNetworkingIstioIo_V1Alpha3_EnvoyFiltersByLabel(labelKey, networkingIstioIoV1Alpha3EnvoyFilters)
 	if err != nil {
 		return nil, err
 	}
-	partitionedNetworkingIstioIov1Alpha3Gateways, err := partitionNetworkingIstioIov1Alpha3GatewaysByLabel(labelKey, networkingIstioIov1Alpha3Gateways)
+	partitionedNetworkingIstioIo_V1Alpha3_Gateways, err := partitionNetworkingIstioIo_V1Alpha3_GatewaysByLabel(labelKey, networkingIstioIoV1Alpha3Gateways)
 	if err != nil {
 		return nil, err
 	}
-	partitionedNetworkingIstioIov1Alpha3ServiceEntries, err := partitionNetworkingIstioIov1Alpha3ServiceEntriesByLabel(labelKey, networkingIstioIov1Alpha3ServiceEntries)
+	partitionedNetworkingIstioIo_V1Alpha3_ServiceEntries, err := partitionNetworkingIstioIo_V1Alpha3_ServiceEntriesByLabel(labelKey, networkingIstioIoV1Alpha3ServiceEntries)
 	if err != nil {
 		return nil, err
 	}
-	partitionedNetworkingIstioIov1Alpha3VirtualServices, err := partitionNetworkingIstioIov1Alpha3VirtualServicesByLabel(labelKey, networkingIstioIov1Alpha3VirtualServices)
+	partitionedNetworkingIstioIo_V1Alpha3_VirtualServices, err := partitionNetworkingIstioIo_V1Alpha3_VirtualServicesByLabel(labelKey, networkingIstioIoV1Alpha3VirtualServices)
 	if err != nil {
 		return nil, err
 	}
-	partitionedSecurityIstioIov1Beta1AuthorizationPolicies, err := partitionSecurityIstioIov1Beta1AuthorizationPoliciesByLabel(labelKey, securityIstioIov1Beta1AuthorizationPolicies)
+	partitionedSecurityIstioIo_V1Beta1_AuthorizationPolicies, err := partitionSecurityIstioIo_V1Beta1_AuthorizationPoliciesByLabel(labelKey, securityIstioIoV1Beta1AuthorizationPolicies)
 	if err != nil {
 		return nil, err
 	}
-	partitionedV1ConfigMaps, err := partitionV1ConfigMapsByLabel(labelKey, v1ConfigMaps)
+	partitionedV1_ConfigMaps, err := partitionV1_ConfigMapsByLabel(labelKey, v1ConfigMaps)
 	if err != nil {
 		return nil, err
 	}
@@ -192,16 +192,16 @@ func NewLabelPartitionedSnapshot(
 	return NewSnapshot(
 		name,
 
-		partitionedCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates,
-		partitionedCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives,
-		partitionedXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs,
-		partitionedNetworkingIstioIov1Alpha3DestinationRules,
-		partitionedNetworkingIstioIov1Alpha3EnvoyFilters,
-		partitionedNetworkingIstioIov1Alpha3Gateways,
-		partitionedNetworkingIstioIov1Alpha3ServiceEntries,
-		partitionedNetworkingIstioIov1Alpha3VirtualServices,
-		partitionedSecurityIstioIov1Beta1AuthorizationPolicies,
-		partitionedV1ConfigMaps,
+		partitionedCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates,
+		partitionedCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives,
+		partitionedXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs,
+		partitionedNetworkingIstioIo_V1Alpha3_DestinationRules,
+		partitionedNetworkingIstioIo_V1Alpha3_EnvoyFilters,
+		partitionedNetworkingIstioIo_V1Alpha3_Gateways,
+		partitionedNetworkingIstioIo_V1Alpha3_ServiceEntries,
+		partitionedNetworkingIstioIo_V1Alpha3_VirtualServices,
+		partitionedSecurityIstioIo_V1Beta1_AuthorizationPolicies,
+		partitionedV1_ConfigMaps,
 		clusters...,
 	), nil
 }
@@ -212,60 +212,60 @@ func NewSinglePartitionedSnapshot(
 	name string,
 	snapshotLabels map[string]string, // a single set of labels shared by all resources
 
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet,
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
+	certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet,
+	certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
 
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet,
+	xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet,
 
-	networkingIstioIov1Alpha3DestinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
-	networkingIstioIov1Alpha3EnvoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
-	networkingIstioIov1Alpha3Gateways networking_istio_io_v1alpha3_sets.GatewaySet,
-	networkingIstioIov1Alpha3ServiceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet,
-	networkingIstioIov1Alpha3VirtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
+	networkingIstioIoV1Alpha3DestinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
+	networkingIstioIoV1Alpha3EnvoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
+	networkingIstioIoV1Alpha3Gateways networking_istio_io_v1alpha3_sets.GatewaySet,
+	networkingIstioIoV1Alpha3ServiceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet,
+	networkingIstioIoV1Alpha3VirtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
 
-	securityIstioIov1Beta1AuthorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
+	securityIstioIoV1Beta1AuthorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
 
 	v1ConfigMaps v1_sets.ConfigMapSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
-	labeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificate, err := NewLabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet(certificatesMeshGlooSoloIov1Alpha2IssuedCertificates, snapshotLabels)
+	labeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificate, err := NewLabeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet(certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
-	labeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirective, err := NewLabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet(certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives, snapshotLabels)
+	labeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirective, err := NewLabeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet(certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
-	labeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfig, err := NewLabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet(xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs, snapshotLabels)
+	labeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfig, err := NewLabeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet(xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
-	labeledNetworkingIstioIov1Alpha3DestinationRule, err := NewLabeledNetworkingIstioIov1Alpha3DestinationRuleSet(networkingIstioIov1Alpha3DestinationRules, snapshotLabels)
+	labeledNetworkingIstioIo_V1Alpha3_DestinationRule, err := NewLabeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet(networkingIstioIoV1Alpha3DestinationRules, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
-	labeledNetworkingIstioIov1Alpha3EnvoyFilter, err := NewLabeledNetworkingIstioIov1Alpha3EnvoyFilterSet(networkingIstioIov1Alpha3EnvoyFilters, snapshotLabels)
+	labeledNetworkingIstioIo_V1Alpha3_EnvoyFilter, err := NewLabeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet(networkingIstioIoV1Alpha3EnvoyFilters, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
-	labeledNetworkingIstioIov1Alpha3Gateway, err := NewLabeledNetworkingIstioIov1Alpha3GatewaySet(networkingIstioIov1Alpha3Gateways, snapshotLabels)
+	labeledNetworkingIstioIo_V1Alpha3_Gateway, err := NewLabeledNetworkingIstioIo_V1Alpha3_GatewaySet(networkingIstioIoV1Alpha3Gateways, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
-	labeledNetworkingIstioIov1Alpha3ServiceEntry, err := NewLabeledNetworkingIstioIov1Alpha3ServiceEntrySet(networkingIstioIov1Alpha3ServiceEntries, snapshotLabels)
+	labeledNetworkingIstioIo_V1Alpha3_ServiceEntry, err := NewLabeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet(networkingIstioIoV1Alpha3ServiceEntries, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
-	labeledNetworkingIstioIov1Alpha3VirtualService, err := NewLabeledNetworkingIstioIov1Alpha3VirtualServiceSet(networkingIstioIov1Alpha3VirtualServices, snapshotLabels)
+	labeledNetworkingIstioIo_V1Alpha3_VirtualService, err := NewLabeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet(networkingIstioIoV1Alpha3VirtualServices, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
-	labeledSecurityIstioIov1Beta1AuthorizationPolicy, err := NewLabeledSecurityIstioIov1Beta1AuthorizationPolicySet(securityIstioIov1Beta1AuthorizationPolicies, snapshotLabels)
+	labeledSecurityIstioIo_V1Beta1_AuthorizationPolicy, err := NewLabeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet(securityIstioIoV1Beta1AuthorizationPolicies, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
-	labeledV1ConfigMap, err := NewLabeledV1ConfigMapSet(v1ConfigMaps, snapshotLabels)
+	labeledV1_ConfigMap, err := NewLabeledV1_ConfigMapSet(v1ConfigMaps, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
@@ -273,16 +273,16 @@ func NewSinglePartitionedSnapshot(
 	return NewSnapshot(
 		name,
 
-		[]LabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet{labeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificate},
-		[]LabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet{labeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirective},
-		[]LabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet{labeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfig},
-		[]LabeledNetworkingIstioIov1Alpha3DestinationRuleSet{labeledNetworkingIstioIov1Alpha3DestinationRule},
-		[]LabeledNetworkingIstioIov1Alpha3EnvoyFilterSet{labeledNetworkingIstioIov1Alpha3EnvoyFilter},
-		[]LabeledNetworkingIstioIov1Alpha3GatewaySet{labeledNetworkingIstioIov1Alpha3Gateway},
-		[]LabeledNetworkingIstioIov1Alpha3ServiceEntrySet{labeledNetworkingIstioIov1Alpha3ServiceEntry},
-		[]LabeledNetworkingIstioIov1Alpha3VirtualServiceSet{labeledNetworkingIstioIov1Alpha3VirtualService},
-		[]LabeledSecurityIstioIov1Beta1AuthorizationPolicySet{labeledSecurityIstioIov1Beta1AuthorizationPolicy},
-		[]LabeledV1ConfigMapSet{labeledV1ConfigMap},
+		[]LabeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet{labeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificate},
+		[]LabeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet{labeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirective},
+		[]LabeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet{labeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfig},
+		[]LabeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet{labeledNetworkingIstioIo_V1Alpha3_DestinationRule},
+		[]LabeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet{labeledNetworkingIstioIo_V1Alpha3_EnvoyFilter},
+		[]LabeledNetworkingIstioIo_V1Alpha3_GatewaySet{labeledNetworkingIstioIo_V1Alpha3_Gateway},
+		[]LabeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet{labeledNetworkingIstioIo_V1Alpha3_ServiceEntry},
+		[]LabeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet{labeledNetworkingIstioIo_V1Alpha3_VirtualService},
+		[]LabeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet{labeledSecurityIstioIo_V1Beta1_AuthorizationPolicy},
+		[]LabeledV1_ConfigMapSet{labeledV1_ConfigMap},
 		clusters...,
 	), nil
 }
@@ -291,31 +291,31 @@ func NewSinglePartitionedSnapshot(
 func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, errHandler output.ErrorHandler) {
 	var genericLists []output.ResourceList
 
-	for _, outputSet := range s.certificatesMeshGlooSoloIov1Alpha2IssuedCertificates {
+	for _, outputSet := range s.certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives {
+	for _, outputSet := range s.certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs {
+	for _, outputSet := range s.xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.networkingIstioIov1Alpha3DestinationRules {
+	for _, outputSet := range s.networkingIstioIoV1Alpha3DestinationRules {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.networkingIstioIov1Alpha3EnvoyFilters {
+	for _, outputSet := range s.networkingIstioIoV1Alpha3EnvoyFilters {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.networkingIstioIov1Alpha3Gateways {
+	for _, outputSet := range s.networkingIstioIoV1Alpha3Gateways {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.networkingIstioIov1Alpha3ServiceEntries {
+	for _, outputSet := range s.networkingIstioIoV1Alpha3ServiceEntries {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.networkingIstioIov1Alpha3VirtualServices {
+	for _, outputSet := range s.networkingIstioIoV1Alpha3VirtualServices {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.securityIstioIov1Beta1AuthorizationPolicies {
+	for _, outputSet := range s.securityIstioIoV1Beta1AuthorizationPolicies {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.v1ConfigMaps {
@@ -332,31 +332,31 @@ func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, err
 func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler) {
 	var genericLists []output.ResourceList
 
-	for _, outputSet := range s.certificatesMeshGlooSoloIov1Alpha2IssuedCertificates {
+	for _, outputSet := range s.certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives {
+	for _, outputSet := range s.certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs {
+	for _, outputSet := range s.xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.networkingIstioIov1Alpha3DestinationRules {
+	for _, outputSet := range s.networkingIstioIoV1Alpha3DestinationRules {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.networkingIstioIov1Alpha3EnvoyFilters {
+	for _, outputSet := range s.networkingIstioIoV1Alpha3EnvoyFilters {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.networkingIstioIov1Alpha3Gateways {
+	for _, outputSet := range s.networkingIstioIoV1Alpha3Gateways {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.networkingIstioIov1Alpha3ServiceEntries {
+	for _, outputSet := range s.networkingIstioIoV1Alpha3ServiceEntries {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.networkingIstioIov1Alpha3VirtualServices {
+	for _, outputSet := range s.networkingIstioIoV1Alpha3VirtualServices {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.securityIstioIov1Beta1AuthorizationPolicies {
+	for _, outputSet := range s.securityIstioIoV1Beta1AuthorizationPolicies {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.v1ConfigMaps {
@@ -370,16 +370,16 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 	}.SyncMultiCluster(ctx, multiClusterClient, errHandler)
 }
 
-func partitionCertificatesMeshGlooSoloIov1Alpha2IssuedCertificatesByLabel(labelKey string, set certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet) ([]LabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet, error) {
+func partitionCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificatesByLabel(labelKey string, set certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet) ([]LabeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet, error) {
 	setsByLabel := map[string]certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "CertificatesMeshGlooSoloIov1Alpha2IssuedCertificate", obj)
+			return nil, MissingRequiredLabelError(labelKey, "CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificate", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "CertificatesMeshGlooSoloIov1Alpha2IssuedCertificate", obj)
+			return nil, MissingRequiredLabelError(labelKey, "CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificate", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -391,39 +391,39 @@ func partitionCertificatesMeshGlooSoloIov1Alpha2IssuedCertificatesByLabel(labelK
 	}
 
 	// partition by label key
-	var partitionedCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates []LabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet
+	var partitionedCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates []LabeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet(setForValue, labels)
+		partitionedSet, err := NewLabeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates = append(partitionedCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates, partitionedSet)
+		partitionedCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates = append(partitionedCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates, func(i, j int) bool {
-		leftLabelValue := partitionedCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates[i].Labels()[labelKey]
-		rightLabelValue := partitionedCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates[j].Labels()[labelKey]
+	sort.SliceStable(partitionedCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates, func(i, j int) bool {
+		leftLabelValue := partitionedCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates[i].Labels()[labelKey]
+		rightLabelValue := partitionedCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates, nil
+	return partitionedCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates, nil
 }
 
-func partitionCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectivesByLabel(labelKey string, set certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet) ([]LabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet, error) {
+func partitionCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectivesByLabel(labelKey string, set certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet) ([]LabeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet, error) {
 	setsByLabel := map[string]certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "CertificatesMeshGlooSoloIov1Alpha2PodBounceDirective", obj)
+			return nil, MissingRequiredLabelError(labelKey, "CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirective", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "CertificatesMeshGlooSoloIov1Alpha2PodBounceDirective", obj)
+			return nil, MissingRequiredLabelError(labelKey, "CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirective", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -435,39 +435,39 @@ func partitionCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectivesByLabel(label
 	}
 
 	// partition by label key
-	var partitionedCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives []LabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet
+	var partitionedCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives []LabeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet(setForValue, labels)
+		partitionedSet, err := NewLabeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives = append(partitionedCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives, partitionedSet)
+		partitionedCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives = append(partitionedCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives, func(i, j int) bool {
-		leftLabelValue := partitionedCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives[i].Labels()[labelKey]
-		rightLabelValue := partitionedCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives[j].Labels()[labelKey]
+	sort.SliceStable(partitionedCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives, func(i, j int) bool {
+		leftLabelValue := partitionedCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives[i].Labels()[labelKey]
+		rightLabelValue := partitionedCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives, nil
+	return partitionedCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives, nil
 }
 
-func partitionXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigsByLabel(labelKey string, set xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet) ([]LabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet, error) {
+func partitionXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigsByLabel(labelKey string, set xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet) ([]LabeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet, error) {
 	setsByLabel := map[string]xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfig", obj)
+			return nil, MissingRequiredLabelError(labelKey, "XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfig", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfig", obj)
+			return nil, MissingRequiredLabelError(labelKey, "XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfig", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -479,39 +479,39 @@ func partitionXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigsByLabel(labelKey
 	}
 
 	// partition by label key
-	var partitionedXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs []LabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet
+	var partitionedXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs []LabeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet(setForValue, labels)
+		partitionedSet, err := NewLabeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs = append(partitionedXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs, partitionedSet)
+		partitionedXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs = append(partitionedXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs, func(i, j int) bool {
-		leftLabelValue := partitionedXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs[i].Labels()[labelKey]
-		rightLabelValue := partitionedXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs[j].Labels()[labelKey]
+	sort.SliceStable(partitionedXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs, func(i, j int) bool {
+		leftLabelValue := partitionedXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs[i].Labels()[labelKey]
+		rightLabelValue := partitionedXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs, nil
+	return partitionedXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs, nil
 }
 
-func partitionNetworkingIstioIov1Alpha3DestinationRulesByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.DestinationRuleSet) ([]LabeledNetworkingIstioIov1Alpha3DestinationRuleSet, error) {
+func partitionNetworkingIstioIo_V1Alpha3_DestinationRulesByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.DestinationRuleSet) ([]LabeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet, error) {
 	setsByLabel := map[string]networking_istio_io_v1alpha3_sets.DestinationRuleSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIov1Alpha3DestinationRule", obj)
+			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIo_V1Alpha3_DestinationRule", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIov1Alpha3DestinationRule", obj)
+			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIo_V1Alpha3_DestinationRule", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -523,39 +523,39 @@ func partitionNetworkingIstioIov1Alpha3DestinationRulesByLabel(labelKey string, 
 	}
 
 	// partition by label key
-	var partitionedNetworkingIstioIov1Alpha3DestinationRules []LabeledNetworkingIstioIov1Alpha3DestinationRuleSet
+	var partitionedNetworkingIstioIo_V1Alpha3_DestinationRules []LabeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledNetworkingIstioIov1Alpha3DestinationRuleSet(setForValue, labels)
+		partitionedSet, err := NewLabeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedNetworkingIstioIov1Alpha3DestinationRules = append(partitionedNetworkingIstioIov1Alpha3DestinationRules, partitionedSet)
+		partitionedNetworkingIstioIo_V1Alpha3_DestinationRules = append(partitionedNetworkingIstioIo_V1Alpha3_DestinationRules, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedNetworkingIstioIov1Alpha3DestinationRules, func(i, j int) bool {
-		leftLabelValue := partitionedNetworkingIstioIov1Alpha3DestinationRules[i].Labels()[labelKey]
-		rightLabelValue := partitionedNetworkingIstioIov1Alpha3DestinationRules[j].Labels()[labelKey]
+	sort.SliceStable(partitionedNetworkingIstioIo_V1Alpha3_DestinationRules, func(i, j int) bool {
+		leftLabelValue := partitionedNetworkingIstioIo_V1Alpha3_DestinationRules[i].Labels()[labelKey]
+		rightLabelValue := partitionedNetworkingIstioIo_V1Alpha3_DestinationRules[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedNetworkingIstioIov1Alpha3DestinationRules, nil
+	return partitionedNetworkingIstioIo_V1Alpha3_DestinationRules, nil
 }
 
-func partitionNetworkingIstioIov1Alpha3EnvoyFiltersByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.EnvoyFilterSet) ([]LabeledNetworkingIstioIov1Alpha3EnvoyFilterSet, error) {
+func partitionNetworkingIstioIo_V1Alpha3_EnvoyFiltersByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.EnvoyFilterSet) ([]LabeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet, error) {
 	setsByLabel := map[string]networking_istio_io_v1alpha3_sets.EnvoyFilterSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIov1Alpha3EnvoyFilter", obj)
+			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIo_V1Alpha3_EnvoyFilter", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIov1Alpha3EnvoyFilter", obj)
+			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIo_V1Alpha3_EnvoyFilter", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -567,39 +567,39 @@ func partitionNetworkingIstioIov1Alpha3EnvoyFiltersByLabel(labelKey string, set 
 	}
 
 	// partition by label key
-	var partitionedNetworkingIstioIov1Alpha3EnvoyFilters []LabeledNetworkingIstioIov1Alpha3EnvoyFilterSet
+	var partitionedNetworkingIstioIo_V1Alpha3_EnvoyFilters []LabeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledNetworkingIstioIov1Alpha3EnvoyFilterSet(setForValue, labels)
+		partitionedSet, err := NewLabeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedNetworkingIstioIov1Alpha3EnvoyFilters = append(partitionedNetworkingIstioIov1Alpha3EnvoyFilters, partitionedSet)
+		partitionedNetworkingIstioIo_V1Alpha3_EnvoyFilters = append(partitionedNetworkingIstioIo_V1Alpha3_EnvoyFilters, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedNetworkingIstioIov1Alpha3EnvoyFilters, func(i, j int) bool {
-		leftLabelValue := partitionedNetworkingIstioIov1Alpha3EnvoyFilters[i].Labels()[labelKey]
-		rightLabelValue := partitionedNetworkingIstioIov1Alpha3EnvoyFilters[j].Labels()[labelKey]
+	sort.SliceStable(partitionedNetworkingIstioIo_V1Alpha3_EnvoyFilters, func(i, j int) bool {
+		leftLabelValue := partitionedNetworkingIstioIo_V1Alpha3_EnvoyFilters[i].Labels()[labelKey]
+		rightLabelValue := partitionedNetworkingIstioIo_V1Alpha3_EnvoyFilters[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedNetworkingIstioIov1Alpha3EnvoyFilters, nil
+	return partitionedNetworkingIstioIo_V1Alpha3_EnvoyFilters, nil
 }
 
-func partitionNetworkingIstioIov1Alpha3GatewaysByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.GatewaySet) ([]LabeledNetworkingIstioIov1Alpha3GatewaySet, error) {
+func partitionNetworkingIstioIo_V1Alpha3_GatewaysByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.GatewaySet) ([]LabeledNetworkingIstioIo_V1Alpha3_GatewaySet, error) {
 	setsByLabel := map[string]networking_istio_io_v1alpha3_sets.GatewaySet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIov1Alpha3Gateway", obj)
+			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIo_V1Alpha3_Gateway", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIov1Alpha3Gateway", obj)
+			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIo_V1Alpha3_Gateway", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -611,39 +611,39 @@ func partitionNetworkingIstioIov1Alpha3GatewaysByLabel(labelKey string, set netw
 	}
 
 	// partition by label key
-	var partitionedNetworkingIstioIov1Alpha3Gateways []LabeledNetworkingIstioIov1Alpha3GatewaySet
+	var partitionedNetworkingIstioIo_V1Alpha3_Gateways []LabeledNetworkingIstioIo_V1Alpha3_GatewaySet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledNetworkingIstioIov1Alpha3GatewaySet(setForValue, labels)
+		partitionedSet, err := NewLabeledNetworkingIstioIo_V1Alpha3_GatewaySet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedNetworkingIstioIov1Alpha3Gateways = append(partitionedNetworkingIstioIov1Alpha3Gateways, partitionedSet)
+		partitionedNetworkingIstioIo_V1Alpha3_Gateways = append(partitionedNetworkingIstioIo_V1Alpha3_Gateways, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedNetworkingIstioIov1Alpha3Gateways, func(i, j int) bool {
-		leftLabelValue := partitionedNetworkingIstioIov1Alpha3Gateways[i].Labels()[labelKey]
-		rightLabelValue := partitionedNetworkingIstioIov1Alpha3Gateways[j].Labels()[labelKey]
+	sort.SliceStable(partitionedNetworkingIstioIo_V1Alpha3_Gateways, func(i, j int) bool {
+		leftLabelValue := partitionedNetworkingIstioIo_V1Alpha3_Gateways[i].Labels()[labelKey]
+		rightLabelValue := partitionedNetworkingIstioIo_V1Alpha3_Gateways[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedNetworkingIstioIov1Alpha3Gateways, nil
+	return partitionedNetworkingIstioIo_V1Alpha3_Gateways, nil
 }
 
-func partitionNetworkingIstioIov1Alpha3ServiceEntriesByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.ServiceEntrySet) ([]LabeledNetworkingIstioIov1Alpha3ServiceEntrySet, error) {
+func partitionNetworkingIstioIo_V1Alpha3_ServiceEntriesByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.ServiceEntrySet) ([]LabeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet, error) {
 	setsByLabel := map[string]networking_istio_io_v1alpha3_sets.ServiceEntrySet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIov1Alpha3ServiceEntry", obj)
+			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIo_V1Alpha3_ServiceEntry", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIov1Alpha3ServiceEntry", obj)
+			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIo_V1Alpha3_ServiceEntry", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -655,39 +655,39 @@ func partitionNetworkingIstioIov1Alpha3ServiceEntriesByLabel(labelKey string, se
 	}
 
 	// partition by label key
-	var partitionedNetworkingIstioIov1Alpha3ServiceEntries []LabeledNetworkingIstioIov1Alpha3ServiceEntrySet
+	var partitionedNetworkingIstioIo_V1Alpha3_ServiceEntries []LabeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledNetworkingIstioIov1Alpha3ServiceEntrySet(setForValue, labels)
+		partitionedSet, err := NewLabeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedNetworkingIstioIov1Alpha3ServiceEntries = append(partitionedNetworkingIstioIov1Alpha3ServiceEntries, partitionedSet)
+		partitionedNetworkingIstioIo_V1Alpha3_ServiceEntries = append(partitionedNetworkingIstioIo_V1Alpha3_ServiceEntries, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedNetworkingIstioIov1Alpha3ServiceEntries, func(i, j int) bool {
-		leftLabelValue := partitionedNetworkingIstioIov1Alpha3ServiceEntries[i].Labels()[labelKey]
-		rightLabelValue := partitionedNetworkingIstioIov1Alpha3ServiceEntries[j].Labels()[labelKey]
+	sort.SliceStable(partitionedNetworkingIstioIo_V1Alpha3_ServiceEntries, func(i, j int) bool {
+		leftLabelValue := partitionedNetworkingIstioIo_V1Alpha3_ServiceEntries[i].Labels()[labelKey]
+		rightLabelValue := partitionedNetworkingIstioIo_V1Alpha3_ServiceEntries[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedNetworkingIstioIov1Alpha3ServiceEntries, nil
+	return partitionedNetworkingIstioIo_V1Alpha3_ServiceEntries, nil
 }
 
-func partitionNetworkingIstioIov1Alpha3VirtualServicesByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.VirtualServiceSet) ([]LabeledNetworkingIstioIov1Alpha3VirtualServiceSet, error) {
+func partitionNetworkingIstioIo_V1Alpha3_VirtualServicesByLabel(labelKey string, set networking_istio_io_v1alpha3_sets.VirtualServiceSet) ([]LabeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet, error) {
 	setsByLabel := map[string]networking_istio_io_v1alpha3_sets.VirtualServiceSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIov1Alpha3VirtualService", obj)
+			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIo_V1Alpha3_VirtualService", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIov1Alpha3VirtualService", obj)
+			return nil, MissingRequiredLabelError(labelKey, "NetworkingIstioIo_V1Alpha3_VirtualService", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -699,39 +699,39 @@ func partitionNetworkingIstioIov1Alpha3VirtualServicesByLabel(labelKey string, s
 	}
 
 	// partition by label key
-	var partitionedNetworkingIstioIov1Alpha3VirtualServices []LabeledNetworkingIstioIov1Alpha3VirtualServiceSet
+	var partitionedNetworkingIstioIo_V1Alpha3_VirtualServices []LabeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledNetworkingIstioIov1Alpha3VirtualServiceSet(setForValue, labels)
+		partitionedSet, err := NewLabeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedNetworkingIstioIov1Alpha3VirtualServices = append(partitionedNetworkingIstioIov1Alpha3VirtualServices, partitionedSet)
+		partitionedNetworkingIstioIo_V1Alpha3_VirtualServices = append(partitionedNetworkingIstioIo_V1Alpha3_VirtualServices, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedNetworkingIstioIov1Alpha3VirtualServices, func(i, j int) bool {
-		leftLabelValue := partitionedNetworkingIstioIov1Alpha3VirtualServices[i].Labels()[labelKey]
-		rightLabelValue := partitionedNetworkingIstioIov1Alpha3VirtualServices[j].Labels()[labelKey]
+	sort.SliceStable(partitionedNetworkingIstioIo_V1Alpha3_VirtualServices, func(i, j int) bool {
+		leftLabelValue := partitionedNetworkingIstioIo_V1Alpha3_VirtualServices[i].Labels()[labelKey]
+		rightLabelValue := partitionedNetworkingIstioIo_V1Alpha3_VirtualServices[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedNetworkingIstioIov1Alpha3VirtualServices, nil
+	return partitionedNetworkingIstioIo_V1Alpha3_VirtualServices, nil
 }
 
-func partitionSecurityIstioIov1Beta1AuthorizationPoliciesByLabel(labelKey string, set security_istio_io_v1beta1_sets.AuthorizationPolicySet) ([]LabeledSecurityIstioIov1Beta1AuthorizationPolicySet, error) {
+func partitionSecurityIstioIo_V1Beta1_AuthorizationPoliciesByLabel(labelKey string, set security_istio_io_v1beta1_sets.AuthorizationPolicySet) ([]LabeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet, error) {
 	setsByLabel := map[string]security_istio_io_v1beta1_sets.AuthorizationPolicySet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "SecurityIstioIov1Beta1AuthorizationPolicy", obj)
+			return nil, MissingRequiredLabelError(labelKey, "SecurityIstioIo_V1Beta1_AuthorizationPolicy", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "SecurityIstioIov1Beta1AuthorizationPolicy", obj)
+			return nil, MissingRequiredLabelError(labelKey, "SecurityIstioIo_V1Beta1_AuthorizationPolicy", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -743,39 +743,39 @@ func partitionSecurityIstioIov1Beta1AuthorizationPoliciesByLabel(labelKey string
 	}
 
 	// partition by label key
-	var partitionedSecurityIstioIov1Beta1AuthorizationPolicies []LabeledSecurityIstioIov1Beta1AuthorizationPolicySet
+	var partitionedSecurityIstioIo_V1Beta1_AuthorizationPolicies []LabeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledSecurityIstioIov1Beta1AuthorizationPolicySet(setForValue, labels)
+		partitionedSet, err := NewLabeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedSecurityIstioIov1Beta1AuthorizationPolicies = append(partitionedSecurityIstioIov1Beta1AuthorizationPolicies, partitionedSet)
+		partitionedSecurityIstioIo_V1Beta1_AuthorizationPolicies = append(partitionedSecurityIstioIo_V1Beta1_AuthorizationPolicies, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedSecurityIstioIov1Beta1AuthorizationPolicies, func(i, j int) bool {
-		leftLabelValue := partitionedSecurityIstioIov1Beta1AuthorizationPolicies[i].Labels()[labelKey]
-		rightLabelValue := partitionedSecurityIstioIov1Beta1AuthorizationPolicies[j].Labels()[labelKey]
+	sort.SliceStable(partitionedSecurityIstioIo_V1Beta1_AuthorizationPolicies, func(i, j int) bool {
+		leftLabelValue := partitionedSecurityIstioIo_V1Beta1_AuthorizationPolicies[i].Labels()[labelKey]
+		rightLabelValue := partitionedSecurityIstioIo_V1Beta1_AuthorizationPolicies[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedSecurityIstioIov1Beta1AuthorizationPolicies, nil
+	return partitionedSecurityIstioIo_V1Beta1_AuthorizationPolicies, nil
 }
 
-func partitionV1ConfigMapsByLabel(labelKey string, set v1_sets.ConfigMapSet) ([]LabeledV1ConfigMapSet, error) {
+func partitionV1_ConfigMapsByLabel(labelKey string, set v1_sets.ConfigMapSet) ([]LabeledV1_ConfigMapSet, error) {
 	setsByLabel := map[string]v1_sets.ConfigMapSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "V1ConfigMap", obj)
+			return nil, MissingRequiredLabelError(labelKey, "V1_ConfigMap", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "V1ConfigMap", obj)
+			return nil, MissingRequiredLabelError(labelKey, "V1_ConfigMap", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -787,120 +787,120 @@ func partitionV1ConfigMapsByLabel(labelKey string, set v1_sets.ConfigMapSet) ([]
 	}
 
 	// partition by label key
-	var partitionedV1ConfigMaps []LabeledV1ConfigMapSet
+	var partitionedV1_ConfigMaps []LabeledV1_ConfigMapSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledV1ConfigMapSet(setForValue, labels)
+		partitionedSet, err := NewLabeledV1_ConfigMapSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedV1ConfigMaps = append(partitionedV1ConfigMaps, partitionedSet)
+		partitionedV1_ConfigMaps = append(partitionedV1_ConfigMaps, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedV1ConfigMaps, func(i, j int) bool {
-		leftLabelValue := partitionedV1ConfigMaps[i].Labels()[labelKey]
-		rightLabelValue := partitionedV1ConfigMaps[j].Labels()[labelKey]
+	sort.SliceStable(partitionedV1_ConfigMaps, func(i, j int) bool {
+		leftLabelValue := partitionedV1_ConfigMaps[i].Labels()[labelKey]
+		rightLabelValue := partitionedV1_ConfigMaps[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedV1ConfigMaps, nil
+	return partitionedV1_ConfigMaps, nil
 }
 
-func (s snapshot) CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates() []LabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet {
-	return s.certificatesMeshGlooSoloIov1Alpha2IssuedCertificates
+func (s snapshot) CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates() []LabeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet {
+	return s.certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates
 }
 
-func (s snapshot) CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives() []LabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet {
-	return s.certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives
+func (s snapshot) CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives() []LabeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet {
+	return s.certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives
 }
 
-func (s snapshot) XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs() []LabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet {
-	return s.xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs
+func (s snapshot) XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs() []LabeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet {
+	return s.xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs
 }
 
-func (s snapshot) NetworkingIstioIov1Alpha3DestinationRules() []LabeledNetworkingIstioIov1Alpha3DestinationRuleSet {
-	return s.networkingIstioIov1Alpha3DestinationRules
+func (s snapshot) NetworkingIstioIo_V1Alpha3_DestinationRules() []LabeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet {
+	return s.networkingIstioIoV1Alpha3DestinationRules
 }
 
-func (s snapshot) NetworkingIstioIov1Alpha3EnvoyFilters() []LabeledNetworkingIstioIov1Alpha3EnvoyFilterSet {
-	return s.networkingIstioIov1Alpha3EnvoyFilters
+func (s snapshot) NetworkingIstioIo_V1Alpha3_EnvoyFilters() []LabeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet {
+	return s.networkingIstioIoV1Alpha3EnvoyFilters
 }
 
-func (s snapshot) NetworkingIstioIov1Alpha3Gateways() []LabeledNetworkingIstioIov1Alpha3GatewaySet {
-	return s.networkingIstioIov1Alpha3Gateways
+func (s snapshot) NetworkingIstioIo_V1Alpha3_Gateways() []LabeledNetworkingIstioIo_V1Alpha3_GatewaySet {
+	return s.networkingIstioIoV1Alpha3Gateways
 }
 
-func (s snapshot) NetworkingIstioIov1Alpha3ServiceEntries() []LabeledNetworkingIstioIov1Alpha3ServiceEntrySet {
-	return s.networkingIstioIov1Alpha3ServiceEntries
+func (s snapshot) NetworkingIstioIo_V1Alpha3_ServiceEntries() []LabeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet {
+	return s.networkingIstioIoV1Alpha3ServiceEntries
 }
 
-func (s snapshot) NetworkingIstioIov1Alpha3VirtualServices() []LabeledNetworkingIstioIov1Alpha3VirtualServiceSet {
-	return s.networkingIstioIov1Alpha3VirtualServices
+func (s snapshot) NetworkingIstioIo_V1Alpha3_VirtualServices() []LabeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet {
+	return s.networkingIstioIoV1Alpha3VirtualServices
 }
 
-func (s snapshot) SecurityIstioIov1Beta1AuthorizationPolicies() []LabeledSecurityIstioIov1Beta1AuthorizationPolicySet {
-	return s.securityIstioIov1Beta1AuthorizationPolicies
+func (s snapshot) SecurityIstioIo_V1Beta1_AuthorizationPolicies() []LabeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet {
+	return s.securityIstioIoV1Beta1AuthorizationPolicies
 }
 
-func (s snapshot) V1ConfigMaps() []LabeledV1ConfigMapSet {
+func (s snapshot) V1_ConfigMaps() []LabeledV1_ConfigMapSet {
 	return s.v1ConfigMaps
 }
 
 func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
-	for _, set := range s.certificatesMeshGlooSoloIov1Alpha2IssuedCertificates {
-		certificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet = certificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet.Union(set.Set())
+	certificatesMeshGlooSoloIoV1Alpha2IssuedCertificateSet := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
+	for _, set := range s.certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates {
+		certificatesMeshGlooSoloIoV1Alpha2IssuedCertificateSet = certificatesMeshGlooSoloIoV1Alpha2IssuedCertificateSet.Union(set.Set())
 	}
-	snapshotMap["certificatesMeshGlooSoloIov1Alpha2IssuedCertificates"] = certificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet.List()
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
-	for _, set := range s.certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives {
-		certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet = certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet.Union(set.Set())
+	snapshotMap["certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates"] = certificatesMeshGlooSoloIoV1Alpha2IssuedCertificateSet.List()
+	certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectiveSet := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+	for _, set := range s.certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives {
+		certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectiveSet = certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectiveSet.Union(set.Set())
 	}
-	snapshotMap["certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives"] = certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet.List()
+	snapshotMap["certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives"] = certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectiveSet.List()
 
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
-	for _, set := range s.xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs {
-		xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet = xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet.Union(set.Set())
+	xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigSet := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
+	for _, set := range s.xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs {
+		xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigSet = xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigSet.Union(set.Set())
 	}
-	snapshotMap["xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs"] = xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet.List()
+	snapshotMap["xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs"] = xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigSet.List()
 
-	networkingIstioIov1Alpha3DestinationRuleSet := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
-	for _, set := range s.networkingIstioIov1Alpha3DestinationRules {
-		networkingIstioIov1Alpha3DestinationRuleSet = networkingIstioIov1Alpha3DestinationRuleSet.Union(set.Set())
+	networkingIstioIoV1Alpha3DestinationRuleSet := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
+	for _, set := range s.networkingIstioIoV1Alpha3DestinationRules {
+		networkingIstioIoV1Alpha3DestinationRuleSet = networkingIstioIoV1Alpha3DestinationRuleSet.Union(set.Set())
 	}
-	snapshotMap["networkingIstioIov1Alpha3DestinationRules"] = networkingIstioIov1Alpha3DestinationRuleSet.List()
-	networkingIstioIov1Alpha3EnvoyFilterSet := networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet()
-	for _, set := range s.networkingIstioIov1Alpha3EnvoyFilters {
-		networkingIstioIov1Alpha3EnvoyFilterSet = networkingIstioIov1Alpha3EnvoyFilterSet.Union(set.Set())
+	snapshotMap["networkingIstioIoV1Alpha3DestinationRules"] = networkingIstioIoV1Alpha3DestinationRuleSet.List()
+	networkingIstioIoV1Alpha3EnvoyFilterSet := networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet()
+	for _, set := range s.networkingIstioIoV1Alpha3EnvoyFilters {
+		networkingIstioIoV1Alpha3EnvoyFilterSet = networkingIstioIoV1Alpha3EnvoyFilterSet.Union(set.Set())
 	}
-	snapshotMap["networkingIstioIov1Alpha3EnvoyFilters"] = networkingIstioIov1Alpha3EnvoyFilterSet.List()
-	networkingIstioIov1Alpha3GatewaySet := networking_istio_io_v1alpha3_sets.NewGatewaySet()
-	for _, set := range s.networkingIstioIov1Alpha3Gateways {
-		networkingIstioIov1Alpha3GatewaySet = networkingIstioIov1Alpha3GatewaySet.Union(set.Set())
+	snapshotMap["networkingIstioIoV1Alpha3EnvoyFilters"] = networkingIstioIoV1Alpha3EnvoyFilterSet.List()
+	networkingIstioIoV1Alpha3GatewaySet := networking_istio_io_v1alpha3_sets.NewGatewaySet()
+	for _, set := range s.networkingIstioIoV1Alpha3Gateways {
+		networkingIstioIoV1Alpha3GatewaySet = networkingIstioIoV1Alpha3GatewaySet.Union(set.Set())
 	}
-	snapshotMap["networkingIstioIov1Alpha3Gateways"] = networkingIstioIov1Alpha3GatewaySet.List()
-	networkingIstioIov1Alpha3ServiceEntrySet := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
-	for _, set := range s.networkingIstioIov1Alpha3ServiceEntries {
-		networkingIstioIov1Alpha3ServiceEntrySet = networkingIstioIov1Alpha3ServiceEntrySet.Union(set.Set())
+	snapshotMap["networkingIstioIoV1Alpha3Gateways"] = networkingIstioIoV1Alpha3GatewaySet.List()
+	networkingIstioIoV1Alpha3ServiceEntrySet := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
+	for _, set := range s.networkingIstioIoV1Alpha3ServiceEntries {
+		networkingIstioIoV1Alpha3ServiceEntrySet = networkingIstioIoV1Alpha3ServiceEntrySet.Union(set.Set())
 	}
-	snapshotMap["networkingIstioIov1Alpha3ServiceEntries"] = networkingIstioIov1Alpha3ServiceEntrySet.List()
-	networkingIstioIov1Alpha3VirtualServiceSet := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
-	for _, set := range s.networkingIstioIov1Alpha3VirtualServices {
-		networkingIstioIov1Alpha3VirtualServiceSet = networkingIstioIov1Alpha3VirtualServiceSet.Union(set.Set())
+	snapshotMap["networkingIstioIoV1Alpha3ServiceEntries"] = networkingIstioIoV1Alpha3ServiceEntrySet.List()
+	networkingIstioIoV1Alpha3VirtualServiceSet := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+	for _, set := range s.networkingIstioIoV1Alpha3VirtualServices {
+		networkingIstioIoV1Alpha3VirtualServiceSet = networkingIstioIoV1Alpha3VirtualServiceSet.Union(set.Set())
 	}
-	snapshotMap["networkingIstioIov1Alpha3VirtualServices"] = networkingIstioIov1Alpha3VirtualServiceSet.List()
+	snapshotMap["networkingIstioIoV1Alpha3VirtualServices"] = networkingIstioIoV1Alpha3VirtualServiceSet.List()
 
-	securityIstioIov1Beta1AuthorizationPolicySet := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
-	for _, set := range s.securityIstioIov1Beta1AuthorizationPolicies {
-		securityIstioIov1Beta1AuthorizationPolicySet = securityIstioIov1Beta1AuthorizationPolicySet.Union(set.Set())
+	securityIstioIoV1Beta1AuthorizationPolicySet := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
+	for _, set := range s.securityIstioIoV1Beta1AuthorizationPolicies {
+		securityIstioIoV1Beta1AuthorizationPolicySet = securityIstioIoV1Beta1AuthorizationPolicySet.Union(set.Set())
 	}
-	snapshotMap["securityIstioIov1Beta1AuthorizationPolicies"] = securityIstioIov1Beta1AuthorizationPolicySet.List()
+	snapshotMap["securityIstioIoV1Beta1AuthorizationPolicies"] = securityIstioIoV1Beta1AuthorizationPolicySet.List()
 
 	v1ConfigMapSet := v1_sets.NewConfigMapSet()
 	for _, set := range s.v1ConfigMaps {
@@ -913,11 +913,11 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	return json.Marshal(snapshotMap)
 }
 
-// LabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet represents a set of certificatesMeshGlooSoloIov1Alpha2IssuedCertificates
+// LabeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet represents a set of certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates
 // which share a common set of labels.
-// These labels are used to find diffs between CertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSets.
-type LabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet interface {
-	// returns the set of Labels shared by this CertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet
+// These labels are used to find diffs between CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSets.
+type LabeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet interface {
+	// returns the set of Labels shared by this CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet
 	Labels() map[string]string
 
 	// returns the set of IssuedCertificatees with the given labels
@@ -927,34 +927,34 @@ type LabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet struct {
+type labeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet struct {
 	set    certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
 	labels map[string]string
 }
 
-func NewLabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet(set certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet, labels map[string]string) (LabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet, error) {
-	// validate that each IssuedCertificate contains the labels, else this is not a valid LabeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet
+func NewLabeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet(set certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet, labels map[string]string) (LabeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet, error) {
+	// validate that each IssuedCertificate contains the labels, else this is not a valid LabeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on CertificatesMeshGlooSoloIov1Alpha2IssuedCertificate %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificate %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet{set: set, labels: labels}, nil
+	return &labeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet) Labels() map[string]string {
+func (l *labeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet) Set() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet {
+func (l *labeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet) Set() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet {
 	return l.set
 }
 
-func (l labeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet) Generic() output.ResourceList {
+func (l labeledCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificateSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -981,11 +981,11 @@ func (l labeledCertificatesMeshGlooSoloIov1Alpha2IssuedCertificateSet) Generic()
 	}
 }
 
-// LabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet represents a set of certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives
+// LabeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet represents a set of certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives
 // which share a common set of labels.
-// These labels are used to find diffs between CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSets.
-type LabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet interface {
-	// returns the set of Labels shared by this CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet
+// These labels are used to find diffs between CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSets.
+type LabeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet interface {
+	// returns the set of Labels shared by this CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet
 	Labels() map[string]string
 
 	// returns the set of PodBounceDirectivees with the given labels
@@ -995,34 +995,34 @@ type LabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet struct {
+type labeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet struct {
 	set    certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 	labels map[string]string
 }
 
-func NewLabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet(set certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet, labels map[string]string) (LabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet, error) {
-	// validate that each PodBounceDirective contains the labels, else this is not a valid LabeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet
+func NewLabeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet(set certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet, labels map[string]string) (LabeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet, error) {
+	// validate that each PodBounceDirective contains the labels, else this is not a valid LabeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on CertificatesMeshGlooSoloIov1Alpha2PodBounceDirective %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirective %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet{set: set, labels: labels}, nil
+	return &labeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet) Labels() map[string]string {
+func (l *labeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet) Set() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet {
+func (l *labeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet) Set() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet {
 	return l.set
 }
 
-func (l labeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet) Generic() output.ResourceList {
+func (l labeledCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectiveSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -1049,11 +1049,11 @@ func (l labeledCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveSet) Generic(
 	}
 }
 
-// LabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet represents a set of xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs
+// LabeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet represents a set of xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs
 // which share a common set of labels.
-// These labels are used to find diffs between XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSets.
-type LabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet interface {
-	// returns the set of Labels shared by this XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet
+// These labels are used to find diffs between XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSets.
+type LabeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet interface {
+	// returns the set of Labels shared by this XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet
 	Labels() map[string]string
 
 	// returns the set of XdsConfiges with the given labels
@@ -1063,34 +1063,34 @@ type LabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet struct {
+type labeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet struct {
 	set    xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
 	labels map[string]string
 }
 
-func NewLabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet(set xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet, labels map[string]string) (LabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet, error) {
-	// validate that each XdsConfig contains the labels, else this is not a valid LabeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet
+func NewLabeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet(set xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet, labels map[string]string) (LabeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet, error) {
+	// validate that each XdsConfig contains the labels, else this is not a valid LabeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfig %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfig %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet{set: set, labels: labels}, nil
+	return &labeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet) Labels() map[string]string {
+func (l *labeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet) Set() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet {
+func (l *labeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet) Set() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet {
 	return l.set
 }
 
-func (l labeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet) Generic() output.ResourceList {
+func (l labeledXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -1117,11 +1117,11 @@ func (l labeledXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigSet) Generic() o
 	}
 }
 
-// LabeledNetworkingIstioIov1Alpha3DestinationRuleSet represents a set of networkingIstioIov1Alpha3DestinationRules
+// LabeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet represents a set of networkingIstioIoV1Alpha3DestinationRules
 // which share a common set of labels.
-// These labels are used to find diffs between NetworkingIstioIov1Alpha3DestinationRuleSets.
-type LabeledNetworkingIstioIov1Alpha3DestinationRuleSet interface {
-	// returns the set of Labels shared by this NetworkingIstioIov1Alpha3DestinationRuleSet
+// These labels are used to find diffs between NetworkingIstioIo_V1Alpha3_DestinationRuleSets.
+type LabeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet interface {
+	// returns the set of Labels shared by this NetworkingIstioIo_V1Alpha3_DestinationRuleSet
 	Labels() map[string]string
 
 	// returns the set of DestinationRulees with the given labels
@@ -1131,34 +1131,34 @@ type LabeledNetworkingIstioIov1Alpha3DestinationRuleSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledNetworkingIstioIov1Alpha3DestinationRuleSet struct {
+type labeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet struct {
 	set    networking_istio_io_v1alpha3_sets.DestinationRuleSet
 	labels map[string]string
 }
 
-func NewLabeledNetworkingIstioIov1Alpha3DestinationRuleSet(set networking_istio_io_v1alpha3_sets.DestinationRuleSet, labels map[string]string) (LabeledNetworkingIstioIov1Alpha3DestinationRuleSet, error) {
-	// validate that each DestinationRule contains the labels, else this is not a valid LabeledNetworkingIstioIov1Alpha3DestinationRuleSet
+func NewLabeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet(set networking_istio_io_v1alpha3_sets.DestinationRuleSet, labels map[string]string) (LabeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet, error) {
+	// validate that each DestinationRule contains the labels, else this is not a valid LabeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on NetworkingIstioIov1Alpha3DestinationRule %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on NetworkingIstioIo_V1Alpha3_DestinationRule %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledNetworkingIstioIov1Alpha3DestinationRuleSet{set: set, labels: labels}, nil
+	return &labeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledNetworkingIstioIov1Alpha3DestinationRuleSet) Labels() map[string]string {
+func (l *labeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledNetworkingIstioIov1Alpha3DestinationRuleSet) Set() networking_istio_io_v1alpha3_sets.DestinationRuleSet {
+func (l *labeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet) Set() networking_istio_io_v1alpha3_sets.DestinationRuleSet {
 	return l.set
 }
 
-func (l labeledNetworkingIstioIov1Alpha3DestinationRuleSet) Generic() output.ResourceList {
+func (l labeledNetworkingIstioIo_V1Alpha3_DestinationRuleSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -1185,11 +1185,11 @@ func (l labeledNetworkingIstioIov1Alpha3DestinationRuleSet) Generic() output.Res
 	}
 }
 
-// LabeledNetworkingIstioIov1Alpha3EnvoyFilterSet represents a set of networkingIstioIov1Alpha3EnvoyFilters
+// LabeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet represents a set of networkingIstioIoV1Alpha3EnvoyFilters
 // which share a common set of labels.
-// These labels are used to find diffs between NetworkingIstioIov1Alpha3EnvoyFilterSets.
-type LabeledNetworkingIstioIov1Alpha3EnvoyFilterSet interface {
-	// returns the set of Labels shared by this NetworkingIstioIov1Alpha3EnvoyFilterSet
+// These labels are used to find diffs between NetworkingIstioIo_V1Alpha3_EnvoyFilterSets.
+type LabeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet interface {
+	// returns the set of Labels shared by this NetworkingIstioIo_V1Alpha3_EnvoyFilterSet
 	Labels() map[string]string
 
 	// returns the set of EnvoyFilteres with the given labels
@@ -1199,34 +1199,34 @@ type LabeledNetworkingIstioIov1Alpha3EnvoyFilterSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledNetworkingIstioIov1Alpha3EnvoyFilterSet struct {
+type labeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet struct {
 	set    networking_istio_io_v1alpha3_sets.EnvoyFilterSet
 	labels map[string]string
 }
 
-func NewLabeledNetworkingIstioIov1Alpha3EnvoyFilterSet(set networking_istio_io_v1alpha3_sets.EnvoyFilterSet, labels map[string]string) (LabeledNetworkingIstioIov1Alpha3EnvoyFilterSet, error) {
-	// validate that each EnvoyFilter contains the labels, else this is not a valid LabeledNetworkingIstioIov1Alpha3EnvoyFilterSet
+func NewLabeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet(set networking_istio_io_v1alpha3_sets.EnvoyFilterSet, labels map[string]string) (LabeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet, error) {
+	// validate that each EnvoyFilter contains the labels, else this is not a valid LabeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on NetworkingIstioIov1Alpha3EnvoyFilter %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on NetworkingIstioIo_V1Alpha3_EnvoyFilter %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledNetworkingIstioIov1Alpha3EnvoyFilterSet{set: set, labels: labels}, nil
+	return &labeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledNetworkingIstioIov1Alpha3EnvoyFilterSet) Labels() map[string]string {
+func (l *labeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledNetworkingIstioIov1Alpha3EnvoyFilterSet) Set() networking_istio_io_v1alpha3_sets.EnvoyFilterSet {
+func (l *labeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet) Set() networking_istio_io_v1alpha3_sets.EnvoyFilterSet {
 	return l.set
 }
 
-func (l labeledNetworkingIstioIov1Alpha3EnvoyFilterSet) Generic() output.ResourceList {
+func (l labeledNetworkingIstioIo_V1Alpha3_EnvoyFilterSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -1253,11 +1253,11 @@ func (l labeledNetworkingIstioIov1Alpha3EnvoyFilterSet) Generic() output.Resourc
 	}
 }
 
-// LabeledNetworkingIstioIov1Alpha3GatewaySet represents a set of networkingIstioIov1Alpha3Gateways
+// LabeledNetworkingIstioIo_V1Alpha3_GatewaySet represents a set of networkingIstioIoV1Alpha3Gateways
 // which share a common set of labels.
-// These labels are used to find diffs between NetworkingIstioIov1Alpha3GatewaySets.
-type LabeledNetworkingIstioIov1Alpha3GatewaySet interface {
-	// returns the set of Labels shared by this NetworkingIstioIov1Alpha3GatewaySet
+// These labels are used to find diffs between NetworkingIstioIo_V1Alpha3_GatewaySets.
+type LabeledNetworkingIstioIo_V1Alpha3_GatewaySet interface {
+	// returns the set of Labels shared by this NetworkingIstioIo_V1Alpha3_GatewaySet
 	Labels() map[string]string
 
 	// returns the set of Gatewayes with the given labels
@@ -1267,34 +1267,34 @@ type LabeledNetworkingIstioIov1Alpha3GatewaySet interface {
 	Generic() output.ResourceList
 }
 
-type labeledNetworkingIstioIov1Alpha3GatewaySet struct {
+type labeledNetworkingIstioIo_V1Alpha3_GatewaySet struct {
 	set    networking_istio_io_v1alpha3_sets.GatewaySet
 	labels map[string]string
 }
 
-func NewLabeledNetworkingIstioIov1Alpha3GatewaySet(set networking_istio_io_v1alpha3_sets.GatewaySet, labels map[string]string) (LabeledNetworkingIstioIov1Alpha3GatewaySet, error) {
-	// validate that each Gateway contains the labels, else this is not a valid LabeledNetworkingIstioIov1Alpha3GatewaySet
+func NewLabeledNetworkingIstioIo_V1Alpha3_GatewaySet(set networking_istio_io_v1alpha3_sets.GatewaySet, labels map[string]string) (LabeledNetworkingIstioIo_V1Alpha3_GatewaySet, error) {
+	// validate that each Gateway contains the labels, else this is not a valid LabeledNetworkingIstioIo_V1Alpha3_GatewaySet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on NetworkingIstioIov1Alpha3Gateway %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on NetworkingIstioIo_V1Alpha3_Gateway %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledNetworkingIstioIov1Alpha3GatewaySet{set: set, labels: labels}, nil
+	return &labeledNetworkingIstioIo_V1Alpha3_GatewaySet{set: set, labels: labels}, nil
 }
 
-func (l *labeledNetworkingIstioIov1Alpha3GatewaySet) Labels() map[string]string {
+func (l *labeledNetworkingIstioIo_V1Alpha3_GatewaySet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledNetworkingIstioIov1Alpha3GatewaySet) Set() networking_istio_io_v1alpha3_sets.GatewaySet {
+func (l *labeledNetworkingIstioIo_V1Alpha3_GatewaySet) Set() networking_istio_io_v1alpha3_sets.GatewaySet {
 	return l.set
 }
 
-func (l labeledNetworkingIstioIov1Alpha3GatewaySet) Generic() output.ResourceList {
+func (l labeledNetworkingIstioIo_V1Alpha3_GatewaySet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -1321,11 +1321,11 @@ func (l labeledNetworkingIstioIov1Alpha3GatewaySet) Generic() output.ResourceLis
 	}
 }
 
-// LabeledNetworkingIstioIov1Alpha3ServiceEntrySet represents a set of networkingIstioIov1Alpha3ServiceEntries
+// LabeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet represents a set of networkingIstioIoV1Alpha3ServiceEntries
 // which share a common set of labels.
-// These labels are used to find diffs between NetworkingIstioIov1Alpha3ServiceEntrySets.
-type LabeledNetworkingIstioIov1Alpha3ServiceEntrySet interface {
-	// returns the set of Labels shared by this NetworkingIstioIov1Alpha3ServiceEntrySet
+// These labels are used to find diffs between NetworkingIstioIo_V1Alpha3_ServiceEntrySets.
+type LabeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet interface {
+	// returns the set of Labels shared by this NetworkingIstioIo_V1Alpha3_ServiceEntrySet
 	Labels() map[string]string
 
 	// returns the set of ServiceEntryes with the given labels
@@ -1335,34 +1335,34 @@ type LabeledNetworkingIstioIov1Alpha3ServiceEntrySet interface {
 	Generic() output.ResourceList
 }
 
-type labeledNetworkingIstioIov1Alpha3ServiceEntrySet struct {
+type labeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet struct {
 	set    networking_istio_io_v1alpha3_sets.ServiceEntrySet
 	labels map[string]string
 }
 
-func NewLabeledNetworkingIstioIov1Alpha3ServiceEntrySet(set networking_istio_io_v1alpha3_sets.ServiceEntrySet, labels map[string]string) (LabeledNetworkingIstioIov1Alpha3ServiceEntrySet, error) {
-	// validate that each ServiceEntry contains the labels, else this is not a valid LabeledNetworkingIstioIov1Alpha3ServiceEntrySet
+func NewLabeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet(set networking_istio_io_v1alpha3_sets.ServiceEntrySet, labels map[string]string) (LabeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet, error) {
+	// validate that each ServiceEntry contains the labels, else this is not a valid LabeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on NetworkingIstioIov1Alpha3ServiceEntry %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on NetworkingIstioIo_V1Alpha3_ServiceEntry %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledNetworkingIstioIov1Alpha3ServiceEntrySet{set: set, labels: labels}, nil
+	return &labeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet{set: set, labels: labels}, nil
 }
 
-func (l *labeledNetworkingIstioIov1Alpha3ServiceEntrySet) Labels() map[string]string {
+func (l *labeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledNetworkingIstioIov1Alpha3ServiceEntrySet) Set() networking_istio_io_v1alpha3_sets.ServiceEntrySet {
+func (l *labeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet) Set() networking_istio_io_v1alpha3_sets.ServiceEntrySet {
 	return l.set
 }
 
-func (l labeledNetworkingIstioIov1Alpha3ServiceEntrySet) Generic() output.ResourceList {
+func (l labeledNetworkingIstioIo_V1Alpha3_ServiceEntrySet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -1389,11 +1389,11 @@ func (l labeledNetworkingIstioIov1Alpha3ServiceEntrySet) Generic() output.Resour
 	}
 }
 
-// LabeledNetworkingIstioIov1Alpha3VirtualServiceSet represents a set of networkingIstioIov1Alpha3VirtualServices
+// LabeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet represents a set of networkingIstioIoV1Alpha3VirtualServices
 // which share a common set of labels.
-// These labels are used to find diffs between NetworkingIstioIov1Alpha3VirtualServiceSets.
-type LabeledNetworkingIstioIov1Alpha3VirtualServiceSet interface {
-	// returns the set of Labels shared by this NetworkingIstioIov1Alpha3VirtualServiceSet
+// These labels are used to find diffs between NetworkingIstioIo_V1Alpha3_VirtualServiceSets.
+type LabeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet interface {
+	// returns the set of Labels shared by this NetworkingIstioIo_V1Alpha3_VirtualServiceSet
 	Labels() map[string]string
 
 	// returns the set of VirtualServicees with the given labels
@@ -1403,34 +1403,34 @@ type LabeledNetworkingIstioIov1Alpha3VirtualServiceSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledNetworkingIstioIov1Alpha3VirtualServiceSet struct {
+type labeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet struct {
 	set    networking_istio_io_v1alpha3_sets.VirtualServiceSet
 	labels map[string]string
 }
 
-func NewLabeledNetworkingIstioIov1Alpha3VirtualServiceSet(set networking_istio_io_v1alpha3_sets.VirtualServiceSet, labels map[string]string) (LabeledNetworkingIstioIov1Alpha3VirtualServiceSet, error) {
-	// validate that each VirtualService contains the labels, else this is not a valid LabeledNetworkingIstioIov1Alpha3VirtualServiceSet
+func NewLabeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet(set networking_istio_io_v1alpha3_sets.VirtualServiceSet, labels map[string]string) (LabeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet, error) {
+	// validate that each VirtualService contains the labels, else this is not a valid LabeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on NetworkingIstioIov1Alpha3VirtualService %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on NetworkingIstioIo_V1Alpha3_VirtualService %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledNetworkingIstioIov1Alpha3VirtualServiceSet{set: set, labels: labels}, nil
+	return &labeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledNetworkingIstioIov1Alpha3VirtualServiceSet) Labels() map[string]string {
+func (l *labeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledNetworkingIstioIov1Alpha3VirtualServiceSet) Set() networking_istio_io_v1alpha3_sets.VirtualServiceSet {
+func (l *labeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet) Set() networking_istio_io_v1alpha3_sets.VirtualServiceSet {
 	return l.set
 }
 
-func (l labeledNetworkingIstioIov1Alpha3VirtualServiceSet) Generic() output.ResourceList {
+func (l labeledNetworkingIstioIo_V1Alpha3_VirtualServiceSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -1457,11 +1457,11 @@ func (l labeledNetworkingIstioIov1Alpha3VirtualServiceSet) Generic() output.Reso
 	}
 }
 
-// LabeledSecurityIstioIov1Beta1AuthorizationPolicySet represents a set of securityIstioIov1Beta1AuthorizationPolicies
+// LabeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet represents a set of securityIstioIoV1Beta1AuthorizationPolicies
 // which share a common set of labels.
-// These labels are used to find diffs between SecurityIstioIov1Beta1AuthorizationPolicySets.
-type LabeledSecurityIstioIov1Beta1AuthorizationPolicySet interface {
-	// returns the set of Labels shared by this SecurityIstioIov1Beta1AuthorizationPolicySet
+// These labels are used to find diffs between SecurityIstioIo_V1Beta1_AuthorizationPolicySets.
+type LabeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet interface {
+	// returns the set of Labels shared by this SecurityIstioIo_V1Beta1_AuthorizationPolicySet
 	Labels() map[string]string
 
 	// returns the set of AuthorizationPolicyes with the given labels
@@ -1471,34 +1471,34 @@ type LabeledSecurityIstioIov1Beta1AuthorizationPolicySet interface {
 	Generic() output.ResourceList
 }
 
-type labeledSecurityIstioIov1Beta1AuthorizationPolicySet struct {
+type labeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet struct {
 	set    security_istio_io_v1beta1_sets.AuthorizationPolicySet
 	labels map[string]string
 }
 
-func NewLabeledSecurityIstioIov1Beta1AuthorizationPolicySet(set security_istio_io_v1beta1_sets.AuthorizationPolicySet, labels map[string]string) (LabeledSecurityIstioIov1Beta1AuthorizationPolicySet, error) {
-	// validate that each AuthorizationPolicy contains the labels, else this is not a valid LabeledSecurityIstioIov1Beta1AuthorizationPolicySet
+func NewLabeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet(set security_istio_io_v1beta1_sets.AuthorizationPolicySet, labels map[string]string) (LabeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet, error) {
+	// validate that each AuthorizationPolicy contains the labels, else this is not a valid LabeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on SecurityIstioIov1Beta1AuthorizationPolicy %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on SecurityIstioIo_V1Beta1_AuthorizationPolicy %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledSecurityIstioIov1Beta1AuthorizationPolicySet{set: set, labels: labels}, nil
+	return &labeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet{set: set, labels: labels}, nil
 }
 
-func (l *labeledSecurityIstioIov1Beta1AuthorizationPolicySet) Labels() map[string]string {
+func (l *labeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledSecurityIstioIov1Beta1AuthorizationPolicySet) Set() security_istio_io_v1beta1_sets.AuthorizationPolicySet {
+func (l *labeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet) Set() security_istio_io_v1beta1_sets.AuthorizationPolicySet {
 	return l.set
 }
 
-func (l labeledSecurityIstioIov1Beta1AuthorizationPolicySet) Generic() output.ResourceList {
+func (l labeledSecurityIstioIo_V1Beta1_AuthorizationPolicySet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -1525,11 +1525,11 @@ func (l labeledSecurityIstioIov1Beta1AuthorizationPolicySet) Generic() output.Re
 	}
 }
 
-// LabeledV1ConfigMapSet represents a set of v1ConfigMaps
+// LabeledV1_ConfigMapSet represents a set of v1ConfigMaps
 // which share a common set of labels.
-// These labels are used to find diffs between V1ConfigMapSets.
-type LabeledV1ConfigMapSet interface {
-	// returns the set of Labels shared by this V1ConfigMapSet
+// These labels are used to find diffs between V1_ConfigMapSets.
+type LabeledV1_ConfigMapSet interface {
+	// returns the set of Labels shared by this V1_ConfigMapSet
 	Labels() map[string]string
 
 	// returns the set of ConfigMapes with the given labels
@@ -1539,34 +1539,34 @@ type LabeledV1ConfigMapSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledV1ConfigMapSet struct {
+type labeledV1_ConfigMapSet struct {
 	set    v1_sets.ConfigMapSet
 	labels map[string]string
 }
 
-func NewLabeledV1ConfigMapSet(set v1_sets.ConfigMapSet, labels map[string]string) (LabeledV1ConfigMapSet, error) {
-	// validate that each ConfigMap contains the labels, else this is not a valid LabeledV1ConfigMapSet
+func NewLabeledV1_ConfigMapSet(set v1_sets.ConfigMapSet, labels map[string]string) (LabeledV1_ConfigMapSet, error) {
+	// validate that each ConfigMap contains the labels, else this is not a valid LabeledV1_ConfigMapSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on V1ConfigMap %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on V1_ConfigMap %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledV1ConfigMapSet{set: set, labels: labels}, nil
+	return &labeledV1_ConfigMapSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledV1ConfigMapSet) Labels() map[string]string {
+func (l *labeledV1_ConfigMapSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledV1ConfigMapSet) Set() v1_sets.ConfigMapSet {
+func (l *labeledV1_ConfigMapSet) Set() v1_sets.ConfigMapSet {
 	return l.set
 }
 
-func (l labeledV1ConfigMapSet) Generic() output.ResourceList {
+func (l labeledV1_ConfigMapSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -1598,18 +1598,18 @@ type builder struct {
 	name     string
 	clusters []string
 
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates  certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+	certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates  certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
+	certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+	xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
 
-	networkingIstioIov1Alpha3DestinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet
-	networkingIstioIov1Alpha3EnvoyFilters     networking_istio_io_v1alpha3_sets.EnvoyFilterSet
-	networkingIstioIov1Alpha3Gateways         networking_istio_io_v1alpha3_sets.GatewaySet
-	networkingIstioIov1Alpha3ServiceEntries   networking_istio_io_v1alpha3_sets.ServiceEntrySet
-	networkingIstioIov1Alpha3VirtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
+	networkingIstioIoV1Alpha3DestinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet
+	networkingIstioIoV1Alpha3EnvoyFilters     networking_istio_io_v1alpha3_sets.EnvoyFilterSet
+	networkingIstioIoV1Alpha3Gateways         networking_istio_io_v1alpha3_sets.GatewaySet
+	networkingIstioIoV1Alpha3ServiceEntries   networking_istio_io_v1alpha3_sets.ServiceEntrySet
+	networkingIstioIoV1Alpha3VirtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
 
-	securityIstioIov1Beta1AuthorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
+	securityIstioIoV1Beta1AuthorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
 
 	v1ConfigMaps v1_sets.ConfigMapSet
 }
@@ -1619,18 +1619,18 @@ func NewBuilder(ctx context.Context, name string) *builder {
 		ctx:  ctx,
 		name: name,
 
-		certificatesMeshGlooSoloIov1Alpha2IssuedCertificates:  certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet(),
-		certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives: certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet(),
+		certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates:  certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet(),
+		certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives: certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet(),
 
-		xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs: xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet(),
+		xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs: xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet(),
 
-		networkingIstioIov1Alpha3DestinationRules: networking_istio_io_v1alpha3_sets.NewDestinationRuleSet(),
-		networkingIstioIov1Alpha3EnvoyFilters:     networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet(),
-		networkingIstioIov1Alpha3Gateways:         networking_istio_io_v1alpha3_sets.NewGatewaySet(),
-		networkingIstioIov1Alpha3ServiceEntries:   networking_istio_io_v1alpha3_sets.NewServiceEntrySet(),
-		networkingIstioIov1Alpha3VirtualServices:  networking_istio_io_v1alpha3_sets.NewVirtualServiceSet(),
+		networkingIstioIoV1Alpha3DestinationRules: networking_istio_io_v1alpha3_sets.NewDestinationRuleSet(),
+		networkingIstioIoV1Alpha3EnvoyFilters:     networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet(),
+		networkingIstioIoV1Alpha3Gateways:         networking_istio_io_v1alpha3_sets.NewGatewaySet(),
+		networkingIstioIoV1Alpha3ServiceEntries:   networking_istio_io_v1alpha3_sets.NewServiceEntrySet(),
+		networkingIstioIoV1Alpha3VirtualServices:  networking_istio_io_v1alpha3_sets.NewVirtualServiceSet(),
 
-		securityIstioIov1Beta1AuthorizationPolicies: security_istio_io_v1beta1_sets.NewAuthorizationPolicySet(),
+		securityIstioIoV1Beta1AuthorizationPolicies: security_istio_io_v1beta1_sets.NewAuthorizationPolicySet(),
 
 		v1ConfigMaps: v1_sets.NewConfigMapSet(),
 	}
@@ -1640,65 +1640,65 @@ func NewBuilder(ctx context.Context, name string) *builder {
 // iteratively collecting outputs before producing a final snapshot
 type Builder interface {
 
-	// add CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates to the collected outputs
-	AddCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates(certificatesMeshGlooSoloIov1Alpha2IssuedCertificates ...*certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate)
+	// add CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates to the collected outputs
+	AddCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates(certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates ...*certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate)
 
-	// get the collected CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates
-	GetCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
+	// get the collected CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates
+	GetCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
 
-	// add CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives to the collected outputs
-	AddCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives(certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives ...*certificates_mesh_gloo_solo_io_v1alpha2.PodBounceDirective)
+	// add CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives to the collected outputs
+	AddCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives(certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives ...*certificates_mesh_gloo_solo_io_v1alpha2.PodBounceDirective)
 
-	// get the collected CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives
-	GetCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+	// get the collected CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives
+	GetCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 
-	// add XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs to the collected outputs
-	AddXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs(xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs ...*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig)
+	// add XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs to the collected outputs
+	AddXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs(xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs ...*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig)
 
-	// get the collected XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs
-	GetXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+	// get the collected XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs
+	GetXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
 
-	// add NetworkingIstioIov1Alpha3DestinationRules to the collected outputs
-	AddNetworkingIstioIov1Alpha3DestinationRules(networkingIstioIov1Alpha3DestinationRules ...*networking_istio_io_v1alpha3.DestinationRule)
+	// add NetworkingIstioIo_V1Alpha3_DestinationRules to the collected outputs
+	AddNetworkingIstioIo_V1Alpha3_DestinationRules(networkingIstioIoV1Alpha3DestinationRules ...*networking_istio_io_v1alpha3.DestinationRule)
 
-	// get the collected NetworkingIstioIov1Alpha3DestinationRules
-	GetNetworkingIstioIov1Alpha3DestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet
+	// get the collected NetworkingIstioIo_V1Alpha3_DestinationRules
+	GetNetworkingIstioIo_V1Alpha3_DestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet
 
-	// add NetworkingIstioIov1Alpha3EnvoyFilters to the collected outputs
-	AddNetworkingIstioIov1Alpha3EnvoyFilters(networkingIstioIov1Alpha3EnvoyFilters ...*networking_istio_io_v1alpha3.EnvoyFilter)
+	// add NetworkingIstioIo_V1Alpha3_EnvoyFilters to the collected outputs
+	AddNetworkingIstioIo_V1Alpha3_EnvoyFilters(networkingIstioIoV1Alpha3EnvoyFilters ...*networking_istio_io_v1alpha3.EnvoyFilter)
 
-	// get the collected NetworkingIstioIov1Alpha3EnvoyFilters
-	GetNetworkingIstioIov1Alpha3EnvoyFilters() networking_istio_io_v1alpha3_sets.EnvoyFilterSet
+	// get the collected NetworkingIstioIo_V1Alpha3_EnvoyFilters
+	GetNetworkingIstioIo_V1Alpha3_EnvoyFilters() networking_istio_io_v1alpha3_sets.EnvoyFilterSet
 
-	// add NetworkingIstioIov1Alpha3Gateways to the collected outputs
-	AddNetworkingIstioIov1Alpha3Gateways(networkingIstioIov1Alpha3Gateways ...*networking_istio_io_v1alpha3.Gateway)
+	// add NetworkingIstioIo_V1Alpha3_Gateways to the collected outputs
+	AddNetworkingIstioIo_V1Alpha3_Gateways(networkingIstioIoV1Alpha3Gateways ...*networking_istio_io_v1alpha3.Gateway)
 
-	// get the collected NetworkingIstioIov1Alpha3Gateways
-	GetNetworkingIstioIov1Alpha3Gateways() networking_istio_io_v1alpha3_sets.GatewaySet
+	// get the collected NetworkingIstioIo_V1Alpha3_Gateways
+	GetNetworkingIstioIo_V1Alpha3_Gateways() networking_istio_io_v1alpha3_sets.GatewaySet
 
-	// add NetworkingIstioIov1Alpha3ServiceEntries to the collected outputs
-	AddNetworkingIstioIov1Alpha3ServiceEntries(networkingIstioIov1Alpha3ServiceEntries ...*networking_istio_io_v1alpha3.ServiceEntry)
+	// add NetworkingIstioIo_V1Alpha3_ServiceEntries to the collected outputs
+	AddNetworkingIstioIo_V1Alpha3_ServiceEntries(networkingIstioIoV1Alpha3ServiceEntries ...*networking_istio_io_v1alpha3.ServiceEntry)
 
-	// get the collected NetworkingIstioIov1Alpha3ServiceEntries
-	GetNetworkingIstioIov1Alpha3ServiceEntries() networking_istio_io_v1alpha3_sets.ServiceEntrySet
+	// get the collected NetworkingIstioIo_V1Alpha3_ServiceEntries
+	GetNetworkingIstioIo_V1Alpha3_ServiceEntries() networking_istio_io_v1alpha3_sets.ServiceEntrySet
 
-	// add NetworkingIstioIov1Alpha3VirtualServices to the collected outputs
-	AddNetworkingIstioIov1Alpha3VirtualServices(networkingIstioIov1Alpha3VirtualServices ...*networking_istio_io_v1alpha3.VirtualService)
+	// add NetworkingIstioIo_V1Alpha3_VirtualServices to the collected outputs
+	AddNetworkingIstioIo_V1Alpha3_VirtualServices(networkingIstioIoV1Alpha3VirtualServices ...*networking_istio_io_v1alpha3.VirtualService)
 
-	// get the collected NetworkingIstioIov1Alpha3VirtualServices
-	GetNetworkingIstioIov1Alpha3VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet
+	// get the collected NetworkingIstioIo_V1Alpha3_VirtualServices
+	GetNetworkingIstioIo_V1Alpha3_VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet
 
-	// add SecurityIstioIov1Beta1AuthorizationPolicies to the collected outputs
-	AddSecurityIstioIov1Beta1AuthorizationPolicies(securityIstioIov1Beta1AuthorizationPolicies ...*security_istio_io_v1beta1.AuthorizationPolicy)
+	// add SecurityIstioIo_V1Beta1_AuthorizationPolicies to the collected outputs
+	AddSecurityIstioIo_V1Beta1_AuthorizationPolicies(securityIstioIoV1Beta1AuthorizationPolicies ...*security_istio_io_v1beta1.AuthorizationPolicy)
 
-	// get the collected SecurityIstioIov1Beta1AuthorizationPolicies
-	GetSecurityIstioIov1Beta1AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet
+	// get the collected SecurityIstioIo_V1Beta1_AuthorizationPolicies
+	GetSecurityIstioIo_V1Beta1_AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet
 
-	// add V1ConfigMaps to the collected outputs
-	AddV1ConfigMaps(v1ConfigMaps ...*v1.ConfigMap)
+	// add V1_ConfigMaps to the collected outputs
+	AddV1_ConfigMaps(v1ConfigMaps ...*v1.ConfigMap)
 
-	// get the collected V1ConfigMaps
-	GetV1ConfigMaps() v1_sets.ConfigMapSet
+	// get the collected V1_ConfigMaps
+	GetV1_ConfigMaps() v1_sets.ConfigMapSet
 
 	// build the collected outputs into a label-partitioned snapshot
 	BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error)
@@ -1723,129 +1723,129 @@ type Builder interface {
 	Delta(newSnap Builder) output.SnapshotDelta
 }
 
-func (b *builder) AddCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates(certificatesMeshGlooSoloIov1Alpha2IssuedCertificates ...*certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate) {
-	for _, obj := range certificatesMeshGlooSoloIov1Alpha2IssuedCertificates {
+func (b *builder) AddCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates(certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates ...*certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate) {
+	for _, obj := range certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output CertificatesMeshGlooSoloIov1Alpha2IssuedCertificate %v", sets.Key(obj))
-		b.certificatesMeshGlooSoloIov1Alpha2IssuedCertificates.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificate %v", sets.Key(obj))
+		b.certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates.Insert(obj)
 	}
 }
-func (b *builder) AddCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives(certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives ...*certificates_mesh_gloo_solo_io_v1alpha2.PodBounceDirective) {
-	for _, obj := range certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives {
+func (b *builder) AddCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives(certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives ...*certificates_mesh_gloo_solo_io_v1alpha2.PodBounceDirective) {
+	for _, obj := range certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output CertificatesMeshGlooSoloIov1Alpha2PodBounceDirective %v", sets.Key(obj))
-		b.certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirective %v", sets.Key(obj))
+		b.certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives.Insert(obj)
 	}
 }
-func (b *builder) AddXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs(xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs ...*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig) {
-	for _, obj := range xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs {
+func (b *builder) AddXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs(xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs ...*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig) {
+	for _, obj := range xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfig %v", sets.Key(obj))
-		b.xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfig %v", sets.Key(obj))
+		b.xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs.Insert(obj)
 	}
 }
-func (b *builder) AddNetworkingIstioIov1Alpha3DestinationRules(networkingIstioIov1Alpha3DestinationRules ...*networking_istio_io_v1alpha3.DestinationRule) {
-	for _, obj := range networkingIstioIov1Alpha3DestinationRules {
+func (b *builder) AddNetworkingIstioIo_V1Alpha3_DestinationRules(networkingIstioIoV1Alpha3DestinationRules ...*networking_istio_io_v1alpha3.DestinationRule) {
+	for _, obj := range networkingIstioIoV1Alpha3DestinationRules {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output NetworkingIstioIov1Alpha3DestinationRule %v", sets.Key(obj))
-		b.networkingIstioIov1Alpha3DestinationRules.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output NetworkingIstioIo_V1Alpha3_DestinationRule %v", sets.Key(obj))
+		b.networkingIstioIoV1Alpha3DestinationRules.Insert(obj)
 	}
 }
-func (b *builder) AddNetworkingIstioIov1Alpha3EnvoyFilters(networkingIstioIov1Alpha3EnvoyFilters ...*networking_istio_io_v1alpha3.EnvoyFilter) {
-	for _, obj := range networkingIstioIov1Alpha3EnvoyFilters {
+func (b *builder) AddNetworkingIstioIo_V1Alpha3_EnvoyFilters(networkingIstioIoV1Alpha3EnvoyFilters ...*networking_istio_io_v1alpha3.EnvoyFilter) {
+	for _, obj := range networkingIstioIoV1Alpha3EnvoyFilters {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output NetworkingIstioIov1Alpha3EnvoyFilter %v", sets.Key(obj))
-		b.networkingIstioIov1Alpha3EnvoyFilters.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output NetworkingIstioIo_V1Alpha3_EnvoyFilter %v", sets.Key(obj))
+		b.networkingIstioIoV1Alpha3EnvoyFilters.Insert(obj)
 	}
 }
-func (b *builder) AddNetworkingIstioIov1Alpha3Gateways(networkingIstioIov1Alpha3Gateways ...*networking_istio_io_v1alpha3.Gateway) {
-	for _, obj := range networkingIstioIov1Alpha3Gateways {
+func (b *builder) AddNetworkingIstioIo_V1Alpha3_Gateways(networkingIstioIoV1Alpha3Gateways ...*networking_istio_io_v1alpha3.Gateway) {
+	for _, obj := range networkingIstioIoV1Alpha3Gateways {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output NetworkingIstioIov1Alpha3Gateway %v", sets.Key(obj))
-		b.networkingIstioIov1Alpha3Gateways.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output NetworkingIstioIo_V1Alpha3_Gateway %v", sets.Key(obj))
+		b.networkingIstioIoV1Alpha3Gateways.Insert(obj)
 	}
 }
-func (b *builder) AddNetworkingIstioIov1Alpha3ServiceEntries(networkingIstioIov1Alpha3ServiceEntries ...*networking_istio_io_v1alpha3.ServiceEntry) {
-	for _, obj := range networkingIstioIov1Alpha3ServiceEntries {
+func (b *builder) AddNetworkingIstioIo_V1Alpha3_ServiceEntries(networkingIstioIoV1Alpha3ServiceEntries ...*networking_istio_io_v1alpha3.ServiceEntry) {
+	for _, obj := range networkingIstioIoV1Alpha3ServiceEntries {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output NetworkingIstioIov1Alpha3ServiceEntry %v", sets.Key(obj))
-		b.networkingIstioIov1Alpha3ServiceEntries.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output NetworkingIstioIo_V1Alpha3_ServiceEntry %v", sets.Key(obj))
+		b.networkingIstioIoV1Alpha3ServiceEntries.Insert(obj)
 	}
 }
-func (b *builder) AddNetworkingIstioIov1Alpha3VirtualServices(networkingIstioIov1Alpha3VirtualServices ...*networking_istio_io_v1alpha3.VirtualService) {
-	for _, obj := range networkingIstioIov1Alpha3VirtualServices {
+func (b *builder) AddNetworkingIstioIo_V1Alpha3_VirtualServices(networkingIstioIoV1Alpha3VirtualServices ...*networking_istio_io_v1alpha3.VirtualService) {
+	for _, obj := range networkingIstioIoV1Alpha3VirtualServices {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output NetworkingIstioIov1Alpha3VirtualService %v", sets.Key(obj))
-		b.networkingIstioIov1Alpha3VirtualServices.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output NetworkingIstioIo_V1Alpha3_VirtualService %v", sets.Key(obj))
+		b.networkingIstioIoV1Alpha3VirtualServices.Insert(obj)
 	}
 }
-func (b *builder) AddSecurityIstioIov1Beta1AuthorizationPolicies(securityIstioIov1Beta1AuthorizationPolicies ...*security_istio_io_v1beta1.AuthorizationPolicy) {
-	for _, obj := range securityIstioIov1Beta1AuthorizationPolicies {
+func (b *builder) AddSecurityIstioIo_V1Beta1_AuthorizationPolicies(securityIstioIoV1Beta1AuthorizationPolicies ...*security_istio_io_v1beta1.AuthorizationPolicy) {
+	for _, obj := range securityIstioIoV1Beta1AuthorizationPolicies {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output SecurityIstioIov1Beta1AuthorizationPolicy %v", sets.Key(obj))
-		b.securityIstioIov1Beta1AuthorizationPolicies.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output SecurityIstioIo_V1Beta1_AuthorizationPolicy %v", sets.Key(obj))
+		b.securityIstioIoV1Beta1AuthorizationPolicies.Insert(obj)
 	}
 }
-func (b *builder) AddV1ConfigMaps(v1ConfigMaps ...*v1.ConfigMap) {
+func (b *builder) AddV1_ConfigMaps(v1ConfigMaps ...*v1.ConfigMap) {
 	for _, obj := range v1ConfigMaps {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output V1ConfigMap %v", sets.Key(obj))
+		contextutils.LoggerFrom(b.ctx).Debugf("added output V1_ConfigMap %v", sets.Key(obj))
 		b.v1ConfigMaps.Insert(obj)
 	}
 }
 
-func (b *builder) GetCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet {
-	return b.certificatesMeshGlooSoloIov1Alpha2IssuedCertificates
+func (b *builder) GetCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet {
+	return b.certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates
 }
-func (b *builder) GetCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet {
-	return b.certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives
-}
-
-func (b *builder) GetXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet {
-	return b.xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs
+func (b *builder) GetCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet {
+	return b.certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives
 }
 
-func (b *builder) GetNetworkingIstioIov1Alpha3DestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet {
-	return b.networkingIstioIov1Alpha3DestinationRules
-}
-func (b *builder) GetNetworkingIstioIov1Alpha3EnvoyFilters() networking_istio_io_v1alpha3_sets.EnvoyFilterSet {
-	return b.networkingIstioIov1Alpha3EnvoyFilters
-}
-func (b *builder) GetNetworkingIstioIov1Alpha3Gateways() networking_istio_io_v1alpha3_sets.GatewaySet {
-	return b.networkingIstioIov1Alpha3Gateways
-}
-func (b *builder) GetNetworkingIstioIov1Alpha3ServiceEntries() networking_istio_io_v1alpha3_sets.ServiceEntrySet {
-	return b.networkingIstioIov1Alpha3ServiceEntries
-}
-func (b *builder) GetNetworkingIstioIov1Alpha3VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet {
-	return b.networkingIstioIov1Alpha3VirtualServices
+func (b *builder) GetXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet {
+	return b.xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs
 }
 
-func (b *builder) GetSecurityIstioIov1Beta1AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet {
-	return b.securityIstioIov1Beta1AuthorizationPolicies
+func (b *builder) GetNetworkingIstioIo_V1Alpha3_DestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet {
+	return b.networkingIstioIoV1Alpha3DestinationRules
+}
+func (b *builder) GetNetworkingIstioIo_V1Alpha3_EnvoyFilters() networking_istio_io_v1alpha3_sets.EnvoyFilterSet {
+	return b.networkingIstioIoV1Alpha3EnvoyFilters
+}
+func (b *builder) GetNetworkingIstioIo_V1Alpha3_Gateways() networking_istio_io_v1alpha3_sets.GatewaySet {
+	return b.networkingIstioIoV1Alpha3Gateways
+}
+func (b *builder) GetNetworkingIstioIo_V1Alpha3_ServiceEntries() networking_istio_io_v1alpha3_sets.ServiceEntrySet {
+	return b.networkingIstioIoV1Alpha3ServiceEntries
+}
+func (b *builder) GetNetworkingIstioIo_V1Alpha3_VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet {
+	return b.networkingIstioIoV1Alpha3VirtualServices
 }
 
-func (b *builder) GetV1ConfigMaps() v1_sets.ConfigMapSet {
+func (b *builder) GetSecurityIstioIo_V1Beta1_AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet {
+	return b.securityIstioIoV1Beta1AuthorizationPolicies
+}
+
+func (b *builder) GetV1_ConfigMaps() v1_sets.ConfigMapSet {
 	return b.v1ConfigMaps
 }
 
@@ -1854,18 +1854,18 @@ func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
 		b.name,
 		labelKey,
 
-		b.certificatesMeshGlooSoloIov1Alpha2IssuedCertificates,
-		b.certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives,
+		b.certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates,
+		b.certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives,
 
-		b.xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs,
+		b.xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs,
 
-		b.networkingIstioIov1Alpha3DestinationRules,
-		b.networkingIstioIov1Alpha3EnvoyFilters,
-		b.networkingIstioIov1Alpha3Gateways,
-		b.networkingIstioIov1Alpha3ServiceEntries,
-		b.networkingIstioIov1Alpha3VirtualServices,
+		b.networkingIstioIoV1Alpha3DestinationRules,
+		b.networkingIstioIoV1Alpha3EnvoyFilters,
+		b.networkingIstioIoV1Alpha3Gateways,
+		b.networkingIstioIoV1Alpha3ServiceEntries,
+		b.networkingIstioIoV1Alpha3VirtualServices,
 
-		b.securityIstioIov1Beta1AuthorizationPolicies,
+		b.securityIstioIoV1Beta1AuthorizationPolicies,
 
 		b.v1ConfigMaps,
 		b.clusters...,
@@ -1877,18 +1877,18 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 		b.name,
 		snapshotLabels,
 
-		b.certificatesMeshGlooSoloIov1Alpha2IssuedCertificates,
-		b.certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives,
+		b.certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates,
+		b.certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives,
 
-		b.xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs,
+		b.xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs,
 
-		b.networkingIstioIov1Alpha3DestinationRules,
-		b.networkingIstioIov1Alpha3EnvoyFilters,
-		b.networkingIstioIov1Alpha3Gateways,
-		b.networkingIstioIov1Alpha3ServiceEntries,
-		b.networkingIstioIov1Alpha3VirtualServices,
+		b.networkingIstioIoV1Alpha3DestinationRules,
+		b.networkingIstioIoV1Alpha3EnvoyFilters,
+		b.networkingIstioIoV1Alpha3Gateways,
+		b.networkingIstioIoV1Alpha3ServiceEntries,
+		b.networkingIstioIoV1Alpha3VirtualServices,
 
-		b.securityIstioIov1Beta1AuthorizationPolicies,
+		b.securityIstioIoV1Beta1AuthorizationPolicies,
 
 		b.v1ConfigMaps,
 		b.clusters...,
@@ -1908,20 +1908,20 @@ func (b *builder) Merge(other Builder) {
 		return
 	}
 
-	b.AddCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates(other.GetCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates().List()...)
-	b.AddCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives(other.GetCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives().List()...)
+	b.AddCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates(other.GetCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates().List()...)
+	b.AddCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives(other.GetCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives().List()...)
 
-	b.AddXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs(other.GetXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs().List()...)
+	b.AddXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs(other.GetXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs().List()...)
 
-	b.AddNetworkingIstioIov1Alpha3DestinationRules(other.GetNetworkingIstioIov1Alpha3DestinationRules().List()...)
-	b.AddNetworkingIstioIov1Alpha3EnvoyFilters(other.GetNetworkingIstioIov1Alpha3EnvoyFilters().List()...)
-	b.AddNetworkingIstioIov1Alpha3Gateways(other.GetNetworkingIstioIov1Alpha3Gateways().List()...)
-	b.AddNetworkingIstioIov1Alpha3ServiceEntries(other.GetNetworkingIstioIov1Alpha3ServiceEntries().List()...)
-	b.AddNetworkingIstioIov1Alpha3VirtualServices(other.GetNetworkingIstioIov1Alpha3VirtualServices().List()...)
+	b.AddNetworkingIstioIo_V1Alpha3_DestinationRules(other.GetNetworkingIstioIo_V1Alpha3_DestinationRules().List()...)
+	b.AddNetworkingIstioIo_V1Alpha3_EnvoyFilters(other.GetNetworkingIstioIo_V1Alpha3_EnvoyFilters().List()...)
+	b.AddNetworkingIstioIo_V1Alpha3_Gateways(other.GetNetworkingIstioIo_V1Alpha3_Gateways().List()...)
+	b.AddNetworkingIstioIo_V1Alpha3_ServiceEntries(other.GetNetworkingIstioIo_V1Alpha3_ServiceEntries().List()...)
+	b.AddNetworkingIstioIo_V1Alpha3_VirtualServices(other.GetNetworkingIstioIo_V1Alpha3_VirtualServices().List()...)
 
-	b.AddSecurityIstioIov1Beta1AuthorizationPolicies(other.GetSecurityIstioIov1Beta1AuthorizationPolicies().List()...)
+	b.AddSecurityIstioIo_V1Beta1_AuthorizationPolicies(other.GetSecurityIstioIo_V1Beta1_AuthorizationPolicies().List()...)
 
-	b.AddV1ConfigMaps(other.GetV1ConfigMaps().List()...)
+	b.AddV1_ConfigMaps(other.GetV1_ConfigMaps().List()...)
 	for _, cluster := range other.Clusters() {
 		b.AddCluster(cluster)
 	}
@@ -1933,39 +1933,39 @@ func (b *builder) Clone() Builder {
 	}
 	clone := NewBuilder(b.ctx, b.name)
 
-	for _, certificatesMeshGlooSoloIov1Alpha2IssuedCertificate := range b.GetCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates().List() {
-		clone.AddCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates(certificatesMeshGlooSoloIov1Alpha2IssuedCertificate.DeepCopy())
+	for _, certificatesMeshGlooSoloIoV1Alpha2IssuedCertificate := range b.GetCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates().List() {
+		clone.AddCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates(certificatesMeshGlooSoloIoV1Alpha2IssuedCertificate.DeepCopy())
 	}
-	for _, certificatesMeshGlooSoloIov1Alpha2PodBounceDirective := range b.GetCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives().List() {
-		clone.AddCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives(certificatesMeshGlooSoloIov1Alpha2PodBounceDirective.DeepCopy())
-	}
-
-	for _, xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfig := range b.GetXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs().List() {
-		clone.AddXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs(xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfig.DeepCopy())
+	for _, certificatesMeshGlooSoloIoV1Alpha2PodBounceDirective := range b.GetCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives().List() {
+		clone.AddCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives(certificatesMeshGlooSoloIoV1Alpha2PodBounceDirective.DeepCopy())
 	}
 
-	for _, networkingIstioIov1Alpha3DestinationRule := range b.GetNetworkingIstioIov1Alpha3DestinationRules().List() {
-		clone.AddNetworkingIstioIov1Alpha3DestinationRules(networkingIstioIov1Alpha3DestinationRule.DeepCopy())
-	}
-	for _, networkingIstioIov1Alpha3EnvoyFilter := range b.GetNetworkingIstioIov1Alpha3EnvoyFilters().List() {
-		clone.AddNetworkingIstioIov1Alpha3EnvoyFilters(networkingIstioIov1Alpha3EnvoyFilter.DeepCopy())
-	}
-	for _, networkingIstioIov1Alpha3Gateway := range b.GetNetworkingIstioIov1Alpha3Gateways().List() {
-		clone.AddNetworkingIstioIov1Alpha3Gateways(networkingIstioIov1Alpha3Gateway.DeepCopy())
-	}
-	for _, networkingIstioIov1Alpha3ServiceEntry := range b.GetNetworkingIstioIov1Alpha3ServiceEntries().List() {
-		clone.AddNetworkingIstioIov1Alpha3ServiceEntries(networkingIstioIov1Alpha3ServiceEntry.DeepCopy())
-	}
-	for _, networkingIstioIov1Alpha3VirtualService := range b.GetNetworkingIstioIov1Alpha3VirtualServices().List() {
-		clone.AddNetworkingIstioIov1Alpha3VirtualServices(networkingIstioIov1Alpha3VirtualService.DeepCopy())
+	for _, xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfig := range b.GetXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs().List() {
+		clone.AddXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs(xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfig.DeepCopy())
 	}
 
-	for _, securityIstioIov1Beta1AuthorizationPolicy := range b.GetSecurityIstioIov1Beta1AuthorizationPolicies().List() {
-		clone.AddSecurityIstioIov1Beta1AuthorizationPolicies(securityIstioIov1Beta1AuthorizationPolicy.DeepCopy())
+	for _, networkingIstioIoV1Alpha3DestinationRule := range b.GetNetworkingIstioIo_V1Alpha3_DestinationRules().List() {
+		clone.AddNetworkingIstioIo_V1Alpha3_DestinationRules(networkingIstioIoV1Alpha3DestinationRule.DeepCopy())
+	}
+	for _, networkingIstioIoV1Alpha3EnvoyFilter := range b.GetNetworkingIstioIo_V1Alpha3_EnvoyFilters().List() {
+		clone.AddNetworkingIstioIo_V1Alpha3_EnvoyFilters(networkingIstioIoV1Alpha3EnvoyFilter.DeepCopy())
+	}
+	for _, networkingIstioIoV1Alpha3Gateway := range b.GetNetworkingIstioIo_V1Alpha3_Gateways().List() {
+		clone.AddNetworkingIstioIo_V1Alpha3_Gateways(networkingIstioIoV1Alpha3Gateway.DeepCopy())
+	}
+	for _, networkingIstioIoV1Alpha3ServiceEntry := range b.GetNetworkingIstioIo_V1Alpha3_ServiceEntries().List() {
+		clone.AddNetworkingIstioIo_V1Alpha3_ServiceEntries(networkingIstioIoV1Alpha3ServiceEntry.DeepCopy())
+	}
+	for _, networkingIstioIoV1Alpha3VirtualService := range b.GetNetworkingIstioIo_V1Alpha3_VirtualServices().List() {
+		clone.AddNetworkingIstioIo_V1Alpha3_VirtualServices(networkingIstioIoV1Alpha3VirtualService.DeepCopy())
 	}
 
-	for _, v1ConfigMap := range b.GetV1ConfigMaps().List() {
-		clone.AddV1ConfigMaps(v1ConfigMap.DeepCopy())
+	for _, securityIstioIoV1Beta1AuthorizationPolicy := range b.GetSecurityIstioIo_V1Beta1_AuthorizationPolicies().List() {
+		clone.AddSecurityIstioIo_V1Beta1_AuthorizationPolicies(securityIstioIoV1Beta1AuthorizationPolicy.DeepCopy())
+	}
+
+	for _, v1ConfigMap := range b.GetV1_ConfigMaps().List() {
+		clone.AddV1_ConfigMaps(v1ConfigMap.DeepCopy())
 	}
 	for _, cluster := range b.Clusters() {
 		clone.AddCluster(cluster)
@@ -1980,92 +1980,92 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
 	}
 
 	// calculate delta between IssuedCertificates
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificateDelta := b.GetCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates().Delta(other.GetCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates())
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificateGvk := schema.GroupVersionKind{
+	certificatesMeshGlooSoloIoV1Alpha2IssuedCertificateDelta := b.GetCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates().Delta(other.GetCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates())
+	certificatesMeshGlooSoloIoV1Alpha2IssuedCertificateGvk := schema.GroupVersionKind{
 		Group:   "certificates.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "IssuedCertificate",
 	}
-	delta.AddInserted(certificatesMeshGlooSoloIov1Alpha2IssuedCertificateGvk, certificatesMeshGlooSoloIov1Alpha2IssuedCertificateDelta.Inserted)
-	delta.AddRemoved(certificatesMeshGlooSoloIov1Alpha2IssuedCertificateGvk, certificatesMeshGlooSoloIov1Alpha2IssuedCertificateDelta.Removed)
+	delta.AddInserted(certificatesMeshGlooSoloIoV1Alpha2IssuedCertificateGvk, certificatesMeshGlooSoloIoV1Alpha2IssuedCertificateDelta.Inserted)
+	delta.AddRemoved(certificatesMeshGlooSoloIoV1Alpha2IssuedCertificateGvk, certificatesMeshGlooSoloIoV1Alpha2IssuedCertificateDelta.Removed)
 	// calculate delta between PodBounceDirectives
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveDelta := b.GetCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives().Delta(other.GetCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives())
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveGvk := schema.GroupVersionKind{
+	certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectiveDelta := b.GetCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives().Delta(other.GetCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives())
+	certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectiveGvk := schema.GroupVersionKind{
 		Group:   "certificates.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "PodBounceDirective",
 	}
-	delta.AddInserted(certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveGvk, certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveDelta.Inserted)
-	delta.AddRemoved(certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveGvk, certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveDelta.Removed)
+	delta.AddInserted(certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectiveGvk, certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectiveDelta.Inserted)
+	delta.AddRemoved(certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectiveGvk, certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectiveDelta.Removed)
 
 	// calculate delta between XdsConfigs
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigDelta := b.GetXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs().Delta(other.GetXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs())
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigGvk := schema.GroupVersionKind{
+	xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigDelta := b.GetXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs().Delta(other.GetXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs())
+	xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigGvk := schema.GroupVersionKind{
 		Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
 		Version: "v1alpha1",
 		Kind:    "XdsConfig",
 	}
-	delta.AddInserted(xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigGvk, xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigDelta.Inserted)
-	delta.AddRemoved(xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigGvk, xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigDelta.Removed)
+	delta.AddInserted(xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigGvk, xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigDelta.Inserted)
+	delta.AddRemoved(xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigGvk, xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigDelta.Removed)
 
 	// calculate delta between DestinationRules
-	networkingIstioIov1Alpha3DestinationRuleDelta := b.GetNetworkingIstioIov1Alpha3DestinationRules().Delta(other.GetNetworkingIstioIov1Alpha3DestinationRules())
-	networkingIstioIov1Alpha3DestinationRuleGvk := schema.GroupVersionKind{
+	networkingIstioIoV1Alpha3DestinationRuleDelta := b.GetNetworkingIstioIo_V1Alpha3_DestinationRules().Delta(other.GetNetworkingIstioIo_V1Alpha3_DestinationRules())
+	networkingIstioIoV1Alpha3DestinationRuleGvk := schema.GroupVersionKind{
 		Group:   "networking.istio.io",
 		Version: "v1alpha3",
 		Kind:    "DestinationRule",
 	}
-	delta.AddInserted(networkingIstioIov1Alpha3DestinationRuleGvk, networkingIstioIov1Alpha3DestinationRuleDelta.Inserted)
-	delta.AddRemoved(networkingIstioIov1Alpha3DestinationRuleGvk, networkingIstioIov1Alpha3DestinationRuleDelta.Removed)
+	delta.AddInserted(networkingIstioIoV1Alpha3DestinationRuleGvk, networkingIstioIoV1Alpha3DestinationRuleDelta.Inserted)
+	delta.AddRemoved(networkingIstioIoV1Alpha3DestinationRuleGvk, networkingIstioIoV1Alpha3DestinationRuleDelta.Removed)
 	// calculate delta between EnvoyFilters
-	networkingIstioIov1Alpha3EnvoyFilterDelta := b.GetNetworkingIstioIov1Alpha3EnvoyFilters().Delta(other.GetNetworkingIstioIov1Alpha3EnvoyFilters())
-	networkingIstioIov1Alpha3EnvoyFilterGvk := schema.GroupVersionKind{
+	networkingIstioIoV1Alpha3EnvoyFilterDelta := b.GetNetworkingIstioIo_V1Alpha3_EnvoyFilters().Delta(other.GetNetworkingIstioIo_V1Alpha3_EnvoyFilters())
+	networkingIstioIoV1Alpha3EnvoyFilterGvk := schema.GroupVersionKind{
 		Group:   "networking.istio.io",
 		Version: "v1alpha3",
 		Kind:    "EnvoyFilter",
 	}
-	delta.AddInserted(networkingIstioIov1Alpha3EnvoyFilterGvk, networkingIstioIov1Alpha3EnvoyFilterDelta.Inserted)
-	delta.AddRemoved(networkingIstioIov1Alpha3EnvoyFilterGvk, networkingIstioIov1Alpha3EnvoyFilterDelta.Removed)
+	delta.AddInserted(networkingIstioIoV1Alpha3EnvoyFilterGvk, networkingIstioIoV1Alpha3EnvoyFilterDelta.Inserted)
+	delta.AddRemoved(networkingIstioIoV1Alpha3EnvoyFilterGvk, networkingIstioIoV1Alpha3EnvoyFilterDelta.Removed)
 	// calculate delta between Gateways
-	networkingIstioIov1Alpha3GatewayDelta := b.GetNetworkingIstioIov1Alpha3Gateways().Delta(other.GetNetworkingIstioIov1Alpha3Gateways())
-	networkingIstioIov1Alpha3GatewayGvk := schema.GroupVersionKind{
+	networkingIstioIoV1Alpha3GatewayDelta := b.GetNetworkingIstioIo_V1Alpha3_Gateways().Delta(other.GetNetworkingIstioIo_V1Alpha3_Gateways())
+	networkingIstioIoV1Alpha3GatewayGvk := schema.GroupVersionKind{
 		Group:   "networking.istio.io",
 		Version: "v1alpha3",
 		Kind:    "Gateway",
 	}
-	delta.AddInserted(networkingIstioIov1Alpha3GatewayGvk, networkingIstioIov1Alpha3GatewayDelta.Inserted)
-	delta.AddRemoved(networkingIstioIov1Alpha3GatewayGvk, networkingIstioIov1Alpha3GatewayDelta.Removed)
+	delta.AddInserted(networkingIstioIoV1Alpha3GatewayGvk, networkingIstioIoV1Alpha3GatewayDelta.Inserted)
+	delta.AddRemoved(networkingIstioIoV1Alpha3GatewayGvk, networkingIstioIoV1Alpha3GatewayDelta.Removed)
 	// calculate delta between ServiceEntries
-	networkingIstioIov1Alpha3ServiceEntryDelta := b.GetNetworkingIstioIov1Alpha3ServiceEntries().Delta(other.GetNetworkingIstioIov1Alpha3ServiceEntries())
-	networkingIstioIov1Alpha3ServiceEntryGvk := schema.GroupVersionKind{
+	networkingIstioIoV1Alpha3ServiceEntryDelta := b.GetNetworkingIstioIo_V1Alpha3_ServiceEntries().Delta(other.GetNetworkingIstioIo_V1Alpha3_ServiceEntries())
+	networkingIstioIoV1Alpha3ServiceEntryGvk := schema.GroupVersionKind{
 		Group:   "networking.istio.io",
 		Version: "v1alpha3",
 		Kind:    "ServiceEntry",
 	}
-	delta.AddInserted(networkingIstioIov1Alpha3ServiceEntryGvk, networkingIstioIov1Alpha3ServiceEntryDelta.Inserted)
-	delta.AddRemoved(networkingIstioIov1Alpha3ServiceEntryGvk, networkingIstioIov1Alpha3ServiceEntryDelta.Removed)
+	delta.AddInserted(networkingIstioIoV1Alpha3ServiceEntryGvk, networkingIstioIoV1Alpha3ServiceEntryDelta.Inserted)
+	delta.AddRemoved(networkingIstioIoV1Alpha3ServiceEntryGvk, networkingIstioIoV1Alpha3ServiceEntryDelta.Removed)
 	// calculate delta between VirtualServices
-	networkingIstioIov1Alpha3VirtualServiceDelta := b.GetNetworkingIstioIov1Alpha3VirtualServices().Delta(other.GetNetworkingIstioIov1Alpha3VirtualServices())
-	networkingIstioIov1Alpha3VirtualServiceGvk := schema.GroupVersionKind{
+	networkingIstioIoV1Alpha3VirtualServiceDelta := b.GetNetworkingIstioIo_V1Alpha3_VirtualServices().Delta(other.GetNetworkingIstioIo_V1Alpha3_VirtualServices())
+	networkingIstioIoV1Alpha3VirtualServiceGvk := schema.GroupVersionKind{
 		Group:   "networking.istio.io",
 		Version: "v1alpha3",
 		Kind:    "VirtualService",
 	}
-	delta.AddInserted(networkingIstioIov1Alpha3VirtualServiceGvk, networkingIstioIov1Alpha3VirtualServiceDelta.Inserted)
-	delta.AddRemoved(networkingIstioIov1Alpha3VirtualServiceGvk, networkingIstioIov1Alpha3VirtualServiceDelta.Removed)
+	delta.AddInserted(networkingIstioIoV1Alpha3VirtualServiceGvk, networkingIstioIoV1Alpha3VirtualServiceDelta.Inserted)
+	delta.AddRemoved(networkingIstioIoV1Alpha3VirtualServiceGvk, networkingIstioIoV1Alpha3VirtualServiceDelta.Removed)
 
 	// calculate delta between AuthorizationPolicies
-	securityIstioIov1Beta1AuthorizationPolicyDelta := b.GetSecurityIstioIov1Beta1AuthorizationPolicies().Delta(other.GetSecurityIstioIov1Beta1AuthorizationPolicies())
-	securityIstioIov1Beta1AuthorizationPolicyGvk := schema.GroupVersionKind{
+	securityIstioIoV1Beta1AuthorizationPolicyDelta := b.GetSecurityIstioIo_V1Beta1_AuthorizationPolicies().Delta(other.GetSecurityIstioIo_V1Beta1_AuthorizationPolicies())
+	securityIstioIoV1Beta1AuthorizationPolicyGvk := schema.GroupVersionKind{
 		Group:   "security.istio.io",
 		Version: "v1beta1",
 		Kind:    "AuthorizationPolicy",
 	}
-	delta.AddInserted(securityIstioIov1Beta1AuthorizationPolicyGvk, securityIstioIov1Beta1AuthorizationPolicyDelta.Inserted)
-	delta.AddRemoved(securityIstioIov1Beta1AuthorizationPolicyGvk, securityIstioIov1Beta1AuthorizationPolicyDelta.Removed)
+	delta.AddInserted(securityIstioIoV1Beta1AuthorizationPolicyGvk, securityIstioIoV1Beta1AuthorizationPolicyDelta.Inserted)
+	delta.AddRemoved(securityIstioIoV1Beta1AuthorizationPolicyGvk, securityIstioIoV1Beta1AuthorizationPolicyDelta.Removed)
 
 	// calculate delta between ConfigMaps
-	v1ConfigMapDelta := b.GetV1ConfigMaps().Delta(other.GetV1ConfigMaps())
+	v1ConfigMapDelta := b.GetV1_ConfigMaps().Delta(other.GetV1_ConfigMaps())
 	v1ConfigMapGvk := schema.GroupVersionKind{
 		Group:   "",
 		Version: "v1",

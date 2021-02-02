@@ -3,16 +3,16 @@
 //go:generate mockgen -source ./remote_snapshot.go -destination mocks/remote_snapshot.go
 
 // The Input DiscoveryInputSnapshot contains the set of all:
-// * AppmeshK8SAwsv1Beta2Meshes
-// * V1ConfigMaps
-// * V1Services
-// * V1Pods
-// * V1Endpoints
-// * V1Nodes
-// * Appsv1Deployments
-// * Appsv1ReplicaSets
-// * Appsv1DaemonSets
-// * Appsv1StatefulSets
+// * AppmeshK8SAws_V1Beta2_Meshes
+// * V1_ConfigMaps
+// * V1_Services
+// * V1_Pods
+// * V1_Endpoints
+// * V1_Nodes
+// * Apps_V1_Deployments
+// * Apps_V1_ReplicaSets
+// * Apps_V1_DaemonSets
+// * Apps_V1_StatefulSets
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
@@ -49,28 +49,28 @@ import (
 // the snapshot of input resources consumed by translation
 type DiscoveryInputSnapshot interface {
 
-	// return the set of input AppmeshK8SAwsv1Beta2Meshes
-	AppmeshK8SAwsv1Beta2Meshes() appmesh_k8s_aws_v1beta2_sets.MeshSet
+	// return the set of input AppmeshK8SAws_V1Beta2_Meshes
+	AppmeshK8SAws_V1Beta2_Meshes() appmesh_k8s_aws_v1beta2_sets.MeshSet
 
-	// return the set of input V1ConfigMaps
-	V1ConfigMaps() v1_sets.ConfigMapSet
-	// return the set of input V1Services
-	V1Services() v1_sets.ServiceSet
-	// return the set of input V1Pods
-	V1Pods() v1_sets.PodSet
-	// return the set of input V1Endpoints
-	V1Endpoints() v1_sets.EndpointsSet
-	// return the set of input V1Nodes
-	V1Nodes() v1_sets.NodeSet
+	// return the set of input V1_ConfigMaps
+	V1_ConfigMaps() v1_sets.ConfigMapSet
+	// return the set of input V1_Services
+	V1_Services() v1_sets.ServiceSet
+	// return the set of input V1_Pods
+	V1_Pods() v1_sets.PodSet
+	// return the set of input V1_Endpoints
+	V1_Endpoints() v1_sets.EndpointsSet
+	// return the set of input V1_Nodes
+	V1_Nodes() v1_sets.NodeSet
 
-	// return the set of input Appsv1Deployments
-	Appsv1Deployments() apps_v1_sets.DeploymentSet
-	// return the set of input Appsv1ReplicaSets
-	Appsv1ReplicaSets() apps_v1_sets.ReplicaSetSet
-	// return the set of input Appsv1DaemonSets
-	Appsv1DaemonSets() apps_v1_sets.DaemonSetSet
-	// return the set of input Appsv1StatefulSets
-	Appsv1StatefulSets() apps_v1_sets.StatefulSetSet
+	// return the set of input Apps_V1_Deployments
+	Apps_V1_Deployments() apps_v1_sets.DeploymentSet
+	// return the set of input Apps_V1_ReplicaSets
+	Apps_V1_ReplicaSets() apps_v1_sets.ReplicaSetSet
+	// return the set of input Apps_V1_DaemonSets
+	Apps_V1_DaemonSets() apps_v1_sets.DaemonSetSet
+	// return the set of input Apps_V1_StatefulSets
+	Apps_V1_StatefulSets() apps_v1_sets.StatefulSetSet
 	// serialize the entire snapshot as JSON
 	MarshalJSON() ([]byte, error)
 }
@@ -78,34 +78,34 @@ type DiscoveryInputSnapshot interface {
 // options for syncing input object statuses
 type DiscoveryInputSyncStatusOptions struct {
 
-	// sync status of AppmeshK8SAwsv1Beta2Mesh objects
-	AppmeshK8SAwsv1Beta2Mesh bool
+	// sync status of AppmeshK8SAws_V1Beta2_Mesh objects
+	AppmeshK8SAws_V1Beta2_Mesh bool
 
-	// sync status of V1ConfigMap objects
-	V1ConfigMap bool
-	// sync status of V1Service objects
-	V1Service bool
-	// sync status of V1Pod objects
-	V1Pod bool
-	// sync status of V1Endpoints objects
-	V1Endpoints bool
-	// sync status of V1Node objects
-	V1Node bool
+	// sync status of V1_ConfigMap objects
+	V1_ConfigMap bool
+	// sync status of V1_Service objects
+	V1_Service bool
+	// sync status of V1_Pod objects
+	V1_Pod bool
+	// sync status of V1_Endpoints objects
+	V1_Endpoints bool
+	// sync status of V1_Node objects
+	V1_Node bool
 
-	// sync status of Appsv1Deployment objects
-	Appsv1Deployment bool
-	// sync status of Appsv1ReplicaSet objects
-	Appsv1ReplicaSet bool
-	// sync status of Appsv1DaemonSet objects
-	Appsv1DaemonSet bool
-	// sync status of Appsv1StatefulSet objects
-	Appsv1StatefulSet bool
+	// sync status of Apps_V1_Deployment objects
+	Apps_V1_Deployment bool
+	// sync status of Apps_V1_ReplicaSet objects
+	Apps_V1_ReplicaSet bool
+	// sync status of Apps_V1_DaemonSet objects
+	Apps_V1_DaemonSet bool
+	// sync status of Apps_V1_StatefulSet objects
+	Apps_V1_StatefulSet bool
 }
 
 type snapshotDiscoveryInput struct {
 	name string
 
-	appmeshK8SAwsv1Beta2Meshes appmesh_k8s_aws_v1beta2_sets.MeshSet
+	appmeshK8SAwsV1Beta2Meshes appmesh_k8s_aws_v1beta2_sets.MeshSet
 
 	v1ConfigMaps v1_sets.ConfigMapSet
 	v1Services   v1_sets.ServiceSet
@@ -113,16 +113,16 @@ type snapshotDiscoveryInput struct {
 	v1Endpoints  v1_sets.EndpointsSet
 	v1Nodes      v1_sets.NodeSet
 
-	appsv1Deployments  apps_v1_sets.DeploymentSet
-	appsv1ReplicaSets  apps_v1_sets.ReplicaSetSet
-	appsv1DaemonSets   apps_v1_sets.DaemonSetSet
-	appsv1StatefulSets apps_v1_sets.StatefulSetSet
+	appsV1Deployments  apps_v1_sets.DeploymentSet
+	appsV1ReplicaSets  apps_v1_sets.ReplicaSetSet
+	appsV1DaemonSets   apps_v1_sets.DaemonSetSet
+	appsV1StatefulSets apps_v1_sets.StatefulSetSet
 }
 
 func NewDiscoveryInputSnapshot(
 	name string,
 
-	appmeshK8SAwsv1Beta2Meshes appmesh_k8s_aws_v1beta2_sets.MeshSet,
+	appmeshK8SAwsV1Beta2Meshes appmesh_k8s_aws_v1beta2_sets.MeshSet,
 
 	v1ConfigMaps v1_sets.ConfigMapSet,
 	v1Services v1_sets.ServiceSet,
@@ -130,81 +130,81 @@ func NewDiscoveryInputSnapshot(
 	v1Endpoints v1_sets.EndpointsSet,
 	v1Nodes v1_sets.NodeSet,
 
-	appsv1Deployments apps_v1_sets.DeploymentSet,
-	appsv1ReplicaSets apps_v1_sets.ReplicaSetSet,
-	appsv1DaemonSets apps_v1_sets.DaemonSetSet,
-	appsv1StatefulSets apps_v1_sets.StatefulSetSet,
+	appsV1Deployments apps_v1_sets.DeploymentSet,
+	appsV1ReplicaSets apps_v1_sets.ReplicaSetSet,
+	appsV1DaemonSets apps_v1_sets.DaemonSetSet,
+	appsV1StatefulSets apps_v1_sets.StatefulSetSet,
 
 ) DiscoveryInputSnapshot {
 	return &snapshotDiscoveryInput{
 		name: name,
 
-		appmeshK8SAwsv1Beta2Meshes: appmeshK8SAwsv1Beta2Meshes,
+		appmeshK8SAwsV1Beta2Meshes: appmeshK8SAwsV1Beta2Meshes,
 		v1ConfigMaps:               v1ConfigMaps,
 		v1Services:                 v1Services,
 		v1Pods:                     v1Pods,
 		v1Endpoints:                v1Endpoints,
 		v1Nodes:                    v1Nodes,
-		appsv1Deployments:          appsv1Deployments,
-		appsv1ReplicaSets:          appsv1ReplicaSets,
-		appsv1DaemonSets:           appsv1DaemonSets,
-		appsv1StatefulSets:         appsv1StatefulSets,
+		appsV1Deployments:          appsV1Deployments,
+		appsV1ReplicaSets:          appsV1ReplicaSets,
+		appsV1DaemonSets:           appsV1DaemonSets,
+		appsV1StatefulSets:         appsV1StatefulSets,
 	}
 }
 
-func (s snapshotDiscoveryInput) AppmeshK8SAwsv1Beta2Meshes() appmesh_k8s_aws_v1beta2_sets.MeshSet {
-	return s.appmeshK8SAwsv1Beta2Meshes
+func (s snapshotDiscoveryInput) AppmeshK8SAws_V1Beta2_Meshes() appmesh_k8s_aws_v1beta2_sets.MeshSet {
+	return s.appmeshK8SAwsV1Beta2Meshes
 }
 
-func (s snapshotDiscoveryInput) V1ConfigMaps() v1_sets.ConfigMapSet {
+func (s snapshotDiscoveryInput) V1_ConfigMaps() v1_sets.ConfigMapSet {
 	return s.v1ConfigMaps
 }
 
-func (s snapshotDiscoveryInput) V1Services() v1_sets.ServiceSet {
+func (s snapshotDiscoveryInput) V1_Services() v1_sets.ServiceSet {
 	return s.v1Services
 }
 
-func (s snapshotDiscoveryInput) V1Pods() v1_sets.PodSet {
+func (s snapshotDiscoveryInput) V1_Pods() v1_sets.PodSet {
 	return s.v1Pods
 }
 
-func (s snapshotDiscoveryInput) V1Endpoints() v1_sets.EndpointsSet {
+func (s snapshotDiscoveryInput) V1_Endpoints() v1_sets.EndpointsSet {
 	return s.v1Endpoints
 }
 
-func (s snapshotDiscoveryInput) V1Nodes() v1_sets.NodeSet {
+func (s snapshotDiscoveryInput) V1_Nodes() v1_sets.NodeSet {
 	return s.v1Nodes
 }
 
-func (s snapshotDiscoveryInput) Appsv1Deployments() apps_v1_sets.DeploymentSet {
-	return s.appsv1Deployments
+func (s snapshotDiscoveryInput) Apps_V1_Deployments() apps_v1_sets.DeploymentSet {
+	return s.appsV1Deployments
 }
 
-func (s snapshotDiscoveryInput) Appsv1ReplicaSets() apps_v1_sets.ReplicaSetSet {
-	return s.appsv1ReplicaSets
+func (s snapshotDiscoveryInput) Apps_V1_ReplicaSets() apps_v1_sets.ReplicaSetSet {
+	return s.appsV1ReplicaSets
 }
 
-func (s snapshotDiscoveryInput) Appsv1DaemonSets() apps_v1_sets.DaemonSetSet {
-	return s.appsv1DaemonSets
+func (s snapshotDiscoveryInput) Apps_V1_DaemonSets() apps_v1_sets.DaemonSetSet {
+	return s.appsV1DaemonSets
 }
 
-func (s snapshotDiscoveryInput) Appsv1StatefulSets() apps_v1_sets.StatefulSetSet {
-	return s.appsv1StatefulSets
+func (s snapshotDiscoveryInput) Apps_V1_StatefulSets() apps_v1_sets.StatefulSetSet {
+	return s.appsV1StatefulSets
 }
 
 func (s snapshotDiscoveryInput) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
-	snapshotMap["appmeshK8SAwsv1Beta2Meshes"] = s.appmeshK8SAwsv1Beta2Meshes.List()
+	snapshotMap["appmeshK8SAwsV1Beta2Meshes"] = s.appmeshK8SAwsV1Beta2Meshes.List()
 	snapshotMap["v1ConfigMaps"] = s.v1ConfigMaps.List()
 	snapshotMap["v1Services"] = s.v1Services.List()
 	snapshotMap["v1Pods"] = s.v1Pods.List()
 	snapshotMap["v1Endpoints"] = s.v1Endpoints.List()
 	snapshotMap["v1Nodes"] = s.v1Nodes.List()
-	snapshotMap["appsv1Deployments"] = s.appsv1Deployments.List()
-	snapshotMap["appsv1ReplicaSets"] = s.appsv1ReplicaSets.List()
-	snapshotMap["appsv1DaemonSets"] = s.appsv1DaemonSets.List()
-	snapshotMap["appsv1StatefulSets"] = s.appsv1StatefulSets.List()
+	snapshotMap["appsV1Deployments"] = s.appsV1Deployments.List()
+	snapshotMap["appsV1ReplicaSets"] = s.appsV1ReplicaSets.List()
+	snapshotMap["appsV1DaemonSets"] = s.appsV1DaemonSets.List()
+	snapshotMap["appsV1StatefulSets"] = s.appsV1StatefulSets.List()
 	return json.Marshal(snapshotMap)
 }
 
@@ -216,28 +216,28 @@ type DiscoveryInputBuilder interface {
 // Options for building a snapshot
 type DiscoveryInputBuildOptions struct {
 
-	// List options for composing a snapshot from AppmeshK8SAwsv1Beta2Meshes
-	AppmeshK8SAwsv1Beta2Meshes ResourceDiscoveryInputBuildOptions
+	// List options for composing a snapshot from AppmeshK8SAws_V1Beta2_Meshes
+	AppmeshK8SAws_V1Beta2_Meshes ResourceDiscoveryInputBuildOptions
 
-	// List options for composing a snapshot from V1ConfigMaps
-	V1ConfigMaps ResourceDiscoveryInputBuildOptions
-	// List options for composing a snapshot from V1Services
-	V1Services ResourceDiscoveryInputBuildOptions
-	// List options for composing a snapshot from V1Pods
-	V1Pods ResourceDiscoveryInputBuildOptions
-	// List options for composing a snapshot from V1Endpoints
-	V1Endpoints ResourceDiscoveryInputBuildOptions
-	// List options for composing a snapshot from V1Nodes
-	V1Nodes ResourceDiscoveryInputBuildOptions
+	// List options for composing a snapshot from V1_ConfigMaps
+	V1_ConfigMaps ResourceDiscoveryInputBuildOptions
+	// List options for composing a snapshot from V1_Services
+	V1_Services ResourceDiscoveryInputBuildOptions
+	// List options for composing a snapshot from V1_Pods
+	V1_Pods ResourceDiscoveryInputBuildOptions
+	// List options for composing a snapshot from V1_Endpoints
+	V1_Endpoints ResourceDiscoveryInputBuildOptions
+	// List options for composing a snapshot from V1_Nodes
+	V1_Nodes ResourceDiscoveryInputBuildOptions
 
-	// List options for composing a snapshot from Appsv1Deployments
-	Appsv1Deployments ResourceDiscoveryInputBuildOptions
-	// List options for composing a snapshot from Appsv1ReplicaSets
-	Appsv1ReplicaSets ResourceDiscoveryInputBuildOptions
-	// List options for composing a snapshot from Appsv1DaemonSets
-	Appsv1DaemonSets ResourceDiscoveryInputBuildOptions
-	// List options for composing a snapshot from Appsv1StatefulSets
-	Appsv1StatefulSets ResourceDiscoveryInputBuildOptions
+	// List options for composing a snapshot from Apps_V1_Deployments
+	Apps_V1_Deployments ResourceDiscoveryInputBuildOptions
+	// List options for composing a snapshot from Apps_V1_ReplicaSets
+	Apps_V1_ReplicaSets ResourceDiscoveryInputBuildOptions
+	// List options for composing a snapshot from Apps_V1_DaemonSets
+	Apps_V1_DaemonSets ResourceDiscoveryInputBuildOptions
+	// List options for composing a snapshot from Apps_V1_StatefulSets
+	Apps_V1_StatefulSets ResourceDiscoveryInputBuildOptions
 }
 
 // Options for reading resources of a given type
@@ -269,7 +269,7 @@ func NewMultiClusterDiscoveryInputBuilder(
 
 func (b *multiClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, name string, opts DiscoveryInputBuildOptions) (DiscoveryInputSnapshot, error) {
 
-	appmeshK8SAwsv1Beta2Meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
+	appmeshK8SAwsV1Beta2Meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
 
 	v1ConfigMaps := v1_sets.NewConfigMapSet()
 	v1Services := v1_sets.NewServiceSet()
@@ -277,43 +277,43 @@ func (b *multiClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, n
 	v1Endpoints := v1_sets.NewEndpointsSet()
 	v1Nodes := v1_sets.NewNodeSet()
 
-	appsv1Deployments := apps_v1_sets.NewDeploymentSet()
-	appsv1ReplicaSets := apps_v1_sets.NewReplicaSetSet()
-	appsv1DaemonSets := apps_v1_sets.NewDaemonSetSet()
-	appsv1StatefulSets := apps_v1_sets.NewStatefulSetSet()
+	appsV1Deployments := apps_v1_sets.NewDeploymentSet()
+	appsV1ReplicaSets := apps_v1_sets.NewReplicaSetSet()
+	appsV1DaemonSets := apps_v1_sets.NewDaemonSetSet()
+	appsV1StatefulSets := apps_v1_sets.NewStatefulSetSet()
 
 	var errs error
 
 	for _, cluster := range b.clusters.ListClusters() {
 
-		if err := b.insertAppmeshK8SAwsv1Beta2MeshesFromCluster(ctx, cluster, appmeshK8SAwsv1Beta2Meshes, opts.AppmeshK8SAwsv1Beta2Meshes); err != nil {
+		if err := b.insertAppmeshK8SAws_V1Beta2_MeshesFromCluster(ctx, cluster, appmeshK8SAwsV1Beta2Meshes, opts.AppmeshK8SAws_V1Beta2_Meshes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertV1ConfigMapsFromCluster(ctx, cluster, v1ConfigMaps, opts.V1ConfigMaps); err != nil {
+		if err := b.insertV1_ConfigMapsFromCluster(ctx, cluster, v1ConfigMaps, opts.V1_ConfigMaps); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertV1ServicesFromCluster(ctx, cluster, v1Services, opts.V1Services); err != nil {
+		if err := b.insertV1_ServicesFromCluster(ctx, cluster, v1Services, opts.V1_Services); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertV1PodsFromCluster(ctx, cluster, v1Pods, opts.V1Pods); err != nil {
+		if err := b.insertV1_PodsFromCluster(ctx, cluster, v1Pods, opts.V1_Pods); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertV1EndpointsFromCluster(ctx, cluster, v1Endpoints, opts.V1Endpoints); err != nil {
+		if err := b.insertV1_EndpointsFromCluster(ctx, cluster, v1Endpoints, opts.V1_Endpoints); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertV1NodesFromCluster(ctx, cluster, v1Nodes, opts.V1Nodes); err != nil {
+		if err := b.insertV1_NodesFromCluster(ctx, cluster, v1Nodes, opts.V1_Nodes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertAppsv1DeploymentsFromCluster(ctx, cluster, appsv1Deployments, opts.Appsv1Deployments); err != nil {
+		if err := b.insertApps_V1_DeploymentsFromCluster(ctx, cluster, appsV1Deployments, opts.Apps_V1_Deployments); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertAppsv1ReplicaSetsFromCluster(ctx, cluster, appsv1ReplicaSets, opts.Appsv1ReplicaSets); err != nil {
+		if err := b.insertApps_V1_ReplicaSetsFromCluster(ctx, cluster, appsV1ReplicaSets, opts.Apps_V1_ReplicaSets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertAppsv1DaemonSetsFromCluster(ctx, cluster, appsv1DaemonSets, opts.Appsv1DaemonSets); err != nil {
+		if err := b.insertApps_V1_DaemonSetsFromCluster(ctx, cluster, appsV1DaemonSets, opts.Apps_V1_DaemonSets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertAppsv1StatefulSetsFromCluster(ctx, cluster, appsv1StatefulSets, opts.Appsv1StatefulSets); err != nil {
+		if err := b.insertApps_V1_StatefulSetsFromCluster(ctx, cluster, appsV1StatefulSets, opts.Apps_V1_StatefulSets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 
@@ -322,23 +322,23 @@ func (b *multiClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, n
 	outputSnap := NewDiscoveryInputSnapshot(
 		name,
 
-		appmeshK8SAwsv1Beta2Meshes,
+		appmeshK8SAwsV1Beta2Meshes,
 		v1ConfigMaps,
 		v1Services,
 		v1Pods,
 		v1Endpoints,
 		v1Nodes,
-		appsv1Deployments,
-		appsv1ReplicaSets,
-		appsv1DaemonSets,
-		appsv1StatefulSets,
+		appsV1Deployments,
+		appsV1ReplicaSets,
+		appsV1DaemonSets,
+		appsV1StatefulSets,
 	)
 
 	return outputSnap, errs
 }
 
-func (b *multiClusterDiscoveryInputBuilder) insertAppmeshK8SAwsv1Beta2MeshesFromCluster(ctx context.Context, cluster string, appmeshK8SAwsv1Beta2Meshes appmesh_k8s_aws_v1beta2_sets.MeshSet, opts ResourceDiscoveryInputBuildOptions) error {
-	appmeshK8SAwsv1Beta2MeshClient, err := appmesh_k8s_aws_v1beta2.NewMulticlusterMeshClient(b.client).Cluster(cluster)
+func (b *multiClusterDiscoveryInputBuilder) insertAppmeshK8SAws_V1Beta2_MeshesFromCluster(ctx context.Context, cluster string, appmeshK8SAwsV1Beta2Meshes appmesh_k8s_aws_v1beta2_sets.MeshSet, opts ResourceDiscoveryInputBuildOptions) error {
+	appmeshK8SAwsV1Beta2MeshClient, err := appmesh_k8s_aws_v1beta2.NewMulticlusterMeshClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -366,21 +366,21 @@ func (b *multiClusterDiscoveryInputBuilder) insertAppmeshK8SAwsv1Beta2MeshesFrom
 		}
 	}
 
-	appmeshK8SAwsv1Beta2MeshList, err := appmeshK8SAwsv1Beta2MeshClient.ListMesh(ctx, opts.ListOptions...)
+	appmeshK8SAwsV1Beta2MeshList, err := appmeshK8SAwsV1Beta2MeshClient.ListMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range appmeshK8SAwsv1Beta2MeshList.Items {
+	for _, item := range appmeshK8SAwsV1Beta2MeshList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		appmeshK8SAwsv1Beta2Meshes.Insert(&item)
+		appmeshK8SAwsV1Beta2Meshes.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *multiClusterDiscoveryInputBuilder) insertV1ConfigMapsFromCluster(ctx context.Context, cluster string, v1ConfigMaps v1_sets.ConfigMapSet, opts ResourceDiscoveryInputBuildOptions) error {
+func (b *multiClusterDiscoveryInputBuilder) insertV1_ConfigMapsFromCluster(ctx context.Context, cluster string, v1ConfigMaps v1_sets.ConfigMapSet, opts ResourceDiscoveryInputBuildOptions) error {
 	v1ConfigMapClient, err := v1.NewMulticlusterConfigMapClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
@@ -422,7 +422,7 @@ func (b *multiClusterDiscoveryInputBuilder) insertV1ConfigMapsFromCluster(ctx co
 
 	return nil
 }
-func (b *multiClusterDiscoveryInputBuilder) insertV1ServicesFromCluster(ctx context.Context, cluster string, v1Services v1_sets.ServiceSet, opts ResourceDiscoveryInputBuildOptions) error {
+func (b *multiClusterDiscoveryInputBuilder) insertV1_ServicesFromCluster(ctx context.Context, cluster string, v1Services v1_sets.ServiceSet, opts ResourceDiscoveryInputBuildOptions) error {
 	v1ServiceClient, err := v1.NewMulticlusterServiceClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
@@ -464,7 +464,7 @@ func (b *multiClusterDiscoveryInputBuilder) insertV1ServicesFromCluster(ctx cont
 
 	return nil
 }
-func (b *multiClusterDiscoveryInputBuilder) insertV1PodsFromCluster(ctx context.Context, cluster string, v1Pods v1_sets.PodSet, opts ResourceDiscoveryInputBuildOptions) error {
+func (b *multiClusterDiscoveryInputBuilder) insertV1_PodsFromCluster(ctx context.Context, cluster string, v1Pods v1_sets.PodSet, opts ResourceDiscoveryInputBuildOptions) error {
 	v1PodClient, err := v1.NewMulticlusterPodClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
@@ -506,7 +506,7 @@ func (b *multiClusterDiscoveryInputBuilder) insertV1PodsFromCluster(ctx context.
 
 	return nil
 }
-func (b *multiClusterDiscoveryInputBuilder) insertV1EndpointsFromCluster(ctx context.Context, cluster string, v1Endpoints v1_sets.EndpointsSet, opts ResourceDiscoveryInputBuildOptions) error {
+func (b *multiClusterDiscoveryInputBuilder) insertV1_EndpointsFromCluster(ctx context.Context, cluster string, v1Endpoints v1_sets.EndpointsSet, opts ResourceDiscoveryInputBuildOptions) error {
 	v1EndpointsClient, err := v1.NewMulticlusterEndpointsClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
@@ -548,7 +548,7 @@ func (b *multiClusterDiscoveryInputBuilder) insertV1EndpointsFromCluster(ctx con
 
 	return nil
 }
-func (b *multiClusterDiscoveryInputBuilder) insertV1NodesFromCluster(ctx context.Context, cluster string, v1Nodes v1_sets.NodeSet, opts ResourceDiscoveryInputBuildOptions) error {
+func (b *multiClusterDiscoveryInputBuilder) insertV1_NodesFromCluster(ctx context.Context, cluster string, v1Nodes v1_sets.NodeSet, opts ResourceDiscoveryInputBuildOptions) error {
 	v1NodeClient, err := v1.NewMulticlusterNodeClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
@@ -591,8 +591,8 @@ func (b *multiClusterDiscoveryInputBuilder) insertV1NodesFromCluster(ctx context
 	return nil
 }
 
-func (b *multiClusterDiscoveryInputBuilder) insertAppsv1DeploymentsFromCluster(ctx context.Context, cluster string, appsv1Deployments apps_v1_sets.DeploymentSet, opts ResourceDiscoveryInputBuildOptions) error {
-	appsv1DeploymentClient, err := apps_v1.NewMulticlusterDeploymentClient(b.client).Cluster(cluster)
+func (b *multiClusterDiscoveryInputBuilder) insertApps_V1_DeploymentsFromCluster(ctx context.Context, cluster string, appsV1Deployments apps_v1_sets.DeploymentSet, opts ResourceDiscoveryInputBuildOptions) error {
+	appsV1DeploymentClient, err := apps_v1.NewMulticlusterDeploymentClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -620,21 +620,21 @@ func (b *multiClusterDiscoveryInputBuilder) insertAppsv1DeploymentsFromCluster(c
 		}
 	}
 
-	appsv1DeploymentList, err := appsv1DeploymentClient.ListDeployment(ctx, opts.ListOptions...)
+	appsV1DeploymentList, err := appsV1DeploymentClient.ListDeployment(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range appsv1DeploymentList.Items {
+	for _, item := range appsV1DeploymentList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		appsv1Deployments.Insert(&item)
+		appsV1Deployments.Insert(&item)
 	}
 
 	return nil
 }
-func (b *multiClusterDiscoveryInputBuilder) insertAppsv1ReplicaSetsFromCluster(ctx context.Context, cluster string, appsv1ReplicaSets apps_v1_sets.ReplicaSetSet, opts ResourceDiscoveryInputBuildOptions) error {
-	appsv1ReplicaSetClient, err := apps_v1.NewMulticlusterReplicaSetClient(b.client).Cluster(cluster)
+func (b *multiClusterDiscoveryInputBuilder) insertApps_V1_ReplicaSetsFromCluster(ctx context.Context, cluster string, appsV1ReplicaSets apps_v1_sets.ReplicaSetSet, opts ResourceDiscoveryInputBuildOptions) error {
+	appsV1ReplicaSetClient, err := apps_v1.NewMulticlusterReplicaSetClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -662,21 +662,21 @@ func (b *multiClusterDiscoveryInputBuilder) insertAppsv1ReplicaSetsFromCluster(c
 		}
 	}
 
-	appsv1ReplicaSetList, err := appsv1ReplicaSetClient.ListReplicaSet(ctx, opts.ListOptions...)
+	appsV1ReplicaSetList, err := appsV1ReplicaSetClient.ListReplicaSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range appsv1ReplicaSetList.Items {
+	for _, item := range appsV1ReplicaSetList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		appsv1ReplicaSets.Insert(&item)
+		appsV1ReplicaSets.Insert(&item)
 	}
 
 	return nil
 }
-func (b *multiClusterDiscoveryInputBuilder) insertAppsv1DaemonSetsFromCluster(ctx context.Context, cluster string, appsv1DaemonSets apps_v1_sets.DaemonSetSet, opts ResourceDiscoveryInputBuildOptions) error {
-	appsv1DaemonSetClient, err := apps_v1.NewMulticlusterDaemonSetClient(b.client).Cluster(cluster)
+func (b *multiClusterDiscoveryInputBuilder) insertApps_V1_DaemonSetsFromCluster(ctx context.Context, cluster string, appsV1DaemonSets apps_v1_sets.DaemonSetSet, opts ResourceDiscoveryInputBuildOptions) error {
+	appsV1DaemonSetClient, err := apps_v1.NewMulticlusterDaemonSetClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -704,21 +704,21 @@ func (b *multiClusterDiscoveryInputBuilder) insertAppsv1DaemonSetsFromCluster(ct
 		}
 	}
 
-	appsv1DaemonSetList, err := appsv1DaemonSetClient.ListDaemonSet(ctx, opts.ListOptions...)
+	appsV1DaemonSetList, err := appsV1DaemonSetClient.ListDaemonSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range appsv1DaemonSetList.Items {
+	for _, item := range appsV1DaemonSetList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		appsv1DaemonSets.Insert(&item)
+		appsV1DaemonSets.Insert(&item)
 	}
 
 	return nil
 }
-func (b *multiClusterDiscoveryInputBuilder) insertAppsv1StatefulSetsFromCluster(ctx context.Context, cluster string, appsv1StatefulSets apps_v1_sets.StatefulSetSet, opts ResourceDiscoveryInputBuildOptions) error {
-	appsv1StatefulSetClient, err := apps_v1.NewMulticlusterStatefulSetClient(b.client).Cluster(cluster)
+func (b *multiClusterDiscoveryInputBuilder) insertApps_V1_StatefulSetsFromCluster(ctx context.Context, cluster string, appsV1StatefulSets apps_v1_sets.StatefulSetSet, opts ResourceDiscoveryInputBuildOptions) error {
+	appsV1StatefulSetClient, err := apps_v1.NewMulticlusterStatefulSetClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -746,15 +746,15 @@ func (b *multiClusterDiscoveryInputBuilder) insertAppsv1StatefulSetsFromCluster(
 		}
 	}
 
-	appsv1StatefulSetList, err := appsv1StatefulSetClient.ListStatefulSet(ctx, opts.ListOptions...)
+	appsV1StatefulSetList, err := appsV1StatefulSetClient.ListStatefulSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range appsv1StatefulSetList.Items {
+	for _, item := range appsV1StatefulSetList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		appsv1StatefulSets.Insert(&item)
+		appsV1StatefulSets.Insert(&item)
 	}
 
 	return nil
@@ -787,7 +787,7 @@ func NewSingleClusterDiscoveryInputBuilderWithClusterName(
 
 func (b *singleClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, name string, opts DiscoveryInputBuildOptions) (DiscoveryInputSnapshot, error) {
 
-	appmeshK8SAwsv1Beta2Meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
+	appmeshK8SAwsV1Beta2Meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
 
 	v1ConfigMaps := v1_sets.NewConfigMapSet()
 	v1Services := v1_sets.NewServiceSet()
@@ -795,63 +795,63 @@ func (b *singleClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, 
 	v1Endpoints := v1_sets.NewEndpointsSet()
 	v1Nodes := v1_sets.NewNodeSet()
 
-	appsv1Deployments := apps_v1_sets.NewDeploymentSet()
-	appsv1ReplicaSets := apps_v1_sets.NewReplicaSetSet()
-	appsv1DaemonSets := apps_v1_sets.NewDaemonSetSet()
-	appsv1StatefulSets := apps_v1_sets.NewStatefulSetSet()
+	appsV1Deployments := apps_v1_sets.NewDeploymentSet()
+	appsV1ReplicaSets := apps_v1_sets.NewReplicaSetSet()
+	appsV1DaemonSets := apps_v1_sets.NewDaemonSetSet()
+	appsV1StatefulSets := apps_v1_sets.NewStatefulSetSet()
 
 	var errs error
 
-	if err := b.insertAppmeshK8SAwsv1Beta2Meshes(ctx, appmeshK8SAwsv1Beta2Meshes, opts.AppmeshK8SAwsv1Beta2Meshes); err != nil {
+	if err := b.insertAppmeshK8SAws_V1Beta2_Meshes(ctx, appmeshK8SAwsV1Beta2Meshes, opts.AppmeshK8SAws_V1Beta2_Meshes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertV1ConfigMaps(ctx, v1ConfigMaps, opts.V1ConfigMaps); err != nil {
+	if err := b.insertV1_ConfigMaps(ctx, v1ConfigMaps, opts.V1_ConfigMaps); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertV1Services(ctx, v1Services, opts.V1Services); err != nil {
+	if err := b.insertV1_Services(ctx, v1Services, opts.V1_Services); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertV1Pods(ctx, v1Pods, opts.V1Pods); err != nil {
+	if err := b.insertV1_Pods(ctx, v1Pods, opts.V1_Pods); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertV1Endpoints(ctx, v1Endpoints, opts.V1Endpoints); err != nil {
+	if err := b.insertV1_Endpoints(ctx, v1Endpoints, opts.V1_Endpoints); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertV1Nodes(ctx, v1Nodes, opts.V1Nodes); err != nil {
+	if err := b.insertV1_Nodes(ctx, v1Nodes, opts.V1_Nodes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertAppsv1Deployments(ctx, appsv1Deployments, opts.Appsv1Deployments); err != nil {
+	if err := b.insertApps_V1_Deployments(ctx, appsV1Deployments, opts.Apps_V1_Deployments); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertAppsv1ReplicaSets(ctx, appsv1ReplicaSets, opts.Appsv1ReplicaSets); err != nil {
+	if err := b.insertApps_V1_ReplicaSets(ctx, appsV1ReplicaSets, opts.Apps_V1_ReplicaSets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertAppsv1DaemonSets(ctx, appsv1DaemonSets, opts.Appsv1DaemonSets); err != nil {
+	if err := b.insertApps_V1_DaemonSets(ctx, appsV1DaemonSets, opts.Apps_V1_DaemonSets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertAppsv1StatefulSets(ctx, appsv1StatefulSets, opts.Appsv1StatefulSets); err != nil {
+	if err := b.insertApps_V1_StatefulSets(ctx, appsV1StatefulSets, opts.Apps_V1_StatefulSets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
 	outputSnap := NewDiscoveryInputSnapshot(
 		name,
 
-		appmeshK8SAwsv1Beta2Meshes,
+		appmeshK8SAwsV1Beta2Meshes,
 		v1ConfigMaps,
 		v1Services,
 		v1Pods,
 		v1Endpoints,
 		v1Nodes,
-		appsv1Deployments,
-		appsv1ReplicaSets,
-		appsv1DaemonSets,
-		appsv1StatefulSets,
+		appsV1Deployments,
+		appsV1ReplicaSets,
+		appsV1DaemonSets,
+		appsV1StatefulSets,
 	)
 
 	return outputSnap, errs
 }
 
-func (b *singleClusterDiscoveryInputBuilder) insertAppmeshK8SAwsv1Beta2Meshes(ctx context.Context, appmeshK8SAwsv1Beta2Meshes appmesh_k8s_aws_v1beta2_sets.MeshSet, opts ResourceDiscoveryInputBuildOptions) error {
+func (b *singleClusterDiscoveryInputBuilder) insertAppmeshK8SAws_V1Beta2_Meshes(ctx context.Context, appmeshK8SAwsV1Beta2Meshes appmesh_k8s_aws_v1beta2_sets.MeshSet, opts ResourceDiscoveryInputBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -871,21 +871,21 @@ func (b *singleClusterDiscoveryInputBuilder) insertAppmeshK8SAwsv1Beta2Meshes(ct
 		}
 	}
 
-	appmeshK8SAwsv1Beta2MeshList, err := appmesh_k8s_aws_v1beta2.NewMeshClient(b.mgr.GetClient()).ListMesh(ctx, opts.ListOptions...)
+	appmeshK8SAwsV1Beta2MeshList, err := appmesh_k8s_aws_v1beta2.NewMeshClient(b.mgr.GetClient()).ListMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range appmeshK8SAwsv1Beta2MeshList.Items {
+	for _, item := range appmeshK8SAwsV1Beta2MeshList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		appmeshK8SAwsv1Beta2Meshes.Insert(&item)
+		appmeshK8SAwsV1Beta2Meshes.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *singleClusterDiscoveryInputBuilder) insertV1ConfigMaps(ctx context.Context, v1ConfigMaps v1_sets.ConfigMapSet, opts ResourceDiscoveryInputBuildOptions) error {
+func (b *singleClusterDiscoveryInputBuilder) insertV1_ConfigMaps(ctx context.Context, v1ConfigMaps v1_sets.ConfigMapSet, opts ResourceDiscoveryInputBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -918,7 +918,7 @@ func (b *singleClusterDiscoveryInputBuilder) insertV1ConfigMaps(ctx context.Cont
 
 	return nil
 }
-func (b *singleClusterDiscoveryInputBuilder) insertV1Services(ctx context.Context, v1Services v1_sets.ServiceSet, opts ResourceDiscoveryInputBuildOptions) error {
+func (b *singleClusterDiscoveryInputBuilder) insertV1_Services(ctx context.Context, v1Services v1_sets.ServiceSet, opts ResourceDiscoveryInputBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -951,7 +951,7 @@ func (b *singleClusterDiscoveryInputBuilder) insertV1Services(ctx context.Contex
 
 	return nil
 }
-func (b *singleClusterDiscoveryInputBuilder) insertV1Pods(ctx context.Context, v1Pods v1_sets.PodSet, opts ResourceDiscoveryInputBuildOptions) error {
+func (b *singleClusterDiscoveryInputBuilder) insertV1_Pods(ctx context.Context, v1Pods v1_sets.PodSet, opts ResourceDiscoveryInputBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -984,7 +984,7 @@ func (b *singleClusterDiscoveryInputBuilder) insertV1Pods(ctx context.Context, v
 
 	return nil
 }
-func (b *singleClusterDiscoveryInputBuilder) insertV1Endpoints(ctx context.Context, v1Endpoints v1_sets.EndpointsSet, opts ResourceDiscoveryInputBuildOptions) error {
+func (b *singleClusterDiscoveryInputBuilder) insertV1_Endpoints(ctx context.Context, v1Endpoints v1_sets.EndpointsSet, opts ResourceDiscoveryInputBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1017,7 +1017,7 @@ func (b *singleClusterDiscoveryInputBuilder) insertV1Endpoints(ctx context.Conte
 
 	return nil
 }
-func (b *singleClusterDiscoveryInputBuilder) insertV1Nodes(ctx context.Context, v1Nodes v1_sets.NodeSet, opts ResourceDiscoveryInputBuildOptions) error {
+func (b *singleClusterDiscoveryInputBuilder) insertV1_Nodes(ctx context.Context, v1Nodes v1_sets.NodeSet, opts ResourceDiscoveryInputBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1051,7 +1051,7 @@ func (b *singleClusterDiscoveryInputBuilder) insertV1Nodes(ctx context.Context, 
 	return nil
 }
 
-func (b *singleClusterDiscoveryInputBuilder) insertAppsv1Deployments(ctx context.Context, appsv1Deployments apps_v1_sets.DeploymentSet, opts ResourceDiscoveryInputBuildOptions) error {
+func (b *singleClusterDiscoveryInputBuilder) insertApps_V1_Deployments(ctx context.Context, appsV1Deployments apps_v1_sets.DeploymentSet, opts ResourceDiscoveryInputBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1071,20 +1071,20 @@ func (b *singleClusterDiscoveryInputBuilder) insertAppsv1Deployments(ctx context
 		}
 	}
 
-	appsv1DeploymentList, err := apps_v1.NewDeploymentClient(b.mgr.GetClient()).ListDeployment(ctx, opts.ListOptions...)
+	appsV1DeploymentList, err := apps_v1.NewDeploymentClient(b.mgr.GetClient()).ListDeployment(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range appsv1DeploymentList.Items {
+	for _, item := range appsV1DeploymentList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		appsv1Deployments.Insert(&item)
+		appsV1Deployments.Insert(&item)
 	}
 
 	return nil
 }
-func (b *singleClusterDiscoveryInputBuilder) insertAppsv1ReplicaSets(ctx context.Context, appsv1ReplicaSets apps_v1_sets.ReplicaSetSet, opts ResourceDiscoveryInputBuildOptions) error {
+func (b *singleClusterDiscoveryInputBuilder) insertApps_V1_ReplicaSets(ctx context.Context, appsV1ReplicaSets apps_v1_sets.ReplicaSetSet, opts ResourceDiscoveryInputBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1104,20 +1104,20 @@ func (b *singleClusterDiscoveryInputBuilder) insertAppsv1ReplicaSets(ctx context
 		}
 	}
 
-	appsv1ReplicaSetList, err := apps_v1.NewReplicaSetClient(b.mgr.GetClient()).ListReplicaSet(ctx, opts.ListOptions...)
+	appsV1ReplicaSetList, err := apps_v1.NewReplicaSetClient(b.mgr.GetClient()).ListReplicaSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range appsv1ReplicaSetList.Items {
+	for _, item := range appsV1ReplicaSetList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		appsv1ReplicaSets.Insert(&item)
+		appsV1ReplicaSets.Insert(&item)
 	}
 
 	return nil
 }
-func (b *singleClusterDiscoveryInputBuilder) insertAppsv1DaemonSets(ctx context.Context, appsv1DaemonSets apps_v1_sets.DaemonSetSet, opts ResourceDiscoveryInputBuildOptions) error {
+func (b *singleClusterDiscoveryInputBuilder) insertApps_V1_DaemonSets(ctx context.Context, appsV1DaemonSets apps_v1_sets.DaemonSetSet, opts ResourceDiscoveryInputBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1137,20 +1137,20 @@ func (b *singleClusterDiscoveryInputBuilder) insertAppsv1DaemonSets(ctx context.
 		}
 	}
 
-	appsv1DaemonSetList, err := apps_v1.NewDaemonSetClient(b.mgr.GetClient()).ListDaemonSet(ctx, opts.ListOptions...)
+	appsV1DaemonSetList, err := apps_v1.NewDaemonSetClient(b.mgr.GetClient()).ListDaemonSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range appsv1DaemonSetList.Items {
+	for _, item := range appsV1DaemonSetList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		appsv1DaemonSets.Insert(&item)
+		appsV1DaemonSets.Insert(&item)
 	}
 
 	return nil
 }
-func (b *singleClusterDiscoveryInputBuilder) insertAppsv1StatefulSets(ctx context.Context, appsv1StatefulSets apps_v1_sets.StatefulSetSet, opts ResourceDiscoveryInputBuildOptions) error {
+func (b *singleClusterDiscoveryInputBuilder) insertApps_V1_StatefulSets(ctx context.Context, appsV1StatefulSets apps_v1_sets.StatefulSetSet, opts ResourceDiscoveryInputBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1170,15 +1170,15 @@ func (b *singleClusterDiscoveryInputBuilder) insertAppsv1StatefulSets(ctx contex
 		}
 	}
 
-	appsv1StatefulSetList, err := apps_v1.NewStatefulSetClient(b.mgr.GetClient()).ListStatefulSet(ctx, opts.ListOptions...)
+	appsV1StatefulSetList, err := apps_v1.NewStatefulSetClient(b.mgr.GetClient()).ListStatefulSet(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range appsv1StatefulSetList.Items {
+	for _, item := range appsV1StatefulSetList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		appsv1StatefulSets.Insert(&item)
+		appsV1StatefulSets.Insert(&item)
 	}
 
 	return nil

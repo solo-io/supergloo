@@ -40,46 +40,46 @@ func (m *MockSnapshot) EXPECT() *MockSnapshotMockRecorder {
 	return m.recorder
 }
 
-// AppmeshK8SAwsv1Beta2VirtualServices mocks base method
-func (m *MockSnapshot) AppmeshK8SAwsv1Beta2VirtualServices() []appmesh.LabeledAppmeshK8SAwsv1Beta2VirtualServiceSet {
+// AppmeshK8SAws_V1Beta2_VirtualServices mocks base method
+func (m *MockSnapshot) AppmeshK8SAws_V1Beta2_VirtualServices() []appmesh.LabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AppmeshK8SAwsv1Beta2VirtualServices")
-	ret0, _ := ret[0].([]appmesh.LabeledAppmeshK8SAwsv1Beta2VirtualServiceSet)
+	ret := m.ctrl.Call(m, "AppmeshK8SAws_V1Beta2_VirtualServices")
+	ret0, _ := ret[0].([]appmesh.LabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet)
 	return ret0
 }
 
-// AppmeshK8SAwsv1Beta2VirtualServices indicates an expected call of AppmeshK8SAwsv1Beta2VirtualServices
-func (mr *MockSnapshotMockRecorder) AppmeshK8SAwsv1Beta2VirtualServices() *gomock.Call {
+// AppmeshK8SAws_V1Beta2_VirtualServices indicates an expected call of AppmeshK8SAws_V1Beta2_VirtualServices
+func (mr *MockSnapshotMockRecorder) AppmeshK8SAws_V1Beta2_VirtualServices() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppmeshK8SAwsv1Beta2VirtualServices", reflect.TypeOf((*MockSnapshot)(nil).AppmeshK8SAwsv1Beta2VirtualServices))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppmeshK8SAws_V1Beta2_VirtualServices", reflect.TypeOf((*MockSnapshot)(nil).AppmeshK8SAws_V1Beta2_VirtualServices))
 }
 
-// AppmeshK8SAwsv1Beta2VirtualNodes mocks base method
-func (m *MockSnapshot) AppmeshK8SAwsv1Beta2VirtualNodes() []appmesh.LabeledAppmeshK8SAwsv1Beta2VirtualNodeSet {
+// AppmeshK8SAws_V1Beta2_VirtualNodes mocks base method
+func (m *MockSnapshot) AppmeshK8SAws_V1Beta2_VirtualNodes() []appmesh.LabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AppmeshK8SAwsv1Beta2VirtualNodes")
-	ret0, _ := ret[0].([]appmesh.LabeledAppmeshK8SAwsv1Beta2VirtualNodeSet)
+	ret := m.ctrl.Call(m, "AppmeshK8SAws_V1Beta2_VirtualNodes")
+	ret0, _ := ret[0].([]appmesh.LabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet)
 	return ret0
 }
 
-// AppmeshK8SAwsv1Beta2VirtualNodes indicates an expected call of AppmeshK8SAwsv1Beta2VirtualNodes
-func (mr *MockSnapshotMockRecorder) AppmeshK8SAwsv1Beta2VirtualNodes() *gomock.Call {
+// AppmeshK8SAws_V1Beta2_VirtualNodes indicates an expected call of AppmeshK8SAws_V1Beta2_VirtualNodes
+func (mr *MockSnapshotMockRecorder) AppmeshK8SAws_V1Beta2_VirtualNodes() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppmeshK8SAwsv1Beta2VirtualNodes", reflect.TypeOf((*MockSnapshot)(nil).AppmeshK8SAwsv1Beta2VirtualNodes))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppmeshK8SAws_V1Beta2_VirtualNodes", reflect.TypeOf((*MockSnapshot)(nil).AppmeshK8SAws_V1Beta2_VirtualNodes))
 }
 
-// AppmeshK8SAwsv1Beta2VirtualRouters mocks base method
-func (m *MockSnapshot) AppmeshK8SAwsv1Beta2VirtualRouters() []appmesh.LabeledAppmeshK8SAwsv1Beta2VirtualRouterSet {
+// AppmeshK8SAws_V1Beta2_VirtualRouters mocks base method
+func (m *MockSnapshot) AppmeshK8SAws_V1Beta2_VirtualRouters() []appmesh.LabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AppmeshK8SAwsv1Beta2VirtualRouters")
-	ret0, _ := ret[0].([]appmesh.LabeledAppmeshK8SAwsv1Beta2VirtualRouterSet)
+	ret := m.ctrl.Call(m, "AppmeshK8SAws_V1Beta2_VirtualRouters")
+	ret0, _ := ret[0].([]appmesh.LabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet)
 	return ret0
 }
 
-// AppmeshK8SAwsv1Beta2VirtualRouters indicates an expected call of AppmeshK8SAwsv1Beta2VirtualRouters
-func (mr *MockSnapshotMockRecorder) AppmeshK8SAwsv1Beta2VirtualRouters() *gomock.Call {
+// AppmeshK8SAws_V1Beta2_VirtualRouters indicates an expected call of AppmeshK8SAws_V1Beta2_VirtualRouters
+func (mr *MockSnapshotMockRecorder) AppmeshK8SAws_V1Beta2_VirtualRouters() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppmeshK8SAwsv1Beta2VirtualRouters", reflect.TypeOf((*MockSnapshot)(nil).AppmeshK8SAwsv1Beta2VirtualRouters))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppmeshK8SAws_V1Beta2_VirtualRouters", reflect.TypeOf((*MockSnapshot)(nil).AppmeshK8SAws_V1Beta2_VirtualRouters))
 }
 
 // ApplyLocalCluster mocks base method
@@ -121,31 +121,31 @@ func (mr *MockSnapshotMockRecorder) MarshalJSON() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarshalJSON", reflect.TypeOf((*MockSnapshot)(nil).MarshalJSON))
 }
 
-// MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet is a mock of LabeledAppmeshK8SAwsv1Beta2VirtualServiceSet interface
-type MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet struct {
+// MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet is a mock of LabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet interface
+type MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet struct {
 	ctrl     *gomock.Controller
-	recorder *MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSetMockRecorder
+	recorder *MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSetMockRecorder
 }
 
-// MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSetMockRecorder is the mock recorder for MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet
-type MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSetMockRecorder struct {
-	mock *MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet
+// MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSetMockRecorder is the mock recorder for MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet
+type MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSetMockRecorder struct {
+	mock *MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet
 }
 
-// NewMockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet creates a new mock instance
-func NewMockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet(ctrl *gomock.Controller) *MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet {
-	mock := &MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet{ctrl: ctrl}
-	mock.recorder = &MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSetMockRecorder{mock}
+// NewMockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet creates a new mock instance
+func NewMockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet(ctrl *gomock.Controller) *MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet {
+	mock := &MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet{ctrl: ctrl}
+	mock.recorder = &MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSetMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet) EXPECT() *MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSetMockRecorder {
+func (m *MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet) EXPECT() *MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSetMockRecorder {
 	return m.recorder
 }
 
 // Labels mocks base method
-func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet) Labels() map[string]string {
+func (m *MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
 	ret0, _ := ret[0].(map[string]string)
@@ -153,13 +153,13 @@ func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet) Labels() map[string]s
 }
 
 // Labels indicates an expected call of Labels
-func (mr *MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSetMockRecorder) Labels() *gomock.Call {
+func (mr *MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet)(nil).Labels))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet)(nil).Labels))
 }
 
 // Set mocks base method
-func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet) Set() v1beta2sets.VirtualServiceSet {
+func (m *MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet) Set() v1beta2sets.VirtualServiceSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
 	ret0, _ := ret[0].(v1beta2sets.VirtualServiceSet)
@@ -167,13 +167,13 @@ func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet) Set() v1beta2sets.Vir
 }
 
 // Set indicates an expected call of Set
-func (mr *MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSetMockRecorder) Set() *gomock.Call {
+func (mr *MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet)(nil).Set))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet)(nil).Set))
 }
 
 // Generic mocks base method
-func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet) Generic() output.ResourceList {
+func (m *MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet) Generic() output.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
 	ret0, _ := ret[0].(output.ResourceList)
@@ -181,36 +181,36 @@ func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet) Generic() output.Reso
 }
 
 // Generic indicates an expected call of Generic
-func (mr *MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSetMockRecorder) Generic() *gomock.Call {
+func (mr *MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledAppmeshK8SAwsv1Beta2VirtualServiceSet)(nil).Generic))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledAppmeshK8SAws_V1Beta2_VirtualServiceSet)(nil).Generic))
 }
 
-// MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet is a mock of LabeledAppmeshK8SAwsv1Beta2VirtualNodeSet interface
-type MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet struct {
+// MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet is a mock of LabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet interface
+type MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet struct {
 	ctrl     *gomock.Controller
-	recorder *MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSetMockRecorder
+	recorder *MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSetMockRecorder
 }
 
-// MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSetMockRecorder is the mock recorder for MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet
-type MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSetMockRecorder struct {
-	mock *MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet
+// MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSetMockRecorder is the mock recorder for MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet
+type MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSetMockRecorder struct {
+	mock *MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet
 }
 
-// NewMockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet creates a new mock instance
-func NewMockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet(ctrl *gomock.Controller) *MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet {
-	mock := &MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet{ctrl: ctrl}
-	mock.recorder = &MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSetMockRecorder{mock}
+// NewMockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet creates a new mock instance
+func NewMockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet(ctrl *gomock.Controller) *MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet {
+	mock := &MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet{ctrl: ctrl}
+	mock.recorder = &MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSetMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet) EXPECT() *MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSetMockRecorder {
+func (m *MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet) EXPECT() *MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSetMockRecorder {
 	return m.recorder
 }
 
 // Labels mocks base method
-func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet) Labels() map[string]string {
+func (m *MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
 	ret0, _ := ret[0].(map[string]string)
@@ -218,13 +218,13 @@ func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet) Labels() map[string]stri
 }
 
 // Labels indicates an expected call of Labels
-func (mr *MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSetMockRecorder) Labels() *gomock.Call {
+func (mr *MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet)(nil).Labels))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet)(nil).Labels))
 }
 
 // Set mocks base method
-func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet) Set() v1beta2sets.VirtualNodeSet {
+func (m *MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet) Set() v1beta2sets.VirtualNodeSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
 	ret0, _ := ret[0].(v1beta2sets.VirtualNodeSet)
@@ -232,13 +232,13 @@ func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet) Set() v1beta2sets.Virtua
 }
 
 // Set indicates an expected call of Set
-func (mr *MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSetMockRecorder) Set() *gomock.Call {
+func (mr *MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet)(nil).Set))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet)(nil).Set))
 }
 
 // Generic mocks base method
-func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet) Generic() output.ResourceList {
+func (m *MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet) Generic() output.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
 	ret0, _ := ret[0].(output.ResourceList)
@@ -246,36 +246,36 @@ func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet) Generic() output.Resourc
 }
 
 // Generic indicates an expected call of Generic
-func (mr *MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSetMockRecorder) Generic() *gomock.Call {
+func (mr *MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledAppmeshK8SAwsv1Beta2VirtualNodeSet)(nil).Generic))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledAppmeshK8SAws_V1Beta2_VirtualNodeSet)(nil).Generic))
 }
 
-// MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet is a mock of LabeledAppmeshK8SAwsv1Beta2VirtualRouterSet interface
-type MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet struct {
+// MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet is a mock of LabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet interface
+type MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet struct {
 	ctrl     *gomock.Controller
-	recorder *MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSetMockRecorder
+	recorder *MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSetMockRecorder
 }
 
-// MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSetMockRecorder is the mock recorder for MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet
-type MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSetMockRecorder struct {
-	mock *MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet
+// MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSetMockRecorder is the mock recorder for MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet
+type MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSetMockRecorder struct {
+	mock *MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet
 }
 
-// NewMockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet creates a new mock instance
-func NewMockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet(ctrl *gomock.Controller) *MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet {
-	mock := &MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet{ctrl: ctrl}
-	mock.recorder = &MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSetMockRecorder{mock}
+// NewMockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet creates a new mock instance
+func NewMockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet(ctrl *gomock.Controller) *MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet {
+	mock := &MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet{ctrl: ctrl}
+	mock.recorder = &MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSetMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet) EXPECT() *MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSetMockRecorder {
+func (m *MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet) EXPECT() *MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSetMockRecorder {
 	return m.recorder
 }
 
 // Labels mocks base method
-func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet) Labels() map[string]string {
+func (m *MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
 	ret0, _ := ret[0].(map[string]string)
@@ -283,13 +283,13 @@ func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet) Labels() map[string]st
 }
 
 // Labels indicates an expected call of Labels
-func (mr *MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSetMockRecorder) Labels() *gomock.Call {
+func (mr *MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet)(nil).Labels))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet)(nil).Labels))
 }
 
 // Set mocks base method
-func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet) Set() v1beta2sets.VirtualRouterSet {
+func (m *MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet) Set() v1beta2sets.VirtualRouterSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
 	ret0, _ := ret[0].(v1beta2sets.VirtualRouterSet)
@@ -297,13 +297,13 @@ func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet) Set() v1beta2sets.Virt
 }
 
 // Set indicates an expected call of Set
-func (mr *MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSetMockRecorder) Set() *gomock.Call {
+func (mr *MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet)(nil).Set))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet)(nil).Set))
 }
 
 // Generic mocks base method
-func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet) Generic() output.ResourceList {
+func (m *MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet) Generic() output.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
 	ret0, _ := ret[0].(output.ResourceList)
@@ -311,9 +311,9 @@ func (m *MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet) Generic() output.Resou
 }
 
 // Generic indicates an expected call of Generic
-func (mr *MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSetMockRecorder) Generic() *gomock.Call {
+func (mr *MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledAppmeshK8SAwsv1Beta2VirtualRouterSet)(nil).Generic))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledAppmeshK8SAws_V1Beta2_VirtualRouterSet)(nil).Generic))
 }
 
 // MockBuilder is a mock of Builder interface
@@ -339,94 +339,94 @@ func (m *MockBuilder) EXPECT() *MockBuilderMockRecorder {
 	return m.recorder
 }
 
-// AddAppmeshK8SAwsv1Beta2VirtualServices mocks base method
-func (m *MockBuilder) AddAppmeshK8SAwsv1Beta2VirtualServices(appmeshK8SAwsv1Beta2VirtualServices ...*v1beta2.VirtualService) {
+// AddAppmeshK8SAws_V1Beta2_VirtualServices mocks base method
+func (m *MockBuilder) AddAppmeshK8SAws_V1Beta2_VirtualServices(appmeshK8SAwsV1Beta2VirtualServices ...*v1beta2.VirtualService) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
-	for _, a := range appmeshK8SAwsv1Beta2VirtualServices {
+	for _, a := range appmeshK8SAwsV1Beta2VirtualServices {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddAppmeshK8SAwsv1Beta2VirtualServices", varargs...)
+	m.ctrl.Call(m, "AddAppmeshK8SAws_V1Beta2_VirtualServices", varargs...)
 }
 
-// AddAppmeshK8SAwsv1Beta2VirtualServices indicates an expected call of AddAppmeshK8SAwsv1Beta2VirtualServices
-func (mr *MockBuilderMockRecorder) AddAppmeshK8SAwsv1Beta2VirtualServices(appmeshK8SAwsv1Beta2VirtualServices ...interface{}) *gomock.Call {
+// AddAppmeshK8SAws_V1Beta2_VirtualServices indicates an expected call of AddAppmeshK8SAws_V1Beta2_VirtualServices
+func (mr *MockBuilderMockRecorder) AddAppmeshK8SAws_V1Beta2_VirtualServices(appmeshK8SAwsV1Beta2VirtualServices ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAppmeshK8SAwsv1Beta2VirtualServices", reflect.TypeOf((*MockBuilder)(nil).AddAppmeshK8SAwsv1Beta2VirtualServices), appmeshK8SAwsv1Beta2VirtualServices...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAppmeshK8SAws_V1Beta2_VirtualServices", reflect.TypeOf((*MockBuilder)(nil).AddAppmeshK8SAws_V1Beta2_VirtualServices), appmeshK8SAwsV1Beta2VirtualServices...)
 }
 
-// GetAppmeshK8SAwsv1Beta2VirtualServices mocks base method
-func (m *MockBuilder) GetAppmeshK8SAwsv1Beta2VirtualServices() v1beta2sets.VirtualServiceSet {
+// GetAppmeshK8SAws_V1Beta2_VirtualServices mocks base method
+func (m *MockBuilder) GetAppmeshK8SAws_V1Beta2_VirtualServices() v1beta2sets.VirtualServiceSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAppmeshK8SAwsv1Beta2VirtualServices")
+	ret := m.ctrl.Call(m, "GetAppmeshK8SAws_V1Beta2_VirtualServices")
 	ret0, _ := ret[0].(v1beta2sets.VirtualServiceSet)
 	return ret0
 }
 
-// GetAppmeshK8SAwsv1Beta2VirtualServices indicates an expected call of GetAppmeshK8SAwsv1Beta2VirtualServices
-func (mr *MockBuilderMockRecorder) GetAppmeshK8SAwsv1Beta2VirtualServices() *gomock.Call {
+// GetAppmeshK8SAws_V1Beta2_VirtualServices indicates an expected call of GetAppmeshK8SAws_V1Beta2_VirtualServices
+func (mr *MockBuilderMockRecorder) GetAppmeshK8SAws_V1Beta2_VirtualServices() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAppmeshK8SAwsv1Beta2VirtualServices", reflect.TypeOf((*MockBuilder)(nil).GetAppmeshK8SAwsv1Beta2VirtualServices))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAppmeshK8SAws_V1Beta2_VirtualServices", reflect.TypeOf((*MockBuilder)(nil).GetAppmeshK8SAws_V1Beta2_VirtualServices))
 }
 
-// AddAppmeshK8SAwsv1Beta2VirtualNodes mocks base method
-func (m *MockBuilder) AddAppmeshK8SAwsv1Beta2VirtualNodes(appmeshK8SAwsv1Beta2VirtualNodes ...*v1beta2.VirtualNode) {
+// AddAppmeshK8SAws_V1Beta2_VirtualNodes mocks base method
+func (m *MockBuilder) AddAppmeshK8SAws_V1Beta2_VirtualNodes(appmeshK8SAwsV1Beta2VirtualNodes ...*v1beta2.VirtualNode) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
-	for _, a := range appmeshK8SAwsv1Beta2VirtualNodes {
+	for _, a := range appmeshK8SAwsV1Beta2VirtualNodes {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddAppmeshK8SAwsv1Beta2VirtualNodes", varargs...)
+	m.ctrl.Call(m, "AddAppmeshK8SAws_V1Beta2_VirtualNodes", varargs...)
 }
 
-// AddAppmeshK8SAwsv1Beta2VirtualNodes indicates an expected call of AddAppmeshK8SAwsv1Beta2VirtualNodes
-func (mr *MockBuilderMockRecorder) AddAppmeshK8SAwsv1Beta2VirtualNodes(appmeshK8SAwsv1Beta2VirtualNodes ...interface{}) *gomock.Call {
+// AddAppmeshK8SAws_V1Beta2_VirtualNodes indicates an expected call of AddAppmeshK8SAws_V1Beta2_VirtualNodes
+func (mr *MockBuilderMockRecorder) AddAppmeshK8SAws_V1Beta2_VirtualNodes(appmeshK8SAwsV1Beta2VirtualNodes ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAppmeshK8SAwsv1Beta2VirtualNodes", reflect.TypeOf((*MockBuilder)(nil).AddAppmeshK8SAwsv1Beta2VirtualNodes), appmeshK8SAwsv1Beta2VirtualNodes...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAppmeshK8SAws_V1Beta2_VirtualNodes", reflect.TypeOf((*MockBuilder)(nil).AddAppmeshK8SAws_V1Beta2_VirtualNodes), appmeshK8SAwsV1Beta2VirtualNodes...)
 }
 
-// GetAppmeshK8SAwsv1Beta2VirtualNodes mocks base method
-func (m *MockBuilder) GetAppmeshK8SAwsv1Beta2VirtualNodes() v1beta2sets.VirtualNodeSet {
+// GetAppmeshK8SAws_V1Beta2_VirtualNodes mocks base method
+func (m *MockBuilder) GetAppmeshK8SAws_V1Beta2_VirtualNodes() v1beta2sets.VirtualNodeSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAppmeshK8SAwsv1Beta2VirtualNodes")
+	ret := m.ctrl.Call(m, "GetAppmeshK8SAws_V1Beta2_VirtualNodes")
 	ret0, _ := ret[0].(v1beta2sets.VirtualNodeSet)
 	return ret0
 }
 
-// GetAppmeshK8SAwsv1Beta2VirtualNodes indicates an expected call of GetAppmeshK8SAwsv1Beta2VirtualNodes
-func (mr *MockBuilderMockRecorder) GetAppmeshK8SAwsv1Beta2VirtualNodes() *gomock.Call {
+// GetAppmeshK8SAws_V1Beta2_VirtualNodes indicates an expected call of GetAppmeshK8SAws_V1Beta2_VirtualNodes
+func (mr *MockBuilderMockRecorder) GetAppmeshK8SAws_V1Beta2_VirtualNodes() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAppmeshK8SAwsv1Beta2VirtualNodes", reflect.TypeOf((*MockBuilder)(nil).GetAppmeshK8SAwsv1Beta2VirtualNodes))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAppmeshK8SAws_V1Beta2_VirtualNodes", reflect.TypeOf((*MockBuilder)(nil).GetAppmeshK8SAws_V1Beta2_VirtualNodes))
 }
 
-// AddAppmeshK8SAwsv1Beta2VirtualRouters mocks base method
-func (m *MockBuilder) AddAppmeshK8SAwsv1Beta2VirtualRouters(appmeshK8SAwsv1Beta2VirtualRouters ...*v1beta2.VirtualRouter) {
+// AddAppmeshK8SAws_V1Beta2_VirtualRouters mocks base method
+func (m *MockBuilder) AddAppmeshK8SAws_V1Beta2_VirtualRouters(appmeshK8SAwsV1Beta2VirtualRouters ...*v1beta2.VirtualRouter) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
-	for _, a := range appmeshK8SAwsv1Beta2VirtualRouters {
+	for _, a := range appmeshK8SAwsV1Beta2VirtualRouters {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddAppmeshK8SAwsv1Beta2VirtualRouters", varargs...)
+	m.ctrl.Call(m, "AddAppmeshK8SAws_V1Beta2_VirtualRouters", varargs...)
 }
 
-// AddAppmeshK8SAwsv1Beta2VirtualRouters indicates an expected call of AddAppmeshK8SAwsv1Beta2VirtualRouters
-func (mr *MockBuilderMockRecorder) AddAppmeshK8SAwsv1Beta2VirtualRouters(appmeshK8SAwsv1Beta2VirtualRouters ...interface{}) *gomock.Call {
+// AddAppmeshK8SAws_V1Beta2_VirtualRouters indicates an expected call of AddAppmeshK8SAws_V1Beta2_VirtualRouters
+func (mr *MockBuilderMockRecorder) AddAppmeshK8SAws_V1Beta2_VirtualRouters(appmeshK8SAwsV1Beta2VirtualRouters ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAppmeshK8SAwsv1Beta2VirtualRouters", reflect.TypeOf((*MockBuilder)(nil).AddAppmeshK8SAwsv1Beta2VirtualRouters), appmeshK8SAwsv1Beta2VirtualRouters...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAppmeshK8SAws_V1Beta2_VirtualRouters", reflect.TypeOf((*MockBuilder)(nil).AddAppmeshK8SAws_V1Beta2_VirtualRouters), appmeshK8SAwsV1Beta2VirtualRouters...)
 }
 
-// GetAppmeshK8SAwsv1Beta2VirtualRouters mocks base method
-func (m *MockBuilder) GetAppmeshK8SAwsv1Beta2VirtualRouters() v1beta2sets.VirtualRouterSet {
+// GetAppmeshK8SAws_V1Beta2_VirtualRouters mocks base method
+func (m *MockBuilder) GetAppmeshK8SAws_V1Beta2_VirtualRouters() v1beta2sets.VirtualRouterSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAppmeshK8SAwsv1Beta2VirtualRouters")
+	ret := m.ctrl.Call(m, "GetAppmeshK8SAws_V1Beta2_VirtualRouters")
 	ret0, _ := ret[0].(v1beta2sets.VirtualRouterSet)
 	return ret0
 }
 
-// GetAppmeshK8SAwsv1Beta2VirtualRouters indicates an expected call of GetAppmeshK8SAwsv1Beta2VirtualRouters
-func (mr *MockBuilderMockRecorder) GetAppmeshK8SAwsv1Beta2VirtualRouters() *gomock.Call {
+// GetAppmeshK8SAws_V1Beta2_VirtualRouters indicates an expected call of GetAppmeshK8SAws_V1Beta2_VirtualRouters
+func (mr *MockBuilderMockRecorder) GetAppmeshK8SAws_V1Beta2_VirtualRouters() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAppmeshK8SAwsv1Beta2VirtualRouters", reflect.TypeOf((*MockBuilder)(nil).GetAppmeshK8SAwsv1Beta2VirtualRouters))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAppmeshK8SAws_V1Beta2_VirtualRouters", reflect.TypeOf((*MockBuilder)(nil).GetAppmeshK8SAws_V1Beta2_VirtualRouters))
 }
 
 // BuildLabelPartitionedSnapshot mocks base method

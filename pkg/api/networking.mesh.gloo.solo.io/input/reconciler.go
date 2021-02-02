@@ -39,29 +39,29 @@ import (
 
 // The Input Reconciler calls a simple func(id) error whenever a
 // storage event is received for any of:
-// * CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates
-// * CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives
-// * XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs
-// * NetworkingIstioIov1Alpha3DestinationRules
-// * NetworkingIstioIov1Alpha3EnvoyFilters
-// * NetworkingIstioIov1Alpha3Gateways
-// * NetworkingIstioIov1Alpha3ServiceEntries
-// * NetworkingIstioIov1Alpha3VirtualServices
-// * SecurityIstioIov1Beta1AuthorizationPolicies
-// * V1ConfigMaps
+// * CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates
+// * CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives
+// * XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs
+// * NetworkingIstioIo_V1Alpha3_DestinationRules
+// * NetworkingIstioIo_V1Alpha3_EnvoyFilters
+// * NetworkingIstioIo_V1Alpha3_Gateways
+// * NetworkingIstioIo_V1Alpha3_ServiceEntries
+// * NetworkingIstioIo_V1Alpha3_VirtualServices
+// * SecurityIstioIo_V1Beta1_AuthorizationPolicies
+// * V1_ConfigMaps
 // from a remote cluster.
-// * SettingsMeshGlooSoloIov1Alpha2Settings
-// * DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets
-// * DiscoveryMeshGlooSoloIov1Alpha2Workloads
-// * DiscoveryMeshGlooSoloIov1Alpha2Meshes
-// * NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies
-// * NetworkingMeshGlooSoloIov1Alpha2AccessPolicies
-// * NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
-// * NetworkingMeshGlooSoloIov1Alpha2FailoverServices
-// * NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments
-// * ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords
-// * V1Secrets
-// * MulticlusterSoloIov1Alpha1KubernetesClusters
+// * SettingsMeshGlooSoloIo_V1Alpha2_Settings
+// * DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets
+// * DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads
+// * DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes
+// * NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies
+// * NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies
+// * NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes
+// * NetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices
+// * NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments
+// * ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords
+// * V1_Secrets
+// * MulticlusterSoloIo_V1Alpha1_KubernetesClusters
 // from the local cluster.
 
 type ReconcileOptions struct {
@@ -93,83 +93,83 @@ func RegisterInputReconciler(
 
 	// initialize reconcile loops
 
-	// initialize CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates reconcile loop for remote clusters
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterIssuedCertificateReconcileLoop("IssuedCertificate", clusters, options.Remote.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates).AddMulticlusterIssuedCertificateReconciler(ctx, &remoteCertificatesMeshGlooSoloIoInputReconciler{base: base}, options.Remote.Predicates...)
-	// initialize CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives reconcile loop for remote clusters
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterPodBounceDirectiveReconcileLoop("PodBounceDirective", clusters, options.Remote.CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives).AddMulticlusterPodBounceDirectiveReconciler(ctx, &remoteCertificatesMeshGlooSoloIoInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates reconcile loop for remote clusters
+	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterIssuedCertificateReconcileLoop("IssuedCertificate", clusters, options.Remote.CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates).AddMulticlusterIssuedCertificateReconciler(ctx, &remoteCertificatesMeshGlooSoloIoInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives reconcile loop for remote clusters
+	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterPodBounceDirectiveReconcileLoop("PodBounceDirective", clusters, options.Remote.CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives).AddMulticlusterPodBounceDirectiveReconciler(ctx, &remoteCertificatesMeshGlooSoloIoInputReconciler{base: base}, options.Remote.Predicates...)
 
-	// initialize XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs reconcile loop for remote clusters
-	xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_controllers.NewMulticlusterXdsConfigReconcileLoop("XdsConfig", clusters, options.Remote.XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs).AddMulticlusterXdsConfigReconciler(ctx, &remoteXdsAgentEnterpriseMeshGlooSoloIoInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs reconcile loop for remote clusters
+	xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_controllers.NewMulticlusterXdsConfigReconcileLoop("XdsConfig", clusters, options.Remote.XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs).AddMulticlusterXdsConfigReconciler(ctx, &remoteXdsAgentEnterpriseMeshGlooSoloIoInputReconciler{base: base}, options.Remote.Predicates...)
 
-	// initialize NetworkingIstioIov1Alpha3DestinationRules reconcile loop for remote clusters
-	networking_istio_io_v1alpha3_controllers.NewMulticlusterDestinationRuleReconcileLoop("DestinationRule", clusters, options.Remote.NetworkingIstioIov1Alpha3DestinationRules).AddMulticlusterDestinationRuleReconciler(ctx, &remoteNetworkingIstioIoInputReconciler{base: base}, options.Remote.Predicates...)
-	// initialize NetworkingIstioIov1Alpha3EnvoyFilters reconcile loop for remote clusters
-	networking_istio_io_v1alpha3_controllers.NewMulticlusterEnvoyFilterReconcileLoop("EnvoyFilter", clusters, options.Remote.NetworkingIstioIov1Alpha3EnvoyFilters).AddMulticlusterEnvoyFilterReconciler(ctx, &remoteNetworkingIstioIoInputReconciler{base: base}, options.Remote.Predicates...)
-	// initialize NetworkingIstioIov1Alpha3Gateways reconcile loop for remote clusters
-	networking_istio_io_v1alpha3_controllers.NewMulticlusterGatewayReconcileLoop("Gateway", clusters, options.Remote.NetworkingIstioIov1Alpha3Gateways).AddMulticlusterGatewayReconciler(ctx, &remoteNetworkingIstioIoInputReconciler{base: base}, options.Remote.Predicates...)
-	// initialize NetworkingIstioIov1Alpha3ServiceEntries reconcile loop for remote clusters
-	networking_istio_io_v1alpha3_controllers.NewMulticlusterServiceEntryReconcileLoop("ServiceEntry", clusters, options.Remote.NetworkingIstioIov1Alpha3ServiceEntries).AddMulticlusterServiceEntryReconciler(ctx, &remoteNetworkingIstioIoInputReconciler{base: base}, options.Remote.Predicates...)
-	// initialize NetworkingIstioIov1Alpha3VirtualServices reconcile loop for remote clusters
-	networking_istio_io_v1alpha3_controllers.NewMulticlusterVirtualServiceReconcileLoop("VirtualService", clusters, options.Remote.NetworkingIstioIov1Alpha3VirtualServices).AddMulticlusterVirtualServiceReconciler(ctx, &remoteNetworkingIstioIoInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize NetworkingIstioIo_V1Alpha3_DestinationRules reconcile loop for remote clusters
+	networking_istio_io_v1alpha3_controllers.NewMulticlusterDestinationRuleReconcileLoop("DestinationRule", clusters, options.Remote.NetworkingIstioIo_V1Alpha3_DestinationRules).AddMulticlusterDestinationRuleReconciler(ctx, &remoteNetworkingIstioIoInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize NetworkingIstioIo_V1Alpha3_EnvoyFilters reconcile loop for remote clusters
+	networking_istio_io_v1alpha3_controllers.NewMulticlusterEnvoyFilterReconcileLoop("EnvoyFilter", clusters, options.Remote.NetworkingIstioIo_V1Alpha3_EnvoyFilters).AddMulticlusterEnvoyFilterReconciler(ctx, &remoteNetworkingIstioIoInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize NetworkingIstioIo_V1Alpha3_Gateways reconcile loop for remote clusters
+	networking_istio_io_v1alpha3_controllers.NewMulticlusterGatewayReconcileLoop("Gateway", clusters, options.Remote.NetworkingIstioIo_V1Alpha3_Gateways).AddMulticlusterGatewayReconciler(ctx, &remoteNetworkingIstioIoInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize NetworkingIstioIo_V1Alpha3_ServiceEntries reconcile loop for remote clusters
+	networking_istio_io_v1alpha3_controllers.NewMulticlusterServiceEntryReconcileLoop("ServiceEntry", clusters, options.Remote.NetworkingIstioIo_V1Alpha3_ServiceEntries).AddMulticlusterServiceEntryReconciler(ctx, &remoteNetworkingIstioIoInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize NetworkingIstioIo_V1Alpha3_VirtualServices reconcile loop for remote clusters
+	networking_istio_io_v1alpha3_controllers.NewMulticlusterVirtualServiceReconcileLoop("VirtualService", clusters, options.Remote.NetworkingIstioIo_V1Alpha3_VirtualServices).AddMulticlusterVirtualServiceReconciler(ctx, &remoteNetworkingIstioIoInputReconciler{base: base}, options.Remote.Predicates...)
 
-	// initialize SecurityIstioIov1Beta1AuthorizationPolicies reconcile loop for remote clusters
-	security_istio_io_v1beta1_controllers.NewMulticlusterAuthorizationPolicyReconcileLoop("AuthorizationPolicy", clusters, options.Remote.SecurityIstioIov1Beta1AuthorizationPolicies).AddMulticlusterAuthorizationPolicyReconciler(ctx, &remoteSecurityIstioIoInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize SecurityIstioIo_V1Beta1_AuthorizationPolicies reconcile loop for remote clusters
+	security_istio_io_v1beta1_controllers.NewMulticlusterAuthorizationPolicyReconcileLoop("AuthorizationPolicy", clusters, options.Remote.SecurityIstioIo_V1Beta1_AuthorizationPolicies).AddMulticlusterAuthorizationPolicyReconciler(ctx, &remoteSecurityIstioIoInputReconciler{base: base}, options.Remote.Predicates...)
 
-	// initialize V1ConfigMaps reconcile loop for remote clusters
-	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters, options.Remote.V1ConfigMaps).AddMulticlusterConfigMapReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize V1_ConfigMaps reconcile loop for remote clusters
+	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters, options.Remote.V1_ConfigMaps).AddMulticlusterConfigMapReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
 
-	// initialize SettingsMeshGlooSoloIov1Alpha2Settings reconcile loop for local cluster
-	if err := settings_mesh_gloo_solo_io_v1alpha2_controllers.NewSettingsReconcileLoop("Settings", mgr, options.Local.SettingsMeshGlooSoloIov1Alpha2Settings).RunSettingsReconciler(ctx, &localSettingsMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	// initialize SettingsMeshGlooSoloIo_V1Alpha2_Settings reconcile loop for local cluster
+	if err := settings_mesh_gloo_solo_io_v1alpha2_controllers.NewSettingsReconcileLoop("Settings", mgr, options.Local.SettingsMeshGlooSoloIo_V1Alpha2_Settings).RunSettingsReconciler(ctx, &localSettingsMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
-	// initialize DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets reconcile loop for local cluster
-	if err := discovery_mesh_gloo_solo_io_v1alpha2_controllers.NewTrafficTargetReconcileLoop("TrafficTarget", mgr, options.Local.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets).RunTrafficTargetReconciler(ctx, &localDiscoveryMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	// initialize DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets reconcile loop for local cluster
+	if err := discovery_mesh_gloo_solo_io_v1alpha2_controllers.NewTrafficTargetReconcileLoop("TrafficTarget", mgr, options.Local.DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets).RunTrafficTargetReconciler(ctx, &localDiscoveryMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
-	// initialize DiscoveryMeshGlooSoloIov1Alpha2Workloads reconcile loop for local cluster
-	if err := discovery_mesh_gloo_solo_io_v1alpha2_controllers.NewWorkloadReconcileLoop("Workload", mgr, options.Local.DiscoveryMeshGlooSoloIov1Alpha2Workloads).RunWorkloadReconciler(ctx, &localDiscoveryMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	// initialize DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads reconcile loop for local cluster
+	if err := discovery_mesh_gloo_solo_io_v1alpha2_controllers.NewWorkloadReconcileLoop("Workload", mgr, options.Local.DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads).RunWorkloadReconciler(ctx, &localDiscoveryMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
-	// initialize DiscoveryMeshGlooSoloIov1Alpha2Meshes reconcile loop for local cluster
-	if err := discovery_mesh_gloo_solo_io_v1alpha2_controllers.NewMeshReconcileLoop("Mesh", mgr, options.Local.DiscoveryMeshGlooSoloIov1Alpha2Meshes).RunMeshReconciler(ctx, &localDiscoveryMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
-		return nil, err
-	}
-
-	// initialize NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies reconcile loop for local cluster
-	if err := networking_mesh_gloo_solo_io_v1alpha2_controllers.NewTrafficPolicyReconcileLoop("TrafficPolicy", mgr, options.Local.NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies).RunTrafficPolicyReconciler(ctx, &localNetworkingMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
-		return nil, err
-	}
-	// initialize NetworkingMeshGlooSoloIov1Alpha2AccessPolicies reconcile loop for local cluster
-	if err := networking_mesh_gloo_solo_io_v1alpha2_controllers.NewAccessPolicyReconcileLoop("AccessPolicy", mgr, options.Local.NetworkingMeshGlooSoloIov1Alpha2AccessPolicies).RunAccessPolicyReconciler(ctx, &localNetworkingMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
-		return nil, err
-	}
-	// initialize NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes reconcile loop for local cluster
-	if err := networking_mesh_gloo_solo_io_v1alpha2_controllers.NewVirtualMeshReconcileLoop("VirtualMesh", mgr, options.Local.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes).RunVirtualMeshReconciler(ctx, &localNetworkingMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
-		return nil, err
-	}
-	// initialize NetworkingMeshGlooSoloIov1Alpha2FailoverServices reconcile loop for local cluster
-	if err := networking_mesh_gloo_solo_io_v1alpha2_controllers.NewFailoverServiceReconcileLoop("FailoverService", mgr, options.Local.NetworkingMeshGlooSoloIov1Alpha2FailoverServices).RunFailoverServiceReconciler(ctx, &localNetworkingMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	// initialize DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes reconcile loop for local cluster
+	if err := discovery_mesh_gloo_solo_io_v1alpha2_controllers.NewMeshReconcileLoop("Mesh", mgr, options.Local.DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes).RunMeshReconciler(ctx, &localDiscoveryMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
-	// initialize NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments reconcile loop for local cluster
-	if err := networking_enterprise_mesh_gloo_solo_io_v1alpha1_controllers.NewWasmDeploymentReconcileLoop("WasmDeployment", mgr, options.Local.NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments).RunWasmDeploymentReconciler(ctx, &localNetworkingEnterpriseMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	// initialize NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies reconcile loop for local cluster
+	if err := networking_mesh_gloo_solo_io_v1alpha2_controllers.NewTrafficPolicyReconcileLoop("TrafficPolicy", mgr, options.Local.NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies).RunTrafficPolicyReconciler(ctx, &localNetworkingMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+	// initialize NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies reconcile loop for local cluster
+	if err := networking_mesh_gloo_solo_io_v1alpha2_controllers.NewAccessPolicyReconcileLoop("AccessPolicy", mgr, options.Local.NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies).RunAccessPolicyReconciler(ctx, &localNetworkingMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+	// initialize NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes reconcile loop for local cluster
+	if err := networking_mesh_gloo_solo_io_v1alpha2_controllers.NewVirtualMeshReconcileLoop("VirtualMesh", mgr, options.Local.NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes).RunVirtualMeshReconciler(ctx, &localNetworkingMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+	// initialize NetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices reconcile loop for local cluster
+	if err := networking_mesh_gloo_solo_io_v1alpha2_controllers.NewFailoverServiceReconcileLoop("FailoverService", mgr, options.Local.NetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices).RunFailoverServiceReconciler(ctx, &localNetworkingMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
-	// initialize ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords reconcile loop for local cluster
-	if err := observability_enterprise_mesh_gloo_solo_io_v1alpha1_controllers.NewAccessLogRecordReconcileLoop("AccessLogRecord", mgr, options.Local.ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords).RunAccessLogRecordReconciler(ctx, &localObservabilityEnterpriseMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	// initialize NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments reconcile loop for local cluster
+	if err := networking_enterprise_mesh_gloo_solo_io_v1alpha1_controllers.NewWasmDeploymentReconcileLoop("WasmDeployment", mgr, options.Local.NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments).RunWasmDeploymentReconciler(ctx, &localNetworkingEnterpriseMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
-	// initialize V1Secrets reconcile loop for local cluster
-	if err := v1_controllers.NewSecretReconcileLoop("Secret", mgr, options.Local.V1Secrets).RunSecretReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	// initialize ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords reconcile loop for local cluster
+	if err := observability_enterprise_mesh_gloo_solo_io_v1alpha1_controllers.NewAccessLogRecordReconcileLoop("AccessLogRecord", mgr, options.Local.ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords).RunAccessLogRecordReconciler(ctx, &localObservabilityEnterpriseMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
-	// initialize MulticlusterSoloIov1Alpha1KubernetesClusters reconcile loop for local cluster
-	if err := multicluster_solo_io_v1alpha1_controllers.NewKubernetesClusterReconcileLoop("KubernetesCluster", mgr, options.Local.MulticlusterSoloIov1Alpha1KubernetesClusters).RunKubernetesClusterReconciler(ctx, &localMulticlusterSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	// initialize V1_Secrets reconcile loop for local cluster
+	if err := v1_controllers.NewSecretReconcileLoop("Secret", mgr, options.Local.V1_Secrets).RunSecretReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+		return nil, err
+	}
+
+	// initialize MulticlusterSoloIo_V1Alpha1_KubernetesClusters reconcile loop for local cluster
+	if err := multicluster_solo_io_v1alpha1_controllers.NewKubernetesClusterReconcileLoop("KubernetesCluster", mgr, options.Local.MulticlusterSoloIo_V1Alpha1_KubernetesClusters).RunKubernetesClusterReconciler(ctx, &localMulticlusterSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
@@ -179,30 +179,30 @@ func RegisterInputReconciler(
 // Options for reconciling a snapshot in remote clusters
 type RemoteReconcileOptions struct {
 
-	// Options for reconciling CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates
-	CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates reconcile.Options
-	// Options for reconciling CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives
-	CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives reconcile.Options
+	// Options for reconciling CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates
+	CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates reconcile.Options
+	// Options for reconciling CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives
+	CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives reconcile.Options
 
-	// Options for reconciling XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs
-	XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs reconcile.Options
+	// Options for reconciling XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs
+	XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs reconcile.Options
 
-	// Options for reconciling NetworkingIstioIov1Alpha3DestinationRules
-	NetworkingIstioIov1Alpha3DestinationRules reconcile.Options
-	// Options for reconciling NetworkingIstioIov1Alpha3EnvoyFilters
-	NetworkingIstioIov1Alpha3EnvoyFilters reconcile.Options
-	// Options for reconciling NetworkingIstioIov1Alpha3Gateways
-	NetworkingIstioIov1Alpha3Gateways reconcile.Options
-	// Options for reconciling NetworkingIstioIov1Alpha3ServiceEntries
-	NetworkingIstioIov1Alpha3ServiceEntries reconcile.Options
-	// Options for reconciling NetworkingIstioIov1Alpha3VirtualServices
-	NetworkingIstioIov1Alpha3VirtualServices reconcile.Options
+	// Options for reconciling NetworkingIstioIo_V1Alpha3_DestinationRules
+	NetworkingIstioIo_V1Alpha3_DestinationRules reconcile.Options
+	// Options for reconciling NetworkingIstioIo_V1Alpha3_EnvoyFilters
+	NetworkingIstioIo_V1Alpha3_EnvoyFilters reconcile.Options
+	// Options for reconciling NetworkingIstioIo_V1Alpha3_Gateways
+	NetworkingIstioIo_V1Alpha3_Gateways reconcile.Options
+	// Options for reconciling NetworkingIstioIo_V1Alpha3_ServiceEntries
+	NetworkingIstioIo_V1Alpha3_ServiceEntries reconcile.Options
+	// Options for reconciling NetworkingIstioIo_V1Alpha3_VirtualServices
+	NetworkingIstioIo_V1Alpha3_VirtualServices reconcile.Options
 
-	// Options for reconciling SecurityIstioIov1Beta1AuthorizationPolicies
-	SecurityIstioIov1Beta1AuthorizationPolicies reconcile.Options
+	// Options for reconciling SecurityIstioIo_V1Beta1_AuthorizationPolicies
+	SecurityIstioIo_V1Beta1_AuthorizationPolicies reconcile.Options
 
-	// Options for reconciling V1ConfigMaps
-	V1ConfigMaps reconcile.Options
+	// Options for reconciling V1_ConfigMaps
+	V1_ConfigMaps reconcile.Options
 
 	// optional predicates for filtering remote events
 	Predicates []predicate.Predicate
@@ -381,36 +381,36 @@ func (r *remoteInputReconciler) ReconcileConfigMapDeletion(clusterName string, o
 // Options for reconciling a snapshot in remote clusters
 type LocalReconcileOptions struct {
 
-	// Options for reconciling SettingsMeshGlooSoloIov1Alpha2Settings
-	SettingsMeshGlooSoloIov1Alpha2Settings reconcile.Options
+	// Options for reconciling SettingsMeshGlooSoloIo_V1Alpha2_Settings
+	SettingsMeshGlooSoloIo_V1Alpha2_Settings reconcile.Options
 
-	// Options for reconciling DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets
-	DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets reconcile.Options
-	// Options for reconciling DiscoveryMeshGlooSoloIov1Alpha2Workloads
-	DiscoveryMeshGlooSoloIov1Alpha2Workloads reconcile.Options
-	// Options for reconciling DiscoveryMeshGlooSoloIov1Alpha2Meshes
-	DiscoveryMeshGlooSoloIov1Alpha2Meshes reconcile.Options
+	// Options for reconciling DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets
+	DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets reconcile.Options
+	// Options for reconciling DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads
+	DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads reconcile.Options
+	// Options for reconciling DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes
+	DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes reconcile.Options
 
-	// Options for reconciling NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies
-	NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies reconcile.Options
-	// Options for reconciling NetworkingMeshGlooSoloIov1Alpha2AccessPolicies
-	NetworkingMeshGlooSoloIov1Alpha2AccessPolicies reconcile.Options
-	// Options for reconciling NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
-	NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes reconcile.Options
-	// Options for reconciling NetworkingMeshGlooSoloIov1Alpha2FailoverServices
-	NetworkingMeshGlooSoloIov1Alpha2FailoverServices reconcile.Options
+	// Options for reconciling NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies
+	NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies reconcile.Options
+	// Options for reconciling NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies
+	NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies reconcile.Options
+	// Options for reconciling NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes
+	NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes reconcile.Options
+	// Options for reconciling NetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices
+	NetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices reconcile.Options
 
-	// Options for reconciling NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments
-	NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments reconcile.Options
+	// Options for reconciling NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments
+	NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments reconcile.Options
 
-	// Options for reconciling ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords
-	ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords reconcile.Options
+	// Options for reconciling ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords
+	ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords reconcile.Options
 
-	// Options for reconciling V1Secrets
-	V1Secrets reconcile.Options
+	// Options for reconciling V1_Secrets
+	V1_Secrets reconcile.Options
 
-	// Options for reconciling MulticlusterSoloIov1Alpha1KubernetesClusters
-	MulticlusterSoloIov1Alpha1KubernetesClusters reconcile.Options
+	// Options for reconciling MulticlusterSoloIo_V1Alpha1_KubernetesClusters
+	MulticlusterSoloIo_V1Alpha1_KubernetesClusters reconcile.Options
 
 	// optional predicates for filtering local events
 	Predicates []predicate.Predicate

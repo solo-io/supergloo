@@ -3,8 +3,8 @@
 //go:generate mockgen -source ./local_snapshot.go -destination mocks/local_snapshot.go
 
 // The Input SettingsSnapshot contains the set of all:
-// * SettingsMeshGlooSoloIov1Alpha2Settings
-// * NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
+// * SettingsMeshGlooSoloIo_V1Alpha2_Settings
+// * NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
@@ -39,11 +39,11 @@ import (
 // the snapshot of input resources consumed by translation
 type SettingsSnapshot interface {
 
-	// return the set of input SettingsMeshGlooSoloIov1Alpha2Settings
-	SettingsMeshGlooSoloIov1Alpha2Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+	// return the set of input SettingsMeshGlooSoloIo_V1Alpha2_Settings
+	SettingsMeshGlooSoloIo_V1Alpha2_Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 
-	// return the set of input NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
-	NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
+	// return the set of input NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes
+	NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 	// update the status of all input objects which support
 	// the Status subresource (across multiple clusters)
 	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts SettingsSyncStatusOptions) error
@@ -57,50 +57,50 @@ type SettingsSnapshot interface {
 // options for syncing input object statuses
 type SettingsSyncStatusOptions struct {
 
-	// sync status of SettingsMeshGlooSoloIov1Alpha2Settings objects
-	SettingsMeshGlooSoloIov1Alpha2Settings bool
+	// sync status of SettingsMeshGlooSoloIo_V1Alpha2_Settings objects
+	SettingsMeshGlooSoloIo_V1Alpha2_Settings bool
 
-	// sync status of NetworkingMeshGlooSoloIov1Alpha2VirtualMesh objects
-	NetworkingMeshGlooSoloIov1Alpha2VirtualMesh bool
+	// sync status of NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMesh objects
+	NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMesh bool
 }
 
 type snapshotSettings struct {
 	name string
 
-	settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+	settingsMeshGlooSoloIoV1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 
-	networkingMeshGlooSoloIov1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
+	networkingMeshGlooSoloIoV1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 }
 
 func NewSettingsSnapshot(
 	name string,
 
-	settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet,
+	settingsMeshGlooSoloIoV1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet,
 
-	networkingMeshGlooSoloIov1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet,
+	networkingMeshGlooSoloIoV1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet,
 
 ) SettingsSnapshot {
 	return &snapshotSettings{
 		name: name,
 
-		settingsMeshGlooSoloIov1Alpha2Settings:        settingsMeshGlooSoloIov1Alpha2Settings,
-		networkingMeshGlooSoloIov1Alpha2VirtualMeshes: networkingMeshGlooSoloIov1Alpha2VirtualMeshes,
+		settingsMeshGlooSoloIoV1Alpha2Settings:        settingsMeshGlooSoloIoV1Alpha2Settings,
+		networkingMeshGlooSoloIoV1Alpha2VirtualMeshes: networkingMeshGlooSoloIoV1Alpha2VirtualMeshes,
 	}
 }
 
-func (s snapshotSettings) SettingsMeshGlooSoloIov1Alpha2Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet {
-	return s.settingsMeshGlooSoloIov1Alpha2Settings
+func (s snapshotSettings) SettingsMeshGlooSoloIo_V1Alpha2_Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet {
+	return s.settingsMeshGlooSoloIoV1Alpha2Settings
 }
 
-func (s snapshotSettings) NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet {
-	return s.networkingMeshGlooSoloIov1Alpha2VirtualMeshes
+func (s snapshotSettings) NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet {
+	return s.networkingMeshGlooSoloIoV1Alpha2VirtualMeshes
 }
 
 func (s snapshotSettings) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts SettingsSyncStatusOptions) error {
 	var errs error
 
-	if opts.SettingsMeshGlooSoloIov1Alpha2Settings {
-		for _, obj := range s.SettingsMeshGlooSoloIov1Alpha2Settings().List() {
+	if opts.SettingsMeshGlooSoloIo_V1Alpha2_Settings {
+		for _, obj := range s.SettingsMeshGlooSoloIo_V1Alpha2_Settings().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -112,8 +112,8 @@ func (s snapshotSettings) SyncStatusesMultiCluster(ctx context.Context, mcClient
 		}
 	}
 
-	if opts.NetworkingMeshGlooSoloIov1Alpha2VirtualMesh {
-		for _, obj := range s.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes().List() {
+	if opts.NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMesh {
+		for _, obj := range s.NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -130,16 +130,16 @@ func (s snapshotSettings) SyncStatusesMultiCluster(ctx context.Context, mcClient
 func (s snapshotSettings) SyncStatuses(ctx context.Context, c client.Client, opts SettingsSyncStatusOptions) error {
 	var errs error
 
-	if opts.SettingsMeshGlooSoloIov1Alpha2Settings {
-		for _, obj := range s.SettingsMeshGlooSoloIov1Alpha2Settings().List() {
+	if opts.SettingsMeshGlooSoloIo_V1Alpha2_Settings {
+		for _, obj := range s.SettingsMeshGlooSoloIo_V1Alpha2_Settings().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
 
-	if opts.NetworkingMeshGlooSoloIov1Alpha2VirtualMesh {
-		for _, obj := range s.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes().List() {
+	if opts.NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMesh {
+		for _, obj := range s.NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
@@ -151,8 +151,8 @@ func (s snapshotSettings) SyncStatuses(ctx context.Context, c client.Client, opt
 func (s snapshotSettings) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
-	snapshotMap["settingsMeshGlooSoloIov1Alpha2Settings"] = s.settingsMeshGlooSoloIov1Alpha2Settings.List()
-	snapshotMap["networkingMeshGlooSoloIov1Alpha2VirtualMeshes"] = s.networkingMeshGlooSoloIov1Alpha2VirtualMeshes.List()
+	snapshotMap["settingsMeshGlooSoloIoV1Alpha2Settings"] = s.settingsMeshGlooSoloIoV1Alpha2Settings.List()
+	snapshotMap["networkingMeshGlooSoloIoV1Alpha2VirtualMeshes"] = s.networkingMeshGlooSoloIoV1Alpha2VirtualMeshes.List()
 	return json.Marshal(snapshotMap)
 }
 
@@ -164,11 +164,11 @@ type SettingsBuilder interface {
 // Options for building a snapshot
 type SettingsBuildOptions struct {
 
-	// List options for composing a snapshot from SettingsMeshGlooSoloIov1Alpha2Settings
-	SettingsMeshGlooSoloIov1Alpha2Settings ResourceSettingsBuildOptions
+	// List options for composing a snapshot from SettingsMeshGlooSoloIo_V1Alpha2_Settings
+	SettingsMeshGlooSoloIo_V1Alpha2_Settings ResourceSettingsBuildOptions
 
-	// List options for composing a snapshot from NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
-	NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes ResourceSettingsBuildOptions
+	// List options for composing a snapshot from NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes
+	NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes ResourceSettingsBuildOptions
 }
 
 // Options for reading resources of a given type
@@ -200,18 +200,18 @@ func NewMultiClusterSettingsBuilder(
 
 func (b *multiClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name string, opts SettingsBuildOptions) (SettingsSnapshot, error) {
 
-	settingsMeshGlooSoloIov1Alpha2Settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+	settingsMeshGlooSoloIoV1Alpha2Settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
-	networkingMeshGlooSoloIov1Alpha2VirtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
+	networkingMeshGlooSoloIoV1Alpha2VirtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
 
 	var errs error
 
 	for _, cluster := range b.clusters.ListClusters() {
 
-		if err := b.insertSettingsMeshGlooSoloIov1Alpha2SettingsFromCluster(ctx, cluster, settingsMeshGlooSoloIov1Alpha2Settings, opts.SettingsMeshGlooSoloIov1Alpha2Settings); err != nil {
+		if err := b.insertSettingsMeshGlooSoloIo_V1Alpha2_SettingsFromCluster(ctx, cluster, settingsMeshGlooSoloIoV1Alpha2Settings, opts.SettingsMeshGlooSoloIo_V1Alpha2_Settings); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertNetworkingMeshGlooSoloIov1Alpha2VirtualMeshesFromCluster(ctx, cluster, networkingMeshGlooSoloIov1Alpha2VirtualMeshes, opts.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes); err != nil {
+		if err := b.insertNetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshesFromCluster(ctx, cluster, networkingMeshGlooSoloIoV1Alpha2VirtualMeshes, opts.NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 
@@ -220,15 +220,15 @@ func (b *multiClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name st
 	outputSnap := NewSettingsSnapshot(
 		name,
 
-		settingsMeshGlooSoloIov1Alpha2Settings,
-		networkingMeshGlooSoloIov1Alpha2VirtualMeshes,
+		settingsMeshGlooSoloIoV1Alpha2Settings,
+		networkingMeshGlooSoloIoV1Alpha2VirtualMeshes,
 	)
 
 	return outputSnap, errs
 }
 
-func (b *multiClusterSettingsBuilder) insertSettingsMeshGlooSoloIov1Alpha2SettingsFromCluster(ctx context.Context, cluster string, settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceSettingsBuildOptions) error {
-	settingsMeshGlooSoloIov1Alpha2SettingsClient, err := settings_mesh_gloo_solo_io_v1alpha2.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
+func (b *multiClusterSettingsBuilder) insertSettingsMeshGlooSoloIo_V1Alpha2_SettingsFromCluster(ctx context.Context, cluster string, settingsMeshGlooSoloIoV1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceSettingsBuildOptions) error {
+	settingsMeshGlooSoloIoV1Alpha2SettingsClient, err := settings_mesh_gloo_solo_io_v1alpha2.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -256,22 +256,22 @@ func (b *multiClusterSettingsBuilder) insertSettingsMeshGlooSoloIov1Alpha2Settin
 		}
 	}
 
-	settingsMeshGlooSoloIov1Alpha2SettingsList, err := settingsMeshGlooSoloIov1Alpha2SettingsClient.ListSettings(ctx, opts.ListOptions...)
+	settingsMeshGlooSoloIoV1Alpha2SettingsList, err := settingsMeshGlooSoloIoV1Alpha2SettingsClient.ListSettings(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range settingsMeshGlooSoloIov1Alpha2SettingsList.Items {
+	for _, item := range settingsMeshGlooSoloIoV1Alpha2SettingsList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		settingsMeshGlooSoloIov1Alpha2Settings.Insert(&item)
+		settingsMeshGlooSoloIoV1Alpha2Settings.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *multiClusterSettingsBuilder) insertNetworkingMeshGlooSoloIov1Alpha2VirtualMeshesFromCluster(ctx context.Context, cluster string, networkingMeshGlooSoloIov1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceSettingsBuildOptions) error {
-	networkingMeshGlooSoloIov1Alpha2VirtualMeshClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterVirtualMeshClient(b.client).Cluster(cluster)
+func (b *multiClusterSettingsBuilder) insertNetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshesFromCluster(ctx context.Context, cluster string, networkingMeshGlooSoloIoV1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceSettingsBuildOptions) error {
+	networkingMeshGlooSoloIoV1Alpha2VirtualMeshClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterVirtualMeshClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -299,15 +299,15 @@ func (b *multiClusterSettingsBuilder) insertNetworkingMeshGlooSoloIov1Alpha2Virt
 		}
 	}
 
-	networkingMeshGlooSoloIov1Alpha2VirtualMeshList, err := networkingMeshGlooSoloIov1Alpha2VirtualMeshClient.ListVirtualMesh(ctx, opts.ListOptions...)
+	networkingMeshGlooSoloIoV1Alpha2VirtualMeshList, err := networkingMeshGlooSoloIoV1Alpha2VirtualMeshClient.ListVirtualMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingMeshGlooSoloIov1Alpha2VirtualMeshList.Items {
+	for _, item := range networkingMeshGlooSoloIoV1Alpha2VirtualMeshList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		networkingMeshGlooSoloIov1Alpha2VirtualMeshes.Insert(&item)
+		networkingMeshGlooSoloIoV1Alpha2VirtualMeshes.Insert(&item)
 	}
 
 	return nil
@@ -340,30 +340,30 @@ func NewSingleClusterSettingsBuilderWithClusterName(
 
 func (b *singleClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name string, opts SettingsBuildOptions) (SettingsSnapshot, error) {
 
-	settingsMeshGlooSoloIov1Alpha2Settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+	settingsMeshGlooSoloIoV1Alpha2Settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
-	networkingMeshGlooSoloIov1Alpha2VirtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
+	networkingMeshGlooSoloIoV1Alpha2VirtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
 
 	var errs error
 
-	if err := b.insertSettingsMeshGlooSoloIov1Alpha2Settings(ctx, settingsMeshGlooSoloIov1Alpha2Settings, opts.SettingsMeshGlooSoloIov1Alpha2Settings); err != nil {
+	if err := b.insertSettingsMeshGlooSoloIo_V1Alpha2_Settings(ctx, settingsMeshGlooSoloIoV1Alpha2Settings, opts.SettingsMeshGlooSoloIo_V1Alpha2_Settings); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertNetworkingMeshGlooSoloIov1Alpha2VirtualMeshes(ctx, networkingMeshGlooSoloIov1Alpha2VirtualMeshes, opts.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes); err != nil {
+	if err := b.insertNetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes(ctx, networkingMeshGlooSoloIoV1Alpha2VirtualMeshes, opts.NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
 	outputSnap := NewSettingsSnapshot(
 		name,
 
-		settingsMeshGlooSoloIov1Alpha2Settings,
-		networkingMeshGlooSoloIov1Alpha2VirtualMeshes,
+		settingsMeshGlooSoloIoV1Alpha2Settings,
+		networkingMeshGlooSoloIoV1Alpha2VirtualMeshes,
 	)
 
 	return outputSnap, errs
 }
 
-func (b *singleClusterSettingsBuilder) insertSettingsMeshGlooSoloIov1Alpha2Settings(ctx context.Context, settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceSettingsBuildOptions) error {
+func (b *singleClusterSettingsBuilder) insertSettingsMeshGlooSoloIo_V1Alpha2_Settings(ctx context.Context, settingsMeshGlooSoloIoV1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceSettingsBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -383,21 +383,21 @@ func (b *singleClusterSettingsBuilder) insertSettingsMeshGlooSoloIov1Alpha2Setti
 		}
 	}
 
-	settingsMeshGlooSoloIov1Alpha2SettingsList, err := settings_mesh_gloo_solo_io_v1alpha2.NewSettingsClient(b.mgr.GetClient()).ListSettings(ctx, opts.ListOptions...)
+	settingsMeshGlooSoloIoV1Alpha2SettingsList, err := settings_mesh_gloo_solo_io_v1alpha2.NewSettingsClient(b.mgr.GetClient()).ListSettings(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range settingsMeshGlooSoloIov1Alpha2SettingsList.Items {
+	for _, item := range settingsMeshGlooSoloIoV1Alpha2SettingsList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		settingsMeshGlooSoloIov1Alpha2Settings.Insert(&item)
+		settingsMeshGlooSoloIoV1Alpha2Settings.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *singleClusterSettingsBuilder) insertNetworkingMeshGlooSoloIov1Alpha2VirtualMeshes(ctx context.Context, networkingMeshGlooSoloIov1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceSettingsBuildOptions) error {
+func (b *singleClusterSettingsBuilder) insertNetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes(ctx context.Context, networkingMeshGlooSoloIoV1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceSettingsBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -417,15 +417,15 @@ func (b *singleClusterSettingsBuilder) insertNetworkingMeshGlooSoloIov1Alpha2Vir
 		}
 	}
 
-	networkingMeshGlooSoloIov1Alpha2VirtualMeshList, err := networking_mesh_gloo_solo_io_v1alpha2.NewVirtualMeshClient(b.mgr.GetClient()).ListVirtualMesh(ctx, opts.ListOptions...)
+	networkingMeshGlooSoloIoV1Alpha2VirtualMeshList, err := networking_mesh_gloo_solo_io_v1alpha2.NewVirtualMeshClient(b.mgr.GetClient()).ListVirtualMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingMeshGlooSoloIov1Alpha2VirtualMeshList.Items {
+	for _, item := range networkingMeshGlooSoloIoV1Alpha2VirtualMeshList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		networkingMeshGlooSoloIov1Alpha2VirtualMeshes.Insert(&item)
+		networkingMeshGlooSoloIoV1Alpha2VirtualMeshes.Insert(&item)
 	}
 
 	return nil

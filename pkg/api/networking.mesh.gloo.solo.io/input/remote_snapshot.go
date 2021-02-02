@@ -3,16 +3,16 @@
 //go:generate mockgen -source ./remote_snapshot.go -destination mocks/remote_snapshot.go
 
 // The Input RemoteSnapshot contains the set of all:
-// * CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates
-// * CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives
-// * XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs
-// * NetworkingIstioIov1Alpha3DestinationRules
-// * NetworkingIstioIov1Alpha3EnvoyFilters
-// * NetworkingIstioIov1Alpha3Gateways
-// * NetworkingIstioIov1Alpha3ServiceEntries
-// * NetworkingIstioIov1Alpha3VirtualServices
-// * SecurityIstioIov1Beta1AuthorizationPolicies
-// * V1ConfigMaps
+// * CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates
+// * CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives
+// * XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs
+// * NetworkingIstioIo_V1Alpha3_DestinationRules
+// * NetworkingIstioIo_V1Alpha3_EnvoyFilters
+// * NetworkingIstioIo_V1Alpha3_Gateways
+// * NetworkingIstioIo_V1Alpha3_ServiceEntries
+// * NetworkingIstioIo_V1Alpha3_VirtualServices
+// * SecurityIstioIo_V1Beta1_AuthorizationPolicies
+// * V1_ConfigMaps
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
@@ -56,30 +56,30 @@ import (
 // the snapshot of input resources consumed by translation
 type RemoteSnapshot interface {
 
-	// return the set of input CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates
-	CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
-	// return the set of input CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives
-	CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+	// return the set of input CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates
+	CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
+	// return the set of input CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives
+	CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 
-	// return the set of input XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs
-	XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+	// return the set of input XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs
+	XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
 
-	// return the set of input NetworkingIstioIov1Alpha3DestinationRules
-	NetworkingIstioIov1Alpha3DestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet
-	// return the set of input NetworkingIstioIov1Alpha3EnvoyFilters
-	NetworkingIstioIov1Alpha3EnvoyFilters() networking_istio_io_v1alpha3_sets.EnvoyFilterSet
-	// return the set of input NetworkingIstioIov1Alpha3Gateways
-	NetworkingIstioIov1Alpha3Gateways() networking_istio_io_v1alpha3_sets.GatewaySet
-	// return the set of input NetworkingIstioIov1Alpha3ServiceEntries
-	NetworkingIstioIov1Alpha3ServiceEntries() networking_istio_io_v1alpha3_sets.ServiceEntrySet
-	// return the set of input NetworkingIstioIov1Alpha3VirtualServices
-	NetworkingIstioIov1Alpha3VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet
+	// return the set of input NetworkingIstioIo_V1Alpha3_DestinationRules
+	NetworkingIstioIo_V1Alpha3_DestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet
+	// return the set of input NetworkingIstioIo_V1Alpha3_EnvoyFilters
+	NetworkingIstioIo_V1Alpha3_EnvoyFilters() networking_istio_io_v1alpha3_sets.EnvoyFilterSet
+	// return the set of input NetworkingIstioIo_V1Alpha3_Gateways
+	NetworkingIstioIo_V1Alpha3_Gateways() networking_istio_io_v1alpha3_sets.GatewaySet
+	// return the set of input NetworkingIstioIo_V1Alpha3_ServiceEntries
+	NetworkingIstioIo_V1Alpha3_ServiceEntries() networking_istio_io_v1alpha3_sets.ServiceEntrySet
+	// return the set of input NetworkingIstioIo_V1Alpha3_VirtualServices
+	NetworkingIstioIo_V1Alpha3_VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet
 
-	// return the set of input SecurityIstioIov1Beta1AuthorizationPolicies
-	SecurityIstioIov1Beta1AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet
+	// return the set of input SecurityIstioIo_V1Beta1_AuthorizationPolicies
+	SecurityIstioIo_V1Beta1_AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet
 
-	// return the set of input V1ConfigMaps
-	V1ConfigMaps() v1_sets.ConfigMapSet
+	// return the set of input V1_ConfigMaps
+	V1_ConfigMaps() v1_sets.ConfigMapSet
 	// update the status of all input objects which support
 	// the Status subresource (across multiple clusters)
 	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts RemoteSyncStatusOptions) error
@@ -93,47 +93,47 @@ type RemoteSnapshot interface {
 // options for syncing input object statuses
 type RemoteSyncStatusOptions struct {
 
-	// sync status of CertificatesMeshGlooSoloIov1Alpha2IssuedCertificate objects
-	CertificatesMeshGlooSoloIov1Alpha2IssuedCertificate bool
-	// sync status of CertificatesMeshGlooSoloIov1Alpha2PodBounceDirective objects
-	CertificatesMeshGlooSoloIov1Alpha2PodBounceDirective bool
+	// sync status of CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificate objects
+	CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificate bool
+	// sync status of CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirective objects
+	CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirective bool
 
-	// sync status of XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfig objects
-	XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfig bool
+	// sync status of XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfig objects
+	XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfig bool
 
-	// sync status of NetworkingIstioIov1Alpha3DestinationRule objects
-	NetworkingIstioIov1Alpha3DestinationRule bool
-	// sync status of NetworkingIstioIov1Alpha3EnvoyFilter objects
-	NetworkingIstioIov1Alpha3EnvoyFilter bool
-	// sync status of NetworkingIstioIov1Alpha3Gateway objects
-	NetworkingIstioIov1Alpha3Gateway bool
-	// sync status of NetworkingIstioIov1Alpha3ServiceEntry objects
-	NetworkingIstioIov1Alpha3ServiceEntry bool
-	// sync status of NetworkingIstioIov1Alpha3VirtualService objects
-	NetworkingIstioIov1Alpha3VirtualService bool
+	// sync status of NetworkingIstioIo_V1Alpha3_DestinationRule objects
+	NetworkingIstioIo_V1Alpha3_DestinationRule bool
+	// sync status of NetworkingIstioIo_V1Alpha3_EnvoyFilter objects
+	NetworkingIstioIo_V1Alpha3_EnvoyFilter bool
+	// sync status of NetworkingIstioIo_V1Alpha3_Gateway objects
+	NetworkingIstioIo_V1Alpha3_Gateway bool
+	// sync status of NetworkingIstioIo_V1Alpha3_ServiceEntry objects
+	NetworkingIstioIo_V1Alpha3_ServiceEntry bool
+	// sync status of NetworkingIstioIo_V1Alpha3_VirtualService objects
+	NetworkingIstioIo_V1Alpha3_VirtualService bool
 
-	// sync status of SecurityIstioIov1Beta1AuthorizationPolicy objects
-	SecurityIstioIov1Beta1AuthorizationPolicy bool
+	// sync status of SecurityIstioIo_V1Beta1_AuthorizationPolicy objects
+	SecurityIstioIo_V1Beta1_AuthorizationPolicy bool
 
-	// sync status of V1ConfigMap objects
-	V1ConfigMap bool
+	// sync status of V1_ConfigMap objects
+	V1_ConfigMap bool
 }
 
 type snapshotRemote struct {
 	name string
 
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates  certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+	certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates  certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
+	certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+	xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
 
-	networkingIstioIov1Alpha3DestinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet
-	networkingIstioIov1Alpha3EnvoyFilters     networking_istio_io_v1alpha3_sets.EnvoyFilterSet
-	networkingIstioIov1Alpha3Gateways         networking_istio_io_v1alpha3_sets.GatewaySet
-	networkingIstioIov1Alpha3ServiceEntries   networking_istio_io_v1alpha3_sets.ServiceEntrySet
-	networkingIstioIov1Alpha3VirtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
+	networkingIstioIoV1Alpha3DestinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet
+	networkingIstioIoV1Alpha3EnvoyFilters     networking_istio_io_v1alpha3_sets.EnvoyFilterSet
+	networkingIstioIoV1Alpha3Gateways         networking_istio_io_v1alpha3_sets.GatewaySet
+	networkingIstioIoV1Alpha3ServiceEntries   networking_istio_io_v1alpha3_sets.ServiceEntrySet
+	networkingIstioIoV1Alpha3VirtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
 
-	securityIstioIov1Beta1AuthorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
+	securityIstioIoV1Beta1AuthorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
 
 	v1ConfigMaps v1_sets.ConfigMapSet
 }
@@ -141,18 +141,18 @@ type snapshotRemote struct {
 func NewRemoteSnapshot(
 	name string,
 
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet,
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
+	certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet,
+	certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
 
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet,
+	xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet,
 
-	networkingIstioIov1Alpha3DestinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
-	networkingIstioIov1Alpha3EnvoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
-	networkingIstioIov1Alpha3Gateways networking_istio_io_v1alpha3_sets.GatewaySet,
-	networkingIstioIov1Alpha3ServiceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet,
-	networkingIstioIov1Alpha3VirtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
+	networkingIstioIoV1Alpha3DestinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
+	networkingIstioIoV1Alpha3EnvoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
+	networkingIstioIoV1Alpha3Gateways networking_istio_io_v1alpha3_sets.GatewaySet,
+	networkingIstioIoV1Alpha3ServiceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet,
+	networkingIstioIoV1Alpha3VirtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet,
 
-	securityIstioIov1Beta1AuthorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
+	securityIstioIoV1Beta1AuthorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet,
 
 	v1ConfigMaps v1_sets.ConfigMapSet,
 
@@ -160,64 +160,64 @@ func NewRemoteSnapshot(
 	return &snapshotRemote{
 		name: name,
 
-		certificatesMeshGlooSoloIov1Alpha2IssuedCertificates:  certificatesMeshGlooSoloIov1Alpha2IssuedCertificates,
-		certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives: certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives,
-		xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs:    xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs,
-		networkingIstioIov1Alpha3DestinationRules:             networkingIstioIov1Alpha3DestinationRules,
-		networkingIstioIov1Alpha3EnvoyFilters:                 networkingIstioIov1Alpha3EnvoyFilters,
-		networkingIstioIov1Alpha3Gateways:                     networkingIstioIov1Alpha3Gateways,
-		networkingIstioIov1Alpha3ServiceEntries:               networkingIstioIov1Alpha3ServiceEntries,
-		networkingIstioIov1Alpha3VirtualServices:              networkingIstioIov1Alpha3VirtualServices,
-		securityIstioIov1Beta1AuthorizationPolicies:           securityIstioIov1Beta1AuthorizationPolicies,
+		certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates:  certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates,
+		certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives: certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives,
+		xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs:    xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs,
+		networkingIstioIoV1Alpha3DestinationRules:             networkingIstioIoV1Alpha3DestinationRules,
+		networkingIstioIoV1Alpha3EnvoyFilters:                 networkingIstioIoV1Alpha3EnvoyFilters,
+		networkingIstioIoV1Alpha3Gateways:                     networkingIstioIoV1Alpha3Gateways,
+		networkingIstioIoV1Alpha3ServiceEntries:               networkingIstioIoV1Alpha3ServiceEntries,
+		networkingIstioIoV1Alpha3VirtualServices:              networkingIstioIoV1Alpha3VirtualServices,
+		securityIstioIoV1Beta1AuthorizationPolicies:           securityIstioIoV1Beta1AuthorizationPolicies,
 		v1ConfigMaps: v1ConfigMaps,
 	}
 }
 
-func (s snapshotRemote) CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet {
-	return s.certificatesMeshGlooSoloIov1Alpha2IssuedCertificates
+func (s snapshotRemote) CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet {
+	return s.certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates
 }
 
-func (s snapshotRemote) CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet {
-	return s.certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives
+func (s snapshotRemote) CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet {
+	return s.certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives
 }
 
-func (s snapshotRemote) XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet {
-	return s.xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs
+func (s snapshotRemote) XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet {
+	return s.xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs
 }
 
-func (s snapshotRemote) NetworkingIstioIov1Alpha3DestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet {
-	return s.networkingIstioIov1Alpha3DestinationRules
+func (s snapshotRemote) NetworkingIstioIo_V1Alpha3_DestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet {
+	return s.networkingIstioIoV1Alpha3DestinationRules
 }
 
-func (s snapshotRemote) NetworkingIstioIov1Alpha3EnvoyFilters() networking_istio_io_v1alpha3_sets.EnvoyFilterSet {
-	return s.networkingIstioIov1Alpha3EnvoyFilters
+func (s snapshotRemote) NetworkingIstioIo_V1Alpha3_EnvoyFilters() networking_istio_io_v1alpha3_sets.EnvoyFilterSet {
+	return s.networkingIstioIoV1Alpha3EnvoyFilters
 }
 
-func (s snapshotRemote) NetworkingIstioIov1Alpha3Gateways() networking_istio_io_v1alpha3_sets.GatewaySet {
-	return s.networkingIstioIov1Alpha3Gateways
+func (s snapshotRemote) NetworkingIstioIo_V1Alpha3_Gateways() networking_istio_io_v1alpha3_sets.GatewaySet {
+	return s.networkingIstioIoV1Alpha3Gateways
 }
 
-func (s snapshotRemote) NetworkingIstioIov1Alpha3ServiceEntries() networking_istio_io_v1alpha3_sets.ServiceEntrySet {
-	return s.networkingIstioIov1Alpha3ServiceEntries
+func (s snapshotRemote) NetworkingIstioIo_V1Alpha3_ServiceEntries() networking_istio_io_v1alpha3_sets.ServiceEntrySet {
+	return s.networkingIstioIoV1Alpha3ServiceEntries
 }
 
-func (s snapshotRemote) NetworkingIstioIov1Alpha3VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet {
-	return s.networkingIstioIov1Alpha3VirtualServices
+func (s snapshotRemote) NetworkingIstioIo_V1Alpha3_VirtualServices() networking_istio_io_v1alpha3_sets.VirtualServiceSet {
+	return s.networkingIstioIoV1Alpha3VirtualServices
 }
 
-func (s snapshotRemote) SecurityIstioIov1Beta1AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet {
-	return s.securityIstioIov1Beta1AuthorizationPolicies
+func (s snapshotRemote) SecurityIstioIo_V1Beta1_AuthorizationPolicies() security_istio_io_v1beta1_sets.AuthorizationPolicySet {
+	return s.securityIstioIoV1Beta1AuthorizationPolicies
 }
 
-func (s snapshotRemote) V1ConfigMaps() v1_sets.ConfigMapSet {
+func (s snapshotRemote) V1_ConfigMaps() v1_sets.ConfigMapSet {
 	return s.v1ConfigMaps
 }
 
 func (s snapshotRemote) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts RemoteSyncStatusOptions) error {
 	var errs error
 
-	if opts.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificate {
-		for _, obj := range s.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates().List() {
+	if opts.CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificate {
+		for _, obj := range s.CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -228,8 +228,8 @@ func (s snapshotRemote) SyncStatusesMultiCluster(ctx context.Context, mcClient m
 			}
 		}
 	}
-	if opts.CertificatesMeshGlooSoloIov1Alpha2PodBounceDirective {
-		for _, obj := range s.CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives().List() {
+	if opts.CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirective {
+		for _, obj := range s.CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -241,8 +241,8 @@ func (s snapshotRemote) SyncStatusesMultiCluster(ctx context.Context, mcClient m
 		}
 	}
 
-	if opts.XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfig {
-		for _, obj := range s.XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs().List() {
+	if opts.XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfig {
+		for _, obj := range s.XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -260,23 +260,23 @@ func (s snapshotRemote) SyncStatusesMultiCluster(ctx context.Context, mcClient m
 func (s snapshotRemote) SyncStatuses(ctx context.Context, c client.Client, opts RemoteSyncStatusOptions) error {
 	var errs error
 
-	if opts.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificate {
-		for _, obj := range s.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates().List() {
+	if opts.CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificate {
+		for _, obj := range s.CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
-	if opts.CertificatesMeshGlooSoloIov1Alpha2PodBounceDirective {
-		for _, obj := range s.CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives().List() {
+	if opts.CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirective {
+		for _, obj := range s.CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
 
-	if opts.XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfig {
-		for _, obj := range s.XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs().List() {
+	if opts.XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfig {
+		for _, obj := range s.XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
@@ -289,15 +289,15 @@ func (s snapshotRemote) SyncStatuses(ctx context.Context, c client.Client, opts 
 func (s snapshotRemote) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
-	snapshotMap["certificatesMeshGlooSoloIov1Alpha2IssuedCertificates"] = s.certificatesMeshGlooSoloIov1Alpha2IssuedCertificates.List()
-	snapshotMap["certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives"] = s.certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives.List()
-	snapshotMap["xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs"] = s.xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs.List()
-	snapshotMap["networkingIstioIov1Alpha3DestinationRules"] = s.networkingIstioIov1Alpha3DestinationRules.List()
-	snapshotMap["networkingIstioIov1Alpha3EnvoyFilters"] = s.networkingIstioIov1Alpha3EnvoyFilters.List()
-	snapshotMap["networkingIstioIov1Alpha3Gateways"] = s.networkingIstioIov1Alpha3Gateways.List()
-	snapshotMap["networkingIstioIov1Alpha3ServiceEntries"] = s.networkingIstioIov1Alpha3ServiceEntries.List()
-	snapshotMap["networkingIstioIov1Alpha3VirtualServices"] = s.networkingIstioIov1Alpha3VirtualServices.List()
-	snapshotMap["securityIstioIov1Beta1AuthorizationPolicies"] = s.securityIstioIov1Beta1AuthorizationPolicies.List()
+	snapshotMap["certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates"] = s.certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates.List()
+	snapshotMap["certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives"] = s.certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives.List()
+	snapshotMap["xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs"] = s.xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs.List()
+	snapshotMap["networkingIstioIoV1Alpha3DestinationRules"] = s.networkingIstioIoV1Alpha3DestinationRules.List()
+	snapshotMap["networkingIstioIoV1Alpha3EnvoyFilters"] = s.networkingIstioIoV1Alpha3EnvoyFilters.List()
+	snapshotMap["networkingIstioIoV1Alpha3Gateways"] = s.networkingIstioIoV1Alpha3Gateways.List()
+	snapshotMap["networkingIstioIoV1Alpha3ServiceEntries"] = s.networkingIstioIoV1Alpha3ServiceEntries.List()
+	snapshotMap["networkingIstioIoV1Alpha3VirtualServices"] = s.networkingIstioIoV1Alpha3VirtualServices.List()
+	snapshotMap["securityIstioIoV1Beta1AuthorizationPolicies"] = s.securityIstioIoV1Beta1AuthorizationPolicies.List()
 	snapshotMap["v1ConfigMaps"] = s.v1ConfigMaps.List()
 	return json.Marshal(snapshotMap)
 }
@@ -310,30 +310,30 @@ type RemoteBuilder interface {
 // Options for building a snapshot
 type RemoteBuildOptions struct {
 
-	// List options for composing a snapshot from CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates
-	CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates ResourceRemoteBuildOptions
-	// List options for composing a snapshot from CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives
-	CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives ResourceRemoteBuildOptions
+	// List options for composing a snapshot from CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates
+	CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates ResourceRemoteBuildOptions
+	// List options for composing a snapshot from CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives
+	CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives ResourceRemoteBuildOptions
 
-	// List options for composing a snapshot from XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs
-	XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs ResourceRemoteBuildOptions
+	// List options for composing a snapshot from XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs
+	XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs ResourceRemoteBuildOptions
 
-	// List options for composing a snapshot from NetworkingIstioIov1Alpha3DestinationRules
-	NetworkingIstioIov1Alpha3DestinationRules ResourceRemoteBuildOptions
-	// List options for composing a snapshot from NetworkingIstioIov1Alpha3EnvoyFilters
-	NetworkingIstioIov1Alpha3EnvoyFilters ResourceRemoteBuildOptions
-	// List options for composing a snapshot from NetworkingIstioIov1Alpha3Gateways
-	NetworkingIstioIov1Alpha3Gateways ResourceRemoteBuildOptions
-	// List options for composing a snapshot from NetworkingIstioIov1Alpha3ServiceEntries
-	NetworkingIstioIov1Alpha3ServiceEntries ResourceRemoteBuildOptions
-	// List options for composing a snapshot from NetworkingIstioIov1Alpha3VirtualServices
-	NetworkingIstioIov1Alpha3VirtualServices ResourceRemoteBuildOptions
+	// List options for composing a snapshot from NetworkingIstioIo_V1Alpha3_DestinationRules
+	NetworkingIstioIo_V1Alpha3_DestinationRules ResourceRemoteBuildOptions
+	// List options for composing a snapshot from NetworkingIstioIo_V1Alpha3_EnvoyFilters
+	NetworkingIstioIo_V1Alpha3_EnvoyFilters ResourceRemoteBuildOptions
+	// List options for composing a snapshot from NetworkingIstioIo_V1Alpha3_Gateways
+	NetworkingIstioIo_V1Alpha3_Gateways ResourceRemoteBuildOptions
+	// List options for composing a snapshot from NetworkingIstioIo_V1Alpha3_ServiceEntries
+	NetworkingIstioIo_V1Alpha3_ServiceEntries ResourceRemoteBuildOptions
+	// List options for composing a snapshot from NetworkingIstioIo_V1Alpha3_VirtualServices
+	NetworkingIstioIo_V1Alpha3_VirtualServices ResourceRemoteBuildOptions
 
-	// List options for composing a snapshot from SecurityIstioIov1Beta1AuthorizationPolicies
-	SecurityIstioIov1Beta1AuthorizationPolicies ResourceRemoteBuildOptions
+	// List options for composing a snapshot from SecurityIstioIo_V1Beta1_AuthorizationPolicies
+	SecurityIstioIo_V1Beta1_AuthorizationPolicies ResourceRemoteBuildOptions
 
-	// List options for composing a snapshot from V1ConfigMaps
-	V1ConfigMaps ResourceRemoteBuildOptions
+	// List options for composing a snapshot from V1_ConfigMaps
+	V1_ConfigMaps ResourceRemoteBuildOptions
 }
 
 // Options for reading resources of a given type
@@ -365,18 +365,18 @@ func NewMultiClusterRemoteBuilder(
 
 func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name string, opts RemoteBuildOptions) (RemoteSnapshot, error) {
 
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+	certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
+	certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
 
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
+	xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
 
-	networkingIstioIov1Alpha3DestinationRules := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
-	networkingIstioIov1Alpha3EnvoyFilters := networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet()
-	networkingIstioIov1Alpha3Gateways := networking_istio_io_v1alpha3_sets.NewGatewaySet()
-	networkingIstioIov1Alpha3ServiceEntries := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
-	networkingIstioIov1Alpha3VirtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+	networkingIstioIoV1Alpha3DestinationRules := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
+	networkingIstioIoV1Alpha3EnvoyFilters := networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet()
+	networkingIstioIoV1Alpha3Gateways := networking_istio_io_v1alpha3_sets.NewGatewaySet()
+	networkingIstioIoV1Alpha3ServiceEntries := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
+	networkingIstioIoV1Alpha3VirtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
 
-	securityIstioIov1Beta1AuthorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
+	securityIstioIoV1Beta1AuthorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
 	v1ConfigMaps := v1_sets.NewConfigMapSet()
 
@@ -384,34 +384,34 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 
 	for _, cluster := range b.clusters.ListClusters() {
 
-		if err := b.insertCertificatesMeshGlooSoloIov1Alpha2IssuedCertificatesFromCluster(ctx, cluster, certificatesMeshGlooSoloIov1Alpha2IssuedCertificates, opts.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates); err != nil {
+		if err := b.insertCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificatesFromCluster(ctx, cluster, certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates, opts.CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectivesFromCluster(ctx, cluster, certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives, opts.CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives); err != nil {
+		if err := b.insertCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectivesFromCluster(ctx, cluster, certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives, opts.CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigsFromCluster(ctx, cluster, xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs, opts.XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs); err != nil {
+		if err := b.insertXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigsFromCluster(ctx, cluster, xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs, opts.XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertNetworkingIstioIov1Alpha3DestinationRulesFromCluster(ctx, cluster, networkingIstioIov1Alpha3DestinationRules, opts.NetworkingIstioIov1Alpha3DestinationRules); err != nil {
+		if err := b.insertNetworkingIstioIo_V1Alpha3_DestinationRulesFromCluster(ctx, cluster, networkingIstioIoV1Alpha3DestinationRules, opts.NetworkingIstioIo_V1Alpha3_DestinationRules); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertNetworkingIstioIov1Alpha3EnvoyFiltersFromCluster(ctx, cluster, networkingIstioIov1Alpha3EnvoyFilters, opts.NetworkingIstioIov1Alpha3EnvoyFilters); err != nil {
+		if err := b.insertNetworkingIstioIo_V1Alpha3_EnvoyFiltersFromCluster(ctx, cluster, networkingIstioIoV1Alpha3EnvoyFilters, opts.NetworkingIstioIo_V1Alpha3_EnvoyFilters); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertNetworkingIstioIov1Alpha3GatewaysFromCluster(ctx, cluster, networkingIstioIov1Alpha3Gateways, opts.NetworkingIstioIov1Alpha3Gateways); err != nil {
+		if err := b.insertNetworkingIstioIo_V1Alpha3_GatewaysFromCluster(ctx, cluster, networkingIstioIoV1Alpha3Gateways, opts.NetworkingIstioIo_V1Alpha3_Gateways); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertNetworkingIstioIov1Alpha3ServiceEntriesFromCluster(ctx, cluster, networkingIstioIov1Alpha3ServiceEntries, opts.NetworkingIstioIov1Alpha3ServiceEntries); err != nil {
+		if err := b.insertNetworkingIstioIo_V1Alpha3_ServiceEntriesFromCluster(ctx, cluster, networkingIstioIoV1Alpha3ServiceEntries, opts.NetworkingIstioIo_V1Alpha3_ServiceEntries); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertNetworkingIstioIov1Alpha3VirtualServicesFromCluster(ctx, cluster, networkingIstioIov1Alpha3VirtualServices, opts.NetworkingIstioIov1Alpha3VirtualServices); err != nil {
+		if err := b.insertNetworkingIstioIo_V1Alpha3_VirtualServicesFromCluster(ctx, cluster, networkingIstioIoV1Alpha3VirtualServices, opts.NetworkingIstioIo_V1Alpha3_VirtualServices); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertSecurityIstioIov1Beta1AuthorizationPoliciesFromCluster(ctx, cluster, securityIstioIov1Beta1AuthorizationPolicies, opts.SecurityIstioIov1Beta1AuthorizationPolicies); err != nil {
+		if err := b.insertSecurityIstioIo_V1Beta1_AuthorizationPoliciesFromCluster(ctx, cluster, securityIstioIoV1Beta1AuthorizationPolicies, opts.SecurityIstioIo_V1Beta1_AuthorizationPolicies); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertV1ConfigMapsFromCluster(ctx, cluster, v1ConfigMaps, opts.V1ConfigMaps); err != nil {
+		if err := b.insertV1_ConfigMapsFromCluster(ctx, cluster, v1ConfigMaps, opts.V1_ConfigMaps); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 
@@ -420,23 +420,23 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 	outputSnap := NewRemoteSnapshot(
 		name,
 
-		certificatesMeshGlooSoloIov1Alpha2IssuedCertificates,
-		certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives,
-		xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs,
-		networkingIstioIov1Alpha3DestinationRules,
-		networkingIstioIov1Alpha3EnvoyFilters,
-		networkingIstioIov1Alpha3Gateways,
-		networkingIstioIov1Alpha3ServiceEntries,
-		networkingIstioIov1Alpha3VirtualServices,
-		securityIstioIov1Beta1AuthorizationPolicies,
+		certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates,
+		certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives,
+		xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs,
+		networkingIstioIoV1Alpha3DestinationRules,
+		networkingIstioIoV1Alpha3EnvoyFilters,
+		networkingIstioIoV1Alpha3Gateways,
+		networkingIstioIoV1Alpha3ServiceEntries,
+		networkingIstioIoV1Alpha3VirtualServices,
+		securityIstioIoV1Beta1AuthorizationPolicies,
 		v1ConfigMaps,
 	)
 
 	return outputSnap, errs
 }
 
-func (b *multiClusterRemoteBuilder) insertCertificatesMeshGlooSoloIov1Alpha2IssuedCertificatesFromCluster(ctx context.Context, cluster string, certificatesMeshGlooSoloIov1Alpha2IssuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ResourceRemoteBuildOptions) error {
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificateClient, err := certificates_mesh_gloo_solo_io_v1alpha2.NewMulticlusterIssuedCertificateClient(b.client).Cluster(cluster)
+func (b *multiClusterRemoteBuilder) insertCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificatesFromCluster(ctx context.Context, cluster string, certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ResourceRemoteBuildOptions) error {
+	certificatesMeshGlooSoloIoV1Alpha2IssuedCertificateClient, err := certificates_mesh_gloo_solo_io_v1alpha2.NewMulticlusterIssuedCertificateClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -464,21 +464,21 @@ func (b *multiClusterRemoteBuilder) insertCertificatesMeshGlooSoloIov1Alpha2Issu
 		}
 	}
 
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificateList, err := certificatesMeshGlooSoloIov1Alpha2IssuedCertificateClient.ListIssuedCertificate(ctx, opts.ListOptions...)
+	certificatesMeshGlooSoloIoV1Alpha2IssuedCertificateList, err := certificatesMeshGlooSoloIoV1Alpha2IssuedCertificateClient.ListIssuedCertificate(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range certificatesMeshGlooSoloIov1Alpha2IssuedCertificateList.Items {
+	for _, item := range certificatesMeshGlooSoloIoV1Alpha2IssuedCertificateList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		certificatesMeshGlooSoloIov1Alpha2IssuedCertificates.Insert(&item)
+		certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates.Insert(&item)
 	}
 
 	return nil
 }
-func (b *multiClusterRemoteBuilder) insertCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectivesFromCluster(ctx context.Context, cluster string, certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet, opts ResourceRemoteBuildOptions) error {
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveClient, err := certificates_mesh_gloo_solo_io_v1alpha2.NewMulticlusterPodBounceDirectiveClient(b.client).Cluster(cluster)
+func (b *multiClusterRemoteBuilder) insertCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectivesFromCluster(ctx context.Context, cluster string, certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet, opts ResourceRemoteBuildOptions) error {
+	certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectiveClient, err := certificates_mesh_gloo_solo_io_v1alpha2.NewMulticlusterPodBounceDirectiveClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -506,22 +506,22 @@ func (b *multiClusterRemoteBuilder) insertCertificatesMeshGlooSoloIov1Alpha2PodB
 		}
 	}
 
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveList, err := certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveClient.ListPodBounceDirective(ctx, opts.ListOptions...)
+	certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectiveList, err := certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectiveClient.ListPodBounceDirective(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveList.Items {
+	for _, item := range certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectiveList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives.Insert(&item)
+		certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *multiClusterRemoteBuilder) insertXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigsFromCluster(ctx context.Context, cluster string, xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet, opts ResourceRemoteBuildOptions) error {
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigClient, err := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.NewMulticlusterXdsConfigClient(b.client).Cluster(cluster)
+func (b *multiClusterRemoteBuilder) insertXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigsFromCluster(ctx context.Context, cluster string, xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet, opts ResourceRemoteBuildOptions) error {
+	xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigClient, err := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.NewMulticlusterXdsConfigClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -549,22 +549,22 @@ func (b *multiClusterRemoteBuilder) insertXdsAgentEnterpriseMeshGlooSoloIov1Alph
 		}
 	}
 
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigList, err := xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigClient.ListXdsConfig(ctx, opts.ListOptions...)
+	xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigList, err := xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigClient.ListXdsConfig(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigList.Items {
+	for _, item := range xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs.Insert(&item)
+		xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *multiClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3DestinationRulesFromCluster(ctx context.Context, cluster string, networkingIstioIov1Alpha3DestinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet, opts ResourceRemoteBuildOptions) error {
-	networkingIstioIov1Alpha3DestinationRuleClient, err := networking_istio_io_v1alpha3.NewMulticlusterDestinationRuleClient(b.client).Cluster(cluster)
+func (b *multiClusterRemoteBuilder) insertNetworkingIstioIo_V1Alpha3_DestinationRulesFromCluster(ctx context.Context, cluster string, networkingIstioIoV1Alpha3DestinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet, opts ResourceRemoteBuildOptions) error {
+	networkingIstioIoV1Alpha3DestinationRuleClient, err := networking_istio_io_v1alpha3.NewMulticlusterDestinationRuleClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -592,21 +592,21 @@ func (b *multiClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3DestinationRu
 		}
 	}
 
-	networkingIstioIov1Alpha3DestinationRuleList, err := networkingIstioIov1Alpha3DestinationRuleClient.ListDestinationRule(ctx, opts.ListOptions...)
+	networkingIstioIoV1Alpha3DestinationRuleList, err := networkingIstioIoV1Alpha3DestinationRuleClient.ListDestinationRule(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingIstioIov1Alpha3DestinationRuleList.Items {
+	for _, item := range networkingIstioIoV1Alpha3DestinationRuleList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		networkingIstioIov1Alpha3DestinationRules.Insert(&item)
+		networkingIstioIoV1Alpha3DestinationRules.Insert(&item)
 	}
 
 	return nil
 }
-func (b *multiClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3EnvoyFiltersFromCluster(ctx context.Context, cluster string, networkingIstioIov1Alpha3EnvoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet, opts ResourceRemoteBuildOptions) error {
-	networkingIstioIov1Alpha3EnvoyFilterClient, err := networking_istio_io_v1alpha3.NewMulticlusterEnvoyFilterClient(b.client).Cluster(cluster)
+func (b *multiClusterRemoteBuilder) insertNetworkingIstioIo_V1Alpha3_EnvoyFiltersFromCluster(ctx context.Context, cluster string, networkingIstioIoV1Alpha3EnvoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet, opts ResourceRemoteBuildOptions) error {
+	networkingIstioIoV1Alpha3EnvoyFilterClient, err := networking_istio_io_v1alpha3.NewMulticlusterEnvoyFilterClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -634,21 +634,21 @@ func (b *multiClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3EnvoyFiltersF
 		}
 	}
 
-	networkingIstioIov1Alpha3EnvoyFilterList, err := networkingIstioIov1Alpha3EnvoyFilterClient.ListEnvoyFilter(ctx, opts.ListOptions...)
+	networkingIstioIoV1Alpha3EnvoyFilterList, err := networkingIstioIoV1Alpha3EnvoyFilterClient.ListEnvoyFilter(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingIstioIov1Alpha3EnvoyFilterList.Items {
+	for _, item := range networkingIstioIoV1Alpha3EnvoyFilterList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		networkingIstioIov1Alpha3EnvoyFilters.Insert(&item)
+		networkingIstioIoV1Alpha3EnvoyFilters.Insert(&item)
 	}
 
 	return nil
 }
-func (b *multiClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3GatewaysFromCluster(ctx context.Context, cluster string, networkingIstioIov1Alpha3Gateways networking_istio_io_v1alpha3_sets.GatewaySet, opts ResourceRemoteBuildOptions) error {
-	networkingIstioIov1Alpha3GatewayClient, err := networking_istio_io_v1alpha3.NewMulticlusterGatewayClient(b.client).Cluster(cluster)
+func (b *multiClusterRemoteBuilder) insertNetworkingIstioIo_V1Alpha3_GatewaysFromCluster(ctx context.Context, cluster string, networkingIstioIoV1Alpha3Gateways networking_istio_io_v1alpha3_sets.GatewaySet, opts ResourceRemoteBuildOptions) error {
+	networkingIstioIoV1Alpha3GatewayClient, err := networking_istio_io_v1alpha3.NewMulticlusterGatewayClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -676,21 +676,21 @@ func (b *multiClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3GatewaysFromC
 		}
 	}
 
-	networkingIstioIov1Alpha3GatewayList, err := networkingIstioIov1Alpha3GatewayClient.ListGateway(ctx, opts.ListOptions...)
+	networkingIstioIoV1Alpha3GatewayList, err := networkingIstioIoV1Alpha3GatewayClient.ListGateway(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingIstioIov1Alpha3GatewayList.Items {
+	for _, item := range networkingIstioIoV1Alpha3GatewayList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		networkingIstioIov1Alpha3Gateways.Insert(&item)
+		networkingIstioIoV1Alpha3Gateways.Insert(&item)
 	}
 
 	return nil
 }
-func (b *multiClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3ServiceEntriesFromCluster(ctx context.Context, cluster string, networkingIstioIov1Alpha3ServiceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet, opts ResourceRemoteBuildOptions) error {
-	networkingIstioIov1Alpha3ServiceEntryClient, err := networking_istio_io_v1alpha3.NewMulticlusterServiceEntryClient(b.client).Cluster(cluster)
+func (b *multiClusterRemoteBuilder) insertNetworkingIstioIo_V1Alpha3_ServiceEntriesFromCluster(ctx context.Context, cluster string, networkingIstioIoV1Alpha3ServiceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet, opts ResourceRemoteBuildOptions) error {
+	networkingIstioIoV1Alpha3ServiceEntryClient, err := networking_istio_io_v1alpha3.NewMulticlusterServiceEntryClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -718,21 +718,21 @@ func (b *multiClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3ServiceEntrie
 		}
 	}
 
-	networkingIstioIov1Alpha3ServiceEntryList, err := networkingIstioIov1Alpha3ServiceEntryClient.ListServiceEntry(ctx, opts.ListOptions...)
+	networkingIstioIoV1Alpha3ServiceEntryList, err := networkingIstioIoV1Alpha3ServiceEntryClient.ListServiceEntry(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingIstioIov1Alpha3ServiceEntryList.Items {
+	for _, item := range networkingIstioIoV1Alpha3ServiceEntryList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		networkingIstioIov1Alpha3ServiceEntries.Insert(&item)
+		networkingIstioIoV1Alpha3ServiceEntries.Insert(&item)
 	}
 
 	return nil
 }
-func (b *multiClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3VirtualServicesFromCluster(ctx context.Context, cluster string, networkingIstioIov1Alpha3VirtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet, opts ResourceRemoteBuildOptions) error {
-	networkingIstioIov1Alpha3VirtualServiceClient, err := networking_istio_io_v1alpha3.NewMulticlusterVirtualServiceClient(b.client).Cluster(cluster)
+func (b *multiClusterRemoteBuilder) insertNetworkingIstioIo_V1Alpha3_VirtualServicesFromCluster(ctx context.Context, cluster string, networkingIstioIoV1Alpha3VirtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet, opts ResourceRemoteBuildOptions) error {
+	networkingIstioIoV1Alpha3VirtualServiceClient, err := networking_istio_io_v1alpha3.NewMulticlusterVirtualServiceClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -760,22 +760,22 @@ func (b *multiClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3VirtualServic
 		}
 	}
 
-	networkingIstioIov1Alpha3VirtualServiceList, err := networkingIstioIov1Alpha3VirtualServiceClient.ListVirtualService(ctx, opts.ListOptions...)
+	networkingIstioIoV1Alpha3VirtualServiceList, err := networkingIstioIoV1Alpha3VirtualServiceClient.ListVirtualService(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingIstioIov1Alpha3VirtualServiceList.Items {
+	for _, item := range networkingIstioIoV1Alpha3VirtualServiceList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		networkingIstioIov1Alpha3VirtualServices.Insert(&item)
+		networkingIstioIoV1Alpha3VirtualServices.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *multiClusterRemoteBuilder) insertSecurityIstioIov1Beta1AuthorizationPoliciesFromCluster(ctx context.Context, cluster string, securityIstioIov1Beta1AuthorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet, opts ResourceRemoteBuildOptions) error {
-	securityIstioIov1Beta1AuthorizationPolicyClient, err := security_istio_io_v1beta1.NewMulticlusterAuthorizationPolicyClient(b.client).Cluster(cluster)
+func (b *multiClusterRemoteBuilder) insertSecurityIstioIo_V1Beta1_AuthorizationPoliciesFromCluster(ctx context.Context, cluster string, securityIstioIoV1Beta1AuthorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet, opts ResourceRemoteBuildOptions) error {
+	securityIstioIoV1Beta1AuthorizationPolicyClient, err := security_istio_io_v1beta1.NewMulticlusterAuthorizationPolicyClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -803,21 +803,21 @@ func (b *multiClusterRemoteBuilder) insertSecurityIstioIov1Beta1AuthorizationPol
 		}
 	}
 
-	securityIstioIov1Beta1AuthorizationPolicyList, err := securityIstioIov1Beta1AuthorizationPolicyClient.ListAuthorizationPolicy(ctx, opts.ListOptions...)
+	securityIstioIoV1Beta1AuthorizationPolicyList, err := securityIstioIoV1Beta1AuthorizationPolicyClient.ListAuthorizationPolicy(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range securityIstioIov1Beta1AuthorizationPolicyList.Items {
+	for _, item := range securityIstioIoV1Beta1AuthorizationPolicyList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		securityIstioIov1Beta1AuthorizationPolicies.Insert(&item)
+		securityIstioIoV1Beta1AuthorizationPolicies.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *multiClusterRemoteBuilder) insertV1ConfigMapsFromCluster(ctx context.Context, cluster string, v1ConfigMaps v1_sets.ConfigMapSet, opts ResourceRemoteBuildOptions) error {
+func (b *multiClusterRemoteBuilder) insertV1_ConfigMapsFromCluster(ctx context.Context, cluster string, v1ConfigMaps v1_sets.ConfigMapSet, opts ResourceRemoteBuildOptions) error {
 	v1ConfigMapClient, err := v1.NewMulticlusterConfigMapClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
@@ -887,73 +887,73 @@ func NewSingleClusterRemoteBuilderWithClusterName(
 
 func (b *singleClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name string, opts RemoteBuildOptions) (RemoteSnapshot, error) {
 
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+	certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
+	certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
 
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
+	xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
 
-	networkingIstioIov1Alpha3DestinationRules := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
-	networkingIstioIov1Alpha3EnvoyFilters := networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet()
-	networkingIstioIov1Alpha3Gateways := networking_istio_io_v1alpha3_sets.NewGatewaySet()
-	networkingIstioIov1Alpha3ServiceEntries := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
-	networkingIstioIov1Alpha3VirtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
+	networkingIstioIoV1Alpha3DestinationRules := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
+	networkingIstioIoV1Alpha3EnvoyFilters := networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet()
+	networkingIstioIoV1Alpha3Gateways := networking_istio_io_v1alpha3_sets.NewGatewaySet()
+	networkingIstioIoV1Alpha3ServiceEntries := networking_istio_io_v1alpha3_sets.NewServiceEntrySet()
+	networkingIstioIoV1Alpha3VirtualServices := networking_istio_io_v1alpha3_sets.NewVirtualServiceSet()
 
-	securityIstioIov1Beta1AuthorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
+	securityIstioIoV1Beta1AuthorizationPolicies := security_istio_io_v1beta1_sets.NewAuthorizationPolicySet()
 
 	v1ConfigMaps := v1_sets.NewConfigMapSet()
 
 	var errs error
 
-	if err := b.insertCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates(ctx, certificatesMeshGlooSoloIov1Alpha2IssuedCertificates, opts.CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates); err != nil {
+	if err := b.insertCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates(ctx, certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates, opts.CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives(ctx, certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives, opts.CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives); err != nil {
+	if err := b.insertCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives(ctx, certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives, opts.CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs(ctx, xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs, opts.XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs); err != nil {
+	if err := b.insertXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs(ctx, xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs, opts.XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertNetworkingIstioIov1Alpha3DestinationRules(ctx, networkingIstioIov1Alpha3DestinationRules, opts.NetworkingIstioIov1Alpha3DestinationRules); err != nil {
+	if err := b.insertNetworkingIstioIo_V1Alpha3_DestinationRules(ctx, networkingIstioIoV1Alpha3DestinationRules, opts.NetworkingIstioIo_V1Alpha3_DestinationRules); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertNetworkingIstioIov1Alpha3EnvoyFilters(ctx, networkingIstioIov1Alpha3EnvoyFilters, opts.NetworkingIstioIov1Alpha3EnvoyFilters); err != nil {
+	if err := b.insertNetworkingIstioIo_V1Alpha3_EnvoyFilters(ctx, networkingIstioIoV1Alpha3EnvoyFilters, opts.NetworkingIstioIo_V1Alpha3_EnvoyFilters); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertNetworkingIstioIov1Alpha3Gateways(ctx, networkingIstioIov1Alpha3Gateways, opts.NetworkingIstioIov1Alpha3Gateways); err != nil {
+	if err := b.insertNetworkingIstioIo_V1Alpha3_Gateways(ctx, networkingIstioIoV1Alpha3Gateways, opts.NetworkingIstioIo_V1Alpha3_Gateways); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertNetworkingIstioIov1Alpha3ServiceEntries(ctx, networkingIstioIov1Alpha3ServiceEntries, opts.NetworkingIstioIov1Alpha3ServiceEntries); err != nil {
+	if err := b.insertNetworkingIstioIo_V1Alpha3_ServiceEntries(ctx, networkingIstioIoV1Alpha3ServiceEntries, opts.NetworkingIstioIo_V1Alpha3_ServiceEntries); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertNetworkingIstioIov1Alpha3VirtualServices(ctx, networkingIstioIov1Alpha3VirtualServices, opts.NetworkingIstioIov1Alpha3VirtualServices); err != nil {
+	if err := b.insertNetworkingIstioIo_V1Alpha3_VirtualServices(ctx, networkingIstioIoV1Alpha3VirtualServices, opts.NetworkingIstioIo_V1Alpha3_VirtualServices); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertSecurityIstioIov1Beta1AuthorizationPolicies(ctx, securityIstioIov1Beta1AuthorizationPolicies, opts.SecurityIstioIov1Beta1AuthorizationPolicies); err != nil {
+	if err := b.insertSecurityIstioIo_V1Beta1_AuthorizationPolicies(ctx, securityIstioIoV1Beta1AuthorizationPolicies, opts.SecurityIstioIo_V1Beta1_AuthorizationPolicies); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertV1ConfigMaps(ctx, v1ConfigMaps, opts.V1ConfigMaps); err != nil {
+	if err := b.insertV1_ConfigMaps(ctx, v1ConfigMaps, opts.V1_ConfigMaps); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
 	outputSnap := NewRemoteSnapshot(
 		name,
 
-		certificatesMeshGlooSoloIov1Alpha2IssuedCertificates,
-		certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives,
-		xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs,
-		networkingIstioIov1Alpha3DestinationRules,
-		networkingIstioIov1Alpha3EnvoyFilters,
-		networkingIstioIov1Alpha3Gateways,
-		networkingIstioIov1Alpha3ServiceEntries,
-		networkingIstioIov1Alpha3VirtualServices,
-		securityIstioIov1Beta1AuthorizationPolicies,
+		certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates,
+		certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives,
+		xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs,
+		networkingIstioIoV1Alpha3DestinationRules,
+		networkingIstioIoV1Alpha3EnvoyFilters,
+		networkingIstioIoV1Alpha3Gateways,
+		networkingIstioIoV1Alpha3ServiceEntries,
+		networkingIstioIoV1Alpha3VirtualServices,
+		securityIstioIoV1Beta1AuthorizationPolicies,
 		v1ConfigMaps,
 	)
 
 	return outputSnap, errs
 }
 
-func (b *singleClusterRemoteBuilder) insertCertificatesMeshGlooSoloIov1Alpha2IssuedCertificates(ctx context.Context, certificatesMeshGlooSoloIov1Alpha2IssuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ResourceRemoteBuildOptions) error {
+func (b *singleClusterRemoteBuilder) insertCertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates(ctx context.Context, certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ResourceRemoteBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -973,20 +973,20 @@ func (b *singleClusterRemoteBuilder) insertCertificatesMeshGlooSoloIov1Alpha2Iss
 		}
 	}
 
-	certificatesMeshGlooSoloIov1Alpha2IssuedCertificateList, err := certificates_mesh_gloo_solo_io_v1alpha2.NewIssuedCertificateClient(b.mgr.GetClient()).ListIssuedCertificate(ctx, opts.ListOptions...)
+	certificatesMeshGlooSoloIoV1Alpha2IssuedCertificateList, err := certificates_mesh_gloo_solo_io_v1alpha2.NewIssuedCertificateClient(b.mgr.GetClient()).ListIssuedCertificate(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range certificatesMeshGlooSoloIov1Alpha2IssuedCertificateList.Items {
+	for _, item := range certificatesMeshGlooSoloIoV1Alpha2IssuedCertificateList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		certificatesMeshGlooSoloIov1Alpha2IssuedCertificates.Insert(&item)
+		certificatesMeshGlooSoloIoV1Alpha2IssuedCertificates.Insert(&item)
 	}
 
 	return nil
 }
-func (b *singleClusterRemoteBuilder) insertCertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives(ctx context.Context, certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet, opts ResourceRemoteBuildOptions) error {
+func (b *singleClusterRemoteBuilder) insertCertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives(ctx context.Context, certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet, opts ResourceRemoteBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1006,21 +1006,21 @@ func (b *singleClusterRemoteBuilder) insertCertificatesMeshGlooSoloIov1Alpha2Pod
 		}
 	}
 
-	certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveList, err := certificates_mesh_gloo_solo_io_v1alpha2.NewPodBounceDirectiveClient(b.mgr.GetClient()).ListPodBounceDirective(ctx, opts.ListOptions...)
+	certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectiveList, err := certificates_mesh_gloo_solo_io_v1alpha2.NewPodBounceDirectiveClient(b.mgr.GetClient()).ListPodBounceDirective(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range certificatesMeshGlooSoloIov1Alpha2PodBounceDirectiveList.Items {
+	for _, item := range certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectiveList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		certificatesMeshGlooSoloIov1Alpha2PodBounceDirectives.Insert(&item)
+		certificatesMeshGlooSoloIoV1Alpha2PodBounceDirectives.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *singleClusterRemoteBuilder) insertXdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs(ctx context.Context, xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet, opts ResourceRemoteBuildOptions) error {
+func (b *singleClusterRemoteBuilder) insertXdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs(ctx context.Context, xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet, opts ResourceRemoteBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1040,21 +1040,21 @@ func (b *singleClusterRemoteBuilder) insertXdsAgentEnterpriseMeshGlooSoloIov1Alp
 		}
 	}
 
-	xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigList, err := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.NewXdsConfigClient(b.mgr.GetClient()).ListXdsConfig(ctx, opts.ListOptions...)
+	xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigList, err := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.NewXdsConfigClient(b.mgr.GetClient()).ListXdsConfig(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigList.Items {
+	for _, item := range xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		xdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs.Insert(&item)
+		xdsAgentEnterpriseMeshGlooSoloIoV1Alpha1XdsConfigs.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *singleClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3DestinationRules(ctx context.Context, networkingIstioIov1Alpha3DestinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet, opts ResourceRemoteBuildOptions) error {
+func (b *singleClusterRemoteBuilder) insertNetworkingIstioIo_V1Alpha3_DestinationRules(ctx context.Context, networkingIstioIoV1Alpha3DestinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet, opts ResourceRemoteBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1074,20 +1074,20 @@ func (b *singleClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3DestinationR
 		}
 	}
 
-	networkingIstioIov1Alpha3DestinationRuleList, err := networking_istio_io_v1alpha3.NewDestinationRuleClient(b.mgr.GetClient()).ListDestinationRule(ctx, opts.ListOptions...)
+	networkingIstioIoV1Alpha3DestinationRuleList, err := networking_istio_io_v1alpha3.NewDestinationRuleClient(b.mgr.GetClient()).ListDestinationRule(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingIstioIov1Alpha3DestinationRuleList.Items {
+	for _, item := range networkingIstioIoV1Alpha3DestinationRuleList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		networkingIstioIov1Alpha3DestinationRules.Insert(&item)
+		networkingIstioIoV1Alpha3DestinationRules.Insert(&item)
 	}
 
 	return nil
 }
-func (b *singleClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3EnvoyFilters(ctx context.Context, networkingIstioIov1Alpha3EnvoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet, opts ResourceRemoteBuildOptions) error {
+func (b *singleClusterRemoteBuilder) insertNetworkingIstioIo_V1Alpha3_EnvoyFilters(ctx context.Context, networkingIstioIoV1Alpha3EnvoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet, opts ResourceRemoteBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1107,20 +1107,20 @@ func (b *singleClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3EnvoyFilters
 		}
 	}
 
-	networkingIstioIov1Alpha3EnvoyFilterList, err := networking_istio_io_v1alpha3.NewEnvoyFilterClient(b.mgr.GetClient()).ListEnvoyFilter(ctx, opts.ListOptions...)
+	networkingIstioIoV1Alpha3EnvoyFilterList, err := networking_istio_io_v1alpha3.NewEnvoyFilterClient(b.mgr.GetClient()).ListEnvoyFilter(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingIstioIov1Alpha3EnvoyFilterList.Items {
+	for _, item := range networkingIstioIoV1Alpha3EnvoyFilterList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		networkingIstioIov1Alpha3EnvoyFilters.Insert(&item)
+		networkingIstioIoV1Alpha3EnvoyFilters.Insert(&item)
 	}
 
 	return nil
 }
-func (b *singleClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3Gateways(ctx context.Context, networkingIstioIov1Alpha3Gateways networking_istio_io_v1alpha3_sets.GatewaySet, opts ResourceRemoteBuildOptions) error {
+func (b *singleClusterRemoteBuilder) insertNetworkingIstioIo_V1Alpha3_Gateways(ctx context.Context, networkingIstioIoV1Alpha3Gateways networking_istio_io_v1alpha3_sets.GatewaySet, opts ResourceRemoteBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1140,20 +1140,20 @@ func (b *singleClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3Gateways(ctx
 		}
 	}
 
-	networkingIstioIov1Alpha3GatewayList, err := networking_istio_io_v1alpha3.NewGatewayClient(b.mgr.GetClient()).ListGateway(ctx, opts.ListOptions...)
+	networkingIstioIoV1Alpha3GatewayList, err := networking_istio_io_v1alpha3.NewGatewayClient(b.mgr.GetClient()).ListGateway(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingIstioIov1Alpha3GatewayList.Items {
+	for _, item := range networkingIstioIoV1Alpha3GatewayList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		networkingIstioIov1Alpha3Gateways.Insert(&item)
+		networkingIstioIoV1Alpha3Gateways.Insert(&item)
 	}
 
 	return nil
 }
-func (b *singleClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3ServiceEntries(ctx context.Context, networkingIstioIov1Alpha3ServiceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet, opts ResourceRemoteBuildOptions) error {
+func (b *singleClusterRemoteBuilder) insertNetworkingIstioIo_V1Alpha3_ServiceEntries(ctx context.Context, networkingIstioIoV1Alpha3ServiceEntries networking_istio_io_v1alpha3_sets.ServiceEntrySet, opts ResourceRemoteBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1173,20 +1173,20 @@ func (b *singleClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3ServiceEntri
 		}
 	}
 
-	networkingIstioIov1Alpha3ServiceEntryList, err := networking_istio_io_v1alpha3.NewServiceEntryClient(b.mgr.GetClient()).ListServiceEntry(ctx, opts.ListOptions...)
+	networkingIstioIoV1Alpha3ServiceEntryList, err := networking_istio_io_v1alpha3.NewServiceEntryClient(b.mgr.GetClient()).ListServiceEntry(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingIstioIov1Alpha3ServiceEntryList.Items {
+	for _, item := range networkingIstioIoV1Alpha3ServiceEntryList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		networkingIstioIov1Alpha3ServiceEntries.Insert(&item)
+		networkingIstioIoV1Alpha3ServiceEntries.Insert(&item)
 	}
 
 	return nil
 }
-func (b *singleClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3VirtualServices(ctx context.Context, networkingIstioIov1Alpha3VirtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet, opts ResourceRemoteBuildOptions) error {
+func (b *singleClusterRemoteBuilder) insertNetworkingIstioIo_V1Alpha3_VirtualServices(ctx context.Context, networkingIstioIoV1Alpha3VirtualServices networking_istio_io_v1alpha3_sets.VirtualServiceSet, opts ResourceRemoteBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1206,21 +1206,21 @@ func (b *singleClusterRemoteBuilder) insertNetworkingIstioIov1Alpha3VirtualServi
 		}
 	}
 
-	networkingIstioIov1Alpha3VirtualServiceList, err := networking_istio_io_v1alpha3.NewVirtualServiceClient(b.mgr.GetClient()).ListVirtualService(ctx, opts.ListOptions...)
+	networkingIstioIoV1Alpha3VirtualServiceList, err := networking_istio_io_v1alpha3.NewVirtualServiceClient(b.mgr.GetClient()).ListVirtualService(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingIstioIov1Alpha3VirtualServiceList.Items {
+	for _, item := range networkingIstioIoV1Alpha3VirtualServiceList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		networkingIstioIov1Alpha3VirtualServices.Insert(&item)
+		networkingIstioIoV1Alpha3VirtualServices.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *singleClusterRemoteBuilder) insertSecurityIstioIov1Beta1AuthorizationPolicies(ctx context.Context, securityIstioIov1Beta1AuthorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet, opts ResourceRemoteBuildOptions) error {
+func (b *singleClusterRemoteBuilder) insertSecurityIstioIo_V1Beta1_AuthorizationPolicies(ctx context.Context, securityIstioIoV1Beta1AuthorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet, opts ResourceRemoteBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1240,21 +1240,21 @@ func (b *singleClusterRemoteBuilder) insertSecurityIstioIov1Beta1AuthorizationPo
 		}
 	}
 
-	securityIstioIov1Beta1AuthorizationPolicyList, err := security_istio_io_v1beta1.NewAuthorizationPolicyClient(b.mgr.GetClient()).ListAuthorizationPolicy(ctx, opts.ListOptions...)
+	securityIstioIoV1Beta1AuthorizationPolicyList, err := security_istio_io_v1beta1.NewAuthorizationPolicyClient(b.mgr.GetClient()).ListAuthorizationPolicy(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range securityIstioIov1Beta1AuthorizationPolicyList.Items {
+	for _, item := range securityIstioIoV1Beta1AuthorizationPolicyList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		securityIstioIov1Beta1AuthorizationPolicies.Insert(&item)
+		securityIstioIoV1Beta1AuthorizationPolicies.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *singleClusterRemoteBuilder) insertV1ConfigMaps(ctx context.Context, v1ConfigMaps v1_sets.ConfigMapSet, opts ResourceRemoteBuildOptions) error {
+func (b *singleClusterRemoteBuilder) insertV1_ConfigMaps(ctx context.Context, v1ConfigMaps v1_sets.ConfigMapSet, opts ResourceRemoteBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{

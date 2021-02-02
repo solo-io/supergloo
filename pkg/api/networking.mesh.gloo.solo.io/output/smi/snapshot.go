@@ -40,12 +40,12 @@ var MissingRequiredLabelError = func(labelKey, resourceKind string, obj ezkube.R
 // the snapshot of output resources produced by a translation
 type Snapshot interface {
 
-	// return the set of SplitSmiSpecIov1Alpha2TrafficSplits with a given set of labels
-	SplitSmiSpecIov1Alpha2TrafficSplits() []LabeledSplitSmiSpecIov1Alpha2TrafficSplitSet
-	// return the set of AccessSmiSpecIov1Alpha2TrafficTargets with a given set of labels
-	AccessSmiSpecIov1Alpha2TrafficTargets() []LabeledAccessSmiSpecIov1Alpha2TrafficTargetSet
-	// return the set of SpecsSmiSpecIov1Alpha3HTTPRouteGroups with a given set of labels
-	SpecsSmiSpecIov1Alpha3HTTPRouteGroups() []LabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet
+	// return the set of SplitSmiSpecIo_V1Alpha2_TrafficSplits with a given set of labels
+	SplitSmiSpecIo_V1Alpha2_TrafficSplits() []LabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet
+	// return the set of AccessSmiSpecIo_V1Alpha2_TrafficTargets with a given set of labels
+	AccessSmiSpecIo_V1Alpha2_TrafficTargets() []LabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet
+	// return the set of SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups with a given set of labels
+	SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups() []LabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet
 
 	// apply the snapshot to the local cluster, garbage collecting stale resources
 	ApplyLocalCluster(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
@@ -60,26 +60,26 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
-	splitSmiSpecIov1Alpha2TrafficSplits   []LabeledSplitSmiSpecIov1Alpha2TrafficSplitSet
-	accessSmiSpecIov1Alpha2TrafficTargets []LabeledAccessSmiSpecIov1Alpha2TrafficTargetSet
-	specsSmiSpecIov1Alpha3HTTPRouteGroups []LabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet
+	splitSmiSpecIoV1Alpha2TrafficSplits   []LabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet
+	accessSmiSpecIoV1Alpha2TrafficTargets []LabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet
+	specsSmiSpecIoV1Alpha3HTTPRouteGroups []LabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet
 	clusters                              []string
 }
 
 func NewSnapshot(
 	name string,
 
-	splitSmiSpecIov1Alpha2TrafficSplits []LabeledSplitSmiSpecIov1Alpha2TrafficSplitSet,
-	accessSmiSpecIov1Alpha2TrafficTargets []LabeledAccessSmiSpecIov1Alpha2TrafficTargetSet,
-	specsSmiSpecIov1Alpha3HTTPRouteGroups []LabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet,
+	splitSmiSpecIoV1Alpha2TrafficSplits []LabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet,
+	accessSmiSpecIoV1Alpha2TrafficTargets []LabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet,
+	specsSmiSpecIoV1Alpha3HTTPRouteGroups []LabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{
 		name: name,
 
-		splitSmiSpecIov1Alpha2TrafficSplits:   splitSmiSpecIov1Alpha2TrafficSplits,
-		accessSmiSpecIov1Alpha2TrafficTargets: accessSmiSpecIov1Alpha2TrafficTargets,
-		specsSmiSpecIov1Alpha3HTTPRouteGroups: specsSmiSpecIov1Alpha3HTTPRouteGroups,
+		splitSmiSpecIoV1Alpha2TrafficSplits:   splitSmiSpecIoV1Alpha2TrafficSplits,
+		accessSmiSpecIoV1Alpha2TrafficTargets: accessSmiSpecIoV1Alpha2TrafficTargets,
+		specsSmiSpecIoV1Alpha3HTTPRouteGroups: specsSmiSpecIoV1Alpha3HTTPRouteGroups,
 		clusters:                              clusters,
 	}
 }
@@ -90,23 +90,23 @@ func NewLabelPartitionedSnapshot(
 	name,
 	labelKey string, // the key by which to partition the resources
 
-	splitSmiSpecIov1Alpha2TrafficSplits split_smi_spec_io_v1alpha2_sets.TrafficSplitSet,
+	splitSmiSpecIoV1Alpha2TrafficSplits split_smi_spec_io_v1alpha2_sets.TrafficSplitSet,
 
-	accessSmiSpecIov1Alpha2TrafficTargets access_smi_spec_io_v1alpha2_sets.TrafficTargetSet,
+	accessSmiSpecIoV1Alpha2TrafficTargets access_smi_spec_io_v1alpha2_sets.TrafficTargetSet,
 
-	specsSmiSpecIov1Alpha3HTTPRouteGroups specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet,
+	specsSmiSpecIoV1Alpha3HTTPRouteGroups specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
-	partitionedSplitSmiSpecIov1Alpha2TrafficSplits, err := partitionSplitSmiSpecIov1Alpha2TrafficSplitsByLabel(labelKey, splitSmiSpecIov1Alpha2TrafficSplits)
+	partitionedSplitSmiSpecIo_V1Alpha2_TrafficSplits, err := partitionSplitSmiSpecIo_V1Alpha2_TrafficSplitsByLabel(labelKey, splitSmiSpecIoV1Alpha2TrafficSplits)
 	if err != nil {
 		return nil, err
 	}
-	partitionedAccessSmiSpecIov1Alpha2TrafficTargets, err := partitionAccessSmiSpecIov1Alpha2TrafficTargetsByLabel(labelKey, accessSmiSpecIov1Alpha2TrafficTargets)
+	partitionedAccessSmiSpecIo_V1Alpha2_TrafficTargets, err := partitionAccessSmiSpecIo_V1Alpha2_TrafficTargetsByLabel(labelKey, accessSmiSpecIoV1Alpha2TrafficTargets)
 	if err != nil {
 		return nil, err
 	}
-	partitionedSpecsSmiSpecIov1Alpha3HTTPRouteGroups, err := partitionSpecsSmiSpecIov1Alpha3HTTPRouteGroupsByLabel(labelKey, specsSmiSpecIov1Alpha3HTTPRouteGroups)
+	partitionedSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups, err := partitionSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupsByLabel(labelKey, specsSmiSpecIoV1Alpha3HTTPRouteGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -114,9 +114,9 @@ func NewLabelPartitionedSnapshot(
 	return NewSnapshot(
 		name,
 
-		partitionedSplitSmiSpecIov1Alpha2TrafficSplits,
-		partitionedAccessSmiSpecIov1Alpha2TrafficTargets,
-		partitionedSpecsSmiSpecIov1Alpha3HTTPRouteGroups,
+		partitionedSplitSmiSpecIo_V1Alpha2_TrafficSplits,
+		partitionedAccessSmiSpecIo_V1Alpha2_TrafficTargets,
+		partitionedSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups,
 		clusters...,
 	), nil
 }
@@ -127,23 +127,23 @@ func NewSinglePartitionedSnapshot(
 	name string,
 	snapshotLabels map[string]string, // a single set of labels shared by all resources
 
-	splitSmiSpecIov1Alpha2TrafficSplits split_smi_spec_io_v1alpha2_sets.TrafficSplitSet,
+	splitSmiSpecIoV1Alpha2TrafficSplits split_smi_spec_io_v1alpha2_sets.TrafficSplitSet,
 
-	accessSmiSpecIov1Alpha2TrafficTargets access_smi_spec_io_v1alpha2_sets.TrafficTargetSet,
+	accessSmiSpecIoV1Alpha2TrafficTargets access_smi_spec_io_v1alpha2_sets.TrafficTargetSet,
 
-	specsSmiSpecIov1Alpha3HTTPRouteGroups specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet,
+	specsSmiSpecIoV1Alpha3HTTPRouteGroups specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
-	labeledSplitSmiSpecIov1Alpha2TrafficSplit, err := NewLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet(splitSmiSpecIov1Alpha2TrafficSplits, snapshotLabels)
+	labeledSplitSmiSpecIo_V1Alpha2_TrafficSplit, err := NewLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet(splitSmiSpecIoV1Alpha2TrafficSplits, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
-	labeledAccessSmiSpecIov1Alpha2TrafficTarget, err := NewLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet(accessSmiSpecIov1Alpha2TrafficTargets, snapshotLabels)
+	labeledAccessSmiSpecIo_V1Alpha2_TrafficTarget, err := NewLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet(accessSmiSpecIoV1Alpha2TrafficTargets, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
-	labeledSpecsSmiSpecIov1Alpha3HTTPRouteGroup, err := NewLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet(specsSmiSpecIov1Alpha3HTTPRouteGroups, snapshotLabels)
+	labeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroup, err := NewLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet(specsSmiSpecIoV1Alpha3HTTPRouteGroups, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
@@ -151,9 +151,9 @@ func NewSinglePartitionedSnapshot(
 	return NewSnapshot(
 		name,
 
-		[]LabeledSplitSmiSpecIov1Alpha2TrafficSplitSet{labeledSplitSmiSpecIov1Alpha2TrafficSplit},
-		[]LabeledAccessSmiSpecIov1Alpha2TrafficTargetSet{labeledAccessSmiSpecIov1Alpha2TrafficTarget},
-		[]LabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet{labeledSpecsSmiSpecIov1Alpha3HTTPRouteGroup},
+		[]LabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet{labeledSplitSmiSpecIo_V1Alpha2_TrafficSplit},
+		[]LabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet{labeledAccessSmiSpecIo_V1Alpha2_TrafficTarget},
+		[]LabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet{labeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroup},
 		clusters...,
 	), nil
 }
@@ -162,13 +162,13 @@ func NewSinglePartitionedSnapshot(
 func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, errHandler output.ErrorHandler) {
 	var genericLists []output.ResourceList
 
-	for _, outputSet := range s.splitSmiSpecIov1Alpha2TrafficSplits {
+	for _, outputSet := range s.splitSmiSpecIoV1Alpha2TrafficSplits {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.accessSmiSpecIov1Alpha2TrafficTargets {
+	for _, outputSet := range s.accessSmiSpecIoV1Alpha2TrafficTargets {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.specsSmiSpecIov1Alpha3HTTPRouteGroups {
+	for _, outputSet := range s.specsSmiSpecIoV1Alpha3HTTPRouteGroups {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -182,13 +182,13 @@ func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, err
 func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler) {
 	var genericLists []output.ResourceList
 
-	for _, outputSet := range s.splitSmiSpecIov1Alpha2TrafficSplits {
+	for _, outputSet := range s.splitSmiSpecIoV1Alpha2TrafficSplits {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.accessSmiSpecIov1Alpha2TrafficTargets {
+	for _, outputSet := range s.accessSmiSpecIoV1Alpha2TrafficTargets {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
-	for _, outputSet := range s.specsSmiSpecIov1Alpha3HTTPRouteGroups {
+	for _, outputSet := range s.specsSmiSpecIoV1Alpha3HTTPRouteGroups {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 
@@ -199,16 +199,16 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 	}.SyncMultiCluster(ctx, multiClusterClient, errHandler)
 }
 
-func partitionSplitSmiSpecIov1Alpha2TrafficSplitsByLabel(labelKey string, set split_smi_spec_io_v1alpha2_sets.TrafficSplitSet) ([]LabeledSplitSmiSpecIov1Alpha2TrafficSplitSet, error) {
+func partitionSplitSmiSpecIo_V1Alpha2_TrafficSplitsByLabel(labelKey string, set split_smi_spec_io_v1alpha2_sets.TrafficSplitSet) ([]LabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet, error) {
 	setsByLabel := map[string]split_smi_spec_io_v1alpha2_sets.TrafficSplitSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "SplitSmiSpecIov1Alpha2TrafficSplit", obj)
+			return nil, MissingRequiredLabelError(labelKey, "SplitSmiSpecIo_V1Alpha2_TrafficSplit", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "SplitSmiSpecIov1Alpha2TrafficSplit", obj)
+			return nil, MissingRequiredLabelError(labelKey, "SplitSmiSpecIo_V1Alpha2_TrafficSplit", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -220,39 +220,39 @@ func partitionSplitSmiSpecIov1Alpha2TrafficSplitsByLabel(labelKey string, set sp
 	}
 
 	// partition by label key
-	var partitionedSplitSmiSpecIov1Alpha2TrafficSplits []LabeledSplitSmiSpecIov1Alpha2TrafficSplitSet
+	var partitionedSplitSmiSpecIo_V1Alpha2_TrafficSplits []LabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet(setForValue, labels)
+		partitionedSet, err := NewLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedSplitSmiSpecIov1Alpha2TrafficSplits = append(partitionedSplitSmiSpecIov1Alpha2TrafficSplits, partitionedSet)
+		partitionedSplitSmiSpecIo_V1Alpha2_TrafficSplits = append(partitionedSplitSmiSpecIo_V1Alpha2_TrafficSplits, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedSplitSmiSpecIov1Alpha2TrafficSplits, func(i, j int) bool {
-		leftLabelValue := partitionedSplitSmiSpecIov1Alpha2TrafficSplits[i].Labels()[labelKey]
-		rightLabelValue := partitionedSplitSmiSpecIov1Alpha2TrafficSplits[j].Labels()[labelKey]
+	sort.SliceStable(partitionedSplitSmiSpecIo_V1Alpha2_TrafficSplits, func(i, j int) bool {
+		leftLabelValue := partitionedSplitSmiSpecIo_V1Alpha2_TrafficSplits[i].Labels()[labelKey]
+		rightLabelValue := partitionedSplitSmiSpecIo_V1Alpha2_TrafficSplits[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedSplitSmiSpecIov1Alpha2TrafficSplits, nil
+	return partitionedSplitSmiSpecIo_V1Alpha2_TrafficSplits, nil
 }
 
-func partitionAccessSmiSpecIov1Alpha2TrafficTargetsByLabel(labelKey string, set access_smi_spec_io_v1alpha2_sets.TrafficTargetSet) ([]LabeledAccessSmiSpecIov1Alpha2TrafficTargetSet, error) {
+func partitionAccessSmiSpecIo_V1Alpha2_TrafficTargetsByLabel(labelKey string, set access_smi_spec_io_v1alpha2_sets.TrafficTargetSet) ([]LabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet, error) {
 	setsByLabel := map[string]access_smi_spec_io_v1alpha2_sets.TrafficTargetSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "AccessSmiSpecIov1Alpha2TrafficTarget", obj)
+			return nil, MissingRequiredLabelError(labelKey, "AccessSmiSpecIo_V1Alpha2_TrafficTarget", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "AccessSmiSpecIov1Alpha2TrafficTarget", obj)
+			return nil, MissingRequiredLabelError(labelKey, "AccessSmiSpecIo_V1Alpha2_TrafficTarget", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -264,39 +264,39 @@ func partitionAccessSmiSpecIov1Alpha2TrafficTargetsByLabel(labelKey string, set 
 	}
 
 	// partition by label key
-	var partitionedAccessSmiSpecIov1Alpha2TrafficTargets []LabeledAccessSmiSpecIov1Alpha2TrafficTargetSet
+	var partitionedAccessSmiSpecIo_V1Alpha2_TrafficTargets []LabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet(setForValue, labels)
+		partitionedSet, err := NewLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedAccessSmiSpecIov1Alpha2TrafficTargets = append(partitionedAccessSmiSpecIov1Alpha2TrafficTargets, partitionedSet)
+		partitionedAccessSmiSpecIo_V1Alpha2_TrafficTargets = append(partitionedAccessSmiSpecIo_V1Alpha2_TrafficTargets, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedAccessSmiSpecIov1Alpha2TrafficTargets, func(i, j int) bool {
-		leftLabelValue := partitionedAccessSmiSpecIov1Alpha2TrafficTargets[i].Labels()[labelKey]
-		rightLabelValue := partitionedAccessSmiSpecIov1Alpha2TrafficTargets[j].Labels()[labelKey]
+	sort.SliceStable(partitionedAccessSmiSpecIo_V1Alpha2_TrafficTargets, func(i, j int) bool {
+		leftLabelValue := partitionedAccessSmiSpecIo_V1Alpha2_TrafficTargets[i].Labels()[labelKey]
+		rightLabelValue := partitionedAccessSmiSpecIo_V1Alpha2_TrafficTargets[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedAccessSmiSpecIov1Alpha2TrafficTargets, nil
+	return partitionedAccessSmiSpecIo_V1Alpha2_TrafficTargets, nil
 }
 
-func partitionSpecsSmiSpecIov1Alpha3HTTPRouteGroupsByLabel(labelKey string, set specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet) ([]LabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet, error) {
+func partitionSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupsByLabel(labelKey string, set specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet) ([]LabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet, error) {
 	setsByLabel := map[string]specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "SpecsSmiSpecIov1Alpha3HTTPRouteGroup", obj)
+			return nil, MissingRequiredLabelError(labelKey, "SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroup", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "SpecsSmiSpecIov1Alpha3HTTPRouteGroup", obj)
+			return nil, MissingRequiredLabelError(labelKey, "SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroup", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -308,72 +308,72 @@ func partitionSpecsSmiSpecIov1Alpha3HTTPRouteGroupsByLabel(labelKey string, set 
 	}
 
 	// partition by label key
-	var partitionedSpecsSmiSpecIov1Alpha3HTTPRouteGroups []LabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet
+	var partitionedSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups []LabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet(setForValue, labels)
+		partitionedSet, err := NewLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedSpecsSmiSpecIov1Alpha3HTTPRouteGroups = append(partitionedSpecsSmiSpecIov1Alpha3HTTPRouteGroups, partitionedSet)
+		partitionedSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups = append(partitionedSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedSpecsSmiSpecIov1Alpha3HTTPRouteGroups, func(i, j int) bool {
-		leftLabelValue := partitionedSpecsSmiSpecIov1Alpha3HTTPRouteGroups[i].Labels()[labelKey]
-		rightLabelValue := partitionedSpecsSmiSpecIov1Alpha3HTTPRouteGroups[j].Labels()[labelKey]
+	sort.SliceStable(partitionedSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups, func(i, j int) bool {
+		leftLabelValue := partitionedSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups[i].Labels()[labelKey]
+		rightLabelValue := partitionedSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedSpecsSmiSpecIov1Alpha3HTTPRouteGroups, nil
+	return partitionedSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups, nil
 }
 
-func (s snapshot) SplitSmiSpecIov1Alpha2TrafficSplits() []LabeledSplitSmiSpecIov1Alpha2TrafficSplitSet {
-	return s.splitSmiSpecIov1Alpha2TrafficSplits
+func (s snapshot) SplitSmiSpecIo_V1Alpha2_TrafficSplits() []LabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet {
+	return s.splitSmiSpecIoV1Alpha2TrafficSplits
 }
 
-func (s snapshot) AccessSmiSpecIov1Alpha2TrafficTargets() []LabeledAccessSmiSpecIov1Alpha2TrafficTargetSet {
-	return s.accessSmiSpecIov1Alpha2TrafficTargets
+func (s snapshot) AccessSmiSpecIo_V1Alpha2_TrafficTargets() []LabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet {
+	return s.accessSmiSpecIoV1Alpha2TrafficTargets
 }
 
-func (s snapshot) SpecsSmiSpecIov1Alpha3HTTPRouteGroups() []LabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet {
-	return s.specsSmiSpecIov1Alpha3HTTPRouteGroups
+func (s snapshot) SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups() []LabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet {
+	return s.specsSmiSpecIoV1Alpha3HTTPRouteGroups
 }
 
 func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
-	splitSmiSpecIov1Alpha2TrafficSplitSet := split_smi_spec_io_v1alpha2_sets.NewTrafficSplitSet()
-	for _, set := range s.splitSmiSpecIov1Alpha2TrafficSplits {
-		splitSmiSpecIov1Alpha2TrafficSplitSet = splitSmiSpecIov1Alpha2TrafficSplitSet.Union(set.Set())
+	splitSmiSpecIoV1Alpha2TrafficSplitSet := split_smi_spec_io_v1alpha2_sets.NewTrafficSplitSet()
+	for _, set := range s.splitSmiSpecIoV1Alpha2TrafficSplits {
+		splitSmiSpecIoV1Alpha2TrafficSplitSet = splitSmiSpecIoV1Alpha2TrafficSplitSet.Union(set.Set())
 	}
-	snapshotMap["splitSmiSpecIov1Alpha2TrafficSplits"] = splitSmiSpecIov1Alpha2TrafficSplitSet.List()
+	snapshotMap["splitSmiSpecIoV1Alpha2TrafficSplits"] = splitSmiSpecIoV1Alpha2TrafficSplitSet.List()
 
-	accessSmiSpecIov1Alpha2TrafficTargetSet := access_smi_spec_io_v1alpha2_sets.NewTrafficTargetSet()
-	for _, set := range s.accessSmiSpecIov1Alpha2TrafficTargets {
-		accessSmiSpecIov1Alpha2TrafficTargetSet = accessSmiSpecIov1Alpha2TrafficTargetSet.Union(set.Set())
+	accessSmiSpecIoV1Alpha2TrafficTargetSet := access_smi_spec_io_v1alpha2_sets.NewTrafficTargetSet()
+	for _, set := range s.accessSmiSpecIoV1Alpha2TrafficTargets {
+		accessSmiSpecIoV1Alpha2TrafficTargetSet = accessSmiSpecIoV1Alpha2TrafficTargetSet.Union(set.Set())
 	}
-	snapshotMap["accessSmiSpecIov1Alpha2TrafficTargets"] = accessSmiSpecIov1Alpha2TrafficTargetSet.List()
+	snapshotMap["accessSmiSpecIoV1Alpha2TrafficTargets"] = accessSmiSpecIoV1Alpha2TrafficTargetSet.List()
 
-	specsSmiSpecIov1Alpha3HTTPRouteGroupSet := specs_smi_spec_io_v1alpha3_sets.NewHTTPRouteGroupSet()
-	for _, set := range s.specsSmiSpecIov1Alpha3HTTPRouteGroups {
-		specsSmiSpecIov1Alpha3HTTPRouteGroupSet = specsSmiSpecIov1Alpha3HTTPRouteGroupSet.Union(set.Set())
+	specsSmiSpecIoV1Alpha3HTTPRouteGroupSet := specs_smi_spec_io_v1alpha3_sets.NewHTTPRouteGroupSet()
+	for _, set := range s.specsSmiSpecIoV1Alpha3HTTPRouteGroups {
+		specsSmiSpecIoV1Alpha3HTTPRouteGroupSet = specsSmiSpecIoV1Alpha3HTTPRouteGroupSet.Union(set.Set())
 	}
-	snapshotMap["specsSmiSpecIov1Alpha3HTTPRouteGroups"] = specsSmiSpecIov1Alpha3HTTPRouteGroupSet.List()
+	snapshotMap["specsSmiSpecIoV1Alpha3HTTPRouteGroups"] = specsSmiSpecIoV1Alpha3HTTPRouteGroupSet.List()
 
 	snapshotMap["clusters"] = s.clusters
 
 	return json.Marshal(snapshotMap)
 }
 
-// LabeledSplitSmiSpecIov1Alpha2TrafficSplitSet represents a set of splitSmiSpecIov1Alpha2TrafficSplits
+// LabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet represents a set of splitSmiSpecIoV1Alpha2TrafficSplits
 // which share a common set of labels.
-// These labels are used to find diffs between SplitSmiSpecIov1Alpha2TrafficSplitSets.
-type LabeledSplitSmiSpecIov1Alpha2TrafficSplitSet interface {
-	// returns the set of Labels shared by this SplitSmiSpecIov1Alpha2TrafficSplitSet
+// These labels are used to find diffs between SplitSmiSpecIo_V1Alpha2_TrafficSplitSets.
+type LabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet interface {
+	// returns the set of Labels shared by this SplitSmiSpecIo_V1Alpha2_TrafficSplitSet
 	Labels() map[string]string
 
 	// returns the set of TrafficSplites with the given labels
@@ -383,34 +383,34 @@ type LabeledSplitSmiSpecIov1Alpha2TrafficSplitSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledSplitSmiSpecIov1Alpha2TrafficSplitSet struct {
+type labeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet struct {
 	set    split_smi_spec_io_v1alpha2_sets.TrafficSplitSet
 	labels map[string]string
 }
 
-func NewLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet(set split_smi_spec_io_v1alpha2_sets.TrafficSplitSet, labels map[string]string) (LabeledSplitSmiSpecIov1Alpha2TrafficSplitSet, error) {
-	// validate that each TrafficSplit contains the labels, else this is not a valid LabeledSplitSmiSpecIov1Alpha2TrafficSplitSet
+func NewLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet(set split_smi_spec_io_v1alpha2_sets.TrafficSplitSet, labels map[string]string) (LabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet, error) {
+	// validate that each TrafficSplit contains the labels, else this is not a valid LabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on SplitSmiSpecIov1Alpha2TrafficSplit %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on SplitSmiSpecIo_V1Alpha2_TrafficSplit %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledSplitSmiSpecIov1Alpha2TrafficSplitSet{set: set, labels: labels}, nil
+	return &labeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledSplitSmiSpecIov1Alpha2TrafficSplitSet) Labels() map[string]string {
+func (l *labeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledSplitSmiSpecIov1Alpha2TrafficSplitSet) Set() split_smi_spec_io_v1alpha2_sets.TrafficSplitSet {
+func (l *labeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet) Set() split_smi_spec_io_v1alpha2_sets.TrafficSplitSet {
 	return l.set
 }
 
-func (l labeledSplitSmiSpecIov1Alpha2TrafficSplitSet) Generic() output.ResourceList {
+func (l labeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -437,11 +437,11 @@ func (l labeledSplitSmiSpecIov1Alpha2TrafficSplitSet) Generic() output.ResourceL
 	}
 }
 
-// LabeledAccessSmiSpecIov1Alpha2TrafficTargetSet represents a set of accessSmiSpecIov1Alpha2TrafficTargets
+// LabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet represents a set of accessSmiSpecIoV1Alpha2TrafficTargets
 // which share a common set of labels.
-// These labels are used to find diffs between AccessSmiSpecIov1Alpha2TrafficTargetSets.
-type LabeledAccessSmiSpecIov1Alpha2TrafficTargetSet interface {
-	// returns the set of Labels shared by this AccessSmiSpecIov1Alpha2TrafficTargetSet
+// These labels are used to find diffs between AccessSmiSpecIo_V1Alpha2_TrafficTargetSets.
+type LabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet interface {
+	// returns the set of Labels shared by this AccessSmiSpecIo_V1Alpha2_TrafficTargetSet
 	Labels() map[string]string
 
 	// returns the set of TrafficTargetes with the given labels
@@ -451,34 +451,34 @@ type LabeledAccessSmiSpecIov1Alpha2TrafficTargetSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledAccessSmiSpecIov1Alpha2TrafficTargetSet struct {
+type labeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet struct {
 	set    access_smi_spec_io_v1alpha2_sets.TrafficTargetSet
 	labels map[string]string
 }
 
-func NewLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet(set access_smi_spec_io_v1alpha2_sets.TrafficTargetSet, labels map[string]string) (LabeledAccessSmiSpecIov1Alpha2TrafficTargetSet, error) {
-	// validate that each TrafficTarget contains the labels, else this is not a valid LabeledAccessSmiSpecIov1Alpha2TrafficTargetSet
+func NewLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet(set access_smi_spec_io_v1alpha2_sets.TrafficTargetSet, labels map[string]string) (LabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet, error) {
+	// validate that each TrafficTarget contains the labels, else this is not a valid LabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on AccessSmiSpecIov1Alpha2TrafficTarget %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on AccessSmiSpecIo_V1Alpha2_TrafficTarget %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledAccessSmiSpecIov1Alpha2TrafficTargetSet{set: set, labels: labels}, nil
+	return &labeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledAccessSmiSpecIov1Alpha2TrafficTargetSet) Labels() map[string]string {
+func (l *labeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledAccessSmiSpecIov1Alpha2TrafficTargetSet) Set() access_smi_spec_io_v1alpha2_sets.TrafficTargetSet {
+func (l *labeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet) Set() access_smi_spec_io_v1alpha2_sets.TrafficTargetSet {
 	return l.set
 }
 
-func (l labeledAccessSmiSpecIov1Alpha2TrafficTargetSet) Generic() output.ResourceList {
+func (l labeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -505,11 +505,11 @@ func (l labeledAccessSmiSpecIov1Alpha2TrafficTargetSet) Generic() output.Resourc
 	}
 }
 
-// LabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet represents a set of specsSmiSpecIov1Alpha3HTTPRouteGroups
+// LabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet represents a set of specsSmiSpecIoV1Alpha3HTTPRouteGroups
 // which share a common set of labels.
-// These labels are used to find diffs between SpecsSmiSpecIov1Alpha3HTTPRouteGroupSets.
-type LabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet interface {
-	// returns the set of Labels shared by this SpecsSmiSpecIov1Alpha3HTTPRouteGroupSet
+// These labels are used to find diffs between SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSets.
+type LabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet interface {
+	// returns the set of Labels shared by this SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet
 	Labels() map[string]string
 
 	// returns the set of HTTPRouteGroupes with the given labels
@@ -519,34 +519,34 @@ type LabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet struct {
+type labeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet struct {
 	set    specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet
 	labels map[string]string
 }
 
-func NewLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet(set specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet, labels map[string]string) (LabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet, error) {
-	// validate that each HTTPRouteGroup contains the labels, else this is not a valid LabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet
+func NewLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet(set specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet, labels map[string]string) (LabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet, error) {
+	// validate that each HTTPRouteGroup contains the labels, else this is not a valid LabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on SpecsSmiSpecIov1Alpha3HTTPRouteGroup %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroup %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet{set: set, labels: labels}, nil
+	return &labeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet) Labels() map[string]string {
+func (l *labeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet) Set() specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet {
+func (l *labeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet) Set() specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet {
 	return l.set
 }
 
-func (l labeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet) Generic() output.ResourceList {
+func (l labeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -578,11 +578,11 @@ type builder struct {
 	name     string
 	clusters []string
 
-	splitSmiSpecIov1Alpha2TrafficSplits split_smi_spec_io_v1alpha2_sets.TrafficSplitSet
+	splitSmiSpecIoV1Alpha2TrafficSplits split_smi_spec_io_v1alpha2_sets.TrafficSplitSet
 
-	accessSmiSpecIov1Alpha2TrafficTargets access_smi_spec_io_v1alpha2_sets.TrafficTargetSet
+	accessSmiSpecIoV1Alpha2TrafficTargets access_smi_spec_io_v1alpha2_sets.TrafficTargetSet
 
-	specsSmiSpecIov1Alpha3HTTPRouteGroups specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet
+	specsSmiSpecIoV1Alpha3HTTPRouteGroups specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet
 }
 
 func NewBuilder(ctx context.Context, name string) *builder {
@@ -590,11 +590,11 @@ func NewBuilder(ctx context.Context, name string) *builder {
 		ctx:  ctx,
 		name: name,
 
-		splitSmiSpecIov1Alpha2TrafficSplits: split_smi_spec_io_v1alpha2_sets.NewTrafficSplitSet(),
+		splitSmiSpecIoV1Alpha2TrafficSplits: split_smi_spec_io_v1alpha2_sets.NewTrafficSplitSet(),
 
-		accessSmiSpecIov1Alpha2TrafficTargets: access_smi_spec_io_v1alpha2_sets.NewTrafficTargetSet(),
+		accessSmiSpecIoV1Alpha2TrafficTargets: access_smi_spec_io_v1alpha2_sets.NewTrafficTargetSet(),
 
-		specsSmiSpecIov1Alpha3HTTPRouteGroups: specs_smi_spec_io_v1alpha3_sets.NewHTTPRouteGroupSet(),
+		specsSmiSpecIoV1Alpha3HTTPRouteGroups: specs_smi_spec_io_v1alpha3_sets.NewHTTPRouteGroupSet(),
 	}
 }
 
@@ -602,23 +602,23 @@ func NewBuilder(ctx context.Context, name string) *builder {
 // iteratively collecting outputs before producing a final snapshot
 type Builder interface {
 
-	// add SplitSmiSpecIov1Alpha2TrafficSplits to the collected outputs
-	AddSplitSmiSpecIov1Alpha2TrafficSplits(splitSmiSpecIov1Alpha2TrafficSplits ...*split_smi_spec_io_v1alpha2.TrafficSplit)
+	// add SplitSmiSpecIo_V1Alpha2_TrafficSplits to the collected outputs
+	AddSplitSmiSpecIo_V1Alpha2_TrafficSplits(splitSmiSpecIoV1Alpha2TrafficSplits ...*split_smi_spec_io_v1alpha2.TrafficSplit)
 
-	// get the collected SplitSmiSpecIov1Alpha2TrafficSplits
-	GetSplitSmiSpecIov1Alpha2TrafficSplits() split_smi_spec_io_v1alpha2_sets.TrafficSplitSet
+	// get the collected SplitSmiSpecIo_V1Alpha2_TrafficSplits
+	GetSplitSmiSpecIo_V1Alpha2_TrafficSplits() split_smi_spec_io_v1alpha2_sets.TrafficSplitSet
 
-	// add AccessSmiSpecIov1Alpha2TrafficTargets to the collected outputs
-	AddAccessSmiSpecIov1Alpha2TrafficTargets(accessSmiSpecIov1Alpha2TrafficTargets ...*access_smi_spec_io_v1alpha2.TrafficTarget)
+	// add AccessSmiSpecIo_V1Alpha2_TrafficTargets to the collected outputs
+	AddAccessSmiSpecIo_V1Alpha2_TrafficTargets(accessSmiSpecIoV1Alpha2TrafficTargets ...*access_smi_spec_io_v1alpha2.TrafficTarget)
 
-	// get the collected AccessSmiSpecIov1Alpha2TrafficTargets
-	GetAccessSmiSpecIov1Alpha2TrafficTargets() access_smi_spec_io_v1alpha2_sets.TrafficTargetSet
+	// get the collected AccessSmiSpecIo_V1Alpha2_TrafficTargets
+	GetAccessSmiSpecIo_V1Alpha2_TrafficTargets() access_smi_spec_io_v1alpha2_sets.TrafficTargetSet
 
-	// add SpecsSmiSpecIov1Alpha3HTTPRouteGroups to the collected outputs
-	AddSpecsSmiSpecIov1Alpha3HTTPRouteGroups(specsSmiSpecIov1Alpha3HTTPRouteGroups ...*specs_smi_spec_io_v1alpha3.HTTPRouteGroup)
+	// add SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups to the collected outputs
+	AddSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups(specsSmiSpecIoV1Alpha3HTTPRouteGroups ...*specs_smi_spec_io_v1alpha3.HTTPRouteGroup)
 
-	// get the collected SpecsSmiSpecIov1Alpha3HTTPRouteGroups
-	GetSpecsSmiSpecIov1Alpha3HTTPRouteGroups() specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet
+	// get the collected SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups
+	GetSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups() specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet
 
 	// build the collected outputs into a label-partitioned snapshot
 	BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error)
@@ -643,44 +643,44 @@ type Builder interface {
 	Delta(newSnap Builder) output.SnapshotDelta
 }
 
-func (b *builder) AddSplitSmiSpecIov1Alpha2TrafficSplits(splitSmiSpecIov1Alpha2TrafficSplits ...*split_smi_spec_io_v1alpha2.TrafficSplit) {
-	for _, obj := range splitSmiSpecIov1Alpha2TrafficSplits {
+func (b *builder) AddSplitSmiSpecIo_V1Alpha2_TrafficSplits(splitSmiSpecIoV1Alpha2TrafficSplits ...*split_smi_spec_io_v1alpha2.TrafficSplit) {
+	for _, obj := range splitSmiSpecIoV1Alpha2TrafficSplits {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output SplitSmiSpecIov1Alpha2TrafficSplit %v", sets.Key(obj))
-		b.splitSmiSpecIov1Alpha2TrafficSplits.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output SplitSmiSpecIo_V1Alpha2_TrafficSplit %v", sets.Key(obj))
+		b.splitSmiSpecIoV1Alpha2TrafficSplits.Insert(obj)
 	}
 }
-func (b *builder) AddAccessSmiSpecIov1Alpha2TrafficTargets(accessSmiSpecIov1Alpha2TrafficTargets ...*access_smi_spec_io_v1alpha2.TrafficTarget) {
-	for _, obj := range accessSmiSpecIov1Alpha2TrafficTargets {
+func (b *builder) AddAccessSmiSpecIo_V1Alpha2_TrafficTargets(accessSmiSpecIoV1Alpha2TrafficTargets ...*access_smi_spec_io_v1alpha2.TrafficTarget) {
+	for _, obj := range accessSmiSpecIoV1Alpha2TrafficTargets {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output AccessSmiSpecIov1Alpha2TrafficTarget %v", sets.Key(obj))
-		b.accessSmiSpecIov1Alpha2TrafficTargets.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output AccessSmiSpecIo_V1Alpha2_TrafficTarget %v", sets.Key(obj))
+		b.accessSmiSpecIoV1Alpha2TrafficTargets.Insert(obj)
 	}
 }
-func (b *builder) AddSpecsSmiSpecIov1Alpha3HTTPRouteGroups(specsSmiSpecIov1Alpha3HTTPRouteGroups ...*specs_smi_spec_io_v1alpha3.HTTPRouteGroup) {
-	for _, obj := range specsSmiSpecIov1Alpha3HTTPRouteGroups {
+func (b *builder) AddSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups(specsSmiSpecIoV1Alpha3HTTPRouteGroups ...*specs_smi_spec_io_v1alpha3.HTTPRouteGroup) {
+	for _, obj := range specsSmiSpecIoV1Alpha3HTTPRouteGroups {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output SpecsSmiSpecIov1Alpha3HTTPRouteGroup %v", sets.Key(obj))
-		b.specsSmiSpecIov1Alpha3HTTPRouteGroups.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroup %v", sets.Key(obj))
+		b.specsSmiSpecIoV1Alpha3HTTPRouteGroups.Insert(obj)
 	}
 }
 
-func (b *builder) GetSplitSmiSpecIov1Alpha2TrafficSplits() split_smi_spec_io_v1alpha2_sets.TrafficSplitSet {
-	return b.splitSmiSpecIov1Alpha2TrafficSplits
+func (b *builder) GetSplitSmiSpecIo_V1Alpha2_TrafficSplits() split_smi_spec_io_v1alpha2_sets.TrafficSplitSet {
+	return b.splitSmiSpecIoV1Alpha2TrafficSplits
 }
 
-func (b *builder) GetAccessSmiSpecIov1Alpha2TrafficTargets() access_smi_spec_io_v1alpha2_sets.TrafficTargetSet {
-	return b.accessSmiSpecIov1Alpha2TrafficTargets
+func (b *builder) GetAccessSmiSpecIo_V1Alpha2_TrafficTargets() access_smi_spec_io_v1alpha2_sets.TrafficTargetSet {
+	return b.accessSmiSpecIoV1Alpha2TrafficTargets
 }
 
-func (b *builder) GetSpecsSmiSpecIov1Alpha3HTTPRouteGroups() specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet {
-	return b.specsSmiSpecIov1Alpha3HTTPRouteGroups
+func (b *builder) GetSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups() specs_smi_spec_io_v1alpha3_sets.HTTPRouteGroupSet {
+	return b.specsSmiSpecIoV1Alpha3HTTPRouteGroups
 }
 
 func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error) {
@@ -688,11 +688,11 @@ func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
 		b.name,
 		labelKey,
 
-		b.splitSmiSpecIov1Alpha2TrafficSplits,
+		b.splitSmiSpecIoV1Alpha2TrafficSplits,
 
-		b.accessSmiSpecIov1Alpha2TrafficTargets,
+		b.accessSmiSpecIoV1Alpha2TrafficTargets,
 
-		b.specsSmiSpecIov1Alpha3HTTPRouteGroups,
+		b.specsSmiSpecIoV1Alpha3HTTPRouteGroups,
 		b.clusters...,
 	)
 }
@@ -702,11 +702,11 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 		b.name,
 		snapshotLabels,
 
-		b.splitSmiSpecIov1Alpha2TrafficSplits,
+		b.splitSmiSpecIoV1Alpha2TrafficSplits,
 
-		b.accessSmiSpecIov1Alpha2TrafficTargets,
+		b.accessSmiSpecIoV1Alpha2TrafficTargets,
 
-		b.specsSmiSpecIov1Alpha3HTTPRouteGroups,
+		b.specsSmiSpecIoV1Alpha3HTTPRouteGroups,
 		b.clusters...,
 	)
 }
@@ -724,11 +724,11 @@ func (b *builder) Merge(other Builder) {
 		return
 	}
 
-	b.AddSplitSmiSpecIov1Alpha2TrafficSplits(other.GetSplitSmiSpecIov1Alpha2TrafficSplits().List()...)
+	b.AddSplitSmiSpecIo_V1Alpha2_TrafficSplits(other.GetSplitSmiSpecIo_V1Alpha2_TrafficSplits().List()...)
 
-	b.AddAccessSmiSpecIov1Alpha2TrafficTargets(other.GetAccessSmiSpecIov1Alpha2TrafficTargets().List()...)
+	b.AddAccessSmiSpecIo_V1Alpha2_TrafficTargets(other.GetAccessSmiSpecIo_V1Alpha2_TrafficTargets().List()...)
 
-	b.AddSpecsSmiSpecIov1Alpha3HTTPRouteGroups(other.GetSpecsSmiSpecIov1Alpha3HTTPRouteGroups().List()...)
+	b.AddSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups(other.GetSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups().List()...)
 	for _, cluster := range other.Clusters() {
 		b.AddCluster(cluster)
 	}
@@ -740,16 +740,16 @@ func (b *builder) Clone() Builder {
 	}
 	clone := NewBuilder(b.ctx, b.name)
 
-	for _, splitSmiSpecIov1Alpha2TrafficSplit := range b.GetSplitSmiSpecIov1Alpha2TrafficSplits().List() {
-		clone.AddSplitSmiSpecIov1Alpha2TrafficSplits(splitSmiSpecIov1Alpha2TrafficSplit.DeepCopy())
+	for _, splitSmiSpecIoV1Alpha2TrafficSplit := range b.GetSplitSmiSpecIo_V1Alpha2_TrafficSplits().List() {
+		clone.AddSplitSmiSpecIo_V1Alpha2_TrafficSplits(splitSmiSpecIoV1Alpha2TrafficSplit.DeepCopy())
 	}
 
-	for _, accessSmiSpecIov1Alpha2TrafficTarget := range b.GetAccessSmiSpecIov1Alpha2TrafficTargets().List() {
-		clone.AddAccessSmiSpecIov1Alpha2TrafficTargets(accessSmiSpecIov1Alpha2TrafficTarget.DeepCopy())
+	for _, accessSmiSpecIoV1Alpha2TrafficTarget := range b.GetAccessSmiSpecIo_V1Alpha2_TrafficTargets().List() {
+		clone.AddAccessSmiSpecIo_V1Alpha2_TrafficTargets(accessSmiSpecIoV1Alpha2TrafficTarget.DeepCopy())
 	}
 
-	for _, specsSmiSpecIov1Alpha3HTTPRouteGroup := range b.GetSpecsSmiSpecIov1Alpha3HTTPRouteGroups().List() {
-		clone.AddSpecsSmiSpecIov1Alpha3HTTPRouteGroups(specsSmiSpecIov1Alpha3HTTPRouteGroup.DeepCopy())
+	for _, specsSmiSpecIoV1Alpha3HTTPRouteGroup := range b.GetSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups().List() {
+		clone.AddSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups(specsSmiSpecIoV1Alpha3HTTPRouteGroup.DeepCopy())
 	}
 	for _, cluster := range b.Clusters() {
 		clone.AddCluster(cluster)
@@ -764,33 +764,33 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
 	}
 
 	// calculate delta between TrafficSplits
-	splitSmiSpecIov1Alpha2TrafficSplitDelta := b.GetSplitSmiSpecIov1Alpha2TrafficSplits().Delta(other.GetSplitSmiSpecIov1Alpha2TrafficSplits())
-	splitSmiSpecIov1Alpha2TrafficSplitGvk := schema.GroupVersionKind{
+	splitSmiSpecIoV1Alpha2TrafficSplitDelta := b.GetSplitSmiSpecIo_V1Alpha2_TrafficSplits().Delta(other.GetSplitSmiSpecIo_V1Alpha2_TrafficSplits())
+	splitSmiSpecIoV1Alpha2TrafficSplitGvk := schema.GroupVersionKind{
 		Group:   "split.smi-spec.io",
 		Version: "v1alpha2",
 		Kind:    "TrafficSplit",
 	}
-	delta.AddInserted(splitSmiSpecIov1Alpha2TrafficSplitGvk, splitSmiSpecIov1Alpha2TrafficSplitDelta.Inserted)
-	delta.AddRemoved(splitSmiSpecIov1Alpha2TrafficSplitGvk, splitSmiSpecIov1Alpha2TrafficSplitDelta.Removed)
+	delta.AddInserted(splitSmiSpecIoV1Alpha2TrafficSplitGvk, splitSmiSpecIoV1Alpha2TrafficSplitDelta.Inserted)
+	delta.AddRemoved(splitSmiSpecIoV1Alpha2TrafficSplitGvk, splitSmiSpecIoV1Alpha2TrafficSplitDelta.Removed)
 
 	// calculate delta between TrafficTargets
-	accessSmiSpecIov1Alpha2TrafficTargetDelta := b.GetAccessSmiSpecIov1Alpha2TrafficTargets().Delta(other.GetAccessSmiSpecIov1Alpha2TrafficTargets())
-	accessSmiSpecIov1Alpha2TrafficTargetGvk := schema.GroupVersionKind{
+	accessSmiSpecIoV1Alpha2TrafficTargetDelta := b.GetAccessSmiSpecIo_V1Alpha2_TrafficTargets().Delta(other.GetAccessSmiSpecIo_V1Alpha2_TrafficTargets())
+	accessSmiSpecIoV1Alpha2TrafficTargetGvk := schema.GroupVersionKind{
 		Group:   "access.smi-spec.io",
 		Version: "v1alpha2",
 		Kind:    "TrafficTarget",
 	}
-	delta.AddInserted(accessSmiSpecIov1Alpha2TrafficTargetGvk, accessSmiSpecIov1Alpha2TrafficTargetDelta.Inserted)
-	delta.AddRemoved(accessSmiSpecIov1Alpha2TrafficTargetGvk, accessSmiSpecIov1Alpha2TrafficTargetDelta.Removed)
+	delta.AddInserted(accessSmiSpecIoV1Alpha2TrafficTargetGvk, accessSmiSpecIoV1Alpha2TrafficTargetDelta.Inserted)
+	delta.AddRemoved(accessSmiSpecIoV1Alpha2TrafficTargetGvk, accessSmiSpecIoV1Alpha2TrafficTargetDelta.Removed)
 
 	// calculate delta between HTTPRouteGroups
-	specsSmiSpecIov1Alpha3HTTPRouteGroupDelta := b.GetSpecsSmiSpecIov1Alpha3HTTPRouteGroups().Delta(other.GetSpecsSmiSpecIov1Alpha3HTTPRouteGroups())
-	specsSmiSpecIov1Alpha3HTTPRouteGroupGvk := schema.GroupVersionKind{
+	specsSmiSpecIoV1Alpha3HTTPRouteGroupDelta := b.GetSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups().Delta(other.GetSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups())
+	specsSmiSpecIoV1Alpha3HTTPRouteGroupGvk := schema.GroupVersionKind{
 		Group:   "specs.smi-spec.io",
 		Version: "v1alpha3",
 		Kind:    "HTTPRouteGroup",
 	}
-	delta.AddInserted(specsSmiSpecIov1Alpha3HTTPRouteGroupGvk, specsSmiSpecIov1Alpha3HTTPRouteGroupDelta.Inserted)
-	delta.AddRemoved(specsSmiSpecIov1Alpha3HTTPRouteGroupGvk, specsSmiSpecIov1Alpha3HTTPRouteGroupDelta.Removed)
+	delta.AddInserted(specsSmiSpecIoV1Alpha3HTTPRouteGroupGvk, specsSmiSpecIoV1Alpha3HTTPRouteGroupDelta.Inserted)
+	delta.AddRemoved(specsSmiSpecIoV1Alpha3HTTPRouteGroupGvk, specsSmiSpecIoV1Alpha3HTTPRouteGroupDelta.Removed)
 	return delta
 }

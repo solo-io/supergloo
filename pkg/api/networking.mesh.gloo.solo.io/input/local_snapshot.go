@@ -3,18 +3,18 @@
 //go:generate mockgen -source ./local_snapshot.go -destination mocks/local_snapshot.go
 
 // The Input LocalSnapshot contains the set of all:
-// * SettingsMeshGlooSoloIov1Alpha2Settings
-// * DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets
-// * DiscoveryMeshGlooSoloIov1Alpha2Workloads
-// * DiscoveryMeshGlooSoloIov1Alpha2Meshes
-// * NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies
-// * NetworkingMeshGlooSoloIov1Alpha2AccessPolicies
-// * NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
-// * NetworkingMeshGlooSoloIov1Alpha2FailoverServices
-// * NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments
-// * ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords
-// * V1Secrets
-// * MulticlusterSoloIov1Alpha1KubernetesClusters
+// * SettingsMeshGlooSoloIo_V1Alpha2_Settings
+// * DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets
+// * DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads
+// * DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes
+// * NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies
+// * NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies
+// * NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes
+// * NetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices
+// * NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments
+// * ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords
+// * V1_Secrets
+// * MulticlusterSoloIo_V1Alpha1_KubernetesClusters
 // read from a given cluster or set of clusters, across all namespaces.
 //
 // A snapshot can be constructed from either a single Manager (for a single cluster)
@@ -64,36 +64,36 @@ import (
 // the snapshot of input resources consumed by translation
 type LocalSnapshot interface {
 
-	// return the set of input SettingsMeshGlooSoloIov1Alpha2Settings
-	SettingsMeshGlooSoloIov1Alpha2Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+	// return the set of input SettingsMeshGlooSoloIo_V1Alpha2_Settings
+	SettingsMeshGlooSoloIo_V1Alpha2_Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 
-	// return the set of input DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets
-	DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets() discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet
-	// return the set of input DiscoveryMeshGlooSoloIov1Alpha2Workloads
-	DiscoveryMeshGlooSoloIov1Alpha2Workloads() discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
-	// return the set of input DiscoveryMeshGlooSoloIov1Alpha2Meshes
-	DiscoveryMeshGlooSoloIov1Alpha2Meshes() discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
+	// return the set of input DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets
+	DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets() discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet
+	// return the set of input DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads
+	DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads() discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
+	// return the set of input DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes
+	DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes() discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
 
-	// return the set of input NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies
-	NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies() networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet
-	// return the set of input NetworkingMeshGlooSoloIov1Alpha2AccessPolicies
-	NetworkingMeshGlooSoloIov1Alpha2AccessPolicies() networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet
-	// return the set of input NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
-	NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
-	// return the set of input NetworkingMeshGlooSoloIov1Alpha2FailoverServices
-	NetworkingMeshGlooSoloIov1Alpha2FailoverServices() networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
+	// return the set of input NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies
+	NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies() networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet
+	// return the set of input NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies
+	NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies() networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet
+	// return the set of input NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes
+	NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
+	// return the set of input NetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices
+	NetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices() networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
 
-	// return the set of input NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments
-	NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments() networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
+	// return the set of input NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments
+	NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments() networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
 
-	// return the set of input ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords
-	ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet
+	// return the set of input ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords
+	ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet
 
-	// return the set of input V1Secrets
-	V1Secrets() v1_sets.SecretSet
+	// return the set of input V1_Secrets
+	V1_Secrets() v1_sets.SecretSet
 
-	// return the set of input MulticlusterSoloIov1Alpha1KubernetesClusters
-	MulticlusterSoloIov1Alpha1KubernetesClusters() multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
+	// return the set of input MulticlusterSoloIo_V1Alpha1_KubernetesClusters
+	MulticlusterSoloIo_V1Alpha1_KubernetesClusters() multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
 	// update the status of all input objects which support
 	// the Status subresource (across multiple clusters)
 	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts LocalSyncStatusOptions) error
@@ -107,155 +107,155 @@ type LocalSnapshot interface {
 // options for syncing input object statuses
 type LocalSyncStatusOptions struct {
 
-	// sync status of SettingsMeshGlooSoloIov1Alpha2Settings objects
-	SettingsMeshGlooSoloIov1Alpha2Settings bool
+	// sync status of SettingsMeshGlooSoloIo_V1Alpha2_Settings objects
+	SettingsMeshGlooSoloIo_V1Alpha2_Settings bool
 
-	// sync status of DiscoveryMeshGlooSoloIov1Alpha2TrafficTarget objects
-	DiscoveryMeshGlooSoloIov1Alpha2TrafficTarget bool
-	// sync status of DiscoveryMeshGlooSoloIov1Alpha2Workload objects
-	DiscoveryMeshGlooSoloIov1Alpha2Workload bool
-	// sync status of DiscoveryMeshGlooSoloIov1Alpha2Mesh objects
-	DiscoveryMeshGlooSoloIov1Alpha2Mesh bool
+	// sync status of DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTarget objects
+	DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTarget bool
+	// sync status of DiscoveryMeshGlooSoloIo_V1Alpha2_Workload objects
+	DiscoveryMeshGlooSoloIo_V1Alpha2_Workload bool
+	// sync status of DiscoveryMeshGlooSoloIo_V1Alpha2_Mesh objects
+	DiscoveryMeshGlooSoloIo_V1Alpha2_Mesh bool
 
-	// sync status of NetworkingMeshGlooSoloIov1Alpha2TrafficPolicy objects
-	NetworkingMeshGlooSoloIov1Alpha2TrafficPolicy bool
-	// sync status of NetworkingMeshGlooSoloIov1Alpha2AccessPolicy objects
-	NetworkingMeshGlooSoloIov1Alpha2AccessPolicy bool
-	// sync status of NetworkingMeshGlooSoloIov1Alpha2VirtualMesh objects
-	NetworkingMeshGlooSoloIov1Alpha2VirtualMesh bool
-	// sync status of NetworkingMeshGlooSoloIov1Alpha2FailoverService objects
-	NetworkingMeshGlooSoloIov1Alpha2FailoverService bool
+	// sync status of NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicy objects
+	NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicy bool
+	// sync status of NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicy objects
+	NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicy bool
+	// sync status of NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMesh objects
+	NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMesh bool
+	// sync status of NetworkingMeshGlooSoloIo_V1Alpha2_FailoverService objects
+	NetworkingMeshGlooSoloIo_V1Alpha2_FailoverService bool
 
-	// sync status of NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployment objects
-	NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployment bool
+	// sync status of NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployment objects
+	NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployment bool
 
-	// sync status of ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecord objects
-	ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecord bool
+	// sync status of ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecord objects
+	ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecord bool
 
-	// sync status of V1Secret objects
-	V1Secret bool
+	// sync status of V1_Secret objects
+	V1_Secret bool
 
-	// sync status of MulticlusterSoloIov1Alpha1KubernetesCluster objects
-	MulticlusterSoloIov1Alpha1KubernetesCluster bool
+	// sync status of MulticlusterSoloIo_V1Alpha1_KubernetesCluster objects
+	MulticlusterSoloIo_V1Alpha1_KubernetesCluster bool
 }
 
 type snapshotLocal struct {
 	name string
 
-	settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+	settingsMeshGlooSoloIoV1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 
-	discoveryMeshGlooSoloIov1Alpha2TrafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet
-	discoveryMeshGlooSoloIov1Alpha2Workloads      discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
-	discoveryMeshGlooSoloIov1Alpha2Meshes         discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
+	discoveryMeshGlooSoloIoV1Alpha2TrafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet
+	discoveryMeshGlooSoloIoV1Alpha2Workloads      discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
+	discoveryMeshGlooSoloIoV1Alpha2Meshes         discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
 
-	networkingMeshGlooSoloIov1Alpha2TrafficPolicies  networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet
-	networkingMeshGlooSoloIov1Alpha2AccessPolicies   networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet
-	networkingMeshGlooSoloIov1Alpha2VirtualMeshes    networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
-	networkingMeshGlooSoloIov1Alpha2FailoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
+	networkingMeshGlooSoloIoV1Alpha2TrafficPolicies  networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet
+	networkingMeshGlooSoloIoV1Alpha2AccessPolicies   networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet
+	networkingMeshGlooSoloIoV1Alpha2VirtualMeshes    networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
+	networkingMeshGlooSoloIoV1Alpha2FailoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
 
-	networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
+	networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
 
-	observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet
+	observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet
 
 	v1Secrets v1_sets.SecretSet
 
-	multiclusterSoloIov1Alpha1KubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
+	multiclusterSoloIoV1Alpha1KubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
 }
 
 func NewLocalSnapshot(
 	name string,
 
-	settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet,
+	settingsMeshGlooSoloIoV1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet,
 
-	discoveryMeshGlooSoloIov1Alpha2TrafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet,
-	discoveryMeshGlooSoloIov1Alpha2Workloads discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet,
-	discoveryMeshGlooSoloIov1Alpha2Meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
+	discoveryMeshGlooSoloIoV1Alpha2TrafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet,
+	discoveryMeshGlooSoloIoV1Alpha2Workloads discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet,
+	discoveryMeshGlooSoloIoV1Alpha2Meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
 
-	networkingMeshGlooSoloIov1Alpha2TrafficPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet,
-	networkingMeshGlooSoloIov1Alpha2AccessPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet,
-	networkingMeshGlooSoloIov1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet,
-	networkingMeshGlooSoloIov1Alpha2FailoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet,
+	networkingMeshGlooSoloIoV1Alpha2TrafficPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet,
+	networkingMeshGlooSoloIoV1Alpha2AccessPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet,
+	networkingMeshGlooSoloIoV1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet,
+	networkingMeshGlooSoloIoV1Alpha2FailoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet,
 
-	networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet,
+	networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet,
 
-	observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet,
+	observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet,
 
 	v1Secrets v1_sets.SecretSet,
 
-	multiclusterSoloIov1Alpha1KubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet,
+	multiclusterSoloIoV1Alpha1KubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet,
 
 ) LocalSnapshot {
 	return &snapshotLocal{
 		name: name,
 
-		settingsMeshGlooSoloIov1Alpha2Settings:                        settingsMeshGlooSoloIov1Alpha2Settings,
-		discoveryMeshGlooSoloIov1Alpha2TrafficTargets:                 discoveryMeshGlooSoloIov1Alpha2TrafficTargets,
-		discoveryMeshGlooSoloIov1Alpha2Workloads:                      discoveryMeshGlooSoloIov1Alpha2Workloads,
-		discoveryMeshGlooSoloIov1Alpha2Meshes:                         discoveryMeshGlooSoloIov1Alpha2Meshes,
-		networkingMeshGlooSoloIov1Alpha2TrafficPolicies:               networkingMeshGlooSoloIov1Alpha2TrafficPolicies,
-		networkingMeshGlooSoloIov1Alpha2AccessPolicies:                networkingMeshGlooSoloIov1Alpha2AccessPolicies,
-		networkingMeshGlooSoloIov1Alpha2VirtualMeshes:                 networkingMeshGlooSoloIov1Alpha2VirtualMeshes,
-		networkingMeshGlooSoloIov1Alpha2FailoverServices:              networkingMeshGlooSoloIov1Alpha2FailoverServices,
-		networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments:     networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments,
-		observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords: observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords,
+		settingsMeshGlooSoloIoV1Alpha2Settings:                        settingsMeshGlooSoloIoV1Alpha2Settings,
+		discoveryMeshGlooSoloIoV1Alpha2TrafficTargets:                 discoveryMeshGlooSoloIoV1Alpha2TrafficTargets,
+		discoveryMeshGlooSoloIoV1Alpha2Workloads:                      discoveryMeshGlooSoloIoV1Alpha2Workloads,
+		discoveryMeshGlooSoloIoV1Alpha2Meshes:                         discoveryMeshGlooSoloIoV1Alpha2Meshes,
+		networkingMeshGlooSoloIoV1Alpha2TrafficPolicies:               networkingMeshGlooSoloIoV1Alpha2TrafficPolicies,
+		networkingMeshGlooSoloIoV1Alpha2AccessPolicies:                networkingMeshGlooSoloIoV1Alpha2AccessPolicies,
+		networkingMeshGlooSoloIoV1Alpha2VirtualMeshes:                 networkingMeshGlooSoloIoV1Alpha2VirtualMeshes,
+		networkingMeshGlooSoloIoV1Alpha2FailoverServices:              networkingMeshGlooSoloIoV1Alpha2FailoverServices,
+		networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments:     networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments,
+		observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords: observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords,
 		v1Secrets: v1Secrets,
-		multiclusterSoloIov1Alpha1KubernetesClusters: multiclusterSoloIov1Alpha1KubernetesClusters,
+		multiclusterSoloIoV1Alpha1KubernetesClusters: multiclusterSoloIoV1Alpha1KubernetesClusters,
 	}
 }
 
-func (s snapshotLocal) SettingsMeshGlooSoloIov1Alpha2Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet {
-	return s.settingsMeshGlooSoloIov1Alpha2Settings
+func (s snapshotLocal) SettingsMeshGlooSoloIo_V1Alpha2_Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet {
+	return s.settingsMeshGlooSoloIoV1Alpha2Settings
 }
 
-func (s snapshotLocal) DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets() discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet {
-	return s.discoveryMeshGlooSoloIov1Alpha2TrafficTargets
+func (s snapshotLocal) DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets() discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet {
+	return s.discoveryMeshGlooSoloIoV1Alpha2TrafficTargets
 }
 
-func (s snapshotLocal) DiscoveryMeshGlooSoloIov1Alpha2Workloads() discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet {
-	return s.discoveryMeshGlooSoloIov1Alpha2Workloads
+func (s snapshotLocal) DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads() discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet {
+	return s.discoveryMeshGlooSoloIoV1Alpha2Workloads
 }
 
-func (s snapshotLocal) DiscoveryMeshGlooSoloIov1Alpha2Meshes() discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet {
-	return s.discoveryMeshGlooSoloIov1Alpha2Meshes
+func (s snapshotLocal) DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes() discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet {
+	return s.discoveryMeshGlooSoloIoV1Alpha2Meshes
 }
 
-func (s snapshotLocal) NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies() networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet {
-	return s.networkingMeshGlooSoloIov1Alpha2TrafficPolicies
+func (s snapshotLocal) NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies() networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet {
+	return s.networkingMeshGlooSoloIoV1Alpha2TrafficPolicies
 }
 
-func (s snapshotLocal) NetworkingMeshGlooSoloIov1Alpha2AccessPolicies() networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet {
-	return s.networkingMeshGlooSoloIov1Alpha2AccessPolicies
+func (s snapshotLocal) NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies() networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet {
+	return s.networkingMeshGlooSoloIoV1Alpha2AccessPolicies
 }
 
-func (s snapshotLocal) NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet {
-	return s.networkingMeshGlooSoloIov1Alpha2VirtualMeshes
+func (s snapshotLocal) NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet {
+	return s.networkingMeshGlooSoloIoV1Alpha2VirtualMeshes
 }
 
-func (s snapshotLocal) NetworkingMeshGlooSoloIov1Alpha2FailoverServices() networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet {
-	return s.networkingMeshGlooSoloIov1Alpha2FailoverServices
+func (s snapshotLocal) NetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices() networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet {
+	return s.networkingMeshGlooSoloIoV1Alpha2FailoverServices
 }
 
-func (s snapshotLocal) NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments() networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet {
-	return s.networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments
+func (s snapshotLocal) NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments() networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet {
+	return s.networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments
 }
 
-func (s snapshotLocal) ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet {
-	return s.observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords
+func (s snapshotLocal) ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet {
+	return s.observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords
 }
 
-func (s snapshotLocal) V1Secrets() v1_sets.SecretSet {
+func (s snapshotLocal) V1_Secrets() v1_sets.SecretSet {
 	return s.v1Secrets
 }
 
-func (s snapshotLocal) MulticlusterSoloIov1Alpha1KubernetesClusters() multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet {
-	return s.multiclusterSoloIov1Alpha1KubernetesClusters
+func (s snapshotLocal) MulticlusterSoloIo_V1Alpha1_KubernetesClusters() multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet {
+	return s.multiclusterSoloIoV1Alpha1KubernetesClusters
 }
 
 func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts LocalSyncStatusOptions) error {
 	var errs error
 
-	if opts.SettingsMeshGlooSoloIov1Alpha2Settings {
-		for _, obj := range s.SettingsMeshGlooSoloIov1Alpha2Settings().List() {
+	if opts.SettingsMeshGlooSoloIo_V1Alpha2_Settings {
+		for _, obj := range s.SettingsMeshGlooSoloIo_V1Alpha2_Settings().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -267,8 +267,8 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 		}
 	}
 
-	if opts.DiscoveryMeshGlooSoloIov1Alpha2TrafficTarget {
-		for _, obj := range s.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List() {
+	if opts.DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTarget {
+		for _, obj := range s.DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -279,8 +279,8 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 			}
 		}
 	}
-	if opts.DiscoveryMeshGlooSoloIov1Alpha2Workload {
-		for _, obj := range s.DiscoveryMeshGlooSoloIov1Alpha2Workloads().List() {
+	if opts.DiscoveryMeshGlooSoloIo_V1Alpha2_Workload {
+		for _, obj := range s.DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -291,57 +291,8 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 			}
 		}
 	}
-	if opts.DiscoveryMeshGlooSoloIov1Alpha2Mesh {
-		for _, obj := range s.DiscoveryMeshGlooSoloIov1Alpha2Meshes().List() {
-			clusterClient, err := mcClient.Cluster(obj.ClusterName)
-			if err != nil {
-				errs = multierror.Append(errs, err)
-				continue
-			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-
-	if opts.NetworkingMeshGlooSoloIov1Alpha2TrafficPolicy {
-		for _, obj := range s.NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies().List() {
-			clusterClient, err := mcClient.Cluster(obj.ClusterName)
-			if err != nil {
-				errs = multierror.Append(errs, err)
-				continue
-			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-	if opts.NetworkingMeshGlooSoloIov1Alpha2AccessPolicy {
-		for _, obj := range s.NetworkingMeshGlooSoloIov1Alpha2AccessPolicies().List() {
-			clusterClient, err := mcClient.Cluster(obj.ClusterName)
-			if err != nil {
-				errs = multierror.Append(errs, err)
-				continue
-			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-	if opts.NetworkingMeshGlooSoloIov1Alpha2VirtualMesh {
-		for _, obj := range s.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes().List() {
-			clusterClient, err := mcClient.Cluster(obj.ClusterName)
-			if err != nil {
-				errs = multierror.Append(errs, err)
-				continue
-			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-	if opts.NetworkingMeshGlooSoloIov1Alpha2FailoverService {
-		for _, obj := range s.NetworkingMeshGlooSoloIov1Alpha2FailoverServices().List() {
+	if opts.DiscoveryMeshGlooSoloIo_V1Alpha2_Mesh {
+		for _, obj := range s.DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -353,8 +304,44 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 		}
 	}
 
-	if opts.NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployment {
-		for _, obj := range s.NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments().List() {
+	if opts.NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicy {
+		for _, obj := range s.NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicy {
+		for _, obj := range s.NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMesh {
+		for _, obj := range s.NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.NetworkingMeshGlooSoloIo_V1Alpha2_FailoverService {
+		for _, obj := range s.NetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -366,8 +353,8 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 		}
 	}
 
-	if opts.ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecord {
-		for _, obj := range s.ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords().List() {
+	if opts.NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployment {
+		for _, obj := range s.NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -379,8 +366,21 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 		}
 	}
 
-	if opts.MulticlusterSoloIov1Alpha1KubernetesCluster {
-		for _, obj := range s.MulticlusterSoloIov1Alpha1KubernetesClusters().List() {
+	if opts.ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecord {
+		for _, obj := range s.ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
+	if opts.MulticlusterSoloIo_V1Alpha1_KubernetesCluster {
+		for _, obj := range s.MulticlusterSoloIo_V1Alpha1_KubernetesClusters().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -397,83 +397,83 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts LocalSyncStatusOptions) error {
 	var errs error
 
-	if opts.SettingsMeshGlooSoloIov1Alpha2Settings {
-		for _, obj := range s.SettingsMeshGlooSoloIov1Alpha2Settings().List() {
+	if opts.SettingsMeshGlooSoloIo_V1Alpha2_Settings {
+		for _, obj := range s.SettingsMeshGlooSoloIo_V1Alpha2_Settings().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
 
-	if opts.DiscoveryMeshGlooSoloIov1Alpha2TrafficTarget {
-		for _, obj := range s.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets().List() {
+	if opts.DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTarget {
+		for _, obj := range s.DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
-	if opts.DiscoveryMeshGlooSoloIov1Alpha2Workload {
-		for _, obj := range s.DiscoveryMeshGlooSoloIov1Alpha2Workloads().List() {
+	if opts.DiscoveryMeshGlooSoloIo_V1Alpha2_Workload {
+		for _, obj := range s.DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
-	if opts.DiscoveryMeshGlooSoloIov1Alpha2Mesh {
-		for _, obj := range s.DiscoveryMeshGlooSoloIov1Alpha2Meshes().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-
-	if opts.NetworkingMeshGlooSoloIov1Alpha2TrafficPolicy {
-		for _, obj := range s.NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-	if opts.NetworkingMeshGlooSoloIov1Alpha2AccessPolicy {
-		for _, obj := range s.NetworkingMeshGlooSoloIov1Alpha2AccessPolicies().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-	if opts.NetworkingMeshGlooSoloIov1Alpha2VirtualMesh {
-		for _, obj := range s.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-	if opts.NetworkingMeshGlooSoloIov1Alpha2FailoverService {
-		for _, obj := range s.NetworkingMeshGlooSoloIov1Alpha2FailoverServices().List() {
+	if opts.DiscoveryMeshGlooSoloIo_V1Alpha2_Mesh {
+		for _, obj := range s.DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
 
-	if opts.NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployment {
-		for _, obj := range s.NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments().List() {
+	if opts.NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicy {
+		for _, obj := range s.NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicy {
+		for _, obj := range s.NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMesh {
+		for _, obj := range s.NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.NetworkingMeshGlooSoloIo_V1Alpha2_FailoverService {
+		for _, obj := range s.NetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
 
-	if opts.ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecord {
-		for _, obj := range s.ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords().List() {
+	if opts.NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployment {
+		for _, obj := range s.NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
 
-	if opts.MulticlusterSoloIov1Alpha1KubernetesCluster {
-		for _, obj := range s.MulticlusterSoloIov1Alpha1KubernetesClusters().List() {
+	if opts.ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecord {
+		for _, obj := range s.ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
+	if opts.MulticlusterSoloIo_V1Alpha1_KubernetesCluster {
+		for _, obj := range s.MulticlusterSoloIo_V1Alpha1_KubernetesClusters().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
@@ -485,18 +485,18 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
-	snapshotMap["settingsMeshGlooSoloIov1Alpha2Settings"] = s.settingsMeshGlooSoloIov1Alpha2Settings.List()
-	snapshotMap["discoveryMeshGlooSoloIov1Alpha2TrafficTargets"] = s.discoveryMeshGlooSoloIov1Alpha2TrafficTargets.List()
-	snapshotMap["discoveryMeshGlooSoloIov1Alpha2Workloads"] = s.discoveryMeshGlooSoloIov1Alpha2Workloads.List()
-	snapshotMap["discoveryMeshGlooSoloIov1Alpha2Meshes"] = s.discoveryMeshGlooSoloIov1Alpha2Meshes.List()
-	snapshotMap["networkingMeshGlooSoloIov1Alpha2TrafficPolicies"] = s.networkingMeshGlooSoloIov1Alpha2TrafficPolicies.List()
-	snapshotMap["networkingMeshGlooSoloIov1Alpha2AccessPolicies"] = s.networkingMeshGlooSoloIov1Alpha2AccessPolicies.List()
-	snapshotMap["networkingMeshGlooSoloIov1Alpha2VirtualMeshes"] = s.networkingMeshGlooSoloIov1Alpha2VirtualMeshes.List()
-	snapshotMap["networkingMeshGlooSoloIov1Alpha2FailoverServices"] = s.networkingMeshGlooSoloIov1Alpha2FailoverServices.List()
-	snapshotMap["networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments"] = s.networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments.List()
-	snapshotMap["observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords"] = s.observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords.List()
+	snapshotMap["settingsMeshGlooSoloIoV1Alpha2Settings"] = s.settingsMeshGlooSoloIoV1Alpha2Settings.List()
+	snapshotMap["discoveryMeshGlooSoloIoV1Alpha2TrafficTargets"] = s.discoveryMeshGlooSoloIoV1Alpha2TrafficTargets.List()
+	snapshotMap["discoveryMeshGlooSoloIoV1Alpha2Workloads"] = s.discoveryMeshGlooSoloIoV1Alpha2Workloads.List()
+	snapshotMap["discoveryMeshGlooSoloIoV1Alpha2Meshes"] = s.discoveryMeshGlooSoloIoV1Alpha2Meshes.List()
+	snapshotMap["networkingMeshGlooSoloIoV1Alpha2TrafficPolicies"] = s.networkingMeshGlooSoloIoV1Alpha2TrafficPolicies.List()
+	snapshotMap["networkingMeshGlooSoloIoV1Alpha2AccessPolicies"] = s.networkingMeshGlooSoloIoV1Alpha2AccessPolicies.List()
+	snapshotMap["networkingMeshGlooSoloIoV1Alpha2VirtualMeshes"] = s.networkingMeshGlooSoloIoV1Alpha2VirtualMeshes.List()
+	snapshotMap["networkingMeshGlooSoloIoV1Alpha2FailoverServices"] = s.networkingMeshGlooSoloIoV1Alpha2FailoverServices.List()
+	snapshotMap["networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments"] = s.networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments.List()
+	snapshotMap["observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords"] = s.observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords.List()
 	snapshotMap["v1Secrets"] = s.v1Secrets.List()
-	snapshotMap["multiclusterSoloIov1Alpha1KubernetesClusters"] = s.multiclusterSoloIov1Alpha1KubernetesClusters.List()
+	snapshotMap["multiclusterSoloIoV1Alpha1KubernetesClusters"] = s.multiclusterSoloIoV1Alpha1KubernetesClusters.List()
 	return json.Marshal(snapshotMap)
 }
 
@@ -508,36 +508,36 @@ type LocalBuilder interface {
 // Options for building a snapshot
 type LocalBuildOptions struct {
 
-	// List options for composing a snapshot from SettingsMeshGlooSoloIov1Alpha2Settings
-	SettingsMeshGlooSoloIov1Alpha2Settings ResourceLocalBuildOptions
+	// List options for composing a snapshot from SettingsMeshGlooSoloIo_V1Alpha2_Settings
+	SettingsMeshGlooSoloIo_V1Alpha2_Settings ResourceLocalBuildOptions
 
-	// List options for composing a snapshot from DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets
-	DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets ResourceLocalBuildOptions
-	// List options for composing a snapshot from DiscoveryMeshGlooSoloIov1Alpha2Workloads
-	DiscoveryMeshGlooSoloIov1Alpha2Workloads ResourceLocalBuildOptions
-	// List options for composing a snapshot from DiscoveryMeshGlooSoloIov1Alpha2Meshes
-	DiscoveryMeshGlooSoloIov1Alpha2Meshes ResourceLocalBuildOptions
+	// List options for composing a snapshot from DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets
+	DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets ResourceLocalBuildOptions
+	// List options for composing a snapshot from DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads
+	DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads ResourceLocalBuildOptions
+	// List options for composing a snapshot from DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes
+	DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes ResourceLocalBuildOptions
 
-	// List options for composing a snapshot from NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies
-	NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies ResourceLocalBuildOptions
-	// List options for composing a snapshot from NetworkingMeshGlooSoloIov1Alpha2AccessPolicies
-	NetworkingMeshGlooSoloIov1Alpha2AccessPolicies ResourceLocalBuildOptions
-	// List options for composing a snapshot from NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
-	NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes ResourceLocalBuildOptions
-	// List options for composing a snapshot from NetworkingMeshGlooSoloIov1Alpha2FailoverServices
-	NetworkingMeshGlooSoloIov1Alpha2FailoverServices ResourceLocalBuildOptions
+	// List options for composing a snapshot from NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies
+	NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies ResourceLocalBuildOptions
+	// List options for composing a snapshot from NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies
+	NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies ResourceLocalBuildOptions
+	// List options for composing a snapshot from NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes
+	NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes ResourceLocalBuildOptions
+	// List options for composing a snapshot from NetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices
+	NetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices ResourceLocalBuildOptions
 
-	// List options for composing a snapshot from NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments
-	NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments ResourceLocalBuildOptions
+	// List options for composing a snapshot from NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments
+	NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments ResourceLocalBuildOptions
 
-	// List options for composing a snapshot from ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords
-	ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords ResourceLocalBuildOptions
+	// List options for composing a snapshot from ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords
+	ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords ResourceLocalBuildOptions
 
-	// List options for composing a snapshot from V1Secrets
-	V1Secrets ResourceLocalBuildOptions
+	// List options for composing a snapshot from V1_Secrets
+	V1_Secrets ResourceLocalBuildOptions
 
-	// List options for composing a snapshot from MulticlusterSoloIov1Alpha1KubernetesClusters
-	MulticlusterSoloIov1Alpha1KubernetesClusters ResourceLocalBuildOptions
+	// List options for composing a snapshot from MulticlusterSoloIo_V1Alpha1_KubernetesClusters
+	MulticlusterSoloIo_V1Alpha1_KubernetesClusters ResourceLocalBuildOptions
 }
 
 // Options for reading resources of a given type
@@ -569,63 +569,63 @@ func NewMultiClusterLocalBuilder(
 
 func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name string, opts LocalBuildOptions) (LocalSnapshot, error) {
 
-	settingsMeshGlooSoloIov1Alpha2Settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+	settingsMeshGlooSoloIoV1Alpha2Settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
-	discoveryMeshGlooSoloIov1Alpha2TrafficTargets := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet()
-	discoveryMeshGlooSoloIov1Alpha2Workloads := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet()
-	discoveryMeshGlooSoloIov1Alpha2Meshes := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet()
+	discoveryMeshGlooSoloIoV1Alpha2TrafficTargets := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet()
+	discoveryMeshGlooSoloIoV1Alpha2Workloads := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet()
+	discoveryMeshGlooSoloIoV1Alpha2Meshes := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet()
 
-	networkingMeshGlooSoloIov1Alpha2TrafficPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficPolicySet()
-	networkingMeshGlooSoloIov1Alpha2AccessPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewAccessPolicySet()
-	networkingMeshGlooSoloIov1Alpha2VirtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
-	networkingMeshGlooSoloIov1Alpha2FailoverServices := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
+	networkingMeshGlooSoloIoV1Alpha2TrafficPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficPolicySet()
+	networkingMeshGlooSoloIoV1Alpha2AccessPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewAccessPolicySet()
+	networkingMeshGlooSoloIoV1Alpha2VirtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
+	networkingMeshGlooSoloIoV1Alpha2FailoverServices := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
-	networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
+	networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
 
-	observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet()
+	observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet()
 
 	v1Secrets := v1_sets.NewSecretSet()
 
-	multiclusterSoloIov1Alpha1KubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
+	multiclusterSoloIoV1Alpha1KubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
 
 	var errs error
 
 	for _, cluster := range b.clusters.ListClusters() {
 
-		if err := b.insertSettingsMeshGlooSoloIov1Alpha2SettingsFromCluster(ctx, cluster, settingsMeshGlooSoloIov1Alpha2Settings, opts.SettingsMeshGlooSoloIov1Alpha2Settings); err != nil {
+		if err := b.insertSettingsMeshGlooSoloIo_V1Alpha2_SettingsFromCluster(ctx, cluster, settingsMeshGlooSoloIoV1Alpha2Settings, opts.SettingsMeshGlooSoloIo_V1Alpha2_Settings); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetsFromCluster(ctx, cluster, discoveryMeshGlooSoloIov1Alpha2TrafficTargets, opts.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets); err != nil {
+		if err := b.insertDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetsFromCluster(ctx, cluster, discoveryMeshGlooSoloIoV1Alpha2TrafficTargets, opts.DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertDiscoveryMeshGlooSoloIov1Alpha2WorkloadsFromCluster(ctx, cluster, discoveryMeshGlooSoloIov1Alpha2Workloads, opts.DiscoveryMeshGlooSoloIov1Alpha2Workloads); err != nil {
+		if err := b.insertDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadsFromCluster(ctx, cluster, discoveryMeshGlooSoloIoV1Alpha2Workloads, opts.DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertDiscoveryMeshGlooSoloIov1Alpha2MeshesFromCluster(ctx, cluster, discoveryMeshGlooSoloIov1Alpha2Meshes, opts.DiscoveryMeshGlooSoloIov1Alpha2Meshes); err != nil {
+		if err := b.insertDiscoveryMeshGlooSoloIo_V1Alpha2_MeshesFromCluster(ctx, cluster, discoveryMeshGlooSoloIoV1Alpha2Meshes, opts.DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertNetworkingMeshGlooSoloIov1Alpha2TrafficPoliciesFromCluster(ctx, cluster, networkingMeshGlooSoloIov1Alpha2TrafficPolicies, opts.NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies); err != nil {
+		if err := b.insertNetworkingMeshGlooSoloIo_V1Alpha2_TrafficPoliciesFromCluster(ctx, cluster, networkingMeshGlooSoloIoV1Alpha2TrafficPolicies, opts.NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertNetworkingMeshGlooSoloIov1Alpha2AccessPoliciesFromCluster(ctx, cluster, networkingMeshGlooSoloIov1Alpha2AccessPolicies, opts.NetworkingMeshGlooSoloIov1Alpha2AccessPolicies); err != nil {
+		if err := b.insertNetworkingMeshGlooSoloIo_V1Alpha2_AccessPoliciesFromCluster(ctx, cluster, networkingMeshGlooSoloIoV1Alpha2AccessPolicies, opts.NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertNetworkingMeshGlooSoloIov1Alpha2VirtualMeshesFromCluster(ctx, cluster, networkingMeshGlooSoloIov1Alpha2VirtualMeshes, opts.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes); err != nil {
+		if err := b.insertNetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshesFromCluster(ctx, cluster, networkingMeshGlooSoloIoV1Alpha2VirtualMeshes, opts.NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertNetworkingMeshGlooSoloIov1Alpha2FailoverServicesFromCluster(ctx, cluster, networkingMeshGlooSoloIov1Alpha2FailoverServices, opts.NetworkingMeshGlooSoloIov1Alpha2FailoverServices); err != nil {
+		if err := b.insertNetworkingMeshGlooSoloIo_V1Alpha2_FailoverServicesFromCluster(ctx, cluster, networkingMeshGlooSoloIoV1Alpha2FailoverServices, opts.NetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertNetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeploymentsFromCluster(ctx, cluster, networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments, opts.NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments); err != nil {
+		if err := b.insertNetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeploymentsFromCluster(ctx, cluster, networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments, opts.NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecordsFromCluster(ctx, cluster, observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords, opts.ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords); err != nil {
+		if err := b.insertObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecordsFromCluster(ctx, cluster, observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords, opts.ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertV1SecretsFromCluster(ctx, cluster, v1Secrets, opts.V1Secrets); err != nil {
+		if err := b.insertV1_SecretsFromCluster(ctx, cluster, v1Secrets, opts.V1_Secrets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertMulticlusterSoloIov1Alpha1KubernetesClustersFromCluster(ctx, cluster, multiclusterSoloIov1Alpha1KubernetesClusters, opts.MulticlusterSoloIov1Alpha1KubernetesClusters); err != nil {
+		if err := b.insertMulticlusterSoloIo_V1Alpha1_KubernetesClustersFromCluster(ctx, cluster, multiclusterSoloIoV1Alpha1KubernetesClusters, opts.MulticlusterSoloIo_V1Alpha1_KubernetesClusters); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 
@@ -634,25 +634,25 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 	outputSnap := NewLocalSnapshot(
 		name,
 
-		settingsMeshGlooSoloIov1Alpha2Settings,
-		discoveryMeshGlooSoloIov1Alpha2TrafficTargets,
-		discoveryMeshGlooSoloIov1Alpha2Workloads,
-		discoveryMeshGlooSoloIov1Alpha2Meshes,
-		networkingMeshGlooSoloIov1Alpha2TrafficPolicies,
-		networkingMeshGlooSoloIov1Alpha2AccessPolicies,
-		networkingMeshGlooSoloIov1Alpha2VirtualMeshes,
-		networkingMeshGlooSoloIov1Alpha2FailoverServices,
-		networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments,
-		observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords,
+		settingsMeshGlooSoloIoV1Alpha2Settings,
+		discoveryMeshGlooSoloIoV1Alpha2TrafficTargets,
+		discoveryMeshGlooSoloIoV1Alpha2Workloads,
+		discoveryMeshGlooSoloIoV1Alpha2Meshes,
+		networkingMeshGlooSoloIoV1Alpha2TrafficPolicies,
+		networkingMeshGlooSoloIoV1Alpha2AccessPolicies,
+		networkingMeshGlooSoloIoV1Alpha2VirtualMeshes,
+		networkingMeshGlooSoloIoV1Alpha2FailoverServices,
+		networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments,
+		observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords,
 		v1Secrets,
-		multiclusterSoloIov1Alpha1KubernetesClusters,
+		multiclusterSoloIoV1Alpha1KubernetesClusters,
 	)
 
 	return outputSnap, errs
 }
 
-func (b *multiClusterLocalBuilder) insertSettingsMeshGlooSoloIov1Alpha2SettingsFromCluster(ctx context.Context, cluster string, settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceLocalBuildOptions) error {
-	settingsMeshGlooSoloIov1Alpha2SettingsClient, err := settings_mesh_gloo_solo_io_v1alpha2.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
+func (b *multiClusterLocalBuilder) insertSettingsMeshGlooSoloIo_V1Alpha2_SettingsFromCluster(ctx context.Context, cluster string, settingsMeshGlooSoloIoV1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceLocalBuildOptions) error {
+	settingsMeshGlooSoloIoV1Alpha2SettingsClient, err := settings_mesh_gloo_solo_io_v1alpha2.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -680,22 +680,22 @@ func (b *multiClusterLocalBuilder) insertSettingsMeshGlooSoloIov1Alpha2SettingsF
 		}
 	}
 
-	settingsMeshGlooSoloIov1Alpha2SettingsList, err := settingsMeshGlooSoloIov1Alpha2SettingsClient.ListSettings(ctx, opts.ListOptions...)
+	settingsMeshGlooSoloIoV1Alpha2SettingsList, err := settingsMeshGlooSoloIoV1Alpha2SettingsClient.ListSettings(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range settingsMeshGlooSoloIov1Alpha2SettingsList.Items {
+	for _, item := range settingsMeshGlooSoloIoV1Alpha2SettingsList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		settingsMeshGlooSoloIov1Alpha2Settings.Insert(&item)
+		settingsMeshGlooSoloIoV1Alpha2Settings.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *multiClusterLocalBuilder) insertDiscoveryMeshGlooSoloIov1Alpha2TrafficTargetsFromCluster(ctx context.Context, cluster string, discoveryMeshGlooSoloIov1Alpha2TrafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet, opts ResourceLocalBuildOptions) error {
-	discoveryMeshGlooSoloIov1Alpha2TrafficTargetClient, err := discovery_mesh_gloo_solo_io_v1alpha2.NewMulticlusterTrafficTargetClient(b.client).Cluster(cluster)
+func (b *multiClusterLocalBuilder) insertDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargetsFromCluster(ctx context.Context, cluster string, discoveryMeshGlooSoloIoV1Alpha2TrafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet, opts ResourceLocalBuildOptions) error {
+	discoveryMeshGlooSoloIoV1Alpha2TrafficTargetClient, err := discovery_mesh_gloo_solo_io_v1alpha2.NewMulticlusterTrafficTargetClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -723,21 +723,21 @@ func (b *multiClusterLocalBuilder) insertDiscoveryMeshGlooSoloIov1Alpha2TrafficT
 		}
 	}
 
-	discoveryMeshGlooSoloIov1Alpha2TrafficTargetList, err := discoveryMeshGlooSoloIov1Alpha2TrafficTargetClient.ListTrafficTarget(ctx, opts.ListOptions...)
+	discoveryMeshGlooSoloIoV1Alpha2TrafficTargetList, err := discoveryMeshGlooSoloIoV1Alpha2TrafficTargetClient.ListTrafficTarget(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range discoveryMeshGlooSoloIov1Alpha2TrafficTargetList.Items {
+	for _, item := range discoveryMeshGlooSoloIoV1Alpha2TrafficTargetList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		discoveryMeshGlooSoloIov1Alpha2TrafficTargets.Insert(&item)
+		discoveryMeshGlooSoloIoV1Alpha2TrafficTargets.Insert(&item)
 	}
 
 	return nil
 }
-func (b *multiClusterLocalBuilder) insertDiscoveryMeshGlooSoloIov1Alpha2WorkloadsFromCluster(ctx context.Context, cluster string, discoveryMeshGlooSoloIov1Alpha2Workloads discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet, opts ResourceLocalBuildOptions) error {
-	discoveryMeshGlooSoloIov1Alpha2WorkloadClient, err := discovery_mesh_gloo_solo_io_v1alpha2.NewMulticlusterWorkloadClient(b.client).Cluster(cluster)
+func (b *multiClusterLocalBuilder) insertDiscoveryMeshGlooSoloIo_V1Alpha2_WorkloadsFromCluster(ctx context.Context, cluster string, discoveryMeshGlooSoloIoV1Alpha2Workloads discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet, opts ResourceLocalBuildOptions) error {
+	discoveryMeshGlooSoloIoV1Alpha2WorkloadClient, err := discovery_mesh_gloo_solo_io_v1alpha2.NewMulticlusterWorkloadClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -765,21 +765,21 @@ func (b *multiClusterLocalBuilder) insertDiscoveryMeshGlooSoloIov1Alpha2Workload
 		}
 	}
 
-	discoveryMeshGlooSoloIov1Alpha2WorkloadList, err := discoveryMeshGlooSoloIov1Alpha2WorkloadClient.ListWorkload(ctx, opts.ListOptions...)
+	discoveryMeshGlooSoloIoV1Alpha2WorkloadList, err := discoveryMeshGlooSoloIoV1Alpha2WorkloadClient.ListWorkload(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range discoveryMeshGlooSoloIov1Alpha2WorkloadList.Items {
+	for _, item := range discoveryMeshGlooSoloIoV1Alpha2WorkloadList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		discoveryMeshGlooSoloIov1Alpha2Workloads.Insert(&item)
+		discoveryMeshGlooSoloIoV1Alpha2Workloads.Insert(&item)
 	}
 
 	return nil
 }
-func (b *multiClusterLocalBuilder) insertDiscoveryMeshGlooSoloIov1Alpha2MeshesFromCluster(ctx context.Context, cluster string, discoveryMeshGlooSoloIov1Alpha2Meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet, opts ResourceLocalBuildOptions) error {
-	discoveryMeshGlooSoloIov1Alpha2MeshClient, err := discovery_mesh_gloo_solo_io_v1alpha2.NewMulticlusterMeshClient(b.client).Cluster(cluster)
+func (b *multiClusterLocalBuilder) insertDiscoveryMeshGlooSoloIo_V1Alpha2_MeshesFromCluster(ctx context.Context, cluster string, discoveryMeshGlooSoloIoV1Alpha2Meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet, opts ResourceLocalBuildOptions) error {
+	discoveryMeshGlooSoloIoV1Alpha2MeshClient, err := discovery_mesh_gloo_solo_io_v1alpha2.NewMulticlusterMeshClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -807,22 +807,22 @@ func (b *multiClusterLocalBuilder) insertDiscoveryMeshGlooSoloIov1Alpha2MeshesFr
 		}
 	}
 
-	discoveryMeshGlooSoloIov1Alpha2MeshList, err := discoveryMeshGlooSoloIov1Alpha2MeshClient.ListMesh(ctx, opts.ListOptions...)
+	discoveryMeshGlooSoloIoV1Alpha2MeshList, err := discoveryMeshGlooSoloIoV1Alpha2MeshClient.ListMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range discoveryMeshGlooSoloIov1Alpha2MeshList.Items {
+	for _, item := range discoveryMeshGlooSoloIoV1Alpha2MeshList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		discoveryMeshGlooSoloIov1Alpha2Meshes.Insert(&item)
+		discoveryMeshGlooSoloIoV1Alpha2Meshes.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *multiClusterLocalBuilder) insertNetworkingMeshGlooSoloIov1Alpha2TrafficPoliciesFromCluster(ctx context.Context, cluster string, networkingMeshGlooSoloIov1Alpha2TrafficPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet, opts ResourceLocalBuildOptions) error {
-	networkingMeshGlooSoloIov1Alpha2TrafficPolicyClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterTrafficPolicyClient(b.client).Cluster(cluster)
+func (b *multiClusterLocalBuilder) insertNetworkingMeshGlooSoloIo_V1Alpha2_TrafficPoliciesFromCluster(ctx context.Context, cluster string, networkingMeshGlooSoloIoV1Alpha2TrafficPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet, opts ResourceLocalBuildOptions) error {
+	networkingMeshGlooSoloIoV1Alpha2TrafficPolicyClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterTrafficPolicyClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -850,21 +850,21 @@ func (b *multiClusterLocalBuilder) insertNetworkingMeshGlooSoloIov1Alpha2Traffic
 		}
 	}
 
-	networkingMeshGlooSoloIov1Alpha2TrafficPolicyList, err := networkingMeshGlooSoloIov1Alpha2TrafficPolicyClient.ListTrafficPolicy(ctx, opts.ListOptions...)
+	networkingMeshGlooSoloIoV1Alpha2TrafficPolicyList, err := networkingMeshGlooSoloIoV1Alpha2TrafficPolicyClient.ListTrafficPolicy(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingMeshGlooSoloIov1Alpha2TrafficPolicyList.Items {
+	for _, item := range networkingMeshGlooSoloIoV1Alpha2TrafficPolicyList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		networkingMeshGlooSoloIov1Alpha2TrafficPolicies.Insert(&item)
+		networkingMeshGlooSoloIoV1Alpha2TrafficPolicies.Insert(&item)
 	}
 
 	return nil
 }
-func (b *multiClusterLocalBuilder) insertNetworkingMeshGlooSoloIov1Alpha2AccessPoliciesFromCluster(ctx context.Context, cluster string, networkingMeshGlooSoloIov1Alpha2AccessPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet, opts ResourceLocalBuildOptions) error {
-	networkingMeshGlooSoloIov1Alpha2AccessPolicyClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterAccessPolicyClient(b.client).Cluster(cluster)
+func (b *multiClusterLocalBuilder) insertNetworkingMeshGlooSoloIo_V1Alpha2_AccessPoliciesFromCluster(ctx context.Context, cluster string, networkingMeshGlooSoloIoV1Alpha2AccessPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet, opts ResourceLocalBuildOptions) error {
+	networkingMeshGlooSoloIoV1Alpha2AccessPolicyClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterAccessPolicyClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -892,21 +892,21 @@ func (b *multiClusterLocalBuilder) insertNetworkingMeshGlooSoloIov1Alpha2AccessP
 		}
 	}
 
-	networkingMeshGlooSoloIov1Alpha2AccessPolicyList, err := networkingMeshGlooSoloIov1Alpha2AccessPolicyClient.ListAccessPolicy(ctx, opts.ListOptions...)
+	networkingMeshGlooSoloIoV1Alpha2AccessPolicyList, err := networkingMeshGlooSoloIoV1Alpha2AccessPolicyClient.ListAccessPolicy(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingMeshGlooSoloIov1Alpha2AccessPolicyList.Items {
+	for _, item := range networkingMeshGlooSoloIoV1Alpha2AccessPolicyList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		networkingMeshGlooSoloIov1Alpha2AccessPolicies.Insert(&item)
+		networkingMeshGlooSoloIoV1Alpha2AccessPolicies.Insert(&item)
 	}
 
 	return nil
 }
-func (b *multiClusterLocalBuilder) insertNetworkingMeshGlooSoloIov1Alpha2VirtualMeshesFromCluster(ctx context.Context, cluster string, networkingMeshGlooSoloIov1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceLocalBuildOptions) error {
-	networkingMeshGlooSoloIov1Alpha2VirtualMeshClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterVirtualMeshClient(b.client).Cluster(cluster)
+func (b *multiClusterLocalBuilder) insertNetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshesFromCluster(ctx context.Context, cluster string, networkingMeshGlooSoloIoV1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceLocalBuildOptions) error {
+	networkingMeshGlooSoloIoV1Alpha2VirtualMeshClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterVirtualMeshClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -934,21 +934,21 @@ func (b *multiClusterLocalBuilder) insertNetworkingMeshGlooSoloIov1Alpha2Virtual
 		}
 	}
 
-	networkingMeshGlooSoloIov1Alpha2VirtualMeshList, err := networkingMeshGlooSoloIov1Alpha2VirtualMeshClient.ListVirtualMesh(ctx, opts.ListOptions...)
+	networkingMeshGlooSoloIoV1Alpha2VirtualMeshList, err := networkingMeshGlooSoloIoV1Alpha2VirtualMeshClient.ListVirtualMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingMeshGlooSoloIov1Alpha2VirtualMeshList.Items {
+	for _, item := range networkingMeshGlooSoloIoV1Alpha2VirtualMeshList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		networkingMeshGlooSoloIov1Alpha2VirtualMeshes.Insert(&item)
+		networkingMeshGlooSoloIoV1Alpha2VirtualMeshes.Insert(&item)
 	}
 
 	return nil
 }
-func (b *multiClusterLocalBuilder) insertNetworkingMeshGlooSoloIov1Alpha2FailoverServicesFromCluster(ctx context.Context, cluster string, networkingMeshGlooSoloIov1Alpha2FailoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet, opts ResourceLocalBuildOptions) error {
-	networkingMeshGlooSoloIov1Alpha2FailoverServiceClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterFailoverServiceClient(b.client).Cluster(cluster)
+func (b *multiClusterLocalBuilder) insertNetworkingMeshGlooSoloIo_V1Alpha2_FailoverServicesFromCluster(ctx context.Context, cluster string, networkingMeshGlooSoloIoV1Alpha2FailoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet, opts ResourceLocalBuildOptions) error {
+	networkingMeshGlooSoloIoV1Alpha2FailoverServiceClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterFailoverServiceClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -976,22 +976,22 @@ func (b *multiClusterLocalBuilder) insertNetworkingMeshGlooSoloIov1Alpha2Failove
 		}
 	}
 
-	networkingMeshGlooSoloIov1Alpha2FailoverServiceList, err := networkingMeshGlooSoloIov1Alpha2FailoverServiceClient.ListFailoverService(ctx, opts.ListOptions...)
+	networkingMeshGlooSoloIoV1Alpha2FailoverServiceList, err := networkingMeshGlooSoloIoV1Alpha2FailoverServiceClient.ListFailoverService(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingMeshGlooSoloIov1Alpha2FailoverServiceList.Items {
+	for _, item := range networkingMeshGlooSoloIoV1Alpha2FailoverServiceList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		networkingMeshGlooSoloIov1Alpha2FailoverServices.Insert(&item)
+		networkingMeshGlooSoloIoV1Alpha2FailoverServices.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *multiClusterLocalBuilder) insertNetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeploymentsFromCluster(ctx context.Context, cluster string, networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet, opts ResourceLocalBuildOptions) error {
-	networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeploymentClient, err := networking_enterprise_mesh_gloo_solo_io_v1alpha1.NewMulticlusterWasmDeploymentClient(b.client).Cluster(cluster)
+func (b *multiClusterLocalBuilder) insertNetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeploymentsFromCluster(ctx context.Context, cluster string, networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet, opts ResourceLocalBuildOptions) error {
+	networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeploymentClient, err := networking_enterprise_mesh_gloo_solo_io_v1alpha1.NewMulticlusterWasmDeploymentClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -1019,22 +1019,22 @@ func (b *multiClusterLocalBuilder) insertNetworkingEnterpriseMeshGlooSoloIov1Alp
 		}
 	}
 
-	networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeploymentList, err := networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeploymentClient.ListWasmDeployment(ctx, opts.ListOptions...)
+	networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeploymentList, err := networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeploymentClient.ListWasmDeployment(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeploymentList.Items {
+	for _, item := range networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeploymentList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments.Insert(&item)
+		networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *multiClusterLocalBuilder) insertObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecordsFromCluster(ctx context.Context, cluster string, observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet, opts ResourceLocalBuildOptions) error {
-	observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecordClient, err := observability_enterprise_mesh_gloo_solo_io_v1alpha1.NewMulticlusterAccessLogRecordClient(b.client).Cluster(cluster)
+func (b *multiClusterLocalBuilder) insertObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecordsFromCluster(ctx context.Context, cluster string, observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet, opts ResourceLocalBuildOptions) error {
+	observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecordClient, err := observability_enterprise_mesh_gloo_solo_io_v1alpha1.NewMulticlusterAccessLogRecordClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -1062,21 +1062,21 @@ func (b *multiClusterLocalBuilder) insertObservabilityEnterpriseMeshGlooSoloIov1
 		}
 	}
 
-	observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecordList, err := observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecordClient.ListAccessLogRecord(ctx, opts.ListOptions...)
+	observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecordList, err := observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecordClient.ListAccessLogRecord(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecordList.Items {
+	for _, item := range observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecordList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords.Insert(&item)
+		observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *multiClusterLocalBuilder) insertV1SecretsFromCluster(ctx context.Context, cluster string, v1Secrets v1_sets.SecretSet, opts ResourceLocalBuildOptions) error {
+func (b *multiClusterLocalBuilder) insertV1_SecretsFromCluster(ctx context.Context, cluster string, v1Secrets v1_sets.SecretSet, opts ResourceLocalBuildOptions) error {
 	v1SecretClient, err := v1.NewMulticlusterSecretClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
@@ -1119,8 +1119,8 @@ func (b *multiClusterLocalBuilder) insertV1SecretsFromCluster(ctx context.Contex
 	return nil
 }
 
-func (b *multiClusterLocalBuilder) insertMulticlusterSoloIov1Alpha1KubernetesClustersFromCluster(ctx context.Context, cluster string, multiclusterSoloIov1Alpha1KubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet, opts ResourceLocalBuildOptions) error {
-	multiclusterSoloIov1Alpha1KubernetesClusterClient, err := multicluster_solo_io_v1alpha1.NewMulticlusterKubernetesClusterClient(b.client).Cluster(cluster)
+func (b *multiClusterLocalBuilder) insertMulticlusterSoloIo_V1Alpha1_KubernetesClustersFromCluster(ctx context.Context, cluster string, multiclusterSoloIoV1Alpha1KubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet, opts ResourceLocalBuildOptions) error {
+	multiclusterSoloIoV1Alpha1KubernetesClusterClient, err := multicluster_solo_io_v1alpha1.NewMulticlusterKubernetesClusterClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -1148,15 +1148,15 @@ func (b *multiClusterLocalBuilder) insertMulticlusterSoloIov1Alpha1KubernetesClu
 		}
 	}
 
-	multiclusterSoloIov1Alpha1KubernetesClusterList, err := multiclusterSoloIov1Alpha1KubernetesClusterClient.ListKubernetesCluster(ctx, opts.ListOptions...)
+	multiclusterSoloIoV1Alpha1KubernetesClusterList, err := multiclusterSoloIoV1Alpha1KubernetesClusterClient.ListKubernetesCluster(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range multiclusterSoloIov1Alpha1KubernetesClusterList.Items {
+	for _, item := range multiclusterSoloIoV1Alpha1KubernetesClusterList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		multiclusterSoloIov1Alpha1KubernetesClusters.Insert(&item)
+		multiclusterSoloIoV1Alpha1KubernetesClusters.Insert(&item)
 	}
 
 	return nil
@@ -1189,85 +1189,85 @@ func NewSingleClusterLocalBuilderWithClusterName(
 
 func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name string, opts LocalBuildOptions) (LocalSnapshot, error) {
 
-	settingsMeshGlooSoloIov1Alpha2Settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+	settingsMeshGlooSoloIoV1Alpha2Settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
-	discoveryMeshGlooSoloIov1Alpha2TrafficTargets := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet()
-	discoveryMeshGlooSoloIov1Alpha2Workloads := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet()
-	discoveryMeshGlooSoloIov1Alpha2Meshes := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet()
+	discoveryMeshGlooSoloIoV1Alpha2TrafficTargets := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet()
+	discoveryMeshGlooSoloIoV1Alpha2Workloads := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet()
+	discoveryMeshGlooSoloIoV1Alpha2Meshes := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet()
 
-	networkingMeshGlooSoloIov1Alpha2TrafficPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficPolicySet()
-	networkingMeshGlooSoloIov1Alpha2AccessPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewAccessPolicySet()
-	networkingMeshGlooSoloIov1Alpha2VirtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
-	networkingMeshGlooSoloIov1Alpha2FailoverServices := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
+	networkingMeshGlooSoloIoV1Alpha2TrafficPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficPolicySet()
+	networkingMeshGlooSoloIoV1Alpha2AccessPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewAccessPolicySet()
+	networkingMeshGlooSoloIoV1Alpha2VirtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
+	networkingMeshGlooSoloIoV1Alpha2FailoverServices := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
-	networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
+	networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
 
-	observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet()
+	observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet()
 
 	v1Secrets := v1_sets.NewSecretSet()
 
-	multiclusterSoloIov1Alpha1KubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
+	multiclusterSoloIoV1Alpha1KubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
 
 	var errs error
 
-	if err := b.insertSettingsMeshGlooSoloIov1Alpha2Settings(ctx, settingsMeshGlooSoloIov1Alpha2Settings, opts.SettingsMeshGlooSoloIov1Alpha2Settings); err != nil {
+	if err := b.insertSettingsMeshGlooSoloIo_V1Alpha2_Settings(ctx, settingsMeshGlooSoloIoV1Alpha2Settings, opts.SettingsMeshGlooSoloIo_V1Alpha2_Settings); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(ctx, discoveryMeshGlooSoloIov1Alpha2TrafficTargets, opts.DiscoveryMeshGlooSoloIov1Alpha2TrafficTargets); err != nil {
+	if err := b.insertDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets(ctx, discoveryMeshGlooSoloIoV1Alpha2TrafficTargets, opts.DiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertDiscoveryMeshGlooSoloIov1Alpha2Workloads(ctx, discoveryMeshGlooSoloIov1Alpha2Workloads, opts.DiscoveryMeshGlooSoloIov1Alpha2Workloads); err != nil {
+	if err := b.insertDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads(ctx, discoveryMeshGlooSoloIoV1Alpha2Workloads, opts.DiscoveryMeshGlooSoloIo_V1Alpha2_Workloads); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertDiscoveryMeshGlooSoloIov1Alpha2Meshes(ctx, discoveryMeshGlooSoloIov1Alpha2Meshes, opts.DiscoveryMeshGlooSoloIov1Alpha2Meshes); err != nil {
+	if err := b.insertDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes(ctx, discoveryMeshGlooSoloIoV1Alpha2Meshes, opts.DiscoveryMeshGlooSoloIo_V1Alpha2_Meshes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertNetworkingMeshGlooSoloIov1Alpha2TrafficPolicies(ctx, networkingMeshGlooSoloIov1Alpha2TrafficPolicies, opts.NetworkingMeshGlooSoloIov1Alpha2TrafficPolicies); err != nil {
+	if err := b.insertNetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies(ctx, networkingMeshGlooSoloIoV1Alpha2TrafficPolicies, opts.NetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertNetworkingMeshGlooSoloIov1Alpha2AccessPolicies(ctx, networkingMeshGlooSoloIov1Alpha2AccessPolicies, opts.NetworkingMeshGlooSoloIov1Alpha2AccessPolicies); err != nil {
+	if err := b.insertNetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies(ctx, networkingMeshGlooSoloIoV1Alpha2AccessPolicies, opts.NetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertNetworkingMeshGlooSoloIov1Alpha2VirtualMeshes(ctx, networkingMeshGlooSoloIov1Alpha2VirtualMeshes, opts.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes); err != nil {
+	if err := b.insertNetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes(ctx, networkingMeshGlooSoloIoV1Alpha2VirtualMeshes, opts.NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertNetworkingMeshGlooSoloIov1Alpha2FailoverServices(ctx, networkingMeshGlooSoloIov1Alpha2FailoverServices, opts.NetworkingMeshGlooSoloIov1Alpha2FailoverServices); err != nil {
+	if err := b.insertNetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices(ctx, networkingMeshGlooSoloIoV1Alpha2FailoverServices, opts.NetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertNetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments(ctx, networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments, opts.NetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments); err != nil {
+	if err := b.insertNetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments(ctx, networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments, opts.NetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords(ctx, observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords, opts.ObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords); err != nil {
+	if err := b.insertObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords(ctx, observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords, opts.ObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertV1Secrets(ctx, v1Secrets, opts.V1Secrets); err != nil {
+	if err := b.insertV1_Secrets(ctx, v1Secrets, opts.V1_Secrets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertMulticlusterSoloIov1Alpha1KubernetesClusters(ctx, multiclusterSoloIov1Alpha1KubernetesClusters, opts.MulticlusterSoloIov1Alpha1KubernetesClusters); err != nil {
+	if err := b.insertMulticlusterSoloIo_V1Alpha1_KubernetesClusters(ctx, multiclusterSoloIoV1Alpha1KubernetesClusters, opts.MulticlusterSoloIo_V1Alpha1_KubernetesClusters); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
 	outputSnap := NewLocalSnapshot(
 		name,
 
-		settingsMeshGlooSoloIov1Alpha2Settings,
-		discoveryMeshGlooSoloIov1Alpha2TrafficTargets,
-		discoveryMeshGlooSoloIov1Alpha2Workloads,
-		discoveryMeshGlooSoloIov1Alpha2Meshes,
-		networkingMeshGlooSoloIov1Alpha2TrafficPolicies,
-		networkingMeshGlooSoloIov1Alpha2AccessPolicies,
-		networkingMeshGlooSoloIov1Alpha2VirtualMeshes,
-		networkingMeshGlooSoloIov1Alpha2FailoverServices,
-		networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments,
-		observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords,
+		settingsMeshGlooSoloIoV1Alpha2Settings,
+		discoveryMeshGlooSoloIoV1Alpha2TrafficTargets,
+		discoveryMeshGlooSoloIoV1Alpha2Workloads,
+		discoveryMeshGlooSoloIoV1Alpha2Meshes,
+		networkingMeshGlooSoloIoV1Alpha2TrafficPolicies,
+		networkingMeshGlooSoloIoV1Alpha2AccessPolicies,
+		networkingMeshGlooSoloIoV1Alpha2VirtualMeshes,
+		networkingMeshGlooSoloIoV1Alpha2FailoverServices,
+		networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments,
+		observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords,
 		v1Secrets,
-		multiclusterSoloIov1Alpha1KubernetesClusters,
+		multiclusterSoloIoV1Alpha1KubernetesClusters,
 	)
 
 	return outputSnap, errs
 }
 
-func (b *singleClusterLocalBuilder) insertSettingsMeshGlooSoloIov1Alpha2Settings(ctx context.Context, settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterLocalBuilder) insertSettingsMeshGlooSoloIo_V1Alpha2_Settings(ctx context.Context, settingsMeshGlooSoloIoV1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1287,21 +1287,21 @@ func (b *singleClusterLocalBuilder) insertSettingsMeshGlooSoloIov1Alpha2Settings
 		}
 	}
 
-	settingsMeshGlooSoloIov1Alpha2SettingsList, err := settings_mesh_gloo_solo_io_v1alpha2.NewSettingsClient(b.mgr.GetClient()).ListSettings(ctx, opts.ListOptions...)
+	settingsMeshGlooSoloIoV1Alpha2SettingsList, err := settings_mesh_gloo_solo_io_v1alpha2.NewSettingsClient(b.mgr.GetClient()).ListSettings(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range settingsMeshGlooSoloIov1Alpha2SettingsList.Items {
+	for _, item := range settingsMeshGlooSoloIoV1Alpha2SettingsList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		settingsMeshGlooSoloIov1Alpha2Settings.Insert(&item)
+		settingsMeshGlooSoloIoV1Alpha2Settings.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *singleClusterLocalBuilder) insertDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(ctx context.Context, discoveryMeshGlooSoloIov1Alpha2TrafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterLocalBuilder) insertDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets(ctx context.Context, discoveryMeshGlooSoloIoV1Alpha2TrafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1321,20 +1321,20 @@ func (b *singleClusterLocalBuilder) insertDiscoveryMeshGlooSoloIov1Alpha2Traffic
 		}
 	}
 
-	discoveryMeshGlooSoloIov1Alpha2TrafficTargetList, err := discovery_mesh_gloo_solo_io_v1alpha2.NewTrafficTargetClient(b.mgr.GetClient()).ListTrafficTarget(ctx, opts.ListOptions...)
+	discoveryMeshGlooSoloIoV1Alpha2TrafficTargetList, err := discovery_mesh_gloo_solo_io_v1alpha2.NewTrafficTargetClient(b.mgr.GetClient()).ListTrafficTarget(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range discoveryMeshGlooSoloIov1Alpha2TrafficTargetList.Items {
+	for _, item := range discoveryMeshGlooSoloIoV1Alpha2TrafficTargetList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		discoveryMeshGlooSoloIov1Alpha2TrafficTargets.Insert(&item)
+		discoveryMeshGlooSoloIoV1Alpha2TrafficTargets.Insert(&item)
 	}
 
 	return nil
 }
-func (b *singleClusterLocalBuilder) insertDiscoveryMeshGlooSoloIov1Alpha2Workloads(ctx context.Context, discoveryMeshGlooSoloIov1Alpha2Workloads discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterLocalBuilder) insertDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads(ctx context.Context, discoveryMeshGlooSoloIoV1Alpha2Workloads discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1354,20 +1354,20 @@ func (b *singleClusterLocalBuilder) insertDiscoveryMeshGlooSoloIov1Alpha2Workloa
 		}
 	}
 
-	discoveryMeshGlooSoloIov1Alpha2WorkloadList, err := discovery_mesh_gloo_solo_io_v1alpha2.NewWorkloadClient(b.mgr.GetClient()).ListWorkload(ctx, opts.ListOptions...)
+	discoveryMeshGlooSoloIoV1Alpha2WorkloadList, err := discovery_mesh_gloo_solo_io_v1alpha2.NewWorkloadClient(b.mgr.GetClient()).ListWorkload(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range discoveryMeshGlooSoloIov1Alpha2WorkloadList.Items {
+	for _, item := range discoveryMeshGlooSoloIoV1Alpha2WorkloadList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		discoveryMeshGlooSoloIov1Alpha2Workloads.Insert(&item)
+		discoveryMeshGlooSoloIoV1Alpha2Workloads.Insert(&item)
 	}
 
 	return nil
 }
-func (b *singleClusterLocalBuilder) insertDiscoveryMeshGlooSoloIov1Alpha2Meshes(ctx context.Context, discoveryMeshGlooSoloIov1Alpha2Meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterLocalBuilder) insertDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes(ctx context.Context, discoveryMeshGlooSoloIoV1Alpha2Meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1387,21 +1387,21 @@ func (b *singleClusterLocalBuilder) insertDiscoveryMeshGlooSoloIov1Alpha2Meshes(
 		}
 	}
 
-	discoveryMeshGlooSoloIov1Alpha2MeshList, err := discovery_mesh_gloo_solo_io_v1alpha2.NewMeshClient(b.mgr.GetClient()).ListMesh(ctx, opts.ListOptions...)
+	discoveryMeshGlooSoloIoV1Alpha2MeshList, err := discovery_mesh_gloo_solo_io_v1alpha2.NewMeshClient(b.mgr.GetClient()).ListMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range discoveryMeshGlooSoloIov1Alpha2MeshList.Items {
+	for _, item := range discoveryMeshGlooSoloIoV1Alpha2MeshList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		discoveryMeshGlooSoloIov1Alpha2Meshes.Insert(&item)
+		discoveryMeshGlooSoloIoV1Alpha2Meshes.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *singleClusterLocalBuilder) insertNetworkingMeshGlooSoloIov1Alpha2TrafficPolicies(ctx context.Context, networkingMeshGlooSoloIov1Alpha2TrafficPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterLocalBuilder) insertNetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies(ctx context.Context, networkingMeshGlooSoloIoV1Alpha2TrafficPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1421,20 +1421,20 @@ func (b *singleClusterLocalBuilder) insertNetworkingMeshGlooSoloIov1Alpha2Traffi
 		}
 	}
 
-	networkingMeshGlooSoloIov1Alpha2TrafficPolicyList, err := networking_mesh_gloo_solo_io_v1alpha2.NewTrafficPolicyClient(b.mgr.GetClient()).ListTrafficPolicy(ctx, opts.ListOptions...)
+	networkingMeshGlooSoloIoV1Alpha2TrafficPolicyList, err := networking_mesh_gloo_solo_io_v1alpha2.NewTrafficPolicyClient(b.mgr.GetClient()).ListTrafficPolicy(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingMeshGlooSoloIov1Alpha2TrafficPolicyList.Items {
+	for _, item := range networkingMeshGlooSoloIoV1Alpha2TrafficPolicyList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		networkingMeshGlooSoloIov1Alpha2TrafficPolicies.Insert(&item)
+		networkingMeshGlooSoloIoV1Alpha2TrafficPolicies.Insert(&item)
 	}
 
 	return nil
 }
-func (b *singleClusterLocalBuilder) insertNetworkingMeshGlooSoloIov1Alpha2AccessPolicies(ctx context.Context, networkingMeshGlooSoloIov1Alpha2AccessPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterLocalBuilder) insertNetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies(ctx context.Context, networkingMeshGlooSoloIoV1Alpha2AccessPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1454,20 +1454,20 @@ func (b *singleClusterLocalBuilder) insertNetworkingMeshGlooSoloIov1Alpha2Access
 		}
 	}
 
-	networkingMeshGlooSoloIov1Alpha2AccessPolicyList, err := networking_mesh_gloo_solo_io_v1alpha2.NewAccessPolicyClient(b.mgr.GetClient()).ListAccessPolicy(ctx, opts.ListOptions...)
+	networkingMeshGlooSoloIoV1Alpha2AccessPolicyList, err := networking_mesh_gloo_solo_io_v1alpha2.NewAccessPolicyClient(b.mgr.GetClient()).ListAccessPolicy(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingMeshGlooSoloIov1Alpha2AccessPolicyList.Items {
+	for _, item := range networkingMeshGlooSoloIoV1Alpha2AccessPolicyList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		networkingMeshGlooSoloIov1Alpha2AccessPolicies.Insert(&item)
+		networkingMeshGlooSoloIoV1Alpha2AccessPolicies.Insert(&item)
 	}
 
 	return nil
 }
-func (b *singleClusterLocalBuilder) insertNetworkingMeshGlooSoloIov1Alpha2VirtualMeshes(ctx context.Context, networkingMeshGlooSoloIov1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterLocalBuilder) insertNetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes(ctx context.Context, networkingMeshGlooSoloIoV1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1487,20 +1487,20 @@ func (b *singleClusterLocalBuilder) insertNetworkingMeshGlooSoloIov1Alpha2Virtua
 		}
 	}
 
-	networkingMeshGlooSoloIov1Alpha2VirtualMeshList, err := networking_mesh_gloo_solo_io_v1alpha2.NewVirtualMeshClient(b.mgr.GetClient()).ListVirtualMesh(ctx, opts.ListOptions...)
+	networkingMeshGlooSoloIoV1Alpha2VirtualMeshList, err := networking_mesh_gloo_solo_io_v1alpha2.NewVirtualMeshClient(b.mgr.GetClient()).ListVirtualMesh(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingMeshGlooSoloIov1Alpha2VirtualMeshList.Items {
+	for _, item := range networkingMeshGlooSoloIoV1Alpha2VirtualMeshList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		networkingMeshGlooSoloIov1Alpha2VirtualMeshes.Insert(&item)
+		networkingMeshGlooSoloIoV1Alpha2VirtualMeshes.Insert(&item)
 	}
 
 	return nil
 }
-func (b *singleClusterLocalBuilder) insertNetworkingMeshGlooSoloIov1Alpha2FailoverServices(ctx context.Context, networkingMeshGlooSoloIov1Alpha2FailoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterLocalBuilder) insertNetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices(ctx context.Context, networkingMeshGlooSoloIoV1Alpha2FailoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1520,21 +1520,21 @@ func (b *singleClusterLocalBuilder) insertNetworkingMeshGlooSoloIov1Alpha2Failov
 		}
 	}
 
-	networkingMeshGlooSoloIov1Alpha2FailoverServiceList, err := networking_mesh_gloo_solo_io_v1alpha2.NewFailoverServiceClient(b.mgr.GetClient()).ListFailoverService(ctx, opts.ListOptions...)
+	networkingMeshGlooSoloIoV1Alpha2FailoverServiceList, err := networking_mesh_gloo_solo_io_v1alpha2.NewFailoverServiceClient(b.mgr.GetClient()).ListFailoverService(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingMeshGlooSoloIov1Alpha2FailoverServiceList.Items {
+	for _, item := range networkingMeshGlooSoloIoV1Alpha2FailoverServiceList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		networkingMeshGlooSoloIov1Alpha2FailoverServices.Insert(&item)
+		networkingMeshGlooSoloIoV1Alpha2FailoverServices.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *singleClusterLocalBuilder) insertNetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments(ctx context.Context, networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterLocalBuilder) insertNetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments(ctx context.Context, networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1554,21 +1554,21 @@ func (b *singleClusterLocalBuilder) insertNetworkingEnterpriseMeshGlooSoloIov1Al
 		}
 	}
 
-	networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeploymentList, err := networking_enterprise_mesh_gloo_solo_io_v1alpha1.NewWasmDeploymentClient(b.mgr.GetClient()).ListWasmDeployment(ctx, opts.ListOptions...)
+	networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeploymentList, err := networking_enterprise_mesh_gloo_solo_io_v1alpha1.NewWasmDeploymentClient(b.mgr.GetClient()).ListWasmDeployment(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeploymentList.Items {
+	for _, item := range networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeploymentList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments.Insert(&item)
+		networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *singleClusterLocalBuilder) insertObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords(ctx context.Context, observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterLocalBuilder) insertObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords(ctx context.Context, observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1588,21 +1588,21 @@ func (b *singleClusterLocalBuilder) insertObservabilityEnterpriseMeshGlooSoloIov
 		}
 	}
 
-	observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecordList, err := observability_enterprise_mesh_gloo_solo_io_v1alpha1.NewAccessLogRecordClient(b.mgr.GetClient()).ListAccessLogRecord(ctx, opts.ListOptions...)
+	observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecordList, err := observability_enterprise_mesh_gloo_solo_io_v1alpha1.NewAccessLogRecordClient(b.mgr.GetClient()).ListAccessLogRecord(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecordList.Items {
+	for _, item := range observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecordList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords.Insert(&item)
+		observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords.Insert(&item)
 	}
 
 	return nil
 }
 
-func (b *singleClusterLocalBuilder) insertV1Secrets(ctx context.Context, v1Secrets v1_sets.SecretSet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterLocalBuilder) insertV1_Secrets(ctx context.Context, v1Secrets v1_sets.SecretSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1636,7 +1636,7 @@ func (b *singleClusterLocalBuilder) insertV1Secrets(ctx context.Context, v1Secre
 	return nil
 }
 
-func (b *singleClusterLocalBuilder) insertMulticlusterSoloIov1Alpha1KubernetesClusters(ctx context.Context, multiclusterSoloIov1Alpha1KubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterLocalBuilder) insertMulticlusterSoloIo_V1Alpha1_KubernetesClusters(ctx context.Context, multiclusterSoloIoV1Alpha1KubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
@@ -1656,15 +1656,15 @@ func (b *singleClusterLocalBuilder) insertMulticlusterSoloIov1Alpha1KubernetesCl
 		}
 	}
 
-	multiclusterSoloIov1Alpha1KubernetesClusterList, err := multicluster_solo_io_v1alpha1.NewKubernetesClusterClient(b.mgr.GetClient()).ListKubernetesCluster(ctx, opts.ListOptions...)
+	multiclusterSoloIoV1Alpha1KubernetesClusterList, err := multicluster_solo_io_v1alpha1.NewKubernetesClusterClient(b.mgr.GetClient()).ListKubernetesCluster(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range multiclusterSoloIov1Alpha1KubernetesClusterList.Items {
+	for _, item := range multiclusterSoloIoV1Alpha1KubernetesClusterList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		multiclusterSoloIov1Alpha1KubernetesClusters.Insert(&item)
+		multiclusterSoloIoV1Alpha1KubernetesClusters.Insert(&item)
 	}
 
 	return nil

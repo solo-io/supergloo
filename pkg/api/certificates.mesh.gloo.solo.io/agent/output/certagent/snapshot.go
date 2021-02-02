@@ -37,10 +37,10 @@ var MissingRequiredLabelError = func(labelKey, resourceKind string, obj ezkube.R
 // the snapshot of output resources produced by a translation
 type Snapshot interface {
 
-	// return the set of CertificatesMeshGlooSoloIov1Alpha2CertificateRequests with a given set of labels
-	CertificatesMeshGlooSoloIov1Alpha2CertificateRequests() []LabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet
-	// return the set of V1Secrets with a given set of labels
-	V1Secrets() []LabeledV1SecretSet
+	// return the set of CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests with a given set of labels
+	CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests() []LabeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet
+	// return the set of V1_Secrets with a given set of labels
+	V1_Secrets() []LabeledV1_SecretSet
 
 	// apply the snapshot to the local cluster, garbage collecting stale resources
 	ApplyLocalCluster(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
@@ -55,22 +55,22 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
-	certificatesMeshGlooSoloIov1Alpha2CertificateRequests []LabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet
-	v1Secrets                                             []LabeledV1SecretSet
+	certificatesMeshGlooSoloIoV1Alpha2CertificateRequests []LabeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet
+	v1Secrets                                             []LabeledV1_SecretSet
 	clusters                                              []string
 }
 
 func NewSnapshot(
 	name string,
 
-	certificatesMeshGlooSoloIov1Alpha2CertificateRequests []LabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet,
-	v1Secrets []LabeledV1SecretSet,
+	certificatesMeshGlooSoloIoV1Alpha2CertificateRequests []LabeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet,
+	v1Secrets []LabeledV1_SecretSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{
 		name: name,
 
-		certificatesMeshGlooSoloIov1Alpha2CertificateRequests: certificatesMeshGlooSoloIov1Alpha2CertificateRequests,
+		certificatesMeshGlooSoloIoV1Alpha2CertificateRequests: certificatesMeshGlooSoloIoV1Alpha2CertificateRequests,
 		v1Secrets: v1Secrets,
 		clusters:  clusters,
 	}
@@ -82,17 +82,17 @@ func NewLabelPartitionedSnapshot(
 	name,
 	labelKey string, // the key by which to partition the resources
 
-	certificatesMeshGlooSoloIov1Alpha2CertificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet,
+	certificatesMeshGlooSoloIoV1Alpha2CertificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet,
 
 	v1Secrets v1_sets.SecretSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
-	partitionedCertificatesMeshGlooSoloIov1Alpha2CertificateRequests, err := partitionCertificatesMeshGlooSoloIov1Alpha2CertificateRequestsByLabel(labelKey, certificatesMeshGlooSoloIov1Alpha2CertificateRequests)
+	partitionedCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests, err := partitionCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestsByLabel(labelKey, certificatesMeshGlooSoloIoV1Alpha2CertificateRequests)
 	if err != nil {
 		return nil, err
 	}
-	partitionedV1Secrets, err := partitionV1SecretsByLabel(labelKey, v1Secrets)
+	partitionedV1_Secrets, err := partitionV1_SecretsByLabel(labelKey, v1Secrets)
 	if err != nil {
 		return nil, err
 	}
@@ -100,8 +100,8 @@ func NewLabelPartitionedSnapshot(
 	return NewSnapshot(
 		name,
 
-		partitionedCertificatesMeshGlooSoloIov1Alpha2CertificateRequests,
-		partitionedV1Secrets,
+		partitionedCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests,
+		partitionedV1_Secrets,
 		clusters...,
 	), nil
 }
@@ -112,17 +112,17 @@ func NewSinglePartitionedSnapshot(
 	name string,
 	snapshotLabels map[string]string, // a single set of labels shared by all resources
 
-	certificatesMeshGlooSoloIov1Alpha2CertificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet,
+	certificatesMeshGlooSoloIoV1Alpha2CertificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet,
 
 	v1Secrets v1_sets.SecretSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
-	labeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequest, err := NewLabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet(certificatesMeshGlooSoloIov1Alpha2CertificateRequests, snapshotLabels)
+	labeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequest, err := NewLabeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet(certificatesMeshGlooSoloIoV1Alpha2CertificateRequests, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
-	labeledV1Secret, err := NewLabeledV1SecretSet(v1Secrets, snapshotLabels)
+	labeledV1_Secret, err := NewLabeledV1_SecretSet(v1Secrets, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
@@ -130,8 +130,8 @@ func NewSinglePartitionedSnapshot(
 	return NewSnapshot(
 		name,
 
-		[]LabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet{labeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequest},
-		[]LabeledV1SecretSet{labeledV1Secret},
+		[]LabeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet{labeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequest},
+		[]LabeledV1_SecretSet{labeledV1_Secret},
 		clusters...,
 	), nil
 }
@@ -140,7 +140,7 @@ func NewSinglePartitionedSnapshot(
 func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, errHandler output.ErrorHandler) {
 	var genericLists []output.ResourceList
 
-	for _, outputSet := range s.certificatesMeshGlooSoloIov1Alpha2CertificateRequests {
+	for _, outputSet := range s.certificatesMeshGlooSoloIoV1Alpha2CertificateRequests {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.v1Secrets {
@@ -157,7 +157,7 @@ func (s *snapshot) ApplyLocalCluster(ctx context.Context, cli client.Client, err
 func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient multicluster.Client, errHandler output.ErrorHandler) {
 	var genericLists []output.ResourceList
 
-	for _, outputSet := range s.certificatesMeshGlooSoloIov1Alpha2CertificateRequests {
+	for _, outputSet := range s.certificatesMeshGlooSoloIoV1Alpha2CertificateRequests {
 		genericLists = append(genericLists, outputSet.Generic())
 	}
 	for _, outputSet := range s.v1Secrets {
@@ -171,16 +171,16 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 	}.SyncMultiCluster(ctx, multiClusterClient, errHandler)
 }
 
-func partitionCertificatesMeshGlooSoloIov1Alpha2CertificateRequestsByLabel(labelKey string, set certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet) ([]LabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet, error) {
+func partitionCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestsByLabel(labelKey string, set certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet) ([]LabeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet, error) {
 	setsByLabel := map[string]certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "CertificatesMeshGlooSoloIov1Alpha2CertificateRequest", obj)
+			return nil, MissingRequiredLabelError(labelKey, "CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequest", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "CertificatesMeshGlooSoloIov1Alpha2CertificateRequest", obj)
+			return nil, MissingRequiredLabelError(labelKey, "CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequest", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -192,39 +192,39 @@ func partitionCertificatesMeshGlooSoloIov1Alpha2CertificateRequestsByLabel(label
 	}
 
 	// partition by label key
-	var partitionedCertificatesMeshGlooSoloIov1Alpha2CertificateRequests []LabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet
+	var partitionedCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests []LabeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet(setForValue, labels)
+		partitionedSet, err := NewLabeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedCertificatesMeshGlooSoloIov1Alpha2CertificateRequests = append(partitionedCertificatesMeshGlooSoloIov1Alpha2CertificateRequests, partitionedSet)
+		partitionedCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests = append(partitionedCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedCertificatesMeshGlooSoloIov1Alpha2CertificateRequests, func(i, j int) bool {
-		leftLabelValue := partitionedCertificatesMeshGlooSoloIov1Alpha2CertificateRequests[i].Labels()[labelKey]
-		rightLabelValue := partitionedCertificatesMeshGlooSoloIov1Alpha2CertificateRequests[j].Labels()[labelKey]
+	sort.SliceStable(partitionedCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests, func(i, j int) bool {
+		leftLabelValue := partitionedCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests[i].Labels()[labelKey]
+		rightLabelValue := partitionedCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedCertificatesMeshGlooSoloIov1Alpha2CertificateRequests, nil
+	return partitionedCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests, nil
 }
 
-func partitionV1SecretsByLabel(labelKey string, set v1_sets.SecretSet) ([]LabeledV1SecretSet, error) {
+func partitionV1_SecretsByLabel(labelKey string, set v1_sets.SecretSet) ([]LabeledV1_SecretSet, error) {
 	setsByLabel := map[string]v1_sets.SecretSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "V1Secret", obj)
+			return nil, MissingRequiredLabelError(labelKey, "V1_Secret", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "V1Secret", obj)
+			return nil, MissingRequiredLabelError(labelKey, "V1_Secret", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -236,45 +236,45 @@ func partitionV1SecretsByLabel(labelKey string, set v1_sets.SecretSet) ([]Labele
 	}
 
 	// partition by label key
-	var partitionedV1Secrets []LabeledV1SecretSet
+	var partitionedV1_Secrets []LabeledV1_SecretSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledV1SecretSet(setForValue, labels)
+		partitionedSet, err := NewLabeledV1_SecretSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedV1Secrets = append(partitionedV1Secrets, partitionedSet)
+		partitionedV1_Secrets = append(partitionedV1_Secrets, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedV1Secrets, func(i, j int) bool {
-		leftLabelValue := partitionedV1Secrets[i].Labels()[labelKey]
-		rightLabelValue := partitionedV1Secrets[j].Labels()[labelKey]
+	sort.SliceStable(partitionedV1_Secrets, func(i, j int) bool {
+		leftLabelValue := partitionedV1_Secrets[i].Labels()[labelKey]
+		rightLabelValue := partitionedV1_Secrets[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedV1Secrets, nil
+	return partitionedV1_Secrets, nil
 }
 
-func (s snapshot) CertificatesMeshGlooSoloIov1Alpha2CertificateRequests() []LabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet {
-	return s.certificatesMeshGlooSoloIov1Alpha2CertificateRequests
+func (s snapshot) CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests() []LabeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet {
+	return s.certificatesMeshGlooSoloIoV1Alpha2CertificateRequests
 }
 
-func (s snapshot) V1Secrets() []LabeledV1SecretSet {
+func (s snapshot) V1_Secrets() []LabeledV1_SecretSet {
 	return s.v1Secrets
 }
 
 func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
-	certificatesMeshGlooSoloIov1Alpha2CertificateRequestSet := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
-	for _, set := range s.certificatesMeshGlooSoloIov1Alpha2CertificateRequests {
-		certificatesMeshGlooSoloIov1Alpha2CertificateRequestSet = certificatesMeshGlooSoloIov1Alpha2CertificateRequestSet.Union(set.Set())
+	certificatesMeshGlooSoloIoV1Alpha2CertificateRequestSet := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
+	for _, set := range s.certificatesMeshGlooSoloIoV1Alpha2CertificateRequests {
+		certificatesMeshGlooSoloIoV1Alpha2CertificateRequestSet = certificatesMeshGlooSoloIoV1Alpha2CertificateRequestSet.Union(set.Set())
 	}
-	snapshotMap["certificatesMeshGlooSoloIov1Alpha2CertificateRequests"] = certificatesMeshGlooSoloIov1Alpha2CertificateRequestSet.List()
+	snapshotMap["certificatesMeshGlooSoloIoV1Alpha2CertificateRequests"] = certificatesMeshGlooSoloIoV1Alpha2CertificateRequestSet.List()
 
 	v1SecretSet := v1_sets.NewSecretSet()
 	for _, set := range s.v1Secrets {
@@ -287,11 +287,11 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	return json.Marshal(snapshotMap)
 }
 
-// LabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet represents a set of certificatesMeshGlooSoloIov1Alpha2CertificateRequests
+// LabeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet represents a set of certificatesMeshGlooSoloIoV1Alpha2CertificateRequests
 // which share a common set of labels.
-// These labels are used to find diffs between CertificatesMeshGlooSoloIov1Alpha2CertificateRequestSets.
-type LabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet interface {
-	// returns the set of Labels shared by this CertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet
+// These labels are used to find diffs between CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSets.
+type LabeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet interface {
+	// returns the set of Labels shared by this CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet
 	Labels() map[string]string
 
 	// returns the set of CertificateRequestes with the given labels
@@ -301,34 +301,34 @@ type LabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet struct {
+type labeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet struct {
 	set    certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
 	labels map[string]string
 }
 
-func NewLabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet(set certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet, labels map[string]string) (LabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet, error) {
-	// validate that each CertificateRequest contains the labels, else this is not a valid LabeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet
+func NewLabeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet(set certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet, labels map[string]string) (LabeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet, error) {
+	// validate that each CertificateRequest contains the labels, else this is not a valid LabeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on CertificatesMeshGlooSoloIov1Alpha2CertificateRequest %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequest %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet{set: set, labels: labels}, nil
+	return &labeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet) Labels() map[string]string {
+func (l *labeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet) Set() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet {
+func (l *labeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet) Set() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet {
 	return l.set
 }
 
-func (l labeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet) Generic() output.ResourceList {
+func (l labeledCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequestSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -355,11 +355,11 @@ func (l labeledCertificatesMeshGlooSoloIov1Alpha2CertificateRequestSet) Generic(
 	}
 }
 
-// LabeledV1SecretSet represents a set of v1Secrets
+// LabeledV1_SecretSet represents a set of v1Secrets
 // which share a common set of labels.
-// These labels are used to find diffs between V1SecretSets.
-type LabeledV1SecretSet interface {
-	// returns the set of Labels shared by this V1SecretSet
+// These labels are used to find diffs between V1_SecretSets.
+type LabeledV1_SecretSet interface {
+	// returns the set of Labels shared by this V1_SecretSet
 	Labels() map[string]string
 
 	// returns the set of Secretes with the given labels
@@ -369,34 +369,34 @@ type LabeledV1SecretSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledV1SecretSet struct {
+type labeledV1_SecretSet struct {
 	set    v1_sets.SecretSet
 	labels map[string]string
 }
 
-func NewLabeledV1SecretSet(set v1_sets.SecretSet, labels map[string]string) (LabeledV1SecretSet, error) {
-	// validate that each Secret contains the labels, else this is not a valid LabeledV1SecretSet
+func NewLabeledV1_SecretSet(set v1_sets.SecretSet, labels map[string]string) (LabeledV1_SecretSet, error) {
+	// validate that each Secret contains the labels, else this is not a valid LabeledV1_SecretSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on V1Secret %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on V1_Secret %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledV1SecretSet{set: set, labels: labels}, nil
+	return &labeledV1_SecretSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledV1SecretSet) Labels() map[string]string {
+func (l *labeledV1_SecretSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledV1SecretSet) Set() v1_sets.SecretSet {
+func (l *labeledV1_SecretSet) Set() v1_sets.SecretSet {
 	return l.set
 }
 
-func (l labeledV1SecretSet) Generic() output.ResourceList {
+func (l labeledV1_SecretSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -428,7 +428,7 @@ type builder struct {
 	name     string
 	clusters []string
 
-	certificatesMeshGlooSoloIov1Alpha2CertificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
+	certificatesMeshGlooSoloIoV1Alpha2CertificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
 
 	v1Secrets v1_sets.SecretSet
 }
@@ -438,7 +438,7 @@ func NewBuilder(ctx context.Context, name string) *builder {
 		ctx:  ctx,
 		name: name,
 
-		certificatesMeshGlooSoloIov1Alpha2CertificateRequests: certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet(),
+		certificatesMeshGlooSoloIoV1Alpha2CertificateRequests: certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet(),
 
 		v1Secrets: v1_sets.NewSecretSet(),
 	}
@@ -448,17 +448,17 @@ func NewBuilder(ctx context.Context, name string) *builder {
 // iteratively collecting outputs before producing a final snapshot
 type Builder interface {
 
-	// add CertificatesMeshGlooSoloIov1Alpha2CertificateRequests to the collected outputs
-	AddCertificatesMeshGlooSoloIov1Alpha2CertificateRequests(certificatesMeshGlooSoloIov1Alpha2CertificateRequests ...*certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequest)
+	// add CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests to the collected outputs
+	AddCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests(certificatesMeshGlooSoloIoV1Alpha2CertificateRequests ...*certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequest)
 
-	// get the collected CertificatesMeshGlooSoloIov1Alpha2CertificateRequests
-	GetCertificatesMeshGlooSoloIov1Alpha2CertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
+	// get the collected CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests
+	GetCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
 
-	// add V1Secrets to the collected outputs
-	AddV1Secrets(v1Secrets ...*v1.Secret)
+	// add V1_Secrets to the collected outputs
+	AddV1_Secrets(v1Secrets ...*v1.Secret)
 
-	// get the collected V1Secrets
-	GetV1Secrets() v1_sets.SecretSet
+	// get the collected V1_Secrets
+	GetV1_Secrets() v1_sets.SecretSet
 
 	// build the collected outputs into a label-partitioned snapshot
 	BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error)
@@ -483,30 +483,30 @@ type Builder interface {
 	Delta(newSnap Builder) output.SnapshotDelta
 }
 
-func (b *builder) AddCertificatesMeshGlooSoloIov1Alpha2CertificateRequests(certificatesMeshGlooSoloIov1Alpha2CertificateRequests ...*certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequest) {
-	for _, obj := range certificatesMeshGlooSoloIov1Alpha2CertificateRequests {
+func (b *builder) AddCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests(certificatesMeshGlooSoloIoV1Alpha2CertificateRequests ...*certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequest) {
+	for _, obj := range certificatesMeshGlooSoloIoV1Alpha2CertificateRequests {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output CertificatesMeshGlooSoloIov1Alpha2CertificateRequest %v", sets.Key(obj))
-		b.certificatesMeshGlooSoloIov1Alpha2CertificateRequests.Insert(obj)
+		contextutils.LoggerFrom(b.ctx).Debugf("added output CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequest %v", sets.Key(obj))
+		b.certificatesMeshGlooSoloIoV1Alpha2CertificateRequests.Insert(obj)
 	}
 }
-func (b *builder) AddV1Secrets(v1Secrets ...*v1.Secret) {
+func (b *builder) AddV1_Secrets(v1Secrets ...*v1.Secret) {
 	for _, obj := range v1Secrets {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output V1Secret %v", sets.Key(obj))
+		contextutils.LoggerFrom(b.ctx).Debugf("added output V1_Secret %v", sets.Key(obj))
 		b.v1Secrets.Insert(obj)
 	}
 }
 
-func (b *builder) GetCertificatesMeshGlooSoloIov1Alpha2CertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet {
-	return b.certificatesMeshGlooSoloIov1Alpha2CertificateRequests
+func (b *builder) GetCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet {
+	return b.certificatesMeshGlooSoloIoV1Alpha2CertificateRequests
 }
 
-func (b *builder) GetV1Secrets() v1_sets.SecretSet {
+func (b *builder) GetV1_Secrets() v1_sets.SecretSet {
 	return b.v1Secrets
 }
 
@@ -515,7 +515,7 @@ func (b *builder) BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, erro
 		b.name,
 		labelKey,
 
-		b.certificatesMeshGlooSoloIov1Alpha2CertificateRequests,
+		b.certificatesMeshGlooSoloIoV1Alpha2CertificateRequests,
 
 		b.v1Secrets,
 		b.clusters...,
@@ -527,7 +527,7 @@ func (b *builder) BuildSinglePartitionedSnapshot(snapshotLabels map[string]strin
 		b.name,
 		snapshotLabels,
 
-		b.certificatesMeshGlooSoloIov1Alpha2CertificateRequests,
+		b.certificatesMeshGlooSoloIoV1Alpha2CertificateRequests,
 
 		b.v1Secrets,
 		b.clusters...,
@@ -547,9 +547,9 @@ func (b *builder) Merge(other Builder) {
 		return
 	}
 
-	b.AddCertificatesMeshGlooSoloIov1Alpha2CertificateRequests(other.GetCertificatesMeshGlooSoloIov1Alpha2CertificateRequests().List()...)
+	b.AddCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests(other.GetCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests().List()...)
 
-	b.AddV1Secrets(other.GetV1Secrets().List()...)
+	b.AddV1_Secrets(other.GetV1_Secrets().List()...)
 	for _, cluster := range other.Clusters() {
 		b.AddCluster(cluster)
 	}
@@ -561,12 +561,12 @@ func (b *builder) Clone() Builder {
 	}
 	clone := NewBuilder(b.ctx, b.name)
 
-	for _, certificatesMeshGlooSoloIov1Alpha2CertificateRequest := range b.GetCertificatesMeshGlooSoloIov1Alpha2CertificateRequests().List() {
-		clone.AddCertificatesMeshGlooSoloIov1Alpha2CertificateRequests(certificatesMeshGlooSoloIov1Alpha2CertificateRequest.DeepCopy())
+	for _, certificatesMeshGlooSoloIoV1Alpha2CertificateRequest := range b.GetCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests().List() {
+		clone.AddCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests(certificatesMeshGlooSoloIoV1Alpha2CertificateRequest.DeepCopy())
 	}
 
-	for _, v1Secret := range b.GetV1Secrets().List() {
-		clone.AddV1Secrets(v1Secret.DeepCopy())
+	for _, v1Secret := range b.GetV1_Secrets().List() {
+		clone.AddV1_Secrets(v1Secret.DeepCopy())
 	}
 	for _, cluster := range b.Clusters() {
 		clone.AddCluster(cluster)
@@ -581,17 +581,17 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
 	}
 
 	// calculate delta between CertificateRequests
-	certificatesMeshGlooSoloIov1Alpha2CertificateRequestDelta := b.GetCertificatesMeshGlooSoloIov1Alpha2CertificateRequests().Delta(other.GetCertificatesMeshGlooSoloIov1Alpha2CertificateRequests())
-	certificatesMeshGlooSoloIov1Alpha2CertificateRequestGvk := schema.GroupVersionKind{
+	certificatesMeshGlooSoloIoV1Alpha2CertificateRequestDelta := b.GetCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests().Delta(other.GetCertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests())
+	certificatesMeshGlooSoloIoV1Alpha2CertificateRequestGvk := schema.GroupVersionKind{
 		Group:   "certificates.mesh.gloo.solo.io",
 		Version: "v1alpha2",
 		Kind:    "CertificateRequest",
 	}
-	delta.AddInserted(certificatesMeshGlooSoloIov1Alpha2CertificateRequestGvk, certificatesMeshGlooSoloIov1Alpha2CertificateRequestDelta.Inserted)
-	delta.AddRemoved(certificatesMeshGlooSoloIov1Alpha2CertificateRequestGvk, certificatesMeshGlooSoloIov1Alpha2CertificateRequestDelta.Removed)
+	delta.AddInserted(certificatesMeshGlooSoloIoV1Alpha2CertificateRequestGvk, certificatesMeshGlooSoloIoV1Alpha2CertificateRequestDelta.Inserted)
+	delta.AddRemoved(certificatesMeshGlooSoloIoV1Alpha2CertificateRequestGvk, certificatesMeshGlooSoloIoV1Alpha2CertificateRequestDelta.Removed)
 
 	// calculate delta between Secrets
-	v1SecretDelta := b.GetV1Secrets().Delta(other.GetV1Secrets())
+	v1SecretDelta := b.GetV1_Secrets().Delta(other.GetV1_Secrets())
 	v1SecretGvk := schema.GroupVersionKind{
 		Group:   "",
 		Version: "v1",

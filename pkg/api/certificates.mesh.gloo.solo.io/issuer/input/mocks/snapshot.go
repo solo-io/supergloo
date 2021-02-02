@@ -38,32 +38,32 @@ func (m *MockSnapshot) EXPECT() *MockSnapshotMockRecorder {
 	return m.recorder
 }
 
-// CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates mocks base method
-func (m *MockSnapshot) CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates() v1alpha2sets.IssuedCertificateSet {
+// CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates mocks base method
+func (m *MockSnapshot) CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates() v1alpha2sets.IssuedCertificateSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates")
+	ret := m.ctrl.Call(m, "CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates")
 	ret0, _ := ret[0].(v1alpha2sets.IssuedCertificateSet)
 	return ret0
 }
 
-// CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates indicates an expected call of CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates
-func (mr *MockSnapshotMockRecorder) CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates() *gomock.Call {
+// CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates indicates an expected call of CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates
+func (mr *MockSnapshotMockRecorder) CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates", reflect.TypeOf((*MockSnapshot)(nil).CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates", reflect.TypeOf((*MockSnapshot)(nil).CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates))
 }
 
-// CertificatesMeshGlooSoloIov1Alpha2CertificateRequests mocks base method
-func (m *MockSnapshot) CertificatesMeshGlooSoloIov1Alpha2CertificateRequests() v1alpha2sets.CertificateRequestSet {
+// CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests mocks base method
+func (m *MockSnapshot) CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests() v1alpha2sets.CertificateRequestSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CertificatesMeshGlooSoloIov1Alpha2CertificateRequests")
+	ret := m.ctrl.Call(m, "CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests")
 	ret0, _ := ret[0].(v1alpha2sets.CertificateRequestSet)
 	return ret0
 }
 
-// CertificatesMeshGlooSoloIov1Alpha2CertificateRequests indicates an expected call of CertificatesMeshGlooSoloIov1Alpha2CertificateRequests
-func (mr *MockSnapshotMockRecorder) CertificatesMeshGlooSoloIov1Alpha2CertificateRequests() *gomock.Call {
+// CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests indicates an expected call of CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests
+func (mr *MockSnapshotMockRecorder) CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificatesMeshGlooSoloIov1Alpha2CertificateRequests", reflect.TypeOf((*MockSnapshot)(nil).CertificatesMeshGlooSoloIov1Alpha2CertificateRequests))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests", reflect.TypeOf((*MockSnapshot)(nil).CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests))
 }
 
 // SyncStatusesMultiCluster mocks base method

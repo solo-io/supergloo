@@ -44,46 +44,46 @@ func (m *MockSnapshot) EXPECT() *MockSnapshotMockRecorder {
 	return m.recorder
 }
 
-// SplitSmiSpecIov1Alpha2TrafficSplits mocks base method
-func (m *MockSnapshot) SplitSmiSpecIov1Alpha2TrafficSplits() []smi.LabeledSplitSmiSpecIov1Alpha2TrafficSplitSet {
+// SplitSmiSpecIo_V1Alpha2_TrafficSplits mocks base method
+func (m *MockSnapshot) SplitSmiSpecIo_V1Alpha2_TrafficSplits() []smi.LabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SplitSmiSpecIov1Alpha2TrafficSplits")
-	ret0, _ := ret[0].([]smi.LabeledSplitSmiSpecIov1Alpha2TrafficSplitSet)
+	ret := m.ctrl.Call(m, "SplitSmiSpecIo_V1Alpha2_TrafficSplits")
+	ret0, _ := ret[0].([]smi.LabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet)
 	return ret0
 }
 
-// SplitSmiSpecIov1Alpha2TrafficSplits indicates an expected call of SplitSmiSpecIov1Alpha2TrafficSplits
-func (mr *MockSnapshotMockRecorder) SplitSmiSpecIov1Alpha2TrafficSplits() *gomock.Call {
+// SplitSmiSpecIo_V1Alpha2_TrafficSplits indicates an expected call of SplitSmiSpecIo_V1Alpha2_TrafficSplits
+func (mr *MockSnapshotMockRecorder) SplitSmiSpecIo_V1Alpha2_TrafficSplits() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SplitSmiSpecIov1Alpha2TrafficSplits", reflect.TypeOf((*MockSnapshot)(nil).SplitSmiSpecIov1Alpha2TrafficSplits))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SplitSmiSpecIo_V1Alpha2_TrafficSplits", reflect.TypeOf((*MockSnapshot)(nil).SplitSmiSpecIo_V1Alpha2_TrafficSplits))
 }
 
-// AccessSmiSpecIov1Alpha2TrafficTargets mocks base method
-func (m *MockSnapshot) AccessSmiSpecIov1Alpha2TrafficTargets() []smi.LabeledAccessSmiSpecIov1Alpha2TrafficTargetSet {
+// AccessSmiSpecIo_V1Alpha2_TrafficTargets mocks base method
+func (m *MockSnapshot) AccessSmiSpecIo_V1Alpha2_TrafficTargets() []smi.LabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AccessSmiSpecIov1Alpha2TrafficTargets")
-	ret0, _ := ret[0].([]smi.LabeledAccessSmiSpecIov1Alpha2TrafficTargetSet)
+	ret := m.ctrl.Call(m, "AccessSmiSpecIo_V1Alpha2_TrafficTargets")
+	ret0, _ := ret[0].([]smi.LabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet)
 	return ret0
 }
 
-// AccessSmiSpecIov1Alpha2TrafficTargets indicates an expected call of AccessSmiSpecIov1Alpha2TrafficTargets
-func (mr *MockSnapshotMockRecorder) AccessSmiSpecIov1Alpha2TrafficTargets() *gomock.Call {
+// AccessSmiSpecIo_V1Alpha2_TrafficTargets indicates an expected call of AccessSmiSpecIo_V1Alpha2_TrafficTargets
+func (mr *MockSnapshotMockRecorder) AccessSmiSpecIo_V1Alpha2_TrafficTargets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccessSmiSpecIov1Alpha2TrafficTargets", reflect.TypeOf((*MockSnapshot)(nil).AccessSmiSpecIov1Alpha2TrafficTargets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccessSmiSpecIo_V1Alpha2_TrafficTargets", reflect.TypeOf((*MockSnapshot)(nil).AccessSmiSpecIo_V1Alpha2_TrafficTargets))
 }
 
-// SpecsSmiSpecIov1Alpha3HTTPRouteGroups mocks base method
-func (m *MockSnapshot) SpecsSmiSpecIov1Alpha3HTTPRouteGroups() []smi.LabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet {
+// SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups mocks base method
+func (m *MockSnapshot) SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups() []smi.LabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SpecsSmiSpecIov1Alpha3HTTPRouteGroups")
-	ret0, _ := ret[0].([]smi.LabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet)
+	ret := m.ctrl.Call(m, "SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups")
+	ret0, _ := ret[0].([]smi.LabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet)
 	return ret0
 }
 
-// SpecsSmiSpecIov1Alpha3HTTPRouteGroups indicates an expected call of SpecsSmiSpecIov1Alpha3HTTPRouteGroups
-func (mr *MockSnapshotMockRecorder) SpecsSmiSpecIov1Alpha3HTTPRouteGroups() *gomock.Call {
+// SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups indicates an expected call of SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups
+func (mr *MockSnapshotMockRecorder) SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpecsSmiSpecIov1Alpha3HTTPRouteGroups", reflect.TypeOf((*MockSnapshot)(nil).SpecsSmiSpecIov1Alpha3HTTPRouteGroups))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups", reflect.TypeOf((*MockSnapshot)(nil).SpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups))
 }
 
 // ApplyLocalCluster mocks base method
@@ -125,31 +125,31 @@ func (mr *MockSnapshotMockRecorder) MarshalJSON() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarshalJSON", reflect.TypeOf((*MockSnapshot)(nil).MarshalJSON))
 }
 
-// MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet is a mock of LabeledSplitSmiSpecIov1Alpha2TrafficSplitSet interface
-type MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet struct {
+// MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet is a mock of LabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet interface
+type MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet struct {
 	ctrl     *gomock.Controller
-	recorder *MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSetMockRecorder
+	recorder *MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSetMockRecorder
 }
 
-// MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSetMockRecorder is the mock recorder for MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet
-type MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSetMockRecorder struct {
-	mock *MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet
+// MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSetMockRecorder is the mock recorder for MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet
+type MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSetMockRecorder struct {
+	mock *MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet
 }
 
-// NewMockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet creates a new mock instance
-func NewMockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet(ctrl *gomock.Controller) *MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet {
-	mock := &MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet{ctrl: ctrl}
-	mock.recorder = &MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSetMockRecorder{mock}
+// NewMockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet creates a new mock instance
+func NewMockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet(ctrl *gomock.Controller) *MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet {
+	mock := &MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet{ctrl: ctrl}
+	mock.recorder = &MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSetMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet) EXPECT() *MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSetMockRecorder {
+func (m *MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet) EXPECT() *MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSetMockRecorder {
 	return m.recorder
 }
 
 // Labels mocks base method
-func (m *MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet) Labels() map[string]string {
+func (m *MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
 	ret0, _ := ret[0].(map[string]string)
@@ -157,13 +157,13 @@ func (m *MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet) Labels() map[string]s
 }
 
 // Labels indicates an expected call of Labels
-func (mr *MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSetMockRecorder) Labels() *gomock.Call {
+func (mr *MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet)(nil).Labels))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet)(nil).Labels))
 }
 
 // Set mocks base method
-func (m *MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet) Set() v1alpha2sets0.TrafficSplitSet {
+func (m *MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet) Set() v1alpha2sets0.TrafficSplitSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
 	ret0, _ := ret[0].(v1alpha2sets0.TrafficSplitSet)
@@ -171,13 +171,13 @@ func (m *MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet) Set() v1alpha2sets0.T
 }
 
 // Set indicates an expected call of Set
-func (mr *MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSetMockRecorder) Set() *gomock.Call {
+func (mr *MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet)(nil).Set))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet)(nil).Set))
 }
 
 // Generic mocks base method
-func (m *MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet) Generic() output.ResourceList {
+func (m *MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet) Generic() output.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
 	ret0, _ := ret[0].(output.ResourceList)
@@ -185,36 +185,36 @@ func (m *MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet) Generic() output.Reso
 }
 
 // Generic indicates an expected call of Generic
-func (mr *MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSetMockRecorder) Generic() *gomock.Call {
+func (mr *MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledSplitSmiSpecIov1Alpha2TrafficSplitSet)(nil).Generic))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledSplitSmiSpecIo_V1Alpha2_TrafficSplitSet)(nil).Generic))
 }
 
-// MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet is a mock of LabeledAccessSmiSpecIov1Alpha2TrafficTargetSet interface
-type MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet struct {
+// MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet is a mock of LabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet interface
+type MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet struct {
 	ctrl     *gomock.Controller
-	recorder *MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSetMockRecorder
+	recorder *MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSetMockRecorder
 }
 
-// MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSetMockRecorder is the mock recorder for MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet
-type MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSetMockRecorder struct {
-	mock *MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet
+// MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSetMockRecorder is the mock recorder for MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet
+type MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSetMockRecorder struct {
+	mock *MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet
 }
 
-// NewMockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet creates a new mock instance
-func NewMockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet(ctrl *gomock.Controller) *MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet {
-	mock := &MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet{ctrl: ctrl}
-	mock.recorder = &MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSetMockRecorder{mock}
+// NewMockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet creates a new mock instance
+func NewMockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet(ctrl *gomock.Controller) *MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet {
+	mock := &MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet{ctrl: ctrl}
+	mock.recorder = &MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSetMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet) EXPECT() *MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSetMockRecorder {
+func (m *MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet) EXPECT() *MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSetMockRecorder {
 	return m.recorder
 }
 
 // Labels mocks base method
-func (m *MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet) Labels() map[string]string {
+func (m *MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
 	ret0, _ := ret[0].(map[string]string)
@@ -222,13 +222,13 @@ func (m *MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet) Labels() map[string
 }
 
 // Labels indicates an expected call of Labels
-func (mr *MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSetMockRecorder) Labels() *gomock.Call {
+func (mr *MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet)(nil).Labels))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet)(nil).Labels))
 }
 
 // Set mocks base method
-func (m *MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet) Set() v1alpha2sets.TrafficTargetSet {
+func (m *MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet) Set() v1alpha2sets.TrafficTargetSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
 	ret0, _ := ret[0].(v1alpha2sets.TrafficTargetSet)
@@ -236,13 +236,13 @@ func (m *MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet) Set() v1alpha2sets.
 }
 
 // Set indicates an expected call of Set
-func (mr *MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSetMockRecorder) Set() *gomock.Call {
+func (mr *MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet)(nil).Set))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet)(nil).Set))
 }
 
 // Generic mocks base method
-func (m *MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet) Generic() output.ResourceList {
+func (m *MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet) Generic() output.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
 	ret0, _ := ret[0].(output.ResourceList)
@@ -250,36 +250,36 @@ func (m *MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet) Generic() output.Re
 }
 
 // Generic indicates an expected call of Generic
-func (mr *MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSetMockRecorder) Generic() *gomock.Call {
+func (mr *MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledAccessSmiSpecIov1Alpha2TrafficTargetSet)(nil).Generic))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledAccessSmiSpecIo_V1Alpha2_TrafficTargetSet)(nil).Generic))
 }
 
-// MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet is a mock of LabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet interface
-type MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet struct {
+// MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet is a mock of LabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet interface
+type MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet struct {
 	ctrl     *gomock.Controller
-	recorder *MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSetMockRecorder
+	recorder *MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSetMockRecorder
 }
 
-// MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSetMockRecorder is the mock recorder for MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet
-type MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSetMockRecorder struct {
-	mock *MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet
+// MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSetMockRecorder is the mock recorder for MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet
+type MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSetMockRecorder struct {
+	mock *MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet
 }
 
-// NewMockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet creates a new mock instance
-func NewMockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet(ctrl *gomock.Controller) *MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet {
-	mock := &MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet{ctrl: ctrl}
-	mock.recorder = &MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSetMockRecorder{mock}
+// NewMockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet creates a new mock instance
+func NewMockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet(ctrl *gomock.Controller) *MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet {
+	mock := &MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet{ctrl: ctrl}
+	mock.recorder = &MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSetMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet) EXPECT() *MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSetMockRecorder {
+func (m *MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet) EXPECT() *MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSetMockRecorder {
 	return m.recorder
 }
 
 // Labels mocks base method
-func (m *MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet) Labels() map[string]string {
+func (m *MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet) Labels() map[string]string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Labels")
 	ret0, _ := ret[0].(map[string]string)
@@ -287,13 +287,13 @@ func (m *MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet) Labels() map[string
 }
 
 // Labels indicates an expected call of Labels
-func (mr *MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSetMockRecorder) Labels() *gomock.Call {
+func (mr *MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSetMockRecorder) Labels() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet)(nil).Labels))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Labels", reflect.TypeOf((*MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet)(nil).Labels))
 }
 
 // Set mocks base method
-func (m *MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet) Set() v1alpha3sets.HTTPRouteGroupSet {
+func (m *MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet) Set() v1alpha3sets.HTTPRouteGroupSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
 	ret0, _ := ret[0].(v1alpha3sets.HTTPRouteGroupSet)
@@ -301,13 +301,13 @@ func (m *MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet) Set() v1alpha3sets.
 }
 
 // Set indicates an expected call of Set
-func (mr *MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSetMockRecorder) Set() *gomock.Call {
+func (mr *MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSetMockRecorder) Set() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet)(nil).Set))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet)(nil).Set))
 }
 
 // Generic mocks base method
-func (m *MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet) Generic() output.ResourceList {
+func (m *MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet) Generic() output.ResourceList {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Generic")
 	ret0, _ := ret[0].(output.ResourceList)
@@ -315,9 +315,9 @@ func (m *MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet) Generic() output.Re
 }
 
 // Generic indicates an expected call of Generic
-func (mr *MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSetMockRecorder) Generic() *gomock.Call {
+func (mr *MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSetMockRecorder) Generic() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledSpecsSmiSpecIov1Alpha3HTTPRouteGroupSet)(nil).Generic))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockLabeledSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroupSet)(nil).Generic))
 }
 
 // MockBuilder is a mock of Builder interface
@@ -343,94 +343,94 @@ func (m *MockBuilder) EXPECT() *MockBuilderMockRecorder {
 	return m.recorder
 }
 
-// AddSplitSmiSpecIov1Alpha2TrafficSplits mocks base method
-func (m *MockBuilder) AddSplitSmiSpecIov1Alpha2TrafficSplits(splitSmiSpecIov1Alpha2TrafficSplits ...*v1alpha20.TrafficSplit) {
+// AddSplitSmiSpecIo_V1Alpha2_TrafficSplits mocks base method
+func (m *MockBuilder) AddSplitSmiSpecIo_V1Alpha2_TrafficSplits(splitSmiSpecIoV1Alpha2TrafficSplits ...*v1alpha20.TrafficSplit) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
-	for _, a := range splitSmiSpecIov1Alpha2TrafficSplits {
+	for _, a := range splitSmiSpecIoV1Alpha2TrafficSplits {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddSplitSmiSpecIov1Alpha2TrafficSplits", varargs...)
+	m.ctrl.Call(m, "AddSplitSmiSpecIo_V1Alpha2_TrafficSplits", varargs...)
 }
 
-// AddSplitSmiSpecIov1Alpha2TrafficSplits indicates an expected call of AddSplitSmiSpecIov1Alpha2TrafficSplits
-func (mr *MockBuilderMockRecorder) AddSplitSmiSpecIov1Alpha2TrafficSplits(splitSmiSpecIov1Alpha2TrafficSplits ...interface{}) *gomock.Call {
+// AddSplitSmiSpecIo_V1Alpha2_TrafficSplits indicates an expected call of AddSplitSmiSpecIo_V1Alpha2_TrafficSplits
+func (mr *MockBuilderMockRecorder) AddSplitSmiSpecIo_V1Alpha2_TrafficSplits(splitSmiSpecIoV1Alpha2TrafficSplits ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSplitSmiSpecIov1Alpha2TrafficSplits", reflect.TypeOf((*MockBuilder)(nil).AddSplitSmiSpecIov1Alpha2TrafficSplits), splitSmiSpecIov1Alpha2TrafficSplits...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSplitSmiSpecIo_V1Alpha2_TrafficSplits", reflect.TypeOf((*MockBuilder)(nil).AddSplitSmiSpecIo_V1Alpha2_TrafficSplits), splitSmiSpecIoV1Alpha2TrafficSplits...)
 }
 
-// GetSplitSmiSpecIov1Alpha2TrafficSplits mocks base method
-func (m *MockBuilder) GetSplitSmiSpecIov1Alpha2TrafficSplits() v1alpha2sets0.TrafficSplitSet {
+// GetSplitSmiSpecIo_V1Alpha2_TrafficSplits mocks base method
+func (m *MockBuilder) GetSplitSmiSpecIo_V1Alpha2_TrafficSplits() v1alpha2sets0.TrafficSplitSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSplitSmiSpecIov1Alpha2TrafficSplits")
+	ret := m.ctrl.Call(m, "GetSplitSmiSpecIo_V1Alpha2_TrafficSplits")
 	ret0, _ := ret[0].(v1alpha2sets0.TrafficSplitSet)
 	return ret0
 }
 
-// GetSplitSmiSpecIov1Alpha2TrafficSplits indicates an expected call of GetSplitSmiSpecIov1Alpha2TrafficSplits
-func (mr *MockBuilderMockRecorder) GetSplitSmiSpecIov1Alpha2TrafficSplits() *gomock.Call {
+// GetSplitSmiSpecIo_V1Alpha2_TrafficSplits indicates an expected call of GetSplitSmiSpecIo_V1Alpha2_TrafficSplits
+func (mr *MockBuilderMockRecorder) GetSplitSmiSpecIo_V1Alpha2_TrafficSplits() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSplitSmiSpecIov1Alpha2TrafficSplits", reflect.TypeOf((*MockBuilder)(nil).GetSplitSmiSpecIov1Alpha2TrafficSplits))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSplitSmiSpecIo_V1Alpha2_TrafficSplits", reflect.TypeOf((*MockBuilder)(nil).GetSplitSmiSpecIo_V1Alpha2_TrafficSplits))
 }
 
-// AddAccessSmiSpecIov1Alpha2TrafficTargets mocks base method
-func (m *MockBuilder) AddAccessSmiSpecIov1Alpha2TrafficTargets(accessSmiSpecIov1Alpha2TrafficTargets ...*v1alpha2.TrafficTarget) {
+// AddAccessSmiSpecIo_V1Alpha2_TrafficTargets mocks base method
+func (m *MockBuilder) AddAccessSmiSpecIo_V1Alpha2_TrafficTargets(accessSmiSpecIoV1Alpha2TrafficTargets ...*v1alpha2.TrafficTarget) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
-	for _, a := range accessSmiSpecIov1Alpha2TrafficTargets {
+	for _, a := range accessSmiSpecIoV1Alpha2TrafficTargets {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddAccessSmiSpecIov1Alpha2TrafficTargets", varargs...)
+	m.ctrl.Call(m, "AddAccessSmiSpecIo_V1Alpha2_TrafficTargets", varargs...)
 }
 
-// AddAccessSmiSpecIov1Alpha2TrafficTargets indicates an expected call of AddAccessSmiSpecIov1Alpha2TrafficTargets
-func (mr *MockBuilderMockRecorder) AddAccessSmiSpecIov1Alpha2TrafficTargets(accessSmiSpecIov1Alpha2TrafficTargets ...interface{}) *gomock.Call {
+// AddAccessSmiSpecIo_V1Alpha2_TrafficTargets indicates an expected call of AddAccessSmiSpecIo_V1Alpha2_TrafficTargets
+func (mr *MockBuilderMockRecorder) AddAccessSmiSpecIo_V1Alpha2_TrafficTargets(accessSmiSpecIoV1Alpha2TrafficTargets ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAccessSmiSpecIov1Alpha2TrafficTargets", reflect.TypeOf((*MockBuilder)(nil).AddAccessSmiSpecIov1Alpha2TrafficTargets), accessSmiSpecIov1Alpha2TrafficTargets...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAccessSmiSpecIo_V1Alpha2_TrafficTargets", reflect.TypeOf((*MockBuilder)(nil).AddAccessSmiSpecIo_V1Alpha2_TrafficTargets), accessSmiSpecIoV1Alpha2TrafficTargets...)
 }
 
-// GetAccessSmiSpecIov1Alpha2TrafficTargets mocks base method
-func (m *MockBuilder) GetAccessSmiSpecIov1Alpha2TrafficTargets() v1alpha2sets.TrafficTargetSet {
+// GetAccessSmiSpecIo_V1Alpha2_TrafficTargets mocks base method
+func (m *MockBuilder) GetAccessSmiSpecIo_V1Alpha2_TrafficTargets() v1alpha2sets.TrafficTargetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAccessSmiSpecIov1Alpha2TrafficTargets")
+	ret := m.ctrl.Call(m, "GetAccessSmiSpecIo_V1Alpha2_TrafficTargets")
 	ret0, _ := ret[0].(v1alpha2sets.TrafficTargetSet)
 	return ret0
 }
 
-// GetAccessSmiSpecIov1Alpha2TrafficTargets indicates an expected call of GetAccessSmiSpecIov1Alpha2TrafficTargets
-func (mr *MockBuilderMockRecorder) GetAccessSmiSpecIov1Alpha2TrafficTargets() *gomock.Call {
+// GetAccessSmiSpecIo_V1Alpha2_TrafficTargets indicates an expected call of GetAccessSmiSpecIo_V1Alpha2_TrafficTargets
+func (mr *MockBuilderMockRecorder) GetAccessSmiSpecIo_V1Alpha2_TrafficTargets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccessSmiSpecIov1Alpha2TrafficTargets", reflect.TypeOf((*MockBuilder)(nil).GetAccessSmiSpecIov1Alpha2TrafficTargets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccessSmiSpecIo_V1Alpha2_TrafficTargets", reflect.TypeOf((*MockBuilder)(nil).GetAccessSmiSpecIo_V1Alpha2_TrafficTargets))
 }
 
-// AddSpecsSmiSpecIov1Alpha3HTTPRouteGroups mocks base method
-func (m *MockBuilder) AddSpecsSmiSpecIov1Alpha3HTTPRouteGroups(specsSmiSpecIov1Alpha3HTTPRouteGroups ...*v1alpha3.HTTPRouteGroup) {
+// AddSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups mocks base method
+func (m *MockBuilder) AddSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups(specsSmiSpecIoV1Alpha3HTTPRouteGroups ...*v1alpha3.HTTPRouteGroup) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
-	for _, a := range specsSmiSpecIov1Alpha3HTTPRouteGroups {
+	for _, a := range specsSmiSpecIoV1Alpha3HTTPRouteGroups {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "AddSpecsSmiSpecIov1Alpha3HTTPRouteGroups", varargs...)
+	m.ctrl.Call(m, "AddSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups", varargs...)
 }
 
-// AddSpecsSmiSpecIov1Alpha3HTTPRouteGroups indicates an expected call of AddSpecsSmiSpecIov1Alpha3HTTPRouteGroups
-func (mr *MockBuilderMockRecorder) AddSpecsSmiSpecIov1Alpha3HTTPRouteGroups(specsSmiSpecIov1Alpha3HTTPRouteGroups ...interface{}) *gomock.Call {
+// AddSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups indicates an expected call of AddSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups
+func (mr *MockBuilderMockRecorder) AddSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups(specsSmiSpecIoV1Alpha3HTTPRouteGroups ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSpecsSmiSpecIov1Alpha3HTTPRouteGroups", reflect.TypeOf((*MockBuilder)(nil).AddSpecsSmiSpecIov1Alpha3HTTPRouteGroups), specsSmiSpecIov1Alpha3HTTPRouteGroups...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups", reflect.TypeOf((*MockBuilder)(nil).AddSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups), specsSmiSpecIoV1Alpha3HTTPRouteGroups...)
 }
 
-// GetSpecsSmiSpecIov1Alpha3HTTPRouteGroups mocks base method
-func (m *MockBuilder) GetSpecsSmiSpecIov1Alpha3HTTPRouteGroups() v1alpha3sets.HTTPRouteGroupSet {
+// GetSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups mocks base method
+func (m *MockBuilder) GetSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups() v1alpha3sets.HTTPRouteGroupSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSpecsSmiSpecIov1Alpha3HTTPRouteGroups")
+	ret := m.ctrl.Call(m, "GetSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups")
 	ret0, _ := ret[0].(v1alpha3sets.HTTPRouteGroupSet)
 	return ret0
 }
 
-// GetSpecsSmiSpecIov1Alpha3HTTPRouteGroups indicates an expected call of GetSpecsSmiSpecIov1Alpha3HTTPRouteGroups
-func (mr *MockBuilderMockRecorder) GetSpecsSmiSpecIov1Alpha3HTTPRouteGroups() *gomock.Call {
+// GetSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups indicates an expected call of GetSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups
+func (mr *MockBuilderMockRecorder) GetSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSpecsSmiSpecIov1Alpha3HTTPRouteGroups", reflect.TypeOf((*MockBuilder)(nil).GetSpecsSmiSpecIov1Alpha3HTTPRouteGroups))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups", reflect.TypeOf((*MockBuilder)(nil).GetSpecsSmiSpecIo_V1Alpha3_HTTPRouteGroups))
 }
 
 // BuildLabelPartitionedSnapshot mocks base method

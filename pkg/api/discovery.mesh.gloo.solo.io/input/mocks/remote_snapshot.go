@@ -38,144 +38,144 @@ func (m *MockDiscoveryInputSnapshot) EXPECT() *MockDiscoveryInputSnapshotMockRec
 	return m.recorder
 }
 
-// AppmeshK8SAwsv1Beta2Meshes mocks base method
-func (m *MockDiscoveryInputSnapshot) AppmeshK8SAwsv1Beta2Meshes() v1beta2sets.MeshSet {
+// AppmeshK8SAws_V1Beta2_Meshes mocks base method
+func (m *MockDiscoveryInputSnapshot) AppmeshK8SAws_V1Beta2_Meshes() v1beta2sets.MeshSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AppmeshK8SAwsv1Beta2Meshes")
+	ret := m.ctrl.Call(m, "AppmeshK8SAws_V1Beta2_Meshes")
 	ret0, _ := ret[0].(v1beta2sets.MeshSet)
 	return ret0
 }
 
-// AppmeshK8SAwsv1Beta2Meshes indicates an expected call of AppmeshK8SAwsv1Beta2Meshes
-func (mr *MockDiscoveryInputSnapshotMockRecorder) AppmeshK8SAwsv1Beta2Meshes() *gomock.Call {
+// AppmeshK8SAws_V1Beta2_Meshes indicates an expected call of AppmeshK8SAws_V1Beta2_Meshes
+func (mr *MockDiscoveryInputSnapshotMockRecorder) AppmeshK8SAws_V1Beta2_Meshes() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppmeshK8SAwsv1Beta2Meshes", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).AppmeshK8SAwsv1Beta2Meshes))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppmeshK8SAws_V1Beta2_Meshes", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).AppmeshK8SAws_V1Beta2_Meshes))
 }
 
-// V1ConfigMaps mocks base method
-func (m *MockDiscoveryInputSnapshot) V1ConfigMaps() v1sets0.ConfigMapSet {
+// V1_ConfigMaps mocks base method
+func (m *MockDiscoveryInputSnapshot) V1_ConfigMaps() v1sets0.ConfigMapSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "V1ConfigMaps")
+	ret := m.ctrl.Call(m, "V1_ConfigMaps")
 	ret0, _ := ret[0].(v1sets0.ConfigMapSet)
 	return ret0
 }
 
-// V1ConfigMaps indicates an expected call of V1ConfigMaps
-func (mr *MockDiscoveryInputSnapshotMockRecorder) V1ConfigMaps() *gomock.Call {
+// V1_ConfigMaps indicates an expected call of V1_ConfigMaps
+func (mr *MockDiscoveryInputSnapshotMockRecorder) V1_ConfigMaps() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1ConfigMaps", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).V1ConfigMaps))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1_ConfigMaps", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).V1_ConfigMaps))
 }
 
-// V1Services mocks base method
-func (m *MockDiscoveryInputSnapshot) V1Services() v1sets0.ServiceSet {
+// V1_Services mocks base method
+func (m *MockDiscoveryInputSnapshot) V1_Services() v1sets0.ServiceSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "V1Services")
+	ret := m.ctrl.Call(m, "V1_Services")
 	ret0, _ := ret[0].(v1sets0.ServiceSet)
 	return ret0
 }
 
-// V1Services indicates an expected call of V1Services
-func (mr *MockDiscoveryInputSnapshotMockRecorder) V1Services() *gomock.Call {
+// V1_Services indicates an expected call of V1_Services
+func (mr *MockDiscoveryInputSnapshotMockRecorder) V1_Services() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1Services", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).V1Services))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1_Services", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).V1_Services))
 }
 
-// V1Pods mocks base method
-func (m *MockDiscoveryInputSnapshot) V1Pods() v1sets0.PodSet {
+// V1_Pods mocks base method
+func (m *MockDiscoveryInputSnapshot) V1_Pods() v1sets0.PodSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "V1Pods")
+	ret := m.ctrl.Call(m, "V1_Pods")
 	ret0, _ := ret[0].(v1sets0.PodSet)
 	return ret0
 }
 
-// V1Pods indicates an expected call of V1Pods
-func (mr *MockDiscoveryInputSnapshotMockRecorder) V1Pods() *gomock.Call {
+// V1_Pods indicates an expected call of V1_Pods
+func (mr *MockDiscoveryInputSnapshotMockRecorder) V1_Pods() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1Pods", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).V1Pods))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1_Pods", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).V1_Pods))
 }
 
-// V1Endpoints mocks base method
-func (m *MockDiscoveryInputSnapshot) V1Endpoints() v1sets0.EndpointsSet {
+// V1_Endpoints mocks base method
+func (m *MockDiscoveryInputSnapshot) V1_Endpoints() v1sets0.EndpointsSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "V1Endpoints")
+	ret := m.ctrl.Call(m, "V1_Endpoints")
 	ret0, _ := ret[0].(v1sets0.EndpointsSet)
 	return ret0
 }
 
-// V1Endpoints indicates an expected call of V1Endpoints
-func (mr *MockDiscoveryInputSnapshotMockRecorder) V1Endpoints() *gomock.Call {
+// V1_Endpoints indicates an expected call of V1_Endpoints
+func (mr *MockDiscoveryInputSnapshotMockRecorder) V1_Endpoints() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1Endpoints", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).V1Endpoints))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1_Endpoints", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).V1_Endpoints))
 }
 
-// V1Nodes mocks base method
-func (m *MockDiscoveryInputSnapshot) V1Nodes() v1sets0.NodeSet {
+// V1_Nodes mocks base method
+func (m *MockDiscoveryInputSnapshot) V1_Nodes() v1sets0.NodeSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "V1Nodes")
+	ret := m.ctrl.Call(m, "V1_Nodes")
 	ret0, _ := ret[0].(v1sets0.NodeSet)
 	return ret0
 }
 
-// V1Nodes indicates an expected call of V1Nodes
-func (mr *MockDiscoveryInputSnapshotMockRecorder) V1Nodes() *gomock.Call {
+// V1_Nodes indicates an expected call of V1_Nodes
+func (mr *MockDiscoveryInputSnapshotMockRecorder) V1_Nodes() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1Nodes", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).V1Nodes))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1_Nodes", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).V1_Nodes))
 }
 
-// Appsv1Deployments mocks base method
-func (m *MockDiscoveryInputSnapshot) Appsv1Deployments() v1sets.DeploymentSet {
+// Apps_V1_Deployments mocks base method
+func (m *MockDiscoveryInputSnapshot) Apps_V1_Deployments() v1sets.DeploymentSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Appsv1Deployments")
+	ret := m.ctrl.Call(m, "Apps_V1_Deployments")
 	ret0, _ := ret[0].(v1sets.DeploymentSet)
 	return ret0
 }
 
-// Appsv1Deployments indicates an expected call of Appsv1Deployments
-func (mr *MockDiscoveryInputSnapshotMockRecorder) Appsv1Deployments() *gomock.Call {
+// Apps_V1_Deployments indicates an expected call of Apps_V1_Deployments
+func (mr *MockDiscoveryInputSnapshotMockRecorder) Apps_V1_Deployments() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Appsv1Deployments", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Appsv1Deployments))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apps_V1_Deployments", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Apps_V1_Deployments))
 }
 
-// Appsv1ReplicaSets mocks base method
-func (m *MockDiscoveryInputSnapshot) Appsv1ReplicaSets() v1sets.ReplicaSetSet {
+// Apps_V1_ReplicaSets mocks base method
+func (m *MockDiscoveryInputSnapshot) Apps_V1_ReplicaSets() v1sets.ReplicaSetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Appsv1ReplicaSets")
+	ret := m.ctrl.Call(m, "Apps_V1_ReplicaSets")
 	ret0, _ := ret[0].(v1sets.ReplicaSetSet)
 	return ret0
 }
 
-// Appsv1ReplicaSets indicates an expected call of Appsv1ReplicaSets
-func (mr *MockDiscoveryInputSnapshotMockRecorder) Appsv1ReplicaSets() *gomock.Call {
+// Apps_V1_ReplicaSets indicates an expected call of Apps_V1_ReplicaSets
+func (mr *MockDiscoveryInputSnapshotMockRecorder) Apps_V1_ReplicaSets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Appsv1ReplicaSets", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Appsv1ReplicaSets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apps_V1_ReplicaSets", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Apps_V1_ReplicaSets))
 }
 
-// Appsv1DaemonSets mocks base method
-func (m *MockDiscoveryInputSnapshot) Appsv1DaemonSets() v1sets.DaemonSetSet {
+// Apps_V1_DaemonSets mocks base method
+func (m *MockDiscoveryInputSnapshot) Apps_V1_DaemonSets() v1sets.DaemonSetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Appsv1DaemonSets")
+	ret := m.ctrl.Call(m, "Apps_V1_DaemonSets")
 	ret0, _ := ret[0].(v1sets.DaemonSetSet)
 	return ret0
 }
 
-// Appsv1DaemonSets indicates an expected call of Appsv1DaemonSets
-func (mr *MockDiscoveryInputSnapshotMockRecorder) Appsv1DaemonSets() *gomock.Call {
+// Apps_V1_DaemonSets indicates an expected call of Apps_V1_DaemonSets
+func (mr *MockDiscoveryInputSnapshotMockRecorder) Apps_V1_DaemonSets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Appsv1DaemonSets", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Appsv1DaemonSets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apps_V1_DaemonSets", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Apps_V1_DaemonSets))
 }
 
-// Appsv1StatefulSets mocks base method
-func (m *MockDiscoveryInputSnapshot) Appsv1StatefulSets() v1sets.StatefulSetSet {
+// Apps_V1_StatefulSets mocks base method
+func (m *MockDiscoveryInputSnapshot) Apps_V1_StatefulSets() v1sets.StatefulSetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Appsv1StatefulSets")
+	ret := m.ctrl.Call(m, "Apps_V1_StatefulSets")
 	ret0, _ := ret[0].(v1sets.StatefulSetSet)
 	return ret0
 }
 
-// Appsv1StatefulSets indicates an expected call of Appsv1StatefulSets
-func (mr *MockDiscoveryInputSnapshotMockRecorder) Appsv1StatefulSets() *gomock.Call {
+// Apps_V1_StatefulSets indicates an expected call of Apps_V1_StatefulSets
+func (mr *MockDiscoveryInputSnapshotMockRecorder) Apps_V1_StatefulSets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Appsv1StatefulSets", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Appsv1StatefulSets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apps_V1_StatefulSets", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Apps_V1_StatefulSets))
 }
 
 // MarshalJSON mocks base method

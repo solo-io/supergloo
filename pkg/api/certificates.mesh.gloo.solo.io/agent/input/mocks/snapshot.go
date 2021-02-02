@@ -39,74 +39,74 @@ func (m *MockSnapshot) EXPECT() *MockSnapshotMockRecorder {
 	return m.recorder
 }
 
-// CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates mocks base method
-func (m *MockSnapshot) CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates() v1alpha2sets.IssuedCertificateSet {
+// CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates mocks base method
+func (m *MockSnapshot) CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates() v1alpha2sets.IssuedCertificateSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates")
+	ret := m.ctrl.Call(m, "CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates")
 	ret0, _ := ret[0].(v1alpha2sets.IssuedCertificateSet)
 	return ret0
 }
 
-// CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates indicates an expected call of CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates
-func (mr *MockSnapshotMockRecorder) CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates() *gomock.Call {
+// CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates indicates an expected call of CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates
+func (mr *MockSnapshotMockRecorder) CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates", reflect.TypeOf((*MockSnapshot)(nil).CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates", reflect.TypeOf((*MockSnapshot)(nil).CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates))
 }
 
-// CertificatesMeshGlooSoloIov1Alpha2CertificateRequests mocks base method
-func (m *MockSnapshot) CertificatesMeshGlooSoloIov1Alpha2CertificateRequests() v1alpha2sets.CertificateRequestSet {
+// CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests mocks base method
+func (m *MockSnapshot) CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests() v1alpha2sets.CertificateRequestSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CertificatesMeshGlooSoloIov1Alpha2CertificateRequests")
+	ret := m.ctrl.Call(m, "CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests")
 	ret0, _ := ret[0].(v1alpha2sets.CertificateRequestSet)
 	return ret0
 }
 
-// CertificatesMeshGlooSoloIov1Alpha2CertificateRequests indicates an expected call of CertificatesMeshGlooSoloIov1Alpha2CertificateRequests
-func (mr *MockSnapshotMockRecorder) CertificatesMeshGlooSoloIov1Alpha2CertificateRequests() *gomock.Call {
+// CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests indicates an expected call of CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests
+func (mr *MockSnapshotMockRecorder) CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificatesMeshGlooSoloIov1Alpha2CertificateRequests", reflect.TypeOf((*MockSnapshot)(nil).CertificatesMeshGlooSoloIov1Alpha2CertificateRequests))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests", reflect.TypeOf((*MockSnapshot)(nil).CertificatesMeshGlooSoloIo_V1Alpha2_CertificateRequests))
 }
 
-// CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives mocks base method
-func (m *MockSnapshot) CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives() v1alpha2sets.PodBounceDirectiveSet {
+// CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives mocks base method
+func (m *MockSnapshot) CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives() v1alpha2sets.PodBounceDirectiveSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives")
+	ret := m.ctrl.Call(m, "CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives")
 	ret0, _ := ret[0].(v1alpha2sets.PodBounceDirectiveSet)
 	return ret0
 }
 
-// CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives indicates an expected call of CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives
-func (mr *MockSnapshotMockRecorder) CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives() *gomock.Call {
+// CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives indicates an expected call of CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives
+func (mr *MockSnapshotMockRecorder) CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives", reflect.TypeOf((*MockSnapshot)(nil).CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives", reflect.TypeOf((*MockSnapshot)(nil).CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives))
 }
 
-// V1Secrets mocks base method
-func (m *MockSnapshot) V1Secrets() v1sets.SecretSet {
+// V1_Secrets mocks base method
+func (m *MockSnapshot) V1_Secrets() v1sets.SecretSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "V1Secrets")
+	ret := m.ctrl.Call(m, "V1_Secrets")
 	ret0, _ := ret[0].(v1sets.SecretSet)
 	return ret0
 }
 
-// V1Secrets indicates an expected call of V1Secrets
-func (mr *MockSnapshotMockRecorder) V1Secrets() *gomock.Call {
+// V1_Secrets indicates an expected call of V1_Secrets
+func (mr *MockSnapshotMockRecorder) V1_Secrets() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1Secrets", reflect.TypeOf((*MockSnapshot)(nil).V1Secrets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1_Secrets", reflect.TypeOf((*MockSnapshot)(nil).V1_Secrets))
 }
 
-// V1Pods mocks base method
-func (m *MockSnapshot) V1Pods() v1sets.PodSet {
+// V1_Pods mocks base method
+func (m *MockSnapshot) V1_Pods() v1sets.PodSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "V1Pods")
+	ret := m.ctrl.Call(m, "V1_Pods")
 	ret0, _ := ret[0].(v1sets.PodSet)
 	return ret0
 }
 
-// V1Pods indicates an expected call of V1Pods
-func (mr *MockSnapshotMockRecorder) V1Pods() *gomock.Call {
+// V1_Pods indicates an expected call of V1_Pods
+func (mr *MockSnapshotMockRecorder) V1_Pods() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1Pods", reflect.TypeOf((*MockSnapshot)(nil).V1Pods))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1_Pods", reflect.TypeOf((*MockSnapshot)(nil).V1_Pods))
 }
 
 // SyncStatusesMultiCluster mocks base method

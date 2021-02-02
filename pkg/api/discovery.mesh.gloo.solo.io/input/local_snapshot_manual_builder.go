@@ -16,18 +16,18 @@ import (
 type InputSettingsSnapshotManualBuilder struct {
 	name string
 
-	settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+	settingsMeshGlooSoloIoV1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 
-	networkingMeshGlooSoloIov1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
+	networkingMeshGlooSoloIoV1Alpha2VirtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 }
 
 func NewInputSettingsSnapshotManualBuilder(name string) *InputSettingsSnapshotManualBuilder {
 	return &InputSettingsSnapshotManualBuilder{
 		name: name,
 
-		settingsMeshGlooSoloIov1Alpha2Settings: settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet(),
+		settingsMeshGlooSoloIoV1Alpha2Settings: settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet(),
 
-		networkingMeshGlooSoloIov1Alpha2VirtualMeshes: networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet(),
+		networkingMeshGlooSoloIoV1Alpha2VirtualMeshes: networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet(),
 	}
 }
 
@@ -35,16 +35,16 @@ func (i *InputSettingsSnapshotManualBuilder) Build() SettingsSnapshot {
 	return NewSettingsSnapshot(
 		i.name,
 
-		i.settingsMeshGlooSoloIov1Alpha2Settings,
+		i.settingsMeshGlooSoloIoV1Alpha2Settings,
 
-		i.networkingMeshGlooSoloIov1Alpha2VirtualMeshes,
+		i.networkingMeshGlooSoloIoV1Alpha2VirtualMeshes,
 	)
 }
-func (i *InputSettingsSnapshotManualBuilder) AddSettingsMeshGlooSoloIov1Alpha2Settings(settingsMeshGlooSoloIov1Alpha2Settings []*settings_mesh_gloo_solo_io_v1alpha2.Settings) *InputSettingsSnapshotManualBuilder {
-	i.settingsMeshGlooSoloIov1Alpha2Settings.Insert(settingsMeshGlooSoloIov1Alpha2Settings...)
+func (i *InputSettingsSnapshotManualBuilder) AddSettingsMeshGlooSoloIo_V1Alpha2_Settings(settingsMeshGlooSoloIoV1Alpha2Settings []*settings_mesh_gloo_solo_io_v1alpha2.Settings) *InputSettingsSnapshotManualBuilder {
+	i.settingsMeshGlooSoloIoV1Alpha2Settings.Insert(settingsMeshGlooSoloIoV1Alpha2Settings...)
 	return i
 }
-func (i *InputSettingsSnapshotManualBuilder) AddNetworkingMeshGlooSoloIov1Alpha2VirtualMeshes(networkingMeshGlooSoloIov1Alpha2VirtualMeshes []*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh) *InputSettingsSnapshotManualBuilder {
-	i.networkingMeshGlooSoloIov1Alpha2VirtualMeshes.Insert(networkingMeshGlooSoloIov1Alpha2VirtualMeshes...)
+func (i *InputSettingsSnapshotManualBuilder) AddNetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes(networkingMeshGlooSoloIoV1Alpha2VirtualMeshes []*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh) *InputSettingsSnapshotManualBuilder {
+	i.networkingMeshGlooSoloIoV1Alpha2VirtualMeshes.Insert(networkingMeshGlooSoloIoV1Alpha2VirtualMeshes...)
 	return i
 }

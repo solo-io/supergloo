@@ -27,19 +27,19 @@ import (
 
 // The Input Reconciler calls a simple func(id) error whenever a
 // storage event is received for any of:
-// * AppmeshK8SAwsv1Beta2Meshes
-// * V1ConfigMaps
-// * V1Services
-// * V1Pods
-// * V1Endpoints
-// * V1Nodes
-// * Appsv1Deployments
-// * Appsv1ReplicaSets
-// * Appsv1DaemonSets
-// * Appsv1StatefulSets
+// * AppmeshK8SAws_V1Beta2_Meshes
+// * V1_ConfigMaps
+// * V1_Services
+// * V1_Pods
+// * V1_Endpoints
+// * V1_Nodes
+// * Apps_V1_Deployments
+// * Apps_V1_ReplicaSets
+// * Apps_V1_DaemonSets
+// * Apps_V1_StatefulSets
 // from a remote cluster.
-// * SettingsMeshGlooSoloIov1Alpha2Settings
-// * NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
+// * SettingsMeshGlooSoloIo_V1Alpha2_Settings
+// * NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes
 // from the local cluster.
 
 type ReconcileOptions struct {
@@ -71,36 +71,36 @@ func RegisterInputReconciler(
 
 	// initialize reconcile loops
 
-	// initialize AppmeshK8SAwsv1Beta2Meshes reconcile loop for remote clusters
-	appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterMeshReconcileLoop("Mesh", clusters, options.Remote.AppmeshK8SAwsv1Beta2Meshes).AddMulticlusterMeshReconciler(ctx, &remoteAppmeshK8SAwsInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize AppmeshK8SAws_V1Beta2_Meshes reconcile loop for remote clusters
+	appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterMeshReconcileLoop("Mesh", clusters, options.Remote.AppmeshK8SAws_V1Beta2_Meshes).AddMulticlusterMeshReconciler(ctx, &remoteAppmeshK8SAwsInputReconciler{base: base}, options.Remote.Predicates...)
 
-	// initialize V1ConfigMaps reconcile loop for remote clusters
-	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters, options.Remote.V1ConfigMaps).AddMulticlusterConfigMapReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
-	// initialize V1Services reconcile loop for remote clusters
-	v1_controllers.NewMulticlusterServiceReconcileLoop("Service", clusters, options.Remote.V1Services).AddMulticlusterServiceReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
-	// initialize V1Pods reconcile loop for remote clusters
-	v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters, options.Remote.V1Pods).AddMulticlusterPodReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
-	// initialize V1Endpoints reconcile loop for remote clusters
-	v1_controllers.NewMulticlusterEndpointsReconcileLoop("Endpoints", clusters, options.Remote.V1Endpoints).AddMulticlusterEndpointsReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
-	// initialize V1Nodes reconcile loop for remote clusters
-	v1_controllers.NewMulticlusterNodeReconcileLoop("Node", clusters, options.Remote.V1Nodes).AddMulticlusterNodeReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize V1_ConfigMaps reconcile loop for remote clusters
+	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters, options.Remote.V1_ConfigMaps).AddMulticlusterConfigMapReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize V1_Services reconcile loop for remote clusters
+	v1_controllers.NewMulticlusterServiceReconcileLoop("Service", clusters, options.Remote.V1_Services).AddMulticlusterServiceReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize V1_Pods reconcile loop for remote clusters
+	v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters, options.Remote.V1_Pods).AddMulticlusterPodReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize V1_Endpoints reconcile loop for remote clusters
+	v1_controllers.NewMulticlusterEndpointsReconcileLoop("Endpoints", clusters, options.Remote.V1_Endpoints).AddMulticlusterEndpointsReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize V1_Nodes reconcile loop for remote clusters
+	v1_controllers.NewMulticlusterNodeReconcileLoop("Node", clusters, options.Remote.V1_Nodes).AddMulticlusterNodeReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
 
-	// initialize Appsv1Deployments reconcile loop for remote clusters
-	apps_v1_controllers.NewMulticlusterDeploymentReconcileLoop("Deployment", clusters, options.Remote.Appsv1Deployments).AddMulticlusterDeploymentReconciler(ctx, &remoteAppsInputReconciler{base: base}, options.Remote.Predicates...)
-	// initialize Appsv1ReplicaSets reconcile loop for remote clusters
-	apps_v1_controllers.NewMulticlusterReplicaSetReconcileLoop("ReplicaSet", clusters, options.Remote.Appsv1ReplicaSets).AddMulticlusterReplicaSetReconciler(ctx, &remoteAppsInputReconciler{base: base}, options.Remote.Predicates...)
-	// initialize Appsv1DaemonSets reconcile loop for remote clusters
-	apps_v1_controllers.NewMulticlusterDaemonSetReconcileLoop("DaemonSet", clusters, options.Remote.Appsv1DaemonSets).AddMulticlusterDaemonSetReconciler(ctx, &remoteAppsInputReconciler{base: base}, options.Remote.Predicates...)
-	// initialize Appsv1StatefulSets reconcile loop for remote clusters
-	apps_v1_controllers.NewMulticlusterStatefulSetReconcileLoop("StatefulSet", clusters, options.Remote.Appsv1StatefulSets).AddMulticlusterStatefulSetReconciler(ctx, &remoteAppsInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize Apps_V1_Deployments reconcile loop for remote clusters
+	apps_v1_controllers.NewMulticlusterDeploymentReconcileLoop("Deployment", clusters, options.Remote.Apps_V1_Deployments).AddMulticlusterDeploymentReconciler(ctx, &remoteAppsInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize Apps_V1_ReplicaSets reconcile loop for remote clusters
+	apps_v1_controllers.NewMulticlusterReplicaSetReconcileLoop("ReplicaSet", clusters, options.Remote.Apps_V1_ReplicaSets).AddMulticlusterReplicaSetReconciler(ctx, &remoteAppsInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize Apps_V1_DaemonSets reconcile loop for remote clusters
+	apps_v1_controllers.NewMulticlusterDaemonSetReconcileLoop("DaemonSet", clusters, options.Remote.Apps_V1_DaemonSets).AddMulticlusterDaemonSetReconciler(ctx, &remoteAppsInputReconciler{base: base}, options.Remote.Predicates...)
+	// initialize Apps_V1_StatefulSets reconcile loop for remote clusters
+	apps_v1_controllers.NewMulticlusterStatefulSetReconcileLoop("StatefulSet", clusters, options.Remote.Apps_V1_StatefulSets).AddMulticlusterStatefulSetReconciler(ctx, &remoteAppsInputReconciler{base: base}, options.Remote.Predicates...)
 
-	// initialize SettingsMeshGlooSoloIov1Alpha2Settings reconcile loop for local cluster
-	if err := settings_mesh_gloo_solo_io_v1alpha2_controllers.NewSettingsReconcileLoop("Settings", mgr, options.Local.SettingsMeshGlooSoloIov1Alpha2Settings).RunSettingsReconciler(ctx, &localSettingsMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	// initialize SettingsMeshGlooSoloIo_V1Alpha2_Settings reconcile loop for local cluster
+	if err := settings_mesh_gloo_solo_io_v1alpha2_controllers.NewSettingsReconcileLoop("Settings", mgr, options.Local.SettingsMeshGlooSoloIo_V1Alpha2_Settings).RunSettingsReconciler(ctx, &localSettingsMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
-	// initialize NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes reconcile loop for local cluster
-	if err := networking_mesh_gloo_solo_io_v1alpha2_controllers.NewVirtualMeshReconcileLoop("VirtualMesh", mgr, options.Local.NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes).RunVirtualMeshReconciler(ctx, &localNetworkingMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	// initialize NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes reconcile loop for local cluster
+	if err := networking_mesh_gloo_solo_io_v1alpha2_controllers.NewVirtualMeshReconcileLoop("VirtualMesh", mgr, options.Local.NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes).RunVirtualMeshReconciler(ctx, &localNetworkingMeshGlooSoloIoInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
@@ -110,28 +110,28 @@ func RegisterInputReconciler(
 // Options for reconciling a snapshot in remote clusters
 type RemoteReconcileOptions struct {
 
-	// Options for reconciling AppmeshK8SAwsv1Beta2Meshes
-	AppmeshK8SAwsv1Beta2Meshes reconcile.Options
+	// Options for reconciling AppmeshK8SAws_V1Beta2_Meshes
+	AppmeshK8SAws_V1Beta2_Meshes reconcile.Options
 
-	// Options for reconciling V1ConfigMaps
-	V1ConfigMaps reconcile.Options
-	// Options for reconciling V1Services
-	V1Services reconcile.Options
-	// Options for reconciling V1Pods
-	V1Pods reconcile.Options
-	// Options for reconciling V1Endpoints
-	V1Endpoints reconcile.Options
-	// Options for reconciling V1Nodes
-	V1Nodes reconcile.Options
+	// Options for reconciling V1_ConfigMaps
+	V1_ConfigMaps reconcile.Options
+	// Options for reconciling V1_Services
+	V1_Services reconcile.Options
+	// Options for reconciling V1_Pods
+	V1_Pods reconcile.Options
+	// Options for reconciling V1_Endpoints
+	V1_Endpoints reconcile.Options
+	// Options for reconciling V1_Nodes
+	V1_Nodes reconcile.Options
 
-	// Options for reconciling Appsv1Deployments
-	Appsv1Deployments reconcile.Options
-	// Options for reconciling Appsv1ReplicaSets
-	Appsv1ReplicaSets reconcile.Options
-	// Options for reconciling Appsv1DaemonSets
-	Appsv1DaemonSets reconcile.Options
-	// Options for reconciling Appsv1StatefulSets
-	Appsv1StatefulSets reconcile.Options
+	// Options for reconciling Apps_V1_Deployments
+	Apps_V1_Deployments reconcile.Options
+	// Options for reconciling Apps_V1_ReplicaSets
+	Apps_V1_ReplicaSets reconcile.Options
+	// Options for reconciling Apps_V1_DaemonSets
+	Apps_V1_DaemonSets reconcile.Options
+	// Options for reconciling Apps_V1_StatefulSets
+	Apps_V1_StatefulSets reconcile.Options
 
 	// optional predicates for filtering remote events
 	Predicates []predicate.Predicate
@@ -302,11 +302,11 @@ func (r *remoteAppsInputReconciler) ReconcileStatefulSetDeletion(clusterName str
 // Options for reconciling a snapshot in remote clusters
 type LocalReconcileOptions struct {
 
-	// Options for reconciling SettingsMeshGlooSoloIov1Alpha2Settings
-	SettingsMeshGlooSoloIov1Alpha2Settings reconcile.Options
+	// Options for reconciling SettingsMeshGlooSoloIo_V1Alpha2_Settings
+	SettingsMeshGlooSoloIo_V1Alpha2_Settings reconcile.Options
 
-	// Options for reconciling NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes
-	NetworkingMeshGlooSoloIov1Alpha2VirtualMeshes reconcile.Options
+	// Options for reconciling NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes
+	NetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes reconcile.Options
 
 	// optional predicates for filtering local events
 	Predicates []predicate.Predicate

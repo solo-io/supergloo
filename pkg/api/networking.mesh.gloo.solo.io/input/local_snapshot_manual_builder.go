@@ -31,48 +31,48 @@ import (
 type InputLocalSnapshotManualBuilder struct {
 	name string
 
-	settingsMeshGlooSoloIov1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+	settingsMeshGlooSoloIoV1Alpha2Settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 
-	discoveryMeshGlooSoloIov1Alpha2TrafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet
-	discoveryMeshGlooSoloIov1Alpha2Workloads      discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
-	discoveryMeshGlooSoloIov1Alpha2Meshes         discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
+	discoveryMeshGlooSoloIoV1Alpha2TrafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet
+	discoveryMeshGlooSoloIoV1Alpha2Workloads      discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
+	discoveryMeshGlooSoloIoV1Alpha2Meshes         discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
 
-	networkingMeshGlooSoloIov1Alpha2TrafficPolicies  networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet
-	networkingMeshGlooSoloIov1Alpha2AccessPolicies   networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet
-	networkingMeshGlooSoloIov1Alpha2VirtualMeshes    networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
-	networkingMeshGlooSoloIov1Alpha2FailoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
+	networkingMeshGlooSoloIoV1Alpha2TrafficPolicies  networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet
+	networkingMeshGlooSoloIoV1Alpha2AccessPolicies   networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet
+	networkingMeshGlooSoloIoV1Alpha2VirtualMeshes    networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
+	networkingMeshGlooSoloIoV1Alpha2FailoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
 
-	networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
+	networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
 
-	observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet
+	observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet
 
 	v1Secrets v1_sets.SecretSet
 
-	multiclusterSoloIov1Alpha1KubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
+	multiclusterSoloIoV1Alpha1KubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
 }
 
 func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBuilder {
 	return &InputLocalSnapshotManualBuilder{
 		name: name,
 
-		settingsMeshGlooSoloIov1Alpha2Settings: settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet(),
+		settingsMeshGlooSoloIoV1Alpha2Settings: settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet(),
 
-		discoveryMeshGlooSoloIov1Alpha2TrafficTargets: discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet(),
-		discoveryMeshGlooSoloIov1Alpha2Workloads:      discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet(),
-		discoveryMeshGlooSoloIov1Alpha2Meshes:         discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet(),
+		discoveryMeshGlooSoloIoV1Alpha2TrafficTargets: discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet(),
+		discoveryMeshGlooSoloIoV1Alpha2Workloads:      discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet(),
+		discoveryMeshGlooSoloIoV1Alpha2Meshes:         discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet(),
 
-		networkingMeshGlooSoloIov1Alpha2TrafficPolicies:  networking_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficPolicySet(),
-		networkingMeshGlooSoloIov1Alpha2AccessPolicies:   networking_mesh_gloo_solo_io_v1alpha2_sets.NewAccessPolicySet(),
-		networkingMeshGlooSoloIov1Alpha2VirtualMeshes:    networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet(),
-		networkingMeshGlooSoloIov1Alpha2FailoverServices: networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet(),
+		networkingMeshGlooSoloIoV1Alpha2TrafficPolicies:  networking_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficPolicySet(),
+		networkingMeshGlooSoloIoV1Alpha2AccessPolicies:   networking_mesh_gloo_solo_io_v1alpha2_sets.NewAccessPolicySet(),
+		networkingMeshGlooSoloIoV1Alpha2VirtualMeshes:    networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet(),
+		networkingMeshGlooSoloIoV1Alpha2FailoverServices: networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet(),
 
-		networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments: networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet(),
+		networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments: networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet(),
 
-		observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords: observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet(),
+		observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords: observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet(),
 
 		v1Secrets: v1_sets.NewSecretSet(),
 
-		multiclusterSoloIov1Alpha1KubernetesClusters: multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet(),
+		multiclusterSoloIoV1Alpha1KubernetesClusters: multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet(),
 	}
 }
 
@@ -80,71 +80,71 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 	return NewLocalSnapshot(
 		i.name,
 
-		i.settingsMeshGlooSoloIov1Alpha2Settings,
+		i.settingsMeshGlooSoloIoV1Alpha2Settings,
 
-		i.discoveryMeshGlooSoloIov1Alpha2TrafficTargets,
-		i.discoveryMeshGlooSoloIov1Alpha2Workloads,
-		i.discoveryMeshGlooSoloIov1Alpha2Meshes,
+		i.discoveryMeshGlooSoloIoV1Alpha2TrafficTargets,
+		i.discoveryMeshGlooSoloIoV1Alpha2Workloads,
+		i.discoveryMeshGlooSoloIoV1Alpha2Meshes,
 
-		i.networkingMeshGlooSoloIov1Alpha2TrafficPolicies,
-		i.networkingMeshGlooSoloIov1Alpha2AccessPolicies,
-		i.networkingMeshGlooSoloIov1Alpha2VirtualMeshes,
-		i.networkingMeshGlooSoloIov1Alpha2FailoverServices,
+		i.networkingMeshGlooSoloIoV1Alpha2TrafficPolicies,
+		i.networkingMeshGlooSoloIoV1Alpha2AccessPolicies,
+		i.networkingMeshGlooSoloIoV1Alpha2VirtualMeshes,
+		i.networkingMeshGlooSoloIoV1Alpha2FailoverServices,
 
-		i.networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments,
+		i.networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments,
 
-		i.observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords,
+		i.observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords,
 
 		i.v1Secrets,
 
-		i.multiclusterSoloIov1Alpha1KubernetesClusters,
+		i.multiclusterSoloIoV1Alpha1KubernetesClusters,
 	)
 }
-func (i *InputLocalSnapshotManualBuilder) AddSettingsMeshGlooSoloIov1Alpha2Settings(settingsMeshGlooSoloIov1Alpha2Settings []*settings_mesh_gloo_solo_io_v1alpha2.Settings) *InputLocalSnapshotManualBuilder {
-	i.settingsMeshGlooSoloIov1Alpha2Settings.Insert(settingsMeshGlooSoloIov1Alpha2Settings...)
+func (i *InputLocalSnapshotManualBuilder) AddSettingsMeshGlooSoloIo_V1Alpha2_Settings(settingsMeshGlooSoloIoV1Alpha2Settings []*settings_mesh_gloo_solo_io_v1alpha2.Settings) *InputLocalSnapshotManualBuilder {
+	i.settingsMeshGlooSoloIoV1Alpha2Settings.Insert(settingsMeshGlooSoloIoV1Alpha2Settings...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddDiscoveryMeshGlooSoloIov1Alpha2TrafficTargets(discoveryMeshGlooSoloIov1Alpha2TrafficTargets []*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) *InputLocalSnapshotManualBuilder {
-	i.discoveryMeshGlooSoloIov1Alpha2TrafficTargets.Insert(discoveryMeshGlooSoloIov1Alpha2TrafficTargets...)
+func (i *InputLocalSnapshotManualBuilder) AddDiscoveryMeshGlooSoloIo_V1Alpha2_TrafficTargets(discoveryMeshGlooSoloIoV1Alpha2TrafficTargets []*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) *InputLocalSnapshotManualBuilder {
+	i.discoveryMeshGlooSoloIoV1Alpha2TrafficTargets.Insert(discoveryMeshGlooSoloIoV1Alpha2TrafficTargets...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddDiscoveryMeshGlooSoloIov1Alpha2Workloads(discoveryMeshGlooSoloIov1Alpha2Workloads []*discovery_mesh_gloo_solo_io_v1alpha2.Workload) *InputLocalSnapshotManualBuilder {
-	i.discoveryMeshGlooSoloIov1Alpha2Workloads.Insert(discoveryMeshGlooSoloIov1Alpha2Workloads...)
+func (i *InputLocalSnapshotManualBuilder) AddDiscoveryMeshGlooSoloIo_V1Alpha2_Workloads(discoveryMeshGlooSoloIoV1Alpha2Workloads []*discovery_mesh_gloo_solo_io_v1alpha2.Workload) *InputLocalSnapshotManualBuilder {
+	i.discoveryMeshGlooSoloIoV1Alpha2Workloads.Insert(discoveryMeshGlooSoloIoV1Alpha2Workloads...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddDiscoveryMeshGlooSoloIov1Alpha2Meshes(discoveryMeshGlooSoloIov1Alpha2Meshes []*discovery_mesh_gloo_solo_io_v1alpha2.Mesh) *InputLocalSnapshotManualBuilder {
-	i.discoveryMeshGlooSoloIov1Alpha2Meshes.Insert(discoveryMeshGlooSoloIov1Alpha2Meshes...)
+func (i *InputLocalSnapshotManualBuilder) AddDiscoveryMeshGlooSoloIo_V1Alpha2_Meshes(discoveryMeshGlooSoloIoV1Alpha2Meshes []*discovery_mesh_gloo_solo_io_v1alpha2.Mesh) *InputLocalSnapshotManualBuilder {
+	i.discoveryMeshGlooSoloIoV1Alpha2Meshes.Insert(discoveryMeshGlooSoloIoV1Alpha2Meshes...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddNetworkingMeshGlooSoloIov1Alpha2TrafficPolicies(networkingMeshGlooSoloIov1Alpha2TrafficPolicies []*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy) *InputLocalSnapshotManualBuilder {
-	i.networkingMeshGlooSoloIov1Alpha2TrafficPolicies.Insert(networkingMeshGlooSoloIov1Alpha2TrafficPolicies...)
+func (i *InputLocalSnapshotManualBuilder) AddNetworkingMeshGlooSoloIo_V1Alpha2_TrafficPolicies(networkingMeshGlooSoloIoV1Alpha2TrafficPolicies []*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy) *InputLocalSnapshotManualBuilder {
+	i.networkingMeshGlooSoloIoV1Alpha2TrafficPolicies.Insert(networkingMeshGlooSoloIoV1Alpha2TrafficPolicies...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddNetworkingMeshGlooSoloIov1Alpha2AccessPolicies(networkingMeshGlooSoloIov1Alpha2AccessPolicies []*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy) *InputLocalSnapshotManualBuilder {
-	i.networkingMeshGlooSoloIov1Alpha2AccessPolicies.Insert(networkingMeshGlooSoloIov1Alpha2AccessPolicies...)
+func (i *InputLocalSnapshotManualBuilder) AddNetworkingMeshGlooSoloIo_V1Alpha2_AccessPolicies(networkingMeshGlooSoloIoV1Alpha2AccessPolicies []*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy) *InputLocalSnapshotManualBuilder {
+	i.networkingMeshGlooSoloIoV1Alpha2AccessPolicies.Insert(networkingMeshGlooSoloIoV1Alpha2AccessPolicies...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddNetworkingMeshGlooSoloIov1Alpha2VirtualMeshes(networkingMeshGlooSoloIov1Alpha2VirtualMeshes []*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh) *InputLocalSnapshotManualBuilder {
-	i.networkingMeshGlooSoloIov1Alpha2VirtualMeshes.Insert(networkingMeshGlooSoloIov1Alpha2VirtualMeshes...)
+func (i *InputLocalSnapshotManualBuilder) AddNetworkingMeshGlooSoloIo_V1Alpha2_VirtualMeshes(networkingMeshGlooSoloIoV1Alpha2VirtualMeshes []*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh) *InputLocalSnapshotManualBuilder {
+	i.networkingMeshGlooSoloIoV1Alpha2VirtualMeshes.Insert(networkingMeshGlooSoloIoV1Alpha2VirtualMeshes...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddNetworkingMeshGlooSoloIov1Alpha2FailoverServices(networkingMeshGlooSoloIov1Alpha2FailoverServices []*networking_mesh_gloo_solo_io_v1alpha2.FailoverService) *InputLocalSnapshotManualBuilder {
-	i.networkingMeshGlooSoloIov1Alpha2FailoverServices.Insert(networkingMeshGlooSoloIov1Alpha2FailoverServices...)
+func (i *InputLocalSnapshotManualBuilder) AddNetworkingMeshGlooSoloIo_V1Alpha2_FailoverServices(networkingMeshGlooSoloIoV1Alpha2FailoverServices []*networking_mesh_gloo_solo_io_v1alpha2.FailoverService) *InputLocalSnapshotManualBuilder {
+	i.networkingMeshGlooSoloIoV1Alpha2FailoverServices.Insert(networkingMeshGlooSoloIoV1Alpha2FailoverServices...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddNetworkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments(networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment) *InputLocalSnapshotManualBuilder {
-	i.networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments.Insert(networkingEnterpriseMeshGlooSoloIov1Alpha1WasmDeployments...)
+func (i *InputLocalSnapshotManualBuilder) AddNetworkingEnterpriseMeshGlooSoloIo_V1Alpha1_WasmDeployments(networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.WasmDeployment) *InputLocalSnapshotManualBuilder {
+	i.networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments.Insert(networkingEnterpriseMeshGlooSoloIoV1Alpha1WasmDeployments...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddObservabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords(observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) *InputLocalSnapshotManualBuilder {
-	i.observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords.Insert(observabilityEnterpriseMeshGlooSoloIov1Alpha1AccessLogRecords...)
+func (i *InputLocalSnapshotManualBuilder) AddObservabilityEnterpriseMeshGlooSoloIo_V1Alpha1_AccessLogRecords(observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) *InputLocalSnapshotManualBuilder {
+	i.observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords.Insert(observabilityEnterpriseMeshGlooSoloIoV1Alpha1AccessLogRecords...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddV1Secrets(v1Secrets []*v1.Secret) *InputLocalSnapshotManualBuilder {
+func (i *InputLocalSnapshotManualBuilder) AddV1_Secrets(v1Secrets []*v1.Secret) *InputLocalSnapshotManualBuilder {
 	i.v1Secrets.Insert(v1Secrets...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddMulticlusterSoloIov1Alpha1KubernetesClusters(multiclusterSoloIov1Alpha1KubernetesClusters []*multicluster_solo_io_v1alpha1.KubernetesCluster) *InputLocalSnapshotManualBuilder {
-	i.multiclusterSoloIov1Alpha1KubernetesClusters.Insert(multiclusterSoloIov1Alpha1KubernetesClusters...)
+func (i *InputLocalSnapshotManualBuilder) AddMulticlusterSoloIo_V1Alpha1_KubernetesClusters(multiclusterSoloIoV1Alpha1KubernetesClusters []*multicluster_solo_io_v1alpha1.KubernetesCluster) *InputLocalSnapshotManualBuilder {
+	i.multiclusterSoloIoV1Alpha1KubernetesClusters.Insert(multiclusterSoloIoV1Alpha1KubernetesClusters...)
 	return i
 }

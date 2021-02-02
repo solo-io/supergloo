@@ -42,144 +42,144 @@ func (m *MockRemoteSnapshot) EXPECT() *MockRemoteSnapshotMockRecorder {
 	return m.recorder
 }
 
-// CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates mocks base method
-func (m *MockRemoteSnapshot) CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates() v1alpha2sets.IssuedCertificateSet {
+// CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates mocks base method
+func (m *MockRemoteSnapshot) CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates() v1alpha2sets.IssuedCertificateSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates")
+	ret := m.ctrl.Call(m, "CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates")
 	ret0, _ := ret[0].(v1alpha2sets.IssuedCertificateSet)
 	return ret0
 }
 
-// CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates indicates an expected call of CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates
-func (mr *MockRemoteSnapshotMockRecorder) CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates() *gomock.Call {
+// CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates indicates an expected call of CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates
+func (mr *MockRemoteSnapshotMockRecorder) CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates", reflect.TypeOf((*MockRemoteSnapshot)(nil).CertificatesMeshGlooSoloIov1Alpha2IssuedCertificates))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates", reflect.TypeOf((*MockRemoteSnapshot)(nil).CertificatesMeshGlooSoloIo_V1Alpha2_IssuedCertificates))
 }
 
-// CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives mocks base method
-func (m *MockRemoteSnapshot) CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives() v1alpha2sets.PodBounceDirectiveSet {
+// CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives mocks base method
+func (m *MockRemoteSnapshot) CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives() v1alpha2sets.PodBounceDirectiveSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives")
+	ret := m.ctrl.Call(m, "CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives")
 	ret0, _ := ret[0].(v1alpha2sets.PodBounceDirectiveSet)
 	return ret0
 }
 
-// CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives indicates an expected call of CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives
-func (mr *MockRemoteSnapshotMockRecorder) CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives() *gomock.Call {
+// CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives indicates an expected call of CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives
+func (mr *MockRemoteSnapshotMockRecorder) CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives", reflect.TypeOf((*MockRemoteSnapshot)(nil).CertificatesMeshGlooSoloIov1Alpha2PodBounceDirectives))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives", reflect.TypeOf((*MockRemoteSnapshot)(nil).CertificatesMeshGlooSoloIo_V1Alpha2_PodBounceDirectives))
 }
 
-// XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs mocks base method
-func (m *MockRemoteSnapshot) XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs() v1alpha1sets.XdsConfigSet {
+// XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs mocks base method
+func (m *MockRemoteSnapshot) XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs() v1alpha1sets.XdsConfigSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs")
+	ret := m.ctrl.Call(m, "XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs")
 	ret0, _ := ret[0].(v1alpha1sets.XdsConfigSet)
 	return ret0
 }
 
-// XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs indicates an expected call of XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs
-func (mr *MockRemoteSnapshotMockRecorder) XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs() *gomock.Call {
+// XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs indicates an expected call of XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs
+func (mr *MockRemoteSnapshotMockRecorder) XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs", reflect.TypeOf((*MockRemoteSnapshot)(nil).XdsAgentEnterpriseMeshGlooSoloIov1Alpha1XdsConfigs))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs", reflect.TypeOf((*MockRemoteSnapshot)(nil).XdsAgentEnterpriseMeshGlooSoloIo_V1Alpha1_XdsConfigs))
 }
 
-// NetworkingIstioIov1Alpha3DestinationRules mocks base method
-func (m *MockRemoteSnapshot) NetworkingIstioIov1Alpha3DestinationRules() v1alpha3sets.DestinationRuleSet {
+// NetworkingIstioIo_V1Alpha3_DestinationRules mocks base method
+func (m *MockRemoteSnapshot) NetworkingIstioIo_V1Alpha3_DestinationRules() v1alpha3sets.DestinationRuleSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NetworkingIstioIov1Alpha3DestinationRules")
+	ret := m.ctrl.Call(m, "NetworkingIstioIo_V1Alpha3_DestinationRules")
 	ret0, _ := ret[0].(v1alpha3sets.DestinationRuleSet)
 	return ret0
 }
 
-// NetworkingIstioIov1Alpha3DestinationRules indicates an expected call of NetworkingIstioIov1Alpha3DestinationRules
-func (mr *MockRemoteSnapshotMockRecorder) NetworkingIstioIov1Alpha3DestinationRules() *gomock.Call {
+// NetworkingIstioIo_V1Alpha3_DestinationRules indicates an expected call of NetworkingIstioIo_V1Alpha3_DestinationRules
+func (mr *MockRemoteSnapshotMockRecorder) NetworkingIstioIo_V1Alpha3_DestinationRules() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingIstioIov1Alpha3DestinationRules", reflect.TypeOf((*MockRemoteSnapshot)(nil).NetworkingIstioIov1Alpha3DestinationRules))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingIstioIo_V1Alpha3_DestinationRules", reflect.TypeOf((*MockRemoteSnapshot)(nil).NetworkingIstioIo_V1Alpha3_DestinationRules))
 }
 
-// NetworkingIstioIov1Alpha3EnvoyFilters mocks base method
-func (m *MockRemoteSnapshot) NetworkingIstioIov1Alpha3EnvoyFilters() v1alpha3sets.EnvoyFilterSet {
+// NetworkingIstioIo_V1Alpha3_EnvoyFilters mocks base method
+func (m *MockRemoteSnapshot) NetworkingIstioIo_V1Alpha3_EnvoyFilters() v1alpha3sets.EnvoyFilterSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NetworkingIstioIov1Alpha3EnvoyFilters")
+	ret := m.ctrl.Call(m, "NetworkingIstioIo_V1Alpha3_EnvoyFilters")
 	ret0, _ := ret[0].(v1alpha3sets.EnvoyFilterSet)
 	return ret0
 }
 
-// NetworkingIstioIov1Alpha3EnvoyFilters indicates an expected call of NetworkingIstioIov1Alpha3EnvoyFilters
-func (mr *MockRemoteSnapshotMockRecorder) NetworkingIstioIov1Alpha3EnvoyFilters() *gomock.Call {
+// NetworkingIstioIo_V1Alpha3_EnvoyFilters indicates an expected call of NetworkingIstioIo_V1Alpha3_EnvoyFilters
+func (mr *MockRemoteSnapshotMockRecorder) NetworkingIstioIo_V1Alpha3_EnvoyFilters() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingIstioIov1Alpha3EnvoyFilters", reflect.TypeOf((*MockRemoteSnapshot)(nil).NetworkingIstioIov1Alpha3EnvoyFilters))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingIstioIo_V1Alpha3_EnvoyFilters", reflect.TypeOf((*MockRemoteSnapshot)(nil).NetworkingIstioIo_V1Alpha3_EnvoyFilters))
 }
 
-// NetworkingIstioIov1Alpha3Gateways mocks base method
-func (m *MockRemoteSnapshot) NetworkingIstioIov1Alpha3Gateways() v1alpha3sets.GatewaySet {
+// NetworkingIstioIo_V1Alpha3_Gateways mocks base method
+func (m *MockRemoteSnapshot) NetworkingIstioIo_V1Alpha3_Gateways() v1alpha3sets.GatewaySet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NetworkingIstioIov1Alpha3Gateways")
+	ret := m.ctrl.Call(m, "NetworkingIstioIo_V1Alpha3_Gateways")
 	ret0, _ := ret[0].(v1alpha3sets.GatewaySet)
 	return ret0
 }
 
-// NetworkingIstioIov1Alpha3Gateways indicates an expected call of NetworkingIstioIov1Alpha3Gateways
-func (mr *MockRemoteSnapshotMockRecorder) NetworkingIstioIov1Alpha3Gateways() *gomock.Call {
+// NetworkingIstioIo_V1Alpha3_Gateways indicates an expected call of NetworkingIstioIo_V1Alpha3_Gateways
+func (mr *MockRemoteSnapshotMockRecorder) NetworkingIstioIo_V1Alpha3_Gateways() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingIstioIov1Alpha3Gateways", reflect.TypeOf((*MockRemoteSnapshot)(nil).NetworkingIstioIov1Alpha3Gateways))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingIstioIo_V1Alpha3_Gateways", reflect.TypeOf((*MockRemoteSnapshot)(nil).NetworkingIstioIo_V1Alpha3_Gateways))
 }
 
-// NetworkingIstioIov1Alpha3ServiceEntries mocks base method
-func (m *MockRemoteSnapshot) NetworkingIstioIov1Alpha3ServiceEntries() v1alpha3sets.ServiceEntrySet {
+// NetworkingIstioIo_V1Alpha3_ServiceEntries mocks base method
+func (m *MockRemoteSnapshot) NetworkingIstioIo_V1Alpha3_ServiceEntries() v1alpha3sets.ServiceEntrySet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NetworkingIstioIov1Alpha3ServiceEntries")
+	ret := m.ctrl.Call(m, "NetworkingIstioIo_V1Alpha3_ServiceEntries")
 	ret0, _ := ret[0].(v1alpha3sets.ServiceEntrySet)
 	return ret0
 }
 
-// NetworkingIstioIov1Alpha3ServiceEntries indicates an expected call of NetworkingIstioIov1Alpha3ServiceEntries
-func (mr *MockRemoteSnapshotMockRecorder) NetworkingIstioIov1Alpha3ServiceEntries() *gomock.Call {
+// NetworkingIstioIo_V1Alpha3_ServiceEntries indicates an expected call of NetworkingIstioIo_V1Alpha3_ServiceEntries
+func (mr *MockRemoteSnapshotMockRecorder) NetworkingIstioIo_V1Alpha3_ServiceEntries() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingIstioIov1Alpha3ServiceEntries", reflect.TypeOf((*MockRemoteSnapshot)(nil).NetworkingIstioIov1Alpha3ServiceEntries))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingIstioIo_V1Alpha3_ServiceEntries", reflect.TypeOf((*MockRemoteSnapshot)(nil).NetworkingIstioIo_V1Alpha3_ServiceEntries))
 }
 
-// NetworkingIstioIov1Alpha3VirtualServices mocks base method
-func (m *MockRemoteSnapshot) NetworkingIstioIov1Alpha3VirtualServices() v1alpha3sets.VirtualServiceSet {
+// NetworkingIstioIo_V1Alpha3_VirtualServices mocks base method
+func (m *MockRemoteSnapshot) NetworkingIstioIo_V1Alpha3_VirtualServices() v1alpha3sets.VirtualServiceSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NetworkingIstioIov1Alpha3VirtualServices")
+	ret := m.ctrl.Call(m, "NetworkingIstioIo_V1Alpha3_VirtualServices")
 	ret0, _ := ret[0].(v1alpha3sets.VirtualServiceSet)
 	return ret0
 }
 
-// NetworkingIstioIov1Alpha3VirtualServices indicates an expected call of NetworkingIstioIov1Alpha3VirtualServices
-func (mr *MockRemoteSnapshotMockRecorder) NetworkingIstioIov1Alpha3VirtualServices() *gomock.Call {
+// NetworkingIstioIo_V1Alpha3_VirtualServices indicates an expected call of NetworkingIstioIo_V1Alpha3_VirtualServices
+func (mr *MockRemoteSnapshotMockRecorder) NetworkingIstioIo_V1Alpha3_VirtualServices() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingIstioIov1Alpha3VirtualServices", reflect.TypeOf((*MockRemoteSnapshot)(nil).NetworkingIstioIov1Alpha3VirtualServices))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NetworkingIstioIo_V1Alpha3_VirtualServices", reflect.TypeOf((*MockRemoteSnapshot)(nil).NetworkingIstioIo_V1Alpha3_VirtualServices))
 }
 
-// SecurityIstioIov1Beta1AuthorizationPolicies mocks base method
-func (m *MockRemoteSnapshot) SecurityIstioIov1Beta1AuthorizationPolicies() v1beta1sets.AuthorizationPolicySet {
+// SecurityIstioIo_V1Beta1_AuthorizationPolicies mocks base method
+func (m *MockRemoteSnapshot) SecurityIstioIo_V1Beta1_AuthorizationPolicies() v1beta1sets.AuthorizationPolicySet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SecurityIstioIov1Beta1AuthorizationPolicies")
+	ret := m.ctrl.Call(m, "SecurityIstioIo_V1Beta1_AuthorizationPolicies")
 	ret0, _ := ret[0].(v1beta1sets.AuthorizationPolicySet)
 	return ret0
 }
 
-// SecurityIstioIov1Beta1AuthorizationPolicies indicates an expected call of SecurityIstioIov1Beta1AuthorizationPolicies
-func (mr *MockRemoteSnapshotMockRecorder) SecurityIstioIov1Beta1AuthorizationPolicies() *gomock.Call {
+// SecurityIstioIo_V1Beta1_AuthorizationPolicies indicates an expected call of SecurityIstioIo_V1Beta1_AuthorizationPolicies
+func (mr *MockRemoteSnapshotMockRecorder) SecurityIstioIo_V1Beta1_AuthorizationPolicies() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SecurityIstioIov1Beta1AuthorizationPolicies", reflect.TypeOf((*MockRemoteSnapshot)(nil).SecurityIstioIov1Beta1AuthorizationPolicies))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SecurityIstioIo_V1Beta1_AuthorizationPolicies", reflect.TypeOf((*MockRemoteSnapshot)(nil).SecurityIstioIo_V1Beta1_AuthorizationPolicies))
 }
 
-// V1ConfigMaps mocks base method
-func (m *MockRemoteSnapshot) V1ConfigMaps() v1sets.ConfigMapSet {
+// V1_ConfigMaps mocks base method
+func (m *MockRemoteSnapshot) V1_ConfigMaps() v1sets.ConfigMapSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "V1ConfigMaps")
+	ret := m.ctrl.Call(m, "V1_ConfigMaps")
 	ret0, _ := ret[0].(v1sets.ConfigMapSet)
 	return ret0
 }
 
-// V1ConfigMaps indicates an expected call of V1ConfigMaps
-func (mr *MockRemoteSnapshotMockRecorder) V1ConfigMaps() *gomock.Call {
+// V1_ConfigMaps indicates an expected call of V1_ConfigMaps
+func (mr *MockRemoteSnapshotMockRecorder) V1_ConfigMaps() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1ConfigMaps", reflect.TypeOf((*MockRemoteSnapshot)(nil).V1ConfigMaps))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "V1_ConfigMaps", reflect.TypeOf((*MockRemoteSnapshot)(nil).V1_ConfigMaps))
 }
 
 // SyncStatusesMultiCluster mocks base method

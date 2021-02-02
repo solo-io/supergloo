@@ -34,8 +34,8 @@ var MissingRequiredLabelError = func(labelKey, resourceKind string, obj ezkube.R
 // the snapshot of output resources produced by a translation
 type Snapshot interface {
 
-	// return the set of V1Secrets with a given set of labels
-	V1Secrets() []LabeledV1SecretSet
+	// return the set of V1_Secrets with a given set of labels
+	V1_Secrets() []LabeledV1_SecretSet
 
 	// apply the snapshot to the local cluster, garbage collecting stale resources
 	ApplyLocalCluster(ctx context.Context, clusterClient client.Client, errHandler output.ErrorHandler)
@@ -50,14 +50,14 @@ type Snapshot interface {
 type snapshot struct {
 	name string
 
-	v1Secrets []LabeledV1SecretSet
+	v1Secrets []LabeledV1_SecretSet
 	clusters  []string
 }
 
 func NewSnapshot(
 	name string,
 
-	v1Secrets []LabeledV1SecretSet,
+	v1Secrets []LabeledV1_SecretSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) Snapshot {
 	return &snapshot{
@@ -78,7 +78,7 @@ func NewLabelPartitionedSnapshot(
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
-	partitionedV1Secrets, err := partitionV1SecretsByLabel(labelKey, v1Secrets)
+	partitionedV1_Secrets, err := partitionV1_SecretsByLabel(labelKey, v1Secrets)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func NewLabelPartitionedSnapshot(
 	return NewSnapshot(
 		name,
 
-		partitionedV1Secrets,
+		partitionedV1_Secrets,
 		clusters...,
 	), nil
 }
@@ -101,7 +101,7 @@ func NewSinglePartitionedSnapshot(
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
-	labeledV1Secret, err := NewLabeledV1SecretSet(v1Secrets, snapshotLabels)
+	labeledV1_Secret, err := NewLabeledV1_SecretSet(v1Secrets, snapshotLabels)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func NewSinglePartitionedSnapshot(
 	return NewSnapshot(
 		name,
 
-		[]LabeledV1SecretSet{labeledV1Secret},
+		[]LabeledV1_SecretSet{labeledV1_Secret},
 		clusters...,
 	), nil
 }
@@ -143,16 +143,16 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 	}.SyncMultiCluster(ctx, multiClusterClient, errHandler)
 }
 
-func partitionV1SecretsByLabel(labelKey string, set v1_sets.SecretSet) ([]LabeledV1SecretSet, error) {
+func partitionV1_SecretsByLabel(labelKey string, set v1_sets.SecretSet) ([]LabeledV1_SecretSet, error) {
 	setsByLabel := map[string]v1_sets.SecretSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
-			return nil, MissingRequiredLabelError(labelKey, "V1Secret", obj)
+			return nil, MissingRequiredLabelError(labelKey, "V1_Secret", obj)
 		}
 		labelValue := obj.Labels[labelKey]
 		if labelValue == "" {
-			return nil, MissingRequiredLabelError(labelKey, "V1Secret", obj)
+			return nil, MissingRequiredLabelError(labelKey, "V1_Secret", obj)
 		}
 
 		setForValue, ok := setsByLabel[labelValue]
@@ -164,30 +164,30 @@ func partitionV1SecretsByLabel(labelKey string, set v1_sets.SecretSet) ([]Labele
 	}
 
 	// partition by label key
-	var partitionedV1Secrets []LabeledV1SecretSet
+	var partitionedV1_Secrets []LabeledV1_SecretSet
 
 	for labelValue, setForValue := range setsByLabel {
 		labels := map[string]string{labelKey: labelValue}
 
-		partitionedSet, err := NewLabeledV1SecretSet(setForValue, labels)
+		partitionedSet, err := NewLabeledV1_SecretSet(setForValue, labels)
 		if err != nil {
 			return nil, err
 		}
 
-		partitionedV1Secrets = append(partitionedV1Secrets, partitionedSet)
+		partitionedV1_Secrets = append(partitionedV1_Secrets, partitionedSet)
 	}
 
 	// sort for idempotency
-	sort.SliceStable(partitionedV1Secrets, func(i, j int) bool {
-		leftLabelValue := partitionedV1Secrets[i].Labels()[labelKey]
-		rightLabelValue := partitionedV1Secrets[j].Labels()[labelKey]
+	sort.SliceStable(partitionedV1_Secrets, func(i, j int) bool {
+		leftLabelValue := partitionedV1_Secrets[i].Labels()[labelKey]
+		rightLabelValue := partitionedV1_Secrets[j].Labels()[labelKey]
 		return leftLabelValue < rightLabelValue
 	})
 
-	return partitionedV1Secrets, nil
+	return partitionedV1_Secrets, nil
 }
 
-func (s snapshot) V1Secrets() []LabeledV1SecretSet {
+func (s snapshot) V1_Secrets() []LabeledV1_SecretSet {
 	return s.v1Secrets
 }
 
@@ -205,11 +205,11 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	return json.Marshal(snapshotMap)
 }
 
-// LabeledV1SecretSet represents a set of v1Secrets
+// LabeledV1_SecretSet represents a set of v1Secrets
 // which share a common set of labels.
-// These labels are used to find diffs between V1SecretSets.
-type LabeledV1SecretSet interface {
-	// returns the set of Labels shared by this V1SecretSet
+// These labels are used to find diffs between V1_SecretSets.
+type LabeledV1_SecretSet interface {
+	// returns the set of Labels shared by this V1_SecretSet
 	Labels() map[string]string
 
 	// returns the set of Secretes with the given labels
@@ -219,34 +219,34 @@ type LabeledV1SecretSet interface {
 	Generic() output.ResourceList
 }
 
-type labeledV1SecretSet struct {
+type labeledV1_SecretSet struct {
 	set    v1_sets.SecretSet
 	labels map[string]string
 }
 
-func NewLabeledV1SecretSet(set v1_sets.SecretSet, labels map[string]string) (LabeledV1SecretSet, error) {
-	// validate that each Secret contains the labels, else this is not a valid LabeledV1SecretSet
+func NewLabeledV1_SecretSet(set v1_sets.SecretSet, labels map[string]string) (LabeledV1_SecretSet, error) {
+	// validate that each Secret contains the labels, else this is not a valid LabeledV1_SecretSet
 	for _, item := range set.List() {
 		for k, v := range labels {
 			// k=v must be present in the item
 			if item.Labels[k] != v {
-				return nil, eris.Errorf("internal error: %v=%v missing on V1Secret %v", k, v, item.Name)
+				return nil, eris.Errorf("internal error: %v=%v missing on V1_Secret %v", k, v, item.Name)
 			}
 		}
 	}
 
-	return &labeledV1SecretSet{set: set, labels: labels}, nil
+	return &labeledV1_SecretSet{set: set, labels: labels}, nil
 }
 
-func (l *labeledV1SecretSet) Labels() map[string]string {
+func (l *labeledV1_SecretSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledV1SecretSet) Set() v1_sets.SecretSet {
+func (l *labeledV1_SecretSet) Set() v1_sets.SecretSet {
 	return l.set
 }
 
-func (l labeledV1SecretSet) Generic() output.ResourceList {
+func (l labeledV1_SecretSet) Generic() output.ResourceList {
 	var desiredResources []ezkube.Object
 	for _, desired := range l.set.List() {
 		desiredResources = append(desiredResources, desired)
@@ -294,11 +294,11 @@ func NewBuilder(ctx context.Context, name string) *builder {
 // iteratively collecting outputs before producing a final snapshot
 type Builder interface {
 
-	// add V1Secrets to the collected outputs
-	AddV1Secrets(v1Secrets ...*v1.Secret)
+	// add V1_Secrets to the collected outputs
+	AddV1_Secrets(v1Secrets ...*v1.Secret)
 
-	// get the collected V1Secrets
-	GetV1Secrets() v1_sets.SecretSet
+	// get the collected V1_Secrets
+	GetV1_Secrets() v1_sets.SecretSet
 
 	// build the collected outputs into a label-partitioned snapshot
 	BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error)
@@ -323,17 +323,17 @@ type Builder interface {
 	Delta(newSnap Builder) output.SnapshotDelta
 }
 
-func (b *builder) AddV1Secrets(v1Secrets ...*v1.Secret) {
+func (b *builder) AddV1_Secrets(v1Secrets ...*v1.Secret) {
 	for _, obj := range v1Secrets {
 		if obj == nil {
 			continue
 		}
-		contextutils.LoggerFrom(b.ctx).Debugf("added output V1Secret %v", sets.Key(obj))
+		contextutils.LoggerFrom(b.ctx).Debugf("added output V1_Secret %v", sets.Key(obj))
 		b.v1Secrets.Insert(obj)
 	}
 }
 
-func (b *builder) GetV1Secrets() v1_sets.SecretSet {
+func (b *builder) GetV1_Secrets() v1_sets.SecretSet {
 	return b.v1Secrets
 }
 
@@ -370,7 +370,7 @@ func (b *builder) Merge(other Builder) {
 		return
 	}
 
-	b.AddV1Secrets(other.GetV1Secrets().List()...)
+	b.AddV1_Secrets(other.GetV1_Secrets().List()...)
 	for _, cluster := range other.Clusters() {
 		b.AddCluster(cluster)
 	}
@@ -382,8 +382,8 @@ func (b *builder) Clone() Builder {
 	}
 	clone := NewBuilder(b.ctx, b.name)
 
-	for _, v1Secret := range b.GetV1Secrets().List() {
-		clone.AddV1Secrets(v1Secret.DeepCopy())
+	for _, v1Secret := range b.GetV1_Secrets().List() {
+		clone.AddV1_Secrets(v1Secret.DeepCopy())
 	}
 	for _, cluster := range b.Clusters() {
 		clone.AddCluster(cluster)
@@ -398,7 +398,7 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
 	}
 
 	// calculate delta between Secrets
-	v1SecretDelta := b.GetV1Secrets().Delta(other.GetV1Secrets())
+	v1SecretDelta := b.GetV1_Secrets().Delta(other.GetV1_Secrets())
 	v1SecretGvk := schema.GroupVersionKind{
 		Group:   "",
 		Version: "v1",
