@@ -195,6 +195,23 @@ func (m *MeshStatus) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetAppliedGlobalServices()) != len(target.GetAppliedGlobalServices()) {
+		return false
+	}
+	for idx, v := range m.GetAppliedGlobalServices() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAppliedGlobalServices()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetAppliedGlobalServices()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	return true
 }
 

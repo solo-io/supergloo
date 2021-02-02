@@ -254,6 +254,7 @@ https://github.com/openservicemesh/osm
 | observedGeneration | int64 |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that mesh-networking has reconciled the latest version of the Mesh. |
   | appliedVirtualMesh | [discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh" >}}) |  | The VirtualMesh, if any, which contains this mesh. |
   | appliedFailoverServices | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService" >}}) | repeated | The FailoverServices, if any, which applies to this mesh. |
+  | appliedGlobalServices | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedGlobalService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedGlobalService" >}}) | repeated | The FailoverServices, if any, which applies to this mesh. |
   
 
 

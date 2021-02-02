@@ -159,12 +159,6 @@ message MeshStatus {
     // has reconciled the latest version of the Mesh.
     int64 observed_generation = 1;
 
-    // The VirtualMesh, if any, which contains this mesh.
-    AppliedVirtualMesh applied_virtual_mesh = 2;
-
-    // The FailoverServices, if any, which applies to this mesh.
-    repeated AppliedFailoverService applied_failover_services = 3;
-
     // AppliedVirtualMesh represents a VirtualMesh that has been applied to this Mesh.
     // If an existing VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
     message AppliedVirtualMesh {
@@ -177,6 +171,9 @@ message MeshStatus {
         // The last known valid spec of the VirtualMesh.
         .networking.mesh.gloo.solo.io.VirtualMeshSpec spec = 3;
     }
+
+    // The VirtualMesh, if any, which contains this mesh.
+    AppliedVirtualMesh applied_virtual_mesh = 2;
 
     // AppliedFailoverService represents a FailoverService that has been applied to this Mesh.
     // If an existing FailoverService becomes invalid the last applied FailoverService will be used.
@@ -191,6 +188,9 @@ message MeshStatus {
         .networking.mesh.gloo.solo.io.FailoverServiceSpec spec = 3;
     }
 
+    // The FailoverServices, if any, which applies to this mesh.
+    repeated AppliedFailoverService applied_failover_services = 3;
+
     // AppliedGlobalService represents an GlobalService that has been applied to this Mesh.
     message AppliedGlobalService {
         // reference to the GlobalService object.
@@ -202,4 +202,8 @@ message MeshStatus {
         // any errors encountered while processing the referenced GlobalService object
         repeated string errors = 3;
     }
+
+    // The FailoverServices, if any, which applies to this mesh.
+    repeated AppliedGlobalService applied_global_services = 4;
+
 }
