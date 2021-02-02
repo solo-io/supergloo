@@ -74,7 +74,7 @@ spec:
             nodePort: 32000
             port: 15443
     global:
-      pilotCertProvider: istiod
+      pilotCertProvider: kubernetes
       controlPlaneSecurityEnabled: true
       podDNSSearchNamespaces:
         - global
