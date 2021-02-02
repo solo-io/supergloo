@@ -121,7 +121,6 @@ var (
 			appmeshv1beta2.GroupVersion: {
 				"VirtualNode",
 				"VirtualRouter",
-				"Route",
 				"VirtualService",
 			},
 		},
