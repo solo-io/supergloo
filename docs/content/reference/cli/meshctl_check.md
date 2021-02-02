@@ -6,10 +6,6 @@ weight: 5
 
 Perform health checks on the Gloo Mesh system
 
-### Synopsis
-
-Perform health checks on the Gloo Mesh system
-
 ```
 meshctl check [flags]
 ```

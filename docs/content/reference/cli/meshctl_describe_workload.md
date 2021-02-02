@@ -6,10 +6,6 @@ weight: 5
 
 Description of workloads
 
-### Synopsis
-
-Description of workloads
-
 ```
 meshctl describe workload [flags]
 ```

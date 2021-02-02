@@ -19,10 +19,19 @@ set -o xtrace
 PROJECT_ROOT=$( cd "$( dirname "${0}" )" >/dev/null 2>&1 && pwd )/..
 echo "Using project root ${PROJECT_ROOT}"
 
+# print build info
+make -C ${PROJECT_ROOT} print-info
+
 source ${PROJECT_ROOT}/ci/setup-funcs.sh
 
 if [ "$1" == "cleanup" ]; then
   kind get clusters | grep -E "${mgmtCluster}|${remoteCluster}" | while read -r r; do kind delete cluster --name "${r}"; done
+
+  # Only cleanup bird container if running with flat-networking
+  if [ ! -z ${FLAT_NETWORKING_ENABLED} ]; then
+    docker stop bird
+  fi
+
   exit 0
 fi
 
@@ -58,6 +67,12 @@ else
 
   wait
 
+  if [ ! -z ${FLAT_NETWORKING_ENABLED} ]; then
+    setup_flat_networking ${mgmtCluster} 32001 ${remoteCluster} 32000
+  fi
+
+
+
   # create istio-injectable namespace
   kubectl --context kind-${mgmtCluster} create namespace bookinfo
   kubectl --context kind-${mgmtCluster} label ns bookinfo istio-injection=enabled --overwrite
@@ -84,17 +99,22 @@ else
 
   echo successfully set up clusters.
 
-  # install gloo mesh
-  install_gloomesh ${mgmtCluster}
+  # skip installing and registering gloomesh components from source (just leaves clusters set up with istio+bookinfo)
+  if [ "$SKIP_DEPLOY_FROM_SOURCE" == "1" ]; then
+    echo "skipping deploy of gloomesh components."
+  else
+    # install gloo mesh
+    install_gloomesh ${mgmtCluster}
 
-  # sleep to allow crds to register
-  sleep 4
+    # sleep to allow crds to register
+    sleep 4
 
-  # register remote cluster
-  register_cluster ${remoteCluster} &
-  register_cluster ${mgmtCluster} &
+    # register remote cluster
+    register_cluster ${remoteCluster} &
+    register_cluster ${mgmtCluster} &
 
-  wait
+    wait
+  fi
 
 fi
 # set current context to management cluster

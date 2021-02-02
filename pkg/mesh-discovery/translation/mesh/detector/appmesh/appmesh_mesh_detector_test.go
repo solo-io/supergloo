@@ -7,9 +7,9 @@ import (
 	aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	detector "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -84,10 +84,10 @@ var _ = Describe("AppMesh MeshDetector", func() {
 			},
 		}
 
-		builder := input.NewInputRemoteSnapshotManualBuilder("app mesh test")
+		builder := input.NewInputDiscoveryInputSnapshotManualBuilder("app mesh test")
 		builder.AddMeshes([]*aws_v1beta2.Mesh{&awsMesh1, &awsMesh2})
 
-		actual, err := meshDetector.DetectMeshes(builder.Build())
+		actual, err := meshDetector.DetectMeshes(builder.Build(), nil)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(actual).To(HaveLen(1))
 		Expect(actual).To(ContainElement(&expected))
@@ -169,10 +169,10 @@ var _ = Describe("AppMesh MeshDetector", func() {
 			},
 		}
 
-		builder := input.NewInputRemoteSnapshotManualBuilder("app mesh test")
+		builder := input.NewInputDiscoveryInputSnapshotManualBuilder("app mesh test")
 		builder.AddMeshes([]*aws_v1beta2.Mesh{&awsMesh1, &awsMesh2})
 
-		actual, err := meshDetector.DetectMeshes(builder.Build())
+		actual, err := meshDetector.DetectMeshes(builder.Build(), nil)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(actual).To(HaveLen(2))
 		Expect(actual).To(ContainElement(&expected1))
@@ -194,10 +194,10 @@ var _ = Describe("AppMesh MeshDetector", func() {
 			Status: aws_v1beta2.MeshStatus{},
 		}
 
-		builder := input.NewInputRemoteSnapshotManualBuilder("app mesh test")
+		builder := input.NewInputDiscoveryInputSnapshotManualBuilder("app mesh test")
 		builder.AddMeshes([]*aws_v1beta2.Mesh{&awsMesh})
 
-		actual, err := meshDetector.DetectMeshes(builder.Build())
+		actual, err := meshDetector.DetectMeshes(builder.Build(), nil)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(actual).To(HaveLen(0))
 	})
@@ -221,10 +221,10 @@ var _ = Describe("AppMesh MeshDetector", func() {
 			},
 		}
 
-		builder := input.NewInputRemoteSnapshotManualBuilder("app mesh test")
+		builder := input.NewInputDiscoveryInputSnapshotManualBuilder("app mesh test")
 		builder.AddMeshes([]*aws_v1beta2.Mesh{&awsMesh})
 
-		_, err := meshDetector.DetectMeshes(builder.Build())
+		_, err := meshDetector.DetectMeshes(builder.Build(), nil)
 		Expect(err).To(HaveOccurred())
 	})
 

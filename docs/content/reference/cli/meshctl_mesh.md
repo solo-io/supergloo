@@ -6,10 +6,6 @@ weight: 5
 
 Operations on a specific mesh
 
-### Synopsis
-
-Operations on a specific mesh
-
 ### Options
 
 ```

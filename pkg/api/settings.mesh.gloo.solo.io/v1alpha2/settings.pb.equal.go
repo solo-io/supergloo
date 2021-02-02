@@ -73,18 +73,110 @@ func (m *SettingsSpec) Equal(that interface{}) bool {
 
 	}
 
+	if h, ok := interface{}(m.GetDiscovery()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetDiscovery()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetDiscovery(), target.GetDiscovery()) {
+			return false
+		}
+	}
+
+	if h, ok := interface{}(m.GetRelay()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRelay()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRelay(), target.GetRelay()) {
+			return false
+		}
+	}
+
 	return true
 }
 
 // Equal function
-func (m *NetworkingExtensionsServer) Equal(that interface{}) bool {
+func (m *RelaySettings) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*NetworkingExtensionsServer)
+	target, ok := that.(*RelaySettings)
 	if !ok {
-		that2, ok := that.(NetworkingExtensionsServer)
+		that2, ok := that.(RelaySettings)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if m.GetEnabled() != target.GetEnabled() {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetServer()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetServer()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetServer(), target.GetServer()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *DiscoverySettings) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DiscoverySettings)
+	if !ok {
+		that2, ok := that.(DiscoverySettings)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetIstio()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetIstio()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetIstio(), target.GetIstio()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *GrpcServer) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*GrpcServer)
+	if !ok {
+		that2, ok := that.(GrpcServer)
 		if ok {
 			target = &that2
 		} else {
@@ -150,6 +242,86 @@ func (m *SettingsStatus) Equal(that interface{}) bool {
 			return false
 		}
 
+	}
+
+	return true
+}
+
+// Equal function
+func (m *DiscoverySettings_Istio) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DiscoverySettings_Istio)
+	if !ok {
+		that2, ok := that.(DiscoverySettings_Istio)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetIngressGatewayDetectors()) != len(target.GetIngressGatewayDetectors()) {
+		return false
+	}
+	for k, v := range m.GetIngressGatewayDetectors() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetIngressGatewayDetectors()[k]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetIngressGatewayDetectors()[k]) {
+				return false
+			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
+func (m *DiscoverySettings_Istio_IngressGatewayDetector) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DiscoverySettings_Istio_IngressGatewayDetector)
+	if !ok {
+		that2, ok := that.(DiscoverySettings_Istio_IngressGatewayDetector)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetGatewayWorkloadLabels()) != len(target.GetGatewayWorkloadLabels()) {
+		return false
+	}
+	for k, v := range m.GetGatewayWorkloadLabels() {
+
+		if strings.Compare(v, target.GetGatewayWorkloadLabels()[k]) != 0 {
+			return false
+		}
+
+	}
+
+	if strings.Compare(m.GetGatewayTlsPortName(), target.GetGatewayTlsPortName()) != 0 {
+		return false
 	}
 
 	return true

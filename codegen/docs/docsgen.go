@@ -10,11 +10,8 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands"
 )
 
-//go:generate go run docsgen.go
-
 func main() {
 	log.Printf("Started docs generation\n")
-
 	ctx := context.TODO()
 	mgr, err := manager.NewManager(ctx, "")
 	if err != nil {
@@ -38,7 +35,9 @@ func main() {
 		Changelog: docsgen.ChangelogOptions{
 			Repos: []docsgen.ChangelogConfig{
 				{Name: "Open Source Gloo Mesh", Repo: "gloo-mesh", Path: "open_source"},
-				{Name: "Gloo Mesh Enterprise", Repo: "gloo-mesh-enterprise", Path: "enterprise"}},
+				// TODO(ryantking): Get enterprise changelog generation setup properly then enable this
+				// {Name: "Gloo Mesh Enterprise", Repo: "gloo-mesh-enterprise", Path: "enterprise"}
+			},
 			OutputDir: "content/reference/changelog",
 		},
 		DocsRoot: "docs",

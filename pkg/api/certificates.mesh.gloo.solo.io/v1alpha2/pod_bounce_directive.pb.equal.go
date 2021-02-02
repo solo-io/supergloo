@@ -67,6 +67,47 @@ func (m *PodBounceDirectiveSpec) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *PodBounceDirectiveStatus) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*PodBounceDirectiveStatus)
+	if !ok {
+		that2, ok := that.(PodBounceDirectiveStatus)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetPodsBounced()) != len(target.GetPodsBounced()) {
+		return false
+	}
+	for idx, v := range m.GetPodsBounced() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetPodsBounced()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetPodsBounced()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
 func (m *PodBounceDirectiveSpec_PodSelector) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -97,6 +138,45 @@ func (m *PodBounceDirectiveSpec_PodSelector) Equal(that interface{}) bool {
 	for k, v := range m.GetLabels() {
 
 		if strings.Compare(v, target.GetLabels()[k]) != 0 {
+			return false
+		}
+
+	}
+
+	if m.GetWaitForReplicas() != target.GetWaitForReplicas() {
+		return false
+	}
+
+	return true
+}
+
+// Equal function
+func (m *PodBounceDirectiveStatus_BouncedPodSet) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*PodBounceDirectiveStatus_BouncedPodSet)
+	if !ok {
+		that2, ok := that.(PodBounceDirectiveStatus_BouncedPodSet)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetBouncedPods()) != len(target.GetBouncedPods()) {
+		return false
+	}
+	for idx, v := range m.GetBouncedPods() {
+
+		if strings.Compare(v, target.GetBouncedPods()[idx]) != 0 {
 			return false
 		}
 

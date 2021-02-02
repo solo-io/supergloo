@@ -3,9 +3,12 @@ package destinationrule_test
 import (
 	"context"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/rotisserie/eris"
+	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
@@ -21,7 +24,10 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
 	mock_hostutils "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils/mocks"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/go-utils/testutils"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,8 +43,14 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		mockReporter              *mock_reporting.MockReporter
 		mockDecorator             *mock_trafficpolicy.MockTrafficPolicyDestinationRuleDecorator
 		destinationRuleTranslator destinationrule.Translator
-		in                        input.Snapshot
+		in                        input.LocalSnapshot
 		ctx                       = context.TODO()
+		settings                  = &settingsv1alpha2.Settings{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      defaults.DefaultSettingsName,
+				Namespace: defaults.DefaultPodNamespace,
+			},
+		}
 	)
 
 	BeforeEach(func() {
@@ -50,6 +62,8 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockDecorator = mock_trafficpolicy.NewMockTrafficPolicyDestinationRuleDecorator(ctrl)
 		destinationRuleTranslator = destinationrule.NewTranslator(
+			settings,
+			nil,
 			mockClusterDomainRegistry,
 			mockDecoratorFactory,
 			trafficTargets,
@@ -62,23 +76,13 @@ var _ = Describe("DestinationRuleTranslator", func() {
 	})
 
 	It("should translate respecting default mTLS Settings", func() {
-		in = input.NewInputSnapshotManualBuilder("").
-			AddSettings(settingsv1alpha2.SettingsSlice{
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      defaults.DefaultSettingsName,
-						Namespace: defaults.DefaultPodNamespace,
-					},
-					Spec: settingsv1alpha2.SettingsSpec{
-						Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
-							Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
-								TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
-							},
-						},
-					},
+		settings.Spec = settingsv1alpha2.SettingsSpec{
+			Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
+				Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
+					TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
 				},
-			}).
-			Build()
+			},
+		}
 
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
@@ -197,7 +201,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
 			Return("local-hostname")
 
 		initializedDestinatonRule := &networkingv1alpha3.DestinationRule{
@@ -249,23 +253,13 @@ var _ = Describe("DestinationRuleTranslator", func() {
 	})
 
 	It("should not output DestinationRule when DestinationRule has no effect", func() {
-		in = input.NewInputSnapshotManualBuilder("").
-			AddSettings(settingsv1alpha2.SettingsSlice{
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      defaults.DefaultSettingsName,
-						Namespace: defaults.DefaultPodNamespace,
-					},
-					Spec: settingsv1alpha2.SettingsSpec{
-						Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
-							Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
-								TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_DISABLE,
-							},
-						},
-					},
+		settings.Spec = settingsv1alpha2.SettingsSpec{
+			Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
+				Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
+					TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_DISABLE,
 				},
-			}).
-			Build()
+			},
+		}
 
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
@@ -324,7 +318,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
 			Return("local-hostname")
 
 		initializedDestinatonRule := &networkingv1alpha3.DestinationRule{
@@ -427,6 +421,8 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		)
 
 		destinationRuleTranslator = destinationrule.NewTranslator(
+			settings,
+			nil,
 			mockClusterDomainRegistry,
 			mockDecoratorFactory,
 			trafficTargets,
@@ -437,23 +433,13 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			Cluster: "source-cluster",
 		}
 
-		in = input.NewInputSnapshotManualBuilder("").
-			AddSettings(settingsv1alpha2.SettingsSlice{
-				{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      defaults.DefaultSettingsName,
-						Namespace: defaults.DefaultPodNamespace,
-					},
-					Spec: settingsv1alpha2.SettingsSpec{
-						Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
-							Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
-								TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
-							},
-						},
-					},
+		settings.Spec = settingsv1alpha2.SettingsSpec{
+			Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
+				Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
+					TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
 				},
-			}).
-			Build()
+			},
+		}
 
 		trafficTarget := &discoveryv1alpha2.TrafficTarget{
 			ObjectMeta: metav1.ObjectMeta{
@@ -502,7 +488,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationServiceFQDN(sourceMeshInstallation.Cluster, trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationFQDN(sourceMeshInstallation.Cluster, trafficTarget.Spec.GetKubeService().Ref).
 			Return("global-hostname")
 
 		expectedDestinatonRule := &networkingv1alpha3.DestinationRule{
@@ -543,5 +529,118 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		destinationRule := destinationRuleTranslator.Translate(ctx, in, trafficTarget, sourceMeshInstallation, mockReporter)
 		Expect(destinationRule).To(Equal(expectedDestinatonRule))
+	})
+
+	It("should report error if translated DestinationRule applies to host already configured by existing DestinationRule", func() {
+		settings.Spec = settingsv1alpha2.SettingsSpec{}
+
+		existingDestinationRules := v1alpha3sets.NewDestinationRuleSet(
+			// user-supplied, should yield conflict error
+			&networkingv1alpha3.DestinationRule{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "user-provided-dr",
+					Namespace: "foo",
+				},
+				Spec: networkingv1alpha3spec.DestinationRule{
+					Host: "*-hostname",
+				},
+			},
+		)
+
+		trafficTarget := &discoveryv1alpha2.TrafficTarget{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "traffic-target",
+			},
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+						Ref: &v1.ClusterObjectRef{
+							Name:        "traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-cluster",
+						},
+					},
+				},
+			},
+			Status: discoveryv1alpha2.TrafficTargetStatus{
+				AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+					{
+						Ref: &v1.ObjectRef{
+							Name:      "tp-1",
+							Namespace: "tp-namespace-1",
+						},
+						Spec: &v1alpha2.TrafficPolicySpec{
+							SourceSelector: []*v1alpha2.WorkloadSelector{
+								{
+									Clusters: []string{"traffic-target-cluster"},
+								},
+							},
+							OutlierDetection: &v1alpha2.TrafficPolicySpec_OutlierDetection{
+								ConsecutiveErrors: 5,
+							},
+						},
+					},
+				},
+			},
+		}
+
+		mockDecoratorFactory.
+			EXPECT().
+			MakeDecorators(decorators.Parameters{
+				ClusterDomains: mockClusterDomainRegistry,
+				Snapshot:       in,
+			}).
+			Return([]decorators.Decorator{mockDecorator})
+
+		mockClusterDomainRegistry.
+			EXPECT().
+			GetDestinationFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
+			Return("local-hostname")
+
+		mockDecorator.
+			EXPECT().
+			ApplyTrafficPolicyToDestinationRule(
+				trafficTarget.Status.AppliedTrafficPolicies[0],
+				trafficTarget,
+				gomock.Any(),
+				gomock.Any(),
+			).
+			DoAndReturn(func(
+				appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+				service *discoveryv1alpha2.TrafficTarget,
+				output *networkingv1alpha3spec.DestinationRule,
+				registerField decorators.RegisterField,
+			) error {
+				output.TrafficPolicy.OutlierDetection = &networkingv1alpha3spec.OutlierDetection{
+					Consecutive_5XxErrors: &types.UInt32Value{Value: 5},
+				}
+				return nil
+			})
+
+		mockReporter.
+			EXPECT().
+			ReportTrafficPolicyToTrafficTarget(
+				trafficTarget,
+				trafficTarget.Status.AppliedTrafficPolicies[0].Ref,
+				gomock.Any()).
+			DoAndReturn(func(trafficTarget *discoveryv1alpha2.TrafficTarget, trafficPolicy ezkube.ResourceId, err error) {
+				Expect(err).To(testutils.HaveInErrorChain(
+					eris.Errorf("Unable to translate AppliedTrafficPolicies to DestinationRule, applies to host %s that is already configured by the existing DestinationRule %s",
+						"local-hostname",
+						sets.Key(existingDestinationRules.List()[0])),
+				),
+				)
+			})
+
+		destinationRuleTranslator = destinationrule.NewTranslator(
+			settings,
+			existingDestinationRules,
+			mockClusterDomainRegistry,
+			mockDecoratorFactory,
+			trafficTargets,
+			failoverServices,
+		)
+
+		_ = destinationRuleTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
 	})
 })

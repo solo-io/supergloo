@@ -1,5 +1,11 @@
 package groups
 
+/*
+	DO NOT IMPORT THIS PACKAGE
+	This package imports the "github.com/solo-io/skv2/contrib" package, which
+	will panic when skv2 template files are not found in the executing environment.
+*/
+
 import (
 	"github.com/solo-io/gloo-mesh/codegen/constants"
 	"github.com/solo-io/skv2/codegen/model"
@@ -9,42 +15,72 @@ import (
 
 var (
 	glooMeshModule  = "github.com/solo-io/gloo-mesh"
-	v1alpha2Version = "v1alpha2"
 	glooMeshApiRoot = "pkg/api"
 )
 
+var GlooMeshSettingsGroup = makeGroup("settings", "v1alpha2", []ResourceToGenerate{
+	{Kind: "Settings"},
+})
+
+var GlooMeshDiscoveryGroup = makeGroup("discovery", "v1alpha2", []ResourceToGenerate{
+	{Kind: "TrafficTarget"},
+	{Kind: "Workload"},
+	{Kind: "Mesh"},
+})
+
+var GlooMeshNetworkingGroup = makeGroup("networking", "v1alpha2", []ResourceToGenerate{
+	{Kind: "TrafficPolicy"},
+	{Kind: "AccessPolicy"},
+	{Kind: "VirtualMesh"},
+	{Kind: "FailoverService"},
+})
+
+var GlooMeshEnterpriseNetworkingGroup = makeGroup("networking.enterprise", "v1alpha1", []ResourceToGenerate{
+	{Kind: "WasmDeployment"},
+})
+
+var GlooMeshEnterpriseObservabilityGroup = makeGroup("observability.enterprise", "v1alpha1", []ResourceToGenerate{
+	{Kind: "AccessLogRecord"},
+})
+
+var GlooMeshEnterpriseRbacGroup = makeGroup("rbac.enterprise", "v1alpha1", []ResourceToGenerate{
+	{Kind: "Role", ShortNames: []string{"gmrole", "gmroles"}},
+	{Kind: "RoleBinding", ShortNames: []string{"gmrolebinding", "gmrolebindings"}},
+})
+
 var GlooMeshGroups = []model.Group{
-	makeGroup("settings", v1alpha2Version, []ResourceToGenerate{
-		{Kind: "Settings"},
-	}),
-	makeGroup("discovery", v1alpha2Version, []ResourceToGenerate{
-		{Kind: "TrafficTarget"},
-		{Kind: "Workload"},
-		{Kind: "Mesh"},
-	}),
-	makeGroup("networking", v1alpha2Version, []ResourceToGenerate{
-		{Kind: "TrafficPolicy"},
-		{Kind: "AccessPolicy"},
-		{Kind: "VirtualMesh"},
-		{Kind: "FailoverService"},
-	}),
+	GlooMeshSettingsGroup,
+	GlooMeshDiscoveryGroup,
+	GlooMeshNetworkingGroup,
+	GlooMeshEnterpriseNetworkingGroup,
+	GlooMeshEnterpriseObservabilityGroup,
+	GlooMeshEnterpriseRbacGroup,
 }
 
 var CertAgentGroups = []model.Group{
-	makeGroup("certificates", v1alpha2Version, []ResourceToGenerate{
+	makeGroup("certificates", "v1alpha2", []ResourceToGenerate{
 		{Kind: "IssuedCertificate"},
 		{Kind: "CertificateRequest"},
-		{Kind: "PodBounceDirective", NoStatus: true},
+		{Kind: "PodBounceDirective"},
 	}),
 }
 
-var XdsAgentGroup = makeGroup("xds.enterprise.agent", "v1alpha1", []ResourceToGenerate{
+var XdsAgentGroup = makeGroup("xds.agent.enterprise", "v1alpha1", []ResourceToGenerate{
 	{Kind: "XdsConfig"},
 })
 
+var AllGeneratedGroups = append(
+	append(
+		GlooMeshGroups,
+		CertAgentGroups...,
+	),
+	XdsAgentGroup,
+)
+
 type ResourceToGenerate struct {
-	Kind     string
-	NoStatus bool // don't put a status on this resource
+	Kind       string
+	ShortNames []string
+	NoStatus   bool // don't put a status on this resource
 }
 
 func makeGroup(groupPrefix, version string, resourcesToGenerate []ResourceToGenerate) model.Group {
@@ -62,6 +98,7 @@ func MakeGroup(module, apiRoot, groupPrefix, version string, resourcesToGenerate
 					Name: resource.Kind + "Spec",
 				},
 			},
+			ShortNames: resource.ShortNames,
 		}
 		if !resource.NoStatus {
 			res.Status = &model.Field{Type: model.Type{

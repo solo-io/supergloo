@@ -4,13 +4,17 @@ import (
 	"context"
 	"reflect"
 
+	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+
+	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/tls"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/snapshotutils"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rotisserie/eris"
@@ -19,10 +23,10 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/equalityutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/skv2/pkg/equalityutils"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -40,7 +44,7 @@ type Translator interface {
 	// Note that the input snapshot TrafficTargetSet contains the given TrafficTarget.
 	Translate(
 		ctx context.Context,
-		in input.Snapshot,
+		in input.LocalSnapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 		reporter reporting.Reporter,
@@ -48,23 +52,29 @@ type Translator interface {
 }
 
 type translator struct {
-	clusterDomains   hostutils.ClusterDomainRegistry
-	decoratorFactory decorators.Factory
-	trafficTargets   discoveryv1alpha2sets.TrafficTargetSet
-	failoverServices v1alpha2sets.FailoverServiceSet
+	settings             *settingsv1alpha2.Settings
+	userDestinationRules v1alpha3sets.DestinationRuleSet
+	clusterDomains       hostutils.ClusterDomainRegistry
+	decoratorFactory     decorators.Factory
+	trafficTargets       discoveryv1alpha2sets.TrafficTargetSet
+	failoverServices     v1alpha2sets.FailoverServiceSet
 }
 
 func NewTranslator(
+	settings *settingsv1alpha2.Settings,
+	userDestinationRules v1alpha3sets.DestinationRuleSet,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
 ) Translator {
 	return &translator{
-		clusterDomains:   clusterDomains,
-		decoratorFactory: decoratorFactory,
-		trafficTargets:   trafficTargets,
-		failoverServices: failoverServices,
+		settings:             settings,
+		userDestinationRules: userDestinationRules,
+		clusterDomains:       clusterDomains,
+		decoratorFactory:     decoratorFactory,
+		trafficTargets:       trafficTargets,
+		failoverServices:     failoverServices,
 	}
 }
 
@@ -73,7 +83,7 @@ func NewTranslator(
 // The input snapshot TrafficTargetSet contains n the
 func (t *translator) Translate(
 	ctx context.Context,
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	reporter reporting.Reporter,
@@ -90,12 +100,7 @@ func (t *translator) Translate(
 		sourceClusterName = sourceMeshInstallation.Cluster
 	}
 
-	settings, err := snapshotutils.GetSingletonSettings(ctx, in)
-	if err != nil {
-		return nil
-	}
-
-	destinationRule, err := t.initializeDestinationRule(trafficTarget, settings.Spec.Mtls, sourceMeshInstallation)
+	destinationRule, err := t.initializeDestinationRule(trafficTarget, t.settings.Spec.Mtls, sourceMeshInstallation)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Error(err)
 		return nil
@@ -134,8 +139,26 @@ func (t *translator) Translate(
 
 	// TODO need a more robust implementation of determining whether a DestinationRule has any effect
 	if len(destinationRule.Spec.Subsets) == 0 &&
-		destinationRule.Spec.GetTrafficPolicy().GetTls().GetMode() == networkingv1alpha3spec.ClientTLSSettings_DISABLE {
+		destinationRule.Spec.GetTrafficPolicy().GetTls().GetMode() == networkingv1alpha3spec.ClientTLSSettings_DISABLE &&
+		destinationRule.Spec.GetTrafficPolicy().GetOutlierDetection() == nil {
 		// no need to create this DestinationRule as it has no effect
+		return nil
+	}
+
+	if t.userDestinationRules == nil {
+		return destinationRule
+	}
+
+	// detect and report error on intersecting config if enabled in settings
+	if errs := conflictsWithUserDestinationRule(
+		t.userDestinationRules,
+		destinationRule,
+	); len(errs) > 0 {
+		for _, err := range errs {
+			for _, policy := range trafficTarget.Status.AppliedTrafficPolicies {
+				reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, policy.Ref, err)
+			}
+		}
 		return nil
 	}
 
@@ -151,7 +174,7 @@ func registerFieldFunc(
 	return func(fieldPtr, val interface{}) error {
 		fieldVal := reflect.ValueOf(fieldPtr).Elem().Interface()
 
-		if equalityutils.Equals(fieldVal, val) {
+		if equalityutils.DeepEqual(fieldVal, val) {
 			return nil
 		}
 		if err := destinationRuleFields.RegisterFieldOwnership(
@@ -185,7 +208,7 @@ func (t *translator) initializeDestinationRule(
 			trafficTarget.Annotations,
 		)
 	}
-	hostname := t.clusterDomains.GetDestinationServiceFQDN(meta.ClusterName, trafficTarget.Spec.GetKubeService().Ref)
+	hostname := t.clusterDomains.GetDestinationFQDN(meta.ClusterName, trafficTarget.Spec.GetKubeService().Ref)
 
 	destinationRule := &networkingv1alpha3.DestinationRule{
 		ObjectMeta: meta,
@@ -211,4 +234,28 @@ func (t *translator) initializeDestinationRule(
 	}
 
 	return destinationRule, nil
+}
+
+// Return errors for each user-supplied VirtualService that applies to the same hostname as the translated VirtualService
+func conflictsWithUserDestinationRule(
+	userDestinationRules v1alpha3sets.DestinationRuleSet,
+	translatedDestinationRule *networkingv1alpha3.DestinationRule,
+) []error {
+	// For each user DR, check whether any hosts match any hosts from translated DR
+	var errs []error
+
+	// destination rules from RemoteSnapshot only contain non-translated objects
+	userDestinationRules.List(func(dr *networkingv1alpha3.DestinationRule) bool {
+		// check if common hostnames exist
+		commonHostname := utils.CommonHostnames([]string{dr.Spec.Host}, []string{translatedDestinationRule.Spec.Host})
+		if len(commonHostname) > 0 {
+			errs = append(
+				errs,
+				eris.Errorf("Unable to translate AppliedTrafficPolicies to DestinationRule, applies to host %s that is already configured by the existing DestinationRule %s", commonHostname[0], sets.Key(dr)),
+			)
+		}
+		return false
+	})
+
+	return errs
 }

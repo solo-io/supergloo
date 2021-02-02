@@ -416,11 +416,14 @@ func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha
 	istioMesh := mesh.Spec.GetIstio()
 	istioInstall := istioMesh.GetInstallation()
 
-	// bounce the control plane pod
+	// bounce the control plane pod first
+	// order matters
 	podsToBounce := []*certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector{
 		{
 			Namespace: istioInstall.Namespace,
 			Labels:    istioInstall.PodLabels,
+			// ensure at least one replica of istiod is ready before restarting the other pods
+			WaitForReplicas: 1,
 		},
 	}
 

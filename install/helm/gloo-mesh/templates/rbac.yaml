@@ -29,6 +29,14 @@ rules:
   - list
   - watch
 - apiGroups:
+  - networking.mesh.gloo.solo.io
+  resources:
+  - virtualmeshes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - settings.mesh.gloo.solo.io
   resources:
   - settings
@@ -115,12 +123,28 @@ rules:
   - list
   - watch
 - apiGroups:
+  - networking.enterprise.mesh.gloo.solo.io
+  resources:
+  - wasmdeployments
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - networking.mesh.gloo.solo.io
   resources:
   - trafficpolicies
   - accesspolicies
   - virtualmeshes
   - failoverservices
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - observability.enterprise.mesh.gloo.solo.io
+  resources:
+  - accesslogrecords
   verbs:
   - get
   - list
@@ -157,12 +181,26 @@ rules:
   - get
   - update
 - apiGroups:
+  - networking.enterprise.mesh.gloo.solo.io
+  resources:
+  - wasmdeployments/status
+  verbs:
+  - get
+  - update
+- apiGroups:
   - networking.mesh.gloo.solo.io
   resources:
   - trafficpolicies/status
   - accesspolicies/status
   - virtualmeshes/status
   - failoverservices/status
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - observability.enterprise.mesh.gloo.solo.io
+  resources:
+  - accesslogrecords/status
   verbs:
   - get
   - update
@@ -209,7 +247,7 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - xds.enterprise.agent.mesh.gloo.solo.io
+  - xds.agent.enterprise.mesh.gloo.solo.io
   resources:
   - xdsconfigs
   verbs:

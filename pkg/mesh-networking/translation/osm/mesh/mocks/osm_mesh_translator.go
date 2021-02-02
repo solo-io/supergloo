@@ -39,7 +39,7 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(ctx context.Context, in input.Snapshot, mesh *v1alpha2.Mesh, outputs smi.Builder, reporter reporting.Reporter) {
+func (m *MockTranslator) Translate(ctx context.Context, in input.LocalSnapshot, mesh *v1alpha2.Mesh, outputs smi.Builder, reporter reporting.Reporter) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Translate", ctx, in, mesh, outputs, reporter)
 }

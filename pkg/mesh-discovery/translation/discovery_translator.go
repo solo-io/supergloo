@@ -6,6 +6,7 @@ import (
 
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/output/discovery"
+	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	internal "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/internal"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/labelutils"
 )
@@ -15,7 +16,12 @@ var DefaultDependencyFactory = internal.DependencyFactoryImpl{}
 // the translator "reconciles the entire state of the world"
 type Translator interface {
 	// translates the Input Snapshot to an Output Snapshot
-	Translate(ctx context.Context, in input.RemoteSnapshot) (discovery.Snapshot, error)
+	Translate(
+		ctx context.Context,
+		in input.DiscoveryInputSnapshot,
+		settings *settingsv1alpha2.DiscoverySettings,
+		localSnapshot input.SettingsSnapshot,
+	) (discovery.Snapshot, error)
 }
 
 type translator struct {
@@ -29,15 +35,20 @@ func NewTranslator(dependencyFactory internal.DependencyFactory) Translator {
 	}
 }
 
-func (t translator) Translate(ctx context.Context, in input.RemoteSnapshot) (discovery.Snapshot, error) {
+func (t translator) Translate(
+	ctx context.Context,
+	in input.DiscoveryInputSnapshot,
+	settings *settingsv1alpha2.DiscoverySettings,
+	localSnapshot input.SettingsSnapshot,
+) (discovery.Snapshot, error) {
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(ctx)
 
 	workloadTranslator := t.dependencies.MakeWorkloadTranslator(ctx, in)
 
-	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator(ctx)
+	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator()
 
-	meshes := meshTranslator.TranslateMeshes(in)
+	meshes := meshTranslator.TranslateMeshes(in, settings)
 
 	workloads := workloadTranslator.TranslateWorkloads(
 		in.Deployments(),
@@ -46,7 +57,14 @@ func (t translator) Translate(ctx context.Context, in input.RemoteSnapshot) (dis
 		meshes,
 	)
 
-	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(in.Services(), workloads, meshes)
+	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(
+		ctx,
+		in.Services(),
+		in.Endpoints(),
+		workloads,
+		meshes,
+		localSnapshot.VirtualMeshes(),
+	)
 
 	t.totalTranslates++
 

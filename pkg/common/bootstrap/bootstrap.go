@@ -28,8 +28,8 @@ import (
 type StartParameters struct {
 	Ctx             context.Context
 	MasterManager   manager.Manager
-	McClient        multicluster.Client
-	Clusters        multicluster.Interface
+	McClient        multicluster.Client    // nil if running in agent mode
+	Clusters        multicluster.Interface // nil if running in agent mode
 	SnapshotHistory *stats.SnapshotHistory
 	// Reference to Settings object this controller uses.
 	SettingsRef v1.ObjectRef
@@ -74,10 +74,9 @@ func (opts *Options) AddToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&opts.SettingsRef.Namespace, "settings-namespace", defaults.DefaultPodNamespace, "The namespace of the Settings object this controller should use.")
 }
 
-// the mesh-discovery controller is the Kubernetes Controller/Operator
-// which processes k8s storage events to produce
-// discovered resources.
-func Start(ctx context.Context, rootLogger string, start StartReconciler, opts Options) error {
+// Start a controller with the given reconciler. Handles bootstrapping local manager + multicluster watches.
+// localMode will start the controller as an "local" only configured to do i/o to local cluster.
+func Start(ctx context.Context, rootLogger string, start StartReconciler, opts Options, localMode bool) error {
 	setupLogging(opts.VerboseMode)
 
 	ctx = contextutils.WithLogger(ctx, rootLogger)
@@ -90,12 +89,20 @@ func Start(ctx context.Context, rootLogger string, start StartReconciler, opts O
 
 	stats.MustStartServerBackground(snapshotHistory, opts.MetricsBindPort)
 
-	clusterWatcher := watch.NewClusterWatcher(ctx, manager.Options{
-		Namespace: "", // TODO (ilackarms): support configuring specific watch namespaces on remote clusters
-		Scheme:    mgr.GetScheme(),
-	})
+	var (
+		clusterWatcher multicluster.Interface
+		mcClient       multicluster.Client
+	)
 
-	mcClient := multicluster.NewClient(clusterWatcher)
+	if !localMode {
+		// construct multicluster watcher and client
+		clusterWatcher = watch.NewClusterWatcher(ctx, manager.Options{
+			Namespace: "", // TODO (ilackarms): support configuring specific watch namespaces on remote clusters
+			Scheme:    mgr.GetScheme(),
+		})
+
+		mcClient = multicluster.NewClient(clusterWatcher)
+	}
 
 	params := StartParameters{
 		Ctx:             ctx,
@@ -111,12 +118,15 @@ func Start(ctx context.Context, rootLogger string, start StartReconciler, opts O
 		return err
 	}
 
-	if err := clusterWatcher.Run(mgr); err != nil {
-		return err
+	if clusterWatcher != nil {
+		// start multicluster watches
+		if err := clusterWatcher.Run(mgr); err != nil {
+			return err
+		}
 	}
 
 	contextutils.LoggerFrom(ctx).Infof("starting manager with options %+v", opts)
-	return mgr.Start(ctx.Done())
+	return mgr.Start(ctx)
 }
 
 // get the manager for the local cluster; we will use this as our "master" cluster

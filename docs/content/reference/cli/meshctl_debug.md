@@ -6,10 +6,6 @@ weight: 5
 
 Debug Gloo Mesh resources
 
-### Synopsis
-
-Debug Gloo Mesh resources
-
 ### Options
 
 ```

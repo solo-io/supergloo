@@ -12,15 +12,14 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func Command(ctx context.Context, globalFlags utils.GlobalFlags) *cobra.Command {
-	opts := &options{
-		verbose: globalFlags.Verbose,
-	}
+func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command {
+	opts := &options{}
 
 	cmd := &cobra.Command{
 		Use:   "uninstall",
 		Short: "Uninstall Gloo Mesh from the referenced cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.verbose = globalFlags.Verbose
 			return uninstall(ctx, opts)
 		},
 	}

@@ -9,10 +9,10 @@ GLOOMESH_IMAGE ?= $(DOCKER_REPO)/gloo-mesh
 CA_IMAGE ?= $(DOCKER_REPO)/cert-agent
 
 SOURCES := $(shell find . -name "*.go" | grep -v test.go)
-RELEASE := "true"
+export RELEASE ?= "true"
 ifeq ($(TAGGED_VERSION),)
 	TAGGED_VERSION := $(shell git describe --tags --dirty --always)
-	RELEASE := "false"
+	export RELEASE := "false"
 endif
 
 VERSION ?= $(shell echo $(TAGGED_VERSION) | cut -c 2-)
@@ -64,6 +64,7 @@ install-go-tools: mod-download
 	go install github.com/gobuffalo/packr/packr
 	# protoc-gen-gogo is only needed for generating our versioned docs site, since older versions of the repo (<= 0.10.7) use gogo
 	go install github.com/gogo/protobuf/protoc-gen-gogo
+	go mod tidy
 
 # Call all generated code targets
 .PHONY: generated-code
@@ -97,8 +98,8 @@ operator-gen: clear-vendor-any
 
 # Generate Reference documentation
 .PHONY: generated-reference-docs
-generated-reference-docs: clear-vendor-any
-	go run codegen/docs/docsgen.go
+generated-reference-docs: clear-vendor-any update-licenses
+	SKIP_CHANGELOG_GENERATION=true go run codegen/docs/docsgen.go
 
 #----------------------------------------------------------------------------------
 # Build
@@ -222,7 +223,9 @@ chart-gen: clear-vendor-any install-go-tools
 .PHONY: manifest-gen
 manifest-gen: install/gloo-mesh-default.yaml
 	goimports -w $(shell ls -d */ | grep -v vendor)
+	go mod tidy
 install/gloo-mesh-default.yaml: chart-gen
+	helm dependency update $(HELM_ROOTDIR)/gloo-mesh
 	helm template --include-crds --namespace gloo-mesh $(HELM_ROOTDIR)/gloo-mesh > $@
 
 #----------------------------------------------------------------------------------
@@ -255,6 +258,18 @@ upload-github-release-assets: build-cli
 ifeq ($(RELEASE),"true")
 	go run ci/upload_github_release_assets.go
 endif
+
+#----------------------------------------------------------------------------------
+# Third Party License Management
+#----------------------------------------------------------------------------------
+.PHONY: update-licenses
+update-licenses:
+	# check for GPL licenses, if there are any, this will fail
+	cd hack/oss_compliance; GO111MODULE=on go run main.go osagen -c "GNU General Public License v2.0,GNU General Public License v3.0,GNU Lesser General Public License v2.1,GNU Lesser General Public License v3.0,GNU Affero General Public License v3.0"
+
+	cd hack/oss_compliance; GO111MODULE=on go run main.go osagen -s "Mozilla Public License 2.0,GNU General Public License v2.0,GNU General Public License v3.0,GNU Lesser General Public License v2.1,GNU Lesser General Public License v3.0,GNU Affero General Public License v3.0"> ../../docs/content/static/content/osa_provided.md
+	cd hack/oss_compliance; GO111MODULE=on go run main.go osagen -i "Mozilla Public License 2.0,GNU General Public License v2.0,GNU General Public License v3.0,GNU Lesser General Public License v2.1,GNU Lesser General Public License v3.0,GNU Affero General Public License v3.0"> ../../docs/content/static/content/osa_included.md
+
 
 #----------------------------------------------------------------------------------
 # Clean

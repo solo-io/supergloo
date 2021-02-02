@@ -20,7 +20,7 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		ctx context.Context,
-		in input.Snapshot,
+		in input.LocalSnapshot,
 		outputs smi.Builder,
 		reporter reporting.Reporter,
 	)
@@ -39,7 +39,7 @@ func NewOSMTranslator() Translator {
 
 func (s *osmTranslator) Translate(
 	ctx context.Context,
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	outputs smi.Builder,
 	reporter reporting.Reporter,
 ) {

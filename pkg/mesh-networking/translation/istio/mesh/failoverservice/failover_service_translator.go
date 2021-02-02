@@ -43,7 +43,7 @@ type Translator interface {
 	// Output resources will be added to the istio.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
-		in input.Snapshot,
+		in input.LocalSnapshot,
 		mesh *discoveryv1alpha2.Mesh,
 		failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
 		outputs istio.Builder,
@@ -66,7 +66,7 @@ func NewTranslator(ctx context.Context, clusterDomains hostutils.ClusterDomainRe
 }
 
 func (t *translator) Translate(
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	mesh *discoveryv1alpha2.Mesh,
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
 	outputs istio.Builder,
@@ -414,15 +414,11 @@ func (t *translator) buildEnvoyAggregateClusterConfig(
 	for _, trafficTarget := range trafficTargets {
 		kubeService := trafficTarget.Spec.GetKubeService()
 		for _, port := range kubeService.Ports {
-			var hostname string
-			if kubeService.Ref.ClusterName == failoverServiceClusterName {
-				// Local k8s DNS
-				hostname = t.clusterDomains.GetServiceLocalFQDN(kubeService.Ref)
-			} else {
-				// Multicluster global DNS
-				hostname = t.clusterDomains.GetServiceGlobalFQDN(kubeService.Ref)
-			}
-			failoverCluster := buildIstioEnvoyClusterName(port.GetPort(), subsetName, hostname)
+			failoverCluster := buildIstioEnvoyClusterName(
+				port.GetPort(),
+				subsetName,
+				t.clusterDomains.GetDestinationFQDN(failoverServiceClusterName, kubeService.Ref),
+			)
 			orderedFailoverList = append(orderedFailoverList, failoverCluster)
 		}
 	}

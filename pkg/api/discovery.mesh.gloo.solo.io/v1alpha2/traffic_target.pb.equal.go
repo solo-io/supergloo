@@ -59,6 +59,9 @@ func (m *TrafficTargetSpec) Equal(that interface{}) bool {
 	switch m.Type.(type) {
 
 	case *TrafficTargetSpec_KubeService_:
+		if _, ok := target.Type.(*TrafficTargetSpec_KubeService_); !ok {
+			return false
+		}
 
 		if h, ok := interface{}(m.GetKubeService()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetKubeService()) {
@@ -70,6 +73,11 @@ func (m *TrafficTargetSpec) Equal(that interface{}) bool {
 			}
 		}
 
+	default:
+		// m is nil but target is not nil
+		if m.Type != target.Type {
+			return false
+		}
 	}
 
 	return true
@@ -138,8 +146,14 @@ func (m *TrafficTargetStatus) Equal(that interface{}) bool {
 		return false
 	}
 
-	if strings.Compare(m.GetRemoteFqdn(), target.GetRemoteFqdn()) != 0 {
-		return false
+	if h, ok := interface{}(m.GetAppliedFederation()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetAppliedFederation()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetAppliedFederation(), target.GetAppliedFederation()) {
+			return false
+		}
 	}
 
 	return true
@@ -232,6 +246,23 @@ func (m *TrafficTargetSpec_KubeService) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetEndpoints()) != len(target.GetEndpoints()) {
+		return false
+	}
+	for idx, v := range m.GetEndpoints() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetEndpoints()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetEndpoints()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	return true
 }
 
@@ -303,6 +334,58 @@ func (m *TrafficTargetSpec_KubeService_Subset) Equal(that interface{}) bool {
 
 		if strings.Compare(v, target.GetValues()[idx]) != 0 {
 			return false
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
+func (m *TrafficTargetSpec_KubeService_EndpointsSubset) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*TrafficTargetSpec_KubeService_EndpointsSubset)
+	if !ok {
+		that2, ok := that.(TrafficTargetSpec_KubeService_EndpointsSubset)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetIpAddresses()) != len(target.GetIpAddresses()) {
+		return false
+	}
+	for idx, v := range m.GetIpAddresses() {
+
+		if strings.Compare(v, target.GetIpAddresses()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	if len(m.GetPorts()) != len(target.GetPorts()) {
+		return false
+	}
+	for idx, v := range m.GetPorts() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetPorts()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetPorts()[idx]) {
+				return false
+			}
 		}
 
 	}
@@ -427,7 +510,7 @@ func (m *TrafficTargetStatus_AppliedFederation) Equal(that interface{}) bool {
 		return false
 	}
 
-	if strings.Compare(m.GetMulticlusterDnsName(), target.GetMulticlusterDnsName()) != 0 {
+	if strings.Compare(m.GetFederatedHostname(), target.GetFederatedHostname()) != 0 {
 		return false
 	}
 

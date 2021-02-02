@@ -8,30 +8,43 @@ package input
 import (
 	settings_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	settings_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
+
+	networking_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networking_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 )
 
-type InputLocalSnapshotManualBuilder struct {
+type InputSettingsSnapshotManualBuilder struct {
 	name string
 
 	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+
+	virtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 }
 
-func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBuilder {
-	return &InputLocalSnapshotManualBuilder{
+func NewInputSettingsSnapshotManualBuilder(name string) *InputSettingsSnapshotManualBuilder {
+	return &InputSettingsSnapshotManualBuilder{
 		name: name,
 
 		settings: settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet(),
+
+		virtualMeshes: networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet(),
 	}
 }
 
-func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
-	return NewLocalSnapshot(
+func (i *InputSettingsSnapshotManualBuilder) Build() SettingsSnapshot {
+	return NewSettingsSnapshot(
 		i.name,
 
 		i.settings,
+
+		i.virtualMeshes,
 	)
 }
-func (i *InputLocalSnapshotManualBuilder) AddSettings(settings []*settings_mesh_gloo_solo_io_v1alpha2.Settings) *InputLocalSnapshotManualBuilder {
+func (i *InputSettingsSnapshotManualBuilder) AddSettings(settings []*settings_mesh_gloo_solo_io_v1alpha2.Settings) *InputSettingsSnapshotManualBuilder {
 	i.settings.Insert(settings...)
+	return i
+}
+func (i *InputSettingsSnapshotManualBuilder) AddVirtualMeshes(virtualMeshes []*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh) *InputSettingsSnapshotManualBuilder {
+	i.virtualMeshes.Insert(virtualMeshes...)
 	return i
 }

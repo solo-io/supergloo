@@ -66,7 +66,7 @@ var _ = Describe("IstioNetworkingExtender", func() {
 			},
 		}
 
-		inputs := input.NewInputSnapshotManualBuilder("istio-extender-test").
+		inputs := input.NewInputLocalSnapshotManualBuilder("istio-extender-test").
 			AddMeshes([]*discoveryv1alpha2.Mesh{mesh}).
 			AddWorkloads([]*discoveryv1alpha2.Workload{workload}).
 			AddTrafficTargets([]*discoveryv1alpha2.TrafficTarget{trafficTarget}).

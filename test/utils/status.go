@@ -9,9 +9,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func AssertTrafficPolicyStatuses(dynamicClient client.Client, namespace string) {
-	ctx := context.Background()
-	trafficPolicy := networkingv1alpha2.NewTrafficPolicyClient(dynamicClient)
+func AssertTrafficPolicyStatuses(
+	ctx context.Context,
+	trafficPolicy networkingv1alpha2.TrafficPolicyClient,
+	namespace string,
+) {
 
 	EventuallyWithOffset(1, func() bool {
 		list, err := trafficPolicy.ListTrafficPolicy(ctx, client.InNamespace(namespace))
@@ -25,10 +27,11 @@ func AssertTrafficPolicyStatuses(dynamicClient client.Client, namespace string) 
 	}, "20s").Should(BeTrue())
 }
 
-func AssertVirtualMeshStatuses(dynamicClient client.Client, namespace string) {
-	ctx := context.Background()
-	virtualMesh := networkingv1alpha2.NewVirtualMeshClient(dynamicClient)
-
+func AssertVirtualMeshStatuses(
+	ctx context.Context,
+	virtualMesh networkingv1alpha2.VirtualMeshClient,
+	namespace string,
+) {
 	EventuallyWithOffset(1, func() bool {
 		list, err := virtualMesh.ListVirtualMesh(ctx, client.InNamespace(namespace))
 		ExpectWithOffset(1, err).NotTo(HaveOccurred())

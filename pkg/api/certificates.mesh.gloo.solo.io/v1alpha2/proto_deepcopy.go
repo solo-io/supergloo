@@ -37,3 +37,9 @@ func (in *PodBounceDirectiveSpec) DeepCopyInto(out *PodBounceDirectiveSpec) {
 	p := proto.Clone(in).(*PodBounceDirectiveSpec)
 	*out = *p
 }
+
+// DeepCopyInto for the PodBounceDirective.Status
+func (in *PodBounceDirectiveStatus) DeepCopyInto(out *PodBounceDirectiveStatus) {
+	p := proto.Clone(in).(*PodBounceDirectiveStatus)
+	*out = *p
+}

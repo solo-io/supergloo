@@ -38,6 +38,10 @@ type TrafficPolicySet interface {
 	Find(id ezkube.ResourceId) (*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another TrafficPolicySet
+	Delta(newSet TrafficPolicySet) sksets.ResourceDelta
 }
 
 func makeGenericTrafficPolicySet(trafficPolicyList []*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy) sksets.ResourceSet {
@@ -68,7 +72,7 @@ func (s *trafficPolicySet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *trafficPolicySet) List(filterResource ...func(*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy) bool) []*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy {
@@ -83,7 +87,7 @@ func (s *trafficPolicySet) List(filterResource ...func(*networking_mesh_gloo_sol
 	}
 
 	var trafficPolicyList []*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		trafficPolicyList = append(trafficPolicyList, obj.(*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy))
 	}
 	return trafficPolicyList
@@ -95,7 +99,7 @@ func (s *trafficPolicySet) Map() map[string]*networking_mesh_gloo_solo_io_v1alph
 	}
 
 	newMap := map[string]*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy)
 	}
 	return newMap
@@ -109,7 +113,7 @@ func (s *trafficPolicySet) Insert(
 	}
 
 	for _, obj := range trafficPolicyList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -117,7 +121,7 @@ func (s *trafficPolicySet) Has(trafficPolicy ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(trafficPolicy)
+	return s.Generic().Has(trafficPolicy)
 }
 
 func (s *trafficPolicySet) Equal(
@@ -126,14 +130,14 @@ func (s *trafficPolicySet) Equal(
 	if s == nil {
 		return trafficPolicySet == nil
 	}
-	return s.set.Equal(makeGenericTrafficPolicySet(trafficPolicySet.List()))
+	return s.Generic().Equal(trafficPolicySet.Generic())
 }
 
 func (s *trafficPolicySet) Delete(TrafficPolicy ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(TrafficPolicy)
+	s.Generic().Delete(TrafficPolicy)
 }
 
 func (s *trafficPolicySet) Union(set TrafficPolicySet) TrafficPolicySet {
@@ -147,7 +151,7 @@ func (s *trafficPolicySet) Difference(set TrafficPolicySet) TrafficPolicySet {
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericTrafficPolicySet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &trafficPolicySet{set: newSet}
 }
 
@@ -155,7 +159,7 @@ func (s *trafficPolicySet) Intersection(set TrafficPolicySet) TrafficPolicySet {
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericTrafficPolicySet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var trafficPolicyList []*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy
 	for _, obj := range newSet.List() {
 		trafficPolicyList = append(trafficPolicyList, obj.(*networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy))
@@ -167,7 +171,7 @@ func (s *trafficPolicySet) Find(id ezkube.ResourceId) (*networking_mesh_gloo_sol
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find TrafficPolicy %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy{}, id)
+	obj, err := s.Generic().Find(&networking_mesh_gloo_solo_io_v1alpha2.TrafficPolicy{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +183,23 @@ func (s *trafficPolicySet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *trafficPolicySet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *trafficPolicySet) Delta(newSet TrafficPolicySet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }
 
 type AccessPolicySet interface {
@@ -207,6 +227,10 @@ type AccessPolicySet interface {
 	Find(id ezkube.ResourceId) (*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another AccessPolicySet
+	Delta(newSet AccessPolicySet) sksets.ResourceDelta
 }
 
 func makeGenericAccessPolicySet(accessPolicyList []*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy) sksets.ResourceSet {
@@ -237,7 +261,7 @@ func (s *accessPolicySet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *accessPolicySet) List(filterResource ...func(*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy) bool) []*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy {
@@ -252,7 +276,7 @@ func (s *accessPolicySet) List(filterResource ...func(*networking_mesh_gloo_solo
 	}
 
 	var accessPolicyList []*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		accessPolicyList = append(accessPolicyList, obj.(*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy))
 	}
 	return accessPolicyList
@@ -264,7 +288,7 @@ func (s *accessPolicySet) Map() map[string]*networking_mesh_gloo_solo_io_v1alpha
 	}
 
 	newMap := map[string]*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy)
 	}
 	return newMap
@@ -278,7 +302,7 @@ func (s *accessPolicySet) Insert(
 	}
 
 	for _, obj := range accessPolicyList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -286,7 +310,7 @@ func (s *accessPolicySet) Has(accessPolicy ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(accessPolicy)
+	return s.Generic().Has(accessPolicy)
 }
 
 func (s *accessPolicySet) Equal(
@@ -295,14 +319,14 @@ func (s *accessPolicySet) Equal(
 	if s == nil {
 		return accessPolicySet == nil
 	}
-	return s.set.Equal(makeGenericAccessPolicySet(accessPolicySet.List()))
+	return s.Generic().Equal(accessPolicySet.Generic())
 }
 
 func (s *accessPolicySet) Delete(AccessPolicy ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(AccessPolicy)
+	s.Generic().Delete(AccessPolicy)
 }
 
 func (s *accessPolicySet) Union(set AccessPolicySet) AccessPolicySet {
@@ -316,7 +340,7 @@ func (s *accessPolicySet) Difference(set AccessPolicySet) AccessPolicySet {
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericAccessPolicySet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &accessPolicySet{set: newSet}
 }
 
@@ -324,7 +348,7 @@ func (s *accessPolicySet) Intersection(set AccessPolicySet) AccessPolicySet {
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericAccessPolicySet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var accessPolicyList []*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy
 	for _, obj := range newSet.List() {
 		accessPolicyList = append(accessPolicyList, obj.(*networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy))
@@ -336,7 +360,7 @@ func (s *accessPolicySet) Find(id ezkube.ResourceId) (*networking_mesh_gloo_solo
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find AccessPolicy %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy{}, id)
+	obj, err := s.Generic().Find(&networking_mesh_gloo_solo_io_v1alpha2.AccessPolicy{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -348,7 +372,23 @@ func (s *accessPolicySet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *accessPolicySet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *accessPolicySet) Delta(newSet AccessPolicySet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }
 
 type VirtualMeshSet interface {
@@ -376,6 +416,10 @@ type VirtualMeshSet interface {
 	Find(id ezkube.ResourceId) (*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another VirtualMeshSet
+	Delta(newSet VirtualMeshSet) sksets.ResourceDelta
 }
 
 func makeGenericVirtualMeshSet(virtualMeshList []*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh) sksets.ResourceSet {
@@ -406,7 +450,7 @@ func (s *virtualMeshSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *virtualMeshSet) List(filterResource ...func(*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh) bool) []*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh {
@@ -421,7 +465,7 @@ func (s *virtualMeshSet) List(filterResource ...func(*networking_mesh_gloo_solo_
 	}
 
 	var virtualMeshList []*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		virtualMeshList = append(virtualMeshList, obj.(*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh))
 	}
 	return virtualMeshList
@@ -433,7 +477,7 @@ func (s *virtualMeshSet) Map() map[string]*networking_mesh_gloo_solo_io_v1alpha2
 	}
 
 	newMap := map[string]*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh)
 	}
 	return newMap
@@ -447,7 +491,7 @@ func (s *virtualMeshSet) Insert(
 	}
 
 	for _, obj := range virtualMeshList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -455,7 +499,7 @@ func (s *virtualMeshSet) Has(virtualMesh ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(virtualMesh)
+	return s.Generic().Has(virtualMesh)
 }
 
 func (s *virtualMeshSet) Equal(
@@ -464,14 +508,14 @@ func (s *virtualMeshSet) Equal(
 	if s == nil {
 		return virtualMeshSet == nil
 	}
-	return s.set.Equal(makeGenericVirtualMeshSet(virtualMeshSet.List()))
+	return s.Generic().Equal(virtualMeshSet.Generic())
 }
 
 func (s *virtualMeshSet) Delete(VirtualMesh ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(VirtualMesh)
+	s.Generic().Delete(VirtualMesh)
 }
 
 func (s *virtualMeshSet) Union(set VirtualMeshSet) VirtualMeshSet {
@@ -485,7 +529,7 @@ func (s *virtualMeshSet) Difference(set VirtualMeshSet) VirtualMeshSet {
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericVirtualMeshSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &virtualMeshSet{set: newSet}
 }
 
@@ -493,7 +537,7 @@ func (s *virtualMeshSet) Intersection(set VirtualMeshSet) VirtualMeshSet {
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericVirtualMeshSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var virtualMeshList []*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh
 	for _, obj := range newSet.List() {
 		virtualMeshList = append(virtualMeshList, obj.(*networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh))
@@ -505,7 +549,7 @@ func (s *virtualMeshSet) Find(id ezkube.ResourceId) (*networking_mesh_gloo_solo_
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find VirtualMesh %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh{}, id)
+	obj, err := s.Generic().Find(&networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -517,7 +561,23 @@ func (s *virtualMeshSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *virtualMeshSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *virtualMeshSet) Delta(newSet VirtualMeshSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }
 
 type FailoverServiceSet interface {
@@ -545,6 +605,10 @@ type FailoverServiceSet interface {
 	Find(id ezkube.ResourceId) (*networking_mesh_gloo_solo_io_v1alpha2.FailoverService, error)
 	// Get the length of the set
 	Length() int
+	// returns the generic implementation of the set
+	Generic() sksets.ResourceSet
+	// returns the delta between this and and another FailoverServiceSet
+	Delta(newSet FailoverServiceSet) sksets.ResourceDelta
 }
 
 func makeGenericFailoverServiceSet(failoverServiceList []*networking_mesh_gloo_solo_io_v1alpha2.FailoverService) sksets.ResourceSet {
@@ -575,7 +639,7 @@ func (s *failoverServiceSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
-	return s.set.Keys()
+	return s.Generic().Keys()
 }
 
 func (s *failoverServiceSet) List(filterResource ...func(*networking_mesh_gloo_solo_io_v1alpha2.FailoverService) bool) []*networking_mesh_gloo_solo_io_v1alpha2.FailoverService {
@@ -590,7 +654,7 @@ func (s *failoverServiceSet) List(filterResource ...func(*networking_mesh_gloo_s
 	}
 
 	var failoverServiceList []*networking_mesh_gloo_solo_io_v1alpha2.FailoverService
-	for _, obj := range s.set.List(genericFilters...) {
+	for _, obj := range s.Generic().List(genericFilters...) {
 		failoverServiceList = append(failoverServiceList, obj.(*networking_mesh_gloo_solo_io_v1alpha2.FailoverService))
 	}
 	return failoverServiceList
@@ -602,7 +666,7 @@ func (s *failoverServiceSet) Map() map[string]*networking_mesh_gloo_solo_io_v1al
 	}
 
 	newMap := map[string]*networking_mesh_gloo_solo_io_v1alpha2.FailoverService{}
-	for k, v := range s.set.Map() {
+	for k, v := range s.Generic().Map() {
 		newMap[k] = v.(*networking_mesh_gloo_solo_io_v1alpha2.FailoverService)
 	}
 	return newMap
@@ -616,7 +680,7 @@ func (s *failoverServiceSet) Insert(
 	}
 
 	for _, obj := range failoverServiceList {
-		s.set.Insert(obj)
+		s.Generic().Insert(obj)
 	}
 }
 
@@ -624,7 +688,7 @@ func (s *failoverServiceSet) Has(failoverService ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.set.Has(failoverService)
+	return s.Generic().Has(failoverService)
 }
 
 func (s *failoverServiceSet) Equal(
@@ -633,14 +697,14 @@ func (s *failoverServiceSet) Equal(
 	if s == nil {
 		return failoverServiceSet == nil
 	}
-	return s.set.Equal(makeGenericFailoverServiceSet(failoverServiceSet.List()))
+	return s.Generic().Equal(failoverServiceSet.Generic())
 }
 
 func (s *failoverServiceSet) Delete(FailoverService ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.set.Delete(FailoverService)
+	s.Generic().Delete(FailoverService)
 }
 
 func (s *failoverServiceSet) Union(set FailoverServiceSet) FailoverServiceSet {
@@ -654,7 +718,7 @@ func (s *failoverServiceSet) Difference(set FailoverServiceSet) FailoverServiceS
 	if s == nil {
 		return set
 	}
-	newSet := s.set.Difference(makeGenericFailoverServiceSet(set.List()))
+	newSet := s.Generic().Difference(set.Generic())
 	return &failoverServiceSet{set: newSet}
 }
 
@@ -662,7 +726,7 @@ func (s *failoverServiceSet) Intersection(set FailoverServiceSet) FailoverServic
 	if s == nil {
 		return nil
 	}
-	newSet := s.set.Intersection(makeGenericFailoverServiceSet(set.List()))
+	newSet := s.Generic().Intersection(set.Generic())
 	var failoverServiceList []*networking_mesh_gloo_solo_io_v1alpha2.FailoverService
 	for _, obj := range newSet.List() {
 		failoverServiceList = append(failoverServiceList, obj.(*networking_mesh_gloo_solo_io_v1alpha2.FailoverService))
@@ -674,7 +738,7 @@ func (s *failoverServiceSet) Find(id ezkube.ResourceId) (*networking_mesh_gloo_s
 	if s == nil {
 		return nil, eris.Errorf("empty set, cannot find FailoverService %v", sksets.Key(id))
 	}
-	obj, err := s.set.Find(&networking_mesh_gloo_solo_io_v1alpha2.FailoverService{}, id)
+	obj, err := s.Generic().Find(&networking_mesh_gloo_solo_io_v1alpha2.FailoverService{}, id)
 	if err != nil {
 		return nil, err
 	}
@@ -686,5 +750,21 @@ func (s *failoverServiceSet) Length() int {
 	if s == nil {
 		return 0
 	}
-	return s.set.Length()
+	return s.Generic().Length()
+}
+
+func (s *failoverServiceSet) Generic() sksets.ResourceSet {
+	if s == nil {
+		return nil
+	}
+	return s.set
+}
+
+func (s *failoverServiceSet) Delta(newSet FailoverServiceSet) sksets.ResourceDelta {
+	if s == nil {
+		return sksets.ResourceDelta{
+			Inserted: newSet.Generic(),
+		}
+	}
+	return s.Generic().Delta(newSet.Generic())
 }

@@ -10,6 +10,8 @@ import (
 	"encoding/json"
 	"sort"
 
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
 
@@ -476,6 +478,9 @@ type Builder interface {
 
 	// create a clone of this builder (deepcopying all resources)
 	Clone() Builder
+
+	// return the difference between the snapshot in this builder's and another
+	Delta(newSnap Builder) output.SnapshotDelta
 }
 
 func (b *builder) AddCertificateRequests(certificateRequests ...*certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequest) {
@@ -567,4 +572,32 @@ func (b *builder) Clone() Builder {
 		clone.AddCluster(cluster)
 	}
 	return clone
+}
+
+func (b *builder) Delta(other Builder) output.SnapshotDelta {
+	delta := output.SnapshotDelta{}
+	if b == nil {
+		return delta
+	}
+
+	// calcualte delta between CertificateRequests
+	certificateRequestDelta := b.GetCertificateRequests().Delta(other.GetCertificateRequests())
+	certificateRequestGvk := schema.GroupVersionKind{
+		Group:   "certificates.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "CertificateRequest",
+	}
+	delta.AddInserted(certificateRequestGvk, certificateRequestDelta.Inserted)
+	delta.AddRemoved(certificateRequestGvk, certificateRequestDelta.Removed)
+
+	// calcualte delta between Secrets
+	secretDelta := b.GetSecrets().Delta(other.GetSecrets())
+	secretGvk := schema.GroupVersionKind{
+		Group:   "",
+		Version: "v1",
+		Kind:    "Secret",
+	}
+	delta.AddInserted(secretGvk, secretDelta.Inserted)
+	delta.AddRemoved(secretGvk, secretDelta.Removed)
+	return delta
 }

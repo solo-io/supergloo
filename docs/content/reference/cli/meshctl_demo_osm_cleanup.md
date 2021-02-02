@@ -6,10 +6,6 @@ weight: 5
 
 Clean up bootstrapped local resources
 
-### Synopsis
-
-Clean up bootstrapped local resources
-
 ```
 meshctl demo osm cleanup [flags]
 ```

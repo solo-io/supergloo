@@ -2,14 +2,17 @@ package istio_test
 
 import (
 	"context"
-	"fmt"
+	"strconv"
 
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
+	istiov1alpha1 "istio.io/api/mesh/v1alpha1"
+	"istio.io/istio/pkg/util/protomarshal"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/labelutils"
 	appsv1 "k8s.io/api/apps/v1"
@@ -53,7 +56,18 @@ var _ = Describe("IstioMeshDetector", func() {
 	}
 
 	trustDomain := "cluster.local"
+	smartDnsProxyingEnabled := true
 	istioConfigMap := func() corev1sets.ConfigMapSet {
+		meshConfig := &istiov1alpha1.MeshConfig{
+			DefaultConfig: &istiov1alpha1.ProxyConfig{
+				ProxyMetadata: map[string]string{
+					"ISTIO_META_DNS_CAPTURE": strconv.FormatBool(smartDnsProxyingEnabled),
+				},
+			},
+			TrustDomain: trustDomain,
+		}
+		yaml, err := protomarshal.ToYAML(meshConfig)
+		Expect(err).To(BeNil())
 		return corev1sets.NewConfigMapSet(&corev1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace:   meshNs,
@@ -61,10 +75,12 @@ var _ = Describe("IstioMeshDetector", func() {
 				ClusterName: clusterName,
 			},
 			Data: map[string]string{
-				"mesh": fmt.Sprintf("trustDomain: \"%s\"", trustDomain),
+				"mesh": yaml,
 			},
 		})
 	}
+
+	settings := &settingsv1alpha2.DiscoverySettings{}
 
 	It("does not detect Istio when it is not there", func() {
 
@@ -87,10 +103,10 @@ var _ = Describe("IstioMeshDetector", func() {
 			ctx,
 		)
 
-		in := input.NewInputRemoteSnapshotManualBuilder("")
-		in.AddDeployments([]*appsv1.Deployment{deployment})
+		inRemote := input.NewInputDiscoveryInputSnapshotManualBuilder("")
+		inRemote.AddDeployments([]*appsv1.Deployment{deployment})
 
-		meshes, err := detector.DetectMeshes(in.Build())
+		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshes).To(HaveLen(0))
 	})
@@ -103,28 +119,29 @@ var _ = Describe("IstioMeshDetector", func() {
 			ctx,
 		)
 
-		in := input.NewInputRemoteSnapshotManualBuilder("")
-		in.AddDeployments([]*appsv1.Deployment{deployment})
-		in.AddConfigMaps(configMaps.List())
+		inRemote := input.NewInputDiscoveryInputSnapshotManualBuilder("")
+		inRemote.AddDeployments([]*appsv1.Deployment{deployment})
+		inRemote.AddConfigMaps(configMaps.List())
 
-		meshes, err := detector.DetectMeshes(in.Build())
+		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshes).To(HaveLen(1))
-		Expect(meshes[0]).To(Equal(&v1alpha2.Mesh{
+		Expect(meshes[0]).To(Equal(&discoveryv1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "istio-pilot-namespace-cluster",
 				Namespace: defaults.GetPodNamespace(),
 				Labels:    labelutils.ClusterLabels(clusterName),
 			},
-			Spec: v1alpha2.MeshSpec{
-				MeshType: &v1alpha2.MeshSpec_Istio_{Istio: &v1alpha2.MeshSpec_Istio{
-					Installation: &v1alpha2.MeshSpec_MeshInstallation{
+			Spec: discoveryv1alpha2.MeshSpec{
+				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
+					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
 						Cluster:   clusterName,
 						Version:   "latest",
 						PodLabels: map[string]string{"app": "istiod"},
 					},
-					CitadelInfo: &v1alpha2.MeshSpec_Istio_CitadelInfo{
+					CitadelInfo: &discoveryv1alpha2.MeshSpec_Istio_CitadelInfo{
 						TrustDomain:           trustDomain,
 						CitadelServiceAccount: serviceAccountName,
 					},
@@ -137,32 +154,33 @@ var _ = Describe("IstioMeshDetector", func() {
 		configMaps := istioConfigMap()
 		deployment := istioDeployment(istiodDeploymentName)
 
-		in := input.NewInputRemoteSnapshotManualBuilder("")
-		in.AddDeployments([]*appsv1.Deployment{deployment})
-		in.AddConfigMaps(configMaps.List())
+		inRemote := input.NewInputDiscoveryInputSnapshotManualBuilder("")
+		inRemote.AddDeployments([]*appsv1.Deployment{deployment})
+		inRemote.AddConfigMaps(configMaps.List())
 
 		detector := NewMeshDetector(
 			ctx,
 		)
 
-		meshes, err := detector.DetectMeshes(in.Build())
+		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshes).To(HaveLen(1))
-		Expect(meshes[0]).To(Equal(&v1alpha2.Mesh{
+		Expect(meshes[0]).To(Equal(&discoveryv1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "istiod-namespace-cluster",
 				Namespace: defaults.GetPodNamespace(),
 				Labels:    labelutils.ClusterLabels(clusterName),
 			},
-			Spec: v1alpha2.MeshSpec{
-				MeshType: &v1alpha2.MeshSpec_Istio_{Istio: &v1alpha2.MeshSpec_Istio{
-					Installation: &v1alpha2.MeshSpec_MeshInstallation{
+			Spec: discoveryv1alpha2.MeshSpec{
+				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
+					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
 						Cluster:   clusterName,
 						PodLabels: map[string]string{"app": "istiod"},
 						Version:   "latest",
 					},
-					CitadelInfo: &v1alpha2.MeshSpec_Istio_CitadelInfo{
+					CitadelInfo: &discoveryv1alpha2.MeshSpec_Istio_CitadelInfo{
 						TrustDomain:           trustDomain,
 						CitadelServiceAccount: serviceAccountName,
 					},
@@ -239,35 +257,150 @@ var _ = Describe("IstioMeshDetector", func() {
 
 		deployment := istioDeployment(istiodDeploymentName)
 
-		in := input.NewInputRemoteSnapshotManualBuilder("")
-		in.AddDeployments([]*appsv1.Deployment{deployment})
-		in.AddConfigMaps(configMaps.List())
-		in.AddServices(services.List())
-		in.AddPods(pods.List())
-		in.AddNodes(nodes.List())
+		inRemote := input.NewInputDiscoveryInputSnapshotManualBuilder("")
+		inRemote.AddDeployments([]*appsv1.Deployment{deployment})
+		inRemote.AddConfigMaps(configMaps.List())
+		inRemote.AddServices(services.List())
+		inRemote.AddPods(pods.List())
+		inRemote.AddNodes(nodes.List())
 
-		meshes, err := detector.DetectMeshes(in.Build())
+		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
 
-		expectedMesh := &v1alpha2.Mesh{
+		expectedMesh := &discoveryv1alpha2.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "istiod-namespace-cluster",
 				Namespace: istioNamespace,
 				Labels:    labelutils.ClusterLabels(clusterName),
 			},
-			Spec: v1alpha2.MeshSpec{
-				MeshType: &v1alpha2.MeshSpec_Istio_{Istio: &v1alpha2.MeshSpec_Istio{
-					Installation: &v1alpha2.MeshSpec_MeshInstallation{
+			Spec: discoveryv1alpha2.MeshSpec{
+				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
+					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
 						Cluster:   clusterName,
 						Version:   "latest",
 						PodLabels: map[string]string{"app": "istiod"},
 					},
-					CitadelInfo: &v1alpha2.MeshSpec_Istio_CitadelInfo{
+					CitadelInfo: &discoveryv1alpha2.MeshSpec_Istio_CitadelInfo{
 						TrustDomain:           trustDomain,
 						CitadelServiceAccount: serviceAccountName,
 					},
-					IngressGateways: []*v1alpha2.MeshSpec_Istio_IngressGatewayInfo{{
+					IngressGateways: []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo{{
+						WorkloadLabels:   workloadLabels,
+						ExternalAddress:  "external.domain",
+						ExternalTlsPort:  5678,
+						TlsContainerPort: 1234,
+					}},
+				}},
+			},
+		}
+
+		Expect(meshes).To(HaveLen(1))
+		Expect(meshes[0]).To(Equal(expectedMesh))
+	})
+
+	It("uses settings to detect ingress gateways", func() {
+		configMaps := istioConfigMap()
+		workloadLabels := map[string]string{"mykey": "myvalue"}
+		services := corev1sets.NewServiceSet(&corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "ingress-svc",
+				Namespace:   meshNs,
+				ClusterName: clusterName,
+			},
+			Spec: corev1.ServiceSpec{
+				Ports: []corev1.ServicePort{{
+					Name:     "specialport",
+					Protocol: "TCP",
+					Port:     1234,
+					NodePort: 5678,
+				}},
+				Selector: workloadLabels,
+				Type:     corev1.ServiceTypeNodePort,
+			},
+		})
+
+		nodeName := "ingress-node"
+		pods := corev1sets.NewPodSet(&corev1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "ingress-pod",
+				Namespace:   meshNs,
+				ClusterName: clusterName,
+				Labels:      workloadLabels,
+			},
+			Spec: corev1.PodSpec{
+				NodeName: nodeName,
+			},
+		})
+		nodes := corev1sets.NewNodeSet(&corev1.Node{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        nodeName,
+				ClusterName: clusterName,
+			},
+			Status: corev1.NodeStatus{
+				Addresses: []corev1.NodeAddress{
+					{
+						Type:    corev1.NodeInternalDNS,
+						Address: "internal.domain",
+					},
+					{
+						Type:    corev1.NodeExternalDNS,
+						Address: "external.domain",
+					},
+				},
+			},
+		})
+
+		detector := NewMeshDetector(
+			ctx,
+		)
+
+		deployment := istioDeployment(istiodDeploymentName)
+
+		inRemote := input.NewInputDiscoveryInputSnapshotManualBuilder("")
+		inRemote.AddDeployments([]*appsv1.Deployment{deployment})
+		inRemote.AddConfigMaps(configMaps.List())
+		inRemote.AddServices(services.List())
+		inRemote.AddPods(pods.List())
+		inRemote.AddNodes(nodes.List())
+		settings := &settingsv1alpha2.DiscoverySettings{
+			Istio: &settingsv1alpha2.DiscoverySettings_Istio{
+				IngressGatewayDetectors: map[string]*settingsv1alpha2.DiscoverySettings_Istio_IngressGatewayDetector{
+					"*": {
+						GatewayWorkloadLabels: map[string]string{"mykey": "myvalue"},
+						GatewayTlsPortName:    "myport",
+					},
+					clusterName: {
+						GatewayTlsPortName: "specialport",
+					},
+				},
+			},
+		}
+
+		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
+		Expect(err).NotTo(HaveOccurred())
+
+		expectedMesh := &discoveryv1alpha2.Mesh{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "istiod-namespace-cluster",
+				Namespace: defaults.GetPodNamespace(),
+				Labels:    labelutils.ClusterLabels(clusterName),
+			},
+			Spec: discoveryv1alpha2.MeshSpec{
+				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
+					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+						Namespace: meshNs,
+						Cluster:   clusterName,
+						Version:   "latest",
+						PodLabels: map[string]string{"app": "istiod"},
+					},
+					CitadelInfo: &discoveryv1alpha2.MeshSpec_Istio_CitadelInfo{
+						TrustDomain:           trustDomain,
+						CitadelServiceAccount: serviceAccountName,
+					},
+					IngressGateways: []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo{{
 						WorkloadLabels:    workloadLabels,
 						ExternalAddress:   "external.domain",
 						ExternalTlsPort:   5678,

@@ -23,4 +23,4 @@ A clear and concise description of what you expected to happen.
 Add any other context about the problem here, e.g.
 - Gloo Mesh version
 - Kubernetes version
-- service mesh and version (if applicable, e.g. Istio 1.5)
+- service mesh and version (if applicable, e.g. Istio 1.7)

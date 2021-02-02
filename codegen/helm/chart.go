@@ -4,6 +4,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/iancoleman/strcase"
+
 	"github.com/solo-io/gloo-mesh/codegen/io"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/common/version"
@@ -37,7 +39,7 @@ var (
 var Chart = &model.Chart{
 	Operators: []model.Operator{
 		discoveryOperator(),
-		networkingOperator(),
+		NetworkingOperator("networking"),
 	},
 	FilterTemplate: filterTemplates,
 	Data: model.Data{
@@ -45,8 +47,36 @@ var Chart = &model.Chart{
 		Name:        "gloo-mesh",
 		Description: "Helm chart for Gloo Mesh.",
 		Version:     version.Version,
+		Dependencies: []model.Dependency{{
+			Name:       "gloo-mesh-crds",
+			Version:    version.Version,
+			Repository: GetHelmRepository() + "gloo-mesh-crds",
+		}},
 	},
-	Values: defaultValues(),
+	Values: DefaultValues(),
+}
+
+// return the Helm repository where Gloo Mesh charts are stored.
+// will point to public url on releases, else install/helm/_output/charts/
+func GetHelmRepository() string {
+	// WARNING: hard-coupled with makefile convention
+	if os.Getenv("RELEASE") == "\"true\"" {
+		return "https://storage.googleapis.com/gloo-mesh/"
+	}
+	// file path must be relative to repo root
+	return "file://../"
+}
+
+var CrdsChart = &model.Chart{
+	FilterTemplate: func(outPath string) bool {
+		return strings.Contains(outPath, "templates") || outPath == "values.yaml"
+	},
+	Data: model.Data{
+		ApiVersion:  "v1",
+		Name:        "gloo-mesh-crds",
+		Description: "CRDs required by Gloo Mesh management controllers (i.e. discovery and networking).",
+		Version:     version.Version,
+	},
 }
 
 var AgentCrdsChart = &model.Chart{
@@ -56,7 +86,7 @@ var AgentCrdsChart = &model.Chart{
 	Data: model.Data{
 		ApiVersion:  "v1",
 		Name:        "agent-crds",
-		Description: "CRDs required by Gloo Mesh remote agents (i.e. cert-agent and wasm-agent.",
+		Description: "CRDs required by Gloo Mesh remote agents (i.e. cert-agent and wasm-agent).",
 		Version:     version.Version,
 	},
 }
@@ -128,7 +158,8 @@ func discoveryOperator() model.Operator {
 	}
 }
 
-func networkingOperator() model.Operator {
+// exported for use in Enterprise chart
+func NetworkingOperator(name string) model.Operator {
 
 	var rbacPolicies []rbacv1.PolicyRule
 
@@ -142,7 +173,7 @@ func networkingOperator() model.Operator {
 	rbacPolicies = append(rbacPolicies, io.CertificateIssuerInputTypes.RbacPoliciesUpdateStatus()...)
 
 	return model.Operator{
-		Name: "networking",
+		Name: name,
 		Deployment: model.Deployment{
 			Image: glooMeshImage(),
 			Resources: &v1.ResourceRequirements{
@@ -164,10 +195,12 @@ func networkingOperator() model.Operator {
 		Rbac: rbacPolicies,
 		Args: []string{
 			"networking",
-			"--metrics-port={{ $.Values.networking.ports.metrics }}",
+			"--metrics-port={{ $.Values." + strcase.ToLowerCamel(name) + ".ports.metrics }}",
 			"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
 			"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
 			"--verbose",
+			"--disallow-intersecting-config={{ $.Values.disallowIntersectingConfig }}",
+			"--watch-output-types={{ $.Values.watchOutputTypes }}",
 		},
 		Env: []v1.EnvVar{
 			{

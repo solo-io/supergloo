@@ -32,8 +32,6 @@ func rootCommand(ctx context.Context) *cobra.Command {
 		},
 	}
 
-	opts.AddToFlags(cmd.PersistentFlags())
-
 	cmd.AddCommand(
 		discoveryCommand(ctx, opts),
 		networkingCommand(ctx, opts),
@@ -42,12 +40,8 @@ func rootCommand(ctx context.Context) *cobra.Command {
 	return cmd
 }
 
-type discoveryOpts struct {
-	*bootstrap.Options
-}
-
 func discoveryCommand(ctx context.Context, bs *bootstrap.Options) *cobra.Command {
-	opts := &discoveryOpts{Options: bs}
+	opts := &mesh_discovery.DiscoveryOpts{Options: bs}
 	cmd := &cobra.Command{
 		Use:   "discovery",
 		Short: "Start the Gloo Mesh Discovery Operator",
@@ -55,19 +49,16 @@ func discoveryCommand(ctx context.Context, bs *bootstrap.Options) *cobra.Command
 			return startDiscovery(ctx, opts)
 		},
 	}
+	opts.AddToFlags(cmd.Flags())
 	return cmd
 }
 
-func startDiscovery(ctx context.Context, opts *discoveryOpts) error {
-	return mesh_discovery.Start(ctx, *opts.Options)
-}
-
-type networkingOpts struct {
-	*bootstrap.Options
+func startDiscovery(ctx context.Context, opts *mesh_discovery.DiscoveryOpts) error {
+	return mesh_discovery.Start(ctx, *opts)
 }
 
 func networkingCommand(ctx context.Context, bs *bootstrap.Options) *cobra.Command {
-	opts := &networkingOpts{Options: bs}
+	opts := &mesh_networking.NetworkingOpts{Options: bs}
 	cmd := &cobra.Command{
 		Use:   "networking",
 		Short: "Start the Gloo Mesh Networking Operator",
@@ -75,9 +66,10 @@ func networkingCommand(ctx context.Context, bs *bootstrap.Options) *cobra.Comman
 			return startNetworking(ctx, opts)
 		},
 	}
+	opts.AddToFlags(cmd.Flags())
 	return cmd
 }
 
-func startNetworking(ctx context.Context, opts *networkingOpts) error {
-	return mesh_networking.Start(ctx, *opts.Options)
+func startNetworking(ctx context.Context, opts *mesh_networking.NetworkingOpts) error {
+	return mesh_networking.Start(ctx, opts)
 }

@@ -70,6 +70,7 @@ type KubeContext struct {
 	Clientset             *kubernetes.Clientset
 	TrafficPolicyClient   networkingv1alpha2.TrafficPolicyClient
 	MeshClient            discoveryv1alpha2.MeshClient
+	TrafficTargetClient   discoveryv1alpha2.TrafficTargetClient
 	SecretClient          kubernetes_core.SecretClient
 	VirtualMeshClient     networkingv1alpha2.VirtualMeshClient
 	DestinationRuleClient istionetworkingv1alpha3.DestinationRuleClient
@@ -107,6 +108,7 @@ func NewKubeContext(kubecontext string) KubeContext {
 		TrafficPolicyClient:   networkingClientset.TrafficPolicies(),
 		VirtualMeshClient:     networkingClientset.VirtualMeshes(),
 		MeshClient:            discoveryClientset.Meshes(),
+		TrafficTargetClient:   discoveryClientset.TrafficTargets(),
 		SecretClient:          kubeCoreClientset.Secrets(),
 		DestinationRuleClient: istioNetworkingClientset.DestinationRules(),
 		VirtualServiceClient:  istioNetworkingClientset.VirtualServices(),
@@ -231,7 +233,7 @@ func StartEnv(ctx context.Context) Env {
 	Expect(err).NotTo(HaveOccurred())
 
 	// get absolute path to setup script so this function can be called from any working directory)
-	cmd := exec.CommandContext(ctx, "bash", "./ci/setup-kind.sh", strconv.Itoa(GinkgoParallelNode()))
+	cmd := exec.CommandContext(ctx, "bash", "-x", "./ci/setup-kind.sh", strconv.Itoa(GinkgoParallelNode()))
 	cmd.Stdout = GinkgoWriter
 	cmd.Stderr = GinkgoWriter
 	cmd.Env = os.Environ()

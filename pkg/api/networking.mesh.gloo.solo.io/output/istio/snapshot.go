@@ -10,6 +10,8 @@ import (
 	"encoding/json"
 	"sort"
 
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
 
@@ -22,8 +24,8 @@ import (
 	certificates_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
 	certificates_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
 
-	xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1"
-	xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1/sets"
+	xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1"
+	xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 
 	networking_istio_io_v1alpha3_sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	networking_istio_io_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -132,7 +134,7 @@ func NewLabelPartitionedSnapshot(
 	issuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet,
 	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
 
-	xdsConfigs xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet,
+	xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet,
 
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
 	envoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
@@ -213,7 +215,7 @@ func NewSinglePartitionedSnapshot(
 	issuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet,
 	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
 
-	xdsConfigs xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet,
+	xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet,
 
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
 	envoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
@@ -456,8 +458,8 @@ func partitionPodBounceDirectivesByLabel(labelKey string, set certificates_mesh_
 	return partitionedPodBounceDirectives, nil
 }
 
-func partitionXdsConfigsByLabel(labelKey string, set xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet) ([]LabeledXdsConfigSet, error) {
-	setsByLabel := map[string]xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet{}
+func partitionXdsConfigsByLabel(labelKey string, set xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet) ([]LabeledXdsConfigSet, error) {
+	setsByLabel := map[string]xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
@@ -470,7 +472,7 @@ func partitionXdsConfigsByLabel(labelKey string, set xds_enterprise_agent_mesh_g
 
 		setForValue, ok := setsByLabel[labelValue]
 		if !ok {
-			setForValue = xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
+			setForValue = xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
 			setsByLabel[labelValue] = setForValue
 		}
 		setForValue.Insert(obj)
@@ -862,7 +864,7 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	}
 	snapshotMap["podBounceDirectives"] = podBounceDirectiveSet.List()
 
-	xdsConfigSet := xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
+	xdsConfigSet := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
 	for _, set := range s.xdsConfigs {
 		xdsConfigSet = xdsConfigSet.Union(set.Set())
 	}
@@ -1055,18 +1057,18 @@ type LabeledXdsConfigSet interface {
 	Labels() map[string]string
 
 	// returns the set of XdsConfiges with the given labels
-	Set() xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+	Set() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
 
 	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
 	Generic() output.ResourceList
 }
 
 type labeledXdsConfigSet struct {
-	set    xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+	set    xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
 	labels map[string]string
 }
 
-func NewLabeledXdsConfigSet(set xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet, labels map[string]string) (LabeledXdsConfigSet, error) {
+func NewLabeledXdsConfigSet(set xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet, labels map[string]string) (LabeledXdsConfigSet, error) {
 	// validate that each XdsConfig contains the labels, else this is not a valid LabeledXdsConfigSet
 	for _, item := range set.List() {
 		for k, v := range labels {
@@ -1084,7 +1086,7 @@ func (l *labeledXdsConfigSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledXdsConfigSet) Set() xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet {
+func (l *labeledXdsConfigSet) Set() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet {
 	return l.set
 }
 
@@ -1096,7 +1098,7 @@ func (l labeledXdsConfigSet) Generic() output.ResourceList {
 
 	// enable list func for garbage collection
 	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
-		var list xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1.XdsConfigList
+		var list xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfigList
 		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
 			return nil, err
 		}
@@ -1599,7 +1601,7 @@ type builder struct {
 	issuedCertificates  certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
 	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 
-	xdsConfigs xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+	xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
 
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet
 	envoyFilters     networking_istio_io_v1alpha3_sets.EnvoyFilterSet
@@ -1620,7 +1622,7 @@ func NewBuilder(ctx context.Context, name string) *builder {
 		issuedCertificates:  certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet(),
 		podBounceDirectives: certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet(),
 
-		xdsConfigs: xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet(),
+		xdsConfigs: xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet(),
 
 		destinationRules: networking_istio_io_v1alpha3_sets.NewDestinationRuleSet(),
 		envoyFilters:     networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet(),
@@ -1651,10 +1653,10 @@ type Builder interface {
 	GetPodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 
 	// add XdsConfigs to the collected outputs
-	AddXdsConfigs(xdsConfigs ...*xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1.XdsConfig)
+	AddXdsConfigs(xdsConfigs ...*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig)
 
 	// get the collected XdsConfigs
-	GetXdsConfigs() xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+	GetXdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
 
 	// add DestinationRules to the collected outputs
 	AddDestinationRules(destinationRules ...*networking_istio_io_v1alpha3.DestinationRule)
@@ -1716,6 +1718,9 @@ type Builder interface {
 
 	// create a clone of this builder (deepcopying all resources)
 	Clone() Builder
+
+	// return the difference between the snapshot in this builder's and another
+	Delta(newSnap Builder) output.SnapshotDelta
 }
 
 func (b *builder) AddIssuedCertificates(issuedCertificates ...*certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate) {
@@ -1736,7 +1741,7 @@ func (b *builder) AddPodBounceDirectives(podBounceDirectives ...*certificates_me
 		b.podBounceDirectives.Insert(obj)
 	}
 }
-func (b *builder) AddXdsConfigs(xdsConfigs ...*xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1.XdsConfig) {
+func (b *builder) AddXdsConfigs(xdsConfigs ...*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig) {
 	for _, obj := range xdsConfigs {
 		if obj == nil {
 			continue
@@ -1816,7 +1821,7 @@ func (b *builder) GetPodBounceDirectives() certificates_mesh_gloo_solo_io_v1alph
 	return b.podBounceDirectives
 }
 
-func (b *builder) GetXdsConfigs() xds_enterprise_agent_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet {
+func (b *builder) GetXdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet {
 	return b.xdsConfigs
 }
 
@@ -1966,4 +1971,107 @@ func (b *builder) Clone() Builder {
 		clone.AddCluster(cluster)
 	}
 	return clone
+}
+
+func (b *builder) Delta(other Builder) output.SnapshotDelta {
+	delta := output.SnapshotDelta{}
+	if b == nil {
+		return delta
+	}
+
+	// calcualte delta between IssuedCertificates
+	issuedCertificateDelta := b.GetIssuedCertificates().Delta(other.GetIssuedCertificates())
+	issuedCertificateGvk := schema.GroupVersionKind{
+		Group:   "certificates.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "IssuedCertificate",
+	}
+	delta.AddInserted(issuedCertificateGvk, issuedCertificateDelta.Inserted)
+	delta.AddRemoved(issuedCertificateGvk, issuedCertificateDelta.Removed)
+	// calcualte delta between PodBounceDirectives
+	podBounceDirectiveDelta := b.GetPodBounceDirectives().Delta(other.GetPodBounceDirectives())
+	podBounceDirectiveGvk := schema.GroupVersionKind{
+		Group:   "certificates.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "PodBounceDirective",
+	}
+	delta.AddInserted(podBounceDirectiveGvk, podBounceDirectiveDelta.Inserted)
+	delta.AddRemoved(podBounceDirectiveGvk, podBounceDirectiveDelta.Removed)
+
+	// calcualte delta between XdsConfigs
+	xdsConfigDelta := b.GetXdsConfigs().Delta(other.GetXdsConfigs())
+	xdsConfigGvk := schema.GroupVersionKind{
+		Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
+		Version: "v1alpha1",
+		Kind:    "XdsConfig",
+	}
+	delta.AddInserted(xdsConfigGvk, xdsConfigDelta.Inserted)
+	delta.AddRemoved(xdsConfigGvk, xdsConfigDelta.Removed)
+
+	// calcualte delta between DestinationRules
+	destinationRuleDelta := b.GetDestinationRules().Delta(other.GetDestinationRules())
+	destinationRuleGvk := schema.GroupVersionKind{
+		Group:   "networking.istio.io",
+		Version: "v1alpha3",
+		Kind:    "DestinationRule",
+	}
+	delta.AddInserted(destinationRuleGvk, destinationRuleDelta.Inserted)
+	delta.AddRemoved(destinationRuleGvk, destinationRuleDelta.Removed)
+	// calcualte delta between EnvoyFilters
+	envoyFilterDelta := b.GetEnvoyFilters().Delta(other.GetEnvoyFilters())
+	envoyFilterGvk := schema.GroupVersionKind{
+		Group:   "networking.istio.io",
+		Version: "v1alpha3",
+		Kind:    "EnvoyFilter",
+	}
+	delta.AddInserted(envoyFilterGvk, envoyFilterDelta.Inserted)
+	delta.AddRemoved(envoyFilterGvk, envoyFilterDelta.Removed)
+	// calcualte delta between Gateways
+	gatewayDelta := b.GetGateways().Delta(other.GetGateways())
+	gatewayGvk := schema.GroupVersionKind{
+		Group:   "networking.istio.io",
+		Version: "v1alpha3",
+		Kind:    "Gateway",
+	}
+	delta.AddInserted(gatewayGvk, gatewayDelta.Inserted)
+	delta.AddRemoved(gatewayGvk, gatewayDelta.Removed)
+	// calcualte delta between ServiceEntries
+	serviceEntryDelta := b.GetServiceEntries().Delta(other.GetServiceEntries())
+	serviceEntryGvk := schema.GroupVersionKind{
+		Group:   "networking.istio.io",
+		Version: "v1alpha3",
+		Kind:    "ServiceEntry",
+	}
+	delta.AddInserted(serviceEntryGvk, serviceEntryDelta.Inserted)
+	delta.AddRemoved(serviceEntryGvk, serviceEntryDelta.Removed)
+	// calcualte delta between VirtualServices
+	virtualServiceDelta := b.GetVirtualServices().Delta(other.GetVirtualServices())
+	virtualServiceGvk := schema.GroupVersionKind{
+		Group:   "networking.istio.io",
+		Version: "v1alpha3",
+		Kind:    "VirtualService",
+	}
+	delta.AddInserted(virtualServiceGvk, virtualServiceDelta.Inserted)
+	delta.AddRemoved(virtualServiceGvk, virtualServiceDelta.Removed)
+
+	// calcualte delta between AuthorizationPolicies
+	authorizationPolicyDelta := b.GetAuthorizationPolicies().Delta(other.GetAuthorizationPolicies())
+	authorizationPolicyGvk := schema.GroupVersionKind{
+		Group:   "security.istio.io",
+		Version: "v1beta1",
+		Kind:    "AuthorizationPolicy",
+	}
+	delta.AddInserted(authorizationPolicyGvk, authorizationPolicyDelta.Inserted)
+	delta.AddRemoved(authorizationPolicyGvk, authorizationPolicyDelta.Removed)
+
+	// calcualte delta between ConfigMaps
+	configMapDelta := b.GetConfigMaps().Delta(other.GetConfigMaps())
+	configMapGvk := schema.GroupVersionKind{
+		Group:   "",
+		Version: "v1",
+		Kind:    "ConfigMap",
+	}
+	delta.AddInserted(configMapGvk, configMapDelta.Inserted)
+	delta.AddRemoved(configMapGvk, configMapDelta.Removed)
+	return delta
 }

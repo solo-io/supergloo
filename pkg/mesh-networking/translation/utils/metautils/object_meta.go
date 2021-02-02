@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
@@ -14,6 +15,7 @@ import (
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -72,6 +74,14 @@ func TranslatedObjectLabels() map[string]string {
 	return map[string]string{OwnershipLabelKey: defaults.GetPodNamespace()}
 }
 
+// Return true if the object is translated by Gloo Mesh
+func IsTranslated(object metav1.Object) bool {
+	translatedObjectLabels := TranslatedObjectLabels()
+	objLabels := object.GetLabels()
+	// AreLabelsInWhiteList returns true if whitelist labels are empty, so we need to check for that case
+	return len(objLabels) > 0 && labels.AreLabelsInWhiteList(translatedObjectLabels, objLabels)
+}
+
 // add a parent to the annotation for a given child object
 func AppendParent(
 	ctx context.Context,
@@ -79,6 +89,11 @@ func AppendParent(
 	parentId ezkube.ResourceId,
 	parentGVK schema.GroupVersionKind,
 ) {
+
+	if reflect.ValueOf(child).IsNil() {
+		return
+	}
+
 	annotations := child.GetAnnotations()
 	if annotations == nil {
 		annotations = make(map[string]string)

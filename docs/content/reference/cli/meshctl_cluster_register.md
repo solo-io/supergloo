@@ -6,10 +6,6 @@ weight: 5
 
 Register a Kubernetes cluster with Gloo Mesh
 
-### Synopsis
-
-Register a Kubernetes cluster with Gloo Mesh
-
 ```
 meshctl cluster register [flags]
 ```
@@ -25,7 +21,7 @@ meshctl cluster register [flags]
       --cluster-name string              name of the cluster to register
       --federation-namespace string      namespace of the Gloo Mesh control plane in which the secret for the registered cluster will be created (default "gloo-mesh")
   -h, --help                             help for register
-      --install-wasm-agent               If true, install the wasm-agent on the cluster being registered.
+      --install-wasm-agent               If true, install the wasm-agent on the cluster being registered if Enterprise Networking is detected. (default true)
       --kubeconfig string                path to the kubeconfig from which the registered cluster will be accessed
       --mgmt-context string              name of the kubeconfig context to use for the management cluster
       --remote-context string            name of the kubeconfig context to use for the remote cluster

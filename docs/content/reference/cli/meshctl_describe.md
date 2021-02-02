@@ -6,10 +6,6 @@ weight: 5
 
 Human readable description of discovered resources and applicable configuration
 
-### Synopsis
-
-Human readable description of discovered resources and applicable configuration
-
 ### Options
 
 ```

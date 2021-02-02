@@ -8,7 +8,7 @@ weight: 100
 This feature is available in Gloo Mesh Enterprise only. If you are using the open source version of Gloo Mesh, this guide will not work.
 {{< /notice >}}
 
-In the role-based API concepts document, we review the functionality of the role-based API and the core components that comprise a role. Now let's actually get some roles deployed and bound to subjects. 
+In the role-based API concepts document, we review the functionality of the role-based API and the core components that comprise a role. Users, Groups, and Service Accounts are supported as role binding subjects. Now let's actually get some roles deployed and bound to subjects. 
 
 This guide will have you create two example roles and bind them to users.
 
@@ -81,7 +81,7 @@ Let's dig into some example roles starting with the admin role referenced above.
 The `full-admin-role` defined below is granting permissions to perform all actions on all scopes. Obviously this role should be treated with caution.
 
 ```yaml
-apiVersion: rbac.mesh.gloo.solo.io/v1alpha1
+apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1alpha1
 kind: Role
 metadata:
   name: full-admin-role
@@ -170,7 +170,7 @@ kubectl --context $MGMT_CONTEXT apply -f full-admin-role.yaml
 Next we will create the RoleBinding for the `kubernetes-admin` user. You may need to change the username depending on the configuration of your management cluster running Gloo Mesh Enterprise.
 
 ```yaml
-apiVersion: rbac.mesh.gloo.solo.io/v1alpha1
+apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1alpha1
 kind: RoleBinding
 metadata:
   labels:
@@ -232,7 +232,7 @@ The Traffic Consumer Role also creates an AccessPolicyScope defining where acces
 The end result is that the role allows the management of AccessPolicies for a specific identity and traffic target, and allows a small number of TrafficPolicyActions on a specific service and workload. This type of fine-grained permissions could then be bound to a developer or operator responsible for managing traffic.
 
 ```yaml
-apiVersion: rbac.mesh.gloo.solo.io/v1alpha1
+apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1alpha1
 kind: Role
 metadata:
   name: traffic-target-consumer-role
@@ -287,7 +287,7 @@ kubectl --context $MGMT_CONTEXT apply -f traffic-target-consumer.yaml
 Now we can bind the role to our junior operator, Gloo.
 
 ```yaml
-apiVersion: rbac.mesh.gloo.solo.io/v1alpha1
+apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1alpha1
 kind: RoleBinding
 metadata:
   labels:

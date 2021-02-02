@@ -1,11 +1,17 @@
 package virtualservice
 
 import (
+	"context"
 	"reflect"
 	"sort"
 
+	"github.com/golang/protobuf/proto"
+	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
+	skv2sets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -14,12 +20,13 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/equalityutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/skv2/pkg/equalityutils"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 //go:generate mockgen -source ./virtual_service_translator.go -destination mocks/virtual_service_translator.go
@@ -39,7 +46,8 @@ type Translator interface {
 		Note that the input snapshot TrafficTargetSet contains the given TrafficTarget.
 	*/
 	Translate(
-		in input.Snapshot,
+		ctx context.Context,
+		in input.LocalSnapshot,
 		trafficTarget *discoveryv1alpha2.TrafficTarget,
 		sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 		reporter reporting.Reporter,
@@ -47,18 +55,28 @@ type Translator interface {
 }
 
 type translator struct {
-	clusterDomains   hostutils.ClusterDomainRegistry
-	decoratorFactory decorators.Factory
+	userVirtualServices v1alpha3sets.VirtualServiceSet
+	clusterDomains      hostutils.ClusterDomainRegistry
+	decoratorFactory    decorators.Factory
 }
 
-func NewTranslator(clusterDomains hostutils.ClusterDomainRegistry, decoratorFactory decorators.Factory) Translator {
-	return &translator{clusterDomains: clusterDomains, decoratorFactory: decoratorFactory}
+func NewTranslator(
+	userVirtualServices v1alpha3sets.VirtualServiceSet,
+	clusterDomains hostutils.ClusterDomainRegistry,
+	decoratorFactory decorators.Factory,
+) Translator {
+	return &translator{
+		userVirtualServices: userVirtualServices,
+		clusterDomains:      clusterDomains,
+		decoratorFactory:    decoratorFactory,
+	}
 }
 
 // Translate a VirtualService for the TrafficTarget.
 // If sourceMeshInstallation is nil, assume that VirtualService is colocated to the trafficTarget and use local FQDNs.
 func (t *translator) Translate(
-	in input.Snapshot,
+	_ context.Context,
+	in input.LocalSnapshot,
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	reporter reporting.Reporter,
@@ -75,7 +93,9 @@ func (t *translator) Translate(
 		sourceCluster = sourceMeshInstallation.Cluster
 	}
 
-	virtualService := t.initializeVirtualService(trafficTarget, sourceMeshInstallation)
+	destinationFQDN := t.clusterDomains.GetDestinationFQDN(sourceCluster, trafficTarget.Spec.GetKubeService().Ref)
+
+	virtualService := t.initializeVirtualService(trafficTarget, sourceMeshInstallation, destinationFQDN)
 	// register the owners of the virtualservice fields
 	virtualServiceFields := fieldutils.NewOwnershipRegistry()
 	vsDecorators := t.decoratorFactory.MakeDecorators(decorators.Parameters{
@@ -83,37 +103,44 @@ func (t *translator) Translate(
 		Snapshot:       in,
 	})
 
-	for _, policy := range trafficTarget.Status.AppliedTrafficPolicies {
-		baseRoute := initializeBaseRoute(policy.Spec, sourceCluster)
-		// nil baseRoute indicates that this cluster is not selected by the WorkloadSelector and thus should not be translated
-		if baseRoute == nil {
-			continue
-		}
+	appliedTpsByRequestMatcher := groupAppliedTpsByRequestMatcher(trafficTarget.Status.AppliedTrafficPolicies)
 
-		registerField := registerFieldFunc(virtualServiceFields, virtualService, policy.Ref)
-		for _, decorator := range vsDecorators {
+	for _, tpsByRequestMatcher := range appliedTpsByRequestMatcher {
 
-			if trafficPolicyDecorator, ok := decorator.(decorators.TrafficPolicyVirtualServiceDecorator); ok {
-				if err := trafficPolicyDecorator.ApplyTrafficPolicyToVirtualService(
-					policy,
-					trafficTarget,
-					sourceMeshInstallation,
-					baseRoute,
-					registerField,
-				); err != nil {
-					reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
+		// initialize base route for TP's group by request matcher
+		baseRoute := initializeBaseRoute(tpsByRequestMatcher[0].Spec, sourceCluster)
+
+		for _, policy := range tpsByRequestMatcher {
+			// nil baseRoute indicates that this cluster is not selected by the WorkloadSelector and thus should not be translated
+			if baseRoute == nil {
+				continue
+			}
+
+			registerField := registerFieldFunc(virtualServiceFields, virtualService, policy.Ref)
+			for _, decorator := range vsDecorators {
+
+				if trafficPolicyDecorator, ok := decorator.(decorators.TrafficPolicyVirtualServiceDecorator); ok {
+					if err := trafficPolicyDecorator.ApplyTrafficPolicyToVirtualService(
+						policy,
+						trafficTarget,
+						sourceMeshInstallation,
+						baseRoute,
+						registerField,
+					); err != nil {
+						reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, policy.Ref, eris.Wrapf(err, "%v", decorator.DecoratorName()))
+					}
 				}
 			}
 		}
 
 		// Avoid appending an HttpRoute that will have no affect, which occurs if no decorators mutate the baseRoute with any non-match config.
-		if equalityutils.Equals(initializeBaseRoute(policy.Spec, sourceCluster), baseRoute) {
+		if equalityutils.DeepEqual(initializeBaseRoute(tpsByRequestMatcher[0].Spec, sourceCluster), baseRoute) {
 			continue
 		}
 
 		// set a default destination for the route (to the target traffictarget)
 		// if a decorator has not already set it
-		t.setDefaultDestination(baseRoute, trafficTarget, sourceCluster)
+		t.setDefaultDestination(baseRoute, destinationFQDN)
 
 		// construct a copy of a route for each service port
 		// required because Istio needs the destination port for every route
@@ -136,7 +163,98 @@ func (t *translator) Translate(
 		return nil
 	}
 
+	if t.userVirtualServices == nil {
+		return virtualService
+	}
+
+	// detect and report error on intersecting config if enabled in settings
+	if errs := conflictsWithUserVirtualService(
+		t.userVirtualServices,
+		virtualService,
+	); len(errs) > 0 {
+		for _, err := range errs {
+			for _, policy := range trafficTarget.Status.AppliedTrafficPolicies {
+				reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, policy.Ref, err)
+			}
+		}
+		return nil
+	}
+
 	return virtualService
+}
+
+// ensure that only a single VirtualService HTTPRoute gets created per TrafficPolicy request matcher
+// by first grouping TrafficPolicies by semantically equivalent request matchers
+func groupAppliedTpsByRequestMatcher(
+	appliedTps []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
+) [][]*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy {
+	var allGroupedTps [][]*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy
+
+	for _, appliedTp := range appliedTps {
+		var grouped bool
+		for i, groupedTps := range allGroupedTps {
+			// append to existing group
+			if requestMatchersEqual(appliedTp.Spec, groupedTps[0].Spec) {
+				allGroupedTps[i] = append(groupedTps, appliedTp)
+				grouped = true
+				break
+			}
+		}
+		// create new group
+		if !grouped {
+			allGroupedTps = append(allGroupedTps, []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{appliedTp})
+		}
+	}
+
+	return allGroupedTps
+}
+
+func requestMatchersEqual(tp1, tp2 *v1alpha2.TrafficPolicySpec) bool {
+	return workloadSelectorListsEqual(tp1.GetSourceSelector(), tp2.GetSourceSelector()) &&
+		httpRequestMatchersEqual(tp1.GetHttpRequestMatchers(), tp2.GetHttpRequestMatchers())
+}
+
+func httpRequestMatchersEqual(matchers1, matchers2 []*v1alpha2.TrafficPolicySpec_HttpMatcher) bool {
+	if len(matchers1) != len(matchers2) {
+		return false
+	}
+	for i := range matchers1 {
+		if !proto.Equal(matchers1[i], matchers2[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+// return true if workload selectors' labels and namespaces are equivalent, ignore clusters
+func workloadSelectorsEqual(ws1, ws2 *v1alpha2.WorkloadSelector) bool {
+	return reflect.DeepEqual(ws1.Labels, ws2.Labels) &&
+		sets.NewString(ws1.Namespaces...).Equal(sets.NewString(ws2.Namespaces...))
+}
+
+// return true if two lists of WorkloadSelectors are semantically equivalent, abstracting away order
+func workloadSelectorListsEqual(wsList1, wsList2 []*v1alpha2.WorkloadSelector) bool {
+	if len(wsList1) != len(wsList2) {
+		return false
+	}
+	matchedWs2 := sets.NewInt()
+	for _, ws1 := range wsList1 {
+		var matched bool
+		for i, ws2 := range wsList2 {
+			if matchedWs2.Has(i) {
+				continue
+			}
+			if workloadSelectorsEqual(ws1, ws2) {
+				matchedWs2.Insert(i)
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			return false
+		}
+	}
+	return true
 }
 
 // construct the callback for registering fields in the virtual service
@@ -148,7 +266,7 @@ func registerFieldFunc(
 	return func(fieldPtr, val interface{}) error {
 		fieldVal := reflect.ValueOf(fieldPtr).Elem().Interface()
 
-		if equalityutils.Equals(fieldVal, val) {
+		if equalityutils.DeepEqual(fieldVal, val) {
 			return nil
 		}
 		if err := virtualServiceFields.RegisterFieldOwnership(
@@ -167,6 +285,7 @@ func registerFieldFunc(
 func (t *translator) initializeVirtualService(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	destinationFQDN string,
 ) *networkingv1alpha3.VirtualService {
 	var meta metav1.ObjectMeta
 	if sourceMeshInstallation != nil {
@@ -182,12 +301,10 @@ func (t *translator) initializeVirtualService(
 		)
 	}
 
-	hosts := []string{t.clusterDomains.GetDestinationServiceFQDN(meta.ClusterName, trafficTarget.Spec.GetKubeService().Ref)}
-
 	return &networkingv1alpha3.VirtualService{
 		ObjectMeta: meta,
 		Spec: networkingv1alpha3spec.VirtualService{
-			Hosts: hosts,
+			Hosts: []string{destinationFQDN},
 		},
 	}
 }
@@ -204,8 +321,7 @@ func initializeBaseRoute(trafficPolicy *v1alpha2.TrafficPolicySpec, sourceCluste
 
 func (t *translator) setDefaultDestination(
 	baseRoute *networkingv1alpha3spec.HTTPRoute,
-	trafficTarget *discoveryv1alpha2.TrafficTarget,
-	sourceClusterName string,
+	destinationFQDN string,
 ) {
 	// if a route destination is already set, we don't need to modify the route
 	if baseRoute.Route != nil {
@@ -214,7 +330,7 @@ func (t *translator) setDefaultDestination(
 
 	baseRoute.Route = []*networkingv1alpha3spec.HTTPRouteDestination{{
 		Destination: &networkingv1alpha3spec.Destination{
-			Host: t.clusterDomains.GetDestinationServiceFQDN(sourceClusterName, trafficTarget.Spec.GetKubeService().GetRef()),
+			Host: destinationFQDN,
 		},
 	}}
 }
@@ -328,7 +444,7 @@ func translateRequestMatchers(
 	return translatedRequestMatchers
 }
 
-func translateRequestMatcherHeaders(matchers []*v1alpha2.TrafficPolicySpec_HeaderMatcher) (
+func translateRequestMatcherHeaders(matchers []*v1alpha1.HeaderMatcher) (
 	map[string]*networkingv1alpha3spec.StringMatch, map[string]*networkingv1alpha3spec.StringMatch,
 ) {
 	headerMatchers := map[string]*networkingv1alpha3spec.StringMatch{}
@@ -392,4 +508,28 @@ func translateRequestMatcherPathSpecifier(matcher *v1alpha2.TrafficPolicySpec_Ht
 		}
 	}
 	return nil
+}
+
+// Return errors for each user-supplied VirtualService that applies to the same hostname as the translated VirtualService
+func conflictsWithUserVirtualService(
+	userVirtualServices v1alpha3sets.VirtualServiceSet,
+	translatedVirtualService *networkingv1alpha3.VirtualService,
+) []error {
+	// For each user VS, check whether any hosts match any hosts from translated VS
+	var errs []error
+
+	// virtual services from RemoteSnapshot only contain non-translated objects
+	userVirtualServices.List(func(vs *networkingv1alpha3.VirtualService) (_ bool) {
+		// check if common hostnames exist
+		commonHostnames := utils.CommonHostnames(vs.Spec.Hosts, translatedVirtualService.Spec.Hosts)
+		if len(commonHostnames) > 0 {
+			errs = append(
+				errs,
+				eris.Errorf("Unable to translate AppliedTrafficPolicies to VirtualService, applies to hosts %+v that are already configured by the existing VirtualService %s", commonHostnames, skv2sets.Key(vs)),
+			)
+		}
+		return
+	})
+
+	return errs
 }

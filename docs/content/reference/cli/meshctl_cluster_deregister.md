@@ -6,10 +6,6 @@ weight: 5
 
 Deregister a Kubernetes cluster from Gloo Mesh, cleaning up any associated resources
 
-### Synopsis
-
-Deregister a Kubernetes cluster from Gloo Mesh, cleaning up any associated resources
-
 ```
 meshctl cluster deregister [flags]
 ```

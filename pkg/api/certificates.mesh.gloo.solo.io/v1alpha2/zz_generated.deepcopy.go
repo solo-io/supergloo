@@ -139,6 +139,8 @@ func (in *PodBounceDirective) DeepCopyInto(out *PodBounceDirective) {
 
 	// deepcopy spec
 	in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy status
+	in.Status.DeepCopyInto(&out.Status)
 
 	return
 }

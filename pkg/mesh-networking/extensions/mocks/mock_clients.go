@@ -36,7 +36,7 @@ func (m *MockClientset) EXPECT() *MockClientsetMockRecorder {
 }
 
 // ConfigureServers mocks base method
-func (m *MockClientset) ConfigureServers(extensionsServerOptions []*v1alpha2.NetworkingExtensionsServer, pushFn extensions.PushFunc) error {
+func (m *MockClientset) ConfigureServers(extensionsServerOptions []*v1alpha2.GrpcServer, pushFn extensions.PushFunc) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConfigureServers", extensionsServerOptions, pushFn)
 	ret0, _ := ret[0].(error)

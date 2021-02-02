@@ -10,6 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 )
 
 // MockTranslator is a mock of Translator interface
@@ -36,15 +37,15 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // TranslateMeshes mocks base method
-func (m *MockTranslator) TranslateMeshes(in input.RemoteSnapshot) v1alpha2sets.MeshSet {
+func (m *MockTranslator) TranslateMeshes(in input.DiscoveryInputSnapshot, settings *v1alpha2.DiscoverySettings) v1alpha2sets.MeshSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranslateMeshes", in)
+	ret := m.ctrl.Call(m, "TranslateMeshes", in, settings)
 	ret0, _ := ret[0].(v1alpha2sets.MeshSet)
 	return ret0
 }
 
 // TranslateMeshes indicates an expected call of TranslateMeshes
-func (mr *MockTranslatorMockRecorder) TranslateMeshes(in interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) TranslateMeshes(in, settings interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateMeshes", reflect.TypeOf((*MockTranslator)(nil).TranslateMeshes), in)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateMeshes", reflect.TypeOf((*MockTranslator)(nil).TranslateMeshes), in, settings)
 }

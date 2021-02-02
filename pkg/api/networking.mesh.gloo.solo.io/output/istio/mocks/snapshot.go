@@ -15,8 +15,8 @@ import (
 	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
 	istio "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
-	v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1"
-	v1alpha1sets "github.com/solo-io/gloo-mesh/pkg/api/xds.enterprise.agent.mesh.gloo.solo.io/v1alpha1/sets"
+	v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1"
+	v1alpha1sets "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 	output "github.com/solo-io/skv2/contrib/pkg/output"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -1280,4 +1280,18 @@ func (m *MockBuilder) Clone() istio.Builder {
 func (mr *MockBuilderMockRecorder) Clone() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockBuilder)(nil).Clone))
+}
+
+// Delta mocks base method
+func (m *MockBuilder) Delta(newSnap istio.Builder) output.SnapshotDelta {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delta", newSnap)
+	ret0, _ := ret[0].(output.SnapshotDelta)
+	return ret0
+}
+
+// Delta indicates an expected call of Delta
+func (mr *MockBuilderMockRecorder) Delta(newSnap interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockBuilder)(nil).Delta), newSnap)
 }

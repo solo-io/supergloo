@@ -2,9 +2,12 @@ package registration
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/rotisserie/eris"
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/gloo-mesh/codegen/io"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/enterprise"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
@@ -15,7 +18,7 @@ import (
 
 var gloomeshRbacRequirements = func() []rbacv1.PolicyRule {
 	var policyRules []rbacv1.PolicyRule
-	policyRules = append(policyRules, io.DiscoveryRemoteInputTypes.RbacPoliciesWatch()...)
+	policyRules = append(policyRules, io.DiscoveryInputTypes.RbacPoliciesWatch()...)
 	policyRules = append(policyRules, io.LocalNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	policyRules = append(policyRules, io.IstioNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	policyRules = append(policyRules, io.SmiNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
@@ -94,9 +97,20 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 		return err
 	}
 
+	// Users can opt out of installing the Wasm Agent since it's only required for the WasmDeployment API.
 	if r.WasmAgent.Install {
-		if err := r.installWasmAgent(ctx); err != nil {
+		enterpriseNetworkingVersion, err := enterprise.GetEnterpriseNetworkingVersion(ctx, r.KubeConfigPath, r.MgmtContext)
+		if err != nil {
 			return err
+		}
+
+		// If Enterprise Networking is present or the user explicitly provided a chart path, install the agent.
+		if enterpriseNetworkingVersion != "" || r.WasmAgent.ChartPath != "" {
+			if err := r.installWasmAgent(ctx, enterpriseNetworkingVersion); err != nil {
+				return err
+			}
+		} else {
+			logrus.Debug("Enterprise Networking not found in management cluster, skipping Wasm Agent install.")
 		}
 	}
 
@@ -177,7 +191,19 @@ func (r *Registrant) uninstallCertAgent(ctx context.Context) error {
 	)
 }
 
-func (r *Registrant) installWasmAgent(ctx context.Context) error {
+func (r *Registrant) installWasmAgent(ctx context.Context, enterpriseNetworkingVersion string) error {
+	if r.WasmAgent.ChartPath == "" {
+		if enterpriseNetworkingVersion != "" {
+			// If we know the user's Enterprise Networking version, install the corresponding Wasm Agent.
+			r.WasmAgent.ChartPath = fmt.Sprintf(gloomesh.WasmAgentChartUriTemplate, enterpriseNetworkingVersion)
+		} else {
+			return eris.New("Failed to install Wasm Agent: no Enterprise Networking detected and no chart override provided.")
+		}
+	} else if enterpriseNetworkingVersion == "" {
+		logrus.Warn("Gloo Mesh Enterprise Networking not detected. Wasm Agent installation will proceed because a chart " +
+			"override was provided, but Wasm features depend on the presence of Enterprise Networking.")
+	}
+
 	return gloomesh.Installer{
 		HelmChartPath:  r.WasmAgent.ChartPath,
 		HelmValuesPath: r.WasmAgent.ChartValues,

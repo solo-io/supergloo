@@ -1,0 +1,27 @@
+
+---
+title: "API Reference"
+description: |
+  This section contains the API Specification for the CRDs used by Gloo Mesh.
+weight: 4
+---
+
+These docs describe Gloo Mesh CRDs.
+
+{{ range $package, $packageIndex := . }}
+
+### {{$package}}
+
+{{- range $msg, $indexEntry := $packageIndex.Crds }}
+
+  - [{{- $indexEntry.Name }}]({{ $indexEntry.Link }})
+
+{{- end}}
+
+{{- range $_, $indexEntry := $packageIndex.Services }}
+
+  - [{{- $indexEntry.Name }}]({{ $indexEntry.Link }})
+
+{{- end}}
+
+{{end}}

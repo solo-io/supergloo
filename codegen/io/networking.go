@@ -38,6 +38,18 @@ var (
 		}: {
 			"Settings",
 		},
+		schema.GroupVersion{
+			Group:   "networking.enterprise." + constants.GlooMeshApiGroupSuffix,
+			Version: "v1alpha1",
+		}: {
+			"WasmDeployment",
+		},
+		schema.GroupVersion{
+			Group:   "observability.enterprise." + constants.GlooMeshApiGroupSuffix,
+			Version: "v1alpha1",
+		}: {
+			"AccessLogRecord",
+		},
 		skv1alpha1.SchemeGroupVersion: {
 			"KubernetesCluster",
 		},
@@ -67,7 +79,7 @@ var (
 				"PodBounceDirective",
 			},
 			schema.GroupVersion{
-				Group:   "xds.enterprise.agent." + constants.GlooMeshApiGroupSuffix,
+				Group:   "xds.agent.enterprise." + constants.GlooMeshApiGroupSuffix,
 				Version: "v1alpha1",
 			}: {
 				"XdsConfig",
@@ -108,7 +120,6 @@ var (
 			appmeshv1beta2.GroupVersion: {
 				"VirtualNode",
 				"VirtualRouter",
-				"Route",
 				"VirtualService",
 			},
 		},
