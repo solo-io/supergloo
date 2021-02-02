@@ -7,10 +7,10 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1alpha1/request_matchers.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/http.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
-import "api/common/v1alpha1/request_matchers.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;

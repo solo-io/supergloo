@@ -55,7 +55,7 @@ Describes a matcher against HTTP response status codes.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | value | uint32 |  | the status code value to match against |
-  | comparator | [common.mesh.gloo.solo.io.StatusCodeMatcher.Comparator]({{< versioned_link_path fromRoot="/reference/api/api.common.v1alpha1.request_matchers#common.mesh.gloo.solo.io.StatusCodeMatcher.Comparator" >}}) |  | the comparison type used for matching |
+  | comparator | [common.mesh.gloo.solo.io.StatusCodeMatcher.Comparator]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha1.request_matchers#common.mesh.gloo.solo.io.StatusCodeMatcher.Comparator" >}}) |  | the comparison type used for matching |
   
 
 
