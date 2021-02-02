@@ -33,7 +33,6 @@ const (
 	istioMetaDnsCaptureKey    = "ISTIO_META_DNS_CAPTURE"
 
 	// https://istio.io/docs/ops/deployment/requirements/#ports-used-by-istio
-	defaultGatewayPortName      = "tls"
 	defaultHTTPSGatewayPortName = "https"
 )
 
@@ -108,6 +107,7 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Discov
 		d.ctx,
 		deployment.Namespace,
 		deployment.ClusterName,
+		ingressGatewayDetector.GetGatewayTlsPortName(),
 		defaults.DefaultEgressGatewayWorkloadLabels,
 		in.Services(),
 	)
@@ -149,13 +149,14 @@ func getEgressGateways(
 	ctx context.Context,
 	namespace string,
 	clusterName string,
+	tlsPortName string,
 	workloadLabels map[string]string,
 	allServices corev1sets.ServiceSet,
 ) []*v1alpha2.MeshSpec_Istio_EgressGatewayInfo {
 	egressSvc := getServicesForLabels(allServices, namespace, clusterName, workloadLabels)
 	var egressGateways []*v1alpha2.MeshSpec_Istio_EgressGatewayInfo
 	for _, svc := range egressSvc {
-		gateway, err := getEgressGateway(svc, workloadLabels)
+		gateway, err := getEgressGateway(svc, tlsPortName, workloadLabels)
 		if err != nil {
 			contextutils.LoggerFrom(ctx).Warnw("detection failed for mathcing istio egress service", "error", err, "service", sets.Key(svc))
 			continue
@@ -269,10 +270,11 @@ func getIngressGateway(
 
 func getEgressGateway(
 	svc *corev1.Service,
+	tlsPortName string,
 	workloadLabels map[string]string,
 ) (*v1alpha2.MeshSpec_Istio_EgressGatewayInfo, error) {
 
-	tlsPort := getSvcPortByName(defaultGatewayPortName, svc)
+	tlsPort := getSvcPortByName(tlsPortName, svc)
 	if tlsPort == nil {
 		return nil, eris.Errorf("no TLS port found on egress gateway")
 	}

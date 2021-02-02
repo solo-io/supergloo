@@ -48,17 +48,29 @@ func SetupClustersAndFederation(customDeployFuc func()) {
 
 // exported for use in enterprise
 func FederateClusters(dynamicClient client.Client, flatNetwork bool) {
-	VirtualMesh, err = data.SelfSignedVirtualMesh(
-		dynamicClient,
-		"bookinfo-federation",
-		BookinfoNamespace,
-		[]*v1.ObjectRef{
-			masterMesh,
-			remoteMesh,
-		},
-		flatNetwork,
-	)
-	Expect(err).NotTo(HaveOccurred())
+	if isLimitedTrust() {
+		VirtualMesh = data.LimitedTrustSelfSignedVirtualMesh(
+			"bookinfo-federation",
+			BookinfoNamespace,
+			[]*v1.ObjectRef{
+				masterMesh,
+				remoteMesh,
+			})
+	} else {
+		VirtualMesh, err = data.SelfSignedVirtualMesh(
+			dynamicClient,
+			"bookinfo-federation",
+			BookinfoNamespace,
+			[]*v1.ObjectRef{
+				masterMesh,
+				remoteMesh,
+			},
+			flatNetwork,
+		)
+		Expect(err).NotTo(HaveOccurred())
+	}
+
+
 
 	err = VirtualMeshManifest.AppendResources(VirtualMesh)
 	Expect(err).NotTo(HaveOccurred())
