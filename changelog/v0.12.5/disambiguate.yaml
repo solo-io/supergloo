@@ -1,3 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    description: Update snapshot interfaces to support same-name Kinds across GroupVersions.
