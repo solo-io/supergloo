@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Deflake Istio 1.7 e2e tests by using kubernetes pilotCertProvider.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1243
