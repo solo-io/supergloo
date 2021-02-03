@@ -245,18 +245,10 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			}
 			outputs.AddSecrets(issuedCertificateSecret)
 		case v1alpha2.IssuedCertificateSpec_SHARED:
-			issuedCertificateSecret := &corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      issuedCertificate.Spec.IssuedCertificateSecret.Name,
-					Namespace: issuedCertificate.Spec.IssuedCertificateSecret.Namespace,
-					Labels:    agentLabels,
-				},
-				Data: issuedCertificateData.ToSecretData(),
-				Type: issuedCertificateSecretType,
-			}
+			issuedCertificateSecret := generateSecretForSharedTrust(issuedCertificate, issuedCertificateData)
 			outputs.AddSecrets(issuedCertificateSecret)
 		default:
-			return fmt.Errorf("Invalid trust model passed")
+			return fmt.Errorf("Invalid trust model passed: %v", issuedCertificate.Spec.TlsType)
 		}
 
 		// mark issued certificate as ISSUED
@@ -393,8 +385,19 @@ func isPodSelected(pod *corev1.Pod, podSelector *v1alpha2.PodBounceDirectiveSpec
 		labels.SelectorFromSet(podSelector.Labels).Matches(labels.Set(pod.Labels))
 }
 
+func generateSecretForSharedTrust(issuedCertificate *v1alpha2.IssuedCertificate, issuedCertificateData secrets.IntermediateCAData)  *corev1.Secret {
+	 return &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      issuedCertificate.Spec.IssuedCertificateSecret.Name,
+					Namespace: issuedCertificate.Spec.IssuedCertificateSecret.Namespace,
+					Labels:    agentLabels,
+				},
+				Data: issuedCertificateData.ToSecretData(),
+				Type: issuedCertificateSecretType,
+			}
+}
+
 func generateSecretForLimitedTrust(issuedCertificate *v1alpha2.IssuedCertificate, issuedCertificateData secrets.IntermediateCAData) (*corev1.Secret, error) {
-	fmt.Println("In limited trust")
 	if len(issuedCertificate.Spec.Hosts) < 1 {
 		return nil, fmt.Errorf("issued certificate %s does not have hosts set", issuedCertificate.Name)
 	}
