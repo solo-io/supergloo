@@ -385,16 +385,16 @@ func isPodSelected(pod *corev1.Pod, podSelector *v1alpha2.PodBounceDirectiveSpec
 		labels.SelectorFromSet(podSelector.Labels).Matches(labels.Set(pod.Labels))
 }
 
-func generateSecretForSharedTrust(issuedCertificate *v1alpha2.IssuedCertificate, issuedCertificateData secrets.IntermediateCAData)  *corev1.Secret {
-	 return &corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      issuedCertificate.Spec.IssuedCertificateSecret.Name,
-					Namespace: issuedCertificate.Spec.IssuedCertificateSecret.Namespace,
-					Labels:    agentLabels,
-				},
-				Data: issuedCertificateData.ToSecretData(),
-				Type: issuedCertificateSecretType,
-			}
+func generateSecretForSharedTrust(issuedCertificate *v1alpha2.IssuedCertificate, issuedCertificateData secrets.IntermediateCAData) *corev1.Secret {
+	return &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      issuedCertificate.Spec.IssuedCertificateSecret.Name,
+			Namespace: issuedCertificate.Spec.IssuedCertificateSecret.Namespace,
+			Labels:    agentLabels,
+		},
+		Data: issuedCertificateData.ToSecretData(),
+		Type: issuedCertificateSecretType,
+	}
 }
 
 func generateSecretForLimitedTrust(issuedCertificate *v1alpha2.IssuedCertificate, issuedCertificateData secrets.IntermediateCAData) (*corev1.Secret, error) {
