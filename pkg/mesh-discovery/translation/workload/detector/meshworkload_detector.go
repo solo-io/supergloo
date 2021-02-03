@@ -144,11 +144,9 @@ func (d workloadDetector) podIsOwnedOwnedByWorkload(pod *corev1.Pod, workload ty
 		workloadReplica = pod
 	}
 
+	// NOTE(ilackarms): currently, we only consider pods with a controller to be part of a workload
 	workloadName := getControllerName(workloadReplica, workload.Kind())
 	if workloadName == "" {
-		// TODO(ilackarms): evaluate this assumption: currently, we
-		// only consider pods owned by workloads to be part of a workload
-		contextutils.LoggerFrom(d.ctx).Debugw("pod has no owner, ignoring for purposes of discovery", "pod", sets.Key(workloadReplica))
 		return false
 	}
 

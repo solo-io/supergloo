@@ -51,6 +51,7 @@ type RegisterReconcilerFunc func(
 // function which defines how the Networking reconciler should apply its output snapshots.
 type SyncOutputsFunc func(
 	ctx context.Context,
+	inputs input.LocalSnapshot,
 	outputSnap *translation.Outputs,
 	errHandler output.ErrorHandler,
 ) error
@@ -281,7 +282,7 @@ func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Lo
 	r.history.SetOutput(outputSnap)
 
 	errHandler := newErrHandler(ctx, in)
-	if err := r.syncOutputs(ctx, outputSnap, errHandler); err != nil {
+	if err := r.syncOutputs(ctx, in, outputSnap, errHandler); err != nil {
 		return multierror.Append(err, errHandler.Errors())
 	}
 
