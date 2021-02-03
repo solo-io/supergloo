@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	istiov1alpha1 "istio.io/api/mesh/v1alpha1"
 	"istio.io/istio/pkg/util/protomarshal"
 

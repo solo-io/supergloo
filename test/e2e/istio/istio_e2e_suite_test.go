@@ -41,8 +41,6 @@ var _ = BeforeEach(func() {
 	}
 })
 
-
-
 func ensureWorkingDirectory() {
 	// ensure we are in proper directory
 	currentFile, err := testutils.GetCurrentFile()

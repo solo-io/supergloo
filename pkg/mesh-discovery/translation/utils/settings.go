@@ -31,7 +31,7 @@ func GetIngressGatewayDetector(settings *settingsv1alpha2.DiscoverySettings, clu
 
 	// Fall back to default values
 	if labels == nil {
-		labels = defaults.DefaultGatewayWorkloadLabels
+		labels = defaults.DefaultIngressGatewayWorkloadLabels
 	}
 	if portName == "" {
 		portName = defaults.DefaultGatewayPortName

@@ -178,9 +178,6 @@ func (m *VirtualMeshSpec_MTLSConfig) Equal(that interface{}) bool {
 	switch m.TrustModel.(type) {
 
 	case *VirtualMeshSpec_MTLSConfig_Shared:
-		if _, ok := target.TrustModel.(*VirtualMeshSpec_MTLSConfig_Shared); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetShared()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetShared()) {
@@ -193,9 +190,6 @@ func (m *VirtualMeshSpec_MTLSConfig) Equal(that interface{}) bool {
 		}
 
 	case *VirtualMeshSpec_MTLSConfig_Limited:
-		if _, ok := target.TrustModel.(*VirtualMeshSpec_MTLSConfig_Limited); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetLimited()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetLimited()) {
@@ -207,11 +201,6 @@ func (m *VirtualMeshSpec_MTLSConfig) Equal(that interface{}) bool {
 			}
 		}
 
-	default:
-		// m is nil but target is not nil
-		if m.TrustModel != target.TrustModel {
-			return false
-		}
 	}
 
 	return true
@@ -241,9 +230,6 @@ func (m *VirtualMeshSpec_RootCertificateAuthority) Equal(that interface{}) bool 
 	switch m.CaSource.(type) {
 
 	case *VirtualMeshSpec_RootCertificateAuthority_Generated:
-		if _, ok := target.CaSource.(*VirtualMeshSpec_RootCertificateAuthority_Generated); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetGenerated()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetGenerated()) {
@@ -256,9 +242,6 @@ func (m *VirtualMeshSpec_RootCertificateAuthority) Equal(that interface{}) bool 
 		}
 
 	case *VirtualMeshSpec_RootCertificateAuthority_Secret:
-		if _, ok := target.CaSource.(*VirtualMeshSpec_RootCertificateAuthority_Secret); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetSecret()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetSecret()) {
@@ -270,11 +253,6 @@ func (m *VirtualMeshSpec_RootCertificateAuthority) Equal(that interface{}) bool 
 			}
 		}
 
-	default:
-		// m is nil but target is not nil
-		if m.CaSource != target.CaSource {
-			return false
-		}
 	}
 
 	return true
@@ -312,9 +290,6 @@ func (m *VirtualMeshSpec_Federation) Equal(that interface{}) bool {
 	switch m.Mode.(type) {
 
 	case *VirtualMeshSpec_Federation_Permissive:
-		if _, ok := target.Mode.(*VirtualMeshSpec_Federation_Permissive); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetPermissive()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetPermissive()) {
@@ -326,11 +301,6 @@ func (m *VirtualMeshSpec_Federation) Equal(that interface{}) bool {
 			}
 		}
 
-	default:
-		// m is nil but target is not nil
-		if m.Mode != target.Mode {
-			return false
-		}
 	}
 
 	return true

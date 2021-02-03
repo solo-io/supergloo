@@ -70,8 +70,6 @@ func FederateClusters(dynamicClient client.Client, flatNetwork bool) {
 		Expect(err).NotTo(HaveOccurred())
 	}
 
-
-
 	err = VirtualMeshManifest.AppendResources(VirtualMesh)
 	Expect(err).NotTo(HaveOccurred())
 

@@ -368,9 +368,6 @@ func (m *TrafficPolicySpec_FaultInjection) Equal(that interface{}) bool {
 	switch m.FaultInjectionType.(type) {
 
 	case *TrafficPolicySpec_FaultInjection_FixedDelay:
-		if _, ok := target.FaultInjectionType.(*TrafficPolicySpec_FaultInjection_FixedDelay); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetFixedDelay()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetFixedDelay()) {
@@ -383,9 +380,6 @@ func (m *TrafficPolicySpec_FaultInjection) Equal(that interface{}) bool {
 		}
 
 	case *TrafficPolicySpec_FaultInjection_ExponentialDelay:
-		if _, ok := target.FaultInjectionType.(*TrafficPolicySpec_FaultInjection_ExponentialDelay); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetExponentialDelay()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetExponentialDelay()) {
@@ -398,9 +392,6 @@ func (m *TrafficPolicySpec_FaultInjection) Equal(that interface{}) bool {
 		}
 
 	case *TrafficPolicySpec_FaultInjection_Abort_:
-		if _, ok := target.FaultInjectionType.(*TrafficPolicySpec_FaultInjection_Abort_); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetAbort()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetAbort()) {
@@ -412,11 +403,6 @@ func (m *TrafficPolicySpec_FaultInjection) Equal(that interface{}) bool {
 			}
 		}
 
-	default:
-		// m is nil but target is not nil
-		if m.FaultInjectionType != target.FaultInjectionType {
-			return false
-		}
 	}
 
 	return true
@@ -652,37 +638,23 @@ func (m *TrafficPolicySpec_HttpMatcher) Equal(that interface{}) bool {
 	switch m.PathSpecifier.(type) {
 
 	case *TrafficPolicySpec_HttpMatcher_Prefix:
-		if _, ok := target.PathSpecifier.(*TrafficPolicySpec_HttpMatcher_Prefix); !ok {
-			return false
-		}
 
 		if strings.Compare(m.GetPrefix(), target.GetPrefix()) != 0 {
 			return false
 		}
 
 	case *TrafficPolicySpec_HttpMatcher_Exact:
-		if _, ok := target.PathSpecifier.(*TrafficPolicySpec_HttpMatcher_Exact); !ok {
-			return false
-		}
 
 		if strings.Compare(m.GetExact(), target.GetExact()) != 0 {
 			return false
 		}
 
 	case *TrafficPolicySpec_HttpMatcher_Regex:
-		if _, ok := target.PathSpecifier.(*TrafficPolicySpec_HttpMatcher_Regex); !ok {
-			return false
-		}
 
 		if strings.Compare(m.GetRegex(), target.GetRegex()) != 0 {
 			return false
 		}
 
-	default:
-		// m is nil but target is not nil
-		if m.PathSpecifier != target.PathSpecifier {
-			return false
-		}
 	}
 
 	return true
@@ -712,37 +684,23 @@ func (m *TrafficPolicySpec_StringMatch) Equal(that interface{}) bool {
 	switch m.MatchType.(type) {
 
 	case *TrafficPolicySpec_StringMatch_Exact:
-		if _, ok := target.MatchType.(*TrafficPolicySpec_StringMatch_Exact); !ok {
-			return false
-		}
 
 		if strings.Compare(m.GetExact(), target.GetExact()) != 0 {
 			return false
 		}
 
 	case *TrafficPolicySpec_StringMatch_Prefix:
-		if _, ok := target.MatchType.(*TrafficPolicySpec_StringMatch_Prefix); !ok {
-			return false
-		}
 
 		if strings.Compare(m.GetPrefix(), target.GetPrefix()) != 0 {
 			return false
 		}
 
 	case *TrafficPolicySpec_StringMatch_Regex:
-		if _, ok := target.MatchType.(*TrafficPolicySpec_StringMatch_Regex); !ok {
-			return false
-		}
 
 		if strings.Compare(m.GetRegex(), target.GetRegex()) != 0 {
 			return false
 		}
 
-	default:
-		// m is nil but target is not nil
-		if m.MatchType != target.MatchType {
-			return false
-		}
 	}
 
 	return true
@@ -816,9 +774,6 @@ func (m *TrafficPolicySpec_Mirror) Equal(that interface{}) bool {
 	switch m.DestinationType.(type) {
 
 	case *TrafficPolicySpec_Mirror_KubeService:
-		if _, ok := target.DestinationType.(*TrafficPolicySpec_Mirror_KubeService); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetKubeService()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetKubeService()) {
@@ -830,11 +785,6 @@ func (m *TrafficPolicySpec_Mirror) Equal(that interface{}) bool {
 			}
 		}
 
-	default:
-		// m is nil but target is not nil
-		if m.DestinationType != target.DestinationType {
-			return false
-		}
 	}
 
 	return true
@@ -982,9 +932,6 @@ func (m *TrafficPolicySpec_MultiDestination_WeightedDestination) Equal(that inte
 	switch m.DestinationType.(type) {
 
 	case *TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService:
-		if _, ok := target.DestinationType.(*TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetKubeService()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetKubeService()) {
@@ -997,9 +944,6 @@ func (m *TrafficPolicySpec_MultiDestination_WeightedDestination) Equal(that inte
 		}
 
 	case *TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService:
-		if _, ok := target.DestinationType.(*TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetFailoverService()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetFailoverService()) {
@@ -1011,11 +955,6 @@ func (m *TrafficPolicySpec_MultiDestination_WeightedDestination) Equal(that inte
 			}
 		}
 
-	default:
-		// m is nil but target is not nil
-		if m.DestinationType != target.DestinationType {
-			return false
-		}
 	}
 
 	return true

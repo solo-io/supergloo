@@ -134,7 +134,7 @@ func (t *translator) Translate(
 }
 
 func (t *translator) federateSharedTrust(
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	mesh *discoveryv1alpha2.Mesh,
 	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
 	outputs istio.Builder,
@@ -347,7 +347,7 @@ func (t *translator) federateSharedTrust(
 }
 
 func (t *translator) federateLimitedTrust(
-	in input.Snapshot,
+	in input.LocalSnapshot,
 	mesh *discoveryv1alpha2.Mesh,
 	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
 	outputs istio.Builder,
@@ -369,6 +369,8 @@ func (t *translator) federateLimitedTrust(
 		return
 	}
 
+	federatedHostnameSuffix := hostutils.GetFederatedHostnameSuffix(virtualMesh.Spec)
+
 	// istio gateway names must be DNS-1123 labels
 	// hyphens are legal, dots are not, so we convert here
 	igwName := kubeutils.SanitizeNameV2(fmt.Sprintf("%v-ingress-%v", virtualMesh.Ref.Name, virtualMesh.Ref.Namespace))
@@ -386,7 +388,7 @@ func (t *translator) federateLimitedTrust(
 					Protocol: httpsGatewayProtocol,
 					Name:     httpsGatewayPortName,
 				},
-				Hosts: []string{fmt.Sprintf("*.%s.%s", istioCluster, hostutils.GlobalHostnameSuffix)},
+				Hosts: []string{fmt.Sprintf("*.%s.%s", istioCluster, federatedHostnameSuffix)},
 				Tls: &networkingv1alpha3spec.ServerTLSSettings{
 					Mode: networkingv1alpha3spec.ServerTLSSettings_MUTUAL,
 					// Hardcoded for now, until Cert Creation is done
@@ -418,7 +420,7 @@ func (t *translator) federateLimitedTrust(
 			contextutils.LoggerFrom(t.ctx).Errorf("unexpected error: failed to generate service entry ip: %v", err)
 			continue
 		}
-		federatedHostname := t.clusterDomains.GetServiceGlobalFQDN(meshKubeService.GetRef())
+		federatedHostname := hostutils.BuildFederatedFQDN(meshKubeService.GetRef(), virtualMesh.Spec)
 
 		endpointPorts := make(map[string]uint32)
 		var ports []*networkingv1alpha3spec.Port
@@ -657,7 +659,7 @@ func (t *translator) federateLimitedTrust(
 						Route: []*networkingv1alpha3spec.HTTPRouteDestination{
 							{
 								Destination: &networkingv1alpha3spec.Destination{
-									Host: t.clusterDomains.GetServiceLocalFQDN(meshKubeService.GetRef()),
+									Host: federatedHostname,
 								},
 							},
 						},
@@ -669,7 +671,6 @@ func (t *translator) federateLimitedTrust(
 		outputs.AddVirtualServices(ingressVs)
 	}
 }
-
 
 func updateTrafficTargetFederationStatus(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
@@ -703,8 +704,6 @@ func ServicesForMesh(
 		return !ezkube.RefsMatch(service.Spec.Mesh, mesh)
 	})
 }
-
-
 
 func buildTcpRewritePatch(
 	istioMesh *discoveryv1alpha2.MeshSpec_Istio,

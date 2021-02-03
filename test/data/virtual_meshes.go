@@ -5,7 +5,7 @@ import (
 
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
-	skv2core "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -13,7 +13,7 @@ import (
 func SelfSignedVirtualMesh(
 	dynamicClient client.Client,
 	name, namespace string,
-	meshes []*skv2core.ObjectRef,
+	meshes []*v1.ObjectRef,
 	flatNetwork bool,
 ) (*v1alpha2.VirtualMesh, error) {
 	hostnameSuffix, err := getTestHostnameSuffix(dynamicClient, meshes)
@@ -50,7 +50,7 @@ func SelfSignedVirtualMesh(
 }
 
 // use a custom hostname suffix when testing against istio >= 1.8
-func getTestHostnameSuffix(dynamicClient client.Client, meshes []*skv2core.ObjectRef) (string, error) {
+func getTestHostnameSuffix(dynamicClient client.Client, meshes []*v1.ObjectRef) (string, error) {
 	meshClient := discoveryv1alpha2.NewMeshClient(dynamicClient)
 	// assume that all meshes are using the same istio version
 	mesh, err := meshClient.GetMesh(context.TODO(), client.ObjectKey{Name: meshes[0].Name, Namespace: meshes[0].Namespace})

@@ -59,9 +59,6 @@ func (m *MeshSpec) Equal(that interface{}) bool {
 	switch m.MeshType.(type) {
 
 	case *MeshSpec_Istio_:
-		if _, ok := target.MeshType.(*MeshSpec_Istio_); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetIstio()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetIstio()) {
@@ -74,9 +71,6 @@ func (m *MeshSpec) Equal(that interface{}) bool {
 		}
 
 	case *MeshSpec_AwsAppMesh_:
-		if _, ok := target.MeshType.(*MeshSpec_AwsAppMesh_); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetAwsAppMesh()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetAwsAppMesh()) {
@@ -89,9 +83,6 @@ func (m *MeshSpec) Equal(that interface{}) bool {
 		}
 
 	case *MeshSpec_Linkerd:
-		if _, ok := target.MeshType.(*MeshSpec_Linkerd); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetLinkerd()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetLinkerd()) {
@@ -104,9 +95,6 @@ func (m *MeshSpec) Equal(that interface{}) bool {
 		}
 
 	case *MeshSpec_ConsulConnect:
-		if _, ok := target.MeshType.(*MeshSpec_ConsulConnect); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetConsulConnect()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetConsulConnect()) {
@@ -119,9 +107,6 @@ func (m *MeshSpec) Equal(that interface{}) bool {
 		}
 
 	case *MeshSpec_Osm:
-		if _, ok := target.MeshType.(*MeshSpec_Osm); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetOsm()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetOsm()) {
@@ -133,11 +118,6 @@ func (m *MeshSpec) Equal(that interface{}) bool {
 			}
 		}
 
-	default:
-		// m is nil but target is not nil
-		if m.MeshType != target.MeshType {
-			return false
-		}
 	}
 
 	return true
@@ -250,6 +230,23 @@ func (m *MeshSpec_Istio) Equal(that interface{}) bool {
 			}
 		} else {
 			if !proto.Equal(v, target.GetIngressGateways()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	if len(m.GetEgressGateways()) != len(target.GetEgressGateways()) {
+		return false
+	}
+	for idx, v := range m.GetEgressGateways() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetEgressGateways()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetEgressGateways()[idx]) {
 				return false
 			}
 		}
@@ -567,7 +564,62 @@ func (m *MeshSpec_Istio_IngressGatewayInfo) Equal(that interface{}) bool {
 		return false
 	}
 
+	if m.GetExternalHttpsPort() != target.GetExternalHttpsPort() {
+		return false
+	}
+
 	if m.GetTlsContainerPort() != target.GetTlsContainerPort() {
+		return false
+	}
+
+	if m.GetHttpsPort() != target.GetHttpsPort() {
+		return false
+	}
+
+	return true
+}
+
+// Equal function
+func (m *MeshSpec_Istio_EgressGatewayInfo) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*MeshSpec_Istio_EgressGatewayInfo)
+	if !ok {
+		that2, ok := that.(MeshSpec_Istio_EgressGatewayInfo)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetName(), target.GetName()) != 0 {
+		return false
+	}
+
+	if len(m.GetWorkloadLabels()) != len(target.GetWorkloadLabels()) {
+		return false
+	}
+	for k, v := range m.GetWorkloadLabels() {
+
+		if strings.Compare(v, target.GetWorkloadLabels()[k]) != 0 {
+			return false
+		}
+
+	}
+
+	if m.GetTlsPort() != target.GetTlsPort() {
+		return false
+	}
+
+	if m.GetHttpsPort() != target.GetHttpsPort() {
 		return false
 	}
 
