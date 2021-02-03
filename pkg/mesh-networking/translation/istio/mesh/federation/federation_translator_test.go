@@ -454,6 +454,7 @@ var _ = Describe("FederationTranslator", func() {
 					makeTrafficSplit(backingService, map[string]string{"foo": "baz"}),
 					makeTrafficSplit(backingService, map[string]string{"bar": "qux"}),
 				},
+				LocalFqdn: "some-svc.some-ns.svc.cluster.local",
 			},
 		}
 
