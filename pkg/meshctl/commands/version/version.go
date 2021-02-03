@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 
-	extv1 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
+	appsv1 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/version"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/dockerutils"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	v1 "k8s.io/api/apps/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func Command(ctx context.Context) *cobra.Command {
@@ -33,6 +33,12 @@ func Command(ctx context.Context) *cobra.Command {
 type options struct {
 	kubeconfig  string
 	kubecontext string
+	namespace   string
+}
+
+func (o *options) addToFlags(flags *pflag.FlagSet) {
+	utils.AddManagementKubeconfigFlags(&o.kubeconfig, &o.kubecontext, flags)
+	flags.StringVar(&o.namespace, "namespace", "gloo-mesh", "namespace that glooo mesh components are deployed to")
 }
 
 type versionInfo struct {
@@ -47,36 +53,17 @@ type serverVersion struct {
 	Components []component `json:"components"`
 }
 type component struct {
-	ComponentName string         `json:"componentName"`
-	Image         componentImage `json:"image"`
+	ComponentName string           `json:"componentName"`
+	Images        []componentImage `json:"images"`
 }
 type componentImage struct {
+	Name    string `json:"name"`
 	Domain  string `json:"domain"`
 	Path    string `json:"path"`
 	Version string `json:"version"`
 }
 
-const (
-	appLabelKey         = "app"
-	imageMatchSubstring = "gloo-mesh"
-)
-
-func getImage(deployment *v1.Deployment) (*componentImage, error) {
-	for _, container := range deployment.Spec.Template.Spec.Containers {
-		if strings.Contains(container.Image, imageMatchSubstring) {
-			parsedImage, err := dockerutils.ParseImageName(container.Image)
-			if err != nil {
-				return nil, err
-			}
-			imageVersion := parsedImage.Tag
-			if parsedImage.Digest != "" {
-				imageVersion = parsedImage.Digest
-			}
-			return &componentImage{Domain: parsedImage.Domain, Path: parsedImage.Path, Version: imageVersion}, nil
-		}
-	}
-	return nil, nil
-}
+const appLabelKey = "app"
 
 func printVersion(ctx context.Context, opts *options) error {
 	serverVersions := makeServerVersions(ctx, opts)
@@ -99,8 +86,8 @@ func makeServerVersions(ctx context.Context, opts *options) []serverVersion {
 		fmt.Fprintf(os.Stderr, "Unable to connect to Kubernetes: %s\n", err.Error())
 		return nil
 	}
-	deploymentClient := extv1.NewDeploymentClient(kubeClient)
-	deployments, err := deploymentClient.ListDeployment(ctx)
+	deploymentClient := appsv1.NewDeploymentClient(kubeClient)
+	deployments, err := deploymentClient.ListDeployment(ctx, &client.ListOptions{Namespace: "gloo-mesh"})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to list deployments: %s\n", err.Error())
 		return nil
@@ -109,16 +96,23 @@ func makeServerVersions(ctx context.Context, opts *options) []serverVersion {
 	// map of namespace to list of components
 	componentMap := make(map[string][]component)
 	for _, deployment := range deployments.Items {
-		image, err := getImage(&deployment)
+		images, err := getImages(&deployment)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to pull image information for %s: %s\n", deployment.Name, err.Error())
 			continue
 		}
-		if image != nil {
-			namespace := deployment.GetObjectMeta().GetNamespace()
-			componentName := deployment.GetObjectMeta().GetLabels()[appLabelKey]
-			componentMap[namespace] = append(componentMap[namespace], component{ComponentName: componentName, Image: *image})
+		if len(images) == 0 {
+			continue
 		}
+
+		namespace := deployment.GetObjectMeta().GetNamespace()
+		componentMap[namespace] = append(
+			componentMap[namespace],
+			component{
+				ComponentName: deployment.GetObjectMeta().GetLabels()[appLabelKey],
+				Images:        images,
+			},
+		)
 	}
 
 	// convert to output format
@@ -130,6 +124,25 @@ func makeServerVersions(ctx context.Context, opts *options) []serverVersion {
 	return serverVersions
 }
 
-func (o *options) addToFlags(flags *pflag.FlagSet) {
-	utils.AddManagementKubeconfigFlags(&o.kubeconfig, &o.kubecontext, flags)
+func getImages(deployment *v1.Deployment) ([]componentImage, error) {
+	images := make([]componentImage, len(deployment.Spec.Template.Spec.Containers))
+	for i, container := range deployment.Spec.Template.Spec.Containers {
+		parsedImage, err := dockerutils.ParseImageName(container.Image)
+		if err != nil {
+			return nil, err
+		}
+		imageVersion := parsedImage.Tag
+		if parsedImage.Digest != "" {
+			imageVersion = parsedImage.Digest
+		}
+
+		images[i] = componentImage{
+			Name:    container.Name,
+			Domain:  parsedImage.Domain,
+			Path:    parsedImage.Path,
+			Version: imageVersion,
+		}
+	}
+
+	return images, nil
 }
