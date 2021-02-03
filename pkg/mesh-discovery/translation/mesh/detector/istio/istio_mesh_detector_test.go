@@ -291,6 +291,8 @@ var _ = Describe("IstioMeshDetector", func() {
 						WorkloadLabels:   workloadLabels,
 						ExternalAddress:  "external.domain",
 						ExternalTlsPort:  5678,
+						HttpsPort: 2345,
+						ExternalHttpsPort: 6789,
 						TlsContainerPort: 1234,
 					}},
 				}},
@@ -311,12 +313,20 @@ var _ = Describe("IstioMeshDetector", func() {
 				ClusterName: clusterName,
 			},
 			Spec: corev1.ServiceSpec{
-				Ports: []corev1.ServicePort{{
-					Name:     "specialport",
-					Protocol: "TCP",
-					Port:     1234,
-					NodePort: 5678,
-				}},
+				Ports: []corev1.ServicePort{
+					{
+						Name:     "specialport",
+						Protocol: "TCP",
+						Port:     1234,
+						NodePort: 5678,
+					},
+					{
+						Name:     "https",
+						Protocol: "HTTPS",
+						Port:     2345,
+						NodePort: 6789,
+					},
+			},
 				Selector: workloadLabels,
 				Type:     corev1.ServiceTypeNodePort,
 			},
@@ -544,14 +554,14 @@ var _ = Describe("IstioMeshDetector", func() {
 
 		deployment := istioDeployment(istiodDeploymentName)
 
-		in := input.NewInputRemoteSnapshotManualBuilder("")
+		in := input.NewInputDiscoveryInputSnapshotManualBuilder("")
 		in.AddDeployments([]*appsv1.Deployment{deployment})
 		in.AddConfigMaps(configMaps.List())
 		in.AddServices(services.List())
 		in.AddPods(pods.List())
 		in.AddNodes(nodes.List())
 
-		meshes, err := detector.DetectMeshes(in.Build())
+		meshes, err := detector.DetectMeshes(in.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
 
 		expectedMesh := &v1alpha2.Mesh{
@@ -562,6 +572,7 @@ var _ = Describe("IstioMeshDetector", func() {
 			},
 			Spec: v1alpha2.MeshSpec{
 				MeshType: &v1alpha2.MeshSpec_Istio_{Istio: &v1alpha2.MeshSpec_Istio{
+					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
 					Installation: &v1alpha2.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
 						Cluster:   clusterName,
