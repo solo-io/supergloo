@@ -29,7 +29,7 @@ under specific circumstances. This bug may surface in sidecars configured by Fai
 
 ## Configure Outlier Detection
 
-The services composing a FailoverService must be configured with outlier detection, which is done through a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/traffic_policy" >}}) custom resource. We are going to apply the following config on the `mgmt-cluster` cluster:
+The services composing a FailoverService must be configured with outlier detection, which is done through a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy/" >}}) custom resource. We are going to apply the following config on the `mgmt-cluster` cluster:
 
 {{< highlight yaml "hl_lines=16-19" >}}
 kubectl apply -f - << EOF
