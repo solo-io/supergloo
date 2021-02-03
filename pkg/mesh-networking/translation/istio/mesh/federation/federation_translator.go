@@ -659,7 +659,7 @@ func (t *translator) federateLimitedTrust(
 						Route: []*networkingv1alpha3spec.HTTPRouteDestination{
 							{
 								Destination: &networkingv1alpha3spec.Destination{
-									Host: federatedHostname,
+									Host: fmt.Sprintf("%s.%s.svc.cluster.local", meshKubeService.Ref.Name, meshKubeService.Ref.Namespace),
 								},
 							},
 						},

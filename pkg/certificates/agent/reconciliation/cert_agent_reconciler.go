@@ -134,8 +134,6 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_PENDING
 	}
 
-	contextutils.LoggerFrom(r.ctx).Infof("%v", issuedCertificate.Spec.TlsType)
-
 	// reset & update status
 	issuedCertificate.Status.ObservedGeneration = issuedCertificate.Generation
 	issuedCertificate.Status.Error = ""
@@ -241,14 +239,12 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 
 		switch issuedCertificate.Spec.TlsType {
 		case v1alpha2.IssuedCertificateSpec_LIMITED:
-			contextutils.LoggerFrom(r.ctx).Infof("LIMITED TRUST")
 			issuedCertificateSecret, err := generateSecretForLimitedTrust(issuedCertificate, issuedCertificateData)
 			if err != nil {
 				return err
 			}
 			outputs.AddSecrets(issuedCertificateSecret)
 		case v1alpha2.IssuedCertificateSpec_SHARED:
-			contextutils.LoggerFrom(r.ctx).Infof("SHARED TRUST 2")
 			issuedCertificateSecret := &corev1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      issuedCertificate.Spec.IssuedCertificateSecret.Name,

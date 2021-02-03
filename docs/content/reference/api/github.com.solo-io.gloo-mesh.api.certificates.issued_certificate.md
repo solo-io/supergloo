@@ -21,6 +21,7 @@ title: "issued_certificate.proto"
   - [IssuedCertificateSpec](#certificates.mesh.gloo.solo.io.IssuedCertificateSpec)
   - [IssuedCertificateStatus](#certificates.mesh.gloo.solo.io.IssuedCertificateStatus)
 
+  - [IssuedCertificateSpec.TlsType](#certificates.mesh.gloo.solo.io.IssuedCertificateSpec.TlsType)
   - [IssuedCertificateStatus.State](#certificates.mesh.gloo.solo.io.IssuedCertificateStatus.State)
 
 
@@ -41,6 +42,7 @@ IssuedCertificates are used to issue SSL certificates to remote Kubernetes clust
   | signingCertificateSecret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the Certificate Issuer's cluster). |
   | issuedCertificateSecret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Certificate Agent's cluster). |
   | podBounceDirective | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | A ref to a PodBounceDirective specifying a list of k8s pods to bounce (delete and cause a restart) when the certificate is issued. This will include the control plane pods as well as any pods which share a data plane with the target mesh. |
+  | tlsType | [certificates.mesh.gloo.solo.io.IssuedCertificateSpec.TlsType]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.issued_certificate#certificates.mesh.gloo.solo.io.IssuedCertificateSpec.TlsType" >}}) |  | Type of certificate to be used for security |
   
 
 
@@ -64,6 +66,18 @@ The IssuedCertificate status is written by the CertificateRequesting agent.
 
 
  <!-- end messages -->
+
+
+<a name="certificates.mesh.gloo.solo.io.IssuedCertificateSpec.TlsType"></a>
+
+### IssuedCertificateSpec.TlsType
+Possible TLS types for which to generate certificates
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| SHARED | 0 | Set when shared trust is used |
+| LIMITED | 1 | Set when limited trust is used |
+
 
 
 <a name="certificates.mesh.gloo.solo.io.IssuedCertificateStatus.State"></a>

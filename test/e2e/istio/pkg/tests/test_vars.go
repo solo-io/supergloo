@@ -41,8 +41,8 @@ var (
 		return curlFromProductpage(fmt.Sprintf("http://%v:%v/", extensions.HelloServerHostname, extensions.HelloServerPort))
 	}
 
-	curlRemoteReviews = func() string {
-		if isLimitedTrust() {
+	curlRemoteReviews = func(federatedSuffix string) string {
+		if IsLimitedTrust() {
 			return curlFromProductpage(fmt.Sprintf("http://reviews.%v.svc.%v.%s/reviews/1", BookinfoNamespace, remoteClusterName, federatedSuffix))
 		}
 		return curlFromProductpage(fmt.Sprintf("http://reviews.%v.svc.%v.%s:9080/reviews/1", BookinfoNamespace, remoteClusterName, federatedSuffix))
@@ -70,7 +70,7 @@ var (
 		return string(out)
 	}
 
-	isLimitedTrust = func() bool {
+	IsLimitedTrust = func() bool {
 		return os.Getenv(e2e.LimitedTrust) != ""
 	}
 )

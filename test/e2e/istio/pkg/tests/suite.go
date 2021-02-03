@@ -48,7 +48,7 @@ func SetupClustersAndFederation(customDeployFuc func()) {
 
 // exported for use in enterprise
 func FederateClusters(dynamicClient client.Client, flatNetwork bool) {
-	if isLimitedTrust() {
+	if IsLimitedTrust() {
 		VirtualMesh = data.LimitedTrustSelfSignedVirtualMesh(
 			"bookinfo-federation",
 			BookinfoNamespace,

@@ -17,7 +17,7 @@ import (
 // to skip testing this package, run `make run-tests SKIP_PACKAGES=test/e2e/istio
 // to test only this package, run `make run-tests TEST_PKG=test/e2e/istio
 func TestIstio(t *testing.T) {
-	if os.Getenv(RunE2E) == "" {
+	if os.Getenv("RUN_E2E") == "" {
 		fmt.Println("skipping E2E tests")
 		return
 	}
@@ -36,7 +36,7 @@ var _ = BeforeSuite(func() {
 
 // Before a test check whether limited trust is set
 var _ = BeforeEach(func() {
-	if isLimitedTrust() {
+	if tests.IsLimitedTrust() {
 		Skip("Limited trust does not currently support the current test case")
 	}
 })

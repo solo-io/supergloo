@@ -24,6 +24,8 @@ title: "mesh.proto"
   - [MeshSpec.ConsulConnectMesh](#discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh)
   - [MeshSpec.Istio](#discovery.mesh.gloo.solo.io.MeshSpec.Istio)
   - [MeshSpec.Istio.CitadelInfo](#discovery.mesh.gloo.solo.io.MeshSpec.Istio.CitadelInfo)
+  - [MeshSpec.Istio.EgressGatewayInfo](#discovery.mesh.gloo.solo.io.MeshSpec.Istio.EgressGatewayInfo)
+  - [MeshSpec.Istio.EgressGatewayInfo.WorkloadLabelsEntry](#discovery.mesh.gloo.solo.io.MeshSpec.Istio.EgressGatewayInfo.WorkloadLabelsEntry)
   - [MeshSpec.Istio.IngressGatewayInfo](#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo)
   - [MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry](#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry)
   - [MeshSpec.LinkerdMesh](#discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh)
@@ -120,6 +122,7 @@ Mesh object representing an installed Istio control plane
 | installation | [discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation" >}}) |  | Configuration metadata about the istio control plane installation. |
   | citadelInfo | [discovery.mesh.gloo.solo.io.MeshSpec.Istio.CitadelInfo]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.CitadelInfo" >}}) |  | Configuration metadata for Istio Citadel (Istio's security component). |
   | ingressGateways | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo" >}}) | repeated | Configuration metadata for Istio IngressGateway (the Istio Ingress). |
+  | egressGateways | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.EgressGatewayInfo]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.EgressGatewayInfo" >}}) | repeated | Configuration metadata for Istio EgressGateway (the Istio Egress). |
   | smartDnsProxyingEnabled | bool |  | True if smart DNS proxying is enabled, which allows for arbitrary DNS domains. |
   
 
@@ -143,6 +146,40 @@ Configuration metadata for Istio Citadel (Istio's security component).
 
 
 
+<a name="discovery.mesh.gloo.solo.io.MeshSpec.Istio.EgressGatewayInfo"></a>
+
+### MeshSpec.Istio.EgressGatewayInfo
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | string |  | Name of the service providing the egressgateway defaults to `istio-egressgateway` |
+  | workloadLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.EgressGatewayInfo.WorkloadLabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.EgressGatewayInfo.WorkloadLabelsEntry" >}}) | repeated | Labels matching the workload which backs the gateway, defaults to `{"istio": "egressgateway"}`. |
+  | tlsPort | uint32 |  | Container port on which the gateway is listening for TLS connections. Defaults to 15443. |
+  | httpsPort | uint32 |  | Service HTTPS port. Defaults to 443 |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.MeshSpec.Istio.EgressGatewayInfo.WorkloadLabelsEntry"></a>
+
+### MeshSpec.Istio.EgressGatewayInfo.WorkloadLabelsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+  | value | string |  |  |
+  
+
+
+
+
+
 <a name="discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo"></a>
 
 ### MeshSpec.Istio.IngressGatewayInfo
@@ -154,7 +191,9 @@ Configuration metadata for Istio Citadel (Istio's security component).
 | workloadLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry" >}}) | repeated | Labels matching the workload which backs the gateway, defaults to `{"istio": "ingressgateway"}`. |
   | externalAddress | string |  | The externally-reachable address on which the gateway is listening for TLS connections. This will be the address used for cross-cluster connectivity. Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes Service (depending on its type). |
   | externalTlsPort | uint32 |  | The externally-reachable port on which the gateway is listening for TLS connections. This will be the port used for cross-cluster connectivity. List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio. Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type). |
+  | externalHttpsPort | uint32 |  |  |
   | tlsContainerPort | uint32 |  | Container port on which the gateway is listening for TLS connections. Defaults to 15443. |
+  | httpsPort | uint32 |  | Service HTTPS port. Defaults to 443 |
   
 
 

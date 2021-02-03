@@ -166,7 +166,19 @@ var _ = Describe("FederationTranslator", func() {
 			AddKubernetesClusters(skv1alpha1.KubernetesClusterSlice{kubeCluster}).
 			Build()
 
-		var expectedGateway = &networkingv1alpha3.Gateway{
+		expectedVS := &networkingv1alpha3.VirtualService{}
+		mockVirtualServiceTranslator.
+			EXPECT().
+			Translate(ctx, in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
+			Return(expectedVS)
+
+		expectedDR := &networkingv1alpha3.DestinationRule{}
+		mockDestinationRuleTranslator.
+			EXPECT().
+			Translate(ctx, in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
+			Return(expectedDR)
+
+		expectedGateway := &networkingv1alpha3.Gateway{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        "my-virtual-mesh-config-namespace",
 				Namespace:   "namespace",
@@ -185,7 +197,7 @@ var _ = Describe("FederationTranslator", func() {
 							Name:     "tls",
 						},
 						Hosts: []string{
-							"*.cluster.soloio",
+							"*.soloio",
 						},
 						Tls: &networkingv1alpha3spec.ServerTLSSettings{
 							Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
@@ -195,7 +207,7 @@ var _ = Describe("FederationTranslator", func() {
 				Selector: map[string]string{"gatewaylabels": "righthere"},
 			},
 		}
-		var expectedEnvoyFilter = &networkingv1alpha3.EnvoyFilter{
+		expectedEnvoyFilter := &networkingv1alpha3.EnvoyFilter{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        "my-virtual-mesh.config-namespace",
 				Namespace:   "namespace",
@@ -250,7 +262,7 @@ var _ = Describe("FederationTranslator", func() {
 													},
 													"cluster_pattern": {
 														Kind: &types.Value_StringValue{
-															StringValue: "\\.cluster.global$",
+															StringValue: "\\.cluster.soloio$",
 														},
 													},
 												},
@@ -264,9 +276,9 @@ var _ = Describe("FederationTranslator", func() {
 				},
 			},
 		}
-		var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1alpha3.ServiceEntry{
+		expectedServiceEntries := istiov1alpha3sets.NewServiceEntrySet(&networkingv1alpha3.ServiceEntry{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:        "some-svc.some-ns.svc.cluster.global",
+				Name:        "some-svc.some-ns.svc.cluster.soloio",
 				Namespace:   "remote-namespace",
 				ClusterName: "remote-cluster",
 				Labels:      metautils.TranslatedObjectLabels(),
@@ -276,7 +288,7 @@ var _ = Describe("FederationTranslator", func() {
 			},
 			Spec: networkingv1alpha3spec.ServiceEntry{
 				Hosts: []string{
-					"some-svc.some-ns.svc.cluster.global",
+					"some-svc.some-ns.svc.cluster.soloio",
 				},
 				Addresses: []string{
 					"243.21.204.125",
@@ -286,6 +298,11 @@ var _ = Describe("FederationTranslator", func() {
 						Number:   1234,
 						Protocol: string(protocol.HTTP),
 						Name:     "http",
+					},
+					{
+						Number:   5555,
+						Protocol: string(protocol.TCP),
+						Name:     "status-port",
 					},
 					{
 						Number:   5678,
@@ -299,25 +316,15 @@ var _ = Describe("FederationTranslator", func() {
 					{
 						Address: "mesh-gateway.dns.name",
 						Ports: map[string]uint32{
-							"http": 8181,
-							"grpc": 8181,
+							"http":        8181,
+							"grpc":        8181,
+							"status-port": 8181,
 						},
 						Labels: map[string]string{"cluster": "cluster"},
 					},
 				},
 			},
 		})
-		expectedVS := &networkingv1alpha3.VirtualService{}
-		mockVirtualServiceTranslator.
-			EXPECT().
-			Translate(ctx, in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
-			Return(expectedVS)
-
-		expectedDR := &networkingv1alpha3.DestinationRule{}
-		mockDestinationRuleTranslator.
-			EXPECT().
-			Translate(ctx, in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
-			Return(expectedDR)
 
 		t := NewTranslator(
 			ctx,
@@ -688,238 +695,92 @@ var _ = Describe("FederationTranslator", func() {
 				},
 			},
 		})
-		expectedVirtualService := istiov1alpha3sets.NewVirtualServiceSet(
-			&networkingv1alpha3.VirtualService{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:        fmt.Sprintf("%v-%v-egw-traffic", trafficTarget1.Name, vMesh.Ref.Name),
-					Namespace:   "remote-namespace",
-					ClusterName: "remote-cluster",
-					Labels:      metautils.TranslatedObjectLabels(),
-					Annotations: map[string]string{
-						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
-					},
+		expectedIngressVirtualService := &networkingv1alpha3.VirtualService{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        fmt.Sprintf("%v-%v-igw-traffic", trafficTarget1.Name, vMesh.Ref.Name),
+				Namespace:   "namespace",
+				ClusterName: "cluster",
+				Labels:      metautils.TranslatedObjectLabels(),
+				Annotations: map[string]string{
+					metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
 				},
-				Spec: networkingv1alpha3spec.VirtualService{
-					Hosts:    []string{clusterDomains.GetFederatedFQDN(trafficTarget1.Spec.GetKubeService().GetRef())},
-					Gateways: []string{"my-virtual-mesh-traffic-target-1-cluster-namespace-egress", "mesh"},
-					Http: []*networkingv1alpha3spec.HTTPRoute{
-						{
-							Match: []*networkingv1alpha3spec.HTTPMatchRequest{
-								{
-									Gateways: []string{"mesh"},
-								},
-							},
-							Route: []*networkingv1alpha3spec.HTTPRouteDestination{
-								{
-									Destination: &networkingv1alpha3spec.Destination{
-										Host:   fmt.Sprintf("%s.%s.svc.cluster.local", "mesh-egress-gateway", "remote-namespace"),
-										Subset: fmt.Sprintf("%v-tls-origination", trafficTarget1.Name),
-										Port: &networkingv1alpha3spec.PortSelector{
-											Number: 443,
-										},
-									},
-								},
-							},
-						},
-						{
-							Match: []*networkingv1alpha3spec.HTTPMatchRequest{
-								{
-									Port:     443,
-									Gateways: []string{"my-virtual-mesh-traffic-target-1-cluster-namespace-egress"},
-								},
-							},
-							Route: []*networkingv1alpha3spec.HTTPRouteDestination{
-								{
-									Destination: &networkingv1alpha3spec.Destination{
-										Host: clusterDomains.GetFederatedFQDN(trafficTarget1.Spec.GetKubeService().GetRef()),
-									},
+			},
+			Spec: networkingv1alpha3spec.VirtualService{
+				Hosts:    []string{federatedHostName},
+				Gateways: []string{"my-virtual-mesh-ingress-config-namespace"},
+				Http: []*networkingv1alpha3spec.HTTPRoute{
+					{
+						Route: []*networkingv1alpha3spec.HTTPRouteDestination{
+							{
+								Destination: &networkingv1alpha3spec.Destination{
+									Host: clusterDomains.GetLocalFQDN(trafficTarget1.Spec.GetKubeService().Ref),
 								},
 							},
 						},
 					},
 				},
 			},
-			&networkingv1alpha3.VirtualService{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:        fmt.Sprintf("%v-%v-igw-traffic", trafficTarget1.Name, vMesh.Ref.Name),
-					Namespace:   "namespace",
-					ClusterName: "cluster",
-					Labels:      metautils.TranslatedObjectLabels(),
-					Annotations: map[string]string{
-						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
-					},
+		}
+		expectedEgressVirtualService := &networkingv1alpha3.VirtualService{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        fmt.Sprintf("%v-%v-egw-traffic", trafficTarget1.Name, vMesh.Ref.Name),
+				Namespace:   "remote-namespace",
+				ClusterName: "remote-cluster",
+				Labels:      metautils.TranslatedObjectLabels(),
+				Annotations: map[string]string{
+					metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
 				},
-				Spec: networkingv1alpha3spec.VirtualService{
-					Hosts:    []string{federatedHostName},
-					Gateways: []string{"my-virtual-mesh-ingress-config-namespace"},
-					Http: []*networkingv1alpha3spec.HTTPRoute{
-						{
-							Route: []*networkingv1alpha3spec.HTTPRouteDestination{
-								{
-									Destination: &networkingv1alpha3spec.Destination{
-										Host: clusterDomains.GetLocalFQDN(trafficTarget1.Spec.GetKubeService().Ref),
+			},
+			Spec: networkingv1alpha3spec.VirtualService{
+				Hosts:    []string{clusterDomains.GetFederatedFQDN(trafficTarget1.Spec.GetKubeService().GetRef())},
+				Gateways: []string{"my-virtual-mesh-traffic-target-1-cluster-namespace-egress", "mesh"},
+				Http: []*networkingv1alpha3spec.HTTPRoute{
+					{
+						Match: []*networkingv1alpha3spec.HTTPMatchRequest{
+							{
+								Gateways: []string{"mesh"},
+							},
+						},
+						Route: []*networkingv1alpha3spec.HTTPRouteDestination{
+							{
+								Destination: &networkingv1alpha3spec.Destination{
+									Host:   fmt.Sprintf("%s.%s.svc.cluster.local", "mesh-egress-gateway", "remote-namespace"),
+									Subset: fmt.Sprintf("%v-tls-origination", trafficTarget1.Name),
+									Port: &networkingv1alpha3spec.PortSelector{
+										Number: 443,
 									},
+								},
+							},
+						},
+					},
+					{
+						Match: []*networkingv1alpha3spec.HTTPMatchRequest{
+							{
+								Port:     443,
+								Gateways: []string{"my-virtual-mesh-traffic-target-1-cluster-namespace-egress"},
+							},
+						},
+						Route: []*networkingv1alpha3spec.HTTPRouteDestination{
+							{
+								Destination: &networkingv1alpha3spec.Destination{
+									Host: clusterDomains.GetFederatedFQDN(trafficTarget1.Spec.GetKubeService().GetRef()),
 								},
 							},
 						},
 					},
 				},
 			},
-		)
+		}
 
 		Expect(outputs.GetGateways()).To(Equal(expectedGateways), "gateways are not as expected")
 		Expect(outputs.GetServiceEntries()).To(Equal(expectedServiceEntries), "service entries are not as expected")
-		Expect(outputs.GetVirtualServices()).To(Equal(expectedVirtualService), "egress virtual service not as expected")
+
+		Expect(outputs.GetVirtualServices().Length()).To(Equal(2))
+		Expect(outputs.GetVirtualServices().Find(expectedIngressVirtualService)).To(Equal(expectedIngressVirtualService), "ingress virtual service not as expected")
+		Expect(outputs.GetVirtualServices().Find(expectedEgressVirtualService)).To(Equal(expectedEgressVirtualService), "egress virtual service not as expected")
+
 		Expect(outputs.GetDestinationRules()).To(Equal(expectedDestinationRules), "destination rule not as expected")
 		Expect(outputs.GetEnvoyFilters().Length()).To(Equal(0), "found unexpected envoy filter")
 
 	})
-})
-
-var expectedGateway = &networkingv1alpha3.Gateway{
-	ObjectMeta: metav1.ObjectMeta{
-		Name:        "my-virtual-mesh-config-namespace",
-		Namespace:   "namespace",
-		ClusterName: "cluster",
-		Labels:      metautils.TranslatedObjectLabels(),
-		Annotations: map[string]string{
-			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
-		},
-	},
-	Spec: networkingv1alpha3spec.Gateway{
-		Servers: []*networkingv1alpha3spec.Server{
-			{
-				Port: &networkingv1alpha3spec.Port{
-					Number:   9191,
-					Protocol: "TLS",
-					Name:     "tls",
-				},
-				Hosts: []string{
-					"*.cluster.soloio",
-				},
-				Tls: &networkingv1alpha3spec.ServerTLSSettings{
-					Mode: networkingv1alpha3spec.ServerTLSSettings_AUTO_PASSTHROUGH,
-				},
-			},
-		},
-		Selector: map[string]string{"gatewaylabels": "righthere"},
-	},
-}
-var expectedEnvoyFilter = &networkingv1alpha3.EnvoyFilter{
-	ObjectMeta: metav1.ObjectMeta{
-		Name:        "my-virtual-mesh.config-namespace",
-		Namespace:   "namespace",
-		ClusterName: "cluster",
-		Labels:      metautils.TranslatedObjectLabels(),
-		Annotations: map[string]string{
-			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
-		},
-	},
-	Spec: networkingv1alpha3spec.EnvoyFilter{
-		WorkloadSelector: &networkingv1alpha3spec.WorkloadSelector{
-			Labels: map[string]string{"gatewaylabels": "righthere"},
-		},
-		ConfigPatches: []*networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectPatch{
-			{
-				ApplyTo: networkingv1alpha3spec.EnvoyFilter_NETWORK_FILTER,
-				Match: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch{
-					Context: networkingv1alpha3spec.EnvoyFilter_GATEWAY,
-					ObjectTypes: &networkingv1alpha3spec.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
-						Listener: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch{
-							PortNumber: 9191,
-							FilterChain: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch_FilterChainMatch{
-								Filter: &networkingv1alpha3spec.EnvoyFilter_ListenerMatch_FilterMatch{
-									Name: "envoy.filters.network.sni_cluster",
-								},
-							},
-						},
-					},
-				},
-				Patch: &networkingv1alpha3spec.EnvoyFilter_Patch{
-					Operation: 5,
-					Value: &types.Struct{
-						Fields: map[string]*types.Value{
-							"name": {
-								Kind: &types.Value_StringValue{
-									StringValue: "envoy.filters.network.tcp_cluster_rewrite",
-								},
-							},
-							"typed_config": {
-								Kind: &types.Value_StructValue{
-									StructValue: &types.Struct{
-										Fields: map[string]*types.Value{
-											"@type": {
-												Kind: &types.Value_StringValue{
-													StringValue: "type.googleapis.com/istio.envoy.config.filter.network.tcp_cluster_rewrite.v2alpha1.TcpClusterRewrite",
-												},
-											},
-											"cluster_replacement": {
-												Kind: &types.Value_StringValue{
-													StringValue: ".cluster.local",
-												},
-											},
-											"cluster_pattern": {
-												Kind: &types.Value_StringValue{
-													StringValue: "\\.cluster.soloio$",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	},
-}
-var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1alpha3.ServiceEntry{
-	ObjectMeta: metav1.ObjectMeta{
-		Name:        "some-svc.some-ns.svc.cluster.soloio",
-		Namespace:   "remote-namespace",
-		ClusterName: "remote-cluster",
-		Labels:      metautils.TranslatedObjectLabels(),
-		Annotations: map[string]string{
-			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
-		},
-	},
-	Spec: networkingv1alpha3spec.ServiceEntry{
-		Hosts: []string{
-			"some-svc.some-ns.svc.cluster.soloio",
-		},
-		Addresses: []string{
-			"243.21.204.125",
-		},
-		Ports: []*networkingv1alpha3spec.Port{
-			{
-				Number:   1234,
-				Protocol: string(protocol.HTTP),
-				Name:     "http",
-			},
-			{
-				Number:   5555,
-				Protocol: string(protocol.TCP),
-				Name:     "status-port",
-			},
-			{
-				Number:   5678,
-				Protocol: string(protocol.GRPC),
-				Name:     "grpc",
-			},
-		},
-		Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
-		Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
-		Endpoints: []*networkingv1alpha3spec.WorkloadEntry{
-			{
-				Address: "mesh-gateway.dns.name",
-				Ports: map[string]uint32{
-					"http":        8181,
-					"grpc":        8181,
-					"status-port": 8181,
-				},
-				Labels: map[string]string{"cluster": "cluster"},
-			},
-		},
-	},
 })

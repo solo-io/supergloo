@@ -95,8 +95,8 @@ Limited trust is a virtual mesh trust model which does not require all meshes sh
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| rootCertificateAuthority | networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority |  | Configure a Root Certificate Authority which will be shared by the members of the virtual mesh. If this is not provided, a self-signed certificate will be used by Service Mesh Hub to establish shared trust for the purposes of failover and federation. |
-
+| rootCertificateAuthority | [networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority" >}}) |  | Configure a Root Certificate Authority which will be shared by the members of the virtual mesh. If this is not provided, a self-signed certificate will be used by Service Mesh Hub to establish shared trust for the purposes of failover and federation. |
+  
 
 
 
