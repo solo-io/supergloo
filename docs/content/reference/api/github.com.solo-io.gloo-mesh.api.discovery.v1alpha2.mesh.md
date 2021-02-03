@@ -32,6 +32,7 @@ title: "mesh.proto"
   - [MeshSpec.OSM](#discovery.mesh.gloo.solo.io.MeshSpec.OSM)
   - [MeshStatus](#discovery.mesh.gloo.solo.io.MeshStatus)
   - [MeshStatus.AppliedFailoverService](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService)
+  - [MeshStatus.AppliedGlobalService](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedGlobalService)
   - [MeshStatus.AppliedVirtualMesh](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh)
 
 
@@ -253,6 +254,7 @@ https://github.com/openservicemesh/osm
 | observedGeneration | int64 |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that mesh-networking has reconciled the latest version of the Mesh. |
   | appliedVirtualMesh | [discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh" >}}) |  | The VirtualMesh, if any, which contains this mesh. |
   | appliedFailoverServices | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService" >}}) | repeated | The FailoverServices, if any, which applies to this mesh. |
+  | appliedGlobalServices | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedGlobalService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedGlobalService" >}}) | repeated | The FailoverServices, if any, which applies to this mesh. |
   
 
 
@@ -270,6 +272,23 @@ AppliedFailoverService represents a FailoverService that has been applied to thi
 | ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the FailoverService. |
   | observedGeneration | int64 |  | The observed generation of the accepted FailoverService. |
   | spec | [networking.mesh.gloo.solo.io.FailoverServiceSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.failover_service#networking.mesh.gloo.solo.io.FailoverServiceSpec" >}}) |  | The last known valid spec of the FailoverService. |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.MeshStatus.AppliedGlobalService"></a>
+
+### MeshStatus.AppliedGlobalService
+AppliedGlobalService represents an GlobalService that has been applied to this Mesh.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | reference to the GlobalService object. |
+  | observedGeneration | int64 |  | the observed generation of the accepted GlobalService. |
+  | errors | []string | repeated | any errors encountered while processing the referenced GlobalService object |
   
 
 

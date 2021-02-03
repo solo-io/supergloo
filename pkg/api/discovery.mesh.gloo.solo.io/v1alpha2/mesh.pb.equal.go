@@ -195,6 +195,23 @@ func (m *MeshStatus) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetAppliedGlobalServices()) != len(target.GetAppliedGlobalServices()) {
+		return false
+	}
+	for idx, v := range m.GetAppliedGlobalServices() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAppliedGlobalServices()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetAppliedGlobalServices()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	return true
 }
 
@@ -665,6 +682,55 @@ func (m *MeshStatus_AppliedFailoverService) Equal(that interface{}) bool {
 		if !proto.Equal(m.GetSpec(), target.GetSpec()) {
 			return false
 		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *MeshStatus_AppliedGlobalService) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*MeshStatus_AppliedGlobalService)
+	if !ok {
+		that2, ok := that.(MeshStatus_AppliedGlobalService)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetRef()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRef()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRef(), target.GetRef()) {
+			return false
+		}
+	}
+
+	if m.GetObservedGeneration() != target.GetObservedGeneration() {
+		return false
+	}
+
+	if len(m.GetErrors()) != len(target.GetErrors()) {
+		return false
+	}
+	for idx, v := range m.GetErrors() {
+
+		if strings.Compare(v, target.GetErrors()[idx]) != 0 {
+			return false
+		}
+
 	}
 
 	return true

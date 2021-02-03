@@ -64,23 +64,6 @@ func (m *GlobalServiceSpec) Equal(that interface{}) bool {
 		}
 	}
 
-	if len(m.GetTrafficTargetSelectors()) != len(target.GetTrafficTargetSelectors()) {
-		return false
-	}
-	for idx, v := range m.GetTrafficTargetSelectors() {
-
-		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetTrafficTargetSelectors()[idx]) {
-				return false
-			}
-		} else {
-			if !proto.Equal(v, target.GetTrafficTargetSelectors()[idx]) {
-				return false
-			}
-		}
-
-	}
-
 	switch m.ExportTo.(type) {
 
 	case *GlobalServiceSpec_VirtualMesh:
@@ -355,6 +338,23 @@ func (m *GlobalServiceSpec_LocalityConfig) Equal(that interface{}) bool {
 		return m == nil
 	} else if m == nil {
 		return false
+	}
+
+	if len(m.GetTrafficTargetSelectors()) != len(target.GetTrafficTargetSelectors()) {
+		return false
+	}
+	for idx, v := range m.GetTrafficTargetSelectors() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetTrafficTargetSelectors()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetTrafficTargetSelectors()[idx]) {
+				return false
+			}
+		}
+
 	}
 
 	if len(m.GetLocalities()) != len(target.GetLocalities()) {
