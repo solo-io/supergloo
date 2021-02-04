@@ -251,22 +251,22 @@ spec:
                 - required:
                   - virtualMesh
                 - required:
-                  - meshes
+                  - meshList
             - required:
               - virtualMesh
             - required:
-              - meshes
+              - meshList
           - oneOf:
             - not:
                 anyOf:
                 - required:
-                  - failover
+                  - serviceList
                 - required:
-                  - locality
+                  - localityFailover
             - required:
-              - failover
+              - serviceList
             - required:
-              - locality
+              - localityFailover
           description: |-
             A GlobalService creates a new hostname to which services can send requests.
                Requests will be routed based on a list of backing traffic targets ordered by
@@ -277,44 +277,12 @@ spec:
 
                Currently this feature only supports Services backed by Istio.
           properties:
-            failover:
-              properties:
-                services:
-                  description: |-
-                    The list of services backing the GlobalService, ordered by decreasing priority.
-                    All services must be backed by either the same service mesh instance or
-                    backed by service meshes that are grouped under a common VirtualMesh.
-                  items:
-                    oneOf:
-                    - not:
-                        anyOf:
-                        - required:
-                          - kubeService
-                    - required:
-                      - kubeService
-                    properties:
-                      kubeService:
-                        description: Name/namespace/cluster of a kubernetes service.
-                        properties:
-                          clusterName:
-                            description: name of the cluster in which the resource exists
-                            type: string
-                          name:
-                            description: name of the resource being referenced
-                            type: string
-                          namespace:
-                            description: namespace of the resource being referenced
-                            type: string
-                        type: object
-                    type: object
-                  type: array
-              type: object
             hostname:
               description: |-
                 The DNS name of the GlobalService. Must be unique within the service mesh instance
                 since it is used as the hostname with which clients communicate.
               type: string
-            locality:
+            localityFailover:
               description: Locality Failover configuration.
               properties:
                 localities:
@@ -328,7 +296,7 @@ spec:
                         type: array
                     type: object
                   type: array
-                trafficTargets:
+                serviceSelectors:
                   description: |-
                     Selectors for the services backing the GlobalService. The selected services are considered
                     equivalent, and Gloo Mesh will route to the optimal service instance based on the locality
@@ -388,12 +356,12 @@ spec:
                     type: object
                   type: array
               type: object
-            meshes:
+            meshList:
               description: |-
                 The meshes that this GlobalService will be visible to. If multiple meshes are specified, they must
                 all belong to the same VirtualMesh.
               properties:
-                meshRefs:
+                meshes:
                   items:
                     properties:
                       name:
@@ -416,6 +384,38 @@ spec:
                 protocol:
                   description: Protocol of the requests sent to the GlobalService, must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS.
                   type: string
+              type: object
+            serviceList:
+              properties:
+                services:
+                  description: |-
+                    The list of services backing the GlobalService, ordered by decreasing priority.
+                    All services must be backed by either the same service mesh instance or
+                    backed by service meshes that are grouped under a common VirtualMesh.
+                  items:
+                    oneOf:
+                    - not:
+                        anyOf:
+                        - required:
+                          - kubeService
+                    - required:
+                      - kubeService
+                    properties:
+                      kubeService:
+                        description: Name/namespace/cluster of a kubernetes service.
+                        properties:
+                          clusterName:
+                            description: name of the cluster in which the resource exists
+                            type: string
+                          name:
+                            description: name of the resource being referenced
+                            type: string
+                          namespace:
+                            description: namespace of the resource being referenced
+                            type: string
+                        type: object
+                    type: object
+                  type: array
               type: object
             virtualMesh:
               description: The VirtualMesh that this GlobalService will be visible to.

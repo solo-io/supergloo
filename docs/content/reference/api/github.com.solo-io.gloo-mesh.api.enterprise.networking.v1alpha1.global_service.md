@@ -45,9 +45,9 @@ A GlobalService creates a new hostname to which services can send requests. Requ
 | hostname | string |  | The DNS name of the GlobalService. Must be unique within the service mesh instance since it is used as the hostname with which clients communicate. |
   | port | [networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.Port]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.Port" >}}) |  | The port on which the GlobalService listens. |
   | virtualMesh | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The VirtualMesh that this GlobalService will be visible to. |
-  | meshes | [networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.MeshList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.MeshList" >}}) |  | The meshes that this GlobalService will be visible to. If multiple meshes are specified, they must all belong to the same VirtualMesh. |
-  | failover | [networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList" >}}) |  |  |
-  | locality | [networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig" >}}) |  | Locality Failover configuration. |
+  | meshList | [networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.MeshList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.MeshList" >}}) |  | The meshes that this GlobalService will be visible to. If multiple meshes are specified, they must all belong to the same VirtualMesh. |
+  | serviceList | [networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList" >}}) |  |  |
+  | localityFailover | [networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig" >}}) |  | Locality Failover configuration. |
   
 
 
@@ -92,7 +92,7 @@ The traffic targets that comprise the GlobalService.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| trafficTargets | [][networking.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | Selectors for the services backing the GlobalService. The selected services are considered equivalent, and Gloo Mesh will route to the optimal service instance based on the locality failover configuration. |
+| serviceSelectors | [][networking.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | Selectors for the services backing the GlobalService. The selected services are considered equivalent, and Gloo Mesh will route to the optimal service instance based on the locality failover configuration. |
   | localities | [][networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality" >}}) | repeated |  |
   
 
@@ -124,7 +124,7 @@ The traffic targets that comprise the GlobalService.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| meshRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated |  |
+| meshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated |  |
   
 
 
