@@ -81,17 +81,17 @@ func (m *GlobalServiceSpec) Equal(that interface{}) bool {
 			}
 		}
 
-	case *GlobalServiceSpec_Meshes:
-		if _, ok := target.ExportTo.(*GlobalServiceSpec_Meshes); !ok {
+	case *GlobalServiceSpec_MeshList_:
+		if _, ok := target.ExportTo.(*GlobalServiceSpec_MeshList_); !ok {
 			return false
 		}
 
-		if h, ok := interface{}(m.GetMeshes()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetMeshes()) {
+		if h, ok := interface{}(m.GetMeshList()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetMeshList()) {
 				return false
 			}
 		} else {
-			if !proto.Equal(m.GetMeshes(), target.GetMeshes()) {
+			if !proto.Equal(m.GetMeshList(), target.GetMeshList()) {
 				return false
 			}
 		}
@@ -105,32 +105,32 @@ func (m *GlobalServiceSpec) Equal(that interface{}) bool {
 
 	switch m.FailoverConfig.(type) {
 
-	case *GlobalServiceSpec_Failover:
-		if _, ok := target.FailoverConfig.(*GlobalServiceSpec_Failover); !ok {
+	case *GlobalServiceSpec_ServiceList:
+		if _, ok := target.FailoverConfig.(*GlobalServiceSpec_ServiceList); !ok {
 			return false
 		}
 
-		if h, ok := interface{}(m.GetFailover()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetFailover()) {
+		if h, ok := interface{}(m.GetServiceList()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetServiceList()) {
 				return false
 			}
 		} else {
-			if !proto.Equal(m.GetFailover(), target.GetFailover()) {
+			if !proto.Equal(m.GetServiceList(), target.GetServiceList()) {
 				return false
 			}
 		}
 
-	case *GlobalServiceSpec_Locality:
-		if _, ok := target.FailoverConfig.(*GlobalServiceSpec_Locality); !ok {
+	case *GlobalServiceSpec_LocalityFailover:
+		if _, ok := target.FailoverConfig.(*GlobalServiceSpec_LocalityFailover); !ok {
 			return false
 		}
 
-		if h, ok := interface{}(m.GetLocality()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetLocality()) {
+		if h, ok := interface{}(m.GetLocalityFailover()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetLocalityFailover()) {
 				return false
 			}
 		} else {
-			if !proto.Equal(m.GetLocality(), target.GetLocality()) {
+			if !proto.Equal(m.GetLocalityFailover(), target.GetLocalityFailover()) {
 				return false
 			}
 		}
@@ -258,17 +258,17 @@ func (m *GlobalServiceSpec_MeshList) Equal(that interface{}) bool {
 		return false
 	}
 
-	if len(m.GetMeshRefs()) != len(target.GetMeshRefs()) {
+	if len(m.GetMeshes()) != len(target.GetMeshes()) {
 		return false
 	}
-	for idx, v := range m.GetMeshRefs() {
+	for idx, v := range m.GetMeshes() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetMeshRefs()[idx]) {
+			if !h.Equal(target.GetMeshes()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetMeshRefs()[idx]) {
+			if !proto.Equal(v, target.GetMeshes()[idx]) {
 				return false
 			}
 		}
@@ -340,17 +340,17 @@ func (m *GlobalServiceSpec_LocalityConfig) Equal(that interface{}) bool {
 		return false
 	}
 
-	if len(m.GetTrafficTargets()) != len(target.GetTrafficTargets()) {
+	if len(m.GetServiceSelectors()) != len(target.GetServiceSelectors()) {
 		return false
 	}
-	for idx, v := range m.GetTrafficTargets() {
+	for idx, v := range m.GetServiceSelectors() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetTrafficTargets()[idx]) {
+			if !h.Equal(target.GetServiceSelectors()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetTrafficTargets()[idx]) {
+			if !proto.Equal(v, target.GetServiceSelectors()[idx]) {
 				return false
 			}
 		}

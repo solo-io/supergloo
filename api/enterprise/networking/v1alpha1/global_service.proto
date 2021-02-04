@@ -26,6 +26,25 @@ message GlobalServiceSpec {
   string hostname = 1;
 
   // The port on which the GlobalService listens.
+  Port port = 2;
+
+  // The GlobalService can be made visible to either a mesh, a VirtualMesh, or multiple meshes that are
+  // in the same VirtualMesh.
+  oneof export_to {
+    // The VirtualMesh that this GlobalService will be visible to.
+    .core.skv2.solo.io.ObjectRef virtual_mesh = 3;
+    // The meshes that this GlobalService will be visible to. If multiple meshes are specified, they must
+    // all belong to the same VirtualMesh.
+    MeshList mesh_list = 4;
+  }
+
+  oneof failover_config {
+    BackingServiceList service_list = 5;
+    // Locality Failover configuration.
+    LocalityConfig locality_failover = 6;
+  }
+
+  // The port on which the GlobalService listens.
   message Port {
     // Port number.
     uint32 number = 1;
@@ -33,29 +52,15 @@ message GlobalServiceSpec {
     string protocol = 2;
   }
 
-  // The port on which the GlobalService listens.
-  Port port = 2;
-
   message MeshList {
-    repeated .core.skv2.solo.io.ObjectRef mesh_refs = 1;
+    repeated .core.skv2.solo.io.ObjectRef meshes = 1;
   }
 
-  // The GlobalService can be made visible to either a mesh, a VirtualMesh, or multiple meshes that are
-  // in the same VirtualMesh.
-  oneof export_to {
-    // The VirtualMesh that this GlobalService will be visible to.
-    .core.skv2.solo.io.ObjectRef virtual_mesh = 4;
-    // The meshes that this GlobalService will be visible to. If multiple meshes are specified, they must
-    // all belong to the same VirtualMesh.
-    MeshList meshes = 5;
-  }
-
-  oneof failover_config {
-    BackingServiceList failover = 6;
-    // Locality Failover configuration.
-    LocalityConfig locality = 7;
-  }
   message BackingServiceList {
+    // The list of services backing the GlobalService, ordered by decreasing priority.
+    // All services must be backed by either the same service mesh instance or
+    // backed by service meshes that are grouped under a common VirtualMesh.
+    repeated BackingService services = 1;
 
     // The traffic targets that comprise the GlobalService.
     message BackingService {
@@ -65,26 +70,21 @@ message GlobalServiceSpec {
         .core.skv2.solo.io.ClusterObjectRef kube_service = 1;
       }
     }
-    // The list of services backing the GlobalService, ordered by decreasing priority.
-    // All services must be backed by either the same service mesh instance or
-    // backed by service meshes that are grouped under a common VirtualMesh.
-    repeated BackingService services = 1;
   }
 
   message LocalityConfig {
     // Selectors for the services backing the GlobalService. The selected services are considered
     // equivalent, and Gloo Mesh will route to the optimal service instance based on the locality
     // failover configuration.
-    repeated .networking.mesh.gloo.solo.io.TrafficTargetSelector traffic_targets = 1;
+    repeated .networking.mesh.gloo.solo.io.TrafficTargetSelector service_selectors = 1;
+
+    repeated Locality localities = 2;
 
     message Locality {
       string from = 1;
       repeated string to = 2;
     }
-
-    repeated Locality localities = 2;
   }
-
 }
 
 message GlobalServiceStatus {
