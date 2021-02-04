@@ -332,6 +332,9 @@ spec:
                         type: string
                     type: object
                   type: array
+                flatNetwork:
+                  description: Whether or not the TrafficTarget has been federated via a flat-network to the given meshes.
+                  type: boolean
               type: object
             appliedTrafficPolicies:
               description: The set of Traffic Policies that have been applied to this TrafficTarget

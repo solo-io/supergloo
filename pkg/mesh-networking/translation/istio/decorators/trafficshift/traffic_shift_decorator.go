@@ -270,7 +270,11 @@ func MakeDestinationRuleSubsetsForTrafficTarget(
 	// which contain all the matching subset names for the remote destination rule.
 	// the labels for the subsets must match the labels on the ServiceEntry Endpoint(s).
 	// Based on https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
-	if sourceClusterName != "" && sourceClusterName != trafficTarget.ClusterName {
+	//
+	// If flat-networking is enabled, we leave the subset info as there is no ingress involved
+	if sourceClusterName != "" &&
+		sourceClusterName != trafficTarget.ClusterName &&
+		!trafficTarget.Status.GetAppliedFederation().GetFlatNetwork() {
 		for _, subset := range subsets {
 			// only the name of the subset matters here.
 			// the labels must match those on the ServiceEntry's endpoints.

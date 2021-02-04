@@ -216,6 +216,7 @@ Federation policy applied to this TrafficTarget, allowing access to the traffic 
 | ----- | ---- | ----- | ----------- |
 | federatedHostname | string |  | For any workload that this traffic target has federated to (i.e., any Workload controlled by a mesh whose ref appears in `federated_to_meshes`), a client in that workload will be able to reach this traffic target at this DNS name. This includes workloads on clusters other than the one hosting this service. |
   | federatedToMeshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The list of Meshes which are able to resolve this service's `multicluster_dns_name`. |
+  | flatNetwork | bool |  | Whether or not the TrafficTarget has been federated via a flat-network to the given meshes. |
   
 
 
