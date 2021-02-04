@@ -105,32 +105,32 @@ func (m *GlobalServiceSpec) Equal(that interface{}) bool {
 
 	switch m.FailoverConfig.(type) {
 
-	case *GlobalServiceSpec_BackingServices:
-		if _, ok := target.FailoverConfig.(*GlobalServiceSpec_BackingServices); !ok {
+	case *GlobalServiceSpec_Failover:
+		if _, ok := target.FailoverConfig.(*GlobalServiceSpec_Failover); !ok {
 			return false
 		}
 
-		if h, ok := interface{}(m.GetBackingServices()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetBackingServices()) {
+		if h, ok := interface{}(m.GetFailover()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetFailover()) {
 				return false
 			}
 		} else {
-			if !proto.Equal(m.GetBackingServices(), target.GetBackingServices()) {
+			if !proto.Equal(m.GetFailover(), target.GetFailover()) {
 				return false
 			}
 		}
 
-	case *GlobalServiceSpec_LocalityConfig_:
-		if _, ok := target.FailoverConfig.(*GlobalServiceSpec_LocalityConfig_); !ok {
+	case *GlobalServiceSpec_Locality:
+		if _, ok := target.FailoverConfig.(*GlobalServiceSpec_Locality); !ok {
 			return false
 		}
 
-		if h, ok := interface{}(m.GetLocalityConfig()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetLocalityConfig()) {
+		if h, ok := interface{}(m.GetLocality()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetLocality()) {
 				return false
 			}
 		} else {
-			if !proto.Equal(m.GetLocalityConfig(), target.GetLocalityConfig()) {
+			if !proto.Equal(m.GetLocality(), target.GetLocality()) {
 				return false
 			}
 		}
@@ -299,17 +299,17 @@ func (m *GlobalServiceSpec_BackingServiceList) Equal(that interface{}) bool {
 		return false
 	}
 
-	if len(m.GetBackingServices()) != len(target.GetBackingServices()) {
+	if len(m.GetServices()) != len(target.GetServices()) {
 		return false
 	}
-	for idx, v := range m.GetBackingServices() {
+	for idx, v := range m.GetServices() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetBackingServices()[idx]) {
+			if !h.Equal(target.GetServices()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetBackingServices()[idx]) {
+			if !proto.Equal(v, target.GetServices()[idx]) {
 				return false
 			}
 		}
@@ -340,17 +340,17 @@ func (m *GlobalServiceSpec_LocalityConfig) Equal(that interface{}) bool {
 		return false
 	}
 
-	if len(m.GetTrafficTargetSelectors()) != len(target.GetTrafficTargetSelectors()) {
+	if len(m.GetTrafficTargets()) != len(target.GetTrafficTargets()) {
 		return false
 	}
-	for idx, v := range m.GetTrafficTargetSelectors() {
+	for idx, v := range m.GetTrafficTargets() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetTrafficTargetSelectors()[idx]) {
+			if !h.Equal(target.GetTrafficTargets()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetTrafficTargetSelectors()[idx]) {
+			if !proto.Equal(v, target.GetTrafficTargets()[idx]) {
 				return false
 			}
 		}
