@@ -22,6 +22,7 @@ title: "workload.proto"
   - [WorkloadSpec.AppMesh](#discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh)
   - [WorkloadSpec.AppMesh.ContainerPort](#discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh.ContainerPort)
   - [WorkloadSpec.KubernetesWorkload](#discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload)
+  - [WorkloadSpec.KubernetesWorkload.EndpointsSubset](#discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.EndpointsSubset)
   - [WorkloadSpec.KubernetesWorkload.PodLabelsEntry](#discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.PodLabelsEntry)
   - [WorkloadStatus](#discovery.mesh.gloo.solo.io.WorkloadStatus)
   - [WorkloadStatus.AppliedAccessLogRecord](#discovery.mesh.gloo.solo.io.WorkloadStatus.AppliedAccessLogRecord)
@@ -93,6 +94,23 @@ Information describing a Kubernetes-based workload (e.g. a Deployment or DaemonS
 | controller | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads. It has the generic name controller as it can represent a deployment, daemonset, or statefulset. |
   | podLabels | [][discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.PodLabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload#discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.PodLabelsEntry" >}}) | repeated | These are the labels directly from the pods that this controller owns. NB: these labels are read directly from the pod template metadata.labels defined in the workload spec. We need these to determine which services are backed by this workload. |
   | serviceAccountName | string |  | Service account attached to the pods owned by this controller. |
+  | endpoints | [][discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.EndpointsSubset]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload#discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.EndpointsSubset" >}}) | repeated | Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs. This API mirrors the kubernetes Endpoints API. https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.EndpointsSubset"></a>
+
+### WorkloadSpec.KubernetesWorkload.EndpointsSubset
+A series of IP addresses and their associated ports. The list of ip + port pairs is the cartesian product of the following lists
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ipAddresses | []string | repeated |  |
+  | ports | [][discovery.mesh.gloo.solo.io.KubeServicePort]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.KubeServicePort" >}}) | repeated |  |
   
 
 
