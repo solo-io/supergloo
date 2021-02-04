@@ -98,6 +98,18 @@ spec:
                   description: namespace of the resource being referenced
                   type: string
               type: object
+            workloads:
+              description: The discovered workloads which serve as backends for this TrafficTarget
+              items:
+                properties:
+                  name:
+                    description: name of the resource being referenced
+                    type: string
+                  namespace:
+                    description: namespace of the resource being referenced
+                    type: string
+                type: object
+              type: array
           type: object
         status:
           properties:

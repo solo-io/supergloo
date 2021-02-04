@@ -56,6 +56,23 @@ func (m *TrafficTargetSpec) Equal(that interface{}) bool {
 		}
 	}
 
+	if len(m.GetWorkloads()) != len(target.GetWorkloads()) {
+		return false
+	}
+	for idx, v := range m.GetWorkloads() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetWorkloads()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetWorkloads()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	switch m.Type.(type) {
 
 	case *TrafficTargetSpec_KubeService_:
