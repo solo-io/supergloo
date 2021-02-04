@@ -170,16 +170,21 @@ func getEndpointsForService(
 		for _, epSub := range ep.Subsets {
 			sub := &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{}
 			for _, addr := range epSub.Addresses {
-				subLocality, err := localityutils.GetSubLocality(kubeService.GetRef().GetClusterName(), *addr.NodeName, nodes)
-				if err != nil {
-					// Log the error but continue processing. We just won't be able to get a locality for this address
-					contextutils.LoggerFrom(ctx).Warnw("could not get locality for address", "error", err)
+				localityIp := &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_LocalityIp{
+					Ip: addr.IP,
 				}
-				sub.LocalityIpAddresses = append(sub.LocalityIpAddresses,
-					&v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_LocalityIp{
-						Ip:          addr.IP,
-						SubLocality: subLocality,
-					})
+				if addr.NodeName != nil {
+					subLocality, err := localityutils.GetSubLocality(kubeService.GetRef().GetClusterName(), *addr.NodeName, nodes)
+					if err != nil {
+						// Log the error but continue processing. We just won't be able to get a locality for this address
+						contextutils.LoggerFrom(ctx).Warnw("could not get locality for address", "error", err)
+					} else {
+						localityIp.SubLocality = subLocality
+					}
+				} else {
+					contextutils.LoggerFrom(ctx).Warnw("address does not have a node", "address", addr)
+				}
+				sub.LocalityIpAddresses = append(sub.LocalityIpAddresses, localityIp)
 			}
 			for _, port := range epSub.Ports {
 				svcPort := &v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
