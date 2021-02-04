@@ -63,8 +63,6 @@ type componentImage struct {
 	Version string `json:"version"`
 }
 
-const appLabelKey = "app"
-
 func printVersion(ctx context.Context, opts *options) error {
 	serverVersions := makeServerVersions(ctx, opts)
 	versions := versionInfo{
@@ -109,7 +107,7 @@ func makeServerVersions(ctx context.Context, opts *options) []serverVersion {
 		componentMap[namespace] = append(
 			componentMap[namespace],
 			component{
-				ComponentName: deployment.GetObjectMeta().GetLabels()[appLabelKey],
+				ComponentName: deployment.GetName(),
 				Images:        images,
 			},
 		)

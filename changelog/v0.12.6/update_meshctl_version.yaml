@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     issueLink: https://github.com/solo-io/gloo-mesh/issues/1123
-    description: Update the meshctl version command to include recently added copmonents.
+    description: Update the `meshctl version` command to include recently added components.
