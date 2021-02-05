@@ -25,7 +25,6 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.HeaderManipulation](#networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderManipulation)
   - [TrafficPolicySpec.HeaderManipulation.AppendRequestHeadersEntry](#networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderManipulation.AppendRequestHeadersEntry)
   - [TrafficPolicySpec.HeaderManipulation.AppendResponseHeadersEntry](#networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderManipulation.AppendResponseHeadersEntry)
-  - [TrafficPolicySpec.HeaderMatcher](#networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderMatcher)
   - [TrafficPolicySpec.HttpMatcher](#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher)
   - [TrafficPolicySpec.HttpMethod](#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMethod)
   - [TrafficPolicySpec.MTLS](#networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS)
@@ -180,24 +179,6 @@ Manipulate request and response headers.
 
 
 
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderMatcher"></a>
-
-### TrafficPolicySpec.HeaderMatcher
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| name | string |  | Specifies the name of the header in the request. |
-  | value | string |  | Specifies the value of the header. If the value is absent a request that has the name header will match, regardless of the header’s value. |
-  | regex | bool |  | Specifies whether the header value should be treated as regex or not. |
-  | invertMatch | bool |  | If set to true, the result of the match will be inverted. Defaults to false.<br>Examples: name=foo, invert_match=true: matches if no header named `foo` is present name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present |
-  
-
-
-
-
-
 <a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher"></a>
 
 ### TrafficPolicySpec.HttpMatcher
@@ -209,7 +190,7 @@ Parameters for matching routes. All specified conditions must be satisfied for a
 | prefix | string |  | If specified, the route is a prefix rule meaning that the prefix must match the beginning of the *:path* header. |
   | exact | string |  | If specified, the route is an exact path rule meaning that the path must exactly match the *:path* header once the query string is removed. |
   | regex | string |  | If specified, the route is a regular expression rule meaning that the regex must match the *:path* header once the query string is removed. The entire path (without the query string) must match the regex. The rule will not match if only a sub-sequence of the *:path* header matches the regex. The regex grammar is defined `here <http://en.cppreference.com/w/cpp/regex/ecmascript>`_. |
-  | headers | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.HeaderMatcher" >}}) | repeated | Specifies a set of headers which requests must match in entirety (all headers must match). |
+  | headers | [][common.mesh.gloo.solo.io.HeaderMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha1.request_matchers#common.mesh.gloo.solo.io.HeaderMatcher" >}}) | repeated | Specifies a set of headers which requests must match in entirety (all headers must match). |
   | queryParameters | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.QueryParameterMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.QueryParameterMatcher" >}}) | repeated | Specifies a set of URL query parameters which requests must match in entirety (all query params must match). The router will check the query string from the *path* header against all the specified query parameters |
   | method | [networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMethod]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMethod" >}}) |  | HTTP Method/Verb to match on. If none specified, the matcher will ignore the HTTP Method |
   

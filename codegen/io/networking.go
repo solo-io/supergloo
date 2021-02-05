@@ -44,6 +44,12 @@ var (
 		}: {
 			"WasmDeployment",
 		},
+		schema.GroupVersion{
+			Group:   "observability.enterprise." + constants.GlooMeshApiGroupSuffix,
+			Version: "v1alpha1",
+		}: {
+			"AccessLogRecord",
+		},
 		skv1alpha1.SchemeGroupVersion: {
 			"KubernetesCluster",
 		},
@@ -114,7 +120,6 @@ var (
 			appmeshv1beta2.GroupVersion: {
 				"VirtualNode",
 				"VirtualRouter",
-				"Route",
 				"VirtualService",
 			},
 		},

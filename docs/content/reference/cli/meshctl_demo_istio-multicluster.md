@@ -6,10 +6,6 @@ weight: 5
 
 Demo Gloo Mesh functionality with two Istio control planes deployed on separate k8s clusters
 
-### Synopsis
-
-Demo Gloo Mesh functionality with two Istio control planes deployed on separate k8s clusters
-
 ### Options
 
 ```

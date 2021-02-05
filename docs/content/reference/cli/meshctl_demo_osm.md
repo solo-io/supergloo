@@ -6,10 +6,6 @@ weight: 5
 
 Demo Gloo Mesh functionality one OSM control plane deployed
 
-### Synopsis
-
-Demo Gloo Mesh functionality one OSM control plane deployed
-
 ### Options
 
 ```

@@ -36,14 +36,7 @@ We've put together [a handful of videos](https://www.youtube.com/watch?v=4sWikVE
 There are many ways to get involved in an open source community and contribute to the project. Watch [this talk](https://www.youtube.com/watch?v=VE-igex6Lz4) to learn more about the architecture and how it works. 
 - **Code:** If you're looking to hack on service mesh, check out the code and the contribution guide [here](https://docs.solo.io/gloo-mesh/latest/contributing/) and look for the *good first issue* and *help wanted* labels in the GitHub issues. 
  - **Docs:** Contribute to the [Docs](docs/) or file issues for any docs bugs or requests [here](https://github.com/solo-io/gloo-mesh/issues). 
- - **Talks and Blogs:** If you are interested in writing or speaking about Gloo Mesh and would like access to content, images or help, [DM us here](https://solo-io.slack.com/archives/DHQ9J939V). Share your demos, tutorials and content back to the community. 
-
-### Community Meetings 
-Calls will be held every other Wednesday at **10am Pacific Time** and are open to the general public. These meetings will be recorded and posted publicly to YouTube. 
- - [Zoom meeting link](https://solo.zoom.us/j/98337720715) - open to the public and recorded
- - [Meeting Calendar](https://calendar.google.com/calendar/embed?src=solo.io_c144salt3ffnlfto3p1qnkbmdo%40group.calendar.google.com&ctz=America%2FLos_Angeles)
- - [Meeting notes](https://bit.ly/ServiceMeshHub-CommunityMeeting) - this document is open to the public
- - [Recorded meetings](https://www.youtube.com/playlist?list=PLBOtlFtGznBiF3Dti9WbPBjPj5KPmoalq) - YouTube playlist for all previous meetings
+ - **Talks and Blogs:** If you are interested in writing or speaking about Gloo Mesh and would like access to content, images or help, [DM us here](https://solo-io.slack.com). Share your demos, tutorials and content back to the community.
 
 ## Questions and Resources
 If you have questions, please join the [#Gloo-Mesh channel](https://solo-io.slack.com/archives/CJQGK5TQ8) in the community slack. More information is available on the [website](https://www.solo.io/products/gloo-mesh/) and in the [docs](https://docs.solo.io/gloo-mesh/latest) 

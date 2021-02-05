@@ -7,6 +7,7 @@
 // * ConfigMaps
 // * Services
 // * Pods
+// * Endpoints
 // * Nodes
 // * Deployments
 // * ReplicaSets
@@ -57,6 +58,8 @@ type DiscoveryInputSnapshot interface {
 	Services() v1_sets.ServiceSet
 	// return the set of input Pods
 	Pods() v1_sets.PodSet
+	// return the set of input Endpoints
+	Endpoints() v1_sets.EndpointsSet
 	// return the set of input Nodes
 	Nodes() v1_sets.NodeSet
 
@@ -84,6 +87,8 @@ type DiscoveryInputSyncStatusOptions struct {
 	Service bool
 	// sync status of Pod objects
 	Pod bool
+	// sync status of Endpoints objects
+	Endpoints bool
 	// sync status of Node objects
 	Node bool
 
@@ -105,6 +110,7 @@ type snapshotDiscoveryInput struct {
 	configMaps v1_sets.ConfigMapSet
 	services   v1_sets.ServiceSet
 	pods       v1_sets.PodSet
+	endpoints  v1_sets.EndpointsSet
 	nodes      v1_sets.NodeSet
 
 	deployments  apps_v1_sets.DeploymentSet
@@ -121,6 +127,7 @@ func NewDiscoveryInputSnapshot(
 	configMaps v1_sets.ConfigMapSet,
 	services v1_sets.ServiceSet,
 	pods v1_sets.PodSet,
+	endpoints v1_sets.EndpointsSet,
 	nodes v1_sets.NodeSet,
 
 	deployments apps_v1_sets.DeploymentSet,
@@ -136,6 +143,7 @@ func NewDiscoveryInputSnapshot(
 		configMaps:   configMaps,
 		services:     services,
 		pods:         pods,
+		endpoints:    endpoints,
 		nodes:        nodes,
 		deployments:  deployments,
 		replicaSets:  replicaSets,
@@ -158,6 +166,10 @@ func (s snapshotDiscoveryInput) Services() v1_sets.ServiceSet {
 
 func (s snapshotDiscoveryInput) Pods() v1_sets.PodSet {
 	return s.pods
+}
+
+func (s snapshotDiscoveryInput) Endpoints() v1_sets.EndpointsSet {
+	return s.endpoints
 }
 
 func (s snapshotDiscoveryInput) Nodes() v1_sets.NodeSet {
@@ -187,6 +199,7 @@ func (s snapshotDiscoveryInput) MarshalJSON() ([]byte, error) {
 	snapshotMap["configMaps"] = s.configMaps.List()
 	snapshotMap["services"] = s.services.List()
 	snapshotMap["pods"] = s.pods.List()
+	snapshotMap["endpoints"] = s.endpoints.List()
 	snapshotMap["nodes"] = s.nodes.List()
 	snapshotMap["deployments"] = s.deployments.List()
 	snapshotMap["replicaSets"] = s.replicaSets.List()
@@ -212,6 +225,8 @@ type DiscoveryInputBuildOptions struct {
 	Services ResourceDiscoveryInputBuildOptions
 	// List options for composing a snapshot from Pods
 	Pods ResourceDiscoveryInputBuildOptions
+	// List options for composing a snapshot from Endpoints
+	Endpoints ResourceDiscoveryInputBuildOptions
 	// List options for composing a snapshot from Nodes
 	Nodes ResourceDiscoveryInputBuildOptions
 
@@ -259,6 +274,7 @@ func (b *multiClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, n
 	configMaps := v1_sets.NewConfigMapSet()
 	services := v1_sets.NewServiceSet()
 	pods := v1_sets.NewPodSet()
+	endpoints := v1_sets.NewEndpointsSet()
 	nodes := v1_sets.NewNodeSet()
 
 	deployments := apps_v1_sets.NewDeploymentSet()
@@ -280,6 +296,9 @@ func (b *multiClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, n
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertPodsFromCluster(ctx, cluster, pods, opts.Pods); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertEndpointsFromCluster(ctx, cluster, endpoints, opts.Endpoints); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertNodesFromCluster(ctx, cluster, nodes, opts.Nodes); err != nil {
@@ -307,6 +326,7 @@ func (b *multiClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, n
 		configMaps,
 		services,
 		pods,
+		endpoints,
 		nodes,
 		deployments,
 		replicaSets,
@@ -482,6 +502,48 @@ func (b *multiClusterDiscoveryInputBuilder) insertPodsFromCluster(ctx context.Co
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
 		pods.Insert(&item)
+	}
+
+	return nil
+}
+func (b *multiClusterDiscoveryInputBuilder) insertEndpointsFromCluster(ctx context.Context, cluster string, endpoints v1_sets.EndpointsSet, opts ResourceDiscoveryInputBuildOptions) error {
+	endpointsClient, err := v1.NewMulticlusterEndpointsClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Endpoints",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	endpointsList, err := endpointsClient.ListEndpoints(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range endpointsList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		endpoints.Insert(&item)
 	}
 
 	return nil
@@ -730,6 +792,7 @@ func (b *singleClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, 
 	configMaps := v1_sets.NewConfigMapSet()
 	services := v1_sets.NewServiceSet()
 	pods := v1_sets.NewPodSet()
+	endpoints := v1_sets.NewEndpointsSet()
 	nodes := v1_sets.NewNodeSet()
 
 	deployments := apps_v1_sets.NewDeploymentSet()
@@ -749,6 +812,9 @@ func (b *singleClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, 
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertPods(ctx, pods, opts.Pods); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertEndpoints(ctx, endpoints, opts.Endpoints); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertNodes(ctx, nodes, opts.Nodes); err != nil {
@@ -774,6 +840,7 @@ func (b *singleClusterDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, 
 		configMaps,
 		services,
 		pods,
+		endpoints,
 		nodes,
 		deployments,
 		replicaSets,
@@ -913,6 +980,39 @@ func (b *singleClusterDiscoveryInputBuilder) insertPods(ctx context.Context, pod
 		item := item // pike
 		item.ClusterName = b.clusterName
 		pods.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterDiscoveryInputBuilder) insertEndpoints(ctx context.Context, endpoints v1_sets.EndpointsSet, opts ResourceDiscoveryInputBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Endpoints",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	endpointsList, err := v1.NewEndpointsClient(b.mgr.GetClient()).ListEndpoints(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range endpointsList.Items {
+		item := item // pike
+		item.ClusterName = b.clusterName
+		endpoints.Insert(&item)
 	}
 
 	return nil

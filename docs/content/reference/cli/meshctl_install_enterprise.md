@@ -6,10 +6,6 @@ weight: 5
 
 Install Gloo Mesh enterprise
 
-### Synopsis
-
-Install Gloo Mesh enterprise
-
 ```
 meshctl install enterprise [flags]
 ```

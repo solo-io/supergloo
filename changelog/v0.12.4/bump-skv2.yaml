@@ -1,0 +1,8 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1225
+    description: Fix the cluster registration panic which would occur when registration artifacts were already present in the registered cluster.
+  - type: DEPENDENCY_BUMP
+    dependencyOwner: solo-io
+    dependencyRepo: skv2
+    dependencyTag: 0.17.2

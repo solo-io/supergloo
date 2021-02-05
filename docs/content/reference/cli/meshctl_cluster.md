@@ -6,10 +6,6 @@ weight: 5
 
 Interacting with remote Kubernetes clusters registered to Gloo Mesh
 
-### Synopsis
-
-Interacting with remote Kubernetes clusters registered to Gloo Mesh
-
 ### Options
 
 ```

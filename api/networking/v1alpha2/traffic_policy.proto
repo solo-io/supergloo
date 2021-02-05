@@ -7,6 +7,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1alpha1/request_matchers.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/http.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
@@ -279,7 +280,7 @@ message TrafficPolicySpec {
         }
 
         // Specifies a set of headers which requests must match in entirety (all headers must match).
-        repeated HeaderMatcher headers = 6;
+        repeated .common.mesh.gloo.solo.io.HeaderMatcher headers = 6;
 
         /*
             Specifies a set of URL query parameters which requests must match in entirety (all query params must match).
@@ -307,30 +308,6 @@ message TrafficPolicySpec {
             // ECMAscript style regex-based match.
             string regex = 3;
         }
-    }
-
-    message HeaderMatcher {
-        // Specifies the name of the header in the request.
-        string name = 1;
-
-        /*
-            Specifies the value of the header. If the value is absent a request that
-            has the name header will match, regardless of the header’s value.
-        */
-        string value = 2;
-
-        // Specifies whether the header value should be treated as regex or not.
-        bool regex = 3;
-
-        /*
-            If set to true, the result of the match will be inverted. Defaults to false.
-
-            Examples:
-            * name=foo, invert_match=true: matches if no header named `foo` is present
-            * name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
-            * name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present
-        */
-        bool invert_match = 4;
     }
 
     /*

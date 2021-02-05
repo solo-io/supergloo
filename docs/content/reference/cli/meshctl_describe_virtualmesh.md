@@ -6,10 +6,6 @@ weight: 5
 
 Description of virtual meshes
 
-### Synopsis
-
-Description of virtual meshes
-
 ```
 meshctl describe virtualmesh [flags]
 ```

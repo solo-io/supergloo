@@ -6,10 +6,6 @@ weight: 5
 
 Description of access policies
 
-### Synopsis
-
-Description of access policies
-
 ```
 meshctl describe accesspolicy [flags]
 ```

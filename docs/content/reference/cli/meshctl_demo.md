@@ -6,10 +6,6 @@ weight: 5
 
 Bootstrap environments for various demos demonstrating Gloo Mesh functionality.
 
-### Synopsis
-
-Bootstrap environments for various demos demonstrating Gloo Mesh functionality.
-
 ### Options
 
 ```

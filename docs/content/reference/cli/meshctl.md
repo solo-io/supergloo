@@ -6,10 +6,6 @@ weight: 5
 
 The Command Line Interface for managing Gloo Mesh.
 
-### Synopsis
-
-The Command Line Interface for managing Gloo Mesh.
-
 ### Options
 
 ```

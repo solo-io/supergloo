@@ -6,7 +6,6 @@ import (
 	"time"
 
 	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
-
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
@@ -28,7 +27,6 @@ import (
 	"github.com/solo-io/skv2/pkg/multicluster"
 	skpredicate "github.com/solo-io/skv2/pkg/predicate"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -91,10 +89,14 @@ func Start(
 	}
 
 	// Needed in order to use field selector on metadata.name for Settings CRD.
-	if err := localMgr.GetFieldIndexer().IndexField(ctx, &settingsv1alpha2.Settings{}, "metadata.name", func(object runtime.Object) []string {
-		settings := object.(*settingsv1alpha2.Settings)
-		return []string{settings.Name}
-	}); err != nil {
+	if err := localMgr.GetFieldIndexer().IndexField(
+		ctx,
+		&settingsv1alpha2.Settings{},
+		"metadata.name",
+		func(object client.Object) []string {
+			settings := object.(*settingsv1alpha2.Settings)
+			return []string{settings.Name}
+		}); err != nil {
 		return err
 	}
 
@@ -186,7 +188,12 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 		return false, err
 	}
 
-	outputSnap, err := r.translator.Translate(ctx, remoteInputSnap, settings.Spec.GetDiscovery())
+	outputSnap, err := r.translator.Translate(
+		ctx,
+		remoteInputSnap,
+		settings.Spec.GetDiscovery(),
+		localInputSnap,
+	)
 	if err != nil {
 		// internal translator errors should never happen
 		return false, err
