@@ -274,7 +274,7 @@ func registerFieldFunc(
 			fieldPtr,
 			[]ezkube.ResourceId{policyRef},
 			&v1alpha2.TrafficPolicy{},
-			0, //TODO(ilackarms): priority
+			0, // TODO(ilackarms): priority
 		); err != nil {
 			return err
 		}
@@ -338,7 +338,10 @@ func (t *translator) setDefaultDestination(
 // construct a copy of a route for each service port
 // required because Istio needs the destination port for every route
 // if the service has multiple service ports defined
-func duplicateRouteForEachPort(baseRoute *networkingv1alpha3spec.HTTPRoute, ports []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort) []*networkingv1alpha3spec.HTTPRoute {
+func duplicateRouteForEachPort(
+	baseRoute *networkingv1alpha3spec.HTTPRoute,
+	ports []*discoveryv1alpha2.KubeServicePort,
+) []*networkingv1alpha3spec.HTTPRoute {
 	if len(ports) == 1 {
 		// no need to specify port for single-port service
 		return []*networkingv1alpha3spec.HTTPRoute{baseRoute}
