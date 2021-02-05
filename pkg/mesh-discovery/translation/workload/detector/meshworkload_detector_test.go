@@ -89,6 +89,9 @@ var _ = Describe("WorkloadDetector", func() {
 				Name:        "pod",
 				ClusterName: deploymentCluster,
 			},
+			Status: corev1.PodStatus{
+				PodIP: "ip-1",
+			},
 		}
 		err := controllerutil.SetControllerReference(rs, pod, scheme.Scheme)
 		Expect(err).NotTo(HaveOccurred())
@@ -134,6 +137,11 @@ var _ = Describe("WorkloadDetector", func() {
 						Controller:         ezkube.MakeClusterObjectRef(deployment),
 						PodLabels:          podLabels,
 						ServiceAccountName: serviceAccountName,
+					},
+				},
+				Endpoints: []*v1alpha2.WorkloadSpec_Endpoint{
+					{
+						IpAddress: pod.Status.PodIP,
 					},
 				},
 				Mesh: ezkube.MakeObjectRef(mesh),

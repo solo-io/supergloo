@@ -108,6 +108,14 @@ var _ = Describe("TrafficTargetDetector", func() {
 			makeWorkload("v1"),
 			makeWorkload("v2"),
 		)
+		var workloadRefs []*skv1.ObjectRef
+		for _, workload := range workloads.List() {
+			workloadRefs = append(workloadRefs, &skv1.ObjectRef{
+				Name:      workload.GetName(),
+				Namespace: workload.GetNamespace(),
+			})
+		}
+
 		meshes := v1alpha2sets.NewMeshSet()
 		svc := makeService()
 
@@ -143,65 +151,10 @@ var _ = Describe("TrafficTargetDetector", func() {
 						},
 					},
 				},
-				Mesh: mesh,
+				Workloads: workloadRefs,
+				Mesh:      mesh,
 			},
 		}))
-	})
-
-	It("translates a service with endpoints if the backing workload is in flat network virtual mesh", func() {
-		workloads := v1alpha2sets.NewWorkloadSet(
-			makeWorkload("v1"),
-			makeWorkload("v2"),
-		)
-		meshes := v1alpha2sets.NewMeshSet()
-		svc := makeService()
-
-		detector := NewTrafficTargetDetector()
-
-		trafficTarget := detector.DetectTrafficTarget(ctx, svc, workloads, meshes)
-
-		Expect(trafficTarget).To(Equal(&v1alpha2.TrafficTarget{
-			ObjectMeta: utils.DiscoveredObjectMeta(svc),
-			Spec: v1alpha2.TrafficTargetSpec{
-				Workloads: []*skv1.ObjectRef{
-					{
-						Name:      "some-workload-v1",
-						Namespace: serviceNs,
-					},
-					{
-						Name:      "some-workload-v2",
-						Namespace: serviceNs,
-					},
-				},
-				Type: &v1alpha2.TrafficTargetSpec_KubeService_{
-					KubeService: &v1alpha2.TrafficTargetSpec_KubeService{
-						Ref:                    ezkube.MakeClusterObjectRef(svc),
-						WorkloadSelectorLabels: svc.Spec.Selector,
-						Labels:                 svc.Labels,
-						Ports: []*v1alpha2.KubeServicePort{
-							{
-								Port:        1234,
-								Name:        "port1",
-								Protocol:    "TCP",
-								AppProtocol: "HTTP",
-							},
-							{
-								Port:     2345,
-								Name:     "port2",
-								Protocol: "UDP",
-							},
-						},
-						Subsets: map[string]*v1alpha2.TrafficTargetSpec_KubeService_Subset{
-							"subset": {
-								Values: []string{"v1", "v2"},
-							},
-						},
-					},
-				},
-				Mesh: mesh,
-			},
-		}))
-
 	})
 
 	It("translates a service with a discovery annotation to a trafficTarget", func() {
