@@ -1,22 +1,20 @@
 package tests
 
 import (
-	"context"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 // run Enterprise Discovery regression tests
 func DiscoveryRegressionTest() {
-	var (
-		ctx context.Context
-	)
+	// var (
+	// 	ctx context.Context
+	// )
 
 	Context("Flat Networking", func() {
 
 		BeforeEach(func() {
-			ctx = context.Background()
+			// ctx = context.Background()
 
 			VirtualMesh.Spec.Federation.FlatNetwork = true
 			VirtualMeshManifest.CreateOrTruncate()
