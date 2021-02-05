@@ -14,7 +14,7 @@ import (
 // TODO(ilackarms): currently we produce a mesh ref that maps directly to the cluster
 
 // detects an istio sidecar
-type sidecarDetector struct {}
+type sidecarDetector struct{}
 
 func NewSidecarDetector() *sidecarDetector {
 	return &sidecarDetector{}

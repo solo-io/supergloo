@@ -26,6 +26,17 @@ message WorkloadSpec {
     // Appmesh specific metadata.
     AppMesh app_mesh = 5;
 
+    // An endpoint representing the direct method of communication with a given workload
+    message Endpoint {
+        // Leaving this message open for further endpoint info
+
+        string ip_address = 1;
+    }
+
+    // A series of IP addresses which correspond to the underlying workloads which this WorkloadSpec owns
+    repeated Endpoint endpoints = 6;
+
+
     // Information describing a Kubernetes-based workload (e.g. a Deployment or DaemonSet).
     message KubernetesWorkload {
         /**
@@ -45,19 +56,6 @@ message WorkloadSpec {
         // Service account attached to the pods owned by this controller.
         string service_account_name = 3;
 
-        // A series of IP addresses and their associated ports.
-        // The list of ip + port pairs is the cartesian product of the following lists
-        message EndpointsSubset {
-
-            repeated string ip_addresses = 1;
-
-            repeated KubeServicePort ports = 2;
-        }
-
-        // Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs.
-        // This API mirrors the kubernetes Endpoints API.
-        // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
-        repeated EndpointsSubset endpoints = 6;
     }
 
     // Information relevant to AppMesh-injected workloads.

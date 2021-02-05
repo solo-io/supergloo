@@ -6,11 +6,12 @@ package mock_detector
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	v1 "k8s.io/api/core/v1"
-	reflect "reflect"
 )
 
 // MockSidecarDetector is a mock of SidecarDetector interface

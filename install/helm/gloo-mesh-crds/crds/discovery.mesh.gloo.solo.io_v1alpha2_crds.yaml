@@ -914,6 +914,14 @@ spec:
                   description: The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container.
                   type: string
               type: object
+            endpoints:
+              description: A series of IP addresses which correspond to the underlying workloads which this WorkloadSpec owns
+              items:
+                properties:
+                  ipAddress:
+                    type: string
+                type: object
+              type: array
             kubernetes:
               description: Information describing workloads backed by Kubernetes Pods.
               properties:
@@ -932,36 +940,6 @@ spec:
                       description: namespace of the resource being referenced
                       type: string
                   type: object
-                endpoints:
-                  description: |-
-                    Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs.
-                    This API mirrors the kubernetes Endpoints API.
-                    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
-                  items:
-                    properties:
-                      ipAddresses:
-                        items:
-                          type: string
-                        type: array
-                      ports:
-                        items:
-                          properties:
-                            appProtocol:
-                              description: Available in k8s 1.18+, specifies the application protocol.
-                              type: string
-                            name:
-                              type: string
-                            port:
-                              description: External-facing port for this k8s service (NOT the service's target port on the backing pods).
-                              maximum: 4294967295
-                              minimum: 0
-                              type: integer
-                            protocol:
-                              type: string
-                          type: object
-                        type: array
-                    type: object
-                  type: array
                 podLabels:
                   additionalProperties:
                     type: string

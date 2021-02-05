@@ -23,7 +23,7 @@ const (
 )
 
 // detects an osm sidecar
-type sidecarDetector struct {}
+type sidecarDetector struct{}
 
 func NewSidecarDetector() *sidecarDetector {
 	return &sidecarDetector{}

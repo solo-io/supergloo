@@ -92,7 +92,6 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 		return nil
 	}
 
-
 	return trafficTarget
 }
 
