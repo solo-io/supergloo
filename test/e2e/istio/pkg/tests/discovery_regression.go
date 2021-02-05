@@ -63,7 +63,7 @@ func DiscoveryRegressionTest() {
 							)
 							Expect(err).NotTo(HaveOccurred())
 
-							if len(workload.Spec.GetKubernetes().GetEndpoints()) == 0 {
+							if len(workload.Spec.GetEndpoints()) == 0 {
 								multiErr = multierror.Append(multiErr, eris.Errorf(
 									"%s has no endpoints",
 									sets.TypedKey(workload)),
