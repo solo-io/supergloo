@@ -28,11 +28,19 @@ meshctl cluster register \
   --cluster-name remote-cluster \
   --remote-context $REMOTE_CONTEXT
 {{< /tab >}}
-{{< tab name="Kind" codelang="shell" >}}
-# For macOS
+{{< tab name="Kind (MacOS)" codelang="shell" >}}
+# Note that for MacOS, you will need to add
+# 127.0.0.1 host.docker.internal
+# to your /etc/hosts file for this address to resolve
+
 ADDRESS=host.docker.internal
 
-# For Linux
+meshctl cluster register \
+  --cluster-name remote-cluster \
+  --remote-context $REMOTE_CONTEXT \
+  --api-server-address ${ADDRESS}
+{{< /tab >}}
+{{< tab name="Kind (Linux)" codelang="shell" >}}
 ADDRESS=$(docker exec "remote-cluster-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')
 
 meshctl cluster register \
