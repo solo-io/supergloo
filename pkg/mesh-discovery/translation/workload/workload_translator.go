@@ -15,30 +15,19 @@ import (
 
 // the mesh-workload translator converts deployments with injected sidecars into Workload CRs
 type Translator interface {
-	TranslateWorkloads(
-		ctx context.Context,
-		deployments appsv1sets.DeploymentSet,
-		daemonSets appsv1sets.DaemonSetSet,
-		statefulSets appsv1sets.StatefulSetSet,
-		meshes v1alpha2sets.MeshSet,
-	) v1alpha2sets.WorkloadSet
+	TranslateWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet, meshes v1alpha2sets.MeshSet) v1alpha2sets.WorkloadSet
 }
 
 type translator struct {
+	ctx              context.Context
 	workloadDetector detector.WorkloadDetector
 }
 
-func NewTranslator(workloadDetector detector.WorkloadDetector) Translator {
-	return &translator{workloadDetector: workloadDetector}
+func NewTranslator(ctx context.Context, workloadDetector detector.WorkloadDetector) Translator {
+	return &translator{ctx: ctx, workloadDetector: workloadDetector}
 }
 
-func (t *translator) TranslateWorkloads(
-	ctx context.Context,
-	deployments appsv1sets.DeploymentSet,
-	daemonSets appsv1sets.DaemonSetSet,
-	statefulSets appsv1sets.StatefulSetSet,
-	meshes v1alpha2sets.MeshSet,
-) v1alpha2sets.WorkloadSet {
+func (t *translator) TranslateWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet, meshes v1alpha2sets.MeshSet) v1alpha2sets.WorkloadSet {
 	var workloads []types.Workload
 	for _, deployment := range deployments.List() {
 		workloads = append(workloads, types.ToWorkload(deployment))
@@ -53,11 +42,11 @@ func (t *translator) TranslateWorkloads(
 	workloadSet := v1alpha2sets.NewWorkloadSet()
 
 	for _, workload := range workloads {
-		workload := t.workloadDetector.DetectWorkload(ctx, workload, meshes)
+		workload := t.workloadDetector.DetectWorkload(workload, meshes)
 		if workload == nil {
 			continue
 		}
-		contextutils.LoggerFrom(ctx).Debugf("detected workload %v", sets.Key(workload))
+		contextutils.LoggerFrom(t.ctx).Debugf("detected workload %v", sets.Key(workload))
 		workloadSet.Insert(workload)
 	}
 	return workloadSet

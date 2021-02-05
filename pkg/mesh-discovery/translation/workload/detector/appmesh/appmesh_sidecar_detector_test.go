@@ -21,7 +21,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 	)
 
 	BeforeEach(func() {
-		sidecarDetector = NewSidecarDetector()
+		sidecarDetector = NewSidecarDetector(context.Background())
 	})
 
 	It("returns the corresponding mesh for an appmesh-injected pod", func() {
@@ -70,7 +70,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 			},
 		}
 
-		actual := sidecarDetector.DetectMeshSidecar(context.Background(), injectedPod, v1alpha2sets.NewMeshSet(mesh))
+		actual := sidecarDetector.DetectMeshSidecar(injectedPod, v1alpha2sets.NewMeshSet(mesh))
 		Expect(actual).To(Equal(mesh))
 	})
 
@@ -105,7 +105,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 			},
 		}
 
-		actual := sidecarDetector.DetectMeshSidecar(context.Background(), plainPod, v1alpha2sets.NewMeshSet(mesh))
+		actual := sidecarDetector.DetectMeshSidecar(plainPod, v1alpha2sets.NewMeshSet(mesh))
 		Expect(actual).To(BeNil())
 	})
 
@@ -151,7 +151,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 			},
 		}
 
-		actual := sidecarDetector.DetectMeshSidecar(context.Background(), injectedPod, v1alpha2sets.NewMeshSet(mesh))
+		actual := sidecarDetector.DetectMeshSidecar(injectedPod, v1alpha2sets.NewMeshSet(mesh))
 		Expect(actual).To(BeNil())
 	})
 
@@ -197,7 +197,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 			},
 		}
 
-		actual := sidecarDetector.DetectMeshSidecar(context.Background(), injectedPod, v1alpha2sets.NewMeshSet(mesh))
+		actual := sidecarDetector.DetectMeshSidecar(injectedPod, v1alpha2sets.NewMeshSet(mesh))
 		Expect(actual).To(BeNil())
 	})
 

@@ -5,7 +5,6 @@
 package mock_workload
 
 import (
-	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -37,15 +36,15 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // TranslateWorkloads mocks base method
-func (m *MockTranslator) TranslateWorkloads(ctx context.Context, deployments v1sets.DeploymentSet, daemonSets v1sets.DaemonSetSet, statefulSets v1sets.StatefulSetSet, meshes v1alpha2sets.MeshSet) v1alpha2sets.WorkloadSet {
+func (m *MockTranslator) TranslateWorkloads(deployments v1sets.DeploymentSet, daemonSets v1sets.DaemonSetSet, statefulSets v1sets.StatefulSetSet, meshes v1alpha2sets.MeshSet) v1alpha2sets.WorkloadSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranslateWorkloads", ctx, deployments, daemonSets, statefulSets, meshes)
+	ret := m.ctrl.Call(m, "TranslateWorkloads", deployments, daemonSets, statefulSets, meshes)
 	ret0, _ := ret[0].(v1alpha2sets.WorkloadSet)
 	return ret0
 }
 
 // TranslateWorkloads indicates an expected call of TranslateWorkloads
-func (mr *MockTranslatorMockRecorder) TranslateWorkloads(ctx, deployments, daemonSets, statefulSets, meshes interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) TranslateWorkloads(deployments, daemonSets, statefulSets, meshes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateWorkloads", reflect.TypeOf((*MockTranslator)(nil).TranslateWorkloads), ctx, deployments, daemonSets, statefulSets, meshes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateWorkloads", reflect.TypeOf((*MockTranslator)(nil).TranslateWorkloads), deployments, daemonSets, statefulSets, meshes)
 }

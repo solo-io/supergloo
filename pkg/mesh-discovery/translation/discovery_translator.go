@@ -49,7 +49,6 @@ func (t translator) Translate(
 	meshes := meshTranslator.TranslateMeshes(in, settings)
 
 	workloads := workloadTranslator.TranslateWorkloads(
-		ctx,
 		in.Deployments(),
 		in.DaemonSets(),
 		in.StatefulSets(),

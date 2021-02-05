@@ -56,14 +56,14 @@ var _ = Describe("IstioSidecarDetector", func() {
 		)
 	}
 
-	detector := NewSidecarDetector()
+	detector := NewSidecarDetector(context.TODO())
 
 	It("detects workload when sidecar mesh is in cluster", func() {
 		pod := pod()
 
 		meshes := istioMeshes(clusterName)
 
-		workload := detector.DetectMeshSidecar(context.TODO(), pod, meshes)
+		workload := detector.DetectMeshSidecar(pod, meshes)
 		Expect(workload).To(Equal(meshes.List()[0]))
 	})
 	It("does not detect workload when sidecar mesh is of different cluster", func() {
@@ -71,7 +71,7 @@ var _ = Describe("IstioSidecarDetector", func() {
 
 		meshes := istioMeshes("different-" + clusterName)
 
-		workload := detector.DetectMeshSidecar(context.TODO(), pod, meshes)
+		workload := detector.DetectMeshSidecar(pod, meshes)
 		Expect(workload).To(BeNil())
 	})
 	It("does not detect workload when sidecar mesh is not present", func() {
@@ -79,7 +79,7 @@ var _ = Describe("IstioSidecarDetector", func() {
 
 		meshes := v1alpha2sets.NewMeshSet()
 
-		workload := detector.DetectMeshSidecar(context.TODO(), pod, meshes)
+		workload := detector.DetectMeshSidecar(pod, meshes)
 		Expect(workload).To(BeNil())
 	})
 	It("does not detect workload when sidecar is not present", func() {
@@ -100,7 +100,7 @@ var _ = Describe("IstioSidecarDetector", func() {
 
 		meshes := istioMeshes(clusterName)
 
-		workload := detector.DetectMeshSidecar(context.TODO(), pod, meshes)
+		workload := detector.DetectMeshSidecar(pod, meshes)
 		Expect(workload).To(BeNil())
 	})
 

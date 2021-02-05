@@ -5,7 +5,6 @@
 package mock_detector
 
 import (
-	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -38,15 +37,15 @@ func (m *MockSidecarDetector) EXPECT() *MockSidecarDetectorMockRecorder {
 }
 
 // DetectMeshSidecar mocks base method
-func (m *MockSidecarDetector) DetectMeshSidecar(ctx context.Context, pod *v1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
+func (m *MockSidecarDetector) DetectMeshSidecar(pod *v1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DetectMeshSidecar", ctx, pod, meshes)
+	ret := m.ctrl.Call(m, "DetectMeshSidecar", pod, meshes)
 	ret0, _ := ret[0].(*v1alpha2.Mesh)
 	return ret0
 }
 
 // DetectMeshSidecar indicates an expected call of DetectMeshSidecar
-func (mr *MockSidecarDetectorMockRecorder) DetectMeshSidecar(ctx, pod, meshes interface{}) *gomock.Call {
+func (mr *MockSidecarDetectorMockRecorder) DetectMeshSidecar(pod, meshes interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DetectMeshSidecar", reflect.TypeOf((*MockSidecarDetector)(nil).DetectMeshSidecar), ctx, pod, meshes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DetectMeshSidecar", reflect.TypeOf((*MockSidecarDetector)(nil).DetectMeshSidecar), pod, meshes)
 }
