@@ -157,8 +157,7 @@ Then install Gloo Mesh into the `gloo-mesh` namespace:
 
 {{< tabs >}}
 {{< tab name="Gloo Mesh" codelang="shell" >}}
-kubectl create ns gloo-mesh
-helm install gloo-mesh gloo-mesh/gloo-mesh --namespace gloo-mesh
+helm install gloo-mesh gloo-mesh/gloo-mesh --namespace gloo-mesh --create-namespace
 {{< /tab >}}
 {{< tab name="Gloo Mesh Enterprise" codelang="shell">}}
 kubectl create ns gloo-mesh
