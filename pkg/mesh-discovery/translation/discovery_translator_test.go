@@ -87,7 +87,7 @@ var _ = Describe("Translator", func() {
 		trafficTargets := v1alpha2sets.NewTrafficTargetSet(&v1alpha2.TrafficTarget{ObjectMeta: labeledMeta})
 
 		mockMeshTranslator.EXPECT().TranslateMeshes(inRemote, settings).Return(meshes)
-		mockWorkloadTranslator.EXPECT().TranslateWorkloads(gomock.Any(), deployments, daemonSets, statefulSets, meshes).Return(workloads)
+		mockWorkloadTranslator.EXPECT().TranslateWorkloads(deployments, daemonSets, statefulSets, meshes).Return(workloads)
 		mockTrafficTargetTranslator.EXPECT().TranslateTrafficTargets(ctx, services, workloads, meshes).Return(trafficTargets)
 
 		out, err := t.Translate(ctx, inRemote, settings)

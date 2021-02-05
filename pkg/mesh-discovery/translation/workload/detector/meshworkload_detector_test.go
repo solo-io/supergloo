@@ -114,6 +114,7 @@ var _ = Describe("WorkloadDetector", func() {
 		pods := corev1sets.NewPodSet(pod)
 		replicaSets := appsv1sets.NewReplicaSetSet(rs)
 		detector := NewWorkloadDetector(
+			context.TODO(),
 			pods,
 			replicaSets,
 			mockSidecarDetector,
@@ -121,9 +122,9 @@ var _ = Describe("WorkloadDetector", func() {
 
 		meshes := v1alpha2sets.NewMeshSet()
 
-		mockSidecarDetector.EXPECT().DetectMeshSidecar(gomock.Any(), pod, meshes).Return(mesh)
+		mockSidecarDetector.EXPECT().DetectMeshSidecar(pod, meshes).Return(mesh)
 
-		workload := detector.DetectWorkload(context.TODO(), types.ToWorkload(deployment), meshes)
+		workload := detector.DetectWorkload(types.ToWorkload(deployment), meshes)
 
 		outputMeta := utils.DiscoveredObjectMeta(deployment)
 		// expect appended workload kind
