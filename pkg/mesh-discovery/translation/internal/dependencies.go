@@ -69,7 +69,7 @@ func (d DependencyFactoryImpl) MakeWorkloadTranslator(
 		in.ReplicaSets(),
 		sidecarDetectors,
 	)
-	return workload.NewTranslator(ctx, workloadDetector)
+	return workload.NewTranslator(workloadDetector)
 }
 
 func (d DependencyFactoryImpl) MakeTrafficTargetTranslator() traffictarget.Translator {

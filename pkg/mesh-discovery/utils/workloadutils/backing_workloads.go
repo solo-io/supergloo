@@ -9,15 +9,14 @@ import (
 func FindBackingWorkloads(
 	service *v1alpha2.TrafficTargetSpec_KubeService,
 	meshWorkloads v1alpha2sets.WorkloadSet,
-) v1alpha2.WorkloadSlice {
+) v1alpha2sets.WorkloadSet {
 
-	var result []*v1alpha2.Workload
-
+	result := v1alpha2sets.NewWorkloadSet()
 	for _, workload := range meshWorkloads.List() {
 		// TODO(ilackarms): refactor this to support more than just k8s workloads
 		// should probably go with a platform-based traffictarget detector (e.g. one for k8s, one for vm, etc.)
 		if isBackingKubeWorkload(service, workload.Spec.GetKubernetes()) {
-			result = append(result, workload)
+			result.Insert(workload)
 		}
 	}
 	return result
