@@ -114,7 +114,7 @@ metadata:
   name: example-istiooperator
   namespace: istio-system
 spec:
-  profile: preview
+  profile: minimal
   meshConfig:
     enableAutoMtls: true
     defaultConfig:
@@ -215,7 +215,7 @@ metadata:
   name: example-istiooperator
   namespace: istio-system
 spec:
-  profile: preview
+  profile: minimal
   meshConfig:
     enableAutoMtls: true
     defaultConfig:
