@@ -79,6 +79,16 @@ func (d workloadDetector) DetectWorkload(
 	// append workload kind for uniqueness
 	outputMeta.Name += "-" + strings.ToLower(workload.Kind())
 
+	var endpoints []*v1alpha2.WorkloadSpec_Endpoint
+	for _, pod := range podsForWorkload.List() {
+		if pod.Status.PodIP == "" {
+			continue
+		}
+		endpoints = append(endpoints, &v1alpha2.WorkloadSpec_Endpoint{
+			IpAddress: pod.Status.PodIP,
+		})
+	}
+
 	return &v1alpha2.Workload{
 		ObjectMeta: outputMeta,
 		Spec: v1alpha2.WorkloadSpec{
@@ -89,7 +99,8 @@ func (d workloadDetector) DetectWorkload(
 					ServiceAccountName: serviceAccount,
 				},
 			},
-			Mesh: meshRef,
+			Mesh:      meshRef,
+			Endpoints: endpoints,
 		},
 	}
 }

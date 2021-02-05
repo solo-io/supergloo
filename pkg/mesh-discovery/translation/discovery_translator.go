@@ -61,10 +61,8 @@ func (t translator) Translate(
 	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(
 		ctx,
 		in.Services(),
-		in.Endpoints(),
 		workloads,
 		meshes,
-		localSnapshot.VirtualMeshes(),
 	)
 
 	t.totalTranslates++

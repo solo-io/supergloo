@@ -94,20 +94,6 @@ func (mr *MockDiscoveryInputSnapshotMockRecorder) Pods() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pods", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Pods))
 }
 
-// Endpoints mocks base method
-func (m *MockDiscoveryInputSnapshot) Endpoints() v1sets0.EndpointsSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Endpoints")
-	ret0, _ := ret[0].(v1sets0.EndpointsSet)
-	return ret0
-}
-
-// Endpoints indicates an expected call of Endpoints
-func (mr *MockDiscoveryInputSnapshotMockRecorder) Endpoints() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Endpoints", reflect.TypeOf((*MockDiscoveryInputSnapshot)(nil).Endpoints))
-}
-
 // Nodes mocks base method
 func (m *MockDiscoveryInputSnapshot) Nodes() v1sets0.NodeSet {
 	m.ctrl.T.Helper()

@@ -15,7 +15,6 @@ var (
 			"Service",
 			"ConfigMap",
 			"Node",
-			"Endpoints",
 		},
 		appsv1.SchemeGroupVersion: {
 			"Deployment",
@@ -34,12 +33,6 @@ var (
 			Version: "v1alpha2",
 		}: {
 			"Settings",
-		},
-		schema.GroupVersion{
-			Group:   "networking." + constants.GlooMeshApiGroupSuffix,
-			Version: "v1alpha2",
-		}: {
-			"VirtualMesh",
 		},
 	}
 
