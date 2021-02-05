@@ -93,8 +93,9 @@ spec:
   hub: gcr.io/istio-enterprise
   # This value can be any Gloo Mesh Istio tag
   tag: 1.8.1
-  profile: minimal
+  profile: preview
   meshConfig:
+    enableAutoMtls: true
     defaultConfig:
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts
@@ -122,8 +123,6 @@ spec:
               targetPort: 15443
               name: tls
               nodePort: 32000
-  meshConfig:
-    enableAutoMtls: true
   values:
     global:
       pilotCertProvider: istiod
