@@ -20,7 +20,7 @@ We will start by registering a remote cluster, i.e. a cluster not running the Gl
 ```shell
 REMOTE_CONTEXT=your_remote_context
 ```
-We will register the cluster with the `meshctl cluster register` command. The kubeconfig context we want to use for the registration process is specified with the `--remote-context` flag. If you are using Kind for your clusters, you will need to specify the `--api-server-address` flag along with the IP address and port of the Kubernetes API server. Select the Kind tab for the commands.
+We will register the cluster with the `meshctl cluster register` command. We will assume that the management plane cluster (i.e. where `discovery` and `networking` are running) is your current kubeconfig context. If not, set the `--mgmt-context` flag. The kubeconfig context for the cluster we want to register to the management plane is specified with the `--remote-context` flag. If you are using Kind for your clusters, you will need to specify the `--api-server-address` flag along with the IP address and port of the Kubernetes API server. Select the Kind tab for the commands.
 
 {{< tabs >}}
 {{< tab name="Kubernetes" codelang="shell" >}}
