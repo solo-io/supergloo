@@ -85,7 +85,7 @@ func makeServerVersions(ctx context.Context, opts *options) []serverVersion {
 		return nil
 	}
 	deploymentClient := appsv1.NewDeploymentClient(kubeClient)
-	deployments, err := deploymentClient.ListDeployment(ctx, &client.ListOptions{Namespace: "gloo-mesh"})
+	deployments, err := deploymentClient.ListDeployment(ctx, &client.ListOptions{Namespace: opts.namespace})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to list deployments: %s\n", err.Error())
 		return nil
