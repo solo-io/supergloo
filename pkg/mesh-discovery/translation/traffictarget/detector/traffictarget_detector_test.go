@@ -14,6 +14,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"github.com/solo-io/skv2/test/matchers"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -163,7 +164,22 @@ var _ = Describe("TrafficTargetDetector", func() {
 				},
 				Subsets: []corev1.EndpointSubset{
 					{
-						Addresses: []corev1.EndpointAddress{{IP: "1"}, {IP: "2"}},
+						Addresses: []corev1.EndpointAddress{
+							{
+								IP: "1",
+								TargetRef: &corev1.ObjectReference{
+									Namespace: deployment.GetNamespace(),
+									Name:      deployment.GetName() + "-random-string",
+								},
+							},
+							{
+								IP: "2",
+								TargetRef: &corev1.ObjectReference{
+									Namespace: deployment.GetNamespace(),
+									Name:      deployment.GetName() + "-random-other-string",
+								},
+							},
+						},
 						Ports: []corev1.EndpointPort{
 							{
 								Name:        "port1",
@@ -201,6 +217,16 @@ var _ = Describe("TrafficTargetDetector", func() {
 		Expect(trafficTarget).To(Equal(&v1alpha2.TrafficTarget{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
 			Spec: v1alpha2.TrafficTargetSpec{
+				Workloads: []*skv1.ObjectRef{
+					{
+						Name:      "some-workload-v1",
+						Namespace: serviceNs,
+					},
+					{
+						Name:      "some-workload-v2",
+						Namespace: serviceNs,
+					},
+				},
 				Type: &v1alpha2.TrafficTargetSpec_KubeService_{
 					KubeService: &v1alpha2.TrafficTargetSpec_KubeService{
 						Ref:                    ezkube.MakeClusterObjectRef(svc),
@@ -224,24 +250,26 @@ var _ = Describe("TrafficTargetDetector", func() {
 								Values: []string{"v1", "v2"},
 							},
 						},
-						Endpoints: []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{
-							{
-								IpAddresses: []string{"1", "2"},
-								Ports: []*v1alpha2.KubeServicePort{
-									{
-										Port:        7000,
-										Name:        "port1",
-										Protocol:    "TCP",
-										AppProtocol: "HTTP",
-									},
-								},
-							},
-						},
 					},
 				},
 				Mesh: mesh,
 			},
 		}))
+
+		for _, v := range workloads.List() {
+			Expect(v.Spec.GetKubernetes().GetEndpoints()).To(HaveLen(1))
+			Expect(v.Spec.GetKubernetes().GetEndpoints()[0]).To(matchers.MatchProto(&v1alpha2.WorkloadSpec_KubernetesWorkload_EndpointsSubset{
+				IpAddresses: []string{"1", "2"},
+				Ports: []*v1alpha2.KubeServicePort{
+					{
+						Port:        7000,
+						Name:        "port1",
+						Protocol:    "TCP",
+						AppProtocol: "HTTP",
+					},
+				},
+			}))
+		}
 	})
 
 	It("translates a service with a discovery annotation to a trafficTarget", func() {
