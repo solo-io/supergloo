@@ -427,7 +427,7 @@ func buildTcpRewritePatchAsConfig(clusterName, clusterDomain, federatedHostnameS
 
 // ConvertKubePortProtocol converts protocol of k8s Service port to application level protocol
 // exported for use in enterprise
-func ConvertKubePortProtocol(port *discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort) string {
+func ConvertKubePortProtocol(port *discoveryv1alpha2.KubeServicePort) string {
 	var appProtocol *string
 	if port.AppProtocol != "" {
 		appProtocol = pointer.StringPtr(port.AppProtocol)

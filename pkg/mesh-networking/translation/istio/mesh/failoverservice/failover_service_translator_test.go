@@ -108,7 +108,7 @@ var _ = Describe("FailoverServiceTranslator", func() {
 								Namespace:   "service-namespace-1",
 								ClusterName: "cluster-1",
 							},
-							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+							Ports: []*discoveryv1alpha2.KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "service1.port1",
@@ -132,7 +132,7 @@ var _ = Describe("FailoverServiceTranslator", func() {
 								Namespace:   "service-namespace-2",
 								ClusterName: "cluster-2",
 							},
-							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+							Ports: []*discoveryv1alpha2.KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "service2.port1",

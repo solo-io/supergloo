@@ -103,7 +103,7 @@ var _ = Describe("FederationTranslator", func() {
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
 					Ref: backingService,
-					Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+					Ports: []*discoveryv1alpha2.KubeServicePort{
 						{
 							Port:     1234,
 							Name:     "http",

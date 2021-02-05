@@ -128,7 +128,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 						Ref:                    ezkube.MakeClusterObjectRef(svc),
 						WorkloadSelectorLabels: svc.Spec.Selector,
 						Labels:                 svc.Labels,
-						Ports: []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+						Ports: []*v1alpha2.KubeServicePort{
 							{
 								Port:        1234,
 								Name:        "port1",
@@ -206,7 +206,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 						Ref:                    ezkube.MakeClusterObjectRef(svc),
 						WorkloadSelectorLabels: svc.Spec.Selector,
 						Labels:                 svc.Labels,
-						Ports: []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+						Ports: []*v1alpha2.KubeServicePort{
 							{
 								Port:        1234,
 								Name:        "port1",
@@ -227,7 +227,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 						Endpoints: []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{
 							{
 								IpAddresses: []string{"1", "2"},
-								Ports: []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+								Ports: []*v1alpha2.KubeServicePort{
 									{
 										Port:        7000,
 										Name:        "port1",
@@ -280,7 +280,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 						Ref:                    ezkube.MakeClusterObjectRef(svc),
 						WorkloadSelectorLabels: svc.Spec.Selector,
 						Labels:                 svc.Labels,
-						Ports: []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+						Ports: []*v1alpha2.KubeServicePort{
 							{
 								Port:        1234,
 								Name:        "port1",

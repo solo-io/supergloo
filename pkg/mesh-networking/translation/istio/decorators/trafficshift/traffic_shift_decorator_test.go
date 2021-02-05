@@ -43,7 +43,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 								Namespace:   "namespace",
 								ClusterName: "cluster",
 							},
-							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+							Ports: []*discoveryv1alpha2.KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "http1",
@@ -133,7 +133,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 								Namespace:   "namespace",
 								ClusterName: "cluster",
 							},
-							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+							Ports: []*discoveryv1alpha2.KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "http1",
@@ -233,7 +233,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 								Namespace:   "namespace",
 								ClusterName: "cluster",
 							},
-							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+							Ports: []*discoveryv1alpha2.KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "http1",
@@ -331,7 +331,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 								Namespace:   "namespace",
 								ClusterName: "cluster",
 							},
-							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+							Ports: []*discoveryv1alpha2.KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "http1",
