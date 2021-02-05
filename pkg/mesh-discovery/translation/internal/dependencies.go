@@ -58,13 +58,12 @@ func (d DependencyFactoryImpl) MakeWorkloadTranslator(
 	in input.DiscoveryInputSnapshot,
 ) workload.Translator {
 	sidecarDetectors := workloaddetector.SidecarDetectors{
-		istiosidecar.NewSidecarDetector(ctx),
-		appmeshsidecar.NewSidecarDetector(ctx),
-		osmsidecar.NewSidecarDetector(ctx),
+		istiosidecar.NewSidecarDetector(),
+		appmeshsidecar.NewSidecarDetector(),
+		osmsidecar.NewSidecarDetector(),
 	}
 
 	workloadDetector := workloaddetector.NewWorkloadDetector(
-		ctx,
 		in.Pods(),
 		in.ReplicaSets(),
 		sidecarDetectors,

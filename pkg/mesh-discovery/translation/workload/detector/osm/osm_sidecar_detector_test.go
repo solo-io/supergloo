@@ -63,14 +63,14 @@ var _ = Describe("OsmSidecarDetector", func() {
 		)
 	}
 
-	detector := NewSidecarDetector(context.Background())
+	detector := NewSidecarDetector()
 
 	It("detects workload when sidecar mesh is in cluster", func() {
 		pod := pod()
 
 		meshes := osmMeshes(clusterName)
 
-		workload := detector.DetectMeshSidecar(pod, meshes)
+		workload := detector.DetectMeshSidecar(context.Background(), pod, meshes)
 		Expect(workload).To(Equal(meshes.List()[0]))
 	})
 
@@ -79,7 +79,7 @@ var _ = Describe("OsmSidecarDetector", func() {
 
 		meshes := osmMeshes("different-" + clusterName)
 
-		workload := detector.DetectMeshSidecar(pod, meshes)
+		workload := detector.DetectMeshSidecar(context.Background(), pod, meshes)
 		Expect(workload).To(BeNil())
 	})
 
@@ -88,7 +88,7 @@ var _ = Describe("OsmSidecarDetector", func() {
 
 		meshes := v1alpha2sets.NewMeshSet()
 
-		workload := detector.DetectMeshSidecar(pod, meshes)
+		workload := detector.DetectMeshSidecar(context.Background(), pod, meshes)
 		Expect(workload).To(BeNil())
 	})
 
@@ -98,7 +98,7 @@ var _ = Describe("OsmSidecarDetector", func() {
 
 		meshes := osmMeshes(clusterName)
 
-		workload := detector.DetectMeshSidecar(pod, meshes)
+		workload := detector.DetectMeshSidecar(context.Background(), pod, meshes)
 		Expect(workload).To(BeNil())
 	})
 
@@ -108,7 +108,7 @@ var _ = Describe("OsmSidecarDetector", func() {
 
 		meshes := osmMeshes(clusterName)
 
-		workload := detector.DetectMeshSidecar(pod, meshes)
+		workload := detector.DetectMeshSidecar(context.Background(), pod, meshes)
 		Expect(workload).To(BeNil())
 	})
 

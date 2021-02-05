@@ -19,16 +19,18 @@ const (
 )
 
 // detects an appmesh sidecar
-type sidecarDetector struct {
-	ctx context.Context
+type sidecarDetector struct{}
+
+func NewSidecarDetector() *sidecarDetector {
+	return &sidecarDetector{}
 }
 
-func NewSidecarDetector(ctx context.Context) *sidecarDetector {
+func (d sidecarDetector) DetectMeshSidecar(
+	ctx context.Context,
+	pod *corev1.Pod,
+	meshes v1alpha2sets.MeshSet,
+) *v1alpha2.Mesh {
 	ctx = contextutils.WithLogger(ctx, "appmesh-sidecar-detector")
-	return &sidecarDetector{ctx: ctx}
-}
-
-func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
 	sidecarContainer := getSidecar(pod.Spec.Containers)
 	if sidecarContainer == nil {
 		return nil
@@ -45,7 +47,7 @@ func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.
 		// https://docs.aws.amazon.com/eks/latest/userguide/mesh-k8s-integration.html
 		split := strings.Split(envVar.Value, "/")
 		if len(split) != 4 {
-			contextutils.LoggerFrom(d.ctx).Warnw("warning: unexpected virtual node name format", "pod", sets.Key(pod), "virtualNode", envVar.Value)
+			contextutils.LoggerFrom(ctx).Warnw("warning: unexpected virtual node name format", "pod", sets.Key(pod), "virtualNode", envVar.Value)
 			return nil
 		}
 		sidecarMeshName = split[1]
@@ -63,7 +65,7 @@ func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.
 		}
 	}
 
-	contextutils.LoggerFrom(d.ctx).Warnw("warning: no mesh found corresponding to pod with appmesh sidecar", "pod", sets.Key(pod))
+	contextutils.LoggerFrom(ctx).Warnw("warning: no mesh found corresponding to pod with appmesh sidecar", "pod", sets.Key(pod))
 	return nil
 }
 

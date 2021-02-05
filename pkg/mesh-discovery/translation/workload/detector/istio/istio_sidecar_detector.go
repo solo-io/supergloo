@@ -14,16 +14,14 @@ import (
 // TODO(ilackarms): currently we produce a mesh ref that maps directly to the cluster
 
 // detects an istio sidecar
-type sidecarDetector struct {
-	ctx context.Context
+type sidecarDetector struct {}
+
+func NewSidecarDetector() *sidecarDetector {
+	return &sidecarDetector{}
 }
 
-func NewSidecarDetector(ctx context.Context) *sidecarDetector {
+func (d sidecarDetector) DetectMeshSidecar(ctx context.Context, pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
 	ctx = contextutils.WithLogger(ctx, "istio-sidecar-detector")
-	return &sidecarDetector{ctx: ctx}
-}
-
-func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
 	if !containsSidecarContainer(pod.Spec.Containers) {
 		return nil
 	}
@@ -42,7 +40,7 @@ func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.
 		}
 	}
 
-	contextutils.LoggerFrom(d.ctx).Warnw("warning: no mesh found corresponding to pod with istio sidecar", "pod", sets.Key(pod))
+	contextutils.LoggerFrom(ctx).Warnw("warning: no mesh found corresponding to pod with istio sidecar", "pod", sets.Key(pod))
 
 	return nil
 }

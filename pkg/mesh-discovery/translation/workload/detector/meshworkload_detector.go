@@ -23,7 +23,11 @@ import (
 // whose backing pods are injected with a Mesh sidecar.
 // If no mesh is detected for the workload, nil is returned
 type WorkloadDetector interface {
-	DetectWorkload(workload types.Workload, meshes v1alpha2sets.MeshSet) *v1alpha2.Workload
+	DetectWorkload(
+		ctx context.Context,
+		workload types.Workload,
+		meshes v1alpha2sets.MeshSet,
+	) *v1alpha2.Workload
 }
 
 const (
@@ -40,24 +44,27 @@ type workloadDetector struct {
 }
 
 func NewWorkloadDetector(
-	ctx context.Context,
 	pods corev1sets.PodSet,
 	replicaSets appsv1sets.ReplicaSetSet,
 	detector SidecarDetector,
 ) WorkloadDetector {
-	ctx = contextutils.WithLogger(ctx, "mesh-workload-detector")
 	return &workloadDetector{
-		ctx:         ctx,
 		pods:        pods,
 		replicaSets: replicaSets,
 		detector:    detector,
 	}
 }
 
-func (d workloadDetector) DetectWorkload(workload types.Workload, meshes v1alpha2sets.MeshSet) *v1alpha2.Workload {
-	podsForWorkload := d.getPodsForWorkload(workload)
+func (d workloadDetector) DetectWorkload(
+	ctx context.Context,
+	workload types.Workload,
+	meshes v1alpha2sets.MeshSet,
+) *v1alpha2.Workload {
 
-	mesh := d.getMeshForPods(podsForWorkload, meshes)
+	ctx = contextutils.WithLogger(ctx, "mesh-workload-detector")
+	podsForWorkload := d.getPodsForWorkload(ctx, workload)
+
+	mesh := d.getMeshForPods(ctx, podsForWorkload, meshes)
 
 	if mesh == nil {
 		return nil
@@ -87,21 +94,28 @@ func (d workloadDetector) DetectWorkload(workload types.Workload, meshes v1alpha
 	}
 }
 
-func (d workloadDetector) getMeshForPods(pods corev1sets.PodSet, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
+func (d workloadDetector) getMeshForPods(
+	ctx context.Context,
+	pods corev1sets.PodSet,
+	meshes v1alpha2sets.MeshSet,
+) *v1alpha2.Mesh {
 	// as long as one pod is detected for a mesh, consider the set owned by that mesh.
 	for _, pod := range pods.List() {
-		if mesh := d.detector.DetectMeshSidecar(pod, meshes); mesh != nil {
+		if mesh := d.detector.DetectMeshSidecar(ctx, pod, meshes); mesh != nil {
 			return mesh
 		}
 	}
 	return nil
 }
 
-func (d workloadDetector) getPodsForWorkload(workload types.Workload) corev1sets.PodSet {
+func (d workloadDetector) getPodsForWorkload(
+	ctx context.Context,
+	workload types.Workload,
+) corev1sets.PodSet {
 	podsForWorkload := corev1sets.NewPodSet()
 
 	for _, pod := range d.pods.List() {
-		if d.podIsOwnedOwnedByWorkload(pod, workload) {
+		if d.podIsOwnedOwnedByWorkload(ctx, pod, workload) {
 			// this pod is owned by the workload in question
 			podsForWorkload.Insert(pod)
 		}
@@ -110,7 +124,11 @@ func (d workloadDetector) getPodsForWorkload(workload types.Workload) corev1sets
 	return podsForWorkload
 }
 
-func (d workloadDetector) podIsOwnedOwnedByWorkload(pod *corev1.Pod, workload types.Workload) bool {
+func (d workloadDetector) podIsOwnedOwnedByWorkload(
+	ctx context.Context,
+	pod *corev1.Pod,
+	workload types.Workload,
+) bool {
 	if pod.Namespace != workload.GetNamespace() || pod.ClusterName != workload.GetClusterName() {
 		return false
 	}
@@ -134,7 +152,7 @@ func (d workloadDetector) podIsOwnedOwnedByWorkload(pod *corev1.Pod, workload ty
 
 		rs, err := d.replicaSets.Find(rsRef)
 		if err != nil {
-			contextutils.LoggerFrom(d.ctx).Warnw("replicaset not found for pod", "replicaset", sets.Key(rsRef), "pod", sets.Key(pod))
+			contextutils.LoggerFrom(ctx).Warnw("replicaset not found for pod", "replicaset", sets.Key(rsRef), "pod", sets.Key(pod))
 			return false
 		}
 		workloadReplica = rs
@@ -148,7 +166,7 @@ func (d workloadDetector) podIsOwnedOwnedByWorkload(pod *corev1.Pod, workload ty
 	if workloadName == "" {
 		// TODO(ilackarms): evaluate this assumption: currently, we
 		// only consider pods owned by workloads to be part of a workload
-		contextutils.LoggerFrom(d.ctx).Debugw("pod has no owner, ignoring for purposes of discovery", "pod", sets.Key(workloadReplica))
+		contextutils.LoggerFrom(ctx).Debugw("pod has no owner, ignoring for purposes of discovery", "pod", sets.Key(workloadReplica))
 		return false
 	}
 

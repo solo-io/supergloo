@@ -53,7 +53,7 @@ func (t *translator) TranslateWorkloads(
 	workloadSet := v1alpha2sets.NewWorkloadSet()
 
 	for _, workload := range workloads {
-		workload := t.workloadDetector.DetectWorkload(workload, meshes)
+		workload := t.workloadDetector.DetectWorkload(ctx, workload, meshes)
 		if workload == nil {
 			continue
 		}

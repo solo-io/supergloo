@@ -23,19 +23,22 @@ const (
 )
 
 // detects an osm sidecar
-type sidecarDetector struct {
-	ctx context.Context
-}
+type sidecarDetector struct {}
 
-func NewSidecarDetector(ctx context.Context) *sidecarDetector {
-	ctx = contextutils.WithLogger(ctx, "linkerd-sidecar-detector")
-	return &sidecarDetector{ctx: ctx}
+func NewSidecarDetector() *sidecarDetector {
+	return &sidecarDetector{}
 }
 
 /*
 	OSM uses vanilla envoy sidecars currently, specifically `envoyproxy/envoy-alpine`.
 */
-func (s *sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
+func (s *sidecarDetector) DetectMeshSidecar(
+	ctx context.Context,
+	pod *corev1.Pod,
+	meshes v1alpha2sets.MeshSet,
+) *v1alpha2.Mesh {
+	ctx = contextutils.WithLogger(ctx, "linkerd-sidecar-detector")
+
 	if !(containsInitContainer(pod.Spec.InitContainers) && containsSidecar(pod.Spec.Containers)) {
 		return nil
 	}
@@ -54,7 +57,7 @@ func (s *sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets
 		}
 	}
 
-	contextutils.LoggerFrom(s.ctx).Warnw("warning: no mesh found corresponding to pod with osm sidecar", "pod", sets.Key(pod))
+	contextutils.LoggerFrom(ctx).Warnw("warning: no mesh found corresponding to pod with osm sidecar", "pod", sets.Key(pod))
 
 	return nil
 }
