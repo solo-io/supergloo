@@ -20,7 +20,7 @@ We will start by registering a remote cluster, i.e. a cluster not running the Gl
 ```shell
 REMOTE_CONTEXT=your_remote_context
 ```
-We will register the cluster with the `meshctl cluster register` command. The kubeconfig context we want to use for the registration process is specified with the `--remote-context` flag. If you are using Kind for your clusters, you will need to specify the `--api-server-address` flag along with the IP address and port of the Kubernetes API server. Select the Kind tab for the commands.
+We will register the cluster with the `meshctl cluster register` command. We will assume that the management plane cluster (i.e. where `discovery` and `networking` are running) is your current kubeconfig context. If not, set the `--mgmt-context` flag. The kubeconfig context for the cluster we want to register to the management plane is specified with the `--remote-context` flag. If you are using Kind for your clusters, you will need to specify the `--api-server-address` flag along with the IP address and port of the Kubernetes API server. Select the Kind tab for the commands.
 
 {{< tabs >}}
 {{< tab name="Kubernetes" codelang="shell" >}}
@@ -28,11 +28,19 @@ meshctl cluster register \
   --cluster-name remote-cluster \
   --remote-context $REMOTE_CONTEXT
 {{< /tab >}}
-{{< tab name="Kind" codelang="shell" >}}
-# For macOS
+{{< tab name="Kind (MacOS)" codelang="shell" >}}
+# Note that for MacOS, you will need to add
+# 127.0.0.1 host.docker.internal
+# to your /etc/hosts file for this address to resolve
+
 ADDRESS=host.docker.internal
 
-# For Linux
+meshctl cluster register \
+  --cluster-name remote-cluster \
+  --remote-context $REMOTE_CONTEXT \
+  --api-server-address ${ADDRESS}
+{{< /tab >}}
+{{< tab name="Kind (Linux)" codelang="shell" >}}
 ADDRESS=$(docker exec "remote-cluster-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')
 
 meshctl cluster register \
