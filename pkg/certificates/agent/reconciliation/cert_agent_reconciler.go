@@ -3,6 +3,7 @@ package reconciliation
 import (
 	"context"
 	"fmt"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"time"
 
 	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
@@ -35,8 +36,14 @@ var (
 	// all output resources are labeled to prevent
 	// resource collisions & garbage collection of
 	// secrets the agent doesn't own
-	agentLabels = map[string]string{
-		fmt.Sprintf("agent.%v", v1alpha2.SchemeGroupVersion.Group): defaults.GetPodNamespace(),
+	agentLabels = func() map[string]string {
+		labels := map[string]string{
+			fmt.Sprintf("agent.%v", v1alpha2.SchemeGroupVersion.Group): defaults.GetPodNamespace(),
+		}
+		if agentCluster := defaults.GetAgentCluster(); agentCluster != "" {
+			labels[metautils.AgentLabelKey] = agentCluster
+		}
+		return labels
 	}
 
 	privateKeySecretType        = corev1.SecretType(fmt.Sprintf("%s/generated_private_key", v1alpha2.SchemeGroupVersion.Group))
@@ -93,7 +100,7 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 			issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_FAILED
 		}
 	}
-	outSnap, err := outputs.BuildSinglePartitionedSnapshot(agentLabels)
+	outSnap, err := outputs.BuildSinglePartitionedSnapshot(agentLabels())
 	if err != nil {
 		return false, err
 	}
@@ -153,7 +160,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      issuedCertificate.Name,
 				Namespace: issuedCertificate.Namespace,
-				Labels:    agentLabels,
+				Labels:    agentLabels(),
 			},
 			Data: map[string][]byte{privateKeySecretKey: privateKey},
 			Type: privateKeySecretType,
@@ -172,7 +179,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      issuedCertificate.Name,
 				Namespace: issuedCertificate.Namespace,
-				Labels:    agentLabels,
+				Labels:    agentLabels(),
 			},
 			Spec: v1alpha2.CertificateRequestSpec{
 				CertificateSigningRequest: csrBytes,
@@ -233,7 +240,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      issuedCertificate.Spec.IssuedCertificateSecret.Name,
 				Namespace: issuedCertificate.Spec.IssuedCertificateSecret.Namespace,
-				Labels:    agentLabels,
+				Labels:    agentLabels(),
 			},
 			Data: issuedCertificateData.ToSecretData(),
 			Type: issuedCertificateSecretType,

@@ -15,11 +15,11 @@ import (
 // which processes k8s storage events to produce
 // discovered resources.
 func Start(ctx context.Context, opts bootstrap.Options) error {
-	return bootstrap.Start(ctx, "cert-agent", startReconciler, opts, schemes.SchemeBuilder, true)
+	return bootstrap.Start(ctx, "cert-agent", StartFunc, opts, schemes.SchemeBuilder, true)
 }
 
 // start the main reconcile loop
-func startReconciler(
+func StartFunc(
 	ctx context.Context,
 	parameters bootstrap.StartParameters,
 ) error {

@@ -24,6 +24,10 @@ var (
 	// the GlooMesh instance which produced them
 	OwnershipLabelKey = fmt.Sprintf("owner.%s", v1alpha2.SchemeGroupVersion.Group)
 
+	// the key used to differentiate translated resources by
+	// the GlooMesh Agent instance which produced them
+	AgentLabelKey = fmt.Sprintf("agent.%s", v1alpha2.SchemeGroupVersion.Group)
+
 	// Annotation key indicating that the resource configures a federated traffic target
 	FederationLabelKey = fmt.Sprintf("federation.%s", v1alpha2.SchemeGroupVersion.Group)
 
