@@ -26,14 +26,14 @@ message WorkloadSpec {
     // Appmesh specific metadata.
     AppMesh app_mesh = 5;
 
-    // An endpoint representing the direct method of communication with a given workload
+    // An endpoint exposed by the workload
     message Endpoint {
         // IP addressof the workload instance
         string ip_address = 1;
     }
 
 
-    // A series of IP addresses and their associated ports.
+    // A set of IP addresses and their associated ports.
     // The list of ip + port pairs is the cartesian product of the following lists
     message EndpointsSubset {
 
@@ -42,7 +42,7 @@ message WorkloadSpec {
         repeated KubeServicePort ports = 2;
     }
 
-    // Sets of IP+Port pairs which enumerate all endpoints which are ready to receive traffic,
+    // Sets of IP+Port pairs exposed by the workload
     repeated Endpoint endpoints = 6;
 
 
