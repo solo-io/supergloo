@@ -140,11 +140,6 @@ var _ = Describe("WorkloadDetector", func() {
 						ServiceAccountName: serviceAccountName,
 					},
 				},
-				Endpoints: []*v1alpha2.WorkloadSpec_Endpoint{
-					{
-						IpAddress: pod.Status.PodIP,
-					},
-				},
 				Mesh: ezkube.MakeObjectRef(mesh),
 			},
 		}))
