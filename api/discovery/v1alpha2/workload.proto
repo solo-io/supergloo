@@ -26,7 +26,7 @@ message WorkloadSpec {
     // Appmesh specific metadata.
     AppMesh app_mesh = 5;
 
-    // An endpoint representing the direct method of communication with a given workload
+    // An endpoint exposed by the workload
     message Endpoint {
         // Leaving this message open for further endpoint info
 
