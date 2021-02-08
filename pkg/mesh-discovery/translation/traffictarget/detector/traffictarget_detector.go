@@ -87,7 +87,7 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 	return trafficTarget
 }
 
-func addMeshForKubeServiceIfValid(
+func addMeshForKubeService(
 	ctx context.Context,
 	tt *v1alpha2.TrafficTarget,
 	service *corev1.Service,
