@@ -179,7 +179,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 							{
 								IP: "2",
 								TargetRef: &corev1.ObjectReference{
-									Name:      buildDeployment("v2").Name + "-819320",
+									Name:      buildDeployment("v2").Name + "-332434",
 									Namespace: serviceNs,
 								},
 							},

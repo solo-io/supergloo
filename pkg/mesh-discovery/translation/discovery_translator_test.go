@@ -58,6 +58,7 @@ var _ = Describe("Translator", func() {
 		services := corev1sets.NewServiceSet(&corev1.Service{})
 		pods := corev1sets.NewPodSet(&corev1.Pod{})
 		nodes := corev1sets.NewNodeSet(&corev1.Node{})
+		endpoints := corev1sets.NewEndpointsSet(&corev1.Endpoints{})
 		deployments := appsv1sets.NewDeploymentSet(&appsv1.Deployment{})
 		replicaSets := appsv1sets.NewReplicaSetSet(&appsv1.ReplicaSet{})
 		daemonSets := appsv1sets.NewDaemonSetSet(&appsv1.DaemonSet{})
@@ -68,6 +69,7 @@ var _ = Describe("Translator", func() {
 			configMaps,
 			services,
 			pods,
+			endpoints,
 			nodes,
 			deployments,
 			replicaSets,
@@ -88,7 +90,7 @@ var _ = Describe("Translator", func() {
 
 		mockMeshTranslator.EXPECT().TranslateMeshes(inRemote, settings).Return(meshes)
 		mockWorkloadTranslator.EXPECT().TranslateWorkloads(deployments, daemonSets, statefulSets, meshes).Return(workloads)
-		mockTrafficTargetTranslator.EXPECT().TranslateTrafficTargets(ctx, services, workloads, meshes).Return(trafficTargets)
+		mockTrafficTargetTranslator.EXPECT().TranslateTrafficTargets(ctx, services, workloads, meshes, endpoints).Return(trafficTargets)
 
 		out, err := t.Translate(ctx, inRemote, settings)
 		Expect(err).NotTo(HaveOccurred())
