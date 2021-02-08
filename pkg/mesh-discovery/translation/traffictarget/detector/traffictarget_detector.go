@@ -159,14 +159,6 @@ func handleWorkloadDiscoveredMesh(
 	// derive subsets from backing workloads
 	tt.Spec.GetKubeService().Subsets = findSubsets(backingWorkloads)
 
-	// Add a refrence to each workload to the TrafficTarget
-	for _, workload := range backingWorkloads {
-		tt.Spec.Workloads = append(tt.Spec.Workloads, &v1.ObjectRef{
-			Name:      workload.GetName(),
-			Namespace: workload.GetNamespace(),
-		})
-	}
-
 	ep, err := endpoints.Find(tt.Spec.GetKubeService().GetRef())
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Errorf(

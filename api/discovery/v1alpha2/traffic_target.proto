@@ -24,9 +24,6 @@ message TrafficTargetSpec {
     // The mesh with which this traffic target is associated.
     .core.skv2.solo.io.ObjectRef mesh = 2;
 
-    // The discovered workloads which serve as backends for this TrafficTarget
-    repeated .core.skv2.solo.io.ObjectRef workloads = 3;
-
     message KubeService {
 
         // A reference to the kube-native traffic target that this TrafficTarget represents.
