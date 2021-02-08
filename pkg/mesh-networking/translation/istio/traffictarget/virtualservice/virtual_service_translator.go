@@ -340,7 +340,7 @@ func (t *translator) setDefaultDestination(
 // if the service has multiple service ports defined
 func duplicateRouteForEachPort(
 	baseRoute *networkingv1alpha3spec.HTTPRoute,
-	ports []*discoveryv1alpha2.KubeServicePort,
+	ports []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort,
 ) []*networkingv1alpha3spec.HTTPRoute {
 	if len(ports) == 1 {
 		// no need to specify port for single-port service

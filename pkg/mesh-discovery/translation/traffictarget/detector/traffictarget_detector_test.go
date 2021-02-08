@@ -131,7 +131,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 						Ref:                    ezkube.MakeClusterObjectRef(svc),
 						WorkloadSelectorLabels: svc.Spec.Selector,
 						Labels:                 svc.Labels,
-						Ports: []*v1alpha2.KubeServicePort{
+						Ports: []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 							{
 								Port:        1234,
 								Name:        "port1",
@@ -191,7 +191,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 						Ref:                    ezkube.MakeClusterObjectRef(svc),
 						WorkloadSelectorLabels: svc.Spec.Selector,
 						Labels:                 svc.Labels,
-						Ports: []*v1alpha2.KubeServicePort{
+						Ports: []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 							{
 								Port:        1234,
 								Name:        "port1",

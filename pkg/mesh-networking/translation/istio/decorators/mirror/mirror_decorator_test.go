@@ -41,7 +41,7 @@ var _ = Describe("MirrorDecorator", func() {
 								Namespace:   "namespace",
 								ClusterName: "local-cluster",
 							},
-							Ports: []*discoveryv1alpha2.KubeServicePort{
+							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "http1",
@@ -113,7 +113,7 @@ var _ = Describe("MirrorDecorator", func() {
 								Namespace:   "namespace",
 								ClusterName: "local-cluster",
 							},
-							Ports: []*discoveryv1alpha2.KubeServicePort{
+							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "http1",
@@ -194,7 +194,7 @@ var _ = Describe("MirrorDecorator", func() {
 								Namespace:   "namespace",
 								ClusterName: "local-cluster",
 							},
-							Ports: []*discoveryv1alpha2.KubeServicePort{
+							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "http1",
@@ -285,7 +285,7 @@ var _ = Describe("MirrorDecorator", func() {
 								Namespace:   "namespace",
 								ClusterName: "local-cluster",
 							},
-							Ports: []*discoveryv1alpha2.KubeServicePort{
+							Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "http1",

@@ -76,12 +76,13 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 	}
 
 	// If the service is not associated with a mesh, do not create a traffic target
-	validTrafficTarget := addMeshForKubeServiceIfValid(
+	validTrafficTarget := addMeshForKubeService(
 		ctx,
 		trafficTarget,
 		service,
 		meshWorkloads,
 		meshes,
+		endpoints,
 	)
 	if !validTrafficTarget {
 		return nil
@@ -137,7 +138,7 @@ func addMeshForKubeService(
 
 	// if no mesh was found from the annotation, check the workloads
 	backingWorkloads := workloadutils.FindBackingWorkloads(tt.Spec.GetKubeService(), meshWorkloads)
-	// if discovery is enabled, do not return
+	// If there are no backing workloads, then we cannot find the associated mesh
 	if backingWorkloads.Length() == 0 {
 		return false
 	}
@@ -167,31 +168,30 @@ func handleWorkloadDiscoveredMesh(
 	// derive subsets from backing workloads
 	tt.Spec.GetKubeService().Subsets = findSubsets(backingWorkloads)
 
+	tt.Spec.GetKubeService().EndpointSubsets = findEndpoints(ctx, backingWorkloads, ep)
+
 	// Add a refrence to each workload to the TrafficTarget
 	for _, workload := range backingWorkloads.List() {
 		tt.Spec.Workloads = append(tt.Spec.Workloads, &v1.ObjectRef{
 			Name:      workload.GetName(),
 			Namespace: workload.GetNamespace(),
 		})
-
-		addEndpointsForWorkload(ctx, workload, ep)
 	}
 
 	tt.Spec.Mesh = validMesh
 }
 
-func addEndpointsForWorkload(
+func findEndpoints(
 	ctx context.Context,
-	workload *v1alpha2.Workload,
+	backingWorkloads discoveryv1alpha2sets.WorkloadSet,
 	endpoint *corev1.Endpoints,
-) {
-	kubeWorkload := workload.Spec.GetKubernetes()
-	if kubeWorkload == nil {
-		return
-	}
+) []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset {
+
+	var result []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset
+	workloadList := backingWorkloads.List()
 
 	for _, epSub := range endpoint.Subsets {
-		sub := &v1alpha2.WorkloadSpec_KubernetesWorkload_EndpointsSubset{}
+		sub := &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{}
 		for _, addr := range epSub.Addresses {
 			if addr.TargetRef == nil {
 				contextutils.LoggerFrom(ctx).Debugf(
@@ -200,28 +200,27 @@ func addEndpointsForWorkload(
 				)
 				continue
 			}
-			// Check if TargetRef points to a child of the workload in question
-			if addr.TargetRef.Namespace == kubeWorkload.GetController().GetNamespace() &&
-				strings.HasPrefix(addr.TargetRef.Name, kubeWorkload.GetController().GetName()) {
-				sub.Endpoints = append(sub.Endpoints, &v1alpha2.WorkloadSpec_KubernetesWorkload_EndpointsSubset_Endpoint{
-					IpAddress: addr.IP,
-				})
-			}
-		}
 
-		// Check if list if IPs is already present on workload, if so we just need to add that port to the corresponding
-		// port list
-		endpointsPresent := false
-		for _, existingEndpoints := range kubeWorkload.GetEndpoints() {
-			// Endpoint list already exists, so append the ports
-			if isEndpoinListEqual(existingEndpoints.GetEndpoints(), sub.GetEndpoints()) {
-				endpointsPresent = true
-				break
+			for _, workload := range workloadList {
+				kubeWorkload := workload.Spec.GetKubernetes()
+				if kubeWorkload == nil {
+					continue
+				}
+				// Check if TargetRef points to a child of a backing workload to get the labels
+				if addr.TargetRef.Namespace == kubeWorkload.GetController().GetNamespace() &&
+					strings.HasPrefix(addr.TargetRef.Name, kubeWorkload.GetController().GetName()) {
+					sub.Endpoints = append(sub.Endpoints, &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint{
+						IpAddress: addr.IP,
+						Labels:    kubeWorkload.PodLabels,
+					})
+					break
+				}
 			}
+
 		}
 
 		for _, port := range epSub.Ports {
-			svcPort := &v1alpha2.KubeServicePort{
+			svcPort := &v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 				Port:     uint32(port.Port),
 				Name:     port.Name,
 				Protocol: string(port.Protocol),
@@ -238,33 +237,13 @@ func addEndpointsForWorkload(
 				"skipping endpoint address %v because no ip addresses were found",
 				epSub,
 			)
-			return
+			continue
 		}
 
-		kubeWorkload.Endpoints = append(kubeWorkload.Endpoints, sub)
-	}
-}
-
-// Check if 2 endpoint lists are equal
-func isEndpoinListEqual(this, that []*v1alpha2.WorkloadSpec_KubernetesWorkload_EndpointsSubset_Endpoint) bool {
-	if len(this) != len(that) {
-		return false
+		result = append(result, sub)
 	}
 
-	for _, outer := range this {
-		foundMatch := false
-		for _, inner := range that {
-			if outer.Equal(inner) {
-				foundMatch = true
-				break
-			}
-		}
-		if !foundMatch {
-			return false
-		}
-	}
-
-	return true
+	return result
 }
 
 // expects a list of just the workloads that back the service you're finding subsets for
@@ -305,9 +284,9 @@ func findSubsets(backingWorkloads discoveryv1alpha2sets.WorkloadSet) map[string]
 	return subsets
 }
 
-func convertPorts(service *corev1.Service) (ports []*v1alpha2.KubeServicePort) {
+func convertPorts(service *corev1.Service) (ports []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort) {
 	for _, kubePort := range service.Spec.Ports {
-		ports = append(ports, &v1alpha2.KubeServicePort{
+		ports = append(ports, &v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 			Port:        uint32(kubePort.Port),
 			Name:        kubePort.Name,
 			Protocol:    string(kubePort.Protocol),

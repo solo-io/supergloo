@@ -73,7 +73,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 							Namespace:   "traffic-target-namespace",
 							ClusterName: "traffic-target-cluster",
 						},
-						Ports: []*discoveryv1alpha2.KubeServicePort{
+						Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 							{
 								Port:     8080,
 								Name:     "http1",
@@ -489,7 +489,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 							Namespace:   "traffic-target-namespace",
 							ClusterName: "traffic-target-cluster",
 						},
-						Ports: []*discoveryv1alpha2.KubeServicePort{
+						Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 							{
 								Port:     8080,
 								Name:     "http1",
@@ -823,7 +823,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 							Namespace:   "traffic-target-namespace",
 							ClusterName: "traffic-target-cluster",
 						},
-						Ports: []*discoveryv1alpha2.KubeServicePort{
+						Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 							{
 								Port:     8080,
 								Name:     "http1",
@@ -891,7 +891,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 							Namespace:   "traffic-target-namespace",
 							ClusterName: "traffic-target-cluster",
 						},
-						Ports: []*discoveryv1alpha2.KubeServicePort{
+						Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 							{
 								Port:     8080,
 								Name:     "http1",
@@ -953,7 +953,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 							Namespace:   "traffic-target-namespace",
 							ClusterName: "traffic-target-cluster",
 						},
-						Ports: []*discoveryv1alpha2.KubeServicePort{
+						Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 							{
 								Port:     8080,
 								Name:     "http1",
