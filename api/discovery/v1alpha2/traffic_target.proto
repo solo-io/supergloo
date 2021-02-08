@@ -38,6 +38,15 @@ message TrafficTargetSpec {
         // Labels on the underlying k8s Service itself.
         map<string, string> labels = 3;
 
+        message KubeServicePort {
+            // External-facing port for this k8s service (NOT the service's target port on the backing pods).
+            uint32 port = 1;
+            string name = 2;
+            string protocol = 3;
+            // Available in k8s 1.18+, specifies the application protocol.
+            string app_protocol = 4;
+        }
+
         // The ports exposed by the underlying service.
         repeated KubeServicePort ports = 4;
 
@@ -49,19 +58,30 @@ message TrafficTargetSpec {
             repeated string values = 1;
         }
 
+        // A series of IP addresses and their associated ports.
+        // The list of ip + port pairs is the cartesian product of the following lists
+        message EndpointsSubset {
+
+            // An endpoint exposed by the service
+            message Endpoint {
+                // IP address
+                string ip_address = 1;
+                // Labels which belong to this IP, these are taken from the backing workload instance.
+                map<string, string> labels = 2;
+            }
+
+            repeated Endpoint endpoints = 1;
+
+            repeated KubeServicePort ports = 2;
+        }
+
+        // Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs.
+        // This API mirrors the kubernetes Endpoints API.
+        // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
+        repeated EndpointsSubset endpoint_subsets = 6;
+
     }
 
-}
-
-// Needs to be at the top level so it can be referenced by the workload proto.
-// cue has trouble with nested proto references.
-message KubeServicePort {
-    // External-facing port for this k8s service (NOT the service's target port on the backing pods).
-    uint32 port = 1;
-    string name = 2;
-    string protocol = 3;
-    // Available in k8s 1.18+, specifies the application protocol.
-    string app_protocol = 4;
 }
 
 message TrafficTargetStatus {

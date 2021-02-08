@@ -21,8 +21,6 @@ title: "workload.proto"
   - [WorkloadSpec](#discovery.mesh.gloo.solo.io.WorkloadSpec)
   - [WorkloadSpec.AppMesh](#discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh)
   - [WorkloadSpec.AppMesh.ContainerPort](#discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh.ContainerPort)
-  - [WorkloadSpec.Endpoint](#discovery.mesh.gloo.solo.io.WorkloadSpec.Endpoint)
-  - [WorkloadSpec.EndpointsSubset](#discovery.mesh.gloo.solo.io.WorkloadSpec.EndpointsSubset)
   - [WorkloadSpec.KubernetesWorkload](#discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload)
   - [WorkloadSpec.KubernetesWorkload.PodLabelsEntry](#discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload.PodLabelsEntry)
   - [WorkloadStatus](#discovery.mesh.gloo.solo.io.WorkloadStatus)
@@ -46,7 +44,6 @@ The Workload is an abstraction for a workload/client which mesh-discovery has di
 | kubernetes | [discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload#discovery.mesh.gloo.solo.io.WorkloadSpec.KubernetesWorkload" >}}) |  | Information describing workloads backed by Kubernetes Pods. |
   | mesh | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The mesh with which this workload is associated. |
   | appMesh | [discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload#discovery.mesh.gloo.solo.io.WorkloadSpec.AppMesh" >}}) |  | Appmesh specific metadata. |
-  | endpoints | [][discovery.mesh.gloo.solo.io.WorkloadSpec.Endpoint]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload#discovery.mesh.gloo.solo.io.WorkloadSpec.Endpoint" >}}) | repeated | Sets of IP+Port pairs which enumerate all endpoints which are ready to receive traffic, |
   
 
 
@@ -79,37 +76,6 @@ k8s application container ports.
 | ----- | ---- | ----- | ----------- |
 | port | uint32 |  |  |
   | protocol | string |  |  |
-  
-
-
-
-
-
-<a name="discovery.mesh.gloo.solo.io.WorkloadSpec.Endpoint"></a>
-
-### WorkloadSpec.Endpoint
-An endpoint representing the direct method of communication with a given workload
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| ipAddress | string |  | IP addressof the workload instance |
-  
-
-
-
-
-
-<a name="discovery.mesh.gloo.solo.io.WorkloadSpec.EndpointsSubset"></a>
-
-### WorkloadSpec.EndpointsSubset
-A series of IP addresses and their associated ports. The list of ip + port pairs is the cartesian product of the following lists
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| endpoints | [][discovery.mesh.gloo.solo.io.WorkloadSpec.Endpoint]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload#discovery.mesh.gloo.solo.io.WorkloadSpec.Endpoint" >}}) | repeated |  |
-  | ports | [][discovery.mesh.gloo.solo.io.KubeServicePort]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.KubeServicePort" >}}) | repeated |  |
   
 
 

@@ -174,7 +174,7 @@ func handleWorkloadDiscoveredMesh(
 			Namespace: workload.GetNamespace(),
 		})
 
-		addEndpointsForWorkload(ctx, workload, ep, tt.Spec.GetKubeService())
+		addEndpointsForWorkload(ctx, workload, ep)
 	}
 
 	tt.Spec.Mesh = validMesh
@@ -184,12 +184,12 @@ func addEndpointsForWorkload(
 	ctx context.Context,
 	workload *v1alpha2.Workload,
 	endpoint *corev1.Endpoints,
-	kubeService *v1alpha2.TrafficTargetSpec_KubeService,
 ) {
 	kubeWorkload := workload.Spec.GetKubernetes()
 	if kubeWorkload == nil {
 		return
 	}
+
 	for _, epSub := range endpoint.Subsets {
 		sub := &v1alpha2.WorkloadSpec_KubernetesWorkload_EndpointsSubset{}
 		for _, addr := range epSub.Addresses {
@@ -203,7 +203,20 @@ func addEndpointsForWorkload(
 			// Check if TargetRef points to a child of the workload in question
 			if addr.TargetRef.Namespace == kubeWorkload.GetController().GetNamespace() &&
 				strings.HasPrefix(addr.TargetRef.Name, kubeWorkload.GetController().GetName()) {
-				sub.IpAddresses = append(sub.IpAddresses, addr.IP)
+				sub.Endpoints = append(sub.Endpoints, &v1alpha2.WorkloadSpec_KubernetesWorkload_EndpointsSubset_Endpoint{
+					IpAddress: addr.IP,
+				})
+			}
+		}
+
+		// Check if list if IPs is already present on workload, if so we just need to add that port to the corresponding
+		// port list
+		endpointsPresent := false
+		for _, existingEndpoints := range kubeWorkload.GetEndpoints() {
+			// Endpoint list already exists, so append the ports
+			if isEndpoinListEqual(existingEndpoints.GetEndpoints(), sub.GetEndpoints()) {
+				endpointsPresent = true
+				break
 			}
 		}
 
@@ -220,7 +233,7 @@ func addEndpointsForWorkload(
 		}
 
 		// Only add this subset to the list if any IPs matched the workload in question
-		if len(sub.GetIpAddresses()) == 0 {
+		if len(sub.GetEndpoints()) == 0 {
 			contextutils.LoggerFrom(ctx).Debugf(
 				"skipping endpoint address %v because no ip addresses were found",
 				epSub,
@@ -230,6 +243,28 @@ func addEndpointsForWorkload(
 
 		kubeWorkload.Endpoints = append(kubeWorkload.Endpoints, sub)
 	}
+}
+
+// Check if 2 endpoint lists are equal
+func isEndpoinListEqual(this, that []*v1alpha2.WorkloadSpec_KubernetesWorkload_EndpointsSubset_Endpoint) bool {
+	if len(this) != len(that) {
+		return false
+	}
+
+	for _, outer := range this {
+		foundMatch := false
+		for _, inner := range that {
+			if outer.Equal(inner) {
+				foundMatch = true
+				break
+			}
+		}
+		if !foundMatch {
+			return false
+		}
+	}
+
+	return true
 }
 
 // expects a list of just the workloads that back the service you're finding subsets for

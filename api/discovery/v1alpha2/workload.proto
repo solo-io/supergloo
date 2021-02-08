@@ -3,7 +3,6 @@ package discovery.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/gloo-mesh/api/discovery/v1alpha2/traffic_target.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -26,26 +25,6 @@ message WorkloadSpec {
     // Appmesh specific metadata.
     AppMesh app_mesh = 5;
 
-    // An endpoint exposed by the workload
-    message Endpoint {
-        // IP addressof the workload instance
-        string ip_address = 1;
-    }
-
-
-    // A set of IP addresses and their associated ports.
-    // The list of ip + port pairs is the cartesian product of the following lists
-    message EndpointsSubset {
-
-        repeated Endpoint endpoints = 1;
-
-        repeated KubeServicePort ports = 2;
-    }
-
-    // Sets of IP+Port pairs exposed by the workload
-    repeated Endpoint endpoints = 6;
-
-
     // Information describing a Kubernetes-based workload (e.g. a Deployment or DaemonSet).
     message KubernetesWorkload {
         /**
@@ -64,7 +43,6 @@ message WorkloadSpec {
 
         // Service account attached to the pods owned by this controller.
         string service_account_name = 3;
-
     }
 
     // Information relevant to AppMesh-injected workloads.

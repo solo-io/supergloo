@@ -101,46 +101,6 @@ func (m *TrafficTargetSpec) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *KubeServicePort) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*KubeServicePort)
-	if !ok {
-		that2, ok := that.(KubeServicePort)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if m.GetPort() != target.GetPort() {
-		return false
-	}
-
-	if strings.Compare(m.GetName(), target.GetName()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetProtocol(), target.GetProtocol()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetAppProtocol(), target.GetAppProtocol()) != 0 {
-		return false
-	}
-
-	return true
-}
-
-// Equal function
 func (m *TrafficTargetStatus) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -303,6 +263,63 @@ func (m *TrafficTargetSpec_KubeService) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetEndpointSubsets()) != len(target.GetEndpointSubsets()) {
+		return false
+	}
+	for idx, v := range m.GetEndpointSubsets() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetEndpointSubsets()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetEndpointSubsets()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
+func (m *TrafficTargetSpec_KubeService_KubeServicePort) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*TrafficTargetSpec_KubeService_KubeServicePort)
+	if !ok {
+		that2, ok := that.(TrafficTargetSpec_KubeService_KubeServicePort)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if m.GetPort() != target.GetPort() {
+		return false
+	}
+
+	if strings.Compare(m.GetName(), target.GetName()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetProtocol(), target.GetProtocol()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetAppProtocol(), target.GetAppProtocol()) != 0 {
+		return false
+	}
+
 	return true
 }
 
@@ -333,6 +350,103 @@ func (m *TrafficTargetSpec_KubeService_Subset) Equal(that interface{}) bool {
 	for idx, v := range m.GetValues() {
 
 		if strings.Compare(v, target.GetValues()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
+func (m *TrafficTargetSpec_KubeService_EndpointsSubset) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*TrafficTargetSpec_KubeService_EndpointsSubset)
+	if !ok {
+		that2, ok := that.(TrafficTargetSpec_KubeService_EndpointsSubset)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetEndpoints()) != len(target.GetEndpoints()) {
+		return false
+	}
+	for idx, v := range m.GetEndpoints() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetEndpoints()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetEndpoints()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	if len(m.GetPorts()) != len(target.GetPorts()) {
+		return false
+	}
+	for idx, v := range m.GetPorts() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetPorts()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetPorts()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
+func (m *TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint)
+	if !ok {
+		that2, ok := that.(TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetIpAddress(), target.GetIpAddress()) != 0 {
+		return false
+	}
+
+	if len(m.GetLabels()) != len(target.GetLabels()) {
+		return false
+	}
+	for k, v := range m.GetLabels() {
+
+		if strings.Compare(v, target.GetLabels()[k]) != 0 {
 			return false
 		}
 

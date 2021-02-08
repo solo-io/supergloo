@@ -36,6 +36,45 @@ spec:
             kubeService:
               description: Metadata about the kube-native traffic target backing this TrafficTarget.
               properties:
+                endpointSubsets:
+                  description: |-
+                    Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs.
+                    This API mirrors the kubernetes Endpoints API.
+                    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
+                  items:
+                    properties:
+                      endpoints:
+                        items:
+                          properties:
+                            ipAddress:
+                              description: IP address
+                              type: string
+                            labels:
+                              additionalProperties:
+                                type: string
+                              description: Labels which belong to this IP, these are taken from the backing workload instance.
+                              type: object
+                          type: object
+                        type: array
+                      ports:
+                        items:
+                          properties:
+                            appProtocol:
+                              description: Available in k8s 1.18+, specifies the application protocol.
+                              type: string
+                            name:
+                              type: string
+                            port:
+                              description: External-facing port for this k8s service (NOT the service's target port on the backing pods).
+                              maximum: 4294967295
+                              minimum: 0
+                              type: integer
+                            protocol:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  type: array
                 labels:
                   additionalProperties:
                     type: string
@@ -914,15 +953,6 @@ spec:
                   description: The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container.
                   type: string
               type: object
-            endpoints:
-              description: Sets of IP+Port pairs which enumerate all endpoints which are ready to receive traffic,
-              items:
-                properties:
-                  ipAddress:
-                    description: IP addressof the workload instance
-                    type: string
-                type: object
-              type: array
             kubernetes:
               description: Information describing workloads backed by Kubernetes Pods.
               properties:
