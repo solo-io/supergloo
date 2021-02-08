@@ -63,6 +63,7 @@ func (r *certIssuerReconciler) reconcile(_ ezkube.ClusterResourceId) (bool, erro
 
 	for _, certificateRequest := range inputSnap.CertificateRequests().List() {
 		if err := r.reconcileCertificateRequest(certificateRequest, inputSnap.IssuedCertificates()); err != nil {
+			contextutils.LoggerFrom(r.ctx).Warnf("certificate request could not be processed: %v", err)
 			certificateRequest.Status.Error = err.Error()
 			certificateRequest.Status.State = v1alpha2.CertificateRequestStatus_FAILED
 		}
