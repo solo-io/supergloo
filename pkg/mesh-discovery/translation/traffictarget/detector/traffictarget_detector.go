@@ -168,6 +168,7 @@ func handleWorkloadDiscoveredMesh(
 	// derive subsets from backing workloads
 	tt.Spec.GetKubeService().Subsets = findSubsets(backingWorkloads)
 
+	// dervive endpoints from kubernetes endpoints, and backing workloads
 	tt.Spec.GetKubeService().EndpointSubsets = findEndpoints(ctx, backingWorkloads, ep)
 
 	// Add a refrence to each workload to the TrafficTarget
@@ -208,7 +209,7 @@ func findEndpoints(
 				}
 				// Check if TargetRef points to a child of a backing workload to get the labels
 				if addr.TargetRef.Namespace == kubeWorkload.GetController().GetNamespace() &&
-					strings.HasPrefix(addr.TargetRef.Name, kubeWorkload.GetController().GetName()) {
+					strings.HasPrefix(addr.TargetRef.Name, kubeWorkload.GetController().GetName() + "-") {
 					sub.Endpoints = append(sub.Endpoints, &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint{
 						IpAddress: addr.IP,
 						Labels:    kubeWorkload.PodLabels,

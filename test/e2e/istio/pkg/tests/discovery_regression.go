@@ -9,7 +9,6 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/gloo-mesh/test/e2e"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // run Enterprise Discovery regression tests
@@ -52,23 +51,11 @@ func DiscoveryRegressionTest() {
 					mgmtTrafficTargets, err := trafficTargetMgmtClient.ListTrafficTarget(ctx)
 					Expect(err).NotTo(HaveOccurred())
 					for _, v := range mgmtTrafficTargets.Items {
-
-						for _, workloadRef := range v.Spec.GetWorkloads() {
-							workload, err := env.Management.WorkloadClient.GetWorkload(
-								ctx,
-								client.ObjectKey{
-									Namespace: workloadRef.GetNamespace(),
-									Name:      workloadRef.GetName(),
-								},
+						if len(v.Spec.GetKubeService().GetEndpointSubsets()) == 0 {
+							multiErr = multierror.Append(multiErr, eris.Errorf(
+								"%s has no endpoints",
+								sets.TypedKey(&v)),
 							)
-							Expect(err).NotTo(HaveOccurred())
-
-							if len(workload.Spec.GetEndpoints()) == 0 {
-								multiErr = multierror.Append(multiErr, eris.Errorf(
-									"%s has no endpoints",
-									sets.TypedKey(workload)),
-								)
-							}
 						}
 					}
 					return multiErr
