@@ -139,7 +139,7 @@ func addMeshForKubeService(
 	// if no mesh was found from the annotation, check the workloads
 	backingWorkloads := workloadutils.FindBackingWorkloads(tt.Spec.GetKubeService(), meshWorkloads)
 	// If there are no backing workloads, then we cannot find the associated mesh
-	if backingWorkloads.Length() == 0 {
+	if len(backingWorkloads) == 0 {
 		return false
 	}
 	handleWorkloadDiscoveredMesh(ctx, tt, backingWorkloads, endpoints)
@@ -149,9 +149,23 @@ func addMeshForKubeService(
 func handleWorkloadDiscoveredMesh(
 	ctx context.Context,
 	tt *v1alpha2.TrafficTarget,
-	backingWorkloads discoveryv1alpha2sets.WorkloadSet,
+	backingWorkloads v1alpha2.WorkloadSlice,
 	endpoints corev1sets.EndpointsSet,
 ) {
+
+	// all backing workloads should be in the same mesh
+	tt.Spec.Mesh = backingWorkloads[0].Spec.Mesh
+
+	// derive subsets from backing workloads
+	tt.Spec.GetKubeService().Subsets = findSubsets(backingWorkloads)
+
+	// Add a refrence to each workload to the TrafficTarget
+	for _, workload := range backingWorkloads {
+		tt.Spec.Workloads = append(tt.Spec.Workloads, &v1.ObjectRef{
+			Name:      workload.GetName(),
+			Namespace: workload.GetNamespace(),
+		})
+	}
 
 	ep, err := endpoints.Find(tt.Spec.GetKubeService().GetRef())
 	if err != nil {
@@ -162,38 +176,22 @@ func handleWorkloadDiscoveredMesh(
 		return
 	}
 
-	// all backing workloads should be in the same mesh
-	validMesh := backingWorkloads.List()[0].Spec.Mesh
-
-	// derive subsets from backing workloads
-	tt.Spec.GetKubeService().Subsets = findSubsets(backingWorkloads)
-
 	// dervive endpoints from kubernetes endpoints, and backing workloads
 	tt.Spec.GetKubeService().EndpointSubsets = findEndpoints(ctx, backingWorkloads, ep)
-
-	// Add a refrence to each workload to the TrafficTarget
-	for _, workload := range backingWorkloads.List() {
-		tt.Spec.Workloads = append(tt.Spec.Workloads, &v1.ObjectRef{
-			Name:      workload.GetName(),
-			Namespace: workload.GetNamespace(),
-		})
-	}
-
-	tt.Spec.Mesh = validMesh
 }
 
 func findEndpoints(
 	ctx context.Context,
-	backingWorkloads discoveryv1alpha2sets.WorkloadSet,
+	backingWorkloads v1alpha2.WorkloadSlice,
 	endpoint *corev1.Endpoints,
 ) []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset {
 
 	var result []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset
-	workloadList := backingWorkloads.List()
 
 	for _, epSub := range endpoint.Subsets {
 		sub := &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{}
 		for _, addr := range epSub.Addresses {
+			addr := addr
 			if addr.TargetRef == nil {
 				contextutils.LoggerFrom(ctx).Debugf(
 					"skipping endpoint address %v because targetRef is nil",
@@ -202,25 +200,25 @@ func findEndpoints(
 				continue
 			}
 
-			for _, workload := range workloadList {
+			for _, workload := range backingWorkloads {
 				kubeWorkload := workload.Spec.GetKubernetes()
 				if kubeWorkload == nil {
 					continue
 				}
 				// Check if TargetRef points to a child of a backing workload to get the labels
 				if addr.TargetRef.Namespace == kubeWorkload.GetController().GetNamespace() &&
-					strings.HasPrefix(addr.TargetRef.Name, kubeWorkload.GetController().GetName() + "-") {
+					strings.HasPrefix(addr.TargetRef.Name, kubeWorkload.GetController().GetName()+"-") {
 					sub.Endpoints = append(sub.Endpoints, &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint{
 						IpAddress: addr.IP,
 						Labels:    kubeWorkload.PodLabels,
 					})
-					break
 				}
 			}
 
 		}
 
 		for _, port := range epSub.Ports {
+			port := port
 			svcPort := &v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 				Port:     uint32(port.Port),
 				Name:     port.Name,
@@ -248,9 +246,9 @@ func findEndpoints(
 }
 
 // expects a list of just the workloads that back the service you're finding subsets for
-func findSubsets(backingWorkloads discoveryv1alpha2sets.WorkloadSet) map[string]*v1alpha2.TrafficTargetSpec_KubeService_Subset {
+func findSubsets(backingWorkloads v1alpha2.WorkloadSlice) map[string]*v1alpha2.TrafficTargetSpec_KubeService_Subset {
 	uniqueLabels := make(map[string]sets.String)
-	for _, backingWorkload := range backingWorkloads.List() {
+	for _, backingWorkload := range backingWorkloads {
 		for key, val := range backingWorkload.Spec.GetKubernetes().GetPodLabels() {
 			// skip known kubernetes values
 			if skippedLabels.Has(key) {
