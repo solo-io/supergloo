@@ -19,6 +19,7 @@ type Translator interface {
 		services corev1sets.ServiceSet,
 		workloads v1alpha2sets.WorkloadSet,
 		meshes v1alpha2sets.MeshSet,
+		endpoints corev1sets.EndpointsSet,
 	) v1alpha2sets.TrafficTargetSet
 }
 
@@ -36,6 +37,7 @@ func (t *translator) TranslateTrafficTargets(
 	services corev1sets.ServiceSet,
 	workloads v1alpha2sets.WorkloadSet,
 	meshes v1alpha2sets.MeshSet,
+	endpoints corev1sets.EndpointsSet,
 ) v1alpha2sets.TrafficTargetSet {
 
 	trafficTargetSet := v1alpha2sets.NewTrafficTargetSet()
@@ -46,6 +48,7 @@ func (t *translator) TranslateTrafficTargets(
 			service,
 			workloads,
 			meshes,
+			endpoints,
 		)
 		if trafficTarget == nil {
 			continue

@@ -53,8 +53,8 @@ func FederateClusters(dynamicClient client.Client, flatNetwork bool) {
 		"bookinfo-federation",
 		BookinfoNamespace,
 		[]*v1.ObjectRef{
-			masterMesh,
-			remoteMesh,
+			MgmtMesh,
+			RemoteMesh,
 		},
 		flatNetwork,
 	)
@@ -74,7 +74,7 @@ func FederateClusters(dynamicClient client.Client, flatNetwork bool) {
 	// check we can hit the remote service
 	// give 5 minutes because the workflow depends on restarting pods
 	// which can take several minutes
-	Eventually(curlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec)), "5m", "2s").Should(ContainSubstring("200 OK"))
+	Eventually(CurlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec)), "5m", "2s").Should(ContainSubstring("200 OK"))
 }
 
 func TeardownFederationAndClusters() {

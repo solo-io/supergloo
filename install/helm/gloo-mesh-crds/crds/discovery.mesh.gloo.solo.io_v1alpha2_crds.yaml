@@ -915,10 +915,11 @@ spec:
                   type: string
               type: object
             endpoints:
-              description: A series of IP addresses which correspond to the underlying workloads which this WorkloadSpec owns
+              description: Sets of IP+Port pairs which enumerate all endpoints which are ready to receive traffic,
               items:
                 properties:
                   ipAddress:
+                    description: IP addressof the workload instance
                     type: string
                 type: object
               type: array

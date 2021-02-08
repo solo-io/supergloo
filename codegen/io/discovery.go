@@ -15,6 +15,7 @@ var (
 			"Service",
 			"ConfigMap",
 			"Node",
+			"Endpoints",
 		},
 		appsv1.SchemeGroupVersion: {
 			"Deployment",

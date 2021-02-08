@@ -201,6 +201,64 @@ func (m *WorkloadSpec_Endpoint) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *WorkloadSpec_EndpointsSubset) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*WorkloadSpec_EndpointsSubset)
+	if !ok {
+		that2, ok := that.(WorkloadSpec_EndpointsSubset)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetEndpoints()) != len(target.GetEndpoints()) {
+		return false
+	}
+	for idx, v := range m.GetEndpoints() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetEndpoints()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetEndpoints()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	if len(m.GetPorts()) != len(target.GetPorts()) {
+		return false
+	}
+	for idx, v := range m.GetPorts() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetPorts()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetPorts()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
 func (m *WorkloadSpec_KubernetesWorkload) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil

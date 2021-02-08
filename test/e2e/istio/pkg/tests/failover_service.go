@@ -55,7 +55,7 @@ func FailoverServiceTest() {
 
 		failoverServiceHostname := fmt.Sprintf("reviews-failover.bookinfo.%s", hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec))
 		curlFailoverService := func() string {
-			return curlFromProductpage(fmt.Sprintf("http://%s:9080/reviews/1", failoverServiceHostname))
+			return CurlFromProductpage(fmt.Sprintf("http://%s:9080/reviews/1", failoverServiceHostname))
 		}
 
 		By("creating a new FailoverService with the prerequisite TrafficPolicy and VirtualMesh", func() {
@@ -76,12 +76,12 @@ func FailoverServiceTest() {
 									{
 										Name:        "reviews",
 										Namespace:   BookinfoNamespace,
-										ClusterName: mgmtClusterName,
+										ClusterName: MgmtClusterName,
 									},
 									{
 										Name:        "reviews",
 										Namespace:   BookinfoNamespace,
-										ClusterName: remoteClusterName,
+										ClusterName: RemoteClusterName,
 									},
 								},
 							},
@@ -105,7 +105,7 @@ func FailoverServiceTest() {
 						Protocol: "http",
 					},
 					Meshes: []*v1.ObjectRef{
-						masterMesh,
+						MgmtMesh,
 					},
 					BackingServices: []*networkingv1alpha2.FailoverServiceSpec_BackingService{
 						{
@@ -113,7 +113,7 @@ func FailoverServiceTest() {
 								KubeService: &v1.ClusterObjectRef{
 									Name:        "reviews",
 									Namespace:   BookinfoNamespace,
-									ClusterName: mgmtClusterName,
+									ClusterName: MgmtClusterName,
 								},
 							},
 						},
@@ -122,7 +122,7 @@ func FailoverServiceTest() {
 								KubeService: &v1.ClusterObjectRef{
 									Name:        "reviews",
 									Namespace:   BookinfoNamespace,
-									ClusterName: remoteClusterName,
+									ClusterName: RemoteClusterName,
 								},
 							},
 						},
@@ -171,7 +171,7 @@ func FailoverServiceTest() {
 									{
 										Name:        "reviews",
 										Namespace:   BookinfoNamespace,
-										ClusterName: mgmtClusterName,
+										ClusterName: MgmtClusterName,
 									},
 								},
 							},
@@ -198,7 +198,7 @@ func FailoverServiceTest() {
 			utils.AssertTrafficPolicyStatuses(ctx, env.Management.TrafficPolicyClient, BookinfoNamespace)
 
 			// reviews-v3 is only deployed on remote cluster, so receiving a response proves that the FailoverService is working
-			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
+			Eventually(CurlReviews, "1m", "1s").Should(ContainSubstring(`"color": "red"`))
 		})
 
 		By("re-enable management-plane reviews deployments", func() {
@@ -209,7 +209,7 @@ func FailoverServiceTest() {
 			env.Management.EnableContainer(ctx, BookinfoNamespace, "reviews-v2")
 			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v1")
 			env.Management.WaitForRollout(ctx, BookinfoNamespace, "reviews-v2")
-			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring("200 OK"))
+			Eventually(CurlReviews, "1m", "1s").Should(ContainSubstring("200 OK"))
 		})
 	})
 }

@@ -28,12 +28,21 @@ message WorkloadSpec {
 
     // An endpoint representing the direct method of communication with a given workload
     message Endpoint {
-        // Leaving this message open for further endpoint info
-
+        // IP addressof the workload instance
         string ip_address = 1;
     }
 
-    // A series of IP addresses which correspond to the underlying workloads which this WorkloadSpec owns
+
+    // A series of IP addresses and their associated ports.
+    // The list of ip + port pairs is the cartesian product of the following lists
+    message EndpointsSubset {
+
+        repeated Endpoint endpoints = 1;
+
+        repeated KubeServicePort ports = 2;
+    }
+
+    // Sets of IP+Port pairs which enumerate all endpoints which are ready to receive traffic,
     repeated Endpoint endpoints = 6;
 
 

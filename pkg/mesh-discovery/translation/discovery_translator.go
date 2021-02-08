@@ -60,6 +60,7 @@ func (t translator) Translate(
 		in.Services(),
 		workloads,
 		meshes,
+		in.Endpoints(),
 	)
 
 	t.totalTranslates++

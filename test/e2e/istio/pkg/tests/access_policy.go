@@ -32,7 +32,7 @@ func AccessPolicyTest() {
 			err = VirtualMeshManifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring("403 Forbidden"))
+			Eventually(CurlReviews, "1m", "1s").Should(ContainSubstring("403 Forbidden"))
 		})
 
 		By("restoring connectivity to the reviews service when AccessPolicy is created", func() {
@@ -53,7 +53,7 @@ func AccessPolicyTest() {
 									{
 										Name:        "bookinfo-productpage",
 										Namespace:   BookinfoNamespace,
-										ClusterName: mgmtClusterName,
+										ClusterName: MgmtClusterName,
 									},
 								},
 							},
@@ -66,7 +66,7 @@ func AccessPolicyTest() {
 									{
 										Name:        "reviews",
 										Namespace:   BookinfoNamespace,
-										ClusterName: mgmtClusterName,
+										ClusterName: MgmtClusterName,
 									},
 								},
 							},
@@ -79,7 +79,7 @@ func AccessPolicyTest() {
 			err = manifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(curlReviews, "1m", "1s").Should(ContainSubstring("200 OK"))
+			Eventually(CurlReviews, "1m", "1s").Should(ContainSubstring("200 OK"))
 		})
 
 		By("restoring connectivity to all services when global access policy enforcement is disabled", func() {
@@ -93,7 +93,7 @@ func AccessPolicyTest() {
 			err = manifest.KubeDelete(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(curlRatings, "1m", "1s").Should(ContainSubstring("200 OK"))
+			Eventually(CurlRatings, "1m", "1s").Should(ContainSubstring("200 OK"))
 		})
 	})
 }

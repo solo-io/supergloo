@@ -77,16 +77,6 @@ func (d workloadDetector) DetectWorkload(
 	// append workload kind for uniqueness
 	outputMeta.Name += "-" + strings.ToLower(workload.Kind())
 
-	var endpoints []*v1alpha2.WorkloadSpec_Endpoint
-	for _, pod := range podsForWorkload.List() {
-		if pod.Status.PodIP == "" {
-			continue
-		}
-		endpoints = append(endpoints, &v1alpha2.WorkloadSpec_Endpoint{
-			IpAddress: pod.Status.PodIP,
-		})
-	}
-
 	return &v1alpha2.Workload{
 		ObjectMeta: outputMeta,
 		Spec: v1alpha2.WorkloadSpec{
@@ -97,16 +87,12 @@ func (d workloadDetector) DetectWorkload(
 					ServiceAccountName: serviceAccount,
 				},
 			},
-			Mesh:      meshRef,
-			Endpoints: endpoints,
+			Mesh: meshRef,
 		},
 	}
 }
 
-func (d workloadDetector) getMeshForPods(
-	pods corev1sets.PodSet,
-	meshes v1alpha2sets.MeshSet,
-) *v1alpha2.Mesh {
+func (d workloadDetector) getMeshForPods(pods corev1sets.PodSet, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
 	// as long as one pod is detected for a mesh, consider the set owned by that mesh.
 	for _, pod := range pods.List() {
 		if mesh := d.detector.DetectMeshSidecar(pod, meshes); mesh != nil {
@@ -131,10 +117,7 @@ func (d workloadDetector) getPodsForWorkload(
 	return podsForWorkload
 }
 
-func (d workloadDetector) podIsOwnedOwnedByWorkload(
-	pod *corev1.Pod,
-	workload types.Workload,
-) bool {
+func (d workloadDetector) podIsOwnedOwnedByWorkload(pod *corev1.Pod, workload types.Workload) bool {
 	if pod.Namespace != workload.GetNamespace() || pod.ClusterName != workload.GetClusterName() {
 		return false
 	}
