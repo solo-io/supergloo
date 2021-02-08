@@ -33,7 +33,7 @@ message WorkloadSpec {
         string ip_address = 1;
     }
 
-    // A series of IP addresses which correspond to the underlying workloads which this WorkloadSpec owns
+    // A set of IP addresses exposed by the workload
     repeated Endpoint endpoints = 6;
 
 
