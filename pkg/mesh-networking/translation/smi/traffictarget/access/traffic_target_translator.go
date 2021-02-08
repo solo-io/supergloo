@@ -76,7 +76,7 @@ func (t *translator) Translate(
 	backingWorkloads := workloadutils.FindBackingWorkloads(target.Spec.GetKubeService(), in.Workloads())
 	for _, ap := range target.Status.GetAppliedAccessPolicies() {
 
-		if backingWorkloads.Length() == 0 {
+		if len(backingWorkloads) == 0 {
 			reporter.ReportAccessPolicyToTrafficTarget(
 				target,
 				ap.GetRef(),
@@ -87,7 +87,7 @@ func (t *translator) Translate(
 
 		// Check workloads for all possible service accounts, if they belong to more than 1, report an error
 		serviceAccounts := sets.NewString()
-		for _, workload := range backingWorkloads.List() {
+		for _, workload := range backingWorkloads {
 			kubeWorkload := workload.Spec.GetKubernetes()
 			if kubeWorkload == nil {
 				continue
@@ -106,7 +106,7 @@ func (t *translator) Translate(
 
 		var trafficTargetsByAp []*smiaccessv1alpha2.TrafficTarget
 
-		backingWorkload := backingWorkloads.List()[0]
+		backingWorkload := backingWorkloads[0]
 		trafficTarget := &smiaccessv1alpha2.TrafficTarget{
 			ObjectMeta: metautils.TranslatedObjectMeta(
 				target.Spec.GetKubeService().Ref,
