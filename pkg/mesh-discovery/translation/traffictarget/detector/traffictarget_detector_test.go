@@ -257,16 +257,6 @@ var _ = Describe("TrafficTargetDetector", func() {
 						},
 					},
 				},
-				Workloads: []*skv1.ObjectRef{
-					{
-						Name:      "some-workload-v1",
-						Namespace: serviceNs,
-					},
-					{
-						Name:      "some-workload-v2",
-						Namespace: serviceNs,
-					},
-				},
 				Mesh: mesh,
 			},
 		}))
