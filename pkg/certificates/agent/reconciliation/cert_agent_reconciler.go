@@ -324,6 +324,8 @@ func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceD
 			configMap, err := allConfigMaps.Find(selector.RootCertSync.ConfigMapRef)
 			if err != nil && errors.IsNotFound(err) {
 				// ConfigMap isn't found; let's wait for it to be added by Istio
+				contextutils.LoggerFrom(r.ctx).Debugf("podBounceDirective %v: waiting for %v configmap creation for selector %v", sets.Key(podBounceDirective), selector.RootCertSync.ConfigMapRef.Name, selector)
+
 				time.Sleep(time.Second)
 
 				return true, nil
@@ -339,6 +341,8 @@ func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceD
 			if configMap.Data[selector.RootCertSync.ConfigMapKey] != string(secret.Data[selector.RootCertSync.SecretKey]) {
 				// the configmap's public key doesn't match the root cert CA's
 				// sleep to allow time for the cert to be distributed and retry
+				contextutils.LoggerFrom(r.ctx).Debugf("podBounceDirective %v: waiting for %v configmap update for selector %v", sets.Key(podBounceDirective), selector.RootCertSync.ConfigMapRef.Name, selector)
+
 				time.Sleep(time.Second)
 
 				return true, nil
