@@ -269,12 +269,6 @@ spec:
                             type: string
                         type: object
                     type: object
-                  waitForCertUpdate:
-                    description: |-
-                      Whether to wait for the namespace's istio-ca-root-cert configmap to align with the mesh's new root cert.
-                      This is used to ensure that the Istio control plane has propagated new certs before restarting
-                      data plane pods.
-                    type: boolean
                   waitForReplicas:
                     description: |-
                       Wait for this number of replacement pods to reach be fully Ready before

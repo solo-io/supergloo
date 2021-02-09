@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
-	"modernc.org/strutil"
-
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	corev1client "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
@@ -25,8 +22,10 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -262,7 +261,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			}
 
 			// try to bounce the pods and see if we need to wait
-			waitingForReplacements, err := r.bouncePods(podBounceDirective, inputPods, inputConfigMaps, nil)
+			waitingForReplacements, err := r.bouncePods(podBounceDirective, inputPods, inputConfigMaps, inputSecrets)
 			if err != nil {
 				return eris.Wrap(err, "bouncing pods")
 			}
@@ -294,7 +293,6 @@ func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceD
 
 	var errs error
 
-	// TODO joekelley do we need this?
 	// collect the pods we want to delete in the order they're specified in the directive
 	// it is important Istiod is restarted before any of the other pods
 	for i, selector := range podBounceDirective.Spec.PodsToBounce {
@@ -322,24 +320,21 @@ func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceD
 
 		if selector.RootCertSync != nil {
 			configMap, err := allConfigMaps.Find(selector.RootCertSync.ConfigMapRef)
-			if err != nil {
+			if err != nil && errors.IsNotFound(err) {
 				// ConfigMap isn't found; let's wait for it to be added by Istio
+				time.Sleep(time.Second)
+
+				return true, nil
+			} else if err != nil {
 				return true, err
 			}
 
 			secret, err := allSecrets.Find(selector.RootCertSync.SecretRef)
 			if err != nil {
-				// TODO joekelley this shouldn't happen
 				return true, err
 			}
 
-			secretValue, err := strutil.Base64Decode(secret.Data[selector.RootCertSync.SecretKey])
-			if err != nil {
-				// TODO joekelley, idk
-				return true, err
-			}
-
-			if configMap.Data[selector.RootCertSync.ConfigMapKey] != string(secretValue) {
+			if configMap.Data[selector.RootCertSync.ConfigMapKey] != string(secret.Data[selector.RootCertSync.SecretKey]) {
 				// the configmap's public key doesn't match the root cert CA's
 				// sleep to allow time for the cert to be distributed and retry
 				time.Sleep(time.Second)

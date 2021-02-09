@@ -147,10 +147,6 @@ func (m *PodBounceDirectiveSpec_PodSelector) Equal(that interface{}) bool {
 		return false
 	}
 
-	if m.GetWaitForCertUpdate() != target.GetWaitForCertUpdate() {
-		return false
-	}
-
 	if h, ok := interface{}(m.GetRootCertSync()).(equality.Equalizer); ok {
 		if !h.Equal(target.GetRootCertSync()) {
 			return false

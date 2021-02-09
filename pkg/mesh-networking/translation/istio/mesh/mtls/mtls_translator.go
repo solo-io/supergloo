@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	"github.com/solo-io/gloo-mesh/pkg/common/version"
+	"istio.io/istio/pilot/pkg/serviceregistry/kube/controller"
 
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
@@ -17,7 +19,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
 	"istio.io/istio/pkg/spiffe"
@@ -43,6 +44,8 @@ const (
 	// name of the istio root CA secret
 	// https://istio.io/latest/docs/tasks/security/cert-management/plugin-ca-cert/
 	istioCaSecretName = "cacerts"
+	// name of the istio root CA configmap distributed to all namespaces
+	istioCaConfigMapName = controller.CACertNamespaceConfigMap
 )
 
 var (
@@ -386,12 +389,12 @@ func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha
 					Name:      istioCaSecretName,
 					Namespace: istioInstall.Namespace,
 				},
-				SecretKey: "root-cert.pem",
+				SecretKey: secrets.RootCertID,
 				ConfigMapRef: &v1.ObjectRef{
-					Name:      "istio-ca-root-cert",
+					Name:      istioCaConfigMapName,
 					Namespace: istioInstall.Namespace,
 				},
-				ConfigMapKey: "root-cert.pem",
+				ConfigMapKey: secrets.RootCertID,
 			},
 		})
 	}
@@ -407,14 +410,14 @@ func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha
 				RootCertSync: &certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector_RootCertSync{
 					SecretRef: &v1.ObjectRef{
 						Name:      istioCaSecretName,
-						Namespace: kubeWorkload.Controller.GetNamespace(),
+						Namespace: istioInstall.Namespace,
 					},
-					SecretKey: "root-cert.pem",
+					SecretKey: secrets.RootCertID,
 					ConfigMapRef: &v1.ObjectRef{
-						Name:      "istio-ca-root-cert",
+						Name:      istioCaConfigMapName,
 						Namespace: kubeWorkload.Controller.GetNamespace(),
 					},
-					ConfigMapKey: "root-cert.pem",
+					ConfigMapKey: secrets.RootCertID,
 				},
 			})
 		}
