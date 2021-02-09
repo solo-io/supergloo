@@ -307,6 +307,7 @@ EOF
 function install_istio_1_7() {
   cluster=$1
   port=$2
+  mgmtClusterAddress=$3
   K="kubectl --context=kind-${cluster}"
 
   echo "installing istio to ${cluster}..."
@@ -346,6 +347,12 @@ spec:
               nodePort: ${port}
   meshConfig:
     enableAutoMtls: true
+    defaultConfig:
+      envoyAccessLogService:
+        address: ${mgmtClusterAddress}:9900
+      proxyMetadata:
+        # annotate Gloo Mesh cluster name for envoy requests (i.e. access logs, metrics)
+        GLOO_MESH_CLUSTER_NAME: ${cluster}
   values:
     prometheus:
       enabled: false
@@ -369,6 +376,7 @@ EOF
 function install_istio_1_8() {
   cluster=$1
   port=$2
+  mgmtClusterAddress=$3
   K="kubectl --context=kind-${cluster}"
 
   echo "installing istio to ${cluster}..."
@@ -385,10 +393,14 @@ spec:
   meshConfig:
     enableAutoMtls: true
     defaultConfig:
+      envoyAccessLogService:
+        address: ${mgmtClusterAddress}:9900
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts
         # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
         ISTIO_META_DNS_CAPTURE: "true"
+        # annotate Gloo Mesh cluster name for envoy requests (i.e. access logs, metrics)
+        GLOO_MESH_CLUSTER_NAME: ${cluster}
   components:
     # Istio Gateway feature
     ingressGateways:
@@ -462,13 +474,15 @@ function install_istio() {
   port=$2
   K="kubectl --context=kind-${cluster}"
 
+  mgmtClusterAddress=$(get_mgmt_server_ip_address ${cluster})
+
   if istioctl version | grep -E -- '1.7'
   then
-    install_istio_1_7 $cluster $port
+    install_istio_1_7 $cluster $port $mgmtClusterAddress
     install_istio_coredns $cluster $port
   elif istioctl version | grep -E -- '1.8'
   then
-    install_istio_1_8 $cluster $port
+    install_istio_1_8 $cluster $port $mgmtClusterAddress
   else
     echo "Encountered unsupported version of Istio: $(istioctl version)"
     exit 1
@@ -601,6 +615,19 @@ function install_gloomesh() {
   if [ ! -z ${POST_INSTALL_SCRIPT} ]; then
     bash -x ${POST_INSTALL_SCRIPT}
   fi
+}
+
+# determine the IP address for the management cluster from the perspective of the specified cluster
+function get_mgmt_server_ip_address() {
+  cluster=$1
+
+  # set to local host if cluster is mgmt-cluster
+  accessLogSinkAddress="localhost"
+  if [[ ${cluster} != ${mgmtCluster} ]]; then
+    # use the node IP of the mgmt cluster if cluster is remote
+    accessLogSinkAddress=$(kubectl --context kind-${mgmtCluster} get node -ojson | jq -r ".items[0].status.addresses[0].address")
+  fi
+  echo ${accessLogSinkAddress}
 }
 
 #### START SCRIPT
