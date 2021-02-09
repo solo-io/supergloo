@@ -262,9 +262,10 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 		TrafficPolicy:   true,
 		AccessPolicy:    true,
 		VirtualMesh:     true,
-		FailoverService: true,
 		WasmDeployment:  true,
 		AccessLogRecord: true,
+		FailoverService: true,
+		GlobalService:   true,
 	}); err != nil {
 		errs = multierror.Append(errs, err)
 	}
