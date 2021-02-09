@@ -474,6 +474,25 @@ spec:
                 recent version of this resource.
               format: int64
               type: integer
+            selectedTrafficTargets:
+              description: The traffic targets that comprise this Global Service.
+              items:
+                properties:
+                  ref:
+                    description: reference to the traffic target
+                    properties:
+                      clusterName:
+                        description: name of the cluster in which the resource exists
+                        type: string
+                      name:
+                        description: name of the resource being referenced
+                        type: string
+                      namespace:
+                        description: namespace of the resource being referenced
+                        type: string
+                    type: object
+                type: object
+              type: array
             state:
               description: |-
                 The state of the overall resource, will only show accepted if it has been successfully

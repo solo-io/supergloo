@@ -100,6 +100,14 @@ message GlobalServiceStatus {
   // The status of the GlobalService for each Mesh to which it has been applied.
   map<string, .networking.mesh.gloo.solo.io.ApprovalStatus> meshes = 3;
 
+  // The traffic targets that comprise this Global Service.
+  repeated SelectedTrafficTarget selected_traffic_targets = 4;
+
   // Any errors found while processing this generation of the resource.
-  repeated string errors = 4;
+  repeated string errors = 5;
+
+  message SelectedTrafficTarget {
+    // reference to the traffic target
+    .core.skv2.solo.io.ClusterObjectRef ref = 1;
+  }
 }
