@@ -105,32 +105,32 @@ func (m *GlobalServiceSpec) Equal(that interface{}) bool {
 
 	switch m.FailoverConfig.(type) {
 
-	case *GlobalServiceSpec_ServiceList:
-		if _, ok := target.FailoverConfig.(*GlobalServiceSpec_ServiceList); !ok {
+	case *GlobalServiceSpec_Static:
+		if _, ok := target.FailoverConfig.(*GlobalServiceSpec_Static); !ok {
 			return false
 		}
 
-		if h, ok := interface{}(m.GetServiceList()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetServiceList()) {
+		if h, ok := interface{}(m.GetStatic()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetStatic()) {
 				return false
 			}
 		} else {
-			if !proto.Equal(m.GetServiceList(), target.GetServiceList()) {
+			if !proto.Equal(m.GetStatic(), target.GetStatic()) {
 				return false
 			}
 		}
 
-	case *GlobalServiceSpec_LocalityFailover:
-		if _, ok := target.FailoverConfig.(*GlobalServiceSpec_LocalityFailover); !ok {
+	case *GlobalServiceSpec_Localized:
+		if _, ok := target.FailoverConfig.(*GlobalServiceSpec_Localized); !ok {
 			return false
 		}
 
-		if h, ok := interface{}(m.GetLocalityFailover()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetLocalityFailover()) {
+		if h, ok := interface{}(m.GetLocalized()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetLocalized()) {
 				return false
 			}
 		} else {
-			if !proto.Equal(m.GetLocalityFailover(), target.GetLocalityFailover()) {
+			if !proto.Equal(m.GetLocalized(), target.GetLocalized()) {
 				return false
 			}
 		}

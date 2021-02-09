@@ -39,9 +39,9 @@ message GlobalServiceSpec {
   }
 
   oneof failover_config {
-    BackingServiceList service_list = 5;
+    BackingServiceList static = 5;
     // Locality Failover configuration.
-    LocalityConfig locality_failover = 6;
+    LocalityConfig localized = 6;
   }
 
   // The port on which the GlobalService listens.
