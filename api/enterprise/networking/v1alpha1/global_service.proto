@@ -62,7 +62,7 @@ message GlobalServiceSpec {
     // backed by service meshes that are grouped under a common VirtualMesh.
     repeated BackingService services = 1;
 
-    // The traffic targets that comprise the GlobalService.
+    // A service represented by a TrafficTarget
     message BackingService {
       // Different traffic target types can be selected as backing services.
       oneof backing_service_type {
@@ -107,7 +107,19 @@ message GlobalServiceStatus {
   repeated string errors = 5;
 
   message SelectedTrafficTarget {
-    // reference to the traffic target
+    // Reference to the traffic target.
     .core.skv2.solo.io.ClusterObjectRef ref = 1;
+
+    // The service that the traffic target represents.
+    BackingService service = 2;
+
+    // A service represented by a TrafficTarget
+    message BackingService {
+      // Different traffic target types can be selected as backing services.
+      oneof backing_service_type {
+        // Name/namespace/cluster of a kubernetes service.
+        .core.skv2.solo.io.ClusterObjectRef kube_service = 1;
+      }
+    }
   }
 }

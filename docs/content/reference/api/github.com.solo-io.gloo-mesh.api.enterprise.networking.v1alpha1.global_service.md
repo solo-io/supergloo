@@ -28,6 +28,7 @@ title: "global_service.proto"
   - [GlobalServiceStatus](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus)
   - [GlobalServiceStatus.MeshesEntry](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.MeshesEntry)
   - [GlobalServiceStatus.SelectedTrafficTarget](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget)
+  - [GlobalServiceStatus.SelectedTrafficTarget.BackingService](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.BackingService)
 
 
 
@@ -73,7 +74,7 @@ A GlobalService creates a new hostname to which services can send requests. Requ
 <a name="networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService"></a>
 
 ### GlobalServiceSpec.BackingServiceList.BackingService
-The traffic targets that comprise the GlobalService.
+A service represented by a TrafficTarget
 
 
 | Field | Type | Label | Description |
@@ -191,7 +192,23 @@ The port on which the GlobalService listens.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ref | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | reference to the traffic target |
+| ref | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Reference to the traffic target. |
+  | service | [networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.BackingService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.BackingService" >}}) |  | The service that the traffic target represents. |
+  
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.BackingService"></a>
+
+### GlobalServiceStatus.SelectedTrafficTarget.BackingService
+A service represented by a TrafficTarget
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| kubeService | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Name/namespace/cluster of a kubernetes service. |
   
 
 
