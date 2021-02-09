@@ -8,6 +8,7 @@
 // * CertificateRequests
 // * PodBounceDirectives
 // * Secrets
+// * ConfigMaps
 // * Pods
 // for a given cluster or set of clusters.
 //
@@ -42,6 +43,7 @@ type multiClusterReconciler interface {
 	certificates_mesh_gloo_solo_io_v1alpha2_controllers.MulticlusterPodBounceDirectiveReconciler
 
 	v1_controllers.MulticlusterSecretReconciler
+	v1_controllers.MulticlusterConfigMapReconciler
 	v1_controllers.MulticlusterPodReconciler
 }
 
@@ -63,6 +65,8 @@ type ReconcileOptions struct {
 
 	// Options for reconciling Secrets
 	Secrets reconcile.Options
+	// Options for reconciling ConfigMaps
+	ConfigMaps reconcile.Options
 	// Options for reconciling Pods
 	Pods reconcile.Options
 }
@@ -99,6 +103,8 @@ func RegisterMultiClusterReconciler(
 	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterPodBounceDirectiveReconcileLoop("PodBounceDirective", clusters, options.PodBounceDirectives).AddMulticlusterPodBounceDirectiveReconciler(ctx, r, predicates...)
 
 	v1_controllers.NewMulticlusterSecretReconcileLoop("Secret", clusters, options.Secrets).AddMulticlusterSecretReconciler(ctx, r, predicates...)
+
+	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters, options.ConfigMaps).AddMulticlusterConfigMapReconciler(ctx, r, predicates...)
 
 	v1_controllers.NewMulticlusterPodReconcileLoop("Pod", clusters, options.Pods).AddMulticlusterPodReconciler(ctx, r, predicates...)
 	return r.base
@@ -164,6 +170,21 @@ func (r *multiClusterReconcilerImpl) ReconcileSecretDeletion(clusterName string,
 	return err
 }
 
+func (r *multiClusterReconcilerImpl) ReconcileConfigMap(clusterName string, obj *v1.ConfigMap) (reconcile.Result, error) {
+	obj.ClusterName = clusterName
+	return r.base.ReconcileRemoteGeneric(obj)
+}
+
+func (r *multiClusterReconcilerImpl) ReconcileConfigMapDeletion(clusterName string, obj reconcile.Request) error {
+	ref := &sk_core_v1.ClusterObjectRef{
+		Name:        obj.Name,
+		Namespace:   obj.Namespace,
+		ClusterName: clusterName,
+	}
+	_, err := r.base.ReconcileRemoteGeneric(ref)
+	return err
+}
+
 func (r *multiClusterReconcilerImpl) ReconcilePod(clusterName string, obj *v1.Pod) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileRemoteGeneric(obj)
@@ -187,6 +208,7 @@ type singleClusterReconciler interface {
 	certificates_mesh_gloo_solo_io_v1alpha2_controllers.PodBounceDirectiveReconciler
 
 	v1_controllers.SecretReconciler
+	v1_controllers.ConfigMapReconciler
 	v1_controllers.PodReconciler
 }
 
@@ -232,6 +254,9 @@ func RegisterSingleClusterReconciler(
 	}
 
 	if err := v1_controllers.NewSecretReconcileLoop("Secret", mgr, options).RunSecretReconciler(ctx, r, predicates...); err != nil {
+		return nil, err
+	}
+	if err := v1_controllers.NewConfigMapReconcileLoop("ConfigMap", mgr, options).RunConfigMapReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
 	}
 	if err := v1_controllers.NewPodReconcileLoop("Pod", mgr, options).RunPodReconciler(ctx, r, predicates...); err != nil {
@@ -285,6 +310,19 @@ func (r *singleClusterReconcilerImpl) ReconcileSecret(obj *v1.Secret) (reconcile
 }
 
 func (r *singleClusterReconcilerImpl) ReconcileSecretDeletion(obj reconcile.Request) error {
+	ref := &sk_core_v1.ObjectRef{
+		Name:      obj.Name,
+		Namespace: obj.Namespace,
+	}
+	_, err := r.base.ReconcileLocalGeneric(ref)
+	return err
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileConfigMap(obj *v1.ConfigMap) (reconcile.Result, error) {
+	return r.base.ReconcileLocalGeneric(obj)
+}
+
+func (r *singleClusterReconcilerImpl) ReconcileConfigMapDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

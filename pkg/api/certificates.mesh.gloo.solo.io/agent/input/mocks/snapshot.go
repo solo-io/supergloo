@@ -95,6 +95,20 @@ func (mr *MockSnapshotMockRecorder) Secrets() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Secrets", reflect.TypeOf((*MockSnapshot)(nil).Secrets))
 }
 
+// ConfigMaps mocks base method
+func (m *MockSnapshot) ConfigMaps() v1sets.ConfigMapSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfigMaps")
+	ret0, _ := ret[0].(v1sets.ConfigMapSet)
+	return ret0
+}
+
+// ConfigMaps indicates an expected call of ConfigMaps
+func (mr *MockSnapshotMockRecorder) ConfigMaps() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigMaps", reflect.TypeOf((*MockSnapshot)(nil).ConfigMaps))
+}
+
 // Pods mocks base method
 func (m *MockSnapshot) Pods() v1sets.PodSet {
 	m.ctrl.T.Helper()
