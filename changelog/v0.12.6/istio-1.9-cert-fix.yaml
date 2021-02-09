@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1257
+    resolvesIssue: false
+    description: Update certificate rotation workflow to support Istio 1.9.
