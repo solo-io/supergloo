@@ -27,6 +27,7 @@ title: "global_service.proto"
   - [GlobalServiceSpec.Port](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.Port)
   - [GlobalServiceStatus](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus)
   - [GlobalServiceStatus.MeshesEntry](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.MeshesEntry)
+  - [GlobalServiceStatus.SelectedTrafficTarget](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget)
 
 
 
@@ -158,6 +159,7 @@ The port on which the GlobalService listens.
 | observedGeneration | int64 |  | The most recent generation observed in the the GlobalService metadata. If the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
   | state | [networking.mesh.gloo.solo.io.ApprovalState]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state#networking.mesh.gloo.solo.io.ApprovalState" >}}) |  | The state of the overall resource, will only show accepted if it has been successfully applied to all target meshes. |
   | meshes | [][networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.MeshesEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.MeshesEntry" >}}) | repeated | The status of the GlobalService for each Mesh to which it has been applied. |
+  | selectedTrafficTargets | [][networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget" >}}) | repeated | The traffic targets that comprise this Global Service. |
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
   
 
@@ -175,6 +177,21 @@ The port on which the GlobalService listens.
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
   | value | [networking.mesh.gloo.solo.io.ApprovalStatus]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state#networking.mesh.gloo.solo.io.ApprovalStatus" >}}) |  |  |
+  
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget"></a>
+
+### GlobalServiceStatus.SelectedTrafficTarget
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ref | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | reference to the traffic target |
   
 
 

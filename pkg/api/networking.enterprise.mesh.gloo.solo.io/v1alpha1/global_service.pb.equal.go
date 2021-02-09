@@ -191,6 +191,23 @@ func (m *GlobalServiceStatus) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetSelectedTrafficTargets()) != len(target.GetSelectedTrafficTargets()) {
+		return false
+	}
+	for idx, v := range m.GetSelectedTrafficTargets() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetSelectedTrafficTargets()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetSelectedTrafficTargets()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	if len(m.GetErrors()) != len(target.GetErrors()) {
 		return false
 	}
@@ -459,6 +476,40 @@ func (m *GlobalServiceSpec_LocalityConfig_Locality) Equal(that interface{}) bool
 			return false
 		}
 
+	}
+
+	return true
+}
+
+// Equal function
+func (m *GlobalServiceStatus_SelectedTrafficTarget) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*GlobalServiceStatus_SelectedTrafficTarget)
+	if !ok {
+		that2, ok := that.(GlobalServiceStatus_SelectedTrafficTarget)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetRef()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRef()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRef(), target.GetRef()) {
+			return false
+		}
 	}
 
 	return true
