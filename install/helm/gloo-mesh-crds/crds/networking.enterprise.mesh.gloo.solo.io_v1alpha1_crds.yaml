@@ -268,12 +268,10 @@ spec:
             - required:
               - localized
           description: |-
-            A GlobalService creates a new hostname to which services can send requests.
-               Requests will be routed based on a list of backing traffic targets ordered by
-               decreasing priority. When outlier detection detects that a traffic target in the list is
-               in an unhealthy state, requests sent to the GlobalService will be routed
-               to the next healthy traffic target in the list. For each traffic target referenced in the
-               GlobalService's BackingServices list, outlier detection must be configured using a TrafficPolicy.
+            A GlobalService creates a new hostname to which client workloads can send requests.
+               Requests will be routed based on either a list of backing traffic targets ordered by
+               priority, or a list of locality directives. Each traffic target backing the
+               GlobalService must be configured with outlier detection using a traffic policy.
 
                Currently this feature only supports Services backed by Istio.
           properties:
@@ -283,24 +281,48 @@ spec:
                 since it is used as the hostname with which clients communicate.
               type: string
             localized:
-              description: Locality Failover configuration.
+              description: Locality failover configuration.
               properties:
-                localities:
+                failoverDirectives:
+                  description: Directives describing the locality failover behavior.
                   items:
                     properties:
                       from:
-                        type: string
+                        description: The locality of a client workload.
+                        properties:
+                          region:
+                            description: The locality's region.
+                            type: string
+                          subZone:
+                            description: The locality's sub-zone. Currently this value is not used.
+                            type: string
+                          zone:
+                            description: The locality's zone. Currently this value is not used.
+                            type: string
+                        type: object
                       to:
+                        description: |-
+                          The list of traffic target localities that can be routed to if the instance local to the client workload
+                          is not available.
                         items:
-                          type: string
+                          properties:
+                            region:
+                              description: The locality's region.
+                              type: string
+                            subZone:
+                              description: The locality's sub-zone. Currently this value is not used.
+                              type: string
+                            zone:
+                              description: The locality's zone. Currently this value is not used.
+                              type: string
+                          type: object
                         type: array
                     type: object
                   type: array
                 serviceSelectors:
                   description: |-
-                    Selectors for the services backing the GlobalService. The selected services are considered
-                    equivalent, and Gloo Mesh will route to the optimal service instance based on the locality
-                    failover configuration.
+                    Selectors for the services backing the GlobalService.
+                    All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
                   items:
                     properties:
                       kubeServiceMatcher:
@@ -382,16 +404,16 @@ spec:
                   minimum: 0
                   type: integer
                 protocol:
-                  description: Protocol of the requests sent to the GlobalService, must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS.
+                  description: Protocol of the requests sent to the GlobalService. Must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS.
                   type: string
               type: object
             static:
+              description: List of backing services in priority order.
               properties:
                 services:
                   description: |-
                     The list of services backing the GlobalService, ordered by decreasing priority.
-                    All services must be backed by either the same service mesh instance or
-                    backed by service meshes that are grouped under a common VirtualMesh.
+                    All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
                   items:
                     oneOf:
                     - not:

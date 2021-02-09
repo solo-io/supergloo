@@ -30,12 +30,10 @@ const (
 const _ = proto.ProtoPackageIsVersion4
 
 //
-//A GlobalService creates a new hostname to which services can send requests.
-//Requests will be routed based on a list of backing traffic targets ordered by
-//decreasing priority. When outlier detection detects that a traffic target in the list is
-//in an unhealthy state, requests sent to the GlobalService will be routed
-//to the next healthy traffic target in the list. For each traffic target referenced in the
-//GlobalService's BackingServices list, outlier detection must be configured using a TrafficPolicy.
+//A GlobalService creates a new hostname to which client workloads can send requests.
+//Requests will be routed based on either a list of backing traffic targets ordered by
+//priority, or a list of locality directives. Each traffic target backing the
+//GlobalService must be configured with outlier detection using a traffic policy.
 //
 //Currently this feature only supports Services backed by Istio.
 type GlobalServiceSpec struct {
@@ -55,6 +53,9 @@ type GlobalServiceSpec struct {
 	//	*GlobalServiceSpec_VirtualMesh
 	//	*GlobalServiceSpec_MeshList_
 	ExportTo isGlobalServiceSpec_ExportTo `protobuf_oneof:"export_to"`
+	// Configuration that determines failover behavior. Failover is based either on a list of services specified
+	// in priority order, or on the localities of the traffic source and destination.
+	//
 	// Types that are assignable to FailoverConfig:
 	//	*GlobalServiceSpec_Static
 	//	*GlobalServiceSpec_Localized
@@ -173,11 +174,12 @@ type isGlobalServiceSpec_FailoverConfig interface {
 }
 
 type GlobalServiceSpec_Static struct {
+	// List of backing services in priority order.
 	Static *GlobalServiceSpec_BackingServiceList `protobuf:"bytes,5,opt,name=static,proto3,oneof"`
 }
 
 type GlobalServiceSpec_Localized struct {
-	// Locality Failover configuration.
+	// Locality failover configuration.
 	Localized *GlobalServiceSpec_LocalityConfig `protobuf:"bytes,6,opt,name=localized,proto3,oneof"`
 }
 
@@ -280,7 +282,7 @@ type GlobalServiceSpec_Port struct {
 
 	// Port number.
 	Number uint32 `protobuf:"varint,1,opt,name=number,proto3" json:"number,omitempty"`
-	// Protocol of the requests sent to the GlobalService, must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS.
+	// Protocol of the requests sent to the GlobalService. Must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS.
 	Protocol string `protobuf:"bytes,2,opt,name=protocol,proto3" json:"protocol,omitempty"`
 }
 
@@ -330,6 +332,7 @@ func (x *GlobalServiceSpec_Port) GetProtocol() string {
 	return ""
 }
 
+// A list of mesh references.
 type GlobalServiceSpec_MeshList struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -377,14 +380,16 @@ func (x *GlobalServiceSpec_MeshList) GetMeshes() []*v1.ObjectRef {
 	return nil
 }
 
+// Enables failover based on a list of services. When outlier detection detects that a traffic target in the list
+// is in an unhealthy state, requests sent to the GlobalService will be routed to the next healthy traffic target
+// in the list.
 type GlobalServiceSpec_BackingServiceList struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	// The list of services backing the GlobalService, ordered by decreasing priority.
-	// All services must be backed by either the same service mesh instance or
-	// backed by service meshes that are grouped under a common VirtualMesh.
+	// All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
 	Services []*GlobalServiceSpec_BackingServiceList_BackingService `protobuf:"bytes,1,rep,name=services,proto3" json:"services,omitempty"`
 }
 
@@ -427,16 +432,21 @@ func (x *GlobalServiceSpec_BackingServiceList) GetServices() []*GlobalServiceSpe
 	return nil
 }
 
+// Enables failover based on locality. When a client workload makes a request to the GlobalService, Gloo Mesh will
+// first try to direct traffic to the service instance geographically closest to the client workload. If outlier
+// detection detects that the closest traffic target is in an unhealthy state, requests will instead be routed
+// to a service instance in one of the localities specified in the `to` field. Currently, each locality in the
+// `to` field will be routed to with equal probability if the local instance is unhealthy.
 type GlobalServiceSpec_LocalityConfig struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Selectors for the services backing the GlobalService. The selected services are considered
-	// equivalent, and Gloo Mesh will route to the optimal service instance based on the locality
-	// failover configuration.
-	ServiceSelectors []*v1alpha2.TrafficTargetSelector            `protobuf:"bytes,1,rep,name=service_selectors,json=serviceSelectors,proto3" json:"service_selectors,omitempty"`
-	Localities       []*GlobalServiceSpec_LocalityConfig_Locality `protobuf:"bytes,2,rep,name=localities,proto3" json:"localities,omitempty"`
+	// Selectors for the services backing the GlobalService.
+	// All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
+	ServiceSelectors []*v1alpha2.TrafficTargetSelector `protobuf:"bytes,1,rep,name=service_selectors,json=serviceSelectors,proto3" json:"service_selectors,omitempty"`
+	// Directives describing the locality failover behavior.
+	FailoverDirectives []*GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective `protobuf:"bytes,2,rep,name=failover_directives,json=failoverDirectives,proto3" json:"failover_directives,omitempty"`
 }
 
 func (x *GlobalServiceSpec_LocalityConfig) Reset() {
@@ -478,9 +488,9 @@ func (x *GlobalServiceSpec_LocalityConfig) GetServiceSelectors() []*v1alpha2.Tra
 	return nil
 }
 
-func (x *GlobalServiceSpec_LocalityConfig) GetLocalities() []*GlobalServiceSpec_LocalityConfig_Locality {
+func (x *GlobalServiceSpec_LocalityConfig) GetFailoverDirectives() []*GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective {
 	if x != nil {
-		return x.Localities
+		return x.FailoverDirectives
 	}
 	return nil
 }
@@ -556,19 +566,82 @@ type GlobalServiceSpec_BackingServiceList_BackingService_KubeService struct {
 func (*GlobalServiceSpec_BackingServiceList_BackingService_KubeService) isGlobalServiceSpec_BackingServiceList_BackingService_BackingServiceType() {
 }
 
+type GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// The locality of a client workload.
+	From *GlobalServiceSpec_LocalityConfig_Locality `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
+	// The list of traffic target localities that can be routed to if the instance local to the client workload
+	// is not available.
+	To []*GlobalServiceSpec_LocalityConfig_Locality `protobuf:"bytes,2,rep,name=to,proto3" json:"to,omitempty"`
+}
+
+func (x *GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective) Reset() {
+	*x = GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective) ProtoMessage() {}
+
+func (x *GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective.ProtoReflect.Descriptor instead.
+func (*GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective) Descriptor() ([]byte, []int) {
+	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_rawDescGZIP(), []int{0, 3, 0}
+}
+
+func (x *GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective) GetFrom() *GlobalServiceSpec_LocalityConfig_Locality {
+	if x != nil {
+		return x.From
+	}
+	return nil
+}
+
+func (x *GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective) GetTo() []*GlobalServiceSpec_LocalityConfig_Locality {
+	if x != nil {
+		return x.To
+	}
+	return nil
+}
+
+// A geographic location defined by a region, zone, and sub-zone.
 type GlobalServiceSpec_LocalityConfig_Locality struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	From string   `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
-	To   []string `protobuf:"bytes,2,rep,name=to,proto3" json:"to,omitempty"`
+	// The locality's region.
+	Region string `protobuf:"bytes,1,opt,name=region,proto3" json:"region,omitempty"`
+	// The locality's zone. Currently this value is not used.
+	Zone string `protobuf:"bytes,2,opt,name=zone,proto3" json:"zone,omitempty"`
+	// The locality's sub-zone. Currently this value is not used.
+	SubZone string `protobuf:"bytes,3,opt,name=sub_zone,json=subZone,proto3" json:"sub_zone,omitempty"`
 }
 
 func (x *GlobalServiceSpec_LocalityConfig_Locality) Reset() {
 	*x = GlobalServiceSpec_LocalityConfig_Locality{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[7]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -581,7 +654,7 @@ func (x *GlobalServiceSpec_LocalityConfig_Locality) String() string {
 func (*GlobalServiceSpec_LocalityConfig_Locality) ProtoMessage() {}
 
 func (x *GlobalServiceSpec_LocalityConfig_Locality) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[7]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -594,21 +667,28 @@ func (x *GlobalServiceSpec_LocalityConfig_Locality) ProtoReflect() protoreflect.
 
 // Deprecated: Use GlobalServiceSpec_LocalityConfig_Locality.ProtoReflect.Descriptor instead.
 func (*GlobalServiceSpec_LocalityConfig_Locality) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_rawDescGZIP(), []int{0, 3, 0}
+	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_rawDescGZIP(), []int{0, 3, 1}
 }
 
-func (x *GlobalServiceSpec_LocalityConfig_Locality) GetFrom() string {
+func (x *GlobalServiceSpec_LocalityConfig_Locality) GetRegion() string {
 	if x != nil {
-		return x.From
+		return x.Region
 	}
 	return ""
 }
 
-func (x *GlobalServiceSpec_LocalityConfig_Locality) GetTo() []string {
+func (x *GlobalServiceSpec_LocalityConfig_Locality) GetZone() string {
 	if x != nil {
-		return x.To
+		return x.Zone
 	}
-	return nil
+	return ""
+}
+
+func (x *GlobalServiceSpec_LocalityConfig_Locality) GetSubZone() string {
+	if x != nil {
+		return x.SubZone
+	}
+	return ""
 }
 
 type GlobalServiceStatus_SelectedTrafficTarget struct {
@@ -625,7 +705,7 @@ type GlobalServiceStatus_SelectedTrafficTarget struct {
 func (x *GlobalServiceStatus_SelectedTrafficTarget) Reset() {
 	*x = GlobalServiceStatus_SelectedTrafficTarget{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[9]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -638,7 +718,7 @@ func (x *GlobalServiceStatus_SelectedTrafficTarget) String() string {
 func (*GlobalServiceStatus_SelectedTrafficTarget) ProtoMessage() {}
 
 func (x *GlobalServiceStatus_SelectedTrafficTarget) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[9]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -684,7 +764,7 @@ type GlobalServiceStatus_SelectedTrafficTarget_BackingService struct {
 func (x *GlobalServiceStatus_SelectedTrafficTarget_BackingService) Reset() {
 	*x = GlobalServiceStatus_SelectedTrafficTarget_BackingService{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[10]
+		mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -697,7 +777,7 @@ func (x *GlobalServiceStatus_SelectedTrafficTarget_BackingService) String() stri
 func (*GlobalServiceStatus_SelectedTrafficTarget_BackingService) ProtoMessage() {}
 
 func (x *GlobalServiceStatus_SelectedTrafficTarget_BackingService) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[10]
+	mi := &file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -763,7 +843,7 @@ var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_
 	0x6e, 0x67, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x32, 0x2f, 0x76, 0x61, 0x6c, 0x69,
 	0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x70, 0x72, 0x6f,
 	0x74, 0x6f, 0x1a, 0x12, 0x65, 0x78, 0x74, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x65, 0x78, 0x74,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xbb, 0x09, 0x0a, 0x11, 0x47, 0x6c, 0x6f, 0x62, 0x61,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xeb, 0x0b, 0x0a, 0x11, 0x47, 0x6c, 0x6f, 0x62, 0x61,
 	0x6c, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x53, 0x70, 0x65, 0x63, 0x12, 0x1a, 0x0a, 0x08,
 	0x68, 0x6f, 0x73, 0x74, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08,
 	0x68, 0x6f, 0x73, 0x74, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x53, 0x0a, 0x04, 0x70, 0x6f, 0x72, 0x74,
@@ -819,7 +899,7 @@ var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_
 	0x2e, 0x69, 0x6f, 0x2e, 0x43, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65, 0x63,
 	0x74, 0x52, 0x65, 0x66, 0x48, 0x00, 0x52, 0x0b, 0x6b, 0x75, 0x62, 0x65, 0x53, 0x65, 0x72, 0x76,
 	0x69, 0x63, 0x65, 0x42, 0x16, 0x0a, 0x14, 0x62, 0x61, 0x63, 0x6b, 0x69, 0x6e, 0x67, 0x5f, 0x73,
-	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x1a, 0x96, 0x02, 0x0a, 0x0e,
+	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x1a, 0xc6, 0x04, 0x0a, 0x0e,
 	0x4c, 0x6f, 0x63, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x60,
 	0x0a, 0x11, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x5f, 0x73, 0x65, 0x6c, 0x65, 0x63, 0x74,
 	0x6f, 0x72, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x33, 0x2e, 0x6e, 0x65, 0x74, 0x77,
@@ -827,17 +907,36 @@ var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_
 	0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x54, 0x72, 0x61, 0x66, 0x66, 0x69, 0x63,
 	0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x10,
 	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x53, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x73,
-	0x12, 0x72, 0x0a, 0x0a, 0x6c, 0x6f, 0x63, 0x61, 0x6c, 0x69, 0x74, 0x69, 0x65, 0x73, 0x18, 0x02,
-	0x20, 0x03, 0x28, 0x0b, 0x32, 0x52, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e,
-	0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x69, 0x73, 0x65, 0x2e, 0x6d, 0x65, 0x73,
-	0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x47,
-	0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x53, 0x70, 0x65, 0x63,
-	0x2e, 0x4c, 0x6f, 0x63, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e,
-	0x4c, 0x6f, 0x63, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x0a, 0x6c, 0x6f, 0x63, 0x61, 0x6c, 0x69,
-	0x74, 0x69, 0x65, 0x73, 0x1a, 0x2e, 0x0a, 0x08, 0x4c, 0x6f, 0x63, 0x61, 0x6c, 0x69, 0x74, 0x79,
-	0x12, 0x12, 0x0a, 0x04, 0x66, 0x72, 0x6f, 0x6d, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
-	0x66, 0x72, 0x6f, 0x6d, 0x12, 0x0e, 0x0a, 0x02, 0x74, 0x6f, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09,
-	0x52, 0x02, 0x74, 0x6f, 0x42, 0x0b, 0x0a, 0x09, 0x65, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x5f, 0x74,
+	0x12, 0x94, 0x01, 0x0a, 0x13, 0x66, 0x61, 0x69, 0x6c, 0x6f, 0x76, 0x65, 0x72, 0x5f, 0x64, 0x69,
+	0x72, 0x65, 0x63, 0x74, 0x69, 0x76, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x63,
+	0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65,
+	0x72, 0x70, 0x72, 0x69, 0x73, 0x65, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f,
+	0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x47, 0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x53,
+	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x53, 0x70, 0x65, 0x63, 0x2e, 0x4c, 0x6f, 0x63, 0x61, 0x6c,
+	0x69, 0x74, 0x79, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x4c, 0x6f, 0x63, 0x61, 0x6c, 0x69,
+	0x74, 0x79, 0x46, 0x61, 0x69, 0x6c, 0x6f, 0x76, 0x65, 0x72, 0x44, 0x69, 0x72, 0x65, 0x63, 0x74,
+	0x69, 0x76, 0x65, 0x52, 0x12, 0x66, 0x61, 0x69, 0x6c, 0x6f, 0x76, 0x65, 0x72, 0x44, 0x69, 0x72,
+	0x65, 0x63, 0x74, 0x69, 0x76, 0x65, 0x73, 0x1a, 0xe7, 0x01, 0x0a, 0x19, 0x4c, 0x6f, 0x63, 0x61,
+	0x6c, 0x69, 0x74, 0x79, 0x46, 0x61, 0x69, 0x6c, 0x6f, 0x76, 0x65, 0x72, 0x44, 0x69, 0x72, 0x65,
+	0x63, 0x74, 0x69, 0x76, 0x65, 0x12, 0x66, 0x0a, 0x04, 0x66, 0x72, 0x6f, 0x6d, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x52, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67,
+	0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x69, 0x73, 0x65, 0x2e, 0x6d, 0x65, 0x73, 0x68,
+	0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x47, 0x6c,
+	0x6f, 0x62, 0x61, 0x6c, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x53, 0x70, 0x65, 0x63, 0x2e,
+	0x4c, 0x6f, 0x63, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x4c,
+	0x6f, 0x63, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x04, 0x66, 0x72, 0x6f, 0x6d, 0x12, 0x62, 0x0a,
+	0x02, 0x74, 0x6f, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x52, 0x2e, 0x6e, 0x65, 0x74, 0x77,
+	0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x69, 0x73,
+	0x65, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f,
+	0x2e, 0x69, 0x6f, 0x2e, 0x47, 0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63,
+	0x65, 0x53, 0x70, 0x65, 0x63, 0x2e, 0x4c, 0x6f, 0x63, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x43, 0x6f,
+	0x6e, 0x66, 0x69, 0x67, 0x2e, 0x4c, 0x6f, 0x63, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x02, 0x74,
+	0x6f, 0x1a, 0x51, 0x0a, 0x08, 0x4c, 0x6f, 0x63, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x12, 0x16, 0x0a,
+	0x06, 0x72, 0x65, 0x67, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72,
+	0x65, 0x67, 0x69, 0x6f, 0x6e, 0x12, 0x12, 0x0a, 0x04, 0x7a, 0x6f, 0x6e, 0x65, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x04, 0x7a, 0x6f, 0x6e, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x73, 0x75, 0x62,
+	0x5f, 0x7a, 0x6f, 0x6e, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x73, 0x75, 0x62,
+	0x5a, 0x6f, 0x6e, 0x65, 0x42, 0x0b, 0x0a, 0x09, 0x65, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x5f, 0x74,
 	0x6f, 0x42, 0x11, 0x0a, 0x0f, 0x66, 0x61, 0x69, 0x6c, 0x6f, 0x76, 0x65, 0x72, 0x5f, 0x63, 0x6f,
 	0x6e, 0x66, 0x69, 0x67, 0x22, 0xbd, 0x06, 0x0a, 0x13, 0x47, 0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x53,
 	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x2f, 0x0a, 0x13,
@@ -912,48 +1011,51 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global
 	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_rawDescData
 }
 
-var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_goTypes = []interface{}{
-	(*GlobalServiceSpec)(nil),                                   // 0: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec
-	(*GlobalServiceStatus)(nil),                                 // 1: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus
-	(*GlobalServiceSpec_Port)(nil),                              // 2: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.Port
-	(*GlobalServiceSpec_MeshList)(nil),                          // 3: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.MeshList
-	(*GlobalServiceSpec_BackingServiceList)(nil),                // 4: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList
-	(*GlobalServiceSpec_LocalityConfig)(nil),                    // 5: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig
-	(*GlobalServiceSpec_BackingServiceList_BackingService)(nil), // 6: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService
-	(*GlobalServiceSpec_LocalityConfig_Locality)(nil),           // 7: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality
-	nil, // 8: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.MeshesEntry
-	(*GlobalServiceStatus_SelectedTrafficTarget)(nil),                // 9: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget
-	(*GlobalServiceStatus_SelectedTrafficTarget_BackingService)(nil), // 10: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.BackingService
-	(*v1.ObjectRef)(nil),                   // 11: core.skv2.solo.io.ObjectRef
-	(v1alpha2.ApprovalState)(0),            // 12: networking.mesh.gloo.solo.io.ApprovalState
-	(*v1alpha2.TrafficTargetSelector)(nil), // 13: networking.mesh.gloo.solo.io.TrafficTargetSelector
-	(*v1.ClusterObjectRef)(nil),            // 14: core.skv2.solo.io.ClusterObjectRef
-	(*v1alpha2.ApprovalStatus)(nil),        // 15: networking.mesh.gloo.solo.io.ApprovalStatus
+	(*GlobalServiceSpec)(nil),                                          // 0: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec
+	(*GlobalServiceStatus)(nil),                                        // 1: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus
+	(*GlobalServiceSpec_Port)(nil),                                     // 2: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.Port
+	(*GlobalServiceSpec_MeshList)(nil),                                 // 3: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.MeshList
+	(*GlobalServiceSpec_BackingServiceList)(nil),                       // 4: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList
+	(*GlobalServiceSpec_LocalityConfig)(nil),                           // 5: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig
+	(*GlobalServiceSpec_BackingServiceList_BackingService)(nil),        // 6: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService
+	(*GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective)(nil), // 7: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.LocalityFailoverDirective
+	(*GlobalServiceSpec_LocalityConfig_Locality)(nil),                  // 8: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality
+	nil, // 9: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.MeshesEntry
+	(*GlobalServiceStatus_SelectedTrafficTarget)(nil),                // 10: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget
+	(*GlobalServiceStatus_SelectedTrafficTarget_BackingService)(nil), // 11: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.BackingService
+	(*v1.ObjectRef)(nil),                   // 12: core.skv2.solo.io.ObjectRef
+	(v1alpha2.ApprovalState)(0),            // 13: networking.mesh.gloo.solo.io.ApprovalState
+	(*v1alpha2.TrafficTargetSelector)(nil), // 14: networking.mesh.gloo.solo.io.TrafficTargetSelector
+	(*v1.ClusterObjectRef)(nil),            // 15: core.skv2.solo.io.ClusterObjectRef
+	(*v1alpha2.ApprovalStatus)(nil),        // 16: networking.mesh.gloo.solo.io.ApprovalStatus
 }
 var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_depIdxs = []int32{
 	2,  // 0: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.port:type_name -> networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.Port
-	11, // 1: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.virtual_mesh:type_name -> core.skv2.solo.io.ObjectRef
+	12, // 1: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.virtual_mesh:type_name -> core.skv2.solo.io.ObjectRef
 	3,  // 2: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.mesh_list:type_name -> networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.MeshList
 	4,  // 3: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.static:type_name -> networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList
 	5,  // 4: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.localized:type_name -> networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig
-	12, // 5: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.state:type_name -> networking.mesh.gloo.solo.io.ApprovalState
-	8,  // 6: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.meshes:type_name -> networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.MeshesEntry
-	9,  // 7: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.selected_traffic_targets:type_name -> networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget
-	11, // 8: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.MeshList.meshes:type_name -> core.skv2.solo.io.ObjectRef
+	13, // 5: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.state:type_name -> networking.mesh.gloo.solo.io.ApprovalState
+	9,  // 6: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.meshes:type_name -> networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.MeshesEntry
+	10, // 7: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.selected_traffic_targets:type_name -> networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget
+	12, // 8: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.MeshList.meshes:type_name -> core.skv2.solo.io.ObjectRef
 	6,  // 9: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.services:type_name -> networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService
-	13, // 10: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.service_selectors:type_name -> networking.mesh.gloo.solo.io.TrafficTargetSelector
-	7,  // 11: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.localities:type_name -> networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality
-	14, // 12: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService.kube_service:type_name -> core.skv2.solo.io.ClusterObjectRef
-	15, // 13: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.MeshesEntry.value:type_name -> networking.mesh.gloo.solo.io.ApprovalStatus
-	14, // 14: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.ref:type_name -> core.skv2.solo.io.ClusterObjectRef
-	10, // 15: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.service:type_name -> networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.BackingService
-	14, // 16: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.BackingService.kube_service:type_name -> core.skv2.solo.io.ClusterObjectRef
-	17, // [17:17] is the sub-list for method output_type
-	17, // [17:17] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	14, // 10: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.service_selectors:type_name -> networking.mesh.gloo.solo.io.TrafficTargetSelector
+	7,  // 11: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.failover_directives:type_name -> networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.LocalityFailoverDirective
+	15, // 12: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService.kube_service:type_name -> core.skv2.solo.io.ClusterObjectRef
+	8,  // 13: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.LocalityFailoverDirective.from:type_name -> networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality
+	8,  // 14: networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.LocalityFailoverDirective.to:type_name -> networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality
+	16, // 15: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.MeshesEntry.value:type_name -> networking.mesh.gloo.solo.io.ApprovalStatus
+	15, // 16: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.ref:type_name -> core.skv2.solo.io.ClusterObjectRef
+	11, // 17: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.service:type_name -> networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.BackingService
+	15, // 18: networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.BackingService.kube_service:type_name -> core.skv2.solo.io.ClusterObjectRef
+	19, // [19:19] is the sub-list for method output_type
+	19, // [19:19] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() {
@@ -1049,6 +1151,18 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global
 			}
 		}
 		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GlobalServiceSpec_LocalityConfig_Locality); i {
 			case 0:
 				return &v.state
@@ -1060,7 +1174,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GlobalServiceStatus_SelectedTrafficTarget); i {
 			case 0:
 				return &v.state
@@ -1072,7 +1186,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GlobalServiceStatus_SelectedTrafficTarget_BackingService); i {
 			case 0:
 				return &v.state
@@ -1094,7 +1208,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global
 	file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[6].OneofWrappers = []interface{}{
 		(*GlobalServiceSpec_BackingServiceList_BackingService_KubeService)(nil),
 	}
-	file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[10].OneofWrappers = []interface{}{
+	file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_msgTypes[11].OneofWrappers = []interface{}{
 		(*GlobalServiceStatus_SelectedTrafficTarget_BackingService_KubeService)(nil),
 	}
 	type x struct{}
@@ -1103,7 +1217,7 @@ func file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_global_service_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

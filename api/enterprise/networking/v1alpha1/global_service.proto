@@ -11,12 +11,10 @@ import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
 /*
-    A GlobalService creates a new hostname to which services can send requests.
-    Requests will be routed based on a list of backing traffic targets ordered by
-    decreasing priority. When outlier detection detects that a traffic target in the list is
-    in an unhealthy state, requests sent to the GlobalService will be routed
-    to the next healthy traffic target in the list. For each traffic target referenced in the
-    GlobalService's BackingServices list, outlier detection must be configured using a TrafficPolicy.
+    A GlobalService creates a new hostname to which client workloads can send requests.
+    Requests will be routed based on either a list of backing traffic targets ordered by
+    priority, or a list of locality directives. Each traffic target backing the
+    GlobalService must be configured with outlier detection using a traffic policy.
 
     Currently this feature only supports Services backed by Istio.
 */
@@ -38,9 +36,12 @@ message GlobalServiceSpec {
     MeshList mesh_list = 4;
   }
 
+  // Configuration that determines failover behavior. Failover is based either on a list of services specified
+  // in priority order, or on the localities of the traffic source and destination.
   oneof failover_config {
+    // List of backing services in priority order.
     BackingServiceList static = 5;
-    // Locality Failover configuration.
+    // Locality failover configuration.
     LocalityConfig localized = 6;
   }
 
@@ -48,18 +49,21 @@ message GlobalServiceSpec {
   message Port {
     // Port number.
     uint32 number = 1;
-    // Protocol of the requests sent to the GlobalService, must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS.
+    // Protocol of the requests sent to the GlobalService. Must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS.
     string protocol = 2;
   }
 
+  // A list of mesh references.
   message MeshList {
     repeated .core.skv2.solo.io.ObjectRef meshes = 1;
   }
 
+  // Enables failover based on a list of services. When outlier detection detects that a traffic target in the list
+  // is in an unhealthy state, requests sent to the GlobalService will be routed to the next healthy traffic target
+  // in the list.
   message BackingServiceList {
     // The list of services backing the GlobalService, ordered by decreasing priority.
-    // All services must be backed by either the same service mesh instance or
-    // backed by service meshes that are grouped under a common VirtualMesh.
+    // All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
     repeated BackingService services = 1;
 
     // A service represented by a TrafficTarget
@@ -72,17 +76,35 @@ message GlobalServiceSpec {
     }
   }
 
+  // Enables failover based on locality. When a client workload makes a request to the GlobalService, Gloo Mesh will
+  // first try to direct traffic to the service instance geographically closest to the client workload. If outlier
+  // detection detects that the closest traffic target is in an unhealthy state, requests will instead be routed
+  // to a service instance in one of the localities specified in the `to` field. Currently, each locality in the
+  // `to` field will be routed to with equal probability if the local instance is unhealthy.
   message LocalityConfig {
-    // Selectors for the services backing the GlobalService. The selected services are considered
-    // equivalent, and Gloo Mesh will route to the optimal service instance based on the locality
-    // failover configuration.
+    // Selectors for the services backing the GlobalService.
+    // All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
     repeated .networking.mesh.gloo.solo.io.TrafficTargetSelector service_selectors = 1;
 
-    repeated Locality localities = 2;
+    // Directives describing the locality failover behavior.
+    repeated LocalityFailoverDirective failover_directives = 2;
 
+    message LocalityFailoverDirective {
+      // The locality of a client workload.
+      Locality from = 1;
+      // The list of traffic target localities that can be routed to if the instance local to the client workload
+      // is not available.
+      repeated Locality to = 2;
+    }
+
+    // A geographic location defined by a region, zone, and sub-zone.
     message Locality {
-      string from = 1;
-      repeated string to = 2;
+      // The locality's region.
+      string region = 1;
+      // The locality's zone. Currently this value is not used.
+      string zone = 2;
+      // The locality's sub-zone. Currently this value is not used.
+      string sub_zone = 3;
     }
   }
 }
