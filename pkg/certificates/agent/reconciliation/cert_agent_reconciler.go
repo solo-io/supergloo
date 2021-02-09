@@ -261,13 +261,14 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			}
 
 			// try to bounce the pods and see if we need to wait
-			waitingForReplacements, err := r.bouncePods(podBounceDirective, inputPods, inputConfigMaps, inputSecrets)
+			waitForConditions, err := r.bouncePods(podBounceDirective, inputPods, inputConfigMaps, inputSecrets)
 			if err != nil {
 				return eris.Wrap(err, "bouncing pods")
 			}
 
-			if waitingForReplacements {
-				// return here without updating the status of the issued Certificate; we want to retry bouncing the pods when replacement pods have been created
+			if waitForConditions {
+				// return here without updating the status of the issued Certificate; we want to retry bouncing the pods
+				// when replacements are live and data plane certs are distributed
 				return nil
 			}
 		}
@@ -283,8 +284,9 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 
 // bounce (delete) the listed pods
 // returns true if we need to wait before proceeding to process the podBounceDirective.
-// we might wait if we need the istiod control plane to come back online or if we need to ensure
-// that the root cert has been propagated to all namespaces for consumption by the data plane.
+// we must wait for the following conditions:
+// 1. istiod control plane has come back online after it has been restarted
+// 2. istio's root cert has been propagated to all istio-controlled namespaces for consumption by the data plane.
 // this will cause the reconcile to end early and persist the IssuedCertificate in the Issued state
 func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceDirective, allPods corev1sets.PodSet, allConfigMaps corev1sets.ConfigMapSet, allSecrets corev1sets.SecretSet) (bool, error) {
 
