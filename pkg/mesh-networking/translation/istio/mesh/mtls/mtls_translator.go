@@ -8,7 +8,6 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	"github.com/solo-io/gloo-mesh/pkg/common/version"
-	"istio.io/istio/pilot/pkg/serviceregistry/kube/controller"
 
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
@@ -45,7 +44,9 @@ const (
 	// https://istio.io/latest/docs/tasks/security/cert-management/plugin-ca-cert/
 	istioCaSecretName = "cacerts"
 	// name of the istio root CA configmap distributed to all namespaces
-	istioCaConfigMapName = controller.CACertNamespaceConfigMap
+	// copied from https://github.com/istio/istio/blob/88a2bfb/pilot/pkg/serviceregistry/kube/controller/namespacecontroller.go#L39
+	// not imported due to issues with dependeny imports
+	istioCaConfigMapName = "istio-ca-root-cert"
 )
 
 var (
