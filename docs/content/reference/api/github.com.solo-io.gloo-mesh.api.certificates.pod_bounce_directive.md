@@ -57,7 +57,6 @@ Pods that will be restarted.
 | namespace | string |  | The namespace in which the pods live. |
   | labels | [][certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.pod_bounce_directive#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry" >}}) | repeated | Any labels shared by the pods. |
   | waitForReplicas | uint32 |  | Wait for this number of replacement pods to reach be fully Ready before deleting the next set of selected pods. This is used to ensure the control plane pods are allowed to restart before sidecars and gateways are restarted. |
-  | waitForCertUpdate | bool |  | Whether to wait for the namespace's istio-ca-root-cert configmap to align with the mesh's new root cert. This is used to ensure that the Istio control plane has propagated new certs before restarting data plane pods. |
   | rootCertSync | [certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.RootCertSync]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.pod_bounce_directive#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.RootCertSync" >}}) |  | Wait for the control plane to have synced all root cert configmaps in data plane namespaces before bouncing these pods. |
   
 
