@@ -22,6 +22,7 @@ import (
 	kubernetes_core "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	observabilityv1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -74,6 +75,7 @@ type KubeContext struct {
 	VirtualMeshClient     networkingv1alpha2.VirtualMeshClient
 	DestinationRuleClient istionetworkingv1alpha3.DestinationRuleClient
 	VirtualServiceClient  istionetworkingv1alpha3.VirtualServiceClient
+	AccessLogRecordClient observabilityv1alpha1.AccessLogRecordClient
 }
 
 // If kubecontext is empty string, use current context.
@@ -94,6 +96,9 @@ func NewKubeContext(kubecontext string) KubeContext {
 	networkingClientset, err := networkingv1alpha2.NewClientsetFromConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
+	observabilityClientset, err := observabilityv1alpha1.NewClientsetFromConfig(restcfg)
+	Expect(err).NotTo(HaveOccurred())
+
 	discoveryClientset, err := discoveryv1alpha2.NewClientsetFromConfig(restcfg)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -111,6 +116,7 @@ func NewKubeContext(kubecontext string) KubeContext {
 		SecretClient:          kubeCoreClientset.Secrets(),
 		DestinationRuleClient: istioNetworkingClientset.DestinationRules(),
 		VirtualServiceClient:  istioNetworkingClientset.VirtualServices(),
+		AccessLogRecordClient: observabilityClientset.AccessLogRecords(),
 	}
 }
 
