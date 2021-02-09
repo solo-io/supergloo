@@ -6,6 +6,7 @@ import (
 	"time"
 
 	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
+	"modernc.org/strutil"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
@@ -282,15 +283,18 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 }
 
 // bounce (delete) the listed pods
-// returns true if we need to wait for replacement pods before proceeding to process the podBounceDirective.
+// returns true if we need to wait before proceeding to process the podBounceDirective.
+// we might wait if we need the istiod control plane to come back online or if we need to ensure
+// that the root cert has been propagated to all namespaces for consumption by the data plane.
 // this will cause the reconcile to end early and persist the IssuedCertificate in the Issued state
-func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceDirective, allPods corev1sets.PodSet, allConfigMaps corev1sets.ConfigMapSet, istioCaSecret *corev1.Secret) (bool, error) {
+func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceDirective, allPods corev1sets.PodSet, allConfigMaps corev1sets.ConfigMapSet, allSecrets corev1sets.SecretSet) (bool, error) {
 
 	// create a client here to call for deletions
 	podClient := corev1client.NewPodClient(r.localClient)
 
 	var errs error
 
+	// TODO joekelley do we need this?
 	// collect the pods we want to delete in the order they're specified in the directive
 	// it is important Istiod is restarted before any of the other pods
 	for i, selector := range podBounceDirective.Spec.PodsToBounce {
@@ -316,9 +320,33 @@ func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceD
 			continue
 		}
 
-		//if selector.WaitForCertUpdate {
-		//	//r.
-		//}
+		if selector.RootCertSync != nil {
+			configMap, err := allConfigMaps.Find(selector.RootCertSync.ConfigMapRef)
+			if err != nil {
+				// ConfigMap isn't found; let's wait for it to be added by Istio
+				return true, err
+			}
+
+			secret, err := allSecrets.Find(selector.RootCertSync.SecretRef)
+			if err != nil {
+				// TODO joekelley this shouldn't happen
+				return true, err
+			}
+
+			secretValue, err := strutil.Base64Decode(secret.Data[selector.RootCertSync.SecretKey])
+			if err != nil {
+				// TODO joekelley, idk
+				return true, err
+			}
+
+			if configMap.Data[selector.RootCertSync.ConfigMapKey] != string(secretValue) {
+				// the configmap's public key doesn't match the root cert CA's
+				// sleep to allow time for the cert to be distributed and retry
+				time.Sleep(time.Second)
+
+				return true, nil
+			}
+		}
 
 		podsToDelete := allPods.List(func(pod *corev1.Pod) bool {
 			return !isPodSelected(pod, selector)

@@ -36,14 +36,9 @@ message PodBounceDirectiveSpec {
         // before sidecars and gateways are restarted.
         uint32 wait_for_replicas = 3;
 
-        // Whether to wait for the namespace's istio-ca-root-cert configmap to align with the mesh's new root cert.
-        // This is used to ensure that the Istio control plane has propagated new certs before restarting
-        // data plane pods.
-        bool wait_for_cert_update = 4;
-
         // Wait for the control plane to have synced all root cert configmaps in data plane namespaces before
         // bouncing these pods.
-        RootCertSync root_cert_sync = 5;
+        RootCertSync root_cert_sync = 4;
 
         // RootCertSync describes values in a secret and configmap which must be equal in order for a pod to be bounced.
         message RootCertSync {

@@ -381,7 +381,18 @@ func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha
 		podsToBounce = append(podsToBounce, &certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector{
 			Namespace: istioInstall.Namespace,
 			Labels:    gateway.WorkloadLabels,
-			//WaitForCertUpdate: true,
+			RootCertSync: &certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector_RootCertSync{
+				SecretRef: &v1.ObjectRef{
+					Name:      istioCaSecretName,
+					Namespace: istioInstall.Namespace,
+				},
+				SecretKey: "root-cert.pem",
+				ConfigMapRef: &v1.ObjectRef{
+					Name:      "istio-ca-root-cert",
+					Namespace: istioInstall.Namespace,
+				},
+				ConfigMapKey: "root-cert.pem",
+			},
 		})
 	}
 
@@ -393,7 +404,18 @@ func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha
 			podsToBounce = append(podsToBounce, &certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector{
 				Namespace: kubeWorkload.Controller.GetNamespace(),
 				Labels:    kubeWorkload.PodLabels,
-				//WaitForCertUpdate: true,
+				RootCertSync: &certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector_RootCertSync{
+					SecretRef: &v1.ObjectRef{
+						Name:      istioCaSecretName,
+						Namespace: kubeWorkload.Controller.GetNamespace(),
+					},
+					SecretKey: "root-cert.pem",
+					ConfigMapRef: &v1.ObjectRef{
+						Name:      "istio-ca-root-cert",
+						Namespace: kubeWorkload.Controller.GetNamespace(),
+					},
+					ConfigMapKey: "root-cert.pem",
+				},
 			})
 		}
 
