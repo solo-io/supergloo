@@ -85,6 +85,7 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 			issuedCertificate,
 			inputSnap.Secrets(),
 			inputSnap.Pods(),
+			inputSnap.ConfigMaps(),
 			inputSnap.CertificateRequests(),
 			inputSnap.PodBounceDirectives(),
 			outputs,
@@ -116,6 +117,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 	issuedCertificate *v1alpha2.IssuedCertificate,
 	inputSecrets corev1sets.SecretSet,
 	inputPods corev1sets.PodSet,
+	inputConfigMaps corev1sets.ConfigMapSet,
 	inputCertificateRequests v1alpha2sets.CertificateRequestSet,
 	podBounceDirectives v1alpha2sets.PodBounceDirectiveSet,
 	outputs certagent.Builder,
@@ -259,7 +261,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			}
 
 			// try to bounce the pods and see if we need to wait
-			waitingForReplacements, err := r.bouncePods(podBounceDirective, inputPods)
+			waitingForReplacements, err := r.bouncePods(podBounceDirective, inputPods, inputConfigMaps, nil)
 			if err != nil {
 				return eris.Wrap(err, "bouncing pods")
 			}
@@ -282,7 +284,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 // bounce (delete) the listed pods
 // returns true if we need to wait for replacement pods before proceeding to process the podBounceDirective.
 // this will cause the reconcile to end early and persist the IssuedCertificate in the Issued state
-func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceDirective, allPods corev1sets.PodSet) (bool, error) {
+func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceDirective, allPods corev1sets.PodSet, allConfigMaps corev1sets.ConfigMapSet, istioCaSecret *corev1.Secret) (bool, error) {
 
 	// create a client here to call for deletions
 	podClient := corev1client.NewPodClient(r.localClient)
@@ -313,6 +315,10 @@ func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceD
 			// skip deletion, these pods were already bounced
 			continue
 		}
+
+		//if selector.WaitForCertUpdate {
+		//	//r.
+		//}
 
 		podsToDelete := allPods.List(func(pod *corev1.Pod) bool {
 			return !isPodSelected(pod, selector)

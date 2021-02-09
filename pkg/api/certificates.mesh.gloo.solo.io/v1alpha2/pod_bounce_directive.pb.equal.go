@@ -147,6 +147,72 @@ func (m *PodBounceDirectiveSpec_PodSelector) Equal(that interface{}) bool {
 		return false
 	}
 
+	if m.GetWaitForCertUpdate() != target.GetWaitForCertUpdate() {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetRootCertSync()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetRootCertSync()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetRootCertSync(), target.GetRootCertSync()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
+func (m *PodBounceDirectiveSpec_PodSelector_RootCertSync) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*PodBounceDirectiveSpec_PodSelector_RootCertSync)
+	if !ok {
+		that2, ok := that.(PodBounceDirectiveSpec_PodSelector_RootCertSync)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetSecretRef()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetSecretRef()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetSecretRef(), target.GetSecretRef()) {
+			return false
+		}
+	}
+
+	if strings.Compare(m.GetSecretKey(), target.GetSecretKey()) != 0 {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetConfigMapRef()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetConfigMapRef()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetConfigMapRef(), target.GetConfigMapRef()) {
+			return false
+		}
+	}
+
+	if strings.Compare(m.GetConfigMapKey(), target.GetConfigMapKey()) != 0 {
+		return false
+	}
+
 	return true
 }
 
