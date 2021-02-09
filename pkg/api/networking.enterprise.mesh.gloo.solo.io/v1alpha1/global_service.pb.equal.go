@@ -374,17 +374,17 @@ func (m *GlobalServiceSpec_LocalityConfig) Equal(that interface{}) bool {
 
 	}
 
-	if len(m.GetLocalities()) != len(target.GetLocalities()) {
+	if len(m.GetFailoverDirectives()) != len(target.GetFailoverDirectives()) {
 		return false
 	}
-	for idx, v := range m.GetLocalities() {
+	for idx, v := range m.GetFailoverDirectives() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetLocalities()[idx]) {
+			if !h.Equal(target.GetFailoverDirectives()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetLocalities()[idx]) {
+			if !proto.Equal(v, target.GetFailoverDirectives()[idx]) {
 				return false
 			}
 		}
@@ -443,6 +443,57 @@ func (m *GlobalServiceSpec_BackingServiceList_BackingService) Equal(that interfa
 }
 
 // Equal function
+func (m *GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective)
+	if !ok {
+		that2, ok := that.(GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if h, ok := interface{}(m.GetFrom()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetFrom()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetFrom(), target.GetFrom()) {
+			return false
+		}
+	}
+
+	if len(m.GetTo()) != len(target.GetTo()) {
+		return false
+	}
+	for idx, v := range m.GetTo() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetTo()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetTo()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
 func (m *GlobalServiceSpec_LocalityConfig_Locality) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -463,19 +514,16 @@ func (m *GlobalServiceSpec_LocalityConfig_Locality) Equal(that interface{}) bool
 		return false
 	}
 
-	if strings.Compare(m.GetFrom(), target.GetFrom()) != 0 {
+	if strings.Compare(m.GetRegion(), target.GetRegion()) != 0 {
 		return false
 	}
 
-	if len(m.GetTo()) != len(target.GetTo()) {
+	if strings.Compare(m.GetZone(), target.GetZone()) != 0 {
 		return false
 	}
-	for idx, v := range m.GetTo() {
 
-		if strings.Compare(v, target.GetTo()[idx]) != 0 {
-			return false
-		}
-
+	if strings.Compare(m.GetSubZone(), target.GetSubZone()) != 0 {
+		return false
 	}
 
 	return true

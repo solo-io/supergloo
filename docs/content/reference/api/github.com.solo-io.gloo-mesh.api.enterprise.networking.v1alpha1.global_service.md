@@ -23,6 +23,7 @@ title: "global_service.proto"
   - [GlobalServiceSpec.BackingServiceList.BackingService](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService)
   - [GlobalServiceSpec.LocalityConfig](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig)
   - [GlobalServiceSpec.LocalityConfig.Locality](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality)
+  - [GlobalServiceSpec.LocalityConfig.LocalityFailoverDirective](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.LocalityFailoverDirective)
   - [GlobalServiceSpec.MeshList](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.MeshList)
   - [GlobalServiceSpec.Port](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.Port)
   - [GlobalServiceStatus](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus)
@@ -39,7 +40,7 @@ title: "global_service.proto"
 <a name="networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec"></a>
 
 ### GlobalServiceSpec
-A GlobalService creates a new hostname to which services can send requests. Requests will be routed based on a list of backing traffic targets ordered by decreasing priority. When outlier detection detects that a traffic target in the list is in an unhealthy state, requests sent to the GlobalService will be routed to the next healthy traffic target in the list. For each traffic target referenced in the GlobalService's BackingServices list, outlier detection must be configured using a TrafficPolicy.<br>Currently this feature only supports Services backed by Istio.
+A GlobalService creates a new hostname to which client workloads can send requests. Requests will be routed based on either a list of backing traffic targets ordered by priority, or a list of locality directives. Each traffic target backing the GlobalService must be configured with outlier detection using a traffic policy.<br>Currently this feature only supports Services backed by Istio.
 
 
 | Field | Type | Label | Description |
@@ -48,8 +49,8 @@ A GlobalService creates a new hostname to which services can send requests. Requ
   | port | [networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.Port]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.Port" >}}) |  | The port on which the GlobalService listens. |
   | virtualMesh | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The VirtualMesh that this GlobalService will be visible to. |
   | meshList | [networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.MeshList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.MeshList" >}}) |  | The meshes that this GlobalService will be visible to. If multiple meshes are specified, they must all belong to the same VirtualMesh. |
-  | static | [networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList" >}}) |  |  |
-  | localized | [networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig" >}}) |  | Locality Failover configuration. |
+  | static | [networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList" >}}) |  | List of backing services in priority order. |
+  | localized | [networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig" >}}) |  | Locality failover configuration. |
   
 
 
@@ -59,12 +60,12 @@ A GlobalService creates a new hostname to which services can send requests. Requ
 <a name="networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList"></a>
 
 ### GlobalServiceSpec.BackingServiceList
-
+Enables failover based on a list of services. When outlier detection detects that a traffic target in the list is in an unhealthy state, requests sent to the GlobalService will be routed to the next healthy traffic target in the list.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| services | [][networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService" >}}) | repeated | The list of services backing the GlobalService, ordered by decreasing priority. All services must be backed by either the same service mesh instance or backed by service meshes that are grouped under a common VirtualMesh. |
+| services | [][networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService" >}}) | repeated | The list of services backing the GlobalService, ordered by decreasing priority. All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh. |
   
 
 
@@ -89,13 +90,13 @@ A service represented by a TrafficTarget
 <a name="networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig"></a>
 
 ### GlobalServiceSpec.LocalityConfig
-
+Enables failover based on locality. When a client workload makes a request to the GlobalService, Gloo Mesh will first try to direct traffic to the service instance geographically closest to the client workload. If outlier detection detects that the closest traffic target is in an unhealthy state, requests will instead be routed to a service instance in one of the localities specified in the `to` field. Currently, each locality in the `to` field will be routed to with equal probability if the local instance is unhealthy.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| serviceSelectors | [][networking.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | Selectors for the services backing the GlobalService. The selected services are considered equivalent, and Gloo Mesh will route to the optimal service instance based on the locality failover configuration. |
-  | localities | [][networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality" >}}) | repeated |  |
+| serviceSelectors | [][networking.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | Selectors for the services backing the GlobalService. All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh. |
+  | failoverDirectives | [][networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.LocalityFailoverDirective]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.LocalityFailoverDirective" >}}) | repeated | Directives describing the locality failover behavior. |
   
 
 
@@ -105,13 +106,30 @@ A service represented by a TrafficTarget
 <a name="networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality"></a>
 
 ### GlobalServiceSpec.LocalityConfig.Locality
+A geographic location defined by a region, zone, and sub-zone.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| region | string |  | The locality's region. |
+  | zone | string |  | The locality's zone. Currently this value is not used. |
+  | subZone | string |  | The locality's sub-zone. Currently this value is not used. |
+  
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.LocalityFailoverDirective"></a>
+
+### GlobalServiceSpec.LocalityConfig.LocalityFailoverDirective
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| from | string |  |  |
-  | to | []string | repeated |  |
+| from | [networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality" >}}) |  | The locality of a client workload. |
+  | to | [][networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality" >}}) | repeated | The list of traffic target localities that can be routed to if the instance local to the client workload is not available. |
   
 
 
@@ -121,7 +139,7 @@ A service represented by a TrafficTarget
 <a name="networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.MeshList"></a>
 
 ### GlobalServiceSpec.MeshList
-
+A list of mesh references.
 
 
 | Field | Type | Label | Description |
@@ -142,7 +160,7 @@ The port on which the GlobalService listens.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | number | uint32 |  | Port number. |
-  | protocol | string |  | Protocol of the requests sent to the GlobalService, must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS. |
+  | protocol | string |  | Protocol of the requests sent to the GlobalService. Must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS. |
   
 
 
