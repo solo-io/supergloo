@@ -621,8 +621,8 @@ function install_gloomesh() {
 function get_mgmt_server_ip_address() {
   cluster=$1
 
-  # set to local host if cluster is mgmt-cluster
-  accessLogSinkAddress="localhost"
+  # set to service if cluster is mgmt-cluster
+  accessLogSinkAddress="enterprise-networking.gloo-mesh"
   if [[ ${cluster} != ${mgmtCluster} ]]; then
     # use the node IP of the mgmt cluster if cluster is remote
     accessLogSinkAddress=$(kubectl --context kind-${mgmtCluster} get node -ojson | jq -r ".items[0].status.addresses[0].address")
