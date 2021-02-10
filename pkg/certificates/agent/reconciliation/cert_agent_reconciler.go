@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
-
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	corev1client "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
@@ -24,8 +22,10 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/reconcile"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -85,6 +85,7 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 			issuedCertificate,
 			inputSnap.Secrets(),
 			inputSnap.Pods(),
+			inputSnap.ConfigMaps(),
 			inputSnap.CertificateRequests(),
 			inputSnap.PodBounceDirectives(),
 			outputs,
@@ -116,6 +117,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 	issuedCertificate *v1alpha2.IssuedCertificate,
 	inputSecrets corev1sets.SecretSet,
 	inputPods corev1sets.PodSet,
+	inputConfigMaps corev1sets.ConfigMapSet,
 	inputCertificateRequests v1alpha2sets.CertificateRequestSet,
 	podBounceDirectives v1alpha2sets.PodBounceDirectiveSet,
 	outputs certagent.Builder,
@@ -259,13 +261,14 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			}
 
 			// try to bounce the pods and see if we need to wait
-			waitingForReplacements, err := r.bouncePods(podBounceDirective, inputPods)
+			waitForConditions, err := r.bouncePods(podBounceDirective, inputPods, inputConfigMaps, inputSecrets)
 			if err != nil {
 				return eris.Wrap(err, "bouncing pods")
 			}
 
-			if waitingForReplacements {
-				// return here without updating the status of the issued Certificate; we want to retry bouncing the pods when replacement pods have been created
+			if waitForConditions {
+				// return here without updating the status of the issued Certificate; we want to retry bouncing the pods
+				// when replacements are live and data plane certs are distributed
 				return nil
 			}
 		}
@@ -280,9 +283,12 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 }
 
 // bounce (delete) the listed pods
-// returns true if we need to wait for replacement pods before proceeding to process the podBounceDirective.
+// returns true if we need to wait before proceeding to process the podBounceDirective.
+// we must wait for the following conditions:
+// 1. istiod control plane has come back online after it has been restarted
+// 2. istio's root cert has been propagated to all istio-controlled namespaces for consumption by the data plane.
 // this will cause the reconcile to end early and persist the IssuedCertificate in the Issued state
-func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceDirective, allPods corev1sets.PodSet) (bool, error) {
+func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceDirective, allPods corev1sets.PodSet, allConfigMaps corev1sets.ConfigMapSet, allSecrets corev1sets.SecretSet) (bool, error) {
 
 	// create a client here to call for deletions
 	podClient := corev1client.NewPodClient(r.localClient)
@@ -312,6 +318,35 @@ func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceD
 
 			// skip deletion, these pods were already bounced
 			continue
+		}
+
+		if selector.RootCertSync != nil {
+			configMap, err := allConfigMaps.Find(selector.RootCertSync.ConfigMapRef)
+			if err != nil && errors.IsNotFound(err) {
+				// ConfigMap isn't found; let's wait for it to be added by Istio
+				contextutils.LoggerFrom(r.ctx).Debugf("podBounceDirective %v: waiting for %v configmap creation for selector %v", sets.Key(podBounceDirective), selector.RootCertSync.ConfigMapRef.Name, selector)
+
+				time.Sleep(time.Second)
+
+				return true, nil
+			} else if err != nil {
+				return true, err
+			}
+
+			secret, err := allSecrets.Find(selector.RootCertSync.SecretRef)
+			if err != nil {
+				return true, err
+			}
+
+			if configMap.Data[selector.RootCertSync.ConfigMapKey] != string(secret.Data[selector.RootCertSync.SecretKey]) {
+				// the configmap's public key doesn't match the root cert CA's
+				// sleep to allow time for the cert to be distributed and retry
+				contextutils.LoggerFrom(r.ctx).Debugf("podBounceDirective %v: waiting for %v configmap update for selector %v", sets.Key(podBounceDirective), selector.RootCertSync.ConfigMapRef.Name, selector)
+
+				time.Sleep(time.Second)
+
+				return true, nil
+			}
 		}
 
 		podsToDelete := allPods.List(func(pod *corev1.Pod) bool {
