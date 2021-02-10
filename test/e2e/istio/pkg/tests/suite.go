@@ -40,22 +40,24 @@ func SetupClustersAndFederation(customDeployFuc func()) {
 		customDeployFuc()
 	}
 
-	var err error
-	dynamicClient, err = client.New(GetEnv().Management.Config, client.Options{})
+	dynamicClient, err := client.New(GetEnv().Management.Config, client.Options{})
 	Expect(err).NotTo(HaveOccurred())
 
-	federateClusters(dynamicClient)
+	FederateClusters(dynamicClient, false)
 }
 
-func federateClusters(dynamicClient client.Client) {
+// exported for use in enterprise
+func FederateClusters(dynamicClient client.Client, flatNetwork bool) {
 	VirtualMesh, err = data.SelfSignedVirtualMesh(
 		dynamicClient,
 		"bookinfo-federation",
 		BookinfoNamespace,
 		[]*v1.ObjectRef{
-			masterMesh,
-			remoteMesh,
-		})
+			MgmtMesh,
+			RemoteMesh,
+		},
+		flatNetwork,
+	)
 	Expect(err).NotTo(HaveOccurred())
 
 	err = VirtualMeshManifest.AppendResources(VirtualMesh)
@@ -67,12 +69,12 @@ func federateClusters(dynamicClient client.Client) {
 	}, "60s", "1s").ShouldNot(HaveOccurred())
 
 	// ensure status is updated
-	utils.AssertVirtualMeshStatuses(dynamicClient, BookinfoNamespace)
+	utils.AssertVirtualMeshStatuses(context.Background(), GetEnv().Management.VirtualMeshClient, BookinfoNamespace)
 
 	// check we can hit the remote service
 	// give 5 minutes because the workflow depends on restarting pods
 	// which can take several minutes
-	Eventually(curlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec)), "5m", "2s").Should(ContainSubstring("200 OK"))
+	Eventually(CurlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec)), "5m", "2s").Should(ContainSubstring("200 OK"))
 }
 
 func TeardownFederationAndClusters() {
@@ -99,6 +101,7 @@ func InitializeTests() bool {
 		_ = Describe("Federation", FederationTest)
 		_ = Describe("Networking Extensions", NetworkingExtensionsTest)
 		_ = Describe("TrafficPolicy", TrafficPolicyTest)
+		_ = Describe("DiscoveryRegression", DiscoveryRegressionTest)
 	)
 	return true
 }

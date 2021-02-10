@@ -6,10 +6,6 @@ weight: 5
 
 Display the version of meshctl and installed Gloo Mesh components
 
-### Synopsis
-
-Display the version of meshctl and installed Gloo Mesh components
-
 ```
 meshctl version [flags]
 ```
@@ -20,6 +16,7 @@ meshctl version [flags]
   -h, --help                 help for version
       --kubeconfig string    path to the kubeconfig from which the management cluster will be accessed
       --kubecontext string   name of the kubeconfig context to use for the management cluster
+      --namespace string     namespace that glooo mesh components are deployed to (default "gloo-mesh")
 ```
 
 ### Options inherited from parent commands

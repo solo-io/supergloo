@@ -12,6 +12,7 @@
 // * VirtualMeshes
 // * FailoverServices
 // * WasmDeployments
+// * AccessLogRecords
 // * Secrets
 // * KubernetesClusters
 // read from a given cluster or set of clusters, across all namespaces.
@@ -54,6 +55,10 @@ import (
 	networking_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
 	networking_enterprise_mesh_gloo_solo_io_v1alpha1_types "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
 	networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
+
+	observability_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1"
+	observability_enterprise_mesh_gloo_solo_io_v1alpha1_types "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1"
+	observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
@@ -117,6 +122,12 @@ var LocalSnapshotGVKs = []schema.GroupVersionKind{
 	},
 
 	schema.GroupVersionKind{
+		Group:   "observability.enterprise.mesh.gloo.solo.io",
+		Version: "v1alpha1",
+		Kind:    "AccessLogRecord",
+	},
+
+	schema.GroupVersionKind{
 		Group:   "",
 		Version: "v1",
 		Kind:    "Secret",
@@ -153,6 +164,9 @@ type LocalSnapshot interface {
 
 	// return the set of input WasmDeployments
 	WasmDeployments() networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
+
+	// return the set of input AccessLogRecords
+	AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet
 
 	// return the set of input Secrets
 	Secrets() v1_sets.SecretSet
@@ -194,6 +208,9 @@ type LocalSyncStatusOptions struct {
 	// sync status of WasmDeployment objects
 	WasmDeployment bool
 
+	// sync status of AccessLogRecord objects
+	AccessLogRecord bool
+
 	// sync status of Secret objects
 	Secret bool
 
@@ -217,6 +234,8 @@ type snapshotLocal struct {
 
 	wasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
 
+	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet
+
 	secrets v1_sets.SecretSet
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet
@@ -238,6 +257,8 @@ func NewLocalSnapshot(
 
 	wasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet,
 
+	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet,
+
 	secrets v1_sets.SecretSet,
 
 	kubernetesClusters multicluster_solo_io_v1alpha1_sets.KubernetesClusterSet,
@@ -255,6 +276,7 @@ func NewLocalSnapshot(
 		virtualMeshes:      virtualMeshes,
 		failoverServices:   failoverServices,
 		wasmDeployments:    wasmDeployments,
+		accessLogRecords:   accessLogRecords,
 		secrets:            secrets,
 		kubernetesClusters: kubernetesClusters,
 	}
@@ -277,6 +299,8 @@ func NewLocalSnapshotFromGeneric(
 	failoverServiceSet := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
 	wasmDeploymentSet := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
+
+	accessLogRecordSet := observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet()
 
 	secretSet := v1_sets.NewSecretSet()
 
@@ -369,6 +393,16 @@ func NewLocalSnapshotFromGeneric(
 			wasmDeploymentSet.Insert(wasmDeployment.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1_types.WasmDeployment))
 		}
 
+		accessLogRecords := snapshot[schema.GroupVersionKind{
+			Group:   "observability.enterprise.mesh.gloo.solo.io",
+			Version: "v1alpha1",
+			Kind:    "AccessLogRecord",
+		}]
+
+		for _, accessLogRecord := range accessLogRecords {
+			accessLogRecordSet.Insert(accessLogRecord.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1_types.AccessLogRecord))
+		}
+
 		secrets := snapshot[schema.GroupVersionKind{
 			Group:   "",
 			Version: "v1",
@@ -401,6 +435,7 @@ func NewLocalSnapshotFromGeneric(
 		virtualMeshSet,
 		failoverServiceSet,
 		wasmDeploymentSet,
+		accessLogRecordSet,
 		secretSet,
 		kubernetesClusterSet,
 	)
@@ -440,6 +475,10 @@ func (s snapshotLocal) FailoverServices() networking_mesh_gloo_solo_io_v1alpha2_
 
 func (s snapshotLocal) WasmDeployments() networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet {
 	return s.wasmDeployments
+}
+
+func (s snapshotLocal) AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet {
+	return s.accessLogRecords
 }
 
 func (s snapshotLocal) Secrets() v1_sets.SecretSet {
@@ -565,6 +604,19 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 		}
 	}
 
+	if opts.AccessLogRecord {
+		for _, obj := range s.AccessLogRecords().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
 	if opts.KubernetesCluster {
 		for _, obj := range s.KubernetesClusters().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
@@ -650,6 +702,14 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 		}
 	}
 
+	if opts.AccessLogRecord {
+		for _, obj := range s.AccessLogRecords().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+
 	if opts.KubernetesCluster {
 		for _, obj := range s.KubernetesClusters().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
@@ -672,6 +732,7 @@ func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 	snapshotMap["virtualMeshes"] = s.virtualMeshes.List()
 	snapshotMap["failoverServices"] = s.failoverServices.List()
 	snapshotMap["wasmDeployments"] = s.wasmDeployments.List()
+	snapshotMap["accessLogRecords"] = s.accessLogRecords.List()
 	snapshotMap["secrets"] = s.secrets.List()
 	snapshotMap["kubernetesClusters"] = s.kubernetesClusters.List()
 	return json.Marshal(snapshotMap)
@@ -706,6 +767,9 @@ type LocalBuildOptions struct {
 
 	// List options for composing a snapshot from WasmDeployments
 	WasmDeployments ResourceLocalBuildOptions
+
+	// List options for composing a snapshot from AccessLogRecords
+	AccessLogRecords ResourceLocalBuildOptions
 
 	// List options for composing a snapshot from Secrets
 	Secrets ResourceLocalBuildOptions
@@ -756,6 +820,8 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
 
+	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet()
+
 	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
@@ -791,6 +857,9 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		if err := b.insertWasmDeploymentsFromCluster(ctx, cluster, wasmDeployments, opts.WasmDeployments); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertAccessLogRecordsFromCluster(ctx, cluster, accessLogRecords, opts.AccessLogRecords); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -812,6 +881,7 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		virtualMeshes,
 		failoverServices,
 		wasmDeployments,
+		accessLogRecords,
 		secrets,
 		kubernetesClusters,
 	)
@@ -1201,6 +1271,49 @@ func (b *multiClusterLocalBuilder) insertWasmDeploymentsFromCluster(ctx context.
 	return nil
 }
 
+func (b *multiClusterLocalBuilder) insertAccessLogRecordsFromCluster(ctx context.Context, cluster string, accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet, opts ResourceLocalBuildOptions) error {
+	accessLogRecordClient, err := observability_enterprise_mesh_gloo_solo_io_v1alpha1.NewMulticlusterAccessLogRecordClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "observability.enterprise.mesh.gloo.solo.io",
+			Version: "v1alpha1",
+			Kind:    "AccessLogRecord",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	accessLogRecordList, err := accessLogRecordClient.ListAccessLogRecord(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range accessLogRecordList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		accessLogRecords.Insert(&item)
+	}
+
+	return nil
+}
+
 func (b *multiClusterLocalBuilder) insertSecretsFromCluster(ctx context.Context, cluster string, secrets v1_sets.SecretSet, opts ResourceLocalBuildOptions) error {
 	secretClient, err := v1.NewMulticlusterSecretClient(b.client).Cluster(cluster)
 	if err != nil {
@@ -1327,6 +1440,8 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
 
+	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet()
+
 	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
@@ -1360,6 +1475,9 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	if err := b.insertWasmDeployments(ctx, wasmDeployments, opts.WasmDeployments); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertAccessLogRecords(ctx, accessLogRecords, opts.AccessLogRecords); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertSecrets(ctx, secrets, opts.Secrets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -1379,6 +1497,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 		virtualMeshes,
 		failoverServices,
 		wasmDeployments,
+		accessLogRecords,
 		secrets,
 		kubernetesClusters,
 	)
@@ -1687,6 +1806,40 @@ func (b *singleClusterLocalBuilder) insertWasmDeployments(ctx context.Context, w
 	return nil
 }
 
+func (b *singleClusterLocalBuilder) insertAccessLogRecords(ctx context.Context, accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "observability.enterprise.mesh.gloo.solo.io",
+			Version: "v1alpha1",
+			Kind:    "AccessLogRecord",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	accessLogRecordList, err := observability_enterprise_mesh_gloo_solo_io_v1alpha1.NewAccessLogRecordClient(b.mgr.GetClient()).ListAccessLogRecord(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range accessLogRecordList.Items {
+		item := item // pike
+		item.ClusterName = b.clusterName
+		accessLogRecords.Insert(&item)
+	}
+
+	return nil
+}
+
 func (b *singleClusterLocalBuilder) insertSecrets(ctx context.Context, secrets v1_sets.SecretSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
@@ -1788,6 +1941,8 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
 
+	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet()
+
 	secrets := v1_sets.NewSecretSet()
 
 	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
@@ -1821,6 +1976,9 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		// insert WasmDeployments
 		case *networking_enterprise_mesh_gloo_solo_io_v1alpha1_types.WasmDeployment:
 			wasmDeployments.Insert(obj)
+		// insert AccessLogRecords
+		case *observability_enterprise_mesh_gloo_solo_io_v1alpha1_types.AccessLogRecord:
+			accessLogRecords.Insert(obj)
 		// insert Secrets
 		case *v1_types.Secret:
 			secrets.Insert(obj)
@@ -1842,6 +2000,7 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		virtualMeshes,
 		failoverServices,
 		wasmDeployments,
+		accessLogRecords,
 		secrets,
 		kubernetesClusters,
 	), nil

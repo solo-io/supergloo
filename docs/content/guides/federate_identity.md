@@ -94,7 +94,7 @@ You should notice that the root certificates that signed the workload certificat
 
 ## Creating a Virtual Mesh
 
-Gloo Mesh uses the [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}) Custom Resource to configure a Virtual Mesh, which is a logical grouping of one or multiple service meshes for the purposes of federation according to some parameters. Let's take a look at a VirtualMesh configuration that can help unify our two service meshes and establish a *shared trust* model for identity:
+Gloo Mesh uses the [Virtual Mesh]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/" %}}) Custom Resource to configure a Virtual Mesh, which is a logical grouping of one or multiple service meshes for the purposes of federation according to some parameters. Let's take a look at a VirtualMesh configuration that can help unify our two service meshes and establish a *shared trust* model for identity:
 
 {{< highlight yaml "hl_lines=8-15 17-21" >}}
 apiVersion: networking.mesh.gloo.solo.io/v1alpha2
@@ -199,7 +199,7 @@ Creating this resource will instruct Service Mesh to establish a shared root ide
 
 When we create the VirtualMesh CR, set the trust model to `shared`, and configure the Root CA parameters, Gloo Mesh will kick off the process to unify the identity to a shared root. First, Gloo Mesh will either create the Root CA specified (if `generated` is used) or use the supplied CA information. 
 
-Then Gloo Mesh will use a Certificate Request (CR) agent on each of the affected clusters to create a new key/cert pair that will form an intermediate CA used by the mesh on that cluster. It will then create a Certificate Request, represented by the [CertificateRequest]({{% versioned_link_path fromRoot="/reference/api/certificate_request/" %}}) CR.
+Then Gloo Mesh will use a Certificate Request (CR) agent on each of the affected clusters to create a new key/cert pair that will form an intermediate CA used by the mesh on that cluster. It will then create a Certificate Request, represented by the [CertificateRequest]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.certificate_request/" %}}) CR.
 
  Gloo Mesh will sign the certificate with the Root CA specified in the VirtualMesh. At that point, we will want the mesh (Istio in this case) to pick up the new intermediate CA and start using that for its workloads.
 

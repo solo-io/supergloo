@@ -45,8 +45,8 @@ func FederationTest() {
 			trafficShiftReviewsV3 := data.RemoteTrafficShiftPolicy("bookinfo-policy", BookinfoNamespace, &v1.ClusterObjectRef{
 				Name:        "reviews",
 				Namespace:   BookinfoNamespace,
-				ClusterName: mgmtClusterName,
-			}, remoteClusterName, map[string]string{"version": "v3"}, 9080)
+				ClusterName: MgmtClusterName,
+			}, RemoteClusterName, map[string]string{"version": "v3"}, 9080)
 
 			err = manifest.AppendResources(trafficShiftReviewsV3)
 			Expect(err).NotTo(HaveOccurred())
@@ -54,10 +54,10 @@ func FederationTest() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// ensure status is updated
-			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
+			utils.AssertTrafficPolicyStatuses(ctx, e2e.GetEnv().Management.TrafficPolicyClient, BookinfoNamespace)
 
 			// check we can eventually hit the v3 subset
-			Eventually(curlReviews, "30s", "1s").Should(ContainSubstring(`"color": "red"`))
+			Eventually(CurlReviews, "30s", "1s").Should(ContainSubstring(`"color": "red"`))
 		})
 	})
 
@@ -84,7 +84,7 @@ func FederationTest() {
 								{
 									Name:        "reviews",
 									Namespace:   BookinfoNamespace,
-									ClusterName: remoteClusterName,
+									ClusterName: RemoteClusterName,
 								},
 							},
 						},
@@ -106,9 +106,9 @@ func FederationTest() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// ensure status is updated
-			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
+			utils.AssertTrafficPolicyStatuses(ctx, e2e.GetEnv().Management.TrafficPolicyClient, BookinfoNamespace)
 
-			Eventually(curlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec)), "30s", "1s").Should(ContainSubstring("418"))
+			Eventually(CurlRemoteReviews(hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec)), "30s", "1s").Should(ContainSubstring("418"))
 
 			// Delete TrafficPolicy so it doesn't interfere with subsequent tests
 			manifest.KubeDelete(BookinfoNamespace)
@@ -136,7 +136,7 @@ func FederationTest() {
 								{
 									Name:        "reviews",
 									Namespace:   BookinfoNamespace,
-									ClusterName: remoteClusterName,
+									ClusterName: RemoteClusterName,
 								},
 							},
 						},
@@ -146,7 +146,7 @@ func FederationTest() {
 							KubeService: &v1.ClusterObjectRef{
 								Name:        "reviews",
 								Namespace:   BookinfoNamespace,
-								ClusterName: mgmtClusterName,
+								ClusterName: MgmtClusterName,
 							},
 						},
 						Percentage: 50,
@@ -159,7 +159,7 @@ func FederationTest() {
 									KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
 										Name:        "reviews",
 										Namespace:   BookinfoNamespace,
-										ClusterName: mgmtClusterName,
+										ClusterName: MgmtClusterName,
 									},
 								},
 								Weight: 50,
@@ -175,7 +175,7 @@ func FederationTest() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// ensure status is updated
-			utils.AssertTrafficPolicyStatuses(dynamicClient, BookinfoNamespace)
+			utils.AssertTrafficPolicyStatuses(ctx, e2e.GetEnv().Management.TrafficPolicyClient, BookinfoNamespace)
 
 			var getFederatedVirtualService = func() (*istionetworkingv1alpha3.VirtualService, error) {
 				env := e2e.GetEnv()
@@ -184,11 +184,11 @@ func FederationTest() {
 					&metav1.ObjectMeta{
 						Name:        "reviews",
 						Namespace:   BookinfoNamespace,
-						ClusterName: remoteClusterName,
+						ClusterName: RemoteClusterName,
 					},
 					&discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: "istio-system",
-						Cluster:   mgmtClusterName,
+						Cluster:   MgmtClusterName,
 					},
 					nil,
 				)

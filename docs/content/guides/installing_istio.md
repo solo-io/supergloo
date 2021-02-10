@@ -15,8 +15,8 @@ Gloo Mesh Enterprise users may be interested in [installing Gloo Mesh Istio]({{%
 {{% /notice %}}
 
 {{% notice note %}}
-Istio 1.8.0 has a [known issue](https://github.com/istio/istio/issues/28620) where sidecar proxies may fail to start
-under specific circumstances. This bug may surface in sidecars configured by Failover Services.
+Istio versions 1.8.0, 1.8.1, and 1.8.2 have a [known issue](https://github.com/istio/istio/issues/28620) where sidecar proxies may fail to start
+under specific circumstances. This bug may surface in sidecars configured by Failover Services. This issue is resolved in Istio 1.8.3.
 {{% /notice %}}
 
 In this guide we will walk you through two options for installing Istio for use with Gloo Mesh in a single cluster and multi-cluster setting. The instructions here are for reference only, and your installation process for Istio will likely be different depending on your organization's policies and procedures.
@@ -100,13 +100,13 @@ spec:
             nodePort: 32001
             port: 15443
     global:
-      pilotCertProvider: kubernetes
+      pilotCertProvider: istiod
       controlPlaneSecurityEnabled: true
       podDNSSearchNamespaces:
       - global
 EOF
 {{< /tab >}}
-{{< tab name="Istio 1.8" codelang="shell" >}}
+{{< tab name="Istio 1.8 and Istio 1.9" codelang="shell" >}}
 cat << EOF | istioctl manifest install -y --context $MGMT_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
@@ -116,6 +116,7 @@ metadata:
 spec:
   profile: minimal
   meshConfig:
+    enableAutoMtls: true
     defaultConfig:
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts
@@ -143,11 +144,9 @@ spec:
               targetPort: 15443
               name: tls
               nodePort: 32001
-  meshConfig:
-    enableAutoMtls: true
   values:
     global:
-      pilotCertProvider: kubernetes
+      pilotCertProvider: istiod
 EOF
 {{< /tab >}}
 {{< /tabs >}}
@@ -202,13 +201,13 @@ spec:
             nodePort: 32000
             port: 15443
     global:
-      pilotCertProvider: kubernetes
+      pilotCertProvider: istiod
       controlPlaneSecurityEnabled: true
       podDNSSearchNamespaces:
       - global
 EOF
 {{< /tab >}}
-{{< tab name="Istio 1.8" codelang="shell" >}}
+{{< tab name="Istio 1.8 and Istio 1.9" codelang="shell" >}}
 cat << EOF | istioctl manifest install -y --context $REMOTE_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
@@ -218,6 +217,7 @@ metadata:
 spec:
   profile: minimal
   meshConfig:
+    enableAutoMtls: true
     defaultConfig:
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts
@@ -245,11 +245,9 @@ spec:
               targetPort: 15443
               name: tls
               nodePort: 32000
-  meshConfig:
-    enableAutoMtls: true
   values:
     global:
-      pilotCertProvider: kubernetes
+      pilotCertProvider: istiod
 EOF
 {{< /tab >}}
 {{< /tabs >}}

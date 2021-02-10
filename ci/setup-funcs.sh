@@ -15,18 +15,38 @@ function create_kind_cluster() {
 
   cluster=$1
   port=$2
+  # Set the network suffix based on the ingress port.
+  # The ingress port params are either 32000, or 32001, so this will either be 1 or 2.
+  # This number will the be used to construct the subnet.
+  # For example: 10.96.${net}.0/24
+  # This value will be used to cordon off, and later join the different pod subnets of the multiple clusters.
+  ((net=$port%32000+1))
 
   echo "creating cluster ${cluster} with ingress port ${port}"
 
   K="kubectl --context=kind-${cluster}"
 
+  # When running multi cluster kind with flat-networking, kind must be configured with a custom CNI.
+  # https://kind.sigs.k8s.io/docs/user/configuration/#disable-default-cni
+  # This allows us to use our own CNI, namely calico.
+  disableDefaultCNI=false
+  if [ ! -z ${FLAT_NETWORKING_ENABLED} ]; then
+    disableDefaultCNI=true
+  fi
+
   # This config is roughly based on: https://kind.sigs.k8s.io/docs/user/ingress/
   cat <<EOF | kind create cluster --name "${cluster}" --image $kindImage --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  serviceSubnet: "10.96.${net}.0/24"
+  podSubnet: "192.168.${net}.0/24"
+  disableDefaultCNI: ${disableDefaultCNI}
 nodes:
 - role: control-plane
   extraPortMappings:
+  - containerPort: 6443
+    hostPort: ${net}000
   - containerPort: ${port}
     hostPort: ${port}
     protocol: TCP
@@ -66,14 +86,229 @@ kubeadmConfigPatches:
       "feature-gates": "EphemeralContainers=true"
 EOF
 
+
   # NOTE: we delete the local-path-storage ns to free up CPU for ci
   ${K} delete ns local-path-storage
+
+  # Only setup kind clusters with flat networking if ENV var is set
+  if [ ! -z ${FLAT_NETWORKING_ENABLED} ]; then
+    # Apply calico networking CNI
+    ${K} apply -f https://docs.projectcalico.org/v3.15/manifests/calico.yaml
+    ${K} -n kube-system set env daemonset/calico-node FELIX_IGNORELOOSERPF=true
+
+    # Ensure calico node is ready before installing istio
+    ${K} -n kube-system rollout status daemonset/calico-node --timeout=300s
+
+    # Install metallb to each cluster. This is a bit of a "hack" to enable LoadBalancers in kind so that
+    # the 2 clusters can directly communicate with each other.
+    # For more info on metallb see: https://metallb.org/
+    ${K} apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/namespace.yaml
+    ${K} apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/metallb.yaml
+    # Setup required memberlist config, see: https://github.com/hashicorp/memberlist
+    ${K} -n metallb-system create secret generic memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+
+
+    if hostname -i; then
+      myip=$(hostname -i)
+    else
+      myip=$(ipconfig getifaddr en0)
+    fi
+    ipkind=$(docker inspect ${cluster}-control-plane | jq -r '.[0].NetworkSettings.Networks[].IPAddress')
+    networkkind=$(echo ${ipkind} | sed 's/.$//')
+
+    # Create the metallb address pool based on the cluster subnet
+    cat << EOF | ${K} apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: metallb-system
+  name: config
+data:
+  config: |
+    address-pools:
+    - name: default
+      protocol: layer2
+      addresses:
+      - ${networkkind}2${net}0-${networkkind}2${net}9
+EOF
+
+  fi
+
+}
+
+function setup_flat_networking() {
+  mgmt_cluster=$1
+  mgmt_port=$2
+  remote_cluster=$3
+  remote_port=$4
+  K_mgmt="kubectl --context=kind-${mgmt_cluster}"
+  K_remote="kubectl --context=kind-${remote_cluster}"
+
+  # Retrieve the subnets as defined by the setup_kind_cluster func above
+  ((mgmt_net=$mgmt_port%32000+1))
+  ((remote_net=$remote_port%32000+1))
+
+  mgmt_cluster_ip=$(docker inspect ${mgmt_cluster}-control-plane | jq -r '.[0].NetworkSettings.Networks.kind.IPAddress')
+  remote_cluster_ip=$(docker inspect ${remote_cluster}-control-plane | jq -r '.[0].NetworkSettings.Networks.kind.IPAddress')
+
+  tmp=$(mktemp -d /tmp/gloo_mesh.XXXXXX)
+
+  # Configuration for calico bird. More info can be found here: https://github.com/BIRD/bird
+  # Example config can be found here: https://github.com/BIRD/bird/blob/master/doc/bird.conf.example
+  # Bird functions as the network "bridge" between the 2 local kind clusters, allowing the pods to communicate directly
+  # with each other
+  cat << EOF > ${tmp}/bird.conf
+log syslog { debug, trace, info, remote, warning, error, auth, fatal, bug };
+log stderr all;
+router id 172.18.0.100;
+filter import_kernel {
+  if ( net != 0.0.0.0/0 ) then {
+  accept;
+  }
+reject;
+}
+debug protocols all;
+protocol device {
+  scan time 2;
+}
+protocol bgp mgmt_cluster_ip {
+  description "${mgmt_cluster_ip}";
+  local as 64513;
+  neighbor ${mgmt_cluster_ip} port 31179 as 64513;
+  multihop;
+  rr client;
+  graceful restart;
+  import all;
+  export all;
+}
+protocol bgp remote_cluster_ip {
+  description "${remote_cluster_ip}";
+  local as 64514;
+  neighbor ${remote_cluster_ip} port 32179 as 64514;
+  multihop;
+  rr client;
+  graceful restart;
+  import all;
+  export all;
+}
+EOF
+  docker run --rm -d --name bird -p 179:179 -v ${tmp}/bird.conf:/etc/bird/bird.conf --entrypoint='' --network=kind pierky/bird bird -c /etc/bird/bird.conf -d
+  bird=$(docker inspect bird | jq -r '.[0].NetworkSettings.Networks.kind.IPAddress')
+
+  # The following 4 steps are done on both the management, and remote clusters to enable direct communication.
+  # In order to accomplish this they setup the routing protocol between them known as BGP, so that they are "discoverable"
+  # 1. A port is added to the calico-node
+  # 2. A BGP peer is added, which is the "discoverable" network node: https://docs.projectcalico.org/reference/resources/bgppeer
+  # 3. A BGP configuration is created with the available IPs for the cidr: https://docs.projectcalico.org/reference/resources/bgpconfig
+  # 4. An IPPool is added for the other clusters pod cidr: https://docs.projectcalico.org/reference/resources/ippool
+  ${K_mgmt}  -n kube-system patch ds calico-node --type=json -p='[{"op": "add", "path": "/spec/template/spec/containers/0/ports", "value": [{"containerPort": 179}]}]'
+  ${K_mgmt} apply -f - <<EOF
+apiVersion: v1
+kind: Service
+metadata:
+  name: bgp
+  namespace: kube-system
+spec:
+  selector:
+    k8s-app: calico-node
+  ports:
+    - port: 179
+      targetPort: 179
+      nodePort: 31179
+  type: NodePort
+EOF
+  # calicoctl doesn't support kube context as a param, so need to manually switch the context before using it.
+  kubectl config use-context kind-${mgmt_cluster}
+  # calicoctl needs to exist before using
+  calicoctl apply -f - <<EOF
+kind: BGPPeer
+apiVersion: projectcalico.org/v3
+metadata:
+  name: peer-to-rrs
+spec:
+  peerIP: ${bird}
+  asNumber: 64513
+EOF
+
+  calicoctl apply -f - <<EOF
+ apiVersion: projectcalico.org/v3
+ kind: BGPConfiguration
+ metadata:
+   name: default
+ spec:
+   asNumber: 64513
+   nodeToNodeMeshEnabled: true
+   serviceClusterIPs:
+   - cidr: 10.96.${mgmt_net}.0/24
+EOF
+
+  cat << EOF | calicoctl apply -f -
+apiVersion: projectcalico.org/v3
+kind: IPPool
+metadata:
+  name: remote-cluster-ip-pool
+spec:
+  cidr: 10.96.${remote_net}.0/24
+  disabled: true
+EOF
+
+  ${K_remote} -n kube-system patch ds calico-node --type=json -p='[{"op": "add", "path": "/spec/template/spec/containers/0/ports", "value": [{"containerPort": 179}]}]'
+  ${K_remote} apply -f - <<EOF
+apiVersion: v1
+kind: Service
+metadata:
+  name: bgp
+  namespace: kube-system
+spec:
+  selector:
+    k8s-app: calico-node
+  ports:
+    - port: 179
+      targetPort: 179
+      nodePort: 32179
+  type: NodePort
+EOF
+  kubectl config use-context kind-${remote_cluster}
+  calicoctl apply -f - <<EOF
+kind: BGPPeer
+apiVersion: projectcalico.org/v3
+metadata:
+  name: peer-to-rrs
+spec:
+  peerIP: ${bird}
+  asNumber: 64514
+EOF
+#  calicoctl delete BGPConfiguration default
+  calicoctl apply -f - <<EOF
+ apiVersion: projectcalico.org/v3
+ kind: BGPConfiguration
+ metadata:
+   name: default
+ spec:
+   asNumber: 64514
+   nodeToNodeMeshEnabled: true
+   serviceClusterIPs:
+   - cidr: 10.96.${remote_net}.0/24
+EOF
+  cat << EOF | calicoctl create -f -
+apiVersion: projectcalico.org/v3
+kind: IPPool
+metadata:
+  name: mgmt-cluster-ip-pool
+spec:
+  cidr: 10.96.${mgmt_net}.0/24
+  disabled: true
+EOF
+
+
 }
 
 # Operator spec for istio 1.7.x
 function install_istio_1_7() {
   cluster=$1
   port=$2
+  mgmtClusterAddress=$3
+  enterpriseNetworkingGrpcPort=$4
   K="kubectl --context=kind-${cluster}"
 
   echo "installing istio to ${cluster}..."
@@ -85,6 +320,7 @@ metadata:
   name: example-istiooperator
   namespace: istio-system
 spec:
+  hub: gcr.io/istio-release
   profile: minimal
   addonComponents:
     istiocoredns:
@@ -112,6 +348,12 @@ spec:
               nodePort: ${port}
   meshConfig:
     enableAutoMtls: true
+    defaultConfig:
+      envoyAccessLogService:
+        address: ${mgmtClusterAddress}:${enterpriseNetworkingGrpcPort}
+      proxyMetadata:
+        # annotate Gloo Mesh cluster name for envoy requests (i.e. access logs, metrics)
+        GLOO_MESH_CLUSTER_NAME: ${cluster}
   values:
     prometheus:
       enabled: false
@@ -124,7 +366,7 @@ spec:
             nodePort: ${port}
             port: 15443
     global:
-      pilotCertProvider: kubernetes
+      pilotCertProvider: istiod
       controlPlaneSecurityEnabled: true
       podDNSSearchNamespaces:
       - global
@@ -135,6 +377,8 @@ EOF
 function install_istio_1_8() {
   cluster=$1
   port=$2
+  mgmtClusterAddress=$3
+  enterpriseNetworkingGrpcPort=$4
   K="kubectl --context=kind-${cluster}"
 
   echo "installing istio to ${cluster}..."
@@ -146,13 +390,19 @@ metadata:
   name: example-istiooperator
   namespace: istio-system
 spec:
+  hub: gcr.io/istio-release
   profile: preview
   meshConfig:
+    enableAutoMtls: true
     defaultConfig:
+      envoyAccessLogService:
+        address: ${mgmtClusterAddress}:${enterpriseNetworkingGrpcPort}
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts
         # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
         ISTIO_META_DNS_CAPTURE: "true"
+        # annotate Gloo Mesh cluster name for envoy requests (i.e. access logs, metrics)
+        GLOO_MESH_CLUSTER_NAME: ${cluster}
   components:
     # Istio Gateway feature
     ingressGateways:
@@ -175,11 +425,67 @@ spec:
               targetPort: 15443
               name: tls
               nodePort: ${port}
-  meshConfig:
-    enableAutoMtls: true
   values:
     global:
-      pilotCertProvider: kubernetes
+      pilotCertProvider: istiod
+EOF
+}
+
+# Operator spec for istio 1.9.x
+function install_istio_1_9() {
+  cluster=$1
+  port=$2
+  mgmtClusterAddress=$3
+  enterpriseNetworkingGrpcPort=$4
+  K="kubectl --context=kind-${cluster}"
+
+  echo "installing istio to ${cluster}..."
+
+  cat << EOF | istioctl manifest install -y --context "kind-${cluster}" -f -
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: example-istiooperator
+  namespace: istio-system
+spec:
+  hub: gcr.io/istio-release
+  profile: preview
+  meshConfig:
+    enableAutoMtls: true
+    defaultConfig:
+      envoyAccessLogService:
+        address: ${mgmtClusterAddress}:${enterpriseNetworkingGrpcPort}
+      proxyMetadata:
+        # Enable Istio agent to handle DNS requests for known hosts
+        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
+        ISTIO_META_DNS_CAPTURE: "true"
+        # annotate Gloo Mesh cluster name for envoy requests (i.e. access logs, metrics)
+        GLOO_MESH_CLUSTER_NAME: ${cluster}
+  components:
+    # Istio Gateway feature
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        env:
+          - name: ISTIO_META_ROUTER_MODE
+            value: "sni-dnat"
+        service:
+          type: NodePort
+          ports:
+            - port: 80
+              targetPort: 8080
+              name: http2
+            - port: 443
+              targetPort: 8443
+              name: https
+            - port: 15443
+              targetPort: 15443
+              name: tls
+              nodePort: ${port}
+  values:
+    global:
+      pilotCertProvider: istiod
 EOF
 }
 
@@ -228,13 +534,19 @@ function install_istio() {
   port=$2
   K="kubectl --context=kind-${cluster}"
 
+  mgmtClusterAddress=$(get_mgmt_server_ip_address ${cluster})
+  enterpriseNetworkingGrpcPort=$(get_enterprise_networking_grpc_port ${cluster})
+
   if istioctl version | grep -E -- '1.7'
   then
-    install_istio_1_7 $cluster $port
+    install_istio_1_7 $cluster $port $mgmtClusterAddress $enterpriseNetworkingGrpcPort
     install_istio_coredns $cluster $port
   elif istioctl version | grep -E -- '1.8'
   then
-    install_istio_1_8 $cluster $port
+    install_istio_1_8 $cluster $port $mgmtClusterAddress $enterpriseNetworkingGrpcPort
+  elif istioctl version | grep -E -- '1.9'
+  then
+    install_istio_1_9 $cluster $port $mgmtClusterAddress $enterpriseNetworkingGrpcPort
   else
     echo "Encountered unsupported version of Istio: $(istioctl version)"
     exit 1
@@ -357,6 +669,32 @@ function install_gloomesh() {
   if [ ! -z ${POST_INSTALL_SCRIPT} ]; then
     bash -x ${POST_INSTALL_SCRIPT}
   fi
+}
+
+# determine the IP address for the management cluster from the perspective of the specified cluster
+function get_mgmt_server_ip_address() {
+  cluster=$1
+
+  # set to service if cluster is mgmt-cluster
+  accessLogSinkAddress="enterprise-networking.gloo-mesh"
+  if [[ ${cluster} != ${mgmtCluster} ]]; then
+    # if remote cluster, use the node IP of the mgmt cluster
+    accessLogSinkAddress=$(kubectl --context kind-${mgmtCluster} get node -ojson | jq -r ".items[0].status.addresses[0].address")
+  fi
+  echo ${accessLogSinkAddress}
+}
+
+# determine the port of the enterprise-networking gRPC server from the perspective of the specified clsuter
+function get_enterprise_networking_grpc_port() {
+  cluster=$1
+
+  # assumes that enterprise-networking grpc port defaults to 9900
+  grpcPort=9900
+  if [[ ${cluster} != ${mgmtCluster} ]]; then
+    # if remote cluster, use the http2 ingress port of the mgmt cluster
+    grpcPort=$(kubectl --context kind-${mgmtCluster} -n istio-system get svc istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+  fi
+  echo ${grpcPort}
 }
 
 #### START SCRIPT

@@ -2,8 +2,9 @@ package istio
 
 import (
 	"context"
-	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"strings"
+
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"

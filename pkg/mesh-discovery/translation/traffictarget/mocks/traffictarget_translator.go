@@ -5,6 +5,7 @@
 package mock_traffictarget
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -36,15 +37,15 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // TranslateTrafficTargets mocks base method
-func (m *MockTranslator) TranslateTrafficTargets(services v1sets.ServiceSet, workloads v1alpha2sets.WorkloadSet, meshes v1alpha2sets.MeshSet) v1alpha2sets.TrafficTargetSet {
+func (m *MockTranslator) TranslateTrafficTargets(ctx context.Context, services v1sets.ServiceSet, workloads v1alpha2sets.WorkloadSet, meshes v1alpha2sets.MeshSet, endpoints v1sets.EndpointsSet) v1alpha2sets.TrafficTargetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranslateTrafficTargets", services, workloads, meshes)
+	ret := m.ctrl.Call(m, "TranslateTrafficTargets", ctx, services, workloads, meshes, endpoints)
 	ret0, _ := ret[0].(v1alpha2sets.TrafficTargetSet)
 	return ret0
 }
 
 // TranslateTrafficTargets indicates an expected call of TranslateTrafficTargets
-func (mr *MockTranslatorMockRecorder) TranslateTrafficTargets(services, workloads, meshes interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) TranslateTrafficTargets(ctx, services, workloads, meshes, endpoints interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateTrafficTargets", reflect.TypeOf((*MockTranslator)(nil).TranslateTrafficTargets), services, workloads, meshes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateTrafficTargets", reflect.TypeOf((*MockTranslator)(nil).TranslateTrafficTargets), ctx, services, workloads, meshes, endpoints)
 }

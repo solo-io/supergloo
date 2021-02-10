@@ -6,10 +6,6 @@ weight: 5
 
 Register a Kubernetes cluster with Gloo Mesh
 
-### Synopsis
-
-Register a Kubernetes cluster with Gloo Mesh
-
 ```
 meshctl cluster register [flags]
 ```

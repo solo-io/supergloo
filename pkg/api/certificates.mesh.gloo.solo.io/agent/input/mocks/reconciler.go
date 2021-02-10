@@ -96,6 +96,21 @@ func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileSecret(clusterName, o
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSecret", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileSecret), clusterName, obj)
 }
 
+// ReconcileConfigMap mocks base method
+func (m *MockmultiClusterReconciler) ReconcileConfigMap(clusterName string, obj *v1.ConfigMap) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileConfigMap", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileConfigMap indicates an expected call of ReconcileConfigMap
+func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileConfigMap(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileConfigMap", reflect.TypeOf((*MockmultiClusterReconciler)(nil).ReconcileConfigMap), clusterName, obj)
+}
+
 // ReconcilePod mocks base method
 func (m *MockmultiClusterReconciler) ReconcilePod(clusterName string, obj *v1.Pod) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
@@ -192,6 +207,21 @@ func (m *MocksingleClusterReconciler) ReconcileSecret(obj *v1.Secret) (reconcile
 func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileSecret(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSecret", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileSecret), obj)
+}
+
+// ReconcileConfigMap mocks base method
+func (m *MocksingleClusterReconciler) ReconcileConfigMap(obj *v1.ConfigMap) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileConfigMap", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileConfigMap indicates an expected call of ReconcileConfigMap
+func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileConfigMap(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileConfigMap", reflect.TypeOf((*MocksingleClusterReconciler)(nil).ReconcileConfigMap), obj)
 }
 
 // ReconcilePod mocks base method

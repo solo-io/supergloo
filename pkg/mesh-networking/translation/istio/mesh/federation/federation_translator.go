@@ -113,7 +113,7 @@ func (t *translator) Translate(
 	// Currently, we just default to using the first one in the list.
 	ingressGateway := istioMesh.IngressGateways[0]
 
-	trafficTargets := servicesForMesh(mesh, in.TrafficTargets())
+	trafficTargets := ServicesForMesh(mesh, in.TrafficTargets())
 
 	if len(trafficTargets) == 0 {
 		contextutils.LoggerFrom(t.ctx).Debugf("no services found in istio mesh %v", sets.Key(mesh))
@@ -172,7 +172,7 @@ func (t *translator) Translate(
 		for _, port := range trafficTarget.Spec.GetKubeService().GetPorts() {
 			ports = append(ports, &networkingv1alpha3spec.Port{
 				Number:   port.Port,
-				Protocol: convertKubePortProtocol(port),
+				Protocol: ConvertKubePortProtocol(port),
 				Name:     port.Name,
 			})
 			endpointPorts[port.Name] = ingressGateway.ExternalTlsPort
@@ -253,7 +253,13 @@ func (t *translator) Translate(
 			outputs.AddDestinationRules(dr)
 
 			// Update AppliedFederation data on TrafficTarget's status
-			updateTrafficTargetFederationStatus(trafficTarget, federatedHostname, ezkube.MakeObjectRef(groupedMesh), virtualMesh.Spec.Meshes)
+			updateTrafficTargetFederationStatus(
+				trafficTarget,
+				federatedHostname,
+				ezkube.MakeObjectRef(groupedMesh),
+				virtualMesh.Spec.Meshes,
+				virtualMesh.Spec.GetFederation().GetFlatNetwork(),
+			)
 		}
 	}
 
@@ -329,6 +335,7 @@ func updateTrafficTargetFederationStatus(
 	federatedHostname string,
 	mesh *v1.ObjectRef,
 	groupedMeshes []*v1.ObjectRef,
+	flatNetwork bool,
 ) {
 	var federatedToMeshes []*v1.ObjectRef
 
@@ -343,10 +350,13 @@ func updateTrafficTargetFederationStatus(
 	trafficTarget.Status.AppliedFederation = &discoveryv1alpha2.TrafficTargetStatus_AppliedFederation{
 		FederatedHostname: federatedHostname,
 		FederatedToMeshes: federatedToMeshes,
+		FlatNetwork:       flatNetwork,
 	}
 }
 
-func servicesForMesh(
+// ServicesForMesh returns all TrafficTargets which belong to a given mesh
+// exported for use in enterprise
+func ServicesForMesh(
 	mesh *discoveryv1alpha2.Mesh,
 	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 ) []*discoveryv1alpha2.TrafficTarget {
@@ -415,8 +425,9 @@ func buildTcpRewritePatchAsConfig(clusterName, clusterDomain, federatedHostnameS
 	})
 }
 
-// Convert protocol of k8s Service port to application level protocol
-func convertKubePortProtocol(port *discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort) string {
+// ConvertKubePortProtocol converts protocol of k8s Service port to application level protocol
+// exported for use in enterprise
+func ConvertKubePortProtocol(port *discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort) string {
 	var appProtocol *string
 	if port.AppProtocol != "" {
 		appProtocol = pointer.StringPtr(port.AppProtocol)

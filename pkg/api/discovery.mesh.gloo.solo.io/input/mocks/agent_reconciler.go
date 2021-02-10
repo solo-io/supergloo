@@ -113,6 +113,21 @@ func (mr *MockmultiClusterAgentReconcilerMockRecorder) ReconcilePod(clusterName,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcilePod", reflect.TypeOf((*MockmultiClusterAgentReconciler)(nil).ReconcilePod), clusterName, obj)
 }
 
+// ReconcileEndpoints mocks base method
+func (m *MockmultiClusterAgentReconciler) ReconcileEndpoints(clusterName string, obj *v10.Endpoints) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileEndpoints", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileEndpoints indicates an expected call of ReconcileEndpoints
+func (mr *MockmultiClusterAgentReconcilerMockRecorder) ReconcileEndpoints(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileEndpoints", reflect.TypeOf((*MockmultiClusterAgentReconciler)(nil).ReconcileEndpoints), clusterName, obj)
+}
+
 // ReconcileNode mocks base method
 func (m *MockmultiClusterAgentReconciler) ReconcileNode(clusterName string, obj *v10.Node) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
@@ -284,6 +299,21 @@ func (m *MocksingleClusterAgentReconciler) ReconcilePod(obj *v10.Pod) (reconcile
 func (mr *MocksingleClusterAgentReconcilerMockRecorder) ReconcilePod(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcilePod", reflect.TypeOf((*MocksingleClusterAgentReconciler)(nil).ReconcilePod), obj)
+}
+
+// ReconcileEndpoints mocks base method
+func (m *MocksingleClusterAgentReconciler) ReconcileEndpoints(obj *v10.Endpoints) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileEndpoints", obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileEndpoints indicates an expected call of ReconcileEndpoints
+func (mr *MocksingleClusterAgentReconcilerMockRecorder) ReconcileEndpoints(obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileEndpoints", reflect.TypeOf((*MocksingleClusterAgentReconciler)(nil).ReconcileEndpoints), obj)
 }
 
 // ReconcileNode mocks base method
