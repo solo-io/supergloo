@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	"github.com/solo-io/gloo-mesh/pkg/common/version"
 
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
@@ -17,7 +18,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
 	"istio.io/istio/pkg/spiffe"
@@ -43,6 +43,10 @@ const (
 	// name of the istio root CA secret
 	// https://istio.io/latest/docs/tasks/security/cert-management/plugin-ca-cert/
 	istioCaSecretName = "cacerts"
+	// name of the istio root CA configmap distributed to all namespaces
+	// copied from https://github.com/istio/istio/blob/88a2bfb/pilot/pkg/serviceregistry/kube/controller/namespacecontroller.go#L39
+	// not imported due to issues with dependeny imports
+	istioCaConfigMapName = "istio-ca-root-cert"
 )
 
 var (
@@ -381,6 +385,18 @@ func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha
 		podsToBounce = append(podsToBounce, &certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector{
 			Namespace: istioInstall.Namespace,
 			Labels:    gateway.WorkloadLabels,
+			RootCertSync: &certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector_RootCertSync{
+				SecretRef: &v1.ObjectRef{
+					Name:      istioCaSecretName,
+					Namespace: istioInstall.Namespace,
+				},
+				SecretKey: secrets.RootCertID,
+				ConfigMapRef: &v1.ObjectRef{
+					Name:      istioCaConfigMapName,
+					Namespace: istioInstall.Namespace,
+				},
+				ConfigMapKey: secrets.RootCertID,
+			},
 		})
 	}
 
@@ -392,6 +408,18 @@ func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha
 			podsToBounce = append(podsToBounce, &certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector{
 				Namespace: kubeWorkload.Controller.GetNamespace(),
 				Labels:    kubeWorkload.PodLabels,
+				RootCertSync: &certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector_RootCertSync{
+					SecretRef: &v1.ObjectRef{
+						Name:      istioCaSecretName,
+						Namespace: istioInstall.Namespace,
+					},
+					SecretKey: secrets.RootCertID,
+					ConfigMapRef: &v1.ObjectRef{
+						Name:      istioCaConfigMapName,
+						Namespace: kubeWorkload.Controller.GetNamespace(),
+					},
+					ConfigMapKey: secrets.RootCertID,
+				},
 			})
 		}
 

@@ -15,8 +15,8 @@ Gloo Mesh Enterprise users may be interested in [installing Gloo Mesh Istio]({{%
 {{% /notice %}}
 
 {{% notice note %}}
-Istio 1.8.0 has a [known issue](https://github.com/istio/istio/issues/28620) where sidecar proxies may fail to start
-under specific circumstances. This bug may surface in sidecars configured by Failover Services.
+Istio versions 1.8.0, 1.8.1, and 1.8.2 have a [known issue](https://github.com/istio/istio/issues/28620) where sidecar proxies may fail to start
+under specific circumstances. This bug may surface in sidecars configured by Failover Services. This issue is resolved in Istio 1.8.3.
 {{% /notice %}}
 
 In this guide we will walk you through two options for installing Istio for use with Gloo Mesh in a single cluster and multi-cluster setting. The instructions here are for reference only, and your installation process for Istio will likely be different depending on your organization's policies and procedures.

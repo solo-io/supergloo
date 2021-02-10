@@ -21,6 +21,7 @@ title: "pod_bounce_directive.proto"
   - [PodBounceDirectiveSpec](#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec)
   - [PodBounceDirectiveSpec.PodSelector](#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector)
   - [PodBounceDirectiveSpec.PodSelector.LabelsEntry](#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry)
+  - [PodBounceDirectiveSpec.PodSelector.RootCertSync](#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.RootCertSync)
   - [PodBounceDirectiveStatus](#certificates.mesh.gloo.solo.io.PodBounceDirectiveStatus)
   - [PodBounceDirectiveStatus.BouncedPodSet](#certificates.mesh.gloo.solo.io.PodBounceDirectiveStatus.BouncedPodSet)
 
@@ -56,6 +57,7 @@ Pods that will be restarted.
 | namespace | string |  | The namespace in which the pods live. |
   | labels | [][certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.pod_bounce_directive#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry" >}}) | repeated | Any labels shared by the pods. |
   | waitForReplicas | uint32 |  | Wait for this number of replacement pods to reach be fully Ready before deleting the next set of selected pods. This is used to ensure the control plane pods are allowed to restart before sidecars and gateways are restarted. |
+  | rootCertSync | [certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.RootCertSync]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.pod_bounce_directive#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.RootCertSync" >}}) |  | Wait for the control plane to have synced all root cert configmaps in data plane namespaces before bouncing these pods. |
   
 
 
@@ -72,6 +74,24 @@ Pods that will be restarted.
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
   | value | string |  |  |
+  
+
+
+
+
+
+<a name="certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.RootCertSync"></a>
+
+### PodBounceDirectiveSpec.PodSelector.RootCertSync
+RootCertSync describes values in a secret and configmap which must be equal in order for a pod to be bounced.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| secretRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  |  |
+  | secretKey | string |  |  |
+  | configMapRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  |  |
+  | configMapKey | string |  |  |
   
 
 
