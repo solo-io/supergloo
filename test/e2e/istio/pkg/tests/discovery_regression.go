@@ -31,7 +31,7 @@ func DiscoveryRegressionTest() {
 		})
 
 		AfterEach(func() {
-			VirtualMesh.Spec.Federation.FlatNetwork = true
+			VirtualMesh.Spec.Federation.FlatNetwork = false
 			VirtualMeshManifest.CreateOrTruncate()
 			err := VirtualMeshManifest.AppendResources(VirtualMesh)
 			Expect(err).NotTo(HaveOccurred())
