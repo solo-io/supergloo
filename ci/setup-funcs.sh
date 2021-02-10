@@ -308,6 +308,7 @@ function install_istio_1_7() {
   cluster=$1
   port=$2
   mgmtClusterAddress=$3
+  enterpriseNetworkingGrpcPort=$4
   K="kubectl --context=kind-${cluster}"
 
   echo "installing istio to ${cluster}..."
@@ -349,7 +350,7 @@ spec:
     enableAutoMtls: true
     defaultConfig:
       envoyAccessLogService:
-        address: ${mgmtClusterAddress}:9900
+        address: ${mgmtClusterAddress}:${enterpriseNetworkingGrpcPort}
       proxyMetadata:
         # annotate Gloo Mesh cluster name for envoy requests (i.e. access logs, metrics)
         GLOO_MESH_CLUSTER_NAME: ${cluster}
@@ -377,6 +378,7 @@ function install_istio_1_8() {
   cluster=$1
   port=$2
   mgmtClusterAddress=$3
+  enterpriseNetworkingGrpcPort=$4
   K="kubectl --context=kind-${cluster}"
 
   echo "installing istio to ${cluster}..."
@@ -394,7 +396,7 @@ spec:
     enableAutoMtls: true
     defaultConfig:
       envoyAccessLogService:
-        address: ${mgmtClusterAddress}:9900
+        address: ${mgmtClusterAddress}:${enterpriseNetworkingGrpcPort}
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts
         # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
@@ -434,6 +436,7 @@ function install_istio_1_9() {
   cluster=$1
   port=$2
   mgmtClusterAddress=$3
+  enterpriseNetworkingGrpcPort=$4
   K="kubectl --context=kind-${cluster}"
 
   echo "installing istio to ${cluster}..."
@@ -451,7 +454,7 @@ spec:
     enableAutoMtls: true
     defaultConfig:
       envoyAccessLogService:
-        address: ${mgmtClusterAddress}:9900
+        address: ${mgmtClusterAddress}:${enterpriseNetworkingGrpcPort}
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts
         # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
@@ -532,17 +535,18 @@ function install_istio() {
   K="kubectl --context=kind-${cluster}"
 
   mgmtClusterAddress=$(get_mgmt_server_ip_address ${cluster})
+  enterpriseNetworkingGrpcPort=$(get_enterprise_networking_grpc_port ${cluster})
 
   if istioctl version | grep -E -- '1.7'
   then
-    install_istio_1_7 $cluster $port $mgmtClusterAddress
+    install_istio_1_7 $cluster $port $mgmtClusterAddress $enterpriseNetworkingGrpcPort
     install_istio_coredns $cluster $port
   elif istioctl version | grep -E -- '1.8'
   then
-    install_istio_1_8 $cluster $port $mgmtClusterAddress
+    install_istio_1_8 $cluster $port $mgmtClusterAddress $enterpriseNetworkingGrpcPort
   elif istioctl version | grep -E -- '1.9'
   then
-    install_istio_1_9 $cluster $port $mgmtClusterAddress
+    install_istio_1_9 $cluster $port $mgmtClusterAddress $enterpriseNetworkingGrpcPort
   else
     echo "Encountered unsupported version of Istio: $(istioctl version)"
     exit 1
@@ -684,10 +688,23 @@ function get_mgmt_server_ip_address() {
   # set to service if cluster is mgmt-cluster
   accessLogSinkAddress="enterprise-networking.gloo-mesh"
   if [[ ${cluster} != ${mgmtCluster} ]]; then
-    # use the node IP of the mgmt cluster if cluster is remote
+    # if remote cluster, use the node IP of the mgmt cluster
     accessLogSinkAddress=$(kubectl --context kind-${mgmtCluster} get node -ojson | jq -r ".items[0].status.addresses[0].address")
   fi
   echo ${accessLogSinkAddress}
+}
+
+# determine the port of the enterprise-networking gRPC server from the perspective of the specified clsuter
+function get_enterprise_networking_grpc_port() {
+  cluster=$1
+
+  # assumes that enterprise-networking grpc port defaults to 9900
+  grpcPort=9900
+  if [[ ${cluster} != ${mgmtCluster} ]]; then
+    # if remote cluster, use the http2 ingress port of the mgmt cluster
+    grpcPort=$(kubectl --context kind-${mgmtCluster} -n istio-system get svc istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+  fi
+  echo ${grpcPort}
 }
 
 #### START SCRIPT
