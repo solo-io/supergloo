@@ -94,7 +94,7 @@ kubectl --context kind-mgmt-cluster -n istio-system get configmap istio -oyaml
 
 Ensure that the following highlighted entries exist in the ConfigMap:
 
-{{< highlight yaml "hl_lines=5-6 8" >}}
+{{< highlight yaml "hl_lines=5-7" >}}
 data:
   mesh: |-
     defaultConfig:
@@ -136,6 +136,12 @@ addresses:
   - address: 172.18.0.4
   - address: mgmt-cluster-control-plane
 {{< /highlight >}}
+    
+Alternatively you can simply run:
+
+```shell
+kubectl --context kind-mgmt-cluster get node -o jsonpath='{.items[0].status.addresses[0].address}'
+```
 
 **Port**
 
