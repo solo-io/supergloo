@@ -36,19 +36,24 @@ spec:
             kubeService:
               description: Metadata about the kube-native traffic target backing this TrafficTarget.
               properties:
-                endpoints:
+                endpointSubsets:
                   description: |-
                     Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs.
                     This API mirrors the kubernetes Endpoints API.
                     https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
                   items:
                     properties:
-                      localityIpAddresses:
+                      endpoints:
                         items:
                           properties:
-                            ip:
-                              description: IP address of endpoint
+                            ipAddress:
+                              description: IP address
                               type: string
+                            labels:
+                              additionalProperties:
+                                type: string
+                              description: Labels which belong to this IP, these are taken from the backing workload instance.
+                              type: object
                             subLocality:
                               description: Each IP can potentially belong to a pod in a different zone/subzone, so need to enumerate that here.
                               properties:

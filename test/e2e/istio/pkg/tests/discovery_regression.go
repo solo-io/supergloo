@@ -31,7 +31,7 @@ func DiscoveryRegressionTest() {
 		})
 
 		AfterEach(func() {
-			VirtualMesh.Spec.Federation.FlatNetwork = true
+			VirtualMesh.Spec.Federation.FlatNetwork = false
 			VirtualMeshManifest.CreateOrTruncate()
 			err := VirtualMeshManifest.AppendResources(VirtualMesh)
 			Expect(err).NotTo(HaveOccurred())
@@ -51,7 +51,7 @@ func DiscoveryRegressionTest() {
 					mgmtTrafficTargets, err := trafficTargetMgmtClient.ListTrafficTarget(ctx)
 					Expect(err).NotTo(HaveOccurred())
 					for _, v := range mgmtTrafficTargets.Items {
-						if len(v.Spec.GetKubeService().GetEndpoints()) == 0 {
+						if len(v.Spec.GetKubeService().GetEndpointSubsets()) == 0 {
 							multiErr = multierror.Append(multiErr, eris.Errorf(
 								"%s has no endpoints",
 								sets.TypedKey(&v)),
