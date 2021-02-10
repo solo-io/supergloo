@@ -20,8 +20,9 @@ type InputSnapshotManualBuilder struct {
 	certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
 	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 
-	secrets v1_sets.SecretSet
-	pods    v1_sets.PodSet
+	secrets    v1_sets.SecretSet
+	configMaps v1_sets.ConfigMapSet
+	pods       v1_sets.PodSet
 }
 
 func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
@@ -32,8 +33,9 @@ func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 		certificateRequests: certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet(),
 		podBounceDirectives: certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet(),
 
-		secrets: v1_sets.NewSecretSet(),
-		pods:    v1_sets.NewPodSet(),
+		secrets:    v1_sets.NewSecretSet(),
+		configMaps: v1_sets.NewConfigMapSet(),
+		pods:       v1_sets.NewPodSet(),
 	}
 }
 
@@ -46,6 +48,7 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 		i.podBounceDirectives,
 
 		i.secrets,
+		i.configMaps,
 		i.pods,
 	)
 }
@@ -63,6 +66,10 @@ func (i *InputSnapshotManualBuilder) AddPodBounceDirectives(podBounceDirectives 
 }
 func (i *InputSnapshotManualBuilder) AddSecrets(secrets []*v1.Secret) *InputSnapshotManualBuilder {
 	i.secrets.Insert(secrets...)
+	return i
+}
+func (i *InputSnapshotManualBuilder) AddConfigMaps(configMaps []*v1.ConfigMap) *InputSnapshotManualBuilder {
+	i.configMaps.Insert(configMaps...)
 	return i
 }
 func (i *InputSnapshotManualBuilder) AddPods(pods []*v1.Pod) *InputSnapshotManualBuilder {
