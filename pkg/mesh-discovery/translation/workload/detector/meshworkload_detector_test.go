@@ -89,6 +89,9 @@ var _ = Describe("WorkloadDetector", func() {
 				Name:        "pod",
 				ClusterName: deploymentCluster,
 			},
+			Status: corev1.PodStatus{
+				PodIP: "ip-1",
+			},
 		}
 		err := controllerutil.SetControllerReference(rs, pod, scheme.Scheme)
 		Expect(err).NotTo(HaveOccurred())
