@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Add utility for marshalling proto messages with specified format.
