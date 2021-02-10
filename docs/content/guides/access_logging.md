@@ -310,3 +310,77 @@ curl -XPOST 'enterprise-networking.gloo-mesh:8080/v0/observability/logs?watch=1&
 
 In a separate terminal context, perform curl requests and you will see access logs
 being streamed back as they are received and processed by Gloo Mesh.
+
+## Debugging
+
+Because access logs provide detailed contextual information at the granularity of 
+individual networking requests and responses, they are a valuable tool for debugging.
+To showcase this, we will contrive a network error and see how access logs can help
+in diagnosing the problem.
+
+First ensure that the Gloo Mesh settings object disables Istio mTLS. This will allow
+us to modify mTLS settings for specific traffic targets.
+
+{{< highlight yaml "hl_lines=10" >}}
+apiVersion: settings.mesh.gloo.solo.io/v1alpha2
+kind: Settings
+metadata:
+  name: settings
+  namespace: gloo-mesh
+spec:
+  ...
+  mtls:
+    istio:
+      tlsMode: DISABLE
+{{< /highlight >}}
+
+Next, create the following Istio DestinationRule which is intentionally erroroneous,
+the referenced TLS secret data does not exist.
+
+```yaml
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: ratings
+  namespace: bookinfo
+spec:
+  host: ratings.bookinfo.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: MUTUAL
+      # these files do not exist
+      clientCertificate: /etc/certs/myclientcert.pem
+      privateKey: /etc/certs/client_private_key.pem
+      caCertificates: /etc/certs/rootcacerts.pem
+```
+
+Sending a request from the `productpage` pod to the ratings traffic target should yield 
+the following access log:
+
+{{< highlight json "hl_lines=10" >}}
+{
+  "result": {
+    "workloadRef": {
+      "name": "productpage-v1",
+      "namespace": "bookinfo",
+      "clusterName": "mgmt-cluster"
+    },
+    "httpAccessLog": {
+      ...
+        "upstreamTransportFailureReason": "TLS error: Secret is not supplied by SDS",
+        "routeName": "default",
+        "downstreamDirectRemoteAddress": {
+          "socketAddress": {
+            "address": "192.168.2.14",
+            "portValue": 52836
+          }
+        }
+      },
+      ...
+    }
+  }
+}
+{{< /highlight >}}
+
+Envoy access logs contain a wealth of information, the details of which can be found
+in the [envoy access log documentation](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage).
