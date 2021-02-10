@@ -181,7 +181,7 @@ This automation, to set up the DNS stubbing, is coming very soon (and this doc m
 
 ##### What Istio versions are supported?
 
-Right now, Gloo Mesh supports Istio 1.7.x and 1.8.x.
+Right now, Gloo Mesh supports Istio 1.7.x, 1.8.x and 1.9.x.
 
 {{% notice note %}}
 Istio versions 1.8.0, 1.8.1, and 1.8.2 have a [known issue](https://github.com/istio/istio/issues/28620) where sidecar proxies may fail to start
