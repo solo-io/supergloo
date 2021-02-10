@@ -101,7 +101,7 @@ func Start(
 	}
 
 	if clusters != nil {
-		// running in master mode; our reconciler should watch local and remote resources
+		// running in non-relay mode; our reconciler should watch local and remote resources
 		if _, err := input.RegisterInputReconciler(
 			ctx,
 			clusters,
@@ -192,7 +192,6 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 		ctx,
 		remoteInputSnap,
 		settings.Spec.GetDiscovery(),
-		localInputSnap,
 	)
 	if err != nil {
 		// internal translator errors should never happen

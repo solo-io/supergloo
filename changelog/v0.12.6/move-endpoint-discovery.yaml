@@ -1,0 +1,5 @@
+changelog:
+- type: FIX
+  issueLink: https://github.com/solo-io/gloo-mesh/issues/1255
+  description: Transfer endpoint discovery from the TrafficTarget to the Workload
+

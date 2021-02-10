@@ -5,7 +5,6 @@ import (
 
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	networkingv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/traffictarget/detector"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -18,10 +17,9 @@ type Translator interface {
 	TranslateTrafficTargets(
 		ctx context.Context,
 		services corev1sets.ServiceSet,
-		endpoints corev1sets.EndpointsSet,
 		workloads v1alpha2sets.WorkloadSet,
 		meshes v1alpha2sets.MeshSet,
-		virtualMeshes networkingv1alpha2sets.VirtualMeshSet,
+		endpoints corev1sets.EndpointsSet,
 	) v1alpha2sets.TrafficTargetSet
 }
 
@@ -37,10 +35,9 @@ func NewTranslator(trafficTargetDetector detector.TrafficTargetDetector) Transla
 func (t *translator) TranslateTrafficTargets(
 	ctx context.Context,
 	services corev1sets.ServiceSet,
-	endpoints corev1sets.EndpointsSet,
 	workloads v1alpha2sets.WorkloadSet,
 	meshes v1alpha2sets.MeshSet,
-	virtualMeshes networkingv1alpha2sets.VirtualMeshSet,
+	endpoints corev1sets.EndpointsSet,
 ) v1alpha2sets.TrafficTargetSet {
 
 	trafficTargetSet := v1alpha2sets.NewTrafficTargetSet()
@@ -49,10 +46,9 @@ func (t *translator) TranslateTrafficTargets(
 		trafficTarget := t.trafficTargetDetector.DetectTrafficTarget(
 			ctx,
 			service,
-			endpoints,
 			workloads,
 			meshes,
-			virtualMeshes,
+			endpoints,
 		)
 		if trafficTarget == nil {
 			continue
