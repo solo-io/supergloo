@@ -15,8 +15,6 @@ import (
 	appmesh_k8s_aws_v1beta2_controllers "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/controller"
 	apps_v1_controllers "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/controller"
 	v1_controllers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
-	networking_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
-	networking_mesh_gloo_solo_io_v1alpha2_controllers "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/controller"
 	settings_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	settings_mesh_gloo_solo_io_v1alpha2_controllers "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/controller"
 	apps_v1 "k8s.io/api/apps/v1"
@@ -39,7 +37,6 @@ import (
 // * StatefulSets
 // from a remote cluster.
 // * Settings
-// * VirtualMeshes
 // from the local cluster.
 
 type ReconcileOptions struct {
@@ -62,7 +59,7 @@ func RegisterInputReconciler(
 	options ReconcileOptions,
 ) (input.InputReconciler, error) {
 	// [appmesh.k8s.aws/v1beta2 v1 apps/v1] false 3
-	// [settings.mesh.gloo.solo.io/v1alpha2 networking.mesh.gloo.solo.io/v1alpha2]
+	// [settings.mesh.gloo.solo.io/v1alpha2]
 
 	base := input.NewInputReconciler(
 		ctx,
@@ -98,11 +95,6 @@ func RegisterInputReconciler(
 
 	// initialize Settings reconcile loop for local cluster
 	if err := settings_mesh_gloo_solo_io_v1alpha2_controllers.NewSettingsReconcileLoop("Settings", mgr, options.Local.Settings).RunSettingsReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
-		return nil, err
-	}
-
-	// initialize VirtualMeshes reconcile loop for local cluster
-	if err := networking_mesh_gloo_solo_io_v1alpha2_controllers.NewVirtualMeshReconcileLoop("VirtualMesh", mgr, options.Local.VirtualMeshes).RunVirtualMeshReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
@@ -299,9 +291,6 @@ type LocalReconcileOptions struct {
 	// Options for reconciling Settings
 	Settings reconcile.Options
 
-	// Options for reconciling VirtualMeshes
-	VirtualMeshes reconcile.Options
-
 	// optional predicates for filtering local events
 	Predicates []predicate.Predicate
 }
@@ -315,19 +304,6 @@ func (r *localInputReconciler) ReconcileSettings(obj *settings_mesh_gloo_solo_io
 }
 
 func (r *localInputReconciler) ReconcileSettingsDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
-}
-
-func (r *localInputReconciler) ReconcileVirtualMesh(obj *networking_mesh_gloo_solo_io_v1alpha2.VirtualMesh) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
-}
-
-func (r *localInputReconciler) ReconcileVirtualMeshDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

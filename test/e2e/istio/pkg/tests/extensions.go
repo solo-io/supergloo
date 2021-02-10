@@ -91,7 +91,7 @@ func NetworkingExtensionsTest() {
 
 			// check we can eventually hit the echo server via the gateway.
 			// This request verifies that Envoy has config provided by Service Entries from our test extensions server.
-			Eventually(curlHelloServer, "30s", "1s").Should(ContainSubstring(helloMsg))
+			Eventually(CurlHelloServer, "30s", "1s").Should(ContainSubstring(helloMsg))
 		})
 	})
 }

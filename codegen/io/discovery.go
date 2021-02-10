@@ -35,12 +35,6 @@ var (
 		}: {
 			"Settings",
 		},
-		schema.GroupVersion{
-			Group:   "networking." + constants.GlooMeshApiGroupSuffix,
-			Version: "v1alpha2",
-		}: {
-			"VirtualMesh",
-		},
 	}
 
 	DiscoveryOutputTypes = OutputSnapshot{

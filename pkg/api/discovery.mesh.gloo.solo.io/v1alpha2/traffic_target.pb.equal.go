@@ -246,17 +246,17 @@ func (m *TrafficTargetSpec_KubeService) Equal(that interface{}) bool {
 
 	}
 
-	if len(m.GetEndpoints()) != len(target.GetEndpoints()) {
+	if len(m.GetEndpointSubsets()) != len(target.GetEndpointSubsets()) {
 		return false
 	}
-	for idx, v := range m.GetEndpoints() {
+	for idx, v := range m.GetEndpointSubsets() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetEndpoints()[idx]) {
+			if !h.Equal(target.GetEndpointSubsets()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetEndpoints()[idx]) {
+			if !proto.Equal(v, target.GetEndpointSubsets()[idx]) {
 				return false
 			}
 		}
@@ -362,13 +362,19 @@ func (m *TrafficTargetSpec_KubeService_EndpointsSubset) Equal(that interface{}) 
 		return false
 	}
 
-	if len(m.GetIpAddresses()) != len(target.GetIpAddresses()) {
+	if len(m.GetEndpoints()) != len(target.GetEndpoints()) {
 		return false
 	}
-	for idx, v := range m.GetIpAddresses() {
+	for idx, v := range m.GetEndpoints() {
 
-		if strings.Compare(v, target.GetIpAddresses()[idx]) != 0 {
-			return false
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetEndpoints()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetEndpoints()[idx]) {
+				return false
+			}
 		}
 
 	}
@@ -386,6 +392,45 @@ func (m *TrafficTargetSpec_KubeService_EndpointsSubset) Equal(that interface{}) 
 			if !proto.Equal(v, target.GetPorts()[idx]) {
 				return false
 			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
+func (m *TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint)
+	if !ok {
+		that2, ok := that.(TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetIpAddress(), target.GetIpAddress()) != 0 {
+		return false
+	}
+
+	if len(m.GetLabels()) != len(target.GetLabels()) {
+		return false
+	}
+	for k, v := range m.GetLabels() {
+
+		if strings.Compare(v, target.GetLabels()[k]) != 0 {
+			return false
 		}
 
 	}
@@ -529,6 +574,10 @@ func (m *TrafficTargetStatus_AppliedFederation) Equal(that interface{}) bool {
 			}
 		}
 
+	}
+
+	if m.GetFlatNetwork() != target.GetFlatNetwork() {
+		return false
 	}
 
 	return true

@@ -36,16 +36,25 @@ spec:
             kubeService:
               description: Metadata about the kube-native traffic target backing this TrafficTarget.
               properties:
-                endpoints:
+                endpointSubsets:
                   description: |-
                     Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs.
                     This API mirrors the kubernetes Endpoints API.
                     https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
                   items:
                     properties:
-                      ipAddresses:
+                      endpoints:
                         items:
-                          type: string
+                          properties:
+                            ipAddress:
+                              description: IP address
+                              type: string
+                            labels:
+                              additionalProperties:
+                                type: string
+                              description: Labels which belong to this IP, these are taken from the backing workload instance.
+                              type: object
+                          type: object
                         type: array
                       ports:
                         items:
@@ -332,6 +341,9 @@ spec:
                         type: string
                     type: object
                   type: array
+                flatNetwork:
+                  description: Whether or not the TrafficTarget has been federated via a flat-network to the given meshes.
+                  type: boolean
               type: object
             appliedTrafficPolicies:
               description: The set of Traffic Policies that have been applied to this TrafficTarget
