@@ -19,38 +19,38 @@ import (
 var (
 	BookinfoNamespace = "bookinfo"
 
-	mgmtClusterName   = "mgmt-cluster"
-	remoteClusterName = "remote-cluster"
+	MgmtClusterName   = "mgmt-cluster"
+	RemoteClusterName = "remote-cluster"
 
-	masterMesh = &v1.ObjectRef{
+	MgmtMesh = &v1.ObjectRef{
 		Name:      "istiod-istio-system-mgmt-cluster",
 		Namespace: "gloo-mesh",
 	}
 
-	remoteMesh = &v1.ObjectRef{
+	RemoteMesh = &v1.ObjectRef{
 		Name:      "istiod-istio-system-remote-cluster",
 		Namespace: "gloo-mesh",
 	}
 
-	curlReviews = func() string {
-		return curlFromProductpage("http://reviews:9080/reviews/1")
+	CurlReviews = func() string {
+		return CurlFromProductpage("http://reviews:9080/reviews/1")
 	}
 
-	curlHelloServer = func() string {
-		return curlFromProductpage(fmt.Sprintf("http://%v:%v/", extensions.HelloServerHostname, extensions.HelloServerPort))
+	CurlHelloServer = func() string {
+		return CurlFromProductpage(fmt.Sprintf("http://%v:%v/", extensions.HelloServerHostname, extensions.HelloServerPort))
 	}
 
-	curlRemoteReviews = func(federatedSuffix string) func() string {
+	CurlRemoteReviews = func(federatedSuffix string) func() string {
 		return func() string {
-			return curlFromProductpage(fmt.Sprintf("http://reviews.%v.svc.%v.%s:9080/reviews/1", BookinfoNamespace, remoteClusterName, federatedSuffix))
+			return CurlFromProductpage(fmt.Sprintf("http://reviews.%v.svc.%v.%s:9080/reviews/1", BookinfoNamespace, RemoteClusterName, federatedSuffix))
 		}
 	}
 
-	curlRatings = func() string {
-		return curlFromProductpage("http://ratings:9080/ratings/1")
+	CurlRatings = func() string {
+		return CurlFromProductpage("http://ratings:9080/ratings/1")
 	}
 
-	curlFromProductpage = func(url string) string {
+	CurlFromProductpage = func(url string) string {
 		env := e2e.GetEnv()
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute/2)
 		defer cancel()
@@ -59,7 +59,7 @@ var (
 		return out
 	}
 
-	curlGateway = func(hostname, path, body, method string) string {
+	CurlGateway = func(hostname, path, body, method string) string {
 		out, err := exec.Command("curl", "--connect-timeout", "1", "--max-time", "5", "-H", hostname, "http://localhost:32000"+path, "-v", "-d", body, "-X", method).CombinedOutput()
 		Expect(err).NotTo(HaveOccurred())
 

@@ -58,11 +58,11 @@ func (t translator) Translate(
 	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(
 		ctx,
 		in.Services(),
-		in.Endpoints(),
 		in.Pods(),
 		in.Nodes(),
 		workloads,
 		meshes,
+		in.Endpoints(),
 	)
 
 	t.totalTranslates++

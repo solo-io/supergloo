@@ -32,22 +32,30 @@ var _ = Describe("TrafficTargetDetector", func() {
 		selectorLabels = map[string]string{"select": "me"}
 		serviceLabels  = map[string]string{"app": "coolapp"}
 
-		deployment = &skv1.ClusterObjectRef{
-			Name:        "deployment",
-			Namespace:   serviceNs,
-			ClusterName: serviceCluster,
-		}
 		mesh = &skv1.ObjectRef{
 			Name:      "mesh",
 			Namespace: "any",
 		}
 	)
 
-	makeWorkload := func(subset string) *v1alpha2.Workload {
+	buildLabels := func(subset string) map[string]string {
 		labels := map[string]string{
 			"select": "me",
 			"subset": subset,
 		}
+		return labels
+	}
+
+	buildDeployment := func(subset string) *skv1.ClusterObjectRef {
+		return &skv1.ClusterObjectRef{
+			Name:        "deployment-" + subset,
+			Namespace:   serviceNs,
+			ClusterName: serviceCluster,
+		}
+	}
+
+	makeWorkload := func(subset string) *v1alpha2.Workload {
+		labels := buildLabels(subset)
 		return &v1alpha2.Workload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "some-workload-" + subset,
@@ -56,7 +64,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 			Spec: v1alpha2.WorkloadSpec{
 				WorkloadType: &v1alpha2.WorkloadSpec_Kubernetes{
 					Kubernetes: &v1alpha2.WorkloadSpec_KubernetesWorkload{
-						Controller:         deployment,
+						Controller:         buildDeployment(subset),
 						PodLabels:          labels,
 						ServiceAccountName: "any",
 					},
@@ -118,7 +126,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 
 		detector := NewTrafficTargetDetector()
 
-		trafficTarget := detector.DetectTrafficTarget(ctx, svc, endpoints, pods, nodes, workloads, meshes)
+		trafficTarget := detector.DetectTrafficTarget(ctx, svc, pods, nodes, workloads, meshes, endpoints)
 
 		Expect(trafficTarget).To(Equal(&v1alpha2.TrafficTarget{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
@@ -153,7 +161,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 		}))
 	})
 
-	It("translates a service with endpoints to a traffic target", func() {
+	It("translates a service with endpoints", func() {
 		endpoints := v1sets.NewEndpointsSet(
 			&corev1.Endpoints{
 				ObjectMeta: metav1.ObjectMeta{
@@ -163,7 +171,22 @@ var _ = Describe("TrafficTargetDetector", func() {
 				},
 				Subsets: []corev1.EndpointSubset{
 					{
-						Addresses: []corev1.EndpointAddress{{IP: "1"}, {IP: "2"}},
+						Addresses: []corev1.EndpointAddress{
+							{
+								IP: "1",
+								TargetRef: &corev1.ObjectReference{
+									Name:      buildDeployment("v1").Name + "-819320",
+									Namespace: serviceNs,
+								},
+							},
+							{
+								IP: "2",
+								TargetRef: &corev1.ObjectReference{
+									Name:      buildDeployment("v2").Name + "-332434",
+									Namespace: serviceNs,
+								},
+							},
+						},
 						Ports: []corev1.EndpointPort{
 							{
 								Name:        "port1",
@@ -187,7 +210,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 
 		detector := NewTrafficTargetDetector()
 
-		trafficTarget := detector.DetectTrafficTarget(ctx, svc, endpoints, pods, nodes, workloads, meshes)
+		trafficTarget := detector.DetectTrafficTarget(ctx, svc, pods, nodes, workloads, meshes, endpoints)
 
 		Expect(trafficTarget).To(Equal(&v1alpha2.TrafficTarget{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
@@ -215,11 +238,17 @@ var _ = Describe("TrafficTargetDetector", func() {
 								Values: []string{"v1", "v2"},
 							},
 						},
-						Endpoints: []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{
+						EndpointSubsets: []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{
 							{
-								LocalityIpAddresses: []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_LocalityIp{
-									{Ip: "1"},
-									{Ip: "2"},
+								Endpoints: []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint{
+									{
+										IpAddress: "1",
+										Labels:    buildLabels("v1"),
+									},
+									{
+										IpAddress: "2",
+										Labels:    buildLabels("v2"),
+									},
 								},
 								Ports: []*v1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
 									{
@@ -265,7 +294,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 
 		detector := NewTrafficTargetDetector()
 
-		trafficTarget := detector.DetectTrafficTarget(ctx, svc, endpoints, pods, nodes, workloads, meshes)
+		trafficTarget := detector.DetectTrafficTarget(ctx, svc, pods, nodes, workloads, meshes, endpoints)
 
 		Expect(trafficTarget).To(Equal(&v1alpha2.TrafficTarget{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
@@ -370,7 +399,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 
 		detector := NewTrafficTargetDetector()
 
-		trafficTarget := detector.DetectTrafficTarget(ctx, svc, endpoints, pods, nodes, workloads, meshes)
+		trafficTarget := detector.DetectTrafficTarget(ctx, svc, pods, nodes, workloads, meshes, endpoints)
 
 		Expect(trafficTarget).To(Equal(&v1alpha2.TrafficTarget{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
@@ -399,19 +428,19 @@ var _ = Describe("TrafficTargetDetector", func() {
 								Values: []string{"v1", "v2"},
 							},
 						},
-						Endpoints: []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{
+						EndpointSubsets: []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{
 							{
-								LocalityIpAddresses: []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_LocalityIp{
+								Endpoints: []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint{
 									{
-										Ip: "1",
-										SubLocality: &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_SubLocality{
+										IpAddress: "1",
+										SubLocality: &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint_SubLocality{
 											Zone:    "zone1",
 											Subzone: "subzone1",
 										},
 									},
 									{
-										Ip: "2",
-										SubLocality: &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_SubLocality{
+										IpAddress: "2",
+										SubLocality: &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint_SubLocality{
 											Zone:    "zone2",
 											Subzone: "subzone2",
 										},
