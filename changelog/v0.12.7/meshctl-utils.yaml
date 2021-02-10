@@ -2,4 +2,4 @@ changelog:
   - type: NON_USER_FACING
     description: Add meshctl utility for marshalling proto messages with specified format.
   - type: NON_USER_FACING
-      description: Add meshtl utility for fowarding ports of pods and deployments.
+    description: Add meshtl utility for fowarding ports of pods and deployments.
