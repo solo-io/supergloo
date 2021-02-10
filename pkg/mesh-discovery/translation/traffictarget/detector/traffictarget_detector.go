@@ -232,8 +232,8 @@ func findEndpoints(
 				}
 			} else {
 				contextutils.LoggerFrom(ctx).Debugf(
-					"skipping endpoint workload labels because targetRef (%v) is nil",
-					addr.TargetRef,
+					"skipping endpoint subset addr (%v) because targetRef is nil",
+					addr,
 				)
 			}
 
