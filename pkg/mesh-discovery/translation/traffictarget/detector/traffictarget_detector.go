@@ -186,8 +186,8 @@ func findEndpoints(
 			addr := addr
 			if addr.TargetRef == nil {
 				contextutils.LoggerFrom(ctx).Debugf(
-					"skipping endpoint address %v because targetRef is nil",
-					addr.TargetRef,
+					"skipping endpoint subset addr (%v) because targetRef is nil",
+					addr,
 				)
 				continue
 			}
