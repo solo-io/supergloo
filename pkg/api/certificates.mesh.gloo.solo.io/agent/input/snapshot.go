@@ -7,6 +7,7 @@
 // * CertificateRequests
 // * PodBounceDirectives
 // * Secrets
+// * ConfigMaps
 // * Pods
 // read from a given cluster or set of clusters, across all namespaces.
 //
@@ -51,6 +52,8 @@ type Snapshot interface {
 
 	// return the set of input Secrets
 	Secrets() v1_sets.SecretSet
+	// return the set of input ConfigMaps
+	ConfigMaps() v1_sets.ConfigMapSet
 	// return the set of input Pods
 	Pods() v1_sets.PodSet
 	// update the status of all input objects which support
@@ -75,6 +78,8 @@ type SyncStatusOptions struct {
 
 	// sync status of Secret objects
 	Secret bool
+	// sync status of ConfigMap objects
+	ConfigMap bool
 	// sync status of Pod objects
 	Pod bool
 }
@@ -86,8 +91,9 @@ type snapshot struct {
 	certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
 	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
 
-	secrets v1_sets.SecretSet
-	pods    v1_sets.PodSet
+	secrets    v1_sets.SecretSet
+	configMaps v1_sets.ConfigMapSet
+	pods       v1_sets.PodSet
 }
 
 func NewSnapshot(
@@ -98,6 +104,7 @@ func NewSnapshot(
 	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
 
 	secrets v1_sets.SecretSet,
+	configMaps v1_sets.ConfigMapSet,
 	pods v1_sets.PodSet,
 
 ) Snapshot {
@@ -108,6 +115,7 @@ func NewSnapshot(
 		certificateRequests: certificateRequests,
 		podBounceDirectives: podBounceDirectives,
 		secrets:             secrets,
+		configMaps:          configMaps,
 		pods:                pods,
 	}
 }
@@ -126,6 +134,10 @@ func (s snapshot) PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_
 
 func (s snapshot) Secrets() v1_sets.SecretSet {
 	return s.secrets
+}
+
+func (s snapshot) ConfigMaps() v1_sets.ConfigMapSet {
+	return s.configMaps
 }
 
 func (s snapshot) Pods() v1_sets.PodSet {
@@ -210,6 +222,7 @@ func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap["certificateRequests"] = s.certificateRequests.List()
 	snapshotMap["podBounceDirectives"] = s.podBounceDirectives.List()
 	snapshotMap["secrets"] = s.secrets.List()
+	snapshotMap["configMaps"] = s.configMaps.List()
 	snapshotMap["pods"] = s.pods.List()
 	return json.Marshal(snapshotMap)
 }
@@ -231,6 +244,8 @@ type BuildOptions struct {
 
 	// List options for composing a snapshot from Secrets
 	Secrets ResourceBuildOptions
+	// List options for composing a snapshot from ConfigMaps
+	ConfigMaps ResourceBuildOptions
 	// List options for composing a snapshot from Pods
 	Pods ResourceBuildOptions
 }
@@ -269,6 +284,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	podBounceDirectives := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
 
 	secrets := v1_sets.NewSecretSet()
+	configMaps := v1_sets.NewConfigMapSet()
 	pods := v1_sets.NewPodSet()
 
 	var errs error
@@ -287,6 +303,9 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		if err := b.insertSecretsFromCluster(ctx, cluster, secrets, opts.Secrets); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertConfigMapsFromCluster(ctx, cluster, configMaps, opts.ConfigMaps); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertPodsFromCluster(ctx, cluster, pods, opts.Pods); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -300,6 +319,7 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 		certificateRequests,
 		podBounceDirectives,
 		secrets,
+		configMaps,
 		pods,
 	)
 
@@ -475,6 +495,48 @@ func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, clus
 
 	return nil
 }
+func (b *multiClusterBuilder) insertConfigMapsFromCluster(ctx context.Context, cluster string, configMaps v1_sets.ConfigMapSet, opts ResourceBuildOptions) error {
+	configMapClient, err := v1.NewMulticlusterConfigMapClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "ConfigMap",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	configMapList, err := configMapClient.ListConfigMap(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range configMapList.Items {
+		item := item               // pike
+		item.ClusterName = cluster // set cluster for in-memory processing
+		configMaps.Insert(&item)
+	}
+
+	return nil
+}
 func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster string, pods v1_sets.PodSet, opts ResourceBuildOptions) error {
 	podClient, err := v1.NewMulticlusterPodClient(b.client).Cluster(cluster)
 	if err != nil {
@@ -550,6 +612,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	podBounceDirectives := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
 
 	secrets := v1_sets.NewSecretSet()
+	configMaps := v1_sets.NewConfigMapSet()
 	pods := v1_sets.NewPodSet()
 
 	var errs error
@@ -566,6 +629,9 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	if err := b.insertSecrets(ctx, secrets, opts.Secrets); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertConfigMaps(ctx, configMaps, opts.ConfigMaps); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertPods(ctx, pods, opts.Pods); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -577,6 +643,7 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 		certificateRequests,
 		podBounceDirectives,
 		secrets,
+		configMaps,
 		pods,
 	)
 
@@ -712,6 +779,39 @@ func (b *singleClusterBuilder) insertSecrets(ctx context.Context, secrets v1_set
 		item := item // pike
 		item.ClusterName = b.clusterName
 		secrets.Insert(&item)
+	}
+
+	return nil
+}
+func (b *singleClusterBuilder) insertConfigMaps(ctx context.Context, configMaps v1_sets.ConfigMapSet, opts ResourceBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "ConfigMap",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	configMapList, err := v1.NewConfigMapClient(b.mgr.GetClient()).ListConfigMap(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range configMapList.Items {
+		item := item // pike
+		item.ClusterName = b.clusterName
+		configMaps.Insert(&item)
 	}
 
 	return nil

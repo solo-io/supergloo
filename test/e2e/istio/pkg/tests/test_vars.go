@@ -52,7 +52,7 @@ var (
 
 	CurlFromProductpage = func(url string) string {
 		env := e2e.GetEnv()
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute/3)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute/2)
 		defer cancel()
 		out := env.Management.GetPod(ctx, BookinfoNamespace, "productpage").Curl(ctx, url, "-v")
 		GinkgoWriter.Write([]byte(out))
