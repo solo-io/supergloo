@@ -3,9 +3,9 @@ package reconciliation
 import (
 	"context"
 	"fmt"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"time"
 
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
 
 	"github.com/hashicorp/go-multierror"

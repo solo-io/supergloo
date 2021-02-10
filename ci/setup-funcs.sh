@@ -338,23 +338,13 @@ function register_cluster() {
   # load cert-agent image
   kind load docker-image --name "${cluster}" "${AGENT_IMAGE}"
 
-  EXTRA_FLAGS=""
-  # used by enterprise e2e test setup
-  # expects the following env set:
-  # INSTALL_ENTERPRISE_AGENT=1
-  # ENTERPRISE_AGENT_CHART=<path to chart>
-  if [ "${INSTALL_ENTERPRISE_AGENT}" == "1" ]; then
-    EXTRA_FLAGS="--install-enterprise-agent --enterprise-agent-chart-file=${ENTERPRISE_AGENT_CHART} --enterprise-agent-chart-values=${ENTERPRISE_AGENT_CHART_VALUES}"
-  fi
-
   go run "${PROJECT_ROOT}/cmd/meshctl/main.go" cluster register \
     --cluster-name "${cluster}" \
     --mgmt-context "kind-${mgmtCluster}" \
     --remote-context "kind-${cluster}" \
     --api-server-address "${apiServerAddress}" \
     --cert-agent-chart-file "${AGENT_CHART}" \
-    --agent-crds-chart-file "${AGENT_CRDS_CHART}" \
-    ${EXTRA_FLAGS}
+    --agent-crds-chart-file "${AGENT_CRDS_CHART}" ``
 }
 
 function install_gloomesh() {
