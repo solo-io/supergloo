@@ -622,5 +622,9 @@ func (m *TrafficTargetStatus_AppliedFederation) Equal(that interface{}) bool {
 
 	}
 
+	if m.GetFlatNetwork() != target.GetFlatNetwork() {
+		return false
+	}
+
 	return true
 }
