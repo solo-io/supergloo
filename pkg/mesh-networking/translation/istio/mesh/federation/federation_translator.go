@@ -253,7 +253,13 @@ func (t *translator) Translate(
 			outputs.AddDestinationRules(dr)
 
 			// Update AppliedFederation data on TrafficTarget's status
-			updateTrafficTargetFederationStatus(trafficTarget, federatedHostname, ezkube.MakeObjectRef(groupedMesh), virtualMesh.Spec.Meshes)
+			updateTrafficTargetFederationStatus(
+				trafficTarget,
+				federatedHostname,
+				ezkube.MakeObjectRef(groupedMesh),
+				virtualMesh.Spec.Meshes,
+				virtualMesh.Spec.GetFederation().GetFlatNetwork(),
+			)
 		}
 	}
 
@@ -329,6 +335,7 @@ func updateTrafficTargetFederationStatus(
 	federatedHostname string,
 	mesh *v1.ObjectRef,
 	groupedMeshes []*v1.ObjectRef,
+	flatNetwork bool,
 ) {
 	var federatedToMeshes []*v1.ObjectRef
 
@@ -343,6 +350,7 @@ func updateTrafficTargetFederationStatus(
 	trafficTarget.Status.AppliedFederation = &discoveryv1alpha2.TrafficTargetStatus_AppliedFederation{
 		FederatedHostname: federatedHostname,
 		FederatedToMeshes: federatedToMeshes,
+		FlatNetwork:       flatNetwork,
 	}
 }
 

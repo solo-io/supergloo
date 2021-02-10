@@ -21,6 +21,8 @@ title: "traffic_target.proto"
   - [TrafficTargetSpec](#discovery.mesh.gloo.solo.io.TrafficTargetSpec)
   - [TrafficTargetSpec.KubeService](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService)
   - [TrafficTargetSpec.KubeService.EndpointsSubset](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset)
+  - [TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint)
+  - [TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry)
   - [TrafficTargetSpec.KubeService.KubeServicePort](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort)
   - [TrafficTargetSpec.KubeService.LabelsEntry](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.LabelsEntry)
   - [TrafficTargetSpec.KubeService.Subset](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.Subset)
@@ -66,7 +68,7 @@ The TrafficTarget is an abstraction for a traffic target which we have discovere
   | labels | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.LabelsEntry" >}}) | repeated | Labels on the underlying k8s Service itself. |
   | ports | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort" >}}) | repeated | The ports exposed by the underlying service. |
   | subsets | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.SubsetsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.SubsetsEntry" >}}) | repeated | Subsets for routing, based on labels. |
-  | endpoints | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset" >}}) | repeated | Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs. This API mirrors the kubernetes Endpoints API. https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core |
+  | endpointSubsets | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset" >}}) | repeated | Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs. This API mirrors the kubernetes Endpoints API. https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core |
   
 
 
@@ -81,8 +83,40 @@ A series of IP addresses and their associated ports. The list of ip + port pairs
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ipAddresses | []string | repeated |  |
+| endpoints | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint" >}}) | repeated |  |
   | ports | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.KubeServicePort" >}}) | repeated |  |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint"></a>
+
+### TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint
+An endpoint exposed by the service
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ipAddress | string |  | IP address |
+  | labels | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry" >}}) | repeated | Labels which belong to this IP, these are taken from the backing workload instance. |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry"></a>
+
+### TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+  | value | string |  |  |
   
 
 
@@ -216,6 +250,7 @@ Federation policy applied to this TrafficTarget, allowing access to the traffic 
 | ----- | ---- | ----- | ----------- |
 | federatedHostname | string |  | For any workload that this traffic target has federated to (i.e., any Workload controlled by a mesh whose ref appears in `federated_to_meshes`), a client in that workload will be able to reach this traffic target at this DNS name. This includes workloads on clusters other than the one hosting this service. |
   | federatedToMeshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The list of Meshes which are able to resolve this service's `multicluster_dns_name`. |
+  | flatNetwork | bool |  | Whether or not the TrafficTarget has been federated via a flat-network to the given meshes. |
   
 
 

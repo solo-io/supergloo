@@ -9,8 +9,7 @@ import (
 
 	v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	gomock "github.com/golang/mock/gomock"
-	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
-	v1alpha20 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	reconcile "github.com/solo-io/skv2/pkg/reconcile"
 	v1 "k8s.io/api/apps/v1"
 	v10 "k8s.io/api/core/v1"
@@ -40,7 +39,7 @@ func (m *MockmultiClusterAgentReconciler) EXPECT() *MockmultiClusterAgentReconci
 }
 
 // ReconcileSettings mocks base method
-func (m *MockmultiClusterAgentReconciler) ReconcileSettings(clusterName string, obj *v1alpha20.Settings) (reconcile.Result, error) {
+func (m *MockmultiClusterAgentReconciler) ReconcileSettings(clusterName string, obj *v1alpha2.Settings) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileSettings", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -52,21 +51,6 @@ func (m *MockmultiClusterAgentReconciler) ReconcileSettings(clusterName string, 
 func (mr *MockmultiClusterAgentReconcilerMockRecorder) ReconcileSettings(clusterName, obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSettings", reflect.TypeOf((*MockmultiClusterAgentReconciler)(nil).ReconcileSettings), clusterName, obj)
-}
-
-// ReconcileVirtualMesh mocks base method
-func (m *MockmultiClusterAgentReconciler) ReconcileVirtualMesh(clusterName string, obj *v1alpha2.VirtualMesh) (reconcile.Result, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileVirtualMesh", clusterName, obj)
-	ret0, _ := ret[0].(reconcile.Result)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ReconcileVirtualMesh indicates an expected call of ReconcileVirtualMesh
-func (mr *MockmultiClusterAgentReconcilerMockRecorder) ReconcileVirtualMesh(clusterName, obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualMesh", reflect.TypeOf((*MockmultiClusterAgentReconciler)(nil).ReconcileVirtualMesh), clusterName, obj)
 }
 
 // ReconcileMesh mocks base method
@@ -243,7 +227,7 @@ func (m *MocksingleClusterAgentReconciler) EXPECT() *MocksingleClusterAgentRecon
 }
 
 // ReconcileSettings mocks base method
-func (m *MocksingleClusterAgentReconciler) ReconcileSettings(obj *v1alpha20.Settings) (reconcile.Result, error) {
+func (m *MocksingleClusterAgentReconciler) ReconcileSettings(obj *v1alpha2.Settings) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileSettings", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -255,21 +239,6 @@ func (m *MocksingleClusterAgentReconciler) ReconcileSettings(obj *v1alpha20.Sett
 func (mr *MocksingleClusterAgentReconcilerMockRecorder) ReconcileSettings(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileSettings", reflect.TypeOf((*MocksingleClusterAgentReconciler)(nil).ReconcileSettings), obj)
-}
-
-// ReconcileVirtualMesh mocks base method
-func (m *MocksingleClusterAgentReconciler) ReconcileVirtualMesh(obj *v1alpha2.VirtualMesh) (reconcile.Result, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileVirtualMesh", obj)
-	ret0, _ := ret[0].(reconcile.Result)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ReconcileVirtualMesh indicates an expected call of ReconcileVirtualMesh
-func (mr *MocksingleClusterAgentReconcilerMockRecorder) ReconcileVirtualMesh(obj interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualMesh", reflect.TypeOf((*MocksingleClusterAgentReconciler)(nil).ReconcileVirtualMesh), obj)
 }
 
 // ReconcileMesh mocks base method

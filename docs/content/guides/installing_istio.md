@@ -106,7 +106,7 @@ spec:
       - global
 EOF
 {{< /tab >}}
-{{< tab name="Istio 1.8" codelang="shell" >}}
+{{< tab name="Istio 1.8 and Istio 1.9" codelang="shell" >}}
 cat << EOF | istioctl manifest install -y --context $MGMT_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
@@ -207,7 +207,7 @@ spec:
       - global
 EOF
 {{< /tab >}}
-{{< tab name="Istio 1.8" codelang="shell" >}}
+{{< tab name="Istio 1.8 and Istio 1.9" codelang="shell" >}}
 cat << EOF | istioctl manifest install -y --context $REMOTE_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator

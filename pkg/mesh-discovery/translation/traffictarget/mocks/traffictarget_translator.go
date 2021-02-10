@@ -11,7 +11,6 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	v1alpha2sets0 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 )
 
 // MockTranslator is a mock of Translator interface
@@ -38,15 +37,15 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // TranslateTrafficTargets mocks base method
-func (m *MockTranslator) TranslateTrafficTargets(ctx context.Context, services v1sets.ServiceSet, endpoints v1sets.EndpointsSet, workloads v1alpha2sets.WorkloadSet, meshes v1alpha2sets.MeshSet, virtualMeshes v1alpha2sets0.VirtualMeshSet) v1alpha2sets.TrafficTargetSet {
+func (m *MockTranslator) TranslateTrafficTargets(ctx context.Context, services v1sets.ServiceSet, workloads v1alpha2sets.WorkloadSet, meshes v1alpha2sets.MeshSet, endpoints v1sets.EndpointsSet) v1alpha2sets.TrafficTargetSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranslateTrafficTargets", ctx, services, endpoints, workloads, meshes, virtualMeshes)
+	ret := m.ctrl.Call(m, "TranslateTrafficTargets", ctx, services, workloads, meshes, endpoints)
 	ret0, _ := ret[0].(v1alpha2sets.TrafficTargetSet)
 	return ret0
 }
 
 // TranslateTrafficTargets indicates an expected call of TranslateTrafficTargets
-func (mr *MockTranslatorMockRecorder) TranslateTrafficTargets(ctx, services, endpoints, workloads, meshes, virtualMeshes interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) TranslateTrafficTargets(ctx, services, workloads, meshes, endpoints interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateTrafficTargets", reflect.TypeOf((*MockTranslator)(nil).TranslateTrafficTargets), ctx, services, endpoints, workloads, meshes, virtualMeshes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslateTrafficTargets", reflect.TypeOf((*MockTranslator)(nil).TranslateTrafficTargets), ctx, services, workloads, meshes, endpoints)
 }

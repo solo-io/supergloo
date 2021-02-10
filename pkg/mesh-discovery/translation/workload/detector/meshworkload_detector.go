@@ -23,7 +23,10 @@ import (
 // whose backing pods are injected with a Mesh sidecar.
 // If no mesh is detected for the workload, nil is returned
 type WorkloadDetector interface {
-	DetectWorkload(workload types.Workload, meshes v1alpha2sets.MeshSet) *v1alpha2.Workload
+	DetectWorkload(
+		workload types.Workload,
+		meshes v1alpha2sets.MeshSet,
+	) *v1alpha2.Workload
 }
 
 const (
@@ -45,16 +48,18 @@ func NewWorkloadDetector(
 	replicaSets appsv1sets.ReplicaSetSet,
 	detector SidecarDetector,
 ) WorkloadDetector {
-	ctx = contextutils.WithLogger(ctx, "mesh-workload-detector")
 	return &workloadDetector{
-		ctx:         ctx,
+		ctx:         contextutils.WithLogger(ctx, "mesh-workload-detector"),
 		pods:        pods,
 		replicaSets: replicaSets,
 		detector:    detector,
 	}
 }
 
-func (d workloadDetector) DetectWorkload(workload types.Workload, meshes v1alpha2sets.MeshSet) *v1alpha2.Workload {
+func (d workloadDetector) DetectWorkload(
+	workload types.Workload,
+	meshes v1alpha2sets.MeshSet,
+) *v1alpha2.Workload {
 	podsForWorkload := d.getPodsForWorkload(workload)
 
 	mesh := d.getMeshForPods(podsForWorkload, meshes)
@@ -97,7 +102,9 @@ func (d workloadDetector) getMeshForPods(pods corev1sets.PodSet, meshes v1alpha2
 	return nil
 }
 
-func (d workloadDetector) getPodsForWorkload(workload types.Workload) corev1sets.PodSet {
+func (d workloadDetector) getPodsForWorkload(
+	workload types.Workload,
+) corev1sets.PodSet {
 	podsForWorkload := corev1sets.NewPodSet()
 
 	for _, pod := range d.pods.List() {
