@@ -17,6 +17,7 @@ rules:
   resources:
   - secrets
   - pods
+  - configmaps
   verbs:
   - get
   - list
@@ -36,6 +37,7 @@ rules:
   resources:
   - secrets/status
   - pods/status
+  - configmaps/status
   verbs:
   - get
   - update
