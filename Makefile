@@ -127,7 +127,7 @@ $(OUTDIR)/gloo-mesh-linux-amd64: $(SOURCES)
 # this is an alternative to using operator-gen to build the image
 .PHONY: gloo-mesh-image
 gloo-mesh-image: gloo-mesh-linux-amd64
-	cp $(OUTDIR)/gloo-mesh-linux-amd64 build/gloo-mesh/gloo-mesh-linux-amd64 && \
+	cp $(OUTDIR)/gloo-mesh-linux-amd64 build/gloo-mesh/ && \
 	docker build -t $(GLOOMESH_IMAGE):$(VERSION) build/gloo-mesh/
 	rm build/gloo-mesh/gloo-mesh-linux-amd64
 
@@ -160,7 +160,7 @@ $(OUTDIR)/cert-agent-linux-amd64: $(SOURCES)
 # this is an alternative to using operator-gen to build the image
 .PHONY: cert-agent-image
 cert-agent-image: cert-agent-linux-amd64
-	cp $(OUTDIR)/cert-agent-linux-amd64 build/cert-agent/cert-agent-linux-amd64 && \
+	cp $(OUTDIR)/cert-agent-linux-amd64 build/cert-agent/ && \
 	docker build -t $(CA_IMAGE):$(VERSION) build/cert-agent/
 	rm build/cert-agent/cert-agent-linux-amd64
 
