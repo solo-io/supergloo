@@ -146,6 +146,54 @@ func (m *GlobalServiceSpec) Equal(that interface{}) bool {
 }
 
 // Equal function
+func (m *BackingService) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*BackingService)
+	if !ok {
+		that2, ok := that.(BackingService)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	switch m.BackingServiceType.(type) {
+
+	case *BackingService_KubeService:
+		if _, ok := target.BackingServiceType.(*BackingService_KubeService); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetKubeService()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetKubeService()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetKubeService(), target.GetKubeService()) {
+				return false
+			}
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.BackingServiceType != target.BackingServiceType {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Equal function
 func (m *GlobalServiceStatus) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -395,54 +443,6 @@ func (m *GlobalServiceSpec_LocalityConfig) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *GlobalServiceSpec_BackingServiceList_BackingService) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*GlobalServiceSpec_BackingServiceList_BackingService)
-	if !ok {
-		that2, ok := that.(GlobalServiceSpec_BackingServiceList_BackingService)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	switch m.BackingServiceType.(type) {
-
-	case *GlobalServiceSpec_BackingServiceList_BackingService_KubeService:
-		if _, ok := target.BackingServiceType.(*GlobalServiceSpec_BackingServiceList_BackingService_KubeService); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetKubeService()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetKubeService()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetKubeService(), target.GetKubeService()) {
-				return false
-			}
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.BackingServiceType != target.BackingServiceType {
-			return false
-		}
-	}
-
-	return true
-}
-
-// Equal function
 func (m *GlobalServiceSpec_LocalityConfig_LocalityFailoverDirective) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
@@ -566,54 +566,6 @@ func (m *GlobalServiceStatus_SelectedTrafficTarget) Equal(that interface{}) bool
 		}
 	} else {
 		if !proto.Equal(m.GetService(), target.GetService()) {
-			return false
-		}
-	}
-
-	return true
-}
-
-// Equal function
-func (m *GlobalServiceStatus_SelectedTrafficTarget_BackingService) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*GlobalServiceStatus_SelectedTrafficTarget_BackingService)
-	if !ok {
-		that2, ok := that.(GlobalServiceStatus_SelectedTrafficTarget_BackingService)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	switch m.BackingServiceType.(type) {
-
-	case *GlobalServiceStatus_SelectedTrafficTarget_BackingService_KubeService:
-		if _, ok := target.BackingServiceType.(*GlobalServiceStatus_SelectedTrafficTarget_BackingService_KubeService); !ok {
-			return false
-		}
-
-		if h, ok := interface{}(m.GetKubeService()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetKubeService()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetKubeService(), target.GetKubeService()) {
-				return false
-			}
-		}
-
-	default:
-		// m is nil but target is not nil
-		if m.BackingServiceType != target.BackingServiceType {
 			return false
 		}
 	}

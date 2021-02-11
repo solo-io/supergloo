@@ -18,9 +18,9 @@ title: "global_service.proto"
 
 
 ## Table of Contents
+  - [BackingService](#networking.enterprise.mesh.gloo.solo.io.BackingService)
   - [GlobalServiceSpec](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec)
   - [GlobalServiceSpec.BackingServiceList](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList)
-  - [GlobalServiceSpec.BackingServiceList.BackingService](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService)
   - [GlobalServiceSpec.LocalityConfig](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig)
   - [GlobalServiceSpec.LocalityConfig.Locality](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.Locality)
   - [GlobalServiceSpec.LocalityConfig.LocalityFailoverDirective](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.LocalityConfig.LocalityFailoverDirective)
@@ -29,9 +29,23 @@ title: "global_service.proto"
   - [GlobalServiceStatus](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus)
   - [GlobalServiceStatus.MeshesEntry](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.MeshesEntry)
   - [GlobalServiceStatus.SelectedTrafficTarget](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget)
-  - [GlobalServiceStatus.SelectedTrafficTarget.BackingService](#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.BackingService)
 
 
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.BackingService"></a>
+
+### BackingService
+A service represented by a TrafficTarget
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| kubeService | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Name/namespace/cluster of a kubernetes service. |
+  
 
 
 
@@ -65,22 +79,7 @@ Enables failover based on a list of services. When outlier detection detects tha
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| services | [][networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService" >}}) | repeated | The list of services backing the GlobalService, ordered by decreasing priority. All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh. |
-  
-
-
-
-
-
-<a name="networking.enterprise.mesh.gloo.solo.io.GlobalServiceSpec.BackingServiceList.BackingService"></a>
-
-### GlobalServiceSpec.BackingServiceList.BackingService
-A service represented by a TrafficTarget
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| kubeService | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Name/namespace/cluster of a kubernetes service. |
+| services | [][networking.enterprise.mesh.gloo.solo.io.BackingService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.BackingService" >}}) | repeated | The list of services backing the GlobalService, ordered by decreasing priority. All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh. |
   
 
 
@@ -211,22 +210,7 @@ The port on which the GlobalService listens.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | ref | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Reference to the traffic target. |
-  | service | [networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.BackingService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.BackingService" >}}) |  | The service that the traffic target represents. |
-  
-
-
-
-
-
-<a name="networking.enterprise.mesh.gloo.solo.io.GlobalServiceStatus.SelectedTrafficTarget.BackingService"></a>
-
-### GlobalServiceStatus.SelectedTrafficTarget.BackingService
-A service represented by a TrafficTarget
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| kubeService | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Name/namespace/cluster of a kubernetes service. |
+  | service | [networking.enterprise.mesh.gloo.solo.io.BackingService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.BackingService" >}}) |  | The service that the traffic target represents. |
   
 
 
