@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Add steps to e2e istio setup to allow ingress traffic from envoy, which is needed for access logging e2e tests.
+
