@@ -12,6 +12,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/debug"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/demo"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/initpluginmanager"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/install"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/mesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/uninstall"
@@ -54,6 +55,7 @@ func RootCommand(ctx context.Context) *cobra.Command {
 		check.Command(ctx),
 		dashboard.Command(ctx),
 		version.Command(ctx),
+		initpluginmanager.Command(ctx),
 	)
 
 	if len(os.Args) > 1 {
