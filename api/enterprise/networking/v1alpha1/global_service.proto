@@ -65,15 +65,6 @@ message GlobalServiceSpec {
     // The list of services backing the GlobalService, ordered by decreasing priority.
     // All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
     repeated BackingService services = 1;
-
-    // A service represented by a TrafficTarget
-    message BackingService {
-      // Different traffic target types can be selected as backing services.
-      oneof backing_service_type {
-        // Name/namespace/cluster of a kubernetes service.
-        .core.skv2.solo.io.ClusterObjectRef kube_service = 1;
-      }
-    }
   }
 
   // Enables failover based on locality. When a client workload makes a request to the GlobalService, Gloo Mesh will
@@ -109,6 +100,15 @@ message GlobalServiceSpec {
   }
 }
 
+// A service represented by a TrafficTarget
+message BackingService {
+  // Different traffic target types can be selected as backing services.
+  oneof backing_service_type {
+    // Name/namespace/cluster of a kubernetes service.
+    .core.skv2.solo.io.ClusterObjectRef kube_service = 1;
+  }
+}
+
 message GlobalServiceStatus {
   // The most recent generation observed in the the GlobalService metadata.
   // If the observedGeneration does not match generation, the controller has not received the most
@@ -134,14 +134,5 @@ message GlobalServiceStatus {
 
     // The service that the traffic target represents.
     BackingService service = 2;
-
-    // A service represented by a TrafficTarget
-    message BackingService {
-      // Different traffic target types can be selected as backing services.
-      oneof backing_service_type {
-        // Name/namespace/cluster of a kubernetes service.
-        .core.skv2.solo.io.ClusterObjectRef kube_service = 1;
-      }
-    }
   }
 }
