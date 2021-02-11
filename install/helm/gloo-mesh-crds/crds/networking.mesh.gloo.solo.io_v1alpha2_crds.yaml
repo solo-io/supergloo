@@ -480,13 +480,32 @@ spec:
                           - kubeService
                         - required:
                           - failoverService
+                        - required:
+                          - globalService
                     - required:
                       - kubeService
                     - required:
                       - failoverService
+                    - required:
+                      - globalService
                     properties:
                       failoverService:
                         description: A traffic shift destination targeting a FailoverService.
+                        properties:
+                          name:
+                            description: The name of the FailoverService.
+                            type: string
+                          namespace:
+                            description: The namespace of the FailoverService.
+                            type: string
+                          subset:
+                            additionalProperties:
+                              type: string
+                            description: Subset routing is currently only supported for Istio backing services.
+                            type: object
+                        type: object
+                      globalService:
+                        description: A traffic shift destination targeting a GlobalService.
                         properties:
                           name:
                             description: The name of the FailoverService.

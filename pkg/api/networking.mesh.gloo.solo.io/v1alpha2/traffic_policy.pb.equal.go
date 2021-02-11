@@ -1011,6 +1011,21 @@ func (m *TrafficPolicySpec_MultiDestination_WeightedDestination) Equal(that inte
 			}
 		}
 
+	case *TrafficPolicySpec_MultiDestination_WeightedDestination_GlobalService:
+		if _, ok := target.DestinationType.(*TrafficPolicySpec_MultiDestination_WeightedDestination_GlobalService); !ok {
+			return false
+		}
+
+		if h, ok := interface{}(m.GetGlobalService()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetGlobalService()) {
+				return false
+			}
+		} else {
+			if !proto.Equal(m.GetGlobalService(), target.GetGlobalService()) {
+				return false
+			}
+		}
+
 	default:
 		// m is nil but target is not nil
 		if m.DestinationType != target.DestinationType {
@@ -1073,14 +1088,14 @@ func (m *TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination)
 }
 
 // Equal function
-func (m *TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination) Equal(that interface{}) bool {
+func (m *TrafficPolicySpec_MultiDestination_WeightedDestination_CustomDestinationReference) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination)
+	target, ok := that.(*TrafficPolicySpec_MultiDestination_WeightedDestination_CustomDestinationReference)
 	if !ok {
-		that2, ok := that.(TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination)
+		that2, ok := that.(TrafficPolicySpec_MultiDestination_WeightedDestination_CustomDestinationReference)
 		if ok {
 			target = &that2
 		} else {
