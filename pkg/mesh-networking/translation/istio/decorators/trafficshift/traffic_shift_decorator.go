@@ -8,6 +8,7 @@ import (
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1alpha1sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
@@ -35,6 +36,7 @@ func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
 		params.ClusterDomains,
 		params.Snapshot.TrafficTargets(),
 		params.Snapshot.FailoverServices(),
+		params.Snapshot.GlobalServices(),
 	)
 }
 
@@ -43,6 +45,7 @@ type trafficShiftDecorator struct {
 	clusterDomains   hostutils.ClusterDomainRegistry
 	trafficTargets   discoveryv1alpha2sets.TrafficTargetSet
 	failoverServices v1alpha2sets.FailoverServiceSet
+	globalServices   v1alpha1sets.GlobalServiceSet
 }
 
 var _ decorators.TrafficPolicyVirtualServiceDecorator = &trafficShiftDecorator{}
@@ -51,11 +54,13 @@ func NewTrafficShiftDecorator(
 	clusterDomains hostutils.ClusterDomainRegistry,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
+	globalServices v1alpha1sets.GlobalServiceSet,
 ) *trafficShiftDecorator {
 	return &trafficShiftDecorator{
 		clusterDomains:   clusterDomains,
 		trafficTargets:   trafficTargets,
 		failoverServices: failoverServices,
+		globalServices:   globalServices,
 	}
 }
 
@@ -115,6 +120,15 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 			var err error
 			trafficShiftDestination, err = d.buildFailoverServiceDestination(
 				destinationType.FailoverService,
+				destination.Weight,
+			)
+			if err != nil {
+				return nil, err
+			}
+		case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_GlobalService:
+			var err error
+			trafficShiftDestination, err = d.buildGlobalServiceDestination(
+				destinationType.GlobalService,
 				destination.Weight,
 			)
 			if err != nil {
@@ -202,25 +216,59 @@ func (d *trafficShiftDecorator) buildFailoverServiceDestination(
 ) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
 	failoverService, err := d.failoverServices.Find(ezkube.MakeObjectRef(failoverServiceDest))
 	if err != nil {
-		return nil, eris.Wrapf(err, "invalid traffic shift destination %s, FailoverService not found", sets.Key(failoverServiceDest))
+		return nil, eris.Wrapf(err, "invalid traffic shift destination %s, GlobalService not found", sets.Key(failoverServiceDest))
 	}
 
+	httpRouteDestination := d.buildHttpRouteDestination(
+		failoverService.Spec.GetHostname(),
+		failoverServiceDest.GetSubset(),
+		failoverService.Spec.GetPort().GetNumber(),
+		weight,
+	)
+
+	return httpRouteDestination, nil
+}
+
+func (d *trafficShiftDecorator) buildGlobalServiceDestination(
+	globalServiceDest *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_CustomDestinationReference,
+	weight uint32,
+) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
+	globalService, err := d.globalServices.Find(ezkube.MakeObjectRef(globalServiceDest))
+	if err != nil {
+		return nil, eris.Wrapf(err, "invalid traffic shift destination %s, GlobalService not found", sets.Key(globalServiceDest))
+	}
+
+	httpRouteDestination := d.buildHttpRouteDestination(
+		globalService.Spec.GetHostname(),
+		globalServiceDest.GetSubset(),
+		globalService.Spec.GetPort().GetNumber(),
+		weight,
+	)
+
+	return httpRouteDestination, nil
+}
+
+func (d *trafficShiftDecorator) buildHttpRouteDestination(
+	hostname string,
+	subset map[string]string,
+	portNumber, weight uint32,
+) *networkingv1alpha3spec.HTTPRouteDestination {
 	httpRouteDestination := &networkingv1alpha3spec.HTTPRouteDestination{
 		Destination: &networkingv1alpha3spec.Destination{
-			Host: failoverService.Spec.Hostname,
+			Host: hostname,
 			Port: &networkingv1alpha3spec.PortSelector{
-				Number: failoverService.Spec.Port.Number,
+				Number: portNumber,
 			},
 		},
 		Weight: int32(weight),
 	}
 
-	if failoverServiceDest.Subset != nil {
+	if subset != nil {
 		// Use the canonical GlooMesh unique name for this subset.
-		httpRouteDestination.Destination.Subset = subsetName(failoverServiceDest.Subset)
+		httpRouteDestination.Destination.Subset = subsetName(subset)
 	}
 
-	return httpRouteDestination, nil
+	return httpRouteDestination
 }
 
 // make all the necessary subsets for the destination rule for the given FailoverService.

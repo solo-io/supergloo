@@ -7,6 +7,8 @@ import (
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
+	v1alpha1sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
@@ -59,7 +61,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 					},
 				},
 			})
-		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets, nil)
+		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets, nil, nil)
 		originalService := &discoveryv1alpha2.TrafficTarget{
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
@@ -149,7 +151,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 					},
 				},
 			})
-		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets, nil)
+		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets, nil, nil)
 		originalService := &discoveryv1alpha2.TrafficTarget{
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
@@ -249,7 +251,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 					},
 				},
 			})
-		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets, nil)
+		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets, nil, nil)
 		originalService := &discoveryv1alpha2.TrafficTarget{
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
@@ -347,7 +349,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 					},
 				},
 			})
-		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets, nil)
+		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets, nil, nil)
 		originalService := &discoveryv1alpha2.TrafficTarget{
 			Spec: discoveryv1alpha2.TrafficTargetSpec{
 				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
@@ -414,7 +416,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 					},
 				},
 			})
-		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, nil, failoverServices)
+		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, nil, failoverServices, nil)
 		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				TrafficShift: &v1alpha2.TrafficPolicySpec_MultiDestination{
@@ -422,6 +424,61 @@ var _ = Describe("TrafficShiftDecorator", func() {
 						{
 							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService{
 								FailoverService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_CustomDestinationReference{
+									Name:      "fs-1",
+									Namespace: "fs-ns-1",
+									Subset: map[string]string{
+										"version": "v1",
+									},
+								},
+							},
+							Weight: 50,
+						},
+					},
+				},
+			},
+		}
+		registerField := func(fieldPtr, val interface{}) error {
+			return nil
+		}
+		err := trafficShiftDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
+		expectedRoute := []*v1alpha3.HTTPRouteDestination{
+			{
+				Destination: &v1alpha3.Destination{
+					Host: "failoverservice.foo.bar.global",
+					Port: &v1alpha3.PortSelector{
+						Number: 9080,
+					},
+					Subset: "version-v1",
+				},
+				Weight: 50,
+			},
+		}
+		Expect(err).ToNot(HaveOccurred())
+		Expect(output.Route).To(Equal(expectedRoute))
+	})
+
+	It("should decorate traffic shift targeting a GlobalService", func() {
+		globalServices := v1alpha1sets.NewGlobalServiceSet(
+			&v1alpha1.GlobalService{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "fs-1",
+					Namespace: "fs-ns-1",
+				},
+				Spec: v1alpha1.GlobalServiceSpec{
+					Hostname: "failoverservice.foo.bar.global",
+					Port: &v1alpha1.GlobalServiceSpec_Port{
+						Number: 9080,
+					},
+				},
+			})
+		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, nil, nil, globalServices)
+		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+			Spec: &v1alpha2.TrafficPolicySpec{
+				TrafficShift: &v1alpha2.TrafficPolicySpec_MultiDestination{
+					Destinations: []*v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination{
+						{
+							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_GlobalService{
+								GlobalService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_CustomDestinationReference{
 									Name:      "fs-1",
 									Namespace: "fs-ns-1",
 									Subset: map[string]string{
