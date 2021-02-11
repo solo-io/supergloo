@@ -537,6 +537,12 @@ function install_istio() {
   mgmtClusterAddress=$(get_mgmt_server_ip_address ${cluster})
   enterpriseNetworkingGrpcPort=$(get_enterprise_networking_grpc_port ${cluster})
 
+  # return non-zero exit code if enterpriseNetworkingGrpcPort is unset
+  if [[-z ${enterpriseNetworkingGrpcPort}]]; then
+    echo "unable to fetch enterprise-networking grpc port"
+    return 1
+  fi
+
   if istioctl version | grep -E -- '1.7'
   then
     install_istio_1_7 $cluster $port $mgmtClusterAddress $enterpriseNetworkingGrpcPort
@@ -696,6 +702,11 @@ function get_mgmt_server_ip_address() {
 
 # determine the port of the enterprise-networking gRPC server from the perspective of the specified clsuter
 function get_enterprise_networking_grpc_port() {
+
+  # return non-zero exit code if grpcPort is unset
+  if [[-z ${grpcPort}]]; then
+    return 1
+  fi
   cluster=$1
 
   # assumes that enterprise-networking grpc port defaults to 9900
@@ -712,7 +723,6 @@ function get_enterprise_networking_grpc_port() {
        n=$((n+1))
        sleep 5
     done
-
   fi
 
   echo ${grpcPort}
