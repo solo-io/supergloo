@@ -700,10 +700,21 @@ function get_enterprise_networking_grpc_port() {
 
   # assumes that enterprise-networking grpc port defaults to 9900
   grpcPort=9900
+
   if [[ ${cluster} != ${mgmtCluster} ]]; then
     # if remote cluster, use the http2 ingress port of the mgmt cluster
-    grpcPort=$(kubectl --context kind-${mgmtCluster} -n istio-system get svc istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+
+    # poll the mgmt-cluster istio ingressgateway service until it's ready or until timeout is reached (100 seconds)
+    n=0
+    until [ "$n" -ge 20 ]
+    do
+       grpcPort=$(kubectl --context kind-${mgmtCluster} -n istio-system get svc istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}') && break
+       n=$((n+1))
+       sleep 5
+    done
+
   fi
+
   echo ${grpcPort}
 }
 
