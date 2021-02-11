@@ -30,9 +30,53 @@ spec:
               anyOf:
               - required:
                 - kubeService
+              - required:
+                - externalService
           - required:
             - kubeService
+          - required:
+            - externalService
           properties:
+            externalService:
+              description: Metadata about the external service to which traffic will be router
+              properties:
+                addresses:
+                  items:
+                    type: string
+                  type: array
+                endpoints:
+                  items:
+                    properties:
+                      address:
+                        type: string
+                      ports:
+                        additionalProperties:
+                          maximum: 4294967295
+                          minimum: 0
+                          type: integer
+                        type: object
+                    type: object
+                  type: array
+                hosts:
+                  items:
+                    type: string
+                  type: array
+                name:
+                  type: string
+                ports:
+                  items:
+                    properties:
+                      name:
+                        type: string
+                      number:
+                        maximum: 4294967295
+                        minimum: 0
+                        type: integer
+                      protocol:
+                        type: string
+                    type: object
+                  type: array
+              type: object
             kubeService:
               description: Metadata about the kube-native traffic target backing this TrafficTarget.
               properties:
@@ -128,7 +172,9 @@ spec:
                   type: object
               type: object
             mesh:
-              description: The mesh with which this traffic target is associated.
+              description: |-
+                The mesh with which this traffic target is associated. Can be omitted if the
+                traffic target isn't associated with any particular mesh, eg for externalservices.
               properties:
                 name:
                   description: name of the resource being referenced

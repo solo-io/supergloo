@@ -61,9 +61,9 @@ func (t *translator) isOSMTrafficTarget(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	allMeshes v1alpha2sets.MeshSet,
 ) bool {
-	meshRef := trafficTarget.Spec.Mesh
+	meshRef := trafficTarget.Spec.GetMesh()
 	if meshRef == nil {
-		contextutils.LoggerFrom(ctx).Errorf("internal error: trafficTarget %v missing mesh ref", sets.Key(trafficTarget))
+		contextutils.LoggerFrom(ctx).Debugf("trafficTarget %v has no mesh ref - is not OSM trafficTarget", sets.Key(trafficTarget))
 		return false
 	}
 	mesh, err := allMeshes.Find(meshRef)

@@ -19,13 +19,45 @@ message TrafficTargetSpec {
     oneof type {
         // Metadata about the kube-native traffic target backing this TrafficTarget.
         KubeService kube_service = 1;
+
+        // Metadata about the external service to which traffic will be router
+        ExternalService external_service = 3;
     }
 
-    // The mesh with which this traffic target is associated.
+    // The mesh with which this traffic target is associated. Can be omitted if the
+    // traffic target isn't associated with any particular mesh, eg for externalservices.
     .core.skv2.solo.io.ObjectRef mesh = 2;
 
-    message KubeService {
+    message ExternalService {
+        
+        string name = 1;
+        
+        repeated string hosts = 2;
 
+        repeated string addresses = 3;
+
+        repeated ServicePort ports = 4;
+
+        repeated ExtEndpoint endpoints = 5;
+
+        message ExtEndpoint {
+            
+            string address = 1;
+
+            map<string, uint32> ports = 2;
+
+        }
+        
+        message ServicePort {
+            uint32 number = 1;
+            string name = 2;
+            string protocol = 3;
+        }
+    }
+
+    
+    message KubeService {
+        
         // A reference to the kube-native traffic target that this TrafficTarget represents.
         .core.skv2.solo.io.ClusterObjectRef ref = 1;
 

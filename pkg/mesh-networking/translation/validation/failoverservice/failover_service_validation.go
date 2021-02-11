@@ -239,7 +239,7 @@ func (f *failoverServiceValidator) validateFederation(
 			// Error already reported when validating backing services.
 			continue
 		}
-		mesh, err := allMeshes.Find(trafficTarget.Spec.Mesh)
+		mesh, err := allMeshes.Find(trafficTarget.Spec.GetMesh())
 		if err != nil {
 			errs = append(errs, err)
 			continue

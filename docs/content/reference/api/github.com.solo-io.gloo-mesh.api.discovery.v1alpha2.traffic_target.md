@@ -19,6 +19,10 @@ title: "traffic_target.proto"
 
 ## Table of Contents
   - [TrafficTargetSpec](#discovery.mesh.gloo.solo.io.TrafficTargetSpec)
+  - [TrafficTargetSpec.ExternalService](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService)
+  - [TrafficTargetSpec.ExternalService.ExtEndpoint](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService.ExtEndpoint)
+  - [TrafficTargetSpec.ExternalService.ExtEndpoint.PortsEntry](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService.ExtEndpoint.PortsEntry)
+  - [TrafficTargetSpec.ExternalService.ServicePort](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService.ServicePort)
   - [TrafficTargetSpec.KubeService](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService)
   - [TrafficTargetSpec.KubeService.EndpointsSubset](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset)
   - [TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint](#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint)
@@ -48,7 +52,76 @@ The TrafficTarget is an abstraction for a traffic target which we have discovere
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | kubeService | [discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService" >}}) |  | Metadata about the kube-native traffic target backing this TrafficTarget. |
-  | mesh | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The mesh with which this traffic target is associated. |
+  | externalService | [discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService" >}}) |  | Metadata about the external service to which traffic will be router |
+  | mesh | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The mesh with which this traffic target is associated. Can be omitted if the traffic target isn't associated with any particular mesh, eg for externalservices. |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService"></a>
+
+### TrafficTargetSpec.ExternalService
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | string |  |  |
+  | hosts | []string | repeated |  |
+  | addresses | []string | repeated |  |
+  | ports | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService.ServicePort]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService.ServicePort" >}}) | repeated |  |
+  | endpoints | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService.ExtEndpoint]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService.ExtEndpoint" >}}) | repeated |  |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService.ExtEndpoint"></a>
+
+### TrafficTargetSpec.ExternalService.ExtEndpoint
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| address | string |  |  |
+  | ports | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService.ExtEndpoint.PortsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService.ExtEndpoint.PortsEntry" >}}) | repeated |  |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService.ExtEndpoint.PortsEntry"></a>
+
+### TrafficTargetSpec.ExternalService.ExtEndpoint.PortsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+  | value | uint32 |  |  |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService.ServicePort"></a>
+
+### TrafficTargetSpec.ExternalService.ServicePort
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| number | uint32 |  |  |
+  | name | string |  |  |
+  | protocol | string |  |  |
   
 
 
