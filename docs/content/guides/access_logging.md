@@ -16,7 +16,12 @@ This guide assumes the following:
 * Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
 * The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}}) under the `bookinfo` namespace
 * `istio-system` is the root namespace for both Istio deployments
-* `enterprise-networking` exposes its gRPC server on port 9900
+* `enterprise-networking` is deployed on the `mgmt-cluster` in the `gloo-mesh` namespace and exposes its gRPC server on port 9900
+* the following environment variables are set:
+  - ```shell
+    MGMT_CONTEXT=your_management_plane_context
+    REMOTE_CONTEXT=your_remote_context
+    ```
 
 ## Prerequisites
 
@@ -89,7 +94,7 @@ both `mgmt-cluster` and `remote-cluster` have the necessary configuration for
 Gloo Mesh access logging. View the Istio ConfigMap with the following command:
 
 ```shell
-kubectl --context kind-mgmt-cluster -n istio-system get configmap istio -oyaml
+kubectl --context MGMT_CONTEXT -n istio-system get configmap istio -oyaml
 ```
 
 Ensure that the following highlighted entries exist in the ConfigMap:
@@ -125,7 +130,7 @@ If using Kind, you can determine the external IP address of the management
 cluster by running the following:
 
 ```shell
-kubectl --context kind-mgmt-cluster get node -oyaml | grep address
+kubectl --context MGMT_CONTEXT get node -oyaml | grep address
 ```
 
 This should return something similar to the following. The IP address (not the
@@ -140,7 +145,7 @@ addresses:
 Alternatively you can simply run:
 
 ```shell
-kubectl --context kind-mgmt-cluster get node -o jsonpath='{.items[0].status.addresses[0].address}'
+kubectl --context MGMT_CONTEXT get node -o jsonpath='{.items[0].status.addresses[0].address}'
 ```
 
 **Port**
@@ -149,7 +154,7 @@ Assuming we're using Istio's ingress model (as described in the prerequisites) a
 running the following:
 
 ```shell
-kubectl --context kind-mgmt-cluster -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}'
+kubectl --context MGMT_CONTEXT -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}'
 ```
 
 ## AccessLogRecord CRD
@@ -181,17 +186,25 @@ for requests containing the header `"foo": "bar"`.
 Let's first generate some access logs by making requests in both clusters:
 
 ```shell
-kubectl --context kind-mgmt-cluster -n bookinfo exec -it deploy/ratings-v1 -c ratings --  curl -H "foo: bar" -v reviews:9080/reviews/1
+kubectl --context MGMT_CONTEXT -n bookinfo exec -it deploy/ratings-v1 -c ratings --  curl -H "foo: bar" -v reviews:9080/reviews/1
 ```
 
 ```shell
-kubectl --context kind-remote-cluster -n bookinfo exec -it deploy/ratings-v1 -c ratings --  curl -H "foo: bar" -v reviews:9080/reviews/1
+kubectl --context REMOTE_CONTEXT -n bookinfo exec -it deploy/ratings-v1 -c ratings --  curl -H "foo: bar" -v reviews:9080/reviews/1
 ```
 
 Assuming the access logs were collected successfully, we can now retrieve them, either
 through `meshctl` or, since enterprise-networking exposes a REST API, using `curl`.
 
-**curl**
+###curl
+
+Before proceeding, open a port forward from `enterprise-networking`'s HTTP
+port to your local machine by running the following:
+
+```shell
+# forward port 8080 from enterprise-networking to localhost:8080
+kubectl --context MGMT_CONTEXT -n gloo-mesh port-forward deploy/enterprise-networking 8080
+```
 
 The following command will fetch up to 10 of the latest access logs.
 
@@ -316,6 +329,11 @@ curl -XPOST 'enterprise-networking.gloo-mesh:8080/v0/observability/logs?watch=1&
 
 In a separate terminal context, perform curl requests and you will see access logs
 being streamed back as they are received and processed by Gloo Mesh.
+
+### meshctl accesslogs plugin
+
+The `meshctl accesslogs` plugin can also be used to facilitate access log retrieval. 
+Install the plugin and read its usage documentation for more details.
 
 ## Debugging
 
