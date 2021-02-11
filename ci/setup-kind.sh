@@ -38,9 +38,7 @@ fi
 if [ "$1" == "osm" ]; then
   # optionally install open service mesh
   create_kind_cluster ${mgmtCluster} 32001
-  install_osm ${mgmtCluster} 32001 &
-
-  wait
+  install_osm ${mgmtCluster} 32001
 
   echo successfully set up clusters.
 
@@ -51,21 +49,17 @@ if [ "$1" == "osm" ]; then
   sleep 4
 
   # register clusters
-  register_cluster ${mgmtCluster} &
-
-  wait
+  register_cluster ${mgmtCluster}
 
 else
 
   # NOTE(ilackarms): we run the setup_kind clusters sequentially due to this bug:
   # related: https://github.com/kubernetes-sigs/kind/issues/1596
   create_kind_cluster ${mgmtCluster} 32001
-  install_istio ${mgmtCluster} 32001 &
+  install_istio ${mgmtCluster} 32001
 
   create_kind_cluster ${remoteCluster} 32000
-  install_istio ${remoteCluster} 32000 &
-
-  wait
+  install_istio ${remoteCluster} 32000
 
   if [ ! -z ${FLAT_NETWORKING_ENABLED} ]; then
     setup_flat_networking ${mgmtCluster} 32001 ${remoteCluster} 32000
