@@ -365,6 +365,7 @@ func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceD
 			contextutils.LoggerFrom(r.ctx).Debugf("deleting pod %v", sets.Key(pod))
 			if err := podClient.DeletePod(r.ctx, ezkube.MakeClientObjectKey(pod)); err != nil {
 				errs = multierror.Append(errs, err)
+				continue
 			}
 			bouncedPods = append(bouncedPods, pod.Name)
 		}

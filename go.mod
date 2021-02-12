@@ -59,10 +59,10 @@ require (
 	github.com/solo-io/anyvendor v0.0.3
 	github.com/solo-io/external-apis v0.1.4
 	github.com/solo-io/go-list-licenses v0.1.0
-	github.com/solo-io/go-utils v0.20.2
+	github.com/solo-io/go-utils v0.20.4
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
-	github.com/solo-io/skv2 v0.17.4-0.20210210222725-fca44fc8ffd2
+	github.com/solo-io/skv2 v0.17.4
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.5.1
 	github.com/spf13/cobra v1.1.1
