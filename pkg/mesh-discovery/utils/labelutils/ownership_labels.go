@@ -30,7 +30,7 @@ func ClusterLabel(cluster string) (string, string) {
 // if running in an agent, (AGENT_CLUSTER is set)
 func OwnershipLabels() map[string]string {
 	ownerId := defaults.GetPodNamespace()
-	if agentClsuter := defaults.GetAgentCluster(); agentClsuter != "" {
+	if agentCluster := defaults.GetAgentCluster(); agentClsuter != "" {
 		ownerId += "-" + agentClsuter
 	}
 	return map[string]string{
