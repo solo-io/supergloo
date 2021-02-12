@@ -1,9 +1,5 @@
 package plugins
 
-import (
-	"fmt"
-)
-
 type Plugin interface {
 	// Run takes in the arguments following the plugin name
 	// and returns any error that occurred while running
@@ -20,7 +16,7 @@ type Handler interface {
 func Handle(handler Handler, args []string) error {
 	plugin, ok := handler.Lookup(args[0])
 	if !ok {
-		return fmt.Errorf("plugin not found: %s", args[0])
+		return nil
 	}
 
 	var pluginArgs []string
