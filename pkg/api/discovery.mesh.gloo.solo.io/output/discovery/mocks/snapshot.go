@@ -14,6 +14,7 @@ import (
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	output "github.com/solo-io/skv2/contrib/pkg/output"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
+	resource "github.com/solo-io/skv2/pkg/resource"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -523,4 +524,18 @@ func (m *MockBuilder) Delta(newSnap discovery.Builder) output.SnapshotDelta {
 func (mr *MockBuilderMockRecorder) Delta(newSnap interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockBuilder)(nil).Delta), newSnap)
+}
+
+// Generic mocks base method
+func (m *MockBuilder) Generic() resource.ClusterSnapshot {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generic")
+	ret0, _ := ret[0].(resource.ClusterSnapshot)
+	return ret0
+}
+
+// Generic indicates an expected call of Generic
+func (mr *MockBuilderMockRecorder) Generic() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generic", reflect.TypeOf((*MockBuilder)(nil).Generic))
 }
