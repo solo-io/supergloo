@@ -11,8 +11,22 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
+// Get the region of a cluster
+func GetClusterRegion(clusterName string, allNodes corev1sets.NodeSet) (string, error) {
+	// get the nodes in the cluster
+	clusterNodes := allNodes.List(func(node *corev1.Node) bool {
+		return node.ClusterName != clusterName
+	})
+	if len(clusterNodes) == 0 {
+		return "", eris.Errorf("could not find any nodes in cluster %s", clusterName)
+	}
+	// pick any one to get the region
+	node := clusterNodes[0]
+	return getRegionFromNode(node)
+}
+
 // Get the region where a service is running
-func GetRegion(service *corev1.Service, allPods corev1sets.PodSet, allNodes corev1sets.NodeSet) (string, error) {
+func GetServiceRegion(service *corev1.Service, allPods corev1sets.PodSet, allNodes corev1sets.NodeSet) (string, error) {
 	if len(service.Spec.Selector) == 0 {
 		return "", eris.Errorf("service %s has no selector", sets.Key(service))
 	}
@@ -36,13 +50,7 @@ func GetRegion(service *corev1.Service, allPods corev1sets.PodSet, allNodes core
 		return "", eris.Wrapf(err, "failed to find node for pod %s", sets.Key(pod))
 	}
 
-	// get the region labels from the node. check both the stable and deprecated labels
-	if regionStable, ok := node.Labels[corev1.LabelZoneRegionStable]; ok {
-		return regionStable, nil
-	} else if regionDeprecated, okDep := node.Labels[corev1.LabelZoneRegion]; okDep {
-		return regionDeprecated, nil
-	}
-	return "", eris.Errorf("failed to find region label on node %s", node.GetName())
+	return getRegionFromNode(node)
 }
 
 // Get the zone and subzone (if it exists) of a node
@@ -79,4 +87,14 @@ func GetSubLocality(
 	}
 
 	return subLocality, nil
+}
+
+func getRegionFromNode(node *corev1.Node) (string, error) {
+	// get the region labels from the node. check both the stable and deprecated labels
+	if regionStable, ok := node.Labels[corev1.LabelZoneRegionStable]; ok {
+		return regionStable, nil
+	} else if regionDeprecated, okDep := node.Labels[corev1.LabelZoneRegion]; okDep {
+		return regionDeprecated, nil
+	}
+	return "", eris.Errorf("failed to find region label on node %s", node.GetName())
 }

@@ -73,7 +73,7 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 	}
 
 	// add locality to the traffic target
-	region, err := localityutils.GetRegion(service, pods, nodes)
+	region, err := localityutils.GetServiceRegion(service, pods, nodes)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Warnw("could not get region for traffic target", zap.Error(err))
 	} else {

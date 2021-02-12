@@ -13,6 +13,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/dockerutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/localityutils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -105,6 +106,10 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Discov
 		in.Pods(),
 	)
 
+	region, err := localityutils.GetClusterRegion(deployment.ClusterName, in.Nodes())
+	if err != nil {
+		contextutils.LoggerFrom(d.ctx).Warnw("could not get region for cluster", deployment.ClusterName)
+	}
 	mesh := &v1alpha2.Mesh{
 		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
 		Spec: v1alpha2.MeshSpec{
@@ -115,6 +120,7 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Discov
 						Cluster:   deployment.ClusterName,
 						PodLabels: deployment.Spec.Selector.MatchLabels,
 						Version:   version,
+						Region:    region,
 					},
 					SmartDnsProxyingEnabled: isSmartDnsProxyingEnabled(meshConfig),
 					CitadelInfo: &v1alpha2.MeshSpec_Istio_CitadelInfo{
