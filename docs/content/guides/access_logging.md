@@ -196,7 +196,7 @@ kubectl --context REMOTE_CONTEXT -n bookinfo exec -it deploy/ratings-v1 -c ratin
 Assuming the access logs were collected successfully, we can now retrieve them, either
 through `meshctl` or, since enterprise-networking exposes a REST API, using `curl`.
 
-###curl
+### curl
 
 Before proceeding, open a port forward from `enterprise-networking`'s HTTP
 port to your local machine by running the following:
