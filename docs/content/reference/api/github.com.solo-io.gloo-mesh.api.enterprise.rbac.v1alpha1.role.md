@@ -23,6 +23,7 @@ title: "role.proto"
   - [RoleSpec](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec)
   - [RoleSpec.AccessPolicyScope](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessPolicyScope)
   - [RoleSpec.FailoverServiceScope](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.FailoverServiceScope)
+  - [RoleSpec.GlobalServiceScope](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.GlobalServiceScope)
   - [RoleSpec.TrafficPolicyScope](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope)
   - [RoleSpec.VirtualMeshScope](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualMeshScope)
   - [RoleSpec.WasmDeploymentScope](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.WasmDeploymentScope)
@@ -74,6 +75,7 @@ A role represents a set of permissions for creating, updating, and deleting Gloo
   | virtualMeshScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualMeshScope]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualMeshScope" >}}) | repeated | A set of VirtualMesh configuration permissions. Permission granularity is defined at the field level. |
   | accessPolicyScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessPolicyScope]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessPolicyScope" >}}) | repeated | A set of AccessPolicy configuration permissions. Permission granularity is defined at the object level. |
   | failoverServiceScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.FailoverServiceScope]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.FailoverServiceScope" >}}) | repeated | A set of FailoverService configuration permissions. Permission granularity is defined at the object level. |
+  | globalServiceScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.GlobalServiceScope]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.GlobalServiceScope" >}}) | repeated | A set of GlobalService configuration permissions. Permission granularity is defined at the object level. |
   | wasmDeploymentScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.WasmDeploymentScope]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.WasmDeploymentScope" >}}) | repeated | A set of WasmDeployment configuration permissions. Permission granularity is defined at the object level. |
   
 
@@ -107,6 +109,24 @@ Represents permissions for configuring FailoverServices.
 | ----- | ---- | ----- | ----------- |
 | meshRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | A list of permitted mesh references. |
   | backingServices | [][networking.mesh.gloo.solo.io.FailoverServiceSpec.BackingService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.failover_service#networking.mesh.gloo.solo.io.FailoverServiceSpec.BackingService" >}}) | repeated | A list of permitted backing services. |
+  
+
+
+
+
+
+<a name="rbac.enterprise.mesh.gloo.solo.io.RoleSpec.GlobalServiceScope"></a>
+
+### RoleSpec.GlobalServiceScope
+Represents permissions for configuring GlobalServices.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| virtualMeshRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | A list of permitted virtual mesh references. |
+  | meshRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | A list of permitted mesh references. |
+  | serviceSelectors | [][networking.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | A list of permitted backing service selectors. |
+  | services | [][networking.enterprise.mesh.gloo.solo.io.BackingService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.global_service#networking.enterprise.mesh.gloo.solo.io.BackingService" >}}) | repeated | A list of permitted backing services. |
   
 
 

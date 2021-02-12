@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/129
+    description: Add a `meshctl init-plugin-manager` which will download and install the meshctl plugin manager.
