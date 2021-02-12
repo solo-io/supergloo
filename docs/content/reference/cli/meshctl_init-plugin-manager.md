@@ -4,7 +4,7 @@ weight: 5
 ---
 ## meshctl init-plugin-manager
 
-Install the plugin manager
+Install the GLoo Mesh Enterprise CLI plugin manager
 
 ```
 meshctl init-plugin-manager [flags]
