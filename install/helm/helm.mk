@@ -19,7 +19,7 @@ clean-helm:
 	rm -f $(AGENT_CRDS_CHART_DIR)/Chart.yaml
 
 .PHONY: publish-crd-chart
-publish-crd-chart: chart-gen fmt
+publish-crd-chart: fetch-helm chart-gen fmt
 	helm package --destination $(CHART_OUTPUT_DIR)/gloo-mesh-crds $(GLOOMESH_CRDS_CHART_DIR)
 	helm repo index $(CHART_OUTPUT_DIR)/gloo-mesh-crds
 ifeq ($(RELEASE),"true")
@@ -38,9 +38,13 @@ package-helm: publish-crd-chart chart-gen fmt
 
 .PHONY: fetch-helm
 fetch-helm:
+	mkdir -p $(CHART_OUTPUT_DIR)/gloo-mesh
 	gsutil -m rsync -r gs://gloo-mesh/gloo-mesh $(CHART_OUTPUT_DIR)/gloo-mesh
+	mkdir -p $(CHART_OUTPUT_DIR)/gloo-mesh-crds
 	gsutil -m rsync -r gs://gloo-mesh/gloo-mesh-crds $(CHART_OUTPUT_DIR)/gloo-mesh-crds
+	mkdir -p $(CHART_OUTPUT_DIR)/cert-agent
 	gsutil -m rsync -r gs://gloo-mesh/cert-agent $(CHART_OUTPUT_DIR)/cert-agent
+	mkdir -p $(CHART_OUTPUT_DIR)/agent-crds
 	gsutil -m rsync -r gs://gloo-mesh/agent-crds $(CHART_OUTPUT_DIR)/agent-crds
 
 .PHONY: index-helm
