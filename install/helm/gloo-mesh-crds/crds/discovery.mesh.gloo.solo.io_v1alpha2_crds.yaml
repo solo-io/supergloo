@@ -1169,6 +1169,9 @@ spec:
                         type: string
                       description: the labels on the control plane pods (read from the deployment)
                       type: object
+                    region:
+                      description: The region of the cluster in which the control plane has been installed.
+                      type: string
                     version:
                       description: |-
                         Version of the Mesh that has been installed.
@@ -1245,6 +1248,9 @@ spec:
                         type: string
                       description: the labels on the control plane pods (read from the deployment)
                       type: object
+                    region:
+                      description: The region of the cluster in which the control plane has been installed.
+                      type: string
                     version:
                       description: |-
                         Version of the Mesh that has been installed.
@@ -1276,6 +1282,9 @@ spec:
                         type: string
                       description: the labels on the control plane pods (read from the deployment)
                       type: object
+                    region:
+                      description: The region of the cluster in which the control plane has been installed.
+                      type: string
                     version:
                       description: |-
                         Version of the Mesh that has been installed.
@@ -1300,6 +1309,9 @@ spec:
                         type: string
                       description: the labels on the control plane pods (read from the deployment)
                       type: object
+                    region:
+                      description: The region of the cluster in which the control plane has been installed.
+                      type: string
                     version:
                       description: |-
                         Version of the Mesh that has been installed.

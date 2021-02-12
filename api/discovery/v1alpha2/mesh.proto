@@ -141,6 +141,9 @@ message MeshSpec {
         // Determined using the image tag on the
         // Mesh's primary control plane image (e.g. the istio-pilot image tag).
         string version = 4;
+
+        // The region of the cluster in which the control plane has been installed.
+        string region = 5;
     }
 
     // information about the Gloo Mesh Cert-Agent which may be installed

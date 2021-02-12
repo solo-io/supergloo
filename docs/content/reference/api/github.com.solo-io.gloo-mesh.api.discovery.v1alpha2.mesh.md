@@ -206,6 +206,7 @@ The cluster on which the control plane for this mesh is deployed. Not all MeshTy
   | cluster | string |  | Cluster in which the control plane has been installed. |
   | podLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry" >}}) | repeated | the labels on the control plane pods (read from the deployment) |
   | version | string |  | Version of the Mesh that has been installed. Determined using the image tag on the Mesh's primary control plane image (e.g. the istio-pilot image tag). |
+  | region | string |  | The region of the cluster in which the control plane has been installed. |
   
 
 
