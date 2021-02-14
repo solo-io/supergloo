@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
@@ -365,16 +367,31 @@ func getAgent(
 	cluster string,
 	pods corev1sets.PodSet,
 ) *v1alpha2.MeshSpec_AgentInfo {
+	agentNamespace := getCertAgentNamespace(cluster, pods)
+	if agentNamespace == "" {
+		return nil
+	}
+	return &v1alpha2.MeshSpec_AgentInfo{
+		AgentNamespace: agentNamespace,
+	}
+}
+
+func getCertAgentNamespace(
+	cluster string,
+	pods corev1sets.PodSet,
+) string {
+	if defaults.GetAgentCluster() != "" {
+		// discovery is running as the agent, assume the cert agent runs in the same namespace
+		return defaults.GetPodNamespace()
+	}
 	agentPods := pods.List(func(pod *corev1.Pod) bool {
+
 		return pod.ClusterName != cluster ||
 			!labels.SelectorFromSet(agentLabels).Matches(labels.Set(pod.Labels))
 	})
 	if len(agentPods) == 0 {
-		return nil
+		return ""
 	}
 	// currently assume only one agent installed per cluster/mesh
-	agentNamespace := agentPods[0].Namespace
-	return &v1alpha2.MeshSpec_AgentInfo{
-		AgentNamespace: agentNamespace,
-	}
+	return agentPods[0].Namespace
 }

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/solo-io/skv2/pkg/stats"
+
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/settingsutils"
 	"github.com/solo-io/skv2/contrib/pkg/output"
 
@@ -15,7 +17,6 @@ import (
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
-	"github.com/solo-io/gloo-mesh/pkg/common/utils/stats"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
@@ -47,9 +48,10 @@ type RegisterReconcilerFunc func(
 	reconcileOpts input.ReconcileOptions,
 ) (skinput.InputReconciler, error)
 
-// function which defines how the Networking reconciler should apply its output snapshots
+// function which defines how the Networking reconciler should apply its output snapshots.
 type SyncOutputsFunc func(
 	ctx context.Context,
+	inputs input.LocalSnapshot,
 	outputSnap *translation.Outputs,
 	errHandler output.ErrorHandler,
 ) error
@@ -61,7 +63,6 @@ type networkingReconciler struct {
 	applier                    apply.Applier
 	reporter                   reporting.Reporter
 	translator                 translation.Translator
-	registerReconciler         RegisterReconcilerFunc
 	syncOutputs                SyncOutputsFunc
 	mgmtClient                 client.Client
 	history                    *stats.SnapshotHistory
@@ -284,7 +285,9 @@ func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.Lo
 	r.history.SetOutput(outputSnap)
 
 	errHandler := newErrHandler(ctx, in)
-	r.syncOutputs(ctx, outputSnap, errHandler)
+	if err := r.syncOutputs(ctx, in, outputSnap, errHandler); err != nil {
+		return multierror.Append(err, errHandler.Errors())
+	}
 
 	return errHandler.Errors()
 }

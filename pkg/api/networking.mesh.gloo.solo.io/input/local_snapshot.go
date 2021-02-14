@@ -29,6 +29,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/solo-io/skv2/pkg/resource"
 	"github.com/solo-io/skv2/pkg/verifier"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -40,26 +41,104 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	settings_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	settings_mesh_gloo_solo_io_v1alpha2_types "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	settings_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
 
 	discovery_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discovery_mesh_gloo_solo_io_v1alpha2_types "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	discovery_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 
 	networking_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networking_mesh_gloo_solo_io_v1alpha2_types "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	networking_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 
 	networking_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
+	networking_enterprise_mesh_gloo_solo_io_v1alpha1_types "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
 	networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 
 	observability_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1"
+	observability_enterprise_mesh_gloo_solo_io_v1alpha1_types "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1"
 	observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	v1_types "k8s.io/api/core/v1"
 
 	multicluster_solo_io_v1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
+	multicluster_solo_io_v1alpha1_types "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	multicluster_solo_io_v1alpha1_sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 )
+
+// SnapshotGVKs is a list of the GVKs included in this snapshot
+var LocalSnapshotGVKs = []schema.GroupVersionKind{
+
+	schema.GroupVersionKind{
+		Group:   "settings.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "Settings",
+	},
+
+	schema.GroupVersionKind{
+		Group:   "discovery.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "TrafficTarget",
+	},
+	schema.GroupVersionKind{
+		Group:   "discovery.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "Workload",
+	},
+	schema.GroupVersionKind{
+		Group:   "discovery.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "Mesh",
+	},
+
+	schema.GroupVersionKind{
+		Group:   "networking.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "TrafficPolicy",
+	},
+	schema.GroupVersionKind{
+		Group:   "networking.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "AccessPolicy",
+	},
+	schema.GroupVersionKind{
+		Group:   "networking.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "VirtualMesh",
+	},
+	schema.GroupVersionKind{
+		Group:   "networking.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "FailoverService",
+	},
+
+	schema.GroupVersionKind{
+		Group:   "networking.enterprise.mesh.gloo.solo.io",
+		Version: "v1alpha1",
+		Kind:    "WasmDeployment",
+	},
+
+	schema.GroupVersionKind{
+		Group:   "observability.enterprise.mesh.gloo.solo.io",
+		Version: "v1alpha1",
+		Kind:    "AccessLogRecord",
+	},
+
+	schema.GroupVersionKind{
+		Group:   "",
+		Version: "v1",
+		Kind:    "Secret",
+	},
+
+	schema.GroupVersionKind{
+		Group:   "multicluster.solo.io",
+		Version: "v1alpha1",
+		Kind:    "KubernetesCluster",
+	},
+}
 
 // the snapshot of input resources consumed by translation
 type LocalSnapshot interface {
@@ -201,6 +280,165 @@ func NewLocalSnapshot(
 		secrets:            secrets,
 		kubernetesClusters: kubernetesClusters,
 	}
+}
+
+func NewLocalSnapshotFromGeneric(
+	name string,
+	genericSnapshot resource.ClusterSnapshot,
+) LocalSnapshot {
+
+	settingsSet := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+
+	trafficTargetSet := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet()
+	workloadSet := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet()
+	meshSet := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet()
+
+	trafficPolicySet := networking_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficPolicySet()
+	accessPolicySet := networking_mesh_gloo_solo_io_v1alpha2_sets.NewAccessPolicySet()
+	virtualMeshSet := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
+	failoverServiceSet := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
+
+	wasmDeploymentSet := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
+
+	accessLogRecordSet := observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet()
+
+	secretSet := v1_sets.NewSecretSet()
+
+	kubernetesClusterSet := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
+
+	for _, snapshot := range genericSnapshot {
+
+		settings := snapshot[schema.GroupVersionKind{
+			Group:   "settings.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Settings",
+		}]
+
+		for _, settings := range settings {
+			settingsSet.Insert(settings.(*settings_mesh_gloo_solo_io_v1alpha2_types.Settings))
+		}
+
+		trafficTargets := snapshot[schema.GroupVersionKind{
+			Group:   "discovery.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "TrafficTarget",
+		}]
+
+		for _, trafficTarget := range trafficTargets {
+			trafficTargetSet.Insert(trafficTarget.(*discovery_mesh_gloo_solo_io_v1alpha2_types.TrafficTarget))
+		}
+		workloads := snapshot[schema.GroupVersionKind{
+			Group:   "discovery.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Workload",
+		}]
+
+		for _, workload := range workloads {
+			workloadSet.Insert(workload.(*discovery_mesh_gloo_solo_io_v1alpha2_types.Workload))
+		}
+		meshes := snapshot[schema.GroupVersionKind{
+			Group:   "discovery.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "Mesh",
+		}]
+
+		for _, mesh := range meshes {
+			meshSet.Insert(mesh.(*discovery_mesh_gloo_solo_io_v1alpha2_types.Mesh))
+		}
+
+		trafficPolicies := snapshot[schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "TrafficPolicy",
+		}]
+
+		for _, trafficPolicy := range trafficPolicies {
+			trafficPolicySet.Insert(trafficPolicy.(*networking_mesh_gloo_solo_io_v1alpha2_types.TrafficPolicy))
+		}
+		accessPolicies := snapshot[schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "AccessPolicy",
+		}]
+
+		for _, accessPolicy := range accessPolicies {
+			accessPolicySet.Insert(accessPolicy.(*networking_mesh_gloo_solo_io_v1alpha2_types.AccessPolicy))
+		}
+		virtualMeshes := snapshot[schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "VirtualMesh",
+		}]
+
+		for _, virtualMesh := range virtualMeshes {
+			virtualMeshSet.Insert(virtualMesh.(*networking_mesh_gloo_solo_io_v1alpha2_types.VirtualMesh))
+		}
+		failoverServices := snapshot[schema.GroupVersionKind{
+			Group:   "networking.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "FailoverService",
+		}]
+
+		for _, failoverService := range failoverServices {
+			failoverServiceSet.Insert(failoverService.(*networking_mesh_gloo_solo_io_v1alpha2_types.FailoverService))
+		}
+
+		wasmDeployments := snapshot[schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1alpha1",
+			Kind:    "WasmDeployment",
+		}]
+
+		for _, wasmDeployment := range wasmDeployments {
+			wasmDeploymentSet.Insert(wasmDeployment.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1_types.WasmDeployment))
+		}
+
+		accessLogRecords := snapshot[schema.GroupVersionKind{
+			Group:   "observability.enterprise.mesh.gloo.solo.io",
+			Version: "v1alpha1",
+			Kind:    "AccessLogRecord",
+		}]
+
+		for _, accessLogRecord := range accessLogRecords {
+			accessLogRecordSet.Insert(accessLogRecord.(*observability_enterprise_mesh_gloo_solo_io_v1alpha1_types.AccessLogRecord))
+		}
+
+		secrets := snapshot[schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Secret",
+		}]
+
+		for _, secret := range secrets {
+			secretSet.Insert(secret.(*v1_types.Secret))
+		}
+
+		kubernetesClusters := snapshot[schema.GroupVersionKind{
+			Group:   "multicluster.solo.io",
+			Version: "v1alpha1",
+			Kind:    "KubernetesCluster",
+		}]
+
+		for _, kubernetesCluster := range kubernetesClusters {
+			kubernetesClusterSet.Insert(kubernetesCluster.(*multicluster_solo_io_v1alpha1_types.KubernetesCluster))
+		}
+
+	}
+	return NewLocalSnapshot(
+		name,
+		settingsSet,
+		trafficTargetSet,
+		workloadSet,
+		meshSet,
+		trafficPolicySet,
+		accessPolicySet,
+		virtualMeshSet,
+		failoverServiceSet,
+		wasmDeploymentSet,
+		accessLogRecordSet,
+		secretSet,
+		kubernetesClusterSet,
+	)
 }
 
 func (s snapshotLocal) Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet {
@@ -1668,4 +1906,102 @@ func (b *singleClusterLocalBuilder) insertKubernetesClusters(ctx context.Context
 	}
 
 	return nil
+}
+
+// build a snapshot from resources in a single cluster
+type inMemoryLocalBuilder struct {
+	getSnapshot func() (resource.ClusterSnapshot, error)
+}
+
+// Produces snapshots of resources read from the manager for the given cluster
+func NewInMemoryLocalBuilder(
+	getSnapshot func() (resource.ClusterSnapshot, error),
+) LocalBuilder {
+	return &inMemoryLocalBuilder{
+		getSnapshot: getSnapshot,
+	}
+}
+
+func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, opts LocalBuildOptions) (LocalSnapshot, error) {
+	genericSnap, err := i.getSnapshot()
+	if err != nil {
+		return nil, err
+	}
+
+	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+
+	trafficTargets := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet()
+	workloads := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet()
+	meshes := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet()
+
+	trafficPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficPolicySet()
+	accessPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewAccessPolicySet()
+	virtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
+	failoverServices := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
+
+	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
+
+	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet()
+
+	secrets := v1_sets.NewSecretSet()
+
+	kubernetesClusters := multicluster_solo_io_v1alpha1_sets.NewKubernetesClusterSet()
+
+	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject) {
+		switch obj := obj.(type) {
+		// insert Settings
+		case *settings_mesh_gloo_solo_io_v1alpha2_types.Settings:
+			settings.Insert(obj)
+		// insert TrafficTargets
+		case *discovery_mesh_gloo_solo_io_v1alpha2_types.TrafficTarget:
+			trafficTargets.Insert(obj)
+		// insert Workloads
+		case *discovery_mesh_gloo_solo_io_v1alpha2_types.Workload:
+			workloads.Insert(obj)
+		// insert Meshes
+		case *discovery_mesh_gloo_solo_io_v1alpha2_types.Mesh:
+			meshes.Insert(obj)
+		// insert TrafficPolicies
+		case *networking_mesh_gloo_solo_io_v1alpha2_types.TrafficPolicy:
+			trafficPolicies.Insert(obj)
+		// insert AccessPolicies
+		case *networking_mesh_gloo_solo_io_v1alpha2_types.AccessPolicy:
+			accessPolicies.Insert(obj)
+		// insert VirtualMeshes
+		case *networking_mesh_gloo_solo_io_v1alpha2_types.VirtualMesh:
+			virtualMeshes.Insert(obj)
+		// insert FailoverServices
+		case *networking_mesh_gloo_solo_io_v1alpha2_types.FailoverService:
+			failoverServices.Insert(obj)
+		// insert WasmDeployments
+		case *networking_enterprise_mesh_gloo_solo_io_v1alpha1_types.WasmDeployment:
+			wasmDeployments.Insert(obj)
+		// insert AccessLogRecords
+		case *observability_enterprise_mesh_gloo_solo_io_v1alpha1_types.AccessLogRecord:
+			accessLogRecords.Insert(obj)
+		// insert Secrets
+		case *v1_types.Secret:
+			secrets.Insert(obj)
+		// insert KubernetesClusters
+		case *multicluster_solo_io_v1alpha1_types.KubernetesCluster:
+			kubernetesClusters.Insert(obj)
+		}
+	})
+
+	return NewLocalSnapshot(
+		name,
+
+		settings,
+		trafficTargets,
+		workloads,
+		meshes,
+		trafficPolicies,
+		accessPolicies,
+		virtualMeshes,
+		failoverServices,
+		wasmDeployments,
+		accessLogRecords,
+		secrets,
+		kubernetesClusters,
+	), nil
 }

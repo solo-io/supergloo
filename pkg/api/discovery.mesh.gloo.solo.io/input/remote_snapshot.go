@@ -27,6 +27,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/solo-io/skv2/pkg/resource"
 	"github.com/solo-io/skv2/pkg/verifier"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -36,15 +37,75 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
+	appmesh_k8s_aws_v1beta2_types "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	appmesh_k8s_aws_v1beta2 "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2"
 	appmesh_k8s_aws_v1beta2_sets "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/sets"
 
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
+	v1_types "k8s.io/api/core/v1"
 
 	apps_v1 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
 	apps_v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
+	apps_v1_types "k8s.io/api/apps/v1"
 )
+
+// SnapshotGVKs is a list of the GVKs included in this snapshot
+var DiscoveryInputSnapshotGVKs = []schema.GroupVersionKind{
+
+	schema.GroupVersionKind{
+		Group:   "appmesh.k8s.aws",
+		Version: "v1beta2",
+		Kind:    "Mesh",
+	},
+
+	schema.GroupVersionKind{
+		Group:   "",
+		Version: "v1",
+		Kind:    "ConfigMap",
+	},
+	schema.GroupVersionKind{
+		Group:   "",
+		Version: "v1",
+		Kind:    "Service",
+	},
+	schema.GroupVersionKind{
+		Group:   "",
+		Version: "v1",
+		Kind:    "Pod",
+	},
+	schema.GroupVersionKind{
+		Group:   "",
+		Version: "v1",
+		Kind:    "Endpoints",
+	},
+	schema.GroupVersionKind{
+		Group:   "",
+		Version: "v1",
+		Kind:    "Node",
+	},
+
+	schema.GroupVersionKind{
+		Group:   "apps",
+		Version: "v1",
+		Kind:    "Deployment",
+	},
+	schema.GroupVersionKind{
+		Group:   "apps",
+		Version: "v1",
+		Kind:    "ReplicaSet",
+	},
+	schema.GroupVersionKind{
+		Group:   "apps",
+		Version: "v1",
+		Kind:    "DaemonSet",
+	},
+	schema.GroupVersionKind{
+		Group:   "apps",
+		Version: "v1",
+		Kind:    "StatefulSet",
+	},
+}
 
 // the snapshot of input resources consumed by translation
 type DiscoveryInputSnapshot interface {
@@ -150,6 +211,135 @@ func NewDiscoveryInputSnapshot(
 		daemonSets:   daemonSets,
 		statefulSets: statefulSets,
 	}
+}
+
+func NewDiscoveryInputSnapshotFromGeneric(
+	name string,
+	genericSnapshot resource.ClusterSnapshot,
+) DiscoveryInputSnapshot {
+
+	meshSet := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
+
+	configMapSet := v1_sets.NewConfigMapSet()
+	serviceSet := v1_sets.NewServiceSet()
+	podSet := v1_sets.NewPodSet()
+	endpointsSet := v1_sets.NewEndpointsSet()
+	nodeSet := v1_sets.NewNodeSet()
+
+	deploymentSet := apps_v1_sets.NewDeploymentSet()
+	replicaSetSet := apps_v1_sets.NewReplicaSetSet()
+	daemonSetSet := apps_v1_sets.NewDaemonSetSet()
+	statefulSetSet := apps_v1_sets.NewStatefulSetSet()
+
+	for _, snapshot := range genericSnapshot {
+
+		meshes := snapshot[schema.GroupVersionKind{
+			Group:   "appmesh.k8s.aws",
+			Version: "v1beta2",
+			Kind:    "Mesh",
+		}]
+
+		for _, mesh := range meshes {
+			meshSet.Insert(mesh.(*appmesh_k8s_aws_v1beta2_types.Mesh))
+		}
+
+		configMaps := snapshot[schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "ConfigMap",
+		}]
+
+		for _, configMap := range configMaps {
+			configMapSet.Insert(configMap.(*v1_types.ConfigMap))
+		}
+		services := snapshot[schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Service",
+		}]
+
+		for _, service := range services {
+			serviceSet.Insert(service.(*v1_types.Service))
+		}
+		pods := snapshot[schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Pod",
+		}]
+
+		for _, pod := range pods {
+			podSet.Insert(pod.(*v1_types.Pod))
+		}
+		endpoints := snapshot[schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Endpoints",
+		}]
+
+		for _, endpoints := range endpoints {
+			endpointsSet.Insert(endpoints.(*v1_types.Endpoints))
+		}
+		nodes := snapshot[schema.GroupVersionKind{
+			Group:   "",
+			Version: "v1",
+			Kind:    "Node",
+		}]
+
+		for _, node := range nodes {
+			nodeSet.Insert(node.(*v1_types.Node))
+		}
+
+		deployments := snapshot[schema.GroupVersionKind{
+			Group:   "apps",
+			Version: "v1",
+			Kind:    "Deployment",
+		}]
+
+		for _, deployment := range deployments {
+			deploymentSet.Insert(deployment.(*apps_v1_types.Deployment))
+		}
+		replicaSets := snapshot[schema.GroupVersionKind{
+			Group:   "apps",
+			Version: "v1",
+			Kind:    "ReplicaSet",
+		}]
+
+		for _, replicaSet := range replicaSets {
+			replicaSetSet.Insert(replicaSet.(*apps_v1_types.ReplicaSet))
+		}
+		daemonSets := snapshot[schema.GroupVersionKind{
+			Group:   "apps",
+			Version: "v1",
+			Kind:    "DaemonSet",
+		}]
+
+		for _, daemonSet := range daemonSets {
+			daemonSetSet.Insert(daemonSet.(*apps_v1_types.DaemonSet))
+		}
+		statefulSets := snapshot[schema.GroupVersionKind{
+			Group:   "apps",
+			Version: "v1",
+			Kind:    "StatefulSet",
+		}]
+
+		for _, statefulSet := range statefulSets {
+			statefulSetSet.Insert(statefulSet.(*apps_v1_types.StatefulSet))
+		}
+
+	}
+	return NewDiscoveryInputSnapshot(
+		name,
+		meshSet,
+		configMapSet,
+		serviceSet,
+		podSet,
+		endpointsSet,
+		nodeSet,
+		deploymentSet,
+		replicaSetSet,
+		daemonSetSet,
+		statefulSetSet,
+	)
 }
 
 func (s snapshotDiscoveryInput) Meshes() appmesh_k8s_aws_v1beta2_sets.MeshSet {
@@ -1182,4 +1372,88 @@ func (b *singleClusterDiscoveryInputBuilder) insertStatefulSets(ctx context.Cont
 	}
 
 	return nil
+}
+
+// build a snapshot from resources in a single cluster
+type inMemoryDiscoveryInputBuilder struct {
+	getSnapshot func() (resource.ClusterSnapshot, error)
+}
+
+// Produces snapshots of resources read from the manager for the given cluster
+func NewInMemoryDiscoveryInputBuilder(
+	getSnapshot func() (resource.ClusterSnapshot, error),
+) DiscoveryInputBuilder {
+	return &inMemoryDiscoveryInputBuilder{
+		getSnapshot: getSnapshot,
+	}
+}
+
+func (i *inMemoryDiscoveryInputBuilder) BuildSnapshot(ctx context.Context, name string, opts DiscoveryInputBuildOptions) (DiscoveryInputSnapshot, error) {
+	genericSnap, err := i.getSnapshot()
+	if err != nil {
+		return nil, err
+	}
+
+	meshes := appmesh_k8s_aws_v1beta2_sets.NewMeshSet()
+
+	configMaps := v1_sets.NewConfigMapSet()
+	services := v1_sets.NewServiceSet()
+	pods := v1_sets.NewPodSet()
+	endpoints := v1_sets.NewEndpointsSet()
+	nodes := v1_sets.NewNodeSet()
+
+	deployments := apps_v1_sets.NewDeploymentSet()
+	replicaSets := apps_v1_sets.NewReplicaSetSet()
+	daemonSets := apps_v1_sets.NewDaemonSetSet()
+	statefulSets := apps_v1_sets.NewStatefulSetSet()
+
+	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject) {
+		switch obj := obj.(type) {
+		// insert Meshes
+		case *appmesh_k8s_aws_v1beta2_types.Mesh:
+			meshes.Insert(obj)
+		// insert ConfigMaps
+		case *v1_types.ConfigMap:
+			configMaps.Insert(obj)
+		// insert Services
+		case *v1_types.Service:
+			services.Insert(obj)
+		// insert Pods
+		case *v1_types.Pod:
+			pods.Insert(obj)
+		// insert Endpoints
+		case *v1_types.Endpoints:
+			endpoints.Insert(obj)
+		// insert Nodes
+		case *v1_types.Node:
+			nodes.Insert(obj)
+		// insert Deployments
+		case *apps_v1_types.Deployment:
+			deployments.Insert(obj)
+		// insert ReplicaSets
+		case *apps_v1_types.ReplicaSet:
+			replicaSets.Insert(obj)
+		// insert DaemonSets
+		case *apps_v1_types.DaemonSet:
+			daemonSets.Insert(obj)
+		// insert StatefulSets
+		case *apps_v1_types.StatefulSet:
+			statefulSets.Insert(obj)
+		}
+	})
+
+	return NewDiscoveryInputSnapshot(
+		name,
+
+		meshes,
+		configMaps,
+		services,
+		pods,
+		endpoints,
+		nodes,
+		deployments,
+		replicaSets,
+		daemonSets,
+		statefulSets,
+	), nil
 }
