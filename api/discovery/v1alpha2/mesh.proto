@@ -145,12 +145,6 @@ message MeshSpec {
 
         // The region of the cluster in which the control plane has been installed.
         string region = 5;
-//
-//        message SubLocality {
-//            string zone = 1;
-//
-//            string sub_zone = 2;
-//        }
 
         // List of zone+sub_zone pairs which this mesh is a part of
         repeated SubLocality sub_localities = 6;

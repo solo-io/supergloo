@@ -87,10 +87,13 @@ message TrafficTargetSpec {
 
 }
 
-// A zone/subzone within the region that the service is in.
+// A zone/subzone subset within the region that the service is in.
+// This organization allows for simpler, and more compact storage of data
 message SubLocality {
+
     string zone = 1;
-    string subzone = 2;
+
+    string sub_zone = 2;
 }
 
 message TrafficTargetStatus {

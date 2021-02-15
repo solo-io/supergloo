@@ -34,6 +34,7 @@ func GetClusterSubLocalities(
 	for _, node := range allNodes.List(func(node *corev1.Node) bool {
 		return node.GetClusterName() == clusterName
 	}) {
+
 		subLocality, err := getSubLocality(node)
 		if err != nil {
 			return nil, err

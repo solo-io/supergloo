@@ -84,14 +84,14 @@ func (m *TrafficTargetSpec) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *SubLocality) Equal(that interface{}) bool {
+func (m *SubLocalitySubset) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*SubLocality)
+	target, ok := that.(*SubLocalitySubset)
 	if !ok {
-		that2, ok := that.(SubLocality)
+		that2, ok := that.(SubLocalitySubset)
 		if ok {
 			target = &that2
 		} else {
@@ -108,8 +108,15 @@ func (m *SubLocality) Equal(that interface{}) bool {
 		return false
 	}
 
-	if strings.Compare(m.GetSubzone(), target.GetSubzone()) != 0 {
+	if len(m.GetSubzone()) != len(target.GetSubzone()) {
 		return false
+	}
+	for idx, v := range m.GetSubzone() {
+
+		if strings.Compare(v, target.GetSubzone()[idx]) != 0 {
+			return false
+		}
+
 	}
 
 	return true

@@ -58,7 +58,9 @@ spec:
                               description: Each IP can potentially belong to a pod in a different zone/subzone, so need to enumerate that here.
                               properties:
                                 subzone:
-                                  type: string
+                                  items:
+                                    type: string
+                                  type: array
                                 zone:
                                   type: string
                               type: object
@@ -1177,7 +1179,9 @@ spec:
                       items:
                         properties:
                           subzone:
-                            type: string
+                            items:
+                              type: string
+                            type: array
                           zone:
                             type: string
                         type: object
@@ -1266,7 +1270,9 @@ spec:
                       items:
                         properties:
                           subzone:
-                            type: string
+                            items:
+                              type: string
+                            type: array
                           zone:
                             type: string
                         type: object
@@ -1310,7 +1316,9 @@ spec:
                       items:
                         properties:
                           subzone:
-                            type: string
+                            items:
+                              type: string
+                            type: array
                           zone:
                             type: string
                         type: object
@@ -1347,7 +1355,9 @@ spec:
                       items:
                         properties:
                           subzone:
-                            type: string
+                            items:
+                              type: string
+                            type: array
                           zone:
                             type: string
                         type: object
