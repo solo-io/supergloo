@@ -43,6 +43,7 @@ require (
 	github.com/iancoleman/strcase v0.1.3
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
+	github.com/mitchellh/hashstructure v1.0.0
 	github.com/olekukonko/tablewriter v0.0.2
 	github.com/onsi/ginkgo v1.14.1
 	github.com/onsi/gomega v1.10.2
