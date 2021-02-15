@@ -139,7 +139,7 @@ endif
 
 .PHONY: gloo-mesh-image-load
 gloo-mesh-image-load: gloo-mesh-image
-    kind load docker-image --name mgmt-cluster $(GLOOMESH_IMAGE):$(VERSION)
+	kind load docker-image --name mgmt-cluster $(GLOOMESH_IMAGE):$(VERSION)
 
 #----------------------------------------------------------------------------------
 # Build cert-agent + image
