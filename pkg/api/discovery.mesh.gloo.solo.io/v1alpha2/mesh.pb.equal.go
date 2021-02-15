@@ -481,6 +481,10 @@ func (m *MeshSpec_MeshInstallation) Equal(that interface{}) bool {
 		return false
 	}
 
+	if strings.Compare(m.GetRegion(), target.GetRegion()) != 0 {
+		return false
+	}
+
 	return true
 }
 

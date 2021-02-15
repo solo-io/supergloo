@@ -6,6 +6,7 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/rbac.enterprise.mesh.g
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/failover_service.proto";
+import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1alpha1/global_service.proto";
 
 /*
     A role represents a set of permissions for creating, updating, and deleting Gloo Mesh configuration.
@@ -26,8 +27,11 @@ message RoleSpec {
     // A set of FailoverService configuration permissions. Permission granularity is defined at the object level.
     repeated FailoverServiceScope failover_service_scopes = 4;
 
+    // A set of GlobalService configuration permissions. Permission granularity is defined at the object level.
+    repeated GlobalServiceScope global_service_scopes = 5;
+
     // A set of WasmDeployment configuration permissions. Permission granularity is defined at the object level.
-    repeated WasmDeploymentScope wasm_deployment_scopes = 5;
+    repeated WasmDeploymentScope wasm_deployment_scopes = 6;
 
     // Represents permissions for configuring TrafficPolicies.
     message TrafficPolicyScope {
@@ -90,6 +94,21 @@ message RoleSpec {
 
         // A list of permitted backing services.
         repeated .networking.mesh.gloo.solo.io.FailoverServiceSpec.BackingService backing_services = 2;
+    }
+
+    // Represents permissions for configuring GlobalServices.
+    message GlobalServiceScope {
+        // A list of permitted virtual mesh references.
+        repeated .core.skv2.solo.io.ObjectRef virtual_mesh_refs = 1;
+
+        // A list of permitted mesh references.
+        repeated .core.skv2.solo.io.ObjectRef mesh_refs = 2;
+
+        // A list of permitted backing service selectors.
+        repeated .networking.mesh.gloo.solo.io.TrafficTargetSelector service_selectors = 3;
+
+        // A list of permitted backing services.
+        repeated .networking.enterprise.mesh.gloo.solo.io.BackingService services = 4;
     }
 
     // Represents permissions for configuring WasmDeployments.
