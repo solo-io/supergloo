@@ -10,9 +10,6 @@ replace (
 	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 
-	// https://github.com/ory/dockertest/issues/208#issuecomment-686820414
-	golang.org/x/sys => golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6
-
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
 	k8s.io/api => k8s.io/api v0.19.7
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.19.7
@@ -31,10 +28,9 @@ require (
 	github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.9.9-0.20210110222040-c850101e02b6
-	github.com/envoyproxy/protoc-gen-validate v0.4.1 // indirect
 	github.com/gertd/go-pluralize v0.1.1
 	github.com/go-git/go-git/v5 v5.2.0
-	github.com/go-logr/zapr v0.3.0
+	github.com/go-logr/zapr v0.3.0 // indirect
 	github.com/gobuffalo/packr v1.30.1
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/mock v1.4.4
@@ -42,9 +38,9 @@ require (
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
-	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
+	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.0
-	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
+	github.com/iancoleman/strcase v0.1.3
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
 	github.com/olekukonko/tablewriter v0.0.2
@@ -53,7 +49,6 @@ require (
 	github.com/openservicemesh/osm v0.3.0
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.7.1
 	github.com/prometheus/common v0.14.0 // indirect
 	github.com/prometheus/procfs v0.2.0 // indirect
 	github.com/pseudomuto/protoc-gen-doc v1.3.2
@@ -61,15 +56,15 @@ require (
 	github.com/rotisserie/eris v0.4.0
 	github.com/servicemeshinterface/smi-sdk-go v0.4.1
 	github.com/sirupsen/logrus v1.7.0
-	github.com/solo-io/anyvendor v0.0.1
+	github.com/solo-io/anyvendor v0.0.3
 	github.com/solo-io/external-apis v0.1.4
-	github.com/solo-io/go-list-licenses v0.0.4
-	github.com/solo-io/go-utils v0.20.2
+	github.com/solo-io/go-list-licenses v0.1.0
+	github.com/solo-io/go-utils v0.20.4
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
-	github.com/solo-io/skv2 v0.17.2
+	github.com/solo-io/skv2 v0.17.4
 	github.com/solo-io/solo-kit v0.16.0
-	github.com/spf13/afero v1.3.4
+	github.com/spf13/afero v1.5.1
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	go.opencensus.io v0.22.5 // indirect

@@ -498,7 +498,7 @@ type ImagePullOptions struct {
 	// * username: <username>
 	// * password: <password>
 	//
-	// the secret must live in the WASM Cache Agent namespace
+	// the secret must live in the Enterprise Agent namespace
 	// as the FilterDeployment
 	PullSecret string `protobuf:"bytes,1,opt,name=pullSecret,proto3" json:"pullSecret,omitempty"`
 	// skip verifying the image server's TLS certificate

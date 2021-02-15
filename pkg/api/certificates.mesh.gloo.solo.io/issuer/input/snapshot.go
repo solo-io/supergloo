@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/solo-io/skv2/pkg/resource"
 	"github.com/solo-io/skv2/pkg/verifier"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -30,8 +31,24 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	certificates_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
+	certificates_mesh_gloo_solo_io_v1alpha2_types "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
 	certificates_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
 )
+
+// SnapshotGVKs is a list of the GVKs included in this snapshot
+var SnapshotGVKs = []schema.GroupVersionKind{
+
+	schema.GroupVersionKind{
+		Group:   "certificates.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "IssuedCertificate",
+	},
+	schema.GroupVersionKind{
+		Group:   "certificates.mesh.gloo.solo.io",
+		Version: "v1alpha2",
+		Kind:    "CertificateRequest",
+	},
+}
 
 // the snapshot of input resources consumed by translation
 type Snapshot interface {
@@ -79,6 +96,43 @@ func NewSnapshot(
 		issuedCertificates:  issuedCertificates,
 		certificateRequests: certificateRequests,
 	}
+}
+
+func NewSnapshotFromGeneric(
+	name string,
+	genericSnapshot resource.ClusterSnapshot,
+) Snapshot {
+
+	issuedCertificateSet := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
+	certificateRequestSet := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
+
+	for _, snapshot := range genericSnapshot {
+
+		issuedCertificates := snapshot[schema.GroupVersionKind{
+			Group:   "certificates.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "IssuedCertificate",
+		}]
+
+		for _, issuedCertificate := range issuedCertificates {
+			issuedCertificateSet.Insert(issuedCertificate.(*certificates_mesh_gloo_solo_io_v1alpha2_types.IssuedCertificate))
+		}
+		certificateRequests := snapshot[schema.GroupVersionKind{
+			Group:   "certificates.mesh.gloo.solo.io",
+			Version: "v1alpha2",
+			Kind:    "CertificateRequest",
+		}]
+
+		for _, certificateRequest := range certificateRequests {
+			certificateRequestSet.Insert(certificateRequest.(*certificates_mesh_gloo_solo_io_v1alpha2_types.CertificateRequest))
+		}
+
+	}
+	return NewSnapshot(
+		name,
+		issuedCertificateSet,
+		certificateRequestSet,
+	)
 }
 
 func (s snapshot) IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet {
@@ -415,4 +469,46 @@ func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, ce
 	}
 
 	return nil
+}
+
+// build a snapshot from resources in a single cluster
+type inMemoryBuilder struct {
+	getSnapshot func() (resource.ClusterSnapshot, error)
+}
+
+// Produces snapshots of resources read from the manager for the given cluster
+func NewInMemoryBuilder(
+	getSnapshot func() (resource.ClusterSnapshot, error),
+) Builder {
+	return &inMemoryBuilder{
+		getSnapshot: getSnapshot,
+	}
+}
+
+func (i *inMemoryBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
+	genericSnap, err := i.getSnapshot()
+	if err != nil {
+		return nil, err
+	}
+
+	issuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
+	certificateRequests := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
+
+	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject) {
+		switch obj := obj.(type) {
+		// insert IssuedCertificates
+		case *certificates_mesh_gloo_solo_io_v1alpha2_types.IssuedCertificate:
+			issuedCertificates.Insert(obj)
+		// insert CertificateRequests
+		case *certificates_mesh_gloo_solo_io_v1alpha2_types.CertificateRequest:
+			certificateRequests.Insert(obj)
+		}
+	})
+
+	return NewSnapshot(
+		name,
+
+		issuedCertificates,
+		certificateRequests,
+	), nil
 }

@@ -85,9 +85,6 @@ var (
 			}: {
 				"XdsConfig",
 			},
-			corev1.SchemeGroupVersion: {
-				"ConfigMap",
-			},
 		},
 	}
 

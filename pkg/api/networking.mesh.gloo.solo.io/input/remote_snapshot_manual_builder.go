@@ -17,9 +17,6 @@ import (
 
 	security_istio_io_v1beta1_sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
 	security_istio_io_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
-
-	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	v1 "k8s.io/api/core/v1"
 )
 
 type InputRemoteSnapshotManualBuilder struct {
@@ -37,8 +34,6 @@ type InputRemoteSnapshotManualBuilder struct {
 	virtualServices  networking_istio_io_v1alpha3_sets.VirtualServiceSet
 
 	authorizationPolicies security_istio_io_v1beta1_sets.AuthorizationPolicySet
-
-	configMaps v1_sets.ConfigMapSet
 }
 
 func NewInputRemoteSnapshotManualBuilder(name string) *InputRemoteSnapshotManualBuilder {
@@ -57,8 +52,6 @@ func NewInputRemoteSnapshotManualBuilder(name string) *InputRemoteSnapshotManual
 		virtualServices:  networking_istio_io_v1alpha3_sets.NewVirtualServiceSet(),
 
 		authorizationPolicies: security_istio_io_v1beta1_sets.NewAuthorizationPolicySet(),
-
-		configMaps: v1_sets.NewConfigMapSet(),
 	}
 }
 
@@ -78,8 +71,6 @@ func (i *InputRemoteSnapshotManualBuilder) Build() RemoteSnapshot {
 		i.virtualServices,
 
 		i.authorizationPolicies,
-
-		i.configMaps,
 	)
 }
 func (i *InputRemoteSnapshotManualBuilder) AddIssuedCertificates(issuedCertificates []*certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate) *InputRemoteSnapshotManualBuilder {
@@ -116,9 +107,5 @@ func (i *InputRemoteSnapshotManualBuilder) AddVirtualServices(virtualServices []
 }
 func (i *InputRemoteSnapshotManualBuilder) AddAuthorizationPolicies(authorizationPolicies []*security_istio_io_v1beta1.AuthorizationPolicy) *InputRemoteSnapshotManualBuilder {
 	i.authorizationPolicies.Insert(authorizationPolicies...)
-	return i
-}
-func (i *InputRemoteSnapshotManualBuilder) AddConfigMaps(configMaps []*v1.ConfigMap) *InputRemoteSnapshotManualBuilder {
-	i.configMaps.Insert(configMaps...)
 	return i
 }

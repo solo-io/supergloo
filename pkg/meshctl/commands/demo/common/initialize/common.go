@@ -100,7 +100,7 @@ func getGlooMeshInstaller(cluster, chartTemplate, chartVersion string, values ma
 	}
 }
 
-func registerCluster(ctx context.Context, mgmtCluster, cluster string, installWasmAgent bool, box packr.Box) error {
+func registerCluster(ctx context.Context, mgmtCluster, cluster string, installEnterpriseAgent bool, box packr.Box) error {
 	fmt.Printf("Registering cluster %s with cert-agent image\n", cluster)
 	apiServerAddress, err := getApiAddress(cluster, box)
 	if err != nil {
@@ -126,8 +126,8 @@ func registerCluster(ctx context.Context, mgmtCluster, cluster string, installWa
 			ChartPath:   fmt.Sprintf(gloomesh.CertAgentChartUriTemplate, version.Version),
 			ChartValues: "",
 		},
-		WasmAgent: registration.AgentInstallOptions{
-			Install: installWasmAgent,
+		EnterpriseAgent: registration.AgentInstallOptions{
+			Install: installEnterpriseAgent,
 		},
 		Verbose: true,
 	}
