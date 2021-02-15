@@ -208,7 +208,7 @@ The cluster on which the control plane for this mesh is deployed. Not all MeshTy
   | podLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry" >}}) | repeated | the labels on the control plane pods (read from the deployment) |
   | version | string |  | Version of the Mesh that has been installed. Determined using the image tag on the Mesh's primary control plane image (e.g. the istio-pilot image tag). |
   | region | string |  | The region of the cluster in which the control plane has been installed. |
-  | subLocalities | [][discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.SubLocality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.SubLocality" >}}) | repeated | List of zone+sub_zone pairs which this mesh is a part of |
+  | subLocalities | [][discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.SubLocality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.SubLocality" >}}) | repeated | List of zone + sub-zone pairs which this mesh is a part of |
   
 
 
@@ -234,7 +234,7 @@ The cluster on which the control plane for this mesh is deployed. Not all MeshTy
 <a name="discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.SubLocality"></a>
 
 ### MeshSpec.MeshInstallation.SubLocality
-
+A zone/sub-zone within the region that the cluster is in.
 
 
 | Field | Type | Label | Description |

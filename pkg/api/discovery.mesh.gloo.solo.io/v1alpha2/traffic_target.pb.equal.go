@@ -477,7 +477,7 @@ func (m *TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint_SubLocality) Equ
 		return false
 	}
 
-	if strings.Compare(m.GetSubzone(), target.GetSubzone()) != 0 {
+	if strings.Compare(m.GetSubZone(), target.GetSubZone()) != 0 {
 		return false
 	}
 
