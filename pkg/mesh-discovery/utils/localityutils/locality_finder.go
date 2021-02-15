@@ -25,13 +25,59 @@ func GetClusterRegion(clusterName string, allNodes corev1sets.NodeSet) (string, 
 	return getRegionFromNode(node)
 }
 
-func GetClusterSubLocalities(
+// UniqueSubLocalities is a list of UniqueSubLocalities
+// Exists as a sub component so it can be used in enterprise
+// Not thread safe
+type UniqueSubLocalities struct {
+	subLocalities map[string]map[string]*v1alpha2.SubLocality
+}
+
+func (u *UniqueSubLocalities) Add(subLocality *v1alpha2.SubLocality) {
+	if u.subLocalities == nil {
+		u.subLocalities = map[string]map[string]*v1alpha2.SubLocality{}
+	}
+
+	// We do not care to add sub localities with empty zones to the list.
+	// Empty sub-zones are okay however.
+	if subLocality.GetZone() == "" {
+		return
+	}
+
+	if zone, foundZone := u.subLocalities[subLocality.GetZone()]; foundZone {
+		if _, foundSubZone := u.subLocalities[subLocality.GetSubZone()]; foundSubZone {
+			// entry already exists
+			return
+		}
+		// Add the new sublocality in the existing zone
+		zone[subLocality.GetSubZone()] = subLocality
+	} else {
+		u.subLocalities[subLocality.GetZone()] = map[string]*v1alpha2.SubLocality{
+			subLocality.GetSubZone(): subLocality,
+		}
+	}
+
+}
+
+func (u *UniqueSubLocalities) List() []*v1alpha2.SubLocality {
+
+	var result []*v1alpha2.SubLocality
+
+	for _, byZone := range u.subLocalities {
+		for _, bySubZone := range byZone {
+			result = append(result, bySubZone)
+		}
+	}
+
+	return result
+}
+
+func GetUniqueClusterSubLocalities(
 	clusterName string,
 	allNodes corev1sets.NodeSet,
 ) ([]*v1alpha2.SubLocality, error) {
-	var result []*v1alpha2.SubLocality
 
-	localities := map[string]map[string]*v1alpha2.SubLocality{}
+	// Map to ensure uniqueness of sub_localities being added to
+	localities := &UniqueSubLocalities{}
 	for _, node := range allNodes.List(func(node *corev1.Node) bool {
 		return node.GetClusterName() == clusterName
 	}) {
@@ -40,10 +86,11 @@ func GetClusterSubLocalities(
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, subLocality)
+
+		localities.Add(subLocality)
 	}
 
-	return result, nil
+	return localities.List(), nil
 }
 
 // Get the region where a service is running

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	"go.uber.org/zap"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
@@ -117,7 +118,12 @@ func (d *meshDetector) detectMesh(
 
 	region, err := localityutils.GetClusterRegion(deployment.ClusterName, in.Nodes())
 	if err != nil {
-		contextutils.LoggerFrom(d.ctx).Warnw("could not get region for cluster", deployment.ClusterName)
+		contextutils.LoggerFrom(d.ctx).Warnw("could not get region for cluster", deployment.ClusterName, zap.Error(err))
+	}
+
+	subLocalities, err := localityutils.GetUniqueClusterSubLocalities(deployment.GetClusterName(), in.Nodes())
+	if err != nil {
+		contextutils.LoggerFrom(d.ctx).Warnw("could not get sub localities for cluster", deployment.ClusterName, zap.Error(err))
 	}
 
 	mesh := &v1alpha2.Mesh{
@@ -126,11 +132,12 @@ func (d *meshDetector) detectMesh(
 			MeshType: &v1alpha2.MeshSpec_Istio_{
 				Istio: &v1alpha2.MeshSpec_Istio{
 					Installation: &v1alpha2.MeshSpec_MeshInstallation{
-						Namespace: deployment.Namespace,
-						Cluster:   deployment.ClusterName,
-						PodLabels: deployment.Spec.Selector.MatchLabels,
-						Version:   version,
-						Region:    region,
+						Namespace:     deployment.Namespace,
+						Cluster:       deployment.ClusterName,
+						PodLabels:     deployment.Spec.Selector.MatchLabels,
+						Version:       version,
+						Region:        region,
+						SubLocalities: subLocalities,
 					},
 					SmartDnsProxyingEnabled: isSmartDnsProxyingEnabled(meshConfig),
 					CitadelInfo: &v1alpha2.MeshSpec_Istio_CitadelInfo{
