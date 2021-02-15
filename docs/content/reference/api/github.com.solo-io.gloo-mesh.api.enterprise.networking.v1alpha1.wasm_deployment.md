@@ -41,7 +41,7 @@ NOTE: ImagePullOptions are currently unsupported
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| pullSecret | string |  | if a username/password is required, specify here the name of a secret: with keys: * username: <username> * password: <password><br>the secret must live in the WASM Cache Agent namespace as the FilterDeployment |
+| pullSecret | string |  | if a username/password is required, specify here the name of a secret: with keys: * username: <username> * password: <password><br>the secret must live in the Enterprise Agent namespace as the FilterDeployment |
   | insecureSkipVerify | bool |  | skip verifying the image server's TLS certificate |
   | plainHttp | bool |  | use HTTP instead of HTTPS |
   

@@ -48,7 +48,6 @@ import (
 // * ServiceEntries
 // * VirtualServices
 // * AuthorizationPolicies
-// * ConfigMaps
 // from a remote cluster.
 // * Settings
 // * TrafficTargets
@@ -83,7 +82,7 @@ func RegisterInputReconciler(
 	singleClusterReconcileFunc input.SingleClusterReconcileFunc,
 	options ReconcileOptions,
 ) (input.InputReconciler, error) {
-	// [certificates.mesh.gloo.solo.io/v1alpha2 xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1 networking.istio.io/v1alpha3 security.istio.io/v1beta1 v1] false 5
+	// [certificates.mesh.gloo.solo.io/v1alpha2 xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1 networking.istio.io/v1alpha3 security.istio.io/v1beta1] false 4
 	// [settings.mesh.gloo.solo.io/v1alpha2 discovery.mesh.gloo.solo.io/v1alpha2 networking.mesh.gloo.solo.io/v1alpha2 networking.enterprise.mesh.gloo.solo.io/v1alpha1 observability.enterprise.mesh.gloo.solo.io/v1alpha1 v1 multicluster.solo.io/v1alpha1]
 
 	base := input.NewInputReconciler(
@@ -116,9 +115,6 @@ func RegisterInputReconciler(
 
 	// initialize AuthorizationPolicies reconcile loop for remote clusters
 	security_istio_io_v1beta1_controllers.NewMulticlusterAuthorizationPolicyReconcileLoop("AuthorizationPolicy", clusters, options.Remote.AuthorizationPolicies).AddMulticlusterAuthorizationPolicyReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
-
-	// initialize ConfigMaps reconcile loop for remote clusters
-	v1_controllers.NewMulticlusterConfigMapReconcileLoop("ConfigMap", clusters, options.Remote.ConfigMaps).AddMulticlusterConfigMapReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
 
 	// initialize Settings reconcile loop for local cluster
 	if err := settings_mesh_gloo_solo_io_v1alpha2_controllers.NewSettingsReconcileLoop("Settings", mgr, options.Local.Settings).RunSettingsReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
@@ -202,9 +198,6 @@ type RemoteReconcileOptions struct {
 
 	// Options for reconciling AuthorizationPolicies
 	AuthorizationPolicies reconcile.Options
-
-	// Options for reconciling ConfigMaps
-	ConfigMaps reconcile.Options
 
 	// optional predicates for filtering remote events
 	Predicates []predicate.Predicate
@@ -340,21 +333,6 @@ func (r *remoteInputReconciler) ReconcileAuthorizationPolicy(clusterName string,
 }
 
 func (r *remoteInputReconciler) ReconcileAuthorizationPolicyDeletion(clusterName string, obj reconcile.Request) error {
-	ref := &sk_core_v1.ClusterObjectRef{
-		Name:        obj.Name,
-		Namespace:   obj.Namespace,
-		ClusterName: clusterName,
-	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
-	return err
-}
-
-func (r *remoteInputReconciler) ReconcileConfigMap(clusterName string, obj *v1.ConfigMap) (reconcile.Result, error) {
-	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
-}
-
-func (r *remoteInputReconciler) ReconcileConfigMapDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
