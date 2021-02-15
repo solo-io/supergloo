@@ -25,7 +25,7 @@ func ConstructUniqueIpForKubeService(kubeServiceRef ezkube.ClusterResourceId) (n
 	return constructUniqueIp(kubeServiceRef, kubeService)
 }
 
-func ConstructUniqueIpForFailoverService(failoverServiceRef ezkube.ResourceId) (net.IP, error) {
+func ConstructUniqueIpForLocalResource(failoverServiceRef ezkube.ResourceId) (net.IP, error) {
 	return constructUniqueIp(&v1.ClusterObjectRef{
 		Name:        failoverServiceRef.GetName(),
 		Namespace:   failoverServiceRef.GetNamespace(),

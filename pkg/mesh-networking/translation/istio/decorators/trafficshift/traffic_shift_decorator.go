@@ -8,6 +8,7 @@ import (
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
 	v1alpha1sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
@@ -285,6 +286,24 @@ func MakeDestinationRuleSubsetsForFailoverService(
 				return false
 			}
 			return ezkube.RefsMatch(failoverService.Ref, failoverDestination)
+		},
+	)
+}
+
+// make all the necessary subsets for the destination rule for the given GlobalService.
+// traverses all the applied traffic policies to find subsets matching this GlobalService
+func MakeDestinationRuleSubsetsForGlobalService(
+	globalService *v1alpha1.GlobalService,
+	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+) []*networkingv1alpha3spec.Subset {
+	return makeDestinationRuleSubsets(
+		allTrafficTargets,
+		func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool {
+			globalServiceDest := weightedDestination.GetGlobalService()
+			if globalServiceDest == nil {
+				return false
+			}
+			return ezkube.RefsMatch(ezkube.MakeObjectRef(globalService), globalServiceDest)
 		},
 	)
 }

@@ -203,7 +203,7 @@ func (t *translator) translateServiceEntry(
 	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
 	mesh *discoveryv1alpha2.Mesh,
 ) (*networkingv1alpha3.ServiceEntry, error) {
-	ip, err := traffictargetutils.ConstructUniqueIpForFailoverService(failoverService.Ref)
+	ip, err := traffictargetutils.ConstructUniqueIpForLocalResource(failoverService.Ref)
 	if err != nil {
 		return nil, err
 	}
