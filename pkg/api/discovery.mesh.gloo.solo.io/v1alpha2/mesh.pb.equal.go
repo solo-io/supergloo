@@ -485,6 +485,23 @@ func (m *MeshSpec_MeshInstallation) Equal(that interface{}) bool {
 		return false
 	}
 
+	if len(m.GetSubLocalities()) != len(target.GetSubLocalities()) {
+		return false
+	}
+	for idx, v := range m.GetSubLocalities() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetSubLocalities()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetSubLocalities()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	return true
 }
 
@@ -589,6 +606,38 @@ func (m *MeshSpec_Istio_IngressGatewayInfo) Equal(that interface{}) bool {
 	}
 
 	if m.GetTlsContainerPort() != target.GetTlsContainerPort() {
+		return false
+	}
+
+	return true
+}
+
+// Equal function
+func (m *MeshSpec_MeshInstallation_SubLocality) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*MeshSpec_MeshInstallation_SubLocality)
+	if !ok {
+		that2, ok := that.(MeshSpec_MeshInstallation_SubLocality)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetZone(), target.GetZone()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetSubZone(), target.GetSubZone()) != 0 {
 		return false
 	}
 
