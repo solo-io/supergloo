@@ -88,7 +88,7 @@ func (m *TrafficTargetSpec) Hash(hasher hash.Hash64) (uint64, error) {
 }
 
 // Hash function
-func (m *SubLocalitySubset) Hash(hasher hash.Hash64) (uint64, error) {
+func (m *SubLocality) Hash(hasher hash.Hash64) (uint64, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -96,7 +96,7 @@ func (m *SubLocalitySubset) Hash(hasher hash.Hash64) (uint64, error) {
 		hasher = fnv.New64()
 	}
 	var err error
-	if _, err = hasher.Write([]byte("discovery.mesh.gloo.solo.io.github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2.SubLocalitySubset")); err != nil {
+	if _, err = hasher.Write([]byte("discovery.mesh.gloo.solo.io.github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2.SubLocality")); err != nil {
 		return 0, err
 	}
 
@@ -104,12 +104,8 @@ func (m *SubLocalitySubset) Hash(hasher hash.Hash64) (uint64, error) {
 		return 0, err
 	}
 
-	for _, v := range m.GetSubzone() {
-
-		if _, err = hasher.Write([]byte(v)); err != nil {
-			return 0, err
-		}
-
+	if _, err = hasher.Write([]byte(m.GetSubZone())); err != nil {
+		return 0, err
 	}
 
 	return hasher.Sum64(), nil

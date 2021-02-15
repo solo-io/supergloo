@@ -31,6 +31,7 @@ func GetClusterSubLocalities(
 ) ([]*v1alpha2.SubLocality, error) {
 	var result []*v1alpha2.SubLocality
 
+	localities := map[string]map[string]*v1alpha2.SubLocality{}
 	for _, node := range allNodes.List(func(node *corev1.Node) bool {
 		return node.GetClusterName() == clusterName
 	}) {

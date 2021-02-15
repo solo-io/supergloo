@@ -5,13 +5,14 @@
 package mock_input
 
 import (
+	reflect "reflect"
+
 	v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	reconcile "github.com/solo-io/skv2/pkg/reconcile"
 	v1 "k8s.io/api/apps/v1"
 	v10 "k8s.io/api/core/v1"
-	reflect "reflect"
 )
 
 // MockmultiClusterAgentReconciler is a mock of multiClusterAgentReconciler interface
