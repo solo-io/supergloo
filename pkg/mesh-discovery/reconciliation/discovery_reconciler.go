@@ -3,9 +3,13 @@ package reconciliation
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
-	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+
+	"github.com/solo-io/skv2/pkg/stats"
+
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
@@ -18,7 +22,6 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/common/utils/stats"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/output"
@@ -62,6 +65,11 @@ func Start(
 	} else {
 		// run in agent mode;  I/O wired up to local cluster only
 		discoveryInputBuilder = input.NewSingleClusterDiscoveryInputBuilderWithClusterName(localMgr, agentCluster)
+
+		// signal to other parts of Discovery that we are running in AGENT_MODE
+		if err := os.Setenv(defaults.AgentClusterEnv, agentCluster); err != nil {
+			return err
+		}
 	}
 
 	verifier := verifier.NewVerifier(ctx, map[schema.GroupVersionKind]verifier.ServerVerifyOption{
@@ -70,13 +78,14 @@ func Start(
 			Group:   appmeshv1beta2.GroupVersion.Group,
 			Version: appmeshv1beta2.GroupVersion.Version,
 			Kind:    "Mesh",
-		}: verifier.ServerVerifyOption_WarnIfNotPresent,
+		}: verifier.ServerVerifyOption_IgnoreIfNotPresent,
 	})
+	translator := translation.NewTranslator(translation.DefaultDependencyFactory)
 	r := &discoveryReconciler{
 		ctx:                   ctx,
 		discoveryInputBuilder: discoveryInputBuilder,
 		settingsBuilder:       settingsBuilder,
-		translator:            translation.NewTranslator(translation.DefaultDependencyFactory),
+		translator:            translator,
 		localClient:           localMgr.GetClient(),
 		history:               history,
 		verboseMode:           verboseMode,
@@ -86,18 +95,6 @@ func Start(
 
 	filterDiscoveryEvents := skpredicate.SimplePredicate{
 		Filter: skpredicate.SimpleEventFilterFunc(isLeaderElectionObject),
-	}
-
-	// Needed in order to use field selector on metadata.name for Settings CRD.
-	if err := localMgr.GetFieldIndexer().IndexField(
-		ctx,
-		&settingsv1alpha2.Settings{},
-		"metadata.name",
-		func(object client.Object) []string {
-			settings := object.(*settingsv1alpha2.Settings)
-			return []string{settings.Name}
-		}); err != nil {
-		return err
 	}
 
 	if clusters != nil {
@@ -172,9 +169,6 @@ func (r *discoveryReconciler) reconcile(obj ezkube.ClusterResourceId) (bool, err
 			// Ensure that only declared Settings object exists in snapshot.
 			ListOptions: []client.ListOption{
 				client.InNamespace(r.settingsRef.Namespace),
-				client.MatchingFields(map[string]string{
-					"metadata.name": r.settingsRef.Name,
-				}),
 			},
 		},
 	})

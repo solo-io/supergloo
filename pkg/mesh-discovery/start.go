@@ -3,10 +3,12 @@ package mesh_discovery
 import (
 	"context"
 
+	"github.com/solo-io/gloo-mesh/pkg/common/schemes"
+
 	"github.com/spf13/pflag"
 
-	"github.com/solo-io/gloo-mesh/pkg/common/bootstrap"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/reconciliation"
+	"github.com/solo-io/skv2/pkg/bootstrap"
 )
 
 type DiscoveryOpts struct {
@@ -23,24 +25,29 @@ func (opts *DiscoveryOpts) AddToFlags(flags *pflag.FlagSet) {
 // which processes k8s storage events to produce
 // discovered resources.
 func Start(ctx context.Context, opts DiscoveryOpts) error {
-	return bootstrap.Start(ctx, "discovery", func(parameters bootstrap.StartParameters) error {
-		return startReconciler(opts.agentCluster, parameters)
-	}, *opts.Options, opts.agentCluster != "")
+	return bootstrap.Start(
+		ctx,
+		"discovery",
+		StartFunc(opts.agentCluster),
+		*opts.Options,
+		schemes.SchemeBuilder,
+		opts.agentCluster != "",
+	)
 }
 
-// start the main reconcile loop
-func startReconciler(
-	agentCluster string,
-	parameters bootstrap.StartParameters,
-) error {
-	return reconciliation.Start(
-		parameters.Ctx,
-		agentCluster,
-		parameters.MasterManager,
-		parameters.Clusters,
-		parameters.McClient,
-		parameters.SnapshotHistory,
-		parameters.VerboseMode,
-		&parameters.SettingsRef,
-	)
+// the mesh-discovery bootstrap.StartFunc, exposed for use in enterprise
+func StartFunc(agentCluster string) func(ctx context.Context, parameters bootstrap.StartParameters) error {
+	return func(ctx context.Context, parameters bootstrap.StartParameters) error {
+		// start the main reconcile loop
+		return reconciliation.Start(
+			ctx,
+			agentCluster,
+			parameters.MasterManager,
+			parameters.Clusters,
+			parameters.McClient,
+			parameters.SnapshotHistory,
+			parameters.VerboseMode,
+			&parameters.SettingsRef,
+		)
+	}
 }

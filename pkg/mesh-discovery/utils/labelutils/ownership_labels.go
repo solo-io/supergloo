@@ -10,6 +10,7 @@ import (
 // the key used to differentiate discovery resources by
 // the cluster in which they were discovered
 var ClusterLabelKey = fmt.Sprintf("cluster.%s", v1alpha2.SchemeGroupVersion.Group)
+var OwnershipLabelKey = fmt.Sprintf("owner.%s", v1alpha2.SchemeGroupVersion.Group)
 
 // Create a label that identifies the cluster used to discover a resource.
 func ClusterLabels(cluster string) map[string]string {
@@ -25,9 +26,14 @@ func ClusterLabel(cluster string) (string, string) {
 }
 
 // identifies the instance of gloo-mesh discovery that produced the resource.
-// uses pod namespace to identify the instance
+// uses pod namespace to identify the instance.
+// if running in an agent, (AGENT_CLUSTER is set)
 func OwnershipLabels() map[string]string {
+	ownerId := defaults.GetPodNamespace()
+	if agentCluster := defaults.GetAgentCluster(); agentCluster != "" {
+		ownerId += "-" + agentCluster
+	}
 	return map[string]string{
-		fmt.Sprintf("owner.%s", v1alpha2.SchemeGroupVersion.Group): defaults.GetPodNamespace(),
+		fmt.Sprintf(OwnershipLabelKey): ownerId,
 	}
 }

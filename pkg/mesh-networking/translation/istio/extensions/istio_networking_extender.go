@@ -5,10 +5,8 @@ import (
 
 	xdsv1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1"
 
-	"github.com/solo-io/skv2/contrib/pkg/sets"
-	corev1 "k8s.io/api/core/v1"
-
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
@@ -102,16 +100,6 @@ func OutputsToProto(outputs istio.Builder) []*v1alpha1.GeneratedObject {
 		})
 	}
 
-	for _, object := range outputs.GetConfigMaps().List() {
-		object := object // pike
-		generatedObjects = append(generatedObjects, &v1alpha1.GeneratedObject{
-			Metadata: extensions.ObjectMetaToProto(object.ObjectMeta),
-			Type: &v1alpha1.GeneratedObject_ConfigMap_{ConfigMap: &v1alpha1.GeneratedObject_ConfigMap{
-				Data: object.Data,
-			}},
-		})
-	}
-
 	return generatedObjects
 }
 
@@ -162,11 +150,6 @@ func applyPatches(ctx context.Context, outputs istio.Builder, patches []*v1alpha
 			outputs.AddXdsConfigs(&xdsv1alpha1.XdsConfig{
 				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
 				Spec:       *objectType.XdsConfig,
-			})
-		case *v1alpha1.GeneratedObject_ConfigMap_:
-			outputs.AddConfigMaps(&corev1.ConfigMap{
-				ObjectMeta: extensions.ObjectMetaFromProto(patchedObject.Metadata),
-				Data:       objectType.ConfigMap.Data,
 			})
 		default:
 			contextutils.LoggerFrom(ctx).DPanicf("unsupported object type %T", objectType)

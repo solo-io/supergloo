@@ -5,9 +5,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent"
-	"github.com/solo-io/gloo-mesh/pkg/common/bootstrap"
 	"github.com/solo-io/gloo-mesh/pkg/common/version"
 	"github.com/solo-io/go-utils/contextutils"
+	"github.com/solo-io/skv2/pkg/bootstrap"
 	"github.com/spf13/cobra"
 )
 
