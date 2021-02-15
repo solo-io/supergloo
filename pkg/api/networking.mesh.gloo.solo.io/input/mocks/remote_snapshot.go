@@ -11,7 +11,6 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
-	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	v1alpha1sets "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
@@ -166,20 +165,6 @@ func (m *MockRemoteSnapshot) AuthorizationPolicies() v1beta1sets.AuthorizationPo
 func (mr *MockRemoteSnapshotMockRecorder) AuthorizationPolicies() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthorizationPolicies", reflect.TypeOf((*MockRemoteSnapshot)(nil).AuthorizationPolicies))
-}
-
-// ConfigMaps mocks base method
-func (m *MockRemoteSnapshot) ConfigMaps() v1sets.ConfigMapSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConfigMaps")
-	ret0, _ := ret[0].(v1sets.ConfigMapSet)
-	return ret0
-}
-
-// ConfigMaps indicates an expected call of ConfigMaps
-func (mr *MockRemoteSnapshotMockRecorder) ConfigMaps() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigMaps", reflect.TypeOf((*MockRemoteSnapshot)(nil).ConfigMaps))
 }
 
 // SyncStatusesMultiCluster mocks base method

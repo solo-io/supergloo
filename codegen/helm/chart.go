@@ -86,7 +86,7 @@ var AgentCrdsChart = &model.Chart{
 	Data: model.Data{
 		ApiVersion:  "v1",
 		Name:        "agent-crds",
-		Description: "CRDs required by Gloo Mesh remote agents (i.e. cert-agent and wasm-agent).",
+		Description: "CRDs required by Gloo Mesh remote agents (i.e. cert-agent and enterprise-agent).",
 		Version:     version.Version,
 	},
 }

@@ -10,10 +10,10 @@ import (
 	"encoding/json"
 	"sort"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/pkg/multicluster"
+	"github.com/solo-io/skv2/pkg/resource"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/skv2/contrib/pkg/output"
@@ -29,6 +29,26 @@ import (
 // that is missing the partition label
 var MissingRequiredLabelError = func(labelKey, resourceKind string, obj ezkube.ResourceId) error {
 	return eris.Errorf("expected label %v not on labels of %v %v", labelKey, resourceKind, sets.Key(obj))
+}
+
+// SnapshotGVKs is a list of the GVKs included in this snapshot
+var SnapshotGVKs = []schema.GroupVersionKind{
+
+	schema.GroupVersionKind{
+		Group:   "appmesh.k8s.aws",
+		Version: "v1beta2",
+		Kind:    "VirtualService",
+	},
+	schema.GroupVersionKind{
+		Group:   "appmesh.k8s.aws",
+		Version: "v1beta2",
+		Kind:    "VirtualNode",
+	},
+	schema.GroupVersionKind{
+		Group:   "appmesh.k8s.aws",
+		Version: "v1beta2",
+		Kind:    "VirtualRouter",
+	},
 }
 
 // the snapshot of output resources produced by a translation
@@ -625,6 +645,9 @@ type Builder interface {
 
 	// return the difference between the snapshot in this builder's and another
 	Delta(newSnap Builder) output.SnapshotDelta
+
+	// convert this snapshot to its generic form
+	Generic() resource.ClusterSnapshot
 }
 
 func (b *builder) AddVirtualServices(virtualServices ...*appmesh_k8s_aws_v1beta2.VirtualService) {
@@ -765,4 +788,42 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
 	delta.AddInserted(virtualRouterGvk, virtualRouterDelta.Inserted)
 	delta.AddRemoved(virtualRouterGvk, virtualRouterDelta.Removed)
 	return delta
+}
+
+// convert this snapshot to its generic form
+func (b *builder) Generic() resource.ClusterSnapshot {
+	if b == nil {
+		return nil
+	}
+	clusterSnapshots := resource.ClusterSnapshot{}
+
+	for _, obj := range b.GetVirtualServices().List() {
+		cluster := obj.GetClusterName()
+		gvk := schema.GroupVersionKind{
+			Group:   "appmesh.k8s.aws",
+			Version: "v1beta2",
+			Kind:    "VirtualService",
+		}
+		clusterSnapshots.Insert(cluster, gvk, obj)
+	}
+	for _, obj := range b.GetVirtualNodes().List() {
+		cluster := obj.GetClusterName()
+		gvk := schema.GroupVersionKind{
+			Group:   "appmesh.k8s.aws",
+			Version: "v1beta2",
+			Kind:    "VirtualNode",
+		}
+		clusterSnapshots.Insert(cluster, gvk, obj)
+	}
+	for _, obj := range b.GetVirtualRouters().List() {
+		cluster := obj.GetClusterName()
+		gvk := schema.GroupVersionKind{
+			Group:   "appmesh.k8s.aws",
+			Version: "v1beta2",
+			Kind:    "VirtualRouter",
+		}
+		clusterSnapshots.Insert(cluster, gvk, obj)
+	}
+
+	return clusterSnapshots
 }
