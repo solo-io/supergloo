@@ -121,6 +121,11 @@ var LocalSnapshotGVKs = []schema.GroupVersionKind{
 		Version: "v1alpha1",
 		Kind:    "WasmDeployment",
 	},
+	schema.GroupVersionKind{
+		Group:   "networking.enterprise.mesh.gloo.solo.io",
+		Version: "v1alpha1",
+		Kind:    "GlobalService",
+	},
 
 	schema.GroupVersionKind{
 		Group:   "observability.enterprise.mesh.gloo.solo.io",
@@ -307,6 +312,7 @@ func NewLocalSnapshotFromGeneric(
 	failoverServiceSet := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
 	wasmDeploymentSet := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
+	globalServiceSet := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewGlobalServiceSet()
 
 	accessLogRecordSet := observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet()
 
@@ -400,6 +406,15 @@ func NewLocalSnapshotFromGeneric(
 		for _, wasmDeployment := range wasmDeployments {
 			wasmDeploymentSet.Insert(wasmDeployment.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1_types.WasmDeployment))
 		}
+		globalServices := snapshot[schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1alpha1",
+			Kind:    "GlobalService",
+		}]
+
+		for _, globalService := range globalServices {
+			globalServiceSet.Insert(globalService.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1_types.GlobalService))
+		}
 
 		accessLogRecords := snapshot[schema.GroupVersionKind{
 			Group:   "observability.enterprise.mesh.gloo.solo.io",
@@ -443,6 +458,7 @@ func NewLocalSnapshotFromGeneric(
 		virtualMeshSet,
 		failoverServiceSet,
 		wasmDeploymentSet,
+		globalServiceSet,
 		accessLogRecordSet,
 		secretSet,
 		kubernetesClusterSet,
@@ -2059,6 +2075,7 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 	failoverServices := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
+	globalServices := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewGlobalServiceSet()
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet()
 
@@ -2095,6 +2112,9 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		// insert WasmDeployments
 		case *networking_enterprise_mesh_gloo_solo_io_v1alpha1_types.WasmDeployment:
 			wasmDeployments.Insert(obj)
+		// insert GlobalServices
+		case *networking_enterprise_mesh_gloo_solo_io_v1alpha1_types.GlobalService:
+			globalServices.Insert(obj)
 		// insert AccessLogRecords
 		case *observability_enterprise_mesh_gloo_solo_io_v1alpha1_types.AccessLogRecord:
 			accessLogRecords.Insert(obj)
@@ -2119,6 +2139,7 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		virtualMeshes,
 		failoverServices,
 		wasmDeployments,
+		globalServices,
 		accessLogRecords,
 		secrets,
 		kubernetesClusters,
