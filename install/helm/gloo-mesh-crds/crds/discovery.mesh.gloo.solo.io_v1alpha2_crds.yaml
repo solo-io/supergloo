@@ -1172,6 +1172,16 @@ spec:
                     region:
                       description: The region of the cluster in which the control plane has been installed.
                       type: string
+                    subLocalities:
+                      description: List of zone+sub_zone pairs which this mesh is a part of
+                      items:
+                        properties:
+                          subZone:
+                            type: string
+                          zone:
+                            type: string
+                        type: object
+                      type: array
                     version:
                       description: |-
                         Version of the Mesh that has been installed.
@@ -1251,6 +1261,16 @@ spec:
                     region:
                       description: The region of the cluster in which the control plane has been installed.
                       type: string
+                    subLocalities:
+                      description: List of zone+sub_zone pairs which this mesh is a part of
+                      items:
+                        properties:
+                          subZone:
+                            type: string
+                          zone:
+                            type: string
+                        type: object
+                      type: array
                     version:
                       description: |-
                         Version of the Mesh that has been installed.
@@ -1285,6 +1305,16 @@ spec:
                     region:
                       description: The region of the cluster in which the control plane has been installed.
                       type: string
+                    subLocalities:
+                      description: List of zone+sub_zone pairs which this mesh is a part of
+                      items:
+                        properties:
+                          subZone:
+                            type: string
+                          zone:
+                            type: string
+                        type: object
+                      type: array
                     version:
                       description: |-
                         Version of the Mesh that has been installed.
@@ -1312,6 +1342,16 @@ spec:
                     region:
                       description: The region of the cluster in which the control plane has been installed.
                       type: string
+                    subLocalities:
+                      description: List of zone+sub_zone pairs which this mesh is a part of
+                      items:
+                        properties:
+                          subZone:
+                            type: string
+                          zone:
+                            type: string
+                        type: object
+                      type: array
                     version:
                       description: |-
                         Version of the Mesh that has been installed.
