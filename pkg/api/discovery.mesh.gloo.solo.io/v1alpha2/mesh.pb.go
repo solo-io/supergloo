@@ -581,7 +581,7 @@ type MeshSpec_MeshInstallation struct {
 	Version string `protobuf:"bytes,4,opt,name=version,proto3" json:"version,omitempty"`
 	// The region of the cluster in which the control plane has been installed.
 	Region string `protobuf:"bytes,5,opt,name=region,proto3" json:"region,omitempty"`
-	// List of zone+sub_zone pairs which this mesh is a part of
+	// List of zone + sub-zone pairs which this mesh is a part of
 	SubLocalities []*MeshSpec_MeshInstallation_SubLocality `protobuf:"bytes,6,rep,name=sub_localities,json=subLocalities,proto3" json:"sub_localities,omitempty"`
 }
 
@@ -856,6 +856,7 @@ func (x *MeshSpec_Istio_IngressGatewayInfo) GetTlsContainerPort() uint32 {
 	return 0
 }
 
+// A zone/sub-zone within the region that the cluster is in.
 type MeshSpec_MeshInstallation_SubLocality struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

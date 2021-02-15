@@ -55,9 +55,9 @@ spec:
                               description: Labels which belong to this IP, these are taken from the backing workload instance.
                               type: object
                             subLocality:
-                              description: Each IP can potentially belong to a pod in a different zone/subzone, so need to enumerate that here.
+                              description: Each IP can potentially belong to a pod in a different zone/sub-zone, so need to enumerate that here.
                               properties:
-                                subzone:
+                                subZone:
                                   type: string
                                 zone:
                                   type: string
@@ -1173,7 +1173,7 @@ spec:
                       description: The region of the cluster in which the control plane has been installed.
                       type: string
                     subLocalities:
-                      description: List of zone+sub_zone pairs which this mesh is a part of
+                      description: List of zone + sub-zone pairs which this mesh is a part of
                       items:
                         properties:
                           subZone:
@@ -1262,7 +1262,7 @@ spec:
                       description: The region of the cluster in which the control plane has been installed.
                       type: string
                     subLocalities:
-                      description: List of zone+sub_zone pairs which this mesh is a part of
+                      description: List of zone + sub-zone pairs which this mesh is a part of
                       items:
                         properties:
                           subZone:
@@ -1306,7 +1306,7 @@ spec:
                       description: The region of the cluster in which the control plane has been installed.
                       type: string
                     subLocalities:
-                      description: List of zone+sub_zone pairs which this mesh is a part of
+                      description: List of zone + sub-zone pairs which this mesh is a part of
                       items:
                         properties:
                           subZone:
@@ -1343,7 +1343,7 @@ spec:
                       description: The region of the cluster in which the control plane has been installed.
                       type: string
                     subLocalities:
-                      description: List of zone+sub_zone pairs which this mesh is a part of
+                      description: List of zone + sub-zone pairs which this mesh is a part of
                       items:
                         properties:
                           subZone:

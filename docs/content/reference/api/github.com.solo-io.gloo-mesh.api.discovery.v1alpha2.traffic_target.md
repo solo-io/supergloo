@@ -103,7 +103,7 @@ An endpoint exposed by the service
 | ----- | ---- | ----- | ----------- |
 | ipAddress | string |  | IP address |
   | labels | [][discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry" >}}) | repeated | Labels which belong to this IP, these are taken from the backing workload instance. |
-  | subLocality | [discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint.SubLocality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint.SubLocality" >}}) |  | Each IP can potentially belong to a pod in a different zone/subzone, so need to enumerate that here. |
+  | subLocality | [discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint.SubLocality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint.SubLocality" >}}) |  | Each IP can potentially belong to a pod in a different zone/sub-zone, so need to enumerate that here. |
   
 
 
@@ -129,13 +129,13 @@ An endpoint exposed by the service
 <a name="discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint.SubLocality"></a>
 
 ### TrafficTargetSpec.KubeService.EndpointsSubset.Endpoint.SubLocality
-A zone/subzone within the region that the service is in.
+A zone/sub-zone within the region that the service is in.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | zone | string |  |  |
-  | subzone | string |  |  |
+  | subZone | string |  |  |
   
 
 
