@@ -58,7 +58,7 @@ func GetSubLocality(
 	clusterName string,
 	nodeName string,
 	allNodes corev1sets.NodeSet,
-) (*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint_SubLocality, error) {
+) (*v1alpha2.SubLocality, error) {
 	node, err := allNodes.Find(&skv1.ClusterObjectRef{
 		ClusterName: clusterName,
 		Name:        nodeName,
@@ -77,7 +77,7 @@ func GetSubLocality(
 		return nil, eris.Errorf("failed to find zone label on node %s", node.GetName())
 	}
 
-	subLocality := &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint_SubLocality{
+	subLocality := &v1alpha2.SubLocality{
 		Zone: zone,
 	}
 
