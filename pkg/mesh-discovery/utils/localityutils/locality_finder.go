@@ -25,6 +25,25 @@ func GetClusterRegion(clusterName string, allNodes corev1sets.NodeSet) (string, 
 	return getRegionFromNode(node)
 }
 
+func GetClusterSubLocalities(
+	clusterName string,
+	allNodes corev1sets.NodeSet,
+) ([]*v1alpha2.SubLocality, error) {
+	var result []*v1alpha2.SubLocality
+
+	for _, node := range allNodes.List(func(node *corev1.Node) bool {
+		return node.GetClusterName() == clusterName
+	}) {
+		subLocality, err := getSubLocality(node)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, subLocality)
+	}
+
+	return result, nil
+}
+
 // Get the region where a service is running
 func GetServiceRegion(service *corev1.Service, allPods corev1sets.PodSet, allNodes corev1sets.NodeSet) (string, error) {
 	if len(service.Spec.Selector) == 0 {
@@ -58,7 +77,7 @@ func GetSubLocality(
 	clusterName string,
 	nodeName string,
 	allNodes corev1sets.NodeSet,
-) (*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint_SubLocality, error) {
+) (*v1alpha2.SubLocality, error) {
 	node, err := allNodes.Find(&skv1.ClusterObjectRef{
 		ClusterName: clusterName,
 		Name:        nodeName,
@@ -66,6 +85,13 @@ func GetSubLocality(
 	if err != nil {
 		return nil, eris.Wrapf(err, "failed to find node with name %s on cluster %s", nodeName, clusterName)
 	}
+
+	return getSubLocality(node)
+}
+
+func getSubLocality(
+	node *corev1.Node,
+) (*v1alpha2.SubLocality, error) {
 
 	// get the zone labels from the node. check both the stable and deprecated labels
 	var zone string
@@ -77,7 +103,7 @@ func GetSubLocality(
 		return nil, eris.Errorf("failed to find zone label on node %s", node.GetName())
 	}
 
-	subLocality := &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint_SubLocality{
+	subLocality := &v1alpha2.SubLocality{
 		Zone: zone,
 	}
 

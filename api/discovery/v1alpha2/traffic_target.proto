@@ -69,12 +69,6 @@ message TrafficTargetSpec {
                 // Labels which belong to this IP, these are taken from the backing workload instance.
                 map<string, string> labels = 2;
 
-                // A zone/subzone within the region that the service is in.
-                message SubLocality {
-                    string zone = 1;
-                    string subzone = 2;
-                }
-
                 // Each IP can potentially belong to a pod in a different zone/subzone, so need to enumerate that here.
                 SubLocality sub_locality = 3;
             }
@@ -91,6 +85,12 @@ message TrafficTargetSpec {
 
     }
 
+}
+
+// A zone/subzone within the region that the service is in.
+message SubLocality {
+    string zone = 1;
+    string subzone = 2;
 }
 
 message TrafficTargetStatus {

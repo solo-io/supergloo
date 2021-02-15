@@ -56,7 +56,10 @@ func NewMeshDetector(
 }
 
 // returns a mesh for each deployment that contains the istiod image
-func (d *meshDetector) DetectMeshes(in input.DiscoveryInputSnapshot, settings *settingsv1alpha2.DiscoverySettings) (v1alpha2.MeshSlice, error) {
+func (d *meshDetector) DetectMeshes(
+	in input.DiscoveryInputSnapshot,
+	settings *settingsv1alpha2.DiscoverySettings,
+) (v1alpha2.MeshSlice, error) {
 	var meshes v1alpha2.MeshSlice
 	var errs error
 	for _, deployment := range in.Deployments().List() {
@@ -72,7 +75,11 @@ func (d *meshDetector) DetectMeshes(in input.DiscoveryInputSnapshot, settings *s
 	return meshes, errs
 }
 
-func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.DiscoveryInputSnapshot, settings *settingsv1alpha2.DiscoverySettings) (*v1alpha2.Mesh, error) {
+func (d *meshDetector) detectMesh(
+	deployment *appsv1.Deployment,
+	in input.DiscoveryInputSnapshot,
+	settings *settingsv1alpha2.DiscoverySettings,
+) (*v1alpha2.Mesh, error) {
 	version, err := d.getIstiodVersion(deployment)
 	if err != nil {
 		return nil, err
@@ -112,6 +119,7 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Discov
 	if err != nil {
 		contextutils.LoggerFrom(d.ctx).Warnw("could not get region for cluster", deployment.ClusterName)
 	}
+
 	mesh := &v1alpha2.Mesh{
 		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
 		Spec: v1alpha2.MeshSpec{

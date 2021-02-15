@@ -1176,7 +1176,7 @@ spec:
                       description: List of zone+sub_zone pairs which this mesh is a part of
                       items:
                         properties:
-                          subZone:
+                          subzone:
                             type: string
                           zone:
                             type: string
@@ -1265,7 +1265,7 @@ spec:
                       description: List of zone+sub_zone pairs which this mesh is a part of
                       items:
                         properties:
-                          subZone:
+                          subzone:
                             type: string
                           zone:
                             type: string
@@ -1309,7 +1309,7 @@ spec:
                       description: List of zone+sub_zone pairs which this mesh is a part of
                       items:
                         properties:
-                          subZone:
+                          subzone:
                             type: string
                           zone:
                             type: string
@@ -1346,7 +1346,7 @@ spec:
                       description: List of zone+sub_zone pairs which this mesh is a part of
                       items:
                         properties:
-                          subZone:
+                          subzone:
                             type: string
                           zone:
                             type: string
