@@ -5,11 +5,10 @@
 package mock_extensions
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	extensions "github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
+	reflect "reflect"
 )
 
 // MockClientset is a mock of Clientset interface

@@ -435,14 +435,14 @@ var _ = Describe("TrafficTargetDetector", func() {
 										IpAddress: "1",
 										SubLocality: &v1alpha2.SubLocality{
 											Zone:    "zone1",
-											Subzone: "subzone1",
+											SubZone: "subzone1",
 										},
 									},
 									{
 										IpAddress: "2",
 										SubLocality: &v1alpha2.SubLocality{
 											Zone:    "zone2",
-											Subzone: "subzone2",
+											SubZone: "subzone2",
 										},
 									},
 								},

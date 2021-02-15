@@ -110,7 +110,7 @@ func getSubLocality(
 
 	// get the subzone (Istio-specific)
 	if subzone, ok := node.Labels[label.IstioSubZone]; ok {
-		subLocality.Subzone = subzone
+		subLocality.SubZone = subzone
 	}
 
 	return subLocality, nil

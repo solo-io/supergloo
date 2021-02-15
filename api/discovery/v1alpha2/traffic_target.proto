@@ -9,6 +9,8 @@ import "google/protobuf/wrappers.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
+// Generate hash functions for sublocality for easier grouping
+option (extproto.hash_all) = true;
 
 /**
     The TrafficTarget is an abstraction for a traffic target which we have discovered to be part of a

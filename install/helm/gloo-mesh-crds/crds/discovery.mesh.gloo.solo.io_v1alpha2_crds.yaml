@@ -57,10 +57,8 @@ spec:
                             subLocality:
                               description: Each IP can potentially belong to a pod in a different zone/subzone, so need to enumerate that here.
                               properties:
-                                subzone:
-                                  items:
-                                    type: string
-                                  type: array
+                                subZone:
+                                  type: string
                                 zone:
                                   type: string
                               type: object
@@ -1178,10 +1176,8 @@ spec:
                       description: List of zone+sub_zone pairs which this mesh is a part of
                       items:
                         properties:
-                          subzone:
-                            items:
-                              type: string
-                            type: array
+                          subZone:
+                            type: string
                           zone:
                             type: string
                         type: object
@@ -1269,10 +1265,8 @@ spec:
                       description: List of zone+sub_zone pairs which this mesh is a part of
                       items:
                         properties:
-                          subzone:
-                            items:
-                              type: string
-                            type: array
+                          subZone:
+                            type: string
                           zone:
                             type: string
                         type: object
@@ -1315,10 +1309,8 @@ spec:
                       description: List of zone+sub_zone pairs which this mesh is a part of
                       items:
                         properties:
-                          subzone:
-                            items:
-                              type: string
-                            type: array
+                          subZone:
+                            type: string
                           zone:
                             type: string
                         type: object
@@ -1354,10 +1346,8 @@ spec:
                       description: List of zone+sub_zone pairs which this mesh is a part of
                       items:
                         properties:
-                          subzone:
-                            items:
-                              type: string
-                            type: array
+                          subZone:
+                            type: string
                           zone:
                             type: string
                         type: object
