@@ -9,6 +9,8 @@ import "google/protobuf/wrappers.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
+// Generate hash functions for sublocality for easier grouping
+option (extproto.hash_all) = true;
 
 /**
     The TrafficTarget is an abstraction for a traffic target which we have discovered to be part of a
@@ -69,13 +71,7 @@ message TrafficTargetSpec {
                 // Labels which belong to this IP, these are taken from the backing workload instance.
                 map<string, string> labels = 2;
 
-                // A zone/sub-zone within the region that the service is in.
-                message SubLocality {
-                    string zone = 1;
-                    string sub_zone = 2;
-                }
-
-                // Each IP can potentially belong to a pod in a different zone/sub-zone, so need to enumerate that here.
+                // Each IP can potentially belong to a pod in a different zone/subzone, so need to enumerate that here.
                 SubLocality sub_locality = 3;
             }
 
@@ -91,6 +87,15 @@ message TrafficTargetSpec {
 
     }
 
+}
+
+// A zone/subzone subset within the region that the service is in.
+// This organization allows for simpler, and more compact storage of data
+message SubLocality {
+
+    string zone = 1;
+
+    string sub_zone = 2;
 }
 
 message TrafficTargetStatus {
