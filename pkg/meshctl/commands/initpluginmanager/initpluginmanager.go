@@ -18,7 +18,7 @@ func Command(ctx context.Context) *cobra.Command {
 	opts := &options{}
 	cmd := &cobra.Command{
 		Use:   "init-plugin-manager",
-		Short: "Install the GLoo Mesh Enterprise CLI plugin manager",
+		Short: "Install the Gloo Mesh Enterprise CLI plugin manager",
 		// TODO(ryantking): Add link to plugin docs after written
 		RunE: func(cmd *cobra.Command, args []string) error {
 			script, err := downloadScript(ctx)
