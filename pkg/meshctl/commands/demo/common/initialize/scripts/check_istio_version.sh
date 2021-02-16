@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-if istioctl version | grep -E -- '1.7|1.8'
+if istioctl version | grep -E -- '1.7|1.8|1.9'
 then
   exit 0
 else
