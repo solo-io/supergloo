@@ -37,7 +37,7 @@ func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
 		params.ClusterDomains,
 		params.Snapshot.TrafficTargets(),
 		params.Snapshot.FailoverServices(),
-		params.Snapshot.GlobalServices(),
+		params.Snapshot.VirtualDestinations(),
 	)
 }
 
@@ -46,7 +46,7 @@ type trafficShiftDecorator struct {
 	clusterDomains   hostutils.ClusterDomainRegistry
 	trafficTargets   discoveryv1alpha2sets.TrafficTargetSet
 	failoverServices v1alpha2sets.FailoverServiceSet
-	globalServices   v1alpha1sets.GlobalServiceSet
+	globalServices   v1alpha1sets.VirtualDestinationSet
 }
 
 var _ decorators.TrafficPolicyVirtualServiceDecorator = &trafficShiftDecorator{}
@@ -55,7 +55,7 @@ func NewTrafficShiftDecorator(
 	clusterDomains hostutils.ClusterDomainRegistry,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
-	globalServices v1alpha1sets.GlobalServiceSet,
+	globalServices v1alpha1sets.VirtualDestinationSet,
 ) *trafficShiftDecorator {
 	return &trafficShiftDecorator{
 		clusterDomains:   clusterDomains,
@@ -126,10 +126,10 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 			if err != nil {
 				return nil, err
 			}
-		case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_GlobalService:
+		case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_VirtualDestination:
 			var err error
-			trafficShiftDestination, err = d.buildGlobalServiceDestination(
-				destinationType.GlobalService,
+			trafficShiftDestination, err = d.buildVirtualDestinationDestination(
+				destinationType.VirtualDestination,
 				destination.Weight,
 			)
 			if err != nil {
@@ -217,7 +217,7 @@ func (d *trafficShiftDecorator) buildFailoverServiceDestination(
 ) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
 	failoverService, err := d.failoverServices.Find(ezkube.MakeObjectRef(failoverServiceDest))
 	if err != nil {
-		return nil, eris.Wrapf(err, "invalid traffic shift destination %s, GlobalService not found", sets.Key(failoverServiceDest))
+		return nil, eris.Wrapf(err, "invalid traffic shift destination %s, VirtualDestination not found", sets.Key(failoverServiceDest))
 	}
 
 	httpRouteDestination := d.buildHttpRouteDestination(
@@ -230,13 +230,13 @@ func (d *trafficShiftDecorator) buildFailoverServiceDestination(
 	return httpRouteDestination, nil
 }
 
-func (d *trafficShiftDecorator) buildGlobalServiceDestination(
+func (d *trafficShiftDecorator) buildVirtualDestinationDestination(
 	globalServiceDest *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_CustomDestinationReference,
 	weight uint32,
 ) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
 	globalService, err := d.globalServices.Find(ezkube.MakeObjectRef(globalServiceDest))
 	if err != nil {
-		return nil, eris.Wrapf(err, "invalid traffic shift destination %s, GlobalService not found", sets.Key(globalServiceDest))
+		return nil, eris.Wrapf(err, "invalid traffic shift destination %s, VirtualDestination not found", sets.Key(globalServiceDest))
 	}
 
 	httpRouteDestination := d.buildHttpRouteDestination(
@@ -290,16 +290,16 @@ func MakeDestinationRuleSubsetsForFailoverService(
 	)
 }
 
-// make all the necessary subsets for the destination rule for the given GlobalService.
-// traverses all the applied traffic policies to find subsets matching this GlobalService
-func MakeDestinationRuleSubsetsForGlobalService(
-	globalService *v1alpha1.GlobalService,
+// make all the necessary subsets for the destination rule for the given VirtualDestination.
+// traverses all the applied traffic policies to find subsets matching this VirtualDestination
+func MakeDestinationRuleSubsetsForVirtualDestination(
+	globalService *v1alpha1.VirtualDestination,
 	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 ) []*networkingv1alpha3spec.Subset {
 	return makeDestinationRuleSubsets(
 		allTrafficTargets,
 		func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool {
-			globalServiceDest := weightedDestination.GetGlobalService()
+			globalServiceDest := weightedDestination.GetVirtualDestination()
 			if globalServiceDest == nil {
 				return false
 			}
