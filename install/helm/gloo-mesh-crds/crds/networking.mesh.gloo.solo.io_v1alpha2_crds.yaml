@@ -481,31 +481,16 @@ spec:
                         - required:
                           - failoverService
                         - required:
-                          - globalService
+                          - virtualDestination
                     - required:
                       - kubeService
                     - required:
                       - failoverService
                     - required:
-                      - globalService
+                      - virtualDestination
                     properties:
                       failoverService:
                         description: A traffic shift destination targeting a FailoverService.
-                        properties:
-                          name:
-                            description: The name of the FailoverService.
-                            type: string
-                          namespace:
-                            description: The namespace of the FailoverService.
-                            type: string
-                          subset:
-                            additionalProperties:
-                              type: string
-                            description: Subset routing is currently only supported for Istio backing services.
-                            type: object
-                        type: object
-                      globalService:
-                        description: A traffic shift destination targeting a VirtualDestination.
                         properties:
                           name:
                             description: The name of the FailoverService.
@@ -540,6 +525,21 @@ spec:
                             additionalProperties:
                               type: string
                             description: Subset routing is currently only supported on Istio.
+                            type: object
+                        type: object
+                      virtualDestination:
+                        description: A traffic shift destination targeting a VirtualDestination.
+                        properties:
+                          name:
+                            description: The name of the FailoverService.
+                            type: string
+                          namespace:
+                            description: The namespace of the FailoverService.
+                            type: string
+                          subset:
+                            additionalProperties:
+                              type: string
+                            description: Subset routing is currently only supported for Istio backing services.
                             type: object
                         type: object
                       weight:
