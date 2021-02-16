@@ -198,185 +198,185 @@ func (mr *MockWasmDeploymentReconcileLoopMockRecorder) RunWasmDeploymentReconcil
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunWasmDeploymentReconciler", reflect.TypeOf((*MockWasmDeploymentReconcileLoop)(nil).RunWasmDeploymentReconciler), varargs...)
 }
 
-// MockGlobalServiceReconciler is a mock of GlobalServiceReconciler interface
-type MockGlobalServiceReconciler struct {
+// MockVirtualDestinationReconciler is a mock of VirtualDestinationReconciler interface
+type MockVirtualDestinationReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockGlobalServiceReconcilerMockRecorder
+	recorder *MockVirtualDestinationReconcilerMockRecorder
 }
 
-// MockGlobalServiceReconcilerMockRecorder is the mock recorder for MockGlobalServiceReconciler
-type MockGlobalServiceReconcilerMockRecorder struct {
-	mock *MockGlobalServiceReconciler
+// MockVirtualDestinationReconcilerMockRecorder is the mock recorder for MockVirtualDestinationReconciler
+type MockVirtualDestinationReconcilerMockRecorder struct {
+	mock *MockVirtualDestinationReconciler
 }
 
-// NewMockGlobalServiceReconciler creates a new mock instance
-func NewMockGlobalServiceReconciler(ctrl *gomock.Controller) *MockGlobalServiceReconciler {
-	mock := &MockGlobalServiceReconciler{ctrl: ctrl}
-	mock.recorder = &MockGlobalServiceReconcilerMockRecorder{mock}
+// NewMockVirtualDestinationReconciler creates a new mock instance
+func NewMockVirtualDestinationReconciler(ctrl *gomock.Controller) *MockVirtualDestinationReconciler {
+	mock := &MockVirtualDestinationReconciler{ctrl: ctrl}
+	mock.recorder = &MockVirtualDestinationReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockGlobalServiceReconciler) EXPECT() *MockGlobalServiceReconcilerMockRecorder {
+func (m *MockVirtualDestinationReconciler) EXPECT() *MockVirtualDestinationReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileGlobalService mocks base method
-func (m *MockGlobalServiceReconciler) ReconcileGlobalService(obj *v1alpha1.GlobalService) (reconcile.Result, error) {
+// ReconcileVirtualDestination mocks base method
+func (m *MockVirtualDestinationReconciler) ReconcileVirtualDestination(obj *v1alpha1.VirtualDestination) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileGlobalService", obj)
+	ret := m.ctrl.Call(m, "ReconcileVirtualDestination", obj)
 	ret0, _ := ret[0].(reconcile.Result)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ReconcileGlobalService indicates an expected call of ReconcileGlobalService
-func (mr *MockGlobalServiceReconcilerMockRecorder) ReconcileGlobalService(obj interface{}) *gomock.Call {
+// ReconcileVirtualDestination indicates an expected call of ReconcileVirtualDestination
+func (mr *MockVirtualDestinationReconcilerMockRecorder) ReconcileVirtualDestination(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileGlobalService", reflect.TypeOf((*MockGlobalServiceReconciler)(nil).ReconcileGlobalService), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualDestination", reflect.TypeOf((*MockVirtualDestinationReconciler)(nil).ReconcileVirtualDestination), obj)
 }
 
-// MockGlobalServiceDeletionReconciler is a mock of GlobalServiceDeletionReconciler interface
-type MockGlobalServiceDeletionReconciler struct {
+// MockVirtualDestinationDeletionReconciler is a mock of VirtualDestinationDeletionReconciler interface
+type MockVirtualDestinationDeletionReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockGlobalServiceDeletionReconcilerMockRecorder
+	recorder *MockVirtualDestinationDeletionReconcilerMockRecorder
 }
 
-// MockGlobalServiceDeletionReconcilerMockRecorder is the mock recorder for MockGlobalServiceDeletionReconciler
-type MockGlobalServiceDeletionReconcilerMockRecorder struct {
-	mock *MockGlobalServiceDeletionReconciler
+// MockVirtualDestinationDeletionReconcilerMockRecorder is the mock recorder for MockVirtualDestinationDeletionReconciler
+type MockVirtualDestinationDeletionReconcilerMockRecorder struct {
+	mock *MockVirtualDestinationDeletionReconciler
 }
 
-// NewMockGlobalServiceDeletionReconciler creates a new mock instance
-func NewMockGlobalServiceDeletionReconciler(ctrl *gomock.Controller) *MockGlobalServiceDeletionReconciler {
-	mock := &MockGlobalServiceDeletionReconciler{ctrl: ctrl}
-	mock.recorder = &MockGlobalServiceDeletionReconcilerMockRecorder{mock}
+// NewMockVirtualDestinationDeletionReconciler creates a new mock instance
+func NewMockVirtualDestinationDeletionReconciler(ctrl *gomock.Controller) *MockVirtualDestinationDeletionReconciler {
+	mock := &MockVirtualDestinationDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockVirtualDestinationDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockGlobalServiceDeletionReconciler) EXPECT() *MockGlobalServiceDeletionReconcilerMockRecorder {
+func (m *MockVirtualDestinationDeletionReconciler) EXPECT() *MockVirtualDestinationDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileGlobalServiceDeletion mocks base method
-func (m *MockGlobalServiceDeletionReconciler) ReconcileGlobalServiceDeletion(req reconcile.Request) error {
+// ReconcileVirtualDestinationDeletion mocks base method
+func (m *MockVirtualDestinationDeletionReconciler) ReconcileVirtualDestinationDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileGlobalServiceDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileVirtualDestinationDeletion", req)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ReconcileGlobalServiceDeletion indicates an expected call of ReconcileGlobalServiceDeletion
-func (mr *MockGlobalServiceDeletionReconcilerMockRecorder) ReconcileGlobalServiceDeletion(req interface{}) *gomock.Call {
+// ReconcileVirtualDestinationDeletion indicates an expected call of ReconcileVirtualDestinationDeletion
+func (mr *MockVirtualDestinationDeletionReconcilerMockRecorder) ReconcileVirtualDestinationDeletion(req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileGlobalServiceDeletion", reflect.TypeOf((*MockGlobalServiceDeletionReconciler)(nil).ReconcileGlobalServiceDeletion), req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualDestinationDeletion", reflect.TypeOf((*MockVirtualDestinationDeletionReconciler)(nil).ReconcileVirtualDestinationDeletion), req)
 }
 
-// MockGlobalServiceFinalizer is a mock of GlobalServiceFinalizer interface
-type MockGlobalServiceFinalizer struct {
+// MockVirtualDestinationFinalizer is a mock of VirtualDestinationFinalizer interface
+type MockVirtualDestinationFinalizer struct {
 	ctrl     *gomock.Controller
-	recorder *MockGlobalServiceFinalizerMockRecorder
+	recorder *MockVirtualDestinationFinalizerMockRecorder
 }
 
-// MockGlobalServiceFinalizerMockRecorder is the mock recorder for MockGlobalServiceFinalizer
-type MockGlobalServiceFinalizerMockRecorder struct {
-	mock *MockGlobalServiceFinalizer
+// MockVirtualDestinationFinalizerMockRecorder is the mock recorder for MockVirtualDestinationFinalizer
+type MockVirtualDestinationFinalizerMockRecorder struct {
+	mock *MockVirtualDestinationFinalizer
 }
 
-// NewMockGlobalServiceFinalizer creates a new mock instance
-func NewMockGlobalServiceFinalizer(ctrl *gomock.Controller) *MockGlobalServiceFinalizer {
-	mock := &MockGlobalServiceFinalizer{ctrl: ctrl}
-	mock.recorder = &MockGlobalServiceFinalizerMockRecorder{mock}
+// NewMockVirtualDestinationFinalizer creates a new mock instance
+func NewMockVirtualDestinationFinalizer(ctrl *gomock.Controller) *MockVirtualDestinationFinalizer {
+	mock := &MockVirtualDestinationFinalizer{ctrl: ctrl}
+	mock.recorder = &MockVirtualDestinationFinalizerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockGlobalServiceFinalizer) EXPECT() *MockGlobalServiceFinalizerMockRecorder {
+func (m *MockVirtualDestinationFinalizer) EXPECT() *MockVirtualDestinationFinalizerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileGlobalService mocks base method
-func (m *MockGlobalServiceFinalizer) ReconcileGlobalService(obj *v1alpha1.GlobalService) (reconcile.Result, error) {
+// ReconcileVirtualDestination mocks base method
+func (m *MockVirtualDestinationFinalizer) ReconcileVirtualDestination(obj *v1alpha1.VirtualDestination) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileGlobalService", obj)
+	ret := m.ctrl.Call(m, "ReconcileVirtualDestination", obj)
 	ret0, _ := ret[0].(reconcile.Result)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ReconcileGlobalService indicates an expected call of ReconcileGlobalService
-func (mr *MockGlobalServiceFinalizerMockRecorder) ReconcileGlobalService(obj interface{}) *gomock.Call {
+// ReconcileVirtualDestination indicates an expected call of ReconcileVirtualDestination
+func (mr *MockVirtualDestinationFinalizerMockRecorder) ReconcileVirtualDestination(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileGlobalService", reflect.TypeOf((*MockGlobalServiceFinalizer)(nil).ReconcileGlobalService), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualDestination", reflect.TypeOf((*MockVirtualDestinationFinalizer)(nil).ReconcileVirtualDestination), obj)
 }
 
-// GlobalServiceFinalizerName mocks base method
-func (m *MockGlobalServiceFinalizer) GlobalServiceFinalizerName() string {
+// VirtualDestinationFinalizerName mocks base method
+func (m *MockVirtualDestinationFinalizer) VirtualDestinationFinalizerName() string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GlobalServiceFinalizerName")
+	ret := m.ctrl.Call(m, "VirtualDestinationFinalizerName")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// GlobalServiceFinalizerName indicates an expected call of GlobalServiceFinalizerName
-func (mr *MockGlobalServiceFinalizerMockRecorder) GlobalServiceFinalizerName() *gomock.Call {
+// VirtualDestinationFinalizerName indicates an expected call of VirtualDestinationFinalizerName
+func (mr *MockVirtualDestinationFinalizerMockRecorder) VirtualDestinationFinalizerName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GlobalServiceFinalizerName", reflect.TypeOf((*MockGlobalServiceFinalizer)(nil).GlobalServiceFinalizerName))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualDestinationFinalizerName", reflect.TypeOf((*MockVirtualDestinationFinalizer)(nil).VirtualDestinationFinalizerName))
 }
 
-// FinalizeGlobalService mocks base method
-func (m *MockGlobalServiceFinalizer) FinalizeGlobalService(obj *v1alpha1.GlobalService) error {
+// FinalizeVirtualDestination mocks base method
+func (m *MockVirtualDestinationFinalizer) FinalizeVirtualDestination(obj *v1alpha1.VirtualDestination) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FinalizeGlobalService", obj)
+	ret := m.ctrl.Call(m, "FinalizeVirtualDestination", obj)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// FinalizeGlobalService indicates an expected call of FinalizeGlobalService
-func (mr *MockGlobalServiceFinalizerMockRecorder) FinalizeGlobalService(obj interface{}) *gomock.Call {
+// FinalizeVirtualDestination indicates an expected call of FinalizeVirtualDestination
+func (mr *MockVirtualDestinationFinalizerMockRecorder) FinalizeVirtualDestination(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeGlobalService", reflect.TypeOf((*MockGlobalServiceFinalizer)(nil).FinalizeGlobalService), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeVirtualDestination", reflect.TypeOf((*MockVirtualDestinationFinalizer)(nil).FinalizeVirtualDestination), obj)
 }
 
-// MockGlobalServiceReconcileLoop is a mock of GlobalServiceReconcileLoop interface
-type MockGlobalServiceReconcileLoop struct {
+// MockVirtualDestinationReconcileLoop is a mock of VirtualDestinationReconcileLoop interface
+type MockVirtualDestinationReconcileLoop struct {
 	ctrl     *gomock.Controller
-	recorder *MockGlobalServiceReconcileLoopMockRecorder
+	recorder *MockVirtualDestinationReconcileLoopMockRecorder
 }
 
-// MockGlobalServiceReconcileLoopMockRecorder is the mock recorder for MockGlobalServiceReconcileLoop
-type MockGlobalServiceReconcileLoopMockRecorder struct {
-	mock *MockGlobalServiceReconcileLoop
+// MockVirtualDestinationReconcileLoopMockRecorder is the mock recorder for MockVirtualDestinationReconcileLoop
+type MockVirtualDestinationReconcileLoopMockRecorder struct {
+	mock *MockVirtualDestinationReconcileLoop
 }
 
-// NewMockGlobalServiceReconcileLoop creates a new mock instance
-func NewMockGlobalServiceReconcileLoop(ctrl *gomock.Controller) *MockGlobalServiceReconcileLoop {
-	mock := &MockGlobalServiceReconcileLoop{ctrl: ctrl}
-	mock.recorder = &MockGlobalServiceReconcileLoopMockRecorder{mock}
+// NewMockVirtualDestinationReconcileLoop creates a new mock instance
+func NewMockVirtualDestinationReconcileLoop(ctrl *gomock.Controller) *MockVirtualDestinationReconcileLoop {
+	mock := &MockVirtualDestinationReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockVirtualDestinationReconcileLoopMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockGlobalServiceReconcileLoop) EXPECT() *MockGlobalServiceReconcileLoopMockRecorder {
+func (m *MockVirtualDestinationReconcileLoop) EXPECT() *MockVirtualDestinationReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// RunGlobalServiceReconciler mocks base method
-func (m *MockGlobalServiceReconcileLoop) RunGlobalServiceReconciler(ctx context.Context, rec controller.GlobalServiceReconciler, predicates ...predicate.Predicate) error {
+// RunVirtualDestinationReconciler mocks base method
+func (m *MockVirtualDestinationReconcileLoop) RunVirtualDestinationReconciler(ctx context.Context, rec controller.VirtualDestinationReconciler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
 	for _, a := range predicates {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "RunGlobalServiceReconciler", varargs...)
+	ret := m.ctrl.Call(m, "RunVirtualDestinationReconciler", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// RunGlobalServiceReconciler indicates an expected call of RunGlobalServiceReconciler
-func (mr *MockGlobalServiceReconcileLoopMockRecorder) RunGlobalServiceReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+// RunVirtualDestinationReconciler indicates an expected call of RunVirtualDestinationReconciler
+func (mr *MockVirtualDestinationReconcileLoopMockRecorder) RunVirtualDestinationReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunGlobalServiceReconciler", reflect.TypeOf((*MockGlobalServiceReconcileLoop)(nil).RunGlobalServiceReconciler), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunVirtualDestinationReconciler", reflect.TypeOf((*MockVirtualDestinationReconcileLoop)(nil).RunVirtualDestinationReconciler), varargs...)
 }

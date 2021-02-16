@@ -11,27 +11,27 @@ import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
 /*
-    A GlobalService creates a new hostname to which client workloads can send requests.
+    A VirtualDestination creates a new hostname to which client workloads can send requests.
     Requests will be routed based on either a list of backing traffic targets ordered by
     priority, or a list of locality directives. Each traffic target backing the
-    GlobalService must be configured with outlier detection using a traffic policy.
+    VirtualDestination must be configured with outlier detection using a traffic policy.
 
     Currently this feature only supports Services backed by Istio.
 */
-message GlobalServiceSpec {
-  // The DNS name of the GlobalService. Must be unique within the service mesh instance
+message VirtualDestinationSpec {
+  // The DNS name of the VirtualDestination. Must be unique within the service mesh instance
   // since it is used as the hostname with which clients communicate.
   string hostname = 1;
 
-  // The port on which the GlobalService listens.
+  // The port on which the VirtualDestination listens.
   Port port = 2;
 
-  // The GlobalService can be made visible to either a mesh, a VirtualMesh, or multiple meshes that are
+  // The VirtualDestination can be made visible to either a mesh, a VirtualMesh, or multiple meshes that are
   // in the same VirtualMesh.
   oneof export_to {
-    // The VirtualMesh that this GlobalService will be visible to.
+    // The VirtualMesh that this VirtualDestination will be visible to.
     .core.skv2.solo.io.ObjectRef virtual_mesh = 3;
-    // The meshes that this GlobalService will be visible to. If multiple meshes are specified, they must
+    // The meshes that this VirtualDestination will be visible to. If multiple meshes are specified, they must
     // all belong to the same VirtualMesh.
     MeshList mesh_list = 4;
   }
@@ -45,11 +45,11 @@ message GlobalServiceSpec {
     LocalityConfig localized = 6;
   }
 
-  // The port on which the GlobalService listens.
+  // The port on which the VirtualDestination listens.
   message Port {
     // Port number.
     uint32 number = 1;
-    // Protocol of the requests sent to the GlobalService. Must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS.
+    // Protocol of the requests sent to the VirtualDestination. Must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS.
     string protocol = 2;
   }
 
@@ -59,21 +59,21 @@ message GlobalServiceSpec {
   }
 
   // Enables failover based on a list of services. When outlier detection detects that a traffic target in the list
-  // is in an unhealthy state, requests sent to the GlobalService will be routed to the next healthy traffic target
+  // is in an unhealthy state, requests sent to the VirtualDestination will be routed to the next healthy traffic target
   // in the list.
   message BackingServiceList {
-    // The list of services backing the GlobalService, ordered by decreasing priority.
+    // The list of services backing the VirtualDestination, ordered by decreasing priority.
     // All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
     repeated BackingService services = 1;
   }
 
-  // Enables failover based on locality. When a client workload makes a request to the GlobalService, Gloo Mesh will
+  // Enables failover based on locality. When a client workload makes a request to the VirtualDestination, Gloo Mesh will
   // first try to direct traffic to the service instance geographically closest to the client workload. If outlier
   // detection detects that the closest traffic target is in an unhealthy state, requests will instead be routed
   // to a service instance in one of the localities specified in the `to` field. Currently, each locality in the
   // `to` field will be routed to with equal probability if the local instance is unhealthy.
   message LocalityConfig {
-    // Selectors for the services backing the GlobalService.
+    // Selectors for the services backing the VirtualDestination.
     // All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
     repeated .networking.mesh.gloo.solo.io.TrafficTargetSelector service_selectors = 1;
 
@@ -109,8 +109,8 @@ message BackingService {
   }
 }
 
-message GlobalServiceStatus {
-  // The most recent generation observed in the the GlobalService metadata.
+message VirtualDestinationStatus {
+  // The most recent generation observed in the the VirtualDestination metadata.
   // If the observedGeneration does not match generation, the controller has not received the most
   // recent version of this resource.
   int64 observed_generation = 1;
@@ -119,7 +119,7 @@ message GlobalServiceStatus {
   // applied to all target meshes.
   .networking.mesh.gloo.solo.io.ApprovalState state = 2;
 
-  // The status of the GlobalService for each Mesh to which it has been applied.
+  // The status of the VirtualDestination for each Mesh to which it has been applied.
   map<string, .networking.mesh.gloo.solo.io.ApprovalStatus> meshes = 3;
 
   // The traffic targets that comprise this Global Service.

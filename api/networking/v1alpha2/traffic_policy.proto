@@ -144,7 +144,7 @@ message TrafficPolicySpec {
                 // A traffic shift destination targeting a FailoverService.
                 CustomDestinationReference failover_service = 3;
 
-                // A traffic shift destination targeting a GlobalService.
+                // A traffic shift destination targeting a VirtualDestination.
                 CustomDestinationReference global_service = 4;
             }
 

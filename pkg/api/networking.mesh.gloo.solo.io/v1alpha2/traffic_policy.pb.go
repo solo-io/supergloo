@@ -1451,7 +1451,7 @@ type TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService stru
 }
 
 type TrafficPolicySpec_MultiDestination_WeightedDestination_GlobalService struct {
-	// A traffic shift destination targeting a GlobalService.
+	// A traffic shift destination targeting a VirtualDestination.
 	GlobalService *TrafficPolicySpec_MultiDestination_WeightedDestination_CustomDestinationReference `protobuf:"bytes,4,opt,name=global_service,json=globalService,proto3,oneof"`
 }
 

@@ -88,18 +88,18 @@ func (mr *MockClientsetMockRecorder) WasmDeployments() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WasmDeployments", reflect.TypeOf((*MockClientset)(nil).WasmDeployments))
 }
 
-// GlobalServices mocks base method
-func (m *MockClientset) GlobalServices() v1alpha1.GlobalServiceClient {
+// VirtualDestinations mocks base method
+func (m *MockClientset) VirtualDestinations() v1alpha1.VirtualDestinationClient {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GlobalServices")
-	ret0, _ := ret[0].(v1alpha1.GlobalServiceClient)
+	ret := m.ctrl.Call(m, "VirtualDestinations")
+	ret0, _ := ret[0].(v1alpha1.VirtualDestinationClient)
 	return ret0
 }
 
-// GlobalServices indicates an expected call of GlobalServices
-func (mr *MockClientsetMockRecorder) GlobalServices() *gomock.Call {
+// VirtualDestinations indicates an expected call of VirtualDestinations
+func (mr *MockClientsetMockRecorder) VirtualDestinations() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GlobalServices", reflect.TypeOf((*MockClientset)(nil).GlobalServices))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualDestinations", reflect.TypeOf((*MockClientset)(nil).VirtualDestinations))
 }
 
 // MockWasmDeploymentReader is a mock of WasmDeploymentReader interface
@@ -606,506 +606,506 @@ func (mr *MockMulticlusterWasmDeploymentClientMockRecorder) Cluster(cluster inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterWasmDeploymentClient)(nil).Cluster), cluster)
 }
 
-// MockGlobalServiceReader is a mock of GlobalServiceReader interface
-type MockGlobalServiceReader struct {
+// MockVirtualDestinationReader is a mock of VirtualDestinationReader interface
+type MockVirtualDestinationReader struct {
 	ctrl     *gomock.Controller
-	recorder *MockGlobalServiceReaderMockRecorder
+	recorder *MockVirtualDestinationReaderMockRecorder
 }
 
-// MockGlobalServiceReaderMockRecorder is the mock recorder for MockGlobalServiceReader
-type MockGlobalServiceReaderMockRecorder struct {
-	mock *MockGlobalServiceReader
+// MockVirtualDestinationReaderMockRecorder is the mock recorder for MockVirtualDestinationReader
+type MockVirtualDestinationReaderMockRecorder struct {
+	mock *MockVirtualDestinationReader
 }
 
-// NewMockGlobalServiceReader creates a new mock instance
-func NewMockGlobalServiceReader(ctrl *gomock.Controller) *MockGlobalServiceReader {
-	mock := &MockGlobalServiceReader{ctrl: ctrl}
-	mock.recorder = &MockGlobalServiceReaderMockRecorder{mock}
+// NewMockVirtualDestinationReader creates a new mock instance
+func NewMockVirtualDestinationReader(ctrl *gomock.Controller) *MockVirtualDestinationReader {
+	mock := &MockVirtualDestinationReader{ctrl: ctrl}
+	mock.recorder = &MockVirtualDestinationReaderMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockGlobalServiceReader) EXPECT() *MockGlobalServiceReaderMockRecorder {
+func (m *MockVirtualDestinationReader) EXPECT() *MockVirtualDestinationReaderMockRecorder {
 	return m.recorder
 }
 
-// GetGlobalService mocks base method
-func (m *MockGlobalServiceReader) GetGlobalService(ctx context.Context, key client.ObjectKey) (*v1alpha1.GlobalService, error) {
+// GetVirtualDestination mocks base method
+func (m *MockVirtualDestinationReader) GetVirtualDestination(ctx context.Context, key client.ObjectKey) (*v1alpha1.VirtualDestination, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetGlobalService", ctx, key)
-	ret0, _ := ret[0].(*v1alpha1.GlobalService)
+	ret := m.ctrl.Call(m, "GetVirtualDestination", ctx, key)
+	ret0, _ := ret[0].(*v1alpha1.VirtualDestination)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetGlobalService indicates an expected call of GetGlobalService
-func (mr *MockGlobalServiceReaderMockRecorder) GetGlobalService(ctx, key interface{}) *gomock.Call {
+// GetVirtualDestination indicates an expected call of GetVirtualDestination
+func (mr *MockVirtualDestinationReaderMockRecorder) GetVirtualDestination(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGlobalService", reflect.TypeOf((*MockGlobalServiceReader)(nil).GetGlobalService), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVirtualDestination", reflect.TypeOf((*MockVirtualDestinationReader)(nil).GetVirtualDestination), ctx, key)
 }
 
-// ListGlobalService mocks base method
-func (m *MockGlobalServiceReader) ListGlobalService(ctx context.Context, opts ...client.ListOption) (*v1alpha1.GlobalServiceList, error) {
+// ListVirtualDestination mocks base method
+func (m *MockVirtualDestinationReader) ListVirtualDestination(ctx context.Context, opts ...client.ListOption) (*v1alpha1.VirtualDestinationList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "ListGlobalService", varargs...)
-	ret0, _ := ret[0].(*v1alpha1.GlobalServiceList)
+	ret := m.ctrl.Call(m, "ListVirtualDestination", varargs...)
+	ret0, _ := ret[0].(*v1alpha1.VirtualDestinationList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListGlobalService indicates an expected call of ListGlobalService
-func (mr *MockGlobalServiceReaderMockRecorder) ListGlobalService(ctx interface{}, opts ...interface{}) *gomock.Call {
+// ListVirtualDestination indicates an expected call of ListVirtualDestination
+func (mr *MockVirtualDestinationReaderMockRecorder) ListVirtualDestination(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListGlobalService", reflect.TypeOf((*MockGlobalServiceReader)(nil).ListGlobalService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVirtualDestination", reflect.TypeOf((*MockVirtualDestinationReader)(nil).ListVirtualDestination), varargs...)
 }
 
-// MockGlobalServiceWriter is a mock of GlobalServiceWriter interface
-type MockGlobalServiceWriter struct {
+// MockVirtualDestinationWriter is a mock of VirtualDestinationWriter interface
+type MockVirtualDestinationWriter struct {
 	ctrl     *gomock.Controller
-	recorder *MockGlobalServiceWriterMockRecorder
+	recorder *MockVirtualDestinationWriterMockRecorder
 }
 
-// MockGlobalServiceWriterMockRecorder is the mock recorder for MockGlobalServiceWriter
-type MockGlobalServiceWriterMockRecorder struct {
-	mock *MockGlobalServiceWriter
+// MockVirtualDestinationWriterMockRecorder is the mock recorder for MockVirtualDestinationWriter
+type MockVirtualDestinationWriterMockRecorder struct {
+	mock *MockVirtualDestinationWriter
 }
 
-// NewMockGlobalServiceWriter creates a new mock instance
-func NewMockGlobalServiceWriter(ctrl *gomock.Controller) *MockGlobalServiceWriter {
-	mock := &MockGlobalServiceWriter{ctrl: ctrl}
-	mock.recorder = &MockGlobalServiceWriterMockRecorder{mock}
+// NewMockVirtualDestinationWriter creates a new mock instance
+func NewMockVirtualDestinationWriter(ctrl *gomock.Controller) *MockVirtualDestinationWriter {
+	mock := &MockVirtualDestinationWriter{ctrl: ctrl}
+	mock.recorder = &MockVirtualDestinationWriterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockGlobalServiceWriter) EXPECT() *MockGlobalServiceWriterMockRecorder {
+func (m *MockVirtualDestinationWriter) EXPECT() *MockVirtualDestinationWriterMockRecorder {
 	return m.recorder
 }
 
-// CreateGlobalService mocks base method
-func (m *MockGlobalServiceWriter) CreateGlobalService(ctx context.Context, obj *v1alpha1.GlobalService, opts ...client.CreateOption) error {
+// CreateVirtualDestination mocks base method
+func (m *MockVirtualDestinationWriter) CreateVirtualDestination(ctx context.Context, obj *v1alpha1.VirtualDestination, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "CreateGlobalService", varargs...)
+	ret := m.ctrl.Call(m, "CreateVirtualDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateGlobalService indicates an expected call of CreateGlobalService
-func (mr *MockGlobalServiceWriterMockRecorder) CreateGlobalService(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// CreateVirtualDestination indicates an expected call of CreateVirtualDestination
+func (mr *MockVirtualDestinationWriterMockRecorder) CreateVirtualDestination(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGlobalService", reflect.TypeOf((*MockGlobalServiceWriter)(nil).CreateGlobalService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVirtualDestination", reflect.TypeOf((*MockVirtualDestinationWriter)(nil).CreateVirtualDestination), varargs...)
 }
 
-// DeleteGlobalService mocks base method
-func (m *MockGlobalServiceWriter) DeleteGlobalService(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+// DeleteVirtualDestination mocks base method
+func (m *MockVirtualDestinationWriter) DeleteVirtualDestination(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, key}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteGlobalService", varargs...)
+	ret := m.ctrl.Call(m, "DeleteVirtualDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteGlobalService indicates an expected call of DeleteGlobalService
-func (mr *MockGlobalServiceWriterMockRecorder) DeleteGlobalService(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+// DeleteVirtualDestination indicates an expected call of DeleteVirtualDestination
+func (mr *MockVirtualDestinationWriterMockRecorder) DeleteVirtualDestination(ctx, key interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGlobalService", reflect.TypeOf((*MockGlobalServiceWriter)(nil).DeleteGlobalService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVirtualDestination", reflect.TypeOf((*MockVirtualDestinationWriter)(nil).DeleteVirtualDestination), varargs...)
 }
 
-// UpdateGlobalService mocks base method
-func (m *MockGlobalServiceWriter) UpdateGlobalService(ctx context.Context, obj *v1alpha1.GlobalService, opts ...client.UpdateOption) error {
+// UpdateVirtualDestination mocks base method
+func (m *MockVirtualDestinationWriter) UpdateVirtualDestination(ctx context.Context, obj *v1alpha1.VirtualDestination, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateGlobalService", varargs...)
+	ret := m.ctrl.Call(m, "UpdateVirtualDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateGlobalService indicates an expected call of UpdateGlobalService
-func (mr *MockGlobalServiceWriterMockRecorder) UpdateGlobalService(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateVirtualDestination indicates an expected call of UpdateVirtualDestination
+func (mr *MockVirtualDestinationWriterMockRecorder) UpdateVirtualDestination(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateGlobalService", reflect.TypeOf((*MockGlobalServiceWriter)(nil).UpdateGlobalService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVirtualDestination", reflect.TypeOf((*MockVirtualDestinationWriter)(nil).UpdateVirtualDestination), varargs...)
 }
 
-// PatchGlobalService mocks base method
-func (m *MockGlobalServiceWriter) PatchGlobalService(ctx context.Context, obj *v1alpha1.GlobalService, patch client.Patch, opts ...client.PatchOption) error {
+// PatchVirtualDestination mocks base method
+func (m *MockVirtualDestinationWriter) PatchVirtualDestination(ctx context.Context, obj *v1alpha1.VirtualDestination, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchGlobalService", varargs...)
+	ret := m.ctrl.Call(m, "PatchVirtualDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchGlobalService indicates an expected call of PatchGlobalService
-func (mr *MockGlobalServiceWriterMockRecorder) PatchGlobalService(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchVirtualDestination indicates an expected call of PatchVirtualDestination
+func (mr *MockVirtualDestinationWriterMockRecorder) PatchVirtualDestination(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchGlobalService", reflect.TypeOf((*MockGlobalServiceWriter)(nil).PatchGlobalService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchVirtualDestination", reflect.TypeOf((*MockVirtualDestinationWriter)(nil).PatchVirtualDestination), varargs...)
 }
 
-// DeleteAllOfGlobalService mocks base method
-func (m *MockGlobalServiceWriter) DeleteAllOfGlobalService(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+// DeleteAllOfVirtualDestination mocks base method
+func (m *MockVirtualDestinationWriter) DeleteAllOfVirtualDestination(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteAllOfGlobalService", varargs...)
+	ret := m.ctrl.Call(m, "DeleteAllOfVirtualDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteAllOfGlobalService indicates an expected call of DeleteAllOfGlobalService
-func (mr *MockGlobalServiceWriterMockRecorder) DeleteAllOfGlobalService(ctx interface{}, opts ...interface{}) *gomock.Call {
+// DeleteAllOfVirtualDestination indicates an expected call of DeleteAllOfVirtualDestination
+func (mr *MockVirtualDestinationWriterMockRecorder) DeleteAllOfVirtualDestination(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfGlobalService", reflect.TypeOf((*MockGlobalServiceWriter)(nil).DeleteAllOfGlobalService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfVirtualDestination", reflect.TypeOf((*MockVirtualDestinationWriter)(nil).DeleteAllOfVirtualDestination), varargs...)
 }
 
-// UpsertGlobalService mocks base method
-func (m *MockGlobalServiceWriter) UpsertGlobalService(ctx context.Context, obj *v1alpha1.GlobalService, transitionFuncs ...v1alpha1.GlobalServiceTransitionFunction) error {
+// UpsertVirtualDestination mocks base method
+func (m *MockVirtualDestinationWriter) UpsertVirtualDestination(ctx context.Context, obj *v1alpha1.VirtualDestination, transitionFuncs ...v1alpha1.VirtualDestinationTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range transitionFuncs {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertGlobalService", varargs...)
+	ret := m.ctrl.Call(m, "UpsertVirtualDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertGlobalService indicates an expected call of UpsertGlobalService
-func (mr *MockGlobalServiceWriterMockRecorder) UpsertGlobalService(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+// UpsertVirtualDestination indicates an expected call of UpsertVirtualDestination
+func (mr *MockVirtualDestinationWriterMockRecorder) UpsertVirtualDestination(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertGlobalService", reflect.TypeOf((*MockGlobalServiceWriter)(nil).UpsertGlobalService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertVirtualDestination", reflect.TypeOf((*MockVirtualDestinationWriter)(nil).UpsertVirtualDestination), varargs...)
 }
 
-// MockGlobalServiceStatusWriter is a mock of GlobalServiceStatusWriter interface
-type MockGlobalServiceStatusWriter struct {
+// MockVirtualDestinationStatusWriter is a mock of VirtualDestinationStatusWriter interface
+type MockVirtualDestinationStatusWriter struct {
 	ctrl     *gomock.Controller
-	recorder *MockGlobalServiceStatusWriterMockRecorder
+	recorder *MockVirtualDestinationStatusWriterMockRecorder
 }
 
-// MockGlobalServiceStatusWriterMockRecorder is the mock recorder for MockGlobalServiceStatusWriter
-type MockGlobalServiceStatusWriterMockRecorder struct {
-	mock *MockGlobalServiceStatusWriter
+// MockVirtualDestinationStatusWriterMockRecorder is the mock recorder for MockVirtualDestinationStatusWriter
+type MockVirtualDestinationStatusWriterMockRecorder struct {
+	mock *MockVirtualDestinationStatusWriter
 }
 
-// NewMockGlobalServiceStatusWriter creates a new mock instance
-func NewMockGlobalServiceStatusWriter(ctrl *gomock.Controller) *MockGlobalServiceStatusWriter {
-	mock := &MockGlobalServiceStatusWriter{ctrl: ctrl}
-	mock.recorder = &MockGlobalServiceStatusWriterMockRecorder{mock}
+// NewMockVirtualDestinationStatusWriter creates a new mock instance
+func NewMockVirtualDestinationStatusWriter(ctrl *gomock.Controller) *MockVirtualDestinationStatusWriter {
+	mock := &MockVirtualDestinationStatusWriter{ctrl: ctrl}
+	mock.recorder = &MockVirtualDestinationStatusWriterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockGlobalServiceStatusWriter) EXPECT() *MockGlobalServiceStatusWriterMockRecorder {
+func (m *MockVirtualDestinationStatusWriter) EXPECT() *MockVirtualDestinationStatusWriterMockRecorder {
 	return m.recorder
 }
 
-// UpdateGlobalServiceStatus mocks base method
-func (m *MockGlobalServiceStatusWriter) UpdateGlobalServiceStatus(ctx context.Context, obj *v1alpha1.GlobalService, opts ...client.UpdateOption) error {
+// UpdateVirtualDestinationStatus mocks base method
+func (m *MockVirtualDestinationStatusWriter) UpdateVirtualDestinationStatus(ctx context.Context, obj *v1alpha1.VirtualDestination, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateGlobalServiceStatus", varargs...)
+	ret := m.ctrl.Call(m, "UpdateVirtualDestinationStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateGlobalServiceStatus indicates an expected call of UpdateGlobalServiceStatus
-func (mr *MockGlobalServiceStatusWriterMockRecorder) UpdateGlobalServiceStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateVirtualDestinationStatus indicates an expected call of UpdateVirtualDestinationStatus
+func (mr *MockVirtualDestinationStatusWriterMockRecorder) UpdateVirtualDestinationStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateGlobalServiceStatus", reflect.TypeOf((*MockGlobalServiceStatusWriter)(nil).UpdateGlobalServiceStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVirtualDestinationStatus", reflect.TypeOf((*MockVirtualDestinationStatusWriter)(nil).UpdateVirtualDestinationStatus), varargs...)
 }
 
-// PatchGlobalServiceStatus mocks base method
-func (m *MockGlobalServiceStatusWriter) PatchGlobalServiceStatus(ctx context.Context, obj *v1alpha1.GlobalService, patch client.Patch, opts ...client.PatchOption) error {
+// PatchVirtualDestinationStatus mocks base method
+func (m *MockVirtualDestinationStatusWriter) PatchVirtualDestinationStatus(ctx context.Context, obj *v1alpha1.VirtualDestination, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchGlobalServiceStatus", varargs...)
+	ret := m.ctrl.Call(m, "PatchVirtualDestinationStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchGlobalServiceStatus indicates an expected call of PatchGlobalServiceStatus
-func (mr *MockGlobalServiceStatusWriterMockRecorder) PatchGlobalServiceStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchVirtualDestinationStatus indicates an expected call of PatchVirtualDestinationStatus
+func (mr *MockVirtualDestinationStatusWriterMockRecorder) PatchVirtualDestinationStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchGlobalServiceStatus", reflect.TypeOf((*MockGlobalServiceStatusWriter)(nil).PatchGlobalServiceStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchVirtualDestinationStatus", reflect.TypeOf((*MockVirtualDestinationStatusWriter)(nil).PatchVirtualDestinationStatus), varargs...)
 }
 
-// MockGlobalServiceClient is a mock of GlobalServiceClient interface
-type MockGlobalServiceClient struct {
+// MockVirtualDestinationClient is a mock of VirtualDestinationClient interface
+type MockVirtualDestinationClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockGlobalServiceClientMockRecorder
+	recorder *MockVirtualDestinationClientMockRecorder
 }
 
-// MockGlobalServiceClientMockRecorder is the mock recorder for MockGlobalServiceClient
-type MockGlobalServiceClientMockRecorder struct {
-	mock *MockGlobalServiceClient
+// MockVirtualDestinationClientMockRecorder is the mock recorder for MockVirtualDestinationClient
+type MockVirtualDestinationClientMockRecorder struct {
+	mock *MockVirtualDestinationClient
 }
 
-// NewMockGlobalServiceClient creates a new mock instance
-func NewMockGlobalServiceClient(ctrl *gomock.Controller) *MockGlobalServiceClient {
-	mock := &MockGlobalServiceClient{ctrl: ctrl}
-	mock.recorder = &MockGlobalServiceClientMockRecorder{mock}
+// NewMockVirtualDestinationClient creates a new mock instance
+func NewMockVirtualDestinationClient(ctrl *gomock.Controller) *MockVirtualDestinationClient {
+	mock := &MockVirtualDestinationClient{ctrl: ctrl}
+	mock.recorder = &MockVirtualDestinationClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockGlobalServiceClient) EXPECT() *MockGlobalServiceClientMockRecorder {
+func (m *MockVirtualDestinationClient) EXPECT() *MockVirtualDestinationClientMockRecorder {
 	return m.recorder
 }
 
-// GetGlobalService mocks base method
-func (m *MockGlobalServiceClient) GetGlobalService(ctx context.Context, key client.ObjectKey) (*v1alpha1.GlobalService, error) {
+// GetVirtualDestination mocks base method
+func (m *MockVirtualDestinationClient) GetVirtualDestination(ctx context.Context, key client.ObjectKey) (*v1alpha1.VirtualDestination, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetGlobalService", ctx, key)
-	ret0, _ := ret[0].(*v1alpha1.GlobalService)
+	ret := m.ctrl.Call(m, "GetVirtualDestination", ctx, key)
+	ret0, _ := ret[0].(*v1alpha1.VirtualDestination)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetGlobalService indicates an expected call of GetGlobalService
-func (mr *MockGlobalServiceClientMockRecorder) GetGlobalService(ctx, key interface{}) *gomock.Call {
+// GetVirtualDestination indicates an expected call of GetVirtualDestination
+func (mr *MockVirtualDestinationClientMockRecorder) GetVirtualDestination(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGlobalService", reflect.TypeOf((*MockGlobalServiceClient)(nil).GetGlobalService), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVirtualDestination", reflect.TypeOf((*MockVirtualDestinationClient)(nil).GetVirtualDestination), ctx, key)
 }
 
-// ListGlobalService mocks base method
-func (m *MockGlobalServiceClient) ListGlobalService(ctx context.Context, opts ...client.ListOption) (*v1alpha1.GlobalServiceList, error) {
+// ListVirtualDestination mocks base method
+func (m *MockVirtualDestinationClient) ListVirtualDestination(ctx context.Context, opts ...client.ListOption) (*v1alpha1.VirtualDestinationList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "ListGlobalService", varargs...)
-	ret0, _ := ret[0].(*v1alpha1.GlobalServiceList)
+	ret := m.ctrl.Call(m, "ListVirtualDestination", varargs...)
+	ret0, _ := ret[0].(*v1alpha1.VirtualDestinationList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListGlobalService indicates an expected call of ListGlobalService
-func (mr *MockGlobalServiceClientMockRecorder) ListGlobalService(ctx interface{}, opts ...interface{}) *gomock.Call {
+// ListVirtualDestination indicates an expected call of ListVirtualDestination
+func (mr *MockVirtualDestinationClientMockRecorder) ListVirtualDestination(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListGlobalService", reflect.TypeOf((*MockGlobalServiceClient)(nil).ListGlobalService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVirtualDestination", reflect.TypeOf((*MockVirtualDestinationClient)(nil).ListVirtualDestination), varargs...)
 }
 
-// CreateGlobalService mocks base method
-func (m *MockGlobalServiceClient) CreateGlobalService(ctx context.Context, obj *v1alpha1.GlobalService, opts ...client.CreateOption) error {
+// CreateVirtualDestination mocks base method
+func (m *MockVirtualDestinationClient) CreateVirtualDestination(ctx context.Context, obj *v1alpha1.VirtualDestination, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "CreateGlobalService", varargs...)
+	ret := m.ctrl.Call(m, "CreateVirtualDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateGlobalService indicates an expected call of CreateGlobalService
-func (mr *MockGlobalServiceClientMockRecorder) CreateGlobalService(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// CreateVirtualDestination indicates an expected call of CreateVirtualDestination
+func (mr *MockVirtualDestinationClientMockRecorder) CreateVirtualDestination(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGlobalService", reflect.TypeOf((*MockGlobalServiceClient)(nil).CreateGlobalService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVirtualDestination", reflect.TypeOf((*MockVirtualDestinationClient)(nil).CreateVirtualDestination), varargs...)
 }
 
-// DeleteGlobalService mocks base method
-func (m *MockGlobalServiceClient) DeleteGlobalService(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+// DeleteVirtualDestination mocks base method
+func (m *MockVirtualDestinationClient) DeleteVirtualDestination(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, key}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteGlobalService", varargs...)
+	ret := m.ctrl.Call(m, "DeleteVirtualDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteGlobalService indicates an expected call of DeleteGlobalService
-func (mr *MockGlobalServiceClientMockRecorder) DeleteGlobalService(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+// DeleteVirtualDestination indicates an expected call of DeleteVirtualDestination
+func (mr *MockVirtualDestinationClientMockRecorder) DeleteVirtualDestination(ctx, key interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGlobalService", reflect.TypeOf((*MockGlobalServiceClient)(nil).DeleteGlobalService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVirtualDestination", reflect.TypeOf((*MockVirtualDestinationClient)(nil).DeleteVirtualDestination), varargs...)
 }
 
-// UpdateGlobalService mocks base method
-func (m *MockGlobalServiceClient) UpdateGlobalService(ctx context.Context, obj *v1alpha1.GlobalService, opts ...client.UpdateOption) error {
+// UpdateVirtualDestination mocks base method
+func (m *MockVirtualDestinationClient) UpdateVirtualDestination(ctx context.Context, obj *v1alpha1.VirtualDestination, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateGlobalService", varargs...)
+	ret := m.ctrl.Call(m, "UpdateVirtualDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateGlobalService indicates an expected call of UpdateGlobalService
-func (mr *MockGlobalServiceClientMockRecorder) UpdateGlobalService(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateVirtualDestination indicates an expected call of UpdateVirtualDestination
+func (mr *MockVirtualDestinationClientMockRecorder) UpdateVirtualDestination(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateGlobalService", reflect.TypeOf((*MockGlobalServiceClient)(nil).UpdateGlobalService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVirtualDestination", reflect.TypeOf((*MockVirtualDestinationClient)(nil).UpdateVirtualDestination), varargs...)
 }
 
-// PatchGlobalService mocks base method
-func (m *MockGlobalServiceClient) PatchGlobalService(ctx context.Context, obj *v1alpha1.GlobalService, patch client.Patch, opts ...client.PatchOption) error {
+// PatchVirtualDestination mocks base method
+func (m *MockVirtualDestinationClient) PatchVirtualDestination(ctx context.Context, obj *v1alpha1.VirtualDestination, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchGlobalService", varargs...)
+	ret := m.ctrl.Call(m, "PatchVirtualDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchGlobalService indicates an expected call of PatchGlobalService
-func (mr *MockGlobalServiceClientMockRecorder) PatchGlobalService(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchVirtualDestination indicates an expected call of PatchVirtualDestination
+func (mr *MockVirtualDestinationClientMockRecorder) PatchVirtualDestination(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchGlobalService", reflect.TypeOf((*MockGlobalServiceClient)(nil).PatchGlobalService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchVirtualDestination", reflect.TypeOf((*MockVirtualDestinationClient)(nil).PatchVirtualDestination), varargs...)
 }
 
-// DeleteAllOfGlobalService mocks base method
-func (m *MockGlobalServiceClient) DeleteAllOfGlobalService(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+// DeleteAllOfVirtualDestination mocks base method
+func (m *MockVirtualDestinationClient) DeleteAllOfVirtualDestination(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteAllOfGlobalService", varargs...)
+	ret := m.ctrl.Call(m, "DeleteAllOfVirtualDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteAllOfGlobalService indicates an expected call of DeleteAllOfGlobalService
-func (mr *MockGlobalServiceClientMockRecorder) DeleteAllOfGlobalService(ctx interface{}, opts ...interface{}) *gomock.Call {
+// DeleteAllOfVirtualDestination indicates an expected call of DeleteAllOfVirtualDestination
+func (mr *MockVirtualDestinationClientMockRecorder) DeleteAllOfVirtualDestination(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfGlobalService", reflect.TypeOf((*MockGlobalServiceClient)(nil).DeleteAllOfGlobalService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfVirtualDestination", reflect.TypeOf((*MockVirtualDestinationClient)(nil).DeleteAllOfVirtualDestination), varargs...)
 }
 
-// UpsertGlobalService mocks base method
-func (m *MockGlobalServiceClient) UpsertGlobalService(ctx context.Context, obj *v1alpha1.GlobalService, transitionFuncs ...v1alpha1.GlobalServiceTransitionFunction) error {
+// UpsertVirtualDestination mocks base method
+func (m *MockVirtualDestinationClient) UpsertVirtualDestination(ctx context.Context, obj *v1alpha1.VirtualDestination, transitionFuncs ...v1alpha1.VirtualDestinationTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range transitionFuncs {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertGlobalService", varargs...)
+	ret := m.ctrl.Call(m, "UpsertVirtualDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertGlobalService indicates an expected call of UpsertGlobalService
-func (mr *MockGlobalServiceClientMockRecorder) UpsertGlobalService(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+// UpsertVirtualDestination indicates an expected call of UpsertVirtualDestination
+func (mr *MockVirtualDestinationClientMockRecorder) UpsertVirtualDestination(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertGlobalService", reflect.TypeOf((*MockGlobalServiceClient)(nil).UpsertGlobalService), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertVirtualDestination", reflect.TypeOf((*MockVirtualDestinationClient)(nil).UpsertVirtualDestination), varargs...)
 }
 
-// UpdateGlobalServiceStatus mocks base method
-func (m *MockGlobalServiceClient) UpdateGlobalServiceStatus(ctx context.Context, obj *v1alpha1.GlobalService, opts ...client.UpdateOption) error {
+// UpdateVirtualDestinationStatus mocks base method
+func (m *MockVirtualDestinationClient) UpdateVirtualDestinationStatus(ctx context.Context, obj *v1alpha1.VirtualDestination, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateGlobalServiceStatus", varargs...)
+	ret := m.ctrl.Call(m, "UpdateVirtualDestinationStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateGlobalServiceStatus indicates an expected call of UpdateGlobalServiceStatus
-func (mr *MockGlobalServiceClientMockRecorder) UpdateGlobalServiceStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateVirtualDestinationStatus indicates an expected call of UpdateVirtualDestinationStatus
+func (mr *MockVirtualDestinationClientMockRecorder) UpdateVirtualDestinationStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateGlobalServiceStatus", reflect.TypeOf((*MockGlobalServiceClient)(nil).UpdateGlobalServiceStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVirtualDestinationStatus", reflect.TypeOf((*MockVirtualDestinationClient)(nil).UpdateVirtualDestinationStatus), varargs...)
 }
 
-// PatchGlobalServiceStatus mocks base method
-func (m *MockGlobalServiceClient) PatchGlobalServiceStatus(ctx context.Context, obj *v1alpha1.GlobalService, patch client.Patch, opts ...client.PatchOption) error {
+// PatchVirtualDestinationStatus mocks base method
+func (m *MockVirtualDestinationClient) PatchVirtualDestinationStatus(ctx context.Context, obj *v1alpha1.VirtualDestination, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchGlobalServiceStatus", varargs...)
+	ret := m.ctrl.Call(m, "PatchVirtualDestinationStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchGlobalServiceStatus indicates an expected call of PatchGlobalServiceStatus
-func (mr *MockGlobalServiceClientMockRecorder) PatchGlobalServiceStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchVirtualDestinationStatus indicates an expected call of PatchVirtualDestinationStatus
+func (mr *MockVirtualDestinationClientMockRecorder) PatchVirtualDestinationStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchGlobalServiceStatus", reflect.TypeOf((*MockGlobalServiceClient)(nil).PatchGlobalServiceStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchVirtualDestinationStatus", reflect.TypeOf((*MockVirtualDestinationClient)(nil).PatchVirtualDestinationStatus), varargs...)
 }
 
-// MockMulticlusterGlobalServiceClient is a mock of MulticlusterGlobalServiceClient interface
-type MockMulticlusterGlobalServiceClient struct {
+// MockMulticlusterVirtualDestinationClient is a mock of MulticlusterVirtualDestinationClient interface
+type MockMulticlusterVirtualDestinationClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockMulticlusterGlobalServiceClientMockRecorder
+	recorder *MockMulticlusterVirtualDestinationClientMockRecorder
 }
 
-// MockMulticlusterGlobalServiceClientMockRecorder is the mock recorder for MockMulticlusterGlobalServiceClient
-type MockMulticlusterGlobalServiceClientMockRecorder struct {
-	mock *MockMulticlusterGlobalServiceClient
+// MockMulticlusterVirtualDestinationClientMockRecorder is the mock recorder for MockMulticlusterVirtualDestinationClient
+type MockMulticlusterVirtualDestinationClientMockRecorder struct {
+	mock *MockMulticlusterVirtualDestinationClient
 }
 
-// NewMockMulticlusterGlobalServiceClient creates a new mock instance
-func NewMockMulticlusterGlobalServiceClient(ctrl *gomock.Controller) *MockMulticlusterGlobalServiceClient {
-	mock := &MockMulticlusterGlobalServiceClient{ctrl: ctrl}
-	mock.recorder = &MockMulticlusterGlobalServiceClientMockRecorder{mock}
+// NewMockMulticlusterVirtualDestinationClient creates a new mock instance
+func NewMockMulticlusterVirtualDestinationClient(ctrl *gomock.Controller) *MockMulticlusterVirtualDestinationClient {
+	mock := &MockMulticlusterVirtualDestinationClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterVirtualDestinationClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMulticlusterGlobalServiceClient) EXPECT() *MockMulticlusterGlobalServiceClientMockRecorder {
+func (m *MockMulticlusterVirtualDestinationClient) EXPECT() *MockMulticlusterVirtualDestinationClientMockRecorder {
 	return m.recorder
 }
 
 // Cluster mocks base method
-func (m *MockMulticlusterGlobalServiceClient) Cluster(cluster string) (v1alpha1.GlobalServiceClient, error) {
+func (m *MockMulticlusterVirtualDestinationClient) Cluster(cluster string) (v1alpha1.VirtualDestinationClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Cluster", cluster)
-	ret0, _ := ret[0].(v1alpha1.GlobalServiceClient)
+	ret0, _ := ret[0].(v1alpha1.VirtualDestinationClient)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Cluster indicates an expected call of Cluster
-func (mr *MockMulticlusterGlobalServiceClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+func (mr *MockMulticlusterVirtualDestinationClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterGlobalServiceClient)(nil).Cluster), cluster)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterVirtualDestinationClient)(nil).Cluster), cluster)
 }

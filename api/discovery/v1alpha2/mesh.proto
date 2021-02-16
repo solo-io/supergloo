@@ -198,19 +198,19 @@ message MeshStatus {
     // The FailoverServices, if any, which applies to this mesh.
     repeated AppliedFailoverService applied_failover_services = 3;
 
-    // AppliedGlobalService represents an GlobalService that has been applied to this Mesh.
-    message AppliedGlobalService {
-        // reference to the GlobalService object.
+    // AppliedVirtualDestination represents an VirtualDestination that has been applied to this Mesh.
+    message AppliedVirtualDestination {
+        // reference to the VirtualDestination object.
         .core.skv2.solo.io.ObjectRef ref = 1;
 
-        // the observed generation of the accepted GlobalService.
+        // the observed generation of the accepted VirtualDestination.
         int64 observedGeneration = 2;
 
-        // any errors encountered while processing the referenced GlobalService object
+        // any errors encountered while processing the referenced VirtualDestination object
         repeated string errors = 3;
     }
 
     // The FailoverServices, if any, which applies to this mesh.
-    repeated AppliedGlobalService applied_global_services = 4;
+    repeated AppliedVirtualDestination applied_global_services = 4;
 
 }

@@ -505,7 +505,7 @@ spec:
                             type: object
                         type: object
                       globalService:
-                        description: A traffic shift destination targeting a GlobalService.
+                        description: A traffic shift destination targeting a VirtualDestination.
                         properties:
                           name:
                             description: The name of the FailoverService.

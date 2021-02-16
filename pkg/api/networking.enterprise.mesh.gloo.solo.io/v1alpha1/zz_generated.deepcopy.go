@@ -69,9 +69,9 @@ func (in *WasmDeploymentList) DeepCopyObject() runtime.Object {
 	return nil
 }
 
-// Generated Deepcopy methods for GlobalService
+// Generated Deepcopy methods for VirtualDestination
 
-func (in *GlobalService) DeepCopyInto(out *GlobalService) {
+func (in *VirtualDestination) DeepCopyInto(out *VirtualDestination) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
@@ -84,29 +84,29 @@ func (in *GlobalService) DeepCopyInto(out *GlobalService) {
 	return
 }
 
-func (in *GlobalService) DeepCopy() *GlobalService {
+func (in *VirtualDestination) DeepCopy() *VirtualDestination {
 	if in == nil {
 		return nil
 	}
-	out := new(GlobalService)
+	out := new(VirtualDestination)
 	in.DeepCopyInto(out)
 	return out
 }
 
-func (in *GlobalService) DeepCopyObject() runtime.Object {
+func (in *VirtualDestination) DeepCopyObject() runtime.Object {
 	if c := in.DeepCopy(); c != nil {
 		return c
 	}
 	return nil
 }
 
-func (in *GlobalServiceList) DeepCopyInto(out *GlobalServiceList) {
+func (in *VirtualDestinationList) DeepCopyInto(out *VirtualDestinationList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
-		*out = make([]GlobalService, len(*in))
+		*out = make([]VirtualDestination, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -114,16 +114,16 @@ func (in *GlobalServiceList) DeepCopyInto(out *GlobalServiceList) {
 	return
 }
 
-func (in *GlobalServiceList) DeepCopy() *GlobalServiceList {
+func (in *VirtualDestinationList) DeepCopy() *VirtualDestinationList {
 	if in == nil {
 		return nil
 	}
-	out := new(GlobalServiceList)
+	out := new(VirtualDestinationList)
 	in.DeepCopyInto(out)
 	return out
 }
 
-func (in *GlobalServiceList) DeepCopyObject() runtime.Object {
+func (in *VirtualDestinationList) DeepCopyObject() runtime.Object {
 	if c := in.DeepCopy(); c != nil {
 		return c
 	}
