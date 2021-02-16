@@ -18,7 +18,7 @@ func NewPathHandler(prefix string) *PathHandler {
 func (ph PathHandler) Lookup(pluginName string) (Plugin, bool) {
 	binaryName := fmt.Sprintf("%s-%s", ph.prefix, pluginName)
 	binaryPath, err := exec.LookPath(binaryName)
-	if err == exec.ErrNotFound {
+	if execErr, ok := err.(*exec.Error); ok && execErr.Err == exec.ErrNotFound {
 		return nil, false
 	} else if err != nil {
 		fmt.Fprintf(os.Stderr, "error searching system path: %s\n", err.Error())
