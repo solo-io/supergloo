@@ -42,7 +42,7 @@ type Clientset interface {
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1alpha1/v1alpha1 APIs
 	WasmDeployments() WasmDeploymentClient
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1alpha1/v1alpha1 APIs
-	GlobalServices() GlobalServiceClient
+	VirtualDestinations() VirtualDestinationClient
 }
 
 type clientSet struct {
@@ -73,8 +73,8 @@ func (c *clientSet) WasmDeployments() WasmDeploymentClient {
 }
 
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1alpha1/v1alpha1 APIs
-func (c *clientSet) GlobalServices() GlobalServiceClient {
-	return NewGlobalServiceClient(c.client)
+func (c *clientSet) VirtualDestinations() VirtualDestinationClient {
+	return NewVirtualDestinationClient(c.client)
 }
 
 // Reader knows how to read and list WasmDeployments.
@@ -219,109 +219,109 @@ func (m *multiclusterWasmDeploymentClient) Cluster(cluster string) (WasmDeployme
 	return NewWasmDeploymentClient(client), nil
 }
 
-// Reader knows how to read and list GlobalServices.
-type GlobalServiceReader interface {
-	// Get retrieves a GlobalService for the given object key
-	GetGlobalService(ctx context.Context, key client.ObjectKey) (*GlobalService, error)
+// Reader knows how to read and list VirtualDestinations.
+type VirtualDestinationReader interface {
+	// Get retrieves a VirtualDestination for the given object key
+	GetVirtualDestination(ctx context.Context, key client.ObjectKey) (*VirtualDestination, error)
 
-	// List retrieves list of GlobalServices for a given namespace and list options.
-	ListGlobalService(ctx context.Context, opts ...client.ListOption) (*GlobalServiceList, error)
+	// List retrieves list of VirtualDestinations for a given namespace and list options.
+	ListVirtualDestination(ctx context.Context, opts ...client.ListOption) (*VirtualDestinationList, error)
 }
 
-// GlobalServiceTransitionFunction instructs the GlobalServiceWriter how to transition between an existing
-// GlobalService object and a desired on an Upsert
-type GlobalServiceTransitionFunction func(existing, desired *GlobalService) error
+// VirtualDestinationTransitionFunction instructs the VirtualDestinationWriter how to transition between an existing
+// VirtualDestination object and a desired on an Upsert
+type VirtualDestinationTransitionFunction func(existing, desired *VirtualDestination) error
 
-// Writer knows how to create, delete, and update GlobalServices.
-type GlobalServiceWriter interface {
-	// Create saves the GlobalService object.
-	CreateGlobalService(ctx context.Context, obj *GlobalService, opts ...client.CreateOption) error
+// Writer knows how to create, delete, and update VirtualDestinations.
+type VirtualDestinationWriter interface {
+	// Create saves the VirtualDestination object.
+	CreateVirtualDestination(ctx context.Context, obj *VirtualDestination, opts ...client.CreateOption) error
 
-	// Delete deletes the GlobalService object.
-	DeleteGlobalService(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+	// Delete deletes the VirtualDestination object.
+	DeleteVirtualDestination(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
 
-	// Update updates the given GlobalService object.
-	UpdateGlobalService(ctx context.Context, obj *GlobalService, opts ...client.UpdateOption) error
+	// Update updates the given VirtualDestination object.
+	UpdateVirtualDestination(ctx context.Context, obj *VirtualDestination, opts ...client.UpdateOption) error
 
-	// Patch patches the given GlobalService object.
-	PatchGlobalService(ctx context.Context, obj *GlobalService, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given VirtualDestination object.
+	PatchVirtualDestination(ctx context.Context, obj *VirtualDestination, patch client.Patch, opts ...client.PatchOption) error
 
-	// DeleteAllOf deletes all GlobalService objects matching the given options.
-	DeleteAllOfGlobalService(ctx context.Context, opts ...client.DeleteAllOfOption) error
+	// DeleteAllOf deletes all VirtualDestination objects matching the given options.
+	DeleteAllOfVirtualDestination(ctx context.Context, opts ...client.DeleteAllOfOption) error
 
-	// Create or Update the GlobalService object.
-	UpsertGlobalService(ctx context.Context, obj *GlobalService, transitionFuncs ...GlobalServiceTransitionFunction) error
+	// Create or Update the VirtualDestination object.
+	UpsertVirtualDestination(ctx context.Context, obj *VirtualDestination, transitionFuncs ...VirtualDestinationTransitionFunction) error
 }
 
-// StatusWriter knows how to update status subresource of a GlobalService object.
-type GlobalServiceStatusWriter interface {
+// StatusWriter knows how to update status subresource of a VirtualDestination object.
+type VirtualDestinationStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
-	// given GlobalService object.
-	UpdateGlobalServiceStatus(ctx context.Context, obj *GlobalService, opts ...client.UpdateOption) error
+	// given VirtualDestination object.
+	UpdateVirtualDestinationStatus(ctx context.Context, obj *VirtualDestination, opts ...client.UpdateOption) error
 
-	// Patch patches the given GlobalService object's subresource.
-	PatchGlobalServiceStatus(ctx context.Context, obj *GlobalService, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given VirtualDestination object's subresource.
+	PatchVirtualDestinationStatus(ctx context.Context, obj *VirtualDestination, patch client.Patch, opts ...client.PatchOption) error
 }
 
-// Client knows how to perform CRUD operations on GlobalServices.
-type GlobalServiceClient interface {
-	GlobalServiceReader
-	GlobalServiceWriter
-	GlobalServiceStatusWriter
+// Client knows how to perform CRUD operations on VirtualDestinations.
+type VirtualDestinationClient interface {
+	VirtualDestinationReader
+	VirtualDestinationWriter
+	VirtualDestinationStatusWriter
 }
 
-type globalServiceClient struct {
+type virtualDestinationClient struct {
 	client client.Client
 }
 
-func NewGlobalServiceClient(client client.Client) *globalServiceClient {
-	return &globalServiceClient{client: client}
+func NewVirtualDestinationClient(client client.Client) *virtualDestinationClient {
+	return &virtualDestinationClient{client: client}
 }
 
-func (c *globalServiceClient) GetGlobalService(ctx context.Context, key client.ObjectKey) (*GlobalService, error) {
-	obj := &GlobalService{}
+func (c *virtualDestinationClient) GetVirtualDestination(ctx context.Context, key client.ObjectKey) (*VirtualDestination, error) {
+	obj := &VirtualDestination{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
 	return obj, nil
 }
 
-func (c *globalServiceClient) ListGlobalService(ctx context.Context, opts ...client.ListOption) (*GlobalServiceList, error) {
-	list := &GlobalServiceList{}
+func (c *virtualDestinationClient) ListVirtualDestination(ctx context.Context, opts ...client.ListOption) (*VirtualDestinationList, error) {
+	list := &VirtualDestinationList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
 	return list, nil
 }
 
-func (c *globalServiceClient) CreateGlobalService(ctx context.Context, obj *GlobalService, opts ...client.CreateOption) error {
+func (c *virtualDestinationClient) CreateVirtualDestination(ctx context.Context, obj *VirtualDestination, opts ...client.CreateOption) error {
 	return c.client.Create(ctx, obj, opts...)
 }
 
-func (c *globalServiceClient) DeleteGlobalService(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &GlobalService{}
+func (c *virtualDestinationClient) DeleteVirtualDestination(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &VirtualDestination{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
 }
 
-func (c *globalServiceClient) UpdateGlobalService(ctx context.Context, obj *GlobalService, opts ...client.UpdateOption) error {
+func (c *virtualDestinationClient) UpdateVirtualDestination(ctx context.Context, obj *VirtualDestination, opts ...client.UpdateOption) error {
 	return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *globalServiceClient) PatchGlobalService(ctx context.Context, obj *GlobalService, patch client.Patch, opts ...client.PatchOption) error {
+func (c *virtualDestinationClient) PatchVirtualDestination(ctx context.Context, obj *VirtualDestination, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, opts...)
 }
 
-func (c *globalServiceClient) DeleteAllOfGlobalService(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &GlobalService{}
+func (c *virtualDestinationClient) DeleteAllOfVirtualDestination(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &VirtualDestination{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
-func (c *globalServiceClient) UpsertGlobalService(ctx context.Context, obj *GlobalService, transitionFuncs ...GlobalServiceTransitionFunction) error {
+func (c *virtualDestinationClient) UpsertVirtualDestination(ctx context.Context, obj *VirtualDestination, transitionFuncs ...VirtualDestinationTransitionFunction) error {
 	genericTxFunc := func(existing, desired runtime.Object) error {
 		for _, txFunc := range transitionFuncs {
-			if err := txFunc(existing.(*GlobalService), desired.(*GlobalService)); err != nil {
+			if err := txFunc(existing.(*VirtualDestination), desired.(*VirtualDestination)); err != nil {
 				return err
 			}
 		}
@@ -331,32 +331,32 @@ func (c *globalServiceClient) UpsertGlobalService(ctx context.Context, obj *Glob
 	return err
 }
 
-func (c *globalServiceClient) UpdateGlobalServiceStatus(ctx context.Context, obj *GlobalService, opts ...client.UpdateOption) error {
+func (c *virtualDestinationClient) UpdateVirtualDestinationStatus(ctx context.Context, obj *VirtualDestination, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *globalServiceClient) PatchGlobalServiceStatus(ctx context.Context, obj *GlobalService, patch client.Patch, opts ...client.PatchOption) error {
+func (c *virtualDestinationClient) PatchVirtualDestinationStatus(ctx context.Context, obj *VirtualDestination, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
-// Provides GlobalServiceClients for multiple clusters.
-type MulticlusterGlobalServiceClient interface {
-	// Cluster returns a GlobalServiceClient for the given cluster
-	Cluster(cluster string) (GlobalServiceClient, error)
+// Provides VirtualDestinationClients for multiple clusters.
+type MulticlusterVirtualDestinationClient interface {
+	// Cluster returns a VirtualDestinationClient for the given cluster
+	Cluster(cluster string) (VirtualDestinationClient, error)
 }
 
-type multiclusterGlobalServiceClient struct {
+type multiclusterVirtualDestinationClient struct {
 	client multicluster.Client
 }
 
-func NewMulticlusterGlobalServiceClient(client multicluster.Client) MulticlusterGlobalServiceClient {
-	return &multiclusterGlobalServiceClient{client: client}
+func NewMulticlusterVirtualDestinationClient(client multicluster.Client) MulticlusterVirtualDestinationClient {
+	return &multiclusterVirtualDestinationClient{client: client}
 }
 
-func (m *multiclusterGlobalServiceClient) Cluster(cluster string) (GlobalServiceClient, error) {
+func (m *multiclusterVirtualDestinationClient) Cluster(cluster string) (VirtualDestinationClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err
 	}
-	return NewGlobalServiceClient(client), nil
+	return NewVirtualDestinationClient(client), nil
 }

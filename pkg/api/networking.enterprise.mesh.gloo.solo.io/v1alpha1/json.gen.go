@@ -46,24 +46,24 @@ func (this *WasmDeploymentStatus) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for GlobalServiceSpec
-func (this *GlobalServiceSpec) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for VirtualDestinationSpec
+func (this *VirtualDestinationSpec) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for GlobalServiceSpec
-func (this *GlobalServiceSpec) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for VirtualDestinationSpec
+func (this *VirtualDestinationSpec) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for GlobalServiceStatus
-func (this *GlobalServiceStatus) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for VirtualDestinationStatus
+func (this *VirtualDestinationStatus) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for GlobalServiceStatus
-func (this *GlobalServiceStatus) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for VirtualDestinationStatus
+func (this *VirtualDestinationStatus) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }

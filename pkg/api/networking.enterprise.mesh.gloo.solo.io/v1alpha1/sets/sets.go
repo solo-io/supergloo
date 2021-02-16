@@ -202,187 +202,187 @@ func (s *wasmDeploymentSet) Delta(newSet WasmDeploymentSet) sksets.ResourceDelta
 	return s.Generic().Delta(newSet.Generic())
 }
 
-type GlobalServiceSet interface {
+type VirtualDestinationSet interface {
 	// Get the set stored keys
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) bool) []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService
+	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) bool) []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination
 	// Return the Set as a map of key to resource.
-	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService
+	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination
 	// Insert a resource into the set.
-	Insert(globalService ...*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService)
+	Insert(virtualDestination ...*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination)
 	// Compare the equality of the keys in two sets (not the resources themselves)
-	Equal(globalServiceSet GlobalServiceSet) bool
+	Equal(virtualDestinationSet VirtualDestinationSet) bool
 	// Check if the set contains a key matching the resource (not the resource itself)
-	Has(globalService ezkube.ResourceId) bool
+	Has(virtualDestination ezkube.ResourceId) bool
 	// Delete the key matching the resource
-	Delete(globalService ezkube.ResourceId)
+	Delete(virtualDestination ezkube.ResourceId)
 	// Return the union with the provided set
-	Union(set GlobalServiceSet) GlobalServiceSet
+	Union(set VirtualDestinationSet) VirtualDestinationSet
 	// Return the difference with the provided set
-	Difference(set GlobalServiceSet) GlobalServiceSet
+	Difference(set VirtualDestinationSet) VirtualDestinationSet
 	// Return the intersection with the provided set
-	Intersection(set GlobalServiceSet) GlobalServiceSet
+	Intersection(set VirtualDestinationSet) VirtualDestinationSet
 	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService, error)
+	Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination, error)
 	// Get the length of the set
 	Length() int
 	// returns the generic implementation of the set
 	Generic() sksets.ResourceSet
-	// returns the delta between this and and another GlobalServiceSet
-	Delta(newSet GlobalServiceSet) sksets.ResourceDelta
+	// returns the delta between this and and another VirtualDestinationSet
+	Delta(newSet VirtualDestinationSet) sksets.ResourceDelta
 }
 
-func makeGenericGlobalServiceSet(globalServiceList []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) sksets.ResourceSet {
+func makeGenericVirtualDestinationSet(virtualDestinationList []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
-	for _, obj := range globalServiceList {
+	for _, obj := range virtualDestinationList {
 		genericResources = append(genericResources, obj)
 	}
 	return sksets.NewResourceSet(genericResources...)
 }
 
-type globalServiceSet struct {
+type virtualDestinationSet struct {
 	set sksets.ResourceSet
 }
 
-func NewGlobalServiceSet(globalServiceList ...*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) GlobalServiceSet {
-	return &globalServiceSet{set: makeGenericGlobalServiceSet(globalServiceList)}
+func NewVirtualDestinationSet(virtualDestinationList ...*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) VirtualDestinationSet {
+	return &virtualDestinationSet{set: makeGenericVirtualDestinationSet(virtualDestinationList)}
 }
 
-func NewGlobalServiceSetFromList(globalServiceList *networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalServiceList) GlobalServiceSet {
-	list := make([]*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService, 0, len(globalServiceList.Items))
-	for idx := range globalServiceList.Items {
-		list = append(list, &globalServiceList.Items[idx])
+func NewVirtualDestinationSetFromList(virtualDestinationList *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestinationList) VirtualDestinationSet {
+	list := make([]*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination, 0, len(virtualDestinationList.Items))
+	for idx := range virtualDestinationList.Items {
+		list = append(list, &virtualDestinationList.Items[idx])
 	}
-	return &globalServiceSet{set: makeGenericGlobalServiceSet(list)}
+	return &virtualDestinationSet{set: makeGenericVirtualDestinationSet(list)}
 }
 
-func (s *globalServiceSet) Keys() sets.String {
+func (s *virtualDestinationSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
 	return s.Generic().Keys()
 }
 
-func (s *globalServiceSet) List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) bool) []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService {
+func (s *virtualDestinationSet) List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) bool) []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination {
 	if s == nil {
 		return nil
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService))
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination))
 		})
 	}
 
-	var globalServiceList []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService
+	var virtualDestinationList []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination
 	for _, obj := range s.Generic().List(genericFilters...) {
-		globalServiceList = append(globalServiceList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService))
+		virtualDestinationList = append(virtualDestinationList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination))
 	}
-	return globalServiceList
+	return virtualDestinationList
 }
 
-func (s *globalServiceSet) Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService {
+func (s *virtualDestinationSet) Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination {
 	if s == nil {
 		return nil
 	}
 
-	newMap := map[string]*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService{}
+	newMap := map[string]*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination{}
 	for k, v := range s.Generic().Map() {
-		newMap[k] = v.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService)
+		newMap[k] = v.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination)
 	}
 	return newMap
 }
 
-func (s *globalServiceSet) Insert(
-	globalServiceList ...*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService,
+func (s *virtualDestinationSet) Insert(
+	virtualDestinationList ...*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination,
 ) {
 	if s == nil {
 		panic("cannot insert into nil set")
 	}
 
-	for _, obj := range globalServiceList {
+	for _, obj := range virtualDestinationList {
 		s.Generic().Insert(obj)
 	}
 }
 
-func (s *globalServiceSet) Has(globalService ezkube.ResourceId) bool {
+func (s *virtualDestinationSet) Has(virtualDestination ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.Generic().Has(globalService)
+	return s.Generic().Has(virtualDestination)
 }
 
-func (s *globalServiceSet) Equal(
-	globalServiceSet GlobalServiceSet,
+func (s *virtualDestinationSet) Equal(
+	virtualDestinationSet VirtualDestinationSet,
 ) bool {
 	if s == nil {
-		return globalServiceSet == nil
+		return virtualDestinationSet == nil
 	}
-	return s.Generic().Equal(globalServiceSet.Generic())
+	return s.Generic().Equal(virtualDestinationSet.Generic())
 }
 
-func (s *globalServiceSet) Delete(GlobalService ezkube.ResourceId) {
+func (s *virtualDestinationSet) Delete(VirtualDestination ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.Generic().Delete(GlobalService)
+	s.Generic().Delete(VirtualDestination)
 }
 
-func (s *globalServiceSet) Union(set GlobalServiceSet) GlobalServiceSet {
+func (s *virtualDestinationSet) Union(set VirtualDestinationSet) VirtualDestinationSet {
 	if s == nil {
 		return set
 	}
-	return NewGlobalServiceSet(append(s.List(), set.List()...)...)
+	return NewVirtualDestinationSet(append(s.List(), set.List()...)...)
 }
 
-func (s *globalServiceSet) Difference(set GlobalServiceSet) GlobalServiceSet {
+func (s *virtualDestinationSet) Difference(set VirtualDestinationSet) VirtualDestinationSet {
 	if s == nil {
 		return set
 	}
 	newSet := s.Generic().Difference(set.Generic())
-	return &globalServiceSet{set: newSet}
+	return &virtualDestinationSet{set: newSet}
 }
 
-func (s *globalServiceSet) Intersection(set GlobalServiceSet) GlobalServiceSet {
+func (s *virtualDestinationSet) Intersection(set VirtualDestinationSet) VirtualDestinationSet {
 	if s == nil {
 		return nil
 	}
 	newSet := s.Generic().Intersection(set.Generic())
-	var globalServiceList []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService
+	var virtualDestinationList []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination
 	for _, obj := range newSet.List() {
-		globalServiceList = append(globalServiceList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService))
+		virtualDestinationList = append(virtualDestinationList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination))
 	}
-	return NewGlobalServiceSet(globalServiceList...)
+	return NewVirtualDestinationSet(virtualDestinationList...)
 }
 
-func (s *globalServiceSet) Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService, error) {
+func (s *virtualDestinationSet) Find(id ezkube.ResourceId) (*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination, error) {
 	if s == nil {
-		return nil, eris.Errorf("empty set, cannot find GlobalService %v", sksets.Key(id))
+		return nil, eris.Errorf("empty set, cannot find VirtualDestination %v", sksets.Key(id))
 	}
-	obj, err := s.Generic().Find(&networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService{}, id)
+	obj, err := s.Generic().Find(&networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination{}, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return obj.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService), nil
+	return obj.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination), nil
 }
 
-func (s *globalServiceSet) Length() int {
+func (s *virtualDestinationSet) Length() int {
 	if s == nil {
 		return 0
 	}
 	return s.Generic().Length()
 }
 
-func (s *globalServiceSet) Generic() sksets.ResourceSet {
+func (s *virtualDestinationSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
 	return s.set
 }
 
-func (s *globalServiceSet) Delta(newSet GlobalServiceSet) sksets.ResourceDelta {
+func (s *virtualDestinationSet) Delta(newSet VirtualDestinationSet) sksets.ResourceDelta {
 	if s == nil {
 		return sksets.ResourceDelta{
 			Inserted: newSet.Generic(),

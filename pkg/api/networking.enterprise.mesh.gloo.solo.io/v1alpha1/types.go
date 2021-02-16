@@ -48,37 +48,37 @@ type WasmDeploymentList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
-// GroupVersionKind for GlobalService
-var GlobalServiceGVK = schema.GroupVersionKind{
+// GroupVersionKind for VirtualDestination
+var VirtualDestinationGVK = schema.GroupVersionKind{
 	Group:   "networking.enterprise.mesh.gloo.solo.io",
 	Version: "v1alpha1",
-	Kind:    "GlobalService",
+	Kind:    "VirtualDestination",
 }
 
-// GlobalService is the Schema for the globalService API
-type GlobalService struct {
+// VirtualDestination is the Schema for the virtualDestination API
+type VirtualDestination struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   GlobalServiceSpec   `json:"spec,omitempty"`
-	Status GlobalServiceStatus `json:"status,omitempty"`
+	Spec   VirtualDestinationSpec   `json:"spec,omitempty"`
+	Status VirtualDestinationStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (GlobalService) GVK() schema.GroupVersionKind {
-	return GlobalServiceGVK
+func (VirtualDestination) GVK() schema.GroupVersionKind {
+	return VirtualDestinationGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// GlobalServiceList contains a list of GlobalService
-type GlobalServiceList struct {
+// VirtualDestinationList contains a list of VirtualDestination
+type VirtualDestinationList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []GlobalService `json:"items"`
+	Items           []VirtualDestination `json:"items"`
 }
 
 func init() {
 	SchemeBuilder.Register(&WasmDeployment{}, &WasmDeploymentList{})
-	SchemeBuilder.Register(&GlobalService{}, &GlobalServiceList{})
+	SchemeBuilder.Register(&VirtualDestination{}, &VirtualDestinationList{})
 }
