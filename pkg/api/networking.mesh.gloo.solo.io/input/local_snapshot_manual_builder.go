@@ -42,8 +42,8 @@ type InputLocalSnapshotManualBuilder struct {
 	virtualMeshes    networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 	failoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
 
-	wasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
-	globalServices  networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.GlobalServiceSet
+	wasmDeployments     networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
+	virtualDestinations networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.VirtualDestinationSet
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.AccessLogRecordSet
 
@@ -67,8 +67,8 @@ func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBu
 		virtualMeshes:    networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet(),
 		failoverServices: networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet(),
 
-		wasmDeployments: networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet(),
-		globalServices:  networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewGlobalServiceSet(),
+		wasmDeployments:     networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet(),
+		virtualDestinations: networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewVirtualDestinationSet(),
 
 		accessLogRecords: observability_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewAccessLogRecordSet(),
 
@@ -94,7 +94,7 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 		i.failoverServices,
 
 		i.wasmDeployments,
-		i.globalServices,
+		i.virtualDestinations,
 
 		i.accessLogRecords,
 
@@ -139,8 +139,8 @@ func (i *InputLocalSnapshotManualBuilder) AddWasmDeployments(wasmDeployments []*
 	i.wasmDeployments.Insert(wasmDeployments...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddGlobalServices(globalServices []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalService) *InputLocalSnapshotManualBuilder {
-	i.globalServices.Insert(globalServices...)
+func (i *InputLocalSnapshotManualBuilder) AddVirtualDestinations(virtualDestinations []*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) *InputLocalSnapshotManualBuilder {
+	i.virtualDestinations.Insert(virtualDestinations...)
 	return i
 }
 func (i *InputLocalSnapshotManualBuilder) AddAccessLogRecords(accessLogRecords []*observability_enterprise_mesh_gloo_solo_io_v1alpha1.AccessLogRecord) *InputLocalSnapshotManualBuilder {

@@ -170,18 +170,18 @@ func (mr *MockLocalSnapshotMockRecorder) WasmDeployments() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WasmDeployments", reflect.TypeOf((*MockLocalSnapshot)(nil).WasmDeployments))
 }
 
-// GlobalServices mocks base method
-func (m *MockLocalSnapshot) GlobalServices() v1alpha1sets.GlobalServiceSet {
+// VirtualDestinations mocks base method
+func (m *MockLocalSnapshot) VirtualDestinations() v1alpha1sets.VirtualDestinationSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GlobalServices")
-	ret0, _ := ret[0].(v1alpha1sets.GlobalServiceSet)
+	ret := m.ctrl.Call(m, "VirtualDestinations")
+	ret0, _ := ret[0].(v1alpha1sets.VirtualDestinationSet)
 	return ret0
 }
 
-// GlobalServices indicates an expected call of GlobalServices
-func (mr *MockLocalSnapshotMockRecorder) GlobalServices() *gomock.Call {
+// VirtualDestinations indicates an expected call of VirtualDestinations
+func (mr *MockLocalSnapshotMockRecorder) VirtualDestinations() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GlobalServices", reflect.TypeOf((*MockLocalSnapshot)(nil).GlobalServices))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualDestinations", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualDestinations))
 }
 
 // AccessLogRecords mocks base method

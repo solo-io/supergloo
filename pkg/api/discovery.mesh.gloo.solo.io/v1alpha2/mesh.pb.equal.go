@@ -709,14 +709,14 @@ func (m *MeshStatus_AppliedFailoverService) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *MeshStatus_AppliedGlobalService) Equal(that interface{}) bool {
+func (m *MeshStatus_AppliedVirtualDestination) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*MeshStatus_AppliedGlobalService)
+	target, ok := that.(*MeshStatus_AppliedVirtualDestination)
 	if !ok {
-		that2, ok := that.(MeshStatus_AppliedGlobalService)
+		that2, ok := that.(MeshStatus_AppliedVirtualDestination)
 		if ok {
 			target = &that2
 		} else {

@@ -45,30 +45,30 @@ func WasmDeploymentClientFromConfigFactoryProvider() WasmDeploymentClientFromCon
 	}
 }
 
-// Provider for GlobalServiceClient from Clientset
-func GlobalServiceClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1alpha1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalServiceClient {
-	return clients.GlobalServices()
+// Provider for VirtualDestinationClient from Clientset
+func VirtualDestinationClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1alpha1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestinationClient {
+	return clients.VirtualDestinations()
 }
 
-// Provider for GlobalService Client from Client
-func GlobalServiceClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalServiceClient {
-	return networking_enterprise_mesh_gloo_solo_io_v1alpha1.NewGlobalServiceClient(client)
+// Provider for VirtualDestination Client from Client
+func VirtualDestinationClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestinationClient {
+	return networking_enterprise_mesh_gloo_solo_io_v1alpha1.NewVirtualDestinationClient(client)
 }
 
-type GlobalServiceClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalServiceClient
+type VirtualDestinationClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestinationClient
 
-func GlobalServiceClientFactoryProvider() GlobalServiceClientFactory {
-	return GlobalServiceClientProvider
+func VirtualDestinationClientFactoryProvider() VirtualDestinationClientFactory {
+	return VirtualDestinationClientProvider
 }
 
-type GlobalServiceClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalServiceClient, error)
+type VirtualDestinationClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestinationClient, error)
 
-func GlobalServiceClientFromConfigFactoryProvider() GlobalServiceClientFromConfigFactory {
-	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1alpha1.GlobalServiceClient, error) {
+func VirtualDestinationClientFromConfigFactoryProvider() VirtualDestinationClientFromConfigFactory {
+	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestinationClient, error) {
 		clients, err := networking_enterprise_mesh_gloo_solo_io_v1alpha1.NewClientsetFromConfig(cfg)
 		if err != nil {
 			return nil, err
 		}
-		return clients.GlobalServices(), nil
+		return clients.VirtualDestinations(), nil
 	}
 }

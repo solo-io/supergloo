@@ -43,7 +43,7 @@ var (
 			Version: "v1alpha1",
 		}: {
 			"WasmDeployment",
-			"GlobalService",
+			"VirtualDestination",
 		},
 		schema.GroupVersion{
 			Group:   "observability.enterprise." + constants.GlooMeshApiGroupSuffix,

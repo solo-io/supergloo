@@ -168,7 +168,7 @@ func FailoverServiceTest() {
 						Destinations: []*networkingv1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination{
 							{
 								DestinationType: &networkingv1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService{
-									FailoverService: &networkingv1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination{
+									FailoverService: &networkingv1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_CustomDestinationReference{
 										Name:      failoverServiceObjMeta.Name,
 										Namespace: failoverServiceObjMeta.Namespace,
 									},

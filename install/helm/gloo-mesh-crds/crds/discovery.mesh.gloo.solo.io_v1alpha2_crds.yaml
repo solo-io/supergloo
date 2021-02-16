@@ -853,7 +853,7 @@ spec:
                                       type: object
                                   type: object
                                 globalService:
-                                  description: A traffic shift destination targeting a GlobalService.
+                                  description: A traffic shift destination targeting a VirtualDestination.
                                   properties:
                                     name:
                                       description: The name of the FailoverService.
@@ -1450,16 +1450,16 @@ spec:
               items:
                 properties:
                   errors:
-                    description: any errors encountered while processing the referenced GlobalService object
+                    description: any errors encountered while processing the referenced VirtualDestination object
                     items:
                       type: string
                     type: array
                   observedGeneration:
-                    description: the observed generation of the accepted GlobalService.
+                    description: the observed generation of the accepted VirtualDestination.
                     format: int64
                     type: integer
                   ref:
-                    description: reference to the GlobalService object.
+                    description: reference to the VirtualDestination object.
                     properties:
                       name:
                         description: name of the resource being referenced
