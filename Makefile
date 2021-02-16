@@ -172,7 +172,7 @@ endif
 
 .PHONY: cert-agent-image-load
 cert-agent-image-load: cert-agent-image
-    kind load docker-image --name mgmt-cluster $(CA_IMAGE):$(VERSION)
+	kind load docker-image --name mgmt-cluster $(CA_IMAGE):$(VERSION)
 
 
 #----------------------------------------------------------------------------------

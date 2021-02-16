@@ -1,4 +1,4 @@
 changelog:
   - type: FIX
     issueLink: https://github.com/solo-io/gloo-mesh/issues/1232
-    description: Reset trafifc policy status correctly so deleted traffic targets are removed.
+    description: Reset traffic policy status correctly so deleted traffic targets are removed.
