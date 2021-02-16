@@ -211,6 +211,6 @@ message MeshStatus {
     }
 
     // The FailoverServices, if any, which applies to this mesh.
-    repeated AppliedVirtualDestination applied_global_services = 4;
+    repeated AppliedVirtualDestination applied_virtual_destinations = 4;
 
 }
