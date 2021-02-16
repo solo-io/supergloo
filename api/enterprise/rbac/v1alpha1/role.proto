@@ -28,7 +28,7 @@ message RoleSpec {
     repeated FailoverServiceScope failover_service_scopes = 4;
 
     // A set of VirtualDestination configuration permissions. Permission granularity is defined at the object level.
-    repeated VirtualDestinationScope global_service_scopes = 5;
+    repeated VirtualDestinationScope virtual_destination_scopes = 5;
 
     // A set of WasmDeployment configuration permissions. Permission granularity is defined at the object level.
     repeated WasmDeploymentScope wasm_deployment_scopes = 6;

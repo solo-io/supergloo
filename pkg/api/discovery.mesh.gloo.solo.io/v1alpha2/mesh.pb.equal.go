@@ -195,17 +195,17 @@ func (m *MeshStatus) Equal(that interface{}) bool {
 
 	}
 
-	if len(m.GetAppliedGlobalServices()) != len(target.GetAppliedGlobalServices()) {
+	if len(m.GetAppliedVirtualDestinations()) != len(target.GetAppliedVirtualDestinations()) {
 		return false
 	}
-	for idx, v := range m.GetAppliedGlobalServices() {
+	for idx, v := range m.GetAppliedVirtualDestinations() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetAppliedGlobalServices()[idx]) {
+			if !h.Equal(target.GetAppliedVirtualDestinations()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetAppliedGlobalServices()[idx]) {
+			if !proto.Equal(v, target.GetAppliedVirtualDestinations()[idx]) {
 				return false
 			}
 		}

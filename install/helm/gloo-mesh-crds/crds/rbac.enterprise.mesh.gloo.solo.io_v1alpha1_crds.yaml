@@ -184,7 +184,116 @@ spec:
                     type: array
                 type: object
               type: array
-            globalServiceScopes:
+            trafficPolicyScopes:
+              description: A set of TrafficPolicy configuration permissions. Permission granularity is defined at the field level.
+              items:
+                properties:
+                  trafficPolicyActions:
+                    description: A list of permitted TrafficPolicy configuration actions.
+                    items:
+                      enum:
+                      - UNKNOWN_TRAFFIC_POLICY_ACTION
+                      - ALL
+                      - TRAFFIC_SHIFT
+                      - FAULT_INJECTION
+                      - REQUEST_TIMEOUT
+                      - RETRIES
+                      - CORS_POLICY
+                      - MIRROR
+                      - HEADER_MANIPULATION
+                      - OUTLIER_DETECTION
+                      - MTLS_CONFIG
+                      type: string
+                    type: array
+                  trafficTargetSelectors:
+                    description: A list of permitted traffic target selectors.
+                    items:
+                      properties:
+                        kubeServiceMatcher:
+                          description: A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters.
+                          properties:
+                            clusters:
+                              description: |-
+                                If specified, match k8s Services if they exist in one of the specified clusters.
+                                           When used in a networking policy, omission matches any cluster.
+                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                              items:
+                                type: string
+                              type: array
+                            labels:
+                              additionalProperties:
+                                type: string
+                              description: |-
+                                If specified, all labels must exist on k8s Service.
+                                           When used in a networking policy, omission matches any labels.
+                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                              type: object
+                            namespaces:
+                              description: |-
+                                If specified, match k8s Services if they exist in one of the specified namespaces.
+                                           When used in a networking policy, omission matches any namespace.
+                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        kubeServiceRefs:
+                          description: Match individual k8s Services by direct reference.
+                          properties:
+                            services:
+                              description: |-
+                                Match k8s Services by direct reference.
+                                           When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
+                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
+                              items:
+                                properties:
+                                  clusterName:
+                                    description: name of the cluster in which the resource exists
+                                    type: string
+                                  name:
+                                    description: name of the resource being referenced
+                                    type: string
+                                  namespace:
+                                    description: namespace of the resource being referenced
+                                    type: string
+                                type: object
+                              type: array
+                          type: object
+                      type: object
+                    type: array
+                  workloadSelectors:
+                    description: A list of permitted workload selectors.
+                    items:
+                      properties:
+                        clusters:
+                          description: |-
+                            If specified, match k8s workloads if they exist in one of the specified clusters.
+                                   When used in a networking policy, omission matches any cluster.
+                                   When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                          items:
+                            type: string
+                          type: array
+                        labels:
+                          additionalProperties:
+                            type: string
+                          description: |-
+                            If specified, all labels must exist on k8s workload.
+                                   When used in a networking policy, omission matches any labels.
+                                   When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                          type: object
+                        namespaces:
+                          description: |-
+                            If specified, match k8s workloads if they exist in one of the specified namespaces.
+                                   When used in a networking policy, omission matches any namespace.
+                                   When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    type: array
+                type: object
+              type: array
+            virtualDestinationScopes:
               description: A set of VirtualDestination configuration permissions. Permission granularity is defined at the object level.
               items:
                 properties:
@@ -292,115 +401,6 @@ spec:
                         namespace:
                           description: namespace of the resource being referenced
                           type: string
-                      type: object
-                    type: array
-                type: object
-              type: array
-            trafficPolicyScopes:
-              description: A set of TrafficPolicy configuration permissions. Permission granularity is defined at the field level.
-              items:
-                properties:
-                  trafficPolicyActions:
-                    description: A list of permitted TrafficPolicy configuration actions.
-                    items:
-                      enum:
-                      - UNKNOWN_TRAFFIC_POLICY_ACTION
-                      - ALL
-                      - TRAFFIC_SHIFT
-                      - FAULT_INJECTION
-                      - REQUEST_TIMEOUT
-                      - RETRIES
-                      - CORS_POLICY
-                      - MIRROR
-                      - HEADER_MANIPULATION
-                      - OUTLIER_DETECTION
-                      - MTLS_CONFIG
-                      type: string
-                    type: array
-                  trafficTargetSelectors:
-                    description: A list of permitted traffic target selectors.
-                    items:
-                      properties:
-                        kubeServiceMatcher:
-                          description: A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters.
-                          properties:
-                            clusters:
-                              description: |-
-                                If specified, match k8s Services if they exist in one of the specified clusters.
-                                           When used in a networking policy, omission matches any cluster.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
-                              items:
-                                type: string
-                              type: array
-                            labels:
-                              additionalProperties:
-                                type: string
-                              description: |-
-                                If specified, all labels must exist on k8s Service.
-                                           When used in a networking policy, omission matches any labels.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
-                              type: object
-                            namespaces:
-                              description: |-
-                                If specified, match k8s Services if they exist in one of the specified namespaces.
-                                           When used in a networking policy, omission matches any namespace.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
-                              items:
-                                type: string
-                              type: array
-                          type: object
-                        kubeServiceRefs:
-                          description: Match individual k8s Services by direct reference.
-                          properties:
-                            services:
-                              description: |-
-                                Match k8s Services by direct reference.
-                                           When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
-                              items:
-                                properties:
-                                  clusterName:
-                                    description: name of the cluster in which the resource exists
-                                    type: string
-                                  name:
-                                    description: name of the resource being referenced
-                                    type: string
-                                  namespace:
-                                    description: namespace of the resource being referenced
-                                    type: string
-                                type: object
-                              type: array
-                          type: object
-                      type: object
-                    type: array
-                  workloadSelectors:
-                    description: A list of permitted workload selectors.
-                    items:
-                      properties:
-                        clusters:
-                          description: |-
-                            If specified, match k8s workloads if they exist in one of the specified clusters.
-                                   When used in a networking policy, omission matches any cluster.
-                                   When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
-                          items:
-                            type: string
-                          type: array
-                        labels:
-                          additionalProperties:
-                            type: string
-                          description: |-
-                            If specified, all labels must exist on k8s workload.
-                                   When used in a networking policy, omission matches any labels.
-                                   When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
-                          type: object
-                        namespaces:
-                          description: |-
-                            If specified, match k8s workloads if they exist in one of the specified namespaces.
-                                   When used in a networking policy, omission matches any namespace.
-                                   When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
-                          items:
-                            type: string
-                          type: array
                       type: object
                     type: array
                 type: object

@@ -1011,17 +1011,17 @@ func (m *TrafficPolicySpec_MultiDestination_WeightedDestination) Equal(that inte
 			}
 		}
 
-	case *TrafficPolicySpec_MultiDestination_WeightedDestination_GlobalService:
-		if _, ok := target.DestinationType.(*TrafficPolicySpec_MultiDestination_WeightedDestination_GlobalService); !ok {
+	case *TrafficPolicySpec_MultiDestination_WeightedDestination_VirtualDestination:
+		if _, ok := target.DestinationType.(*TrafficPolicySpec_MultiDestination_WeightedDestination_VirtualDestination); !ok {
 			return false
 		}
 
-		if h, ok := interface{}(m.GetGlobalService()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetGlobalService()) {
+		if h, ok := interface{}(m.GetVirtualDestination()).(equality.Equalizer); ok {
+			if !h.Equal(target.GetVirtualDestination()) {
 				return false
 			}
 		} else {
-			if !proto.Equal(m.GetGlobalService(), target.GetGlobalService()) {
+			if !proto.Equal(m.GetVirtualDestination(), target.GetVirtualDestination()) {
 				return false
 			}
 		}
