@@ -63,7 +63,6 @@ func (v *applier) Apply(ctx context.Context, input input.LocalSnapshot, userSupp
 
 // Optimistically initialize policy statuses to accepted, which may be set to invalid or failed pending subsequent validation.
 func initializePolicyStatuses(input input.LocalSnapshot) {
-
 	trafficPolicies := input.TrafficPolicies().List()
 	accessPolicies := input.AccessPolicies().List()
 	failoverServices := input.FailoverServices().List()
@@ -74,7 +73,7 @@ func initializePolicyStatuses(input input.LocalSnapshot) {
 		trafficPolicy.Status = networkingv1alpha2.TrafficPolicyStatus{
 			State:              networkingv1alpha2.ApprovalState_ACCEPTED,
 			ObservedGeneration: trafficPolicy.Generation,
-			TrafficTargets:     trafficPolicy.Status.TrafficTargets,
+			TrafficTargets:     map[string]*networkingv1alpha2.ApprovalStatus{},
 		}
 	}
 

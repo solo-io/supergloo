@@ -3,6 +3,8 @@ package mesh_networking
 import (
 	"context"
 
+	"github.com/solo-io/gloo-mesh/pkg/common/schemes"
+
 	certissuerinput "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
 	certissuerreconciliation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/reconciliation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply"
@@ -14,9 +16,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/common/bootstrap"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reconciliation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
+	"github.com/solo-io/skv2/pkg/bootstrap"
 	"github.com/spf13/pflag"
 )
 
@@ -53,6 +55,7 @@ func StartExtended(ctx context.Context, opts *NetworkingOpts, makeExtensions Mak
 		"networking",
 		starter.startReconciler,
 		*opts.Options,
+		schemes.SchemeBuilder,
 		disableMultiCluster,
 	)
 }
@@ -65,26 +68,28 @@ type networkingStarter struct {
 }
 
 // start the main reconcile loop
-func (s networkingStarter) startReconciler(parameters bootstrap.StartParameters) error {
+func (s networkingStarter) startReconciler(ctx context.Context, parameters bootstrap.StartParameters) error {
 	extensionOpts := s.makeExtensions(parameters)
 	extensionOpts.initDefaults(parameters)
 
-	startCertIssuer(
-		parameters.Ctx,
+	if err := startCertIssuer(
+		ctx,
 		extensionOpts.CertIssuerReconciler.RegisterCertIssuerReconciler,
 		extensionOpts.CertIssuerReconciler.MakeCertIssuerSnapshotBuilder(parameters),
 		extensionOpts.CertIssuerReconciler.SyncCertificateIssuerInputStatuses,
 		parameters.MasterManager,
-	)
+	); err != nil {
+		return err
+	}
 
-	extensionClientset := extensions.NewClientset(parameters.Ctx)
+	extensionClientset := extensions.NewClientset(ctx)
 
 	inputSnapshotBuilder := input.NewSingleClusterLocalBuilder(parameters.MasterManager)
 
 	// contains output resource types read from all registered clusters
 	userProvidedSnapshotBuilder := extensionOpts.NetworkingReconciler.MakeUserSnapshotBuilder(parameters)
 
-	reporter := reporting.NewPanickingReporter(parameters.Ctx)
+	reporter := reporting.NewPanickingReporter(ctx)
 
 	translator := extensionOpts.NetworkingReconciler.MakeTranslator(translation.NewTranslator(
 		istio.NewIstioTranslator(extensionClientset),
@@ -100,7 +105,7 @@ func (s networkingStarter) startReconciler(parameters bootstrap.StartParameters)
 	applier := apply.NewApplier(validatingTranslator)
 
 	return reconciliation.Start(
-		parameters.Ctx,
+		ctx,
 		inputSnapshotBuilder,
 		userProvidedSnapshotBuilder,
 		applier,
@@ -124,8 +129,8 @@ func startCertIssuer(
 	builder certissuerinput.Builder,
 	syncInputStatuses certissuerreconciliation.SyncStatusFunc,
 	masterManager manager.Manager,
-) {
-	certissuerreconciliation.Start(
+) error {
+	return certissuerreconciliation.Start(
 		ctx,
 		registerReconciler,
 		builder,

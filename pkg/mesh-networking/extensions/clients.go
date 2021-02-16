@@ -5,12 +5,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/solo-io/go-utils/grpcutils"
 	"github.com/solo-io/go-utils/hashutils"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
 	"github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
-	"github.com/solo-io/gloo-mesh/pkg/common/utils/grpc"
 	"github.com/solo-io/go-utils/contextutils"
 )
 
@@ -29,7 +29,7 @@ func NewClientsFromSettings(ctx context.Context, extensionsServerOptions []*v1al
 		if extensionsServerAddr == "" {
 			return nil, eris.Errorf("must specify extensions server address")
 		}
-		dialOpts := grpc.DialOpts{
+		dialOpts := grpcutils.DialOpts{
 			Address:                    extensionsServerAddr,
 			Insecure:                   extensionsServer.GetInsecure(),
 			ReconnectOnNetworkFailures: extensionsServer.GetReconnectOnNetworkFailures(),

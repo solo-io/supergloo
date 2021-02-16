@@ -277,12 +277,13 @@ func (t *translator) constructIssuedCertificate(
 		Namespace: istioNamespace,
 	}
 
+	clusterName := istioMesh.GetInstallation().GetCluster()
 	issuedCertificateMeta := metav1.ObjectMeta{
 		Name: mesh.Name,
 		// write to the agent namespace
 		Namespace: agentNamespace,
 		// write to the mesh cluster
-		ClusterName: istioMesh.GetInstallation().GetCluster(),
+		ClusterName: clusterName,
 		Labels:      metautils.TranslatedObjectLabels(),
 	}
 

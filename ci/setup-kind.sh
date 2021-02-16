@@ -101,9 +101,6 @@ else
     # sleep to allow crds to register
     sleep 4
 
-    # configure mgmt-cluster with ingress routing
-    kubectl --context kind-${mgmtCluster} -n gloo-mesh apply -f ./ci/istio_ingress.yaml
-
     # register remote cluster
     register_cluster ${remoteCluster} &
 
