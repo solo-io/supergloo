@@ -10,82 +10,19 @@ weight: 30
 
 This guide assumes the following:
 
-* Gloo Mesh Enterprise is [installed and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/#install-gloo-mesh" %}})
-* `gloo-mesh` is the installation namespace for Gloo Mesh
+* Gloo Mesh Enterprise is [installed in relay mode and running on the `mgmt-cluster`]({{% versioned_link_path fromRoot="/setup/install-gloo-mesh" %}})
+  * `gloo-mesh` is the installation namespace for Gloo Mesh
+  * `enterprise-networking` is deployed on the `mgmt-cluster` in the `gloo-mesh` namespace and exposes its gRPC server on port 9900
+  * `enterprise-agent` is deployed on both clusters and exposes its gRPC server on port 9977
+  * Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
 * Istio is [installed on both `mgmt-cluster` and `remote-cluster`]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) clusters
-* Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
+  * `istio-system` is the root namespace for both Istio deployments
 * The `bookinfo` app is [installed into the two clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}}) under the `bookinfo` namespace
-* `istio-system` is the root namespace for both Istio deployments
-* `enterprise-networking` is deployed on the `mgmt-cluster` in the `gloo-mesh` namespace and exposes its gRPC server on port 9900
 * the following environment variables are set:
-  - ```shell
+    ```shell
     MGMT_CONTEXT=your_management_plane_context
     REMOTE_CONTEXT=your_remote_context
     ```
-
-## Prerequisites
-
-The `mgmt-cluster` must be configured to receive ingress traffic originating
-outside the cluster because Gloo Mesh's access logging feature requires that
-remote envoy proxies be able to send gRPC requests to the enterprise-networking
-service.
-
-For demonstration purposes, we recommend using Istio and following
-their [ingress gateway tutorial](https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/).
-
-After setting up the Istio ingress gateway, we need to configure two additional
-resources in order to route external traffic to the correct enterprise-networking service ports:
-
-```yaml
-apiVersion: networking.istio.io/v1alpha3
-kind: Gateway
-metadata:
-  name: gloo-mesh-ingress
-  namespace: gloo-mesh
-spec:
-  selector:
-    app: istio-ingressgateway
-  servers:
-    - port:
-        number: 80
-        name: http
-        protocol: HTTP
-      hosts:
-        - "enterprise-networking.gloo-mesh"
-```
-
-```yaml
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  name: gloo-mesh-ingress
-  namespace: gloo-mesh
-spec:
-  hosts:
-    - "enterprise-networking.gloo-mesh"
-  gateways:
-    - gloo-mesh/gloo-mesh-ingress
-  http:
-    # route all gRPC traffic received on port 80 of the ingress gateway to port 9900 of the enterprise-networking service
-    - match:
-        - port: 80
-          headers:
-            content-type:
-              exact: application/grpc
-      route:
-        - destination:
-            host: enterprise-networking.gloo-mesh.svc.cluster.local
-            port:
-              number: 9900
-    # route all other traffic received on port 80 of the ingress gateway to port 8080 of the enterprise-networking service
-    - match:
-        - port: 80
-      route:
-        - destination:
-            host: enterprise-networking.gloo-mesh.svc.cluster.local
-            port:
-              number: 8080
-```
 
 ## Istio Configuration
 
@@ -101,10 +38,10 @@ Ensure that the following highlighted entries exist in the ConfigMap:
 
 {{< highlight yaml "hl_lines=5-7" >}}
 data:
-  mesh: |-
+  mesh:
     defaultConfig:
       envoyAccessLogService:
-        address: grpc-sink-address:port
+        address: enterprise-agent.gloo-mesh:9977
       proxyMetadata:
         GLOO_MESH_CLUSTER_NAME: your-gloo-mesh-registered-cluster-name
 {{< /highlight >}}
@@ -114,48 +51,6 @@ for their sidecars to pick up the new config.
 
 The `GLOO_MESH_CLUSTER_NAME` value is used to annotate the Gloo Mesh cluster name when emitting
 access logs, which is then used by Gloo Mesh to correlate the envoy proxy to a discovered workload.
-
-The `grpc-sink-address` references the enterprise-networking gRPC access log sink,
-whose value will differ depending on the cluster:
-
-#### Management Cluster gRPC Sink Address
-
-The address is simply `enterprise-networking.gloo-mesh:9900`.
-
-#### Remote Cluster gRPC Sink Address
-
-**IP Address**
-
-If using Kind, you can determine the external IP address of the management
-cluster by running the following:
-
-```shell
-kubectl --context MGMT_CONTEXT get node -oyaml | grep address
-```
-
-This should return something similar to the following. The IP address (not the
-DNS name) should be used.
-
-{{< highlight yaml "hl_lines=2" >}}
-addresses:
-  - address: 172.18.0.4
-  - address: mgmt-cluster-control-plane
-{{< /highlight >}}
-    
-Alternatively you can simply run:
-
-```shell
-kubectl --context MGMT_CONTEXT get node -o jsonpath='{.items[0].status.addresses[0].address}'
-```
-
-**Port**
-
-Assuming we're using Istio's ingress model (as described in the prerequisites) and node port, the external port can be found by
-running the following:
-
-```shell
-kubectl --context MGMT_CONTEXT -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}'
-```
 
 ## AccessLogRecord CRD
 
@@ -406,5 +301,5 @@ the following access log:
 }
 {{< /highlight >}}
 
-Envoy access logs contain a wealth of information, the details of which can be found
+Envoy access logs contain a highly detailed information, the details of which can be found
 in the [envoy access log documentation](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage).
