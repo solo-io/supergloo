@@ -18,7 +18,8 @@ func Command(ctx context.Context) *cobra.Command {
 	opts := &options{}
 	cmd := &cobra.Command{
 		Use:   "init-plugin-manager",
-		Short: "Install the plugin manager",
+		Short: "Install the Gloo Mesh Enterprise CLI plugin manager",
+		// TODO(ryantking): Add link to plugin docs after written
 		RunE: func(cmd *cobra.Command, args []string) error {
 			script, err := downloadScript(ctx)
 			if err != nil {
@@ -51,7 +52,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 }
 
 func downloadScript(ctx context.Context) (io.ReadCloser, error) {
-	const uri = "https://storage.googleapis.com/gloo-mesh-enterprise/meshctl-plugins/install.sh"
+	const uri = "https://run.solo.io/meshctl-plugin/install"
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, nil)
 	if err != nil {
 		return nil, err

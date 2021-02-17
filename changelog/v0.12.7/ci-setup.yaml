@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1270
+    description: Remove unnecessary setup steps. Update CI setup to use enterprise-agent as local access log sync.

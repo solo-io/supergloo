@@ -21,6 +21,7 @@ title: "role.proto"
   - [RoleBindingSpec](#rbac.enterprise.mesh.gloo.solo.io.RoleBindingSpec)
   - [RoleBindingStatus](#rbac.enterprise.mesh.gloo.solo.io.RoleBindingStatus)
   - [RoleSpec](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec)
+  - [RoleSpec.AccessLogRecordScope](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessLogRecordScope)
   - [RoleSpec.AccessPolicyScope](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessPolicyScope)
   - [RoleSpec.FailoverServiceScope](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.FailoverServiceScope)
   - [RoleSpec.TrafficPolicyScope](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope)
@@ -77,6 +78,22 @@ A role represents a set of permissions for creating, updating, and deleting Gloo
   | failoverServiceScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.FailoverServiceScope]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.FailoverServiceScope" >}}) | repeated | A set of FailoverService configuration permissions. Permission granularity is defined at the object level. |
   | virtualDestinationScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualDestinationScope]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualDestinationScope" >}}) | repeated | A set of VirtualDestination configuration permissions. Permission granularity is defined at the object level. |
   | wasmDeploymentScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.WasmDeploymentScope]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.WasmDeploymentScope" >}}) | repeated | A set of WasmDeployment configuration permissions. Permission granularity is defined at the object level. |
+  | accessLogRecordScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessLogRecordScope]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessLogRecordScope" >}}) | repeated | A set of AccessLogRecord configuration permissions. Permission granularity is defined at the object level. |
+  
+
+
+
+
+
+<a name="rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessLogRecordScope"></a>
+
+### RoleSpec.AccessLogRecordScope
+Represents permissions for configuring AccessLogRecords.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| workloadSelectors | [][networking.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | A list of permitted workload selectors. |
   
 
 

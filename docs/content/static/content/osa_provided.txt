@@ -8,6 +8,7 @@ Name|Version|License
 [envoyproxy/go-control-plane](https://github.com/envoyproxy/go-control-plane)|v0.9.9-0.20210110222040-c850101e02b6|Apache License 2.0
 [gertd/go-pluralize](https://github.com/gertd/go-pluralize)|v0.1.1|MIT License
 [go-git/v5](https://github.com/go-git/go-git)|v5.2.0|Apache License 2.0
+[go-openapi/swag](https://github.com/go-openapi/swag)|v0.19.6|Apache License 2.0
 [gobuffalo/packr](https://github.com/gobuffalo/packr)|v1.30.1|MIT License
 [gogo/protobuf](https://github.com/gogo/protobuf)|v1.3.2|BSD 3-clause "New" or "Revised" License
 [golang/protobuf](https://github.com/golang/protobuf)|v1.4.3|BSD 3-clause "New" or "Revised" License
