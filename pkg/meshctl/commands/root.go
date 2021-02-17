@@ -65,8 +65,6 @@ func RootCommand(ctx context.Context) *cobra.Command {
 				fmt.Fprintf(os.Stderr, "plugin error: %s\n", err.Error())
 				os.Exit(1)
 			}
-
-			os.Exit(0)
 		}
 	}
 
