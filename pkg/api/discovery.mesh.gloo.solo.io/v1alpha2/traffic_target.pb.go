@@ -111,8 +111,7 @@ type TrafficTargetSpec_KubeService_ struct {
 
 func (*TrafficTargetSpec_KubeService_) isTrafficTargetSpec_Type() {}
 
-// A zone/subzone subset within the region that the service is in.
-// This organization allows for simpler, and more compact storage of data
+// A zone/sub-zone subset within the region that the service is in.
 type SubLocality struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -269,9 +268,10 @@ type TrafficTargetSpec_KubeService struct {
 	Ports []*TrafficTargetSpec_KubeService_KubeServicePort `protobuf:"bytes,4,rep,name=ports,proto3" json:"ports,omitempty"`
 	// Subsets for routing, based on labels.
 	Subsets map[string]*TrafficTargetSpec_KubeService_Subset `protobuf:"bytes,5,rep,name=subsets,proto3" json:"subsets,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Region service is in. Will always be the same for all endpoints of a service.
+	// The region the service resides in, typically representing a large geographic area.
+	// All of the service's endpoints will be in this region.
 	Region string `protobuf:"bytes,6,opt,name=region,proto3" json:"region,omitempty"`
-	// Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs.
+	// Each endpoints subset is a group of endpoints arranged in terms of IP/port pairs.
 	// This API mirrors the kubernetes Endpoints API.
 	// https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
 	EndpointSubsets []*TrafficTargetSpec_KubeService_EndpointsSubset `protobuf:"bytes,7,rep,name=endpoint_subsets,json=endpointSubsets,proto3" json:"endpoint_subsets,omitempty"`
@@ -480,7 +480,7 @@ func (x *TrafficTargetSpec_KubeService_Subset) GetValues() []string {
 }
 
 // A series of IP addresses and their associated ports.
-// The list of IP + port pairs is the cartesian product of the two lists
+// The list of IP + port pairs is the cartesian product of the two lists.
 type TrafficTargetSpec_KubeService_EndpointsSubset struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -544,9 +544,9 @@ type TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint struct {
 
 	// IP address
 	IpAddress string `protobuf:"bytes,1,opt,name=ip_address,json=ipAddress,proto3" json:"ip_address,omitempty"`
-	// Labels which belong to this IP, these are taken from the backing workload instance.
+	// Labels which belong to this IP. These are taken from the backing workload instance.
 	Labels map[string]string `protobuf:"bytes,2,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Each IP can potentially belong to a pod in a different zone/subzone, so need to enumerate that here.
+	// The zone/sub-zone of the endpoint.
 	SubLocality *SubLocality `protobuf:"bytes,3,opt,name=sub_locality,json=subLocality,proto3" json:"sub_locality,omitempty"`
 }
 

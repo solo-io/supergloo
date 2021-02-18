@@ -57,21 +57,23 @@ message TrafficTargetSpec {
             repeated string values = 1;
         }
 
-        // Region service is in. Will always be the same for all endpoints of a service.
+        // The region the service resides in, typically representing a large geographic area.
+        // All of the service's endpoints will be in this region.
         string region = 6;
 
         // A series of IP addresses and their associated ports.
-        // The list of IP + port pairs is the cartesian product of the two lists
+        // The list of IP + port pairs is the cartesian product of the two lists.
         message EndpointsSubset {
 
             // An endpoint exposed by the service
             message Endpoint {
                 // IP address
                 string ip_address = 1;
-                // Labels which belong to this IP, these are taken from the backing workload instance.
+
+                // Labels which belong to this IP. These are taken from the backing workload instance.
                 map<string, string> labels = 2;
 
-                // Each IP can potentially belong to a pod in a different zone/subzone, so need to enumerate that here.
+                // The zone/sub-zone of the endpoint.
                 SubLocality sub_locality = 3;
             }
 
@@ -80,7 +82,7 @@ message TrafficTargetSpec {
             repeated KubeServicePort ports = 2;
         }
 
-        // Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs.
+        // Each endpoints subset is a group of endpoints arranged in terms of IP/port pairs.
         // This API mirrors the kubernetes Endpoints API.
         // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
         repeated EndpointsSubset endpoint_subsets = 7;
@@ -89,12 +91,9 @@ message TrafficTargetSpec {
 
 }
 
-// A zone/subzone subset within the region that the service is in.
-// This organization allows for simpler, and more compact storage of data
+// A zone/sub-zone subset within the region that the service is in.
 message SubLocality {
-
     string zone = 1;
-
     string sub_zone = 2;
 }
 

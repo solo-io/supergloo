@@ -32,10 +32,12 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.Mirror](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Mirror)
   - [TrafficPolicySpec.MultiDestination](#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination)
   - [TrafficPolicySpec.MultiDestination.WeightedDestination](#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination)
-  - [TrafficPolicySpec.MultiDestination.WeightedDestination.CustomDestinationReference](#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.CustomDestinationReference)
-  - [TrafficPolicySpec.MultiDestination.WeightedDestination.CustomDestinationReference.SubsetEntry](#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.CustomDestinationReference.SubsetEntry)
+  - [TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination](#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination)
+  - [TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry](#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry)
   - [TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination](#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination)
   - [TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry](#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry)
+  - [TrafficPolicySpec.MultiDestination.WeightedDestination.VirtualDestinationReference](#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.VirtualDestinationReference)
+  - [TrafficPolicySpec.MultiDestination.WeightedDestination.VirtualDestinationReference.SubsetEntry](#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.VirtualDestinationReference.SubsetEntry)
   - [TrafficPolicySpec.OutlierDetection](#networking.mesh.gloo.solo.io.TrafficPolicySpec.OutlierDetection)
   - [TrafficPolicySpec.QueryParameterMatcher](#networking.mesh.gloo.solo.io.TrafficPolicySpec.QueryParameterMatcher)
   - [TrafficPolicySpec.RetryPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.RetryPolicy)
@@ -285,8 +287,8 @@ Istio TLS settings Map onto the enums defined here https://github.com/istio/api/
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | kubeService | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination" >}}) |  | The use kubeService to shift traffic a Kubernetes Service/subset. |
-  | failoverService | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.CustomDestinationReference]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.CustomDestinationReference" >}}) |  | A traffic shift destination targeting a FailoverService. |
-  | virtualDestination | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.CustomDestinationReference]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.CustomDestinationReference" >}}) |  | A traffic shift destination targeting a VirtualDestination. |
+  | failoverService | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination" >}}) |  | A traffic shift destination targeting a FailoverService. |
+  | virtualDestination | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.VirtualDestinationReference]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.VirtualDestinationReference" >}}) |  | A traffic shift destination targeting a VirtualDestination. |
   | weight | uint32 |  | Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100. |
   
 
@@ -294,9 +296,9 @@ Istio TLS settings Map onto the enums defined here https://github.com/istio/api/
 
 
 
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.CustomDestinationReference"></a>
+<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination"></a>
 
-### TrafficPolicySpec.MultiDestination.WeightedDestination.CustomDestinationReference
+### TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination
 A traffic shift destination that references a FailoverService.
 
 
@@ -304,16 +306,16 @@ A traffic shift destination that references a FailoverService.
 | ----- | ---- | ----- | ----------- |
 | name | string |  | The name of the FailoverService. |
   | namespace | string |  | The namespace of the FailoverService. |
-  | subset | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.CustomDestinationReference.SubsetEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.CustomDestinationReference.SubsetEntry" >}}) | repeated | Subset routing is currently only supported for Istio backing services. |
+  | subset | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry" >}}) | repeated | Subset routing is currently only supported for Istio backing services. |
   
 
 
 
 
 
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.CustomDestinationReference.SubsetEntry"></a>
+<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry"></a>
 
-### TrafficPolicySpec.MultiDestination.WeightedDestination.CustomDestinationReference.SubsetEntry
+### TrafficPolicySpec.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry
 
 
 
@@ -349,6 +351,39 @@ A traffic shift destination which lives in kubernetes.
 <a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry"></a>
 
 ### TrafficPolicySpec.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+  | value | string |  |  |
+  
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.VirtualDestinationReference"></a>
+
+### TrafficPolicySpec.MultiDestination.WeightedDestination.VirtualDestinationReference
+A traffic shift destination that references a VirtualDestination.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | string |  | The name of the VirtualDestination. |
+  | namespace | string |  | The namespace of the VirtualDestination. |
+  | subset | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.VirtualDestinationReference.SubsetEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.VirtualDestinationReference.SubsetEntry" >}}) | repeated | Subset routing is currently only supported for Istio backing services. |
+  
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.MultiDestination.WeightedDestination.VirtualDestinationReference.SubsetEntry"></a>
+
+### TrafficPolicySpec.MultiDestination.WeightedDestination.VirtualDestinationReference.SubsetEntry
 
 
 

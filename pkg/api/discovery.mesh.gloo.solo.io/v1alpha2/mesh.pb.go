@@ -992,17 +992,17 @@ func (x *MeshStatus_AppliedFailoverService) GetSpec() *v1alpha2.FailoverServiceS
 	return nil
 }
 
-// AppliedVirtualDestination represents an VirtualDestination that has been applied to this Mesh.
+// AppliedVirtualDestination represents a VirtualDestination that has been applied to this Mesh.
 type MeshStatus_AppliedVirtualDestination struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// reference to the VirtualDestination object.
+	// Reference to the VirtualDestination.
 	Ref *v1.ObjectRef `protobuf:"bytes,1,opt,name=ref,proto3" json:"ref,omitempty"`
-	// the observed generation of the accepted VirtualDestination.
+	// The observed generation of the accepted VirtualDestination.
 	ObservedGeneration int64 `protobuf:"varint,2,opt,name=observedGeneration,proto3" json:"observedGeneration,omitempty"`
-	// any errors encountered while processing the referenced VirtualDestination object
+	// Any errors encountered while processing the referenced VirtualDestination object.
 	Errors []string `protobuf:"bytes,3,rep,name=errors,proto3" json:"errors,omitempty"`
 }
 
