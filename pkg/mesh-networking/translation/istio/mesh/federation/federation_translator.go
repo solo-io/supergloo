@@ -6,6 +6,7 @@ import (
 
 	"github.com/Masterminds/semver"
 	envoy_api_v2_listener "github.com/envoyproxy/go-control-plane/envoy/api/v2/listener"
+	envoy_config_listener_v3 "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
 	"github.com/gogo/protobuf/types"
 	"github.com/rotisserie/eris"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
@@ -289,11 +290,32 @@ func (t *translator) Translate(
 		},
 	}
 
-	ef := &networkingv1alpha3.EnvoyFilter{
+	ef := BuildTcpRewriteEnvoyFilter(
+		ingressGateway,
+		istioMesh.GetInstallation(),
+		tcpRewritePatch,
+		fmt.Sprintf("%v.%v", virtualMesh.Ref.Name, virtualMesh.Ref.Namespace),
+	)
+
+	// Append the virtual mesh as a parent to each output resource
+	metautils.AppendParent(t.ctx, gw, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+	metautils.AppendParent(t.ctx, ef, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+
+	outputs.AddGateways(gw)
+	outputs.AddEnvoyFilters(ef)
+}
+
+func BuildTcpRewriteEnvoyFilter(
+	ingressGateway *discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo,
+	istioInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	tcpRewritePatch *types.Struct,
+	name string,
+) *networkingv1alpha3.EnvoyFilter {
+	return &networkingv1alpha3.EnvoyFilter{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        fmt.Sprintf("%v.%v", virtualMesh.Ref.Name, virtualMesh.Ref.Namespace),
-			Namespace:   istioNamespace,
-			ClusterName: istioCluster,
+			Name:        name,
+			Namespace:   istioInstallation.GetNamespace(),
+			ClusterName: istioInstallation.GetCluster(),
 			Labels:      metautils.TranslatedObjectLabels(),
 		},
 		Spec: networkingv1alpha3spec.EnvoyFilter{
@@ -321,13 +343,6 @@ func (t *translator) Translate(
 			}},
 		},
 	}
-
-	// Append the virtual mesh as a parent to each output resource
-	metautils.AppendParent(t.ctx, gw, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
-	metautils.AppendParent(t.ctx, ef, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
-
-	outputs.AddGateways(gw)
-	outputs.AddEnvoyFilters(ef)
 }
 
 func updateTrafficTargetFederationStatus(
@@ -371,6 +386,19 @@ func buildTcpRewritePatch(
 	clusterDomain string,
 	federatedHostnameSuffix string,
 ) (*types.Struct, error) {
+	if clusterDomain == "" {
+		clusterDomain = defaults.DefaultClusterDomain
+	}
+	clusterPattern := fmt.Sprintf("\\.%s.%s$", clusterName, federatedHostnameSuffix)
+	clusterReplacement := "." + clusterDomain
+	return BuildTcpRewritePatch(istioMesh, clusterPattern, clusterReplacement)
+}
+
+// BuildTcpRewritePatch Public to be used in enterprise
+func BuildTcpRewritePatch(
+	istioMesh *discoveryv1alpha2.MeshSpec_Istio,
+	clusterPattern, clusterReplacement string,
+) (*types.Struct, error) {
 	version, err := semver.NewVersion(istioMesh.Installation.Version)
 	if err != nil {
 		return nil, err
@@ -381,38 +409,33 @@ func buildTcpRewritePatch(
 	}
 	// If Istio version less than 1.7.x, use untyped config
 	if constraint.Check(version) {
-		return buildTcpRewritePatchAsConfig(clusterName, clusterDomain, federatedHostnameSuffix)
+		return buildTcpRewritePatchAsConfig(clusterPattern, clusterReplacement)
+
 	}
 	// If Istio version >= 1.7.x, used typed config
-	return buildTcpRewritePatchAsTypedConfig(clusterName, clusterDomain, federatedHostnameSuffix)
+	return buildTcpRewritePatchAsTypedConfig(clusterPattern, clusterReplacement)
 }
 
-func buildTcpRewritePatchAsTypedConfig(clusterName, clusterDomain, federatedHostnameSuffix string) (*types.Struct, error) {
-	if clusterDomain == "" {
-		clusterDomain = defaults.DefaultClusterDomain
-	}
+func buildTcpRewritePatchAsTypedConfig(clusterPattern, clusterReplacement string) (*types.Struct, error) {
 	tcpClusterRewrite, err := protoutils.MessageToAnyWithError(&v2alpha1.TcpClusterRewrite{
-		ClusterPattern:     fmt.Sprintf("\\.%s.%s$", clusterName, federatedHostnameSuffix),
-		ClusterReplacement: "." + clusterDomain,
+		ClusterPattern:     clusterPattern,
+		ClusterReplacement: clusterReplacement,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return protoutils.GolangMessageToGogoStruct(&envoy_api_v2_listener.Filter{
+	return protoutils.GolangMessageToGogoStruct(&envoy_config_listener_v3.Filter{
 		Name: envoyTcpClusterRewriteFilterName,
-		ConfigType: &envoy_api_v2_listener.Filter_TypedConfig{
+		ConfigType: &envoy_config_listener_v3.Filter_TypedConfig{
 			TypedConfig: tcpClusterRewrite,
 		},
 	})
 }
 
-func buildTcpRewritePatchAsConfig(clusterName, clusterDomain, federatedHostnameSuffix string) (*types.Struct, error) {
-	if clusterDomain == "" {
-		clusterDomain = defaults.DefaultClusterDomain
-	}
+func buildTcpRewritePatchAsConfig(clusterPattern, clusterReplacement string) (*types.Struct, error) {
 	tcpRewrite, err := protoutils.GogoMessageToGolangStruct(&v2alpha1.TcpClusterRewrite{
-		ClusterPattern:     fmt.Sprintf("\\.%s.%s$", clusterName, federatedHostnameSuffix),
-		ClusterReplacement: "." + clusterDomain,
+		ClusterPattern:     clusterPattern,
+		ClusterReplacement: clusterReplacement,
 	})
 	if err != nil {
 		return nil, err
