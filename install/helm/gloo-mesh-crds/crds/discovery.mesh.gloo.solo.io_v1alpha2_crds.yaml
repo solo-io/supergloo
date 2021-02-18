@@ -38,7 +38,7 @@ spec:
             - externalService
           properties:
             externalService:
-              description: Metadata about the external service to which traffic will be router
+              description: Metadata about the external service to which traffic will be routed.
               properties:
                 addresses:
                   items:

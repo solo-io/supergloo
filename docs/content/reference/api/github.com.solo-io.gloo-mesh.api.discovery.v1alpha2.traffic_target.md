@@ -52,7 +52,7 @@ The TrafficTarget is an abstraction for a traffic target which we have discovere
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | kubeService | [discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService" >}}) |  | Metadata about the kube-native traffic target backing this TrafficTarget. |
-  | externalService | [discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService" >}}) |  | Metadata about the external service to which traffic will be router |
+  | externalService | [discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService" >}}) |  | Metadata about the external service to which traffic will be routed. |
   | mesh | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The mesh with which this traffic target is associated. Can be omitted if the traffic target isn't associated with any particular mesh, eg for externalservices. |
   
 

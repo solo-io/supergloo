@@ -119,7 +119,7 @@ type TrafficTargetSpec_KubeService_ struct {
 }
 
 type TrafficTargetSpec_ExternalService_ struct {
-	// Metadata about the external service to which traffic will be router
+	// Metadata about the external service to which traffic will be routed.
 	ExternalService *TrafficTargetSpec_ExternalService `protobuf:"bytes,3,opt,name=external_service,json=externalService,proto3,oneof"`
 }
 
