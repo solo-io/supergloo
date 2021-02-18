@@ -250,7 +250,7 @@ func (t *translator) Translate(
 				outputs.AddDestinationRules(dr)
 
 				// Update AppliedFederation data on TrafficTarget's status
-				updateTrafficTargetFederationStatus(
+				setKubeServiceTTFederationStatus(
 					trafficTarget,
 					federatedHostname,
 					ezkube.MakeObjectRef(groupedMesh),
@@ -336,7 +336,7 @@ func (t *translator) Translate(
 	outputs.AddEnvoyFilters(ef)
 }
 
-func updateTrafficTargetFederationStatus(
+func setKubeServiceTTFederationStatus(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
 	federatedHostname string,
 	mesh *v1.ObjectRef,
@@ -346,13 +346,7 @@ func updateTrafficTargetFederationStatus(
 	var federatedToMeshes []*v1.ObjectRef
 
 	// don't include the mesh of the traffic target itself in the list of federated meshes,
-	// unless it's an external traffic target.
 	for _, ref := range groupedMeshes {
-		_, isExternalTrafficTarget := trafficTarget.Spec.Type.(*discoveryv1alpha2.TrafficTargetSpec_ExternalService_)
-		if isExternalTrafficTarget {
-			federatedToMeshes = append(federatedToMeshes, ref)
-			continue
-		}
 		if ezkube.RefsMatch(ref, mesh) {
 			continue
 		}
@@ -374,6 +368,8 @@ func ServicesForMesh(
 ) []*discoveryv1alpha2.TrafficTarget {
 	return allTrafficTargets.List(func(service *discoveryv1alpha2.TrafficTarget) bool {
 		// Always return external services, they apply to all meshes
+		// TODO: Revisit once we have an API for expressing which meshes the
+		// external service should be exported to. For now, export to all.
 		if service.Spec.GetMesh() == nil {
 			if _, ok := service.Spec.Type.(*discoveryv1alpha2.TrafficTargetSpec_ExternalService_); ok {
 				// Is External service

@@ -63,7 +63,13 @@ func (t *translator) isOSMTrafficTarget(
 ) bool {
 	meshRef := trafficTarget.Spec.GetMesh()
 	if meshRef == nil {
-		contextutils.LoggerFrom(ctx).Debugf("trafficTarget %v has no mesh ref - is not OSM trafficTarget", sets.Key(trafficTarget))
+		if _, ok := trafficTarget.Spec.Type.(*discoveryv1alpha2.TrafficTargetSpec_KubeService_); ok {
+			// Is KubeService, MeshRef is required
+			contextutils.LoggerFrom(ctx).Errorf("internal error: KubeService TrafficTarget %v missing mesh ref", sets.Key(trafficTarget))
+		} else {
+			// Not KubeService, MeshRef not required
+			contextutils.LoggerFrom(ctx).Debugf("trafficTarget %v has no mesh ref - is not OSM trafficTarget", sets.Key(trafficTarget))
+		}
 		return false
 	}
 	mesh, err := allMeshes.Find(meshRef)
