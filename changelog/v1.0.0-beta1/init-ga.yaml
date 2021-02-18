@@ -1,0 +1,4 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: Gloo Mesh is going GA!
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1278
