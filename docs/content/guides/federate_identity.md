@@ -23,6 +23,23 @@ To illustrate these concepts, we will assume that:
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document.
 {{% /notice %}}
 
+## Enforce mTLS
+
+Apply the following yaml to both your management plane and remote cluster:
+
+```shell
+apiVersion: "security.istio.io/v1beta1"
+kind: "PeerAuthentication"
+metadata:
+  name: "default"
+  namespace: "istio-system"
+spec:
+  mtls:
+    mode: STRICT
+```
+
+This is an Istio setting. For more, see: https://istio.io/latest/docs/concepts/security/
+
 ## Verify identity in two clusters is different
 
 We can see the certificate chain used to establish mTLS between Istio services in `mgmt-cluster` cluster and `remote-cluster` cluster and can compare them to be different. One way to see the certificates, is to use the `openssl s_client` tool with the `-showcerts` param when calling between two services. Let's try it on the `mgmt-cluster-cluster`:
