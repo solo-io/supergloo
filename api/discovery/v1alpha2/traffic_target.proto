@@ -20,7 +20,7 @@ message TrafficTargetSpec {
         // Metadata about the kube-native traffic target backing this TrafficTarget.
         KubeService kube_service = 1;
 
-        // Metadata about the external service to which traffic will be router
+        // Metadata about the external service to which traffic will be routed.
         ExternalService external_service = 3;
     }
 
