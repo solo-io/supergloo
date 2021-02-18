@@ -51,8 +51,8 @@ The TrafficTarget is an abstraction for a traffic target which we have discovere
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeService | [discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService" >}}) |  | Metadata about the kube-native traffic target backing this TrafficTarget. |
-  | externalService | [discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService" >}}) |  | Metadata about the external service to which traffic will be routed. |
+| kubeService | [discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.KubeService" >}}) |  | KubeService is a kube-native Traffic Target representing a kubernetes service running inside of a kubernetes cluster. |
+  | externalService | [discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec.ExternalService" >}}) |  | ExternalService is a Traffic Target representing a service external to the Mesh. It can be used to expose a given hostname or IP address to all clusters in the Virtual Mesh. |
   | mesh | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The mesh with which this traffic target is associated. Can be omitted if the traffic target isn't associated with any particular mesh, eg for externalservices. |
   
 
