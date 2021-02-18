@@ -231,7 +231,7 @@ func (d *trafficShiftDecorator) buildFailoverServiceDestination(
 }
 
 func (d *trafficShiftDecorator) buildVirtualDestinationDestination(
-	globalServiceDest *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_CustomDestinationReference,
+	globalServiceDest *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_VirtualDestinationReference,
 	weight uint32,
 ) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
 	globalService, err := d.globalServices.Find(ezkube.MakeObjectRef(globalServiceDest))
