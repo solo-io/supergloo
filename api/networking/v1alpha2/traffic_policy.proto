@@ -125,11 +125,23 @@ message TrafficPolicySpec {
             }
 
             // A traffic shift destination that references a FailoverService.
-            message CustomDestinationReference {
+            message FailoverServiceDestination {
                 // The name of the FailoverService.
                 string name = 1;
 
                 // The namespace of the FailoverService.
+                string namespace = 2;
+
+                // Subset routing is currently only supported for Istio backing services.
+                map<string, string> subset = 3;
+            }
+
+            // A traffic shift destination that references a VirtualDestination.
+            message VirtualDestinationReference {
+                // The name of the VirtualDestination.
+                string name = 1;
+
+                // The namespace of the VirtualDestination.
                 string namespace = 2;
 
                 // Subset routing is currently only supported for Istio backing services.
@@ -142,10 +154,10 @@ message TrafficPolicySpec {
                 KubeDestination kube_service = 1;
 
                 // A traffic shift destination targeting a FailoverService.
-                CustomDestinationReference failover_service = 3;
+                FailoverServiceDestination failover_service = 3;
 
                 // A traffic shift destination targeting a VirtualDestination.
-                CustomDestinationReference virtual_destination = 4;
+                VirtualDestinationReference virtual_destination = 4;
             }
 
             // Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100.

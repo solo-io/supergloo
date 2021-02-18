@@ -29,5 +29,10 @@ func (bp BinaryPlugin) Run(args []string) error {
 	cmd.Stdin = bp.In
 	cmd.Stdout = bp.Out
 	cmd.Stderr = bp.Err
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	os.Exit(0)
+	return nil
 }

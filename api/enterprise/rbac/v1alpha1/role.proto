@@ -33,6 +33,9 @@ message RoleSpec {
     // A set of WasmDeployment configuration permissions. Permission granularity is defined at the object level.
     repeated WasmDeploymentScope wasm_deployment_scopes = 6;
 
+    // A set of AccessLogRecord configuration permissions. Permission granularity is defined at the object level.
+    repeated AccessLogRecordScope access_log_record_scopes = 7;
+
     // Represents permissions for configuring TrafficPolicies.
     message TrafficPolicyScope {
         // A list of permitted TrafficPolicy configuration actions.
@@ -113,6 +116,12 @@ message RoleSpec {
 
     // Represents permissions for configuring WasmDeployments.
     message WasmDeploymentScope {
+        // A list of permitted workload selectors.
+        repeated .networking.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 1;
+    }
+
+    // Represents permissions for configuring AccessLogRecords.
+    message AccessLogRecordScope {
         // A list of permitted workload selectors.
         repeated .networking.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 1;
     }

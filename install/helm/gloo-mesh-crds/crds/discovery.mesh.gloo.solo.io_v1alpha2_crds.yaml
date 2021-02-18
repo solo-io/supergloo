@@ -38,7 +38,7 @@ spec:
               properties:
                 endpointSubsets:
                   description: |-
-                    Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs.
+                    Each endpoints subset is a group of endpoints arranged in terms of IP/port pairs.
                     This API mirrors the kubernetes Endpoints API.
                     https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
                   items:
@@ -52,10 +52,10 @@ spec:
                             labels:
                               additionalProperties:
                                 type: string
-                              description: Labels which belong to this IP, these are taken from the backing workload instance.
+                              description: Labels which belong to this IP. These are taken from the backing workload instance.
                               type: object
                             subLocality:
-                              description: Each IP can potentially belong to a pod in a different zone/subzone, so need to enumerate that here.
+                              description: The zone/sub-zone of the endpoint.
                               properties:
                                 subZone:
                                   type: string
@@ -120,7 +120,9 @@ spec:
                       type: string
                   type: object
                 region:
-                  description: Region service is in. Will always be the same for all endpoints of a service.
+                  description: |-
+                    The region the service resides in, typically representing a large geographic area.
+                    All of the service's endpoints will be in this region.
                   type: string
                 subsets:
                   additionalProperties:
@@ -879,10 +881,10 @@ spec:
                                   description: A traffic shift destination targeting a VirtualDestination.
                                   properties:
                                     name:
-                                      description: The name of the FailoverService.
+                                      description: The name of the VirtualDestination.
                                       type: string
                                     namespace:
-                                      description: The namespace of the FailoverService.
+                                      description: The namespace of the VirtualDestination.
                                       type: string
                                     subset:
                                       additionalProperties:
@@ -1450,16 +1452,16 @@ spec:
               items:
                 properties:
                   errors:
-                    description: any errors encountered while processing the referenced VirtualDestination object
+                    description: Any errors encountered while processing the referenced VirtualDestination object.
                     items:
                       type: string
                     type: array
                   observedGeneration:
-                    description: the observed generation of the accepted VirtualDestination.
+                    description: The observed generation of the accepted VirtualDestination.
                     format: int64
                     type: integer
                   ref:
-                    description: reference to the VirtualDestination object.
+                    description: Reference to the VirtualDestination.
                     properties:
                       name:
                         description: name of the resource being referenced

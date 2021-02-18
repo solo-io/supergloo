@@ -198,15 +198,15 @@ message MeshStatus {
     // The FailoverServices, if any, which applies to this mesh.
     repeated AppliedFailoverService applied_failover_services = 3;
 
-    // AppliedVirtualDestination represents an VirtualDestination that has been applied to this Mesh.
+    // AppliedVirtualDestination represents a VirtualDestination that has been applied to this Mesh.
     message AppliedVirtualDestination {
-        // reference to the VirtualDestination object.
+        // Reference to the VirtualDestination.
         .core.skv2.solo.io.ObjectRef ref = 1;
 
-        // the observed generation of the accepted VirtualDestination.
+        // The observed generation of the accepted VirtualDestination.
         int64 observedGeneration = 2;
 
-        // any errors encountered while processing the referenced VirtualDestination object
+        // Any errors encountered while processing the referenced VirtualDestination object.
         repeated string errors = 3;
     }
 

@@ -1088,14 +1088,57 @@ func (m *TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination)
 }
 
 // Equal function
-func (m *TrafficPolicySpec_MultiDestination_WeightedDestination_CustomDestinationReference) Equal(that interface{}) bool {
+func (m *TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*TrafficPolicySpec_MultiDestination_WeightedDestination_CustomDestinationReference)
+	target, ok := that.(*TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination)
 	if !ok {
-		that2, ok := that.(TrafficPolicySpec_MultiDestination_WeightedDestination_CustomDestinationReference)
+		that2, ok := that.(TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetName(), target.GetName()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetNamespace(), target.GetNamespace()) != 0 {
+		return false
+	}
+
+	if len(m.GetSubset()) != len(target.GetSubset()) {
+		return false
+	}
+	for k, v := range m.GetSubset() {
+
+		if strings.Compare(v, target.GetSubset()[k]) != 0 {
+			return false
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
+func (m *TrafficPolicySpec_MultiDestination_WeightedDestination_VirtualDestinationReference) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*TrafficPolicySpec_MultiDestination_WeightedDestination_VirtualDestinationReference)
+	if !ok {
+		that2, ok := that.(TrafficPolicySpec_MultiDestination_WeightedDestination_VirtualDestinationReference)
 		if ok {
 			target = &that2
 		} else {

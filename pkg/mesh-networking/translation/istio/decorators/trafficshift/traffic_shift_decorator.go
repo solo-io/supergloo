@@ -212,7 +212,7 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 }
 
 func (d *trafficShiftDecorator) buildFailoverServiceDestination(
-	failoverServiceDest *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_CustomDestinationReference,
+	failoverServiceDest *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination,
 	weight uint32,
 ) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
 	failoverService, err := d.failoverServices.Find(ezkube.MakeObjectRef(failoverServiceDest))
