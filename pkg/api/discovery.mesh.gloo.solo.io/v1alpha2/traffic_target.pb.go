@@ -114,12 +114,15 @@ type isTrafficTargetSpec_Type interface {
 }
 
 type TrafficTargetSpec_KubeService_ struct {
-	// Metadata about the kube-native traffic target backing this TrafficTarget.
+	// KubeService is a kube-native Traffic Target representing a kubernetes
+	// service running inside of a kubernetes cluster.
 	KubeService *TrafficTargetSpec_KubeService `protobuf:"bytes,1,opt,name=kube_service,json=kubeService,proto3,oneof"`
 }
 
 type TrafficTargetSpec_ExternalService_ struct {
-	// Metadata about the external service to which traffic will be routed.
+	// ExternalService is a Traffic Target representing a service
+	// external to the Mesh. It can be used to expose a given hostname
+	// or IP address to all clusters in the Virtual Mesh.
 	ExternalService *TrafficTargetSpec_ExternalService `protobuf:"bytes,3,opt,name=external_service,json=externalService,proto3,oneof"`
 }
 
