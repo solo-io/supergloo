@@ -39,8 +39,7 @@ spec:
                 endpointSubsets:
                   description: |-
                     Each endpoints subset is a group of endpoints arranged in terms of IP/port pairs.
-                    This API mirrors the kubernetes Endpoints API.
-                    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
+                    This API mirrors the [Kubernetes Endpoints API](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core).
                   items:
                     properties:
                       endpoints:

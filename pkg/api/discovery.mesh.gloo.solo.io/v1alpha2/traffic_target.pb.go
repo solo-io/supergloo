@@ -111,7 +111,7 @@ type TrafficTargetSpec_KubeService_ struct {
 
 func (*TrafficTargetSpec_KubeService_) isTrafficTargetSpec_Type() {}
 
-// A zone/sub-zone subset within the region that the service is in.
+// A subdivision of a region representing a set of physically colocated compute resources.
 type SubLocality struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -272,8 +272,7 @@ type TrafficTargetSpec_KubeService struct {
 	// All of the service's endpoints will be in this region.
 	Region string `protobuf:"bytes,6,opt,name=region,proto3" json:"region,omitempty"`
 	// Each endpoints subset is a group of endpoints arranged in terms of IP/port pairs.
-	// This API mirrors the kubernetes Endpoints API.
-	// https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
+	// This API mirrors the [Kubernetes Endpoints API](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core).
 	EndpointSubsets []*TrafficTargetSpec_KubeService_EndpointsSubset `protobuf:"bytes,7,rep,name=endpoint_subsets,json=endpointSubsets,proto3" json:"endpoint_subsets,omitempty"`
 }
 

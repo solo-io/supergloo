@@ -13,21 +13,19 @@ option (extproto.equal_all) = true;
 /*
     A VirtualDestination creates a new hostname to which client workloads can send requests.
     Requests will be routed based on either a list of backing traffic targets ordered by
-    priority, or a list of locality directives. Each traffic target backing the
-    VirtualDestination must be configured with outlier detection using a traffic policy.
+    explicit priority, or a list of locality directives. Each TrafficTarget backing the
+    VirtualDestination must be configured with outlier detection through a TrafficPolicy.
 
-    Currently this feature only supports Services backed by Istio.
+    Currently this feature only supports TrafficTargets backed by Istio.
 */
 message VirtualDestinationSpec {
-  // The DNS name of the VirtualDestination. Must be unique within the service mesh instance
-  // since it is used as the hostname with which clients communicate.
+  // The DNS name of the VirtualDestination. Must be unique within the service mesh instance.
   string hostname = 1;
 
   // The port on which the VirtualDestination listens.
   Port port = 2;
 
-  // The VirtualDestination can be made visible to either a mesh, a VirtualMesh, or multiple meshes that are
-  // in the same VirtualMesh.
+  // The VirtualDestination can be made visible to either a mesh, a VirtualMesh, or a subset of meshes within the same VirtualMesh.
   oneof export_to {
     // The VirtualMesh that this VirtualDestination will be visible to.
     .core.skv2.solo.io.ObjectRef virtual_mesh = 3;
@@ -36,12 +34,11 @@ message VirtualDestinationSpec {
     MeshList mesh_list = 4;
   }
 
-  // Configuration that determines failover behavior. Failover is based either on a list of services specified
-  // in priority order, or on the localities of the traffic source and destination.
+  // Configuration that determines failover behavior.
   oneof failover_config {
-    // List of backing services in priority order.
+    // Failover priority is determined by an explicitly provided static ordering of TrafficTargets.
     BackingServiceList static = 5;
-    // Locality failover configuration.
+    // Failover priority is determined by the localities of the traffic source and destination.
     LocalityConfig localized = 6;
   }
 
@@ -58,8 +55,8 @@ message VirtualDestinationSpec {
     repeated .core.skv2.solo.io.ObjectRef meshes = 1;
   }
 
-  // Enables failover based on a list of services. When outlier detection detects that a traffic target in the list
-  // is in an unhealthy state, requests sent to the VirtualDestination will be routed to the next healthy traffic target
+  // Configure failover based on a list of TrafficTargets. When a TrafficTarget in the list
+  // is in an unhealthy state (as determined by its outlier detection configuration), requests sent to the VirtualDestination will be routed to the next healthy TrafficTarget
   // in the list.
   message BackingServiceList {
     // The list of services backing the VirtualDestination, ordered by decreasing priority.
