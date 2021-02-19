@@ -26,8 +26,7 @@ message VirtualDestinationSpec {
   // The port on which the VirtualDestination listens.
   Port port = 2;
 
-  // The VirtualDestination can be made visible to either a mesh, a VirtualMesh, or multiple meshes that are
-  // in the same VirtualMesh.
+  // The VirtualDestination can be made visible to either a mesh, a VirtualMesh, or a subset of meshes within the same VirtualMesh.
   oneof export_to {
     // The VirtualMesh that this VirtualDestination will be visible to.
     .core.skv2.solo.io.ObjectRef virtual_mesh = 3;
