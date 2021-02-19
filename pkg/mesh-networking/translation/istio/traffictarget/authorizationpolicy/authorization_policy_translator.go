@@ -224,12 +224,13 @@ func parseServiceAccountRefs(
 		if err != nil {
 			return nil, err
 		}
-		// If no error thrown, trustDomains is guaranteed to be of length 1.
-		uri, err := buildSpiffeURI(trustDomains[0], serviceAccountRef.Namespace, serviceAccountRef.Name)
-		if err != nil {
-			return nil, err
+		for _, trustDomain := range trustDomains {
+			uri, err := buildSpiffeURI(trustDomain, serviceAccountRef.Namespace, serviceAccountRef.Name)
+			if err != nil {
+				return nil, err
+			}
+			principals = append(principals, uri)
 		}
-		principals = append(principals, uri)
 	}
 	return principals, nil
 }
@@ -244,13 +245,23 @@ func getTrustDomainsForClusters(
 ) ([]string, error) {
 	var errs *multierror.Error
 	var trustDomains []string
-	for _, clusterName := range clusterNames {
-		trustDomain, err := getTrustDomainForCluster(clusterName, meshes)
-		if err != nil {
-			errs = multierror.Append(errs, err)
-			continue
+	// omitted cluster name denotes all clusters
+	if len(clusterNames) == 0 || len(clusterNames) == 1 && clusterNames[0] == "" {
+		meshes.List(func(mesh *discoveryv1alpha2.Mesh) (_ bool) {
+			if domain := mesh.Spec.GetIstio().GetCitadelInfo().GetTrustDomain(); domain != "" {
+				trustDomains = append(trustDomains, domain)
+			}
+			return
+		})
+	} else {
+		for _, clusterName := range clusterNames {
+			trustDomain, err := getTrustDomainForCluster(clusterName, meshes)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			trustDomains = append(trustDomains, trustDomain)
 		}
-		trustDomains = append(trustDomains, trustDomain)
 	}
 	return trustDomains, errs.ErrorOrNil()
 }
