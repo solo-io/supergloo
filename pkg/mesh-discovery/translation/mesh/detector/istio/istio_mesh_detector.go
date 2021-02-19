@@ -110,7 +110,7 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Discov
 
 	region, err := localityutils.GetClusterRegion(deployment.ClusterName, in.Nodes())
 	if err != nil {
-		contextutils.LoggerFrom(d.ctx).Warnw("could not get region for cluster", deployment.ClusterName)
+		contextutils.LoggerFrom(d.ctx).Warnf("could not get region for cluster: %s", deployment.ClusterName)
 	}
 	mesh := &v1alpha2.Mesh{
 		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
