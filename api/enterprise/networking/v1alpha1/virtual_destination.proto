@@ -16,7 +16,7 @@ option (extproto.equal_all) = true;
     explicit priority, or a list of locality directives. Each TrafficTarget backing the
     VirtualDestination must be configured with outlier detection through a TrafficPolicy.
 
-    Currently this feature only supports Services backed by Istio.
+    Currently this feature only supports TrafficTargets backed by Istio.
 */
 message VirtualDestinationSpec {
   // The DNS name of the VirtualDestination. Must be unique within the service mesh instance
