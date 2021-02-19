@@ -37,7 +37,7 @@ message VirtualDestinationSpec {
 
   // Configuration that determines failover behavior.
   oneof failover_config {
-    // List of backing services in priority order.
+    // Failover priority is determined by an explicitly provided static ordering of TrafficTargets.
     BackingServiceList static = 5;
     // Failover priority is determined by the localities of the traffic source and destination.
     LocalityConfig localized = 6;
