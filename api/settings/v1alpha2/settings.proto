@@ -12,7 +12,7 @@ import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/traffic_policy.prot
 message SettingsSpec {
 
     // Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence)
-    .networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS mtls = 1;
+    .networking.mesh.gloo.solo.io.TrafficPolicy.MTLS mtls = 1;
 
     // Configure Gloo Mesh networking to communicate with one or more external gRPC NetworkingExtensions servers.
     // Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence).
