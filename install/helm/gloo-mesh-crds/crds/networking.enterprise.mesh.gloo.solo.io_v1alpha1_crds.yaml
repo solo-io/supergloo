@@ -270,18 +270,16 @@ spec:
           description: |-
             A VirtualDestination creates a new hostname to which client workloads can send requests.
                Requests will be routed based on either a list of backing traffic targets ordered by
-               priority, or a list of locality directives. Each traffic target backing the
-               VirtualDestination must be configured with outlier detection using a traffic policy.
+               explicit priority, or a list of locality directives. Each TrafficTarget backing the
+               VirtualDestination must be configured with outlier detection through a TrafficPolicy.
 
-               Currently this feature only supports Services backed by Istio.
+               Currently this feature only supports TrafficTargets backed by Istio.
           properties:
             hostname:
-              description: |-
-                The DNS name of the VirtualDestination. Must be unique within the service mesh instance
-                since it is used as the hostname with which clients communicate.
+              description: The DNS name of the VirtualDestination. Must be unique within the service mesh instance.
               type: string
             localized:
-              description: Locality failover configuration.
+              description: Failover priority is determined by the localities of the traffic source and destination.
               properties:
                 failoverDirectives:
                   description: Directives describing the locality failover behavior.
@@ -408,7 +406,7 @@ spec:
                   type: string
               type: object
             static:
-              description: List of backing services in priority order.
+              description: Failover priority is determined by an explicitly provided static ordering of TrafficTargets.
               properties:
                 services:
                   description: |-

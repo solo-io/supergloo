@@ -90,7 +90,7 @@ message TrafficTargetSpec {
 
 }
 
-// A zone/sub-zone subset within the region that the service is in.
+// A subdivision of a region representing a set of physically colocated compute resources.
 message SubLocality {
     string zone = 1;
     string sub_zone = 2;
