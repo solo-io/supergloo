@@ -44,7 +44,7 @@ import (
 const (
 	// NOTE(ilackarms): we may want to support federating over non-tls port at some point.
 	defaultGatewayProtocol = "TLS"
-	defaultGatewayPortName = "tls"
+	DefaultGatewayPortName = "tls"
 
 	envoySniClusterFilterName        = "envoy.filters.network.sni_cluster"
 	envoyTcpClusterRewriteFilterName = "envoy.filters.network.tcp_cluster_rewrite"
@@ -266,7 +266,7 @@ func (t *translator) Translate(
 
 	// istio gateway names must be DNS-1123 labels
 	// hyphens are legal, dots are not, so we convert here
-	gwName := kubeutils.SanitizeNameV2(fmt.Sprintf("%v-%v", virtualMesh.Ref.Name, virtualMesh.Ref.Namespace))
+	gwName := BuildGatewayName(virtualMesh)
 	gw := &networkingv1alpha3.Gateway{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        gwName,
@@ -279,7 +279,7 @@ func (t *translator) Translate(
 				Port: &networkingv1alpha3spec.Port{
 					Number:   ingressGateway.TlsContainerPort,
 					Protocol: defaultGatewayProtocol,
-					Name:     defaultGatewayPortName,
+					Name:     DefaultGatewayPortName,
 				},
 				Hosts: []string{"*." + federatedHostnameSuffix},
 				Tls: &networkingv1alpha3spec.ServerTLSSettings{
@@ -303,6 +303,10 @@ func (t *translator) Translate(
 
 	outputs.AddGateways(gw)
 	outputs.AddEnvoyFilters(ef)
+}
+
+func BuildGatewayName(virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh) string {
+	return kubeutils.SanitizeNameV2(fmt.Sprintf("%v-%v", virtualMesh.Ref.Name, virtualMesh.Ref.Namespace))
 }
 
 func BuildTcpRewriteEnvoyFilter(
