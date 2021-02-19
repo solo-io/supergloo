@@ -58,8 +58,8 @@ message VirtualDestinationSpec {
     repeated .core.skv2.solo.io.ObjectRef meshes = 1;
   }
 
-  // Enables failover based on a list of services. When outlier detection detects that a traffic target in the list
-  // is in an unhealthy state, requests sent to the VirtualDestination will be routed to the next healthy traffic target
+  // Configure failover based on a list of TrafficTargets. When a TrafficTarget in the list
+  // is in an unhealthy state (as determined by its outlier detection configuration), requests sent to the VirtualDestination will be routed to the next healthy TrafficTarget
   // in the list.
   message BackingServiceList {
     // The list of services backing the VirtualDestination, ordered by decreasing priority.
