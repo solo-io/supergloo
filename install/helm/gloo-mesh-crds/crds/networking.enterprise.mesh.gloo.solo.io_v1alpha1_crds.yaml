@@ -317,6 +317,29 @@ spec:
                         type: array
                     type: object
                   type: array
+                outlierDetection:
+                  description: Outlier detection to determine the health of the selected services.
+                  properties:
+                    baseEjectionTime:
+                      description: 'Minimum ejection duration. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 30s.'
+                      type: string
+                    consecutiveErrors:
+                      description: Number of errors before a host is ejected from the connection pool. Defaults to 5.
+                      maximum: 4294967295
+                      minimum: 0
+                      type: integer
+                    interval:
+                      description: 'Time interval between ejection sweep analysis. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 10s.'
+                      type: string
+                    maxEjectionPercent:
+                      description: |-
+                        Maximum % of hosts in the load balancing pool for the upstream service that can be ejected,
+                        but will eject at least one host regardless of the value. MUST BE >= 0 and <= 100.
+                        Defaults to 100%, allowing all hosts to be ejected from the pool.
+                      maximum: 4294967295
+                      minimum: 0
+                      type: integer
+                  type: object
                 serviceSelectors:
                   description: |-
                     Selectors for the services backing the VirtualDestination.

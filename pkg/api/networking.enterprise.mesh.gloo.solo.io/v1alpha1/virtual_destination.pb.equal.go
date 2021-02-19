@@ -439,6 +439,16 @@ func (m *VirtualDestinationSpec_LocalityConfig) Equal(that interface{}) bool {
 
 	}
 
+	if h, ok := interface{}(m.GetOutlierDetection()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetOutlierDetection()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetOutlierDetection(), target.GetOutlierDetection()) {
+			return false
+		}
+	}
+
 	return true
 }
 

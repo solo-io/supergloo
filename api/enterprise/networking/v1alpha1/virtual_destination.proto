@@ -6,6 +6,7 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/traffic_policy.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -94,6 +95,9 @@ message VirtualDestinationSpec {
       // The locality's sub-zone. Currently this value is not used.
       string sub_zone = 3;
     }
+
+    // Outlier detection to determine the health of the selected services.
+    networking.mesh.gloo.solo.io.TrafficPolicySpec.OutlierDetection outlier_detection = 3;
   }
 }
 
