@@ -181,4 +181,139 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 		authPolicy := translator.Translate(inputSnapshot, trafficTarget, mockReporter)
 		Expect(authPolicy).To(Equal(expectedAuthPolicy))
 	})
+
+	It("should handle wildcard (empty) cluster source selectors", func() {
+		trafficTarget := &discoveryv1alpha2.TrafficTarget{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "ms",
+				Namespace: "ms-namespace",
+			},
+			Spec: discoveryv1alpha2.TrafficTargetSpec{
+				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
+					KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+						Ref: &v1.ClusterObjectRef{
+							Name:        "kube-service",
+							Namespace:   "kube-service-namespace",
+							ClusterName: "cluster",
+						},
+						WorkloadSelectorLabels: map[string]string{
+							"app": "kube-service",
+						},
+					},
+				},
+			},
+			Status: discoveryv1alpha2.TrafficTargetStatus{
+				AppliedAccessPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedAccessPolicy{
+					{
+						Spec: &networkingv1alpha2.AccessPolicySpec{
+							SourceSelector: []*networkingv1alpha2.IdentitySelector{
+								{
+									KubeIdentityMatcher: &networkingv1alpha2.IdentitySelector_KubeIdentityMatcher{
+										Namespaces: []string{"ns1"},
+									},
+								},
+								{
+									KubeServiceAccountRefs: &networkingv1alpha2.IdentitySelector_KubeServiceAccountRefs{
+										ServiceAccounts: []*v1.ClusterObjectRef{
+											{
+												Name:      "sa2",
+												Namespace: "ns2",
+											},
+										},
+									},
+								},
+							},
+							AllowedPaths:   []string{"/path1"},
+							AllowedMethods: []types.HttpMethodValue{types.HttpMethodValue_GET},
+							AllowedPorts:   []uint32{8080},
+						},
+					},
+				},
+			},
+		}
+		meshes := []*discoveryv1alpha2.Mesh{
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "mesh1",
+				},
+				Spec: discoveryv1alpha2.MeshSpec{
+					MeshType: &discoveryv1alpha2.MeshSpec_Istio_{
+						Istio: &discoveryv1alpha2.MeshSpec_Istio{
+							Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+								Cluster: "cluster1",
+							},
+							CitadelInfo: &discoveryv1alpha2.MeshSpec_Istio_CitadelInfo{
+								TrustDomain: "cluster1.local",
+							},
+						},
+					},
+				},
+			},
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "mesh2",
+				},
+				Spec: discoveryv1alpha2.MeshSpec{
+					MeshType: &discoveryv1alpha2.MeshSpec_Istio_{
+						Istio: &discoveryv1alpha2.MeshSpec_Istio{
+							Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+								Cluster: "cluster2",
+							},
+							CitadelInfo: &discoveryv1alpha2.MeshSpec_Istio_CitadelInfo{
+								TrustDomain: "cluster2.local",
+							},
+						},
+					},
+				},
+			},
+		}
+		expectedAuthPolicy := &securityv1beta1.AuthorizationPolicy{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        trafficTarget.Spec.GetKubeService().Ref.Name,
+				Namespace:   trafficTarget.Spec.GetKubeService().Ref.Namespace,
+				ClusterName: trafficTarget.Spec.GetKubeService().Ref.ClusterName,
+				Labels: map[string]string{
+					"owner.networking.mesh.gloo.solo.io": "gloo-mesh",
+				},
+			},
+			Spec: securityv1beta1spec.AuthorizationPolicy{
+				Selector: &v1beta1.WorkloadSelector{
+					MatchLabels: trafficTarget.Spec.GetKubeService().WorkloadSelectorLabels,
+				},
+				Rules: []*securityv1beta1spec.Rule{
+					{
+						From: []*securityv1beta1spec.Rule_From{
+							{
+								Source: &securityv1beta1spec.Source{
+									Namespaces: []string{"ns1"},
+								},
+							},
+							{
+								Source: &securityv1beta1spec.Source{
+									Principals: []string{
+										"cluster1.local/ns/ns2/sa/sa2",
+										"cluster2.local/ns/ns2/sa/sa2",
+									},
+								},
+							},
+						},
+						To: []*securityv1beta1spec.Rule_To{
+							{
+								Operation: &securityv1beta1spec.Operation{
+									Ports:   []string{"8080"},
+									Methods: []string{"GET"},
+									Paths:   []string{"/path1"},
+								},
+							},
+						},
+					},
+				},
+				Action: securityv1beta1spec.AuthorizationPolicy_ALLOW,
+			},
+		}
+		inputSnapshot := input.NewInputLocalSnapshotManualBuilder("").AddMeshes(meshes).Build()
+		authPolicy := translator.Translate(inputSnapshot, trafficTarget, mockReporter)
+		//Expect(equalityutils.DeepEqual(authPolicy, expectedAuthPolicy)).To(BeTrue())
+		Expect(authPolicy).To(Equal(expectedAuthPolicy))
+	})
 })
