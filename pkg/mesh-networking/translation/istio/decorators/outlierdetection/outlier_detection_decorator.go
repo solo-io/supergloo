@@ -44,7 +44,7 @@ func (d *outlierDetectionDecorator) ApplyTrafficPolicyToDestinationRule(
 	output *networkingv1alpha3spec.DestinationRule,
 	registerField decorators.RegisterField,
 ) error {
-	if outlierDetection := d.translateOutlierDetection(appliedPolicy.Spec); outlierDetection != nil {
+	if outlierDetection := TranslateOutlierDetection(appliedPolicy.Spec.GetOutlierDetection()); outlierDetection != nil {
 		if err := registerField(&output.TrafficPolicy.OutlierDetection, outlierDetection); err != nil {
 			return err
 		}
@@ -53,10 +53,10 @@ func (d *outlierDetectionDecorator) ApplyTrafficPolicyToDestinationRule(
 	return nil
 }
 
-func (d *outlierDetectionDecorator) translateOutlierDetection(
-	trafficPolicy *v1alpha2.TrafficPolicySpec,
+// TranslateOutlierDetection public to be used in enterprise
+func TranslateOutlierDetection(
+	outlierDetection *v1alpha2.TrafficPolicySpec_OutlierDetection,
 ) *networkingv1alpha3spec.OutlierDetection {
-	outlierDetection := trafficPolicy.GetOutlierDetection()
 	if outlierDetection == nil {
 		return nil
 	}
