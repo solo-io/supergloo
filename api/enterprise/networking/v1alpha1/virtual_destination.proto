@@ -35,8 +35,7 @@ message VirtualDestinationSpec {
     MeshList mesh_list = 4;
   }
 
-  // Configuration that determines failover behavior. Failover is based either on a list of services specified
-  // in priority order, or on the localities of the traffic source and destination.
+  // Configuration that determines failover behavior.
   oneof failover_config {
     // List of backing services in priority order.
     BackingServiceList static = 5;
