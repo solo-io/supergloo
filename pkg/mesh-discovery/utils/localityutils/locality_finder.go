@@ -12,7 +12,7 @@ import (
 )
 
 // Get the region of a cluster
-func GetClusterRegion(clusterName string, allNodes corev1sets.NodeSet) (string, error) {
+func GetClusterRegion(clusterName string, nodes corev1sets.NodeSet) (string, error) {
 	// get the nodes in the cluster
 	clusterNodes := allNodes.List(func(node *corev1.Node) bool {
 		return node.ClusterName != clusterName
