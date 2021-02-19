@@ -4,7 +4,7 @@ package observability.enterprise.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1";
 
 import "github.com/solo-io/gloo-mesh/api/common/v1alpha1/request_matchers.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1alpha1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/traffic_policy.proto";
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
@@ -17,7 +17,7 @@ message AccessLogRecordSpec {
 
     // Select the workloads to be configured to emit access logs.
     // Leave empty to apply to all workloads managed by Gloo Mesh.
-    repeated .networking.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 1;
+    repeated .common.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 1;
 
     // Configure criteria for determining which access logs will be recorded.
     // The list is disjunctive, a request will be recorded if it matches any filter.

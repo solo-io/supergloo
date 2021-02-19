@@ -3,7 +3,7 @@ package networking.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2";
 
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/http.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1alpha1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
 
 import "extproto/ext.proto";
@@ -30,13 +30,13 @@ message AccessPolicySpec {
         service accounts properly reflect the desired
         boundary for your access control policies.
     */
-    repeated IdentitySelector source_selector = 2;
+    repeated .common.mesh.gloo.solo.io.IdentitySelector source_selector = 1;
 
     /*
         Requests destined for these pods will have the rule applied.
         Leave empty to apply to all destination pods in the mesh.
     */
-    repeated TrafficTargetSelector destination_selector = 3;
+    repeated .common.mesh.gloo.solo.io.TrafficTargetSelector destination_selector = 2;
 
     /*
         Optional. A list of HTTP paths or gRPC methods to allow.
@@ -48,20 +48,20 @@ message AccessPolicySpec {
 
         If not specified, allow any path.
     */
-    repeated string allowed_paths = 4;
+    repeated string allowed_paths = 3;
 
     /*
         Optional. A list of HTTP methods to allow (e.g., "GET", "POST").
         It is ignored in gRPC case because the value is always "POST".
         If not specified, allows any method.
     */
-    repeated HttpMethodValue allowed_methods = 5;
+    repeated HttpMethodValue allowed_methods = 4;
 
     /*
         Optional. A list of ports which to allow.
         If not set any port is allowed.
     */
-    repeated uint32 allowed_ports = 6;
+    repeated uint32 allowed_ports = 5;
 }
 
 message AccessPolicyStatus {

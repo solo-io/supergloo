@@ -69,9 +69,6 @@ func (m *WorkloadSpec) Equal(that interface{}) bool {
 	switch m.WorkloadType.(type) {
 
 	case *WorkloadSpec_Kubernetes:
-		if _, ok := target.WorkloadType.(*WorkloadSpec_Kubernetes); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetKubernetes()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetKubernetes()) {
@@ -83,11 +80,6 @@ func (m *WorkloadSpec) Equal(that interface{}) bool {
 			}
 		}
 
-	default:
-		// m is nil but target is not nil
-		if m.WorkloadType != target.WorkloadType {
-			return false
-		}
 	}
 
 	return true

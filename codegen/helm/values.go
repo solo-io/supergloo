@@ -43,9 +43,9 @@ func DefaultValues() ChartValues {
 			},
 		},
 		Settings: SettingsValues{
-			Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
-				Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
-					TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL,
+			Mtls: &v1alpha2.TrafficPolicy_MTLS{
+				Istio: &v1alpha2.TrafficPolicy_MTLS_Istio{
+					TlsMode: v1alpha2.TrafficPolicy_MTLS_Istio_ISTIO_MUTUAL,
 				},
 			},
 			// needed to ensure that generated yaml uses "{}" for empty message instead of "null", which causes a schema validation error

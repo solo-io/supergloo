@@ -9,7 +9,7 @@ import "google/protobuf/wrappers.proto";
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1alpha1/request_matchers.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/http.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1alpha1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
 
 import "extproto/ext.proto";
@@ -34,13 +34,13 @@ message TrafficPolicySpec {
 
         Note: If using the TrafficTargetSelector.Matcher, specifying clusters is currently not supported in Istio.
     */
-    repeated WorkloadSelector source_selector = 1;
+    repeated .common.mesh.gloo.solo.io.WorkloadSelector source_selector = 1;
 
     /*
         Requests destined for these k8s services will have the rule applied.
         Leave empty to apply to all destination k8s services in the mesh.
     */
-    repeated TrafficTargetSelector destination_selector = 2;
+    repeated .common.mesh.gloo.solo.io.TrafficTargetSelector destination_selector = 2;
 
     /*
         If specified, this rule will only apply to http requests matching these conditions.

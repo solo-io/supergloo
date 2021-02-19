@@ -59,9 +59,6 @@ func (m *MeshSpec) Equal(that interface{}) bool {
 	switch m.MeshType.(type) {
 
 	case *MeshSpec_Istio_:
-		if _, ok := target.MeshType.(*MeshSpec_Istio_); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetIstio()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetIstio()) {
@@ -74,9 +71,6 @@ func (m *MeshSpec) Equal(that interface{}) bool {
 		}
 
 	case *MeshSpec_AwsAppMesh_:
-		if _, ok := target.MeshType.(*MeshSpec_AwsAppMesh_); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetAwsAppMesh()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetAwsAppMesh()) {
@@ -89,9 +83,6 @@ func (m *MeshSpec) Equal(that interface{}) bool {
 		}
 
 	case *MeshSpec_Linkerd:
-		if _, ok := target.MeshType.(*MeshSpec_Linkerd); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetLinkerd()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetLinkerd()) {
@@ -104,9 +95,6 @@ func (m *MeshSpec) Equal(that interface{}) bool {
 		}
 
 	case *MeshSpec_ConsulConnect:
-		if _, ok := target.MeshType.(*MeshSpec_ConsulConnect); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetConsulConnect()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetConsulConnect()) {
@@ -119,9 +107,6 @@ func (m *MeshSpec) Equal(that interface{}) bool {
 		}
 
 	case *MeshSpec_Osm:
-		if _, ok := target.MeshType.(*MeshSpec_Osm); !ok {
-			return false
-		}
 
 		if h, ok := interface{}(m.GetOsm()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetOsm()) {
@@ -133,11 +118,6 @@ func (m *MeshSpec) Equal(that interface{}) bool {
 			}
 		}
 
-	default:
-		// m is nil but target is not nil
-		if m.MeshType != target.MeshType {
-			return false
-		}
 	}
 
 	return true

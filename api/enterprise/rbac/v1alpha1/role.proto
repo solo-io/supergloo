@@ -4,7 +4,7 @@ package rbac.enterprise.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/rbac.enterprise.mesh.gloo.solo.io/v1alpha1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1alpha1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/failover_service.proto";
 
 /*
@@ -38,10 +38,10 @@ message RoleSpec {
         repeated TrafficPolicyActions traffic_policy_actions = 1;
 
         // A list of permitted traffic target selectors.
-        repeated .networking.mesh.gloo.solo.io.TrafficTargetSelector traffic_target_selectors = 2;
+        repeated .common.mesh.gloo.solo.io.TrafficTargetSelector traffic_target_selectors = 2;
 
         // A list of permitted workload selectors.
-        repeated .networking.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 3;
+        repeated .common.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 3;
 
         // Enums representing fields on the TrafficPolicy CRD.
         enum TrafficPolicyActions {
@@ -80,10 +80,10 @@ message RoleSpec {
     // Represents permissions for configuring AccessPolicies.
     message AccessPolicyScope {
         // A list of permitted identity selectors.
-        repeated .networking.mesh.gloo.solo.io.IdentitySelector identity_selectors = 1;
+        repeated .common.mesh.gloo.solo.io.IdentitySelector identity_selectors = 1;
 
         // A list of permitted traffic target selectors.
-        repeated .networking.mesh.gloo.solo.io.TrafficTargetSelector traffic_target_selectors = 2;
+        repeated .common.mesh.gloo.solo.io.TrafficTargetSelector traffic_target_selectors = 2;
     }
 
     // Represents permissions for configuring FailoverServices.
@@ -98,13 +98,13 @@ message RoleSpec {
     // Represents permissions for configuring WasmDeployments.
     message WasmDeploymentScope {
         // A list of permitted workload selectors.
-        repeated .networking.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 1;
+        repeated .common.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 1;
     }
 
     // Represents permissions for configuring AccessLogRecords.
     message AccessLogRecordScope {
         // A list of permitted workload selectors.
-        repeated .networking.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 1;
+        repeated .common.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 1;
     }
 }
 
