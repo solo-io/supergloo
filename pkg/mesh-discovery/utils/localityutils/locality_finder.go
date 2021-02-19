@@ -93,7 +93,7 @@ func getRegionFromNode(node *corev1.Node) (string, error) {
 	// get the region labels from the node. check both the stable and deprecated labels
 	if regionStable, ok := node.Labels[corev1.LabelZoneRegionStable]; ok {
 		return regionStable, nil
-	} else if regionDeprecated, okDep := node.Labels[corev1.LabelZoneRegion]; okDep {
+	} else if regionDeprecated, ok := node.Labels[corev1.LabelZoneRegion]; ok {
 		return regionDeprecated, nil
 	}
 	return "", eris.Errorf("failed to find region label on node %s", node.GetName())
