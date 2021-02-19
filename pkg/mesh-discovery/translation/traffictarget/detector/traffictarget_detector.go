@@ -76,9 +76,8 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 	region, err := localityutils.GetServiceRegion(service, pods, nodes)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Warnw("could not get region for traffic target", zap.Error(err))
-	} else {
-		kubeService.Region = region
 	}
+	kubeService.Region = region
 
 	trafficTarget := &v1alpha2.TrafficTarget{
 		ObjectMeta: utils.DiscoveredObjectMeta(service),
