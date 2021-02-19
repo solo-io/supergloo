@@ -54,17 +54,17 @@ A service represented by a TrafficTarget
 <a name="networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec"></a>
 
 ### VirtualDestinationSpec
-A VirtualDestination creates a new hostname to which client workloads can send requests. Requests will be routed based on either a list of backing traffic targets ordered by priority, or a list of locality directives. Each traffic target backing the VirtualDestination must be configured with outlier detection using a traffic policy.<br>Currently this feature only supports Services backed by Istio.
+A VirtualDestination creates a new hostname to which client workloads can send requests. Requests will be routed based on either a list of backing traffic targets ordered by explicit priority, or a list of locality directives. Each TrafficTarget backing the VirtualDestination must be configured with outlier detection through a TrafficPolicy.<br>Currently this feature only supports TrafficTargets backed by Istio.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| hostname | string |  | The DNS name of the VirtualDestination. Must be unique within the service mesh instance since it is used as the hostname with which clients communicate. |
+| hostname | string |  | The DNS name of the VirtualDestination. Must be unique within the service mesh instance. |
   | port | [networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.Port]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.Port" >}}) |  | The port on which the VirtualDestination listens. |
   | virtualMesh | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The VirtualMesh that this VirtualDestination will be visible to. |
   | meshList | [networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.MeshList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.MeshList" >}}) |  | The meshes that this VirtualDestination will be visible to. If multiple meshes are specified, they must all belong to the same VirtualMesh. |
-  | static | [networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.BackingServiceList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.BackingServiceList" >}}) |  | List of backing services in priority order. |
-  | localized | [networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig" >}}) |  | Locality failover configuration. |
+  | static | [networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.BackingServiceList]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.BackingServiceList" >}}) |  | Failover priority is determined by an explicitly provided static ordering of TrafficTargets. |
+  | localized | [networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig" >}}) |  | Failover priority is determined by the localities of the traffic source and destination. |
   
 
 
@@ -74,7 +74,7 @@ A VirtualDestination creates a new hostname to which client workloads can send r
 <a name="networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.BackingServiceList"></a>
 
 ### VirtualDestinationSpec.BackingServiceList
-Enables failover based on a list of services. When outlier detection detects that a traffic target in the list is in an unhealthy state, requests sent to the VirtualDestination will be routed to the next healthy traffic target in the list.
+Configure failover based on a list of TrafficTargets. When a TrafficTarget in the list is in an unhealthy state (as determined by its outlier detection configuration), requests sent to the VirtualDestination will be routed to the next healthy TrafficTarget in the list.
 
 
 | Field | Type | Label | Description |

@@ -32,29 +32,26 @@ const _ = proto.ProtoPackageIsVersion4
 //
 //A VirtualDestination creates a new hostname to which client workloads can send requests.
 //Requests will be routed based on either a list of backing traffic targets ordered by
-//priority, or a list of locality directives. Each traffic target backing the
-//VirtualDestination must be configured with outlier detection using a traffic policy.
+//explicit priority, or a list of locality directives. Each TrafficTarget backing the
+//VirtualDestination must be configured with outlier detection through a TrafficPolicy.
 //
-//Currently this feature only supports Services backed by Istio.
+//Currently this feature only supports TrafficTargets backed by Istio.
 type VirtualDestinationSpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The DNS name of the VirtualDestination. Must be unique within the service mesh instance
-	// since it is used as the hostname with which clients communicate.
+	// The DNS name of the VirtualDestination. Must be unique within the service mesh instance.
 	Hostname string `protobuf:"bytes,1,opt,name=hostname,proto3" json:"hostname,omitempty"`
 	// The port on which the VirtualDestination listens.
 	Port *VirtualDestinationSpec_Port `protobuf:"bytes,2,opt,name=port,proto3" json:"port,omitempty"`
-	// The VirtualDestination can be made visible to either a mesh, a VirtualMesh, or multiple meshes that are
-	// in the same VirtualMesh.
+	// The VirtualDestination can be made visible to either a mesh, a VirtualMesh, or a subset of meshes within the same VirtualMesh.
 	//
 	// Types that are assignable to ExportTo:
 	//	*VirtualDestinationSpec_VirtualMesh
 	//	*VirtualDestinationSpec_MeshList_
 	ExportTo isVirtualDestinationSpec_ExportTo `protobuf_oneof:"export_to"`
-	// Configuration that determines failover behavior. Failover is based either on a list of services specified
-	// in priority order, or on the localities of the traffic source and destination.
+	// Configuration that determines failover behavior.
 	//
 	// Types that are assignable to FailoverConfig:
 	//	*VirtualDestinationSpec_Static
@@ -174,12 +171,12 @@ type isVirtualDestinationSpec_FailoverConfig interface {
 }
 
 type VirtualDestinationSpec_Static struct {
-	// List of backing services in priority order.
+	// Failover priority is determined by an explicitly provided static ordering of TrafficTargets.
 	Static *VirtualDestinationSpec_BackingServiceList `protobuf:"bytes,5,opt,name=static,proto3,oneof"`
 }
 
 type VirtualDestinationSpec_Localized struct {
-	// Locality failover configuration.
+	// Failover priority is determined by the localities of the traffic source and destination.
 	Localized *VirtualDestinationSpec_LocalityConfig `protobuf:"bytes,6,opt,name=localized,proto3,oneof"`
 }
 
@@ -450,8 +447,8 @@ func (x *VirtualDestinationSpec_MeshList) GetMeshes() []*v1.ObjectRef {
 	return nil
 }
 
-// Enables failover based on a list of services. When outlier detection detects that a traffic target in the list
-// is in an unhealthy state, requests sent to the VirtualDestination will be routed to the next healthy traffic target
+// Configure failover based on a list of TrafficTargets. When a TrafficTarget in the list
+// is in an unhealthy state (as determined by its outlier detection configuration), requests sent to the VirtualDestination will be routed to the next healthy TrafficTarget
 // in the list.
 type VirtualDestinationSpec_BackingServiceList struct {
 	state         protoimpl.MessageState

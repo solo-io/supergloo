@@ -83,15 +83,14 @@ message TrafficTargetSpec {
         }
 
         // Each endpoints subset is a group of endpoints arranged in terms of IP/port pairs.
-        // This API mirrors the kubernetes Endpoints API.
-        // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
+        // This API mirrors the [Kubernetes Endpoints API](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core).
         repeated EndpointsSubset endpoint_subsets = 7;
 
     }
 
 }
 
-// A zone/sub-zone subset within the region that the service is in.
+// A subdivision of a region representing a set of physically colocated compute resources.
 message SubLocality {
     string zone = 1;
     string sub_zone = 2;
