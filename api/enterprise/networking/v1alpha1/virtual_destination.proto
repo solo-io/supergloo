@@ -14,7 +14,7 @@ option (extproto.equal_all) = true;
     A VirtualDestination creates a new hostname to which client workloads can send requests.
     Requests will be routed based on either a list of backing traffic targets ordered by
     priority, or a list of locality directives. Each traffic target backing the
-    VirtualDestination must be configured with outlier detection using a traffic policy.
+    VirtualDestination must be configured with outlier detection through a TrafficPolicy.
 
     Currently this feature only supports Services backed by Istio.
 */
