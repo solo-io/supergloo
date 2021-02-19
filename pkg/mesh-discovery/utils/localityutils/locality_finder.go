@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-// Get the region of a cluster
+// Get the region of a cluster by the labels on any node associated with the cluster.
 func GetClusterRegion(clusterName string, nodes corev1sets.NodeSet) (string, error) {
 	// get the nodes in the cluster
 	clusterNodes := allNodes.List(func(node *corev1.Node) bool {
