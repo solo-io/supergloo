@@ -19,8 +19,7 @@ option (extproto.equal_all) = true;
     Currently this feature only supports TrafficTargets backed by Istio.
 */
 message VirtualDestinationSpec {
-  // The DNS name of the VirtualDestination. Must be unique within the service mesh instance
-  // since it is used as the hostname with which clients communicate.
+  // The DNS name of the VirtualDestination. Must be unique within the service mesh instance.
   string hostname = 1;
 
   // The port on which the VirtualDestination listens.
