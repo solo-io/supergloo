@@ -306,7 +306,9 @@ func (t *translator) Translate(
 }
 
 func BuildGatewayName(virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh) string {
-	return kubeutils.SanitizeNameV2(fmt.Sprintf("%v-%v", virtualMesh.Ref.Name, virtualMesh.Ref.Namespace))
+	return kubeutils.SanitizeNameV2(
+		fmt.Sprintf("%s-%s", virtualMesh.GetRef().GetName(), virtualMesh.GetRef().GetNamespace()),
+	)
 }
 
 func BuildTcpRewriteEnvoyFilter(
