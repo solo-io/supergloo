@@ -121,7 +121,7 @@ func GetServiceRegion(service *corev1.Service, pods corev1sets.PodSet, nodes cor
 	return getRegionFromNode(node)
 }
 
-// Get the zone and subzone (if it exists) of a node
+// Get the zone and sub-zone (if it exists) of a node
 func GetSubLocality(
 	clusterName string,
 	nodeName string,
@@ -156,7 +156,7 @@ func getSubLocality(
 		Zone: zone,
 	}
 
-	// get the subzone (Istio-specific)
+	// get the sub-zone (Istio-specific)
 	if subzone, ok := node.Labels[label.TopologySubzone.Name]; ok {
 		subLocality.SubZone = subzone
 	}

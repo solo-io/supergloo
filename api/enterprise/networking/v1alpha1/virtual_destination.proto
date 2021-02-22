@@ -73,6 +73,7 @@ message VirtualDestinationSpec {
   message LocalityConfig {
     // Selectors for the services backing the VirtualDestination.
     // All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
+    // Currently only one service per cluster can be selected, more than one per cluster will be considered invalid.
     repeated .networking.mesh.gloo.solo.io.TrafficTargetSelector service_selectors = 1;
 
     // Directives describing the locality failover behavior.

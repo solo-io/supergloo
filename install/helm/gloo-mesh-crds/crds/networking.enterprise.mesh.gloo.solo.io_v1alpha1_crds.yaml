@@ -344,6 +344,7 @@ spec:
                   description: |-
                     Selectors for the services backing the VirtualDestination.
                     All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
+                    Currently only one service per cluster can be selected, more than one per cluster will be considered invalid.
                   items:
                     properties:
                       kubeServiceMatcher:
