@@ -1,13 +1,13 @@
 ---
-title: "meshctl install enterprise"
+title: "meshctl oss enterprise"
 weight: 5
 ---
-## meshctl install enterprise
+## meshctl oss enterprise
 
 Install Gloo Mesh enterprise
 
 ```
-meshctl install enterprise [flags]
+meshctl oss enterprise [flags]
 ```
 
 ### Options
@@ -42,5 +42,5 @@ meshctl install enterprise [flags]
 
 ### SEE ALSO
 
-* [meshctl install](../meshctl_install)	 - Install Gloo Mesh
+* [meshctl oss](../meshctl_oss)	 - Install Gloo Mesh
 

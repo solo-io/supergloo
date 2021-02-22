@@ -1,0 +1,5 @@
+changelog:
+  - type: NON_USER_FACING
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/149
+    resolvesIssue: false
+    description: Move install register OSS commands from the root to `oss` subcommands

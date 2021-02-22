@@ -1,13 +1,13 @@
 ---
-title: "meshctl install"
+title: "meshctl oss install"
 weight: 5
 ---
-## meshctl install
+## meshctl oss install
 
-Install Gloo Mesh
+Install Gloo Mesh OSS
 
 ```
-meshctl install [flags]
+meshctl oss install [flags]
 ```
 
 ### Options
@@ -39,6 +39,5 @@ meshctl install [flags]
 
 ### SEE ALSO
 
-* [meshctl](../meshctl)	 - The Command Line Interface for managing Gloo Mesh.
-* [meshctl install enterprise](../meshctl_install_enterprise)	 - Install Gloo Mesh enterprise
+* [meshctl oss](../meshctl_oss)	 - Install Gloo Mesh
 
