@@ -528,12 +528,6 @@ function install_istio() {
   port=$2
   K="kubectl --context=kind-${cluster}"
 
-  # return non-zero exit code if enterpriseNetworkingGrpcPort is unset
-  if [[-z ${enterpriseNetworkingGrpcPort}]]; then
-    echo "unable to fetch enterprise-networking grpc port"
-    return 1
-  fi
-
   if istioctl version | grep -E -- '1.7'
   then
     install_istio_1_7 $cluster $port
