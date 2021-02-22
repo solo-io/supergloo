@@ -5,6 +5,7 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.so
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/virtual_mesh.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/failover_service.proto";
+import "github.com/solo-io/gloo-mesh/api/discovery/v1alpha2/traffic_target.proto";
 import "google/protobuf/wrappers.proto";
 
 import "extproto/ext.proto";
@@ -141,6 +142,12 @@ message MeshSpec {
         // Determined using the image tag on the
         // Mesh's primary control plane image (e.g. the istio-pilot image tag).
         string version = 4;
+
+        // The region of the cluster in which the control plane has been installed.
+        string region = 5;
+
+        // List of zone+sub_zone pairs which this mesh is a part of
+        repeated SubLocality sub_localities = 6;
     }
 
     // information about the Gloo Mesh Cert-Agent which may be installed
@@ -159,12 +166,6 @@ message MeshStatus {
     // has reconciled the latest version of the Mesh.
     int64 observed_generation = 1;
 
-    // The VirtualMesh, if any, which contains this mesh.
-    AppliedVirtualMesh applied_virtual_mesh = 2;
-
-    // The FailoverServices, if any, which applies to this mesh.
-    repeated AppliedFailoverService applied_failover_services = 3;
-
     // AppliedVirtualMesh represents a VirtualMesh that has been applied to this Mesh.
     // If an existing VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
     message AppliedVirtualMesh {
@@ -178,6 +179,9 @@ message MeshStatus {
         .networking.mesh.gloo.solo.io.VirtualMeshSpec spec = 3;
     }
 
+    // The VirtualMesh, if any, which contains this mesh.
+    AppliedVirtualMesh applied_virtual_mesh = 2;
+
     // AppliedFailoverService represents a FailoverService that has been applied to this Mesh.
     // If an existing FailoverService becomes invalid the last applied FailoverService will be used.
     message AppliedFailoverService {
@@ -190,4 +194,23 @@ message MeshStatus {
         // The last known valid spec of the FailoverService.
         .networking.mesh.gloo.solo.io.FailoverServiceSpec spec = 3;
     }
+
+    // The FailoverServices, if any, which applies to this mesh.
+    repeated AppliedFailoverService applied_failover_services = 3;
+
+    // AppliedVirtualDestination represents a VirtualDestination that has been applied to this Mesh.
+    message AppliedVirtualDestination {
+        // Reference to the VirtualDestination.
+        .core.skv2.solo.io.ObjectRef ref = 1;
+
+        // The observed generation of the accepted VirtualDestination.
+        int64 observedGeneration = 2;
+
+        // Any errors encountered while processing the referenced VirtualDestination object.
+        repeated string errors = 3;
+    }
+
+    // The FailoverServices, if any, which applies to this mesh.
+    repeated AppliedVirtualDestination applied_virtual_destinations = 4;
+
 }

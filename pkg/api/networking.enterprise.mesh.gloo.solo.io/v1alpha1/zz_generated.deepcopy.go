@@ -68,3 +68,64 @@ func (in *WasmDeploymentList) DeepCopyObject() runtime.Object {
 	}
 	return nil
 }
+
+// Generated Deepcopy methods for VirtualDestination
+
+func (in *VirtualDestination) DeepCopyInto(out *VirtualDestination) {
+	*out = *in
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+
+	// deepcopy spec
+	in.Spec.DeepCopyInto(&out.Spec)
+	// deepcopy status
+	in.Status.DeepCopyInto(&out.Status)
+
+	return
+}
+
+func (in *VirtualDestination) DeepCopy() *VirtualDestination {
+	if in == nil {
+		return nil
+	}
+	out := new(VirtualDestination)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *VirtualDestination) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
+}
+
+func (in *VirtualDestinationList) DeepCopyInto(out *VirtualDestinationList) {
+	*out = *in
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]VirtualDestination, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	return
+}
+
+func (in *VirtualDestinationList) DeepCopy() *VirtualDestinationList {
+	if in == nil {
+		return nil
+	}
+	out := new(VirtualDestinationList)
+	in.DeepCopyInto(out)
+	return out
+}
+
+func (in *VirtualDestinationList) DeepCopyObject() runtime.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	}
+	return nil
+}

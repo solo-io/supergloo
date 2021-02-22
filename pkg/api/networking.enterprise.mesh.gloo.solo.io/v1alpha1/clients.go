@@ -41,6 +41,8 @@ func (m *multiclusterClientset) Cluster(cluster string) (Clientset, error) {
 type Clientset interface {
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1alpha1/v1alpha1 APIs
 	WasmDeployments() WasmDeploymentClient
+	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1alpha1/v1alpha1 APIs
+	VirtualDestinations() VirtualDestinationClient
 }
 
 type clientSet struct {
@@ -68,6 +70,11 @@ func NewClientset(client client.Client) Clientset {
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1alpha1/v1alpha1 APIs
 func (c *clientSet) WasmDeployments() WasmDeploymentClient {
 	return NewWasmDeploymentClient(c.client)
+}
+
+// clienset for the networking.enterprise.mesh.gloo.solo.io/v1alpha1/v1alpha1 APIs
+func (c *clientSet) VirtualDestinations() VirtualDestinationClient {
+	return NewVirtualDestinationClient(c.client)
 }
 
 // Reader knows how to read and list WasmDeployments.
@@ -210,4 +217,146 @@ func (m *multiclusterWasmDeploymentClient) Cluster(cluster string) (WasmDeployme
 		return nil, err
 	}
 	return NewWasmDeploymentClient(client), nil
+}
+
+// Reader knows how to read and list VirtualDestinations.
+type VirtualDestinationReader interface {
+	// Get retrieves a VirtualDestination for the given object key
+	GetVirtualDestination(ctx context.Context, key client.ObjectKey) (*VirtualDestination, error)
+
+	// List retrieves list of VirtualDestinations for a given namespace and list options.
+	ListVirtualDestination(ctx context.Context, opts ...client.ListOption) (*VirtualDestinationList, error)
+}
+
+// VirtualDestinationTransitionFunction instructs the VirtualDestinationWriter how to transition between an existing
+// VirtualDestination object and a desired on an Upsert
+type VirtualDestinationTransitionFunction func(existing, desired *VirtualDestination) error
+
+// Writer knows how to create, delete, and update VirtualDestinations.
+type VirtualDestinationWriter interface {
+	// Create saves the VirtualDestination object.
+	CreateVirtualDestination(ctx context.Context, obj *VirtualDestination, opts ...client.CreateOption) error
+
+	// Delete deletes the VirtualDestination object.
+	DeleteVirtualDestination(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+	// Update updates the given VirtualDestination object.
+	UpdateVirtualDestination(ctx context.Context, obj *VirtualDestination, opts ...client.UpdateOption) error
+
+	// Patch patches the given VirtualDestination object.
+	PatchVirtualDestination(ctx context.Context, obj *VirtualDestination, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all VirtualDestination objects matching the given options.
+	DeleteAllOfVirtualDestination(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the VirtualDestination object.
+	UpsertVirtualDestination(ctx context.Context, obj *VirtualDestination, transitionFuncs ...VirtualDestinationTransitionFunction) error
+}
+
+// StatusWriter knows how to update status subresource of a VirtualDestination object.
+type VirtualDestinationStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given VirtualDestination object.
+	UpdateVirtualDestinationStatus(ctx context.Context, obj *VirtualDestination, opts ...client.UpdateOption) error
+
+	// Patch patches the given VirtualDestination object's subresource.
+	PatchVirtualDestinationStatus(ctx context.Context, obj *VirtualDestination, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on VirtualDestinations.
+type VirtualDestinationClient interface {
+	VirtualDestinationReader
+	VirtualDestinationWriter
+	VirtualDestinationStatusWriter
+}
+
+type virtualDestinationClient struct {
+	client client.Client
+}
+
+func NewVirtualDestinationClient(client client.Client) *virtualDestinationClient {
+	return &virtualDestinationClient{client: client}
+}
+
+func (c *virtualDestinationClient) GetVirtualDestination(ctx context.Context, key client.ObjectKey) (*VirtualDestination, error) {
+	obj := &VirtualDestination{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *virtualDestinationClient) ListVirtualDestination(ctx context.Context, opts ...client.ListOption) (*VirtualDestinationList, error) {
+	list := &VirtualDestinationList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *virtualDestinationClient) CreateVirtualDestination(ctx context.Context, obj *VirtualDestination, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *virtualDestinationClient) DeleteVirtualDestination(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &VirtualDestination{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *virtualDestinationClient) UpdateVirtualDestination(ctx context.Context, obj *VirtualDestination, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *virtualDestinationClient) PatchVirtualDestination(ctx context.Context, obj *VirtualDestination, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *virtualDestinationClient) DeleteAllOfVirtualDestination(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &VirtualDestination{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *virtualDestinationClient) UpsertVirtualDestination(ctx context.Context, obj *VirtualDestination, transitionFuncs ...VirtualDestinationTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*VirtualDestination), desired.(*VirtualDestination)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
+func (c *virtualDestinationClient) UpdateVirtualDestinationStatus(ctx context.Context, obj *VirtualDestination, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *virtualDestinationClient) PatchVirtualDestinationStatus(ctx context.Context, obj *VirtualDestination, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides VirtualDestinationClients for multiple clusters.
+type MulticlusterVirtualDestinationClient interface {
+	// Cluster returns a VirtualDestinationClient for the given cluster
+	Cluster(cluster string) (VirtualDestinationClient, error)
+}
+
+type multiclusterVirtualDestinationClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterVirtualDestinationClient(client multicluster.Client) MulticlusterVirtualDestinationClient {
+	return &multiclusterVirtualDestinationClient{client: client}
+}
+
+func (m *multiclusterVirtualDestinationClient) Cluster(cluster string) (VirtualDestinationClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewVirtualDestinationClient(client), nil
 }

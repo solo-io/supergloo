@@ -32,6 +32,7 @@ title: "mesh.proto"
   - [MeshSpec.OSM](#discovery.mesh.gloo.solo.io.MeshSpec.OSM)
   - [MeshStatus](#discovery.mesh.gloo.solo.io.MeshStatus)
   - [MeshStatus.AppliedFailoverService](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService)
+  - [MeshStatus.AppliedVirtualDestination](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination)
   - [MeshStatus.AppliedVirtualMesh](#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh)
 
 
@@ -205,6 +206,8 @@ The cluster on which the control plane for this mesh is deployed. Not all MeshTy
   | cluster | string |  | Cluster in which the control plane has been installed. |
   | podLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.MeshInstallation.PodLabelsEntry" >}}) | repeated | the labels on the control plane pods (read from the deployment) |
   | version | string |  | Version of the Mesh that has been installed. Determined using the image tag on the Mesh's primary control plane image (e.g. the istio-pilot image tag). |
+  | region | string |  | The region of the cluster in which the control plane has been installed. |
+  | subLocalities | [][discovery.mesh.gloo.solo.io.SubLocality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.SubLocality" >}}) | repeated | List of zone+sub_zone pairs which this mesh is a part of |
   
 
 
@@ -253,6 +256,7 @@ https://github.com/openservicemesh/osm
 | observedGeneration | int64 |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that mesh-networking has reconciled the latest version of the Mesh. |
   | appliedVirtualMesh | [discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh" >}}) |  | The VirtualMesh, if any, which contains this mesh. |
   | appliedFailoverServices | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService" >}}) | repeated | The FailoverServices, if any, which applies to this mesh. |
+  | appliedVirtualDestinations | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination" >}}) | repeated | The FailoverServices, if any, which applies to this mesh. |
   
 
 
@@ -270,6 +274,23 @@ AppliedFailoverService represents a FailoverService that has been applied to thi
 | ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the FailoverService. |
   | observedGeneration | int64 |  | The observed generation of the accepted FailoverService. |
   | spec | [networking.mesh.gloo.solo.io.FailoverServiceSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.failover_service#networking.mesh.gloo.solo.io.FailoverServiceSpec" >}}) |  | The last known valid spec of the FailoverService. |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination"></a>
+
+### MeshStatus.AppliedVirtualDestination
+AppliedVirtualDestination represents a VirtualDestination that has been applied to this Mesh.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the VirtualDestination. |
+  | observedGeneration | int64 |  | The observed generation of the accepted VirtualDestination. |
+  | errors | []string | repeated | Any errors encountered while processing the referenced VirtualDestination object. |
   
 
 

@@ -19,3 +19,15 @@ func (in *WasmDeploymentStatus) DeepCopyInto(out *WasmDeploymentStatus) {
 	p := proto.Clone(in).(*WasmDeploymentStatus)
 	*out = *p
 }
+
+// DeepCopyInto for the VirtualDestination.Spec
+func (in *VirtualDestinationSpec) DeepCopyInto(out *VirtualDestinationSpec) {
+	p := proto.Clone(in).(*VirtualDestinationSpec)
+	*out = *p
+}
+
+// DeepCopyInto for the VirtualDestination.Status
+func (in *VirtualDestinationStatus) DeepCopyInto(out *VirtualDestinationStatus) {
+	p := proto.Clone(in).(*VirtualDestinationStatus)
+	*out = *p
+}
