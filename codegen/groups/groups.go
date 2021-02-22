@@ -37,6 +37,7 @@ var GlooMeshNetworkingGroup = makeGroup("networking", "v1alpha2", []ResourceToGe
 
 var GlooMeshEnterpriseNetworkingGroup = makeGroup("networking.enterprise", "v1alpha1", []ResourceToGenerate{
 	{Kind: "WasmDeployment"},
+	{Kind: "VirtualDestination"},
 })
 
 var GlooMeshEnterpriseObservabilityGroup = makeGroup("observability.enterprise", "v1alpha1", []ResourceToGenerate{

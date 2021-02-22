@@ -43,6 +43,42 @@ type WasmDeploymentList struct {
 	Items           []WasmDeployment `json:"items"`
 }
 
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+
+// GroupVersionKind for VirtualDestination
+var VirtualDestinationGVK = schema.GroupVersionKind{
+	Group:   "networking.enterprise.mesh.gloo.solo.io",
+	Version: "v1alpha1",
+	Kind:    "VirtualDestination",
+}
+
+// VirtualDestination is the Schema for the virtualDestination API
+type VirtualDestination struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   VirtualDestinationSpec   `json:"spec,omitempty"`
+	Status VirtualDestinationStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (VirtualDestination) GVK() schema.GroupVersionKind {
+	return VirtualDestinationGVK
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// VirtualDestinationList contains a list of VirtualDestination
+type VirtualDestinationList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []VirtualDestination `json:"items"`
+}
+
 func init() {
 	SchemeBuilder.Register(&WasmDeployment{}, &WasmDeploymentList{})
+	SchemeBuilder.Register(&VirtualDestination{}, &VirtualDestinationList{})
 }
