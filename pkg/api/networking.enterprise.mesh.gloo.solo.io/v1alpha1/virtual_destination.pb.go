@@ -511,6 +511,7 @@ type VirtualDestinationSpec_LocalityConfig struct {
 
 	// Selectors for the services backing the VirtualDestination.
 	// All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
+	// Currently only one service per cluster can be selected, more than one per cluster will be considered invalid.
 	ServiceSelectors []*v1alpha2.TrafficTargetSelector `protobuf:"bytes,1,rep,name=service_selectors,json=serviceSelectors,proto3" json:"service_selectors,omitempty"`
 	// Directives describing the locality failover behavior.
 	FailoverDirectives []*VirtualDestinationSpec_LocalityConfig_LocalityFailoverDirective `protobuf:"bytes,2,rep,name=failover_directives,json=failoverDirectives,proto3" json:"failover_directives,omitempty"`
