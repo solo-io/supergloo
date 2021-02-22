@@ -38,8 +38,8 @@ Describes a matcher against HTTP request headers.
 | ----- | ---- | ----- | ----------- |
 | name | string |  | Specifies the name of the header in the request. |
   | value | string |  | Specifies the value of the header. If the value is absent a request that has the name header will match, regardless of the header’s value. |
-  | regex | bool |  | Specifies whether the header value should be treated as regex or not. |
-  | invertMatch | bool |  | If set to true, the result of the match will be inverted. Defaults to false.<br>Examples: name=foo, invert_match=true: matches if no header named `foo` is present name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present |
+  | regex | bool |  | Specifies whether the header value should be treated as regex. |
+  | invertMatch | bool |  | If set to true, the result of the match will be inverted. Defaults to false.<br>Examples:<br>- name=foo, invert_match=true: matches if no header named `foo` is present - name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present - name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present. |
   
 
 
@@ -54,8 +54,8 @@ Describes a matcher against HTTP response status codes.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| value | uint32 |  | the status code value to match against |
-  | comparator | [common.mesh.gloo.solo.io.StatusCodeMatcher.Comparator]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha1.request_matchers#common.mesh.gloo.solo.io.StatusCodeMatcher.Comparator" >}}) |  | the comparison type used for matching |
+| value | uint32 |  | The status code value to match against. |
+  | comparator | [common.mesh.gloo.solo.io.StatusCodeMatcher.Comparator]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.request_matchers#common.mesh.gloo.solo.io.StatusCodeMatcher.Comparator" >}}) |  | The comparison type used for matching. |
   
 
 
@@ -71,9 +71,9 @@ Describes a matcher against HTTP response status codes.
 
 | Name | Number | Description |
 | ---- | ------ | ----------- |
-| EQ | 0 | default, strict equality |
-| GE | 1 | greater than or equal to |
-| LE | 2 | less than or equal to |
+| EQ | 0 | Strict equality. |
+| GE | 1 | Greater than or equal to. |
+| LE | 2 | Less than or equal to. |
 
 
  <!-- end enums -->

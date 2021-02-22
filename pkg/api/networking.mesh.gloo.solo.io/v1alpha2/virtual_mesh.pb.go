@@ -90,7 +90,7 @@ func (VirtualMeshSpec_GlobalAccessPolicy) EnumDescriptor() ([]byte, []int) {
 //shared configuration and cross-mesh interoperability.
 //
 //VirtualMeshes are used to configure things like shared trust roots (for mTLS)
-//and federation of traffic targets (for cross-cluster networking).
+//and federation of TrafficTargets (for cross-cluster networking).
 //
 //Currently, VirtualMeshes can only be constructed from Istio meshes.
 type VirtualMeshSpec struct {
@@ -103,9 +103,9 @@ type VirtualMeshSpec struct {
 	// Configuration options for managing Mutual-TLS mTLS in a virtual mesh.Sets
 	// a shared Certificate Authority across the defined meshes.
 	MtlsConfig *VirtualMeshSpec_MTLSConfig `protobuf:"bytes,2,opt,name=mtls_config,json=mtlsConfig,proto3" json:"mtls_config,omitempty"`
-	// Determine how to expose traffic targets to cross-mesh traffic using Service Federation.
+	// Determine how to expose TrafficTargets to cross-mesh traffic using Service Federation.
 	Federation *VirtualMeshSpec_Federation `protobuf:"bytes,3,opt,name=federation,proto3" json:"federation,omitempty"`
-	// Sets an Access Policy for the whole mesh.
+	// Sets an AccessPolicy for the whole mesh.
 	GlobalAccessPolicy VirtualMeshSpec_GlobalAccessPolicy `protobuf:"varint,4,opt,name=global_access_policy,json=globalAccessPolicy,proto3,enum=networking.mesh.gloo.solo.io.VirtualMeshSpec_GlobalAccessPolicy" json:"global_access_policy,omitempty"`
 }
 
@@ -334,12 +334,12 @@ type isVirtualMeshSpec_MTLSConfig_TrustModel interface {
 }
 
 type VirtualMeshSpec_MTLSConfig_Shared struct {
-	// Shared trust (allow communication between any workloads and traffic targets in the grouped Meshes).
+	// Shared trust (allow communication between any workloads and TrafficTargets in the grouped Meshes).
 	Shared *VirtualMeshSpec_MTLSConfig_SharedTrust `protobuf:"bytes,1,opt,name=shared,proto3,oneof"`
 }
 
 type VirtualMeshSpec_MTLSConfig_Limited struct {
-	// Limited trust (selectively allow communication between workloads and traffic targets in the grouped Meshes).
+	// Limited trust (selectively allow communication between workloads and TrafficTargets in the grouped Meshes).
 	Limited *VirtualMeshSpec_MTLSConfig_LimitedTrust `protobuf:"bytes,2,opt,name=limited,proto3,oneof"`
 }
 
@@ -437,7 +437,7 @@ func (*VirtualMeshSpec_RootCertificateAuthority_Secret) isVirtualMeshSpec_RootCe
 }
 
 // In Gloo Mesh, "federation" refers to the ability
-// to expose traffic targets with a global DNS name
+// to expose TrafficTargets with a global DNS name
 // for traffic originating from any workload within the
 // virtual mesh.
 type VirtualMeshSpec_Federation struct {
@@ -445,7 +445,7 @@ type VirtualMeshSpec_Federation struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The "mode" in which to federate traffic targets within this virtual mesh.
+	// The "mode" in which to federate TrafficTargets within this virtual mesh.
 	//
 	// Types that are assignable to Mode:
 	//	*VirtualMeshSpec_Federation_Permissive
@@ -454,7 +454,7 @@ type VirtualMeshSpec_Federation struct {
 	// rather than through an ingress gateway.
 	// NOTE: This feature will not work if the clusters are not pre-configured to live on the same network.
 	FlatNetwork bool `protobuf:"varint,2,opt,name=flat_network,json=flatNetwork,proto3" json:"flat_network,omitempty"`
-	// Configure the suffix for hostnames of traffic targets federated within this virtual mesh.
+	// Configure the suffix for hostnames of TrafficTargets federated within this virtual mesh.
 	// Currently this is only supported for Istio with smart DNS proxying enabled.
 	// If any meshes do not have smart DNS proxying enabled, setting this field results in an error.
 	// If omitted, the hostname suffix defaults to "global".
@@ -526,7 +526,7 @@ type isVirtualMeshSpec_Federation_Mode interface {
 }
 
 type VirtualMeshSpec_Federation_Permissive struct {
-	// Select permissive mode to expose all traffic targets in a
+	// Select permissive mode to expose all TrafficTargets in a
 	// VirtualMesh to cross-cluster traffic from all workloads
 	// in that Virtual Mesh.
 	Permissive *empty.Empty `protobuf:"bytes,1,opt,name=permissive,proto3,oneof"`

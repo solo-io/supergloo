@@ -10,37 +10,38 @@ import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
 /*
-    When certificates are issued, pods may need to be bounced (restarted) to ensure they pick up the
-    new certificates. If so, the certificate Issuer will create a PodBounceDirective containing the namespaces and labels
+    When certificates are issued, Istio-controlled pods need to be bounced (restarted) to ensure they pick up the
+    new certificates due to [this issue](https://github.com/istio/istio/issues/22993).
+    The certificate issuer will create a PodBounceDirective containing the namespaces and labels
     of the pods that need to be bounced in order to pick up the new certs.
 */
 message PodBounceDirectiveSpec {
 
-    // A list of k8s pods to bounce (delete and cause a restart)
+    // A list of Kubernetes pods to bounce (delete and cause a restart)
     // when the certificate is issued.
-    // This will include the control plane pods as well as any pods
+    // This will include the control plane pods as well as any Pods
     // which share a data plane with the target mesh.
     repeated PodSelector pods_to_bounce = 6;
 
-    // Pods that will be restarted.
+    // pods that will be restarted.
     message PodSelector {
         // The namespace in which the pods live.
         string namespace = 1;
 
-        // Any labels shared by the pods.
+        // Any labels shared by the Pods.
         map<string, string> labels = 2;
 
-        // Wait for this number of replacement pods to reach be fully Ready before
-        // deleting the next set of selected pods.
+        // Wait for this number of replacement pods to reach be fully ready before
+        // deleting the next set of selected Pods.
         // This is used to ensure the control plane pods are allowed to restart
         // before sidecars and gateways are restarted.
         uint32 wait_for_replicas = 3;
 
         // Wait for the control plane to have synced all root cert configmaps in data plane namespaces before
-        // bouncing these pods.
+        // bouncing these Pods.
         RootCertSync root_cert_sync = 4;
 
-        // RootCertSync describes values in a secret and configmap which must be equal in order for a pod to be bounced.
+        // RootCertSync describes values in a secret and configmap which must be equal in order for a Pod to be bounced.
         message RootCertSync {
             .core.skv2.solo.io.ObjectRef secret_ref = 1;
 
@@ -55,19 +56,19 @@ message PodBounceDirectiveSpec {
 
 
 /*
-    PodBounceDirectiveStatus reports the status for stateful pod bounces (when bouncing pods requires waiting for readiness)
+    PodBounceDirectiveStatus reports the status for stateful Pod bounces (when bouncing pods requires waiting for readiness).
 */
 message PodBounceDirectiveStatus {
 
-    // A list of k8s pods to bounce (delete and cause a restart)
+    // A list of Kubernetes pods to bounce (delete and cause a restart)
     // when the certificate is issued.
-    // This will include the control plane pods as well as any pods
+    // This will include the control plane pods as well as any Pods
     // which share a data plane with the target mesh.
     repeated BouncedPodSet pods_bounced = 4;
 
-    // A set of Pods that were restarted.
+    // A set of pods that were restarted.
     message BouncedPodSet {
-        // The names of the pods that were bounced for the corresponding selector.
+        // The names of the pods that were bounced for the corresponding selector specified in `PodBounceDirectiveSpec.PodSelector.labels`.
         repeated string bounced_pods = 1;
     }
 

@@ -93,7 +93,7 @@ Represents permissions for configuring AccessLogRecords.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| workloadSelectors | [][networking.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | A list of permitted workload selectors. |
+| workloadSelectors | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | A list of permitted workload selectors. |
   
 
 
@@ -108,8 +108,8 @@ Represents permissions for configuring AccessPolicies.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| identitySelectors | [][networking.mesh.gloo.solo.io.IdentitySelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.IdentitySelector" >}}) | repeated | A list of permitted identity selectors. |
-  | trafficTargetSelectors | [][networking.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | A list of permitted traffic target selectors. |
+| identitySelectors | [][common.mesh.gloo.solo.io.IdentitySelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.IdentitySelector" >}}) | repeated | A list of permitted identity selectors. |
+  | trafficTargetSelectors | [][common.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | A list of permitted TrafficTarget selectors. |
   
 
 
@@ -141,8 +141,8 @@ Represents permissions for configuring TrafficPolicies.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | trafficPolicyActions | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope.TrafficPolicyActions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope.TrafficPolicyActions" >}}) | repeated | A list of permitted TrafficPolicy configuration actions. |
-  | trafficTargetSelectors | [][networking.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | A list of permitted traffic target selectors. |
-  | workloadSelectors | [][networking.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | A list of permitted workload selectors. |
+  | trafficTargetSelectors | [][common.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | A list of permitted TrafficTarget selectors. |
+  | workloadSelectors | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | A list of permitted workload selectors. |
   
 
 
@@ -159,7 +159,7 @@ Represents permissions for configuring VirtualDestinations.
 | ----- | ---- | ----- | ----------- |
 | virtualMeshRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | A list of permitted virtual mesh references. |
   | meshRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | A list of permitted mesh references. |
-  | serviceSelectors | [][networking.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | A list of permitted backing service selectors. |
+  | serviceSelectors | [][common.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | A list of permitted backing service selectors. |
   | services | [][networking.enterprise.mesh.gloo.solo.io.BackingService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.BackingService" >}}) | repeated | A list of permitted backing services. |
   
 
@@ -191,7 +191,7 @@ Represents permissions for configuring WasmDeployments.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| workloadSelectors | [][networking.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | A list of permitted workload selectors. |
+| workloadSelectors | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | A list of permitted workload selectors. |
   
 
 

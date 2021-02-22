@@ -23,26 +23,26 @@ spec:
       properties:
         spec:
           description: |-
-            A Traffic Policy applies some L7 routing features to an existing mesh.
-               Traffic Policies specify the following for all requests:
+            A TrafficPolicy applies some L7 routing features to an existing mesh.
+               Describes specify the following for all requests:
                - originating from from **source workload**
                - sent to **destination targets**
                - matching one or more **request matcher**
           properties:
             destinationSelector:
               description: |-
-                Requests destined for these k8s services will have the rule applied.
-                       Leave empty to apply to all destination k8s services in the mesh.
+                Requests destined for these Kubernetes services will have the rule applied.
+                       Leave empty to apply to all destination Kubernetes services in the mesh.
               items:
                 properties:
                   kubeServiceMatcher:
-                    description: A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters.
+                    description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
                     properties:
                       clusters:
                         description: |-
-                          If specified, match k8s Services if they exist in one of the specified clusters.
+                          If specified, match Kubernetes Services if they exist in one of the specified clusters.
                                      When used in a networking policy, omission matches any cluster.
-                                     When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                         items:
                           type: string
                         type: array
@@ -50,27 +50,27 @@ spec:
                         additionalProperties:
                           type: string
                         description: |-
-                          If specified, all labels must exist on k8s Service.
+                          If specified, a match requires all labels to exist on a Kubernetes Service.
                                      When used in a networking policy, omission matches any labels.
-                                     When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                         type: object
                       namespaces:
                         description: |-
-                          If specified, match k8s Services if they exist in one of the specified namespaces.
+                          If specified, match Kubernetes Services if they exist in one of the specified namespaces.
                                      When used in a networking policy, omission matches any namespace.
-                                     When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                         items:
                           type: string
                         type: array
                     type: object
                   kubeServiceRefs:
-                    description: Match individual k8s Services by direct reference.
+                    description: Match Kubernetes Services by direct reference.
                     properties:
                       services:
                         description: |-
-                          Match k8s Services by direct reference.
+                          Match Kubernetes Services by direct reference.
                                      When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
-                                     When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
                         items:
                           properties:
                             clusterName:
@@ -123,21 +123,22 @@ spec:
                           description: |-
                             If set to true, the result of the match will be inverted. Defaults to false.
 
-                                   Examples:
-                                   * name=foo, invert_match=true: matches if no header named `foo` is present
-                                   * name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
-                                   * name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present
+                               Examples:
+
+                                   - name=foo, invert_match=true: matches if no header named `foo` is present
+                                   - name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
+                                   - name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present.
                           type: boolean
                         name:
                           description: Specifies the name of the header in the request.
                           type: string
                         regex:
-                          description: Specifies whether the header value should be treated as regex or not.
+                          description: Specifies whether the header value should be treated as regex.
                           type: boolean
                         value:
                           description: |-
                             Specifies the value of the header. If the value is absent a request that
-                                   has the name header will match, regardless of the header’s value.
+                            has the name header will match, regardless of the header’s value.
                           type: string
                       type: object
                     type: array
@@ -203,35 +204,35 @@ spec:
                 corsPolicy:
                   description: |-
                     Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to
-                           https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
-                           for further details about cross origin resource sharing.
+                               https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+                               for further details about cross origin resource sharing.
                   properties:
                     allowCredentials:
                       description: |-
                         Indicates whether the caller is allowed to send the actual request
-                                   (not the preflight) using credentials. Translates to
-                                   `Access-Control-Allow-Credentials` header.
+                                       (not the preflight) using credentials. Translates to
+                                       `Access-Control-Allow-Credentials` header.
                       nullable: true
                       type: boolean
                     allowHeaders:
                       description: |-
                         List of HTTP headers that can be used when requesting the
-                                   resource. Serialized to Access-Control-Allow-Headers header.
+                                       resource. Serialized to Access-Control-Allow-Headers header.
                       items:
                         type: string
                       type: array
                     allowMethods:
                       description: |-
                         List of HTTP methods allowed to access the resource. The content will
-                                   be serialized into the Access-Control-Allow-Methods header.
+                                       be serialized into the Access-Control-Allow-Methods header.
                       items:
                         type: string
                       type: array
                     allowOrigins:
                       description: |-
                         String patterns that match allowed origins.
-                                   An origin is allowed if any of the string matchers match.
-                                   If a match is found, then the outgoing Access-Control-Allow-Origin would be set to the origin as provided by the client.
+                                       An origin is allowed if any of the string matchers match.
+                                       If a match is found, then the outgoing Access-Control-Allow-Origin would be set to the origin as provided by the client.
                       items:
                         oneOf:
                         - not:
@@ -263,14 +264,14 @@ spec:
                     exposeHeaders:
                       description: |-
                         A white list of HTTP headers that the browsers are allowed to
-                                   access. Serialized into Access-Control-Expose-Headers header.
+                                       access. Serialized into Access-Control-Expose-Headers header.
                       items:
                         type: string
                       type: array
                     maxAge:
                       description: |-
                         Specifies how long the results of a preflight request can be
-                                   cached. Translates to the `Access-Control-Max-Age` header.
+                                       cached. Translates to the `Access-Control-Max-Age` header.
                       type: string
                   type: object
                 faultInjection:
@@ -294,7 +295,7 @@ spec:
                     abort:
                       description: |-
                         Abort Http request attempts and return error codes back to downstream
-                                       service, giving the impression that the upstream service is faulty.
+                                           service, giving the impression that the upstream service is faulty.
                       properties:
                         httpStatus:
                           description: REQUIRED. HTTP status code to use to abort the Http request.
@@ -307,7 +308,7 @@ spec:
                     fixedDelay:
                       description: |-
                         Add a fixed delay before forwarding the request. Format:
-                                           1h/1m/1s/1ms. MUST be >=1ms.
+                                               1h/1m/1s/1ms. MUST be >=1ms.
                       type: string
                     percentage:
                       description: Percentage of requests to be faulted with the error code provided. Values range between 0 and 100
@@ -349,7 +350,7 @@ spec:
                     - kubeService
                   properties:
                     kubeService:
-                      description: Name/namespace/cluster of a kubernetes service.
+                      description: Name/namespace/cluster of a Kubernetes service.
                       properties:
                         clusterName:
                           description: name of the cluster in which the resource exists
@@ -364,12 +365,12 @@ spec:
                     percentage:
                       description: |-
                         Percentage of traffic to mirror. If absent, 100% will be mirrored.
-                                   Values range between 0 and 100
+                                       Values range between 0 and 100
                       format: double
                       type: number
                     port:
                       description: |-
-                        Port on the destination k8s service to receive traffic. If multiple are found, and none are specified,
+                        Port on the destination Kubernetes service to receive traffic. If multiple are found, and none are specified,
                         then the configuration will be considered invalid.
                       maximum: 4294967295
                       minimum: 0
@@ -393,7 +394,7 @@ spec:
                 outlierDetection:
                   description: |-
                     Configure outlier detection on the targeted services.
-                           Setting this field requires an empty source_selector because it must apply to all traffic.
+                               Setting this field requires an empty source_selector because it must apply to all traffic.
                   properties:
                     baseEjectionTime:
                       description: 'Minimum ejection duration. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 30s.'
@@ -432,7 +433,7 @@ spec:
                 trafficShift:
                   description: |-
                     Enables traffic shifting, i.e. to reroute requests to a different service,
-                           to a subset of pods based on their label, and/or split traffic between multiple services.
+                               to a subset of pods based on their label, and/or split traffic between multiple services.
                   properties:
                     destinations:
                       description: A traffic shift destination.
@@ -472,7 +473,7 @@ spec:
                             description: The use kubeService to shift traffic a Kubernetes Service/subset.
                             properties:
                               clusterName:
-                                description: The cluster of the destination k8s service (as it is registered with Gloo Mesh).
+                                description: The cluster of the destination Kubernetes service (as it is registered with Gloo Mesh).
                                 type: string
                               name:
                                 description: The name of the destination service.
@@ -481,7 +482,7 @@ spec:
                                 description: The namespace of the destination service.
                                 type: string
                               port:
-                                description: Port on the destination k8s service to receive traffic. Required if the service exposes more than one port.
+                                description: Port on the destination Kubernetes service to receive traffic. Required if the service exposes more than one port.
                                 maximum: 4294967295
                                 minimum: 0
                                 type: integer
@@ -529,9 +530,9 @@ spec:
                 properties:
                   clusters:
                     description: |-
-                      If specified, match k8s workloads if they exist in one of the specified clusters.
+                      If specified, match Kubernetes workloads if they exist in one of the specified clusters.
                              When used in a networking policy, omission matches any cluster.
-                             When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                             When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                     items:
                       type: string
                     type: array
@@ -539,15 +540,15 @@ spec:
                     additionalProperties:
                       type: string
                     description: |-
-                      If specified, all labels must exist on k8s workload.
+                      If specified, all labels must exist on Kubernetes workload.
                              When used in a networking policy, omission matches any labels.
-                             When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                             When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                     type: object
                   namespaces:
                     description: |-
-                      If specified, match k8s workloads if they exist in one of the specified namespaces.
+                      If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
                              When used in a networking policy, omission matches any namespace.
-                             When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                             When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                     items:
                       type: string
                     type: array
@@ -703,13 +704,13 @@ spec:
               items:
                 properties:
                   kubeServiceMatcher:
-                    description: A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters.
+                    description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
                     properties:
                       clusters:
                         description: |-
-                          If specified, match k8s Services if they exist in one of the specified clusters.
+                          If specified, match Kubernetes Services if they exist in one of the specified clusters.
                                      When used in a networking policy, omission matches any cluster.
-                                     When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                         items:
                           type: string
                         type: array
@@ -717,27 +718,27 @@ spec:
                         additionalProperties:
                           type: string
                         description: |-
-                          If specified, all labels must exist on k8s Service.
+                          If specified, a match requires all labels to exist on a Kubernetes Service.
                                      When used in a networking policy, omission matches any labels.
-                                     When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                         type: object
                       namespaces:
                         description: |-
-                          If specified, match k8s Services if they exist in one of the specified namespaces.
+                          If specified, match Kubernetes Services if they exist in one of the specified namespaces.
                                      When used in a networking policy, omission matches any namespace.
-                                     When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                         items:
                           type: string
                         type: array
                     type: object
                   kubeServiceRefs:
-                    description: Match individual k8s Services by direct reference.
+                    description: Match Kubernetes Services by direct reference.
                     properties:
                       services:
                         description: |-
-                          Match k8s Services by direct reference.
+                          Match Kubernetes Services by direct reference.
                                      When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
-                                     When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
                         items:
                           properties:
                             clusterName:
@@ -769,33 +770,33 @@ spec:
               items:
                 properties:
                   kubeIdentityMatcher:
-                    description: A KubeIdentityMatcher matches request identities based on the k8s namespace and cluster.
+                    description: Match request identities based on the Kubernetes namespace and cluster.
                     properties:
                       clusters:
                         description: |-
-                          If specified, match k8s identity if it exists in one of the specified clusters.
+                          If specified, match a Kubernetes identity if it exists in one of the specified clusters.
                                      When used in a networking policy, omission matches any cluster.
-                                     When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                         items:
                           type: string
                         type: array
                       namespaces:
                         description: |-
-                          If specified, match k8s identity if it exists in one of the specified namespaces.
+                          If specified, match a Kubernetes identity if it exists in one of the specified namespaces.
                                      When used in a networking policy, omission matches any namespace.
-                                     When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                         items:
                           type: string
                         type: array
                     type: object
                   kubeServiceAccountRefs:
-                    description: KubeServiceAccountRefs matches request identities based on the k8s service account of request.
+                    description: Match request identities based on the Kubernetes service account of the request.
                     properties:
                       serviceAccounts:
                         description: |-
-                          Match k8s ServiceAccounts by direct reference.
+                          Match Kubernetes service accounts by direct reference.
                                      When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
-                                     When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
                         items:
                           properties:
                             clusterName:
@@ -912,12 +913,12 @@ spec:
                shared configuration and cross-mesh interoperability.
 
                VirtualMeshes are used to configure things like shared trust roots (for mTLS)
-               and federation of traffic targets (for cross-cluster networking).
+               and federation of TrafficTargets (for cross-cluster networking).
 
                Currently, VirtualMeshes can only be constructed from Istio meshes.
           properties:
             federation:
-              description: Determine how to expose traffic targets to cross-mesh traffic using Service Federation.
+              description: Determine how to expose TrafficTargets to cross-mesh traffic using Service Federation.
               oneOf:
               - not:
                   anyOf:
@@ -934,21 +935,21 @@ spec:
                   type: boolean
                 hostnameSuffix:
                   description: |-
-                    Configure the suffix for hostnames of traffic targets federated within this virtual mesh.
+                    Configure the suffix for hostnames of TrafficTargets federated within this virtual mesh.
                     Currently this is only supported for Istio with smart DNS proxying enabled.
                     If any meshes do not have smart DNS proxying enabled, setting this field results in an error.
                     If omitted, the hostname suffix defaults to "global".
                   type: string
                 permissive:
                   description: |-
-                    Select permissive mode to expose all traffic targets in a
+                    Select permissive mode to expose all TrafficTargets in a
                     VirtualMesh to cross-cluster traffic from all workloads
                     in that Virtual Mesh.
                   maxProperties: 0
                   type: object
               type: object
             globalAccessPolicy:
-              description: Sets an Access Policy for the whole mesh.
+              description: Sets an AccessPolicy for the whole mesh.
               enum:
               - MESH_DEFAULT
               - ENABLED
@@ -990,10 +991,10 @@ spec:
                     `meshctl` provides the command `meshctl mesh restart` to simplify this process.
                   type: boolean
                 limited:
-                  description: Limited trust (selectively allow communication between workloads and traffic targets in the grouped Meshes).
+                  description: Limited trust (selectively allow communication between workloads and TrafficTargets in the grouped Meshes).
                   type: object
                 shared:
-                  description: Shared trust (allow communication between any workloads and traffic targets in the grouped Meshes).
+                  description: Shared trust (allow communication between any workloads and TrafficTargets in the grouped Meshes).
                   properties:
                     rootCertificateAuthority:
                       description: |-
@@ -1136,10 +1137,10 @@ spec:
         spec:
           description: |-
             A FailoverService creates a new hostname to which services can send requests.
-               Requests will be routed based on a list of backing traffic targets ordered by
-               decreasing priority. When outlier detection detects that a traffic target in the list is
+               Requests will be routed based on a list of backing TrafficTargets ordered by
+               decreasing priority. When outlier detection detects that a TrafficTarget in the list is
                in an unhealthy state, requests sent to the FailoverService will be routed
-               to the next healthy traffic target in the list. For each traffic target referenced in the
+               to the next healthy TrafficTarget in the list. For each TrafficTarget referenced in the
                FailoverService's BackingServices list, outlier detection must be configured using a TrafficPolicy.
 
                Currently this feature only supports Services backed by Istio.
@@ -1159,7 +1160,7 @@ spec:
                   - kubeService
                 properties:
                   kubeService:
-                    description: Name/namespace/cluster of a kubernetes service.
+                    description: Name/namespace/cluster of a Kubernetes service.
                     properties:
                       clusterName:
                         description: name of the cluster in which the resource exists

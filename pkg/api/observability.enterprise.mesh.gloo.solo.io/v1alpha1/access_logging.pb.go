@@ -11,8 +11,8 @@ import (
 	sync "sync"
 
 	proto "github.com/golang/protobuf/proto"
-	v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha1"
-	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha2"
+	v1alpha21 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -39,7 +39,7 @@ type AccessLogRecordSpec struct {
 
 	// Select the workloads to be configured to emit access logs.
 	// Leave empty to apply to all workloads managed by Gloo Mesh.
-	WorkloadSelectors []*v1alpha1.WorkloadSelector `protobuf:"bytes,1,rep,name=workload_selectors,json=workloadSelectors,proto3" json:"workload_selectors,omitempty"`
+	WorkloadSelectors []*v1alpha2.WorkloadSelector `protobuf:"bytes,1,rep,name=workload_selectors,json=workloadSelectors,proto3" json:"workload_selectors,omitempty"`
 	// Configure criteria for determining which access logs will be recorded.
 	// The list is disjunctive, a request will be recorded if it matches any filter.
 	// Leave empty to emit all access logs.
@@ -78,7 +78,7 @@ func (*AccessLogRecordSpec) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_enterprise_observability_v1alpha1_access_logging_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *AccessLogRecordSpec) GetWorkloadSelectors() []*v1alpha1.WorkloadSelector {
+func (x *AccessLogRecordSpec) GetWorkloadSelectors() []*v1alpha2.WorkloadSelector {
 	if x != nil {
 		return x.WorkloadSelectors
 	}
@@ -103,7 +103,7 @@ type AccessLogRecordStatus struct {
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 	// The state of the overall resource, will only show accepted if it has been successfully
 	// applied to all target workloads.
-	State v1alpha2.ApprovalState `protobuf:"varint,2,opt,name=state,proto3,enum=networking.mesh.gloo.solo.io.ApprovalState" json:"state,omitempty"`
+	State v1alpha21.ApprovalState `protobuf:"varint,2,opt,name=state,proto3,enum=networking.mesh.gloo.solo.io.ApprovalState" json:"state,omitempty"`
 	// Any errors encountered during processing. Also reported to any Workloads that this object applies to.
 	Errors []string `protobuf:"bytes,3,rep,name=errors,proto3" json:"errors,omitempty"`
 	// references to workloads that this AccessLogRecord applies to
@@ -149,11 +149,11 @@ func (x *AccessLogRecordStatus) GetObservedGeneration() int64 {
 	return 0
 }
 
-func (x *AccessLogRecordStatus) GetState() v1alpha2.ApprovalState {
+func (x *AccessLogRecordStatus) GetState() v1alpha21.ApprovalState {
 	if x != nil {
 		return x.State
 	}
-	return v1alpha2.ApprovalState_PENDING
+	return v1alpha21.ApprovalState_PENDING
 }
 
 func (x *AccessLogRecordStatus) GetErrors() []string {
@@ -177,9 +177,9 @@ type AccessLogRecordSpec_Filter struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Matches against a response status code. Omit to match any status code.
-	StatusCodeMatcher *v1alpha1.StatusCodeMatcher `protobuf:"bytes,1,opt,name=status_code_matcher,json=statusCodeMatcher,proto3" json:"status_code_matcher,omitempty"`
+	StatusCodeMatcher *v1alpha2.StatusCodeMatcher `protobuf:"bytes,1,opt,name=status_code_matcher,json=statusCodeMatcher,proto3" json:"status_code_matcher,omitempty"`
 	// Matches against a request or response header. Omit to match any headers.
-	HeaderMatcher *v1alpha1.HeaderMatcher `protobuf:"bytes,2,opt,name=header_matcher,json=headerMatcher,proto3" json:"header_matcher,omitempty"`
+	HeaderMatcher *v1alpha2.HeaderMatcher `protobuf:"bytes,2,opt,name=header_matcher,json=headerMatcher,proto3" json:"header_matcher,omitempty"`
 }
 
 func (x *AccessLogRecordSpec_Filter) Reset() {
@@ -214,14 +214,14 @@ func (*AccessLogRecordSpec_Filter) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_enterprise_observability_v1alpha1_access_logging_proto_rawDescGZIP(), []int{0, 0}
 }
 
-func (x *AccessLogRecordSpec_Filter) GetStatusCodeMatcher() *v1alpha1.StatusCodeMatcher {
+func (x *AccessLogRecordSpec_Filter) GetStatusCodeMatcher() *v1alpha2.StatusCodeMatcher {
 	if x != nil {
 		return x.StatusCodeMatcher
 	}
 	return nil
 }
 
-func (x *AccessLogRecordSpec_Filter) GetHeaderMatcher() *v1alpha1.HeaderMatcher {
+func (x *AccessLogRecordSpec_Filter) GetHeaderMatcher() *v1alpha2.HeaderMatcher {
 	if x != nil {
 		return x.HeaderMatcher
 	}
@@ -242,11 +242,11 @@ var file_github_com_solo_io_gloo_mesh_api_enterprise_observability_v1alpha1_acce
 	0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x1a, 0x47, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
 	0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d,
 	0x65, 0x73, 0x68, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x76,
-	0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x31, 0x2f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f,
+	0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x32, 0x2f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f,
 	0x6d, 0x61, 0x74, 0x63, 0x68, 0x65, 0x72, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x40,
 	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d,
 	0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x61, 0x70, 0x69,
-	0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x31,
+	0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x32,
 	0x2f, 0x73, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x1a, 0x4b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c,
 	0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x61,
@@ -325,11 +325,11 @@ var file_github_com_solo_io_gloo_mesh_api_enterprise_observability_v1alpha1_acce
 	(*AccessLogRecordSpec)(nil),        // 0: observability.enterprise.mesh.gloo.solo.io.AccessLogRecordSpec
 	(*AccessLogRecordStatus)(nil),      // 1: observability.enterprise.mesh.gloo.solo.io.AccessLogRecordStatus
 	(*AccessLogRecordSpec_Filter)(nil), // 2: observability.enterprise.mesh.gloo.solo.io.AccessLogRecordSpec.Filter
-	(*v1alpha1.WorkloadSelector)(nil),  // 3: common.mesh.gloo.solo.io.WorkloadSelector
-	(v1alpha2.ApprovalState)(0),        // 4: networking.mesh.gloo.solo.io.ApprovalState
+	(*v1alpha2.WorkloadSelector)(nil),  // 3: common.mesh.gloo.solo.io.WorkloadSelector
+	(v1alpha21.ApprovalState)(0),       // 4: networking.mesh.gloo.solo.io.ApprovalState
 	(*v1.ObjectRef)(nil),               // 5: core.skv2.solo.io.ObjectRef
-	(*v1alpha1.StatusCodeMatcher)(nil), // 6: common.mesh.gloo.solo.io.StatusCodeMatcher
-	(*v1alpha1.HeaderMatcher)(nil),     // 7: common.mesh.gloo.solo.io.HeaderMatcher
+	(*v1alpha2.StatusCodeMatcher)(nil), // 6: common.mesh.gloo.solo.io.StatusCodeMatcher
+	(*v1alpha2.HeaderMatcher)(nil),     // 7: common.mesh.gloo.solo.io.HeaderMatcher
 }
 var file_github_com_solo_io_gloo_mesh_api_enterprise_observability_v1alpha1_access_logging_proto_depIdxs = []int32{
 	3, // 0: observability.enterprise.mesh.gloo.solo.io.AccessLogRecordSpec.workload_selectors:type_name -> common.mesh.gloo.solo.io.WorkloadSelector

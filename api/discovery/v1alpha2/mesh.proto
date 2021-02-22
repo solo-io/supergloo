@@ -11,13 +11,11 @@ import "google/protobuf/wrappers.proto";
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
-/*
-    Meshes represent a currently registered service mesh.
-*/
+// Represents a service mesh deployment discovered by Gloo Mesh.
 message MeshSpec {
 
-    // The mesh type indicates information specific to the particular type of
-    // Mesh represented by this Mesh resource.
+    // TODO(harveyxia) rename to type
+    // Metadata specific to the particular service mesh type represented by this `Mesh`.
     oneof mesh_type {
         Istio istio = 1;
         AwsAppMesh aws_app_mesh = 2;
@@ -26,134 +24,141 @@ message MeshSpec {
         OSM osm = 6;
     }
 
-    // Information about the Gloo Mesh certificate agent if it has been installed to the remote cluster.
+    // Information about the Gloo Mesh agent if it has been installed to the managed cluster.
     AgentInfo agent_info = 5;
 
-    // Mesh object representing an installed Istio control plane
+    // Describes an Istio deployment.
     message Istio {
 
-        // Configuration metadata about the istio control plane installation.
+        // Describes the Istio control plane deployment.
         MeshInstallation installation = 1;
 
-        // Configuration metadata for Istio Citadel (Istio's security component).
+        // Describes Istio Citadel (Istio's security component).
         CitadelInfo citadel_info = 2;
 
-        // Configuration metadata for Istio IngressGateway (the Istio Ingress).
+        // Describes the ingress gateway.
         repeated IngressGatewayInfo ingress_gateways = 3;
 
         // True if smart DNS proxying is enabled, which allows for arbitrary DNS domains.
         bool smart_dns_proxying_enabled = 4;
 
-        // Configuration metadata for Istio Citadel (Istio's security component).
+        // TODO(harveyxia) flatten this out
+        // Describes Istio Citadel (Istio's security component).
         message CitadelInfo {
-            /*
-                Istio trust domain used for https/spiffe identity.
-                https://spiffe.io/spiffe/concepts/#trust-domain
-                https://istio.io/docs/reference/glossary/#identity
 
-                If empty will default to "cluster.local".
-            */
+            // Istio trust domain used for https/[spiffe](https://spiffe.io/spiffe/concepts/#trust-domain) [identity](https://istio.io/docs/reference/glossary/#identity).
+            // If empty will default to ["cluster.local"](https://github.com/istio/istio/blob/e768f408a7de224e64ccdfb2634442541ce08e6a/pilot/cmd/pilot-agent/main.go#L118).
             string trust_domain = 1;
 
-            /*
-                istio-citadel service account, used to determine identity for the Istio CA cert.
-                If empty will default to "istio-citadel".
-            */
+            // TODO(harveyxia) rename to istiod_service_account
+            // istio-citadel service account, used to determine identity for the Istio CA cert.
+            // If empty will default to "istio-citadel".
             string citadel_service_account = 2;
         }
 
+        // Describes the ingress gateway.
         message IngressGatewayInfo {
 
-            // Labels matching the workload which backs the gateway,
-            // defaults to `{"istio": "ingressgateway"}`.
+            // Labels matching the workload backing the gateway.
+            // [Defaults to](https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73) `{"istio": "ingressgateway"}`.
             map<string, string> workload_labels = 1;
 
             // The externally-reachable address on which the gateway is listening for TLS connections.
             // This will be the address used for cross-cluster connectivity.
-            // Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes Service (depending on its type).
+            // Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes service (depending on its type).
             string external_address = 2;
 
             // The externally-reachable port on which the gateway is listening for TLS connections.
             // This will be the port used for cross-cluster connectivity.
-            // List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio.
-            // Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type).
+            // See the list of [common ports used by Istio](https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio).
+            // Defaults to 15443 (or the NodePort) of the Kubernetes service (depending on its type).
             uint32 external_tls_port = 3;
 
             // Container port on which the gateway is listening for TLS connections.
             // Defaults to 15443.
             uint32 tls_container_port = 4;
-
         }
     }
 
-    // Mesh object representing AWS AppMesh.
+    // Describes an AWS App Mesh instance.
     message AwsAppMesh {
-        // AWS name for the AppMesh instance, must be unique across the AWS account.
+
+        // AWS name for the App Mesh instance, must be unique across all AppMesh instances owned by the AWS account.
         string aws_name = 1;
-        // The AWS region the AWS App Mesh control plane resources exist in.
+
+        // The AWS region the App Mesh control plane resources exist in.
         string region = 2;
+
         // The AWS Account ID associated with the Mesh. Populated at REST API registration time.
         string aws_account_id = 3;
-        // The unique AWS ARN associated with the Mesh.
+
+        // The unique AWS ARN associated with the App Mesh instance.
         string arn = 4;
-        // The k8s clusters on which sidecars for this AppMesh instance have been discovered.
+
+        // The Kubernetes clusters on which sidecars for this App Mesh instance have been discovered.
         repeated string clusters = 5;
     }
 
-    // Mesh object representing an installed Linkerd control plane.
+    // Describes a Linkerd deployment.
     message LinkerdMesh {
+
+        // Describes the Linkerd control plane deployment.
         MeshInstallation installation = 1;
 
-        // The cluster domain suffix this Linkerd mesh is configured with.
-        // See https://linkerd.io/2/tasks/using-custom-domain/ for info.
+        // The cluster domain suffix this Linkerd mesh is configured with. See [this reference](https://linkerd.io/2/tasks/using-custom-domain/) for more info.
         string cluster_domain = 2;
     }
 
-    // Mesh object representing an installed ConsulConnect control plane.
+    // Describes a ConsulConnect deployment.
     message ConsulConnectMesh {
+
+        // Describes the ConsulConnect control plane deployment.
         MeshInstallation installation = 1;
     }
 
-    /*
-        https://github.com/openservicemesh/osm
-    */
+    // Describes an [OSM](https://github.com/openservicemesh/osm) deployment.
     message OSM {
 
-        // Information about where OSM is installed in a managed Kubernetes Cluster.
+        // Describes the OSM control plane deployment.
         MeshInstallation installation = 1;
     }
 
     /*
-        The cluster on which the control plane for this mesh is deployed.
-        Not all MeshTypes have a MeshInstallation. Only self-hosted
-        control planes such as Istio and Linkerd will have installation metadata.
+        Describes the Kubernetes cluster on which the control plane for this mesh is deployed.
+        Only self-hosted control planes such as Istio, Linkerd, OSM, and ConsulConnect will have installation metadata.
     */
     message MeshInstallation {
+
         // Namespace in which the control plane has been installed.
         string namespace = 1;
 
-        // Cluster in which the control plane has been installed.
+        // The Gloo Mesh cluster in which the control plane has been installed.
         string cluster = 2;
 
-        // the labels on the control plane pods (read from the deployment)
+        // The labels on the control plane pods (read from the deployment).
         map<string, string> pod_labels = 3;
 
-        // Version of the Mesh that has been installed.
-        // Determined using the image tag on the
-        // Mesh's primary control plane image (e.g. the istio-pilot image tag).
+        // The version of the Mesh that has been installed, which is determined using the image tag on the
+        // mesh's primary control plane image (e.g. the istio-pilot image tag).
         string version = 4;
 
-        // The region of the cluster in which the control plane has been installed.
+        // The region of the cluster in which the control plane has been installed, which is
+        // determined from the value of the [Kubernetes region topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesioregion)
+        // on any Kubernetes node associated with the cluster of this mesh.
         string region = 5;
 
-        // List of zone+sub_zone pairs which this mesh is a part of
+        // List of zone and sub zone pairs for this mesh.
+        // Zone is determined from the value of the [Kubernetes zone topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone),
+        // on any Kubernetes node associated with the cluster of this mesh.
+        // Sub zones only apply to Istio meshes, [see their documentation](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
         repeated SubLocality sub_localities = 6;
     }
 
-    // information about the Gloo Mesh Cert-Agent which may be installed
-    // to the remote cluster which contains the Mesh control plane
+    // Describes the Gloo Mesh agent which may be installed
+    // to the managed cluster containing the mesh control plane.
     message AgentInfo {
-        // the namespace in which the agent is installed
+
+        // The namespace in which the Gloo Mesh agent is installed.
         string agent_namespace = 1;
     }
 
@@ -162,14 +167,24 @@ message MeshSpec {
 message MeshStatus {
 
     // The observed generation of the Mesh.
-    // When this matches the Mesh's metadata.generation, it indicates that mesh-networking
-    // has reconciled the latest version of the Mesh.
+    // When this matches the Mesh's metadata.generation, it indicates that Gloo Mesh
+    // has processed the latest version of the Mesh.
     int64 observed_generation = 1;
+
+    // The VirtualMesh, if any, which contains this mesh.
+    AppliedVirtualMesh applied_virtual_mesh = 2;
+
+    // The FailoverServices, if any, which applies to this mesh.
+    repeated AppliedFailoverService applied_failover_services = 3;
+
+    // The FailoverServices, if any, which applies to this mesh.
+    repeated AppliedVirtualDestination applied_virtual_destinations = 4;
 
     // AppliedVirtualMesh represents a VirtualMesh that has been applied to this Mesh.
     // If an existing VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
     message AppliedVirtualMesh {
-        // Reference to the VirtualMesh.
+
+        // Reference to the applied VirtualMesh object.
         .core.skv2.solo.io.ObjectRef ref = 1;
 
         // The observed generation of the accepted VirtualMesh.
@@ -179,13 +194,12 @@ message MeshStatus {
         .networking.mesh.gloo.solo.io.VirtualMeshSpec spec = 3;
     }
 
-    // The VirtualMesh, if any, which contains this mesh.
-    AppliedVirtualMesh applied_virtual_mesh = 2;
-
+    // TODO(harveyxia) remove
     // AppliedFailoverService represents a FailoverService that has been applied to this Mesh.
     // If an existing FailoverService becomes invalid the last applied FailoverService will be used.
     message AppliedFailoverService {
-        // Reference to the FailoverService.
+
+        // Reference to the applied FailoverService object.
         .core.skv2.solo.io.ObjectRef ref = 1;
 
         // The observed generation of the accepted FailoverService.
@@ -195,12 +209,10 @@ message MeshStatus {
         .networking.mesh.gloo.solo.io.FailoverServiceSpec spec = 3;
     }
 
-    // The FailoverServices, if any, which applies to this mesh.
-    repeated AppliedFailoverService applied_failover_services = 3;
-
     // AppliedVirtualDestination represents a VirtualDestination that has been applied to this Mesh.
     message AppliedVirtualDestination {
-        // Reference to the VirtualDestination.
+
+        // Reference to the applied VirtualDestination object.
         .core.skv2.solo.io.ObjectRef ref = 1;
 
         // The observed generation of the accepted VirtualDestination.
@@ -209,8 +221,4 @@ message MeshStatus {
         // Any errors encountered while processing the referenced VirtualDestination object.
         repeated string errors = 3;
     }
-
-    // The FailoverServices, if any, which applies to this mesh.
-    repeated AppliedVirtualDestination applied_virtual_destinations = 4;
-
 }

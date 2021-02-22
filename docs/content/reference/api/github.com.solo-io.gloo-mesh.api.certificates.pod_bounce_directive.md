@@ -34,12 +34,12 @@ title: "pod_bounce_directive.proto"
 <a name="certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec"></a>
 
 ### PodBounceDirectiveSpec
-When certificates are issued, pods may need to be bounced (restarted) to ensure they pick up the new certificates. If so, the certificate Issuer will create a PodBounceDirective containing the namespaces and labels of the pods that need to be bounced in order to pick up the new certs.
+When certificates are issued, Istio-controlled pods need to be bounced (restarted) to ensure they pick up the new certificates due to [this issue](https://github.com/istio/istio/issues/22993). The certificate issuer will create a PodBounceDirective containing the namespaces and labels of the pods that need to be bounced in order to pick up the new certs.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| podsToBounce | [][certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.pod_bounce_directive#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector" >}}) | repeated | A list of k8s pods to bounce (delete and cause a restart) when the certificate is issued. This will include the control plane pods as well as any pods which share a data plane with the target mesh. |
+| podsToBounce | [][certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.pod_bounce_directive#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector" >}}) | repeated | A list of Kubernetes pods to bounce (delete and cause a restart) when the certificate is issued. This will include the control plane pods as well as any Pods which share a data plane with the target mesh. |
   
 
 
@@ -49,15 +49,15 @@ When certificates are issued, pods may need to be bounced (restarted) to ensure 
 <a name="certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector"></a>
 
 ### PodBounceDirectiveSpec.PodSelector
-Pods that will be restarted.
+pods that will be restarted.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | namespace | string |  | The namespace in which the pods live. |
-  | labels | [][certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.pod_bounce_directive#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry" >}}) | repeated | Any labels shared by the pods. |
-  | waitForReplicas | uint32 |  | Wait for this number of replacement pods to reach be fully Ready before deleting the next set of selected pods. This is used to ensure the control plane pods are allowed to restart before sidecars and gateways are restarted. |
-  | rootCertSync | [certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.RootCertSync]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.pod_bounce_directive#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.RootCertSync" >}}) |  | Wait for the control plane to have synced all root cert configmaps in data plane namespaces before bouncing these pods. |
+  | labels | [][certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.pod_bounce_directive#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.LabelsEntry" >}}) | repeated | Any labels shared by the Pods. |
+  | waitForReplicas | uint32 |  | Wait for this number of replacement pods to reach be fully ready before deleting the next set of selected Pods. This is used to ensure the control plane pods are allowed to restart before sidecars and gateways are restarted. |
+  | rootCertSync | [certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.RootCertSync]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.pod_bounce_directive#certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.RootCertSync" >}}) |  | Wait for the control plane to have synced all root cert configmaps in data plane namespaces before bouncing these Pods. |
   
 
 
@@ -83,7 +83,7 @@ Pods that will be restarted.
 <a name="certificates.mesh.gloo.solo.io.PodBounceDirectiveSpec.PodSelector.RootCertSync"></a>
 
 ### PodBounceDirectiveSpec.PodSelector.RootCertSync
-RootCertSync describes values in a secret and configmap which must be equal in order for a pod to be bounced.
+RootCertSync describes values in a secret and configmap which must be equal in order for a Pod to be bounced.
 
 
 | Field | Type | Label | Description |
@@ -101,12 +101,12 @@ RootCertSync describes values in a secret and configmap which must be equal in o
 <a name="certificates.mesh.gloo.solo.io.PodBounceDirectiveStatus"></a>
 
 ### PodBounceDirectiveStatus
-PodBounceDirectiveStatus reports the status for stateful pod bounces (when bouncing pods requires waiting for readiness)
+PodBounceDirectiveStatus reports the status for stateful Pod bounces (when bouncing pods requires waiting for readiness).
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| podsBounced | [][certificates.mesh.gloo.solo.io.PodBounceDirectiveStatus.BouncedPodSet]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.pod_bounce_directive#certificates.mesh.gloo.solo.io.PodBounceDirectiveStatus.BouncedPodSet" >}}) | repeated | A list of k8s pods to bounce (delete and cause a restart) when the certificate is issued. This will include the control plane pods as well as any pods which share a data plane with the target mesh. |
+| podsBounced | [][certificates.mesh.gloo.solo.io.PodBounceDirectiveStatus.BouncedPodSet]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.pod_bounce_directive#certificates.mesh.gloo.solo.io.PodBounceDirectiveStatus.BouncedPodSet" >}}) | repeated | A list of Kubernetes pods to bounce (delete and cause a restart) when the certificate is issued. This will include the control plane pods as well as any Pods which share a data plane with the target mesh. |
   
 
 
@@ -116,12 +116,12 @@ PodBounceDirectiveStatus reports the status for stateful pod bounces (when bounc
 <a name="certificates.mesh.gloo.solo.io.PodBounceDirectiveStatus.BouncedPodSet"></a>
 
 ### PodBounceDirectiveStatus.BouncedPodSet
-A set of Pods that were restarted.
+A set of pods that were restarted.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| bouncedPods | []string | repeated | The names of the pods that were bounced for the corresponding selector. |
+| bouncedPods | []string | repeated | The names of the pods that were bounced for the corresponding selector specified in `PodBounceDirectiveSpec.PodSelector.labels`. |
   
 
 

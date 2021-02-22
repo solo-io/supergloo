@@ -193,12 +193,12 @@ type WorkloadSpec_KubernetesWorkload struct {
 	unknownFields protoimpl.UnknownFields
 
 	//*
-	//Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads.
+	//Resource ref to the underlying Kubernetes controller which is managing the pods associated with the workloads.
 	//It has the generic name controller as it can represent a deployment, daemonset, or statefulset.
 	Controller *v1.ClusterObjectRef `protobuf:"bytes,1,opt,name=controller,proto3" json:"controller,omitempty"`
 	//*
 	//These are the labels directly from the pods that this controller owns.
-	//NB: these labels are read directly from the pod template metadata.labels
+	//NB: these labels are read directly from the Pod template metadata.labels
 	//defined in the workload spec.
 	//We need these to determine which services are backed by this workload.
 	PodLabels map[string]string `protobuf:"bytes,2,rep,name=pod_labels,json=podLabels,proto3" json:"pod_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
@@ -317,7 +317,7 @@ func (x *WorkloadSpec_AppMesh) GetPorts() []*WorkloadSpec_AppMesh_ContainerPort 
 	return nil
 }
 
-// k8s application container ports.
+// Kubernetes application container ports.
 type WorkloadSpec_AppMesh_ContainerPort struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

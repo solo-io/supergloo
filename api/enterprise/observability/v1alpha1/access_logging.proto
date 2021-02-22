@@ -3,8 +3,8 @@ package observability.enterprise.mesh.gloo.solo.io;
 
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1";
 
-import "github.com/solo-io/gloo-mesh/api/common/v1alpha1/request_matchers.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1alpha1/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1alpha2/request_matchers.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1alpha2/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/traffic_policy.proto";
 import "github.com/solo-io/skv2/api/core/v1/core.proto";

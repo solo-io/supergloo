@@ -33,7 +33,7 @@ title: "failover_service.proto"
 <a name="networking.mesh.gloo.solo.io.FailoverServiceSpec"></a>
 
 ### FailoverServiceSpec
-A FailoverService creates a new hostname to which services can send requests. Requests will be routed based on a list of backing traffic targets ordered by decreasing priority. When outlier detection detects that a traffic target in the list is in an unhealthy state, requests sent to the FailoverService will be routed to the next healthy traffic target in the list. For each traffic target referenced in the FailoverService's BackingServices list, outlier detection must be configured using a TrafficPolicy.<br>Currently this feature only supports Services backed by Istio.
+A FailoverService creates a new hostname to which services can send requests. Requests will be routed based on a list of backing TrafficTargets ordered by decreasing priority. When outlier detection detects that a TrafficTarget in the list is in an unhealthy state, requests sent to the FailoverService will be routed to the next healthy TrafficTarget in the list. For each TrafficTarget referenced in the FailoverService's BackingServices list, outlier detection must be configured using a TrafficPolicy.<br>Currently this feature only supports Services backed by Istio.
 
 
 | Field | Type | Label | Description |
@@ -51,12 +51,12 @@ A FailoverService creates a new hostname to which services can send requests. Re
 <a name="networking.mesh.gloo.solo.io.FailoverServiceSpec.BackingService"></a>
 
 ### FailoverServiceSpec.BackingService
-The traffic targets that comprise the FailoverService.
+The TrafficTargets that comprise the FailoverService.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeService | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Name/namespace/cluster of a kubernetes service. |
+| kubeService | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Name/namespace/cluster of a Kubernetes service. |
   
 
 

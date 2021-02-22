@@ -57,7 +57,7 @@ title: "settings.proto"
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| ingressGatewayDetectors | [][settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetectorsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetectorsEntry" >}}) | repeated | Ingress gateway detectors for each cluster. The key to the map is either a k8s cluster name or the wildcard `*` meaning all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the wildcard entry will be used if it exists. Lastly, we will fall back to the default values. |
+| ingressGatewayDetectors | [][settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetectorsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.DiscoverySettings.Istio.IngressGatewayDetectorsEntry" >}}) | repeated | Ingress gateway detectors for each cluster. The key to the map is either a Kubernetes cluster name or the wildcard `*` meaning all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the wildcard entry will be used if it exists. Lastly, we will fall back to the default values. |
   
 
 
@@ -138,7 +138,7 @@ Relay provides a way for connecting Gloo Mesh to remote Kubernetes Clusters with
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | enabled | bool |  | enable the use of Relay for cluster management. If relay is enabled, make sure to follow the [Cluster Registration guide for Relay]({{< versioned_link_path fromRoot="/guides/setup/register_cluster#relay" >}}) for registering your clusters. |
-  | server | [settings.mesh.gloo.solo.io.GrpcServer]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.GrpcServer" >}}) |  | Connection info for the Relay Server. Gloo Mesh will fetch discovery resources from this server and push translated outputs to this server. Note: currently this field has no effect as the relay server runs in-process of the networking pod. |
+  | server | [settings.mesh.gloo.solo.io.GrpcServer]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.GrpcServer" >}}) |  | Connection info for the Relay Server. Gloo Mesh will fetch discovery resources from this server and push translated outputs to this server. Note: currently this field has no effect as the relay server runs in-process of the networking Pod. |
   
 
 
@@ -153,7 +153,7 @@ Configure global settings and defaults.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| mtls | [networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.MTLS" >}}) |  | Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence) |
+| mtls | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS" >}}) |  | Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence) |
   | networkingExtensionServers | [][settings.mesh.gloo.solo.io.GrpcServer]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.GrpcServer" >}}) | repeated | Configure Gloo Mesh networking to communicate with one or more external gRPC NetworkingExtensions servers. Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence). Note: Extension Servers have full write access to the output objects written by Gloo Mesh. |
   | discovery | [settings.mesh.gloo.solo.io.DiscoverySettings]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.DiscoverySettings" >}}) |  | Settings specific to the discovery controller. |
   | relay | [settings.mesh.gloo.solo.io.RelaySettings]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.settings.v1alpha2.settings#settings.mesh.gloo.solo.io.RelaySettings" >}}) |  | Enable and configure use of Relay to communicate with remote clusters. This is an Enterprise-only feature. |

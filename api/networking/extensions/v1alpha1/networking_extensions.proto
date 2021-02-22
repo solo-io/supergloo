@@ -60,7 +60,7 @@ message ExtensionPatchResponse {
 message DiscoverySnapshot {
     // all meshes in the discovery snapshot
     repeated MeshObject meshes = 1;
-    // all traffic targets in the discovery snapshot
+    // all TrafficTargets in the discovery snapshot
     repeated TrafficTargetObject traffic_targets = 2;
     // all workloads in the discovery snapshot
     repeated WorkloadObject workloads = 3;
@@ -120,22 +120,22 @@ message GeneratedObject {
     }
 }
 
-// ObjectMeta is a simplified clone of the kubernetes ObjectMeta used to represent object metadata
-// for K8s objects passed as messages in the NetworkingExtensions API.
+// ObjectMeta is a simplified clone of the Kubernetes ObjectMeta used to represent object metadata
+// for Kubernetes objects passed as messages in the NetworkingExtensions API.
 message ObjectMeta {
-    // the kubernetes name of the object
+    // the Kubernetes name of the object
     string name = 1;
 
-    // the kubernetes namespace of the object
+    // the Kubernetes namespace of the object
     string namespace = 2;
 
-    // the kubernetes clusterName of the object (used internally by Gloo Mesh)
+    // the Kubernetes clusterName of the object (used internally by Gloo Mesh)
     string cluster_name = 3;
 
-    // the kubernetes labels on the object
+    // the Kubernetes labels on the object
     map<string,string> labels = 4;
 
-    // the kubernetes annotations on the object
+    // the Kubernetes annotations on the object
     map<string,string> annotations = 5;
 }
 

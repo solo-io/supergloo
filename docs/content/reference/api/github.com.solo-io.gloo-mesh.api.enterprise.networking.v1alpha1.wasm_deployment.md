@@ -74,7 +74,7 @@ A WasmDeployment deploys one or more WASM Envoy Filters to selected Sidecars and
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| workloadSelector | [][networking.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Sidecars/Gateways whose Workloads match these selectors will attach the specified WASM Filters. Leave empty to have all workloads in the mesh apply receive the WASM Filter. |
+| workloadSelector | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Sidecars/Gateways whose Workloads match these selectors will attach the specified WASM Filters. Leave empty to have all workloads in the mesh apply receive the WASM Filter. |
   | filters | [][networking.enterprise.mesh.gloo.solo.io.WasmFilterSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.wasm_deployment#networking.enterprise.mesh.gloo.solo.io.WasmFilterSpec" >}}) | repeated | Parameters for specifying the WASM filter |
   | weight | uint32 |  | weight is used to determine the order of WASM Filters when applying multiple WasmDeployments to a single workload. Deployed WASM filters will be sorted in order of highest to lowest weight. WasmDeployments with equal weights will be sorted non-deterministically. Note that all WASM Filters are currently inserted just before the Envoy router filter in the HTTP Connection Manager's HTTP Filter Chain. |
   

@@ -154,7 +154,7 @@ type DiscoverySnapshot struct {
 
 	// all meshes in the discovery snapshot
 	Meshes []*MeshObject `protobuf:"bytes,1,rep,name=meshes,proto3" json:"meshes,omitempty"`
-	// all traffic targets in the discovery snapshot
+	// all TrafficTargets in the discovery snapshot
 	TrafficTargets []*TrafficTargetObject `protobuf:"bytes,2,rep,name=traffic_targets,json=trafficTargets,proto3" json:"traffic_targets,omitempty"`
 	// all workloads in the discovery snapshot
 	Workloads []*WorkloadObject `protobuf:"bytes,3,rep,name=workloads,proto3" json:"workloads,omitempty"`
@@ -565,22 +565,22 @@ func (*GeneratedObject_ConfigMap_) isGeneratedObject_Type() {}
 
 func (*GeneratedObject_XdsConfig) isGeneratedObject_Type() {}
 
-// ObjectMeta is a simplified clone of the kubernetes ObjectMeta used to represent object metadata
-// for K8s objects passed as messages in the NetworkingExtensions API.
+// ObjectMeta is a simplified clone of the Kubernetes ObjectMeta used to represent object metadata
+// for Kubernetes objects passed as messages in the NetworkingExtensions API.
 type ObjectMeta struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// the kubernetes name of the object
+	// the Kubernetes name of the object
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// the kubernetes namespace of the object
+	// the Kubernetes namespace of the object
 	Namespace string `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	// the kubernetes clusterName of the object (used internally by Gloo Mesh)
+	// the Kubernetes clusterName of the object (used internally by Gloo Mesh)
 	ClusterName string `protobuf:"bytes,3,opt,name=cluster_name,json=clusterName,proto3" json:"cluster_name,omitempty"`
-	// the kubernetes labels on the object
+	// the Kubernetes labels on the object
 	Labels map[string]string `protobuf:"bytes,4,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// the kubernetes annotations on the object
+	// the Kubernetes annotations on the object
 	Annotations map[string]string `protobuf:"bytes,5,rep,name=annotations,proto3" json:"annotations,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 

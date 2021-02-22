@@ -44,7 +44,7 @@ A service represented by a TrafficTarget
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeService | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Name/namespace/cluster of a kubernetes service. |
+| kubeService | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Name/namespace/cluster of a Kubernetes service. |
   
 
 
@@ -54,7 +54,7 @@ A service represented by a TrafficTarget
 <a name="networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec"></a>
 
 ### VirtualDestinationSpec
-A VirtualDestination creates a new hostname to which client workloads can send requests. Requests will be routed based on either a list of backing traffic targets ordered by explicit priority, or a list of locality directives. Each TrafficTarget backing the VirtualDestination must be configured with outlier detection through a TrafficPolicy.<br>Currently this feature only supports TrafficTargets backed by Istio.
+A VirtualDestination creates a new hostname to which client workloads can send requests. Requests will be routed based on either a list of backing TrafficTargets ordered by explicit priority, or a list of locality directives. Each TrafficTarget backing the VirtualDestination must be configured with outlier detection through a TrafficPolicy.<br>Currently this feature only supports TrafficTargets backed by Istio.
 
 
 | Field | Type | Label | Description |
@@ -89,14 +89,14 @@ Configure failover based on a list of TrafficTargets. When a TrafficTarget in th
 <a name="networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig"></a>
 
 ### VirtualDestinationSpec.LocalityConfig
-Enables failover based on locality. When a client workload makes a request to the VirtualDestination, Gloo Mesh will first try to direct traffic to the service instance geographically closest to the client workload. If outlier detection detects that the closest traffic target is in an unhealthy state, requests will instead be routed to a service instance in one of the localities specified in the `to` field. Currently, each locality in the `to` field will be routed to with equal probability if the local instance is unhealthy.
+Enables failover based on locality. When a client workload makes a request to the VirtualDestination, Gloo Mesh will first try to direct traffic to the service instance geographically closest to the client workload. If outlier detection detects that the closest TrafficTarget is in an unhealthy state, requests will instead be routed to a service instance in one of the localities specified in the `to` field. Currently, each locality in the `to` field will be routed to with equal probability if the local instance is unhealthy.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| serviceSelectors | [][networking.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | Selectors for the services backing the VirtualDestination. All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh. Currently only one service per cluster can be selected, more than one per cluster will be considered invalid. |
+| serviceSelectors | [][common.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | Selectors for the services backing the VirtualDestination. All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh. Currently only one service per cluster can be selected, more than one per cluster will be considered invalid. |
   | failoverDirectives | [][networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig.LocalityFailoverDirective]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig.LocalityFailoverDirective" >}}) | repeated | Directives describing the locality failover behavior. |
-  | outlierDetection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.OutlierDetection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.OutlierDetection" >}}) |  | Outlier detection to determine the health of the selected services. |
+  | outlierDetection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection" >}}) |  | Outlier detection to determine the health of the selected services. |
   
 
 
@@ -129,7 +129,7 @@ A geographic location defined by a region, zone, and sub-zone.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | from | [networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig.Locality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig.Locality" >}}) |  | The locality of a client workload. |
-  | to | [][networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig.Locality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig.Locality" >}}) | repeated | The list of traffic target localities that can be routed to if the instance local to the client workload is not available. |
+  | to | [][networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig.Locality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig.Locality" >}}) | repeated | The list of TrafficTarget localities that can be routed to if the instance local to the client workload is not available. |
   
 
 
@@ -178,7 +178,7 @@ The port on which the VirtualDestination listens.
 | observedGeneration | int64 |  | The most recent generation observed in the the VirtualDestination metadata. If the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
   | state | [networking.mesh.gloo.solo.io.ApprovalState]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state#networking.mesh.gloo.solo.io.ApprovalState" >}}) |  | The state of the overall resource, will only show accepted if it has been successfully applied to all target meshes. |
   | meshes | [][networking.enterprise.mesh.gloo.solo.io.VirtualDestinationStatus.MeshesEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationStatus.MeshesEntry" >}}) | repeated | The status of the VirtualDestination for each Mesh to which it has been applied. |
-  | selectedTrafficTargets | [][networking.enterprise.mesh.gloo.solo.io.VirtualDestinationStatus.SelectedTrafficTarget]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationStatus.SelectedTrafficTarget" >}}) | repeated | The traffic targets that comprise this Global Service. |
+  | selectedTrafficTargets | [][networking.enterprise.mesh.gloo.solo.io.VirtualDestinationStatus.SelectedTrafficTarget]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationStatus.SelectedTrafficTarget" >}}) | repeated | The TrafficTargets that comprise this Global Service. |
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
   
 
@@ -211,7 +211,7 @@ The port on which the VirtualDestination listens.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | ref | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Reference to the traffic target. |
-  | service | [networking.enterprise.mesh.gloo.solo.io.BackingService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.BackingService" >}}) |  | The service that the traffic target represents. |
+  | service | [networking.enterprise.mesh.gloo.solo.io.BackingService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.BackingService" >}}) |  | The service that the TrafficTarget represents. |
   
 
 

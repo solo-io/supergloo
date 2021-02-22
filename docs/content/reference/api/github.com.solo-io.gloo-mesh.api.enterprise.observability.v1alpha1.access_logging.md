@@ -36,7 +36,7 @@ Describes a record of access logs sourced from a set of workloads and optionally
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| workloadSelectors | [][networking.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.selectors#networking.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Select the workloads to be configured to emit access logs. Leave empty to apply to all workloads managed by Gloo Mesh. |
+| workloadSelectors | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Select the workloads to be configured to emit access logs. Leave empty to apply to all workloads managed by Gloo Mesh. |
   | filters | [][observability.enterprise.mesh.gloo.solo.io.AccessLogRecordSpec.Filter]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.observability.v1alpha1.access_logging#observability.enterprise.mesh.gloo.solo.io.AccessLogRecordSpec.Filter" >}}) | repeated | Configure criteria for determining which access logs will be recorded. The list is disjunctive, a request will be recorded if it matches any filter. Leave empty to emit all access logs. |
   
 
@@ -52,8 +52,8 @@ Specify criteria for recording access logs. A request must match all specified c
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| statusCodeMatcher | [common.mesh.gloo.solo.io.StatusCodeMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha1.request_matchers#common.mesh.gloo.solo.io.StatusCodeMatcher" >}}) |  | Matches against a response status code. Omit to match any status code. |
-  | headerMatcher | [common.mesh.gloo.solo.io.HeaderMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha1.request_matchers#common.mesh.gloo.solo.io.HeaderMatcher" >}}) |  | Matches against a request or response header. Omit to match any headers. |
+| statusCodeMatcher | [common.mesh.gloo.solo.io.StatusCodeMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.request_matchers#common.mesh.gloo.solo.io.StatusCodeMatcher" >}}) |  | Matches against a response status code. Omit to match any status code. |
+  | headerMatcher | [common.mesh.gloo.solo.io.HeaderMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.request_matchers#common.mesh.gloo.solo.io.HeaderMatcher" >}}) |  | Matches against a request or response header. Omit to match any headers. |
   
 
 

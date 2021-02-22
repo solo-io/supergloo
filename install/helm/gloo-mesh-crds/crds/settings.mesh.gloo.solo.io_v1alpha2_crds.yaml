@@ -48,7 +48,7 @@ spec:
                             type: object
                         type: object
                       description: |-
-                        Ingress gateway detectors for each cluster. The key to the map is either a k8s cluster name or the wildcard
+                        Ingress gateway detectors for each cluster. The key to the map is either a Kubernetes cluster name or the wildcard
                         `*` meaning all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the
                         wildcard entry will be used if it exists. Lastly, we will fall back to the default values.
                       type: object
@@ -102,7 +102,7 @@ spec:
                   description: |-
                     Connection info for the Relay Server. Gloo Mesh will fetch discovery resources from this server
                     and push translated outputs to this server.
-                    Note: currently this field has no effect as the relay server runs in-process of the networking pod.
+                    Note: currently this field has no effect as the relay server runs in-process of the networking Pod.
                   properties:
                     address:
                       description: TCP address of the gRPC Server (including port)

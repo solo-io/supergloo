@@ -4,7 +4,7 @@ package networking.enterprise.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1alpha2/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/traffic_policy.proto";
 
@@ -13,7 +13,7 @@ option (extproto.equal_all) = true;
 
 /*
     A VirtualDestination creates a new hostname to which client workloads can send requests.
-    Requests will be routed based on either a list of backing traffic targets ordered by
+    Requests will be routed based on either a list of backing TrafficTargets ordered by
     explicit priority, or a list of locality directives. Each TrafficTarget backing the
     VirtualDestination must be configured with outlier detection through a TrafficPolicy.
 
@@ -67,14 +67,14 @@ message VirtualDestinationSpec {
 
   // Enables failover based on locality. When a client workload makes a request to the VirtualDestination, Gloo Mesh will
   // first try to direct traffic to the service instance geographically closest to the client workload. If outlier
-  // detection detects that the closest traffic target is in an unhealthy state, requests will instead be routed
+  // detection detects that the closest TrafficTarget is in an unhealthy state, requests will instead be routed
   // to a service instance in one of the localities specified in the `to` field. Currently, each locality in the
   // `to` field will be routed to with equal probability if the local instance is unhealthy.
   message LocalityConfig {
     // Selectors for the services backing the VirtualDestination.
     // All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
     // Currently only one service per cluster can be selected, more than one per cluster will be considered invalid.
-    repeated .networking.mesh.gloo.solo.io.TrafficTargetSelector service_selectors = 1;
+    repeated .common.mesh.gloo.solo.io.TrafficTargetSelector service_selectors = 1;
 
     // Directives describing the locality failover behavior.
     repeated LocalityFailoverDirective failover_directives = 2;
@@ -82,7 +82,7 @@ message VirtualDestinationSpec {
     message LocalityFailoverDirective {
       // The locality of a client workload.
       Locality from = 1;
-      // The list of traffic target localities that can be routed to if the instance local to the client workload
+      // The list of TrafficTarget localities that can be routed to if the instance local to the client workload
       // is not available.
       repeated Locality to = 2;
     }
@@ -98,21 +98,21 @@ message VirtualDestinationSpec {
     }
 
     // Outlier detection to determine the health of the selected services.
-    networking.mesh.gloo.solo.io.TrafficPolicy.OutlierDetection outlier_detection = 3;
+    networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection outlier_detection = 3;
   }
 }
 
 // A service represented by a TrafficTarget
 message BackingService {
-  // Different traffic target types can be selected as backing services.
+  // Different TrafficTarget types can be selected as backing services.
   oneof backing_service_type {
-    // Name/namespace/cluster of a kubernetes service.
+    // Name/namespace/cluster of a Kubernetes service.
     .core.skv2.solo.io.ClusterObjectRef kube_service = 1;
   }
 }
 
 message VirtualDestinationStatus {
-  // The most recent generation observed in the the Virtual gDestination metadata.
+  // The most recent generation observed in the the VirtualDestination metadata.
   // If the observedGeneration does not match generation, the controller has not received the most
   // recent version of this resource.
   int64 observed_generation = 1;
@@ -124,7 +124,7 @@ message VirtualDestinationStatus {
   // The status of the VirtualDestination for each Mesh to which it has been applied.
   map<string, .networking.mesh.gloo.solo.io.ApprovalStatus> meshes = 3;
 
-  // The traffic targets that comprise this Global Service.
+  // The TrafficTargets that comprise this Global Service.
   repeated SelectedTrafficTarget selected_traffic_targets = 4;
 
   // Any errors found while processing this generation of the resource.
@@ -134,7 +134,7 @@ message VirtualDestinationStatus {
     // Reference to the traffic target.
     .core.skv2.solo.io.ClusterObjectRef ref = 1;
 
-    // The service that the traffic target represents.
+    // The service that the TrafficTarget represents.
     BackingService service = 2;
   }
 }

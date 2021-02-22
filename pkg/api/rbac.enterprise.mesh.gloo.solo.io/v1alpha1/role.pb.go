@@ -11,9 +11,9 @@ import (
 	sync "sync"
 
 	proto "github.com/golang/protobuf/proto"
-	v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha1"
-	v1alpha11 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
-	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha2"
+	v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
+	v1alpha21 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -416,10 +416,10 @@ type RoleSpec_TrafficPolicyScope struct {
 
 	// A list of permitted TrafficPolicy configuration actions.
 	TrafficPolicyActions []RoleSpec_TrafficPolicyScope_TrafficPolicyActions `protobuf:"varint,1,rep,packed,name=traffic_policy_actions,json=trafficPolicyActions,proto3,enum=rbac.enterprise.mesh.gloo.solo.io.RoleSpec_TrafficPolicyScope_TrafficPolicyActions" json:"traffic_policy_actions,omitempty"`
-	// A list of permitted traffic target selectors.
-	TrafficTargetSelectors []*v1alpha1.TrafficTargetSelector `protobuf:"bytes,2,rep,name=traffic_target_selectors,json=trafficTargetSelectors,proto3" json:"traffic_target_selectors,omitempty"`
+	// A list of permitted TrafficTarget selectors.
+	TrafficTargetSelectors []*v1alpha2.TrafficTargetSelector `protobuf:"bytes,2,rep,name=traffic_target_selectors,json=trafficTargetSelectors,proto3" json:"traffic_target_selectors,omitempty"`
 	// A list of permitted workload selectors.
-	WorkloadSelectors []*v1alpha1.WorkloadSelector `protobuf:"bytes,3,rep,name=workload_selectors,json=workloadSelectors,proto3" json:"workload_selectors,omitempty"`
+	WorkloadSelectors []*v1alpha2.WorkloadSelector `protobuf:"bytes,3,rep,name=workload_selectors,json=workloadSelectors,proto3" json:"workload_selectors,omitempty"`
 }
 
 func (x *RoleSpec_TrafficPolicyScope) Reset() {
@@ -461,14 +461,14 @@ func (x *RoleSpec_TrafficPolicyScope) GetTrafficPolicyActions() []RoleSpec_Traff
 	return nil
 }
 
-func (x *RoleSpec_TrafficPolicyScope) GetTrafficTargetSelectors() []*v1alpha1.TrafficTargetSelector {
+func (x *RoleSpec_TrafficPolicyScope) GetTrafficTargetSelectors() []*v1alpha2.TrafficTargetSelector {
 	if x != nil {
 		return x.TrafficTargetSelectors
 	}
 	return nil
 }
 
-func (x *RoleSpec_TrafficPolicyScope) GetWorkloadSelectors() []*v1alpha1.WorkloadSelector {
+func (x *RoleSpec_TrafficPolicyScope) GetWorkloadSelectors() []*v1alpha2.WorkloadSelector {
 	if x != nil {
 		return x.WorkloadSelectors
 	}
@@ -540,9 +540,9 @@ type RoleSpec_AccessPolicyScope struct {
 	unknownFields protoimpl.UnknownFields
 
 	// A list of permitted identity selectors.
-	IdentitySelectors []*v1alpha1.IdentitySelector `protobuf:"bytes,1,rep,name=identity_selectors,json=identitySelectors,proto3" json:"identity_selectors,omitempty"`
-	// A list of permitted traffic target selectors.
-	TrafficTargetSelectors []*v1alpha1.TrafficTargetSelector `protobuf:"bytes,2,rep,name=traffic_target_selectors,json=trafficTargetSelectors,proto3" json:"traffic_target_selectors,omitempty"`
+	IdentitySelectors []*v1alpha2.IdentitySelector `protobuf:"bytes,1,rep,name=identity_selectors,json=identitySelectors,proto3" json:"identity_selectors,omitempty"`
+	// A list of permitted TrafficTarget selectors.
+	TrafficTargetSelectors []*v1alpha2.TrafficTargetSelector `protobuf:"bytes,2,rep,name=traffic_target_selectors,json=trafficTargetSelectors,proto3" json:"traffic_target_selectors,omitempty"`
 }
 
 func (x *RoleSpec_AccessPolicyScope) Reset() {
@@ -577,14 +577,14 @@ func (*RoleSpec_AccessPolicyScope) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_enterprise_rbac_v1alpha1_role_proto_rawDescGZIP(), []int{0, 2}
 }
 
-func (x *RoleSpec_AccessPolicyScope) GetIdentitySelectors() []*v1alpha1.IdentitySelector {
+func (x *RoleSpec_AccessPolicyScope) GetIdentitySelectors() []*v1alpha2.IdentitySelector {
 	if x != nil {
 		return x.IdentitySelectors
 	}
 	return nil
 }
 
-func (x *RoleSpec_AccessPolicyScope) GetTrafficTargetSelectors() []*v1alpha1.TrafficTargetSelector {
+func (x *RoleSpec_AccessPolicyScope) GetTrafficTargetSelectors() []*v1alpha2.TrafficTargetSelector {
 	if x != nil {
 		return x.TrafficTargetSelectors
 	}
@@ -600,7 +600,7 @@ type RoleSpec_FailoverServiceScope struct {
 	// A list of permitted mesh references.
 	MeshRefs []*v1.ObjectRef `protobuf:"bytes,1,rep,name=mesh_refs,json=meshRefs,proto3" json:"mesh_refs,omitempty"`
 	// A list of permitted backing services.
-	BackingServices []*v1alpha2.FailoverServiceSpec_BackingService `protobuf:"bytes,2,rep,name=backing_services,json=backingServices,proto3" json:"backing_services,omitempty"`
+	BackingServices []*v1alpha21.FailoverServiceSpec_BackingService `protobuf:"bytes,2,rep,name=backing_services,json=backingServices,proto3" json:"backing_services,omitempty"`
 }
 
 func (x *RoleSpec_FailoverServiceScope) Reset() {
@@ -642,7 +642,7 @@ func (x *RoleSpec_FailoverServiceScope) GetMeshRefs() []*v1.ObjectRef {
 	return nil
 }
 
-func (x *RoleSpec_FailoverServiceScope) GetBackingServices() []*v1alpha2.FailoverServiceSpec_BackingService {
+func (x *RoleSpec_FailoverServiceScope) GetBackingServices() []*v1alpha21.FailoverServiceSpec_BackingService {
 	if x != nil {
 		return x.BackingServices
 	}
@@ -660,9 +660,9 @@ type RoleSpec_VirtualDestinationScope struct {
 	// A list of permitted mesh references.
 	MeshRefs []*v1.ObjectRef `protobuf:"bytes,2,rep,name=mesh_refs,json=meshRefs,proto3" json:"mesh_refs,omitempty"`
 	// A list of permitted backing service selectors.
-	ServiceSelectors []*v1alpha1.TrafficTargetSelector `protobuf:"bytes,3,rep,name=service_selectors,json=serviceSelectors,proto3" json:"service_selectors,omitempty"`
+	ServiceSelectors []*v1alpha2.TrafficTargetSelector `protobuf:"bytes,3,rep,name=service_selectors,json=serviceSelectors,proto3" json:"service_selectors,omitempty"`
 	// A list of permitted backing services.
-	Services []*v1alpha11.BackingService `protobuf:"bytes,4,rep,name=services,proto3" json:"services,omitempty"`
+	Services []*v1alpha1.BackingService `protobuf:"bytes,4,rep,name=services,proto3" json:"services,omitempty"`
 }
 
 func (x *RoleSpec_VirtualDestinationScope) Reset() {
@@ -711,14 +711,14 @@ func (x *RoleSpec_VirtualDestinationScope) GetMeshRefs() []*v1.ObjectRef {
 	return nil
 }
 
-func (x *RoleSpec_VirtualDestinationScope) GetServiceSelectors() []*v1alpha1.TrafficTargetSelector {
+func (x *RoleSpec_VirtualDestinationScope) GetServiceSelectors() []*v1alpha2.TrafficTargetSelector {
 	if x != nil {
 		return x.ServiceSelectors
 	}
 	return nil
 }
 
-func (x *RoleSpec_VirtualDestinationScope) GetServices() []*v1alpha11.BackingService {
+func (x *RoleSpec_VirtualDestinationScope) GetServices() []*v1alpha1.BackingService {
 	if x != nil {
 		return x.Services
 	}
@@ -732,7 +732,7 @@ type RoleSpec_WasmDeploymentScope struct {
 	unknownFields protoimpl.UnknownFields
 
 	// A list of permitted workload selectors.
-	WorkloadSelectors []*v1alpha1.WorkloadSelector `protobuf:"bytes,1,rep,name=workload_selectors,json=workloadSelectors,proto3" json:"workload_selectors,omitempty"`
+	WorkloadSelectors []*v1alpha2.WorkloadSelector `protobuf:"bytes,1,rep,name=workload_selectors,json=workloadSelectors,proto3" json:"workload_selectors,omitempty"`
 }
 
 func (x *RoleSpec_WasmDeploymentScope) Reset() {
@@ -767,7 +767,7 @@ func (*RoleSpec_WasmDeploymentScope) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_enterprise_rbac_v1alpha1_role_proto_rawDescGZIP(), []int{0, 5}
 }
 
-func (x *RoleSpec_WasmDeploymentScope) GetWorkloadSelectors() []*v1alpha1.WorkloadSelector {
+func (x *RoleSpec_WasmDeploymentScope) GetWorkloadSelectors() []*v1alpha2.WorkloadSelector {
 	if x != nil {
 		return x.WorkloadSelectors
 	}
@@ -781,7 +781,7 @@ type RoleSpec_AccessLogRecordScope struct {
 	unknownFields protoimpl.UnknownFields
 
 	// A list of permitted workload selectors.
-	WorkloadSelectors []*v1alpha1.WorkloadSelector `protobuf:"bytes,1,rep,name=workload_selectors,json=workloadSelectors,proto3" json:"workload_selectors,omitempty"`
+	WorkloadSelectors []*v1alpha2.WorkloadSelector `protobuf:"bytes,1,rep,name=workload_selectors,json=workloadSelectors,proto3" json:"workload_selectors,omitempty"`
 }
 
 func (x *RoleSpec_AccessLogRecordScope) Reset() {
@@ -816,7 +816,7 @@ func (*RoleSpec_AccessLogRecordScope) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_enterprise_rbac_v1alpha1_role_proto_rawDescGZIP(), []int{0, 6}
 }
 
-func (x *RoleSpec_AccessLogRecordScope) GetWorkloadSelectors() []*v1alpha1.WorkloadSelector {
+func (x *RoleSpec_AccessLogRecordScope) GetWorkloadSelectors() []*v1alpha2.WorkloadSelector {
 	if x != nil {
 		return x.WorkloadSelectors
 	}
@@ -838,7 +838,7 @@ var file_github_com_solo_io_gloo_mesh_api_enterprise_rbac_v1alpha1_role_proto_ra
 	0x6f, 0x72, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x40, 0x67, 0x69, 0x74, 0x68, 0x75,
 	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c,
 	0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x63, 0x6f, 0x6d, 0x6d,
-	0x6f, 0x6e, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x31, 0x2f, 0x73, 0x65, 0x6c, 0x65,
+	0x6f, 0x6e, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x32, 0x2f, 0x73, 0x65, 0x6c, 0x65,
 	0x63, 0x74, 0x6f, 0x72, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x4b, 0x67, 0x69, 0x74,
 	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f,
 	0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6e, 0x65,
@@ -1062,24 +1062,24 @@ var file_github_com_solo_io_gloo_mesh_api_enterprise_rbac_v1alpha1_role_proto_ms
 var file_github_com_solo_io_gloo_mesh_api_enterprise_rbac_v1alpha1_role_proto_goTypes = []interface{}{
 	(RoleSpec_TrafficPolicyScope_TrafficPolicyActions)(0), // 0: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope.TrafficPolicyActions
 	(RoleSpec_VirtualMeshScope_VirtualMeshActions)(0),     // 1: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualMeshScope.VirtualMeshActions
-	(*RoleSpec)(nil),                                    // 2: rbac.enterprise.mesh.gloo.solo.io.RoleSpec
-	(*RoleStatus)(nil),                                  // 3: rbac.enterprise.mesh.gloo.solo.io.RoleStatus
-	(*RoleBindingSpec)(nil),                             // 4: rbac.enterprise.mesh.gloo.solo.io.RoleBindingSpec
-	(*RoleBindingStatus)(nil),                           // 5: rbac.enterprise.mesh.gloo.solo.io.RoleBindingStatus
-	(*RoleSpec_TrafficPolicyScope)(nil),                 // 6: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope
-	(*RoleSpec_VirtualMeshScope)(nil),                   // 7: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualMeshScope
-	(*RoleSpec_AccessPolicyScope)(nil),                  // 8: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessPolicyScope
-	(*RoleSpec_FailoverServiceScope)(nil),               // 9: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.FailoverServiceScope
-	(*RoleSpec_VirtualDestinationScope)(nil),            // 10: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualDestinationScope
-	(*RoleSpec_WasmDeploymentScope)(nil),                // 11: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.WasmDeploymentScope
-	(*RoleSpec_AccessLogRecordScope)(nil),               // 12: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessLogRecordScope
-	(*v1.TypedObjectRef)(nil),                           // 13: core.skv2.solo.io.TypedObjectRef
-	(*v1.ObjectRef)(nil),                                // 14: core.skv2.solo.io.ObjectRef
-	(*v1alpha1.TrafficTargetSelector)(nil),              // 15: common.mesh.gloo.solo.io.TrafficTargetSelector
-	(*v1alpha1.WorkloadSelector)(nil),                   // 16: common.mesh.gloo.solo.io.WorkloadSelector
-	(*v1alpha1.IdentitySelector)(nil),                   // 17: common.mesh.gloo.solo.io.IdentitySelector
-	(*v1alpha2.FailoverServiceSpec_BackingService)(nil), // 18: networking.mesh.gloo.solo.io.FailoverServiceSpec.BackingService
-	(*v1alpha11.BackingService)(nil),                    // 19: networking.enterprise.mesh.gloo.solo.io.BackingService
+	(*RoleSpec)(nil),                                     // 2: rbac.enterprise.mesh.gloo.solo.io.RoleSpec
+	(*RoleStatus)(nil),                                   // 3: rbac.enterprise.mesh.gloo.solo.io.RoleStatus
+	(*RoleBindingSpec)(nil),                              // 4: rbac.enterprise.mesh.gloo.solo.io.RoleBindingSpec
+	(*RoleBindingStatus)(nil),                            // 5: rbac.enterprise.mesh.gloo.solo.io.RoleBindingStatus
+	(*RoleSpec_TrafficPolicyScope)(nil),                  // 6: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope
+	(*RoleSpec_VirtualMeshScope)(nil),                    // 7: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualMeshScope
+	(*RoleSpec_AccessPolicyScope)(nil),                   // 8: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessPolicyScope
+	(*RoleSpec_FailoverServiceScope)(nil),                // 9: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.FailoverServiceScope
+	(*RoleSpec_VirtualDestinationScope)(nil),             // 10: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualDestinationScope
+	(*RoleSpec_WasmDeploymentScope)(nil),                 // 11: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.WasmDeploymentScope
+	(*RoleSpec_AccessLogRecordScope)(nil),                // 12: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessLogRecordScope
+	(*v1.TypedObjectRef)(nil),                            // 13: core.skv2.solo.io.TypedObjectRef
+	(*v1.ObjectRef)(nil),                                 // 14: core.skv2.solo.io.ObjectRef
+	(*v1alpha2.TrafficTargetSelector)(nil),               // 15: common.mesh.gloo.solo.io.TrafficTargetSelector
+	(*v1alpha2.WorkloadSelector)(nil),                    // 16: common.mesh.gloo.solo.io.WorkloadSelector
+	(*v1alpha2.IdentitySelector)(nil),                    // 17: common.mesh.gloo.solo.io.IdentitySelector
+	(*v1alpha21.FailoverServiceSpec_BackingService)(nil), // 18: networking.mesh.gloo.solo.io.FailoverServiceSpec.BackingService
+	(*v1alpha1.BackingService)(nil),                      // 19: networking.enterprise.mesh.gloo.solo.io.BackingService
 }
 var file_github_com_solo_io_gloo_mesh_api_enterprise_rbac_v1alpha1_role_proto_depIdxs = []int32{
 	6,  // 0: rbac.enterprise.mesh.gloo.solo.io.RoleSpec.traffic_policy_scopes:type_name -> rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope

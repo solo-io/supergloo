@@ -31,17 +31,18 @@ const (
 const _ = proto.ProtoPackageIsVersion4
 
 //
-//When certificates are issued, pods may need to be bounced (restarted) to ensure they pick up the
-//new certificates. If so, the certificate Issuer will create a PodBounceDirective containing the namespaces and labels
+//When certificates are issued, Istio-controlled pods need to be bounced (restarted) to ensure they pick up the
+//new certificates due to [this issue](https://github.com/istio/istio/issues/22993).
+//The certificate issuer will create a PodBounceDirective containing the namespaces and labels
 //of the pods that need to be bounced in order to pick up the new certs.
 type PodBounceDirectiveSpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// A list of k8s pods to bounce (delete and cause a restart)
+	// A list of Kubernetes pods to bounce (delete and cause a restart)
 	// when the certificate is issued.
-	// This will include the control plane pods as well as any pods
+	// This will include the control plane pods as well as any Pods
 	// which share a data plane with the target mesh.
 	PodsToBounce []*PodBounceDirectiveSpec_PodSelector `protobuf:"bytes,6,rep,name=pods_to_bounce,json=podsToBounce,proto3" json:"pods_to_bounce,omitempty"`
 }
@@ -86,15 +87,15 @@ func (x *PodBounceDirectiveSpec) GetPodsToBounce() []*PodBounceDirectiveSpec_Pod
 }
 
 //
-//PodBounceDirectiveStatus reports the status for stateful pod bounces (when bouncing pods requires waiting for readiness)
+//PodBounceDirectiveStatus reports the status for stateful Pod bounces (when bouncing pods requires waiting for readiness).
 type PodBounceDirectiveStatus struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// A list of k8s pods to bounce (delete and cause a restart)
+	// A list of Kubernetes pods to bounce (delete and cause a restart)
 	// when the certificate is issued.
-	// This will include the control plane pods as well as any pods
+	// This will include the control plane pods as well as any Pods
 	// which share a data plane with the target mesh.
 	PodsBounced []*PodBounceDirectiveStatus_BouncedPodSet `protobuf:"bytes,4,rep,name=pods_bounced,json=podsBounced,proto3" json:"pods_bounced,omitempty"`
 }
@@ -138,7 +139,7 @@ func (x *PodBounceDirectiveStatus) GetPodsBounced() []*PodBounceDirectiveStatus_
 	return nil
 }
 
-// Pods that will be restarted.
+// pods that will be restarted.
 type PodBounceDirectiveSpec_PodSelector struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -146,15 +147,15 @@ type PodBounceDirectiveSpec_PodSelector struct {
 
 	// The namespace in which the pods live.
 	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	// Any labels shared by the pods.
+	// Any labels shared by the Pods.
 	Labels map[string]string `protobuf:"bytes,2,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Wait for this number of replacement pods to reach be fully Ready before
-	// deleting the next set of selected pods.
+	// Wait for this number of replacement pods to reach be fully ready before
+	// deleting the next set of selected Pods.
 	// This is used to ensure the control plane pods are allowed to restart
 	// before sidecars and gateways are restarted.
 	WaitForReplicas uint32 `protobuf:"varint,3,opt,name=wait_for_replicas,json=waitForReplicas,proto3" json:"wait_for_replicas,omitempty"`
 	// Wait for the control plane to have synced all root cert configmaps in data plane namespaces before
-	// bouncing these pods.
+	// bouncing these Pods.
 	RootCertSync *PodBounceDirectiveSpec_PodSelector_RootCertSync `protobuf:"bytes,4,opt,name=root_cert_sync,json=rootCertSync,proto3" json:"root_cert_sync,omitempty"`
 }
 
@@ -218,7 +219,7 @@ func (x *PodBounceDirectiveSpec_PodSelector) GetRootCertSync() *PodBounceDirecti
 	return nil
 }
 
-// RootCertSync describes values in a secret and configmap which must be equal in order for a pod to be bounced.
+// RootCertSync describes values in a secret and configmap which must be equal in order for a Pod to be bounced.
 type PodBounceDirectiveSpec_PodSelector_RootCertSync struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -290,13 +291,13 @@ func (x *PodBounceDirectiveSpec_PodSelector_RootCertSync) GetConfigMapKey() stri
 	return ""
 }
 
-// A set of Pods that were restarted.
+// A set of pods that were restarted.
 type PodBounceDirectiveStatus_BouncedPodSet struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The names of the pods that were bounced for the corresponding selector.
+	// The names of the pods that were bounced for the corresponding selector specified in `PodBounceDirectiveSpec.PodSelector.labels`.
 	BouncedPods []string `protobuf:"bytes,1,rep,name=bounced_pods,json=bouncedPods,proto3" json:"bounced_pods,omitempty"`
 }
 

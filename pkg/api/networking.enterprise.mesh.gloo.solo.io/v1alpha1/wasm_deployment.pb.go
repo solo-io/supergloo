@@ -12,7 +12,7 @@ import (
 
 	proto "github.com/golang/protobuf/proto"
 	any "github.com/golang/protobuf/ptypes/any"
-	v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha1"
+	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha2"
 	_ "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	_ "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/types"
 	_ "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -95,7 +95,7 @@ type WasmDeploymentSpec struct {
 	//
 	//Sidecars/Gateways whose Workloads match these selectors will attach the specified WASM Filters.
 	//Leave empty to have all workloads in the mesh apply receive the WASM Filter.
-	WorkloadSelector []*v1alpha1.WorkloadSelector `protobuf:"bytes,1,rep,name=workload_selector,json=workloadSelector,proto3" json:"workload_selector,omitempty"`
+	WorkloadSelector []*v1alpha2.WorkloadSelector `protobuf:"bytes,1,rep,name=workload_selector,json=workloadSelector,proto3" json:"workload_selector,omitempty"`
 	// Parameters for specifying the WASM filter
 	Filters []*WasmFilterSpec `protobuf:"bytes,2,rep,name=filters,proto3" json:"filters,omitempty"`
 	// weight is used to determine the order of WASM Filters when applying
@@ -140,7 +140,7 @@ func (*WasmDeploymentSpec) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_wasm_deployment_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *WasmDeploymentSpec) GetWorkloadSelector() []*v1alpha1.WorkloadSelector {
+func (x *WasmDeploymentSpec) GetWorkloadSelector() []*v1alpha2.WorkloadSelector {
 	if x != nil {
 		return x.WorkloadSelector
 	}
@@ -653,7 +653,7 @@ var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_wasm_de
 	0x32, 0x2f, 0x68, 0x74, 0x74, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x40, 0x67, 0x69,
 	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f,
 	0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x63,
-	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x31, 0x2f, 0x73,
+	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x32, 0x2f, 0x73,
 	0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x4b,
 	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d,
 	0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x61, 0x70, 0x69,
@@ -789,7 +789,7 @@ var file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_wasm_de
 	(*ImagePullOptions)(nil),                // 5: networking.enterprise.mesh.gloo.solo.io.ImagePullOptions
 	(*WasmDeploymentStatus)(nil),            // 6: networking.enterprise.mesh.gloo.solo.io.WasmDeploymentStatus
 	nil,                                     // 7: networking.enterprise.mesh.gloo.solo.io.WasmDeploymentStatus.WorkloadStatesEntry
-	(*v1alpha1.WorkloadSelector)(nil),       // 8: common.mesh.gloo.solo.io.WorkloadSelector
+	(*v1alpha2.WorkloadSelector)(nil),       // 8: common.mesh.gloo.solo.io.WorkloadSelector
 	(*any.Any)(nil),                         // 9: google.protobuf.Any
 	(v1alpha3.EnvoyFilter_PatchContext)(0),  // 10: istio.networking.v1alpha3.EnvoyFilter.PatchContext
 }

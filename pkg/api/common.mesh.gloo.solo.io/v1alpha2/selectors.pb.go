@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.25.0
 // 	protoc        v3.6.1
-// source: github.com/solo-io/gloo-mesh/api/common/v1alpha1/selectors.proto
+// source: github.com/solo-io/gloo-mesh/api/common/v1alpha2/selectors.proto
 
-package v1alpha1
+package v1alpha2
 
 import (
 	reflect "reflect"
@@ -44,7 +44,7 @@ type TrafficTargetSelector struct {
 func (x *TrafficTargetSelector) Reset() {
 	*x = TrafficTargetSelector{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[0]
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -57,7 +57,7 @@ func (x *TrafficTargetSelector) String() string {
 func (*TrafficTargetSelector) ProtoMessage() {}
 
 func (x *TrafficTargetSelector) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[0]
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -70,7 +70,7 @@ func (x *TrafficTargetSelector) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrafficTargetSelector.ProtoReflect.Descriptor instead.
 func (*TrafficTargetSelector) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDescGZIP(), []int{0}
+	return file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *TrafficTargetSelector) GetKubeServiceMatcher() *TrafficTargetSelector_KubeServiceMatcher {
@@ -113,7 +113,7 @@ type WorkloadSelector struct {
 func (x *WorkloadSelector) Reset() {
 	*x = WorkloadSelector{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[1]
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -126,7 +126,7 @@ func (x *WorkloadSelector) String() string {
 func (*WorkloadSelector) ProtoMessage() {}
 
 func (x *WorkloadSelector) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[1]
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -139,7 +139,7 @@ func (x *WorkloadSelector) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkloadSelector.ProtoReflect.Descriptor instead.
 func (*WorkloadSelector) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDescGZIP(), []int{1}
+	return file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *WorkloadSelector) GetLabels() map[string]string {
@@ -178,7 +178,7 @@ type IdentitySelector struct {
 func (x *IdentitySelector) Reset() {
 	*x = IdentitySelector{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[2]
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -191,7 +191,7 @@ func (x *IdentitySelector) String() string {
 func (*IdentitySelector) ProtoMessage() {}
 
 func (x *IdentitySelector) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[2]
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -204,7 +204,7 @@ func (x *IdentitySelector) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IdentitySelector.ProtoReflect.Descriptor instead.
 func (*IdentitySelector) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDescGZIP(), []int{2}
+	return file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *IdentitySelector) GetKubeIdentityMatcher() *IdentitySelector_KubeIdentityMatcher {
@@ -246,7 +246,7 @@ type TrafficTargetSelector_KubeServiceMatcher struct {
 func (x *TrafficTargetSelector_KubeServiceMatcher) Reset() {
 	*x = TrafficTargetSelector_KubeServiceMatcher{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[3]
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -259,7 +259,7 @@ func (x *TrafficTargetSelector_KubeServiceMatcher) String() string {
 func (*TrafficTargetSelector_KubeServiceMatcher) ProtoMessage() {}
 
 func (x *TrafficTargetSelector_KubeServiceMatcher) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[3]
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -272,7 +272,7 @@ func (x *TrafficTargetSelector_KubeServiceMatcher) ProtoReflect() protoreflect.M
 
 // Deprecated: Use TrafficTargetSelector_KubeServiceMatcher.ProtoReflect.Descriptor instead.
 func (*TrafficTargetSelector_KubeServiceMatcher) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDescGZIP(), []int{0, 0}
+	return file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDescGZIP(), []int{0, 0}
 }
 
 func (x *TrafficTargetSelector_KubeServiceMatcher) GetLabels() map[string]string {
@@ -311,7 +311,7 @@ type TrafficTargetSelector_KubeServiceRefs struct {
 func (x *TrafficTargetSelector_KubeServiceRefs) Reset() {
 	*x = TrafficTargetSelector_KubeServiceRefs{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[4]
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -324,7 +324,7 @@ func (x *TrafficTargetSelector_KubeServiceRefs) String() string {
 func (*TrafficTargetSelector_KubeServiceRefs) ProtoMessage() {}
 
 func (x *TrafficTargetSelector_KubeServiceRefs) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[4]
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -337,7 +337,7 @@ func (x *TrafficTargetSelector_KubeServiceRefs) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use TrafficTargetSelector_KubeServiceRefs.ProtoReflect.Descriptor instead.
 func (*TrafficTargetSelector_KubeServiceRefs) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDescGZIP(), []int{0, 1}
+	return file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDescGZIP(), []int{0, 1}
 }
 
 func (x *TrafficTargetSelector_KubeServiceRefs) GetServices() []*v1.ClusterObjectRef {
@@ -367,7 +367,7 @@ type IdentitySelector_KubeIdentityMatcher struct {
 func (x *IdentitySelector_KubeIdentityMatcher) Reset() {
 	*x = IdentitySelector_KubeIdentityMatcher{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[7]
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -380,7 +380,7 @@ func (x *IdentitySelector_KubeIdentityMatcher) String() string {
 func (*IdentitySelector_KubeIdentityMatcher) ProtoMessage() {}
 
 func (x *IdentitySelector_KubeIdentityMatcher) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[7]
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -393,7 +393,7 @@ func (x *IdentitySelector_KubeIdentityMatcher) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use IdentitySelector_KubeIdentityMatcher.ProtoReflect.Descriptor instead.
 func (*IdentitySelector_KubeIdentityMatcher) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDescGZIP(), []int{2, 0}
+	return file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDescGZIP(), []int{2, 0}
 }
 
 func (x *IdentitySelector_KubeIdentityMatcher) GetNamespaces() []string {
@@ -425,7 +425,7 @@ type IdentitySelector_KubeServiceAccountRefs struct {
 func (x *IdentitySelector_KubeServiceAccountRefs) Reset() {
 	*x = IdentitySelector_KubeServiceAccountRefs{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[8]
+		mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -438,7 +438,7 @@ func (x *IdentitySelector_KubeServiceAccountRefs) String() string {
 func (*IdentitySelector_KubeServiceAccountRefs) ProtoMessage() {}
 
 func (x *IdentitySelector_KubeServiceAccountRefs) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[8]
+	mi := &file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -451,7 +451,7 @@ func (x *IdentitySelector_KubeServiceAccountRefs) ProtoReflect() protoreflect.Me
 
 // Deprecated: Use IdentitySelector_KubeServiceAccountRefs.ProtoReflect.Descriptor instead.
 func (*IdentitySelector_KubeServiceAccountRefs) Descriptor() ([]byte, []int) {
-	return file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDescGZIP(), []int{2, 1}
+	return file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDescGZIP(), []int{2, 1}
 }
 
 func (x *IdentitySelector_KubeServiceAccountRefs) GetServiceAccounts() []*v1.ClusterObjectRef {
@@ -461,13 +461,13 @@ func (x *IdentitySelector_KubeServiceAccountRefs) GetServiceAccounts() []*v1.Clu
 	return nil
 }
 
-var File_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto protoreflect.FileDescriptor
+var File_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto protoreflect.FileDescriptor
 
-var file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDesc = []byte{
+var file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDesc = []byte{
 	0x0a, 0x40, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c,
 	0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x61,
 	0x70, 0x69, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68,
-	0x61, 0x31, 0x2f, 0x73, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x73, 0x2e, 0x70, 0x72, 0x6f,
+	0x61, 0x32, 0x2f, 0x73, 0x65, 0x6c, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x73, 0x2e, 0x70, 0x72, 0x6f,
 	0x74, 0x6f, 0x12, 0x18, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e,
 	0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x1a, 0x1e, 0x67, 0x6f,
 	0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x77, 0x72,
@@ -559,23 +559,23 @@ var file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDes
 	0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f,
 	0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f,
 	0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61,
-	0x31, 0xc0, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x32, 0xc0, 0xf5, 0x04, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDescOnce sync.Once
-	file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDescData = file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDesc
+	file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDescOnce sync.Once
+	file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDescData = file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDesc
 )
 
-func file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDescGZIP() []byte {
-	file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDescOnce.Do(func() {
-		file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDescData = protoimpl.X.CompressGZIP(file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDescData)
+func file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDescGZIP() []byte {
+	file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDescOnce.Do(func() {
+		file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDescData = protoimpl.X.CompressGZIP(file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDescData)
 	})
-	return file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDescData
+	return file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDescData
 }
 
-var file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
-var file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_goTypes = []interface{}{
+var file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_goTypes = []interface{}{
 	(*TrafficTargetSelector)(nil),                    // 0: common.mesh.gloo.solo.io.TrafficTargetSelector
 	(*WorkloadSelector)(nil),                         // 1: common.mesh.gloo.solo.io.WorkloadSelector
 	(*IdentitySelector)(nil),                         // 2: common.mesh.gloo.solo.io.IdentitySelector
@@ -587,7 +587,7 @@ var file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_goType
 	(*IdentitySelector_KubeServiceAccountRefs)(nil), // 8: common.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs
 	(*v1.ClusterObjectRef)(nil),                     // 9: core.skv2.solo.io.ClusterObjectRef
 }
-var file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_depIdxs = []int32{
+var file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_depIdxs = []int32{
 	3, // 0: common.mesh.gloo.solo.io.TrafficTargetSelector.kube_service_matcher:type_name -> common.mesh.gloo.solo.io.TrafficTargetSelector.KubeServiceMatcher
 	4, // 1: common.mesh.gloo.solo.io.TrafficTargetSelector.kube_service_refs:type_name -> common.mesh.gloo.solo.io.TrafficTargetSelector.KubeServiceRefs
 	6, // 2: common.mesh.gloo.solo.io.WorkloadSelector.labels:type_name -> common.mesh.gloo.solo.io.WorkloadSelector.LabelsEntry
@@ -603,13 +603,13 @@ var file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_depIdx
 	0, // [0:8] is the sub-list for field type_name
 }
 
-func init() { file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_init() }
-func file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_init() {
-	if File_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto != nil {
+func init() { file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_init() }
+func file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_init() {
+	if File_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*TrafficTargetSelector); i {
 			case 0:
 				return &v.state
@@ -621,7 +621,7 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_init(
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*WorkloadSelector); i {
 			case 0:
 				return &v.state
@@ -633,7 +633,7 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_init(
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*IdentitySelector); i {
 			case 0:
 				return &v.state
@@ -645,7 +645,7 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_init(
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*TrafficTargetSelector_KubeServiceMatcher); i {
 			case 0:
 				return &v.state
@@ -657,7 +657,7 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_init(
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*TrafficTargetSelector_KubeServiceRefs); i {
 			case 0:
 				return &v.state
@@ -669,7 +669,7 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_init(
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*IdentitySelector_KubeIdentityMatcher); i {
 			case 0:
 				return &v.state
@@ -681,7 +681,7 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_init(
 				return nil
 			}
 		}
-		file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*IdentitySelector_KubeServiceAccountRefs); i {
 			case 0:
 				return &v.state
@@ -698,18 +698,18 @@ func file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_init(
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDesc,
+			RawDescriptor: file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_goTypes,
-		DependencyIndexes: file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_depIdxs,
-		MessageInfos:      file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_msgTypes,
+		GoTypes:           file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_goTypes,
+		DependencyIndexes: file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_depIdxs,
+		MessageInfos:      file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_msgTypes,
 	}.Build()
-	File_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto = out.File
-	file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_rawDesc = nil
-	file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_goTypes = nil
-	file_github_com_solo_io_gloo_mesh_api_common_v1alpha1_selectors_proto_depIdxs = nil
+	File_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto = out.File
+	file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_rawDesc = nil
+	file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_goTypes = nil
+	file_github_com_solo_io_gloo_mesh_api_common_v1alpha2_selectors_proto_depIdxs = nil
 }

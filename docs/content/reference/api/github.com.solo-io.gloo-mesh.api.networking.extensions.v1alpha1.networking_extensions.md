@@ -49,7 +49,7 @@ a Protobuf representation of the set of Discovery objects used to produce the Ne
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | meshes | [][extensions.networking.mesh.gloo.solo.io.MeshObject]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions#extensions.networking.mesh.gloo.solo.io.MeshObject" >}}) | repeated | all meshes in the discovery snapshot |
-  | trafficTargets | [][extensions.networking.mesh.gloo.solo.io.TrafficTargetObject]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions#extensions.networking.mesh.gloo.solo.io.TrafficTargetObject" >}}) | repeated | all traffic targets in the discovery snapshot |
+  | trafficTargets | [][extensions.networking.mesh.gloo.solo.io.TrafficTargetObject]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions#extensions.networking.mesh.gloo.solo.io.TrafficTargetObject" >}}) | repeated | all TrafficTargets in the discovery snapshot |
   | workloads | [][extensions.networking.mesh.gloo.solo.io.WorkloadObject]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions#extensions.networking.mesh.gloo.solo.io.WorkloadObject" >}}) | repeated | all workloads in the discovery snapshot |
   
 
@@ -160,16 +160,16 @@ a proto-serializable representation of a Mesh object
 <a name="extensions.networking.mesh.gloo.solo.io.ObjectMeta"></a>
 
 ### ObjectMeta
-ObjectMeta is a simplified clone of the kubernetes ObjectMeta used to represent object metadata for K8s objects passed as messages in the NetworkingExtensions API.
+ObjectMeta is a simplified clone of the Kubernetes ObjectMeta used to represent object metadata for Kubernetes objects passed as messages in the NetworkingExtensions API.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| name | string |  | the kubernetes name of the object |
-  | namespace | string |  | the kubernetes namespace of the object |
-  | clusterName | string |  | the kubernetes clusterName of the object (used internally by Gloo Mesh) |
-  | labels | [][extensions.networking.mesh.gloo.solo.io.ObjectMeta.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions#extensions.networking.mesh.gloo.solo.io.ObjectMeta.LabelsEntry" >}}) | repeated | the kubernetes labels on the object |
-  | annotations | [][extensions.networking.mesh.gloo.solo.io.ObjectMeta.AnnotationsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions#extensions.networking.mesh.gloo.solo.io.ObjectMeta.AnnotationsEntry" >}}) | repeated | the kubernetes annotations on the object |
+| name | string |  | the Kubernetes name of the object |
+  | namespace | string |  | the Kubernetes namespace of the object |
+  | clusterName | string |  | the Kubernetes clusterName of the object (used internally by Gloo Mesh) |
+  | labels | [][extensions.networking.mesh.gloo.solo.io.ObjectMeta.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions#extensions.networking.mesh.gloo.solo.io.ObjectMeta.LabelsEntry" >}}) | repeated | the Kubernetes labels on the object |
+  | annotations | [][extensions.networking.mesh.gloo.solo.io.ObjectMeta.AnnotationsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions#extensions.networking.mesh.gloo.solo.io.ObjectMeta.AnnotationsEntry" >}}) | repeated | the Kubernetes annotations on the object |
   
 
 

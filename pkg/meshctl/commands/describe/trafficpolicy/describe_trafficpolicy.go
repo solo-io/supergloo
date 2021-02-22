@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
+	commonv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha2"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/printing"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
@@ -85,7 +86,7 @@ func describeTrafficPolicies(ctx context.Context, c client.Client, searchTerms [
 	return buf.String(), nil
 }
 
-func formattedWorkloadSelectors(sels []*networkingv1alpha2.WorkloadSelector) string {
+func formattedWorkloadSelectors(sels []*commonv1alpha2.WorkloadSelector) string {
 	if len(sels) < 1 {
 		return ""
 	}
@@ -139,7 +140,7 @@ func formattedHttpMatchers(sels []*networkingv1alpha2.TrafficPolicySpec_HttpMatc
 
 type trafficPolicyDescription struct {
 	Metadata            *v1.ClusterObjectRef
-	SourceWorkloads     []*networkingv1alpha2.WorkloadSelector
+	SourceWorkloads     []*commonv1alpha2.WorkloadSelector
 	DestinationServices []*v1.ClusterObjectRef
 	HttpMatchers        []*networkingv1alpha2.TrafficPolicySpec_HttpMatcher
 }

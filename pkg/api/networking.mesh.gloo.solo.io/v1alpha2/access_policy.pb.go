@@ -11,7 +11,7 @@ import (
 	sync "sync"
 
 	proto "github.com/golang/protobuf/proto"
-	v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha1"
+	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha2"
 	types "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/types"
 	_ "github.com/solo-io/protoc-gen-ext/extproto"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -52,11 +52,11 @@ type AccessPolicySpec struct {
 	//For fine-grained access control policies, ensure that your
 	//service accounts properly reflect the desired
 	//boundary for your access control policies.
-	SourceSelector []*v1alpha1.IdentitySelector `protobuf:"bytes,1,rep,name=source_selector,json=sourceSelector,proto3" json:"source_selector,omitempty"`
+	SourceSelector []*v1alpha2.IdentitySelector `protobuf:"bytes,1,rep,name=source_selector,json=sourceSelector,proto3" json:"source_selector,omitempty"`
 	//
 	//Requests destined for these pods will have the rule applied.
 	//Leave empty to apply to all destination pods in the mesh.
-	DestinationSelector []*v1alpha1.TrafficTargetSelector `protobuf:"bytes,2,rep,name=destination_selector,json=destinationSelector,proto3" json:"destination_selector,omitempty"`
+	DestinationSelector []*v1alpha2.TrafficTargetSelector `protobuf:"bytes,2,rep,name=destination_selector,json=destinationSelector,proto3" json:"destination_selector,omitempty"`
 	//
 	//Optional. A list of HTTP paths or gRPC methods to allow.
 	//gRPC methods must be presented as fully-qualified name in the form of
@@ -110,14 +110,14 @@ func (*AccessPolicySpec) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_networking_v1alpha2_access_policy_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *AccessPolicySpec) GetSourceSelector() []*v1alpha1.IdentitySelector {
+func (x *AccessPolicySpec) GetSourceSelector() []*v1alpha2.IdentitySelector {
 	if x != nil {
 		return x.SourceSelector
 	}
 	return nil
 }
 
-func (x *AccessPolicySpec) GetDestinationSelector() []*v1alpha1.TrafficTargetSelector {
+func (x *AccessPolicySpec) GetDestinationSelector() []*v1alpha2.TrafficTargetSelector {
 	if x != nil {
 		return x.DestinationSelector
 	}
@@ -250,7 +250,7 @@ var file_github_com_solo_io_gloo_mesh_api_networking_v1alpha2_access_policy_prot
 	0x74, 0x74, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x40, 0x67, 0x69, 0x74, 0x68, 0x75,
 	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f, 0x67, 0x6c,
 	0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x63, 0x6f, 0x6d, 0x6d,
-	0x6f, 0x6e, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x31, 0x2f, 0x73, 0x65, 0x6c, 0x65,
+	0x6f, 0x6e, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x32, 0x2f, 0x73, 0x65, 0x6c, 0x65,
 	0x63, 0x74, 0x6f, 0x72, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x4b, 0x67, 0x69, 0x74,
 	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x6f, 0x6c, 0x6f, 0x2d, 0x69, 0x6f, 0x2f,
 	0x67, 0x6c, 0x6f, 0x6f, 0x2d, 0x6d, 0x65, 0x73, 0x68, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6e, 0x65,
@@ -332,8 +332,8 @@ var file_github_com_solo_io_gloo_mesh_api_networking_v1alpha2_access_policy_prot
 	(*AccessPolicySpec)(nil),               // 0: networking.mesh.gloo.solo.io.AccessPolicySpec
 	(*AccessPolicyStatus)(nil),             // 1: networking.mesh.gloo.solo.io.AccessPolicyStatus
 	nil,                                    // 2: networking.mesh.gloo.solo.io.AccessPolicyStatus.TrafficTargetsEntry
-	(*v1alpha1.IdentitySelector)(nil),      // 3: common.mesh.gloo.solo.io.IdentitySelector
-	(*v1alpha1.TrafficTargetSelector)(nil), // 4: common.mesh.gloo.solo.io.TrafficTargetSelector
+	(*v1alpha2.IdentitySelector)(nil),      // 3: common.mesh.gloo.solo.io.IdentitySelector
+	(*v1alpha2.TrafficTargetSelector)(nil), // 4: common.mesh.gloo.solo.io.TrafficTargetSelector
 	(types.HttpMethodValue)(0),             // 5: networking.mesh.gloo.solo.io.HttpMethodValue
 	(ApprovalState)(0),                     // 6: networking.mesh.gloo.solo.io.ApprovalState
 	(*ApprovalStatus)(nil),                 // 7: networking.mesh.gloo.solo.io.ApprovalStatus

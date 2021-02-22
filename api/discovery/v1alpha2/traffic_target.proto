@@ -9,42 +9,34 @@ import "google/protobuf/wrappers.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
-// Generate hash functions for sublocality for easier grouping
+// Generate hash functions for sublocality for easier grouping.
 option (extproto.hash_all) = true;
 
-/**
-    The TrafficTarget is an abstraction for a traffic target which we have discovered to be part of a
-    given mesh.
-*/
+// The TrafficTarget is an abstraction for any entity capable of receiving networking requests that has
+// been discovered by Gloo Mesh.
 message TrafficTargetSpec {
-    // The type of traffic target backing the TrafficTarget.
+
+    // Describes the platform-specific TrafficTarget.
     oneof type {
-        // Metadata about the kube-native traffic target backing this TrafficTarget.
+
+        // Describes the Kubernetes service backing this TrafficTarget.
         KubeService kube_service = 1;
     }
 
-    // The mesh with which this traffic target is associated.
+    // The mesh that controls this TrafficTarget.
     .core.skv2.solo.io.ObjectRef mesh = 2;
 
+    // Describes a Kubernetes service.
     message KubeService {
 
-        // A reference to the kube-native traffic target that this TrafficTarget represents.
+        // Reference to the Kubernetes service object.
         .core.skv2.solo.io.ClusterObjectRef ref = 1;
 
-        // Selectors for the set of pods targeted by the k8s Service.
+        // Selectors for the set of pods targeted by the Kubernetes service.
         map<string, string> workload_selector_labels = 2;
 
-        // Labels on the underlying k8s Service itself.
+        // Labels on the Kubernetes service.
         map<string, string> labels = 3;
-
-        message KubeServicePort {
-            // External-facing port for this k8s service (NOT the service's target port on the backing pods).
-            uint32 port = 1;
-            string name = 2;
-            string protocol = 3;
-            // Available in k8s 1.18+, specifies the application protocol.
-            string app_protocol = 4;
-        }
 
         // The ports exposed by the underlying service.
         repeated KubeServicePort ports = 4;
@@ -52,110 +44,132 @@ message TrafficTargetSpec {
         // Subsets for routing, based on labels.
         map<string, Subset> subsets = 5;
 
-        // Subsets for routing, based on labels.
-        message Subset {
-            repeated string values = 1;
-        }
-
         // The region the service resides in, typically representing a large geographic area.
-        // All of the service's endpoints will be in this region.
         string region = 6;
-
-        // A series of IP addresses and their associated ports.
-        // The list of IP + port pairs is the cartesian product of the two lists.
-        message EndpointsSubset {
-
-            // An endpoint exposed by the service
-            message Endpoint {
-                // IP address
-                string ip_address = 1;
-
-                // Labels which belong to this IP. These are taken from the backing workload instance.
-                map<string, string> labels = 2;
-
-                // The zone/sub-zone of the endpoint.
-                SubLocality sub_locality = 3;
-            }
-
-            repeated Endpoint endpoints = 1;
-
-            repeated KubeServicePort ports = 2;
-        }
 
         // Each endpoints subset is a group of endpoints arranged in terms of IP/port pairs.
         // This API mirrors the [Kubernetes Endpoints API](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core).
         repeated EndpointsSubset endpoint_subsets = 7;
 
+        // Describes the service's ports. See [here](https://kubernetes.io/docs/concepts/services-networking/service/#multi-port-services) for more information.
+        message KubeServicePort {
+
+            // External-facing port for this Kubernetes service (*not* the service's target port on the targeted pods).
+            uint32 port = 1;
+
+            string name = 2;
+
+            string protocol = 3;
+
+            // Available in Kubernetes 1.18+, describes the application protocol.
+            string app_protocol = 4;
+        }
+
+        // Subsets for routing, based on labels.
+        message Subset {
+            repeated string values = 1;
+        }
+
+        // A series of IP addresses and their associated ports.
+        // The list of IP and port pairs is the cartesian product of the endpoint and port lists.
+        message EndpointsSubset {
+
+            repeated Endpoint endpoints = 1;
+
+            repeated KubeServicePort ports = 2;
+
+            // An endpoint exposed by this service.
+            message Endpoint {
+
+                string ip_address = 1;
+
+                // Labels which belong to this IP. These are taken from the backing workload instance.
+                map<string, string> labels = 2;
+
+                // The zone and sub-zone (if controlled by Istio) of the endpoint.
+                SubLocality sub_locality = 3;
+            }
+        }
     }
 
 }
 
 // A subdivision of a region representing a set of physically colocated compute resources.
 message SubLocality {
+
+    // A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
     string zone = 1;
+
+    // A subdivision of zone. Only applies to Istio-controlled services, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
     string sub_zone = 2;
 }
 
 message TrafficTargetStatus {
 
     // The most recent generation observed in the the TrafficPolicy metadata.
-    // if the observedGeneration does not match generation, the controller has not received the most
+    // If the observedGeneration does not match generation, Gloo Mesh has not processed the most
     // recent version of this resource.
     int64 observed_generation = 1;
 
-    // The set of Traffic Policies that have been applied to this TrafficTarget
+    // The set of TrafficPolicies that have been applied to this TrafficTarget.
     repeated AppliedTrafficPolicy applied_traffic_policies = 3;
 
-    // The set of Access Policies that have been applied to this TrafficTarget
+    // The set of AccessPolicies that have been applied to this TrafficTarget.
     repeated AppliedAccessPolicy applied_access_policies = 4;
 
-    // The local fully qualified domain
+    // The fully qualified domain name for requests originating from a source *coloated* with this TrafficTarget.
+    // For Kubernetes services, "colocated" means within the same Kubernetes cluster.
     string local_fqdn = 5;
 
-    // Federation metadata. Only populated if this traffic target is federated through a VirtualMesh.
+    // Federation metadata. Only populated if this TrafficTarget is federated through a VirtualMesh.
     AppliedFederation applied_federation = 6;
 
-    // AppliedTrafficPolicy represents a traffic policy that has been applied to the TrafficTarget.
-    // if an existing Traffic Policy becomes invalid, the last applied policy will be used
+    // Represents a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}}) that has been applied to the TrafficTarget.
+    // If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
     message AppliedTrafficPolicy {
-        // reference to the traffic policy
+
+        // Reference to the TrafficPolicy object.
         .core.skv2.solo.io.ObjectRef ref = 1;
 
-        // the observed generation of the accepted traffic policy
+        // The observed generation of the accepted TrafficPolicy.
         int64 observedGeneration = 2;
 
-        // the last known valid spec of the traffic policy
+        // The spec of the last known valid TrafficPolicy.
         .networking.mesh.gloo.solo.io.TrafficPolicySpec spec = 3;
     }
 
-    // AppliedAccessPolicy represents a access policy that has been applied to the TrafficTarget.
-    // if an existing Access Policy becomes invalid, the last applied policy will be used
+    // Represents an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy" >}})
+    // that has been applied to this TrafficTarget.
+    // If an existing AccessPolicy becomes invalid, the last valid applied policy will be used.
     message AppliedAccessPolicy {
-        // reference to the access policy
+
+        // Reference to the AccessPolicy object.
         .core.skv2.solo.io.ObjectRef ref = 1;
 
-        // the observed generation of the accepted access policy
+        // The observed generation of the accepted AccessPolicy.
         int64 observedGeneration = 2;
 
-        // the last known valid spec of the access policy
+        // The spec of the last known valid AccessPolicy.
         .networking.mesh.gloo.solo.io.AccessPolicySpec spec = 3;
     }
 
-    // Federation policy applied to this TrafficTarget, allowing access
-    // to the traffic target from other meshes/clusters.
+    // Represents the federation configuration applied to this TrafficTarget through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}).
+    // Federation allows access to the TrafficTarget from other meshes/clusters.
     message AppliedFederation {
-        /**
-            For any workload that this traffic target has federated to (i.e., any Workload controlled by a mesh whose ref appears in `federated_to_meshes`),
-            a client in that workload will be able to reach this traffic target at this DNS name. This includes workloads on clusters other than
-            the one hosting this service.
+
+        /*
+            For any Workload that this TrafficTarget has been federated to (i.e., any Workload controlled by a Mesh whose ref appears in `federated_to_meshes`),
+            that Workload will be able to reach this TrafficTarget using this DNS name.
+            For Kubernetes TrafficTargets this includes Workloads on clusters other than the one hosting this TrafficTarget.
         */
         string federated_hostname = 1;
 
-        // The list of Meshes which are able to resolve this service's `multicluster_dns_name`.
+        // The list of Meshes which are able to resolve this TrafficTargets's `multicluster_dns_name`.
         repeated .core.skv2.solo.io.ObjectRef federated_to_meshes = 2;
 
-        // Whether or not the TrafficTarget has been federated via a flat-network to the given meshes.
+        // Whether or not the TrafficTarget has been federated to the given meshes using a VirtualMesh where
+        // [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})
+        // is true.
         bool flat_network = 3;
     }
-
 }

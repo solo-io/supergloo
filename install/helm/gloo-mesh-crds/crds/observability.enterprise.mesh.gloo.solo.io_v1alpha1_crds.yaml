@@ -40,35 +40,36 @@ spec:
                         description: |-
                           If set to true, the result of the match will be inverted. Defaults to false.
 
-                                 Examples:
-                                 * name=foo, invert_match=true: matches if no header named `foo` is present
-                                 * name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
-                                 * name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present
+                             Examples:
+
+                                 - name=foo, invert_match=true: matches if no header named `foo` is present
+                                 - name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
+                                 - name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present.
                         type: boolean
                       name:
                         description: Specifies the name of the header in the request.
                         type: string
                       regex:
-                        description: Specifies whether the header value should be treated as regex or not.
+                        description: Specifies whether the header value should be treated as regex.
                         type: boolean
                       value:
                         description: |-
                           Specifies the value of the header. If the value is absent a request that
-                                 has the name header will match, regardless of the header’s value.
+                          has the name header will match, regardless of the header’s value.
                         type: string
                     type: object
                   statusCodeMatcher:
                     description: Matches against a response status code. Omit to match any status code.
                     properties:
                       comparator:
-                        description: the comparison type used for matching
+                        description: The comparison type used for matching.
                         enum:
                         - EQ
                         - GE
                         - LE
                         type: string
                       value:
-                        description: the status code value to match against
+                        description: The status code value to match against.
                         maximum: 4294967295
                         minimum: 0
                         type: integer
@@ -83,9 +84,9 @@ spec:
                 properties:
                   clusters:
                     description: |-
-                      If specified, match k8s workloads if they exist in one of the specified clusters.
+                      If specified, match Kubernetes workloads if they exist in one of the specified clusters.
                              When used in a networking policy, omission matches any cluster.
-                             When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                             When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                     items:
                       type: string
                     type: array
@@ -93,15 +94,15 @@ spec:
                     additionalProperties:
                       type: string
                     description: |-
-                      If specified, all labels must exist on k8s workload.
+                      If specified, all labels must exist on Kubernetes workload.
                              When used in a networking policy, omission matches any labels.
-                             When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                             When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                     type: object
                   namespaces:
                     description: |-
-                      If specified, match k8s workloads if they exist in one of the specified namespaces.
+                      If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
                              When used in a networking policy, omission matches any namespace.
-                             When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                             When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                     items:
                       type: string
                     type: array

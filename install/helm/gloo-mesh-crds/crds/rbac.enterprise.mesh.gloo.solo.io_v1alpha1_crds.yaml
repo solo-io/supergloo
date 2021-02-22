@@ -40,9 +40,9 @@ spec:
                       properties:
                         clusters:
                           description: |-
-                            If specified, match k8s workloads if they exist in one of the specified clusters.
+                            If specified, match Kubernetes workloads if they exist in one of the specified clusters.
                                    When used in a networking policy, omission matches any cluster.
-                                   When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                                   When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                           items:
                             type: string
                           type: array
@@ -50,15 +50,15 @@ spec:
                           additionalProperties:
                             type: string
                           description: |-
-                            If specified, all labels must exist on k8s workload.
+                            If specified, all labels must exist on Kubernetes workload.
                                    When used in a networking policy, omission matches any labels.
-                                   When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                                   When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                           type: object
                         namespaces:
                           description: |-
-                            If specified, match k8s workloads if they exist in one of the specified namespaces.
+                            If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
                                    When used in a networking policy, omission matches any namespace.
-                                   When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                                   When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                           items:
                             type: string
                           type: array
@@ -75,33 +75,33 @@ spec:
                     items:
                       properties:
                         kubeIdentityMatcher:
-                          description: A KubeIdentityMatcher matches request identities based on the k8s namespace and cluster.
+                          description: Match request identities based on the Kubernetes namespace and cluster.
                           properties:
                             clusters:
                               description: |-
-                                If specified, match k8s identity if it exists in one of the specified clusters.
+                                If specified, match a Kubernetes identity if it exists in one of the specified clusters.
                                            When used in a networking policy, omission matches any cluster.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                               items:
                                 type: string
                               type: array
                             namespaces:
                               description: |-
-                                If specified, match k8s identity if it exists in one of the specified namespaces.
+                                If specified, match a Kubernetes identity if it exists in one of the specified namespaces.
                                            When used in a networking policy, omission matches any namespace.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                               items:
                                 type: string
                               type: array
                           type: object
                         kubeServiceAccountRefs:
-                          description: KubeServiceAccountRefs matches request identities based on the k8s service account of request.
+                          description: Match request identities based on the Kubernetes service account of the request.
                           properties:
                             serviceAccounts:
                               description: |-
-                                Match k8s ServiceAccounts by direct reference.
+                                Match Kubernetes service accounts by direct reference.
                                            When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
                               items:
                                 properties:
                                   clusterName:
@@ -119,17 +119,17 @@ spec:
                       type: object
                     type: array
                   trafficTargetSelectors:
-                    description: A list of permitted traffic target selectors.
+                    description: A list of permitted TrafficTarget selectors.
                     items:
                       properties:
                         kubeServiceMatcher:
-                          description: A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters.
+                          description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
                           properties:
                             clusters:
                               description: |-
-                                If specified, match k8s Services if they exist in one of the specified clusters.
+                                If specified, match Kubernetes Services if they exist in one of the specified clusters.
                                            When used in a networking policy, omission matches any cluster.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                               items:
                                 type: string
                               type: array
@@ -137,27 +137,27 @@ spec:
                               additionalProperties:
                                 type: string
                               description: |-
-                                If specified, all labels must exist on k8s Service.
+                                If specified, a match requires all labels to exist on a Kubernetes Service.
                                            When used in a networking policy, omission matches any labels.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                               type: object
                             namespaces:
                               description: |-
-                                If specified, match k8s Services if they exist in one of the specified namespaces.
+                                If specified, match Kubernetes Services if they exist in one of the specified namespaces.
                                            When used in a networking policy, omission matches any namespace.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                               items:
                                 type: string
                               type: array
                           type: object
                         kubeServiceRefs:
-                          description: Match individual k8s Services by direct reference.
+                          description: Match Kubernetes Services by direct reference.
                           properties:
                             services:
                               description: |-
-                                Match k8s Services by direct reference.
+                                Match Kubernetes Services by direct reference.
                                            When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
                               items:
                                 properties:
                                   clusterName:
@@ -192,7 +192,7 @@ spec:
                         - kubeService
                       properties:
                         kubeService:
-                          description: Name/namespace/cluster of a kubernetes service.
+                          description: Name/namespace/cluster of a Kubernetes service.
                           properties:
                             clusterName:
                               description: name of the cluster in which the resource exists
@@ -242,17 +242,17 @@ spec:
                       type: string
                     type: array
                   trafficTargetSelectors:
-                    description: A list of permitted traffic target selectors.
+                    description: A list of permitted TrafficTarget selectors.
                     items:
                       properties:
                         kubeServiceMatcher:
-                          description: A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters.
+                          description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
                           properties:
                             clusters:
                               description: |-
-                                If specified, match k8s Services if they exist in one of the specified clusters.
+                                If specified, match Kubernetes Services if they exist in one of the specified clusters.
                                            When used in a networking policy, omission matches any cluster.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                               items:
                                 type: string
                               type: array
@@ -260,27 +260,27 @@ spec:
                               additionalProperties:
                                 type: string
                               description: |-
-                                If specified, all labels must exist on k8s Service.
+                                If specified, a match requires all labels to exist on a Kubernetes Service.
                                            When used in a networking policy, omission matches any labels.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                               type: object
                             namespaces:
                               description: |-
-                                If specified, match k8s Services if they exist in one of the specified namespaces.
+                                If specified, match Kubernetes Services if they exist in one of the specified namespaces.
                                            When used in a networking policy, omission matches any namespace.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                               items:
                                 type: string
                               type: array
                           type: object
                         kubeServiceRefs:
-                          description: Match individual k8s Services by direct reference.
+                          description: Match Kubernetes Services by direct reference.
                           properties:
                             services:
                               description: |-
-                                Match k8s Services by direct reference.
+                                Match Kubernetes Services by direct reference.
                                            When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
                               items:
                                 properties:
                                   clusterName:
@@ -303,9 +303,9 @@ spec:
                       properties:
                         clusters:
                           description: |-
-                            If specified, match k8s workloads if they exist in one of the specified clusters.
+                            If specified, match Kubernetes workloads if they exist in one of the specified clusters.
                                    When used in a networking policy, omission matches any cluster.
-                                   When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                                   When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                           items:
                             type: string
                           type: array
@@ -313,15 +313,15 @@ spec:
                           additionalProperties:
                             type: string
                           description: |-
-                            If specified, all labels must exist on k8s workload.
+                            If specified, all labels must exist on Kubernetes workload.
                                    When used in a networking policy, omission matches any labels.
-                                   When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                                   When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                           type: object
                         namespaces:
                           description: |-
-                            If specified, match k8s workloads if they exist in one of the specified namespaces.
+                            If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
                                    When used in a networking policy, omission matches any namespace.
-                                   When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                                   When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                           items:
                             type: string
                           type: array
@@ -350,13 +350,13 @@ spec:
                     items:
                       properties:
                         kubeServiceMatcher:
-                          description: A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters.
+                          description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
                           properties:
                             clusters:
                               description: |-
-                                If specified, match k8s Services if they exist in one of the specified clusters.
+                                If specified, match Kubernetes Services if they exist in one of the specified clusters.
                                            When used in a networking policy, omission matches any cluster.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                               items:
                                 type: string
                               type: array
@@ -364,27 +364,27 @@ spec:
                               additionalProperties:
                                 type: string
                               description: |-
-                                If specified, all labels must exist on k8s Service.
+                                If specified, a match requires all labels to exist on a Kubernetes Service.
                                            When used in a networking policy, omission matches any labels.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                               type: object
                             namespaces:
                               description: |-
-                                If specified, match k8s Services if they exist in one of the specified namespaces.
+                                If specified, match Kubernetes Services if they exist in one of the specified namespaces.
                                            When used in a networking policy, omission matches any namespace.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                               items:
                                 type: string
                               type: array
                           type: object
                         kubeServiceRefs:
-                          description: Match individual k8s Services by direct reference.
+                          description: Match Kubernetes Services by direct reference.
                           properties:
                             services:
                               description: |-
-                                Match k8s Services by direct reference.
+                                Match Kubernetes Services by direct reference.
                                            When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
-                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
                               items:
                                 properties:
                                   clusterName:
@@ -413,7 +413,7 @@ spec:
                         - kubeService
                       properties:
                         kubeService:
-                          description: Name/namespace/cluster of a kubernetes service.
+                          description: Name/namespace/cluster of a Kubernetes service.
                           properties:
                             clusterName:
                               description: name of the cluster in which the resource exists
@@ -480,9 +480,9 @@ spec:
                       properties:
                         clusters:
                           description: |-
-                            If specified, match k8s workloads if they exist in one of the specified clusters.
+                            If specified, match Kubernetes workloads if they exist in one of the specified clusters.
                                    When used in a networking policy, omission matches any cluster.
-                                   When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                                   When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                           items:
                             type: string
                           type: array
@@ -490,15 +490,15 @@ spec:
                           additionalProperties:
                             type: string
                           description: |-
-                            If specified, all labels must exist on k8s workload.
+                            If specified, all labels must exist on Kubernetes workload.
                                    When used in a networking policy, omission matches any labels.
-                                   When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                                   When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                           type: object
                         namespaces:
                           description: |-
-                            If specified, match k8s workloads if they exist in one of the specified namespaces.
+                            If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
                                    When used in a networking policy, omission matches any namespace.
-                                   When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                                   When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                           items:
                             type: string
                           type: array

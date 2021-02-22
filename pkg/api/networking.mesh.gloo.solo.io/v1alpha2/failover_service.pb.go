@@ -30,10 +30,10 @@ const _ = proto.ProtoPackageIsVersion4
 
 //
 //A FailoverService creates a new hostname to which services can send requests.
-//Requests will be routed based on a list of backing traffic targets ordered by
-//decreasing priority. When outlier detection detects that a traffic target in the list is
+//Requests will be routed based on a list of backing TrafficTargets ordered by
+//decreasing priority. When outlier detection detects that a TrafficTarget in the list is
 //in an unhealthy state, requests sent to the FailoverService will be routed
-//to the next healthy traffic target in the list. For each traffic target referenced in the
+//to the next healthy TrafficTarget in the list. For each TrafficTarget referenced in the
 //FailoverService's BackingServices list, outlier detection must be configured using a TrafficPolicy.
 //
 //Currently this feature only supports Services backed by Istio.
@@ -255,13 +255,13 @@ func (x *FailoverServiceSpec_Port) GetProtocol() string {
 	return ""
 }
 
-// The traffic targets that comprise the FailoverService.
+// The TrafficTargets that comprise the FailoverService.
 type FailoverServiceSpec_BackingService struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Different traffic target types can be selected as backing services.
+	// Different TrafficTarget types can be selected as backing services.
 	//
 	// Types that are assignable to BackingServiceType:
 	//	*FailoverServiceSpec_BackingService_KubeService
@@ -319,7 +319,7 @@ type isFailoverServiceSpec_BackingService_BackingServiceType interface {
 }
 
 type FailoverServiceSpec_BackingService_KubeService struct {
-	// Name/namespace/cluster of a kubernetes service.
+	// Name/namespace/cluster of a Kubernetes service.
 	KubeService *v1.ClusterObjectRef `protobuf:"bytes,1,opt,name=kube_service,json=kubeService,proto3,oneof"`
 }
 

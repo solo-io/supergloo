@@ -23,8 +23,8 @@ spec:
       properties:
         spec:
           description: |-
-            The TrafficTarget is an abstraction for a traffic target which we have discovered to be part of a
-               given mesh.
+            The TrafficTarget is an abstraction for any entity capable of receiving networking requests that has
+            been discovered by Gloo Mesh.
           oneOf:
           - not:
               anyOf:
@@ -34,7 +34,7 @@ spec:
             - kubeService
           properties:
             kubeService:
-              description: Metadata about the kube-native traffic target backing this TrafficTarget.
+              description: Describes the Kubernetes service backing this TrafficTarget.
               properties:
                 endpointSubsets:
                   description: |-
@@ -46,7 +46,6 @@ spec:
                         items:
                           properties:
                             ipAddress:
-                              description: IP address
                               type: string
                             labels:
                               additionalProperties:
@@ -54,11 +53,13 @@ spec:
                               description: Labels which belong to this IP. These are taken from the backing workload instance.
                               type: object
                             subLocality:
-                              description: The zone/sub-zone of the endpoint.
+                              description: The zone and sub-zone (if controlled by Istio) of the endpoint.
                               properties:
                                 subZone:
+                                  description: A subdivision of zone. Only applies to Istio-controlled services, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
                                   type: string
                                 zone:
+                                  description: A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
                                   type: string
                               type: object
                           type: object
@@ -67,12 +68,12 @@ spec:
                         items:
                           properties:
                             appProtocol:
-                              description: Available in k8s 1.18+, specifies the application protocol.
+                              description: Available in Kubernetes 1.18+, describes the application protocol.
                               type: string
                             name:
                               type: string
                             port:
-                              description: External-facing port for this k8s service (NOT the service's target port on the backing pods).
+                              description: External-facing port for this Kubernetes service (*not* the service's target port on the targeted pods).
                               maximum: 4294967295
                               minimum: 0
                               type: integer
@@ -85,19 +86,19 @@ spec:
                 labels:
                   additionalProperties:
                     type: string
-                  description: Labels on the underlying k8s Service itself.
+                  description: Labels on the Kubernetes service.
                   type: object
                 ports:
                   description: The ports exposed by the underlying service.
                   items:
                     properties:
                       appProtocol:
-                        description: Available in k8s 1.18+, specifies the application protocol.
+                        description: Available in Kubernetes 1.18+, describes the application protocol.
                         type: string
                       name:
                         type: string
                       port:
-                        description: External-facing port for this k8s service (NOT the service's target port on the backing pods).
+                        description: External-facing port for this Kubernetes service (*not* the service's target port on the targeted pods).
                         maximum: 4294967295
                         minimum: 0
                         type: integer
@@ -106,7 +107,7 @@ spec:
                     type: object
                   type: array
                 ref:
-                  description: A reference to the kube-native traffic target that this TrafficTarget represents.
+                  description: Reference to the Kubernetes service object.
                   properties:
                     clusterName:
                       description: name of the cluster in which the resource exists
@@ -119,9 +120,7 @@ spec:
                       type: string
                   type: object
                 region:
-                  description: |-
-                    The region the service resides in, typically representing a large geographic area.
-                    All of the service's endpoints will be in this region.
+                  description: The region the service resides in, typically representing a large geographic area.
                   type: string
                 subsets:
                   additionalProperties:
@@ -136,11 +135,11 @@ spec:
                 workloadSelectorLabels:
                   additionalProperties:
                     type: string
-                  description: Selectors for the set of pods targeted by the k8s Service.
+                  description: Selectors for the set of pods targeted by the Kubernetes service.
                   type: object
               type: object
             mesh:
-              description: The mesh with which this traffic target is associated.
+              description: The mesh that controls this TrafficTarget.
               properties:
                 name:
                   description: name of the resource being referenced
@@ -153,15 +152,15 @@ spec:
         status:
           properties:
             appliedAccessPolicies:
-              description: The set of Access Policies that have been applied to this TrafficTarget
+              description: The set of AccessPolicies that have been applied to this TrafficTarget.
               items:
                 properties:
                   observedGeneration:
-                    description: the observed generation of the accepted access policy
+                    description: The observed generation of the accepted AccessPolicy.
                     format: int64
                     type: integer
                   ref:
-                    description: reference to the access policy
+                    description: Reference to the AccessPolicy object.
                     properties:
                       name:
                         description: name of the resource being referenced
@@ -171,7 +170,7 @@ spec:
                         type: string
                     type: object
                   spec:
-                    description: the last known valid spec of the access policy
+                    description: The spec of the last known valid AccessPolicy.
                     properties:
                       allowedMethods:
                         description: |-
@@ -220,13 +219,13 @@ spec:
                         items:
                           properties:
                             kubeServiceMatcher:
-                              description: A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters.
+                              description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
                               properties:
                                 clusters:
                                   description: |-
-                                    If specified, match k8s Services if they exist in one of the specified clusters.
+                                    If specified, match Kubernetes Services if they exist in one of the specified clusters.
                                                When used in a networking policy, omission matches any cluster.
-                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                                   items:
                                     type: string
                                   type: array
@@ -234,27 +233,27 @@ spec:
                                   additionalProperties:
                                     type: string
                                   description: |-
-                                    If specified, all labels must exist on k8s Service.
+                                    If specified, a match requires all labels to exist on a Kubernetes Service.
                                                When used in a networking policy, omission matches any labels.
-                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                                   type: object
                                 namespaces:
                                   description: |-
-                                    If specified, match k8s Services if they exist in one of the specified namespaces.
+                                    If specified, match Kubernetes Services if they exist in one of the specified namespaces.
                                                When used in a networking policy, omission matches any namespace.
-                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                                   items:
                                     type: string
                                   type: array
                               type: object
                             kubeServiceRefs:
-                              description: Match individual k8s Services by direct reference.
+                              description: Match Kubernetes Services by direct reference.
                               properties:
                                 services:
                                   description: |-
-                                    Match k8s Services by direct reference.
+                                    Match Kubernetes Services by direct reference.
                                                When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
-                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
                                   items:
                                     properties:
                                       clusterName:
@@ -286,33 +285,33 @@ spec:
                         items:
                           properties:
                             kubeIdentityMatcher:
-                              description: A KubeIdentityMatcher matches request identities based on the k8s namespace and cluster.
+                              description: Match request identities based on the Kubernetes namespace and cluster.
                               properties:
                                 clusters:
                                   description: |-
-                                    If specified, match k8s identity if it exists in one of the specified clusters.
+                                    If specified, match a Kubernetes identity if it exists in one of the specified clusters.
                                                When used in a networking policy, omission matches any cluster.
-                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                                   items:
                                     type: string
                                   type: array
                                 namespaces:
                                   description: |-
-                                    If specified, match k8s identity if it exists in one of the specified namespaces.
+                                    If specified, match a Kubernetes identity if it exists in one of the specified namespaces.
                                                When used in a networking policy, omission matches any namespace.
-                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                                   items:
                                     type: string
                                   type: array
                               type: object
                             kubeServiceAccountRefs:
-                              description: KubeServiceAccountRefs matches request identities based on the k8s service account of request.
+                              description: Match request identities based on the Kubernetes service account of the request.
                               properties:
                                 serviceAccounts:
                                   description: |-
-                                    Match k8s ServiceAccounts by direct reference.
+                                    Match Kubernetes service accounts by direct reference.
                                                When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
-                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
                                   items:
                                     properties:
                                       clusterName:
@@ -333,16 +332,16 @@ spec:
                 type: object
               type: array
             appliedFederation:
-              description: Federation metadata. Only populated if this traffic target is federated through a VirtualMesh.
+              description: Federation metadata. Only populated if this TrafficTarget is federated through a VirtualMesh.
               properties:
                 federatedHostname:
                   description: |-
-                    For any workload that this traffic target has federated to (i.e., any Workload controlled by a mesh whose ref appears in `federated_to_meshes`),
-                               a client in that workload will be able to reach this traffic target at this DNS name. This includes workloads on clusters other than
-                               the one hosting this service.
+                    For any Workload that this TrafficTarget has been federated to (i.e., any Workload controlled by a Mesh whose ref appears in `federated_to_meshes`),
+                               that Workload will be able to reach this TrafficTarget using this DNS name.
+                               For Kubernetes TrafficTargets this includes Workloads on clusters other than the one hosting this TrafficTarget.
                   type: string
                 federatedToMeshes:
-                  description: The list of Meshes which are able to resolve this service's `multicluster_dns_name`.
+                  description: The list of Meshes which are able to resolve this TrafficTargets's `multicluster_dns_name`.
                   items:
                     properties:
                       name:
@@ -354,19 +353,22 @@ spec:
                     type: object
                   type: array
                 flatNetwork:
-                  description: Whether or not the TrafficTarget has been federated via a flat-network to the given meshes.
+                  description: |-
+                    Whether or not the TrafficTarget has been federated to the given meshes using a VirtualMesh where
+                    [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}}))
+                    is true.
                   type: boolean
               type: object
             appliedTrafficPolicies:
-              description: The set of Traffic Policies that have been applied to this TrafficTarget
+              description: The set of TrafficPolicies that have been applied to this TrafficTarget.
               items:
                 properties:
                   observedGeneration:
-                    description: the observed generation of the accepted traffic policy
+                    description: The observed generation of the accepted TrafficPolicy.
                     format: int64
                     type: integer
                   ref:
-                    description: reference to the traffic policy
+                    description: Reference to the TrafficPolicy object.
                     properties:
                       name:
                         description: name of the resource being referenced
@@ -376,22 +378,22 @@ spec:
                         type: string
                     type: object
                   spec:
-                    description: the last known valid spec of the traffic policy
+                    description: The spec of the last known valid TrafficPolicy.
                     properties:
                       destinationSelector:
                         description: |-
-                          Requests destined for these k8s services will have the rule applied.
-                                 Leave empty to apply to all destination k8s services in the mesh.
+                          Requests destined for these Kubernetes services will have the rule applied.
+                                 Leave empty to apply to all destination Kubernetes services in the mesh.
                         items:
                           properties:
                             kubeServiceMatcher:
-                              description: A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters.
+                              description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
                               properties:
                                 clusters:
                                   description: |-
-                                    If specified, match k8s Services if they exist in one of the specified clusters.
+                                    If specified, match Kubernetes Services if they exist in one of the specified clusters.
                                                When used in a networking policy, omission matches any cluster.
-                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                                   items:
                                     type: string
                                   type: array
@@ -399,27 +401,27 @@ spec:
                                   additionalProperties:
                                     type: string
                                   description: |-
-                                    If specified, all labels must exist on k8s Service.
+                                    If specified, a match requires all labels to exist on a Kubernetes Service.
                                                When used in a networking policy, omission matches any labels.
-                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                                   type: object
                                 namespaces:
                                   description: |-
-                                    If specified, match k8s Services if they exist in one of the specified namespaces.
+                                    If specified, match Kubernetes Services if they exist in one of the specified namespaces.
                                                When used in a networking policy, omission matches any namespace.
-                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                                   items:
                                     type: string
                                   type: array
                               type: object
                             kubeServiceRefs:
-                              description: Match individual k8s Services by direct reference.
+                              description: Match Kubernetes Services by direct reference.
                               properties:
                                 services:
                                   description: |-
-                                    Match k8s Services by direct reference.
+                                    Match Kubernetes Services by direct reference.
                                                When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
-                                               When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
                                   items:
                                     properties:
                                       clusterName:
@@ -472,21 +474,22 @@ spec:
                                     description: |-
                                       If set to true, the result of the match will be inverted. Defaults to false.
 
-                                             Examples:
-                                             * name=foo, invert_match=true: matches if no header named `foo` is present
-                                             * name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
-                                             * name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present
+                                         Examples:
+
+                                             - name=foo, invert_match=true: matches if no header named `foo` is present
+                                             - name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
+                                             - name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present.
                                     type: boolean
                                   name:
                                     description: Specifies the name of the header in the request.
                                     type: string
                                   regex:
-                                    description: Specifies whether the header value should be treated as regex or not.
+                                    description: Specifies whether the header value should be treated as regex.
                                     type: boolean
                                   value:
                                     description: |-
                                       Specifies the value of the header. If the value is absent a request that
-                                             has the name header will match, regardless of the header’s value.
+                                      has the name header will match, regardless of the header’s value.
                                     type: string
                                 type: object
                               type: array
@@ -552,35 +555,35 @@ spec:
                           corsPolicy:
                             description: |-
                               Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to
-                                     https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
-                                     for further details about cross origin resource sharing.
+                                         https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+                                         for further details about cross origin resource sharing.
                             properties:
                               allowCredentials:
                                 description: |-
                                   Indicates whether the caller is allowed to send the actual request
-                                             (not the preflight) using credentials. Translates to
-                                             `Access-Control-Allow-Credentials` header.
+                                                 (not the preflight) using credentials. Translates to
+                                                 `Access-Control-Allow-Credentials` header.
                                 nullable: true
                                 type: boolean
                               allowHeaders:
                                 description: |-
                                   List of HTTP headers that can be used when requesting the
-                                             resource. Serialized to Access-Control-Allow-Headers header.
+                                                 resource. Serialized to Access-Control-Allow-Headers header.
                                 items:
                                   type: string
                                 type: array
                               allowMethods:
                                 description: |-
                                   List of HTTP methods allowed to access the resource. The content will
-                                             be serialized into the Access-Control-Allow-Methods header.
+                                                 be serialized into the Access-Control-Allow-Methods header.
                                 items:
                                   type: string
                                 type: array
                               allowOrigins:
                                 description: |-
                                   String patterns that match allowed origins.
-                                             An origin is allowed if any of the string matchers match.
-                                             If a match is found, then the outgoing Access-Control-Allow-Origin would be set to the origin as provided by the client.
+                                                 An origin is allowed if any of the string matchers match.
+                                                 If a match is found, then the outgoing Access-Control-Allow-Origin would be set to the origin as provided by the client.
                                 items:
                                   oneOf:
                                   - not:
@@ -612,14 +615,14 @@ spec:
                               exposeHeaders:
                                 description: |-
                                   A white list of HTTP headers that the browsers are allowed to
-                                             access. Serialized into Access-Control-Expose-Headers header.
+                                                 access. Serialized into Access-Control-Expose-Headers header.
                                 items:
                                   type: string
                                 type: array
                               maxAge:
                                 description: |-
                                   Specifies how long the results of a preflight request can be
-                                             cached. Translates to the `Access-Control-Max-Age` header.
+                                                 cached. Translates to the `Access-Control-Max-Age` header.
                                 type: string
                             type: object
                           faultInjection:
@@ -643,7 +646,7 @@ spec:
                               abort:
                                 description: |-
                                   Abort Http request attempts and return error codes back to downstream
-                                                 service, giving the impression that the upstream service is faulty.
+                                                     service, giving the impression that the upstream service is faulty.
                                 properties:
                                   httpStatus:
                                     description: REQUIRED. HTTP status code to use to abort the Http request.
@@ -656,7 +659,7 @@ spec:
                               fixedDelay:
                                 description: |-
                                   Add a fixed delay before forwarding the request. Format:
-                                                     1h/1m/1s/1ms. MUST be >=1ms.
+                                                         1h/1m/1s/1ms. MUST be >=1ms.
                                 type: string
                               percentage:
                                 description: Percentage of requests to be faulted with the error code provided. Values range between 0 and 100
@@ -698,7 +701,7 @@ spec:
                               - kubeService
                             properties:
                               kubeService:
-                                description: Name/namespace/cluster of a kubernetes service.
+                                description: Name/namespace/cluster of a Kubernetes service.
                                 properties:
                                   clusterName:
                                     description: name of the cluster in which the resource exists
@@ -713,12 +716,12 @@ spec:
                               percentage:
                                 description: |-
                                   Percentage of traffic to mirror. If absent, 100% will be mirrored.
-                                             Values range between 0 and 100
+                                                 Values range between 0 and 100
                                 format: double
                                 type: number
                               port:
                                 description: |-
-                                  Port on the destination k8s service to receive traffic. If multiple are found, and none are specified,
+                                  Port on the destination Kubernetes service to receive traffic. If multiple are found, and none are specified,
                                   then the configuration will be considered invalid.
                                 maximum: 4294967295
                                 minimum: 0
@@ -742,7 +745,7 @@ spec:
                           outlierDetection:
                             description: |-
                               Configure outlier detection on the targeted services.
-                                     Setting this field requires an empty source_selector because it must apply to all traffic.
+                                         Setting this field requires an empty source_selector because it must apply to all traffic.
                             properties:
                               baseEjectionTime:
                                 description: 'Minimum ejection duration. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 30s.'
@@ -781,7 +784,7 @@ spec:
                           trafficShift:
                             description: |-
                               Enables traffic shifting, i.e. to reroute requests to a different service,
-                                     to a subset of pods based on their label, and/or split traffic between multiple services.
+                                         to a subset of pods based on their label, and/or split traffic between multiple services.
                             properties:
                               destinations:
                                 description: A traffic shift destination.
@@ -821,7 +824,7 @@ spec:
                                       description: The use kubeService to shift traffic a Kubernetes Service/subset.
                                       properties:
                                         clusterName:
-                                          description: The cluster of the destination k8s service (as it is registered with Gloo Mesh).
+                                          description: The cluster of the destination Kubernetes service (as it is registered with Gloo Mesh).
                                           type: string
                                         name:
                                           description: The name of the destination service.
@@ -830,7 +833,7 @@ spec:
                                           description: The namespace of the destination service.
                                           type: string
                                         port:
-                                          description: Port on the destination k8s service to receive traffic. Required if the service exposes more than one port.
+                                          description: Port on the destination Kubernetes service to receive traffic. Required if the service exposes more than one port.
                                           maximum: 4294967295
                                           minimum: 0
                                           type: integer
@@ -878,9 +881,9 @@ spec:
                           properties:
                             clusters:
                               description: |-
-                                If specified, match k8s workloads if they exist in one of the specified clusters.
+                                If specified, match Kubernetes workloads if they exist in one of the specified clusters.
                                        When used in a networking policy, omission matches any cluster.
-                                       When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                                       When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
                               items:
                                 type: string
                               type: array
@@ -888,15 +891,15 @@ spec:
                               additionalProperties:
                                 type: string
                               description: |-
-                                If specified, all labels must exist on k8s workload.
+                                If specified, all labels must exist on Kubernetes workload.
                                        When used in a networking policy, omission matches any labels.
-                                       When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                                       When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
                               type: object
                             namespaces:
                               description: |-
-                                If specified, match k8s workloads if they exist in one of the specified namespaces.
+                                If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
                                        When used in a networking policy, omission matches any namespace.
-                                       When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                                       When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
                               items:
                                 type: string
                               type: array
@@ -906,12 +909,14 @@ spec:
                 type: object
               type: array
             localFqdn:
-              description: The local fully qualified domain
+              description: |-
+                The fully qualified domain name for requests originating from a source *coloated* with this TrafficTarget.
+                For Kubernetes services, "colocated" means within the same Kubernetes cluster.
               type: string
             observedGeneration:
               description: |-
                 The most recent generation observed in the the TrafficPolicy metadata.
-                if the observedGeneration does not match generation, the controller has not received the most
+                If the observedGeneration does not match generation, Gloo Mesh has not processed the most
                 recent version of this resource.
               format: int64
               type: integer
@@ -980,7 +985,7 @@ spec:
               properties:
                 controller:
                   description: |-
-                    Resource ref to the underlying kubernetes controller which is managing the pods associated with the workloads.
+                    Resource ref to the underlying Kubernetes controller which is managing the pods associated with the workloads.
                               It has the generic name controller as it can represent a deployment, daemonset, or statefulset.
                   properties:
                     clusterName:
@@ -998,7 +1003,7 @@ spec:
                     type: string
                   description: |-
                     These are the labels directly from the pods that this controller owns.
-                               NB: these labels are read directly from the pod template metadata.labels
+                               NB: these labels are read directly from the Pod template metadata.labels
                                defined in the workload spec.
                                We need these to determine which services are backed by this workload.
                   type: object
@@ -1106,7 +1111,7 @@ spec:
     openAPIV3Schema:
       properties:
         spec:
-          description: Meshes represent a currently registered service mesh.
+          description: Represents a service mesh deployment discovered by Gloo Mesh.
           oneOf:
           - not:
               anyOf:
@@ -1132,38 +1137,39 @@ spec:
             - osm
           properties:
             agentInfo:
-              description: Information about the Gloo Mesh certificate agent if it has been installed to the remote cluster.
+              description: Information about the Gloo Mesh agent if it has been installed to the managed cluster.
               properties:
                 agentNamespace:
-                  description: the namespace in which the agent is installed
+                  description: The namespace in which the Gloo Mesh agent is installed.
                   type: string
               type: object
             awsAppMesh:
               properties:
                 arn:
-                  description: The unique AWS ARN associated with the Mesh.
+                  description: The unique AWS ARN associated with the App Mesh instance.
                   type: string
                 awsAccountId:
                   description: The AWS Account ID associated with the Mesh. Populated at REST API registration time.
                   type: string
                 awsName:
-                  description: AWS name for the AppMesh instance, must be unique across the AWS account.
+                  description: AWS name for the App Mesh instance, must be unique across all AppMesh instances owned by the AWS account.
                   type: string
                 clusters:
-                  description: The k8s clusters on which sidecars for this AppMesh instance have been discovered.
+                  description: The Kubernetes clusters on which sidecars for this App Mesh instance have been discovered.
                   items:
                     type: string
                   type: array
                 region:
-                  description: The AWS region the AWS App Mesh control plane resources exist in.
+                  description: The AWS region the App Mesh control plane resources exist in.
                   type: string
               type: object
             consulConnect:
               properties:
                 installation:
+                  description: Describes the ConsulConnect control plane deployment.
                   properties:
                     cluster:
-                      description: Cluster in which the control plane has been installed.
+                      description: The Gloo Mesh cluster in which the control plane has been installed.
                       type: string
                     namespace:
                       description: Namespace in which the control plane has been installed.
@@ -1171,64 +1177,70 @@ spec:
                     podLabels:
                       additionalProperties:
                         type: string
-                      description: the labels on the control plane pods (read from the deployment)
+                      description: The labels on the control plane pods (read from the deployment).
                       type: object
                     region:
-                      description: The region of the cluster in which the control plane has been installed.
+                      description: |-
+                        The region of the cluster in which the control plane has been installed, which is
+                        determined from the value of the [Kubernetes region topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesioregion)
+                        on any Kubernetes node associated with the cluster of this mesh.
                       type: string
                     subLocalities:
-                      description: List of zone+sub_zone pairs which this mesh is a part of
+                      description: |-
+                        List of zone and sub zone pairs for this mesh.
+                        Zone is determined from the value of the [Kubernetes zone topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone),
+                        on any Kubernetes node associated with the cluster of this mesh.
+                        Sub zones only apply to Istio meshes, [see their documentation](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
                       items:
                         properties:
                           subZone:
+                            description: A subdivision of zone. Only applies to Istio-controlled services, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
                             type: string
                           zone:
+                            description: A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
                             type: string
                         type: object
                       type: array
                     version:
                       description: |-
-                        Version of the Mesh that has been installed.
-                        Determined using the image tag on the
-                        Mesh's primary control plane image (e.g. the istio-pilot image tag).
+                        The version of the Mesh that has been installed, which is determined using the image tag on the
+                        mesh's primary control plane image (e.g. the istio-pilot image tag).
                       type: string
                   type: object
               type: object
             istio:
               properties:
                 citadelInfo:
-                  description: Configuration metadata for Istio Citadel (Istio's security component).
+                  description: Describes Istio Citadel (Istio's security component).
                   properties:
                     citadelServiceAccount:
                       description: |-
+                        TODO(harveyxia) rename to istiod_service_account
                         istio-citadel service account, used to determine identity for the Istio CA cert.
-                                       If empty will default to "istio-citadel".
+                        If empty will default to "istio-citadel".
                       type: string
                     trustDomain:
                       description: |-
-                        Istio trust domain used for https/spiffe identity.
-                                       https://spiffe.io/spiffe/concepts/#trust-domain
-                                       https://istio.io/docs/reference/glossary/#identity
-
-                                       If empty will default to "cluster.local".
+                        Istio trust domain used for https/[spiffe](https://spiffe.io/spiffe/concepts/#trust-domain) [identity](https://istio.io/docs/reference/glossary/#identity).
+                        If empty will default to ["cluster.local"](https://github.com/istio/istio/blob/e768f408a7de224e64ccdfb2634442541ce08e6a/pilot/cmd/pilot-agent/main.go#L118).
                       type: string
                   type: object
                 ingressGateways:
-                  description: Configuration metadata for Istio IngressGateway (the Istio Ingress).
+                  description: Describes the ingress gateway.
                   items:
                     properties:
                       externalAddress:
                         description: |-
                           The externally-reachable address on which the gateway is listening for TLS connections.
                           This will be the address used for cross-cluster connectivity.
-                          Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes Service (depending on its type).
+                          Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes service (depending on its type).
                         type: string
                       externalTlsPort:
                         description: |-
                           The externally-reachable port on which the gateway is listening for TLS connections.
                           This will be the port used for cross-cluster connectivity.
-                          List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio.
-                          Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type).
+                          See the list of [common ports used by Istio](https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio).
+                          Defaults to 15443 (or the NodePort) of the Kubernetes service (depending on its type).
                         maximum: 4294967295
                         minimum: 0
                         type: integer
@@ -1243,16 +1255,16 @@ spec:
                         additionalProperties:
                           type: string
                         description: |-
-                          Labels matching the workload which backs the gateway,
-                          defaults to `{"istio": "ingressgateway"}`.
+                          Labels matching the workload backing the gateway.
+                          [Defaults to](https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73) `{"istio": "ingressgateway"}`.
                         type: object
                     type: object
                   type: array
                 installation:
-                  description: Configuration metadata about the istio control plane installation.
+                  description: Describes the Istio control plane deployment.
                   properties:
                     cluster:
-                      description: Cluster in which the control plane has been installed.
+                      description: The Gloo Mesh cluster in which the control plane has been installed.
                       type: string
                     namespace:
                       description: Namespace in which the control plane has been installed.
@@ -1260,26 +1272,34 @@ spec:
                     podLabels:
                       additionalProperties:
                         type: string
-                      description: the labels on the control plane pods (read from the deployment)
+                      description: The labels on the control plane pods (read from the deployment).
                       type: object
                     region:
-                      description: The region of the cluster in which the control plane has been installed.
+                      description: |-
+                        The region of the cluster in which the control plane has been installed, which is
+                        determined from the value of the [Kubernetes region topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesioregion)
+                        on any Kubernetes node associated with the cluster of this mesh.
                       type: string
                     subLocalities:
-                      description: List of zone+sub_zone pairs which this mesh is a part of
+                      description: |-
+                        List of zone and sub zone pairs for this mesh.
+                        Zone is determined from the value of the [Kubernetes zone topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone),
+                        on any Kubernetes node associated with the cluster of this mesh.
+                        Sub zones only apply to Istio meshes, [see their documentation](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
                       items:
                         properties:
                           subZone:
+                            description: A subdivision of zone. Only applies to Istio-controlled services, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
                             type: string
                           zone:
+                            description: A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
                             type: string
                         type: object
                       type: array
                     version:
                       description: |-
-                        Version of the Mesh that has been installed.
-                        Determined using the image tag on the
-                        Mesh's primary control plane image (e.g. the istio-pilot image tag).
+                        The version of the Mesh that has been installed, which is determined using the image tag on the
+                        mesh's primary control plane image (e.g. the istio-pilot image tag).
                       type: string
                   type: object
                 smartDnsProxyingEnabled:
@@ -1289,14 +1309,13 @@ spec:
             linkerd:
               properties:
                 clusterDomain:
-                  description: |-
-                    The cluster domain suffix this Linkerd mesh is configured with.
-                    See https://linkerd.io/2/tasks/using-custom-domain/ for info.
+                  description: The cluster domain suffix this Linkerd mesh is configured with. See [this reference](https://linkerd.io/2/tasks/using-custom-domain/) for more info.
                   type: string
                 installation:
+                  description: Describes the Linkerd control plane deployment.
                   properties:
                     cluster:
-                      description: Cluster in which the control plane has been installed.
+                      description: The Gloo Mesh cluster in which the control plane has been installed.
                       type: string
                     namespace:
                       description: Namespace in which the control plane has been installed.
@@ -1304,36 +1323,44 @@ spec:
                     podLabels:
                       additionalProperties:
                         type: string
-                      description: the labels on the control plane pods (read from the deployment)
+                      description: The labels on the control plane pods (read from the deployment).
                       type: object
                     region:
-                      description: The region of the cluster in which the control plane has been installed.
+                      description: |-
+                        The region of the cluster in which the control plane has been installed, which is
+                        determined from the value of the [Kubernetes region topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesioregion)
+                        on any Kubernetes node associated with the cluster of this mesh.
                       type: string
                     subLocalities:
-                      description: List of zone+sub_zone pairs which this mesh is a part of
+                      description: |-
+                        List of zone and sub zone pairs for this mesh.
+                        Zone is determined from the value of the [Kubernetes zone topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone),
+                        on any Kubernetes node associated with the cluster of this mesh.
+                        Sub zones only apply to Istio meshes, [see their documentation](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
                       items:
                         properties:
                           subZone:
+                            description: A subdivision of zone. Only applies to Istio-controlled services, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
                             type: string
                           zone:
+                            description: A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
                             type: string
                         type: object
                       type: array
                     version:
                       description: |-
-                        Version of the Mesh that has been installed.
-                        Determined using the image tag on the
-                        Mesh's primary control plane image (e.g. the istio-pilot image tag).
+                        The version of the Mesh that has been installed, which is determined using the image tag on the
+                        mesh's primary control plane image (e.g. the istio-pilot image tag).
                       type: string
                   type: object
               type: object
             osm:
               properties:
                 installation:
-                  description: Information about where OSM is installed in a managed Kubernetes Cluster.
+                  description: Describes the OSM control plane deployment.
                   properties:
                     cluster:
-                      description: Cluster in which the control plane has been installed.
+                      description: The Gloo Mesh cluster in which the control plane has been installed.
                       type: string
                     namespace:
                       description: Namespace in which the control plane has been installed.
@@ -1341,26 +1368,34 @@ spec:
                     podLabels:
                       additionalProperties:
                         type: string
-                      description: the labels on the control plane pods (read from the deployment)
+                      description: The labels on the control plane pods (read from the deployment).
                       type: object
                     region:
-                      description: The region of the cluster in which the control plane has been installed.
+                      description: |-
+                        The region of the cluster in which the control plane has been installed, which is
+                        determined from the value of the [Kubernetes region topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesioregion)
+                        on any Kubernetes node associated with the cluster of this mesh.
                       type: string
                     subLocalities:
-                      description: List of zone+sub_zone pairs which this mesh is a part of
+                      description: |-
+                        List of zone and sub zone pairs for this mesh.
+                        Zone is determined from the value of the [Kubernetes zone topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone),
+                        on any Kubernetes node associated with the cluster of this mesh.
+                        Sub zones only apply to Istio meshes, [see their documentation](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
                       items:
                         properties:
                           subZone:
+                            description: A subdivision of zone. Only applies to Istio-controlled services, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
                             type: string
                           zone:
+                            description: A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
                             type: string
                         type: object
                       type: array
                     version:
                       description: |-
-                        Version of the Mesh that has been installed.
-                        Determined using the image tag on the
-                        Mesh's primary control plane image (e.g. the istio-pilot image tag).
+                        The version of the Mesh that has been installed, which is determined using the image tag on the
+                        mesh's primary control plane image (e.g. the istio-pilot image tag).
                       type: string
                   type: object
               type: object
@@ -1376,7 +1411,7 @@ spec:
                     format: int64
                     type: integer
                   ref:
-                    description: Reference to the FailoverService.
+                    description: Reference to the applied FailoverService object.
                     properties:
                       name:
                         description: name of the resource being referenced
@@ -1403,7 +1438,7 @@ spec:
                             - kubeService
                           properties:
                             kubeService:
-                              description: Name/namespace/cluster of a kubernetes service.
+                              description: Name/namespace/cluster of a Kubernetes service.
                               properties:
                                 clusterName:
                                   description: name of the cluster in which the resource exists
@@ -1463,7 +1498,7 @@ spec:
                     format: int64
                     type: integer
                   ref:
-                    description: Reference to the VirtualDestination.
+                    description: Reference to the applied VirtualDestination object.
                     properties:
                       name:
                         description: name of the resource being referenced
@@ -1482,7 +1517,7 @@ spec:
                   format: int64
                   type: integer
                 ref:
-                  description: Reference to the VirtualMesh.
+                  description: Reference to the applied VirtualMesh object.
                   properties:
                     name:
                       description: name of the resource being referenced
@@ -1495,7 +1530,7 @@ spec:
                   description: The last known valid spec of the VirtualMesh.
                   properties:
                     federation:
-                      description: Determine how to expose traffic targets to cross-mesh traffic using Service Federation.
+                      description: Determine how to expose TrafficTargets to cross-mesh traffic using Service Federation.
                       oneOf:
                       - not:
                           anyOf:
@@ -1512,21 +1547,21 @@ spec:
                           type: boolean
                         hostnameSuffix:
                           description: |-
-                            Configure the suffix for hostnames of traffic targets federated within this virtual mesh.
+                            Configure the suffix for hostnames of TrafficTargets federated within this virtual mesh.
                             Currently this is only supported for Istio with smart DNS proxying enabled.
                             If any meshes do not have smart DNS proxying enabled, setting this field results in an error.
                             If omitted, the hostname suffix defaults to "global".
                           type: string
                         permissive:
                           description: |-
-                            Select permissive mode to expose all traffic targets in a
+                            Select permissive mode to expose all TrafficTargets in a
                             VirtualMesh to cross-cluster traffic from all workloads
                             in that Virtual Mesh.
                           maxProperties: 0
                           type: object
                       type: object
                     globalAccessPolicy:
-                      description: Sets an Access Policy for the whole mesh.
+                      description: Sets an AccessPolicy for the whole mesh.
                       enum:
                       - MESH_DEFAULT
                       - ENABLED
@@ -1568,10 +1603,10 @@ spec:
                             `meshctl` provides the command `meshctl mesh restart` to simplify this process.
                           type: boolean
                         limited:
-                          description: Limited trust (selectively allow communication between workloads and traffic targets in the grouped Meshes).
+                          description: Limited trust (selectively allow communication between workloads and TrafficTargets in the grouped Meshes).
                           type: object
                         shared:
-                          description: Shared trust (allow communication between any workloads and traffic targets in the grouped Meshes).
+                          description: Shared trust (allow communication between any workloads and TrafficTargets in the grouped Meshes).
                           properties:
                             rootCertificateAuthority:
                               description: |-
@@ -1628,8 +1663,8 @@ spec:
             observedGeneration:
               description: |-
                 The observed generation of the Mesh.
-                When this matches the Mesh's metadata.generation, it indicates that mesh-networking
-                has reconciled the latest version of the Mesh.
+                When this matches the Mesh's metadata.generation, it indicates that Gloo Mesh
+                has processed the latest version of the Mesh.
               format: int64
               type: integer
           type: object

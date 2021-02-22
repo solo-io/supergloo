@@ -30,15 +30,14 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-//
-//Meshes represent a currently registered service mesh.
+// Represents a service mesh deployment discovered by Gloo Mesh.
 type MeshSpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The mesh type indicates information specific to the particular type of
-	// Mesh represented by this Mesh resource.
+	// TODO(harveyxia) rename to type
+	// Metadata specific to the particular service mesh type represented by this `Mesh`.
 	//
 	// Types that are assignable to MeshType:
 	//	*MeshSpec_Istio_
@@ -47,7 +46,7 @@ type MeshSpec struct {
 	//	*MeshSpec_ConsulConnect
 	//	*MeshSpec_Osm
 	MeshType isMeshSpec_MeshType `protobuf_oneof:"mesh_type"`
-	// Information about the Gloo Mesh certificate agent if it has been installed to the remote cluster.
+	// Information about the Gloo Mesh agent if it has been installed to the managed cluster.
 	AgentInfo *MeshSpec_AgentInfo `protobuf:"bytes,5,opt,name=agent_info,json=agentInfo,proto3" json:"agent_info,omitempty"`
 }
 
@@ -172,8 +171,8 @@ type MeshStatus struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The observed generation of the Mesh.
-	// When this matches the Mesh's metadata.generation, it indicates that mesh-networking
-	// has reconciled the latest version of the Mesh.
+	// When this matches the Mesh's metadata.generation, it indicates that Gloo Mesh
+	// has processed the latest version of the Mesh.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 	// The VirtualMesh, if any, which contains this mesh.
 	AppliedVirtualMesh *MeshStatus_AppliedVirtualMesh `protobuf:"bytes,2,opt,name=applied_virtual_mesh,json=appliedVirtualMesh,proto3" json:"applied_virtual_mesh,omitempty"`
@@ -243,17 +242,17 @@ func (x *MeshStatus) GetAppliedVirtualDestinations() []*MeshStatus_AppliedVirtua
 	return nil
 }
 
-// Mesh object representing an installed Istio control plane
+// Describes an Istio deployment.
 type MeshSpec_Istio struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Configuration metadata about the istio control plane installation.
+	// Describes the Istio control plane deployment.
 	Installation *MeshSpec_MeshInstallation `protobuf:"bytes,1,opt,name=installation,proto3" json:"installation,omitempty"`
-	// Configuration metadata for Istio Citadel (Istio's security component).
+	// Describes Istio Citadel (Istio's security component).
 	CitadelInfo *MeshSpec_Istio_CitadelInfo `protobuf:"bytes,2,opt,name=citadel_info,json=citadelInfo,proto3" json:"citadel_info,omitempty"`
-	// Configuration metadata for Istio IngressGateway (the Istio Ingress).
+	// Describes the ingress gateway.
 	IngressGateways []*MeshSpec_Istio_IngressGatewayInfo `protobuf:"bytes,3,rep,name=ingress_gateways,json=ingressGateways,proto3" json:"ingress_gateways,omitempty"`
 	// True if smart DNS proxying is enabled, which allows for arbitrary DNS domains.
 	SmartDnsProxyingEnabled bool `protobuf:"varint,4,opt,name=smart_dns_proxying_enabled,json=smartDnsProxyingEnabled,proto3" json:"smart_dns_proxying_enabled,omitempty"`
@@ -319,21 +318,21 @@ func (x *MeshSpec_Istio) GetSmartDnsProxyingEnabled() bool {
 	return false
 }
 
-// Mesh object representing AWS AppMesh.
+// Describes an AWS App Mesh instance.
 type MeshSpec_AwsAppMesh struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// AWS name for the AppMesh instance, must be unique across the AWS account.
+	// AWS name for the App Mesh instance, must be unique across all AppMesh instances owned by the AWS account.
 	AwsName string `protobuf:"bytes,1,opt,name=aws_name,json=awsName,proto3" json:"aws_name,omitempty"`
-	// The AWS region the AWS App Mesh control plane resources exist in.
+	// The AWS region the App Mesh control plane resources exist in.
 	Region string `protobuf:"bytes,2,opt,name=region,proto3" json:"region,omitempty"`
 	// The AWS Account ID associated with the Mesh. Populated at REST API registration time.
 	AwsAccountId string `protobuf:"bytes,3,opt,name=aws_account_id,json=awsAccountId,proto3" json:"aws_account_id,omitempty"`
-	// The unique AWS ARN associated with the Mesh.
+	// The unique AWS ARN associated with the App Mesh instance.
 	Arn string `protobuf:"bytes,4,opt,name=arn,proto3" json:"arn,omitempty"`
-	// The k8s clusters on which sidecars for this AppMesh instance have been discovered.
+	// The Kubernetes clusters on which sidecars for this App Mesh instance have been discovered.
 	Clusters []string `protobuf:"bytes,5,rep,name=clusters,proto3" json:"clusters,omitempty"`
 }
 
@@ -404,15 +403,15 @@ func (x *MeshSpec_AwsAppMesh) GetClusters() []string {
 	return nil
 }
 
-// Mesh object representing an installed Linkerd control plane.
+// Describes a Linkerd deployment.
 type MeshSpec_LinkerdMesh struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Describes the Linkerd control plane deployment.
 	Installation *MeshSpec_MeshInstallation `protobuf:"bytes,1,opt,name=installation,proto3" json:"installation,omitempty"`
-	// The cluster domain suffix this Linkerd mesh is configured with.
-	// See https://linkerd.io/2/tasks/using-custom-domain/ for info.
+	// The cluster domain suffix this Linkerd mesh is configured with. See [this reference](https://linkerd.io/2/tasks/using-custom-domain/) for more info.
 	ClusterDomain string `protobuf:"bytes,2,opt,name=cluster_domain,json=clusterDomain,proto3" json:"cluster_domain,omitempty"`
 }
 
@@ -462,12 +461,13 @@ func (x *MeshSpec_LinkerdMesh) GetClusterDomain() string {
 	return ""
 }
 
-// Mesh object representing an installed ConsulConnect control plane.
+// Describes a ConsulConnect deployment.
 type MeshSpec_ConsulConnectMesh struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Describes the ConsulConnect control plane deployment.
 	Installation *MeshSpec_MeshInstallation `protobuf:"bytes,1,opt,name=installation,proto3" json:"installation,omitempty"`
 }
 
@@ -510,14 +510,13 @@ func (x *MeshSpec_ConsulConnectMesh) GetInstallation() *MeshSpec_MeshInstallatio
 	return nil
 }
 
-//
-//https://github.com/openservicemesh/osm
+// Describes an [OSM](https://github.com/openservicemesh/osm) deployment.
 type MeshSpec_OSM struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Information about where OSM is installed in a managed Kubernetes Cluster.
+	// Describes the OSM control plane deployment.
 	Installation *MeshSpec_MeshInstallation `protobuf:"bytes,1,opt,name=installation,proto3" json:"installation,omitempty"`
 }
 
@@ -561,9 +560,8 @@ func (x *MeshSpec_OSM) GetInstallation() *MeshSpec_MeshInstallation {
 }
 
 //
-//The cluster on which the control plane for this mesh is deployed.
-//Not all MeshTypes have a MeshInstallation. Only self-hosted
-//control planes such as Istio and Linkerd will have installation metadata.
+//Describes the Kubernetes cluster on which the control plane for this mesh is deployed.
+//Only self-hosted control planes such as Istio, Linkerd, OSM, and ConsulConnect will have installation metadata.
 type MeshSpec_MeshInstallation struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -571,17 +569,21 @@ type MeshSpec_MeshInstallation struct {
 
 	// Namespace in which the control plane has been installed.
 	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	// Cluster in which the control plane has been installed.
+	// The Gloo Mesh cluster in which the control plane has been installed.
 	Cluster string `protobuf:"bytes,2,opt,name=cluster,proto3" json:"cluster,omitempty"`
-	// the labels on the control plane pods (read from the deployment)
+	// The labels on the control plane pods (read from the deployment).
 	PodLabels map[string]string `protobuf:"bytes,3,rep,name=pod_labels,json=podLabels,proto3" json:"pod_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Version of the Mesh that has been installed.
-	// Determined using the image tag on the
-	// Mesh's primary control plane image (e.g. the istio-pilot image tag).
+	// The version of the Mesh that has been installed, which is determined using the image tag on the
+	// mesh's primary control plane image (e.g. the istio-pilot image tag).
 	Version string `protobuf:"bytes,4,opt,name=version,proto3" json:"version,omitempty"`
-	// The region of the cluster in which the control plane has been installed.
+	// The region of the cluster in which the control plane has been installed, which is
+	// determined from the value of the [Kubernetes region topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesioregion)
+	// on any Kubernetes node associated with the cluster of this mesh.
 	Region string `protobuf:"bytes,5,opt,name=region,proto3" json:"region,omitempty"`
-	// List of zone+sub_zone pairs which this mesh is a part of
+	// List of zone and sub zone pairs for this mesh.
+	// Zone is determined from the value of the [Kubernetes zone topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone),
+	// on any Kubernetes node associated with the cluster of this mesh.
+	// Sub zones only apply to Istio meshes, [see their documentation](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
 	SubLocalities []*SubLocality `protobuf:"bytes,6,rep,name=sub_localities,json=subLocalities,proto3" json:"sub_localities,omitempty"`
 }
 
@@ -659,14 +661,14 @@ func (x *MeshSpec_MeshInstallation) GetSubLocalities() []*SubLocality {
 	return nil
 }
 
-// information about the Gloo Mesh Cert-Agent which may be installed
-// to the remote cluster which contains the Mesh control plane
+// Describes the Gloo Mesh agent which may be installed
+// to the managed cluster containing the mesh control plane.
 type MeshSpec_AgentInfo struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// the namespace in which the agent is installed
+	// The namespace in which the Gloo Mesh agent is installed.
 	AgentNamespace string `protobuf:"bytes,1,opt,name=agent_namespace,json=agentNamespace,proto3" json:"agent_namespace,omitempty"`
 }
 
@@ -709,22 +711,19 @@ func (x *MeshSpec_AgentInfo) GetAgentNamespace() string {
 	return ""
 }
 
-// Configuration metadata for Istio Citadel (Istio's security component).
+// TODO(harveyxia) flatten this out
+// Describes Istio Citadel (Istio's security component).
 type MeshSpec_Istio_CitadelInfo struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//
-	//Istio trust domain used for https/spiffe identity.
-	//https://spiffe.io/spiffe/concepts/#trust-domain
-	//https://istio.io/docs/reference/glossary/#identity
-	//
-	//If empty will default to "cluster.local".
+	// Istio trust domain used for https/[spiffe](https://spiffe.io/spiffe/concepts/#trust-domain) [identity](https://istio.io/docs/reference/glossary/#identity).
+	// If empty will default to ["cluster.local"](https://github.com/istio/istio/blob/e768f408a7de224e64ccdfb2634442541ce08e6a/pilot/cmd/pilot-agent/main.go#L118).
 	TrustDomain string `protobuf:"bytes,1,opt,name=trust_domain,json=trustDomain,proto3" json:"trust_domain,omitempty"`
-	//
-	//istio-citadel service account, used to determine identity for the Istio CA cert.
-	//If empty will default to "istio-citadel".
+	// TODO(harveyxia) rename to istiod_service_account
+	// istio-citadel service account, used to determine identity for the Istio CA cert.
+	// If empty will default to "istio-citadel".
 	CitadelServiceAccount string `protobuf:"bytes,2,opt,name=citadel_service_account,json=citadelServiceAccount,proto3" json:"citadel_service_account,omitempty"`
 }
 
@@ -774,22 +773,23 @@ func (x *MeshSpec_Istio_CitadelInfo) GetCitadelServiceAccount() string {
 	return ""
 }
 
+// Describes the ingress gateway.
 type MeshSpec_Istio_IngressGatewayInfo struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Labels matching the workload which backs the gateway,
-	// defaults to `{"istio": "ingressgateway"}`.
+	// Labels matching the workload backing the gateway.
+	// [Defaults to](https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73) `{"istio": "ingressgateway"}`.
 	WorkloadLabels map[string]string `protobuf:"bytes,1,rep,name=workload_labels,json=workloadLabels,proto3" json:"workload_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// The externally-reachable address on which the gateway is listening for TLS connections.
 	// This will be the address used for cross-cluster connectivity.
-	// Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes Service (depending on its type).
+	// Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes service (depending on its type).
 	ExternalAddress string `protobuf:"bytes,2,opt,name=external_address,json=externalAddress,proto3" json:"external_address,omitempty"`
 	// The externally-reachable port on which the gateway is listening for TLS connections.
 	// This will be the port used for cross-cluster connectivity.
-	// List of common ports: https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio.
-	// Defaults to 15443 (or the NodePort) of the Kubernetes Service (depending on its type).
+	// See the list of [common ports used by Istio](https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio).
+	// Defaults to 15443 (or the NodePort) of the Kubernetes service (depending on its type).
 	ExternalTlsPort uint32 `protobuf:"varint,3,opt,name=external_tls_port,json=externalTlsPort,proto3" json:"external_tls_port,omitempty"`
 	// Container port on which the gateway is listening for TLS connections.
 	// Defaults to 15443.
@@ -863,7 +863,7 @@ type MeshStatus_AppliedVirtualMesh struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Reference to the VirtualMesh.
+	// Reference to the applied VirtualMesh object.
 	Ref *v1.ObjectRef `protobuf:"bytes,1,opt,name=ref,proto3" json:"ref,omitempty"`
 	// The observed generation of the accepted VirtualMesh.
 	ObservedGeneration int64 `protobuf:"varint,2,opt,name=observedGeneration,proto3" json:"observedGeneration,omitempty"`
@@ -924,6 +924,7 @@ func (x *MeshStatus_AppliedVirtualMesh) GetSpec() *v1alpha2.VirtualMeshSpec {
 	return nil
 }
 
+// TODO(harveyxia) remove
 // AppliedFailoverService represents a FailoverService that has been applied to this Mesh.
 // If an existing FailoverService becomes invalid the last applied FailoverService will be used.
 type MeshStatus_AppliedFailoverService struct {
@@ -931,7 +932,7 @@ type MeshStatus_AppliedFailoverService struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Reference to the FailoverService.
+	// Reference to the applied FailoverService object.
 	Ref *v1.ObjectRef `protobuf:"bytes,1,opt,name=ref,proto3" json:"ref,omitempty"`
 	// The observed generation of the accepted FailoverService.
 	ObservedGeneration int64 `protobuf:"varint,2,opt,name=observedGeneration,proto3" json:"observedGeneration,omitempty"`
@@ -998,7 +999,7 @@ type MeshStatus_AppliedVirtualDestination struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Reference to the VirtualDestination.
+	// Reference to the applied VirtualDestination object.
 	Ref *v1.ObjectRef `protobuf:"bytes,1,opt,name=ref,proto3" json:"ref,omitempty"`
 	// The observed generation of the accepted VirtualDestination.
 	ObservedGeneration int64 `protobuf:"varint,2,opt,name=observedGeneration,proto3" json:"observedGeneration,omitempty"`

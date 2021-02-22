@@ -15,7 +15,7 @@ option (extproto.equal_all) = true;
     shared configuration and cross-mesh interoperability.
 
     VirtualMeshes are used to configure things like shared trust roots (for mTLS)
-    and federation of traffic targets (for cross-cluster networking).
+    and federation of TrafficTargets (for cross-cluster networking).
 
     Currently, VirtualMeshes can only be constructed from Istio meshes.
 */
@@ -28,10 +28,10 @@ message VirtualMeshSpec {
     // a shared Certificate Authority across the defined meshes.
     MTLSConfig mtls_config = 2;
 
-    // Determine how to expose traffic targets to cross-mesh traffic using Service Federation.
+    // Determine how to expose TrafficTargets to cross-mesh traffic using Service Federation.
     Federation federation = 3;
 
-    // Sets an Access Policy for the whole mesh.
+    // Sets an AccessPolicy for the whole mesh.
     GlobalAccessPolicy global_access_policy = 4;
 
     // Mutual TLS Config for a Virtual Mesh.
@@ -41,9 +41,9 @@ message VirtualMeshSpec {
 
         // Select a trust model in order to establish trust between mTLS-secured meshes.
         oneof trust_model {
-            // Shared trust (allow communication between any workloads and traffic targets in the grouped Meshes).
+            // Shared trust (allow communication between any workloads and TrafficTargets in the grouped Meshes).
             SharedTrust shared = 1;
-            // Limited trust (selectively allow communication between workloads and traffic targets in the grouped Meshes).
+            // Limited trust (selectively allow communication between workloads and TrafficTargets in the grouped Meshes).
             LimitedTrust limited = 2;
         }
 
@@ -114,13 +114,13 @@ message VirtualMeshSpec {
     }
 
     // In Gloo Mesh, "federation" refers to the ability
-    // to expose traffic targets with a global DNS name
+    // to expose TrafficTargets with a global DNS name
     // for traffic originating from any workload within the
     // virtual mesh.
     message Federation {
-        // The "mode" in which to federate traffic targets within this virtual mesh.
+        // The "mode" in which to federate TrafficTargets within this virtual mesh.
         oneof mode {
-            // Select permissive mode to expose all traffic targets in a
+            // Select permissive mode to expose all TrafficTargets in a
             // VirtualMesh to cross-cluster traffic from all workloads
             // in that Virtual Mesh.
             .google.protobuf.Empty permissive = 1;
@@ -131,7 +131,7 @@ message VirtualMeshSpec {
         // NOTE: This feature will not work if the clusters are not pre-configured to live on the same network.
         bool flat_network = 2;
 
-        // Configure the suffix for hostnames of traffic targets federated within this virtual mesh.
+        // Configure the suffix for hostnames of TrafficTargets federated within this virtual mesh.
         // Currently this is only supported for Istio with smart DNS proxying enabled.
         // If any meshes do not have smart DNS proxying enabled, setting this field results in an error.
         // If omitted, the hostname suffix defaults to "global".
