@@ -146,7 +146,7 @@ func getSubLocality(
 	var zone string
 	if zoneStable, ok := node.Labels[corev1.LabelZoneFailureDomainStable]; ok {
 		zone = zoneStable
-	} else if zoneDeprecated, okDep := node.Labels[corev1.LabelZoneFailureDomain]; okDep {
+	} else if zoneDeprecated, ok := node.Labels[corev1.LabelZoneFailureDomain]; ok {
 		zone = zoneDeprecated
 	} else {
 		return nil, eris.Errorf("failed to find zone label on node %s", node.GetName())
