@@ -12,9 +12,9 @@ import (
 )
 
 // Get the region of a cluster
-func GetClusterRegion(clusterName string, allNodes corev1sets.NodeSet) (string, error) {
+func GetClusterRegion(clusterName string, nodes corev1sets.NodeSet) (string, error) {
 	// get the nodes in the cluster
-	clusterNodes := allNodes.List(func(node *corev1.Node) bool {
+	clusterNodes := nodes.List(func(node *corev1.Node) bool {
 		return node.ClusterName != clusterName
 	})
 	if len(clusterNodes) == 0 {
@@ -73,12 +73,12 @@ func (u *UniqueSubLocalities) List() []*v1alpha2.SubLocality {
 
 func GetUniqueClusterSubLocalities(
 	clusterName string,
-	allNodes corev1sets.NodeSet,
+	nodes corev1sets.NodeSet,
 ) ([]*v1alpha2.SubLocality, error) {
 
 	// Map to ensure uniqueness of sub_localities being added to
 	localities := &UniqueSubLocalities{}
-	for _, node := range allNodes.List(func(node *corev1.Node) bool {
+	for _, node := range nodes.List(func(node *corev1.Node) bool {
 		return node.GetClusterName() == clusterName
 	}) {
 
@@ -94,12 +94,12 @@ func GetUniqueClusterSubLocalities(
 }
 
 // Get the region where a service is running
-func GetServiceRegion(service *corev1.Service, allPods corev1sets.PodSet, allNodes corev1sets.NodeSet) (string, error) {
+func GetServiceRegion(service *corev1.Service, pods corev1sets.PodSet, nodes corev1sets.NodeSet) (string, error) {
 	if len(service.Spec.Selector) == 0 {
 		return "", eris.Errorf("service %s has no selector", sets.Key(service))
 	}
 	// get all the pods matching the service selector
-	matchingPods := allPods.List(func(pod *corev1.Pod) bool {
+	matchingPods := pods.List(func(pod *corev1.Pod) bool {
 		return pod.ClusterName != service.GetClusterName() ||
 			pod.Namespace != service.GetNamespace() ||
 			!labels.SelectorFromSet(service.Spec.Selector).Matches(labels.Set(pod.Labels))
@@ -110,7 +110,7 @@ func GetServiceRegion(service *corev1.Service, allPods corev1sets.PodSet, allNod
 	// pick any pod; all of the pods' nodes should be in the same region
 	pod := matchingPods[0]
 	// get the node that the pod is running on
-	node, err := allNodes.Find(&skv1.ClusterObjectRef{
+	node, err := nodes.Find(&skv1.ClusterObjectRef{
 		ClusterName: pod.ClusterName,
 		Name:        pod.Spec.NodeName,
 	})
@@ -125,9 +125,9 @@ func GetServiceRegion(service *corev1.Service, allPods corev1sets.PodSet, allNod
 func GetSubLocality(
 	clusterName string,
 	nodeName string,
-	allNodes corev1sets.NodeSet,
+	nodes corev1sets.NodeSet,
 ) (*v1alpha2.SubLocality, error) {
-	node, err := allNodes.Find(&skv1.ClusterObjectRef{
+	node, err := nodes.Find(&skv1.ClusterObjectRef{
 		ClusterName: clusterName,
 		Name:        nodeName,
 	})

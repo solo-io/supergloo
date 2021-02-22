@@ -162,13 +162,13 @@ func getIngressGateways(
 	workloadLabels map[string]string,
 	tlsPortName string,
 	allServices corev1sets.ServiceSet,
-	allPods corev1sets.PodSet,
-	allNodes corev1sets.NodeSet,
+	pods corev1sets.PodSet,
+	nodes corev1sets.NodeSet,
 ) []*v1alpha2.MeshSpec_Istio_IngressGatewayInfo {
 	ingressSvcs := getIngressServices(allServices, namespace, clusterName, workloadLabels)
 	var ingressGateways []*v1alpha2.MeshSpec_Istio_IngressGatewayInfo
 	for _, svc := range ingressSvcs {
-		gateway, err := getIngressGateway(svc, workloadLabels, tlsPortName, allPods, allNodes)
+		gateway, err := getIngressGateway(svc, workloadLabels, tlsPortName, pods, nodes)
 		if err != nil {
 			contextutils.LoggerFrom(ctx).Warnw("detection failed for matching istio ingress service", "error", err, "service", sets.Key(svc))
 			continue
@@ -182,8 +182,8 @@ func getIngressGateway(
 	svc *corev1.Service,
 	workloadLabels map[string]string,
 	tlsPortName string,
-	allPods corev1sets.PodSet,
-	allNodes corev1sets.NodeSet,
+	pods corev1sets.PodSet,
+	nodes corev1sets.NodeSet,
 ) (*v1alpha2.MeshSpec_Istio_IngressGatewayInfo, error) {
 	var (
 		tlsPort *corev1.ServicePort
@@ -212,8 +212,8 @@ func getIngressGateway(
 			svc.ClusterName,
 			svc.Namespace,
 			workloadLabels,
-			allPods,
-			allNodes,
+			pods,
+			nodes,
 		)
 		if err != nil {
 			return nil, err

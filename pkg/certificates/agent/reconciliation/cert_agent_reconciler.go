@@ -295,7 +295,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 // 1. istiod control plane has come back online after it has been restarted
 // 2. istio's root cert has been propagated to all istio-controlled namespaces for consumption by the data plane.
 // this will cause the reconcile to end early and persist the IssuedCertificate in the Issued state
-func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceDirective, allPods corev1sets.PodSet, allConfigMaps corev1sets.ConfigMapSet, allSecrets corev1sets.SecretSet) (bool, error) {
+func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceDirective, pods corev1sets.PodSet, allConfigMaps corev1sets.ConfigMapSet, allSecrets corev1sets.SecretSet) (bool, error) {
 
 	// create a client here to call for deletions
 	podClient := corev1client.NewPodClient(r.localClient)
@@ -312,7 +312,7 @@ func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceD
 
 			// if all required replicas are not ready, return true to indicate we should halt processing
 			// of the directive here in order to wait for a future update to the Pods in the input snapshot.
-			if !replacementsReady(allPods, selector, podsBounced.BouncedPods) {
+			if !replacementsReady(pods, selector, podsBounced.BouncedPods) {
 
 				contextutils.LoggerFrom(r.ctx).Debugf("podBounceDirective %v: waiting for ready pods for selector %v", sets.Key(podBounceDirective), selector)
 
@@ -356,7 +356,7 @@ func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceD
 			}
 		}
 
-		podsToDelete := allPods.List(func(pod *corev1.Pod) bool {
+		podsToDelete := pods.List(func(pod *corev1.Pod) bool {
 			return !isPodSelected(pod, selector)
 		})
 
