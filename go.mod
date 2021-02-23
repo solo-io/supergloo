@@ -59,7 +59,7 @@ require (
 	github.com/sirupsen/logrus v1.7.0
 	github.com/solo-io/anyvendor v0.0.3
 	github.com/solo-io/external-apis v0.1.4
-	github.com/solo-io/go-list-licenses v0.1.0
+	github.com/solo-io/go-list-licenses v0.1.3
 	github.com/solo-io/go-utils v0.20.4
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
