@@ -458,15 +458,15 @@ var _ = Describe("TrafficShiftDecorator", func() {
 	})
 
 	It("should decorate traffic shift targeting a GlobalService", func() {
-		globalServices := v1alpha1sets.NewGlobalServiceSet(
-			&v1alpha1.GlobalService{
+		globalServices := v1alpha1sets.NewVirtualDestinationSet(
+			&v1alpha1.VirtualDestination{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "fs-1",
 					Namespace: "fs-ns-1",
 				},
-				Spec: v1alpha1.GlobalServiceSpec{
+				Spec: v1alpha1.VirtualDestinationSpec{
 					Hostname: "failoverservice.foo.bar.global",
-					Port: &v1alpha1.GlobalServiceSpec_Port{
+					Port: &v1alpha1.VirtualDestinationSpec_Port{
 						Number: 9080,
 					},
 				},
@@ -477,8 +477,8 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				TrafficShift: &v1alpha2.TrafficPolicySpec_MultiDestination{
 					Destinations: []*v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination{
 						{
-							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_GlobalService{
-								GlobalService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_CustomDestinationReference{
+							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_VirtualDestination{
+								VirtualDestination: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_VirtualDestinationReference{
 									Name:      "fs-1",
 									Namespace: "fs-ns-1",
 									Subset: map[string]string{
