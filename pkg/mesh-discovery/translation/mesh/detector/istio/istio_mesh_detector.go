@@ -161,11 +161,11 @@ func getIngressGateways(
 	clusterName string,
 	workloadLabels map[string]string,
 	tlsPortName string,
-	allServices corev1sets.ServiceSet,
+	services corev1sets.ServiceSet,
 	pods corev1sets.PodSet,
 	nodes corev1sets.NodeSet,
 ) []*v1alpha2.MeshSpec_Istio_IngressGatewayInfo {
-	ingressSvcs := getIngressServices(allServices, namespace, clusterName, workloadLabels)
+	ingressSvcs := getIngressServices(services, namespace, clusterName, workloadLabels)
 	var ingressGateways []*v1alpha2.MeshSpec_Istio_IngressGatewayInfo
 	for _, svc := range ingressSvcs {
 		gateway, err := getIngressGateway(svc, workloadLabels, tlsPortName, pods, nodes)
@@ -256,12 +256,12 @@ func getIngressGateway(
 }
 
 func getIngressServices(
-	allServices corev1sets.ServiceSet,
+	services corev1sets.ServiceSet,
 	namespace string,
 	clusterName string,
 	workloadLabels map[string]string,
 ) []*corev1.Service {
-	return allServices.List(func(svc *corev1.Service) bool {
+	return services.List(func(svc *corev1.Service) bool {
 		return svc.Namespace != namespace ||
 			svc.ClusterName != clusterName ||
 			!labels.SelectorFromSet(workloadLabels).Matches(labels.Set(svc.Spec.Selector))
