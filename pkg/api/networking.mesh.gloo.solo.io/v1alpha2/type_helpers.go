@@ -11,6 +11,3 @@ type AccessPolicySlice []*AccessPolicy
 
 // VirtualMeshSlice represents a slice of *VirtualMesh
 type VirtualMeshSlice []*VirtualMesh
-
-// FailoverServiceSlice represents a slice of *FailoverService
-type FailoverServiceSlice []*FailoverService

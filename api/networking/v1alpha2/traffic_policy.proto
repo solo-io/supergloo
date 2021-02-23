@@ -131,22 +131,19 @@ message TrafficPolicySpec {
             // Specify a traffic shift destination along with a weight.
             message WeightedDestination {
 
+                // Specify the proportion of traffic to be forwarded to this destination.
+                // Weights across all of the `destinations` must sum to 100.
+                uint32 weight = 1;
+
                 // Platform specific destinations.
                 oneof destination_type {
 
                     // Specify a Kubernetes Service.
-                    KubeDestination kube_service = 1;
-
-                    // Specify a FailoverService.
-                    FailoverServiceDestination failover_service = 3;
+                    KubeDestination kube_service = 2;
 
                     // Specify a VirtualDestination.
-                    VirtualDestinationReference virtual_destination = 4;
+                    VirtualDestinationReference virtual_destination = 3;
                 }
-
-                // Specify the proportion of traffic to be forwarded to this destination.
-                // Weights across all of the `destinations` must sum to 100.
-                uint32 weight = 2;
 
                 // A Kubernetes destination.
                 message KubeDestination {
@@ -165,19 +162,6 @@ message TrafficPolicySpec {
 
                     // Port on the service to receive traffic. Required if the service exposes more than one port.
                     uint32 port = 5;
-                }
-
-                // TODO(harveyxia) remove
-                // A traffic shift destination that references a FailoverService.
-                message FailoverServiceDestination {
-                    // The name of the FailoverService.
-                    string name = 1;
-
-                    // The namespace of the FailoverService.
-                    string namespace = 2;
-
-                    // Subset routing is currently only supported for Istio backing services.
-                    map<string, string> subset = 3;
                 }
 
                 // Specify a VirtualDestination traffic shift destination.

@@ -4,7 +4,6 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.so
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/virtual_mesh.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/failover_service.proto";
 import "github.com/solo-io/gloo-mesh/api/discovery/v1alpha2/destination.proto";
 import "google/protobuf/wrappers.proto";
 
@@ -183,11 +182,8 @@ message MeshStatus {
     // The VirtualMesh, if any, which contains this mesh.
     AppliedVirtualMesh applied_virtual_mesh = 2;
 
-    // The FailoverServices, if any, which apply to this mesh.
-    repeated AppliedFailoverService applied_failover_services = 3;
-
     // The VirtualDestinations, if any, which apply to this mesh.
-    repeated AppliedVirtualDestination applied_virtual_destinations = 4;
+    repeated AppliedVirtualDestination applied_virtual_destinations = 3;
 
     // Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}) that applies to this Mesh.
     // If an existing applied VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
@@ -201,21 +197,6 @@ message MeshStatus {
 
         // The spec of the last known valid VirtualMesh.
         .networking.mesh.gloo.solo.io.VirtualMeshSpec spec = 3;
-    }
-
-    // TODO(harveyxia) remove
-    // AppliedFailoverService describes a FailoverService that applies to this Mesh.
-    // If an existing FailoverService becomes invalid the last applied FailoverService will be used.
-    message AppliedFailoverService {
-
-        // Reference to the applied FailoverService object.
-        .core.skv2.solo.io.ObjectRef ref = 1;
-
-        // The observed generation of the accepted FailoverService.
-        int64 observedGeneration = 2;
-
-        // The last known valid spec of the FailoverService.
-        .networking.mesh.gloo.solo.io.FailoverServiceSpec spec = 3;
     }
 
     // Describes a [VirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination.md" >}}) that applies to this Mesh.

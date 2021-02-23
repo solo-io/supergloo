@@ -10,7 +10,6 @@
 // * TrafficPolicies
 // * AccessPolicies
 // * VirtualMeshes
-// * FailoverServices
 // * WasmDeployments
 // * VirtualDestinations
 // * AccessLogRecords
@@ -110,11 +109,6 @@ var LocalSnapshotGVKs = []schema.GroupVersionKind{
 		Version: "v1alpha2",
 		Kind:    "VirtualMesh",
 	},
-	schema.GroupVersionKind{
-		Group:   "networking.mesh.gloo.solo.io",
-		Version: "v1alpha2",
-		Kind:    "FailoverService",
-	},
 
 	schema.GroupVersionKind{
 		Group:   "networking.enterprise.mesh.gloo.solo.io",
@@ -165,8 +159,6 @@ type LocalSnapshot interface {
 	AccessPolicies() networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet
 	// return the set of input VirtualMeshes
 	VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
-	// return the set of input FailoverServices
-	FailoverServices() networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
 
 	// return the set of input WasmDeployments
 	WasmDeployments() networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
@@ -210,8 +202,6 @@ type LocalSyncStatusOptions struct {
 	AccessPolicy bool
 	// sync status of VirtualMesh objects
 	VirtualMesh bool
-	// sync status of FailoverService objects
-	FailoverService bool
 
 	// sync status of WasmDeployment objects
 	WasmDeployment bool
@@ -237,10 +227,9 @@ type snapshotLocal struct {
 	workloads    discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
 	meshes       discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
 
-	trafficPolicies  networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet
-	accessPolicies   networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet
-	virtualMeshes    networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
-	failoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet
+	trafficPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet
+	accessPolicies  networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet
+	virtualMeshes   networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet
 
 	wasmDeployments     networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet
 	virtualDestinations networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.VirtualDestinationSet
@@ -264,7 +253,6 @@ func NewLocalSnapshot(
 	trafficPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet,
 	accessPolicies networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet,
 	virtualMeshes networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet,
-	failoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet,
 
 	wasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet,
 	virtualDestinations networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.VirtualDestinationSet,
@@ -286,7 +274,6 @@ func NewLocalSnapshot(
 		trafficPolicies:     trafficPolicies,
 		accessPolicies:      accessPolicies,
 		virtualMeshes:       virtualMeshes,
-		failoverServices:    failoverServices,
 		wasmDeployments:     wasmDeployments,
 		virtualDestinations: virtualDestinations,
 		accessLogRecords:    accessLogRecords,
@@ -309,7 +296,6 @@ func NewLocalSnapshotFromGeneric(
 	trafficPolicySet := networking_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficPolicySet()
 	accessPolicySet := networking_mesh_gloo_solo_io_v1alpha2_sets.NewAccessPolicySet()
 	virtualMeshSet := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
-	failoverServiceSet := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
 	wasmDeploymentSet := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
 	virtualDestinationSet := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewVirtualDestinationSet()
@@ -387,15 +373,6 @@ func NewLocalSnapshotFromGeneric(
 		for _, virtualMesh := range virtualMeshes {
 			virtualMeshSet.Insert(virtualMesh.(*networking_mesh_gloo_solo_io_v1alpha2_types.VirtualMesh))
 		}
-		failoverServices := snapshot[schema.GroupVersionKind{
-			Group:   "networking.mesh.gloo.solo.io",
-			Version: "v1alpha2",
-			Kind:    "FailoverService",
-		}]
-
-		for _, failoverService := range failoverServices {
-			failoverServiceSet.Insert(failoverService.(*networking_mesh_gloo_solo_io_v1alpha2_types.FailoverService))
-		}
 
 		wasmDeployments := snapshot[schema.GroupVersionKind{
 			Group:   "networking.enterprise.mesh.gloo.solo.io",
@@ -456,7 +433,6 @@ func NewLocalSnapshotFromGeneric(
 		trafficPolicySet,
 		accessPolicySet,
 		virtualMeshSet,
-		failoverServiceSet,
 		wasmDeploymentSet,
 		virtualDestinationSet,
 		accessLogRecordSet,
@@ -491,10 +467,6 @@ func (s snapshotLocal) AccessPolicies() networking_mesh_gloo_solo_io_v1alpha2_se
 
 func (s snapshotLocal) VirtualMeshes() networking_mesh_gloo_solo_io_v1alpha2_sets.VirtualMeshSet {
 	return s.virtualMeshes
-}
-
-func (s snapshotLocal) FailoverServices() networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet {
-	return s.failoverServices
 }
 
 func (s snapshotLocal) WasmDeployments() networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet {
@@ -596,18 +568,6 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 	}
 	if opts.VirtualMesh {
 		for _, obj := range s.VirtualMeshes().List() {
-			clusterClient, err := mcClient.Cluster(obj.ClusterName)
-			if err != nil {
-				errs = multierror.Append(errs, err)
-				continue
-			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-	if opts.FailoverService {
-		for _, obj := range s.FailoverServices().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -726,13 +686,6 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 			}
 		}
 	}
-	if opts.FailoverService {
-		for _, obj := range s.FailoverServices().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
 
 	if opts.WasmDeployment {
 		for _, obj := range s.WasmDeployments().List() {
@@ -777,7 +730,6 @@ func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 	snapshotMap["trafficPolicies"] = s.trafficPolicies.List()
 	snapshotMap["accessPolicies"] = s.accessPolicies.List()
 	snapshotMap["virtualMeshes"] = s.virtualMeshes.List()
-	snapshotMap["failoverServices"] = s.failoverServices.List()
 	snapshotMap["wasmDeployments"] = s.wasmDeployments.List()
 	snapshotMap["virtualDestinations"] = s.virtualDestinations.List()
 	snapshotMap["accessLogRecords"] = s.accessLogRecords.List()
@@ -810,8 +762,6 @@ type LocalBuildOptions struct {
 	AccessPolicies ResourceLocalBuildOptions
 	// List options for composing a snapshot from VirtualMeshes
 	VirtualMeshes ResourceLocalBuildOptions
-	// List options for composing a snapshot from FailoverServices
-	FailoverServices ResourceLocalBuildOptions
 
 	// List options for composing a snapshot from WasmDeployments
 	WasmDeployments ResourceLocalBuildOptions
@@ -866,7 +816,6 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 	trafficPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficPolicySet()
 	accessPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewAccessPolicySet()
 	virtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
-	failoverServices := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
 	virtualDestinations := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewVirtualDestinationSet()
@@ -902,9 +851,6 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		if err := b.insertVirtualMeshesFromCluster(ctx, cluster, virtualMeshes, opts.VirtualMeshes); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertFailoverServicesFromCluster(ctx, cluster, failoverServices, opts.FailoverServices); err != nil {
-			errs = multierror.Append(errs, err)
-		}
 		if err := b.insertWasmDeploymentsFromCluster(ctx, cluster, wasmDeployments, opts.WasmDeployments); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -933,7 +879,6 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		trafficPolicies,
 		accessPolicies,
 		virtualMeshes,
-		failoverServices,
 		wasmDeployments,
 		virtualDestinations,
 		accessLogRecords,
@@ -1240,48 +1185,6 @@ func (b *multiClusterLocalBuilder) insertVirtualMeshesFromCluster(ctx context.Co
 
 	return nil
 }
-func (b *multiClusterLocalBuilder) insertFailoverServicesFromCluster(ctx context.Context, cluster string, failoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet, opts ResourceLocalBuildOptions) error {
-	failoverServiceClient, err := networking_mesh_gloo_solo_io_v1alpha2.NewMulticlusterFailoverServiceClient(b.client).Cluster(cluster)
-	if err != nil {
-		return err
-	}
-
-	if opts.Verifier != nil {
-		mgr, err := b.clusters.Cluster(cluster)
-		if err != nil {
-			return err
-		}
-
-		gvk := schema.GroupVersionKind{
-			Group:   "networking.mesh.gloo.solo.io",
-			Version: "v1alpha2",
-			Kind:    "FailoverService",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			cluster,
-			mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	failoverServiceList, err := failoverServiceClient.ListFailoverService(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range failoverServiceList.Items {
-		item := item               // pike
-		item.ClusterName = cluster // set cluster for in-memory processing
-		failoverServices.Insert(&item)
-	}
-
-	return nil
-}
 
 func (b *multiClusterLocalBuilder) insertWasmDeploymentsFromCluster(ctx context.Context, cluster string, wasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet, opts ResourceLocalBuildOptions) error {
 	wasmDeploymentClient, err := networking_enterprise_mesh_gloo_solo_io_v1alpha1.NewMulticlusterWasmDeploymentClient(b.client).Cluster(cluster)
@@ -1533,7 +1436,6 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	trafficPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficPolicySet()
 	accessPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewAccessPolicySet()
 	virtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
-	failoverServices := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
 	virtualDestinations := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewVirtualDestinationSet()
@@ -1567,9 +1469,6 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	if err := b.insertVirtualMeshes(ctx, virtualMeshes, opts.VirtualMeshes); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertFailoverServices(ctx, failoverServices, opts.FailoverServices); err != nil {
-		errs = multierror.Append(errs, err)
-	}
 	if err := b.insertWasmDeployments(ctx, wasmDeployments, opts.WasmDeployments); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -1596,7 +1495,6 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 		trafficPolicies,
 		accessPolicies,
 		virtualMeshes,
-		failoverServices,
 		wasmDeployments,
 		virtualDestinations,
 		accessLogRecords,
@@ -1840,39 +1738,6 @@ func (b *singleClusterLocalBuilder) insertVirtualMeshes(ctx context.Context, vir
 
 	return nil
 }
-func (b *singleClusterLocalBuilder) insertFailoverServices(ctx context.Context, failoverServices networking_mesh_gloo_solo_io_v1alpha2_sets.FailoverServiceSet, opts ResourceLocalBuildOptions) error {
-
-	if opts.Verifier != nil {
-		gvk := schema.GroupVersionKind{
-			Group:   "networking.mesh.gloo.solo.io",
-			Version: "v1alpha2",
-			Kind:    "FailoverService",
-		}
-
-		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
-			"", // verify in the local cluster
-			b.mgr.GetConfig(),
-			gvk,
-		); err != nil {
-			return err
-		} else if !resourceRegistered {
-			return nil
-		}
-	}
-
-	failoverServiceList, err := networking_mesh_gloo_solo_io_v1alpha2.NewFailoverServiceClient(b.mgr.GetClient()).ListFailoverService(ctx, opts.ListOptions...)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range failoverServiceList.Items {
-		item := item // pike
-		item.ClusterName = b.clusterName
-		failoverServices.Insert(&item)
-	}
-
-	return nil
-}
 
 func (b *singleClusterLocalBuilder) insertWasmDeployments(ctx context.Context, wasmDeployments networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.WasmDeploymentSet, opts ResourceLocalBuildOptions) error {
 
@@ -2072,7 +1937,6 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 	trafficPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficPolicySet()
 	accessPolicies := networking_mesh_gloo_solo_io_v1alpha2_sets.NewAccessPolicySet()
 	virtualMeshes := networking_mesh_gloo_solo_io_v1alpha2_sets.NewVirtualMeshSet()
-	failoverServices := networking_mesh_gloo_solo_io_v1alpha2_sets.NewFailoverServiceSet()
 
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewWasmDeploymentSet()
 	virtualDestinations := networking_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewVirtualDestinationSet()
@@ -2106,9 +1970,6 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		// insert VirtualMeshes
 		case *networking_mesh_gloo_solo_io_v1alpha2_types.VirtualMesh:
 			virtualMeshes.Insert(obj)
-		// insert FailoverServices
-		case *networking_mesh_gloo_solo_io_v1alpha2_types.FailoverService:
-			failoverServices.Insert(obj)
 		// insert WasmDeployments
 		case *networking_enterprise_mesh_gloo_solo_io_v1alpha1_types.WasmDeployment:
 			wasmDeployments.Insert(obj)
@@ -2137,7 +1998,6 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		trafficPolicies,
 		accessPolicies,
 		virtualMeshes,
-		failoverServices,
 		wasmDeployments,
 		virtualDestinations,
 		accessLogRecords,

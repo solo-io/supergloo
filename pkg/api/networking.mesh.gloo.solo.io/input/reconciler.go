@@ -56,7 +56,6 @@ import (
 // * TrafficPolicies
 // * AccessPolicies
 // * VirtualMeshes
-// * FailoverServices
 // * WasmDeployments
 // * VirtualDestinations
 // * AccessLogRecords
@@ -145,10 +144,6 @@ func RegisterInputReconciler(
 	}
 	// initialize VirtualMeshes reconcile loop for local cluster
 	if err := networking_mesh_gloo_solo_io_v1alpha2_controllers.NewVirtualMeshReconcileLoop("VirtualMesh", mgr, options.Local.VirtualMeshes).RunVirtualMeshReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
-		return nil, err
-	}
-	// initialize FailoverServices reconcile loop for local cluster
-	if err := networking_mesh_gloo_solo_io_v1alpha2_controllers.NewFailoverServiceReconcileLoop("FailoverService", mgr, options.Local.FailoverServices).RunFailoverServiceReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
@@ -366,8 +361,6 @@ type LocalReconcileOptions struct {
 	AccessPolicies reconcile.Options
 	// Options for reconciling VirtualMeshes
 	VirtualMeshes reconcile.Options
-	// Options for reconciling FailoverServices
-	FailoverServices reconcile.Options
 
 	// Options for reconciling WasmDeployments
 	WasmDeployments reconcile.Options
@@ -474,19 +467,6 @@ func (r *localInputReconciler) ReconcileVirtualMesh(obj *networking_mesh_gloo_so
 }
 
 func (r *localInputReconciler) ReconcileVirtualMeshDeletion(obj reconcile.Request) error {
-	ref := &sk_core_v1.ObjectRef{
-		Name:      obj.Name,
-		Namespace: obj.Namespace,
-	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
-	return err
-}
-
-func (r *localInputReconciler) ReconcileFailoverService(obj *networking_mesh_gloo_solo_io_v1alpha2.FailoverService) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
-}
-
-func (r *localInputReconciler) ReconcileFailoverServiceDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

@@ -100,31 +100,3 @@ func VirtualMeshClientFromConfigFactoryProvider() VirtualMeshClientFromConfigFac
 		return clients.VirtualMeshes(), nil
 	}
 }
-
-// Provider for FailoverServiceClient from Clientset
-func FailoverServiceClientFromClientsetProvider(clients networking_mesh_gloo_solo_io_v1alpha2.Clientset) networking_mesh_gloo_solo_io_v1alpha2.FailoverServiceClient {
-	return clients.FailoverServices()
-}
-
-// Provider for FailoverService Client from Client
-func FailoverServiceClientProvider(client client.Client) networking_mesh_gloo_solo_io_v1alpha2.FailoverServiceClient {
-	return networking_mesh_gloo_solo_io_v1alpha2.NewFailoverServiceClient(client)
-}
-
-type FailoverServiceClientFactory func(client client.Client) networking_mesh_gloo_solo_io_v1alpha2.FailoverServiceClient
-
-func FailoverServiceClientFactoryProvider() FailoverServiceClientFactory {
-	return FailoverServiceClientProvider
-}
-
-type FailoverServiceClientFromConfigFactory func(cfg *rest.Config) (networking_mesh_gloo_solo_io_v1alpha2.FailoverServiceClient, error)
-
-func FailoverServiceClientFromConfigFactoryProvider() FailoverServiceClientFromConfigFactory {
-	return func(cfg *rest.Config) (networking_mesh_gloo_solo_io_v1alpha2.FailoverServiceClient, error) {
-		clients, err := networking_mesh_gloo_solo_io_v1alpha2.NewClientsetFromConfig(cfg)
-		if err != nil {
-			return nil, err
-		}
-		return clients.FailoverServices(), nil
-	}
-}

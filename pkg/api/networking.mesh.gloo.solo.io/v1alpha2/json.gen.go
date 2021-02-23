@@ -89,25 +89,3 @@ func (this *VirtualMeshStatus) MarshalJSON() ([]byte, error) {
 func (this *VirtualMeshStatus) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
-
-// MarshalJSON is a custom marshaler for FailoverServiceSpec
-func (this *FailoverServiceSpec) MarshalJSON() ([]byte, error) {
-	str, err := marshaller.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for FailoverServiceSpec
-func (this *FailoverServiceSpec) UnmarshalJSON(b []byte) error {
-	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for FailoverServiceStatus
-func (this *FailoverServiceStatus) MarshalJSON() ([]byte, error) {
-	str, err := marshaller.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for FailoverServiceStatus
-func (this *FailoverServiceStatus) UnmarshalJSON(b []byte) error {
-	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
-}

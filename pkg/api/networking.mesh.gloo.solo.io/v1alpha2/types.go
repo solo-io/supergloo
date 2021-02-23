@@ -113,44 +113,8 @@ type VirtualMeshList struct {
 	Items           []VirtualMesh `json:"items"`
 }
 
-// +genclient
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +k8s:openapi-gen=true
-// +kubebuilder:subresource:status
-
-// GroupVersionKind for FailoverService
-var FailoverServiceGVK = schema.GroupVersionKind{
-	Group:   "networking.mesh.gloo.solo.io",
-	Version: "v1alpha2",
-	Kind:    "FailoverService",
-}
-
-// FailoverService is the Schema for the failoverService API
-type FailoverService struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   FailoverServiceSpec   `json:"spec,omitempty"`
-	Status FailoverServiceStatus `json:"status,omitempty"`
-}
-
-// GVK returns the GroupVersionKind associated with the resource type.
-func (FailoverService) GVK() schema.GroupVersionKind {
-	return FailoverServiceGVK
-}
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// FailoverServiceList contains a list of FailoverService
-type FailoverServiceList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []FailoverService `json:"items"`
-}
-
 func init() {
 	SchemeBuilder.Register(&TrafficPolicy{}, &TrafficPolicyList{})
 	SchemeBuilder.Register(&AccessPolicy{}, &AccessPolicyList{})
 	SchemeBuilder.Register(&VirtualMesh{}, &VirtualMeshList{})
-	SchemeBuilder.Register(&FailoverService{}, &FailoverServiceList{})
 }

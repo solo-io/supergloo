@@ -176,50 +176,6 @@ spec:
                     type: array
                 type: object
               type: array
-            failoverServiceScopes:
-              description: A set of FailoverService configuration permissions. Permission granularity is defined at the object level.
-              items:
-                properties:
-                  backingServices:
-                    description: A list of permitted backing services.
-                    items:
-                      oneOf:
-                      - not:
-                          anyOf:
-                          - required:
-                            - kubeService
-                      - required:
-                        - kubeService
-                      properties:
-                        kubeService:
-                          description: Name/namespace/cluster of a Kubernetes service.
-                          properties:
-                            clusterName:
-                              description: name of the cluster in which the resource exists
-                              type: string
-                            name:
-                              description: name of the resource being referenced
-                              type: string
-                            namespace:
-                              description: namespace of the resource being referenced
-                              type: string
-                          type: object
-                      type: object
-                    type: array
-                  meshRefs:
-                    description: A list of permitted mesh references.
-                    items:
-                      properties:
-                        name:
-                          description: name of the resource being referenced
-                          type: string
-                        namespace:
-                          description: namespace of the resource being referenced
-                          type: string
-                      type: object
-                    type: array
-                type: object
-              type: array
             trafficPolicyScopes:
               description: A set of TrafficPolicy configuration permissions. Permission granularity is defined at the field level.
               items:

@@ -30,7 +30,6 @@ var (
 			"TrafficPolicy",
 			"AccessPolicy",
 			"VirtualMesh",
-			"FailoverService",
 		},
 		schema.GroupVersion{
 			Group:   "settings." + constants.GlooMeshApiGroupSuffix,

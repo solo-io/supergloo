@@ -32,7 +32,6 @@ var GlooMeshNetworkingGroup = makeGroup("networking", "v1alpha2", []ResourceToGe
 	{Kind: "TrafficPolicy"},
 	{Kind: "AccessPolicy"},
 	{Kind: "VirtualMesh"},
-	{Kind: "FailoverService"},
 })
 
 var GlooMeshEnterpriseNetworkingGroup = makeGroup("networking.enterprise", "v1alpha1", []ResourceToGenerate{
