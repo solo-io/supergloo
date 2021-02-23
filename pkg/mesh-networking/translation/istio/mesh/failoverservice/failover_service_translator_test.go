@@ -269,7 +269,7 @@ var _ = Describe("FailoverServiceTranslator", func() {
 		}
 		expectedServiceEntryYamls := []string{
 			`addresses:
-- 247.153.147.39
+- 249.167.75.74
 hosts:
 - failover-1.failover-namespace.cluster1
 location: MESH_INTERNAL
@@ -280,7 +280,7 @@ ports:
 resolution: DNS
 `,
 			`addresses:
-- 247.153.147.39
+- 249.167.75.74
 hosts:
 - failover-1.failover-namespace.cluster1
 location: MESH_INTERNAL
