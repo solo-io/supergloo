@@ -98,7 +98,7 @@ var _ = Describe("FederationTranslator", func() {
 			Namespace:   "some-ns",
 			ClusterName: clusterName,
 		}
-		trafficTarget1 := &discoveryv1alpha2.Destination{
+		destination1 := &discoveryv1alpha2.Destination{
 			ObjectMeta: metav1.ObjectMeta{},
 			Spec: discoveryv1alpha2.DestinationSpec{
 				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
@@ -157,7 +157,7 @@ var _ = Describe("FederationTranslator", func() {
 		}
 
 		in := input.NewInputLocalSnapshotManualBuilder("ignored").
-			AddDestinations(discoveryv1alpha2.DestinationSlice{trafficTarget1}).
+			AddDestinations(discoveryv1alpha2.DestinationSlice{destination1}).
 			AddMeshes(discoveryv1alpha2.MeshSlice{mesh, clientMesh}).
 			AddKubernetesClusters(skv1alpha1.KubernetesClusterSlice{kubeCluster}).
 			Build()
@@ -165,13 +165,13 @@ var _ = Describe("FederationTranslator", func() {
 		expectedVS := &networkingv1alpha3.VirtualService{}
 		mockVirtualServiceTranslator.
 			EXPECT().
-			Translate(ctx, in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
+			Translate(ctx, in, destination1, clientMesh.Spec.GetIstio().Installation, nil).
 			Return(expectedVS)
 
 		expectedDR := &networkingv1alpha3.DestinationRule{}
 		mockDestinationRuleTranslator.
 			EXPECT().
-			Translate(ctx, in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
+			Translate(ctx, in, destination1, clientMesh.Spec.GetIstio().Installation, nil).
 			Return(expectedDR)
 
 		t := NewTranslator(

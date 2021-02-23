@@ -327,7 +327,7 @@ func (t *translator) Translate(
 }
 
 func updateDestinationFederationStatus(
-	trafficTarget *discoveryv1alpha2.Destination,
+	destination *discoveryv1alpha2.Destination,
 	federatedHostname string,
 	mesh *v1.ObjectRef,
 	groupedMeshes []*v1.ObjectRef,
@@ -343,7 +343,7 @@ func updateDestinationFederationStatus(
 		federatedToMeshes = append(federatedToMeshes, mesh)
 	}
 
-	trafficTarget.Status.AppliedFederation = &discoveryv1alpha2.DestinationStatus_AppliedFederation{
+	destination.Status.AppliedFederation = &discoveryv1alpha2.DestinationStatus_AppliedFederation{
 		FederatedHostname: federatedHostname,
 		FederatedToMeshes: federatedToMeshes,
 		FlatNetwork:       flatNetwork,

@@ -213,7 +213,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			},
 		}
 
-		trafficTarget := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1alpha2.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "traffic-target",
 			},
@@ -270,13 +270,13 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationFQDN(destination.Spec.GetKubeService().Ref.ClusterName, destination.Spec.GetKubeService().Ref).
 			Return("local-hostname")
 
 		initializedDestinatonRule := &networkingv1alpha3.DestinationRule{
 			ObjectMeta: metautils.TranslatedObjectMeta(
-				trafficTarget.Spec.GetKubeService().Ref,
-				trafficTarget.Annotations,
+				destination.Spec.GetKubeService().Ref,
+				destination.Annotations,
 			),
 			Spec: networkingv1alpha3spec.DestinationRule{
 				Host: "local-hostname",
@@ -291,14 +291,14 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		mockDecorator.
 			EXPECT().
 			ApplyTrafficPolicyToDestinationRule(
-				trafficTarget.Status.AppliedTrafficPolicies[0],
-				trafficTarget,
+				destination.Status.AppliedTrafficPolicies[0],
+				destination,
 				&initializedDestinatonRule.Spec,
 				gomock.Any(),
 			).
 			Return(nil)
 
-		destinationRule := destinationRuleTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
+		destinationRule := destinationRuleTranslator.Translate(ctx, in, destination, nil, mockReporter)
 		Expect(destinationRule).To(BeNil())
 	})
 
@@ -396,7 +396,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			},
 		}
 
-		trafficTarget := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1alpha2.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "traffic-target",
 				Namespace: "gloo-mesh",
@@ -431,7 +431,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			},
 		}
 
-		federatedClusterLabels := trafficshift.MakeFederatedSubsetLabel(trafficTarget.Spec.GetKubeService().Ref.ClusterName)
+		federatedClusterLabels := trafficshift.MakeFederatedSubsetLabel(destination.Spec.GetKubeService().Ref.ClusterName)
 
 		mockDecoratorFactory.
 			EXPECT().
@@ -443,14 +443,14 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationFQDN(sourceMeshInstallation.Cluster, trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationFQDN(sourceMeshInstallation.Cluster, destination.Spec.GetKubeService().Ref).
 			Return("global-hostname")
 
 		expectedDestinatonRule := &networkingv1alpha3.DestinationRule{
 			ObjectMeta: metautils.FederatedObjectMeta(
-				trafficTarget.Spec.GetKubeService().Ref,
+				destination.Spec.GetKubeService().Ref,
 				sourceMeshInstallation,
-				trafficTarget.Annotations,
+				destination.Annotations,
 			),
 			Spec: networkingv1alpha3spec.DestinationRule{
 				Host: "global-hostname",
@@ -475,14 +475,14 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		mockDecorator.
 			EXPECT().
 			ApplyTrafficPolicyToDestinationRule(
-				trafficTarget.Status.AppliedTrafficPolicies[0],
-				trafficTarget,
+				destination.Status.AppliedTrafficPolicies[0],
+				destination,
 				&expectedDestinatonRule.Spec,
 				gomock.Any(),
 			).
 			Return(nil)
 
-		destinationRule := destinationRuleTranslator.Translate(ctx, in, trafficTarget, sourceMeshInstallation, mockReporter)
+		destinationRule := destinationRuleTranslator.Translate(ctx, in, destination, sourceMeshInstallation, mockReporter)
 		Expect(destinationRule).To(Equal(expectedDestinatonRule))
 	})
 
@@ -580,7 +580,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 				destination,
 				destination.Status.AppliedTrafficPolicies[0].Ref,
 				gomock.Any()).
-			DoAndReturn(func(trafficTarget *discoveryv1alpha2.Destination, trafficPolicy ezkube.ResourceId, err error) {
+			DoAndReturn(func(destination *discoveryv1alpha2.Destination, trafficPolicy ezkube.ResourceId, err error) {
 				Expect(err).To(testutils.HaveInErrorChain(
 					eris.Errorf("Unable to translate AppliedTrafficPolicies to DestinationRule, applies to host %s that is already configured by the existing DestinationRule %s",
 						"local-hostname",

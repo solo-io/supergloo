@@ -60,7 +60,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		sourceSelectorLabels := map[string]string{"env": "dev"}
 		sourceSelectorNamespaces := []string{"n1", "n2"}
 
-		trafficTarget := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1alpha2.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "traffic-target",
 			},
@@ -176,7 +176,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationFQDN(destination.Spec.GetKubeService().Ref.ClusterName, destination.Spec.GetKubeService().Ref).
 			Return("local-hostname")
 
 		mockDecoratorFactory.
@@ -411,8 +411,8 @@ var _ = Describe("VirtualServiceTranslator", func() {
 
 		expectedVirtualService := &networkingv1alpha3.VirtualService{
 			ObjectMeta: metautils.TranslatedObjectMeta(
-				trafficTarget.Spec.GetKubeService().Ref,
-				trafficTarget.Annotations,
+				destination.Spec.GetKubeService().Ref,
+				destination.Annotations,
 			),
 			Spec: networkingv1alpha3spec.VirtualService{
 				Hosts: []string{"local-hostname"},
@@ -423,8 +423,8 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockDecorator.
 			EXPECT().
 			ApplyTrafficPolicyToVirtualService(
-				trafficTarget.Status.AppliedTrafficPolicies[0],
-				trafficTarget,
+				destination.Status.AppliedTrafficPolicies[0],
+				destination,
 				nil,
 				&networkingv1alpha3spec.HTTPRoute{
 					Match: initializedMatchRequests,
@@ -446,8 +446,8 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockDecorator.
 			EXPECT().
 			ApplyTrafficPolicyToVirtualService(
-				trafficTarget.Status.AppliedTrafficPolicies[1],
-				trafficTarget,
+				destination.Status.AppliedTrafficPolicies[1],
+				destination,
 				nil,
 				&networkingv1alpha3spec.HTTPRoute{
 					Match:   initializedMatchRequests,
@@ -467,7 +467,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			}).
 			Return(nil)
 
-		virtualService := virtualServiceTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
+		virtualService := virtualServiceTranslator.Translate(ctx, in, destination, nil, mockReporter)
 		Expect(virtualService).To(Equal(expectedVirtualService))
 	})
 
@@ -479,7 +479,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			Cluster:   "mgmt-cluster",
 		}
 
-		trafficTarget := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1alpha2.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        "traffic-target",
 				ClusterName: "remote-cluster",
@@ -553,7 +553,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationFQDN(meshInstallation.Cluster, trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationFQDN(meshInstallation.Cluster, destination.Spec.GetKubeService().Ref).
 			Return("local-hostname")
 
 		mockDecoratorFactory.
@@ -772,9 +772,9 @@ var _ = Describe("VirtualServiceTranslator", func() {
 
 		expectedVirtualService := &networkingv1alpha3.VirtualService{
 			ObjectMeta: metautils.FederatedObjectMeta(
-				trafficTarget.Spec.GetKubeService().Ref,
+				destination.Spec.GetKubeService().Ref,
 				meshInstallation,
-				trafficTarget.Annotations,
+				destination.Annotations,
 			),
 			Spec: networkingv1alpha3spec.VirtualService{
 				Hosts: []string{"local-hostname"},
@@ -785,8 +785,8 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockDecorator.
 			EXPECT().
 			ApplyTrafficPolicyToVirtualService(
-				trafficTarget.Status.AppliedTrafficPolicies[0],
-				trafficTarget,
+				destination.Status.AppliedTrafficPolicies[0],
+				destination,
 				meshInstallation,
 				&networkingv1alpha3spec.HTTPRoute{
 					Match: initializedMatchRequests,
@@ -808,7 +808,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		virtualService := virtualServiceTranslator.Translate(
 			ctx,
 			in,
-			trafficTarget,
+			destination,
 			meshInstallation,
 			mockReporter,
 		)
@@ -816,7 +816,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 	})
 
 	It("should not output a VirtualService if translated VirtualService has no HttpRoutes", func() {
-		trafficTarget := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1alpha2.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "traffic-target",
 			},
@@ -859,7 +859,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationFQDN(destination.Spec.GetKubeService().Ref.ClusterName, destination.Spec.GetKubeService().Ref).
 			Return("local-hostname")
 
 		mockDecoratorFactory.
@@ -873,20 +873,20 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockDecorator.
 			EXPECT().
 			ApplyTrafficPolicyToVirtualService(
-				trafficTarget.Status.AppliedTrafficPolicies[0],
-				trafficTarget,
+				destination.Status.AppliedTrafficPolicies[0],
+				destination,
 				nil,
 				&networkingv1alpha3spec.HTTPRoute{},
 				gomock.Any(),
 			).
 			Return(nil)
 
-		virtualService := virtualServiceTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
+		virtualService := virtualServiceTranslator.Translate(ctx, in, destination, nil, mockReporter)
 		Expect(virtualService).To(BeNil())
 	})
 
 	It("should not output an HttpRoute if TrafficPolicy's WorkloadSelector does not select source cluster", func() {
-		trafficTarget := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1alpha2.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "traffic-target",
 			},
@@ -934,7 +934,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationFQDN(destination.Spec.GetKubeService().Ref.ClusterName, destination.Spec.GetKubeService().Ref).
 			Return("local-hostname")
 
 		mockDecoratorFactory.
@@ -945,12 +945,12 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			}).
 			Return([]decorators.Decorator{mockDecorator})
 
-		virtualService := virtualServiceTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
+		virtualService := virtualServiceTranslator.Translate(ctx, in, destination, nil, mockReporter)
 		Expect(virtualService).To(BeNil())
 	})
 
 	It("should not output a VirtualService if it contains a host that is already configured by an existing VirtualService not owned by Gloo Mesh", func() {
-		trafficTarget := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1alpha2.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "traffic-target",
 			},
@@ -1023,7 +1023,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 
 		mockClusterDomainRegistry.
 			EXPECT().
-			GetDestinationFQDN(trafficTarget.Spec.GetKubeService().Ref.ClusterName, trafficTarget.Spec.GetKubeService().Ref).
+			GetDestinationFQDN(destination.Spec.GetKubeService().Ref.ClusterName, destination.Spec.GetKubeService().Ref).
 			Return("local-hostname")
 
 		mockDecoratorFactory.
@@ -1037,8 +1037,8 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockDecorator.
 			EXPECT().
 			ApplyTrafficPolicyToVirtualService(
-				trafficTarget.Status.AppliedTrafficPolicies[0],
-				trafficTarget,
+				destination.Status.AppliedTrafficPolicies[0],
+				destination,
 				nil,
 				gomock.Any(),
 				gomock.Any(),
@@ -1060,10 +1060,10 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockReporter.
 			EXPECT().
 			ReportTrafficPolicyToDestination(
-				trafficTarget,
-				trafficTarget.Status.AppliedTrafficPolicies[0].Ref,
+				destination,
+				destination.Status.AppliedTrafficPolicies[0].Ref,
 				gomock.Any()).
-			DoAndReturn(func(trafficTarget *discoveryv1alpha2.Destination, trafficPolicy ezkube.ResourceId, err error) {
+			DoAndReturn(func(destination *discoveryv1alpha2.Destination, trafficPolicy ezkube.ResourceId, err error) {
 				Expect(err).To(testutils.HaveInErrorChain(
 					eris.Errorf("Unable to translate AppliedTrafficPolicies to VirtualService, applies to hosts %+v that are already configured by the existing VirtualService %s",
 						[]string{"local-hostname"},
@@ -1073,6 +1073,6 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			})
 
 		virtualServiceTranslator = virtualservice.NewTranslator(existingVirtualServices, mockClusterDomainRegistry, mockDecoratorFactory)
-		_ = virtualServiceTranslator.Translate(ctx, in, trafficTarget, nil, mockReporter)
+		_ = virtualServiceTranslator.Translate(ctx, in, destination, nil, mockReporter)
 	})
 })

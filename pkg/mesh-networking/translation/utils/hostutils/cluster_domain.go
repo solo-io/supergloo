@@ -75,19 +75,19 @@ func (c *clusterDomainRegistry) GetClusterDomain(clusterName string) string {
 	return clusterDomain
 }
 
-func (c *clusterDomainRegistry) GetLocalFQDN(trafficTargetRef ezkube.ClusterResourceId) string {
-	return fmt.Sprintf("%s.%s.svc.%s", trafficTargetRef.GetName(), trafficTargetRef.GetNamespace(), c.GetClusterDomain(trafficTargetRef.GetClusterName()))
+func (c *clusterDomainRegistry) GetLocalFQDN(destinationRef ezkube.ClusterResourceId) string {
+	return fmt.Sprintf("%s.%s.svc.%s", destinationRef.GetName(), destinationRef.GetNamespace(), c.GetClusterDomain(destinationRef.GetClusterName()))
 }
 
-func (c *clusterDomainRegistry) GetFederatedFQDN(trafficTargetRef ezkube.ClusterResourceId) string {
-	trafficTarget, err := c.destinations.Find(&skv1.ObjectRef{
-		Name:      utils.DiscoveredResourceName(trafficTargetRef),
+func (c *clusterDomainRegistry) GetFederatedFQDN(destinationRef ezkube.ClusterResourceId) string {
+	destination, err := c.destinations.Find(&skv1.ObjectRef{
+		Name:      utils.DiscoveredResourceName(destinationRef),
 		Namespace: defaults.GetPodNamespace(),
 	})
-	if err != nil || trafficTarget.Status.GetAppliedFederation().GetFederatedHostname() == "" {
-		return fmt.Sprintf("%s.%s.svc.%s.%v", trafficTargetRef.GetName(), trafficTargetRef.GetNamespace(), trafficTargetRef.GetClusterName(), DefaultHostnameSuffix)
+	if err != nil || destination.Status.GetAppliedFederation().GetFederatedHostname() == "" {
+		return fmt.Sprintf("%s.%s.svc.%s.%v", destinationRef.GetName(), destinationRef.GetNamespace(), destinationRef.GetClusterName(), DefaultHostnameSuffix)
 	} else {
-		return trafficTarget.Status.GetAppliedFederation().GetFederatedHostname()
+		return destination.Status.GetAppliedFederation().GetFederatedHostname()
 	}
 }
 

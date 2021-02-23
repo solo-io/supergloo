@@ -187,24 +187,24 @@ func registerFieldFunc(
 }
 
 func (t *translator) initializeDestinationRule(
-	trafficTarget *discoveryv1alpha2.Destination,
+	destination *discoveryv1alpha2.Destination,
 	mtlsDefault *v1alpha2.TrafficPolicySpec_Policy_MTLS,
 	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
 ) (*networkingv1alpha3.DestinationRule, error) {
 	var meta metav1.ObjectMeta
 	if sourceMeshInstallation != nil {
 		meta = metautils.FederatedObjectMeta(
-			trafficTarget.Spec.GetKubeService().Ref,
+			destination.Spec.GetKubeService().Ref,
 			sourceMeshInstallation,
-			trafficTarget.Annotations,
+			destination.Annotations,
 		)
 	} else {
 		meta = metautils.TranslatedObjectMeta(
-			trafficTarget.Spec.GetKubeService().Ref,
-			trafficTarget.Annotations,
+			destination.Spec.GetKubeService().Ref,
+			destination.Annotations,
 		)
 	}
-	hostname := t.clusterDomains.GetDestinationFQDN(meta.ClusterName, trafficTarget.Spec.GetKubeService().Ref)
+	hostname := t.clusterDomains.GetDestinationFQDN(meta.ClusterName, destination.Spec.GetKubeService().Ref)
 
 	destinationRule := &networkingv1alpha3.DestinationRule{
 		ObjectMeta: meta,
@@ -212,7 +212,7 @@ func (t *translator) initializeDestinationRule(
 			Host:          hostname,
 			TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{},
 			Subsets: trafficshift.MakeDestinationRuleSubsetsForDestination(
-				trafficTarget,
+				destination,
 				t.destinations,
 				sourceMeshInstallation.GetCluster(),
 			),

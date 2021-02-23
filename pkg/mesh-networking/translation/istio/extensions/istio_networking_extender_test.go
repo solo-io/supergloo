@@ -59,7 +59,7 @@ var _ = Describe("IstioNetworkingExtender", func() {
 			},
 		}
 
-		trafficTarget := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1alpha2.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "destination",
 				Namespace: "namespace",
@@ -69,7 +69,7 @@ var _ = Describe("IstioNetworkingExtender", func() {
 		inputs := input.NewInputLocalSnapshotManualBuilder("istio-extender-test").
 			AddMeshes([]*discoveryv1alpha2.Mesh{mesh}).
 			AddWorkloads([]*discoveryv1alpha2.Workload{workload}).
-			AddDestinations([]*discoveryv1alpha2.Destination{trafficTarget}).
+			AddDestinations([]*discoveryv1alpha2.Destination{destination}).
 			Build()
 
 		outputs := istio.NewBuilder(ctx, "test")

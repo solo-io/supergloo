@@ -31,7 +31,7 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.LocalSnapshot,
-		trafficTarget *discoveryv1alpha2.Destination,
+		destination *discoveryv1alpha2.Destination,
 		outputs istio.Builder,
 		reporter reporting.Reporter,
 	)
@@ -50,7 +50,7 @@ func NewTranslator(
 	userSupplied input.RemoteSnapshot,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
-	trafficTargets discoveryv1alpha2sets.DestinationSet,
+	destinations discoveryv1alpha2sets.DestinationSet,
 ) Translator {
 	var existingVirtualServices v1alpha3sets.VirtualServiceSet
 	var existingDestinationRules v1alpha3sets.DestinationRuleSet
@@ -61,7 +61,7 @@ func NewTranslator(
 
 	return &translator{
 		ctx:                   ctx,
-		destinationRules:      destinationrule.NewTranslator(settingsutils.SettingsFromContext(ctx), existingDestinationRules, clusterDomains, decoratorFactory, trafficTargets),
+		destinationRules:      destinationrule.NewTranslator(settingsutils.SettingsFromContext(ctx), existingDestinationRules, clusterDomains, decoratorFactory, destinations),
 		virtualServices:       virtualservice.NewTranslator(existingVirtualServices, clusterDomains, decoratorFactory),
 		authorizationPolicies: authorizationpolicy.NewTranslator(),
 	}
@@ -70,46 +70,46 @@ func NewTranslator(
 // translate the appropriate resources for the given Destination.
 func (t *translator) Translate(
 	in input.LocalSnapshot,
-	trafficTarget *discoveryv1alpha2.Destination,
+	destination *discoveryv1alpha2.Destination,
 	outputs istio.Builder,
 	reporter reporting.Reporter,
 ) {
-	// only translate istio trafficTargets
-	if !t.isIstioDestination(t.ctx, trafficTarget, in.Meshes()) {
+	// only translate istio Destinations
+	if !t.isIstioDestination(t.ctx, destination, in.Meshes()) {
 		return
 	}
 
 	// Translate VirtualServices for Destinations, can be nil if there is no service or applied traffic policies
-	// Pass nil sourceMeshInstallation to translate VirtualService local to trafficTarget
-	vs := t.virtualServices.Translate(t.ctx, in, trafficTarget, nil, reporter)
+	// Pass nil sourceMeshInstallation to translate VirtualService local to destination
+	vs := t.virtualServices.Translate(t.ctx, in, destination, nil, reporter)
 	// Append the Destination as a parent to the virtual service
-	metautils.AppendParent(t.ctx, vs, trafficTarget, trafficTarget.GVK())
+	metautils.AppendParent(t.ctx, vs, destination, destination.GVK())
 	outputs.AddVirtualServices(vs)
 	// Translate DestinationRules for Destinations, can be nil if there is no service or applied traffic policies
-	dr := t.destinationRules.Translate(t.ctx, in, trafficTarget, nil, reporter)
+	dr := t.destinationRules.Translate(t.ctx, in, destination, nil, reporter)
 	// Append the Destination as a parent to the destination rule
-	metautils.AppendParent(t.ctx, dr, trafficTarget, trafficTarget.GVK())
+	metautils.AppendParent(t.ctx, dr, destination, destination.GVK())
 	outputs.AddDestinationRules(dr)
 	// Translate AuthorizationPolicies for Destinations, can be nil if there is no service or applied traffic policies
-	ap := t.authorizationPolicies.Translate(in, trafficTarget, reporter)
+	ap := t.authorizationPolicies.Translate(in, destination, reporter)
 	// Append the Destination as a parent to the authorization policy
-	metautils.AppendParent(t.ctx, ap, trafficTarget, trafficTarget.GVK())
+	metautils.AppendParent(t.ctx, ap, destination, destination.GVK())
 	outputs.AddAuthorizationPolicies(ap)
 }
 
 func (t *translator) isIstioDestination(
 	ctx context.Context,
-	trafficTarget *discoveryv1alpha2.Destination,
+	destination *discoveryv1alpha2.Destination,
 	allMeshes discoveryv1alpha2sets.MeshSet,
 ) bool {
-	meshRef := trafficTarget.Spec.Mesh
+	meshRef := destination.Spec.Mesh
 	if meshRef == nil {
-		contextutils.LoggerFrom(ctx).Errorf("internal error: trafficTarget %v missing mesh ref", sets.Key(trafficTarget))
+		contextutils.LoggerFrom(ctx).Errorf("internal error: destination %v missing mesh ref", sets.Key(destination))
 		return false
 	}
 	mesh, err := allMeshes.Find(meshRef)
 	if err != nil {
-		contextutils.LoggerFrom(ctx).Errorf("internal error: could not find mesh %v for trafficTarget %v", sets.Key(meshRef), sets.Key(trafficTarget))
+		contextutils.LoggerFrom(ctx).Errorf("internal error: could not find mesh %v for destination %v", sets.Key(meshRef), sets.Key(destination))
 		return false
 	}
 	return mesh.Spec.GetIstio() != nil

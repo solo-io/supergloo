@@ -142,7 +142,7 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	}
 	trafficShiftKubeService := trafficShiftService.Spec.GetKubeService()
 
-	// An empty sourceClusterName indicates translation for VirtualService local to trafficTarget
+	// An empty sourceClusterName indicates translation for VirtualService local to Destination
 	if sourceClusterName == "" {
 		sourceClusterName = destination.Spec.GetKubeService().GetRef().GetClusterName()
 	}
@@ -183,7 +183,7 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 // make all the necessary subsets for the destination rule for the given destination.
 // traverses all the applied traffic policies to find subsets matching this destination
 func MakeDestinationRuleSubsetsForDestination(
-	trafficTarget *discoveryv1alpha2.Destination,
+	destination *discoveryv1alpha2.Destination,
 	allDestinations discoveryv1alpha2sets.DestinationSet,
 	sourceClusterName string,
 ) []*networkingv1alpha3spec.Subset {
@@ -192,7 +192,7 @@ func MakeDestinationRuleSubsetsForDestination(
 		func(weightedDestination *v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination) bool {
 			switch destType := weightedDestination.DestinationType.(type) {
 			case *v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
-				return destinationutils.IsDestinationForKubeService(trafficTarget, destType.KubeService)
+				return destinationutils.IsDestinationForKubeService(destination, destType.KubeService)
 			}
 			return false
 		},
@@ -205,12 +205,12 @@ func MakeDestinationRuleSubsetsForDestination(
 	//
 	// If flat-networking is enabled, we leave the subset info as there is no ingress involved
 	if sourceClusterName != "" &&
-		sourceClusterName != trafficTarget.ClusterName &&
-		!trafficTarget.Status.GetAppliedFederation().GetFlatNetwork() {
+		sourceClusterName != destination.ClusterName &&
+		!destination.Status.GetAppliedFederation().GetFlatNetwork() {
 		for _, subset := range subsets {
 			// only the name of the subset matters here.
 			// the labels must match those on the ServiceEntry's endpoints.
-			subset.Labels = MakeFederatedSubsetLabel(trafficTarget.Spec.GetKubeService().Ref.ClusterName)
+			subset.Labels = MakeFederatedSubsetLabel(destination.Spec.GetKubeService().Ref.ClusterName)
 			// we also remove the TrafficPolicy, leaving
 			// it to the server-side DestinationRule to enforce.
 			subset.TrafficPolicy = nil

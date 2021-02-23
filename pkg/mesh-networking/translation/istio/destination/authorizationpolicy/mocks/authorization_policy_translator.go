@@ -38,15 +38,15 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(in input.LocalSnapshot, trafficTarget *v1alpha2.Destination, reporter reporting.Reporter) *v1beta1.AuthorizationPolicy {
+func (m *MockTranslator) Translate(in input.LocalSnapshot, destination *v1alpha2.Destination, reporter reporting.Reporter) *v1beta1.AuthorizationPolicy {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Translate", in, trafficTarget, reporter)
+	ret := m.ctrl.Call(m, "Translate", in, destination, reporter)
 	ret0, _ := ret[0].(*v1beta1.AuthorizationPolicy)
 	return ret0
 }
 
 // Translate indicates an expected call of Translate
-func (mr *MockTranslatorMockRecorder) Translate(in, trafficTarget, reporter interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) Translate(in, destination, reporter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), in, trafficTarget, reporter)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), in, destination, reporter)
 }

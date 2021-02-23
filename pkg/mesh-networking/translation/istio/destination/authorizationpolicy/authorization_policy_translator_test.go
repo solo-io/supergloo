@@ -179,7 +179,7 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 	})
 
 	It("should handle wildcard (empty) cluster source selectors", func() {
-		trafficTarget := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1alpha2.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "ms",
 				Namespace: "ms-namespace",
@@ -261,16 +261,16 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 		}
 		expectedAuthPolicy := &securityv1beta1.AuthorizationPolicy{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:        trafficTarget.Spec.GetKubeService().Ref.Name,
-				Namespace:   trafficTarget.Spec.GetKubeService().Ref.Namespace,
-				ClusterName: trafficTarget.Spec.GetKubeService().Ref.ClusterName,
+				Name:        destination.Spec.GetKubeService().Ref.Name,
+				Namespace:   destination.Spec.GetKubeService().Ref.Namespace,
+				ClusterName: destination.Spec.GetKubeService().Ref.ClusterName,
 				Labels: map[string]string{
 					"owner.networking.mesh.gloo.solo.io": "gloo-mesh",
 				},
 			},
 			Spec: securityv1beta1spec.AuthorizationPolicy{
 				Selector: &v1beta1.WorkloadSelector{
-					MatchLabels: trafficTarget.Spec.GetKubeService().WorkloadSelectorLabels,
+					MatchLabels: destination.Spec.GetKubeService().WorkloadSelectorLabels,
 				},
 				Rules: []*securityv1beta1spec.Rule{
 					{
@@ -304,7 +304,7 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 			},
 		}
 		inputSnapshot := input.NewInputLocalSnapshotManualBuilder("").AddMeshes(meshes).Build()
-		authPolicy := translator.Translate(inputSnapshot, trafficTarget, mockReporter)
+		authPolicy := translator.Translate(inputSnapshot, destination, mockReporter)
 		//Expect(equalityutils.DeepEqual(authPolicy, expectedAuthPolicy)).To(BeTrue())
 		Expect(authPolicy).To(Equal(expectedAuthPolicy))
 	})

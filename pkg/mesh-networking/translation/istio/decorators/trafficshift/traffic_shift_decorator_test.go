@@ -327,7 +327,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 	})
 
 	It("should not decorate traffic shift if error during field registration", func() {
-		trafficTargets := v1alpha2sets.NewDestinationSet(
+		destinations := v1alpha2sets.NewDestinationSet(
 			&discoveryv1alpha2.Destination{
 				Spec: discoveryv1alpha2.DestinationSpec{
 					Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
@@ -353,7 +353,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 					},
 				},
 			})
-		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, trafficTargets)
+		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, destinations)
 		originalService := &discoveryv1alpha2.Destination{
 			Spec: discoveryv1alpha2.DestinationSpec{
 				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{

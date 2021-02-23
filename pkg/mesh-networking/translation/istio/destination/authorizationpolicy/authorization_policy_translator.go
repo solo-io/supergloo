@@ -84,17 +84,17 @@ func (t *translator) Translate(
 }
 
 func (t *translator) initializeAuthorizationPolicy(
-	trafficTarget *discoveryv1alpha2.Destination,
+	destination *discoveryv1alpha2.Destination,
 ) *securityv1beta1.AuthorizationPolicy {
 	meta := metautils.TranslatedObjectMeta(
-		trafficTarget.Spec.GetKubeService().Ref,
-		trafficTarget.Annotations,
+		destination.Spec.GetKubeService().Ref,
+		destination.Annotations,
 	)
 	authPolicy := &securityv1beta1.AuthorizationPolicy{
 		ObjectMeta: meta,
 		Spec: securityv1beta1spec.AuthorizationPolicy{
 			Selector: &typesv1beta1.WorkloadSelector{
-				MatchLabels: trafficTarget.Spec.GetKubeService().WorkloadSelectorLabels,
+				MatchLabels: destination.Spec.GetKubeService().WorkloadSelectorLabels,
 			},
 			Action: securityv1beta1spec.AuthorizationPolicy_ALLOW,
 		},

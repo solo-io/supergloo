@@ -50,7 +50,7 @@ var _ = Describe("IstioDestinationTranslator", func() {
 	})
 
 	It("should translate", func() {
-		trafficTarget := &v1alpha2.Destination{
+		destination := &v1alpha2.Destination{
 			Spec: v1alpha2.DestinationSpec{
 				Mesh: &v1.ObjectRef{
 					Name:      "hello",
@@ -63,8 +63,8 @@ var _ = Describe("IstioDestinationTranslator", func() {
 			AddMeshes([]*v1alpha2.Mesh{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      trafficTarget.Spec.GetMesh().GetName(),
-						Namespace: trafficTarget.Spec.GetMesh().GetNamespace(),
+						Name:      destination.Spec.GetMesh().GetName(),
+						Namespace: destination.Spec.GetMesh().GetNamespace(),
 					},
 					Spec: v1alpha2.MeshSpec{
 						Type: &v1alpha2.MeshSpec_Istio_{
@@ -81,15 +81,15 @@ var _ = Describe("IstioDestinationTranslator", func() {
 
 		mockDestinationRuleTranslator.
 			EXPECT().
-			Translate(ctx, in, trafficTarget, nil, mockReporter).
+			Translate(ctx, in, destination, nil, mockReporter).
 			Return(dr)
 		mockVirtualServiceTranslator.
 			EXPECT().
-			Translate(ctx, in, trafficTarget, nil, mockReporter).
+			Translate(ctx, in, destination, nil, mockReporter).
 			Return(vs)
 		mockAuthorizationPolicyTranslator.
 			EXPECT().
-			Translate(in, trafficTarget, mockReporter).
+			Translate(in, destination, mockReporter).
 			Return(ap)
 		mockOutputs.
 			EXPECT().
@@ -101,6 +101,6 @@ var _ = Describe("IstioDestinationTranslator", func() {
 			EXPECT().
 			AddAuthorizationPolicies(ap)
 
-		istioDestinationTranslator.Translate(in, trafficTarget, mockOutputs, mockReporter)
+		istioDestinationTranslator.Translate(in, destination, mockOutputs, mockReporter)
 	})
 })

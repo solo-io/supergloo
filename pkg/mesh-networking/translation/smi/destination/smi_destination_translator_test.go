@@ -43,7 +43,7 @@ var _ = Describe("SmiDestinationTranslator", func() {
 	})
 
 	It("should translate when an smi Destination", func() {
-		trafficTarget := &v1alpha2.Destination{
+		destination := &v1alpha2.Destination{
 			Spec: v1alpha2.DestinationSpec{
 				Mesh: &v1.ObjectRef{
 					Name:      "hello",
@@ -57,7 +57,7 @@ var _ = Describe("SmiDestinationTranslator", func() {
 
 		mockSplitTranslator.
 			EXPECT().
-			Translate(gomock.AssignableToTypeOf(ctx), in, trafficTarget, mockReporter).
+			Translate(gomock.AssignableToTypeOf(ctx), in, destination, mockReporter).
 			Return(ts)
 
 		mockOutputs.
@@ -68,7 +68,7 @@ var _ = Describe("SmiDestinationTranslator", func() {
 		hrg := &smispecsv1alpha3.HTTPRouteGroup{}
 		mockAccessTranslator.
 			EXPECT().
-			Translate(gomock.AssignableToTypeOf(ctx), in, trafficTarget, mockReporter).
+			Translate(gomock.AssignableToTypeOf(ctx), in, destination, mockReporter).
 			Return([]*smiaccessv1alpha2.TrafficTarget{tt}, []*smispecsv1alpha3.HTTPRouteGroup{hrg})
 
 		mockOutputs.
@@ -79,6 +79,6 @@ var _ = Describe("SmiDestinationTranslator", func() {
 			EXPECT().
 			AddHTTPRouteGroups(hrg)
 
-		smiDestinationTranslator.Translate(ctx, in, trafficTarget, mockOutputs, mockReporter)
+		smiDestinationTranslator.Translate(ctx, in, destination, mockOutputs, mockReporter)
 	})
 })

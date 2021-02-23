@@ -107,7 +107,7 @@ func (d *mirrorDecorator) translateMirror(
 func (d *mirrorDecorator) makeKubeDestinationMirror(
 	mirrorDest *v1alpha2.TrafficPolicySpec_Policy_Mirror_KubeService,
 	port uint32,
-	trafficTarget *discoveryv1alpha2.Destination,
+	destination *discoveryv1alpha2.Destination,
 	sourceClusterName string,
 ) (*networkingv1alpha3spec.Destination, error) {
 	destinationRef := mirrorDest.KubeService
@@ -119,9 +119,9 @@ func (d *mirrorDecorator) makeKubeDestinationMirror(
 
 	// TODO(ilackarms): support other types of Destination destinations, e.g. via ServiceEntries
 
-	// An empty sourceClusterName indicates translation for VirtualService local to trafficTarget
+	// An empty sourceClusterName indicates translation for VirtualService local to Destination
 	if sourceClusterName == "" {
-		sourceClusterName = trafficTarget.Spec.GetKubeService().GetRef().GetClusterName()
+		sourceClusterName = destination.Spec.GetKubeService().GetRef().GetClusterName()
 	}
 
 	destinationHostname := d.clusterDomains.GetDestinationFQDN(
