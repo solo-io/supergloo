@@ -66,7 +66,7 @@ func (m *WorkloadSpec) Equal(that interface{}) bool {
 		}
 	}
 
-	switch m.WorkloadType.(type) {
+	switch m.Type.(type) {
 
 	case *WorkloadSpec_Kubernetes:
 

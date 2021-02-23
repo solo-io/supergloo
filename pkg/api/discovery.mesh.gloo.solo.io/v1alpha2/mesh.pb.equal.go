@@ -56,7 +56,7 @@ func (m *MeshSpec) Equal(that interface{}) bool {
 		}
 	}
 
-	switch m.MeshType.(type) {
+	switch m.Type.(type) {
 
 	case *MeshSpec_Istio_:
 
@@ -209,14 +209,12 @@ func (m *MeshSpec_Istio) Equal(that interface{}) bool {
 		}
 	}
 
-	if h, ok := interface{}(m.GetCitadelInfo()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetCitadelInfo()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetCitadelInfo(), target.GetCitadelInfo()) {
-			return false
-		}
+	if strings.Compare(m.GetTrustDomain(), target.GetTrustDomain()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetIstiodServiceAccount(), target.GetIstiodServiceAccount()) != 0 {
+		return false
 	}
 
 	if len(m.GetIngressGateways()) != len(target.GetIngressGateways()) {
@@ -490,38 +488,6 @@ func (m *MeshSpec_AgentInfo) Equal(that interface{}) bool {
 	}
 
 	if strings.Compare(m.GetAgentNamespace(), target.GetAgentNamespace()) != 0 {
-		return false
-	}
-
-	return true
-}
-
-// Equal function
-func (m *MeshSpec_Istio_CitadelInfo) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*MeshSpec_Istio_CitadelInfo)
-	if !ok {
-		that2, ok := that.(MeshSpec_Istio_CitadelInfo)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if strings.Compare(m.GetTrustDomain(), target.GetTrustDomain()) != 0 {
-		return false
-	}
-
-	if strings.Compare(m.GetCitadelServiceAccount(), target.GetCitadelServiceAccount()) != 0 {
 		return false
 	}
 

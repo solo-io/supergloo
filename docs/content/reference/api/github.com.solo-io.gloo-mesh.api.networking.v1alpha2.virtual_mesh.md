@@ -45,8 +45,8 @@ Represents a logical grouping of Meshes for shared configuration and cross-mesh 
 | ----- | ---- | ----- | ----------- |
 | meshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | Specify the Meshes configured by this VirtualMesh. |
   | mtlsConfig | [networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig" >}}) |  | Specify mTLS options. |
-  | federation | [networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation" >}}) |  | Specify how to federate TrafficTargets across service mesh boundaries. |
-  | globalAccessPolicy | [networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy" >}}) |  | Specify a global access policy for all Workloads and TrafficTargets associated with this VirtualMesh. |
+  | federation | [networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation" >}}) |  | Specify how to federate Destinations across service mesh boundaries. |
+  | globalAccessPolicy | [networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy" >}}) |  | Specify a global access policy for all Workloads and Destinations associated with this VirtualMesh. |
   
 
 
@@ -56,14 +56,14 @@ Represents a logical grouping of Meshes for shared configuration and cross-mesh 
 <a name="networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation"></a>
 
 ### VirtualMeshSpec.Federation
-"Federation" refers to the ability to expose TrafficTargets across service mesh boundaries, i.e. to traffic originating from Workloads external to the TrafficTarget's Mesh.
+"Federation" refers to the ability to expose Destinations across service mesh boundaries, i.e. to traffic originating from Workloads external to the Destination's Mesh.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| permissive | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  | Expose all TrafficTargets to all Workloads in this VirtualMesh. |
-  | flatNetwork | bool |  | If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the TrafficTargets, rather than through an ingress gateway. This mode requires a flat network environment. |
-  | hostnameSuffix | string |  | Configure the suffix for hostnames of TrafficTargets federated within this VirtualMesh. Currently this is only supported for Istio with [smart DNS proxying enabled](https://istio.io/latest/blog/2020/dns-proxy/), otherwise setting this field results in an error. If omitted, the hostname suffix defaults to "global". |
+| permissive | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  | Expose all Destinations to all Workloads in this VirtualMesh. |
+  | flatNetwork | bool |  | If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations, rather than through an ingress gateway. This mode requires a flat network environment. |
+  | hostnameSuffix | string |  | Configure the suffix for hostnames of Destinations federated within this VirtualMesh. Currently this is only supported for Istio with [smart DNS proxying enabled](https://istio.io/latest/blog/2020/dns-proxy/), otherwise setting this field results in an error. If omitted, the hostname suffix defaults to "global". |
   
 
 
@@ -78,8 +78,8 @@ Specify mTLS options. This includes options for configuring Mutual TLS within an
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| shared | [networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust" >}}) |  | Shared trust (allow communication between any pair of Workloads and TrafficTargets in the grouped Meshes). |
-  | limited | [networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust" >}}) |  | Limited trust (selectively allow communication between Workloads and TrafficTargets in the grouped Meshes). *Currently not available.* |
+| shared | [networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust" >}}) |  | Shared trust (allow communication between any pair of Workloads and Destinations in the grouped Meshes). |
+  | limited | [networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust" >}}) |  | Limited trust (selectively allow communication between Workloads and Destinations in the grouped Meshes). *Currently not available.* |
   | autoRestartPods | bool |  | Specify whether to allow Gloo Mesh to restart Kubernetes Pods when certificates are rotated when establishing shared trust. If this option is not explicitly enabled, users must restart Pods manually for the new certificates to be picked up. `meshctl` provides the command `meshctl mesh restart` to simplify this process, see [here]({{< versioned_link_path fromRoot="reference/cli/meshctl_mesh_restart/" >}}) for more info. |
   
 
@@ -100,7 +100,7 @@ Limited trust is a trust model which does not require trusting Meshes to share t
 <a name="networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust"></a>
 
 ### VirtualMeshSpec.MTLSConfig.SharedTrust
-Shared trust is a trust model requiring a common root certificate shared between trusting Meshes, as well as shared identity between all Workloads and TrafficTargets which wish to communicate within the VirtualMesh.
+Shared trust is a trust model requiring a common root certificate shared between trusting Meshes, as well as shared identity between all Workloads and Destinations which wish to communicate within the VirtualMesh.
 
 
 | Field | Type | Label | Description |
@@ -184,13 +184,13 @@ Configuration for generating a self-signed root certificate. Uses the X.509 form
 <a name="networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy"></a>
 
 ### VirtualMeshSpec.GlobalAccessPolicy
-Specify a global access policy for all Workloads and TrafficTargets associated with this VirtualMesh.
+Specify a global access policy for all Workloads and Destinations associated with this VirtualMesh.
 
 | Name | Number | Description |
 | ---- | ------ | ----------- |
 | MESH_DEFAULT | 0 | Assume the default for the service mesh type. Istio defaults to `false`, App Mesh defaults to `true`. |
-| ENABLED | 1 | Disallow traffic to all TrafficTargets in the VirtualMesh unless explicitly allowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}). |
-| DISABLED | 2 | Allow traffic to all TrafficTargets in the VirtualMesh unless explicitly disallowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}). |
+| ENABLED | 1 | Disallow traffic to all Destinations in the VirtualMesh unless explicitly allowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}). |
+| DISABLED | 2 | Allow traffic to all Destinations in the VirtualMesh unless explicitly disallowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}). |
 
 
  <!-- end enums -->

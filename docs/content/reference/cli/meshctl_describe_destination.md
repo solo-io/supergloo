@@ -1,19 +1,19 @@
 ---
-title: "meshctl describe traffictarget"
+title: "meshctl describe destination"
 weight: 5
 ---
-## meshctl describe traffictarget
+## meshctl describe destination
 
-Description of managed traffic targets
+Description of discovered Destinations
 
 ```
-meshctl describe traffictarget [flags]
+meshctl describe destination [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for traffictarget
+  -h, --help   help for destination
 ```
 
 ### Options inherited from parent commands

@@ -13,9 +13,8 @@ option (extproto.equal_all) = true;
 // Describes a service mesh control plane deployment.
 message MeshSpec {
 
-    // TODO(harveyxia) rename to type
     // Describes platform specific properties of the service mesh.
-    oneof mesh_type {
+    oneof type {
 
         // Describes an [Istio](https://istio.io/) service mesh.
         Istio istio = 1;
@@ -42,27 +41,18 @@ message MeshSpec {
         // Describes the Istio control plane deployment.
         MeshInstallation installation = 1;
 
-        // Describes Istio Citadel (Istio's security component).
-        CitadelInfo citadel_info = 2;
+        // The Istio trust domain used for https/[spiffe](https://spiffe.io/spiffe/concepts/#trust-domain) [identity](https://istio.io/docs/reference/glossary/#identity).
+        // If empty will default to ["cluster.local"](https://github.com/istio/istio/blob/e768f408a7de224e64ccdfb2634442541ce08e6a/pilot/cmd/pilot-agent/main.go#L118).
+        string trust_domain = 2;
+
+        // The istiod service account which determines identity for the Istio CA cert.
+        string istiod_service_account = 3;
 
         // Describes the ingress gateway.
-        repeated IngressGatewayInfo ingress_gateways = 3;
+        repeated IngressGatewayInfo ingress_gateways = 4;
 
         // True if smart DNS proxying is enabled, which allows for arbitrary DNS domains.
-        bool smart_dns_proxying_enabled = 4;
-
-        // TODO(harveyxia) flatten this out
-        // Describes Istio Citadel (Istio's security component).
-        message CitadelInfo {
-
-            // The Istio trust domain used for https/[spiffe](https://spiffe.io/spiffe/concepts/#trust-domain) [identity](https://istio.io/docs/reference/glossary/#identity).
-            // If empty will default to ["cluster.local"](https://github.com/istio/istio/blob/e768f408a7de224e64ccdfb2634442541ce08e6a/pilot/cmd/pilot-agent/main.go#L118).
-            string trust_domain = 1;
-
-            // TODO(harveyxia) rename to istiod_service_account
-            // The istiod service account which determines identity for the Istio CA cert.
-            string citadel_service_account = 2;
-        }
+        bool smart_dns_proxying_enabled = 5;
 
         // Describes the ingress gateway.
         message IngressGatewayInfo {

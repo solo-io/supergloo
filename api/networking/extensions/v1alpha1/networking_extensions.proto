@@ -61,13 +61,13 @@ message DiscoverySnapshot {
     // all meshes in the discovery snapshot
     repeated MeshObject meshes = 1;
     // all Destinations in the discovery snapshot
-    repeated TrafficTargetObject traffic_targets = 2;
+    repeated DestinationObject destinations = 2;
     // all workloads in the discovery snapshot
     repeated WorkloadObject workloads = 3;
 }
 
 // a proto-serializable representation of a Destination object
-message TrafficTargetObject {
+message DestinationObject {
     // metadata of the object
     ObjectMeta metadata = 1;
     // the spec of the object

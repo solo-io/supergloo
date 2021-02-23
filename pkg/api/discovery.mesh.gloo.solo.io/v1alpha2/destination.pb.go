@@ -117,7 +117,7 @@ type SubLocality struct {
 
 	// A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
 	Zone string `protobuf:"bytes,1,opt,name=zone,proto3" json:"zone,omitempty"`
-	// A subdivision of zone. Only applies to Istio-controlled services, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
+	// A subdivision of zone. Only applies to Istio-controlled Destinations, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
 	SubZone string `protobuf:"bytes,2,opt,name=sub_zone,json=subZone,proto3" json:"sub_zone,omitempty"`
 }
 

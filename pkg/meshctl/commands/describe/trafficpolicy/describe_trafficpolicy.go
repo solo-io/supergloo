@@ -114,7 +114,7 @@ func formattedHttpMatchers(sels []*networkingv1alpha2.TrafficPolicySpec_HttpMatc
 		s.WriteString(printing.FormattedField("Prefix", matcher.GetPrefix()))
 		s.WriteString(printing.FormattedField("Exact", matcher.GetExact()))
 		s.WriteString(printing.FormattedField("Regex", matcher.GetRegex()))
-		s.WriteString(printing.FormattedField("Method", matcher.GetMethod().Method.String()))
+		s.WriteString(printing.FormattedField("Method", matcher.GetMethod()))
 		s.WriteString("HEADERS\n")
 		for _, header := range matcher.GetHeaders() {
 			val := header.Value

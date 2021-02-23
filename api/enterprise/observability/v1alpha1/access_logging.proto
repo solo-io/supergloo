@@ -26,12 +26,15 @@ message AccessLogRecordSpec {
 
     // Specify criteria for recording access logs. A request must match all specified criteria to be recorded.
     message Filter {
-        // TODO make oneof, https://github.com/solo-io/gloo-mesh-enterprise/issues/167
-        // Matches against a response status code. Omit to match any status code.
-        .common.mesh.gloo.solo.io.StatusCodeMatcher status_code_matcher = 1;
 
-        // Matches against a request or response header. Omit to match any headers.
-        .common.mesh.gloo.solo.io.HeaderMatcher header_matcher = 2;
+        // Criteria type.
+        oneof type {
+            // Matches against a response status code. Omit to match any status code.
+            .common.mesh.gloo.solo.io.StatusCodeMatcher status_code_matcher = 1;
+
+            // Matches against a request or response header. Omit to match any headers.
+            .common.mesh.gloo.solo.io.HeaderMatcher header_matcher = 2;
+        }
     }
 }
 

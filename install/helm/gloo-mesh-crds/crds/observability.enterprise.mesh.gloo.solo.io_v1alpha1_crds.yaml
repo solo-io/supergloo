@@ -32,6 +32,17 @@ spec:
                 The list is disjunctive, a request will be recorded if it matches any filter.
                 Leave empty to emit all access logs.
               items:
+                oneOf:
+                - not:
+                    anyOf:
+                    - required:
+                      - statusCodeMatcher
+                    - required:
+                      - headerMatcher
+                - required:
+                  - statusCodeMatcher
+                - required:
+                  - headerMatcher
                 properties:
                   headerMatcher:
                     description: Matches against a request or response header. Omit to match any headers.
@@ -59,9 +70,7 @@ spec:
                         type: string
                     type: object
                   statusCodeMatcher:
-                    description: |-
-                      TODO make oneof, https://github.com/solo-io/gloo-mesh-enterprise/issues/167
-                      Matches against a response status code. Omit to match any status code.
+                    description: Matches against a response status code. Omit to match any status code.
                     properties:
                       comparator:
                         description: The comparison type used for matching.

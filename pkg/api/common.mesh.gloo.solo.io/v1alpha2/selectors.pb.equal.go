@@ -26,14 +26,14 @@ var (
 )
 
 // Equal function
-func (m *TrafficTargetSelector) Equal(that interface{}) bool {
+func (m *DestinationSelector) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*TrafficTargetSelector)
+	target, ok := that.(*DestinationSelector)
 	if !ok {
-		that2, ok := that.(TrafficTargetSelector)
+		that2, ok := that.(DestinationSelector)
 		if ok {
 			target = &that2
 		} else {
@@ -171,14 +171,14 @@ func (m *IdentitySelector) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *TrafficTargetSelector_KubeServiceMatcher) Equal(that interface{}) bool {
+func (m *DestinationSelector_KubeServiceMatcher) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*TrafficTargetSelector_KubeServiceMatcher)
+	target, ok := that.(*DestinationSelector_KubeServiceMatcher)
 	if !ok {
-		that2, ok := that.(TrafficTargetSelector_KubeServiceMatcher)
+		that2, ok := that.(DestinationSelector_KubeServiceMatcher)
 		if ok {
 			target = &that2
 		} else {
@@ -228,14 +228,14 @@ func (m *TrafficTargetSelector_KubeServiceMatcher) Equal(that interface{}) bool 
 }
 
 // Equal function
-func (m *TrafficTargetSelector_KubeServiceRefs) Equal(that interface{}) bool {
+func (m *DestinationSelector_KubeServiceRefs) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*TrafficTargetSelector_KubeServiceRefs)
+	target, ok := that.(*DestinationSelector_KubeServiceRefs)
 	if !ok {
-		that2, ok := that.(TrafficTargetSelector_KubeServiceRefs)
+		that2, ok := that.(DestinationSelector_KubeServiceRefs)
 		if ok {
 			target = &that2
 		} else {

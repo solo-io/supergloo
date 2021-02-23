@@ -26,9 +26,9 @@ These docs describe Gloo Mesh CRDs.
 
 ### discovery.mesh.gloo.solo.io
 
-  - [Mesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec" >}})
+  - [Destination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.destination#discovery.mesh.gloo.solo.io.DestinationSpec" >}})
 
-  - [TrafficTarget]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec" >}})
+  - [Mesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec" >}})
 
   - [Workload]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.workload#discovery.mesh.gloo.solo.io.WorkloadSpec" >}})
 
@@ -53,8 +53,6 @@ These docs describe Gloo Mesh CRDs.
 ### networking.mesh.gloo.solo.io
 
   - [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy#networking.mesh.gloo.solo.io.AccessPolicySpec" >}})
-
-  - [FailoverService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.failover_service#networking.mesh.gloo.solo.io.FailoverServiceSpec" >}})
 
   - [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec" >}})
 

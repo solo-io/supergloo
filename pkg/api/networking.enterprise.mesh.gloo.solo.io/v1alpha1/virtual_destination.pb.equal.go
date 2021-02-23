@@ -124,14 +124,14 @@ func (m *VirtualDestinationSpec) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *BackingService) Equal(that interface{}) bool {
+func (m *BackingDestination) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*BackingService)
+	target, ok := that.(*BackingDestination)
 	if !ok {
-		that2, ok := that.(BackingService)
+		that2, ok := that.(BackingDestination)
 		if ok {
 			target = &that2
 		} else {
@@ -144,9 +144,9 @@ func (m *BackingService) Equal(that interface{}) bool {
 		return false
 	}
 
-	switch m.BackingServiceType.(type) {
+	switch m.Type.(type) {
 
-	case *BackingService_KubeService:
+	case *BackingDestination_KubeService:
 
 		if h, ok := interface{}(m.GetKubeService()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetKubeService()) {
@@ -209,17 +209,17 @@ func (m *VirtualDestinationStatus) Equal(that interface{}) bool {
 
 	}
 
-	if len(m.GetSelectedTrafficTargets()) != len(target.GetSelectedTrafficTargets()) {
+	if len(m.GetSelectedDestinations()) != len(target.GetSelectedDestinations()) {
 		return false
 	}
-	for idx, v := range m.GetSelectedTrafficTargets() {
+	for idx, v := range m.GetSelectedDestinations() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetSelectedTrafficTargets()[idx]) {
+			if !h.Equal(target.GetSelectedDestinations()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetSelectedTrafficTargets()[idx]) {
+			if !proto.Equal(v, target.GetSelectedDestinations()[idx]) {
 				return false
 			}
 		}
@@ -314,14 +314,14 @@ func (m *VirtualDestinationSpec_MeshList) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *VirtualDestinationSpec_BackingServiceList) Equal(that interface{}) bool {
+func (m *VirtualDestinationSpec_BackingDestinationList) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*VirtualDestinationSpec_BackingServiceList)
+	target, ok := that.(*VirtualDestinationSpec_BackingDestinationList)
 	if !ok {
-		that2, ok := that.(VirtualDestinationSpec_BackingServiceList)
+		that2, ok := that.(VirtualDestinationSpec_BackingDestinationList)
 		if ok {
 			target = &that2
 		} else {
@@ -334,17 +334,17 @@ func (m *VirtualDestinationSpec_BackingServiceList) Equal(that interface{}) bool
 		return false
 	}
 
-	if len(m.GetServices()) != len(target.GetServices()) {
+	if len(m.GetDestinations()) != len(target.GetDestinations()) {
 		return false
 	}
-	for idx, v := range m.GetServices() {
+	for idx, v := range m.GetDestinations() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetServices()[idx]) {
+			if !h.Equal(target.GetDestinations()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetServices()[idx]) {
+			if !proto.Equal(v, target.GetDestinations()[idx]) {
 				return false
 			}
 		}
@@ -375,17 +375,17 @@ func (m *VirtualDestinationSpec_LocalityConfig) Equal(that interface{}) bool {
 		return false
 	}
 
-	if len(m.GetServiceSelectors()) != len(target.GetServiceSelectors()) {
+	if len(m.GetDestinationSelectors()) != len(target.GetDestinationSelectors()) {
 		return false
 	}
-	for idx, v := range m.GetServiceSelectors() {
+	for idx, v := range m.GetDestinationSelectors() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetServiceSelectors()[idx]) {
+			if !h.Equal(target.GetDestinationSelectors()[idx]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetServiceSelectors()[idx]) {
+			if !proto.Equal(v, target.GetDestinationSelectors()[idx]) {
 				return false
 			}
 		}
@@ -510,14 +510,14 @@ func (m *VirtualDestinationSpec_LocalityConfig_Locality) Equal(that interface{})
 }
 
 // Equal function
-func (m *VirtualDestinationStatus_SelectedTrafficTarget) Equal(that interface{}) bool {
+func (m *VirtualDestinationStatus_SelectedDestinations) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*VirtualDestinationStatus_SelectedTrafficTarget)
+	target, ok := that.(*VirtualDestinationStatus_SelectedDestinations)
 	if !ok {
-		that2, ok := that.(VirtualDestinationStatus_SelectedTrafficTarget)
+		that2, ok := that.(VirtualDestinationStatus_SelectedDestinations)
 		if ok {
 			target = &that2
 		} else {
@@ -540,12 +540,12 @@ func (m *VirtualDestinationStatus_SelectedTrafficTarget) Equal(that interface{})
 		}
 	}
 
-	if h, ok := interface{}(m.GetService()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetService()) {
+	if h, ok := interface{}(m.GetDestination()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetDestination()) {
 			return false
 		}
 	} else {
-		if !proto.Equal(m.GetService(), target.GetService()) {
+		if !proto.Equal(m.GetDestination(), target.GetDestination()) {
 			return false
 		}
 	}

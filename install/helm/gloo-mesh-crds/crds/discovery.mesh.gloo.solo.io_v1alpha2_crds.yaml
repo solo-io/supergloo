@@ -54,7 +54,7 @@ spec:
                               description: The zone and sub-zone (if controlled by Istio) of the endpoint.
                               properties:
                                 subZone:
-                                  description: A subdivision of zone. Only applies to Istio-controlled services, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
+                                  description: A subdivision of zone. Only applies to Istio-controlled Destinations, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
                                   type: string
                                 zone:
                                   description: A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
@@ -176,16 +176,6 @@ spec:
                                  It is ignored in gRPC case because the value is always "POST".
                                  If not specified, allows any method.
                         items:
-                          enum:
-                          - GET
-                          - POST
-                          - PUT
-                          - DELETE
-                          - HEAD
-                          - CONNECT
-                          - OPTIONS
-                          - TRACE
-                          - PATCH
                           type: string
                         type: array
                       allowedPaths:
@@ -213,7 +203,7 @@ spec:
                       destinationSelector:
                         description: |-
                           Specify the Destinations for which to apply this AccessPolicy.
-                          Leave empty to apply the AccessPolicy to all TrafficTargets.
+                          Leave empty to apply the AccessPolicy to all Destinations.
                         items:
                           properties:
                             kubeServiceMatcher:
@@ -372,8 +362,8 @@ spec:
                     properties:
                       destinationSelector:
                         description: |-
-                          Specify the Destinations (traffic targets) this TrafficPolicy applies to.
-                          Omit to apply to all TrafficTargets.
+                          Specify the Destinations (destinations) this TrafficPolicy applies to.
+                          Omit to apply to all Destinations.
                         items:
                           properties:
                             kubeServiceMatcher:
@@ -482,21 +472,8 @@ spec:
                                 type: object
                               type: array
                             method:
-                              description: Specify an HTTP Method/Verb to match against.
-                              properties:
-                                method:
-                                  enum:
-                                  - GET
-                                  - POST
-                                  - PUT
-                                  - DELETE
-                                  - HEAD
-                                  - CONNECT
-                                  - OPTIONS
-                                  - TRACE
-                                  - PATCH
-                                  type: string
-                              type: object
+                              description: Specify an HTTP method to match against.
+                              type: string
                             prefix:
                               description: If specified, the targeted path must begin with the prefix.
                               type: string
@@ -600,13 +577,9 @@ spec:
                                 - required:
                                   - fixedDelay
                                 - required:
-                                  - exponentialDelay
-                                - required:
                                   - abort
                             - required:
                               - fixedDelay
-                            - required:
-                              - exponentialDelay
                             - required:
                               - abort
                             properties:
@@ -618,11 +591,6 @@ spec:
                                     format: int32
                                     type: integer
                                 type: object
-                              exponentialDelay:
-                                description: |-
-                                  TODO(harveyxia) remove
-                                  $hide_from_docs
-                                type: string
                               fixedDelay:
                                 description: 'Add a delay of a fixed duration before sending the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms.'
                                 type: string
@@ -1123,7 +1091,7 @@ spec:
                       items:
                         properties:
                           subZone:
-                            description: A subdivision of zone. Only applies to Istio-controlled services, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
+                            description: A subdivision of zone. Only applies to Istio-controlled Destinations, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
                             type: string
                           zone:
                             description: A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
@@ -1140,20 +1108,6 @@ spec:
             istio:
               description: Describes an [Istio](https://istio.io/) service mesh.
               properties:
-                citadelInfo:
-                  description: Describes Istio Citadel (Istio's security component).
-                  properties:
-                    citadelServiceAccount:
-                      description: |-
-                        TODO(harveyxia) rename to istiod_service_account
-                        The istiod service account which determines identity for the Istio CA cert.
-                      type: string
-                    trustDomain:
-                      description: |-
-                        The Istio trust domain used for https/[spiffe](https://spiffe.io/spiffe/concepts/#trust-domain) [identity](https://istio.io/docs/reference/glossary/#identity).
-                        If empty will default to ["cluster.local"](https://github.com/istio/istio/blob/e768f408a7de224e64ccdfb2634442541ce08e6a/pilot/cmd/pilot-agent/main.go#L118).
-                      type: string
-                  type: object
                 ingressGateways:
                   description: Describes the ingress gateway.
                   items:
@@ -1218,7 +1172,7 @@ spec:
                       items:
                         properties:
                           subZone:
-                            description: A subdivision of zone. Only applies to Istio-controlled services, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
+                            description: A subdivision of zone. Only applies to Istio-controlled Destinations, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
                             type: string
                           zone:
                             description: A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
@@ -1231,9 +1185,17 @@ spec:
                         mesh's primary control plane image (e.g. the istio-pilot image tag).
                       type: string
                   type: object
+                istiodServiceAccount:
+                  description: The istiod service account which determines identity for the Istio CA cert.
+                  type: string
                 smartDnsProxyingEnabled:
                   description: True if smart DNS proxying is enabled, which allows for arbitrary DNS domains.
                   type: boolean
+                trustDomain:
+                  description: |-
+                    The Istio trust domain used for https/[spiffe](https://spiffe.io/spiffe/concepts/#trust-domain) [identity](https://istio.io/docs/reference/glossary/#identity).
+                    If empty will default to ["cluster.local"](https://github.com/istio/istio/blob/e768f408a7de224e64ccdfb2634442541ce08e6a/pilot/cmd/pilot-agent/main.go#L118).
+                  type: string
               type: object
             linkerd:
               description: Describes a [Linkerd](https://linkerd.io/) service mesh.
@@ -1270,7 +1232,7 @@ spec:
                       items:
                         properties:
                           subZone:
-                            description: A subdivision of zone. Only applies to Istio-controlled services, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
+                            description: A subdivision of zone. Only applies to Istio-controlled Destinations, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
                             type: string
                           zone:
                             description: A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
@@ -1316,7 +1278,7 @@ spec:
                       items:
                         properties:
                           subZone:
-                            description: A subdivision of zone. Only applies to Istio-controlled services, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
+                            description: A subdivision of zone. Only applies to Istio-controlled Destinations, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
                             type: string
                           zone:
                             description: A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
@@ -1390,7 +1352,7 @@ spec:
                       properties:
                         flatNetwork:
                           description: |-
-                            If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the TrafficTargets,
+                            If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations,
                             rather than through an ingress gateway. This mode requires a flat network environment.
                           type: boolean
                         hostnameSuffix:

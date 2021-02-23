@@ -20,7 +20,6 @@ title: "traffic_policy.proto"
 ## Table of Contents
   - [TrafficPolicySpec](#networking.mesh.gloo.solo.io.TrafficPolicySpec)
   - [TrafficPolicySpec.HttpMatcher](#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher)
-  - [TrafficPolicySpec.HttpMatcher.HttpMethod](#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher.HttpMethod)
   - [TrafficPolicySpec.HttpMatcher.QueryParameterMatcher](#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher.QueryParameterMatcher)
   - [TrafficPolicySpec.Policy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy)
   - [TrafficPolicySpec.Policy.CorsPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy)
@@ -35,8 +34,6 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.Policy.Mirror](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.Mirror)
   - [TrafficPolicySpec.Policy.MultiDestination](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination)
   - [TrafficPolicySpec.Policy.MultiDestination.WeightedDestination](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination)
-  - [TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.FailoverServiceDestination](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.FailoverServiceDestination)
-  - [TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry)
   - [TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination)
   - [TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination.SubsetEntry)
   - [TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.VirtualDestinationReference](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.VirtualDestinationReference)
@@ -44,7 +41,7 @@ title: "traffic_policy.proto"
   - [TrafficPolicySpec.Policy.OutlierDetection](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection)
   - [TrafficPolicySpec.Policy.RetryPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.RetryPolicy)
   - [TrafficPolicyStatus](#networking.mesh.gloo.solo.io.TrafficPolicyStatus)
-  - [TrafficPolicyStatus.TrafficTargetsEntry](#networking.mesh.gloo.solo.io.TrafficPolicyStatus.TrafficTargetsEntry)
+  - [TrafficPolicyStatus.DestinationsEntry](#networking.mesh.gloo.solo.io.TrafficPolicyStatus.DestinationsEntry)
 
   - [TrafficPolicySpec.Policy.MTLS.Istio.TLSmode](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS.Istio.TLSmode)
 
@@ -62,7 +59,7 @@ Applies L7 routing and post-routing configuration on selected network edges.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | sourceSelector | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Specify the Workloads (traffic sources) this TrafficPolicy applies to. Omit to apply to all Workloads. |
-  | destinationSelector | [][common.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | Specify the TrafficTargets (traffic targets) this TrafficPolicy applies to. Omit to apply to all TrafficTargets. |
+  | destinationSelector | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | Specify the Destinations (destinations) this TrafficPolicy applies to. Omit to apply to all Destinations. |
   | httpRequestMatchers | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher" >}}) | repeated | Specify criteria that HTTP requests must satisfy for the TrafficPolicy to apply. Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur. Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply. Omit to apply to any HTTP request. |
   | policy | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy" >}}) |  | Specify L7 routing and post-routing configuration. |
   
@@ -84,22 +81,7 @@ Specify HTTP request level match criteria. All specified conditions must be sati
   | regex | string |  | If specified, the targeted path must match the regex. |
   | headers | [][common.mesh.gloo.solo.io.HeaderMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.request_matchers#common.mesh.gloo.solo.io.HeaderMatcher" >}}) | repeated | Specify a set of headers which requests must match in entirety (all headers must match). |
   | queryParameters | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher.QueryParameterMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher.QueryParameterMatcher" >}}) | repeated | Specify a set of URL query parameters which requests must match in entirety (all query params must match). |
-  | method | [networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher.HttpMethod]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher.HttpMethod" >}}) |  | Specify an HTTP Method/Verb to match against. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher.HttpMethod"></a>
-
-### TrafficPolicySpec.HttpMatcher.HttpMethod
-TODO(harveyxia) make string Express an optional HttpMethod by wrapping it in a nillable message.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| method | [networking.mesh.gloo.solo.io.HttpMethodValue]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.http#networking.mesh.gloo.solo.io.HttpMethodValue" >}}) |  |  |
+  | method | string |  | Specify an HTTP method to match against. |
   
 
 
@@ -192,7 +174,6 @@ Specify one or more faults to inject for the selected network edge.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | fixedDelay | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | Add a delay of a fixed duration before sending the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms. |
-  | exponentialDelay | [google.protobuf.Duration]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.duration#google.protobuf.Duration" >}}) |  | TODO(harveyxia) remove $hide_from_docs |
   | abort | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.FaultInjection.Abort]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.FaultInjection.Abort" >}}) |  | Abort the request and return the specified error code back to traffic source. |
   | percentage | double |  | Percentage of requests to be faulted. Values range between 0 and 100. If omitted all requests will be faulted. |
   
@@ -269,7 +250,7 @@ Specify modifications to request and response headers.
 <a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS"></a>
 
 ### TrafficPolicySpec.Policy.MTLS
-Configure mTLS settings on traffic targets. If specified this overrides the global default defined in Settings.
+Configure mTLS settings on destinations. If specified this overrides the global default defined in Settings.
 
 
 | Field | Type | Label | Description |
@@ -336,43 +317,9 @@ Specify a traffic shift destination along with a weight.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| kubeService | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination" >}}) |  | Specify a Kubernetes Service. |
-  | failoverService | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.FailoverServiceDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.FailoverServiceDestination" >}}) |  | Specify a FailoverService. |
+| weight | uint32 |  | Specify the proportion of traffic to be forwarded to this destination. Weights across all of the `destinations` must sum to 100. |
+  | kubeService | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.KubeDestination" >}}) |  | Specify a Kubernetes Service. |
   | virtualDestination | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.VirtualDestinationReference]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.VirtualDestinationReference" >}}) |  | Specify a VirtualDestination. |
-  | weight | uint32 |  | Specify the proportion of traffic to be forwarded to this destination. Weights across all of the `destinations` must sum to 100. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.FailoverServiceDestination"></a>
-
-### TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.FailoverServiceDestination
-TODO(harveyxia) remove A traffic shift destination that references a FailoverService.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| name | string |  | The name of the FailoverService. |
-  | namespace | string |  | The namespace of the FailoverService. |
-  | subset | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry" >}}) | repeated | Subset routing is currently only supported for Istio backing services. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry"></a>
-
-### TrafficPolicySpec.Policy.MultiDestination.WeightedDestination.FailoverServiceDestination.SubsetEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | string |  |  |
-  | value | string |  |  |
   
 
 
@@ -490,8 +437,8 @@ Specify retries for failed requests.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The most recent generation observed in the the TrafficPolicy metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
-  | state | [networking.mesh.gloo.solo.io.ApprovalState]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state#networking.mesh.gloo.solo.io.ApprovalState" >}}) |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all selected TrafficTargets. |
-  | trafficTargets | [][networking.mesh.gloo.solo.io.TrafficPolicyStatus.TrafficTargetsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicyStatus.TrafficTargetsEntry" >}}) | repeated | The status of the TrafficPolicy for each selected TrafficTarget. A TrafficPolicy may be Accepted for some TrafficTargets and rejected for others. |
+  | state | [networking.mesh.gloo.solo.io.ApprovalState]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state#networking.mesh.gloo.solo.io.ApprovalState" >}}) |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all selected Destinations. |
+  | destinations | [][networking.mesh.gloo.solo.io.TrafficPolicyStatus.DestinationsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicyStatus.DestinationsEntry" >}}) | repeated | The status of the TrafficPolicy for each selected Destination. A TrafficPolicy may be Accepted for some Destinations and rejected for others. |
   | workloads | []string | repeated | The list of selected Workloads for which this policy has been applied. |
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
   
@@ -500,9 +447,9 @@ Specify retries for failed requests.
 
 
 
-<a name="networking.mesh.gloo.solo.io.TrafficPolicyStatus.TrafficTargetsEntry"></a>
+<a name="networking.mesh.gloo.solo.io.TrafficPolicyStatus.DestinationsEntry"></a>
 
-### TrafficPolicyStatus.TrafficTargetsEntry
+### TrafficPolicyStatus.DestinationsEntry
 
 
 

@@ -70,6 +70,62 @@ spec:
               description: A set of AccessPolicy configuration permissions. Permission granularity is defined at the object level.
               items:
                 properties:
+                  destinationSelectors:
+                    description: A list of permitted Destination selectors.
+                    items:
+                      properties:
+                        kubeServiceMatcher:
+                          description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
+                          properties:
+                            clusters:
+                              description: |-
+                                If specified, match Kubernetes Services if they exist in one of the specified clusters.
+                                           When used in a networking policy, omission matches any cluster.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+                              items:
+                                type: string
+                              type: array
+                            labels:
+                              additionalProperties:
+                                type: string
+                              description: |-
+                                If specified, a match requires all labels to exist on a Kubernetes Service.
+                                           When used in a networking policy, omission matches any labels.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                              type: object
+                            namespaces:
+                              description: |-
+                                If specified, match Kubernetes Services if they exist in one of the specified namespaces.
+                                           When used in a networking policy, omission matches any namespace.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        kubeServiceRefs:
+                          description: Match Kubernetes Services by direct reference.
+                          properties:
+                            services:
+                              description: |-
+                                Match Kubernetes Services by direct reference.
+                                           When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
+                              items:
+                                properties:
+                                  clusterName:
+                                    description: name of the cluster in which the resource exists
+                                    type: string
+                                  name:
+                                    description: name of the resource being referenced
+                                    type: string
+                                  namespace:
+                                    description: namespace of the resource being referenced
+                                    type: string
+                                type: object
+                              type: array
+                          type: object
+                      type: object
+                    type: array
                   identitySelectors:
                     description: A list of permitted identity selectors.
                     items:
@@ -118,7 +174,13 @@ spec:
                           type: object
                       type: object
                     type: array
-                  trafficTargetSelectors:
+                type: object
+              type: array
+            trafficPolicyScopes:
+              description: A set of TrafficPolicy configuration permissions. Permission granularity is defined at the field level.
+              items:
+                properties:
+                  destinationSelectors:
                     description: A list of permitted Destination selectors.
                     items:
                       properties:
@@ -174,12 +236,6 @@ spec:
                           type: object
                       type: object
                     type: array
-                type: object
-              type: array
-            trafficPolicyScopes:
-              description: A set of TrafficPolicy configuration permissions. Permission granularity is defined at the field level.
-              items:
-                properties:
                   trafficPolicyActions:
                     description: A list of permitted TrafficPolicy configuration actions.
                     items:
@@ -196,62 +252,6 @@ spec:
                       - OUTLIER_DETECTION
                       - MTLS_CONFIG
                       type: string
-                    type: array
-                  trafficTargetSelectors:
-                    description: A list of permitted Destination selectors.
-                    items:
-                      properties:
-                        kubeServiceMatcher:
-                          description: Match Kubernetes Services by their labels, namespaces, and/or clusters.
-                          properties:
-                            clusters:
-                              description: |-
-                                If specified, match Kubernetes Services if they exist in one of the specified clusters.
-                                           When used in a networking policy, omission matches any cluster.
-                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
-                              items:
-                                type: string
-                              type: array
-                            labels:
-                              additionalProperties:
-                                type: string
-                              description: |-
-                                If specified, a match requires all labels to exist on a Kubernetes Service.
-                                           When used in a networking policy, omission matches any labels.
-                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
-                              type: object
-                            namespaces:
-                              description: |-
-                                If specified, match Kubernetes Services if they exist in one of the specified namespaces.
-                                           When used in a networking policy, omission matches any namespace.
-                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
-                              items:
-                                type: string
-                              type: array
-                          type: object
-                        kubeServiceRefs:
-                          description: Match Kubernetes Services by direct reference.
-                          properties:
-                            services:
-                              description: |-
-                                Match Kubernetes Services by direct reference.
-                                           When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
-                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any value for the given field.
-                              items:
-                                properties:
-                                  clusterName:
-                                    description: name of the cluster in which the resource exists
-                                    type: string
-                                  name:
-                                    description: name of the resource being referenced
-                                    type: string
-                                  namespace:
-                                    description: namespace of the resource being referenced
-                                    type: string
-                                type: object
-                              type: array
-                          type: object
-                      type: object
                     type: array
                   workloadSelectors:
                     description: A list of permitted Workload selectors.
@@ -289,19 +289,7 @@ spec:
               description: A set of VirtualDestination configuration permissions. Permission granularity is defined at the object level.
               items:
                 properties:
-                  meshRefs:
-                    description: A list of permitted mesh references.
-                    items:
-                      properties:
-                        name:
-                          description: name of the resource being referenced
-                          type: string
-                        namespace:
-                          description: namespace of the resource being referenced
-                          type: string
-                      type: object
-                    type: array
-                  serviceSelectors:
+                  destinationSelectors:
                     description: A list of permitted backing service selectors.
                     items:
                       properties:
@@ -357,8 +345,8 @@ spec:
                           type: object
                       type: object
                     type: array
-                  services:
-                    description: A list of permitted backing services.
+                  destinations:
+                    description: A list of permitted backing Destinations.
                     items:
                       oneOf:
                       - not:
@@ -381,6 +369,18 @@ spec:
                               description: namespace of the resource being referenced
                               type: string
                           type: object
+                      type: object
+                    type: array
+                  meshRefs:
+                    description: A list of permitted mesh references.
+                    items:
+                      properties:
+                        name:
+                          description: name of the resource being referenced
+                          type: string
+                        namespace:
+                          description: namespace of the resource being referenced
+                          type: string
                       type: object
                     type: array
                   virtualMeshRefs:

@@ -42,8 +42,8 @@ message VirtualDestinationSpec {
     // Configuration that determines failover ordering.
     oneof failover_config {
 
-        // Failover priority is determined by an explicitly provided static ordering of TrafficTargets.
-        BackingServiceList static = 5;
+        // Failover priority is determined by an explicitly provided static ordering of Destinations.
+        BackingDestinationList static = 5;
 
         // Failover priority is determined by the localities of the traffic source and destination.
         LocalityConfig localized = 6;
@@ -64,27 +64,26 @@ message VirtualDestinationSpec {
         repeated .core.skv2.solo.io.ObjectRef meshes = 1;
     }
 
-    // TODO(harveyxia) rename Service to Destination
-    // Failover priority is determined by an explicitly provided static ordering of TrafficTargets.
+    // Failover priority is determined by an explicitly provided static ordering of Destinations.
     // When a Destination in the list is in an unhealthy state (as determined by its configured outlier detection),
     // requests sent to the VirtualDestination will be routed to the next healthy Destination in the list.
-    message BackingServiceList {
+    message BackingDestinationList {
 
         // The list of Destinations backing the VirtualDestination, ordered by decreasing priority.
-        // All services must be either in the same Mesh or in Meshes that are grouped under a common VirtualMesh.
-        repeated BackingService services = 1;
+        // All Destinations must be either in the same Mesh or in Meshes that are grouped under a common VirtualMesh.
+        repeated BackingDestination destinations = 1;
     }
 
     // Enables failover based on locality. When a client workload makes a request to the VirtualDestination, Gloo Mesh will
-    // first try to direct traffic to the service instance geographically closest to the client workload. If outlier
+    // first try to direct traffic to the Destination instance geographically closest to the client workload. If outlier
     // detection detects that the closest Destination is in an unhealthy state, requests will instead be routed
-    // to a service in one of the localities specified in the `to` field.
+    // to a Destination in one of the localities specified in the `to` field.
     message LocalityConfig {
 
-        // Selectors for the services backing the VirtualDestination.
-        // All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
-        // Currently only one service per cluster can be selected, more than one per cluster will be considered invalid.
-        repeated .common.mesh.gloo.solo.io.TrafficTargetSelector service_selectors = 1;
+        // Selectors for the Destinations backing the VirtualDestination.
+        // All Destinations must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
+        // Currently only one Destination per cluster can be selected, more than one per cluster will be considered invalid.
+        repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selectors = 1;
 
         // Directives describing the locality failover behavior.
         repeated LocalityFailoverDirective failover_directives = 2;
@@ -111,16 +110,16 @@ message VirtualDestinationSpec {
             string sub_zone = 3;
         }
 
-        // Outlier detection to determine the health of the selected services.
+        // Outlier detection to determine the health of the selected Destinations.
         networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection outlier_detection = 3;
     }
 }
 
-// A service represented by a Destination.
-message BackingService {
+// A backing Destination.
+message BackingDestination {
 
-    // Platform specific TrafficTargets.
-    oneof backing_service_type {
+    // Platform specific Destinations.
+    oneof type {
 
         // Reference to a Kubernetes Service.
         .core.skv2.solo.io.ClusterObjectRef kube_service = 1;
@@ -142,17 +141,17 @@ message VirtualDestinationStatus {
     map<string, .networking.mesh.gloo.solo.io.ApprovalStatus> meshes = 3;
 
     // The Destinations that comprise this VirtualDestination.
-    repeated SelectedTrafficTarget selected_traffic_targets = 4;
+    repeated SelectedDestinations selected_destinations = 4;
 
     // Any errors found while processing this generation of the resource.
     repeated string errors = 5;
 
-    message SelectedTrafficTarget {
+    message SelectedDestinations {
 
-        // Reference to the traffic target.
+        // Reference to the Destination object.
         .core.skv2.solo.io.ClusterObjectRef ref = 1;
 
-        // The service that the Destination represents.
-        BackingService service = 2;
+        // The platform-specific destination that the Destination object represents.
+        BackingDestination destination = 2;
     }
 }

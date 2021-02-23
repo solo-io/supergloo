@@ -76,7 +76,7 @@ func describeMeshes(ctx context.Context, c client.Client, searchTerms []string) 
 		table.Append([]string{
 			description.Metadata.string(),
 			printing.FormattedObjectRef(description.VirtualMesh),
-			printing.FormattedObjectRefs(description.FailoverServices),
+			printing.FormattedObjectRefs(description.VirtualDestinations),
 		})
 	}
 	table.Render()
@@ -98,9 +98,9 @@ func (m meshMetadata) string() string {
 }
 
 type meshDescription struct {
-	Metadata         *meshMetadata
-	VirtualMesh      *v1.ObjectRef
-	FailoverServices []*v1.ObjectRef
+	Metadata            *meshMetadata
+	VirtualMesh         *v1.ObjectRef
+	VirtualDestinations []*v1.ObjectRef
 }
 
 type meshMetadata struct {
@@ -132,15 +132,15 @@ func matchMesh(mesh discoveryv1alpha2.Mesh, searchTerms []string) bool {
 func describeMesh(mesh *discoveryv1alpha2.Mesh) meshDescription {
 	meshMeta := getMeshMetadata(mesh)
 
-	var failoverServices []*v1.ObjectRef
-	for _, fs := range mesh.Status.AppliedFailoverServices {
-		failoverServices = append(failoverServices, fs.Ref)
+	var virtualDestinations []*v1.ObjectRef
+	for _, fs := range mesh.Status.AppliedVirtualDestinations {
+		virtualDestinations = append(virtualDestinations, fs.Ref)
 	}
 
 	return meshDescription{
-		Metadata:         &meshMeta,
-		VirtualMesh:      mesh.Status.GetAppliedVirtualMesh().GetRef(),
-		FailoverServices: failoverServices,
+		Metadata:            &meshMeta,
+		VirtualMesh:         mesh.Status.GetAppliedVirtualMesh().GetRef(),
+		VirtualDestinations: virtualDestinations,
 	}
 }
 
@@ -157,7 +157,7 @@ func getMeshMetadata(mesh *discoveryv1alpha2.Mesh) meshMetadata {
 		}
 	}
 	var meshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation
-	switch mesh.Spec.GetMeshType().(type) {
+	switch mesh.Spec.GetType().(type) {
 	case *discoveryv1alpha2.MeshSpec_Istio_:
 		meshType = "istio"
 		meshInstallation = mesh.Spec.GetIstio().Installation

@@ -1,4 +1,4 @@
-package traffictarget
+package destinations
 
 import (
 	"bytes"
@@ -19,15 +19,15 @@ import (
 func Command(ctx context.Context) *cobra.Command {
 	opts := &options{}
 	cmd := &cobra.Command{
-		Use:     "traffictarget",
-		Short:   "Description of managed traffic targets",
-		Aliases: []string{"traffictargets"},
+		Use:     "destination",
+		Short:   "Description of discovered Destinations",
+		Aliases: []string{"destinations"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := utils.BuildClient(opts.kubeconfig, opts.kubecontext)
 			if err != nil {
 				return err
 			}
-			description, err := describeTrafficTargets(ctx, c, opts.searchTerms)
+			description, err := describeDestinations(ctx, c, opts.searchTerms)
 			if err != nil {
 				return err
 			}
@@ -51,17 +51,17 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.StringSliceVarP(&o.searchTerms, "search", "s", []string{}, "A list of terms to match traffic target names against")
 }
 
-func describeTrafficTargets(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
-	trafficTargetClient := discoveryv1alpha2.NewTrafficTargetClient(c)
-	trafficTargetList, err := trafficTargetClient.ListTrafficTarget(ctx)
+func describeDestinations(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
+	destinationClient := discoveryv1alpha2.NewDestinationClient(c)
+	destinationList, err := destinationClient.ListDestination(ctx)
 	if err != nil {
 		return "", err
 	}
-	var trafficTargetDescriptions []trafficTargetDescription
-	for _, trafficTarget := range trafficTargetList.Items {
-		trafficTarget := trafficTarget // pike
-		if matchTrafficTarget(trafficTarget, searchTerms) {
-			trafficTargetDescriptions = append(trafficTargetDescriptions, describeTrafficTarget(&trafficTarget))
+	var destinationDescriptions []destinationDescription
+	for _, destination := range destinationList.Items {
+		destination := destination // pike
+		if matchDestination(destination, searchTerms) {
+			destinationDescriptions = append(destinationDescriptions, describeDestination(&destination))
 		}
 	}
 
@@ -71,7 +71,7 @@ func describeTrafficTargets(ctx context.Context, c client.Client, searchTerms []
 	table.SetRowLine(true)
 	table.SetAutoWrapText(false)
 
-	for _, description := range trafficTargetDescriptions {
+	for _, description := range destinationDescriptions {
 		table.Append([]string{
 			description.Metadata.string(),
 			printing.FormattedObjectRefs(description.TrafficPolicies),
@@ -83,7 +83,7 @@ func describeTrafficTargets(ctx context.Context, c client.Client, searchTerms []
 	return buf.String(), nil
 }
 
-func (m trafficTargetMetadata) string() string {
+func (m destinationMetadata) string() string {
 	var s strings.Builder
 	s.WriteString(printing.FormattedField("Name", m.Name))
 	s.WriteString(printing.FormattedField("Namespace", m.Namespace))
@@ -93,13 +93,13 @@ func (m trafficTargetMetadata) string() string {
 	return s.String()
 }
 
-type trafficTargetDescription struct {
-	Metadata        *trafficTargetMetadata
+type destinationDescription struct {
+	Metadata        *destinationMetadata
 	TrafficPolicies []*v1.ObjectRef
 	AccessPolicies  []*v1.ObjectRef
 }
 
-type trafficTargetMetadata struct {
+type destinationMetadata struct {
 	Type              string
 	Name              string
 	Namespace         string
@@ -108,14 +108,14 @@ type trafficTargetMetadata struct {
 	FederatedToMeshes []*v1.ObjectRef
 }
 
-func matchTrafficTarget(trafficTarget discoveryv1alpha2.TrafficTarget, searchTerms []string) bool {
+func matchDestination(destination discoveryv1alpha2.Destination, searchTerms []string) bool {
 	// do not apply matching when there are no search strings
 	if len(searchTerms) == 0 {
 		return true
 	}
 
 	for _, s := range searchTerms {
-		if strings.Contains(trafficTarget.Name, s) {
+		if strings.Contains(destination.Name, s) {
 			return true
 		}
 	}
@@ -123,37 +123,37 @@ func matchTrafficTarget(trafficTarget discoveryv1alpha2.TrafficTarget, searchTer
 	return false
 }
 
-func describeTrafficTarget(trafficTarget *discoveryv1alpha2.TrafficTarget) trafficTargetDescription {
-	meshMeta := getTrafficTargetMetadata(trafficTarget)
+func describeDestination(destination *discoveryv1alpha2.Destination) destinationDescription {
+	meshMeta := getDestinationMetadata(destination)
 	var trafficPolicies []*v1.ObjectRef
-	for _, fs := range trafficTarget.Status.AppliedTrafficPolicies {
+	for _, fs := range destination.Status.AppliedTrafficPolicies {
 		trafficPolicies = append(trafficPolicies, fs.Ref)
 	}
 
 	var accessPolicies []*v1.ObjectRef
-	for _, vm := range trafficTarget.Status.AppliedAccessPolicies {
+	for _, vm := range destination.Status.AppliedAccessPolicies {
 		accessPolicies = append(accessPolicies, vm.Ref)
 	}
 
-	return trafficTargetDescription{
+	return destinationDescription{
 		Metadata:        &meshMeta,
 		TrafficPolicies: trafficPolicies,
 		AccessPolicies:  accessPolicies,
 	}
 }
 
-func getTrafficTargetMetadata(trafficTarget *discoveryv1alpha2.TrafficTarget) trafficTargetMetadata {
-	switch trafficTarget.Spec.GetType().(type) {
-	case *discoveryv1alpha2.TrafficTargetSpec_KubeService_:
-		kubeServiceRef := trafficTarget.Spec.GetKubeService().Ref
-		return trafficTargetMetadata{
+func getDestinationMetadata(destination *discoveryv1alpha2.Destination) destinationMetadata {
+	switch destination.Spec.GetType().(type) {
+	case *discoveryv1alpha2.DestinationSpec_KubeService_:
+		kubeServiceRef := destination.Spec.GetKubeService().Ref
+		return destinationMetadata{
 			Type:              "kubernetes service",
 			Name:              kubeServiceRef.Name,
 			Namespace:         kubeServiceRef.Namespace,
 			Cluster:           kubeServiceRef.ClusterName,
-			FederatedDnsName:  trafficTarget.Status.GetAppliedFederation().GetFederatedHostname(),
-			FederatedToMeshes: trafficTarget.Status.GetAppliedFederation().GetFederatedToMeshes(),
+			FederatedDnsName:  destination.Status.GetAppliedFederation().GetFederatedHostname(),
+			FederatedToMeshes: destination.Status.GetAppliedFederation().GetFederatedToMeshes(),
 		}
 	}
-	return trafficTargetMetadata{}
+	return destinationMetadata{}
 }

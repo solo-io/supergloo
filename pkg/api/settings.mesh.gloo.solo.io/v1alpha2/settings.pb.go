@@ -34,7 +34,7 @@ type SettingsSpec struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Configure default mTLS settings for TrafficTargets.
+	// Configure default mTLS settings for Destinations.
 	Mtls *v1alpha2.TrafficPolicySpec_Policy_MTLS `protobuf:"bytes,1,opt,name=mtls,proto3" json:"mtls,omitempty"`
 	// Configure Gloo Mesh networking to communicate with one or more external gRPC NetworkingExtensions servers.
 	// Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence).

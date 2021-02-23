@@ -18,6 +18,7 @@ title: "networking_extensions.proto"
 
 
 ## Table of Contents
+  - [DestinationObject](#extensions.networking.mesh.gloo.solo.io.DestinationObject)
   - [DiscoverySnapshot](#extensions.networking.mesh.gloo.solo.io.DiscoverySnapshot)
   - [ExtensionPatchRequest](#extensions.networking.mesh.gloo.solo.io.ExtensionPatchRequest)
   - [ExtensionPatchResponse](#extensions.networking.mesh.gloo.solo.io.ExtensionPatchResponse)
@@ -29,13 +30,29 @@ title: "networking_extensions.proto"
   - [ObjectMeta.AnnotationsEntry](#extensions.networking.mesh.gloo.solo.io.ObjectMeta.AnnotationsEntry)
   - [ObjectMeta.LabelsEntry](#extensions.networking.mesh.gloo.solo.io.ObjectMeta.LabelsEntry)
   - [PushNotification](#extensions.networking.mesh.gloo.solo.io.PushNotification)
-  - [TrafficTargetObject](#extensions.networking.mesh.gloo.solo.io.TrafficTargetObject)
   - [WatchPushNotificationsRequest](#extensions.networking.mesh.gloo.solo.io.WatchPushNotificationsRequest)
   - [WorkloadObject](#extensions.networking.mesh.gloo.solo.io.WorkloadObject)
 
 
 
   - [NetworkingExtensions](#extensions.networking.mesh.gloo.solo.io.NetworkingExtensions)
+
+
+
+
+<a name="extensions.networking.mesh.gloo.solo.io.DestinationObject"></a>
+
+### DestinationObject
+a proto-serializable representation of a Destination object
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| metadata | [extensions.networking.mesh.gloo.solo.io.ObjectMeta]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions#extensions.networking.mesh.gloo.solo.io.ObjectMeta" >}}) |  | metadata of the object |
+  | spec | [discovery.mesh.gloo.solo.io.DestinationSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.destination#discovery.mesh.gloo.solo.io.DestinationSpec" >}}) |  | the spec of the object |
+  | status | [discovery.mesh.gloo.solo.io.DestinationStatus]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.destination#discovery.mesh.gloo.solo.io.DestinationStatus" >}}) |  | the status of the object |
+  
+
 
 
 
@@ -49,7 +66,7 @@ a Protobuf representation of the set of Discovery objects used to produce the Ne
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | meshes | [][extensions.networking.mesh.gloo.solo.io.MeshObject]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions#extensions.networking.mesh.gloo.solo.io.MeshObject" >}}) | repeated | all meshes in the discovery snapshot |
-  | trafficTargets | [][extensions.networking.mesh.gloo.solo.io.TrafficTargetObject]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions#extensions.networking.mesh.gloo.solo.io.TrafficTargetObject" >}}) | repeated | all TrafficTargets in the discovery snapshot |
+  | destinations | [][extensions.networking.mesh.gloo.solo.io.DestinationObject]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions#extensions.networking.mesh.gloo.solo.io.DestinationObject" >}}) | repeated | all Destinations in the discovery snapshot |
   | workloads | [][extensions.networking.mesh.gloo.solo.io.WorkloadObject]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions#extensions.networking.mesh.gloo.solo.io.WorkloadObject" >}}) | repeated | all workloads in the discovery snapshot |
   
 
@@ -213,23 +230,6 @@ ObjectMeta is a simplified clone of the Kubernetes ObjectMeta used to represent 
 ### PushNotification
 triggers a resync of Gloo Mesh objects
 
-
-
-
-
-
-<a name="extensions.networking.mesh.gloo.solo.io.TrafficTargetObject"></a>
-
-### TrafficTargetObject
-a proto-serializable representation of a TrafficTarget object
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| metadata | [extensions.networking.mesh.gloo.solo.io.ObjectMeta]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.extensions.v1alpha1.networking_extensions#extensions.networking.mesh.gloo.solo.io.ObjectMeta" >}}) |  | metadata of the object |
-  | spec | [discovery.mesh.gloo.solo.io.TrafficTargetSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetSpec" >}}) |  | the spec of the object |
-  | status | [discovery.mesh.gloo.solo.io.TrafficTargetStatus]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetStatus" >}}) |  | the status of the object |
-  
 
 
 

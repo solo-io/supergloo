@@ -437,7 +437,7 @@ type VirtualMeshSpec_Federation struct {
 	// Types that are assignable to Mode:
 	//	*VirtualMeshSpec_Federation_Permissive
 	Mode isVirtualMeshSpec_Federation_Mode `protobuf_oneof:"mode"`
-	// If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the TrafficTargets,
+	// If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations,
 	// rather than through an ingress gateway. This mode requires a flat network environment.
 	FlatNetwork bool `protobuf:"varint,2,opt,name=flat_network,json=flatNetwork,proto3" json:"flat_network,omitempty"`
 	// Configure the suffix for hostnames of Destinations federated within this VirtualMesh.

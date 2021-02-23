@@ -39,7 +39,7 @@ message RoleSpec {
         repeated TrafficPolicyActions traffic_policy_actions = 1;
 
         // A list of permitted Destination selectors.
-        repeated .common.mesh.gloo.solo.io.TrafficTargetSelector traffic_target_selectors = 2;
+        repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selectors = 2;
 
         // A list of permitted Workload selectors.
         repeated .common.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 3;
@@ -86,7 +86,7 @@ message RoleSpec {
         repeated .common.mesh.gloo.solo.io.IdentitySelector identity_selectors = 1;
 
         // A list of permitted Destination selectors.
-        repeated .common.mesh.gloo.solo.io.TrafficTargetSelector traffic_target_selectors = 2;
+        repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selectors = 2;
     }
 
     // Represents permissions for configuring VirtualDestinations.
@@ -99,10 +99,10 @@ message RoleSpec {
         repeated .core.skv2.solo.io.ObjectRef mesh_refs = 2;
 
         // A list of permitted backing service selectors.
-        repeated .common.mesh.gloo.solo.io.TrafficTargetSelector service_selectors = 3;
+        repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selectors = 3;
 
-        // A list of permitted backing services.
-        repeated .networking.enterprise.mesh.gloo.solo.io.BackingService services = 4;
+        // A list of permitted backing Destinations.
+        repeated .networking.enterprise.mesh.gloo.solo.io.BackingDestination destinations = 4;
     }
 
     // Represents permissions for configuring WasmDeployments.

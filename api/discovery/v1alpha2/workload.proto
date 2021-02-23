@@ -11,7 +11,7 @@ option (extproto.equal_all) = true;
 message WorkloadSpec {
 
     // Describes platform specific properties of the workload.
-    oneof workload_type {
+    oneof type {
 
         // Information describing workloads backed by Kubernetes Pods.
         KubernetesWorkload kubernetes = 1;

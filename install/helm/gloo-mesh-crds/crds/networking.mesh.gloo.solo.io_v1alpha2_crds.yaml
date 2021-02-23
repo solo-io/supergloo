@@ -26,8 +26,8 @@ spec:
           properties:
             destinationSelector:
               description: |-
-                Specify the Destinations (traffic targets) this TrafficPolicy applies to.
-                Omit to apply to all TrafficTargets.
+                Specify the Destinations (destinations) this TrafficPolicy applies to.
+                Omit to apply to all Destinations.
               items:
                 properties:
                   kubeServiceMatcher:
@@ -136,21 +136,8 @@ spec:
                       type: object
                     type: array
                   method:
-                    description: Specify an HTTP Method/Verb to match against.
-                    properties:
-                      method:
-                        enum:
-                        - GET
-                        - POST
-                        - PUT
-                        - DELETE
-                        - HEAD
-                        - CONNECT
-                        - OPTIONS
-                        - TRACE
-                        - PATCH
-                        type: string
-                    type: object
+                    description: Specify an HTTP method to match against.
+                    type: string
                   prefix:
                     description: If specified, the targeted path must begin with the prefix.
                     type: string
@@ -254,13 +241,9 @@ spec:
                       - required:
                         - fixedDelay
                       - required:
-                        - exponentialDelay
-                      - required:
                         - abort
                   - required:
                     - fixedDelay
-                  - required:
-                    - exponentialDelay
                   - required:
                     - abort
                   properties:
@@ -272,11 +255,6 @@ spec:
                           format: int32
                           type: integer
                       type: object
-                    exponentialDelay:
-                      description: |-
-                        TODO(harveyxia) remove
-                        $hide_from_docs
-                      type: string
                     fixedDelay:
                       description: 'Add a delay of a fixed duration before sending the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms.'
                       type: string
@@ -497,29 +475,7 @@ spec:
           type: object
         status:
           properties:
-            errors:
-              description: Any errors found while processing this generation of the resource.
-              items:
-                type: string
-              type: array
-            observedGeneration:
-              description: |-
-                The most recent generation observed in the the TrafficPolicy metadata.
-                If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
-                recent version of this resource.
-              format: int64
-              type: integer
-            state:
-              description: |-
-                The state of the overall resource.
-                It will only show accepted if it has been successfully applied to all selected TrafficTargets.
-              enum:
-              - PENDING
-              - ACCEPTED
-              - INVALID
-              - FAILED
-              type: string
-            trafficTargets:
+            destinations:
               additionalProperties:
                 properties:
                   acceptanceOrder:
@@ -551,6 +507,28 @@ spec:
                 The status of the TrafficPolicy for each selected Destination.
                 A TrafficPolicy may be Accepted for some Destinations and rejected for others.
               type: object
+            errors:
+              description: Any errors found while processing this generation of the resource.
+              items:
+                type: string
+              type: array
+            observedGeneration:
+              description: |-
+                The most recent generation observed in the the TrafficPolicy metadata.
+                If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
+                recent version of this resource.
+              format: int64
+              type: integer
+            state:
+              description: |-
+                The state of the overall resource.
+                It will only show accepted if it has been successfully applied to all selected Destinations.
+              enum:
+              - PENDING
+              - ACCEPTED
+              - INVALID
+              - FAILED
+              type: string
             workloads:
               description: The list of selected Workloads for which this policy has been applied.
               items:
@@ -587,7 +565,7 @@ spec:
       properties:
         spec:
           description: |-
-            Grants communication permission between selected identities (i.e. traffic sources) and Destinations (i.e. traffic targets).
+            Grants communication permission between selected identities (i.e. traffic sources) and Destinations (i.e. destinations).
             Explicitly granted access permission is required if a
             [VirtualMesh's GlobalAccessPolicy]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy" %}})
             is set to `ENABLED`.
@@ -598,16 +576,6 @@ spec:
                        It is ignored in gRPC case because the value is always "POST".
                        If not specified, allows any method.
               items:
-                enum:
-                - GET
-                - POST
-                - PUT
-                - DELETE
-                - HEAD
-                - CONNECT
-                - OPTIONS
-                - TRACE
-                - PATCH
                 type: string
               type: array
             allowedPaths:
@@ -635,7 +603,7 @@ spec:
             destinationSelector:
               description: |-
                 Specify the Destinations for which to apply this AccessPolicy.
-                Leave empty to apply the AccessPolicy to all TrafficTargets.
+                Leave empty to apply the AccessPolicy to all Destinations.
               items:
                 properties:
                   kubeServiceMatcher:
@@ -743,29 +711,7 @@ spec:
           type: object
         status:
           properties:
-            errors:
-              description: Any errors found while processing this generation of the resource.
-              items:
-                type: string
-              type: array
-            observedGeneration:
-              description: |-
-                The most recent generation observed in the the AccessPolicy metadata.
-                If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
-                recent version of this resource.
-              format: int64
-              type: integer
-            state:
-              description: |-
-                The state of the overall resource.
-                It will only show accepted if it has been successfully applied to selected TrafficTargets.
-              enum:
-              - PENDING
-              - ACCEPTED
-              - INVALID
-              - FAILED
-              type: string
-            trafficTargets:
+            destinations:
               additionalProperties:
                 properties:
                   acceptanceOrder:
@@ -797,6 +743,28 @@ spec:
                 The status of the AccessPolicy for each Destination to which it has been applied.
                 An AccessPolicy may be accepted for some Destinations and rejected for others.
               type: object
+            errors:
+              description: Any errors found while processing this generation of the resource.
+              items:
+                type: string
+              type: array
+            observedGeneration:
+              description: |-
+                The most recent generation observed in the the AccessPolicy metadata.
+                If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
+                recent version of this resource.
+              format: int64
+              type: integer
+            state:
+              description: |-
+                The state of the overall resource.
+                It will only show accepted if it has been successfully applied to selected Destinations.
+              enum:
+              - PENDING
+              - ACCEPTED
+              - INVALID
+              - FAILED
+              type: string
             workloads:
               description: The list of Workloads to which this policy has been applied.
               items:
@@ -846,7 +814,7 @@ spec:
               properties:
                 flatNetwork:
                   description: |-
-                    If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the TrafficTargets,
+                    If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations,
                     rather than through an ingress gateway. This mode requires a flat network environment.
                   type: boolean
                 hostnameSuffix:

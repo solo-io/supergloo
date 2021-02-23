@@ -163,7 +163,7 @@ func getAccessPolicyFilters(accessPolicy *networkingv1alpha2.AccessPolicy) acces
 	}
 
 	for i, method := range accessPolicy.Spec.GetAllowedMethods() {
-		filters.AllowedMethods[i] = method.String()
+		filters.AllowedMethods[i] = method
 	}
 
 	for i, port := range accessPolicy.Spec.GetAllowedPorts() {

@@ -8,7 +8,6 @@ import "google/protobuf/wrappers.proto";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1alpha2/request_matchers.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/http.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1alpha2/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
 
@@ -22,9 +21,9 @@ message TrafficPolicySpec {
     // Omit to apply to all Workloads.
     repeated .common.mesh.gloo.solo.io.WorkloadSelector source_selector = 1;
 
-    // Specify the Destinations (traffic targets) this TrafficPolicy applies to.
-    // Omit to apply to all TrafficTargets.
-    repeated .common.mesh.gloo.solo.io.TrafficTargetSelector destination_selector = 2;
+    // Specify the Destinations (destinations) this TrafficPolicy applies to.
+    // Omit to apply to all Destinations.
+    repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selector = 2;
 
     // Specify criteria that HTTP requests must satisfy for the TrafficPolicy to apply.
     // Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur.
@@ -57,14 +56,8 @@ message TrafficPolicySpec {
         // Specify a set of URL query parameters which requests must match in entirety (all query params must match).
         repeated QueryParameterMatcher query_parameters = 5;
 
-        // Specify an HTTP Method/Verb to match against.
-        HttpMethod method = 6;
-
-        // TODO(harveyxia) make string
-        // Express an optional HttpMethod by wrapping it in a nillable message.
-        message HttpMethod {
-            networking.mesh.gloo.solo.io.HttpMethodValue method = 1;
-        }
+        // Specify an HTTP method to match against.
+        string method = 6;
 
         // Specify match criteria against the target URL's query parameters.
         message QueryParameterMatcher {
@@ -192,12 +185,8 @@ message TrafficPolicySpec {
                 // Add a delay of a fixed duration before sending the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms.
                 google.protobuf.Duration fixed_delay = 1;
 
-                // TODO(harveyxia) remove
-                // $hide_from_docs
-                google.protobuf.Duration exponential_delay = 2;
-
                 // Abort the request and return the specified error code back to traffic source.
-                Abort abort = 3;
+                Abort abort = 2;
             }
 
             // Abort the request and return the specified error code back to traffic source.
@@ -308,7 +297,7 @@ message TrafficPolicySpec {
             uint32 max_ejection_percent = 4;
         }
 
-        // Configure mTLS settings on traffic targets. If specified this overrides the global default defined in Settings.
+        // Configure mTLS settings on destinations. If specified this overrides the global default defined in Settings.
         message MTLS {
 
             // Istio TLS settings.
@@ -350,12 +339,12 @@ message TrafficPolicyStatus {
     int64 observed_generation = 1;
 
     // The state of the overall resource.
-    // It will only show accepted if it has been successfully applied to all selected TrafficTargets.
+    // It will only show accepted if it has been successfully applied to all selected Destinations.
     ApprovalState state = 2;
 
     // The status of the TrafficPolicy for each selected Destination.
     // A TrafficPolicy may be Accepted for some Destinations and rejected for others.
-    map<string, ApprovalStatus> traffic_targets = 3;
+    map<string, ApprovalStatus> destinations = 3;
 
     // The list of selected Workloads for which this policy has been applied.
     repeated string workloads = 4;

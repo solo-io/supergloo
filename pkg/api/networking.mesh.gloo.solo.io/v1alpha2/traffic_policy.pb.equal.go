@@ -139,17 +139,17 @@ func (m *TrafficPolicyStatus) Equal(that interface{}) bool {
 		return false
 	}
 
-	if len(m.GetTrafficTargets()) != len(target.GetTrafficTargets()) {
+	if len(m.GetDestinations()) != len(target.GetDestinations()) {
 		return false
 	}
-	for k, v := range m.GetTrafficTargets() {
+	for k, v := range m.GetDestinations() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetTrafficTargets()[k]) {
+			if !h.Equal(target.GetDestinations()[k]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetTrafficTargets()[k]) {
+			if !proto.Equal(v, target.GetDestinations()[k]) {
 				return false
 			}
 		}
@@ -236,14 +236,8 @@ func (m *TrafficPolicySpec_HttpMatcher) Equal(that interface{}) bool {
 
 	}
 
-	if h, ok := interface{}(m.GetMethod()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetMethod()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetMethod(), target.GetMethod()) {
-			return false
-		}
+	if strings.Compare(m.GetMethod(), target.GetMethod()) != 0 {
+		return false
 	}
 
 	switch m.PathSpecifier.(type) {
@@ -380,34 +374,6 @@ func (m *TrafficPolicySpec_Policy) Equal(that interface{}) bool {
 		if !proto.Equal(m.GetMtls(), target.GetMtls()) {
 			return false
 		}
-	}
-
-	return true
-}
-
-// Equal function
-func (m *TrafficPolicySpec_HttpMatcher_HttpMethod) Equal(that interface{}) bool {
-	if that == nil {
-		return m == nil
-	}
-
-	target, ok := that.(*TrafficPolicySpec_HttpMatcher_HttpMethod)
-	if !ok {
-		that2, ok := that.(TrafficPolicySpec_HttpMatcher_HttpMethod)
-		if ok {
-			target = &that2
-		} else {
-			return false
-		}
-	}
-	if target == nil {
-		return m == nil
-	} else if m == nil {
-		return false
-	}
-
-	if m.GetMethod() != target.GetMethod() {
-		return false
 	}
 
 	return true
@@ -563,18 +529,6 @@ func (m *TrafficPolicySpec_Policy_FaultInjection) Equal(that interface{}) bool {
 			}
 		} else {
 			if !proto.Equal(m.GetFixedDelay(), target.GetFixedDelay()) {
-				return false
-			}
-		}
-
-	case *TrafficPolicySpec_Policy_FaultInjection_ExponentialDelay:
-
-		if h, ok := interface{}(m.GetExponentialDelay()).(equality.Equalizer); ok {
-			if !h.Equal(target.GetExponentialDelay()) {
-				return false
-			}
-		} else {
-			if !proto.Equal(m.GetExponentialDelay(), target.GetExponentialDelay()) {
 				return false
 			}
 		}

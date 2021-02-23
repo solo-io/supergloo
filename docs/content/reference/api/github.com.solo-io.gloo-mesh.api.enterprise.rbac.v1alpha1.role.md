@@ -23,7 +23,6 @@ title: "role.proto"
   - [RoleSpec](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec)
   - [RoleSpec.AccessLogRecordScope](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessLogRecordScope)
   - [RoleSpec.AccessPolicyScope](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessPolicyScope)
-  - [RoleSpec.FailoverServiceScope](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.FailoverServiceScope)
   - [RoleSpec.TrafficPolicyScope](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope)
   - [RoleSpec.VirtualDestinationScope](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualDestinationScope)
   - [RoleSpec.VirtualMeshScope](#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualMeshScope)
@@ -75,7 +74,6 @@ A role represents a set of permissions for creating, updating, and deleting Gloo
 | trafficPolicyScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope" >}}) | repeated | A set of TrafficPolicy configuration permissions. Permission granularity is defined at the field level. |
   | virtualMeshScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualMeshScope]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualMeshScope" >}}) | repeated | A set of VirtualMesh configuration permissions. Permission granularity is defined at the field level. |
   | accessPolicyScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessPolicyScope]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessPolicyScope" >}}) | repeated | A set of AccessPolicy configuration permissions. Permission granularity is defined at the object level. |
-  | failoverServiceScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.FailoverServiceScope]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.FailoverServiceScope" >}}) | repeated | A set of FailoverService configuration permissions. Permission granularity is defined at the object level. |
   | virtualDestinationScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualDestinationScope]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.VirtualDestinationScope" >}}) | repeated | A set of VirtualDestination configuration permissions. Permission granularity is defined at the object level. |
   | wasmDeploymentScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.WasmDeploymentScope]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.WasmDeploymentScope" >}}) | repeated | A set of WasmDeployment configuration permissions. Permission granularity is defined at the object level. |
   | accessLogRecordScopes | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessLogRecordScope]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.AccessLogRecordScope" >}}) | repeated | A set of AccessLogRecord configuration permissions. Permission granularity is defined at the object level. |
@@ -109,23 +107,7 @@ Represents permissions for configuring AccessPolicies.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | identitySelectors | [][common.mesh.gloo.solo.io.IdentitySelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.IdentitySelector" >}}) | repeated | A list of permitted identity selectors. |
-  | trafficTargetSelectors | [][common.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | A list of permitted TrafficTarget selectors. |
-  
-
-
-
-
-
-<a name="rbac.enterprise.mesh.gloo.solo.io.RoleSpec.FailoverServiceScope"></a>
-
-### RoleSpec.FailoverServiceScope
-Represents permissions for configuring FailoverServices.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| meshRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | A list of permitted mesh references. |
-  | backingServices | [][networking.mesh.gloo.solo.io.FailoverServiceSpec.BackingService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.failover_service#networking.mesh.gloo.solo.io.FailoverServiceSpec.BackingService" >}}) | repeated | A list of permitted backing services. |
+  | destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | A list of permitted Destination selectors. |
   
 
 
@@ -141,7 +123,7 @@ Represents permissions for configuring TrafficPolicies.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | trafficPolicyActions | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope.TrafficPolicyActions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope.TrafficPolicyActions" >}}) | repeated | A list of permitted TrafficPolicy configuration actions. |
-  | trafficTargetSelectors | [][common.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | A list of permitted TrafficTarget selectors. |
+  | destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | A list of permitted Destination selectors. |
   | workloadSelectors | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | A list of permitted Workload selectors. |
   
 
@@ -159,8 +141,8 @@ Represents permissions for configuring VirtualDestinations.
 | ----- | ---- | ----- | ----------- |
 | virtualMeshRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | A list of permitted virtual mesh references. |
   | meshRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | A list of permitted mesh references. |
-  | serviceSelectors | [][common.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | A list of permitted backing service selectors. |
-  | services | [][networking.enterprise.mesh.gloo.solo.io.BackingService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.BackingService" >}}) | repeated | A list of permitted backing services. |
+  | destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | A list of permitted backing service selectors. |
+  | destinations | [][networking.enterprise.mesh.gloo.solo.io.BackingDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.BackingDestination" >}}) | repeated | A list of permitted backing Destinations. |
   
 
 

@@ -277,67 +277,11 @@ spec:
             localized:
               description: Failover priority is determined by the localities of the traffic source and destination.
               properties:
-                failoverDirectives:
-                  description: Directives describing the locality failover behavior.
-                  items:
-                    properties:
-                      from:
-                        description: The locality of the client workload.
-                        properties:
-                          region:
-                            description: The locality's region.
-                            type: string
-                          subZone:
-                            description: The locality's sub-zone. Currently this value is not used.
-                            type: string
-                          zone:
-                            description: The locality's zone. Currently this value is not used.
-                            type: string
-                        type: object
-                      to:
-                        description: The list of Destination localities that can be routed to if the instance local to the client workload is not available.
-                        items:
-                          properties:
-                            region:
-                              description: The locality's region.
-                              type: string
-                            subZone:
-                              description: The locality's sub-zone. Currently this value is not used.
-                              type: string
-                            zone:
-                              description: The locality's zone. Currently this value is not used.
-                              type: string
-                          type: object
-                        type: array
-                    type: object
-                  type: array
-                outlierDetection:
-                  description: Outlier detection to determine the health of the selected services.
-                  properties:
-                    baseEjectionTime:
-                      description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
-                      type: string
-                    consecutiveErrors:
-                      description: The number of errors before a host is ejected from the connection pool. A default will be used if not set.
-                      maximum: 4294967295
-                      minimum: 0
-                      type: integer
-                    interval:
-                      description: 'The time interval between ejection sweep analysis. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
-                      type: string
-                    maxEjectionPercent:
-                      description: |-
-                        The maximum percentage of hosts that can be ejected from the load balancing pool.
-                        At least one host will be ejected regardless of the value. Must be between 0 and 100. A default will be used if not set.
-                      maximum: 4294967295
-                      minimum: 0
-                      type: integer
-                  type: object
-                serviceSelectors:
+                destinationSelectors:
                   description: |-
-                    Selectors for the services backing the VirtualDestination.
-                    All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
-                    Currently only one service per cluster can be selected, more than one per cluster will be considered invalid.
+                    Selectors for the Destinations backing the VirtualDestination.
+                    All Destinations must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
+                    Currently only one Destination per cluster can be selected, more than one per cluster will be considered invalid.
                   items:
                     properties:
                       kubeServiceMatcher:
@@ -392,6 +336,62 @@ spec:
                         type: object
                     type: object
                   type: array
+                failoverDirectives:
+                  description: Directives describing the locality failover behavior.
+                  items:
+                    properties:
+                      from:
+                        description: The locality of the client workload.
+                        properties:
+                          region:
+                            description: The locality's region.
+                            type: string
+                          subZone:
+                            description: The locality's sub-zone. Currently this value is not used.
+                            type: string
+                          zone:
+                            description: The locality's zone. Currently this value is not used.
+                            type: string
+                        type: object
+                      to:
+                        description: The list of Destination localities that can be routed to if the instance local to the client workload is not available.
+                        items:
+                          properties:
+                            region:
+                              description: The locality's region.
+                              type: string
+                            subZone:
+                              description: The locality's sub-zone. Currently this value is not used.
+                              type: string
+                            zone:
+                              description: The locality's zone. Currently this value is not used.
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  type: array
+                outlierDetection:
+                  description: Outlier detection to determine the health of the selected Destinations.
+                  properties:
+                    baseEjectionTime:
+                      description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
+                      type: string
+                    consecutiveErrors:
+                      description: The number of errors before a host is ejected from the connection pool. A default will be used if not set.
+                      maximum: 4294967295
+                      minimum: 0
+                      type: integer
+                    interval:
+                      description: 'The time interval between ejection sweep analysis. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
+                      type: string
+                    maxEjectionPercent:
+                      description: |-
+                        The maximum percentage of hosts that can be ejected from the load balancing pool.
+                        At least one host will be ejected regardless of the value. Must be between 0 and 100. A default will be used if not set.
+                      maximum: 4294967295
+                      minimum: 0
+                      type: integer
+                  type: object
               type: object
             meshList:
               description: |-
@@ -423,12 +423,12 @@ spec:
                   type: string
               type: object
             static:
-              description: Failover priority is determined by an explicitly provided static ordering of TrafficTargets.
+              description: Failover priority is determined by an explicitly provided static ordering of Destinations.
               properties:
-                services:
+                destinations:
                   description: |-
                     The list of Destinations backing the VirtualDestination, ordered by decreasing priority.
-                    All services must be either in the same Mesh or in Meshes that are grouped under a common VirtualMesh.
+                    All Destinations must be either in the same Mesh or in Meshes that are grouped under a common VirtualMesh.
                   items:
                     oneOf:
                     - not:
@@ -509,25 +509,12 @@ spec:
                 recent version of this resource.
               format: int64
               type: integer
-            selectedTrafficTargets:
+            selectedDestinations:
               description: The Destinations that comprise this VirtualDestination.
               items:
                 properties:
-                  ref:
-                    description: Reference to the traffic target.
-                    properties:
-                      clusterName:
-                        description: name of the cluster in which the resource exists
-                        type: string
-                      name:
-                        description: name of the resource being referenced
-                        type: string
-                      namespace:
-                        description: namespace of the resource being referenced
-                        type: string
-                    type: object
-                  service:
-                    description: The service that the Destination represents.
+                  destination:
+                    description: The platform-specific destination that the Destination object represents.
                     oneOf:
                     - not:
                         anyOf:
@@ -549,6 +536,19 @@ spec:
                             description: namespace of the resource being referenced
                             type: string
                         type: object
+                    type: object
+                  ref:
+                    description: Reference to the Destination object.
+                    properties:
+                      clusterName:
+                        description: name of the cluster in which the resource exists
+                        type: string
+                      name:
+                        description: name of the resource being referenced
+                        type: string
+                      namespace:
+                        description: namespace of the resource being referenced
+                        type: string
                     type: object
                 type: object
               type: array

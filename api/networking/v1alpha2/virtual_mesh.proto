@@ -110,7 +110,7 @@ message VirtualMeshSpec {
             .google.protobuf.Empty permissive = 1;
         };
 
-        // If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the TrafficTargets,
+        // If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations,
         // rather than through an ingress gateway. This mode requires a flat network environment.
         bool flat_network = 2;
 

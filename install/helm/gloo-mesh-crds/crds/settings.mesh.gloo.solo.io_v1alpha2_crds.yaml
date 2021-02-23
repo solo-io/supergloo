@@ -54,7 +54,7 @@ spec:
                   type: object
               type: object
             mtls:
-              description: Configure default mTLS settings for TrafficTargets.
+              description: Configure default mTLS settings for Destinations.
               properties:
                 istio:
                   description: Istio TLS settings.

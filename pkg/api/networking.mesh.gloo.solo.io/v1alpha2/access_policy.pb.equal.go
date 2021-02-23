@@ -96,7 +96,7 @@ func (m *AccessPolicySpec) Equal(that interface{}) bool {
 	}
 	for idx, v := range m.GetAllowedMethods() {
 
-		if v != target.GetAllowedMethods()[idx] {
+		if strings.Compare(v, target.GetAllowedMethods()[idx]) != 0 {
 			return false
 		}
 
@@ -145,17 +145,17 @@ func (m *AccessPolicyStatus) Equal(that interface{}) bool {
 		return false
 	}
 
-	if len(m.GetTrafficTargets()) != len(target.GetTrafficTargets()) {
+	if len(m.GetDestinations()) != len(target.GetDestinations()) {
 		return false
 	}
-	for k, v := range m.GetTrafficTargets() {
+	for k, v := range m.GetDestinations() {
 
 		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetTrafficTargets()[k]) {
+			if !h.Equal(target.GetDestinations()[k]) {
 				return false
 			}
 		} else {
-			if !proto.Equal(v, target.GetTrafficTargets()[k]) {
+			if !proto.Equal(v, target.GetDestinations()[k]) {
 				return false
 			}
 		}

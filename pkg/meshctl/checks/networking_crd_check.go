@@ -31,10 +31,6 @@ func (c *networkingCrdCheck) Run(ctx context.Context, client client.Client, _ st
 	if err != nil {
 		allErrors = append(allErrors, err)
 	}
-	fsList, err := v1alpha2.NewFailoverServiceClient(client).ListFailoverService(ctx)
-	if err != nil {
-		allErrors = append(allErrors, err)
-	}
 	vmList, err := v1alpha2.NewVirtualMeshClient(client).ListVirtualMesh(ctx)
 	if err != nil {
 		allErrors = append(allErrors, err)
@@ -44,9 +40,6 @@ func (c *networkingCrdCheck) Run(ctx context.Context, client client.Client, _ st
 		allErrors = append(allErrors, errs...)
 	}
 	if errs := c.checkAccessPolicies(apList); errs != nil {
-		allErrors = append(allErrors, errs...)
-	}
-	if errs := c.checkFailoverServices(fsList); errs != nil {
 		allErrors = append(allErrors, errs...)
 	}
 	if errs := c.checkVirtualMeshes(vmList); errs != nil {
@@ -84,20 +77,6 @@ func (c *networkingCrdCheck) checkAccessPolicies(apList *v1alpha2.AccessPolicyLi
 	for _, ap := range apList.Items {
 		ap := ap // pike
 		if err := c.checkStatus(ap.Kind, &ap, ap.Generation, &ap.Status); err != nil {
-			errs = append(errs, err)
-		}
-	}
-	return errs
-}
-
-func (c *networkingCrdCheck) checkFailoverServices(fsList *v1alpha2.FailoverServiceList) []error {
-	if fsList == nil {
-		return nil
-	}
-	var errs []error
-	for _, fs := range fsList.Items {
-		fs := fs // pike
-		if err := c.checkStatus(fs.Kind, &fs, fs.Generation, &fs.Status); err != nil {
 			errs = append(errs, err)
 		}
 	}

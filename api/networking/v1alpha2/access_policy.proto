@@ -2,14 +2,13 @@ syntax = "proto3";
 package networking.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2";
 
-import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/http.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1alpha2/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
-// Grants communication permission between selected identities (i.e. traffic sources) and Destinations (i.e. traffic targets).
+// Grants communication permission between selected identities (i.e. traffic sources) and Destinations (i.e. destinations).
 // Explicitly granted access permission is required if a
 // [VirtualMesh's GlobalAccessPolicy]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy" %}})
 // is set to `ENABLED`.
@@ -20,8 +19,8 @@ message AccessPolicySpec {
     repeated .common.mesh.gloo.solo.io.IdentitySelector source_selector = 1;
 
     // Specify the Destinations for which to apply this AccessPolicy.
-    // Leave empty to apply the AccessPolicy to all TrafficTargets.
-    repeated .common.mesh.gloo.solo.io.TrafficTargetSelector destination_selector = 2;
+    // Leave empty to apply the AccessPolicy to all Destinations.
+    repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selector = 2;
 
     /*
         *Optional.* A list of HTTP paths or gRPC methods to allow.
@@ -40,7 +39,7 @@ message AccessPolicySpec {
         It is ignored in gRPC case because the value is always "POST".
         If not specified, allows any method.
     */
-    repeated HttpMethodValue allowed_methods = 4;
+    repeated string allowed_methods = 4;
 
     /*
         *Optional.* A list of ports which to allow.
@@ -57,12 +56,12 @@ message AccessPolicyStatus {
     int64 observed_generation = 1;
 
     // The state of the overall resource.
-    // It will only show accepted if it has been successfully applied to selected TrafficTargets.
+    // It will only show accepted if it has been successfully applied to selected Destinations.
     ApprovalState state = 2;
 
     // The status of the AccessPolicy for each Destination to which it has been applied.
     // An AccessPolicy may be accepted for some Destinations and rejected for others.
-    map<string, ApprovalStatus> traffic_targets = 3;
+    map<string, ApprovalStatus> destinations = 3;
 
     // The list of Workloads to which this policy has been applied.
     repeated string workloads = 4;
