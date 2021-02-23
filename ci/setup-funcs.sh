@@ -89,7 +89,7 @@ EOF
 
 
   # NOTE: we delete the local-path-storage ns to free up CPU for ci
-  ${K} delete ns local-path-storage
+  # ${K} delete ns local-path-storage
 
   # Only setup kind clusters with flat networking if ENV var is set
   if [ ! -z ${FLAT_NETWORKING_ENABLED} ]; then
@@ -394,6 +394,8 @@ spec:
     defaultConfig:
       envoyAccessLogService:
         address: enterprise-agent.gloo-mesh:9977
+      envoyMetricsService:
+        address: $(get_mgmt_ingress_address)
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts
         # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
@@ -424,7 +426,9 @@ spec:
               nodePort: ${port}
   values:
     global:
-      pilotCertProvider: istiod
+      pilotCertProvider: istiod     
+      multiCluster:
+        clusterName: ${cluster}
 EOF
 }
 
@@ -668,6 +672,15 @@ function install_gloomesh() {
 # Note(ilackarms): these names are hard-coded in test/e2e/env.go
 mgmtCluster=mgmt-cluster
 remoteCluster=remote-cluster
+
+## HELPER FUNCS
+
+# determine the address of the ingress in the management cluster
+function get_mgmt_ingress_address() {
+  mgmtIngressAddress=$(kubectl --context kind-${mgmtCluster} get node -ojson | jq -r ".items[0].status.addresses[0].address")
+  mgmtIngressPort=$(kubectl --context kind-${mgmtCluster} -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+  echo "${mgmtIngressAddress}:${mgmtIngressPort}"
+}
 
 ### DEBUG FUNCS
 function debug_proxy() {
