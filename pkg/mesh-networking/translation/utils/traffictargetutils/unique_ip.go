@@ -17,20 +17,20 @@ import (
 var ipAssignableSubnet = "240.0.0.0/4"
 
 const (
-	kubeService     = "kube-service"
-	failoverService = "failover-service"
+	kubeService   = "kube-service"
+	localResource = "local-resource"
 )
 
 func ConstructUniqueIpForKubeService(kubeServiceRef ezkube.ClusterResourceId) (net.IP, error) {
 	return constructUniqueIp(kubeServiceRef, kubeService)
 }
 
-func ConstructUniqueIpForLocalResource(failoverServiceRef ezkube.ResourceId) (net.IP, error) {
+func ConstructUniqueIpForLocalResource(resourceRef ezkube.ResourceId) (net.IP, error) {
 	return constructUniqueIp(&v1.ClusterObjectRef{
-		Name:        failoverServiceRef.GetName(),
-		Namespace:   failoverServiceRef.GetNamespace(),
+		Name:        resourceRef.GetName(),
+		Namespace:   resourceRef.GetNamespace(),
 		ClusterName: "",
-	}, failoverService)
+	}, localResource)
 }
 
 func constructUniqueIp(clusterObjectRef ezkube.ClusterResourceId, scope string) (net.IP, error) {
