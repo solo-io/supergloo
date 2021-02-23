@@ -13,12 +13,12 @@ option (extproto.equal_all) = true;
 
 /*
     A VirtualDestination creates a new hostname to which client workloads can send requests.
-    The hostname abstracts over a set of underlying TrafficTargets and provides failover functionality between them.
+    The hostname abstracts over a set of underlying Destinations and provides failover functionality between them.
     Failover order is determined by either an explicitly defined priority (`static`), or a list of locality directives (`localized`).
 
-    Each TrafficTarget backing the VirtualDestination must be configured with a
+    Each Destination backing the VirtualDestination must be configured with a
     [TrafficPolicy's outlier detection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy/" >}}).
-    Currently this feature only supports TrafficTargets backed by Istio.
+    Currently this feature only supports Destinations backed by Istio.
 */
 message VirtualDestinationSpec {
 
@@ -66,18 +66,18 @@ message VirtualDestinationSpec {
 
     // TODO(harveyxia) rename Service to Destination
     // Failover priority is determined by an explicitly provided static ordering of TrafficTargets.
-    // When a TrafficTarget in the list is in an unhealthy state (as determined by its configured outlier detection),
-    // requests sent to the VirtualDestination will be routed to the next healthy TrafficTarget in the list.
+    // When a Destination in the list is in an unhealthy state (as determined by its configured outlier detection),
+    // requests sent to the VirtualDestination will be routed to the next healthy Destination in the list.
     message BackingServiceList {
 
-        // The list of TrafficTargets backing the VirtualDestination, ordered by decreasing priority.
+        // The list of Destinations backing the VirtualDestination, ordered by decreasing priority.
         // All services must be either in the same Mesh or in Meshes that are grouped under a common VirtualMesh.
         repeated BackingService services = 1;
     }
 
     // Enables failover based on locality. When a client workload makes a request to the VirtualDestination, Gloo Mesh will
     // first try to direct traffic to the service instance geographically closest to the client workload. If outlier
-    // detection detects that the closest TrafficTarget is in an unhealthy state, requests will instead be routed
+    // detection detects that the closest Destination is in an unhealthy state, requests will instead be routed
     // to a service in one of the localities specified in the `to` field.
     message LocalityConfig {
 
@@ -94,7 +94,7 @@ message VirtualDestinationSpec {
             // The locality of the client workload.
             Locality from = 1;
 
-            // The list of TrafficTarget localities that can be routed to if the instance local to the client workload is not available.
+            // The list of Destination localities that can be routed to if the instance local to the client workload is not available.
             repeated Locality to = 2;
         }
 
@@ -116,7 +116,7 @@ message VirtualDestinationSpec {
     }
 }
 
-// A service represented by a TrafficTarget.
+// A service represented by a Destination.
 message BackingService {
 
     // Platform specific TrafficTargets.
@@ -141,7 +141,7 @@ message VirtualDestinationStatus {
     // The status of the VirtualDestination for each Mesh to which it has been exported to.
     map<string, .networking.mesh.gloo.solo.io.ApprovalStatus> meshes = 3;
 
-    // The TrafficTargets that comprise this VirtualDestination.
+    // The Destinations that comprise this VirtualDestination.
     repeated SelectedTrafficTarget selected_traffic_targets = 4;
 
     // Any errors found while processing this generation of the resource.
@@ -152,7 +152,7 @@ message VirtualDestinationStatus {
         // Reference to the traffic target.
         .core.skv2.solo.io.ClusterObjectRef ref = 1;
 
-        // The service that the TrafficTarget represents.
+        // The service that the Destination represents.
         BackingService service = 2;
     }
 }

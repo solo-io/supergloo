@@ -264,12 +264,12 @@ spec:
               - localized
           description: |-
             A VirtualDestination creates a new hostname to which client workloads can send requests.
-               The hostname abstracts over a set of underlying TrafficTargets and provides failover functionality between them.
+               The hostname abstracts over a set of underlying Destinations and provides failover functionality between them.
                Failover order is determined by either an explicitly defined priority (`static`), or a list of locality directives (`localized`).
 
-               Each TrafficTarget backing the VirtualDestination must be configured with a
+               Each Destination backing the VirtualDestination must be configured with a
                [TrafficPolicy's outlier detection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy/" >}}).
-               Currently this feature only supports TrafficTargets backed by Istio.
+               Currently this feature only supports Destinations backed by Istio.
           properties:
             hostname:
               description: The DNS name of the VirtualDestination. Must be unique within the service mesh instance.
@@ -295,7 +295,7 @@ spec:
                             type: string
                         type: object
                       to:
-                        description: The list of TrafficTarget localities that can be routed to if the instance local to the client workload is not available.
+                        description: The list of Destination localities that can be routed to if the instance local to the client workload is not available.
                         items:
                           properties:
                             region:
@@ -427,7 +427,7 @@ spec:
               properties:
                 services:
                   description: |-
-                    The list of TrafficTargets backing the VirtualDestination, ordered by decreasing priority.
+                    The list of Destinations backing the VirtualDestination, ordered by decreasing priority.
                     All services must be either in the same Mesh or in Meshes that are grouped under a common VirtualMesh.
                   items:
                     oneOf:
@@ -510,7 +510,7 @@ spec:
               format: int64
               type: integer
             selectedTrafficTargets:
-              description: The TrafficTargets that comprise this VirtualDestination.
+              description: The Destinations that comprise this VirtualDestination.
               items:
                 properties:
                   ref:
@@ -527,7 +527,7 @@ spec:
                         type: string
                     type: object
                   service:
-                    description: The service that the TrafficTarget represents.
+                    description: The service that the Destination represents.
                     oneOf:
                     - not:
                         anyOf:

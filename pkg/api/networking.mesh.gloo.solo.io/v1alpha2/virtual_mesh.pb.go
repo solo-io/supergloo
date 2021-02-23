@@ -30,15 +30,15 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-// Specify a global access policy for all Workloads and TrafficTargets associated with this VirtualMesh.
+// Specify a global access policy for all Workloads and Destinations associated with this VirtualMesh.
 type VirtualMeshSpec_GlobalAccessPolicy int32
 
 const (
 	// Assume the default for the service mesh type. Istio defaults to `false`, App Mesh defaults to `true`.
 	VirtualMeshSpec_MESH_DEFAULT VirtualMeshSpec_GlobalAccessPolicy = 0
-	// Disallow traffic to all TrafficTargets in the VirtualMesh unless explicitly allowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}).
+	// Disallow traffic to all Destinations in the VirtualMesh unless explicitly allowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}).
 	VirtualMeshSpec_ENABLED VirtualMeshSpec_GlobalAccessPolicy = 1
-	// Allow traffic to all TrafficTargets in the VirtualMesh unless explicitly disallowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}).
+	// Allow traffic to all Destinations in the VirtualMesh unless explicitly disallowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}).
 	VirtualMeshSpec_DISABLED VirtualMeshSpec_GlobalAccessPolicy = 2
 )
 
@@ -93,9 +93,9 @@ type VirtualMeshSpec struct {
 	Meshes []*v1.ObjectRef `protobuf:"bytes,1,rep,name=meshes,proto3" json:"meshes,omitempty"`
 	// Specify mTLS options.
 	MtlsConfig *VirtualMeshSpec_MTLSConfig `protobuf:"bytes,2,opt,name=mtls_config,json=mtlsConfig,proto3" json:"mtls_config,omitempty"`
-	// Specify how to federate TrafficTargets across service mesh boundaries.
+	// Specify how to federate Destinations across service mesh boundaries.
 	Federation *VirtualMeshSpec_Federation `protobuf:"bytes,3,opt,name=federation,proto3" json:"federation,omitempty"`
-	// Specify a global access policy for all Workloads and TrafficTargets associated with this VirtualMesh.
+	// Specify a global access policy for all Workloads and Destinations associated with this VirtualMesh.
 	GlobalAccessPolicy VirtualMeshSpec_GlobalAccessPolicy `protobuf:"varint,4,opt,name=global_access_policy,json=globalAccessPolicy,proto3,enum=networking.mesh.gloo.solo.io.VirtualMeshSpec_GlobalAccessPolicy" json:"global_access_policy,omitempty"`
 }
 
@@ -324,12 +324,12 @@ type isVirtualMeshSpec_MTLSConfig_TrustModel interface {
 }
 
 type VirtualMeshSpec_MTLSConfig_Shared struct {
-	// Shared trust (allow communication between any pair of Workloads and TrafficTargets in the grouped Meshes).
+	// Shared trust (allow communication between any pair of Workloads and Destinations in the grouped Meshes).
 	Shared *VirtualMeshSpec_MTLSConfig_SharedTrust `protobuf:"bytes,1,opt,name=shared,proto3,oneof"`
 }
 
 type VirtualMeshSpec_MTLSConfig_Limited struct {
-	// Limited trust (selectively allow communication between Workloads and TrafficTargets in the grouped Meshes). *Currently not available.*
+	// Limited trust (selectively allow communication between Workloads and Destinations in the grouped Meshes). *Currently not available.*
 	Limited *VirtualMeshSpec_MTLSConfig_LimitedTrust `protobuf:"bytes,2,opt,name=limited,proto3,oneof"`
 }
 
@@ -425,14 +425,14 @@ func (*VirtualMeshSpec_RootCertificateAuthority_Generated) isVirtualMeshSpec_Roo
 func (*VirtualMeshSpec_RootCertificateAuthority_Secret) isVirtualMeshSpec_RootCertificateAuthority_CaSource() {
 }
 
-// "Federation" refers to the ability to expose TrafficTargets across service mesh boundaries, i.e. to traffic
-// originating from Workloads external to the TrafficTarget's Mesh.
+// "Federation" refers to the ability to expose Destinations across service mesh boundaries, i.e. to traffic
+// originating from Workloads external to the Destination's Mesh.
 type VirtualMeshSpec_Federation struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The "mode" in which to federate TrafficTargets within this VirtualMesh.
+	// The "mode" in which to federate Destinations within this VirtualMesh.
 	//
 	// Types that are assignable to Mode:
 	//	*VirtualMeshSpec_Federation_Permissive
@@ -440,7 +440,7 @@ type VirtualMeshSpec_Federation struct {
 	// If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the TrafficTargets,
 	// rather than through an ingress gateway. This mode requires a flat network environment.
 	FlatNetwork bool `protobuf:"varint,2,opt,name=flat_network,json=flatNetwork,proto3" json:"flat_network,omitempty"`
-	// Configure the suffix for hostnames of TrafficTargets federated within this VirtualMesh.
+	// Configure the suffix for hostnames of Destinations federated within this VirtualMesh.
 	// Currently this is only supported for Istio with [smart DNS proxying enabled](https://istio.io/latest/blog/2020/dns-proxy/),
 	// otherwise setting this field results in an error.
 	// If omitted, the hostname suffix defaults to "global".
@@ -512,14 +512,14 @@ type isVirtualMeshSpec_Federation_Mode interface {
 }
 
 type VirtualMeshSpec_Federation_Permissive struct {
-	// Expose all TrafficTargets to all Workloads in this VirtualMesh.
+	// Expose all Destinations to all Workloads in this VirtualMesh.
 	Permissive *empty.Empty `protobuf:"bytes,1,opt,name=permissive,proto3,oneof"`
 }
 
 func (*VirtualMeshSpec_Federation_Permissive) isVirtualMeshSpec_Federation_Mode() {}
 
 // Shared trust is a trust model requiring a common root certificate shared between trusting Meshes, as well as shared identity
-// between all Workloads and TrafficTargets which wish to communicate within the VirtualMesh.
+// between all Workloads and Destinations which wish to communicate within the VirtualMesh.
 type VirtualMeshSpec_MTLSConfig_SharedTrust struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

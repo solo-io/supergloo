@@ -26,7 +26,7 @@ spec:
           properties:
             destinationSelector:
               description: |-
-                Specify the TrafficTargets (traffic targets) this TrafficPolicy applies to.
+                Specify the Destinations (traffic targets) this TrafficPolicy applies to.
                 Omit to apply to all TrafficTargets.
               items:
                 properties:
@@ -567,8 +567,8 @@ spec:
                     type: string
                 type: object
               description: |-
-                The status of the TrafficPolicy for each selected TrafficTarget.
-                A TrafficPolicy may be Accepted for some TrafficTargets and rejected for others.
+                The status of the TrafficPolicy for each selected Destination.
+                A TrafficPolicy may be Accepted for some Destinations and rejected for others.
               type: object
             workloads:
               description: The list of selected Workloads for which this policy has been applied.
@@ -606,7 +606,7 @@ spec:
       properties:
         spec:
           description: |-
-            Grants communication permission between selected identities (i.e. traffic sources) and TrafficTargets (i.e. traffic targets).
+            Grants communication permission between selected identities (i.e. traffic sources) and Destinations (i.e. traffic targets).
             Explicitly granted access permission is required if a
             [VirtualMesh's GlobalAccessPolicy]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy" %}})
             is set to `ENABLED`.
@@ -653,7 +653,7 @@ spec:
               type: array
             destinationSelector:
               description: |-
-                Specify the TrafficTargets for which to apply this AccessPolicy.
+                Specify the Destinations for which to apply this AccessPolicy.
                 Leave empty to apply the AccessPolicy to all TrafficTargets.
               items:
                 properties:
@@ -813,8 +813,8 @@ spec:
                     type: string
                 type: object
               description: |-
-                The status of the AccessPolicy for each TrafficTarget to which it has been applied.
-                An AccessPolicy may be accepted for some TrafficTargets and rejected for others.
+                The status of the AccessPolicy for each Destination to which it has been applied.
+                An AccessPolicy may be accepted for some Destinations and rejected for others.
               type: object
             workloads:
               description: The list of Workloads to which this policy has been applied.
@@ -854,7 +854,7 @@ spec:
           description: Represents a logical grouping of Meshes for shared configuration and cross-mesh interoperability.
           properties:
             federation:
-              description: Specify how to federate TrafficTargets across service mesh boundaries.
+              description: Specify how to federate Destinations across service mesh boundaries.
               oneOf:
               - not:
                   anyOf:
@@ -870,18 +870,18 @@ spec:
                   type: boolean
                 hostnameSuffix:
                   description: |-
-                    Configure the suffix for hostnames of TrafficTargets federated within this VirtualMesh.
+                    Configure the suffix for hostnames of Destinations federated within this VirtualMesh.
                     Currently this is only supported for Istio with [smart DNS proxying enabled](https://istio.io/latest/blog/2020/dns-proxy/),
                     otherwise setting this field results in an error.
                     If omitted, the hostname suffix defaults to "global".
                   type: string
                 permissive:
-                  description: Expose all TrafficTargets to all Workloads in this VirtualMesh.
+                  description: Expose all Destinations to all Workloads in this VirtualMesh.
                   maxProperties: 0
                   type: object
               type: object
             globalAccessPolicy:
-              description: Specify a global access policy for all Workloads and TrafficTargets associated with this VirtualMesh.
+              description: Specify a global access policy for all Workloads and Destinations associated with this VirtualMesh.
               enum:
               - MESH_DEFAULT
               - ENABLED
@@ -921,10 +921,10 @@ spec:
                     `meshctl` provides the command `meshctl mesh restart` to simplify this process, see [here]({{< versioned_link_path fromRoot="reference/cli/meshctl_mesh_restart/" >}}) for more info.
                   type: boolean
                 limited:
-                  description: Limited trust (selectively allow communication between Workloads and TrafficTargets in the grouped Meshes). *Currently not available.*
+                  description: Limited trust (selectively allow communication between Workloads and Destinations in the grouped Meshes). *Currently not available.*
                   type: object
                 shared:
-                  description: Shared trust (allow communication between any pair of Workloads and TrafficTargets in the grouped Meshes).
+                  description: Shared trust (allow communication between any pair of Workloads and Destinations in the grouped Meshes).
                   properties:
                     rootCertificateAuthority:
                       description: |-
@@ -1065,10 +1065,10 @@ spec:
             TODO(harveyxia) delete this
 
                A FailoverService creates a new hostname to which services can send requests.
-               Requests will be routed based on a list of backing TrafficTargets ordered by
-               decreasing priority. When outlier detection detects that a TrafficTarget in the list is
+               Requests will be routed based on a list of backing Destinations ordered by
+               decreasing priority. When outlier detection detects that a Destination in the list is
                in an unhealthy state, requests sent to the FailoverService will be routed
-               to the next healthy TrafficTarget in the list. For each TrafficTarget referenced in the
+               to the next healthy Destination in the list. For each Destination referenced in the
                FailoverService's BackingServices list, outlier detection must be configured using a TrafficPolicy.
 
                Currently this feature only supports Services backed by Istio.

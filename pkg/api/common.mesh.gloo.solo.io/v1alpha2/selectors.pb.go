@@ -29,7 +29,7 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-// Select TrafficTargets using one or more platform-specific selectors.
+// Select Destinations using one or more platform-specific selectors.
 type TrafficTargetSelector struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -163,7 +163,7 @@ func (x *WorkloadSelector) GetClusters() []string {
 	return nil
 }
 
-// Select TrafficTarget identities using one or more platform-specific selectors.
+// Select Destination identities using one or more platform-specific selectors.
 type IdentitySelector struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

@@ -58,18 +58,18 @@ func (mr *MockLocalSnapshotMockRecorder) Settings() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Settings", reflect.TypeOf((*MockLocalSnapshot)(nil).Settings))
 }
 
-// TrafficTargets mocks base method
-func (m *MockLocalSnapshot) TrafficTargets() v1alpha2sets.TrafficTargetSet {
+// Destinations mocks base method
+func (m *MockLocalSnapshot) Destinations() v1alpha2sets.DestinationSet {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TrafficTargets")
-	ret0, _ := ret[0].(v1alpha2sets.TrafficTargetSet)
+	ret := m.ctrl.Call(m, "Destinations")
+	ret0, _ := ret[0].(v1alpha2sets.DestinationSet)
 	return ret0
 }
 
-// TrafficTargets indicates an expected call of TrafficTargets
-func (mr *MockLocalSnapshotMockRecorder) TrafficTargets() *gomock.Call {
+// Destinations indicates an expected call of Destinations
+func (mr *MockLocalSnapshotMockRecorder) Destinations() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrafficTargets", reflect.TypeOf((*MockLocalSnapshot)(nil).TrafficTargets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Destinations", reflect.TypeOf((*MockLocalSnapshot)(nil).Destinations))
 }
 
 // Workloads mocks base method

@@ -17,111 +17,111 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// Handle events for the TrafficTarget Resource
+// Handle events for the Destination Resource
 // DEPRECATED: Prefer reconciler pattern.
-type TrafficTargetEventHandler interface {
-	CreateTrafficTarget(obj *discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) error
-	UpdateTrafficTarget(old, new *discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) error
-	DeleteTrafficTarget(obj *discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) error
-	GenericTrafficTarget(obj *discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) error
+type DestinationEventHandler interface {
+	CreateDestination(obj *discovery_mesh_gloo_solo_io_v1alpha2.Destination) error
+	UpdateDestination(old, new *discovery_mesh_gloo_solo_io_v1alpha2.Destination) error
+	DeleteDestination(obj *discovery_mesh_gloo_solo_io_v1alpha2.Destination) error
+	GenericDestination(obj *discovery_mesh_gloo_solo_io_v1alpha2.Destination) error
 }
 
-type TrafficTargetEventHandlerFuncs struct {
-	OnCreate  func(obj *discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) error
-	OnUpdate  func(old, new *discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) error
-	OnDelete  func(obj *discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) error
-	OnGeneric func(obj *discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) error
+type DestinationEventHandlerFuncs struct {
+	OnCreate  func(obj *discovery_mesh_gloo_solo_io_v1alpha2.Destination) error
+	OnUpdate  func(old, new *discovery_mesh_gloo_solo_io_v1alpha2.Destination) error
+	OnDelete  func(obj *discovery_mesh_gloo_solo_io_v1alpha2.Destination) error
+	OnGeneric func(obj *discovery_mesh_gloo_solo_io_v1alpha2.Destination) error
 }
 
-func (f *TrafficTargetEventHandlerFuncs) CreateTrafficTarget(obj *discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) error {
+func (f *DestinationEventHandlerFuncs) CreateDestination(obj *discovery_mesh_gloo_solo_io_v1alpha2.Destination) error {
 	if f.OnCreate == nil {
 		return nil
 	}
 	return f.OnCreate(obj)
 }
 
-func (f *TrafficTargetEventHandlerFuncs) DeleteTrafficTarget(obj *discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) error {
+func (f *DestinationEventHandlerFuncs) DeleteDestination(obj *discovery_mesh_gloo_solo_io_v1alpha2.Destination) error {
 	if f.OnDelete == nil {
 		return nil
 	}
 	return f.OnDelete(obj)
 }
 
-func (f *TrafficTargetEventHandlerFuncs) UpdateTrafficTarget(objOld, objNew *discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) error {
+func (f *DestinationEventHandlerFuncs) UpdateDestination(objOld, objNew *discovery_mesh_gloo_solo_io_v1alpha2.Destination) error {
 	if f.OnUpdate == nil {
 		return nil
 	}
 	return f.OnUpdate(objOld, objNew)
 }
 
-func (f *TrafficTargetEventHandlerFuncs) GenericTrafficTarget(obj *discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) error {
+func (f *DestinationEventHandlerFuncs) GenericDestination(obj *discovery_mesh_gloo_solo_io_v1alpha2.Destination) error {
 	if f.OnGeneric == nil {
 		return nil
 	}
 	return f.OnGeneric(obj)
 }
 
-type TrafficTargetEventWatcher interface {
-	AddEventHandler(ctx context.Context, h TrafficTargetEventHandler, predicates ...predicate.Predicate) error
+type DestinationEventWatcher interface {
+	AddEventHandler(ctx context.Context, h DestinationEventHandler, predicates ...predicate.Predicate) error
 }
 
-type trafficTargetEventWatcher struct {
+type destinationEventWatcher struct {
 	watcher events.EventWatcher
 }
 
-func NewTrafficTargetEventWatcher(name string, mgr manager.Manager) TrafficTargetEventWatcher {
-	return &trafficTargetEventWatcher{
-		watcher: events.NewWatcher(name, mgr, &discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget{}),
+func NewDestinationEventWatcher(name string, mgr manager.Manager) DestinationEventWatcher {
+	return &destinationEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &discovery_mesh_gloo_solo_io_v1alpha2.Destination{}),
 	}
 }
 
-func (c *trafficTargetEventWatcher) AddEventHandler(ctx context.Context, h TrafficTargetEventHandler, predicates ...predicate.Predicate) error {
-	handler := genericTrafficTargetHandler{handler: h}
+func (c *destinationEventWatcher) AddEventHandler(ctx context.Context, h DestinationEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericDestinationHandler{handler: h}
 	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
 		return err
 	}
 	return nil
 }
 
-// genericTrafficTargetHandler implements a generic events.EventHandler
-type genericTrafficTargetHandler struct {
-	handler TrafficTargetEventHandler
+// genericDestinationHandler implements a generic events.EventHandler
+type genericDestinationHandler struct {
+	handler DestinationEventHandler
 }
 
-func (h genericTrafficTargetHandler) Create(object client.Object) error {
-	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget)
+func (h genericDestinationHandler) Create(object client.Object) error {
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1alpha2.Destination)
 	if !ok {
-		return errors.Errorf("internal error: TrafficTarget handler received event for %T", object)
+		return errors.Errorf("internal error: Destination handler received event for %T", object)
 	}
-	return h.handler.CreateTrafficTarget(obj)
+	return h.handler.CreateDestination(obj)
 }
 
-func (h genericTrafficTargetHandler) Delete(object client.Object) error {
-	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget)
+func (h genericDestinationHandler) Delete(object client.Object) error {
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1alpha2.Destination)
 	if !ok {
-		return errors.Errorf("internal error: TrafficTarget handler received event for %T", object)
+		return errors.Errorf("internal error: Destination handler received event for %T", object)
 	}
-	return h.handler.DeleteTrafficTarget(obj)
+	return h.handler.DeleteDestination(obj)
 }
 
-func (h genericTrafficTargetHandler) Update(old, new client.Object) error {
-	objOld, ok := old.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget)
+func (h genericDestinationHandler) Update(old, new client.Object) error {
+	objOld, ok := old.(*discovery_mesh_gloo_solo_io_v1alpha2.Destination)
 	if !ok {
-		return errors.Errorf("internal error: TrafficTarget handler received event for %T", old)
+		return errors.Errorf("internal error: Destination handler received event for %T", old)
 	}
-	objNew, ok := new.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget)
+	objNew, ok := new.(*discovery_mesh_gloo_solo_io_v1alpha2.Destination)
 	if !ok {
-		return errors.Errorf("internal error: TrafficTarget handler received event for %T", new)
+		return errors.Errorf("internal error: Destination handler received event for %T", new)
 	}
-	return h.handler.UpdateTrafficTarget(objOld, objNew)
+	return h.handler.UpdateDestination(objOld, objNew)
 }
 
-func (h genericTrafficTargetHandler) Generic(object client.Object) error {
-	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget)
+func (h genericDestinationHandler) Generic(object client.Object) error {
+	obj, ok := object.(*discovery_mesh_gloo_solo_io_v1alpha2.Destination)
 	if !ok {
-		return errors.Errorf("internal error: TrafficTarget handler received event for %T", object)
+		return errors.Errorf("internal error: Destination handler received event for %T", object)
 	}
-	return h.handler.GenericTrafficTarget(obj)
+	return h.handler.GenericDestination(obj)
 }
 
 // Handle events for the Workload Resource

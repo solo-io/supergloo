@@ -17,31 +17,31 @@ import (
   See package `github.com/solo-io/skv2/pkg/multicluster/register` for example
 */
 
-// Provider for TrafficTargetClient from Clientset
-func TrafficTargetClientFromClientsetProvider(clients discovery_mesh_gloo_solo_io_v1alpha2.Clientset) discovery_mesh_gloo_solo_io_v1alpha2.TrafficTargetClient {
-	return clients.TrafficTargets()
+// Provider for DestinationClient from Clientset
+func DestinationClientFromClientsetProvider(clients discovery_mesh_gloo_solo_io_v1alpha2.Clientset) discovery_mesh_gloo_solo_io_v1alpha2.DestinationClient {
+	return clients.Destinations()
 }
 
-// Provider for TrafficTarget Client from Client
-func TrafficTargetClientProvider(client client.Client) discovery_mesh_gloo_solo_io_v1alpha2.TrafficTargetClient {
-	return discovery_mesh_gloo_solo_io_v1alpha2.NewTrafficTargetClient(client)
+// Provider for Destination Client from Client
+func DestinationClientProvider(client client.Client) discovery_mesh_gloo_solo_io_v1alpha2.DestinationClient {
+	return discovery_mesh_gloo_solo_io_v1alpha2.NewDestinationClient(client)
 }
 
-type TrafficTargetClientFactory func(client client.Client) discovery_mesh_gloo_solo_io_v1alpha2.TrafficTargetClient
+type DestinationClientFactory func(client client.Client) discovery_mesh_gloo_solo_io_v1alpha2.DestinationClient
 
-func TrafficTargetClientFactoryProvider() TrafficTargetClientFactory {
-	return TrafficTargetClientProvider
+func DestinationClientFactoryProvider() DestinationClientFactory {
+	return DestinationClientProvider
 }
 
-type TrafficTargetClientFromConfigFactory func(cfg *rest.Config) (discovery_mesh_gloo_solo_io_v1alpha2.TrafficTargetClient, error)
+type DestinationClientFromConfigFactory func(cfg *rest.Config) (discovery_mesh_gloo_solo_io_v1alpha2.DestinationClient, error)
 
-func TrafficTargetClientFromConfigFactoryProvider() TrafficTargetClientFromConfigFactory {
-	return func(cfg *rest.Config) (discovery_mesh_gloo_solo_io_v1alpha2.TrafficTargetClient, error) {
+func DestinationClientFromConfigFactoryProvider() DestinationClientFromConfigFactory {
+	return func(cfg *rest.Config) (discovery_mesh_gloo_solo_io_v1alpha2.DestinationClient, error) {
 		clients, err := discovery_mesh_gloo_solo_io_v1alpha2.NewClientsetFromConfig(cfg)
 		if err != nil {
 			return nil, err
 		}
-		return clients.TrafficTargets(), nil
+		return clients.Destinations(), nil
 	}
 }
 

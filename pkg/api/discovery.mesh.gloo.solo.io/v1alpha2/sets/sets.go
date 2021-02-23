@@ -13,187 +13,187 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-type TrafficTargetSet interface {
+type DestinationSet interface {
 	// Get the set stored keys
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
-	List(filterResource ...func(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) bool) []*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget
+	List(filterResource ...func(*discovery_mesh_gloo_solo_io_v1alpha2.Destination) bool) []*discovery_mesh_gloo_solo_io_v1alpha2.Destination
 	// Return the Set as a map of key to resource.
-	Map() map[string]*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget
+	Map() map[string]*discovery_mesh_gloo_solo_io_v1alpha2.Destination
 	// Insert a resource into the set.
-	Insert(trafficTarget ...*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget)
+	Insert(destination ...*discovery_mesh_gloo_solo_io_v1alpha2.Destination)
 	// Compare the equality of the keys in two sets (not the resources themselves)
-	Equal(trafficTargetSet TrafficTargetSet) bool
+	Equal(destinationSet DestinationSet) bool
 	// Check if the set contains a key matching the resource (not the resource itself)
-	Has(trafficTarget ezkube.ResourceId) bool
+	Has(destination ezkube.ResourceId) bool
 	// Delete the key matching the resource
-	Delete(trafficTarget ezkube.ResourceId)
+	Delete(destination ezkube.ResourceId)
 	// Return the union with the provided set
-	Union(set TrafficTargetSet) TrafficTargetSet
+	Union(set DestinationSet) DestinationSet
 	// Return the difference with the provided set
-	Difference(set TrafficTargetSet) TrafficTargetSet
+	Difference(set DestinationSet) DestinationSet
 	// Return the intersection with the provided set
-	Intersection(set TrafficTargetSet) TrafficTargetSet
+	Intersection(set DestinationSet) DestinationSet
 	// Find the resource with the given ID
-	Find(id ezkube.ResourceId) (*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget, error)
+	Find(id ezkube.ResourceId) (*discovery_mesh_gloo_solo_io_v1alpha2.Destination, error)
 	// Get the length of the set
 	Length() int
 	// returns the generic implementation of the set
 	Generic() sksets.ResourceSet
-	// returns the delta between this and and another TrafficTargetSet
-	Delta(newSet TrafficTargetSet) sksets.ResourceDelta
+	// returns the delta between this and and another DestinationSet
+	Delta(newSet DestinationSet) sksets.ResourceDelta
 }
 
-func makeGenericTrafficTargetSet(trafficTargetList []*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) sksets.ResourceSet {
+func makeGenericDestinationSet(destinationList []*discovery_mesh_gloo_solo_io_v1alpha2.Destination) sksets.ResourceSet {
 	var genericResources []ezkube.ResourceId
-	for _, obj := range trafficTargetList {
+	for _, obj := range destinationList {
 		genericResources = append(genericResources, obj)
 	}
 	return sksets.NewResourceSet(genericResources...)
 }
 
-type trafficTargetSet struct {
+type destinationSet struct {
 	set sksets.ResourceSet
 }
 
-func NewTrafficTargetSet(trafficTargetList ...*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) TrafficTargetSet {
-	return &trafficTargetSet{set: makeGenericTrafficTargetSet(trafficTargetList)}
+func NewDestinationSet(destinationList ...*discovery_mesh_gloo_solo_io_v1alpha2.Destination) DestinationSet {
+	return &destinationSet{set: makeGenericDestinationSet(destinationList)}
 }
 
-func NewTrafficTargetSetFromList(trafficTargetList *discovery_mesh_gloo_solo_io_v1alpha2.TrafficTargetList) TrafficTargetSet {
-	list := make([]*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget, 0, len(trafficTargetList.Items))
-	for idx := range trafficTargetList.Items {
-		list = append(list, &trafficTargetList.Items[idx])
+func NewDestinationSetFromList(destinationList *discovery_mesh_gloo_solo_io_v1alpha2.DestinationList) DestinationSet {
+	list := make([]*discovery_mesh_gloo_solo_io_v1alpha2.Destination, 0, len(destinationList.Items))
+	for idx := range destinationList.Items {
+		list = append(list, &destinationList.Items[idx])
 	}
-	return &trafficTargetSet{set: makeGenericTrafficTargetSet(list)}
+	return &destinationSet{set: makeGenericDestinationSet(list)}
 }
 
-func (s *trafficTargetSet) Keys() sets.String {
+func (s *destinationSet) Keys() sets.String {
 	if s == nil {
 		return sets.String{}
 	}
 	return s.Generic().Keys()
 }
 
-func (s *trafficTargetSet) List(filterResource ...func(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) bool) []*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget {
+func (s *destinationSet) List(filterResource ...func(*discovery_mesh_gloo_solo_io_v1alpha2.Destination) bool) []*discovery_mesh_gloo_solo_io_v1alpha2.Destination {
 	if s == nil {
 		return nil
 	}
 	var genericFilters []func(ezkube.ResourceId) bool
 	for _, filter := range filterResource {
 		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
-			return filter(obj.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget))
+			return filter(obj.(*discovery_mesh_gloo_solo_io_v1alpha2.Destination))
 		})
 	}
 
-	var trafficTargetList []*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget
+	var destinationList []*discovery_mesh_gloo_solo_io_v1alpha2.Destination
 	for _, obj := range s.Generic().List(genericFilters...) {
-		trafficTargetList = append(trafficTargetList, obj.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget))
+		destinationList = append(destinationList, obj.(*discovery_mesh_gloo_solo_io_v1alpha2.Destination))
 	}
-	return trafficTargetList
+	return destinationList
 }
 
-func (s *trafficTargetSet) Map() map[string]*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget {
+func (s *destinationSet) Map() map[string]*discovery_mesh_gloo_solo_io_v1alpha2.Destination {
 	if s == nil {
 		return nil
 	}
 
-	newMap := map[string]*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget{}
+	newMap := map[string]*discovery_mesh_gloo_solo_io_v1alpha2.Destination{}
 	for k, v := range s.Generic().Map() {
-		newMap[k] = v.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget)
+		newMap[k] = v.(*discovery_mesh_gloo_solo_io_v1alpha2.Destination)
 	}
 	return newMap
 }
 
-func (s *trafficTargetSet) Insert(
-	trafficTargetList ...*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget,
+func (s *destinationSet) Insert(
+	destinationList ...*discovery_mesh_gloo_solo_io_v1alpha2.Destination,
 ) {
 	if s == nil {
 		panic("cannot insert into nil set")
 	}
 
-	for _, obj := range trafficTargetList {
+	for _, obj := range destinationList {
 		s.Generic().Insert(obj)
 	}
 }
 
-func (s *trafficTargetSet) Has(trafficTarget ezkube.ResourceId) bool {
+func (s *destinationSet) Has(destination ezkube.ResourceId) bool {
 	if s == nil {
 		return false
 	}
-	return s.Generic().Has(trafficTarget)
+	return s.Generic().Has(destination)
 }
 
-func (s *trafficTargetSet) Equal(
-	trafficTargetSet TrafficTargetSet,
+func (s *destinationSet) Equal(
+	destinationSet DestinationSet,
 ) bool {
 	if s == nil {
-		return trafficTargetSet == nil
+		return destinationSet == nil
 	}
-	return s.Generic().Equal(trafficTargetSet.Generic())
+	return s.Generic().Equal(destinationSet.Generic())
 }
 
-func (s *trafficTargetSet) Delete(TrafficTarget ezkube.ResourceId) {
+func (s *destinationSet) Delete(Destination ezkube.ResourceId) {
 	if s == nil {
 		return
 	}
-	s.Generic().Delete(TrafficTarget)
+	s.Generic().Delete(Destination)
 }
 
-func (s *trafficTargetSet) Union(set TrafficTargetSet) TrafficTargetSet {
+func (s *destinationSet) Union(set DestinationSet) DestinationSet {
 	if s == nil {
 		return set
 	}
-	return NewTrafficTargetSet(append(s.List(), set.List()...)...)
+	return NewDestinationSet(append(s.List(), set.List()...)...)
 }
 
-func (s *trafficTargetSet) Difference(set TrafficTargetSet) TrafficTargetSet {
+func (s *destinationSet) Difference(set DestinationSet) DestinationSet {
 	if s == nil {
 		return set
 	}
 	newSet := s.Generic().Difference(set.Generic())
-	return &trafficTargetSet{set: newSet}
+	return &destinationSet{set: newSet}
 }
 
-func (s *trafficTargetSet) Intersection(set TrafficTargetSet) TrafficTargetSet {
+func (s *destinationSet) Intersection(set DestinationSet) DestinationSet {
 	if s == nil {
 		return nil
 	}
 	newSet := s.Generic().Intersection(set.Generic())
-	var trafficTargetList []*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget
+	var destinationList []*discovery_mesh_gloo_solo_io_v1alpha2.Destination
 	for _, obj := range newSet.List() {
-		trafficTargetList = append(trafficTargetList, obj.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget))
+		destinationList = append(destinationList, obj.(*discovery_mesh_gloo_solo_io_v1alpha2.Destination))
 	}
-	return NewTrafficTargetSet(trafficTargetList...)
+	return NewDestinationSet(destinationList...)
 }
 
-func (s *trafficTargetSet) Find(id ezkube.ResourceId) (*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget, error) {
+func (s *destinationSet) Find(id ezkube.ResourceId) (*discovery_mesh_gloo_solo_io_v1alpha2.Destination, error) {
 	if s == nil {
-		return nil, eris.Errorf("empty set, cannot find TrafficTarget %v", sksets.Key(id))
+		return nil, eris.Errorf("empty set, cannot find Destination %v", sksets.Key(id))
 	}
-	obj, err := s.Generic().Find(&discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget{}, id)
+	obj, err := s.Generic().Find(&discovery_mesh_gloo_solo_io_v1alpha2.Destination{}, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return obj.(*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget), nil
+	return obj.(*discovery_mesh_gloo_solo_io_v1alpha2.Destination), nil
 }
 
-func (s *trafficTargetSet) Length() int {
+func (s *destinationSet) Length() int {
 	if s == nil {
 		return 0
 	}
 	return s.Generic().Length()
 }
 
-func (s *trafficTargetSet) Generic() sksets.ResourceSet {
+func (s *destinationSet) Generic() sksets.ResourceSet {
 	if s == nil {
 		return nil
 	}
 	return s.set
 }
 
-func (s *trafficTargetSet) Delta(newSet TrafficTargetSet) sksets.ResourceDelta {
+func (s *destinationSet) Delta(newSet DestinationSet) sksets.ResourceDelta {
 	if s == nil {
 		return sksets.ResourceDelta{
 			Inserted: newSet.Generic(),

@@ -13,34 +13,34 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 
-// GroupVersionKind for TrafficTarget
-var TrafficTargetGVK = schema.GroupVersionKind{
+// GroupVersionKind for Destination
+var DestinationGVK = schema.GroupVersionKind{
 	Group:   "discovery.mesh.gloo.solo.io",
 	Version: "v1alpha2",
-	Kind:    "TrafficTarget",
+	Kind:    "Destination",
 }
 
-// TrafficTarget is the Schema for the trafficTarget API
-type TrafficTarget struct {
+// Destination is the Schema for the destination API
+type Destination struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   TrafficTargetSpec   `json:"spec,omitempty"`
-	Status TrafficTargetStatus `json:"status,omitempty"`
+	Spec   DestinationSpec   `json:"spec,omitempty"`
+	Status DestinationStatus `json:"status,omitempty"`
 }
 
 // GVK returns the GroupVersionKind associated with the resource type.
-func (TrafficTarget) GVK() schema.GroupVersionKind {
-	return TrafficTargetGVK
+func (Destination) GVK() schema.GroupVersionKind {
+	return DestinationGVK
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// TrafficTargetList contains a list of TrafficTarget
-type TrafficTargetList struct {
+// DestinationList contains a list of Destination
+type DestinationList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []TrafficTarget `json:"items"`
+	Items           []Destination `json:"items"`
 }
 
 // +genclient
@@ -114,7 +114,7 @@ type MeshList struct {
 }
 
 func init() {
-	SchemeBuilder.Register(&TrafficTarget{}, &TrafficTargetList{})
+	SchemeBuilder.Register(&Destination{}, &DestinationList{})
 	SchemeBuilder.Register(&Workload{}, &WorkloadList{})
 	SchemeBuilder.Register(&Mesh{}, &MeshList{})
 }

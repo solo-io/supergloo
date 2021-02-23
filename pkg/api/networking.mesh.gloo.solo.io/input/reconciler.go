@@ -50,7 +50,7 @@ import (
 // * AuthorizationPolicies
 // from a remote cluster.
 // * Settings
-// * TrafficTargets
+// * Destinations
 // * Workloads
 // * Meshes
 // * TrafficPolicies
@@ -122,8 +122,8 @@ func RegisterInputReconciler(
 		return nil, err
 	}
 
-	// initialize TrafficTargets reconcile loop for local cluster
-	if err := discovery_mesh_gloo_solo_io_v1alpha2_controllers.NewTrafficTargetReconcileLoop("TrafficTarget", mgr, options.Local.TrafficTargets).RunTrafficTargetReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	// initialize Destinations reconcile loop for local cluster
+	if err := discovery_mesh_gloo_solo_io_v1alpha2_controllers.NewDestinationReconcileLoop("Destination", mgr, options.Local.Destinations).RunDestinationReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 	// initialize Workloads reconcile loop for local cluster
@@ -353,8 +353,8 @@ type LocalReconcileOptions struct {
 	// Options for reconciling Settings
 	Settings reconcile.Options
 
-	// Options for reconciling TrafficTargets
-	TrafficTargets reconcile.Options
+	// Options for reconciling Destinations
+	Destinations reconcile.Options
 	// Options for reconciling Workloads
 	Workloads reconcile.Options
 	// Options for reconciling Meshes
@@ -404,11 +404,11 @@ func (r *localInputReconciler) ReconcileSettingsDeletion(obj reconcile.Request) 
 	return err
 }
 
-func (r *localInputReconciler) ReconcileTrafficTarget(obj *discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) (reconcile.Result, error) {
+func (r *localInputReconciler) ReconcileDestination(obj *discovery_mesh_gloo_solo_io_v1alpha2.Destination) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 
-func (r *localInputReconciler) ReconcileTrafficTargetDeletion(obj reconcile.Request) error {
+func (r *localInputReconciler) ReconcileDestinationDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

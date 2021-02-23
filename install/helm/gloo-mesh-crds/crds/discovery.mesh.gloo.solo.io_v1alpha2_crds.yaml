@@ -6,14 +6,14 @@ metadata:
   labels:
     app: gloo-mesh
     app.kubernetes.io/name: gloo-mesh
-  name: traffictargets.discovery.mesh.gloo.solo.io
+  name: destinations.discovery.mesh.gloo.solo.io
 spec:
   group: discovery.mesh.gloo.solo.io
   names:
-    kind: TrafficTarget
-    listKind: TrafficTargetList
-    plural: traffictargets
-    singular: traffictarget
+    kind: Destination
+    listKind: DestinationList
+    plural: destinations
+    singular: destination
   preserveUnknownFields: false
   scope: Namespaced
   subresources:
@@ -22,9 +22,7 @@ spec:
     openAPIV3Schema:
       properties:
         spec:
-          description: |-
-            The TrafficTarget is an abstraction for any entity capable of receiving networking requests that has
-            been discovered by Gloo Mesh.
+          description: The Destination is an abstraction for any entity capable of receiving networking requests.
           oneOf:
           - not:
               anyOf:
@@ -34,7 +32,7 @@ spec:
             - kubeService
           properties:
             kubeService:
-              description: Describes the Kubernetes service backing this TrafficTarget.
+              description: Describes the Kubernetes service backing this Destination.
               properties:
                 endpointSubsets:
                   description: |-
@@ -139,7 +137,7 @@ spec:
                   type: object
               type: object
             mesh:
-              description: The mesh that controls this TrafficTarget.
+              description: The mesh that controls this Destination.
               properties:
                 name:
                   description: name of the resource being referenced
@@ -152,7 +150,7 @@ spec:
         status:
           properties:
             appliedAccessPolicies:
-              description: The set of AccessPolicies that have been applied to this TrafficTarget.
+              description: The set of AccessPolicies that have been applied to this Destination.
               items:
                 properties:
                   observedGeneration:
@@ -214,7 +212,7 @@ spec:
                         type: array
                       destinationSelector:
                         description: |-
-                          Specify the TrafficTargets for which to apply this AccessPolicy.
+                          Specify the Destinations for which to apply this AccessPolicy.
                           Leave empty to apply the AccessPolicy to all TrafficTargets.
                         items:
                           properties:
@@ -324,16 +322,16 @@ spec:
                 type: object
               type: array
             appliedFederation:
-              description: Federation metadata. Only populated if this TrafficTarget is federated through a VirtualMesh.
+              description: Federation metadata. Only populated if this Destination is federated through a VirtualMesh.
               properties:
                 federatedHostname:
                   description: |-
-                    For any Workload that this TrafficTarget has been federated to (i.e., any Workload controlled by a Mesh whose reference appears in `federated_to_meshes`),
-                               that Workload will be able to reach this TrafficTarget using this DNS name.
-                               For Kubernetes TrafficTargets this includes Workloads on clusters other than the one hosting this TrafficTarget.
+                    For any Workload that this Destination has been federated to (i.e., any Workload controlled by a Mesh whose reference appears in `federated_to_meshes`),
+                               that Workload will be able to reach this Destination using this DNS name.
+                               For Kubernetes Destinations this includes Workloads on clusters other than the one hosting this Destination.
                   type: string
                 federatedToMeshes:
-                  description: The list of Meshes which are able to resolve this TrafficTargets's `multicluster_dns_name`.
+                  description: The list of Meshes which are able to resolve this Destination's `multicluster_dns_name`.
                   items:
                     properties:
                       name:
@@ -346,13 +344,13 @@ spec:
                   type: array
                 flatNetwork:
                   description: |-
-                    Whether or not the TrafficTarget has been federated to the given meshes using a VirtualMesh where
+                    Whether or not the Destination has been federated to the given meshes using a VirtualMesh where
                     [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})
                     is true.
                   type: boolean
               type: object
             appliedTrafficPolicies:
-              description: The set of TrafficPolicies that have been applied to this TrafficTarget.
+              description: The set of TrafficPolicies that have been applied to this Destination.
               items:
                 properties:
                   observedGeneration:
@@ -374,7 +372,7 @@ spec:
                     properties:
                       destinationSelector:
                         description: |-
-                          Specify the TrafficTargets (traffic targets) this TrafficPolicy applies to.
+                          Specify the Destinations (traffic targets) this TrafficPolicy applies to.
                           Omit to apply to all TrafficTargets.
                         items:
                           properties:
@@ -866,7 +864,7 @@ spec:
               type: array
             localFqdn:
               description: |-
-                The fully qualified domain name for requests originating from a source *coloated* with this TrafficTarget.
+                The fully qualified domain name for requests originating from a source *coloated* with this Destination.
                 For Kubernetes services, "colocated" means within the same Kubernetes cluster.
               type: string
             observedGeneration:
@@ -1482,7 +1480,7 @@ spec:
                   description: The spec of the last known valid VirtualMesh.
                   properties:
                     federation:
-                      description: Specify how to federate TrafficTargets across service mesh boundaries.
+                      description: Specify how to federate Destinations across service mesh boundaries.
                       oneOf:
                       - not:
                           anyOf:
@@ -1498,18 +1496,18 @@ spec:
                           type: boolean
                         hostnameSuffix:
                           description: |-
-                            Configure the suffix for hostnames of TrafficTargets federated within this VirtualMesh.
+                            Configure the suffix for hostnames of Destinations federated within this VirtualMesh.
                             Currently this is only supported for Istio with [smart DNS proxying enabled](https://istio.io/latest/blog/2020/dns-proxy/),
                             otherwise setting this field results in an error.
                             If omitted, the hostname suffix defaults to "global".
                           type: string
                         permissive:
-                          description: Expose all TrafficTargets to all Workloads in this VirtualMesh.
+                          description: Expose all Destinations to all Workloads in this VirtualMesh.
                           maxProperties: 0
                           type: object
                       type: object
                     globalAccessPolicy:
-                      description: Specify a global access policy for all Workloads and TrafficTargets associated with this VirtualMesh.
+                      description: Specify a global access policy for all Workloads and Destinations associated with this VirtualMesh.
                       enum:
                       - MESH_DEFAULT
                       - ENABLED
@@ -1549,10 +1547,10 @@ spec:
                             `meshctl` provides the command `meshctl mesh restart` to simplify this process, see [here]({{< versioned_link_path fromRoot="reference/cli/meshctl_mesh_restart/" >}}) for more info.
                           type: boolean
                         limited:
-                          description: Limited trust (selectively allow communication between Workloads and TrafficTargets in the grouped Meshes). *Currently not available.*
+                          description: Limited trust (selectively allow communication between Workloads and Destinations in the grouped Meshes). *Currently not available.*
                           type: object
                         shared:
-                          description: Shared trust (allow communication between any pair of Workloads and TrafficTargets in the grouped Meshes).
+                          description: Shared trust (allow communication between any pair of Workloads and Destinations in the grouped Meshes).
                           properties:
                             rootCertificateAuthority:
                               description: |-

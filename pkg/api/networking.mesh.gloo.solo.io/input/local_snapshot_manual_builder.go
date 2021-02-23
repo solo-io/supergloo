@@ -33,9 +33,9 @@ type InputLocalSnapshotManualBuilder struct {
 
 	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 
-	trafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet
-	workloads      discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
-	meshes         discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
+	destinations discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet
+	workloads    discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
+	meshes       discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
 
 	trafficPolicies  networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet
 	accessPolicies   networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet
@@ -58,9 +58,9 @@ func NewInputLocalSnapshotManualBuilder(name string) *InputLocalSnapshotManualBu
 
 		settings: settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet(),
 
-		trafficTargets: discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet(),
-		workloads:      discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet(),
-		meshes:         discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet(),
+		destinations: discovery_mesh_gloo_solo_io_v1alpha2_sets.NewDestinationSet(),
+		workloads:    discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet(),
+		meshes:       discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet(),
 
 		trafficPolicies:  networking_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficPolicySet(),
 		accessPolicies:   networking_mesh_gloo_solo_io_v1alpha2_sets.NewAccessPolicySet(),
@@ -84,7 +84,7 @@ func (i *InputLocalSnapshotManualBuilder) Build() LocalSnapshot {
 
 		i.settings,
 
-		i.trafficTargets,
+		i.destinations,
 		i.workloads,
 		i.meshes,
 
@@ -107,8 +107,8 @@ func (i *InputLocalSnapshotManualBuilder) AddSettings(settings []*settings_mesh_
 	i.settings.Insert(settings...)
 	return i
 }
-func (i *InputLocalSnapshotManualBuilder) AddTrafficTargets(trafficTargets []*discovery_mesh_gloo_solo_io_v1alpha2.TrafficTarget) *InputLocalSnapshotManualBuilder {
-	i.trafficTargets.Insert(trafficTargets...)
+func (i *InputLocalSnapshotManualBuilder) AddDestinations(destinations []*discovery_mesh_gloo_solo_io_v1alpha2.Destination) *InputLocalSnapshotManualBuilder {
+	i.destinations.Insert(destinations...)
 	return i
 }
 func (i *InputLocalSnapshotManualBuilder) AddWorkloads(workloads []*discovery_mesh_gloo_solo_io_v1alpha2.Workload) *InputLocalSnapshotManualBuilder {

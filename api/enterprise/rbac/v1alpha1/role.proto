@@ -42,7 +42,7 @@ message RoleSpec {
         // A list of permitted TrafficPolicy configuration actions.
         repeated TrafficPolicyActions traffic_policy_actions = 1;
 
-        // A list of permitted TrafficTarget selectors.
+        // A list of permitted Destination selectors.
         repeated .common.mesh.gloo.solo.io.TrafficTargetSelector traffic_target_selectors = 2;
 
         // A list of permitted Workload selectors.
@@ -89,7 +89,7 @@ message RoleSpec {
         // A list of permitted identity selectors.
         repeated .common.mesh.gloo.solo.io.IdentitySelector identity_selectors = 1;
 
-        // A list of permitted TrafficTarget selectors.
+        // A list of permitted Destination selectors.
         repeated .common.mesh.gloo.solo.io.TrafficTargetSelector traffic_target_selectors = 2;
     }
 

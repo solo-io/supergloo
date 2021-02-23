@@ -21,7 +21,7 @@ var (
 		}: {
 			"Mesh",
 			"Workload",
-			"TrafficTarget",
+			"Destination",
 		},
 		schema.GroupVersion{
 			Group:   "networking." + constants.GlooMeshApiGroupSuffix,

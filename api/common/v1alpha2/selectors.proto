@@ -8,7 +8,7 @@ import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
-// Select TrafficTargets using one or more platform-specific selectors.
+// Select Destinations using one or more platform-specific selectors.
 message TrafficTargetSelector {
 
     // Match Kubernetes Services by their labels, namespaces, and/or clusters.
@@ -74,7 +74,7 @@ message WorkloadSelector {
     repeated string clusters = 3;
 }
 
-// Select TrafficTarget identities using one or more platform-specific selectors.
+// Select Destination identities using one or more platform-specific selectors.
 message IdentitySelector {
 
     // Match request identities based on the Kubernetes namespace and cluster.

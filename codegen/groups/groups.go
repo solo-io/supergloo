@@ -23,7 +23,7 @@ var GlooMeshSettingsGroup = makeGroup("settings", "v1alpha2", []ResourceToGenera
 })
 
 var GlooMeshDiscoveryGroup = makeGroup("discovery", "v1alpha2", []ResourceToGenerate{
-	{Kind: "TrafficTarget"},
+	{Kind: "Destination"},
 	{Kind: "Workload"},
 	{Kind: "Mesh"},
 })

@@ -5,7 +5,7 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.so
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/virtual_mesh.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/failover_service.proto";
-import "github.com/solo-io/gloo-mesh/api/discovery/v1alpha2/traffic_target.proto";
+import "github.com/solo-io/gloo-mesh/api/discovery/v1alpha2/destination.proto";
 import "google/protobuf/wrappers.proto";
 
 import "extproto/ext.proto";

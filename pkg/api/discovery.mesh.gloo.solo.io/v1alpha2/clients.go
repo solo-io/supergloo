@@ -40,7 +40,7 @@ func (m *multiclusterClientset) Cluster(cluster string) (Clientset, error) {
 // clienset for the discovery.mesh.gloo.solo.io/v1alpha2 APIs
 type Clientset interface {
 	// clienset for the discovery.mesh.gloo.solo.io/v1alpha2/v1alpha2 APIs
-	TrafficTargets() TrafficTargetClient
+	Destinations() DestinationClient
 	// clienset for the discovery.mesh.gloo.solo.io/v1alpha2/v1alpha2 APIs
 	Workloads() WorkloadClient
 	// clienset for the discovery.mesh.gloo.solo.io/v1alpha2/v1alpha2 APIs
@@ -70,8 +70,8 @@ func NewClientset(client client.Client) Clientset {
 }
 
 // clienset for the discovery.mesh.gloo.solo.io/v1alpha2/v1alpha2 APIs
-func (c *clientSet) TrafficTargets() TrafficTargetClient {
-	return NewTrafficTargetClient(c.client)
+func (c *clientSet) Destinations() DestinationClient {
+	return NewDestinationClient(c.client)
 }
 
 // clienset for the discovery.mesh.gloo.solo.io/v1alpha2/v1alpha2 APIs
@@ -84,109 +84,109 @@ func (c *clientSet) Meshes() MeshClient {
 	return NewMeshClient(c.client)
 }
 
-// Reader knows how to read and list TrafficTargets.
-type TrafficTargetReader interface {
-	// Get retrieves a TrafficTarget for the given object key
-	GetTrafficTarget(ctx context.Context, key client.ObjectKey) (*TrafficTarget, error)
+// Reader knows how to read and list Destinations.
+type DestinationReader interface {
+	// Get retrieves a Destination for the given object key
+	GetDestination(ctx context.Context, key client.ObjectKey) (*Destination, error)
 
-	// List retrieves list of TrafficTargets for a given namespace and list options.
-	ListTrafficTarget(ctx context.Context, opts ...client.ListOption) (*TrafficTargetList, error)
+	// List retrieves list of Destinations for a given namespace and list options.
+	ListDestination(ctx context.Context, opts ...client.ListOption) (*DestinationList, error)
 }
 
-// TrafficTargetTransitionFunction instructs the TrafficTargetWriter how to transition between an existing
-// TrafficTarget object and a desired on an Upsert
-type TrafficTargetTransitionFunction func(existing, desired *TrafficTarget) error
+// DestinationTransitionFunction instructs the DestinationWriter how to transition between an existing
+// Destination object and a desired on an Upsert
+type DestinationTransitionFunction func(existing, desired *Destination) error
 
-// Writer knows how to create, delete, and update TrafficTargets.
-type TrafficTargetWriter interface {
-	// Create saves the TrafficTarget object.
-	CreateTrafficTarget(ctx context.Context, obj *TrafficTarget, opts ...client.CreateOption) error
+// Writer knows how to create, delete, and update Destinations.
+type DestinationWriter interface {
+	// Create saves the Destination object.
+	CreateDestination(ctx context.Context, obj *Destination, opts ...client.CreateOption) error
 
-	// Delete deletes the TrafficTarget object.
-	DeleteTrafficTarget(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+	// Delete deletes the Destination object.
+	DeleteDestination(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
 
-	// Update updates the given TrafficTarget object.
-	UpdateTrafficTarget(ctx context.Context, obj *TrafficTarget, opts ...client.UpdateOption) error
+	// Update updates the given Destination object.
+	UpdateDestination(ctx context.Context, obj *Destination, opts ...client.UpdateOption) error
 
-	// Patch patches the given TrafficTarget object.
-	PatchTrafficTarget(ctx context.Context, obj *TrafficTarget, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given Destination object.
+	PatchDestination(ctx context.Context, obj *Destination, patch client.Patch, opts ...client.PatchOption) error
 
-	// DeleteAllOf deletes all TrafficTarget objects matching the given options.
-	DeleteAllOfTrafficTarget(ctx context.Context, opts ...client.DeleteAllOfOption) error
+	// DeleteAllOf deletes all Destination objects matching the given options.
+	DeleteAllOfDestination(ctx context.Context, opts ...client.DeleteAllOfOption) error
 
-	// Create or Update the TrafficTarget object.
-	UpsertTrafficTarget(ctx context.Context, obj *TrafficTarget, transitionFuncs ...TrafficTargetTransitionFunction) error
+	// Create or Update the Destination object.
+	UpsertDestination(ctx context.Context, obj *Destination, transitionFuncs ...DestinationTransitionFunction) error
 }
 
-// StatusWriter knows how to update status subresource of a TrafficTarget object.
-type TrafficTargetStatusWriter interface {
+// StatusWriter knows how to update status subresource of a Destination object.
+type DestinationStatusWriter interface {
 	// Update updates the fields corresponding to the status subresource for the
-	// given TrafficTarget object.
-	UpdateTrafficTargetStatus(ctx context.Context, obj *TrafficTarget, opts ...client.UpdateOption) error
+	// given Destination object.
+	UpdateDestinationStatus(ctx context.Context, obj *Destination, opts ...client.UpdateOption) error
 
-	// Patch patches the given TrafficTarget object's subresource.
-	PatchTrafficTargetStatus(ctx context.Context, obj *TrafficTarget, patch client.Patch, opts ...client.PatchOption) error
+	// Patch patches the given Destination object's subresource.
+	PatchDestinationStatus(ctx context.Context, obj *Destination, patch client.Patch, opts ...client.PatchOption) error
 }
 
-// Client knows how to perform CRUD operations on TrafficTargets.
-type TrafficTargetClient interface {
-	TrafficTargetReader
-	TrafficTargetWriter
-	TrafficTargetStatusWriter
+// Client knows how to perform CRUD operations on Destinations.
+type DestinationClient interface {
+	DestinationReader
+	DestinationWriter
+	DestinationStatusWriter
 }
 
-type trafficTargetClient struct {
+type destinationClient struct {
 	client client.Client
 }
 
-func NewTrafficTargetClient(client client.Client) *trafficTargetClient {
-	return &trafficTargetClient{client: client}
+func NewDestinationClient(client client.Client) *destinationClient {
+	return &destinationClient{client: client}
 }
 
-func (c *trafficTargetClient) GetTrafficTarget(ctx context.Context, key client.ObjectKey) (*TrafficTarget, error) {
-	obj := &TrafficTarget{}
+func (c *destinationClient) GetDestination(ctx context.Context, key client.ObjectKey) (*Destination, error) {
+	obj := &Destination{}
 	if err := c.client.Get(ctx, key, obj); err != nil {
 		return nil, err
 	}
 	return obj, nil
 }
 
-func (c *trafficTargetClient) ListTrafficTarget(ctx context.Context, opts ...client.ListOption) (*TrafficTargetList, error) {
-	list := &TrafficTargetList{}
+func (c *destinationClient) ListDestination(ctx context.Context, opts ...client.ListOption) (*DestinationList, error) {
+	list := &DestinationList{}
 	if err := c.client.List(ctx, list, opts...); err != nil {
 		return nil, err
 	}
 	return list, nil
 }
 
-func (c *trafficTargetClient) CreateTrafficTarget(ctx context.Context, obj *TrafficTarget, opts ...client.CreateOption) error {
+func (c *destinationClient) CreateDestination(ctx context.Context, obj *Destination, opts ...client.CreateOption) error {
 	return c.client.Create(ctx, obj, opts...)
 }
 
-func (c *trafficTargetClient) DeleteTrafficTarget(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
-	obj := &TrafficTarget{}
+func (c *destinationClient) DeleteDestination(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &Destination{}
 	obj.SetName(key.Name)
 	obj.SetNamespace(key.Namespace)
 	return c.client.Delete(ctx, obj, opts...)
 }
 
-func (c *trafficTargetClient) UpdateTrafficTarget(ctx context.Context, obj *TrafficTarget, opts ...client.UpdateOption) error {
+func (c *destinationClient) UpdateDestination(ctx context.Context, obj *Destination, opts ...client.UpdateOption) error {
 	return c.client.Update(ctx, obj, opts...)
 }
 
-func (c *trafficTargetClient) PatchTrafficTarget(ctx context.Context, obj *TrafficTarget, patch client.Patch, opts ...client.PatchOption) error {
+func (c *destinationClient) PatchDestination(ctx context.Context, obj *Destination, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Patch(ctx, obj, patch, opts...)
 }
 
-func (c *trafficTargetClient) DeleteAllOfTrafficTarget(ctx context.Context, opts ...client.DeleteAllOfOption) error {
-	obj := &TrafficTarget{}
+func (c *destinationClient) DeleteAllOfDestination(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &Destination{}
 	return c.client.DeleteAllOf(ctx, obj, opts...)
 }
 
-func (c *trafficTargetClient) UpsertTrafficTarget(ctx context.Context, obj *TrafficTarget, transitionFuncs ...TrafficTargetTransitionFunction) error {
+func (c *destinationClient) UpsertDestination(ctx context.Context, obj *Destination, transitionFuncs ...DestinationTransitionFunction) error {
 	genericTxFunc := func(existing, desired runtime.Object) error {
 		for _, txFunc := range transitionFuncs {
-			if err := txFunc(existing.(*TrafficTarget), desired.(*TrafficTarget)); err != nil {
+			if err := txFunc(existing.(*Destination), desired.(*Destination)); err != nil {
 				return err
 			}
 		}
@@ -196,34 +196,34 @@ func (c *trafficTargetClient) UpsertTrafficTarget(ctx context.Context, obj *Traf
 	return err
 }
 
-func (c *trafficTargetClient) UpdateTrafficTargetStatus(ctx context.Context, obj *TrafficTarget, opts ...client.UpdateOption) error {
+func (c *destinationClient) UpdateDestinationStatus(ctx context.Context, obj *Destination, opts ...client.UpdateOption) error {
 	return c.client.Status().Update(ctx, obj, opts...)
 }
 
-func (c *trafficTargetClient) PatchTrafficTargetStatus(ctx context.Context, obj *TrafficTarget, patch client.Patch, opts ...client.PatchOption) error {
+func (c *destinationClient) PatchDestinationStatus(ctx context.Context, obj *Destination, patch client.Patch, opts ...client.PatchOption) error {
 	return c.client.Status().Patch(ctx, obj, patch, opts...)
 }
 
-// Provides TrafficTargetClients for multiple clusters.
-type MulticlusterTrafficTargetClient interface {
-	// Cluster returns a TrafficTargetClient for the given cluster
-	Cluster(cluster string) (TrafficTargetClient, error)
+// Provides DestinationClients for multiple clusters.
+type MulticlusterDestinationClient interface {
+	// Cluster returns a DestinationClient for the given cluster
+	Cluster(cluster string) (DestinationClient, error)
 }
 
-type multiclusterTrafficTargetClient struct {
+type multiclusterDestinationClient struct {
 	client multicluster.Client
 }
 
-func NewMulticlusterTrafficTargetClient(client multicluster.Client) MulticlusterTrafficTargetClient {
-	return &multiclusterTrafficTargetClient{client: client}
+func NewMulticlusterDestinationClient(client multicluster.Client) MulticlusterDestinationClient {
+	return &multiclusterDestinationClient{client: client}
 }
 
-func (m *multiclusterTrafficTargetClient) Cluster(cluster string) (TrafficTargetClient, error) {
+func (m *multiclusterDestinationClient) Cluster(cluster string) (DestinationClient, error) {
 	client, err := m.client.Cluster(cluster)
 	if err != nil {
 		return nil, err
 	}
-	return NewTrafficTargetClient(client), nil
+	return NewDestinationClient(client), nil
 }
 
 // Reader knows how to read and list Workloads.

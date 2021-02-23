@@ -119,7 +119,7 @@ spec:
                       type: object
                     type: array
                   trafficTargetSelectors:
-                    description: A list of permitted TrafficTarget selectors.
+                    description: A list of permitted Destination selectors.
                     items:
                       properties:
                         kubeServiceMatcher:
@@ -242,7 +242,7 @@ spec:
                       type: string
                     type: array
                   trafficTargetSelectors:
-                    description: A list of permitted TrafficTarget selectors.
+                    description: A list of permitted Destination selectors.
                     items:
                       properties:
                         kubeServiceMatcher:

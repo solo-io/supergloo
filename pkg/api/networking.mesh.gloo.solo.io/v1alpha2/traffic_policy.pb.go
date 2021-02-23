@@ -100,7 +100,7 @@ type TrafficPolicySpec struct {
 	// Specify the Workloads (traffic sources) this TrafficPolicy applies to.
 	// Omit to apply to all Workloads.
 	SourceSelector []*v1alpha2.WorkloadSelector `protobuf:"bytes,1,rep,name=source_selector,json=sourceSelector,proto3" json:"source_selector,omitempty"`
-	// Specify the TrafficTargets (traffic targets) this TrafficPolicy applies to.
+	// Specify the Destinations (traffic targets) this TrafficPolicy applies to.
 	// Omit to apply to all TrafficTargets.
 	DestinationSelector []*v1alpha2.TrafficTargetSelector `protobuf:"bytes,2,rep,name=destination_selector,json=destinationSelector,proto3" json:"destination_selector,omitempty"`
 	// Specify criteria that HTTP requests must satisfy for the TrafficPolicy to apply.
@@ -184,8 +184,8 @@ type TrafficPolicyStatus struct {
 	// The state of the overall resource.
 	// It will only show accepted if it has been successfully applied to all selected TrafficTargets.
 	State ApprovalState `protobuf:"varint,2,opt,name=state,proto3,enum=networking.mesh.gloo.solo.io.ApprovalState" json:"state,omitempty"`
-	// The status of the TrafficPolicy for each selected TrafficTarget.
-	// A TrafficPolicy may be Accepted for some TrafficTargets and rejected for others.
+	// The status of the TrafficPolicy for each selected Destination.
+	// A TrafficPolicy may be Accepted for some Destinations and rejected for others.
 	TrafficTargets map[string]*ApprovalStatus `protobuf:"bytes,3,rep,name=traffic_targets,json=trafficTargets,proto3" json:"traffic_targets,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// The list of selected Workloads for which this policy has been applied.
 	Workloads []string `protobuf:"bytes,4,rep,name=workloads,proto3" json:"workloads,omitempty"`

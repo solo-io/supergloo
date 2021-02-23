@@ -29,7 +29,7 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-// Grants communication permission between selected identities (i.e. traffic sources) and TrafficTargets (i.e. traffic targets).
+// Grants communication permission between selected identities (i.e. traffic sources) and Destinations (i.e. traffic targets).
 // Explicitly granted access permission is required if a
 // [VirtualMesh's GlobalAccessPolicy]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy" %}})
 // is set to `ENABLED`.
@@ -41,7 +41,7 @@ type AccessPolicySpec struct {
 	// Specify the identities of Workloads (i.e. traffic sources) for which to apply this AccessPolicy.
 	// Leave empty to apply the AccessPolicy to all Workloads colocated in the destination's Mesh.
 	SourceSelector []*v1alpha2.IdentitySelector `protobuf:"bytes,1,rep,name=source_selector,json=sourceSelector,proto3" json:"source_selector,omitempty"`
-	// Specify the TrafficTargets for which to apply this AccessPolicy.
+	// Specify the Destinations for which to apply this AccessPolicy.
 	// Leave empty to apply the AccessPolicy to all TrafficTargets.
 	DestinationSelector []*v1alpha2.TrafficTargetSelector `protobuf:"bytes,2,rep,name=destination_selector,json=destinationSelector,proto3" json:"destination_selector,omitempty"`
 	//
@@ -144,8 +144,8 @@ type AccessPolicyStatus struct {
 	// The state of the overall resource.
 	// It will only show accepted if it has been successfully applied to selected TrafficTargets.
 	State ApprovalState `protobuf:"varint,2,opt,name=state,proto3,enum=networking.mesh.gloo.solo.io.ApprovalState" json:"state,omitempty"`
-	// The status of the AccessPolicy for each TrafficTarget to which it has been applied.
-	// An AccessPolicy may be accepted for some TrafficTargets and rejected for others.
+	// The status of the AccessPolicy for each Destination to which it has been applied.
+	// An AccessPolicy may be accepted for some Destinations and rejected for others.
 	TrafficTargets map[string]*ApprovalStatus `protobuf:"bytes,3,rep,name=traffic_targets,json=trafficTargets,proto3" json:"traffic_targets,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// The list of Workloads to which this policy has been applied.
 	Workloads []string `protobuf:"bytes,4,rep,name=workloads,proto3" json:"workloads,omitempty"`

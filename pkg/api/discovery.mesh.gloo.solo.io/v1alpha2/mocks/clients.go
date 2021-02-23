@@ -74,18 +74,18 @@ func (m *MockClientset) EXPECT() *MockClientsetMockRecorder {
 	return m.recorder
 }
 
-// TrafficTargets mocks base method
-func (m *MockClientset) TrafficTargets() v1alpha2.TrafficTargetClient {
+// Destinations mocks base method
+func (m *MockClientset) Destinations() v1alpha2.DestinationClient {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TrafficTargets")
-	ret0, _ := ret[0].(v1alpha2.TrafficTargetClient)
+	ret := m.ctrl.Call(m, "Destinations")
+	ret0, _ := ret[0].(v1alpha2.DestinationClient)
 	return ret0
 }
 
-// TrafficTargets indicates an expected call of TrafficTargets
-func (mr *MockClientsetMockRecorder) TrafficTargets() *gomock.Call {
+// Destinations indicates an expected call of Destinations
+func (mr *MockClientsetMockRecorder) Destinations() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrafficTargets", reflect.TypeOf((*MockClientset)(nil).TrafficTargets))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Destinations", reflect.TypeOf((*MockClientset)(nil).Destinations))
 }
 
 // Workloads mocks base method
@@ -116,508 +116,508 @@ func (mr *MockClientsetMockRecorder) Meshes() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Meshes", reflect.TypeOf((*MockClientset)(nil).Meshes))
 }
 
-// MockTrafficTargetReader is a mock of TrafficTargetReader interface
-type MockTrafficTargetReader struct {
+// MockDestinationReader is a mock of DestinationReader interface
+type MockDestinationReader struct {
 	ctrl     *gomock.Controller
-	recorder *MockTrafficTargetReaderMockRecorder
+	recorder *MockDestinationReaderMockRecorder
 }
 
-// MockTrafficTargetReaderMockRecorder is the mock recorder for MockTrafficTargetReader
-type MockTrafficTargetReaderMockRecorder struct {
-	mock *MockTrafficTargetReader
+// MockDestinationReaderMockRecorder is the mock recorder for MockDestinationReader
+type MockDestinationReaderMockRecorder struct {
+	mock *MockDestinationReader
 }
 
-// NewMockTrafficTargetReader creates a new mock instance
-func NewMockTrafficTargetReader(ctrl *gomock.Controller) *MockTrafficTargetReader {
-	mock := &MockTrafficTargetReader{ctrl: ctrl}
-	mock.recorder = &MockTrafficTargetReaderMockRecorder{mock}
+// NewMockDestinationReader creates a new mock instance
+func NewMockDestinationReader(ctrl *gomock.Controller) *MockDestinationReader {
+	mock := &MockDestinationReader{ctrl: ctrl}
+	mock.recorder = &MockDestinationReaderMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockTrafficTargetReader) EXPECT() *MockTrafficTargetReaderMockRecorder {
+func (m *MockDestinationReader) EXPECT() *MockDestinationReaderMockRecorder {
 	return m.recorder
 }
 
-// GetTrafficTarget mocks base method
-func (m *MockTrafficTargetReader) GetTrafficTarget(ctx context.Context, key client.ObjectKey) (*v1alpha2.TrafficTarget, error) {
+// GetDestination mocks base method
+func (m *MockDestinationReader) GetDestination(ctx context.Context, key client.ObjectKey) (*v1alpha2.Destination, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTrafficTarget", ctx, key)
-	ret0, _ := ret[0].(*v1alpha2.TrafficTarget)
+	ret := m.ctrl.Call(m, "GetDestination", ctx, key)
+	ret0, _ := ret[0].(*v1alpha2.Destination)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetTrafficTarget indicates an expected call of GetTrafficTarget
-func (mr *MockTrafficTargetReaderMockRecorder) GetTrafficTarget(ctx, key interface{}) *gomock.Call {
+// GetDestination indicates an expected call of GetDestination
+func (mr *MockDestinationReaderMockRecorder) GetDestination(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrafficTarget", reflect.TypeOf((*MockTrafficTargetReader)(nil).GetTrafficTarget), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDestination", reflect.TypeOf((*MockDestinationReader)(nil).GetDestination), ctx, key)
 }
 
-// ListTrafficTarget mocks base method
-func (m *MockTrafficTargetReader) ListTrafficTarget(ctx context.Context, opts ...client.ListOption) (*v1alpha2.TrafficTargetList, error) {
+// ListDestination mocks base method
+func (m *MockDestinationReader) ListDestination(ctx context.Context, opts ...client.ListOption) (*v1alpha2.DestinationList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "ListTrafficTarget", varargs...)
-	ret0, _ := ret[0].(*v1alpha2.TrafficTargetList)
+	ret := m.ctrl.Call(m, "ListDestination", varargs...)
+	ret0, _ := ret[0].(*v1alpha2.DestinationList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListTrafficTarget indicates an expected call of ListTrafficTarget
-func (mr *MockTrafficTargetReaderMockRecorder) ListTrafficTarget(ctx interface{}, opts ...interface{}) *gomock.Call {
+// ListDestination indicates an expected call of ListDestination
+func (mr *MockDestinationReaderMockRecorder) ListDestination(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTrafficTarget", reflect.TypeOf((*MockTrafficTargetReader)(nil).ListTrafficTarget), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDestination", reflect.TypeOf((*MockDestinationReader)(nil).ListDestination), varargs...)
 }
 
-// MockTrafficTargetWriter is a mock of TrafficTargetWriter interface
-type MockTrafficTargetWriter struct {
+// MockDestinationWriter is a mock of DestinationWriter interface
+type MockDestinationWriter struct {
 	ctrl     *gomock.Controller
-	recorder *MockTrafficTargetWriterMockRecorder
+	recorder *MockDestinationWriterMockRecorder
 }
 
-// MockTrafficTargetWriterMockRecorder is the mock recorder for MockTrafficTargetWriter
-type MockTrafficTargetWriterMockRecorder struct {
-	mock *MockTrafficTargetWriter
+// MockDestinationWriterMockRecorder is the mock recorder for MockDestinationWriter
+type MockDestinationWriterMockRecorder struct {
+	mock *MockDestinationWriter
 }
 
-// NewMockTrafficTargetWriter creates a new mock instance
-func NewMockTrafficTargetWriter(ctrl *gomock.Controller) *MockTrafficTargetWriter {
-	mock := &MockTrafficTargetWriter{ctrl: ctrl}
-	mock.recorder = &MockTrafficTargetWriterMockRecorder{mock}
+// NewMockDestinationWriter creates a new mock instance
+func NewMockDestinationWriter(ctrl *gomock.Controller) *MockDestinationWriter {
+	mock := &MockDestinationWriter{ctrl: ctrl}
+	mock.recorder = &MockDestinationWriterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockTrafficTargetWriter) EXPECT() *MockTrafficTargetWriterMockRecorder {
+func (m *MockDestinationWriter) EXPECT() *MockDestinationWriterMockRecorder {
 	return m.recorder
 }
 
-// CreateTrafficTarget mocks base method
-func (m *MockTrafficTargetWriter) CreateTrafficTarget(ctx context.Context, obj *v1alpha2.TrafficTarget, opts ...client.CreateOption) error {
+// CreateDestination mocks base method
+func (m *MockDestinationWriter) CreateDestination(ctx context.Context, obj *v1alpha2.Destination, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "CreateTrafficTarget", varargs...)
+	ret := m.ctrl.Call(m, "CreateDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateTrafficTarget indicates an expected call of CreateTrafficTarget
-func (mr *MockTrafficTargetWriterMockRecorder) CreateTrafficTarget(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// CreateDestination indicates an expected call of CreateDestination
+func (mr *MockDestinationWriterMockRecorder) CreateDestination(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTrafficTarget", reflect.TypeOf((*MockTrafficTargetWriter)(nil).CreateTrafficTarget), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDestination", reflect.TypeOf((*MockDestinationWriter)(nil).CreateDestination), varargs...)
 }
 
-// DeleteTrafficTarget mocks base method
-func (m *MockTrafficTargetWriter) DeleteTrafficTarget(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+// DeleteDestination mocks base method
+func (m *MockDestinationWriter) DeleteDestination(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, key}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteTrafficTarget", varargs...)
+	ret := m.ctrl.Call(m, "DeleteDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteTrafficTarget indicates an expected call of DeleteTrafficTarget
-func (mr *MockTrafficTargetWriterMockRecorder) DeleteTrafficTarget(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+// DeleteDestination indicates an expected call of DeleteDestination
+func (mr *MockDestinationWriterMockRecorder) DeleteDestination(ctx, key interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTrafficTarget", reflect.TypeOf((*MockTrafficTargetWriter)(nil).DeleteTrafficTarget), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDestination", reflect.TypeOf((*MockDestinationWriter)(nil).DeleteDestination), varargs...)
 }
 
-// UpdateTrafficTarget mocks base method
-func (m *MockTrafficTargetWriter) UpdateTrafficTarget(ctx context.Context, obj *v1alpha2.TrafficTarget, opts ...client.UpdateOption) error {
+// UpdateDestination mocks base method
+func (m *MockDestinationWriter) UpdateDestination(ctx context.Context, obj *v1alpha2.Destination, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateTrafficTarget", varargs...)
+	ret := m.ctrl.Call(m, "UpdateDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateTrafficTarget indicates an expected call of UpdateTrafficTarget
-func (mr *MockTrafficTargetWriterMockRecorder) UpdateTrafficTarget(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateDestination indicates an expected call of UpdateDestination
+func (mr *MockDestinationWriterMockRecorder) UpdateDestination(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTrafficTarget", reflect.TypeOf((*MockTrafficTargetWriter)(nil).UpdateTrafficTarget), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDestination", reflect.TypeOf((*MockDestinationWriter)(nil).UpdateDestination), varargs...)
 }
 
-// PatchTrafficTarget mocks base method
-func (m *MockTrafficTargetWriter) PatchTrafficTarget(ctx context.Context, obj *v1alpha2.TrafficTarget, patch client.Patch, opts ...client.PatchOption) error {
+// PatchDestination mocks base method
+func (m *MockDestinationWriter) PatchDestination(ctx context.Context, obj *v1alpha2.Destination, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchTrafficTarget", varargs...)
+	ret := m.ctrl.Call(m, "PatchDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchTrafficTarget indicates an expected call of PatchTrafficTarget
-func (mr *MockTrafficTargetWriterMockRecorder) PatchTrafficTarget(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchDestination indicates an expected call of PatchDestination
+func (mr *MockDestinationWriterMockRecorder) PatchDestination(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchTrafficTarget", reflect.TypeOf((*MockTrafficTargetWriter)(nil).PatchTrafficTarget), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchDestination", reflect.TypeOf((*MockDestinationWriter)(nil).PatchDestination), varargs...)
 }
 
-// DeleteAllOfTrafficTarget mocks base method
-func (m *MockTrafficTargetWriter) DeleteAllOfTrafficTarget(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+// DeleteAllOfDestination mocks base method
+func (m *MockDestinationWriter) DeleteAllOfDestination(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteAllOfTrafficTarget", varargs...)
+	ret := m.ctrl.Call(m, "DeleteAllOfDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteAllOfTrafficTarget indicates an expected call of DeleteAllOfTrafficTarget
-func (mr *MockTrafficTargetWriterMockRecorder) DeleteAllOfTrafficTarget(ctx interface{}, opts ...interface{}) *gomock.Call {
+// DeleteAllOfDestination indicates an expected call of DeleteAllOfDestination
+func (mr *MockDestinationWriterMockRecorder) DeleteAllOfDestination(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfTrafficTarget", reflect.TypeOf((*MockTrafficTargetWriter)(nil).DeleteAllOfTrafficTarget), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfDestination", reflect.TypeOf((*MockDestinationWriter)(nil).DeleteAllOfDestination), varargs...)
 }
 
-// UpsertTrafficTarget mocks base method
-func (m *MockTrafficTargetWriter) UpsertTrafficTarget(ctx context.Context, obj *v1alpha2.TrafficTarget, transitionFuncs ...v1alpha2.TrafficTargetTransitionFunction) error {
+// UpsertDestination mocks base method
+func (m *MockDestinationWriter) UpsertDestination(ctx context.Context, obj *v1alpha2.Destination, transitionFuncs ...v1alpha2.DestinationTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range transitionFuncs {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertTrafficTarget", varargs...)
+	ret := m.ctrl.Call(m, "UpsertDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertTrafficTarget indicates an expected call of UpsertTrafficTarget
-func (mr *MockTrafficTargetWriterMockRecorder) UpsertTrafficTarget(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+// UpsertDestination indicates an expected call of UpsertDestination
+func (mr *MockDestinationWriterMockRecorder) UpsertDestination(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertTrafficTarget", reflect.TypeOf((*MockTrafficTargetWriter)(nil).UpsertTrafficTarget), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertDestination", reflect.TypeOf((*MockDestinationWriter)(nil).UpsertDestination), varargs...)
 }
 
-// MockTrafficTargetStatusWriter is a mock of TrafficTargetStatusWriter interface
-type MockTrafficTargetStatusWriter struct {
+// MockDestinationStatusWriter is a mock of DestinationStatusWriter interface
+type MockDestinationStatusWriter struct {
 	ctrl     *gomock.Controller
-	recorder *MockTrafficTargetStatusWriterMockRecorder
+	recorder *MockDestinationStatusWriterMockRecorder
 }
 
-// MockTrafficTargetStatusWriterMockRecorder is the mock recorder for MockTrafficTargetStatusWriter
-type MockTrafficTargetStatusWriterMockRecorder struct {
-	mock *MockTrafficTargetStatusWriter
+// MockDestinationStatusWriterMockRecorder is the mock recorder for MockDestinationStatusWriter
+type MockDestinationStatusWriterMockRecorder struct {
+	mock *MockDestinationStatusWriter
 }
 
-// NewMockTrafficTargetStatusWriter creates a new mock instance
-func NewMockTrafficTargetStatusWriter(ctrl *gomock.Controller) *MockTrafficTargetStatusWriter {
-	mock := &MockTrafficTargetStatusWriter{ctrl: ctrl}
-	mock.recorder = &MockTrafficTargetStatusWriterMockRecorder{mock}
+// NewMockDestinationStatusWriter creates a new mock instance
+func NewMockDestinationStatusWriter(ctrl *gomock.Controller) *MockDestinationStatusWriter {
+	mock := &MockDestinationStatusWriter{ctrl: ctrl}
+	mock.recorder = &MockDestinationStatusWriterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockTrafficTargetStatusWriter) EXPECT() *MockTrafficTargetStatusWriterMockRecorder {
+func (m *MockDestinationStatusWriter) EXPECT() *MockDestinationStatusWriterMockRecorder {
 	return m.recorder
 }
 
-// UpdateTrafficTargetStatus mocks base method
-func (m *MockTrafficTargetStatusWriter) UpdateTrafficTargetStatus(ctx context.Context, obj *v1alpha2.TrafficTarget, opts ...client.UpdateOption) error {
+// UpdateDestinationStatus mocks base method
+func (m *MockDestinationStatusWriter) UpdateDestinationStatus(ctx context.Context, obj *v1alpha2.Destination, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateTrafficTargetStatus", varargs...)
+	ret := m.ctrl.Call(m, "UpdateDestinationStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateTrafficTargetStatus indicates an expected call of UpdateTrafficTargetStatus
-func (mr *MockTrafficTargetStatusWriterMockRecorder) UpdateTrafficTargetStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateDestinationStatus indicates an expected call of UpdateDestinationStatus
+func (mr *MockDestinationStatusWriterMockRecorder) UpdateDestinationStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTrafficTargetStatus", reflect.TypeOf((*MockTrafficTargetStatusWriter)(nil).UpdateTrafficTargetStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDestinationStatus", reflect.TypeOf((*MockDestinationStatusWriter)(nil).UpdateDestinationStatus), varargs...)
 }
 
-// PatchTrafficTargetStatus mocks base method
-func (m *MockTrafficTargetStatusWriter) PatchTrafficTargetStatus(ctx context.Context, obj *v1alpha2.TrafficTarget, patch client.Patch, opts ...client.PatchOption) error {
+// PatchDestinationStatus mocks base method
+func (m *MockDestinationStatusWriter) PatchDestinationStatus(ctx context.Context, obj *v1alpha2.Destination, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchTrafficTargetStatus", varargs...)
+	ret := m.ctrl.Call(m, "PatchDestinationStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchTrafficTargetStatus indicates an expected call of PatchTrafficTargetStatus
-func (mr *MockTrafficTargetStatusWriterMockRecorder) PatchTrafficTargetStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchDestinationStatus indicates an expected call of PatchDestinationStatus
+func (mr *MockDestinationStatusWriterMockRecorder) PatchDestinationStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchTrafficTargetStatus", reflect.TypeOf((*MockTrafficTargetStatusWriter)(nil).PatchTrafficTargetStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchDestinationStatus", reflect.TypeOf((*MockDestinationStatusWriter)(nil).PatchDestinationStatus), varargs...)
 }
 
-// MockTrafficTargetClient is a mock of TrafficTargetClient interface
-type MockTrafficTargetClient struct {
+// MockDestinationClient is a mock of DestinationClient interface
+type MockDestinationClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockTrafficTargetClientMockRecorder
+	recorder *MockDestinationClientMockRecorder
 }
 
-// MockTrafficTargetClientMockRecorder is the mock recorder for MockTrafficTargetClient
-type MockTrafficTargetClientMockRecorder struct {
-	mock *MockTrafficTargetClient
+// MockDestinationClientMockRecorder is the mock recorder for MockDestinationClient
+type MockDestinationClientMockRecorder struct {
+	mock *MockDestinationClient
 }
 
-// NewMockTrafficTargetClient creates a new mock instance
-func NewMockTrafficTargetClient(ctrl *gomock.Controller) *MockTrafficTargetClient {
-	mock := &MockTrafficTargetClient{ctrl: ctrl}
-	mock.recorder = &MockTrafficTargetClientMockRecorder{mock}
+// NewMockDestinationClient creates a new mock instance
+func NewMockDestinationClient(ctrl *gomock.Controller) *MockDestinationClient {
+	mock := &MockDestinationClient{ctrl: ctrl}
+	mock.recorder = &MockDestinationClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockTrafficTargetClient) EXPECT() *MockTrafficTargetClientMockRecorder {
+func (m *MockDestinationClient) EXPECT() *MockDestinationClientMockRecorder {
 	return m.recorder
 }
 
-// GetTrafficTarget mocks base method
-func (m *MockTrafficTargetClient) GetTrafficTarget(ctx context.Context, key client.ObjectKey) (*v1alpha2.TrafficTarget, error) {
+// GetDestination mocks base method
+func (m *MockDestinationClient) GetDestination(ctx context.Context, key client.ObjectKey) (*v1alpha2.Destination, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTrafficTarget", ctx, key)
-	ret0, _ := ret[0].(*v1alpha2.TrafficTarget)
+	ret := m.ctrl.Call(m, "GetDestination", ctx, key)
+	ret0, _ := ret[0].(*v1alpha2.Destination)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetTrafficTarget indicates an expected call of GetTrafficTarget
-func (mr *MockTrafficTargetClientMockRecorder) GetTrafficTarget(ctx, key interface{}) *gomock.Call {
+// GetDestination indicates an expected call of GetDestination
+func (mr *MockDestinationClientMockRecorder) GetDestination(ctx, key interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrafficTarget", reflect.TypeOf((*MockTrafficTargetClient)(nil).GetTrafficTarget), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDestination", reflect.TypeOf((*MockDestinationClient)(nil).GetDestination), ctx, key)
 }
 
-// ListTrafficTarget mocks base method
-func (m *MockTrafficTargetClient) ListTrafficTarget(ctx context.Context, opts ...client.ListOption) (*v1alpha2.TrafficTargetList, error) {
+// ListDestination mocks base method
+func (m *MockDestinationClient) ListDestination(ctx context.Context, opts ...client.ListOption) (*v1alpha2.DestinationList, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "ListTrafficTarget", varargs...)
-	ret0, _ := ret[0].(*v1alpha2.TrafficTargetList)
+	ret := m.ctrl.Call(m, "ListDestination", varargs...)
+	ret0, _ := ret[0].(*v1alpha2.DestinationList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListTrafficTarget indicates an expected call of ListTrafficTarget
-func (mr *MockTrafficTargetClientMockRecorder) ListTrafficTarget(ctx interface{}, opts ...interface{}) *gomock.Call {
+// ListDestination indicates an expected call of ListDestination
+func (mr *MockDestinationClientMockRecorder) ListDestination(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTrafficTarget", reflect.TypeOf((*MockTrafficTargetClient)(nil).ListTrafficTarget), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDestination", reflect.TypeOf((*MockDestinationClient)(nil).ListDestination), varargs...)
 }
 
-// CreateTrafficTarget mocks base method
-func (m *MockTrafficTargetClient) CreateTrafficTarget(ctx context.Context, obj *v1alpha2.TrafficTarget, opts ...client.CreateOption) error {
+// CreateDestination mocks base method
+func (m *MockDestinationClient) CreateDestination(ctx context.Context, obj *v1alpha2.Destination, opts ...client.CreateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "CreateTrafficTarget", varargs...)
+	ret := m.ctrl.Call(m, "CreateDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateTrafficTarget indicates an expected call of CreateTrafficTarget
-func (mr *MockTrafficTargetClientMockRecorder) CreateTrafficTarget(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// CreateDestination indicates an expected call of CreateDestination
+func (mr *MockDestinationClientMockRecorder) CreateDestination(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTrafficTarget", reflect.TypeOf((*MockTrafficTargetClient)(nil).CreateTrafficTarget), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDestination", reflect.TypeOf((*MockDestinationClient)(nil).CreateDestination), varargs...)
 }
 
-// DeleteTrafficTarget mocks base method
-func (m *MockTrafficTargetClient) DeleteTrafficTarget(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+// DeleteDestination mocks base method
+func (m *MockDestinationClient) DeleteDestination(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, key}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteTrafficTarget", varargs...)
+	ret := m.ctrl.Call(m, "DeleteDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteTrafficTarget indicates an expected call of DeleteTrafficTarget
-func (mr *MockTrafficTargetClientMockRecorder) DeleteTrafficTarget(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+// DeleteDestination indicates an expected call of DeleteDestination
+func (mr *MockDestinationClientMockRecorder) DeleteDestination(ctx, key interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, key}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTrafficTarget", reflect.TypeOf((*MockTrafficTargetClient)(nil).DeleteTrafficTarget), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDestination", reflect.TypeOf((*MockDestinationClient)(nil).DeleteDestination), varargs...)
 }
 
-// UpdateTrafficTarget mocks base method
-func (m *MockTrafficTargetClient) UpdateTrafficTarget(ctx context.Context, obj *v1alpha2.TrafficTarget, opts ...client.UpdateOption) error {
+// UpdateDestination mocks base method
+func (m *MockDestinationClient) UpdateDestination(ctx context.Context, obj *v1alpha2.Destination, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateTrafficTarget", varargs...)
+	ret := m.ctrl.Call(m, "UpdateDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateTrafficTarget indicates an expected call of UpdateTrafficTarget
-func (mr *MockTrafficTargetClientMockRecorder) UpdateTrafficTarget(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateDestination indicates an expected call of UpdateDestination
+func (mr *MockDestinationClientMockRecorder) UpdateDestination(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTrafficTarget", reflect.TypeOf((*MockTrafficTargetClient)(nil).UpdateTrafficTarget), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDestination", reflect.TypeOf((*MockDestinationClient)(nil).UpdateDestination), varargs...)
 }
 
-// PatchTrafficTarget mocks base method
-func (m *MockTrafficTargetClient) PatchTrafficTarget(ctx context.Context, obj *v1alpha2.TrafficTarget, patch client.Patch, opts ...client.PatchOption) error {
+// PatchDestination mocks base method
+func (m *MockDestinationClient) PatchDestination(ctx context.Context, obj *v1alpha2.Destination, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchTrafficTarget", varargs...)
+	ret := m.ctrl.Call(m, "PatchDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchTrafficTarget indicates an expected call of PatchTrafficTarget
-func (mr *MockTrafficTargetClientMockRecorder) PatchTrafficTarget(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchDestination indicates an expected call of PatchDestination
+func (mr *MockDestinationClientMockRecorder) PatchDestination(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchTrafficTarget", reflect.TypeOf((*MockTrafficTargetClient)(nil).PatchTrafficTarget), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchDestination", reflect.TypeOf((*MockDestinationClient)(nil).PatchDestination), varargs...)
 }
 
-// DeleteAllOfTrafficTarget mocks base method
-func (m *MockTrafficTargetClient) DeleteAllOfTrafficTarget(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+// DeleteAllOfDestination mocks base method
+func (m *MockDestinationClient) DeleteAllOfDestination(ctx context.Context, opts ...client.DeleteAllOfOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DeleteAllOfTrafficTarget", varargs...)
+	ret := m.ctrl.Call(m, "DeleteAllOfDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteAllOfTrafficTarget indicates an expected call of DeleteAllOfTrafficTarget
-func (mr *MockTrafficTargetClientMockRecorder) DeleteAllOfTrafficTarget(ctx interface{}, opts ...interface{}) *gomock.Call {
+// DeleteAllOfDestination indicates an expected call of DeleteAllOfDestination
+func (mr *MockDestinationClientMockRecorder) DeleteAllOfDestination(ctx interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfTrafficTarget", reflect.TypeOf((*MockTrafficTargetClient)(nil).DeleteAllOfTrafficTarget), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfDestination", reflect.TypeOf((*MockDestinationClient)(nil).DeleteAllOfDestination), varargs...)
 }
 
-// UpsertTrafficTarget mocks base method
-func (m *MockTrafficTargetClient) UpsertTrafficTarget(ctx context.Context, obj *v1alpha2.TrafficTarget, transitionFuncs ...v1alpha2.TrafficTargetTransitionFunction) error {
+// UpsertDestination mocks base method
+func (m *MockDestinationClient) UpsertDestination(ctx context.Context, obj *v1alpha2.Destination, transitionFuncs ...v1alpha2.DestinationTransitionFunction) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range transitionFuncs {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpsertTrafficTarget", varargs...)
+	ret := m.ctrl.Call(m, "UpsertDestination", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpsertTrafficTarget indicates an expected call of UpsertTrafficTarget
-func (mr *MockTrafficTargetClientMockRecorder) UpsertTrafficTarget(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+// UpsertDestination indicates an expected call of UpsertDestination
+func (mr *MockDestinationClientMockRecorder) UpsertDestination(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertTrafficTarget", reflect.TypeOf((*MockTrafficTargetClient)(nil).UpsertTrafficTarget), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertDestination", reflect.TypeOf((*MockDestinationClient)(nil).UpsertDestination), varargs...)
 }
 
-// UpdateTrafficTargetStatus mocks base method
-func (m *MockTrafficTargetClient) UpdateTrafficTargetStatus(ctx context.Context, obj *v1alpha2.TrafficTarget, opts ...client.UpdateOption) error {
+// UpdateDestinationStatus mocks base method
+func (m *MockDestinationClient) UpdateDestinationStatus(ctx context.Context, obj *v1alpha2.Destination, opts ...client.UpdateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "UpdateTrafficTargetStatus", varargs...)
+	ret := m.ctrl.Call(m, "UpdateDestinationStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateTrafficTargetStatus indicates an expected call of UpdateTrafficTargetStatus
-func (mr *MockTrafficTargetClientMockRecorder) UpdateTrafficTargetStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+// UpdateDestinationStatus indicates an expected call of UpdateDestinationStatus
+func (mr *MockDestinationClientMockRecorder) UpdateDestinationStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTrafficTargetStatus", reflect.TypeOf((*MockTrafficTargetClient)(nil).UpdateTrafficTargetStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDestinationStatus", reflect.TypeOf((*MockDestinationClient)(nil).UpdateDestinationStatus), varargs...)
 }
 
-// PatchTrafficTargetStatus mocks base method
-func (m *MockTrafficTargetClient) PatchTrafficTargetStatus(ctx context.Context, obj *v1alpha2.TrafficTarget, patch client.Patch, opts ...client.PatchOption) error {
+// PatchDestinationStatus mocks base method
+func (m *MockDestinationClient) PatchDestinationStatus(ctx context.Context, obj *v1alpha2.Destination, patch client.Patch, opts ...client.PatchOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, obj, patch}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "PatchTrafficTargetStatus", varargs...)
+	ret := m.ctrl.Call(m, "PatchDestinationStatus", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PatchTrafficTargetStatus indicates an expected call of PatchTrafficTargetStatus
-func (mr *MockTrafficTargetClientMockRecorder) PatchTrafficTargetStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+// PatchDestinationStatus indicates an expected call of PatchDestinationStatus
+func (mr *MockDestinationClientMockRecorder) PatchDestinationStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, obj, patch}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchTrafficTargetStatus", reflect.TypeOf((*MockTrafficTargetClient)(nil).PatchTrafficTargetStatus), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchDestinationStatus", reflect.TypeOf((*MockDestinationClient)(nil).PatchDestinationStatus), varargs...)
 }
 
-// MockMulticlusterTrafficTargetClient is a mock of MulticlusterTrafficTargetClient interface
-type MockMulticlusterTrafficTargetClient struct {
+// MockMulticlusterDestinationClient is a mock of MulticlusterDestinationClient interface
+type MockMulticlusterDestinationClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockMulticlusterTrafficTargetClientMockRecorder
+	recorder *MockMulticlusterDestinationClientMockRecorder
 }
 
-// MockMulticlusterTrafficTargetClientMockRecorder is the mock recorder for MockMulticlusterTrafficTargetClient
-type MockMulticlusterTrafficTargetClientMockRecorder struct {
-	mock *MockMulticlusterTrafficTargetClient
+// MockMulticlusterDestinationClientMockRecorder is the mock recorder for MockMulticlusterDestinationClient
+type MockMulticlusterDestinationClientMockRecorder struct {
+	mock *MockMulticlusterDestinationClient
 }
 
-// NewMockMulticlusterTrafficTargetClient creates a new mock instance
-func NewMockMulticlusterTrafficTargetClient(ctrl *gomock.Controller) *MockMulticlusterTrafficTargetClient {
-	mock := &MockMulticlusterTrafficTargetClient{ctrl: ctrl}
-	mock.recorder = &MockMulticlusterTrafficTargetClientMockRecorder{mock}
+// NewMockMulticlusterDestinationClient creates a new mock instance
+func NewMockMulticlusterDestinationClient(ctrl *gomock.Controller) *MockMulticlusterDestinationClient {
+	mock := &MockMulticlusterDestinationClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterDestinationClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockMulticlusterTrafficTargetClient) EXPECT() *MockMulticlusterTrafficTargetClientMockRecorder {
+func (m *MockMulticlusterDestinationClient) EXPECT() *MockMulticlusterDestinationClientMockRecorder {
 	return m.recorder
 }
 
 // Cluster mocks base method
-func (m *MockMulticlusterTrafficTargetClient) Cluster(cluster string) (v1alpha2.TrafficTargetClient, error) {
+func (m *MockMulticlusterDestinationClient) Cluster(cluster string) (v1alpha2.DestinationClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Cluster", cluster)
-	ret0, _ := ret[0].(v1alpha2.TrafficTargetClient)
+	ret0, _ := ret[0].(v1alpha2.DestinationClient)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Cluster indicates an expected call of Cluster
-func (mr *MockMulticlusterTrafficTargetClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+func (mr *MockMulticlusterDestinationClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterTrafficTargetClient)(nil).Cluster), cluster)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterDestinationClient)(nil).Cluster), cluster)
 }
 
 // MockWorkloadReader is a mock of WorkloadReader interface

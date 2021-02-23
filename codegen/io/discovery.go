@@ -46,7 +46,7 @@ var (
 			}: {
 				"Mesh",
 				"Workload",
-				"TrafficTarget",
+				"Destination",
 			},
 		},
 	}

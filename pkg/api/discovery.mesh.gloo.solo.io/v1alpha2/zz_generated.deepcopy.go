@@ -8,9 +8,9 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
-// Generated Deepcopy methods for TrafficTarget
+// Generated Deepcopy methods for Destination
 
-func (in *TrafficTarget) DeepCopyInto(out *TrafficTarget) {
+func (in *Destination) DeepCopyInto(out *Destination) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
@@ -23,29 +23,29 @@ func (in *TrafficTarget) DeepCopyInto(out *TrafficTarget) {
 	return
 }
 
-func (in *TrafficTarget) DeepCopy() *TrafficTarget {
+func (in *Destination) DeepCopy() *Destination {
 	if in == nil {
 		return nil
 	}
-	out := new(TrafficTarget)
+	out := new(Destination)
 	in.DeepCopyInto(out)
 	return out
 }
 
-func (in *TrafficTarget) DeepCopyObject() runtime.Object {
+func (in *Destination) DeepCopyObject() runtime.Object {
 	if c := in.DeepCopy(); c != nil {
 		return c
 	}
 	return nil
 }
 
-func (in *TrafficTargetList) DeepCopyInto(out *TrafficTargetList) {
+func (in *DestinationList) DeepCopyInto(out *DestinationList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
-		*out = make([]TrafficTarget, len(*in))
+		*out = make([]Destination, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -53,16 +53,16 @@ func (in *TrafficTargetList) DeepCopyInto(out *TrafficTargetList) {
 	return
 }
 
-func (in *TrafficTargetList) DeepCopy() *TrafficTargetList {
+func (in *DestinationList) DeepCopy() *DestinationList {
 	if in == nil {
 		return nil
 	}
-	out := new(TrafficTargetList)
+	out := new(DestinationList)
 	in.DeepCopyInto(out)
 	return out
 }
 
-func (in *TrafficTargetList) DeepCopyObject() runtime.Object {
+func (in *DestinationList) DeepCopyObject() runtime.Object {
 	if c := in.DeepCopy(); c != nil {
 		return c
 	}

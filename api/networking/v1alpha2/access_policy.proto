@@ -9,7 +9,7 @@ import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.pr
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
-// Grants communication permission between selected identities (i.e. traffic sources) and TrafficTargets (i.e. traffic targets).
+// Grants communication permission between selected identities (i.e. traffic sources) and Destinations (i.e. traffic targets).
 // Explicitly granted access permission is required if a
 // [VirtualMesh's GlobalAccessPolicy]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy" %}})
 // is set to `ENABLED`.
@@ -19,7 +19,7 @@ message AccessPolicySpec {
     // Leave empty to apply the AccessPolicy to all Workloads colocated in the destination's Mesh.
     repeated .common.mesh.gloo.solo.io.IdentitySelector source_selector = 1;
 
-    // Specify the TrafficTargets for which to apply this AccessPolicy.
+    // Specify the Destinations for which to apply this AccessPolicy.
     // Leave empty to apply the AccessPolicy to all TrafficTargets.
     repeated .common.mesh.gloo.solo.io.TrafficTargetSelector destination_selector = 2;
 
@@ -60,8 +60,8 @@ message AccessPolicyStatus {
     // It will only show accepted if it has been successfully applied to selected TrafficTargets.
     ApprovalState state = 2;
 
-    // The status of the AccessPolicy for each TrafficTarget to which it has been applied.
-    // An AccessPolicy may be accepted for some TrafficTargets and rejected for others.
+    // The status of the AccessPolicy for each Destination to which it has been applied.
+    // An AccessPolicy may be accepted for some Destinations and rejected for others.
     map<string, ApprovalStatus> traffic_targets = 3;
 
     // The list of Workloads to which this policy has been applied.

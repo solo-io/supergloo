@@ -15,187 +15,187 @@ import (
 	predicate "sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
-// MockTrafficTargetReconciler is a mock of TrafficTargetReconciler interface
-type MockTrafficTargetReconciler struct {
+// MockDestinationReconciler is a mock of DestinationReconciler interface
+type MockDestinationReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockTrafficTargetReconcilerMockRecorder
+	recorder *MockDestinationReconcilerMockRecorder
 }
 
-// MockTrafficTargetReconcilerMockRecorder is the mock recorder for MockTrafficTargetReconciler
-type MockTrafficTargetReconcilerMockRecorder struct {
-	mock *MockTrafficTargetReconciler
+// MockDestinationReconcilerMockRecorder is the mock recorder for MockDestinationReconciler
+type MockDestinationReconcilerMockRecorder struct {
+	mock *MockDestinationReconciler
 }
 
-// NewMockTrafficTargetReconciler creates a new mock instance
-func NewMockTrafficTargetReconciler(ctrl *gomock.Controller) *MockTrafficTargetReconciler {
-	mock := &MockTrafficTargetReconciler{ctrl: ctrl}
-	mock.recorder = &MockTrafficTargetReconcilerMockRecorder{mock}
+// NewMockDestinationReconciler creates a new mock instance
+func NewMockDestinationReconciler(ctrl *gomock.Controller) *MockDestinationReconciler {
+	mock := &MockDestinationReconciler{ctrl: ctrl}
+	mock.recorder = &MockDestinationReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockTrafficTargetReconciler) EXPECT() *MockTrafficTargetReconcilerMockRecorder {
+func (m *MockDestinationReconciler) EXPECT() *MockDestinationReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileTrafficTarget mocks base method
-func (m *MockTrafficTargetReconciler) ReconcileTrafficTarget(obj *v1alpha2.TrafficTarget) (reconcile.Result, error) {
+// ReconcileDestination mocks base method
+func (m *MockDestinationReconciler) ReconcileDestination(obj *v1alpha2.Destination) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileTrafficTarget", obj)
+	ret := m.ctrl.Call(m, "ReconcileDestination", obj)
 	ret0, _ := ret[0].(reconcile.Result)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ReconcileTrafficTarget indicates an expected call of ReconcileTrafficTarget
-func (mr *MockTrafficTargetReconcilerMockRecorder) ReconcileTrafficTarget(obj interface{}) *gomock.Call {
+// ReconcileDestination indicates an expected call of ReconcileDestination
+func (mr *MockDestinationReconcilerMockRecorder) ReconcileDestination(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileTrafficTarget", reflect.TypeOf((*MockTrafficTargetReconciler)(nil).ReconcileTrafficTarget), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileDestination", reflect.TypeOf((*MockDestinationReconciler)(nil).ReconcileDestination), obj)
 }
 
-// MockTrafficTargetDeletionReconciler is a mock of TrafficTargetDeletionReconciler interface
-type MockTrafficTargetDeletionReconciler struct {
+// MockDestinationDeletionReconciler is a mock of DestinationDeletionReconciler interface
+type MockDestinationDeletionReconciler struct {
 	ctrl     *gomock.Controller
-	recorder *MockTrafficTargetDeletionReconcilerMockRecorder
+	recorder *MockDestinationDeletionReconcilerMockRecorder
 }
 
-// MockTrafficTargetDeletionReconcilerMockRecorder is the mock recorder for MockTrafficTargetDeletionReconciler
-type MockTrafficTargetDeletionReconcilerMockRecorder struct {
-	mock *MockTrafficTargetDeletionReconciler
+// MockDestinationDeletionReconcilerMockRecorder is the mock recorder for MockDestinationDeletionReconciler
+type MockDestinationDeletionReconcilerMockRecorder struct {
+	mock *MockDestinationDeletionReconciler
 }
 
-// NewMockTrafficTargetDeletionReconciler creates a new mock instance
-func NewMockTrafficTargetDeletionReconciler(ctrl *gomock.Controller) *MockTrafficTargetDeletionReconciler {
-	mock := &MockTrafficTargetDeletionReconciler{ctrl: ctrl}
-	mock.recorder = &MockTrafficTargetDeletionReconcilerMockRecorder{mock}
+// NewMockDestinationDeletionReconciler creates a new mock instance
+func NewMockDestinationDeletionReconciler(ctrl *gomock.Controller) *MockDestinationDeletionReconciler {
+	mock := &MockDestinationDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockDestinationDeletionReconcilerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockTrafficTargetDeletionReconciler) EXPECT() *MockTrafficTargetDeletionReconcilerMockRecorder {
+func (m *MockDestinationDeletionReconciler) EXPECT() *MockDestinationDeletionReconcilerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileTrafficTargetDeletion mocks base method
-func (m *MockTrafficTargetDeletionReconciler) ReconcileTrafficTargetDeletion(req reconcile.Request) error {
+// ReconcileDestinationDeletion mocks base method
+func (m *MockDestinationDeletionReconciler) ReconcileDestinationDeletion(req reconcile.Request) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileTrafficTargetDeletion", req)
+	ret := m.ctrl.Call(m, "ReconcileDestinationDeletion", req)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// ReconcileTrafficTargetDeletion indicates an expected call of ReconcileTrafficTargetDeletion
-func (mr *MockTrafficTargetDeletionReconcilerMockRecorder) ReconcileTrafficTargetDeletion(req interface{}) *gomock.Call {
+// ReconcileDestinationDeletion indicates an expected call of ReconcileDestinationDeletion
+func (mr *MockDestinationDeletionReconcilerMockRecorder) ReconcileDestinationDeletion(req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileTrafficTargetDeletion", reflect.TypeOf((*MockTrafficTargetDeletionReconciler)(nil).ReconcileTrafficTargetDeletion), req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileDestinationDeletion", reflect.TypeOf((*MockDestinationDeletionReconciler)(nil).ReconcileDestinationDeletion), req)
 }
 
-// MockTrafficTargetFinalizer is a mock of TrafficTargetFinalizer interface
-type MockTrafficTargetFinalizer struct {
+// MockDestinationFinalizer is a mock of DestinationFinalizer interface
+type MockDestinationFinalizer struct {
 	ctrl     *gomock.Controller
-	recorder *MockTrafficTargetFinalizerMockRecorder
+	recorder *MockDestinationFinalizerMockRecorder
 }
 
-// MockTrafficTargetFinalizerMockRecorder is the mock recorder for MockTrafficTargetFinalizer
-type MockTrafficTargetFinalizerMockRecorder struct {
-	mock *MockTrafficTargetFinalizer
+// MockDestinationFinalizerMockRecorder is the mock recorder for MockDestinationFinalizer
+type MockDestinationFinalizerMockRecorder struct {
+	mock *MockDestinationFinalizer
 }
 
-// NewMockTrafficTargetFinalizer creates a new mock instance
-func NewMockTrafficTargetFinalizer(ctrl *gomock.Controller) *MockTrafficTargetFinalizer {
-	mock := &MockTrafficTargetFinalizer{ctrl: ctrl}
-	mock.recorder = &MockTrafficTargetFinalizerMockRecorder{mock}
+// NewMockDestinationFinalizer creates a new mock instance
+func NewMockDestinationFinalizer(ctrl *gomock.Controller) *MockDestinationFinalizer {
+	mock := &MockDestinationFinalizer{ctrl: ctrl}
+	mock.recorder = &MockDestinationFinalizerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockTrafficTargetFinalizer) EXPECT() *MockTrafficTargetFinalizerMockRecorder {
+func (m *MockDestinationFinalizer) EXPECT() *MockDestinationFinalizerMockRecorder {
 	return m.recorder
 }
 
-// ReconcileTrafficTarget mocks base method
-func (m *MockTrafficTargetFinalizer) ReconcileTrafficTarget(obj *v1alpha2.TrafficTarget) (reconcile.Result, error) {
+// ReconcileDestination mocks base method
+func (m *MockDestinationFinalizer) ReconcileDestination(obj *v1alpha2.Destination) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileTrafficTarget", obj)
+	ret := m.ctrl.Call(m, "ReconcileDestination", obj)
 	ret0, _ := ret[0].(reconcile.Result)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ReconcileTrafficTarget indicates an expected call of ReconcileTrafficTarget
-func (mr *MockTrafficTargetFinalizerMockRecorder) ReconcileTrafficTarget(obj interface{}) *gomock.Call {
+// ReconcileDestination indicates an expected call of ReconcileDestination
+func (mr *MockDestinationFinalizerMockRecorder) ReconcileDestination(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileTrafficTarget", reflect.TypeOf((*MockTrafficTargetFinalizer)(nil).ReconcileTrafficTarget), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileDestination", reflect.TypeOf((*MockDestinationFinalizer)(nil).ReconcileDestination), obj)
 }
 
-// TrafficTargetFinalizerName mocks base method
-func (m *MockTrafficTargetFinalizer) TrafficTargetFinalizerName() string {
+// DestinationFinalizerName mocks base method
+func (m *MockDestinationFinalizer) DestinationFinalizerName() string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TrafficTargetFinalizerName")
+	ret := m.ctrl.Call(m, "DestinationFinalizerName")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// TrafficTargetFinalizerName indicates an expected call of TrafficTargetFinalizerName
-func (mr *MockTrafficTargetFinalizerMockRecorder) TrafficTargetFinalizerName() *gomock.Call {
+// DestinationFinalizerName indicates an expected call of DestinationFinalizerName
+func (mr *MockDestinationFinalizerMockRecorder) DestinationFinalizerName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrafficTargetFinalizerName", reflect.TypeOf((*MockTrafficTargetFinalizer)(nil).TrafficTargetFinalizerName))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DestinationFinalizerName", reflect.TypeOf((*MockDestinationFinalizer)(nil).DestinationFinalizerName))
 }
 
-// FinalizeTrafficTarget mocks base method
-func (m *MockTrafficTargetFinalizer) FinalizeTrafficTarget(obj *v1alpha2.TrafficTarget) error {
+// FinalizeDestination mocks base method
+func (m *MockDestinationFinalizer) FinalizeDestination(obj *v1alpha2.Destination) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FinalizeTrafficTarget", obj)
+	ret := m.ctrl.Call(m, "FinalizeDestination", obj)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// FinalizeTrafficTarget indicates an expected call of FinalizeTrafficTarget
-func (mr *MockTrafficTargetFinalizerMockRecorder) FinalizeTrafficTarget(obj interface{}) *gomock.Call {
+// FinalizeDestination indicates an expected call of FinalizeDestination
+func (mr *MockDestinationFinalizerMockRecorder) FinalizeDestination(obj interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeTrafficTarget", reflect.TypeOf((*MockTrafficTargetFinalizer)(nil).FinalizeTrafficTarget), obj)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FinalizeDestination", reflect.TypeOf((*MockDestinationFinalizer)(nil).FinalizeDestination), obj)
 }
 
-// MockTrafficTargetReconcileLoop is a mock of TrafficTargetReconcileLoop interface
-type MockTrafficTargetReconcileLoop struct {
+// MockDestinationReconcileLoop is a mock of DestinationReconcileLoop interface
+type MockDestinationReconcileLoop struct {
 	ctrl     *gomock.Controller
-	recorder *MockTrafficTargetReconcileLoopMockRecorder
+	recorder *MockDestinationReconcileLoopMockRecorder
 }
 
-// MockTrafficTargetReconcileLoopMockRecorder is the mock recorder for MockTrafficTargetReconcileLoop
-type MockTrafficTargetReconcileLoopMockRecorder struct {
-	mock *MockTrafficTargetReconcileLoop
+// MockDestinationReconcileLoopMockRecorder is the mock recorder for MockDestinationReconcileLoop
+type MockDestinationReconcileLoopMockRecorder struct {
+	mock *MockDestinationReconcileLoop
 }
 
-// NewMockTrafficTargetReconcileLoop creates a new mock instance
-func NewMockTrafficTargetReconcileLoop(ctrl *gomock.Controller) *MockTrafficTargetReconcileLoop {
-	mock := &MockTrafficTargetReconcileLoop{ctrl: ctrl}
-	mock.recorder = &MockTrafficTargetReconcileLoopMockRecorder{mock}
+// NewMockDestinationReconcileLoop creates a new mock instance
+func NewMockDestinationReconcileLoop(ctrl *gomock.Controller) *MockDestinationReconcileLoop {
+	mock := &MockDestinationReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockDestinationReconcileLoopMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockTrafficTargetReconcileLoop) EXPECT() *MockTrafficTargetReconcileLoopMockRecorder {
+func (m *MockDestinationReconcileLoop) EXPECT() *MockDestinationReconcileLoopMockRecorder {
 	return m.recorder
 }
 
-// RunTrafficTargetReconciler mocks base method
-func (m *MockTrafficTargetReconcileLoop) RunTrafficTargetReconciler(ctx context.Context, rec controller.TrafficTargetReconciler, predicates ...predicate.Predicate) error {
+// RunDestinationReconciler mocks base method
+func (m *MockDestinationReconcileLoop) RunDestinationReconciler(ctx context.Context, rec controller.DestinationReconciler, predicates ...predicate.Predicate) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, rec}
 	for _, a := range predicates {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "RunTrafficTargetReconciler", varargs...)
+	ret := m.ctrl.Call(m, "RunDestinationReconciler", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// RunTrafficTargetReconciler indicates an expected call of RunTrafficTargetReconciler
-func (mr *MockTrafficTargetReconcileLoopMockRecorder) RunTrafficTargetReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+// RunDestinationReconciler indicates an expected call of RunDestinationReconciler
+func (mr *MockDestinationReconcileLoopMockRecorder) RunDestinationReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, rec}, predicates...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunTrafficTargetReconciler", reflect.TypeOf((*MockTrafficTargetReconcileLoop)(nil).RunTrafficTargetReconciler), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunDestinationReconciler", reflect.TypeOf((*MockDestinationReconcileLoop)(nil).RunDestinationReconciler), varargs...)
 }
 
 // MockWorkloadReconciler is a mock of WorkloadReconciler interface

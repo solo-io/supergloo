@@ -8,15 +8,15 @@ import (
 	proto "github.com/golang/protobuf/proto"
 )
 
-// DeepCopyInto for the TrafficTarget.Spec
-func (in *TrafficTargetSpec) DeepCopyInto(out *TrafficTargetSpec) {
-	p := proto.Clone(in).(*TrafficTargetSpec)
+// DeepCopyInto for the Destination.Spec
+func (in *DestinationSpec) DeepCopyInto(out *DestinationSpec) {
+	p := proto.Clone(in).(*DestinationSpec)
 	*out = *p
 }
 
-// DeepCopyInto for the TrafficTarget.Status
-func (in *TrafficTargetStatus) DeepCopyInto(out *TrafficTargetStatus) {
-	p := proto.Clone(in).(*TrafficTargetStatus)
+// DeepCopyInto for the Destination.Status
+func (in *DestinationStatus) DeepCopyInto(out *DestinationStatus) {
+	p := proto.Clone(in).(*DestinationStatus)
 	*out = *p
 }
 

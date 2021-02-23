@@ -419,7 +419,7 @@ type RoleSpec_TrafficPolicyScope struct {
 
 	// A list of permitted TrafficPolicy configuration actions.
 	TrafficPolicyActions []RoleSpec_TrafficPolicyScope_TrafficPolicyActions `protobuf:"varint,1,rep,packed,name=traffic_policy_actions,json=trafficPolicyActions,proto3,enum=rbac.enterprise.mesh.gloo.solo.io.RoleSpec_TrafficPolicyScope_TrafficPolicyActions" json:"traffic_policy_actions,omitempty"`
-	// A list of permitted TrafficTarget selectors.
+	// A list of permitted Destination selectors.
 	TrafficTargetSelectors []*v1alpha2.TrafficTargetSelector `protobuf:"bytes,2,rep,name=traffic_target_selectors,json=trafficTargetSelectors,proto3" json:"traffic_target_selectors,omitempty"`
 	// A list of permitted Workload selectors.
 	WorkloadSelectors []*v1alpha2.WorkloadSelector `protobuf:"bytes,3,rep,name=workload_selectors,json=workloadSelectors,proto3" json:"workload_selectors,omitempty"`
@@ -544,7 +544,7 @@ type RoleSpec_AccessPolicyScope struct {
 
 	// A list of permitted identity selectors.
 	IdentitySelectors []*v1alpha2.IdentitySelector `protobuf:"bytes,1,rep,name=identity_selectors,json=identitySelectors,proto3" json:"identity_selectors,omitempty"`
-	// A list of permitted TrafficTarget selectors.
+	// A list of permitted Destination selectors.
 	TrafficTargetSelectors []*v1alpha2.TrafficTargetSelector `protobuf:"bytes,2,rep,name=traffic_target_selectors,json=trafficTargetSelectors,proto3" json:"traffic_target_selectors,omitempty"`
 }
 

@@ -5,7 +5,7 @@ package extensions.networking.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1";
 
 import "github.com/solo-io/gloo-mesh/api/discovery/v1alpha2/mesh.proto";
-import "github.com/solo-io/gloo-mesh/api/discovery/v1alpha2/traffic_target.proto";
+import "github.com/solo-io/gloo-mesh/api/discovery/v1alpha2/destination.proto";
 import "github.com/solo-io/gloo-mesh/api/discovery/v1alpha2/workload.proto";
 import "github.com/solo-io/gloo-mesh/api/xds/v1alpha1/xds_config.proto";
 
@@ -60,20 +60,20 @@ message ExtensionPatchResponse {
 message DiscoverySnapshot {
     // all meshes in the discovery snapshot
     repeated MeshObject meshes = 1;
-    // all TrafficTargets in the discovery snapshot
+    // all Destinations in the discovery snapshot
     repeated TrafficTargetObject traffic_targets = 2;
     // all workloads in the discovery snapshot
     repeated WorkloadObject workloads = 3;
 }
 
-// a proto-serializable representation of a TrafficTarget object
+// a proto-serializable representation of a Destination object
 message TrafficTargetObject {
     // metadata of the object
     ObjectMeta metadata = 1;
     // the spec of the object
-    .discovery.mesh.gloo.solo.io.TrafficTargetSpec spec = 2;
+    .discovery.mesh.gloo.solo.io.DestinationSpec spec = 2;
     // the status of the object
-    .discovery.mesh.gloo.solo.io.TrafficTargetStatus status = 3;
+    .discovery.mesh.gloo.solo.io.DestinationStatus status = 3;
 }
 
 // a proto-serializable representation of a Workload object

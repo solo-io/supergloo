@@ -4,7 +4,7 @@
 
 // The Input LocalSnapshot contains the set of all:
 // * Settings
-// * TrafficTargets
+// * Destinations
 // * Workloads
 // * Meshes
 // * TrafficPolicies
@@ -82,7 +82,7 @@ var LocalSnapshotGVKs = []schema.GroupVersionKind{
 	schema.GroupVersionKind{
 		Group:   "discovery.mesh.gloo.solo.io",
 		Version: "v1alpha2",
-		Kind:    "TrafficTarget",
+		Kind:    "Destination",
 	},
 	schema.GroupVersionKind{
 		Group:   "discovery.mesh.gloo.solo.io",
@@ -152,8 +152,8 @@ type LocalSnapshot interface {
 	// return the set of input Settings
 	Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 
-	// return the set of input TrafficTargets
-	TrafficTargets() discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet
+	// return the set of input Destinations
+	Destinations() discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet
 	// return the set of input Workloads
 	Workloads() discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
 	// return the set of input Meshes
@@ -197,8 +197,8 @@ type LocalSyncStatusOptions struct {
 	// sync status of Settings objects
 	Settings bool
 
-	// sync status of TrafficTarget objects
-	TrafficTarget bool
+	// sync status of Destination objects
+	Destination bool
 	// sync status of Workload objects
 	Workload bool
 	// sync status of Mesh objects
@@ -233,9 +233,9 @@ type snapshotLocal struct {
 
 	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
 
-	trafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet
-	workloads      discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
-	meshes         discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
+	destinations discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet
+	workloads    discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
+	meshes       discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
 
 	trafficPolicies  networking_mesh_gloo_solo_io_v1alpha2_sets.TrafficPolicySet
 	accessPolicies   networking_mesh_gloo_solo_io_v1alpha2_sets.AccessPolicySet
@@ -257,7 +257,7 @@ func NewLocalSnapshot(
 
 	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet,
 
-	trafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet,
+	destinations discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet,
 	workloads discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet,
 	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
 
@@ -280,7 +280,7 @@ func NewLocalSnapshot(
 		name: name,
 
 		settings:            settings,
-		trafficTargets:      trafficTargets,
+		destinations:        destinations,
 		workloads:           workloads,
 		meshes:              meshes,
 		trafficPolicies:     trafficPolicies,
@@ -302,7 +302,7 @@ func NewLocalSnapshotFromGeneric(
 
 	settingsSet := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
-	trafficTargetSet := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet()
+	destinationSet := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewDestinationSet()
 	workloadSet := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet()
 	meshSet := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet()
 
@@ -332,14 +332,14 @@ func NewLocalSnapshotFromGeneric(
 			settingsSet.Insert(settings.(*settings_mesh_gloo_solo_io_v1alpha2_types.Settings))
 		}
 
-		trafficTargets := snapshot[schema.GroupVersionKind{
+		destinations := snapshot[schema.GroupVersionKind{
 			Group:   "discovery.mesh.gloo.solo.io",
 			Version: "v1alpha2",
-			Kind:    "TrafficTarget",
+			Kind:    "Destination",
 		}]
 
-		for _, trafficTarget := range trafficTargets {
-			trafficTargetSet.Insert(trafficTarget.(*discovery_mesh_gloo_solo_io_v1alpha2_types.TrafficTarget))
+		for _, destination := range destinations {
+			destinationSet.Insert(destination.(*discovery_mesh_gloo_solo_io_v1alpha2_types.Destination))
 		}
 		workloads := snapshot[schema.GroupVersionKind{
 			Group:   "discovery.mesh.gloo.solo.io",
@@ -450,7 +450,7 @@ func NewLocalSnapshotFromGeneric(
 	return NewLocalSnapshot(
 		name,
 		settingsSet,
-		trafficTargetSet,
+		destinationSet,
 		workloadSet,
 		meshSet,
 		trafficPolicySet,
@@ -469,8 +469,8 @@ func (s snapshotLocal) Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.Setti
 	return s.settings
 }
 
-func (s snapshotLocal) TrafficTargets() discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet {
-	return s.trafficTargets
+func (s snapshotLocal) Destinations() discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet {
+	return s.destinations
 }
 
 func (s snapshotLocal) Workloads() discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet {
@@ -533,8 +533,8 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 		}
 	}
 
-	if opts.TrafficTarget {
-		for _, obj := range s.TrafficTargets().List() {
+	if opts.Destination {
+		for _, obj := range s.Destinations().List() {
 			clusterClient, err := mcClient.Cluster(obj.ClusterName)
 			if err != nil {
 				errs = multierror.Append(errs, err)
@@ -683,8 +683,8 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 		}
 	}
 
-	if opts.TrafficTarget {
-		for _, obj := range s.TrafficTargets().List() {
+	if opts.Destination {
+		for _, obj := range s.Destinations().List() {
 			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
@@ -771,7 +771,7 @@ func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
 	snapshotMap["settings"] = s.settings.List()
-	snapshotMap["trafficTargets"] = s.trafficTargets.List()
+	snapshotMap["destinations"] = s.destinations.List()
 	snapshotMap["workloads"] = s.workloads.List()
 	snapshotMap["meshes"] = s.meshes.List()
 	snapshotMap["trafficPolicies"] = s.trafficPolicies.List()
@@ -797,8 +797,8 @@ type LocalBuildOptions struct {
 	// List options for composing a snapshot from Settings
 	Settings ResourceLocalBuildOptions
 
-	// List options for composing a snapshot from TrafficTargets
-	TrafficTargets ResourceLocalBuildOptions
+	// List options for composing a snapshot from Destinations
+	Destinations ResourceLocalBuildOptions
 	// List options for composing a snapshot from Workloads
 	Workloads ResourceLocalBuildOptions
 	// List options for composing a snapshot from Meshes
@@ -859,7 +859,7 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 
 	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
-	trafficTargets := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet()
+	destinations := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewDestinationSet()
 	workloads := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet()
 	meshes := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet()
 
@@ -884,7 +884,7 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		if err := b.insertSettingsFromCluster(ctx, cluster, settings, opts.Settings); err != nil {
 			errs = multierror.Append(errs, err)
 		}
-		if err := b.insertTrafficTargetsFromCluster(ctx, cluster, trafficTargets, opts.TrafficTargets); err != nil {
+		if err := b.insertDestinationsFromCluster(ctx, cluster, destinations, opts.Destinations); err != nil {
 			errs = multierror.Append(errs, err)
 		}
 		if err := b.insertWorkloadsFromCluster(ctx, cluster, workloads, opts.Workloads); err != nil {
@@ -927,7 +927,7 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		name,
 
 		settings,
-		trafficTargets,
+		destinations,
 		workloads,
 		meshes,
 		trafficPolicies,
@@ -987,8 +987,8 @@ func (b *multiClusterLocalBuilder) insertSettingsFromCluster(ctx context.Context
 	return nil
 }
 
-func (b *multiClusterLocalBuilder) insertTrafficTargetsFromCluster(ctx context.Context, cluster string, trafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet, opts ResourceLocalBuildOptions) error {
-	trafficTargetClient, err := discovery_mesh_gloo_solo_io_v1alpha2.NewMulticlusterTrafficTargetClient(b.client).Cluster(cluster)
+func (b *multiClusterLocalBuilder) insertDestinationsFromCluster(ctx context.Context, cluster string, destinations discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet, opts ResourceLocalBuildOptions) error {
+	destinationClient, err := discovery_mesh_gloo_solo_io_v1alpha2.NewMulticlusterDestinationClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -1002,7 +1002,7 @@ func (b *multiClusterLocalBuilder) insertTrafficTargetsFromCluster(ctx context.C
 		gvk := schema.GroupVersionKind{
 			Group:   "discovery.mesh.gloo.solo.io",
 			Version: "v1alpha2",
-			Kind:    "TrafficTarget",
+			Kind:    "Destination",
 		}
 
 		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
@@ -1016,15 +1016,15 @@ func (b *multiClusterLocalBuilder) insertTrafficTargetsFromCluster(ctx context.C
 		}
 	}
 
-	trafficTargetList, err := trafficTargetClient.ListTrafficTarget(ctx, opts.ListOptions...)
+	destinationList, err := destinationClient.ListDestination(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range trafficTargetList.Items {
+	for _, item := range destinationList.Items {
 		item := item               // pike
 		item.ClusterName = cluster // set cluster for in-memory processing
-		trafficTargets.Insert(&item)
+		destinations.Insert(&item)
 	}
 
 	return nil
@@ -1526,7 +1526,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 
 	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
-	trafficTargets := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet()
+	destinations := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewDestinationSet()
 	workloads := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet()
 	meshes := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet()
 
@@ -1549,7 +1549,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	if err := b.insertSettings(ctx, settings, opts.Settings); err != nil {
 		errs = multierror.Append(errs, err)
 	}
-	if err := b.insertTrafficTargets(ctx, trafficTargets, opts.TrafficTargets); err != nil {
+	if err := b.insertDestinations(ctx, destinations, opts.Destinations); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 	if err := b.insertWorkloads(ctx, workloads, opts.Workloads); err != nil {
@@ -1590,7 +1590,7 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 		name,
 
 		settings,
-		trafficTargets,
+		destinations,
 		workloads,
 		meshes,
 		trafficPolicies,
@@ -1641,13 +1641,13 @@ func (b *singleClusterLocalBuilder) insertSettings(ctx context.Context, settings
 	return nil
 }
 
-func (b *singleClusterLocalBuilder) insertTrafficTargets(ctx context.Context, trafficTargets discovery_mesh_gloo_solo_io_v1alpha2_sets.TrafficTargetSet, opts ResourceLocalBuildOptions) error {
+func (b *singleClusterLocalBuilder) insertDestinations(ctx context.Context, destinations discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet, opts ResourceLocalBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
 			Group:   "discovery.mesh.gloo.solo.io",
 			Version: "v1alpha2",
-			Kind:    "TrafficTarget",
+			Kind:    "Destination",
 		}
 
 		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
@@ -1661,15 +1661,15 @@ func (b *singleClusterLocalBuilder) insertTrafficTargets(ctx context.Context, tr
 		}
 	}
 
-	trafficTargetList, err := discovery_mesh_gloo_solo_io_v1alpha2.NewTrafficTargetClient(b.mgr.GetClient()).ListTrafficTarget(ctx, opts.ListOptions...)
+	destinationList, err := discovery_mesh_gloo_solo_io_v1alpha2.NewDestinationClient(b.mgr.GetClient()).ListDestination(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
 
-	for _, item := range trafficTargetList.Items {
+	for _, item := range destinationList.Items {
 		item := item // pike
 		item.ClusterName = b.clusterName
-		trafficTargets.Insert(&item)
+		destinations.Insert(&item)
 	}
 
 	return nil
@@ -2065,7 +2065,7 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
 
-	trafficTargets := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewTrafficTargetSet()
+	destinations := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewDestinationSet()
 	workloads := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet()
 	meshes := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet()
 
@@ -2088,9 +2088,9 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		// insert Settings
 		case *settings_mesh_gloo_solo_io_v1alpha2_types.Settings:
 			settings.Insert(obj)
-		// insert TrafficTargets
-		case *discovery_mesh_gloo_solo_io_v1alpha2_types.TrafficTarget:
-			trafficTargets.Insert(obj)
+		// insert Destinations
+		case *discovery_mesh_gloo_solo_io_v1alpha2_types.Destination:
+			destinations.Insert(obj)
 		// insert Workloads
 		case *discovery_mesh_gloo_solo_io_v1alpha2_types.Workload:
 			workloads.Insert(obj)
@@ -2131,7 +2131,7 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		name,
 
 		settings,
-		trafficTargets,
+		destinations,
 		workloads,
 		meshes,
 		trafficPolicies,

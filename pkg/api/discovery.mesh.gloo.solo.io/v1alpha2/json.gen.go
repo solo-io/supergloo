@@ -24,25 +24,25 @@ var (
 	unmarshaller = &jsonpb.Unmarshaler{}
 )
 
-// MarshalJSON is a custom marshaler for TrafficTargetSpec
-func (this *TrafficTargetSpec) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for DestinationSpec
+func (this *DestinationSpec) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for TrafficTargetSpec
-func (this *TrafficTargetSpec) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for DestinationSpec
+func (this *DestinationSpec) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for TrafficTargetStatus
-func (this *TrafficTargetStatus) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for DestinationStatus
+func (this *DestinationStatus) MarshalJSON() ([]byte, error) {
 	str, err := marshaller.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for TrafficTargetStatus
-func (this *TrafficTargetStatus) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for DestinationStatus
+func (this *DestinationStatus) UnmarshalJSON(b []byte) error {
 	return unmarshaller.Unmarshal(bytes.NewReader(b), this)
 }
 

@@ -19,10 +19,10 @@ message VirtualMeshSpec {
     // Specify mTLS options.
     MTLSConfig mtls_config = 2;
 
-    // Specify how to federate TrafficTargets across service mesh boundaries.
+    // Specify how to federate Destinations across service mesh boundaries.
     Federation federation = 3;
 
-    // Specify a global access policy for all Workloads and TrafficTargets associated with this VirtualMesh.
+    // Specify a global access policy for all Workloads and Destinations associated with this VirtualMesh.
     GlobalAccessPolicy global_access_policy = 4;
 
     // Specify mTLS options.
@@ -33,10 +33,10 @@ message VirtualMeshSpec {
         // Specify the model for establishing mTLS trust between Meshes.
         oneof trust_model {
 
-            // Shared trust (allow communication between any pair of Workloads and TrafficTargets in the grouped Meshes).
+            // Shared trust (allow communication between any pair of Workloads and Destinations in the grouped Meshes).
             SharedTrust shared = 1;
 
-            // Limited trust (selectively allow communication between Workloads and TrafficTargets in the grouped Meshes). *Currently not available.*
+            // Limited trust (selectively allow communication between Workloads and Destinations in the grouped Meshes). *Currently not available.*
             LimitedTrust limited = 2;
         }
 
@@ -47,7 +47,7 @@ message VirtualMeshSpec {
         bool auto_restart_pods = 3;
 
         // Shared trust is a trust model requiring a common root certificate shared between trusting Meshes, as well as shared identity
-        // between all Workloads and TrafficTargets which wish to communicate within the VirtualMesh.
+        // between all Workloads and Destinations which wish to communicate within the VirtualMesh.
         message SharedTrust {
 
             // Configure a Root Certificate Authority which will be shared by all Meshes associated with this VirtualMesh.
@@ -99,14 +99,14 @@ message VirtualMeshSpec {
         }
     }
 
-    // "Federation" refers to the ability to expose TrafficTargets across service mesh boundaries, i.e. to traffic
-    // originating from Workloads external to the TrafficTarget's Mesh.
+    // "Federation" refers to the ability to expose Destinations across service mesh boundaries, i.e. to traffic
+    // originating from Workloads external to the Destination's Mesh.
     message Federation {
 
-        // The "mode" in which to federate TrafficTargets within this VirtualMesh.
+        // The "mode" in which to federate Destinations within this VirtualMesh.
         oneof mode {
 
-            // Expose all TrafficTargets to all Workloads in this VirtualMesh.
+            // Expose all Destinations to all Workloads in this VirtualMesh.
             .google.protobuf.Empty permissive = 1;
         };
 
@@ -114,23 +114,23 @@ message VirtualMeshSpec {
         // rather than through an ingress gateway. This mode requires a flat network environment.
         bool flat_network = 2;
 
-        // Configure the suffix for hostnames of TrafficTargets federated within this VirtualMesh.
+        // Configure the suffix for hostnames of Destinations federated within this VirtualMesh.
         // Currently this is only supported for Istio with [smart DNS proxying enabled](https://istio.io/latest/blog/2020/dns-proxy/),
         // otherwise setting this field results in an error.
         // If omitted, the hostname suffix defaults to "global".
         string hostname_suffix = 3;
     }
 
-    // Specify a global access policy for all Workloads and TrafficTargets associated with this VirtualMesh.
+    // Specify a global access policy for all Workloads and Destinations associated with this VirtualMesh.
     enum GlobalAccessPolicy {
 
         // Assume the default for the service mesh type. Istio defaults to `false`, App Mesh defaults to `true`.
         MESH_DEFAULT = 0;
 
-        // Disallow traffic to all TrafficTargets in the VirtualMesh unless explicitly allowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}).
+        // Disallow traffic to all Destinations in the VirtualMesh unless explicitly allowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}).
         ENABLED = 1;
 
-        // Allow traffic to all TrafficTargets in the VirtualMesh unless explicitly disallowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}).
+        // Allow traffic to all Destinations in the VirtualMesh unless explicitly disallowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}).
         DISABLED = 2;
     }
 

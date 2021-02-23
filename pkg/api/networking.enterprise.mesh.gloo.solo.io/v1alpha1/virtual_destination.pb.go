@@ -32,12 +32,12 @@ const _ = proto.ProtoPackageIsVersion4
 
 //
 //A VirtualDestination creates a new hostname to which client workloads can send requests.
-//The hostname abstracts over a set of underlying TrafficTargets and provides failover functionality between them.
+//The hostname abstracts over a set of underlying Destinations and provides failover functionality between them.
 //Failover order is determined by either an explicitly defined priority (`static`), or a list of locality directives (`localized`).
 //
-//Each TrafficTarget backing the VirtualDestination must be configured with a
+//Each Destination backing the VirtualDestination must be configured with a
 //[TrafficPolicy's outlier detection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy/" >}}).
-//Currently this feature only supports TrafficTargets backed by Istio.
+//Currently this feature only supports Destinations backed by Istio.
 type VirtualDestinationSpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -186,7 +186,7 @@ func (*VirtualDestinationSpec_Static) isVirtualDestinationSpec_FailoverConfig() 
 
 func (*VirtualDestinationSpec_Localized) isVirtualDestinationSpec_FailoverConfig() {}
 
-// A service represented by a TrafficTarget.
+// A service represented by a Destination.
 type BackingService struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -270,7 +270,7 @@ type VirtualDestinationStatus struct {
 	State v1alpha2.ApprovalState `protobuf:"varint,2,opt,name=state,proto3,enum=networking.mesh.gloo.solo.io.ApprovalState" json:"state,omitempty"`
 	// The status of the VirtualDestination for each Mesh to which it has been exported to.
 	Meshes map[string]*v1alpha2.ApprovalStatus `protobuf:"bytes,3,rep,name=meshes,proto3" json:"meshes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// The TrafficTargets that comprise this VirtualDestination.
+	// The Destinations that comprise this VirtualDestination.
 	SelectedTrafficTargets []*VirtualDestinationStatus_SelectedTrafficTarget `protobuf:"bytes,4,rep,name=selected_traffic_targets,json=selectedTrafficTargets,proto3" json:"selected_traffic_targets,omitempty"`
 	// Any errors found while processing this generation of the resource.
 	Errors []string `protobuf:"bytes,5,rep,name=errors,proto3" json:"errors,omitempty"`
@@ -451,14 +451,14 @@ func (x *VirtualDestinationSpec_MeshList) GetMeshes() []*v1.ObjectRef {
 
 // TODO(harveyxia) rename Service to Destination
 // Failover priority is determined by an explicitly provided static ordering of TrafficTargets.
-// When a TrafficTarget in the list is in an unhealthy state (as determined by its configured outlier detection),
-// requests sent to the VirtualDestination will be routed to the next healthy TrafficTarget in the list.
+// When a Destination in the list is in an unhealthy state (as determined by its configured outlier detection),
+// requests sent to the VirtualDestination will be routed to the next healthy Destination in the list.
 type VirtualDestinationSpec_BackingServiceList struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The list of TrafficTargets backing the VirtualDestination, ordered by decreasing priority.
+	// The list of Destinations backing the VirtualDestination, ordered by decreasing priority.
 	// All services must be either in the same Mesh or in Meshes that are grouped under a common VirtualMesh.
 	Services []*BackingService `protobuf:"bytes,1,rep,name=services,proto3" json:"services,omitempty"`
 }
@@ -504,7 +504,7 @@ func (x *VirtualDestinationSpec_BackingServiceList) GetServices() []*BackingServ
 
 // Enables failover based on locality. When a client workload makes a request to the VirtualDestination, Gloo Mesh will
 // first try to direct traffic to the service instance geographically closest to the client workload. If outlier
-// detection detects that the closest TrafficTarget is in an unhealthy state, requests will instead be routed
+// detection detects that the closest Destination is in an unhealthy state, requests will instead be routed
 // to a service in one of the localities specified in the `to` field.
 type VirtualDestinationSpec_LocalityConfig struct {
 	state         protoimpl.MessageState
@@ -581,7 +581,7 @@ type VirtualDestinationSpec_LocalityConfig_LocalityFailoverDirective struct {
 
 	// The locality of the client workload.
 	From *VirtualDestinationSpec_LocalityConfig_Locality `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
-	// The list of TrafficTarget localities that can be routed to if the instance local to the client workload is not available.
+	// The list of Destination localities that can be routed to if the instance local to the client workload is not available.
 	To []*VirtualDestinationSpec_LocalityConfig_Locality `protobuf:"bytes,2,rep,name=to,proto3" json:"to,omitempty"`
 }
 
@@ -705,7 +705,7 @@ type VirtualDestinationStatus_SelectedTrafficTarget struct {
 
 	// Reference to the traffic target.
 	Ref *v1.ClusterObjectRef `protobuf:"bytes,1,opt,name=ref,proto3" json:"ref,omitempty"`
-	// The service that the TrafficTarget represents.
+	// The service that the Destination represents.
 	Service *BackingService `protobuf:"bytes,2,opt,name=service,proto3" json:"service,omitempty"`
 }
 

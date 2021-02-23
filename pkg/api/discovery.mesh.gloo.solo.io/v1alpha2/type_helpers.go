@@ -3,8 +3,8 @@
 // Definitions for the Kubernetes types
 package v1alpha2
 
-// TrafficTargetSlice represents a slice of *TrafficTarget
-type TrafficTargetSlice []*TrafficTarget
+// DestinationSlice represents a slice of *Destination
+type DestinationSlice []*Destination
 
 // WorkloadSlice represents a slice of *Workload
 type WorkloadSlice []*Workload
