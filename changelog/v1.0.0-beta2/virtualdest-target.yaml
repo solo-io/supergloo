@@ -1,4 +1,0 @@
-changelog:
-- type: NEW_FEATURE
-  issueLink: https://github.com/solo-io/gloo-mesh/issues/1293
-  description: Add VirtualDestination as TrafficPolicy target
