@@ -44,7 +44,7 @@ func (t translator) Translate(
 
 	workloadTranslator := t.dependencies.MakeWorkloadTranslator(ctx, in)
 
-	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator()
+	destinationTranslator := t.dependencies.MakeDestinationTranslator()
 
 	meshes := meshTranslator.TranslateMeshes(in, settings)
 
@@ -55,7 +55,7 @@ func (t translator) Translate(
 		meshes,
 	)
 
-	trafficTargets := trafficTargetTranslator.TranslateTrafficTargets(
+	destinations := destinationTranslator.TranslateDestinations(
 		ctx,
 		in.Services(),
 		in.Pods(),
@@ -70,7 +70,7 @@ func (t translator) Translate(
 	return discovery.NewSinglePartitionedSnapshot(
 		fmt.Sprintf("mesh-discovery-%v", t.totalTranslates),
 		labelutils.OwnershipLabels(),
-		trafficTargets,
+		destinations,
 		workloads,
 		meshes,
 	)

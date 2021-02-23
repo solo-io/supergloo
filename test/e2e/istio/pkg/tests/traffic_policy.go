@@ -112,9 +112,11 @@ func TrafficPolicyTest() {
 					ClusterName: MgmtClusterName,
 				},
 				Spec: v1alpha2.TrafficPolicySpec{
-					Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
-						Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
-							TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_DISABLE,
+					Policy: &v1alpha2.TrafficPolicySpec_Policy{
+						Mtls: &v1alpha2.TrafficPolicySpec_Policy_MTLS{
+							Istio: &v1alpha2.TrafficPolicySpec_Policy_MTLS_Istio{
+								TlsMode: v1alpha2.TrafficPolicySpec_Policy_MTLS_Istio_DISABLE,
+							},
 						},
 					},
 				},

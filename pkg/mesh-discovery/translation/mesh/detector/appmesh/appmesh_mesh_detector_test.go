@@ -72,7 +72,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 				},
 			},
 			Spec: v1alpha2.MeshSpec{
-				MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
+				Type: &v1alpha2.MeshSpec_AwsAppMesh_{
 					AwsAppMesh: &v1alpha2.MeshSpec_AwsAppMesh{
 						AwsName:      meshName1,
 						Region:       "us-east-2",
@@ -137,7 +137,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 				},
 			},
 			Spec: v1alpha2.MeshSpec{
-				MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
+				Type: &v1alpha2.MeshSpec_AwsAppMesh_{
 					AwsAppMesh: &v1alpha2.MeshSpec_AwsAppMesh{
 						AwsName:      meshName1,
 						Region:       "us-east-2",
@@ -157,7 +157,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 				},
 			},
 			Spec: v1alpha2.MeshSpec{
-				MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
+				Type: &v1alpha2.MeshSpec_AwsAppMesh_{
 					AwsAppMesh: &v1alpha2.MeshSpec_AwsAppMesh{
 						AwsName:      meshName2,
 						Region:       "us-east-2",

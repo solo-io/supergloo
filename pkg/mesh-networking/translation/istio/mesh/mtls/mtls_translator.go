@@ -108,7 +108,7 @@ func (t *translator) Translate(
 ) {
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {
-		contextutils.LoggerFrom(t.ctx).Debugf("ignoring non istio mesh %v %T", sets.Key(mesh), mesh.Spec.MeshType)
+		contextutils.LoggerFrom(t.ctx).Debugf("ignoring non istio mesh %v %T", sets.Key(mesh), mesh.Spec.Type)
 		return
 	}
 
@@ -126,7 +126,7 @@ func (t *translator) updateMtlsOutputs(
 	mtlsConfig := virtualMesh.Spec.MtlsConfig
 	if mtlsConfig == nil {
 		// nothing to do
-		contextutils.LoggerFrom(t.ctx).Debugf("no translation for virtual mesh %v which has no mTLS configuration", sets.Key(mesh))
+		contextutils.LoggerFrom(t.ctx).Debugf("no translation for VirtualMesh %v which has no mTLS configuration", sets.Key(mesh))
 		return nil
 	}
 
@@ -185,7 +185,7 @@ func (t *translator) configureSharedTrust(
 		autoRestartPods,
 	)
 
-	// Append the virtual mesh as a parent to each output resource
+	// Append the VirtualMesh as a parent to each output resource
 	metautils.AppendParent(t.ctx, issuedCertificate, virtualMeshRef, v1alpha2.VirtualMesh{}.GVK())
 	metautils.AppendParent(t.ctx, podBounceDirective, virtualMeshRef, v1alpha2.VirtualMesh{}.GVK())
 
@@ -238,7 +238,7 @@ func (t *translator) getOrCreateRootCaSecret(
 			}
 		}
 
-		// Append the virtual mesh as a parent to the output secret
+		// Append the VirtualMesh as a parent to the output secret
 		metautils.AppendParent(t.ctx, selfSignedCertSecret, virtualMeshRef, v1alpha2.VirtualMesh{}.GVK())
 
 		localOutputs.AddSecrets(selfSignedCertSecret)
@@ -257,13 +257,13 @@ func (t *translator) constructIssuedCertificate(
 ) (*certificatesv1alpha2.IssuedCertificate, *certificatesv1alpha2.PodBounceDirective) {
 	istioMesh := mesh.Spec.GetIstio()
 
-	trustDomain := istioMesh.GetCitadelInfo().GetTrustDomain()
+	trustDomain := istioMesh.GetTrustDomain()
 	if trustDomain == "" {
 		trustDomain = defaultTrustDomain
 	}
-	citadelServiceAccount := istioMesh.GetCitadelInfo().GetCitadelServiceAccount()
-	if citadelServiceAccount == "" {
-		citadelServiceAccount = defaultCitadelServiceAccount
+	istiodServiceAccount := istioMesh.GetIstiodServiceAccount()
+	if istiodServiceAccount == "" {
+		istiodServiceAccount = defaultCitadelServiceAccount
 	}
 	istioNamespace := istioMesh.GetInstallation().GetNamespace()
 	if istioNamespace == "" {
@@ -307,7 +307,7 @@ func (t *translator) constructIssuedCertificate(
 	return &certificatesv1alpha2.IssuedCertificate{
 		ObjectMeta: issuedCertificateMeta,
 		Spec: certificatesv1alpha2.IssuedCertificateSpec{
-			Hosts:                    []string{buildSpiffeURI(trustDomain, istioNamespace, citadelServiceAccount)},
+			Hosts:                    []string{buildSpiffeURI(trustDomain, istioNamespace, istiodServiceAccount)},
 			Org:                      defaultIstioOrg,
 			SigningCertificateSecret: rootCaSecret,
 			IssuedCertificateSecret:  istioCaCerts,

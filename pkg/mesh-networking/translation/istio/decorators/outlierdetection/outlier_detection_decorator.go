@@ -39,8 +39,8 @@ func (d *outlierDetectionDecorator) DecoratorName() string {
 }
 
 func (d *outlierDetectionDecorator) ApplyTrafficPolicyToDestinationRule(
-	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
-	_ *discoveryv1alpha2.TrafficTarget,
+	appliedPolicy *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy,
+	_ *discoveryv1alpha2.Destination,
 	output *networkingv1alpha3spec.DestinationRule,
 	registerField decorators.RegisterField,
 ) error {
@@ -56,7 +56,7 @@ func (d *outlierDetectionDecorator) ApplyTrafficPolicyToDestinationRule(
 func (d *outlierDetectionDecorator) translateOutlierDetection(
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
 ) *networkingv1alpha3spec.OutlierDetection {
-	outlierDetection := trafficPolicy.GetOutlierDetection()
+	outlierDetection := trafficPolicy.GetPolicy().GetOutlierDetection()
 	if outlierDetection == nil {
 		return nil
 	}

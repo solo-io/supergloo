@@ -79,7 +79,7 @@ Failover priority is determined by an explicitly provided static ordering of Des
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| destinations | [][networking.enterprise.mesh.gloo.solo.io.BackingDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.BackingDestination" >}}) | repeated | The list of Destinations backing the VirtualDestination, ordered by decreasing priority. All Destinations must be either in the same Mesh or in Meshes that are grouped under a common VirtualMesh. |
+| destinations | [][networking.enterprise.mesh.gloo.solo.io.BackingDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.BackingDestination" >}}) | repeated | The list of Destinations backing the VirtualDestination, ordered by decreasing priority. All Destinations must be either in the same Mesh or in Meshes that are grouped under a common VirtualMesh. **Required**, cannot be omitted. |
   
 
 
@@ -94,7 +94,7 @@ Enables failover based on locality. When a client workload makes a request to th
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | Selectors for the Destinations backing the VirtualDestination. All Destinations must be either in the same mesh or in meshes that are grouped under a common VirtualMesh. Currently only one Destination per cluster can be selected, more than one per cluster will be considered invalid. |
+| destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | Selectors for the Destinations backing the VirtualDestination. All Destinations must be either in the same mesh or in meshes that are grouped under a common VirtualMesh. Currently only one Destination per cluster can be selected, more than one per cluster will be considered invalid. **Required**, cannot be omitted. |
   | failoverDirectives | [][networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig.LocalityFailoverDirective]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig.LocalityFailoverDirective" >}}) | repeated | Directives describing the locality failover behavior. |
   | outlierDetection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection" >}}) |  | Outlier detection to determine the health of the selected Destinations. |
   

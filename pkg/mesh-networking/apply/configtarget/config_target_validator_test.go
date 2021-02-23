@@ -4,6 +4,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	commonv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha2"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
@@ -35,15 +36,15 @@ var _ = Describe("ConfigTargetValidator", func() {
 					Namespace: "bar",
 				},
 			})
-		trafficTargets := discoveryv1alpha2sets.NewTrafficTargetSet(
-			&discoveryv1alpha2.TrafficTarget{
+		destinations := discoveryv1alpha2sets.NewDestinationSet(
+			&discoveryv1alpha2.Destination{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "traffictarget",
+					Name:      "destination",
 					Namespace: "namespace",
 				},
-				Spec: discoveryv1alpha2.TrafficTargetSpec{
-					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
-						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+				Spec: discoveryv1alpha2.DestinationSpec{
+					Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
+						KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
 							Ref: &v1.ClusterObjectRef{
 								Name:        "foo",
 								Namespace:   "bar",
@@ -54,7 +55,7 @@ var _ = Describe("ConfigTargetValidator", func() {
 				},
 			})
 
-		validator = configtarget.NewConfigTargetValidator(meshes, trafficTargets)
+		validator = configtarget.NewConfigTargetValidator(meshes, destinations)
 
 		accessPolicies := v1alpha2.AccessPolicySlice{
 			{
@@ -63,9 +64,9 @@ var _ = Describe("ConfigTargetValidator", func() {
 					Namespace: namespace,
 				},
 				Spec: v1alpha2.AccessPolicySpec{
-					DestinationSelector: []*v1alpha2.TrafficTargetSelector{
+					DestinationSelector: []*commonv1alpha2.DestinationSelector{
 						{
-							KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
+							KubeServiceRefs: &commonv1alpha2.DestinationSelector_KubeServiceRefs{
 								Services: []*v1.ClusterObjectRef{
 									{
 										Name:        "foo",
@@ -87,9 +88,9 @@ var _ = Describe("ConfigTargetValidator", func() {
 					Namespace: namespace,
 				},
 				Spec: v1alpha2.AccessPolicySpec{
-					DestinationSelector: []*v1alpha2.TrafficTargetSelector{
+					DestinationSelector: []*commonv1alpha2.DestinationSelector{
 						{
-							KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
+							KubeServiceRefs: &commonv1alpha2.DestinationSelector_KubeServiceRefs{
 								Services: []*v1.ClusterObjectRef{
 									{
 										Name:        "nonexistent",
@@ -107,43 +108,6 @@ var _ = Describe("ConfigTargetValidator", func() {
 			},
 		}
 
-		failoverServices := v1alpha2.FailoverServiceSlice{
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "valid",
-					Namespace: namespace,
-				},
-				Spec: v1alpha2.FailoverServiceSpec{
-					Meshes: []*v1.ObjectRef{
-						{
-							Name:      "foo",
-							Namespace: "bar",
-						},
-					},
-				},
-				Status: v1alpha2.FailoverServiceStatus{
-					State: v1alpha2.ApprovalState_ACCEPTED,
-				},
-			},
-			{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "invalid",
-					Namespace: namespace,
-				},
-				Spec: v1alpha2.FailoverServiceSpec{
-					Meshes: []*v1.ObjectRef{
-						{
-							Name:      "nonexistent",
-							Namespace: "nonexistent",
-						},
-					},
-				},
-				Status: v1alpha2.FailoverServiceStatus{
-					State: v1alpha2.ApprovalState_ACCEPTED,
-				},
-			},
-		}
-
 		trafficPolicies := v1alpha2.TrafficPolicySlice{
 			{
 				ObjectMeta: metav1.ObjectMeta{
@@ -151,9 +115,9 @@ var _ = Describe("ConfigTargetValidator", func() {
 					Namespace: namespace,
 				},
 				Spec: v1alpha2.TrafficPolicySpec{
-					DestinationSelector: []*v1alpha2.TrafficTargetSelector{
+					DestinationSelector: []*commonv1alpha2.DestinationSelector{
 						{
-							KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
+							KubeServiceRefs: &commonv1alpha2.DestinationSelector_KubeServiceRefs{
 								Services: []*v1.ClusterObjectRef{
 									{
 										Name:        "foo",
@@ -175,9 +139,9 @@ var _ = Describe("ConfigTargetValidator", func() {
 					Namespace: namespace,
 				},
 				Spec: v1alpha2.TrafficPolicySpec{
-					DestinationSelector: []*v1alpha2.TrafficTargetSelector{
+					DestinationSelector: []*commonv1alpha2.DestinationSelector{
 						{
-							KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
+							KubeServiceRefs: &commonv1alpha2.DestinationSelector_KubeServiceRefs{
 								Services: []*v1.ClusterObjectRef{
 									{
 										Name:        "nonexistent",
@@ -233,22 +197,19 @@ var _ = Describe("ConfigTargetValidator", func() {
 		}
 
 		validator.ValidateAccessPolicies(accessPolicies)
-		validator.ValidateFailoverServices(failoverServices)
 		validator.ValidateTrafficPolicies(trafficPolicies)
 		validator.ValidateVirtualMeshes(virtualMeshes)
 
 		Expect(accessPolicies[0].Status.State).To(Equal(v1alpha2.ApprovalState_ACCEPTED))
-		Expect(failoverServices[0].Status.State).To(Equal(v1alpha2.ApprovalState_ACCEPTED))
 		Expect(trafficPolicies[0].Status.State).To(Equal(v1alpha2.ApprovalState_ACCEPTED))
 		Expect(virtualMeshes[0].Status.State).To(Equal(v1alpha2.ApprovalState_ACCEPTED))
 
 		Expect(accessPolicies[1].Status.State).To(Equal(v1alpha2.ApprovalState_INVALID))
-		Expect(failoverServices[1].Status.State).To(Equal(v1alpha2.ApprovalState_INVALID))
 		Expect(trafficPolicies[1].Status.State).To(Equal(v1alpha2.ApprovalState_INVALID))
 		Expect(virtualMeshes[1].Status.State).To(Equal(v1alpha2.ApprovalState_INVALID))
 	})
 
-	It("should validate one virtual mesh per mesh", func() {
+	It("should validate one VirtualMesh per mesh", func() {
 		meshes := discoveryv1alpha2sets.NewMeshSet(
 			&discoveryv1alpha2.Mesh{
 				ObjectMeta: metav1.ObjectMeta{

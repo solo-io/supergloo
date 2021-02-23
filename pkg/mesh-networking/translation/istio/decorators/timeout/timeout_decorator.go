@@ -36,8 +36,8 @@ func (d *timeoutDecorator) DecoratorName() string {
 }
 
 func (d *timeoutDecorator) ApplyTrafficPolicyToVirtualService(
-	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
-	_ *discoveryv1alpha2.TrafficTarget,
+	appliedPolicy *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy,
+	_ *discoveryv1alpha2.Destination,
 	_ *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
@@ -58,5 +58,5 @@ func (d *timeoutDecorator) ApplyTrafficPolicyToVirtualService(
 func (d *timeoutDecorator) translateTimeout(
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
 ) (*types.Duration, error) {
-	return gogoutils.DurationProtoToGogo(trafficPolicy.RequestTimeout), nil
+	return gogoutils.DurationProtoToGogo(trafficPolicy.GetPolicy().GetRequestTimeout()), nil
 }

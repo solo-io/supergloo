@@ -44,7 +44,7 @@ var _ = Describe("IstioSidecarDetector", func() {
 					Name:      "istio-cluster",
 				},
 				Spec: v1alpha2.MeshSpec{
-					MeshType: &v1alpha2.MeshSpec_Istio_{
+					Type: &v1alpha2.MeshSpec_Istio_{
 						Istio: &v1alpha2.MeshSpec_Istio{
 							Installation: &v1alpha2.MeshSpec_MeshInstallation{
 								Cluster: cluster,

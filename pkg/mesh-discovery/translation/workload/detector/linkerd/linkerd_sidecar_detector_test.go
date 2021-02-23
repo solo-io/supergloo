@@ -47,7 +47,7 @@ package linkerd_test
 // 					Name:      "linkerd-cluster",
 // 				},
 // 				Spec: v1alpha2.MeshSpec{
-// 					MeshType: &v1alpha2.MeshSpec_Linkerd{
+// 					Type: &v1alpha2.MeshSpec_Linkerd{
 // 						Linkerd: &v1alpha2.MeshSpec_LinkerdMesh{
 // 							Installation: &v1alpha2.MeshSpec_MeshInstallation{
 // 								Cluster: cluster,

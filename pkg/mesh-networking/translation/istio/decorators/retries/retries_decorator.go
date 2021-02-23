@@ -35,8 +35,8 @@ func (d *retriesDecorator) DecoratorName() string {
 }
 
 func (d *retriesDecorator) ApplyTrafficPolicyToVirtualService(
-	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
-	_ *discoveryv1alpha2.TrafficTarget,
+	appliedPolicy *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy,
+	_ *discoveryv1alpha2.Destination,
 	_ *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
@@ -57,7 +57,7 @@ func (d *retriesDecorator) ApplyTrafficPolicyToVirtualService(
 func (d *retriesDecorator) translateRetries(
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
 ) (*networkingv1alpha3spec.HTTPRetry, error) {
-	retries := trafficPolicy.Retries
+	retries := trafficPolicy.GetPolicy().GetRetries()
 	if retries == nil {
 		return nil, nil
 	}

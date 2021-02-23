@@ -13,13 +13,13 @@ import (
 
 // the reporter reports status errors on user configuration objects
 type Reporter interface {
-	// report an error on a traffic policy that has been applied to a TrafficTarget
-	ReportTrafficPolicyToTrafficTarget(trafficTarget *discoveryv1alpha2.TrafficTarget, trafficPolicy ezkube.ResourceId, err error)
+	// report an error on a TrafficPolicy that has been applied to a Destination
+	ReportTrafficPolicyToDestination(destination *discoveryv1alpha2.Destination, trafficPolicy ezkube.ResourceId, err error)
 
-	// report an error on an access policy that has been applied to a TrafficTarget
-	ReportAccessPolicyToTrafficTarget(trafficTarget *discoveryv1alpha2.TrafficTarget, accessPolicy ezkube.ResourceId, err error)
+	// report an error on an AccessPolicy that has been applied to a Destination
+	ReportAccessPolicyToDestination(destination *discoveryv1alpha2.Destination, accessPolicy ezkube.ResourceId, err error)
 
-	// report an error on a virtual mesh that has been applied to a Mesh
+	// report an error on a VirtualMesh that has been applied to a Mesh
 	ReportVirtualMeshToMesh(mesh *discoveryv1alpha2.Mesh, virtualMesh ezkube.ResourceId, err error)
 
 	// report an error on a failover service that has been applied to a Mesh
@@ -40,20 +40,20 @@ func NewPanickingReporter(ctx context.Context) Reporter {
 	return &panickingReporter{ctx: ctx}
 }
 
-func (p *panickingReporter) ReportTrafficPolicyToTrafficTarget(trafficTarget *discoveryv1alpha2.TrafficTarget, trafficPolicy ezkube.ResourceId, err error) {
+func (p *panickingReporter) ReportTrafficPolicyToDestination(destination *discoveryv1alpha2.Destination, trafficPolicy ezkube.ResourceId, err error) {
 	contextutils.LoggerFrom(p.ctx).
 		DPanicw(
 			"internal error: error reported on TrafficPolicy which should have been caught by validation!",
 			"policy", sets.Key(trafficPolicy),
-			"traffic-target", sets.Key(trafficTarget),
+			"traffic-target", sets.Key(destination),
 			"error", err)
 }
 
-func (p *panickingReporter) ReportAccessPolicyToTrafficTarget(trafficTarget *discoveryv1alpha2.TrafficTarget, accessPolicy ezkube.ResourceId, err error) {
+func (p *panickingReporter) ReportAccessPolicyToDestination(destination *discoveryv1alpha2.Destination, accessPolicy ezkube.ResourceId, err error) {
 	contextutils.LoggerFrom(p.ctx).
 		DPanicw("internal error: error reported on AccessPolicy which should have been caught by validation!",
 			"policy", sets.Key(accessPolicy),
-			"traffic-target", sets.Key(trafficTarget),
+			"traffic-target", sets.Key(destination),
 			"error", err)
 }
 

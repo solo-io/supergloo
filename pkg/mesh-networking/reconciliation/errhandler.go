@@ -92,17 +92,6 @@ func (e *errHandler) handleError(resource ezkube.Object, err error) {
 				tp.Status.Errors = append(tp.Status.Errors, err.Error())
 				tp.Status.State = v1alpha2.ApprovalState_FAILED
 			}
-		case v1alpha2.FailoverService{}.GVK().String():
-			for _, parentFS := range parents {
-				fs, findErr := e.in.FailoverServices().Find(parentFS)
-				if findErr != nil {
-					contextutils.LoggerFrom(e.ctx).Errorf("internal error: resource for parent not found: %s", parentFS.String())
-					continue
-				}
-
-				fs.Status.Errors = append(fs.Status.Errors, err.Error())
-				fs.Status.State = v1alpha2.ApprovalState_FAILED
-			}
 		case v1alpha12.WasmDeployment{}.GVK().String():
 			for _, parentWd := range parents {
 				fs, findErr := e.in.WasmDeployments().Find(parentWd)

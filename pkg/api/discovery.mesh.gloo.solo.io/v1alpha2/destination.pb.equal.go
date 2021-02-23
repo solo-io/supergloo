@@ -59,6 +59,9 @@ func (m *DestinationSpec) Equal(that interface{}) bool {
 	switch m.Type.(type) {
 
 	case *DestinationSpec_KubeService_:
+		if _, ok := target.Type.(*DestinationSpec_KubeService_); !ok {
+			return false
+		}
 
 		if h, ok := interface{}(m.GetKubeService()).(equality.Equalizer); ok {
 			if !h.Equal(target.GetKubeService()) {
@@ -70,6 +73,11 @@ func (m *DestinationSpec) Equal(that interface{}) bool {
 			}
 		}
 
+	default:
+		// m is nil but target is not nil
+		if m.Type != target.Type {
+			return false
+		}
 	}
 
 	return true

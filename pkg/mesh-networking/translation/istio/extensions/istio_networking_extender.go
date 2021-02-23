@@ -19,7 +19,7 @@ import (
 
 // IstioExtender provides a caller-friendly mechanism for the Istio Networking Translator to apply patches supplied by a set of preconfigured v1alpha1.NetworkingExtensionsServer.
 type IstioExtender interface {
-	// PatchOutputs retrieves from the NetworkingExtensionsServers and applies patches to the outputs for a given TrafficTarget
+	// PatchOutputs retrieves from the NetworkingExtensionsServers and applies patches to the outputs for a given Destination
 	PatchOutputs(ctx context.Context, inputs input.LocalSnapshot, outputs istio.Builder) error
 }
 

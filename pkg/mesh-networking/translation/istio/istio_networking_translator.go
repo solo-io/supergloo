@@ -55,16 +55,15 @@ func (t *istioTranslator) Translate(
 ) {
 	ctx = contextutils.WithLogger(ctx, fmt.Sprintf("istio-translator-%v", t.totalTranslates))
 
-	trafficTargetTranslator := t.dependencies.MakeTrafficTargetTranslator(
+	destinationTranslator := t.dependencies.MakeDestinationTranslator(
 		ctx,
 		userSupplied,
 		in.KubernetesClusters(),
-		in.TrafficTargets(),
-		in.FailoverServices(),
+		in.Destinations(),
 	)
 
-	for _, trafficTarget := range in.TrafficTargets().List() {
-		trafficTargetTranslator.Translate(in, trafficTarget, istioOutputs, reporter)
+	for _, destination := range in.Destinations().List() {
+		destinationTranslator.Translate(in, destination, istioOutputs, reporter)
 	}
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(
@@ -73,8 +72,7 @@ func (t *istioTranslator) Translate(
 		in.KubernetesClusters(),
 		in.Secrets(),
 		in.Workloads(),
-		in.TrafficTargets(),
-		in.FailoverServices(),
+		in.Destinations(),
 	)
 
 	for _, mesh := range in.Meshes().List() {

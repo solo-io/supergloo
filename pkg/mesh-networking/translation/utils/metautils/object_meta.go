@@ -28,7 +28,7 @@ var (
 	// the GlooMesh Agent instance which produced them
 	AgentLabelKey = fmt.Sprintf("agent.%s", v1alpha2.SchemeGroupVersion.Group)
 
-	// Annotation key indicating that the resource configures a federated traffic target
+	// Annotation key indicating that the resource configures a federated Destination
 	FederationLabelKey = fmt.Sprintf("federation.%s", v1alpha2.SchemeGroupVersion.Group)
 
 	// Annotation key for tracking the parent resources that were translated in the creation of a child resource

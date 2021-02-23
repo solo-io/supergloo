@@ -89,7 +89,7 @@ func (d *meshDetector) discoverMesh(meshArn string, awsMeshList []*aws_v1beta2.M
 	mesh := &v1alpha2.Mesh{
 		ObjectMeta: discoveredMeshObjectMeta(meshName, parsedArn.Region, parsedArn.AccountID),
 		Spec: v1alpha2.MeshSpec{
-			MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
+			Type: &v1alpha2.MeshSpec_AwsAppMesh_{
 				AwsAppMesh: &v1alpha2.MeshSpec_AwsAppMesh{
 					AwsName:      meshName,
 					Region:       parsedArn.Region,

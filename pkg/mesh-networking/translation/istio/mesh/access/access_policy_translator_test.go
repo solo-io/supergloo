@@ -30,7 +30,7 @@ var _ = Describe("AccessPolicyTranslator", func() {
 	It("should translate an AuthorizationPolicy for the ingress gateway and in the installation namespace", func() {
 		mesh := &discoveryv1alpha2.Mesh{
 			Spec: discoveryv1alpha2.MeshSpec{
-				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{
+				Type: &discoveryv1alpha2.MeshSpec_Istio_{
 					Istio: &discoveryv1alpha2.MeshSpec_Istio{
 						Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 							Namespace: "istio-system",
@@ -131,7 +131,7 @@ var _ = Describe("AccessPolicyTranslator", func() {
 	It("should not translate any AuthorizationPolicies", func() {
 		mesh := &discoveryv1alpha2.Mesh{
 			Spec: discoveryv1alpha2.MeshSpec{
-				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{
+				Type: &discoveryv1alpha2.MeshSpec_Istio_{
 					Istio: &discoveryv1alpha2.MeshSpec_Istio{
 						Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 							Namespace: "istio-system",

@@ -18,7 +18,7 @@ import (
 
 // The access control translator translates a VirtualMesh EnforcementPolicy into Istio AuthorizationPolicies.
 type Translator interface {
-	// Returns nil if no AuthorizationPolicies are required for the mesh (i.e. because access policy enforcement is disabled).
+	// Returns nil if no AuthorizationPolicies are required for the mesh (i.e. because AccessPolicy enforcement is disabled).
 	// Output resources will be added to the istio.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
@@ -65,7 +65,7 @@ func (t *translator) Translate(
 		istioMesh.IngressGateways,
 	)
 
-	// Append the virtual mesh as a parent to each output resource
+	// Append the VirtualMesh as a parent to each output resource
 	metautils.AppendParent(t.ctx, globalAuthPolicy, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
 	for _, ap := range ingressGatewayAuthPolicies {
 		metautils.AppendParent(t.ctx, ap, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())

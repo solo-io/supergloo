@@ -27,13 +27,15 @@ var _ = Describe("HeaderManipulationDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
-				HeaderManipulation: &v1alpha2.TrafficPolicySpec_HeaderManipulation{
-					AppendRequestHeaders:  map[string]string{"a": "b"},
-					RemoveRequestHeaders:  []string{"3", "4"},
-					AppendResponseHeaders: map[string]string{"foo": "bar"},
-					RemoveResponseHeaders: []string{"1", "2"},
+				Policy: &v1alpha2.TrafficPolicySpec_Policy{
+					HeaderManipulation: &v1alpha2.TrafficPolicySpec_Policy_HeaderManipulation{
+						AppendRequestHeaders:  map[string]string{"a": "b"},
+						RemoveRequestHeaders:  []string{"3", "4"},
+						AppendResponseHeaders: map[string]string{"foo": "bar"},
+						RemoveResponseHeaders: []string{"1", "2"},
+					},
 				},
 			},
 		}
@@ -57,9 +59,11 @@ var _ = Describe("HeaderManipulationDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return testErr
 		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
-				HeaderManipulation: &v1alpha2.TrafficPolicySpec_HeaderManipulation{},
+				Policy: &v1alpha2.TrafficPolicySpec_Policy{
+					HeaderManipulation: &v1alpha2.TrafficPolicySpec_Policy_HeaderManipulation{},
+				},
 			},
 		}
 		err := headerManipulationDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)

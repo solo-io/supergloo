@@ -80,7 +80,7 @@ func (d workloadDetector) DetectWorkload(
 	return &v1alpha2.Workload{
 		ObjectMeta: outputMeta,
 		Spec: v1alpha2.WorkloadSpec{
-			WorkloadType: &v1alpha2.WorkloadSpec_Kubernetes{
+			Type: &v1alpha2.WorkloadSpec_Kubernetes{
 				Kubernetes: &v1alpha2.WorkloadSpec_KubernetesWorkload{
 					Controller:         controllerRef,
 					PodLabels:          labels,

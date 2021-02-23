@@ -110,7 +110,7 @@ spec:
     agentNamespace: gloo-mesh
   istio:
     citadelInfo:
-      citadelServiceAccount: istiod-service-account
+      IstiodServiceAccount: istiod-service-account
       trustDomain: cluster.local
     ingressGateways:
     - externalAddress: 172.20.0.3

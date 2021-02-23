@@ -62,7 +62,7 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh
 	return &v1alpha2.Mesh{
 		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
 		Spec: v1alpha2.MeshSpec{
-			MeshType: &v1alpha2.MeshSpec_Osm{
+			Type: &v1alpha2.MeshSpec_Osm{
 				Osm: &v1alpha2.MeshSpec_OSM{
 					Installation: &v1alpha2.MeshSpec_MeshInstallation{
 						Namespace: deployment.Namespace,

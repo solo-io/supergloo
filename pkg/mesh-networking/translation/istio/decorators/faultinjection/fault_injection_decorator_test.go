@@ -29,15 +29,17 @@ var _ = Describe("FaultInjectionDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
-				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
-					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_Abort_{
-						Abort: &v1alpha2.TrafficPolicySpec_FaultInjection_Abort{
-							HttpStatus: 404,
+				Policy: &v1alpha2.TrafficPolicySpec_Policy{
+					FaultInjection: &v1alpha2.TrafficPolicySpec_Policy_FaultInjection{
+						FaultInjectionType: &v1alpha2.TrafficPolicySpec_Policy_FaultInjection_Abort_{
+							Abort: &v1alpha2.TrafficPolicySpec_Policy_FaultInjection_Abort{
+								HttpStatus: 404,
+							},
 						},
+						Percentage: 50,
 					},
-					Percentage: 50,
 				},
 			},
 		}
@@ -56,13 +58,15 @@ var _ = Describe("FaultInjectionDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
-				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
-					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_FixedDelay{
-						FixedDelay: &duration.Duration{Seconds: 2},
+				Policy: &v1alpha2.TrafficPolicySpec_Policy{
+					FaultInjection: &v1alpha2.TrafficPolicySpec_Policy_FaultInjection{
+						FaultInjectionType: &v1alpha2.TrafficPolicySpec_Policy_FaultInjection_FixedDelay{
+							FixedDelay: &duration.Duration{Seconds: 2},
+						},
+						Percentage: 50,
 					},
-					Percentage: 50,
 				},
 			},
 		}
@@ -77,41 +81,18 @@ var _ = Describe("FaultInjectionDecorator", func() {
 		Expect(output.Fault).To(Equal(expectedFaultInjection))
 	})
 
-	It("should set fault injection of type exponential delay", func() {
-		registerField := func(fieldPtr, val interface{}) error {
-			return nil
-		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
-			Spec: &v1alpha2.TrafficPolicySpec{
-				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
-					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_ExponentialDelay{
-						ExponentialDelay: &duration.Duration{Seconds: 2},
-					},
-					Percentage: 50,
-				},
-			},
-		}
-		expectedFaultInjection := &v1alpha3.HTTPFaultInjection{
-			Delay: &v1alpha3.HTTPFaultInjection_Delay{
-				HttpDelayType: &v1alpha3.HTTPFaultInjection_Delay_ExponentialDelay{ExponentialDelay: &types.Duration{Seconds: 2}},
-				Percentage:    &v1alpha3.Percent{Value: 50},
-			},
-		}
-		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(output.Fault).To(Equal(expectedFaultInjection))
-	})
-
 	It("should not set fault injection if error during field registration", func() {
 		testErr := eris.New("registration error")
 		registerField := func(fieldPtr, val interface{}) error {
 			return testErr
 		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
-				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
-					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_ExponentialDelay{
-						ExponentialDelay: &duration.Duration{Seconds: 2},
+				Policy: &v1alpha2.TrafficPolicySpec_Policy{
+					FaultInjection: &v1alpha2.TrafficPolicySpec_Policy_FaultInjection{
+						FaultInjectionType: &v1alpha2.TrafficPolicySpec_Policy_FaultInjection_FixedDelay{
+							FixedDelay: &duration.Duration{Seconds: 2},
+						},
 					},
 				},
 			},
@@ -125,10 +106,12 @@ var _ = Describe("FaultInjectionDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
-				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
-					Percentage: 50,
+				Policy: &v1alpha2.TrafficPolicySpec_Policy{
+					FaultInjection: &v1alpha2.TrafficPolicySpec_Policy_FaultInjection{
+						Percentage: 50,
+					},
 				},
 			},
 		}

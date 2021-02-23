@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/rotisserie/eris"
+	commonv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
@@ -18,51 +19,35 @@ import (
 	any errors (i.e. references to non-existent discovery entities) to the offending resource status.
 */
 type ConfigTargetValidator interface {
-	// Validate mesh references declared on FailoverServices.
-	ValidateFailoverServices(
-		failoverServices v1alpha2.FailoverServiceSlice,
-	)
-
-	// Validate traffic target references declared on TrafficPolicies.
+	// Validate Destination references declared on TrafficPolicies.
 	ValidateTrafficPolicies(
 		trafficPolicies v1alpha2.TrafficPolicySlice,
 	)
 
 	// Validate mesh references declared on VirtualMeshes.
-	// Also validate that all referenced meshes are contained in at most one virtual mesh.
+	// Also validate that all referenced meshes are contained in at most one VirtualMesh.
 	ValidateVirtualMeshes(
 		virtualMeshes v1alpha2.VirtualMeshSlice,
 	)
 
-	// Validate traffic target references declared on AccessPolicies.
+	// Validate Destination references declared on AccessPolicies.
 	ValidateAccessPolicies(
 		accessPolicies v1alpha2.AccessPolicySlice,
 	)
 }
 
 type configTargetValidator struct {
-	meshes         discoveryv1alpha2sets.MeshSet
-	trafficTargets discoveryv1alpha2sets.TrafficTargetSet
+	meshes       discoveryv1alpha2sets.MeshSet
+	destinations discoveryv1alpha2sets.DestinationSet
 }
 
 func NewConfigTargetValidator(
 	meshes discoveryv1alpha2sets.MeshSet,
-	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+	destinations discoveryv1alpha2sets.DestinationSet,
 ) ConfigTargetValidator {
 	return &configTargetValidator{
-		meshes:         meshes,
-		trafficTargets: trafficTargets,
-	}
-}
-
-func (c *configTargetValidator) ValidateFailoverServices(failoverServices v1alpha2.FailoverServiceSlice) {
-	for _, failoverService := range failoverServices {
-		errs := c.validateMeshReferences(failoverService.Spec.Meshes)
-		if len(errs) == 0 {
-			continue
-		}
-		failoverService.Status.State = v1alpha2.ApprovalState_INVALID
-		failoverService.Status.Errors = getErrStrings(errs)
+		meshes:       meshes,
+		destinations: destinations,
 	}
 }
 
@@ -81,7 +66,7 @@ func (c *configTargetValidator) ValidateVirtualMeshes(virtualMeshes v1alpha2.Vir
 
 func (c *configTargetValidator) ValidateTrafficPolicies(trafficPolicies v1alpha2.TrafficPolicySlice) {
 	for _, trafficPolicy := range trafficPolicies {
-		errs := c.validateTrafficTargetReferences(trafficPolicy.Spec.DestinationSelector)
+		errs := c.validateDestinationReferences(trafficPolicy.Spec.DestinationSelector)
 		if len(errs) == 0 {
 			continue
 		}
@@ -92,7 +77,7 @@ func (c *configTargetValidator) ValidateTrafficPolicies(trafficPolicies v1alpha2
 
 func (c *configTargetValidator) ValidateAccessPolicies(accessPolicies v1alpha2.AccessPolicySlice) {
 	for _, accessPolicy := range accessPolicies {
-		errs := c.validateTrafficTargetReferences(accessPolicy.Spec.DestinationSelector)
+		errs := c.validateDestinationReferences(accessPolicy.Spec.DestinationSelector)
 		if len(errs) == 0 {
 			continue
 		}
@@ -111,17 +96,17 @@ func (c *configTargetValidator) validateMeshReferences(meshRefs []*v1.ObjectRef)
 	return errs
 }
 
-func (c *configTargetValidator) validateTrafficTargetReferences(serviceSelectors []*v1alpha2.TrafficTargetSelector) []error {
+func (c *configTargetValidator) validateDestinationReferences(serviceSelectors []*commonv1alpha2.DestinationSelector) []error {
 	var errs []error
 	for _, destinationSelector := range serviceSelectors {
 		kubeServiceRefs := destinationSelector.GetKubeServiceRefs()
-		// only validate traffic targets selected by direct reference
+		// only validate Destinations selected by direct reference
 		if kubeServiceRefs == nil {
 			continue
 		}
 		for _, ref := range kubeServiceRefs.Services {
 			if !c.kubeServiceExists(ref) {
-				errs = append(errs, eris.Errorf("TrafficTarget %s not found", sets.Key(ref)))
+				errs = append(errs, eris.Errorf("Destination %s not found", sets.Key(ref)))
 			}
 		}
 	}
@@ -129,8 +114,8 @@ func (c *configTargetValidator) validateTrafficTargetReferences(serviceSelectors
 }
 
 func (c *configTargetValidator) kubeServiceExists(ref *v1.ClusterObjectRef) bool {
-	for _, trafficTarget := range c.trafficTargets.List() {
-		kubeService := trafficTarget.Spec.GetKubeService()
+	for _, destination := range c.destinations.List() {
+		kubeService := destination.Spec.GetKubeService()
 		if kubeService == nil {
 			continue
 		}
@@ -175,7 +160,7 @@ func validateOneVirtualMeshPerMesh(virtualMeshes []*v1alpha2.VirtualMesh) {
 		}
 		vMesh := vMesh
 		for _, mesh := range vMesh.Spec.Meshes {
-			// Ignore virtual mesh if previously invalidated.
+			// Ignore VirtualMesh if previously invalidated.
 			if invalidVirtualMeshes.Has(vMesh) {
 				continue
 			}
@@ -200,7 +185,7 @@ func validateOneVirtualMeshPerMesh(virtualMeshes []*v1alpha2.VirtualMesh) {
 	}
 }
 
-// sort the set of virtual meshes in the order in which they were accepted.
+// sort the set of VirtualMeshes in the order in which they were accepted.
 // VMeshes which were accepted first and have not changed (i.e. their observedGeneration is up-to-date) take precedence.
 // Next are vMeshes that were previously accepted but whose observedGeneration is out of date. This permits vmeshes which were modified but formerly correct to maintain
 // their acceptance status ahead of vmeshes which were unmodified and previously rejected.

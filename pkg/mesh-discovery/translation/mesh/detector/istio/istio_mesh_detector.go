@@ -115,7 +115,7 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Discov
 	mesh := &v1alpha2.Mesh{
 		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
 		Spec: v1alpha2.MeshSpec{
-			MeshType: &v1alpha2.MeshSpec_Istio_{
+			Type: &v1alpha2.MeshSpec_Istio_{
 				Istio: &v1alpha2.MeshSpec_Istio{
 					Installation: &v1alpha2.MeshSpec_MeshInstallation{
 						Namespace: deployment.Namespace,
@@ -125,12 +125,10 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Discov
 						Region:    region,
 					},
 					SmartDnsProxyingEnabled: isSmartDnsProxyingEnabled(meshConfig),
-					CitadelInfo: &v1alpha2.MeshSpec_Istio_CitadelInfo{
-						TrustDomain: meshConfig.TrustDomain,
-						// This assumes that the istiod deployment is the cert provider
-						CitadelServiceAccount: deployment.Spec.Template.Spec.ServiceAccountName,
-					},
-					IngressGateways: ingressGateways,
+					TrustDomain:             meshConfig.TrustDomain,
+					// This assumes that the istiod deployment is the cert provider
+					IstiodServiceAccount: deployment.Spec.Template.Spec.ServiceAccountName,
+					IngressGateways:      ingressGateways,
 				},
 			},
 			AgentInfo: agent,

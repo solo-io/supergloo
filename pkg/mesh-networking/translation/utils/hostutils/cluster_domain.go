@@ -46,17 +46,17 @@ type ClusterDomainRegistry interface {
 }
 
 type clusterDomainRegistry struct {
-	clusters       skv1alpha1sets.KubernetesClusterSet
-	trafficTargets v1alpha2sets.TrafficTargetSet
+	clusters     skv1alpha1sets.KubernetesClusterSet
+	destinations v1alpha2sets.DestinationSet
 }
 
 func NewClusterDomainRegistry(
 	clusters skv1alpha1sets.KubernetesClusterSet,
-	trafficTargets v1alpha2sets.TrafficTargetSet,
+	destinations v1alpha2sets.DestinationSet,
 ) ClusterDomainRegistry {
 	return &clusterDomainRegistry{
-		clusters:       clusters,
-		trafficTargets: trafficTargets,
+		clusters:     clusters,
+		destinations: destinations,
 	}
 }
 
@@ -80,7 +80,7 @@ func (c *clusterDomainRegistry) GetLocalFQDN(trafficTargetRef ezkube.ClusterReso
 }
 
 func (c *clusterDomainRegistry) GetFederatedFQDN(trafficTargetRef ezkube.ClusterResourceId) string {
-	trafficTarget, err := c.trafficTargets.Find(&skv1.ObjectRef{
+	trafficTarget, err := c.destinations.Find(&skv1.ObjectRef{
 		Name:      utils.DiscoveredResourceName(trafficTargetRef),
 		Namespace: defaults.GetPodNamespace(),
 	})
@@ -93,10 +93,10 @@ func (c *clusterDomainRegistry) GetFederatedFQDN(trafficTargetRef ezkube.Cluster
 
 func (c *clusterDomainRegistry) GetDestinationFQDN(originatingCluster string, destination ezkube.ClusterResourceId) string {
 	if destination.GetClusterName() == originatingCluster {
-		// hostname will use the cluster local domain if the destination is in the same cluster as the target TrafficTarget
+		// hostname will use the cluster local domain if the destination is in the same cluster as the target Destination
 		return c.GetLocalFQDN(destination)
 	} else {
-		// hostname will use the cross-cluster domain if the destination is in a different cluster than the target TrafficTarget
+		// hostname will use the cross-cluster domain if the destination is in a different cluster than the target Destination
 		return c.GetFederatedFQDN(destination)
 	}
 }

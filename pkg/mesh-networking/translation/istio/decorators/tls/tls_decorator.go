@@ -34,8 +34,8 @@ func (d *tlsDecorator) DecoratorName() string {
 }
 
 func (d *tlsDecorator) ApplyTrafficPolicyToDestinationRule(
-	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
-	_ *discoveryv1alpha2.TrafficTarget,
+	appliedPolicy *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy,
+	_ *discoveryv1alpha2.Destination,
 	output *networkingv1alpha3spec.DestinationRule,
 	registerField decorators.RegisterField,
 ) error {
@@ -57,10 +57,11 @@ func (d *tlsDecorator) translateTlsSettings(
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
 ) (*networkingv1alpha3spec.ClientTLSSettings, error) {
 	// If TrafficPolicy doesn't specify mTLS configuration, use global default populated upstream during initialization.
-	if trafficPolicy.GetMtls().GetIstio() == nil {
+	istioMtls := trafficPolicy.GetPolicy().GetMtls().GetIstio()
+	if istioMtls == nil {
 		return nil, nil
 	}
-	istioTlsMode, err := MapIstioTlsMode(trafficPolicy.Mtls.Istio.TlsMode)
+	istioTlsMode, err := MapIstioTlsMode(istioMtls.TlsMode)
 	if err != nil {
 		return nil, err
 	}
@@ -69,13 +70,13 @@ func (d *tlsDecorator) translateTlsSettings(
 	}, nil
 }
 
-func MapIstioTlsMode(tlsMode v1alpha2.TrafficPolicySpec_MTLS_Istio_TLSmode) (networkingv1alpha3spec.ClientTLSSettings_TLSmode, error) {
+func MapIstioTlsMode(tlsMode v1alpha2.TrafficPolicySpec_Policy_MTLS_Istio_TLSmode) (networkingv1alpha3spec.ClientTLSSettings_TLSmode, error) {
 	switch tlsMode {
-	case v1alpha2.TrafficPolicySpec_MTLS_Istio_DISABLE:
+	case v1alpha2.TrafficPolicySpec_Policy_MTLS_Istio_DISABLE:
 		return networkingv1alpha3spec.ClientTLSSettings_DISABLE, nil
-	case v1alpha2.TrafficPolicySpec_MTLS_Istio_SIMPLE:
+	case v1alpha2.TrafficPolicySpec_Policy_MTLS_Istio_SIMPLE:
 		return networkingv1alpha3spec.ClientTLSSettings_SIMPLE, nil
-	case v1alpha2.TrafficPolicySpec_MTLS_Istio_ISTIO_MUTUAL:
+	case v1alpha2.TrafficPolicySpec_Policy_MTLS_Istio_ISTIO_MUTUAL:
 		return networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL, nil
 	default:
 		return 0, eris.Errorf("unrecognized Istio TLS mode %s", tlsMode)

@@ -7,10 +7,9 @@ import (
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/destinationrule"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/virtualservice"
 
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 
@@ -18,11 +17,10 @@ import (
 
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/mtls"
 
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/access"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/failoverservice"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/federation"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	skv1alpha1sets "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1/sets"
 )
@@ -33,21 +31,19 @@ import (
 // NOTE(ilackarms): private interface used here as it's not expected we'll need to
 // define our DependencyFactory anywhere else
 type DependencyFactory interface {
-	MakeTrafficTargetTranslator(
+	MakeDestinationTranslator(
 		ctx context.Context,
 		userSupplied input.RemoteSnapshot,
 		clusters skv1alpha1sets.KubernetesClusterSet,
-		trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
-		failoverServices v1alpha2sets.FailoverServiceSet,
-	) traffictarget.Translator
+		destinations discoveryv1alpha2sets.DestinationSet,
+	) destination.Translator
 	MakeMeshTranslator(
 		ctx context.Context,
 		userSupplied input.RemoteSnapshot,
 		clusters skv1alpha1sets.KubernetesClusterSet,
 		secrets corev1sets.SecretSet,
 		workloads discoveryv1alpha2sets.WorkloadSet,
-		trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
-		failoverServices v1alpha2sets.FailoverServiceSet,
+		destinations discoveryv1alpha2sets.DestinationSet,
 	) mesh.Translator
 }
 
@@ -57,17 +53,16 @@ func NewDependencyFactory() DependencyFactory {
 	return dependencyFactoryImpl{}
 }
 
-func (d dependencyFactoryImpl) MakeTrafficTargetTranslator(
+func (d dependencyFactoryImpl) MakeDestinationTranslator(
 	ctx context.Context,
 	userSupplied input.RemoteSnapshot,
 	clusters skv1alpha1sets.KubernetesClusterSet,
-	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
-	failoverServices v1alpha2sets.FailoverServiceSet,
-) traffictarget.Translator {
-	clusterDomains := hostutils.NewClusterDomainRegistry(clusters, trafficTargets)
+	destinations discoveryv1alpha2sets.DestinationSet,
+) destination.Translator {
+	clusterDomains := hostutils.NewClusterDomainRegistry(clusters, destinations)
 	decoratorFactory := decorators.NewFactory()
 
-	return traffictarget.NewTranslator(ctx, userSupplied, clusterDomains, decoratorFactory, trafficTargets, failoverServices)
+	return destination.NewTranslator(ctx, userSupplied, clusterDomains, decoratorFactory, destinations)
 }
 
 func (d dependencyFactoryImpl) MakeMeshTranslator(
@@ -76,10 +71,9 @@ func (d dependencyFactoryImpl) MakeMeshTranslator(
 	clusters skv1alpha1sets.KubernetesClusterSet,
 	secrets corev1sets.SecretSet,
 	workloads discoveryv1alpha2sets.WorkloadSet,
-	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
-	failoverServices v1alpha2sets.FailoverServiceSet,
+	destinations discoveryv1alpha2sets.DestinationSet,
 ) mesh.Translator {
-	clusterDomains := hostutils.NewClusterDomainRegistry(clusters, trafficTargets)
+	clusterDomains := hostutils.NewClusterDomainRegistry(clusters, destinations)
 
 	var existingVirtualServices v1alpha3sets.VirtualServiceSet
 	var existingDestinationRules v1alpha3sets.DestinationRuleSet
@@ -90,20 +84,17 @@ func (d dependencyFactoryImpl) MakeMeshTranslator(
 
 	federationTranslator := federation.NewTranslator(
 		ctx,
-		trafficTargets,
-		failoverServices,
+		destinations,
 		virtualservice.NewTranslator(existingVirtualServices, clusterDomains, decorators.NewFactory()),
-		destinationrule.NewTranslator(settingsutils.SettingsFromContext(ctx), existingDestinationRules, clusterDomains, decorators.NewFactory(), trafficTargets, failoverServices),
+		destinationrule.NewTranslator(settingsutils.SettingsFromContext(ctx), existingDestinationRules, clusterDomains, decorators.NewFactory(), destinations),
 	)
 	mtlsTranslator := mtls.NewTranslator(ctx, secrets, workloads)
 	accessTranslator := access.NewTranslator(ctx)
-	failoverServiceTranslator := failoverservice.NewTranslator(ctx, clusterDomains)
 
 	return mesh.NewTranslator(
 		ctx,
 		mtlsTranslator,
 		federationTranslator,
 		accessTranslator,
-		failoverServiceTranslator,
 	)
 }

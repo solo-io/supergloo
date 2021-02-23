@@ -30,10 +30,12 @@ var _ = Describe("OutlierDetectionDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
-				OutlierDetection: &v1alpha2.TrafficPolicySpec_OutlierDetection{
-					ConsecutiveErrors: 2,
+				Policy: &v1alpha2.TrafficPolicySpec_Policy{
+					OutlierDetection: &v1alpha2.TrafficPolicySpec_Policy_OutlierDetection{
+						ConsecutiveErrors: 2,
+					},
 				},
 			},
 		}
@@ -58,10 +60,12 @@ var _ = Describe("OutlierDetectionDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return testErr
 		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
-				OutlierDetection: &v1alpha2.TrafficPolicySpec_OutlierDetection{
-					ConsecutiveErrors: 2,
+				Policy: &v1alpha2.TrafficPolicySpec_Policy{
+					OutlierDetection: &v1alpha2.TrafficPolicySpec_Policy_OutlierDetection{
+						ConsecutiveErrors: 2,
+					},
 				},
 			},
 		}

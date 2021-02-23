@@ -3,6 +3,7 @@ package tests
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	commonv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha2"
 	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/test/utils"
 	skv2core "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -46,9 +47,9 @@ func AccessPolicyTest() {
 					Namespace: BookinfoNamespace,
 				},
 				Spec: networkingv1alpha2.AccessPolicySpec{
-					SourceSelector: []*networkingv1alpha2.IdentitySelector{
+					SourceSelector: []*commonv1alpha2.IdentitySelector{
 						{
-							KubeServiceAccountRefs: &networkingv1alpha2.IdentitySelector_KubeServiceAccountRefs{
+							KubeServiceAccountRefs: &commonv1alpha2.IdentitySelector_KubeServiceAccountRefs{
 								ServiceAccounts: []*skv2core.ClusterObjectRef{
 									{
 										Name:        "bookinfo-productpage",
@@ -59,9 +60,9 @@ func AccessPolicyTest() {
 							},
 						},
 					},
-					DestinationSelector: []*networkingv1alpha2.TrafficTargetSelector{
+					DestinationSelector: []*commonv1alpha2.DestinationSelector{
 						{
-							KubeServiceRefs: &networkingv1alpha2.TrafficTargetSelector_KubeServiceRefs{
+							KubeServiceRefs: &commonv1alpha2.DestinationSelector_KubeServiceRefs{
 								Services: []*skv2core.ClusterObjectRef{
 									{
 										Name:        "reviews",

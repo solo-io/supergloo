@@ -5,8 +5,8 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
-	mock_destinationrule "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/destinationrule/mocks"
-	mock_virtualservice "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice/mocks"
+	mock_destinationrule "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/destinationrule/mocks"
+	mock_virtualservice "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/virtualservice/mocks"
 	"github.com/solo-io/gloo-mesh/test/data"
 	"istio.io/istio/pkg/config/protocol"
 
@@ -34,7 +34,7 @@ var _ = Describe("FederationTranslator", func() {
 	mockVirtualServiceTranslator := mock_virtualservice.NewMockTranslator(ctrl)
 	mockDestinationRuleTranslator := mock_destinationrule.NewMockTranslator(ctrl)
 
-	It("translates federation resources for a virtual mesh", func() {
+	It("translates federation resources for a VirtualMesh", func() {
 
 		namespace := "namespace"
 		clusterName := "cluster"
@@ -45,7 +45,7 @@ var _ = Describe("FederationTranslator", func() {
 				Name:      "federated-mesh",
 			},
 			Spec: discoveryv1alpha2.MeshSpec{
-				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+				Type: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
 					SmartDnsProxyingEnabled: true,
 					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: namespace,
@@ -68,7 +68,7 @@ var _ = Describe("FederationTranslator", func() {
 				Name:      "client-mesh",
 			},
 			Spec: discoveryv1alpha2.MeshSpec{
-				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+				Type: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
 					SmartDnsProxyingEnabled: true,
 					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: "remote-namespace",
@@ -81,8 +81,8 @@ var _ = Describe("FederationTranslator", func() {
 		meshRef := ezkube.MakeObjectRef(mesh)
 		clientMeshRef := ezkube.MakeObjectRef(clientMesh)
 
-		makeTrafficSplit := func(backingService *v1.ClusterObjectRef, subset map[string]string) *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy {
-			return &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{Spec: &data.RemoteTrafficShiftPolicy(
+		makeTrafficSplit := func(backingService *v1.ClusterObjectRef, subset map[string]string) *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy {
+			return &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{Spec: &data.RemoteTrafficShiftPolicy(
 				"",
 				"",
 				backingService,
@@ -98,12 +98,12 @@ var _ = Describe("FederationTranslator", func() {
 			Namespace:   "some-ns",
 			ClusterName: clusterName,
 		}
-		trafficTarget1 := &discoveryv1alpha2.TrafficTarget{
+		trafficTarget1 := &discoveryv1alpha2.Destination{
 			ObjectMeta: metav1.ObjectMeta{},
-			Spec: discoveryv1alpha2.TrafficTargetSpec{
-				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+			Spec: discoveryv1alpha2.DestinationSpec{
+				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
 					Ref: backingService,
-					Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+					Ports: []*discoveryv1alpha2.DestinationSpec_KubeService_KubeServicePort{
 						{
 							Port:     1234,
 							Name:     "http",
@@ -124,8 +124,8 @@ var _ = Describe("FederationTranslator", func() {
 				Mesh: meshRef,
 			},
 			// include some applied subsets
-			Status: discoveryv1alpha2.TrafficTargetStatus{
-				AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+			Status: discoveryv1alpha2.DestinationStatus{
+				AppliedTrafficPolicies: []*discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
 					makeTrafficSplit(backingService, map[string]string{"foo": "bar"}),
 					makeTrafficSplit(backingService, map[string]string{"foo": "baz"}),
 					makeTrafficSplit(backingService, map[string]string{"bar": "qux"}),
@@ -157,7 +157,7 @@ var _ = Describe("FederationTranslator", func() {
 		}
 
 		in := input.NewInputLocalSnapshotManualBuilder("ignored").
-			AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget1}).
+			AddDestinations(discoveryv1alpha2.DestinationSlice{trafficTarget1}).
 			AddMeshes(discoveryv1alpha2.MeshSlice{mesh, clientMesh}).
 			AddKubernetesClusters(skv1alpha1.KubernetesClusterSlice{kubeCluster}).
 			Build()
@@ -176,8 +176,7 @@ var _ = Describe("FederationTranslator", func() {
 
 		t := NewTranslator(
 			ctx,
-			in.TrafficTargets(),
-			in.FailoverServices(),
+			in.Destinations(),
 			mockVirtualServiceTranslator,
 			mockDestinationRuleTranslator,
 		)

@@ -33,8 +33,8 @@ func (d *headerManipulationDecorator) DecoratorName() string {
 }
 
 func (d *headerManipulationDecorator) ApplyTrafficPolicyToVirtualService(
-	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
-	_ *discoveryv1alpha2.TrafficTarget,
+	appliedPolicy *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy,
+	_ *discoveryv1alpha2.Destination,
 	_ *discoveryv1alpha2.MeshSpec_MeshInstallation,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
@@ -52,7 +52,7 @@ func (d *headerManipulationDecorator) ApplyTrafficPolicyToVirtualService(
 func (d *headerManipulationDecorator) translateHeaderManipulation(
 	trafficPolicy *v1alpha2.TrafficPolicySpec,
 ) *networkingv1alpha3spec.Headers {
-	headerManipulation := trafficPolicy.GetHeaderManipulation()
+	headerManipulation := trafficPolicy.GetPolicy().GetHeaderManipulation()
 	if headerManipulation == nil {
 		return nil
 	}

@@ -18,13 +18,13 @@ func InputSnapshotToProto(in input.LocalSnapshot) *v1alpha1.DiscoverySnapshot {
 			Status:   &mesh.Status,
 		})
 	}
-	var trafficTargets []*v1alpha1.TrafficTargetObject
-	for _, trafficTarget := range in.TrafficTargets().List() {
-		trafficTarget := trafficTarget
-		trafficTargets = append(trafficTargets, &v1alpha1.TrafficTargetObject{
-			Metadata: ObjectMetaToProto(trafficTarget.ObjectMeta),
-			Spec:     &trafficTarget.Spec,
-			Status:   &trafficTarget.Status,
+	var destinations []*v1alpha1.DestinationObject
+	for _, destination := range in.Destinations().List() {
+		destination := destination
+		destinations = append(destinations, &v1alpha1.DestinationObject{
+			Metadata: ObjectMetaToProto(destination.ObjectMeta),
+			Spec:     &destination.Spec,
+			Status:   &destination.Status,
 		})
 	}
 	var workloads []*v1alpha1.WorkloadObject
@@ -37,14 +37,14 @@ func InputSnapshotToProto(in input.LocalSnapshot) *v1alpha1.DiscoverySnapshot {
 		})
 	}
 	return &v1alpha1.DiscoverySnapshot{
-		Meshes:         meshes,
-		TrafficTargets: trafficTargets,
-		Workloads:      workloads,
+		Meshes:       meshes,
+		Destinations: destinations,
+		Workloads:    workloads,
 	}
 }
 
 // InputSnapshotFromProto constructs a Networking input snapshot from proto Discovery Snapshot
-// This method is not intended to be used here, but called from implementating servers.
+// This method is not intended to be used here, but called from implementing servers.
 func InputSnapshotFromProto(name string, in *v1alpha1.DiscoverySnapshot) input.LocalSnapshot {
 	builder := input.NewInputLocalSnapshotManualBuilder(name)
 
@@ -59,16 +59,17 @@ func InputSnapshotFromProto(name string, in *v1alpha1.DiscoverySnapshot) input.L
 	}
 	builder.AddMeshes(meshes)
 
-	// insert trafficTargets
-	var trafficTargets discoveryv1alpha2.TrafficTargetSlice
-	for _, trafficTarget := range in.TrafficTargets {
-		trafficTargets = append(trafficTargets, &discoveryv1alpha2.TrafficTarget{
-			ObjectMeta: ObjectMetaFromProto(trafficTarget.Metadata),
-			Spec:       *trafficTarget.Spec,
-			Status:     *trafficTarget.Status,
+	// insert destinations
+	var destinations discoveryv1alpha2.DestinationSlice
+	for _, destination := range in.Destinations {
+		destination := destination // pike
+		destinations = append(destinations, &discoveryv1alpha2.Destination{
+			ObjectMeta: ObjectMetaFromProto(destination.Metadata),
+			Spec:       *destination.Spec,
+			Status:     *destination.Status,
 		})
 	}
-	builder.AddTrafficTargets(trafficTargets)
+	builder.AddDestinations(destinations)
 
 	// insert workloads
 	var workloads discoveryv1alpha2.WorkloadSlice

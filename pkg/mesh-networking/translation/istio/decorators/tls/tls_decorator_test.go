@@ -34,11 +34,13 @@ var _ = Describe("TlsDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
-				Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
-					Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
-						TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_DISABLE,
+				Policy: &v1alpha2.TrafficPolicySpec_Policy{
+					Mtls: &v1alpha2.TrafficPolicySpec_Policy_MTLS{
+						Istio: &v1alpha2.TrafficPolicySpec_Policy_MTLS_Istio{
+							TlsMode: v1alpha2.TrafficPolicySpec_Policy_MTLS_Istio_DISABLE,
+						},
 					},
 				},
 			},
@@ -60,7 +62,7 @@ var _ = Describe("TlsDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{},
 		}
 		err := tlsDecorator.ApplyTrafficPolicyToDestinationRule(

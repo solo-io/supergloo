@@ -29,9 +29,11 @@ var _ = Describe("TimeoutDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
-				RequestTimeout: &duration.Duration{Seconds: 5},
+				Policy: &v1alpha2.TrafficPolicySpec_Policy{
+					RequestTimeout: &duration.Duration{Seconds: 5},
+				},
 			},
 		}
 		expectedTimeout := &types.Duration{Seconds: 5}
@@ -45,9 +47,11 @@ var _ = Describe("TimeoutDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return testErr
 		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
-				RequestTimeout: &duration.Duration{Seconds: 5},
+				Policy: &v1alpha2.TrafficPolicySpec_Policy{
+					RequestTimeout: &duration.Duration{Seconds: 5},
+				},
 			},
 		}
 		err := timeoutDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)

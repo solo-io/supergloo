@@ -133,7 +133,7 @@ var _ = Describe("IstioMeshDetector", func() {
 				Labels:    labelutils.ClusterLabels(clusterName),
 			},
 			Spec: discoveryv1alpha2.MeshSpec{
-				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+				Type: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
 					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
 					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
@@ -141,10 +141,8 @@ var _ = Describe("IstioMeshDetector", func() {
 						Version:   "latest",
 						PodLabels: map[string]string{"app": "istiod"},
 					},
-					CitadelInfo: &discoveryv1alpha2.MeshSpec_Istio_CitadelInfo{
-						TrustDomain:           trustDomain,
-						CitadelServiceAccount: serviceAccountName,
-					},
+					TrustDomain:          trustDomain,
+					IstiodServiceAccount: serviceAccountName,
 				}},
 			},
 		}))
@@ -172,7 +170,7 @@ var _ = Describe("IstioMeshDetector", func() {
 				Labels:    labelutils.ClusterLabels(clusterName),
 			},
 			Spec: discoveryv1alpha2.MeshSpec{
-				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+				Type: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
 					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
 					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
@@ -180,10 +178,8 @@ var _ = Describe("IstioMeshDetector", func() {
 						PodLabels: map[string]string{"app": "istiod"},
 						Version:   "latest",
 					},
-					CitadelInfo: &discoveryv1alpha2.MeshSpec_Istio_CitadelInfo{
-						TrustDomain:           trustDomain,
-						CitadelServiceAccount: serviceAccountName,
-					},
+					TrustDomain:          trustDomain,
+					IstiodServiceAccount: serviceAccountName,
 				}},
 			},
 		}))
@@ -267,7 +263,7 @@ var _ = Describe("IstioMeshDetector", func() {
 				Labels:    labelutils.ClusterLabels(clusterName),
 			},
 			Spec: discoveryv1alpha2.MeshSpec{
-				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+				Type: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
 					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
 					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
@@ -275,10 +271,8 @@ var _ = Describe("IstioMeshDetector", func() {
 						Version:   "latest",
 						PodLabels: map[string]string{"app": "istiod"},
 					},
-					CitadelInfo: &discoveryv1alpha2.MeshSpec_Istio_CitadelInfo{
-						TrustDomain:           trustDomain,
-						CitadelServiceAccount: serviceAccountName,
-					},
+					TrustDomain:          trustDomain,
+					IstiodServiceAccount: serviceAccountName,
 					IngressGateways: []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo{{
 						WorkloadLabels:   workloadLabels,
 						ExternalAddress:  "external.domain",
@@ -381,7 +375,7 @@ var _ = Describe("IstioMeshDetector", func() {
 				Labels:    labelutils.ClusterLabels(clusterName),
 			},
 			Spec: discoveryv1alpha2.MeshSpec{
-				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+				Type: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
 					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
 					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
@@ -389,10 +383,8 @@ var _ = Describe("IstioMeshDetector", func() {
 						Version:   "latest",
 						PodLabels: map[string]string{"app": "istiod"},
 					},
-					CitadelInfo: &discoveryv1alpha2.MeshSpec_Istio_CitadelInfo{
-						TrustDomain:           trustDomain,
-						CitadelServiceAccount: serviceAccountName,
-					},
+					TrustDomain:          trustDomain,
+					IstiodServiceAccount: serviceAccountName,
 					IngressGateways: []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo{{
 						WorkloadLabels:   workloadLabels,
 						ExternalAddress:  "external.domain",

@@ -62,7 +62,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 				Namespace: "gloo-mesh",
 			},
 			Spec: v1alpha2.MeshSpec{
-				MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
+				Type: &v1alpha2.MeshSpec_AwsAppMesh_{
 					AwsAppMesh: &v1alpha2.MeshSpec_AwsAppMesh{
 						AwsName: meshName,
 					},
@@ -97,7 +97,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 				Namespace: "gloo-mesh",
 			},
 			Spec: v1alpha2.MeshSpec{
-				MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
+				Type: &v1alpha2.MeshSpec_AwsAppMesh_{
 					AwsAppMesh: &v1alpha2.MeshSpec_AwsAppMesh{
 						AwsName: meshName,
 					},
@@ -147,7 +147,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 				Namespace: "gloo-mesh",
 			},
 			Spec: v1alpha2.MeshSpec{
-				MeshType: &v1alpha2.MeshSpec_Istio_{},
+				Type: &v1alpha2.MeshSpec_Istio_{},
 			},
 		}
 
@@ -193,7 +193,7 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 				Namespace: "gloo-mesh",
 			},
 			Spec: v1alpha2.MeshSpec{
-				MeshType: &v1alpha2.MeshSpec_Istio_{},
+				Type: &v1alpha2.MeshSpec_Istio_{},
 			},
 		}
 

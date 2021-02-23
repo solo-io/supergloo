@@ -16,9 +16,9 @@ import (
 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation"
+	mock_destination "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/destination/mocks"
 	mock_translator_internal "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/internal/mocks"
 	mock_mesh "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/mocks"
-	mock_traffictarget "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/traffictarget/mocks"
 	mock_workload "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/mocks"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/labelutils"
 	appsv1 "k8s.io/api/apps/v1"
@@ -32,10 +32,10 @@ var _ = Describe("Translator", func() {
 		ctl *gomock.Controller
 		ctx context.Context
 
-		mockDependencyFactory       *mock_translator_internal.MockDependencyFactory
-		mockMeshTranslator          *mock_mesh.MockTranslator
-		mockWorkloadTranslator      *mock_workload.MockTranslator
-		mockTrafficTargetTranslator *mock_traffictarget.MockTranslator
+		mockDependencyFactory     *mock_translator_internal.MockDependencyFactory
+		mockMeshTranslator        *mock_mesh.MockTranslator
+		mockWorkloadTranslator    *mock_workload.MockTranslator
+		mockDestinationTranslator *mock_destination.MockTranslator
 	)
 
 	BeforeEach(func() {
@@ -44,7 +44,7 @@ var _ = Describe("Translator", func() {
 		mockDependencyFactory = mock_translator_internal.NewMockDependencyFactory(ctl)
 		mockMeshTranslator = mock_mesh.NewMockTranslator(ctl)
 		mockWorkloadTranslator = mock_workload.NewMockTranslator(ctl)
-		mockTrafficTargetTranslator = mock_traffictarget.NewMockTranslator(ctl)
+		mockDestinationTranslator = mock_destination.NewMockTranslator(ctl)
 	})
 
 	AfterEach(func() {
@@ -80,17 +80,17 @@ var _ = Describe("Translator", func() {
 
 		mockDependencyFactory.EXPECT().MakeMeshTranslator(ctx).Return(mockMeshTranslator)
 		mockDependencyFactory.EXPECT().MakeWorkloadTranslator(ctx, inRemote).Return(mockWorkloadTranslator)
-		mockDependencyFactory.EXPECT().MakeTrafficTargetTranslator().Return(mockTrafficTargetTranslator)
+		mockDependencyFactory.EXPECT().MakeDestinationTranslator().Return(mockDestinationTranslator)
 
 		labeledMeta := metav1.ObjectMeta{Labels: labelutils.ClusterLabels("cluster")}
 
 		meshes := v1alpha2sets.NewMeshSet(&v1alpha2.Mesh{ObjectMeta: labeledMeta})
 		workloads := v1alpha2sets.NewWorkloadSet(&v1alpha2.Workload{ObjectMeta: labeledMeta})
-		trafficTargets := v1alpha2sets.NewTrafficTargetSet(&v1alpha2.TrafficTarget{ObjectMeta: labeledMeta})
+		destinations := v1alpha2sets.NewDestinationSet(&v1alpha2.Destination{ObjectMeta: labeledMeta})
 
 		mockMeshTranslator.EXPECT().TranslateMeshes(inRemote, settings).Return(meshes)
 		mockWorkloadTranslator.EXPECT().TranslateWorkloads(deployments, daemonSets, statefulSets, meshes).Return(workloads)
-		mockTrafficTargetTranslator.EXPECT().TranslateTrafficTargets(ctx, services, pods, nodes, workloads, meshes, endpoints).Return(trafficTargets)
+		mockDestinationTranslator.EXPECT().TranslateDestinations(ctx, services, pods, nodes, workloads, meshes, endpoints).Return(destinations)
 
 		out, err := t.Translate(ctx, inRemote, settings)
 		Expect(err).NotTo(HaveOccurred())
@@ -98,7 +98,7 @@ var _ = Describe("Translator", func() {
 		expectedOut, err := discovery.NewSinglePartitionedSnapshot(
 			"mesh-discovery-1",
 			labelutils.OwnershipLabels(),
-			trafficTargets,
+			destinations,
 			workloads,
 			meshes,
 		)

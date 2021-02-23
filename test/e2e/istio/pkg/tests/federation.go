@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	commonv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha2"
 	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
@@ -78,24 +79,28 @@ func FederationTest() {
 				},
 				Spec: v1alpha2.TrafficPolicySpec{
 					SourceSelector: nil,
-					DestinationSelector: []*v1alpha2.TrafficTargetSelector{{
-						KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
-							Services: []*v1.ClusterObjectRef{
-								{
-									Name:        "reviews",
-									Namespace:   BookinfoNamespace,
-									ClusterName: RemoteClusterName,
+					DestinationSelector: []*commonv1alpha2.DestinationSelector{
+						{
+							KubeServiceRefs: &commonv1alpha2.DestinationSelector_KubeServiceRefs{
+								Services: []*v1.ClusterObjectRef{
+									{
+										Name:        "reviews",
+										Namespace:   BookinfoNamespace,
+										ClusterName: RemoteClusterName,
+									},
 								},
 							},
 						},
-					}},
-					FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
-						FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_Abort_{
-							&v1alpha2.TrafficPolicySpec_FaultInjection_Abort{
-								HttpStatus: http.StatusTeapot,
+					},
+					Policy: &v1alpha2.TrafficPolicySpec_Policy{
+						FaultInjection: &v1alpha2.TrafficPolicySpec_Policy_FaultInjection{
+							FaultInjectionType: &v1alpha2.TrafficPolicySpec_Policy_FaultInjection_Abort_{
+								&v1alpha2.TrafficPolicySpec_Policy_FaultInjection_Abort{
+									HttpStatus: http.StatusTeapot,
+								},
 							},
+							Percentage: 100,
 						},
-						Percentage: 100,
 					},
 				},
 			}
@@ -130,39 +135,43 @@ func FederationTest() {
 				},
 				Spec: v1alpha2.TrafficPolicySpec{
 					SourceSelector: nil,
-					DestinationSelector: []*v1alpha2.TrafficTargetSelector{{
-						KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
-							Services: []*v1.ClusterObjectRef{
-								{
-									Name:        "reviews",
-									Namespace:   BookinfoNamespace,
-									ClusterName: RemoteClusterName,
-								},
-							},
-						},
-					}},
-					Mirror: &v1alpha2.TrafficPolicySpec_Mirror{
-						DestinationType: &v1alpha2.TrafficPolicySpec_Mirror_KubeService{
-							KubeService: &v1.ClusterObjectRef{
-								Name:        "reviews",
-								Namespace:   BookinfoNamespace,
-								ClusterName: MgmtClusterName,
-							},
-						},
-						Percentage: 50,
-						Port:       9080,
-					},
-					TrafficShift: &v1alpha2.TrafficPolicySpec_MultiDestination{
-						Destinations: []*v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination{
-							{
-								DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
-									KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
+					DestinationSelector: []*commonv1alpha2.DestinationSelector{
+						{
+							KubeServiceRefs: &commonv1alpha2.DestinationSelector_KubeServiceRefs{
+								Services: []*v1.ClusterObjectRef{
+									{
 										Name:        "reviews",
 										Namespace:   BookinfoNamespace,
-										ClusterName: MgmtClusterName,
+										ClusterName: RemoteClusterName,
 									},
 								},
-								Weight: 50,
+							},
+						},
+					},
+					Policy: &v1alpha2.TrafficPolicySpec_Policy{
+						Mirror: &v1alpha2.TrafficPolicySpec_Policy_Mirror{
+							DestinationType: &v1alpha2.TrafficPolicySpec_Policy_Mirror_KubeService{
+								KubeService: &v1.ClusterObjectRef{
+									Name:        "reviews",
+									Namespace:   BookinfoNamespace,
+									ClusterName: MgmtClusterName,
+								},
+							},
+							Percentage: 50,
+							Port:       9080,
+						},
+						TrafficShift: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination{
+							Destinations: []*v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+								{
+									DestinationType: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+										KubeService: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+											Name:        "reviews",
+											Namespace:   BookinfoNamespace,
+											ClusterName: MgmtClusterName,
+										},
+									},
+									Weight: 50,
+								},
 							},
 						},
 					},

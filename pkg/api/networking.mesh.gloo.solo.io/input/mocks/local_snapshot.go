@@ -142,20 +142,6 @@ func (mr *MockLocalSnapshotMockRecorder) VirtualMeshes() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualMeshes", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualMeshes))
 }
 
-// FailoverServices mocks base method
-func (m *MockLocalSnapshot) FailoverServices() v1alpha2sets0.FailoverServiceSet {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FailoverServices")
-	ret0, _ := ret[0].(v1alpha2sets0.FailoverServiceSet)
-	return ret0
-}
-
-// FailoverServices indicates an expected call of FailoverServices
-func (mr *MockLocalSnapshotMockRecorder) FailoverServices() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FailoverServices", reflect.TypeOf((*MockLocalSnapshot)(nil).FailoverServices))
-}
-
 // WasmDeployments mocks base method
 func (m *MockLocalSnapshot) WasmDeployments() v1alpha1sets.WasmDeploymentSet {
 	m.ctrl.T.Helper()
