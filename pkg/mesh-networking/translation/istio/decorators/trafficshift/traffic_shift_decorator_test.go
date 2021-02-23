@@ -457,8 +457,8 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		Expect(output.Route).To(Equal(expectedRoute))
 	})
 
-	It("should decorate traffic shift targeting a GlobalService", func() {
-		globalServices := v1alpha1sets.NewVirtualDestinationSet(
+	It("should decorate traffic shift targeting a VirtualDestination", func() {
+		virtualDestinations := v1alpha1sets.NewVirtualDestinationSet(
 			&v1alpha1.VirtualDestination{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "fs-1",
@@ -471,7 +471,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 					},
 				},
 			})
-		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, nil, nil, globalServices)
+		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, nil, nil, virtualDestinations)
 		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
 			Spec: &v1alpha2.TrafficPolicySpec{
 				TrafficShift: &v1alpha2.TrafficPolicySpec_MultiDestination{

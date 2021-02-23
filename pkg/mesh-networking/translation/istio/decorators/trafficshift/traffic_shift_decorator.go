@@ -43,10 +43,10 @@ func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
 
 // handles setting Weighted Destinations on a VirtualService
 type trafficShiftDecorator struct {
-	clusterDomains   hostutils.ClusterDomainRegistry
-	trafficTargets   discoveryv1alpha2sets.TrafficTargetSet
-	failoverServices v1alpha2sets.FailoverServiceSet
-	globalServices   v1alpha1sets.VirtualDestinationSet
+	clusterDomains      hostutils.ClusterDomainRegistry
+	trafficTargets      discoveryv1alpha2sets.TrafficTargetSet
+	failoverServices    v1alpha2sets.FailoverServiceSet
+	virtualDestinations v1alpha1sets.VirtualDestinationSet
 }
 
 var _ decorators.TrafficPolicyVirtualServiceDecorator = &trafficShiftDecorator{}
@@ -55,13 +55,13 @@ func NewTrafficShiftDecorator(
 	clusterDomains hostutils.ClusterDomainRegistry,
 	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 	failoverServices v1alpha2sets.FailoverServiceSet,
-	globalServices v1alpha1sets.VirtualDestinationSet,
+	virtualDestinations v1alpha1sets.VirtualDestinationSet,
 ) *trafficShiftDecorator {
 	return &trafficShiftDecorator{
-		clusterDomains:   clusterDomains,
-		trafficTargets:   trafficTargets,
-		failoverServices: failoverServices,
-		globalServices:   globalServices,
+		clusterDomains:      clusterDomains,
+		trafficTargets:      trafficTargets,
+		failoverServices:    failoverServices,
+		virtualDestinations: virtualDestinations,
 	}
 }
 
@@ -231,18 +231,18 @@ func (d *trafficShiftDecorator) buildFailoverServiceDestination(
 }
 
 func (d *trafficShiftDecorator) buildVirtualDestinationDestination(
-	globalServiceDest *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_VirtualDestinationReference,
+	virtualDestinationDest *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_VirtualDestinationReference,
 	weight uint32,
 ) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
-	globalService, err := d.globalServices.Find(ezkube.MakeObjectRef(globalServiceDest))
+	virtualDestination, err := d.virtualDestinations.Find(ezkube.MakeObjectRef(virtualDestinationDest))
 	if err != nil {
-		return nil, eris.Wrapf(err, "invalid traffic shift destination %s, VirtualDestination not found", sets.Key(globalServiceDest))
+		return nil, eris.Wrapf(err, "invalid traffic shift destination %s, VirtualDestination not found", sets.Key(virtualDestinationDest))
 	}
 
 	httpRouteDestination := d.buildHttpRouteDestination(
-		globalService.Spec.GetHostname(),
-		globalServiceDest.GetSubset(),
-		globalService.Spec.GetPort().GetNumber(),
+		virtualDestination.Spec.GetHostname(),
+		virtualDestinationDest.GetSubset(),
+		virtualDestination.Spec.GetPort().GetNumber(),
 		weight,
 	)
 
@@ -293,17 +293,17 @@ func MakeDestinationRuleSubsetsForFailoverService(
 // make all the necessary subsets for the destination rule for the given VirtualDestination.
 // traverses all the applied traffic policies to find subsets matching this VirtualDestination
 func MakeDestinationRuleSubsetsForVirtualDestination(
-	globalService *v1alpha1.VirtualDestination,
+	virtualDestination *v1alpha1.VirtualDestination,
 	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
 ) []*networkingv1alpha3spec.Subset {
 	return makeDestinationRuleSubsets(
 		allTrafficTargets,
 		func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool {
-			globalServiceDest := weightedDestination.GetVirtualDestination()
-			if globalServiceDest == nil {
+			virtualDestinationDest := weightedDestination.GetVirtualDestination()
+			if virtualDestinationDest == nil {
 				return false
 			}
-			return ezkube.RefsMatch(ezkube.MakeObjectRef(globalService), globalServiceDest)
+			return ezkube.RefsMatch(ezkube.MakeObjectRef(virtualDestination), virtualDestinationDest)
 		},
 	)
 }
