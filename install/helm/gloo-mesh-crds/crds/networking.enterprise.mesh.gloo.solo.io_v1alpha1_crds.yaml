@@ -22,10 +22,10 @@ spec:
     openAPIV3Schema:
       properties:
         spec:
-          description: A WasmDeployment deploys one or more WASM Envoy Filters to selected Sidecars and Gateways in a Mesh.
+          description: Deploys one or more WASM Envoy Filters to selected Sidecars and Gateways in a Mesh.
           properties:
             filters:
-              description: Parameters for specifying the WASM filter
+              description: Specify WASM filter parameters.
               items:
                 allOf:
                 - oneOf:
@@ -70,7 +70,7 @@ spec:
                       The specific config generation context to which to attach the filter. Istio
                       generates envoy configuration in the context of a gateway,
                       inbound traffic to sidecar and outbound traffic from sidecar.
-                      Uses the Istio default (ANY).
+                      Uses the Istio default (`ANY`).
                     enum:
                     - ANY
                     - SIDECAR_INBOUND
@@ -87,12 +87,10 @@ spec:
                       TODO(ilackarms): we may need to provide options for customizing the Cluster given to envoy along with the HTTP Fetch URI. currently Gloo Mesh will create a simple plaintext HTTP cluster from the Host/Port specified in the URI.
                     properties:
                       sha:
-                        description: |-
-                          The Sha256 Checksum of the filter binary (will be verified by the proxy).
-                          Required.
+                        description: '**Required**. The Sha256 Checksum of the filter binary (will be verified by the proxy).'
                         type: string
                       uri:
-                        description: The HTTP URI from which to fetch the filter
+                        description: The HTTP URI from which to fetch the filter.
                         type: string
                     type: object
                   insertBeforeFilter:
@@ -111,13 +109,10 @@ spec:
                     type: string
                   rootId:
                     description: |-
-                      the root id must match the root id
-                      defined inside the filter.
-                      if the user does not provide this field,
-                      Gloo Mesh will attempt to pull the image
-                      and set it from the filter_conf contained in the image config.
-                      note that if the filter_source is not set to wasm_image_source,
-                      this field is required
+                      The `root id` must match the `root id` defined inside the filter.
+                      If the user does not provide this field, Gloo Mesh will attempt to pull the image
+                      and set it from the `filter_conf` contained in the image config.
+                      Note that if the `filter_source` is not set to `wasm_image_source`, this field is required.
                     type: string
                   staticFilterConfig:
                     description: |-
@@ -131,7 +126,7 @@ spec:
                     description: |-
                       An ID which will be used along with a hash of the wasm code
                       (or the name of the registered Null VM plugin) to determine which VM will be used to load the WASM filter.
-                      All filters on the same proxy which use the same vm_id and code within will use the same VM.
+                      All filters on the same proxy which use the same `vm_id` and code within will use the same VM.
                       May be left blank. Sharing a VM between plugins can reduce memory utilization and make sharing of data easier which may have security implications.
                     type: string
                   wasmImageSource:
@@ -140,14 +135,14 @@ spec:
                       Images can be built and pushed to registries using `meshctl` and `wasme`.
                     properties:
                       wasmImageTag:
-                        description: the full tag of the wasm image. should include the registry address at the beginning, e.g. webassemblyhub.io/ilackarms/helloworld:v0.1
+                        description: The full tag of the wasm image. It must include the registry address at the beginning, e.g. "webassemblyhub.io/ilackarms/helloworld:v0.1".
                         type: string
                     type: object
                 type: object
               type: array
             weight:
               description: |-
-                weight is used to determine the order of WASM Filters when applying
+                Weight is used to determine the order of WASM Filters when applying
                 multiple WasmDeployments to a single workload.
                 Deployed WASM filters will be sorted in order of
                 highest to lowest weight. WasmDeployments with equal weights will be
@@ -160,7 +155,7 @@ spec:
             workloadSelector:
               description: |-
                 Sidecars/Gateways whose Workloads match these selectors will attach the specified WASM Filters.
-                       Leave empty to have all workloads in the mesh apply receive the WASM Filter.
+                Leave empty to have all workloads in the mesh apply receive the WASM Filter.
               items:
                 properties:
                   clusters:
@@ -201,7 +196,7 @@ spec:
             observedGeneration:
               description: |-
                 The most recent generation observed in the the WasmDeployment metadata.
-                if the observedGeneration does not match generation, the controller has not received the most
+                if the observedGeneration does not match `metadata.generation`, Gloo Mesh has not processed the most
                 recent version of this resource.
               format: int64
               type: integer
@@ -212,7 +207,7 @@ spec:
                 - FILTERS_DEPLOYED
                 - DEPLOYMENT_FAILED
                 type: string
-              description: the state of the WasmDeployment as it has been applied to each individual workload.
+              description: The state of the WasmDeployment as it has been applied to each individual Workload.
               type: object
           type: object
       type: object
@@ -269,10 +264,11 @@ spec:
               - localized
           description: |-
             A VirtualDestination creates a new hostname to which client workloads can send requests.
-               Requests will be routed based on either a list of backing TrafficTargets ordered by
-               explicit priority, or a list of locality directives. Each TrafficTarget backing the
-               VirtualDestination must be configured with outlier detection through a TrafficPolicy.
+               The hostname abstracts over a set of underlying TrafficTargets and provides failover functionality between them.
+               Failover order is determined by either an explicitly defined priority (`static`), or a list of locality directives (`localized`).
 
+               Each TrafficTarget backing the VirtualDestination must be configured with a
+               [TrafficPolicy's outlier detection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy/" >}}).
                Currently this feature only supports TrafficTargets backed by Istio.
           properties:
             hostname:
@@ -286,7 +282,7 @@ spec:
                   items:
                     properties:
                       from:
-                        description: The locality of a client workload.
+                        description: The locality of the client workload.
                         properties:
                           region:
                             description: The locality's region.
@@ -299,9 +295,7 @@ spec:
                             type: string
                         type: object
                       to:
-                        description: |-
-                          The list of TrafficTarget localities that can be routed to if the instance local to the client workload
-                          is not available.
+                        description: The list of TrafficTarget localities that can be routed to if the instance local to the client workload is not available.
                         items:
                           properties:
                             region:
@@ -321,21 +315,20 @@ spec:
                   description: Outlier detection to determine the health of the selected services.
                   properties:
                     baseEjectionTime:
-                      description: 'Minimum ejection duration. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 30s.'
+                      description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
                       type: string
                     consecutiveErrors:
-                      description: Number of errors before a host is ejected from the connection pool. Defaults to 5.
+                      description: The number of errors before a host is ejected from the connection pool. A default will be used if not set.
                       maximum: 4294967295
                       minimum: 0
                       type: integer
                     interval:
-                      description: 'Time interval between ejection sweep analysis. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 10s.'
+                      description: 'The time interval between ejection sweep analysis. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
                       type: string
                     maxEjectionPercent:
                       description: |-
-                        Maximum % of hosts in the load balancing pool for the upstream service that can be ejected,
-                        but will eject at least one host regardless of the value. MUST BE >= 0 and <= 100.
-                        Defaults to 100%, allowing all hosts to be ejected from the pool.
+                        The maximum percentage of hosts that can be ejected from the load balancing pool.
+                        At least one host will be ejected regardless of the value. Must be between 0 and 100. A default will be used if not set.
                       maximum: 4294967295
                       minimum: 0
                       type: integer
@@ -402,7 +395,7 @@ spec:
               type: object
             meshList:
               description: |-
-                The meshes that this VirtualDestination will be visible to. If multiple meshes are specified, they must
+                The Meshes that this VirtualDestination will be visible to. If multiple meshes are specified, they must
                 all belong to the same VirtualMesh.
               properties:
                 meshes:
@@ -426,7 +419,7 @@ spec:
                   minimum: 0
                   type: integer
                 protocol:
-                  description: Protocol of the requests sent to the VirtualDestination. Must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS.
+                  description: Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`.
                   type: string
               type: object
             static:
@@ -434,8 +427,8 @@ spec:
               properties:
                 services:
                   description: |-
-                    The list of services backing the VirtualDestination, ordered by decreasing priority.
-                    All services must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
+                    The list of TrafficTargets backing the VirtualDestination, ordered by decreasing priority.
+                    All services must be either in the same Mesh or in Meshes that are grouped under a common VirtualMesh.
                   items:
                     oneOf:
                     - not:
@@ -446,7 +439,7 @@ spec:
                       - kubeService
                     properties:
                       kubeService:
-                        description: Name/namespace/cluster of a Kubernetes service.
+                        description: Reference to a Kubernetes Service.
                         properties:
                           clusterName:
                             description: name of the cluster in which the resource exists
@@ -484,12 +477,12 @@ spec:
                 properties:
                   acceptanceOrder:
                     description: |-
-                      AcceptanceOrder represents the order in which the Policy
+                      Represents the order in which the policy
                       was accepted and applied to a discovery resource. The first accepted policy
                       will have an acceptance_order of 0, the second 1, etc.
                       When conflicts are detected in the system,
                       the Policy with the lowest acceptance_order
-                      will be chosen (and all other conflicting policies will be rejected).
+                      will be chosen and all other conflicting policies will be rejected.
                     maximum: 4294967295
                     minimum: 0
                     type: integer
@@ -499,9 +492,7 @@ spec:
                       type: string
                     type: array
                   state:
-                    description: |-
-                      The result of attempting to apply the policy to the discovery resource,
-                      reported by the Policy controller (mesh-networking).
+                    description: The result of attempting to apply the policy to the discovery resource.
                     enum:
                     - PENDING
                     - ACCEPTED
@@ -509,17 +500,17 @@ spec:
                     - FAILED
                     type: string
                 type: object
-              description: The status of the VirtualDestination for each Mesh to which it has been applied.
+              description: The status of the VirtualDestination for each Mesh to which it has been exported to.
               type: object
             observedGeneration:
               description: |-
                 The most recent generation observed in the the VirtualDestination metadata.
-                If the observedGeneration does not match generation, the controller has not received the most
+                If the observedGeneration does not match `metadata.generation`, Gloo Mesh has not processed the most
                 recent version of this resource.
               format: int64
               type: integer
             selectedTrafficTargets:
-              description: The TrafficTargets that comprise this Global Service.
+              description: The TrafficTargets that comprise this VirtualDestination.
               items:
                 properties:
                   ref:
@@ -546,7 +537,7 @@ spec:
                       - kubeService
                     properties:
                       kubeService:
-                        description: Name/namespace/cluster of a Kubernetes service.
+                        description: Reference to a Kubernetes Service.
                         properties:
                           clusterName:
                             description: name of the cluster in which the resource exists
@@ -564,7 +555,7 @@ spec:
             state:
               description: |-
                 The state of the overall resource, will only show accepted if it has been successfully
-                applied to all target meshes.
+                applied to all exported to Meshes.
               enum:
               - PENDING
               - ACCEPTED

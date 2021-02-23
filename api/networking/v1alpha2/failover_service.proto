@@ -8,6 +8,7 @@ import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.pr
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
+// TODO(harveyxia) delete this
 /*
     A FailoverService creates a new hostname to which services can send requests.
     Requests will be routed based on a list of backing TrafficTargets ordered by
@@ -60,7 +61,7 @@ message FailoverServiceStatus {
 
     /*
         The most recent generation observed in the the FailoverService metadata.
-        If the observedGeneration does not match generation, the controller has not received the most
+        If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
         recent version of this resource.
     */
     int64 observed_generation = 1;

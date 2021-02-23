@@ -44,17 +44,17 @@ title: "mesh.proto"
 <a name="discovery.mesh.gloo.solo.io.MeshSpec"></a>
 
 ### MeshSpec
-Represents a service mesh deployment discovered by Gloo Mesh.
+Describes a service mesh control plane deployment.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| istio | [discovery.mesh.gloo.solo.io.MeshSpec.Istio]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio" >}}) |  |  |
-  | awsAppMesh | [discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh" >}}) |  |  |
-  | linkerd | [discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh" >}}) |  |  |
-  | consulConnect | [discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh" >}}) |  |  |
-  | osm | [discovery.mesh.gloo.solo.io.MeshSpec.OSM]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.OSM" >}}) |  |  |
-  | agentInfo | [discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo" >}}) |  | Information about the Gloo Mesh agent if it has been installed to the managed cluster. |
+| istio | [discovery.mesh.gloo.solo.io.MeshSpec.Istio]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio" >}}) |  | Describes an [Istio](https://istio.io/) service mesh. |
+  | awsAppMesh | [discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.AwsAppMesh" >}}) |  | Describes an [AWS App Mesh](https://aws.amazon.com/app-mesh/) service mesh. |
+  | linkerd | [discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.LinkerdMesh" >}}) |  | Describes a [Linkerd](https://linkerd.io/) service mesh. |
+  | consulConnect | [discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.ConsulConnectMesh" >}}) |  | Describes a [Consul Connect](https://www.consul.io/docs/connect) service mesh. |
+  | osm | [discovery.mesh.gloo.solo.io.MeshSpec.OSM]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.OSM" >}}) |  | Describes an [Open Service Mesh](https://openservicemesh.io/) service mesh. |
+  | agentInfo | [discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshSpec.AgentInfo" >}}) |  | Describes the Gloo Mesh agent if it has been installed to the managed cluster. |
   
 
 
@@ -84,7 +84,7 @@ Describes an AWS App Mesh instance.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| awsName | string |  | AWS name for the App Mesh instance, must be unique across all AppMesh instances owned by the AWS account. |
+| awsName | string |  | The AWS name for the App Mesh instance, must be unique across all AppMesh instances owned by the AWS account. |
   | region | string |  | The AWS region the App Mesh control plane resources exist in. |
   | awsAccountId | string |  | The AWS Account ID associated with the Mesh. Populated at REST API registration time. |
   | arn | string |  | The unique AWS ARN associated with the App Mesh instance. |
@@ -136,8 +136,8 @@ TODO(harveyxia) flatten this out Describes Istio Citadel (Istio's security compo
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| trustDomain | string |  | Istio trust domain used for https/[spiffe](https://spiffe.io/spiffe/concepts/#trust-domain) [identity](https://istio.io/docs/reference/glossary/#identity). If empty will default to ["cluster.local"](https://github.com/istio/istio/blob/e768f408a7de224e64ccdfb2634442541ce08e6a/pilot/cmd/pilot-agent/main.go#L118). |
-  | citadelServiceAccount | string |  | TODO(harveyxia) rename to istiod_service_account istio-citadel service account, used to determine identity for the Istio CA cert. If empty will default to "istio-citadel". |
+| trustDomain | string |  | The Istio trust domain used for https/[spiffe](https://spiffe.io/spiffe/concepts/#trust-domain) [identity](https://istio.io/docs/reference/glossary/#identity). If empty will default to ["cluster.local"](https://github.com/istio/istio/blob/e768f408a7de224e64ccdfb2634442541ce08e6a/pilot/cmd/pilot-agent/main.go#L118). |
+  | citadelServiceAccount | string |  | TODO(harveyxia) rename to istiod_service_account The istiod service account which determines identity for the Istio CA cert. |
   
 
 
@@ -255,8 +255,8 @@ Describes an [OSM](https://github.com/openservicemesh/osm) deployment.
 | ----- | ---- | ----- | ----------- |
 | observedGeneration | int64 |  | The observed generation of the Mesh. When this matches the Mesh's metadata.generation, it indicates that Gloo Mesh has processed the latest version of the Mesh. |
   | appliedVirtualMesh | [discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh" >}}) |  | The VirtualMesh, if any, which contains this mesh. |
-  | appliedFailoverServices | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService" >}}) | repeated | The FailoverServices, if any, which applies to this mesh. |
-  | appliedVirtualDestinations | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination" >}}) | repeated | The FailoverServices, if any, which applies to this mesh. |
+  | appliedFailoverServices | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService" >}}) | repeated | The FailoverServices, if any, which apply to this mesh. |
+  | appliedVirtualDestinations | [][discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.mesh#discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination" >}}) | repeated | The VirtualDestinations, if any, which apply to this mesh. |
   
 
 
@@ -266,7 +266,7 @@ Describes an [OSM](https://github.com/openservicemesh/osm) deployment.
 <a name="discovery.mesh.gloo.solo.io.MeshStatus.AppliedFailoverService"></a>
 
 ### MeshStatus.AppliedFailoverService
-TODO(harveyxia) remove AppliedFailoverService represents a FailoverService that has been applied to this Mesh. If an existing FailoverService becomes invalid the last applied FailoverService will be used.
+TODO(harveyxia) remove AppliedFailoverService describes a FailoverService that applies to this Mesh. If an existing FailoverService becomes invalid the last applied FailoverService will be used.
 
 
 | Field | Type | Label | Description |
@@ -283,14 +283,14 @@ TODO(harveyxia) remove AppliedFailoverService represents a FailoverService that 
 <a name="discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualDestination"></a>
 
 ### MeshStatus.AppliedVirtualDestination
-AppliedVirtualDestination represents a VirtualDestination that has been applied to this Mesh.
+Describes a [VirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination.md" >}}) that applies to this Mesh.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the applied VirtualDestination object. |
   | observedGeneration | int64 |  | The observed generation of the accepted VirtualDestination. |
-  | errors | []string | repeated | Any errors encountered while processing the referenced VirtualDestination object. |
+  | errors | []string | repeated | Any errors encountered while processing the VirtualDestination. |
   
 
 
@@ -300,14 +300,14 @@ AppliedVirtualDestination represents a VirtualDestination that has been applied 
 <a name="discovery.mesh.gloo.solo.io.MeshStatus.AppliedVirtualMesh"></a>
 
 ### MeshStatus.AppliedVirtualMesh
-AppliedVirtualMesh represents a VirtualMesh that has been applied to this Mesh. If an existing VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
+Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}) that applies to this Mesh. If an existing applied VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the applied VirtualMesh object. |
   | observedGeneration | int64 |  | The observed generation of the accepted VirtualMesh. |
-  | spec | [networking.mesh.gloo.solo.io.VirtualMeshSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec" >}}) |  | The last known valid spec of the VirtualMesh. |
+  | spec | [networking.mesh.gloo.solo.io.VirtualMeshSpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec" >}}) |  | The spec of the last known valid VirtualMesh. |
   
 
 

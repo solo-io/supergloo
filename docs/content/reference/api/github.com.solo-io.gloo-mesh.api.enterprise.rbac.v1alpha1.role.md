@@ -46,8 +46,8 @@ title: "role.proto"
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| subjects | [][core.skv2.solo.io.TypedObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.TypedObjectRef" >}}) | repeated | reference to users or groups to apply the Gloo Mesh Role to |
-  | roleRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | reference to a Gloo Mesh Role |
+| subjects | [][core.skv2.solo.io.TypedObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.TypedObjectRef" >}}) | repeated | Specify by reference the Kubernetes Users or Groups the Role should apply to. |
+  | roleRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Specify by reference the Gloo Mesh Role to bind. |
   
 
 
@@ -67,7 +67,7 @@ title: "role.proto"
 <a name="rbac.enterprise.mesh.gloo.solo.io.RoleSpec"></a>
 
 ### RoleSpec
-A role represents a set of permissions for creating, updating, and deleting Gloo Mesh configuration. A role consists of a set of scopes for each policy type. The permission granularity is defined at the field level for TrafficPolicy and VirtualMesh and at the object level for AccessPolicy and FailoverService.
+A role represents a set of permissions for creating, updating, and deleting Gloo Mesh configuration objects. A role consists of a set of scopes for each policy type. Depending on the policy type, the permission granularity is defined at the field level or at the object level.
 
 
 | Field | Type | Label | Description |
@@ -93,7 +93,7 @@ Represents permissions for configuring AccessLogRecords.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| workloadSelectors | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | A list of permitted workload selectors. |
+| workloadSelectors | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | A list of permitted Workload selectors. |
   
 
 
@@ -142,7 +142,7 @@ Represents permissions for configuring TrafficPolicies.
 | ----- | ---- | ----- | ----------- |
 | trafficPolicyActions | [][rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope.TrafficPolicyActions]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.rbac.v1alpha1.role#rbac.enterprise.mesh.gloo.solo.io.RoleSpec.TrafficPolicyScope.TrafficPolicyActions" >}}) | repeated | A list of permitted TrafficPolicy configuration actions. |
   | trafficTargetSelectors | [][common.mesh.gloo.solo.io.TrafficTargetSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.TrafficTargetSelector" >}}) | repeated | A list of permitted TrafficTarget selectors. |
-  | workloadSelectors | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | A list of permitted workload selectors. |
+  | workloadSelectors | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | A list of permitted Workload selectors. |
   
 
 
@@ -191,7 +191,7 @@ Represents permissions for configuring WasmDeployments.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| workloadSelectors | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | A list of permitted workload selectors. |
+| workloadSelectors | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1alpha2.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | A list of permitted Workload selectors. |
   
 
 
@@ -206,7 +206,7 @@ Represents permissions for configuring WasmDeployments.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| observedGeneration | int64 |  |  |
+| observedGeneration | int64 |  | The observed generation of the Role. When this matches the Role's `metadata.generation` it indicates that Gloo Mesh has processed the latest version of the Role. |
   
 
 

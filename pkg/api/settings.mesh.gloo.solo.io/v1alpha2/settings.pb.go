@@ -28,22 +28,21 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-// Configure global settings and defaults.
+// Configure system-wide settings and defaults. Settings specified in networking policies take precedence over those specified here.
 type SettingsSpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence)
+	// Configure default mTLS settings for TrafficTargets.
 	Mtls *v1alpha2.TrafficPolicySpec_Policy_MTLS `protobuf:"bytes,1,opt,name=mtls,proto3" json:"mtls,omitempty"`
 	// Configure Gloo Mesh networking to communicate with one or more external gRPC NetworkingExtensions servers.
 	// Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence).
 	// Note: Extension Servers have full write access to the output objects written by Gloo Mesh.
 	NetworkingExtensionServers []*GrpcServer `protobuf:"bytes,2,rep,name=networking_extension_servers,json=networkingExtensionServers,proto3" json:"networking_extension_servers,omitempty"`
-	// Settings specific to the discovery controller.
+	// Settings for Gloo Mesh discovery.
 	Discovery *DiscoverySettings `protobuf:"bytes,3,opt,name=discovery,proto3" json:"discovery,omitempty"`
-	// Enable and configure use of Relay to communicate with remote clusters.
-	// This is an Enterprise-only feature.
+	// Enable and configure use of Relay mode to communicate with remote clusters. This is an enterprise-only feature.
 	Relay *RelaySettings `protobuf:"bytes,4,opt,name=relay,proto3" json:"relay,omitempty"`
 }
 
@@ -107,6 +106,7 @@ func (x *SettingsSpec) GetRelay() *RelaySettings {
 	return nil
 }
 
+// RelaySettings contains options for configuring Gloo Mesh to use Relay for cluster management.
 // Relay provides a way for connecting Gloo Mesh to remote Kubernetes Clusters
 // without the need to share credentials and access to remote Kube API Servers
 // from the management cluster (the Gloo Mesh controllers).
@@ -119,20 +119,20 @@ func (x *SettingsSpec) GetRelay() *RelaySettings {
 // registration time, which then connects directly to the Relay Server in the management cluster.
 // to push its discovery data and pull its mesh configuration.
 //
-// RelaySettings contains options for configuring Gloo Mesh to use Relay for cluster management.
 //
 // To configure Gloo Mesh to use Relay, make sure to read the
-// [Installation guide for use with Relay]({{< versioned_link_path fromRoot="/guides/setup/insatll_gloo_mesh" >}}) and
-// [Cluster Registration guide for use with Relay]({{< versioned_link_path fromRoot="/guides/setup/register_cluster" >}}).
+// [relay installation guide]({{< versioned_link_path fromRoot="/guides/setup/install_gloo_mesh" >}}) and
+// [relay cluster registration guide]({{< versioned_link_path fromRoot="/guides/setup/register_cluster" >}}).
 type RelaySettings struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// enable the use of Relay for cluster management.
-	// If relay is enabled, make sure to follow the [Cluster Registration guide for Relay]({{< versioned_link_path fromRoot="/guides/setup/register_cluster#relay" >}})
+	// Enable the use of Relay for cluster management.
+	// If relay is enabled, make sure to follow the [relay cluster registration guide]({{< versioned_link_path fromRoot="/guides/setup/register_cluster#relay" >}})
 	// for registering your clusters.
 	Enabled bool `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	// TODO(harveyxia) can we remove this?
 	// Connection info for the Relay Server. Gloo Mesh will fetch discovery resources from this server
 	// and push translated outputs to this server.
 	// Note: currently this field has no effect as the relay server runs in-process of the networking Pod.
@@ -185,6 +185,7 @@ func (x *RelaySettings) GetServer() *GrpcServer {
 	return nil
 }
 
+// Settings for Gloo Mesh discovery.
 type DiscoverySettings struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -233,17 +234,17 @@ func (x *DiscoverySettings) GetIstio() *DiscoverySettings_Istio {
 	return nil
 }
 
-// Options for connecting to an external gRPC server
+// Options for connecting to an external gRPC server.
 type GrpcServer struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// TCP address of the gRPC Server (including port)
+	// TCP address of the gRPC Server (including port).
 	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	// Communicate over HTTP rather than HTTPS
+	// If true communicate over HTTP rather than HTTPS.
 	Insecure bool `protobuf:"varint,2,opt,name=insecure,proto3" json:"insecure,omitempty"`
-	// Instruct Gloo Mesh to automatically reconnect to the server on network failures
+	// If true Gloo Mesh will automatically attempt to reconnect to the server after encountering network failures.
 	ReconnectOnNetworkFailures bool `protobuf:"varint,3,opt,name=reconnect_on_network_failures,json=reconnectOnNetworkFailures,proto3" json:"reconnect_on_network_failures,omitempty"`
 }
 
@@ -306,7 +307,7 @@ type SettingsStatus struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The most recent generation observed in the the Settings metadata.
-	// If the observedGeneration does not match generation, the controller has not processed the most
+	// If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
 	// recent version of this resource.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 	// The state of the overall resource.
@@ -369,14 +370,15 @@ func (x *SettingsStatus) GetErrors() []string {
 	return nil
 }
 
+// Istio-specific discovery settings
 type DiscoverySettings_Istio struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Ingress gateway detectors for each cluster. The key to the map is either a Kubernetes cluster name or the wildcard
-	// `*` meaning all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the
-	// wildcard entry will be used if it exists. Lastly, we will fall back to the default values.
+	// Configure discovery of ingress gateways per cluster. The key to the map is either a Gloo Mesh cluster name or
+	// `*` denoting all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the
+	// wildcard entry will be used if it exists. Lastly, we will fall back to a set of default values.
 	IngressGatewayDetectors map[string]*DiscoverySettings_Istio_IngressGatewayDetector `protobuf:"bytes,1,rep,name=ingress_gateway_detectors,json=ingressGatewayDetectors,proto3" json:"ingress_gateway_detectors,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
@@ -419,18 +421,17 @@ func (x *DiscoverySettings_Istio) GetIngressGatewayDetectors() map[string]*Disco
 	return nil
 }
 
-// Workload labels and TLS port name used during discovery to detect ingress gateways for a mesh.
+// Configure discovery of ingress gateways.
 type DiscoverySettings_Istio_IngressGatewayDetector struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The workload labels used during discovery to detect ingress gateways for a mesh.
+	// Workload labels used to detect ingress gateways for an Istio deployment.
 	// If not specified, will default to `{"istio": "ingressgateway"}`.
 	GatewayWorkloadLabels map[string]string `protobuf:"bytes,1,rep,name=gateway_workload_labels,json=gatewayWorkloadLabels,proto3" json:"gateway_workload_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// The name of the TLS port used to detect ingress gateways. Services must have a port with this name
-	// in order to be recognized as an ingress gateway during discovery.
-	// If not specified, will default to `tls`.
+	// The name of the TLS port used to detect ingress gateways. Kubernetes services must have a port with this name
+	// in order to be recognized as an ingress gateway. If not specified, will default to `tls`.
 	GatewayTlsPortName string `protobuf:"bytes,2,opt,name=gateway_tls_port_name,json=gatewayTlsPortName,proto3" json:"gateway_tls_port_name,omitempty"`
 }
 

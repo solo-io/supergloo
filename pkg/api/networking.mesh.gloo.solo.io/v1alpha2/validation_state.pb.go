@@ -97,15 +97,14 @@ type ApprovalStatus struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// AcceptanceOrder represents the order in which the Policy
+	// Represents the order in which the policy
 	// was accepted and applied to a discovery resource. The first accepted policy
 	// will have an acceptance_order of 0, the second 1, etc.
 	// When conflicts are detected in the system,
 	// the Policy with the lowest acceptance_order
-	// will be chosen (and all other conflicting policies will be rejected).
+	// will be chosen and all other conflicting policies will be rejected.
 	AcceptanceOrder uint32 `protobuf:"varint,1,opt,name=acceptance_order,json=acceptanceOrder,proto3" json:"acceptance_order,omitempty"`
-	// The result of attempting to apply the policy to the discovery resource,
-	// reported by the Policy controller (mesh-networking).
+	// The result of attempting to apply the policy to the discovery resource.
 	State ApprovalState `protobuf:"varint,2,opt,name=state,proto3,enum=networking.mesh.gloo.solo.io.ApprovalState" json:"state,omitempty"`
 	// Any errors observed which prevented the resource from being Accepted.
 	Errors []string `protobuf:"bytes,3,rep,name=errors,proto3" json:"errors,omitempty"`

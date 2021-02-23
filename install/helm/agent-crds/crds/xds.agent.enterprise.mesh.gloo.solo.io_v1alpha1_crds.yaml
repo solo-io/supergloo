@@ -23,40 +23,40 @@ spec:
       properties:
         spec:
           description: |-
-            XdsConfigs are used to issue XDS Configuration Resources to running Envoy instances.
+            XdsConfigs are used to issue xDS Configuration Resources to running Envoy instances.
                They are created by Gloo Mesh for processing by an agent running on managed clusters.
 
-               The agent will serve the specified XDS configuration resources on its grpc-xds port (default 9977)
+               The agent will serve the specified xDS configuration resources on its grpc-xds port (default 9977)
                to the Envoy instances (nodes) defined in the XDSConfigSpec.
 
                This feature is currently only available in Gloo Mesh Enterprise.
           properties:
             types:
               description: |-
-                the xDS resources to serve to the nodes.
-                mapped by type URL.
+                The xDS resources to serve to the nodes.
+                Mapped by type URL.
               items:
                 properties:
                   resources:
-                    description: stored as compressed, base-64 encoded raw bytes.
+                    description: Stored as compressed, base-64 encoded raw bytes.
                     items:
                       properties:
                         compressedData:
-                          description: stored as compressed, base-64 encoded raw bytes.
+                          description: Stored as compressed, base-64 encoded raw bytes.
                           format: binary
                           type: string
                         name:
-                          description: name of the resource, as referenced by xDS
+                          description: Name of the resource as referenced by xDS.
                           type: string
                       type: object
                     type: array
                   typeUrl:
-                    description: the type URL of the resources in the given set
+                    description: The type URL of the resources in the given set.
                     type: string
                 type: object
               type: array
             workloads:
-              description: The Workloads that will receive this XDS Configuration.
+              description: The Workloads that will receive this xDS Configuration.
               items:
                 properties:
                   name:
@@ -73,13 +73,13 @@ spec:
           properties:
             error:
               description: |-
-                Any error observed which prevented the CertificateRequest from being processed.
+                Any error observed which prevented the XdsConfig from being processed.
                 If the error is empty, the request has been processed successfully.
               type: string
             observedGeneration:
               description: |-
                 The most recent generation observed in the the XdsConfig metadata.
-                If the observedGeneration does not match generation, the XDS Agent has not processed the most
+                If the `observedGeneration` does not match `metadata.generation`, the Gloo Mesh agent has not processed the most
                 recent version of this XdsConfig.
               format: int64
               type: integer

@@ -84,12 +84,12 @@ type HeaderMatcher struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Specifies the name of the header in the request.
+	// Specify the name of the header in the request.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// Specifies the value of the header. If the value is absent a request that
+	// Specify the value of the header. If the value is absent a request that
 	// has the name header will match, regardless of the header’s value.
 	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
-	// Specifies whether the header value should be treated as regex.
+	// Specify whether the header value should be treated as regex.
 	Regex bool `protobuf:"varint,3,opt,name=regex,proto3" json:"regex,omitempty"`
 	//
 	//If set to true, the result of the match will be inverted. Defaults to false.

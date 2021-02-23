@@ -30,14 +30,14 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-// Represents a service mesh deployment discovered by Gloo Mesh.
+// Describes a service mesh control plane deployment.
 type MeshSpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	// TODO(harveyxia) rename to type
-	// Metadata specific to the particular service mesh type represented by this `Mesh`.
+	// Describes platform specific properties of the service mesh.
 	//
 	// Types that are assignable to MeshType:
 	//	*MeshSpec_Istio_
@@ -46,7 +46,7 @@ type MeshSpec struct {
 	//	*MeshSpec_ConsulConnect
 	//	*MeshSpec_Osm
 	MeshType isMeshSpec_MeshType `protobuf_oneof:"mesh_type"`
-	// Information about the Gloo Mesh agent if it has been installed to the managed cluster.
+	// Describes the Gloo Mesh agent if it has been installed to the managed cluster.
 	AgentInfo *MeshSpec_AgentInfo `protobuf:"bytes,5,opt,name=agent_info,json=agentInfo,proto3" json:"agent_info,omitempty"`
 }
 
@@ -136,22 +136,27 @@ type isMeshSpec_MeshType interface {
 }
 
 type MeshSpec_Istio_ struct {
+	// Describes an [Istio](https://istio.io/) service mesh.
 	Istio *MeshSpec_Istio `protobuf:"bytes,1,opt,name=istio,proto3,oneof"`
 }
 
 type MeshSpec_AwsAppMesh_ struct {
+	// Describes an [AWS App Mesh](https://aws.amazon.com/app-mesh/) service mesh.
 	AwsAppMesh *MeshSpec_AwsAppMesh `protobuf:"bytes,2,opt,name=aws_app_mesh,json=awsAppMesh,proto3,oneof"`
 }
 
 type MeshSpec_Linkerd struct {
+	// Describes a [Linkerd](https://linkerd.io/) service mesh.
 	Linkerd *MeshSpec_LinkerdMesh `protobuf:"bytes,3,opt,name=linkerd,proto3,oneof"`
 }
 
 type MeshSpec_ConsulConnect struct {
+	// Describes a [Consul Connect](https://www.consul.io/docs/connect) service mesh.
 	ConsulConnect *MeshSpec_ConsulConnectMesh `protobuf:"bytes,4,opt,name=consul_connect,json=consulConnect,proto3,oneof"`
 }
 
 type MeshSpec_Osm struct {
+	// Describes an [Open Service Mesh](https://openservicemesh.io/) service mesh.
 	Osm *MeshSpec_OSM `protobuf:"bytes,6,opt,name=osm,proto3,oneof"`
 }
 
@@ -176,9 +181,9 @@ type MeshStatus struct {
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 	// The VirtualMesh, if any, which contains this mesh.
 	AppliedVirtualMesh *MeshStatus_AppliedVirtualMesh `protobuf:"bytes,2,opt,name=applied_virtual_mesh,json=appliedVirtualMesh,proto3" json:"applied_virtual_mesh,omitempty"`
-	// The FailoverServices, if any, which applies to this mesh.
+	// The FailoverServices, if any, which apply to this mesh.
 	AppliedFailoverServices []*MeshStatus_AppliedFailoverService `protobuf:"bytes,3,rep,name=applied_failover_services,json=appliedFailoverServices,proto3" json:"applied_failover_services,omitempty"`
-	// The FailoverServices, if any, which applies to this mesh.
+	// The VirtualDestinations, if any, which apply to this mesh.
 	AppliedVirtualDestinations []*MeshStatus_AppliedVirtualDestination `protobuf:"bytes,4,rep,name=applied_virtual_destinations,json=appliedVirtualDestinations,proto3" json:"applied_virtual_destinations,omitempty"`
 }
 
@@ -324,7 +329,7 @@ type MeshSpec_AwsAppMesh struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// AWS name for the App Mesh instance, must be unique across all AppMesh instances owned by the AWS account.
+	// The AWS name for the App Mesh instance, must be unique across all AppMesh instances owned by the AWS account.
 	AwsName string `protobuf:"bytes,1,opt,name=aws_name,json=awsName,proto3" json:"aws_name,omitempty"`
 	// The AWS region the App Mesh control plane resources exist in.
 	Region string `protobuf:"bytes,2,opt,name=region,proto3" json:"region,omitempty"`
@@ -718,12 +723,11 @@ type MeshSpec_Istio_CitadelInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Istio trust domain used for https/[spiffe](https://spiffe.io/spiffe/concepts/#trust-domain) [identity](https://istio.io/docs/reference/glossary/#identity).
+	// The Istio trust domain used for https/[spiffe](https://spiffe.io/spiffe/concepts/#trust-domain) [identity](https://istio.io/docs/reference/glossary/#identity).
 	// If empty will default to ["cluster.local"](https://github.com/istio/istio/blob/e768f408a7de224e64ccdfb2634442541ce08e6a/pilot/cmd/pilot-agent/main.go#L118).
 	TrustDomain string `protobuf:"bytes,1,opt,name=trust_domain,json=trustDomain,proto3" json:"trust_domain,omitempty"`
 	// TODO(harveyxia) rename to istiod_service_account
-	// istio-citadel service account, used to determine identity for the Istio CA cert.
-	// If empty will default to "istio-citadel".
+	// The istiod service account which determines identity for the Istio CA cert.
 	CitadelServiceAccount string `protobuf:"bytes,2,opt,name=citadel_service_account,json=citadelServiceAccount,proto3" json:"citadel_service_account,omitempty"`
 }
 
@@ -856,8 +860,8 @@ func (x *MeshSpec_Istio_IngressGatewayInfo) GetTlsContainerPort() uint32 {
 	return 0
 }
 
-// AppliedVirtualMesh represents a VirtualMesh that has been applied to this Mesh.
-// If an existing VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
+// Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}) that applies to this Mesh.
+// If an existing applied VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
 type MeshStatus_AppliedVirtualMesh struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -867,7 +871,7 @@ type MeshStatus_AppliedVirtualMesh struct {
 	Ref *v1.ObjectRef `protobuf:"bytes,1,opt,name=ref,proto3" json:"ref,omitempty"`
 	// The observed generation of the accepted VirtualMesh.
 	ObservedGeneration int64 `protobuf:"varint,2,opt,name=observedGeneration,proto3" json:"observedGeneration,omitempty"`
-	// The last known valid spec of the VirtualMesh.
+	// The spec of the last known valid VirtualMesh.
 	Spec *v1alpha2.VirtualMeshSpec `protobuf:"bytes,3,opt,name=spec,proto3" json:"spec,omitempty"`
 }
 
@@ -925,7 +929,7 @@ func (x *MeshStatus_AppliedVirtualMesh) GetSpec() *v1alpha2.VirtualMeshSpec {
 }
 
 // TODO(harveyxia) remove
-// AppliedFailoverService represents a FailoverService that has been applied to this Mesh.
+// AppliedFailoverService describes a FailoverService that applies to this Mesh.
 // If an existing FailoverService becomes invalid the last applied FailoverService will be used.
 type MeshStatus_AppliedFailoverService struct {
 	state         protoimpl.MessageState
@@ -993,7 +997,7 @@ func (x *MeshStatus_AppliedFailoverService) GetSpec() *v1alpha2.FailoverServiceS
 	return nil
 }
 
-// AppliedVirtualDestination represents a VirtualDestination that has been applied to this Mesh.
+// Describes a [VirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination.md" >}}) that applies to this Mesh.
 type MeshStatus_AppliedVirtualDestination struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1003,7 +1007,7 @@ type MeshStatus_AppliedVirtualDestination struct {
 	Ref *v1.ObjectRef `protobuf:"bytes,1,opt,name=ref,proto3" json:"ref,omitempty"`
 	// The observed generation of the accepted VirtualDestination.
 	ObservedGeneration int64 `protobuf:"varint,2,opt,name=observedGeneration,proto3" json:"observedGeneration,omitempty"`
-	// Any errors encountered while processing the referenced VirtualDestination object.
+	// Any errors encountered while processing the VirtualDestination.
 	Errors []string `protobuf:"bytes,3,rep,name=errors,proto3" json:"errors,omitempty"`
 }
 

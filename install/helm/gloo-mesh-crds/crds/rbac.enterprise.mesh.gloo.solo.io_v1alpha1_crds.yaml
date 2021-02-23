@@ -26,16 +26,16 @@ spec:
       properties:
         spec:
           description: |-
-            A role represents a set of permissions for creating, updating, and deleting Gloo Mesh configuration.
-               A role consists of a set of scopes for each policy type. The permission granularity is defined at the field level
-                for TrafficPolicy and VirtualMesh and at the object level for AccessPolicy and FailoverService.
+            A role represents a set of permissions for creating, updating, and deleting Gloo Mesh configuration objects.
+               A role consists of a set of scopes for each policy type. Depending on the policy type,
+               the permission granularity is defined at the field level or at the object level.
           properties:
             accessLogRecordScopes:
               description: A set of AccessLogRecord configuration permissions. Permission granularity is defined at the object level.
               items:
                 properties:
                   workloadSelectors:
-                    description: A list of permitted workload selectors.
+                    description: A list of permitted Workload selectors.
                     items:
                       properties:
                         clusters:
@@ -298,7 +298,7 @@ spec:
                       type: object
                     type: array
                   workloadSelectors:
-                    description: A list of permitted workload selectors.
+                    description: A list of permitted Workload selectors.
                     items:
                       properties:
                         clusters:
@@ -413,7 +413,7 @@ spec:
                         - kubeService
                       properties:
                         kubeService:
-                          description: Name/namespace/cluster of a Kubernetes service.
+                          description: Reference to a Kubernetes Service.
                           properties:
                             clusterName:
                               description: name of the cluster in which the resource exists
@@ -475,7 +475,7 @@ spec:
               items:
                 properties:
                   workloadSelectors:
-                    description: A list of permitted workload selectors.
+                    description: A list of permitted Workload selectors.
                     items:
                       properties:
                         clusters:
@@ -510,6 +510,10 @@ spec:
         status:
           properties:
             observedGeneration:
+              description: |-
+                The observed generation of the Role.
+                When this matches the Role's `metadata.generation` it indicates that Gloo Mesh
+                has processed the latest version of the Role.
               format: int64
               type: integer
           type: object
@@ -547,7 +551,7 @@ spec:
         spec:
           properties:
             roleRef:
-              description: reference to a Gloo Mesh Role
+              description: Specify by reference the Gloo Mesh Role to bind.
               properties:
                 name:
                   description: name of the resource being referenced
@@ -557,7 +561,7 @@ spec:
                   type: string
               type: object
             subjects:
-              description: reference to users or groups to apply the Gloo Mesh Role to
+              description: Specify by reference the Kubernetes Users or Groups the Role should apply to.
               items:
                 properties:
                   apiGroup:

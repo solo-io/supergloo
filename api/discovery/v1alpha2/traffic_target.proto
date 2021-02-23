@@ -107,7 +107,7 @@ message SubLocality {
 message TrafficTargetStatus {
 
     // The most recent generation observed in the the TrafficPolicy metadata.
-    // If the observedGeneration does not match generation, Gloo Mesh has not processed the most
+    // If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
     // recent version of this resource.
     int64 observed_generation = 1;
 
@@ -124,7 +124,7 @@ message TrafficTargetStatus {
     // Federation metadata. Only populated if this TrafficTarget is federated through a VirtualMesh.
     AppliedFederation applied_federation = 6;
 
-    // Represents a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}}) that has been applied to the TrafficTarget.
+    // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}}) that applies to the TrafficTarget.
     // If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
     message AppliedTrafficPolicy {
 
@@ -138,8 +138,8 @@ message TrafficTargetStatus {
         .networking.mesh.gloo.solo.io.TrafficPolicySpec spec = 3;
     }
 
-    // Represents an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy" >}})
-    // that has been applied to this TrafficTarget.
+    // Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy" >}})
+    // that applies to this TrafficTarget.
     // If an existing AccessPolicy becomes invalid, the last valid applied policy will be used.
     message AppliedAccessPolicy {
 
@@ -153,12 +153,12 @@ message TrafficTargetStatus {
         .networking.mesh.gloo.solo.io.AccessPolicySpec spec = 3;
     }
 
-    // Represents the federation configuration applied to this TrafficTarget through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}).
+    // Describes the federation configuration applied to this TrafficTarget through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}).
     // Federation allows access to the TrafficTarget from other meshes/clusters.
     message AppliedFederation {
 
         /*
-            For any Workload that this TrafficTarget has been federated to (i.e., any Workload controlled by a Mesh whose ref appears in `federated_to_meshes`),
+            For any Workload that this TrafficTarget has been federated to (i.e., any Workload controlled by a Mesh whose reference appears in `federated_to_meshes`),
             that Workload will be able to reach this TrafficTarget using this DNS name.
             For Kubernetes TrafficTargets this includes Workloads on clusters other than the one hosting this TrafficTarget.
         */

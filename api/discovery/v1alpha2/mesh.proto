@@ -11,20 +11,30 @@ import "google/protobuf/wrappers.proto";
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
-// Represents a service mesh deployment discovered by Gloo Mesh.
+// Describes a service mesh control plane deployment.
 message MeshSpec {
 
     // TODO(harveyxia) rename to type
-    // Metadata specific to the particular service mesh type represented by this `Mesh`.
+    // Describes platform specific properties of the service mesh.
     oneof mesh_type {
+
+        // Describes an [Istio](https://istio.io/) service mesh.
         Istio istio = 1;
+
+        // Describes an [AWS App Mesh](https://aws.amazon.com/app-mesh/) service mesh.
         AwsAppMesh aws_app_mesh = 2;
+
+        // Describes a [Linkerd](https://linkerd.io/) service mesh.
         LinkerdMesh linkerd = 3;
+
+        // Describes a [Consul Connect](https://www.consul.io/docs/connect) service mesh.
         ConsulConnectMesh consul_connect = 4;
+
+        // Describes an [Open Service Mesh](https://openservicemesh.io/) service mesh.
         OSM osm = 6;
     }
 
-    // Information about the Gloo Mesh agent if it has been installed to the managed cluster.
+    // Describes the Gloo Mesh agent if it has been installed to the managed cluster.
     AgentInfo agent_info = 5;
 
     // Describes an Istio deployment.
@@ -46,13 +56,12 @@ message MeshSpec {
         // Describes Istio Citadel (Istio's security component).
         message CitadelInfo {
 
-            // Istio trust domain used for https/[spiffe](https://spiffe.io/spiffe/concepts/#trust-domain) [identity](https://istio.io/docs/reference/glossary/#identity).
+            // The Istio trust domain used for https/[spiffe](https://spiffe.io/spiffe/concepts/#trust-domain) [identity](https://istio.io/docs/reference/glossary/#identity).
             // If empty will default to ["cluster.local"](https://github.com/istio/istio/blob/e768f408a7de224e64ccdfb2634442541ce08e6a/pilot/cmd/pilot-agent/main.go#L118).
             string trust_domain = 1;
 
             // TODO(harveyxia) rename to istiod_service_account
-            // istio-citadel service account, used to determine identity for the Istio CA cert.
-            // If empty will default to "istio-citadel".
+            // The istiod service account which determines identity for the Istio CA cert.
             string citadel_service_account = 2;
         }
 
@@ -83,7 +92,7 @@ message MeshSpec {
     // Describes an AWS App Mesh instance.
     message AwsAppMesh {
 
-        // AWS name for the App Mesh instance, must be unique across all AppMesh instances owned by the AWS account.
+        // The AWS name for the App Mesh instance, must be unique across all AppMesh instances owned by the AWS account.
         string aws_name = 1;
 
         // The AWS region the App Mesh control plane resources exist in.
@@ -174,14 +183,14 @@ message MeshStatus {
     // The VirtualMesh, if any, which contains this mesh.
     AppliedVirtualMesh applied_virtual_mesh = 2;
 
-    // The FailoverServices, if any, which applies to this mesh.
+    // The FailoverServices, if any, which apply to this mesh.
     repeated AppliedFailoverService applied_failover_services = 3;
 
-    // The FailoverServices, if any, which applies to this mesh.
+    // The VirtualDestinations, if any, which apply to this mesh.
     repeated AppliedVirtualDestination applied_virtual_destinations = 4;
 
-    // AppliedVirtualMesh represents a VirtualMesh that has been applied to this Mesh.
-    // If an existing VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
+    // Describes a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}) that applies to this Mesh.
+    // If an existing applied VirtualMesh becomes invalid, the last applied VirtualMesh will be used.
     message AppliedVirtualMesh {
 
         // Reference to the applied VirtualMesh object.
@@ -190,12 +199,12 @@ message MeshStatus {
         // The observed generation of the accepted VirtualMesh.
         int64 observedGeneration = 2;
 
-        // The last known valid spec of the VirtualMesh.
+        // The spec of the last known valid VirtualMesh.
         .networking.mesh.gloo.solo.io.VirtualMeshSpec spec = 3;
     }
 
     // TODO(harveyxia) remove
-    // AppliedFailoverService represents a FailoverService that has been applied to this Mesh.
+    // AppliedFailoverService describes a FailoverService that applies to this Mesh.
     // If an existing FailoverService becomes invalid the last applied FailoverService will be used.
     message AppliedFailoverService {
 
@@ -209,7 +218,7 @@ message MeshStatus {
         .networking.mesh.gloo.solo.io.FailoverServiceSpec spec = 3;
     }
 
-    // AppliedVirtualDestination represents a VirtualDestination that has been applied to this Mesh.
+    // Describes a [VirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination.md" >}}) that applies to this Mesh.
     message AppliedVirtualDestination {
 
         // Reference to the applied VirtualDestination object.
@@ -218,7 +227,7 @@ message MeshStatus {
         // The observed generation of the accepted VirtualDestination.
         int64 observedGeneration = 2;
 
-        // Any errors encountered while processing the referenced VirtualDestination object.
+        // Any errors encountered while processing the VirtualDestination.
         repeated string errors = 3;
     }
 }

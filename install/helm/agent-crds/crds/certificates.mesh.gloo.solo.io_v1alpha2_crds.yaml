@@ -65,7 +65,7 @@ spec:
               type: string
             podBounceDirective:
               description: |-
-                A ref to a PodBounceDirective specifying a list of Kubernetes pods to bounce
+                A reference to a PodBounceDirective specifying a list of Kubernetes pods to bounce
                 (delete and cause a restart) when the certificate is issued.
 
                 Istio-controlled pods require restarting in order for Envoy proxies to pick up the newly issued certificate
@@ -103,7 +103,7 @@ spec:
             observedGeneration:
               description: |-
                 The most recent generation observed in the the IssuedCertificate metadata.
-                If the observedGeneration does not match generation, the Gloo Mesh agent has not processed the most
+                If the `observedGeneration` does not match `metadata.generation`, the Gloo Mesh agent has not processed the most
                 recent version of this IssuedCertificate.
               format: int64
               type: integer
@@ -176,7 +176,7 @@ spec:
             observedGeneration:
               description: |-
                 The most recent generation observed in the the CertificateRequest metadata.
-                If the observedGeneration does not match generation, the issuer has not processed the most
+                If the `observedGeneration` does not match `metadata.generation`, the issuer has not processed the most
                 recent version of this request.
               format: int64
               type: integer

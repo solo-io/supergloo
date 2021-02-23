@@ -271,7 +271,7 @@ a proto-serializable representation of a Workload object
 <a name="extensions.networking.mesh.gloo.solo.io.NetworkingExtensions"></a>
 
 ### NetworkingExtensions
-NetworkingExtensions provides customizeable patches to Gloo Mesh-generated configuration. Gloo Mesh uses a NetworkingExtensions client to request optional patches from a pluggable NetworkingExtensions server. The server can return a set of patches which Gloo Mesh will apply before writing configuration to the cluster.
+NetworkingExtensions provides customizable patches to Gloo Mesh-generated configuration. Gloo Mesh uses a NetworkingExtensions client to request optional patches from a pluggable NetworkingExtensions server. The server can return a set of patches which Gloo Mesh will apply before writing configuration to the cluster.
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|

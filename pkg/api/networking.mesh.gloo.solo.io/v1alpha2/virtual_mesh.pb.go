@@ -30,18 +30,16 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-//
-//If ENABLED, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies.
-//If DISABLED, by default allow traffic to all Services in the VirtualMesh.
-//If MESH_DEFAULT, the default value depends on the type service mesh:
-//Istio: false
-//Appmesh: true
+// Specify a global access policy for all Workloads and TrafficTargets associated with this VirtualMesh.
 type VirtualMeshSpec_GlobalAccessPolicy int32
 
 const (
+	// Assume the default for the service mesh type. Istio defaults to `false`, App Mesh defaults to `true`.
 	VirtualMeshSpec_MESH_DEFAULT VirtualMeshSpec_GlobalAccessPolicy = 0
-	VirtualMeshSpec_ENABLED      VirtualMeshSpec_GlobalAccessPolicy = 1
-	VirtualMeshSpec_DISABLED     VirtualMeshSpec_GlobalAccessPolicy = 2
+	// Disallow traffic to all TrafficTargets in the VirtualMesh unless explicitly allowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}).
+	VirtualMeshSpec_ENABLED VirtualMeshSpec_GlobalAccessPolicy = 1
+	// Allow traffic to all TrafficTargets in the VirtualMesh unless explicitly disallowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}).
+	VirtualMeshSpec_DISABLED VirtualMeshSpec_GlobalAccessPolicy = 2
 )
 
 // Enum value maps for VirtualMeshSpec_GlobalAccessPolicy.
@@ -85,27 +83,19 @@ func (VirtualMeshSpec_GlobalAccessPolicy) EnumDescriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_networking_v1alpha2_virtual_mesh_proto_rawDescGZIP(), []int{0, 0}
 }
 
-//
-//A VirtualMesh represents a logical grouping of meshes for
-//shared configuration and cross-mesh interoperability.
-//
-//VirtualMeshes are used to configure things like shared trust roots (for mTLS)
-//and federation of TrafficTargets (for cross-cluster networking).
-//
-//Currently, VirtualMeshes can only be constructed from Istio meshes.
+// Represents a logical grouping of Meshes for shared configuration and cross-mesh interoperability.
 type VirtualMeshSpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The meshes contained in this virtual mesh.
+	// Specify the Meshes configured by this VirtualMesh.
 	Meshes []*v1.ObjectRef `protobuf:"bytes,1,rep,name=meshes,proto3" json:"meshes,omitempty"`
-	// Configuration options for managing Mutual-TLS mTLS in a virtual mesh.Sets
-	// a shared Certificate Authority across the defined meshes.
+	// Specify mTLS options.
 	MtlsConfig *VirtualMeshSpec_MTLSConfig `protobuf:"bytes,2,opt,name=mtls_config,json=mtlsConfig,proto3" json:"mtls_config,omitempty"`
-	// Determine how to expose TrafficTargets to cross-mesh traffic using Service Federation.
+	// Specify how to federate TrafficTargets across service mesh boundaries.
 	Federation *VirtualMeshSpec_Federation `protobuf:"bytes,3,opt,name=federation,proto3" json:"federation,omitempty"`
-	// Sets an AccessPolicy for the whole mesh.
+	// Specify a global access policy for all Workloads and TrafficTargets associated with this VirtualMesh.
 	GlobalAccessPolicy VirtualMeshSpec_GlobalAccessPolicy `protobuf:"varint,4,opt,name=global_access_policy,json=globalAccessPolicy,proto3,enum=networking.mesh.gloo.solo.io.VirtualMeshSpec_GlobalAccessPolicy" json:"global_access_policy,omitempty"`
 }
 
@@ -175,11 +165,11 @@ type VirtualMeshStatus struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The most recent generation observed in the the VirtualMesh metadata.
-	// If the observedGeneration does not match generation, the controller has not received the most
+	// If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
 	// recent version of this resource.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 	// The state of the overall resource. It will only show accepted if it has been successfully
-	// applied to all target meshes.
+	// applied to all selected Meshes.
 	State ApprovalState `protobuf:"varint,2,opt,name=state,proto3,enum=networking.mesh.gloo.solo.io.ApprovalState" json:"state,omitempty"`
 	// Any errors found while processing this generation of the resource.
 	Errors []string `protobuf:"bytes,3,rep,name=errors,proto3" json:"errors,omitempty"`
@@ -248,24 +238,24 @@ func (x *VirtualMeshStatus) GetMeshes() map[string]*ApprovalStatus {
 	return nil
 }
 
-// Mutual TLS Config for a Virtual Mesh.
-// This includes options for configuring Mutual TLS within an indvidual mesh, as
+// Specify mTLS options.
+// This includes options for configuring Mutual TLS within an individual mesh, as
 // well as enabling mTLS across Meshes by establishing cross-mesh trust.
 type VirtualMeshSpec_MTLSConfig struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Select a trust model in order to establish trust between mTLS-secured meshes.
+	// Specify the model for establishing mTLS trust between Meshes.
 	//
 	// Types that are assignable to TrustModel:
 	//	*VirtualMeshSpec_MTLSConfig_Shared
 	//	*VirtualMeshSpec_MTLSConfig_Limited
 	TrustModel isVirtualMeshSpec_MTLSConfig_TrustModel `protobuf_oneof:"trust_model"`
-	// Allow Gloo Mesh to restart mesh pods when certificates are rotated.
+	// Specify whether to allow Gloo Mesh to restart Kubernetes Pods when certificates are rotated when establishing shared trust.
 	// If this option is not explicitly enabled,
-	// users must restart the pods manually for the new certificates to be picked up.
-	// `meshctl` provides the command `meshctl mesh restart` to simplify this process.
+	// users must restart Pods manually for the new certificates to be picked up.
+	// `meshctl` provides the command `meshctl mesh restart` to simplify this process, see [here]({{< versioned_link_path fromRoot="reference/cli/meshctl_mesh_restart/" >}}) for more info.
 	AutoRestartPods bool `protobuf:"varint,3,opt,name=auto_restart_pods,json=autoRestartPods,proto3" json:"auto_restart_pods,omitempty"`
 }
 
@@ -334,12 +324,12 @@ type isVirtualMeshSpec_MTLSConfig_TrustModel interface {
 }
 
 type VirtualMeshSpec_MTLSConfig_Shared struct {
-	// Shared trust (allow communication between any workloads and TrafficTargets in the grouped Meshes).
+	// Shared trust (allow communication between any pair of Workloads and TrafficTargets in the grouped Meshes).
 	Shared *VirtualMeshSpec_MTLSConfig_SharedTrust `protobuf:"bytes,1,opt,name=shared,proto3,oneof"`
 }
 
 type VirtualMeshSpec_MTLSConfig_Limited struct {
-	// Limited trust (selectively allow communication between workloads and TrafficTargets in the grouped Meshes).
+	// Limited trust (selectively allow communication between Workloads and TrafficTargets in the grouped Meshes). *Currently not available.*
 	Limited *VirtualMeshSpec_MTLSConfig_LimitedTrust `protobuf:"bytes,2,opt,name=limited,proto3,oneof"`
 }
 
@@ -347,14 +337,13 @@ func (*VirtualMeshSpec_MTLSConfig_Shared) isVirtualMeshSpec_MTLSConfig_TrustMode
 
 func (*VirtualMeshSpec_MTLSConfig_Limited) isVirtualMeshSpec_MTLSConfig_TrustModel() {}
 
-// RootCertificateAuthority defines parameters for configuring the
-// root CA for a Virtual Mesh.
+// Specify parameters for configuring the root certificate authority for a VirtualMesh.
 type VirtualMeshSpec_RootCertificateAuthority struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Select a source for the Root CA data which Gloo Mesh will use for the Virtual Mesh.
+	// Specify the source of the Root CA data which Gloo Mesh will use for the VirtualMesh.
 	//
 	// Types that are assignable to CaSource:
 	//	*VirtualMeshSpec_RootCertificateAuthority_Generated
@@ -425,8 +414,8 @@ type VirtualMeshSpec_RootCertificateAuthority_Generated struct {
 }
 
 type VirtualMeshSpec_RootCertificateAuthority_Secret struct {
-	// Use a root certificate provided in a Kubernetes Secret.
-	// [Secrets provided in this way must follow a specified format, documented here.]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}})
+	// Reference to a Kubernetes Secret containing the root certificate authority.
+	// Provided secrets must conform to a specified format, [documented here]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}).
 	Secret *v1.ObjectRef `protobuf:"bytes,2,opt,name=secret,proto3,oneof"`
 }
 
@@ -436,27 +425,24 @@ func (*VirtualMeshSpec_RootCertificateAuthority_Generated) isVirtualMeshSpec_Roo
 func (*VirtualMeshSpec_RootCertificateAuthority_Secret) isVirtualMeshSpec_RootCertificateAuthority_CaSource() {
 }
 
-// In Gloo Mesh, "federation" refers to the ability
-// to expose TrafficTargets with a global DNS name
-// for traffic originating from any workload within the
-// virtual mesh.
+// "Federation" refers to the ability to expose TrafficTargets across service mesh boundaries, i.e. to traffic
+// originating from Workloads external to the TrafficTarget's Mesh.
 type VirtualMeshSpec_Federation struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The "mode" in which to federate TrafficTargets within this virtual mesh.
+	// The "mode" in which to federate TrafficTargets within this VirtualMesh.
 	//
 	// Types that are assignable to Mode:
 	//	*VirtualMeshSpec_Federation_Permissive
 	Mode isVirtualMeshSpec_Federation_Mode `protobuf_oneof:"mode"`
-	// If true, all multicluster traffic will be routed directly to the service endpoints of the traffic targets,
-	// rather than through an ingress gateway.
-	// NOTE: This feature will not work if the clusters are not pre-configured to live on the same network.
+	// If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the TrafficTargets,
+	// rather than through an ingress gateway. This mode requires a flat network environment.
 	FlatNetwork bool `protobuf:"varint,2,opt,name=flat_network,json=flatNetwork,proto3" json:"flat_network,omitempty"`
-	// Configure the suffix for hostnames of TrafficTargets federated within this virtual mesh.
-	// Currently this is only supported for Istio with smart DNS proxying enabled.
-	// If any meshes do not have smart DNS proxying enabled, setting this field results in an error.
+	// Configure the suffix for hostnames of TrafficTargets federated within this VirtualMesh.
+	// Currently this is only supported for Istio with [smart DNS proxying enabled](https://istio.io/latest/blog/2020/dns-proxy/),
+	// otherwise setting this field results in an error.
 	// If omitted, the hostname suffix defaults to "global".
 	HostnameSuffix string `protobuf:"bytes,3,opt,name=hostname_suffix,json=hostnameSuffix,proto3" json:"hostname_suffix,omitempty"`
 }
@@ -526,29 +512,21 @@ type isVirtualMeshSpec_Federation_Mode interface {
 }
 
 type VirtualMeshSpec_Federation_Permissive struct {
-	// Select permissive mode to expose all TrafficTargets in a
-	// VirtualMesh to cross-cluster traffic from all workloads
-	// in that Virtual Mesh.
+	// Expose all TrafficTargets to all Workloads in this VirtualMesh.
 	Permissive *empty.Empty `protobuf:"bytes,1,opt,name=permissive,proto3,oneof"`
 }
 
 func (*VirtualMeshSpec_Federation_Permissive) isVirtualMeshSpec_Federation_Mode() {}
 
-//
-//Shared trust is a virtual mesh trust model requiring a shared root certificate, as well as shared identity
-//between all entities which wish to communicate within the virtual mesh.
-//
-//The best current example of this would be the replicated control planes example from Istio:
-//https://preliminary.istio.io/docs/setup/install/multicluster/gateways/
+// Shared trust is a trust model requiring a common root certificate shared between trusting Meshes, as well as shared identity
+// between all Workloads and TrafficTargets which wish to communicate within the VirtualMesh.
 type VirtualMeshSpec_MTLSConfig_SharedTrust struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Configure a Root Certificate Authority which will be shared by the
-	// members of the virtual mesh.
-	// If this is not provided, a self-signed certificate will be used
-	// by Gloo Mesh to establish shared trust for the purposes of failover and federation.
+	// Configure a Root Certificate Authority which will be shared by all Meshes associated with this VirtualMesh.
+	// If this is not provided, a self-signed certificate will be generated by Gloo Mesh.
 	RootCertificateAuthority *VirtualMeshSpec_RootCertificateAuthority `protobuf:"bytes,1,opt,name=root_certificate_authority,json=rootCertificateAuthority,proto3" json:"root_certificate_authority,omitempty"`
 }
 
@@ -591,17 +569,16 @@ func (x *VirtualMeshSpec_MTLSConfig_SharedTrust) GetRootCertificateAuthority() *
 	return nil
 }
 
-//
-//Limited trust is a virtual mesh trust model which does not require all meshes sharing the same root certificate
-//or identity model. But rather, the limited trust creates trust between meshes running on different clusters
-//by connecting their ingress/egress gateways with a common cert/identity. In this model all requests
-//between different have the following request path when communicating between clusters
-//
-//cluster 1 MTLS               shared MTLS                  cluster 2 MTLS
-//client/workload <-----------> egress gateway <----------> ingress gateway <--------------> server
-//
-//This approach has the downside of not maintaining identity from client to server, but allows for ad-hoc
-//addition of additional clusters into a virtual mesh.
+// Limited trust is a trust model which does not require trusting Meshes to share the same root certificate
+// or identity. Instead, trust is established between different Meshes
+// by connecting their ingress/egress gateways with a common certificate/identity. In this model all requests
+// between different have the following request path when communicating between clusters
+// ```
+//                cluster 1 MTLS               shared MTLS                  cluster 2 MTLS
+// client/workload <-----------> egress gateway <----------> ingress gateway <--------------> server
+// ```
+// This approach has the downside of not maintaining identity from client to server, but allows for ad-hoc
+// addition of additional Meshes into a VirtualMesh.
 type VirtualMeshSpec_MTLSConfig_LimitedTrust struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -640,9 +617,8 @@ func (*VirtualMeshSpec_MTLSConfig_LimitedTrust) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_networking_v1alpha2_virtual_mesh_proto_rawDescGZIP(), []int{0, 0, 1}
 }
 
-//
-//Configuration for generating a self-signed root certificate.
-//Uses the X.509 format, RFC5280.
+// Configuration for generating a self-signed root certificate.
+// Uses the X.509 format, RFC5280.
 type VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

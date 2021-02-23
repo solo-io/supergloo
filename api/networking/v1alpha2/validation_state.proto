@@ -10,16 +10,15 @@ option (extproto.equal_all) = true;
 // The approval status of a policy that has been applied to a discovery resource.
 message ApprovalStatus {
 
-    // AcceptanceOrder represents the order in which the Policy
+    // Represents the order in which the policy
     // was accepted and applied to a discovery resource. The first accepted policy
     // will have an acceptance_order of 0, the second 1, etc.
     // When conflicts are detected in the system,
     // the Policy with the lowest acceptance_order
-    // will be chosen (and all other conflicting policies will be rejected).
+    // will be chosen and all other conflicting policies will be rejected.
     uint32 acceptance_order = 1;
 
-    // The result of attempting to apply the policy to the discovery resource,
-    // reported by the Policy controller (mesh-networking).
+    // The result of attempting to apply the policy to the discovery resource.
     ApprovalState state = 2;
 
     // Any errors observed which prevented the resource from being Accepted.
@@ -29,6 +28,7 @@ message ApprovalStatus {
 
 // State of a Policy resource reflected in the status by Gloo Mesh while processing a resource.
 enum ApprovalState {
+    
     // Resources are in a Pending state before they have been processed by Gloo Mesh.
     PENDING = 0;
 

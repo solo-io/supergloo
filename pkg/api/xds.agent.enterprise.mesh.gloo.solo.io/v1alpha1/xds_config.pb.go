@@ -30,10 +30,10 @@ const (
 const _ = proto.ProtoPackageIsVersion4
 
 //
-//XdsConfigs are used to issue XDS Configuration Resources to running Envoy instances.
+//XdsConfigs are used to issue xDS Configuration Resources to running Envoy instances.
 //They are created by Gloo Mesh for processing by an agent running on managed clusters.
 //
-//The agent will serve the specified XDS configuration resources on its grpc-xds port (default 9977)
+//The agent will serve the specified xDS configuration resources on its grpc-xds port (default 9977)
 //to the Envoy instances (nodes) defined in the XDSConfigSpec.
 //
 //This feature is currently only available in Gloo Mesh Enterprise.
@@ -42,11 +42,10 @@ type XdsConfigSpec struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//
-	//The Workloads that will receive this XDS Configuration.
+	// The Workloads that will receive this xDS Configuration.
 	Workloads []*v1.ObjectRef `protobuf:"bytes,1,rep,name=workloads,proto3" json:"workloads,omitempty"`
-	// the xDS resources to serve to the nodes.
-	// mapped by type URL.
+	// The xDS resources to serve to the nodes.
+	// Mapped by type URL.
 	Types []*XdsConfigSpec_TypedResources `protobuf:"bytes,2,rep,name=types,proto3" json:"types,omitempty"`
 }
 
@@ -103,10 +102,10 @@ type XdsConfigStatus struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The most recent generation observed in the the XdsConfig metadata.
-	// If the observedGeneration does not match generation, the XDS Agent has not processed the most
+	// If the `observedGeneration` does not match `metadata.generation`, the Gloo Mesh agent has not processed the most
 	// recent version of this XdsConfig.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
-	// Any error observed which prevented the CertificateRequest from being processed.
+	// Any error observed which prevented the XdsConfig from being processed.
 	// If the error is empty, the request has been processed successfully.
 	Error string `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 }
@@ -157,15 +156,15 @@ func (x *XdsConfigStatus) GetError() string {
 	return ""
 }
 
-// a set of resources of a single type (typeURL)
+// A set of resources of a single type (typeURL).
 type XdsConfigSpec_TypedResources struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// the type URL of the resources in the given set
+	// The type URL of the resources in the given set.
 	TypeUrl string `protobuf:"bytes,1,opt,name=type_url,json=typeUrl,proto3" json:"type_url,omitempty"`
-	// stored as compressed, base-64 encoded raw bytes.
+	// Stored as compressed, base-64 encoded raw bytes.
 	Resources []*XdsConfigSpec_Resource `protobuf:"bytes,2,rep,name=resources,proto3" json:"resources,omitempty"`
 }
 
@@ -215,15 +214,15 @@ func (x *XdsConfigSpec_TypedResources) GetResources() []*XdsConfigSpec_Resource 
 	return nil
 }
 
-// a single named resource
+// A single named resource.
 type XdsConfigSpec_Resource struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// name of the resource, as referenced by xDS
+	// Name of the resource as referenced by xDS.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// stored as compressed, base-64 encoded raw bytes.
+	// Stored as compressed, base-64 encoded raw bytes.
 	CompressedData []byte `protobuf:"bytes,2,opt,name=compressed_data,json=compressedData,proto3" json:"compressed_data,omitempty"`
 }
 

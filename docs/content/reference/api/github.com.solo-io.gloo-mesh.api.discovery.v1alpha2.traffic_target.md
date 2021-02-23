@@ -231,7 +231,7 @@ Subsets for routing, based on labels.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| observedGeneration | int64 |  | The most recent generation observed in the the TrafficPolicy metadata. If the observedGeneration does not match generation, Gloo Mesh has not processed the most recent version of this resource. |
+| observedGeneration | int64 |  | The most recent generation observed in the the TrafficPolicy metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
   | appliedTrafficPolicies | [][discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedTrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedTrafficPolicy" >}}) | repeated | The set of TrafficPolicies that have been applied to this TrafficTarget. |
   | appliedAccessPolicies | [][discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedAccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1alpha2.traffic_target#discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedAccessPolicy" >}}) | repeated | The set of AccessPolicies that have been applied to this TrafficTarget. |
   | localFqdn | string |  | The fully qualified domain name for requests originating from a source *coloated* with this TrafficTarget. For Kubernetes services, "colocated" means within the same Kubernetes cluster. |
@@ -245,7 +245,7 @@ Subsets for routing, based on labels.
 <a name="discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedAccessPolicy"></a>
 
 ### TrafficTargetStatus.AppliedAccessPolicy
-Represents an AccessPolicy that has been applied to this TrafficTarget. If an existing AccessPolicy becomes invalid, the last valid applied policy will be used.
+Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy" >}}) that applies to this TrafficTarget. If an existing AccessPolicy becomes invalid, the last valid applied policy will be used.
 
 
 | Field | Type | Label | Description |
@@ -262,14 +262,14 @@ Represents an AccessPolicy that has been applied to this TrafficTarget. If an ex
 <a name="discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedFederation"></a>
 
 ### TrafficTargetStatus.AppliedFederation
-Represents the federation configuration applied to this TrafficTarget through a VirtualMesh. Federation allows access to the TrafficTarget from other meshes/clusters.
+Describes the federation configuration applied to this TrafficTarget through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}). Federation allows access to the TrafficTarget from other meshes/clusters.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| federatedHostname | string |  | For any Workload that this TrafficTarget has been federated to (i.e., any Workload controlled by a Mesh whose ref appears in `federated_to_meshes`), that Workload will be able to reach this TrafficTarget using this DNS name. For Kubernetes TrafficTargets this includes Workloads on clusters other than the one hosting this TrafficTarget. |
+| federatedHostname | string |  | For any Workload that this TrafficTarget has been federated to (i.e., any Workload controlled by a Mesh whose reference appears in `federated_to_meshes`), that Workload will be able to reach this TrafficTarget using this DNS name. For Kubernetes TrafficTargets this includes Workloads on clusters other than the one hosting this TrafficTarget. |
   | federatedToMeshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The list of Meshes which are able to resolve this TrafficTargets's `multicluster_dns_name`. |
-  | flatNetwork | bool |  | Whether or not the TrafficTarget has been federated to the given meshes using a VirtualMesh where [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})) is true. |
+  | flatNetwork | bool |  | Whether or not the TrafficTarget has been federated to the given meshes using a VirtualMesh where [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}}) is true. |
   
 
 
@@ -279,7 +279,7 @@ Represents the federation configuration applied to this TrafficTarget through a 
 <a name="discovery.mesh.gloo.solo.io.TrafficTargetStatus.AppliedTrafficPolicy"></a>
 
 ### TrafficTargetStatus.AppliedTrafficPolicy
-Represents a TrafficPolicy that has been applied to the TrafficTarget. If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
+Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}}) that applies to the TrafficTarget. If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
 
 
 | Field | Type | Label | Description |

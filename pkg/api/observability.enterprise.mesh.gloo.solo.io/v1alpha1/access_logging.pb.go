@@ -98,7 +98,7 @@ type AccessLogRecordStatus struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The most recent generation observed in the the AccessLogRecord metadata.
-	// If the observedGeneration does not match generation, the controller has not processed the most
+	// If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
 	// recent version of this resource.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 	// The state of the overall resource, will only show accepted if it has been successfully
@@ -176,6 +176,7 @@ type AccessLogRecordSpec_Filter struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// TODO make oneof, https://github.com/solo-io/gloo-mesh-enterprise/issues/167
 	// Matches against a response status code. Omit to match any status code.
 	StatusCodeMatcher *v1alpha2.StatusCodeMatcher `protobuf:"bytes,1,opt,name=status_code_matcher,json=statusCodeMatcher,proto3" json:"status_code_matcher,omitempty"`
 	// Matches against a request or response header. Omit to match any headers.

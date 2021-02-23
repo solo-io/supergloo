@@ -38,15 +38,15 @@ title: "virtual_mesh.proto"
 <a name="networking.mesh.gloo.solo.io.VirtualMeshSpec"></a>
 
 ### VirtualMeshSpec
-A VirtualMesh represents a logical grouping of meshes for shared configuration and cross-mesh interoperability.<br>VirtualMeshes are used to configure things like shared trust roots (for mTLS) and federation of TrafficTargets (for cross-cluster networking).<br>Currently, VirtualMeshes can only be constructed from Istio meshes.
+Represents a logical grouping of Meshes for shared configuration and cross-mesh interoperability.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| meshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The meshes contained in this virtual mesh. |
-  | mtlsConfig | [networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig" >}}) |  | Configuration options for managing Mutual-TLS mTLS in a virtual mesh.Sets a shared Certificate Authority across the defined meshes. |
-  | federation | [networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation" >}}) |  | Determine how to expose TrafficTargets to cross-mesh traffic using Service Federation. |
-  | globalAccessPolicy | [networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy" >}}) |  | Sets an AccessPolicy for the whole mesh. |
+| meshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | Specify the Meshes configured by this VirtualMesh. |
+  | mtlsConfig | [networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig" >}}) |  | Specify mTLS options. |
+  | federation | [networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation" >}}) |  | Specify how to federate TrafficTargets across service mesh boundaries. |
+  | globalAccessPolicy | [networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy" >}}) |  | Specify a global access policy for all Workloads and TrafficTargets associated with this VirtualMesh. |
   
 
 
@@ -56,14 +56,14 @@ A VirtualMesh represents a logical grouping of meshes for shared configuration a
 <a name="networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation"></a>
 
 ### VirtualMeshSpec.Federation
-In Gloo Mesh, "federation" refers to the ability to expose TrafficTargets with a global DNS name for traffic originating from any workload within the virtual mesh.
+"Federation" refers to the ability to expose TrafficTargets across service mesh boundaries, i.e. to traffic originating from Workloads external to the TrafficTarget's Mesh.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| permissive | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  | Select permissive mode to expose all TrafficTargets in a VirtualMesh to cross-cluster traffic from all workloads in that Virtual Mesh. |
-  | flatNetwork | bool |  | If true, all multicluster traffic will be routed directly to the service endpoints of the traffic targets, rather than through an ingress gateway. NOTE: This feature will not work if the clusters are not pre-configured to live on the same network. |
-  | hostnameSuffix | string |  | Configure the suffix for hostnames of TrafficTargets federated within this virtual mesh. Currently this is only supported for Istio with smart DNS proxying enabled. If any meshes do not have smart DNS proxying enabled, setting this field results in an error. If omitted, the hostname suffix defaults to "global". |
+| permissive | [google.protobuf.Empty]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.protoc-gen-ext.external.google.protobuf.empty#google.protobuf.Empty" >}}) |  | Expose all TrafficTargets to all Workloads in this VirtualMesh. |
+  | flatNetwork | bool |  | If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the TrafficTargets, rather than through an ingress gateway. This mode requires a flat network environment. |
+  | hostnameSuffix | string |  | Configure the suffix for hostnames of TrafficTargets federated within this VirtualMesh. Currently this is only supported for Istio with [smart DNS proxying enabled](https://istio.io/latest/blog/2020/dns-proxy/), otherwise setting this field results in an error. If omitted, the hostname suffix defaults to "global". |
   
 
 
@@ -73,14 +73,14 @@ In Gloo Mesh, "federation" refers to the ability to expose TrafficTargets with a
 <a name="networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig"></a>
 
 ### VirtualMeshSpec.MTLSConfig
-Mutual TLS Config for a Virtual Mesh. This includes options for configuring Mutual TLS within an indvidual mesh, as well as enabling mTLS across Meshes by establishing cross-mesh trust.
+Specify mTLS options. This includes options for configuring Mutual TLS within an individual mesh, as well as enabling mTLS across Meshes by establishing cross-mesh trust.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| shared | [networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust" >}}) |  | Shared trust (allow communication between any workloads and TrafficTargets in the grouped Meshes). |
-  | limited | [networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust" >}}) |  | Limited trust (selectively allow communication between workloads and TrafficTargets in the grouped Meshes). |
-  | autoRestartPods | bool |  | Allow Gloo Mesh to restart mesh pods when certificates are rotated. If this option is not explicitly enabled, users must restart the pods manually for the new certificates to be picked up. `meshctl` provides the command `meshctl mesh restart` to simplify this process. |
+| shared | [networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust" >}}) |  | Shared trust (allow communication between any pair of Workloads and TrafficTargets in the grouped Meshes). |
+  | limited | [networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust" >}}) |  | Limited trust (selectively allow communication between Workloads and TrafficTargets in the grouped Meshes). *Currently not available.* |
+  | autoRestartPods | bool |  | Specify whether to allow Gloo Mesh to restart Kubernetes Pods when certificates are rotated when establishing shared trust. If this option is not explicitly enabled, users must restart Pods manually for the new certificates to be picked up. `meshctl` provides the command `meshctl mesh restart` to simplify this process, see [here]({{< versioned_link_path fromRoot="reference/cli/meshctl_mesh_restart/" >}}) for more info. |
   
 
 
@@ -90,7 +90,7 @@ Mutual TLS Config for a Virtual Mesh. This includes options for configuring Mutu
 <a name="networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.LimitedTrust"></a>
 
 ### VirtualMeshSpec.MTLSConfig.LimitedTrust
-Limited trust is a virtual mesh trust model which does not require all meshes sharing the same root certificate or identity model. But rather, the limited trust creates trust between meshes running on different clusters by connecting their ingress/egress gateways with a common cert/identity. In this model all requests between different have the following request path when communicating between clusters<br>cluster 1 MTLS               shared MTLS                  cluster 2 MTLS client/workload <-----------> egress gateway <----------> ingress gateway <--------------> server<br>This approach has the downside of not maintaining identity from client to server, but allows for ad-hoc addition of additional clusters into a virtual mesh.
+Limited trust is a trust model which does not require trusting Meshes to share the same root certificate or identity. Instead, trust is established between different Meshes by connecting their ingress/egress gateways with a common certificate/identity. In this model all requests between different have the following request path when communicating between clusters ```                cluster 1 MTLS               shared MTLS                  cluster 2 MTLS client/workload <-----------> egress gateway <----------> ingress gateway <--------------> server ``` This approach has the downside of not maintaining identity from client to server, but allows for ad-hoc addition of additional Meshes into a VirtualMesh.
 
 
 
@@ -100,12 +100,12 @@ Limited trust is a virtual mesh trust model which does not require all meshes sh
 <a name="networking.mesh.gloo.solo.io.VirtualMeshSpec.MTLSConfig.SharedTrust"></a>
 
 ### VirtualMeshSpec.MTLSConfig.SharedTrust
-Shared trust is a virtual mesh trust model requiring a shared root certificate, as well as shared identity between all entities which wish to communicate within the virtual mesh.<br>The best current example of this would be the replicated control planes example from Istio: https://preliminary.istio.io/docs/setup/install/multicluster/gateways/
+Shared trust is a trust model requiring a common root certificate shared between trusting Meshes, as well as shared identity between all Workloads and TrafficTargets which wish to communicate within the VirtualMesh.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| rootCertificateAuthority | [networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority" >}}) |  | Configure a Root Certificate Authority which will be shared by the members of the virtual mesh. If this is not provided, a self-signed certificate will be used by Gloo Mesh to establish shared trust for the purposes of failover and federation. |
+| rootCertificateAuthority | [networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority" >}}) |  | Configure a Root Certificate Authority which will be shared by all Meshes associated with this VirtualMesh. If this is not provided, a self-signed certificate will be generated by Gloo Mesh. |
   
 
 
@@ -115,13 +115,13 @@ Shared trust is a virtual mesh trust model requiring a shared root certificate, 
 <a name="networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority"></a>
 
 ### VirtualMeshSpec.RootCertificateAuthority
-RootCertificateAuthority defines parameters for configuring the root CA for a Virtual Mesh.
+Specify parameters for configuring the root certificate authority for a VirtualMesh.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | generated | [networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority.SelfSignedCert]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority.SelfSignedCert" >}}) |  | Generate a self-signed root certificate with the given options. |
-  | secret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Use a root certificate provided in a Kubernetes Secret. [Secrets provided in this way must follow a specified format, documented here.]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}) |
+  | secret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to a Kubernetes Secret containing the root certificate authority. Provided secrets must conform to a specified format, [documented here]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}). |
   
 
 
@@ -153,8 +153,8 @@ Configuration for generating a self-signed root certificate. Uses the X.509 form
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| observedGeneration | int64 |  | The most recent generation observed in the the VirtualMesh metadata. If the observedGeneration does not match generation, the controller has not received the most recent version of this resource. |
-  | state | [networking.mesh.gloo.solo.io.ApprovalState]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state#networking.mesh.gloo.solo.io.ApprovalState" >}}) |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all target meshes. |
+| observedGeneration | int64 |  | The most recent generation observed in the the VirtualMesh metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
+  | state | [networking.mesh.gloo.solo.io.ApprovalState]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.validation_state#networking.mesh.gloo.solo.io.ApprovalState" >}}) |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all selected Meshes. |
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
   | meshes | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry" >}}) | repeated | The status of the VirtualMesh for each Mesh to which it has been applied. A VirtualMesh may be Accepted for some Meshes and rejected for others. |
   
@@ -184,13 +184,13 @@ Configuration for generating a self-signed root certificate. Uses the X.509 form
 <a name="networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy"></a>
 
 ### VirtualMeshSpec.GlobalAccessPolicy
-If ENABLED, by default disallow traffic to all Services in the VirtualMesh unless explicitly allowed through AccessControlPolicies. If DISABLED, by default allow traffic to all Services in the VirtualMesh. If MESH_DEFAULT, the default value depends on the type service mesh: Istio: false Appmesh: true
+Specify a global access policy for all Workloads and TrafficTargets associated with this VirtualMesh.
 
 | Name | Number | Description |
 | ---- | ------ | ----------- |
-| MESH_DEFAULT | 0 |  |
-| ENABLED | 1 |  |
-| DISABLED | 2 |  |
+| MESH_DEFAULT | 0 | Assume the default for the service mesh type. Istio defaults to `false`, App Mesh defaults to `true`. |
+| ENABLED | 1 | Disallow traffic to all TrafficTargets in the VirtualMesh unless explicitly allowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}). |
+| DISABLED | 2 | Allow traffic to all TrafficTargets in the VirtualMesh unless explicitly disallowed through [AccessPolicies]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" >}}). |
 
 
  <!-- end enums -->

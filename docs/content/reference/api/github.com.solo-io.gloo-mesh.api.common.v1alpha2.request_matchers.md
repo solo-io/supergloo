@@ -36,9 +36,9 @@ Describes a matcher against HTTP request headers.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| name | string |  | Specifies the name of the header in the request. |
-  | value | string |  | Specifies the value of the header. If the value is absent a request that has the name header will match, regardless of the header’s value. |
-  | regex | bool |  | Specifies whether the header value should be treated as regex. |
+| name | string |  | Specify the name of the header in the request. |
+  | value | string |  | Specify the value of the header. If the value is absent a request that has the name header will match, regardless of the header’s value. |
+  | regex | bool |  | Specify whether the header value should be treated as regex. |
   | invertMatch | bool |  | If set to true, the result of the match will be inverted. Defaults to false.<br>Examples:<br>- name=foo, invert_match=true: matches if no header named `foo` is present - name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present - name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present. |
   
 

@@ -47,19 +47,21 @@ spec:
                                  - name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present.
                         type: boolean
                       name:
-                        description: Specifies the name of the header in the request.
+                        description: Specify the name of the header in the request.
                         type: string
                       regex:
-                        description: Specifies whether the header value should be treated as regex.
+                        description: Specify whether the header value should be treated as regex.
                         type: boolean
                       value:
                         description: |-
-                          Specifies the value of the header. If the value is absent a request that
+                          Specify the value of the header. If the value is absent a request that
                           has the name header will match, regardless of the header’s value.
                         type: string
                     type: object
                   statusCodeMatcher:
-                    description: Matches against a response status code. Omit to match any status code.
+                    description: |-
+                      TODO make oneof, https://github.com/solo-io/gloo-mesh-enterprise/issues/167
+                      Matches against a response status code. Omit to match any status code.
                     properties:
                       comparator:
                         description: The comparison type used for matching.
@@ -119,7 +121,7 @@ spec:
             observedGeneration:
               description: |-
                 The most recent generation observed in the the AccessLogRecord metadata.
-                If the observedGeneration does not match generation, the controller has not processed the most
+                If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
                 recent version of this resource.
               format: int64
               type: integer

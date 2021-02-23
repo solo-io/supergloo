@@ -46,7 +46,7 @@ message IssuedCertificateSpec {
     // The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Gloo Mesh agent's cluster).
     .core.skv2.solo.io.ObjectRef issued_certificate_secret = 4;
 
-    // A ref to a PodBounceDirective specifying a list of Kubernetes pods to bounce
+    // A reference to a PodBounceDirective specifying a list of Kubernetes pods to bounce
     // (delete and cause a restart) when the certificate is issued.
     //
     // Istio-controlled pods require restarting in order for Envoy proxies to pick up the newly issued certificate
@@ -62,7 +62,7 @@ message IssuedCertificateSpec {
 message IssuedCertificateStatus {
 
     // The most recent generation observed in the the IssuedCertificate metadata.
-    // If the observedGeneration does not match generation, the Gloo Mesh agent has not processed the most
+    // If the `observedGeneration` does not match `metadata.generation`, the Gloo Mesh agent has not processed the most
     // recent version of this IssuedCertificate.
     int64 observed_generation = 1;
 

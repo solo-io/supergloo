@@ -40,7 +40,7 @@ IssuedCertificates are used to issue SSL certificates to remote Kubernetes clust
   | org | string |  | The organization for this certificate. |
   | signingCertificateSecret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The secret containing the root SSL certificate used to sign this IssuedCertificate (located in the certificate issuer's cluster). |
   | issuedCertificateSecret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Gloo Mesh agent's cluster). |
-  | podBounceDirective | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | A ref to a PodBounceDirective specifying a list of Kubernetes pods to bounce (delete and cause a restart) when the certificate is issued.<br>Istio-controlled pods require restarting in order for Envoy proxies to pick up the newly issued certificate due to [this issue](https://github.com/istio/istio/issues/22993).<br>This will include the control plane pods as well as any Pods which share a data plane with the target mesh. |
+  | podBounceDirective | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | A reference to a PodBounceDirective specifying a list of Kubernetes pods to bounce (delete and cause a restart) when the certificate is issued.<br>Istio-controlled pods require restarting in order for Envoy proxies to pick up the newly issued certificate due to [this issue](https://github.com/istio/istio/issues/22993).<br>This will include the control plane pods as well as any Pods which share a data plane with the target mesh. |
   
 
 
@@ -55,7 +55,7 @@ The IssuedCertificate status is written by the CertificateRequesting agent.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| observedGeneration | int64 |  | The most recent generation observed in the the IssuedCertificate metadata. If the observedGeneration does not match generation, the Gloo Mesh agent has not processed the most recent version of this IssuedCertificate. |
+| observedGeneration | int64 |  | The most recent generation observed in the the IssuedCertificate metadata. If the `observedGeneration` does not match `metadata.generation`, the Gloo Mesh agent has not processed the most recent version of this IssuedCertificate. |
   | error | string |  | Any error observed which prevented the CertificateRequest from being processed. If the error is empty, the request has been processed successfully. |
   | state | [certificates.mesh.gloo.solo.io.IssuedCertificateStatus.State]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.certificates.issued_certificate#certificates.mesh.gloo.solo.io.IssuedCertificateStatus.State" >}}) |  | The current state of the IssuedCertificate workflow, reported by the agent. |
   

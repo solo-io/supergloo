@@ -32,15 +32,15 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-// WorkloadState is the state of the WasmDeployment resource as it has been applied to an individual workload.
+// WorkloadState is the state of the WasmDeployment resource as it has been applied to an individual Workload.
 type WasmDeploymentStatus_WorkloadState int32
 
 const (
-	// DEPLOYMENT_PENDING filters have not yet been deployed to the target workload.
+	// Indicates that filters have not yet been deployed to the target Workload.
 	WasmDeploymentStatus_DEPLOYMENT_PENDING WasmDeploymentStatus_WorkloadState = 0
-	// FILTERS_DEPLOYED indicates the WASM Filters have been deployed to the target workload (along with any cluster dependencies).
+	// Indicates the WASM Filters have been deployed to the target Workload (along with any cluster dependencies).
 	WasmDeploymentStatus_FILTERS_DEPLOYED WasmDeploymentStatus_WorkloadState = 1
-	// DEPLOYMENT_FAILED indicates Deploying the WASM Filters to this workload failed
+	// Indicates deploying the WASM Filters to this Workload failed.
 	WasmDeploymentStatus_DEPLOYMENT_FAILED WasmDeploymentStatus_WorkloadState = 2
 )
 
@@ -85,20 +85,18 @@ func (WasmDeploymentStatus_WorkloadState) EnumDescriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1alpha1_wasm_deployment_proto_rawDescGZIP(), []int{5, 0}
 }
 
-//
-//A WasmDeployment deploys one or more WASM Envoy Filters to selected Sidecars and Gateways in a Mesh.
+// Deploys one or more WASM Envoy Filters to selected Sidecars and Gateways in a Mesh.
 type WasmDeploymentSpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//
-	//Sidecars/Gateways whose Workloads match these selectors will attach the specified WASM Filters.
-	//Leave empty to have all workloads in the mesh apply receive the WASM Filter.
+	// Sidecars/Gateways whose Workloads match these selectors will attach the specified WASM Filters.
+	// Leave empty to have all workloads in the mesh apply receive the WASM Filter.
 	WorkloadSelector []*v1alpha2.WorkloadSelector `protobuf:"bytes,1,rep,name=workload_selector,json=workloadSelector,proto3" json:"workload_selector,omitempty"`
-	// Parameters for specifying the WASM filter
+	// Specify WASM filter parameters.
 	Filters []*WasmFilterSpec `protobuf:"bytes,2,rep,name=filters,proto3" json:"filters,omitempty"`
-	// weight is used to determine the order of WASM Filters when applying
+	// Weight is used to determine the order of WASM Filters when applying
 	// multiple WasmDeployments to a single workload.
 	// Deployed WASM filters will be sorted in order of
 	// highest to lowest weight. WasmDeployments with equal weights will be
@@ -161,7 +159,7 @@ func (x *WasmDeploymentSpec) GetWeight() uint32 {
 	return 0
 }
 
-// description of the WASM Filter to deploy
+// Specify the WASM Filter to deploy.
 type WasmFilterSpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -177,29 +175,26 @@ type WasmFilterSpec struct {
 	FilterSource isWasmFilterSpec_FilterSource `protobuf_oneof:"filter_source"`
 	// Filter/service configuration used to configure or reconfigure a filter
 	// (proxy_on_configuration).
-	// Several options are available for providing a source of filter config (dynamic and static)/
+	// Several options are available for providing a source of filter config (dynamic and static).
 	//
 	// Types that are assignable to FilterConfigSource:
 	//	*WasmFilterSpec_StaticFilterConfig
 	//	*WasmFilterSpec_DynamicFilterConfig
 	FilterConfigSource isWasmFilterSpec_FilterConfigSource `protobuf_oneof:"filter_config_source"`
-	// the root id must match the root id
-	// defined inside the filter.
-	// if the user does not provide this field,
-	// Gloo Mesh will attempt to pull the image
-	// and set it from the filter_conf contained in the image config.
-	// note that if the filter_source is not set to wasm_image_source,
-	// this field is required
+	// The `root id` must match the `root id` defined inside the filter.
+	// If the user does not provide this field, Gloo Mesh will attempt to pull the image
+	// and set it from the `filter_conf` contained in the image config.
+	// Note that if the `filter_source` is not set to `wasm_image_source`, this field is required.
 	RootId string `protobuf:"bytes,5,opt,name=root_id,json=rootId,proto3" json:"root_id,omitempty"`
 	// An ID which will be used along with a hash of the wasm code
 	// (or the name of the registered Null VM plugin) to determine which VM will be used to load the WASM filter.
-	// All filters on the same proxy which use the same vm_id and code within will use the same VM.
+	// All filters on the same proxy which use the same `vm_id` and code within will use the same VM.
 	// May be left blank. Sharing a VM between plugins can reduce memory utilization and make sharing of data easier which may have security implications.
 	VmId string `protobuf:"bytes,6,opt,name=vm_id,json=vmId,proto3" json:"vm_id,omitempty"`
 	// The specific config generation context to which to attach the filter. Istio
 	// generates envoy configuration in the context of a gateway,
 	// inbound traffic to sidecar and outbound traffic from sidecar.
-	// Uses the Istio default (ANY).
+	// Uses the Istio default (`ANY`).
 	FilterContext v1alpha3.EnvoyFilter_PatchContext `protobuf:"varint,7,opt,name=filter_context,json=filterContext,proto3,enum=istio.networking.v1alpha3.EnvoyFilter_PatchContext" json:"filter_context,omitempty"`
 	// The filter in the Envoy HTTP Filter Chain immediately before which the WASM filter will be
 	// inserted.
@@ -378,16 +373,15 @@ func (*WasmFilterSpec_StaticFilterConfig) isWasmFilterSpec_FilterConfigSource() 
 
 func (*WasmFilterSpec_DynamicFilterConfig) isWasmFilterSpec_FilterConfigSource() {}
 
-// Specifies options for fetching WASM Filters from an HTTP URI.
+// Specify options for fetching WASM Filters from an HTTP URI.
 type UriSource struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The HTTP URI from which to fetch the filter
+	// The HTTP URI from which to fetch the filter.
 	Uri string `protobuf:"bytes,1,opt,name=uri,proto3" json:"uri,omitempty"`
-	// The Sha256 Checksum of the filter binary (will be verified by the proxy).
-	// Required.
+	// **Required**. The Sha256 Checksum of the filter binary (will be verified by the proxy).
 	Sha string `protobuf:"bytes,2,opt,name=sha,proto3" json:"sha,omitempty"`
 }
 
@@ -437,14 +431,14 @@ func (x *UriSource) GetSha() string {
 	return ""
 }
 
-// Specifies options for fetching WASM Filters from a [WASM-compatible OCI Registry](https://webassemblyhub.io/)
+// Specify options for fetching WASM Filters from a [WASM-compatible OCI Registry](https://webassemblyhub.io/).
 // Images can be built and pushed to registries using `meshctl` and `wasme`.
 type WasmImageSource struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// the full tag of the wasm image. should include the registry address at the beginning, e.g. webassemblyhub.io/ilackarms/helloworld:v0.1
+	// The full tag of the wasm image. It must include the registry address at the beginning, e.g. "webassemblyhub.io/ilackarms/helloworld:v0.1".
 	WasmImageTag string `protobuf:"bytes,1,opt,name=wasm_image_tag,json=wasmImageTag,proto3" json:"wasm_image_tag,omitempty"`
 }
 
@@ -487,24 +481,22 @@ func (x *WasmImageSource) GetWasmImageTag() string {
 	return ""
 }
 
-// NOTE: ImagePullOptions are currently unsupported
+// NOTE: ImagePullOptions are currently unsupported.
 type ImagePullOptions struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// if a username/password is required,
-	// specify here the name of a secret:
-	// with keys:
+	// If a username/password is required,
+	// specify the name of a secret with keys:
 	// * username: <username>
 	// * password: <password>
 	//
-	// the secret must live in the Enterprise Agent namespace
-	// as the FilterDeployment
+	// The secret must live in the Enterprises Agent namespace.
 	PullSecret string `protobuf:"bytes,1,opt,name=pullSecret,proto3" json:"pullSecret,omitempty"`
-	// skip verifying the image server's TLS certificate
+	// If true skip verifying the image server's TLS certificate.
 	InsecureSkipVerify bool `protobuf:"varint,2,opt,name=insecureSkipVerify,proto3" json:"insecureSkipVerify,omitempty"`
-	// use HTTP instead of HTTPS
+	// If true use HTTP instead of HTTPS.
 	PlainHttp bool `protobuf:"varint,3,opt,name=plainHttp,proto3" json:"plainHttp,omitempty"`
 }
 
@@ -567,14 +559,14 @@ type WasmDeploymentStatus struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The most recent generation observed in the the WasmDeployment metadata.
-	// if the observedGeneration does not match generation, the controller has not received the most
+	// if the observedGeneration does not match `metadata.generation`, Gloo Mesh has not processed the most
 	// recent version of this resource.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 	// Any errors encountered while processing this generation of the resource.
 	// This can include failures to pull a WASM image as well as missing or invalid
 	// fields in the spec.
 	Error string `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
-	// the state of the WasmDeployment as it has been applied to each individual workload.
+	// The state of the WasmDeployment as it has been applied to each individual Workload.
 	WorkloadStates map[string]WasmDeploymentStatus_WorkloadState `protobuf:"bytes,3,rep,name=workload_states,json=workloadStates,proto3" json:"workload_states,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3,enum=networking.enterprise.mesh.gloo.solo.io.WasmDeploymentStatus_WorkloadState"`
 }
 

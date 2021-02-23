@@ -15,122 +15,78 @@ import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.pr
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
-/*
-    A TrafficPolicy applies some L7 routing features to an existing mesh.
-    Describes specify the following for all requests:
-    - originating from from **source workload**
-    - sent to **destination targets**
-    - matching one or more **request matcher**
-*/
+// Applies L7 routing and post-routing configuration on selected network edges.
 message TrafficPolicySpec {
 
-    /*
-        Requests originating from these workloads will have the rule applied.
-        Leave empty to have all workloads in the mesh apply these rules.
-
-        Note: Source Selectors are ignored when TrafficPolicies are
-        applied to pods in a Linkerd mesh. TrafficPolicies will apply to
-        all selected destinations in Linkerd, regardless of the source.
-
-        Note: If using the TrafficTargetSelector.Matcher, specifying clusters is currently not supported in Istio.
-    */
+    // Specify the Workloads (traffic sources) this TrafficPolicy applies to.
+    // Omit to apply to all Workloads.
     repeated .common.mesh.gloo.solo.io.WorkloadSelector source_selector = 1;
 
-    /*
-        Requests destined for these Kubernetes services will have the rule applied.
-        Leave empty to apply to all destination Kubernetes services in the mesh.
-    */
+    // Specify the TrafficTargets (traffic targets) this TrafficPolicy applies to.
+    // Omit to apply to all TrafficTargets.
     repeated .common.mesh.gloo.solo.io.TrafficTargetSelector destination_selector = 2;
 
-    /*
-        If specified, this rule will only apply to http requests matching these conditions.
-        Within a single matcher, all conditions must be satisfied for a match to occur.
-        Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply.
-        NB: Linkerd only supports matching on Request Path and Method.
-    */
+    // Specify criteria that HTTP requests must satisfy for the TrafficPolicy to apply.
+    // Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur.
+    // Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply.
+    // Omit to apply to any HTTP request.
     repeated HttpMatcher http_request_matchers = 3;
 
+    // Specify L7 routing and post-routing configuration.
     Policy policy = 4;
 
-    // Parameters for matching routes. All specified conditions must be satisfied for a match to occur.
+    // Specify HTTP request level match criteria. All specified conditions must be satisfied for a match to occur.
     message HttpMatcher {
+
+        // Specify match criteria against the targeted path.
         oneof path_specifier {
-            /*
-                If specified, the route is a prefix rule meaning that the prefix must
-                match the beginning of the *:path* header.
-            */
+
+            // If specified, the targeted path must begin with the prefix.
             string prefix = 1;
 
-            /*
-                If specified, the route is an exact path rule meaning that the path must
-                exactly match the *:path* header once the query string is removed.
-            */
+            // If specified, the targeted path must exactly match the value.
             string exact = 2;
 
-            /*
-                If specified, the route is a regular expression rule meaning that the
-                regex must match the *:path* header once the query string is removed. The entire path
-                (without the query string) must match the regex. The rule will not match if only a
-                sub-sequence of the *:path* header matches the regex. The regex grammar is defined `here
-                <http://en.cppreference.com/w/cpp/regex/ecmascript>`_.
-            */
+            // If specified, the targeted path must match the regex.
             string regex = 3;
         }
 
-        // Specifies a set of headers which requests must match in entirety (all headers must match).
+        // Specify a set of headers which requests must match in entirety (all headers must match).
         repeated .common.mesh.gloo.solo.io.HeaderMatcher headers = 4;
 
-        /*
-            Specifies a set of URL query parameters which requests must match in entirety (all query params must match).
-            The router will check the query string from the *path* header against all the specified query parameters
-        */
+        // Specify a set of URL query parameters which requests must match in entirety (all query params must match).
         repeated QueryParameterMatcher query_parameters = 5;
 
-        // HTTP Method/Verb to match on. If none specified, the matcher will ignore the HTTP Method
+        // Specify an HTTP Method/Verb to match against.
         HttpMethod method = 6;
 
+        // TODO(harveyxia) make string
         // Express an optional HttpMethod by wrapping it in a nillable message.
         message HttpMethod {
             networking.mesh.gloo.solo.io.HttpMethodValue method = 1;
         }
 
-        /*
-            Query parameter matching treats the query string of a request's :path header
-            as an ampersand-separated list of keys and/or key=value elements.
-        */
+        // Specify match criteria against the target URL's query parameters.
         message QueryParameterMatcher {
-            /*
-                Specifies the name of a key that must be present in the requested
-                *path*'s query string.
-            */
+
+            // Specify the name of a key that must be present in the requested path's query string.
             string name = 1;
 
-            /*
-                Specifies the value of the key. If the value is absent, a request
-                that contains the key in its query string will match, whether the
-                key appears with a value (e.g., "?debug=true") or not (e.g., "?debug")
-            */
+            // Specify the value of the query parameter keyed on `name`.
             string value = 2;
 
-            /*
-                Specifies whether the query parameter value is a regular expression.
-                Defaults to false. The entire query parameter value (i.e., the part to
-                the right of the equals sign in "key=value") must match the regex.
-                E.g., the regex "\d+$" will match "123" but not "a123" or "123a".
-            */
+            // If true, treat `value` as a regular expression.
             bool regex = 3;
         }
     }
 
-    // Configuration affecting traffic routing and post-routing behavior.
+    // Specify L7 routing and post-routing configuration.
     message Policy {
-        /*
-            Enables traffic shifting, i.e. to reroute requests to a different service,
-            to a subset of pods based on their label, and/or split traffic between multiple services.
-        */
+
+        // Shift traffic to a different destination.
         MultiDestination traffic_shift = 4;
 
-        // Enable fault injection on requests.
+        // Inject faulty responses.
         FaultInjection fault_injection = 5;
 
         // Set a timeout on requests.
@@ -139,65 +95,79 @@ message TrafficPolicySpec {
         // Set a retry policy on requests.
         RetryPolicy retries = 7;
 
-        /*
-            Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to
-            https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
-            for further details about cross origin resource sharing.
-        */
+        // Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this link](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS)
+        // for further details about cross origin resource sharing.
         CorsPolicy cors_policy = 8;
 
-        // Mirror HTTP traffic to a another destination. Traffic will still be sent to its original destination as normal.
+        // Mirror traffic to a another destination (traffic will be sent to its original destination in addition to the mirrored destinations).
         Mirror mirror = 9;
 
         // Manipulate request and response headers.
         HeaderManipulation header_manipulation = 10;
 
-        /*
-            Configure outlier detection on the targeted services.
-            Setting this field requires an empty source_selector because it must apply to all traffic.
-        */
+        // Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
+        // Specifying this field requires an empty `source_selector` because it must apply to all traffic.
         OutlierDetection outlier_detection = 11;
 
         // Configure mTLS settings. If specified will override global default defined in Settings.
         MTLS mtls = 12;
 
-        /*
-            RetryPolicy contains mesh-specific retry configuration.
-            Different meshes support different Retry features.
-            Gloo Mesh's RetryPolicy exposes config for multiple meshes simultaneously,
-            allowing the same TrafficPolicy to apply retries to different mesh types.
-            The configuration applied to the target mesh will use the corresponding
-            config for each type, while other config types will be ignored.
-        */
+        // Specify retries for failed requests.
         message RetryPolicy {
+
             // Number of retries for a given request
             int32 attempts = 1;
 
-            // Timeout per retry attempt for a given request. format: 1h/1m/1s/1ms. MUST BE >=1ms.
+            // Timeout per retry attempt for a given request. Format: `1h`/`1m`/`1s`/`1ms`. *Must be >= 1ms*.
             google.protobuf.Duration per_try_timeout = 2;
         }
 
+        // Specify a traffic shift destination.
         message MultiDestination {
+
+            // Specify weighted traffic shift destinations.
+            repeated WeightedDestination destinations = 1;
+
+            // Specify a traffic shift destination along with a weight.
             message WeightedDestination {
 
-                // A traffic shift destination which lives in kubernetes.
+                // Platform specific destinations.
+                oneof destination_type {
+
+                    // Specify a Kubernetes Service.
+                    KubeDestination kube_service = 1;
+
+                    // Specify a FailoverService.
+                    FailoverServiceDestination failover_service = 3;
+
+                    // Specify a VirtualDestination.
+                    VirtualDestinationReference virtual_destination = 4;
+                }
+
+                // Specify the proportion of traffic to be forwarded to this destination.
+                // Weights across all of the `destinations` must sum to 100.
+                uint32 weight = 2;
+
+                // A Kubernetes destination.
                 message KubeDestination {
-                    // The name of the destination service.
+
+                    // The name of the service.
                     string name = 1;
 
-                    // The namespace of the destination service.
+                    // The namespace of the service.
                     string namespace = 2;
 
-                    // The cluster of the destination Kubernetes service (as it is registered with Gloo Mesh).
+                    // The Gloo Mesh cluster name (registration name) of the service.
                     string cluster_name = 3;
 
-                    // Subset routing is currently only supported on Istio.
+                    // Specify, by labels, a subset of service instances to route to.
                     map<string, string> subset = 4;
 
-                    // Port on the destination Kubernetes service to receive traffic. Required if the service exposes more than one port.
+                    // Port on the service to receive traffic. Required if the service exposes more than one port.
                     uint32 port = 5;
                 }
 
+                // TODO(harveyxia) remove
                 // A traffic shift destination that references a FailoverService.
                 message FailoverServiceDestination {
                     // The name of the FailoverService.
@@ -210,143 +180,101 @@ message TrafficPolicySpec {
                     map<string, string> subset = 3;
                 }
 
-                // A traffic shift destination that references a VirtualDestination.
+                // Specify a VirtualDestination traffic shift destination.
                 message VirtualDestinationReference {
-                    // The name of the VirtualDestination.
+
+                    // The name of the VirtualDestination object.
                     string name = 1;
 
-                    // The namespace of the VirtualDestination.
+                    // The namespace of the VirtualDestination object.
                     string namespace = 2;
 
-                    // Subset routing is currently only supported for Istio backing services.
+                    // Specify, by labels, a subset of service instances backing the VirtualDestination to route to.
                     map<string, string> subset = 3;
                 }
-
-                // The different destination types can be selected for a traffic shift.
-                oneof destination_type {
-                    // The use kubeService to shift traffic a Kubernetes Service/subset.
-                    KubeDestination kube_service = 1;
-
-                    // A traffic shift destination targeting a FailoverService.
-                    FailoverServiceDestination failover_service = 3;
-
-                    // A traffic shift destination targeting a VirtualDestination.
-                    VirtualDestinationReference virtual_destination = 4;
-                }
-
-                // Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100.
-                uint32 weight = 2;
-
             }
-
-            // A traffic shift destination.
-            repeated WeightedDestination destinations = 1;
         }
 
-        /*
-            FaultInjection can be used to specify one or more faults to inject
-            while forwarding http requests to the destination specified in a route.
-            Faults include aborting the Http request from downstream service, and/or delaying
-            proxying of requests. A fault rule MUST HAVE delay or abort.
-        */
+        // Specify one or more faults to inject for the selected network edge.
         message FaultInjection {
 
-            /*
-                The _fixedDelay_ field is used to indicate the amount of delay in seconds.
-                The optional _percentage_ field can be used to only delay a certain
-                percentage of requests. If left unspecified, all request will be delayed.
-            */
+            // Indicate the amount of delay in seconds.
+            // The optional _percentage_ field can be used to only delay a certain
+            // percentage of requests. If left unspecified, all request will be delayed.
+
+            // Specify the type of fault to inject.
             oneof fault_injection_type {
-                /*
-                        Add a fixed delay before forwarding the request. Format:
-                        1h/1m/1s/1ms. MUST be >=1ms.
-                    */
+
+                // Add a delay of a fixed duration before sending the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms.
                 google.protobuf.Duration fixed_delay = 1;
 
+                // TODO(harveyxia) remove
                 // $hide_from_docs
                 google.protobuf.Duration exponential_delay = 2;
 
-                /*
-                    Abort Http request attempts and return error codes back to downstream
-                    service, giving the impression that the upstream service is faulty.
-                */
+                // Abort the request and return the specified error code back to traffic source.
                 Abort abort = 3;
             }
 
-            /*
-                The _httpStatus_ field is used to indicate the HTTP status code to
-                return to the caller. The optional _percentage_ field can be used to only
-                abort a certain percentage of requests. If not specified, all requests are
-                aborted.
-            */
+            // Abort the request and return the specified error code back to traffic source.
             message Abort {
-                // REQUIRED. HTTP status code to use to abort the Http request.
-                int32 http_status = 4;
+
+                // **Required**. HTTP status code to use to abort the request.
+                int32 http_status = 1;
             }
 
-            // Percentage of requests to be faulted with the error code provided. Values range between 0 and 100
-            double percentage = 5;
+            // Percentage of requests to be faulted. Values range between 0 and 100. If omitted all requests will be faulted.
+            double percentage = 4;
         }
 
-        // Manipulate request and response headers.
+        // Specify modifications to request and response headers.
         message HeaderManipulation {
+
             // HTTP headers to remove before returning a response to the caller.
-            repeated string remove_response_headers = 12;
+            repeated string remove_response_headers = 1;
 
             // Additional HTTP headers to add before returning a response to the caller.
-            map<string, string> append_response_headers = 13;
+            map<string, string> append_response_headers = 2;
 
             // HTTP headers to remove before forwarding a request to the destination service.
-            repeated string remove_request_headers = 14;
+            repeated string remove_request_headers = 3;
 
             // Additional HTTP headers to add before forwarding a request to the destination service.
-            map<string, string> append_request_headers = 15;
+            map<string, string> append_request_headers = 4;
         }
 
+        // Specify Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this link](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS)
+        // for further details about cross origin resource sharing.
         message CorsPolicy {
-            /*
-                String patterns that match allowed origins.
-                An origin is allowed if any of the string matchers match.
-                If a match is found, then the outgoing Access-Control-Allow-Origin would be set to the origin as provided by the client.
-            */
+
+            // String patterns that match allowed origins. An origin is allowed if any of the string matchers match.
             repeated StringMatch allow_origins = 7;
 
-            /*
-                List of HTTP methods allowed to access the resource. The content will
-                be serialized into the Access-Control-Allow-Methods header.
-            */
+            // List of HTTP methods allowed to access the resource. The content will
+            // be serialized to the `Access-Control-Allow-Methods` header.
             repeated string allow_methods = 2;
 
-            /*
-                List of HTTP headers that can be used when requesting the
-                resource. Serialized to Access-Control-Allow-Headers header.
-            */
+            // List of HTTP headers that can be used when requesting the
+            // resource. Serialized to the `Access-Control-Allow-Headers` header.
             repeated string allow_headers = 3;
 
-            /*
-                A white list of HTTP headers that the browsers are allowed to
-                access. Serialized into Access-Control-Expose-Headers header.
-            */
+            // A list of HTTP headers that browsers are allowed to
+            // access. Serialized to the `Access-Control-Expose-Headers` header.
             repeated string expose_headers = 4;
 
-            /*
-                Specifies how long the results of a preflight request can be
-                cached. Translates to the `Access-Control-Max-Age` header.
-            */
+            // Specify how long the results of a preflight request can be
+            // cached. Serialized to the `Access-Control-Max-Age` header.
             google.protobuf.Duration max_age = 5;
 
-            /*
-                Indicates whether the caller is allowed to send the actual request
-                (not the preflight) using credentials. Translates to
-                `Access-Control-Allow-Credentials` header.
-            */
+            // Indicates whether the caller is allowed to send the actual request
+            // (not the preflight) using credentials. Translates to the
+            // `Access-Control-Allow-Credentials` header.
             google.protobuf.BoolValue allow_credentials = 6;
 
-            /*
-                Describes how to match a given string in HTTP headers. Match is
-                case-sensitive.
-            */
+            // Describes how to match a given string in HTTP headers. Match is case-sensitive.
             message StringMatch {
+
+                // The string match type.
                 oneof match_type {
 
                     // Exact string match.
@@ -361,59 +289,58 @@ message TrafficPolicySpec {
             }
         }
 
+        // Mirror traffic to a another destination (traffic will be sent to its original destination in addition to the mirrored destinations).
         message Mirror {
-            // Different destination types can be selected mirroring traffic.
+
+            // Platform specific mirror destinations.
             oneof destination_type {
-                // Name/namespace/cluster of a Kubernetes service.
+
+                // Reference (name, namespace, Gloo Mesh cluster) to a Kubernetes service.
                 .core.skv2.solo.io.ClusterObjectRef kube_service = 1;
             }
 
-            /*
-                Percentage of traffic to mirror. If absent, 100% will be mirrored.
-                Values range between 0 and 100
-            */
+            // Percentage of traffic to mirror. If omitted all traffic will be mirrored. Values must be between 0 and 100.
             double percentage = 2;
-            // Port on the destination Kubernetes service to receive traffic. If multiple are found, and none are specified,
-            // then the configuration will be considered invalid.
+
+            // Port on the destination to receive traffic. Required if the destination exposes multiple ports.
             uint32 port = 3;
         }
 
-        /*
-            Configure outlier detection settings on targeted services. If set, source selectors must be empty.
-            Outlier detection settings apply to all incoming traffic.
-        */
+        // Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
+        // Specifying this field requires an empty `source_selector` because it must apply to all traffic.
         message OutlierDetection {
-            // Number of errors before a host is ejected from the connection pool. Defaults to 5.
+
+            // The number of errors before a host is ejected from the connection pool. A default will be used if not set.
             uint32 consecutive_errors = 1;
 
-            // Time interval between ejection sweep analysis. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 10s.
+            // The time interval between ejection sweep analysis. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.
             google.protobuf.Duration interval = 2;
 
-            // Minimum ejection duration. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 30s.
+            // The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.
             google.protobuf.Duration base_ejection_time = 3;
 
-            // Maximum % of hosts in the load balancing pool for the upstream service that can be ejected,
-            // but will eject at least one host regardless of the value. MUST BE >= 0 and <= 100.
-            // Defaults to 100%, allowing all hosts to be ejected from the pool.
+            // The maximum percentage of hosts that can be ejected from the load balancing pool.
+            // At least one host will be ejected regardless of the value. Must be between 0 and 100. A default will be used if not set.
             uint32 max_ejection_percent = 4;
         }
 
         // Configure mTLS settings on traffic targets. If specified this overrides the global default defined in Settings.
         message MTLS {
 
-            // Istio TLS settings
+            // Istio TLS settings.
             Istio istio = 1;
 
-            // Istio TLS settings
-            // Map onto the enums defined here https://github.com/istio/api/blob/00636152b9d9254b614828a65723840282a177d3/networking/v1beta1/destination_rule.proto#L886
+            // Istio TLS settings.
             message Istio {
 
                 // TLS connection mode
                 TLSmode tls_mode = 1;
 
-                // TLS connection mode
+                // TLS connection mode. Enums correspond to those
+                // [defined here](https://github.com/istio/api/blob/00636152b9d9254b614828a65723840282a177d3/networking/v1beta1/destination_rule.proto#L886)
                 enum TLSmode {
-                    // Do not setup a TLS connection to the upstream endpoint.
+
+                    // Do not originate a TLS connection to the upstream endpoint.
                     DISABLE = 0;
 
                     // Originate a TLS connection to the upstream endpoint.
@@ -434,20 +361,19 @@ message TrafficPolicySpec {
 message TrafficPolicyStatus {
 
     // The most recent generation observed in the the TrafficPolicy metadata.
-    // if the observedGeneration does not match generation, the controller has not received the most
+    // If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
     // recent version of this resource.
     int64 observed_generation = 1;
 
     // The state of the overall resource.
-    // It will only show accepted if it has been successfully
-    // applied to all target meshes.
+    // It will only show accepted if it has been successfully applied to all selected TrafficTargets.
     ApprovalState state = 2;
 
-    // The status of the TrafficPolicy for each TrafficTarget to which it has been applied.
+    // The status of the TrafficPolicy for each selected TrafficTarget.
     // A TrafficPolicy may be Accepted for some TrafficTargets and rejected for others.
     map<string, ApprovalStatus> traffic_targets = 3;
 
-    // The list of Workloads to which this policy has been applied.
+    // The list of selected Workloads for which this policy has been applied.
     repeated string workloads = 4;
 
     // Any errors found while processing this generation of the resource.

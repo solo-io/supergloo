@@ -174,7 +174,7 @@ type TrafficTargetStatus struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The most recent generation observed in the the TrafficPolicy metadata.
-	// If the observedGeneration does not match generation, Gloo Mesh has not processed the most
+	// If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
 	// recent version of this resource.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 	// The set of TrafficPolicies that have been applied to this TrafficTarget.
@@ -604,7 +604,7 @@ func (x *TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint) GetSubLocality(
 	return nil
 }
 
-// Represents a TrafficPolicy that has been applied to the TrafficTarget.
+// Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}}) that applies to the TrafficTarget.
 // If an existing TrafficPolicy becomes invalid, the last valid applied TrafficPolicy will be used.
 type TrafficTargetStatus_AppliedTrafficPolicy struct {
 	state         protoimpl.MessageState
@@ -672,7 +672,8 @@ func (x *TrafficTargetStatus_AppliedTrafficPolicy) GetSpec() *v1alpha2.TrafficPo
 	return nil
 }
 
-// Represents an AccessPolicy that has been applied to this TrafficTarget.
+// Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy" >}})
+// that applies to this TrafficTarget.
 // If an existing AccessPolicy becomes invalid, the last valid applied policy will be used.
 type TrafficTargetStatus_AppliedAccessPolicy struct {
 	state         protoimpl.MessageState
@@ -740,22 +741,22 @@ func (x *TrafficTargetStatus_AppliedAccessPolicy) GetSpec() *v1alpha2.AccessPoli
 	return nil
 }
 
-// Represents the federation configuration applied to this TrafficTarget through a VirtualMesh. Federation allows access
-// to the TrafficTarget from other meshes/clusters.
+// Describes the federation configuration applied to this TrafficTarget through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}).
+// Federation allows access to the TrafficTarget from other meshes/clusters.
 type TrafficTargetStatus_AppliedFederation struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	//
-	//For any Workload that this TrafficTarget has been federated to (i.e., any Workload controlled by a Mesh whose ref appears in `federated_to_meshes`),
+	//For any Workload that this TrafficTarget has been federated to (i.e., any Workload controlled by a Mesh whose reference appears in `federated_to_meshes`),
 	//that Workload will be able to reach this TrafficTarget using this DNS name.
 	//For Kubernetes TrafficTargets this includes Workloads on clusters other than the one hosting this TrafficTarget.
 	FederatedHostname string `protobuf:"bytes,1,opt,name=federated_hostname,json=federatedHostname,proto3" json:"federated_hostname,omitempty"`
 	// The list of Meshes which are able to resolve this TrafficTargets's `multicluster_dns_name`.
 	FederatedToMeshes []*v1.ObjectRef `protobuf:"bytes,2,rep,name=federated_to_meshes,json=federatedToMeshes,proto3" json:"federated_to_meshes,omitempty"`
 	// Whether or not the TrafficTarget has been federated to the given meshes using a VirtualMesh where
-	// [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}}))
+	// [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})
 	// is true.
 	FlatNetwork bool `protobuf:"varint,3,opt,name=flat_network,json=flatNetwork,proto3" json:"flat_network,omitempty"`
 }

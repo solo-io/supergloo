@@ -28,22 +28,20 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-//*
-//The Workload is an abstraction for a workload/client which mesh-discovery has discovered to be part of a
-//given mesh (i.e. its traffic is managed by an in-mesh sidecar).
+// Describes a workload controlled by a discovered service mesh.
 type WorkloadSpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Specifies the underlying type of workload that this Workload is abstracting.
+	// Describes platform specific properties of the workload.
 	//
 	// Types that are assignable to WorkloadType:
 	//	*WorkloadSpec_Kubernetes
 	WorkloadType isWorkloadSpec_WorkloadType `protobuf_oneof:"workload_type"`
-	// The mesh with which this workload is associated.
+	// The Mesh with which this Workload is associated.
 	Mesh *v1.ObjectRef `protobuf:"bytes,4,opt,name=mesh,proto3" json:"mesh,omitempty"`
-	// Appmesh specific metadata.
+	// Metadata specific to an App Mesh controlled workload.
 	AppMesh *WorkloadSpec_AppMesh `protobuf:"bytes,5,opt,name=app_mesh,json=appMesh,proto3" json:"app_mesh,omitempty"`
 }
 
@@ -124,8 +122,8 @@ type WorkloadStatus struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The observed generation of the Workload.
-	// When this matches the Workload's metadata.generation it indicates that mesh-networking
-	// has reconciled the latest version of the Workload.
+	// When this matches the Workload's `metadata.generation` it indicates that Gloo Mesh
+	// has processed the latest version of the Workload.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 	// The set of AccessLogRecords that have been applied to this Workload.
 	AppliedAccessLogRecords []*WorkloadStatus_AppliedAccessLogRecord `protobuf:"bytes,2,rep,name=applied_access_log_records,json=appliedAccessLogRecords,proto3" json:"applied_access_log_records,omitempty"`
@@ -186,23 +184,17 @@ func (x *WorkloadStatus) GetAppliedWasmDeployments() []*WorkloadStatus_AppliedWa
 	return nil
 }
 
-// Information describing a Kubernetes-based workload (e.g. a Deployment or DaemonSet).
+// Describes a Kubernetes workload (e.g. a Deployment or DaemonSet).
 type WorkloadSpec_KubernetesWorkload struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//*
-	//Resource ref to the underlying Kubernetes controller which is managing the pods associated with the workloads.
-	//It has the generic name controller as it can represent a deployment, daemonset, or statefulset.
+	// Resource reference to the Kubernetes Pod controller (i.e. Deployment, ReplicaSet, DaemonSet) for this Workload..
 	Controller *v1.ClusterObjectRef `protobuf:"bytes,1,opt,name=controller,proto3" json:"controller,omitempty"`
-	//*
-	//These are the labels directly from the pods that this controller owns.
-	//NB: these labels are read directly from the Pod template metadata.labels
-	//defined in the workload spec.
-	//We need these to determine which services are backed by this workload.
+	// Labels on the Pod itself (read from `metadata.labels`), which are used to determine which Services front this workload.
 	PodLabels map[string]string `protobuf:"bytes,2,rep,name=pod_labels,json=podLabels,proto3" json:"pod_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Service account attached to the pods owned by this controller.
+	// Service account associated with the Pods owned by this controller.
 	ServiceAccountName string `protobuf:"bytes,3,opt,name=service_account_name,json=serviceAccountName,proto3" json:"service_account_name,omitempty"`
 }
 
@@ -259,15 +251,15 @@ func (x *WorkloadSpec_KubernetesWorkload) GetServiceAccountName() string {
 	return ""
 }
 
-// Information relevant to AppMesh-injected workloads.
+// Metadata specific to an App Mesh controlled workload.
 type WorkloadSpec_AppMesh struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The value of the env var APPMESH_VIRTUAL_NODE_NAME on the Appmesh envoy proxy container.
+	// The value of the env var APPMESH_VIRTUAL_NODE_NAME on the App Mesh envoy proxy container.
 	VirtualNodeName string `protobuf:"bytes,1,opt,name=virtual_node_name,json=virtualNodeName,proto3" json:"virtual_node_name,omitempty"`
-	// Needed for declaring Appmesh VirtualNode listeners.
+	// Ports exposed by this workload. Needed for declaring App Mesh VirtualNode listeners.
 	Ports []*WorkloadSpec_AppMesh_ContainerPort `protobuf:"bytes,2,rep,name=ports,proto3" json:"ports,omitempty"`
 }
 
@@ -373,17 +365,17 @@ func (x *WorkloadSpec_AppMesh_ContainerPort) GetProtocol() string {
 	return ""
 }
 
-// AppliedAccessLogRecord represents an AccessLogRecord that has been applied to this Workload.
+// Describes an [AccessLogRecord]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.observability.v1alpha1.access_logging/" >}}) that applies to this Workload.
 type WorkloadStatus_AppliedAccessLogRecord struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// reference to the AccessLogRecord object.
+	// Reference to the AccessLogRecord object.
 	Ref *v1.ObjectRef `protobuf:"bytes,1,opt,name=ref,proto3" json:"ref,omitempty"`
-	// the observed generation of the accepted AccessLogRecord.
+	// The observed generation of the accepted AccessLogRecord.
 	ObservedGeneration int64 `protobuf:"varint,2,opt,name=observedGeneration,proto3" json:"observedGeneration,omitempty"`
-	// any errors encountered while processing the referenced AccessLogRecord object
+	// Any errors encountered while processing the AccessLogRecord object
 	Errors []string `protobuf:"bytes,3,rep,name=errors,proto3" json:"errors,omitempty"`
 }
 
@@ -440,16 +432,17 @@ func (x *WorkloadStatus_AppliedAccessLogRecord) GetErrors() []string {
 	return nil
 }
 
+// Describes a [WasmDeployment]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.wasm_deployment/" >}}) that applies to this Workload.
 type WorkloadStatus_AppliedWasmDeployment struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// reference to the WasmDeployment object.
+	// Reference to the WasmDeployment object.
 	Ref *v1.ObjectRef `protobuf:"bytes,1,opt,name=ref,proto3" json:"ref,omitempty"`
-	// the observed generation of the accepted WasmDeployment.
+	// The observed generation of the WasmDeployment.
 	ObservedGeneration int64 `protobuf:"varint,2,opt,name=observedGeneration,proto3" json:"observedGeneration,omitempty"`
-	// any errors encountered while processing the referenced WasmDeployment object
+	// Any errors encountered while processing the WasmDeployment object.
 	Errors []string `protobuf:"bytes,3,rep,name=errors,proto3" json:"errors,omitempty"`
 }
 

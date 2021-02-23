@@ -131,7 +131,7 @@ type IssuedCertificateSpec struct {
 	SigningCertificateSecret *v1.ObjectRef `protobuf:"bytes,3,opt,name=signing_certificate_secret,json=signingCertificateSecret,proto3" json:"signing_certificate_secret,omitempty"`
 	// The secret containing the SSL certificate to be generated for this IssuedCertificate (located in the Gloo Mesh agent's cluster).
 	IssuedCertificateSecret *v1.ObjectRef `protobuf:"bytes,4,opt,name=issued_certificate_secret,json=issuedCertificateSecret,proto3" json:"issued_certificate_secret,omitempty"`
-	// A ref to a PodBounceDirective specifying a list of Kubernetes pods to bounce
+	// A reference to a PodBounceDirective specifying a list of Kubernetes pods to bounce
 	// (delete and cause a restart) when the certificate is issued.
 	//
 	// Istio-controlled pods require restarting in order for Envoy proxies to pick up the newly issued certificate
@@ -216,7 +216,7 @@ type IssuedCertificateStatus struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The most recent generation observed in the the IssuedCertificate metadata.
-	// If the observedGeneration does not match generation, the Gloo Mesh agent has not processed the most
+	// If the `observedGeneration` does not match `metadata.generation`, the Gloo Mesh agent has not processed the most
 	// recent version of this IssuedCertificate.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 	// Any error observed which prevented the CertificateRequest from being processed.

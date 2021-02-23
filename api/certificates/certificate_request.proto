@@ -31,7 +31,7 @@ message CertificateRequestSpec {
 message CertificateRequestStatus {
 
     // The most recent generation observed in the the CertificateRequest metadata.
-    // If the observedGeneration does not match generation, the issuer has not processed the most
+    // If the `observedGeneration` does not match `metadata.generation`, the issuer has not processed the most
     // recent version of this request.
     int64 observed_generation = 1;
 

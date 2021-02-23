@@ -29,36 +29,23 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-//
-//Access control policies apply ALLOW policies to communication in a mesh.
-//Access control policies specify the following:
-//ALLOW those requests that: originate from from **source workload**, target the **destination target**,
-//and match the indicated request criteria (allowed_paths, allowed_methods, allowed_ports).
-//Enforcement of access control is determined by the
-//[VirtualMesh's GlobalAccessPolicy]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy" %}})
+// Grants communication permission between selected identities (i.e. traffic sources) and TrafficTargets (i.e. traffic targets).
+// Explicitly granted access permission is required if a
+// [VirtualMesh's GlobalAccessPolicy]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy" %}})
+// is set to `ENABLED`.
 type AccessPolicySpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//
-	//Requests originating from these pods will have the rule applied.
-	//Leave empty to have all pods in the mesh apply these policies.
-	//
-	//Note that access control policies are mapped to source pods by their
-	//service account. If other pods share the same service account,
-	//this access control rule will apply to those pods as well.
-	//
-	//For fine-grained access control policies, ensure that your
-	//service accounts properly reflect the desired
-	//boundary for your access control policies.
+	// Specify the identities of Workloads (i.e. traffic sources) for which to apply this AccessPolicy.
+	// Leave empty to apply the AccessPolicy to all Workloads colocated in the destination's Mesh.
 	SourceSelector []*v1alpha2.IdentitySelector `protobuf:"bytes,1,rep,name=source_selector,json=sourceSelector,proto3" json:"source_selector,omitempty"`
-	//
-	//Requests destined for these pods will have the rule applied.
-	//Leave empty to apply to all destination pods in the mesh.
+	// Specify the TrafficTargets for which to apply this AccessPolicy.
+	// Leave empty to apply the AccessPolicy to all TrafficTargets.
 	DestinationSelector []*v1alpha2.TrafficTargetSelector `protobuf:"bytes,2,rep,name=destination_selector,json=destinationSelector,proto3" json:"destination_selector,omitempty"`
 	//
-	//Optional. A list of HTTP paths or gRPC methods to allow.
+	//Optional.* A list of HTTP paths or gRPC methods to allow.
 	//gRPC methods must be presented as fully-qualified name in the form of
 	//"/packageName.serviceName/methodName" and are case sensitive.
 	//Exact match, prefix match, and suffix match are supported for paths.
@@ -68,12 +55,12 @@ type AccessPolicySpec struct {
 	//If not specified, allow any path.
 	AllowedPaths []string `protobuf:"bytes,3,rep,name=allowed_paths,json=allowedPaths,proto3" json:"allowed_paths,omitempty"`
 	//
-	//Optional. A list of HTTP methods to allow (e.g., "GET", "POST").
+	//Optional.* A list of HTTP methods to allow (e.g., "GET", "POST").
 	//It is ignored in gRPC case because the value is always "POST".
 	//If not specified, allows any method.
 	AllowedMethods []types.HttpMethodValue `protobuf:"varint,4,rep,packed,name=allowed_methods,json=allowedMethods,proto3,enum=networking.mesh.gloo.solo.io.HttpMethodValue" json:"allowed_methods,omitempty"`
 	//
-	//Optional. A list of ports which to allow.
+	//Optional.* A list of ports which to allow.
 	//If not set any port is allowed.
 	AllowedPorts []uint32 `protobuf:"varint,5,rep,packed,name=allowed_ports,json=allowedPorts,proto3" json:"allowed_ports,omitempty"`
 }
@@ -151,15 +138,14 @@ type AccessPolicyStatus struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The most recent generation observed in the the AccessPolicy metadata.
-	// If the observedGeneration does not match generation, the controller has not received the most
+	// If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
 	// recent version of this resource.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 	// The state of the overall resource.
-	// It will only show accepted if it has been successfully
-	// applied to all target meshes.
+	// It will only show accepted if it has been successfully applied to selected TrafficTargets.
 	State ApprovalState `protobuf:"varint,2,opt,name=state,proto3,enum=networking.mesh.gloo.solo.io.ApprovalState" json:"state,omitempty"`
 	// The status of the AccessPolicy for each TrafficTarget to which it has been applied.
-	// An AccessPolicy may be Accepted for some TrafficTargets and rejected for others.
+	// An AccessPolicy may be accepted for some TrafficTargets and rejected for others.
 	TrafficTargets map[string]*ApprovalStatus `protobuf:"bytes,3,rep,name=traffic_targets,json=trafficTargets,proto3" json:"traffic_targets,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// The list of Workloads to which this policy has been applied.
 	Workloads []string `protobuf:"bytes,4,rep,name=workloads,proto3" json:"workloads,omitempty"`

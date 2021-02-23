@@ -22,10 +22,10 @@ spec:
     openAPIV3Schema:
       properties:
         spec:
-          description: Configure global settings and defaults.
+          description: Configure system-wide settings and defaults. Settings specified in networking policies take precedence over those specified here.
           properties:
             discovery:
-              description: Settings specific to the discovery controller.
+              description: Settings for Gloo Mesh discovery.
               properties:
                 istio:
                   description: Istio-specific discovery settings
@@ -35,30 +35,29 @@ spec:
                         properties:
                           gatewayTlsPortName:
                             description: |-
-                              The name of the TLS port used to detect ingress gateways. Services must have a port with this name
-                              in order to be recognized as an ingress gateway during discovery.
-                              If not specified, will default to `tls`.
+                              The name of the TLS port used to detect ingress gateways. Kubernetes services must have a port with this name
+                              in order to be recognized as an ingress gateway. If not specified, will default to `tls`.
                             type: string
                           gatewayWorkloadLabels:
                             additionalProperties:
                               type: string
                             description: |-
-                              The workload labels used during discovery to detect ingress gateways for a mesh.
+                              Workload labels used to detect ingress gateways for an Istio deployment.
                               If not specified, will default to `{"istio": "ingressgateway"}`.
                             type: object
                         type: object
                       description: |-
-                        Ingress gateway detectors for each cluster. The key to the map is either a Kubernetes cluster name or the wildcard
-                        `*` meaning all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the
-                        wildcard entry will be used if it exists. Lastly, we will fall back to the default values.
+                        Configure discovery of ingress gateways per cluster. The key to the map is either a Gloo Mesh cluster name or
+                        `*` denoting all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the
+                        wildcard entry will be used if it exists. Lastly, we will fall back to a set of default values.
                       type: object
                   type: object
               type: object
             mtls:
-              description: Configure default mTLS settings for TrafficTargets (MTLS declared in TrafficPolicies take precedence)
+              description: Configure default mTLS settings for TrafficTargets.
               properties:
                 istio:
-                  description: Istio TLS settings
+                  description: Istio TLS settings.
                   properties:
                     tlsMode:
                       description: TLS connection mode
@@ -77,41 +76,40 @@ spec:
               items:
                 properties:
                   address:
-                    description: TCP address of the gRPC Server (including port)
+                    description: TCP address of the gRPC Server (including port).
                     type: string
                   insecure:
-                    description: Communicate over HTTP rather than HTTPS
+                    description: If true communicate over HTTP rather than HTTPS.
                     type: boolean
                   reconnectOnNetworkFailures:
-                    description: Instruct Gloo Mesh to automatically reconnect to the server on network failures
+                    description: If true Gloo Mesh will automatically attempt to reconnect to the server after encountering network failures.
                     type: boolean
                 type: object
               type: array
             relay:
-              description: |-
-                Enable and configure use of Relay to communicate with remote clusters.
-                This is an Enterprise-only feature.
+              description: Enable and configure use of Relay mode to communicate with remote clusters. This is an enterprise-only feature.
               properties:
                 enabled:
                   description: |-
-                    enable the use of Relay for cluster management.
-                    If relay is enabled, make sure to follow the [Cluster Registration guide for Relay]({{< versioned_link_path fromRoot="/guides/setup/register_cluster#relay" >}})
+                    Enable the use of Relay for cluster management.
+                    If relay is enabled, make sure to follow the [relay cluster registration guide]({{< versioned_link_path fromRoot="/guides/setup/register_cluster#relay" >}})
                     for registering your clusters.
                   type: boolean
                 server:
                   description: |-
+                    TODO(harveyxia) can we remove this?
                     Connection info for the Relay Server. Gloo Mesh will fetch discovery resources from this server
                     and push translated outputs to this server.
                     Note: currently this field has no effect as the relay server runs in-process of the networking Pod.
                   properties:
                     address:
-                      description: TCP address of the gRPC Server (including port)
+                      description: TCP address of the gRPC Server (including port).
                       type: string
                     insecure:
-                      description: Communicate over HTTP rather than HTTPS
+                      description: If true communicate over HTTP rather than HTTPS.
                       type: boolean
                     reconnectOnNetworkFailures:
-                      description: Instruct Gloo Mesh to automatically reconnect to the server on network failures
+                      description: If true Gloo Mesh will automatically attempt to reconnect to the server after encountering network failures.
                       type: boolean
                   type: object
               type: object
@@ -126,7 +124,7 @@ spec:
             observedGeneration:
               description: |-
                 The most recent generation observed in the the Settings metadata.
-                If the observedGeneration does not match generation, the controller has not processed the most
+                If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
                 recent version of this resource.
               format: int64
               type: integer

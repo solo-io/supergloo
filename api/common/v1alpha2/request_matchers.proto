@@ -4,14 +4,14 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.
 
 // Describes a matcher against HTTP request headers.
 message HeaderMatcher {
-    // Specifies the name of the header in the request.
+    // Specify the name of the header in the request.
     string name = 1;
 
-    // Specifies the value of the header. If the value is absent a request that
+    // Specify the value of the header. If the value is absent a request that
     // has the name header will match, regardless of the header’s value.
     string value = 2;
 
-    // Specifies whether the header value should be treated as regex.
+    // Specify whether the header value should be treated as regex.
     bool regex = 3;
 
     /*

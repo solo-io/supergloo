@@ -161,9 +161,9 @@ func (RoleSpec_VirtualMeshScope_VirtualMeshActions) EnumDescriptor() ([]byte, []
 }
 
 //
-//A role represents a set of permissions for creating, updating, and deleting Gloo Mesh configuration.
-//A role consists of a set of scopes for each policy type. The permission granularity is defined at the field level
-//for TrafficPolicy and VirtualMesh and at the object level for AccessPolicy and FailoverService.
+//A role represents a set of permissions for creating, updating, and deleting Gloo Mesh configuration objects.
+//A role consists of a set of scopes for each policy type. Depending on the policy type,
+//the permission granularity is defined at the field level or at the object level.
 type RoleSpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -271,6 +271,9 @@ type RoleStatus struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The observed generation of the Role.
+	// When this matches the Role's `metadata.generation` it indicates that Gloo Mesh
+	// has processed the latest version of the Role.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 }
 
@@ -318,9 +321,9 @@ type RoleBindingSpec struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// reference to users or groups to apply the Gloo Mesh Role to
+	// Specify by reference the Kubernetes Users or Groups the Role should apply to.
 	Subjects []*v1.TypedObjectRef `protobuf:"bytes,1,rep,name=subjects,proto3" json:"subjects,omitempty"`
-	// reference to a Gloo Mesh Role
+	// Specify by reference the Gloo Mesh Role to bind.
 	RoleRef *v1.ObjectRef `protobuf:"bytes,2,opt,name=role_ref,json=roleRef,proto3" json:"role_ref,omitempty"`
 }
 
@@ -418,7 +421,7 @@ type RoleSpec_TrafficPolicyScope struct {
 	TrafficPolicyActions []RoleSpec_TrafficPolicyScope_TrafficPolicyActions `protobuf:"varint,1,rep,packed,name=traffic_policy_actions,json=trafficPolicyActions,proto3,enum=rbac.enterprise.mesh.gloo.solo.io.RoleSpec_TrafficPolicyScope_TrafficPolicyActions" json:"traffic_policy_actions,omitempty"`
 	// A list of permitted TrafficTarget selectors.
 	TrafficTargetSelectors []*v1alpha2.TrafficTargetSelector `protobuf:"bytes,2,rep,name=traffic_target_selectors,json=trafficTargetSelectors,proto3" json:"traffic_target_selectors,omitempty"`
-	// A list of permitted workload selectors.
+	// A list of permitted Workload selectors.
 	WorkloadSelectors []*v1alpha2.WorkloadSelector `protobuf:"bytes,3,rep,name=workload_selectors,json=workloadSelectors,proto3" json:"workload_selectors,omitempty"`
 }
 
@@ -731,7 +734,7 @@ type RoleSpec_WasmDeploymentScope struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// A list of permitted workload selectors.
+	// A list of permitted Workload selectors.
 	WorkloadSelectors []*v1alpha2.WorkloadSelector `protobuf:"bytes,1,rep,name=workload_selectors,json=workloadSelectors,proto3" json:"workload_selectors,omitempty"`
 }
 
@@ -780,7 +783,7 @@ type RoleSpec_AccessLogRecordScope struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// A list of permitted workload selectors.
+	// A list of permitted Workload selectors.
 	WorkloadSelectors []*v1alpha2.WorkloadSelector `protobuf:"bytes,1,rep,name=workload_selectors,json=workloadSelectors,proto3" json:"workload_selectors,omitempty"`
 }
 

@@ -9,9 +9,9 @@ import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/failover_service.pr
 import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1alpha1/virtual_destination.proto";
 
 /*
-    A role represents a set of permissions for creating, updating, and deleting Gloo Mesh configuration.
-    A role consists of a set of scopes for each policy type. The permission granularity is defined at the field level
-     for TrafficPolicy and VirtualMesh and at the object level for AccessPolicy and FailoverService.
+    A role represents a set of permissions for creating, updating, and deleting Gloo Mesh configuration objects.
+    A role consists of a set of scopes for each policy type. Depending on the policy type,
+    the permission granularity is defined at the field level or at the object level.
 */
 message RoleSpec {
 
@@ -38,13 +38,14 @@ message RoleSpec {
 
     // Represents permissions for configuring TrafficPolicies.
     message TrafficPolicyScope {
+
         // A list of permitted TrafficPolicy configuration actions.
         repeated TrafficPolicyActions traffic_policy_actions = 1;
 
         // A list of permitted TrafficTarget selectors.
         repeated .common.mesh.gloo.solo.io.TrafficTargetSelector traffic_target_selectors = 2;
 
-        // A list of permitted workload selectors.
+        // A list of permitted Workload selectors.
         repeated .common.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 3;
 
         // Enums representing fields on the TrafficPolicy CRD.
@@ -59,12 +60,13 @@ message RoleSpec {
             MIRROR = 7;
             HEADER_MANIPULATION = 8;
             OUTLIER_DETECTION = 9;
-            MTLS_CONFIG  = 10;
+            MTLS_CONFIG = 10;
         }
     }
 
     // Represents permissions for configuring VirtualMeshes.
     message VirtualMeshScope {
+
         // A list of permitted VirtualMesh configuration actions.
         repeated VirtualMeshActions virtual_mesh_actions = 1;
 
@@ -83,6 +85,7 @@ message RoleSpec {
 
     // Represents permissions for configuring AccessPolicies.
     message AccessPolicyScope {
+
         // A list of permitted identity selectors.
         repeated .common.mesh.gloo.solo.io.IdentitySelector identity_selectors = 1;
 
@@ -92,6 +95,7 @@ message RoleSpec {
 
     // Represents permissions for configuring FailoverServices.
     message FailoverServiceScope {
+
         // A list of permitted mesh references.
         repeated .core.skv2.solo.io.ObjectRef mesh_refs = 1;
 
@@ -101,6 +105,7 @@ message RoleSpec {
 
     // Represents permissions for configuring VirtualDestinations.
     message VirtualDestinationScope {
+
         // A list of permitted virtual mesh references.
         repeated .core.skv2.solo.io.ObjectRef virtual_mesh_refs = 1;
 
@@ -116,26 +121,33 @@ message RoleSpec {
 
     // Represents permissions for configuring WasmDeployments.
     message WasmDeploymentScope {
-        // A list of permitted workload selectors.
+
+        // A list of permitted Workload selectors.
         repeated .common.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 1;
     }
 
     // Represents permissions for configuring AccessLogRecords.
     message AccessLogRecordScope {
-        // A list of permitted workload selectors.
+
+        // A list of permitted Workload selectors.
         repeated .common.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 1;
     }
 }
 
 message RoleStatus {
+
+    // The observed generation of the Role.
+    // When this matches the Role's `metadata.generation` it indicates that Gloo Mesh
+    // has processed the latest version of the Role.
     int64 observed_generation = 1;
 }
 
 message RoleBindingSpec {
-    // reference to users or groups to apply the Gloo Mesh Role to
+
+    // Specify by reference the Kubernetes Users or Groups the Role should apply to.
     repeated core.skv2.solo.io.TypedObjectRef subjects = 1;
 
-    // reference to a Gloo Mesh Role
+    // Specify by reference the Gloo Mesh Role to bind.
     core.skv2.solo.io.ObjectRef role_ref = 2;
 }
 

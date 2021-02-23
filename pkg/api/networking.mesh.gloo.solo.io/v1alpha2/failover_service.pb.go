@@ -124,7 +124,7 @@ type FailoverServiceStatus struct {
 
 	//
 	//The most recent generation observed in the the FailoverService metadata.
-	//If the observedGeneration does not match generation, the controller has not received the most
+	//If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
 	//recent version of this resource.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 	//

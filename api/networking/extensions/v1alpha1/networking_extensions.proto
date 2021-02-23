@@ -17,7 +17,7 @@ import "networking/v1alpha3/sidecar.proto";
 import "networking/v1alpha3/virtual_service.proto";
 import "networking/v1alpha3/workload_entry.proto";
 
-// NetworkingExtensions provides customizeable patches to Gloo Mesh-generated configuration.
+// NetworkingExtensions provides customizable patches to Gloo Mesh-generated configuration.
 // Gloo Mesh uses a NetworkingExtensions client to request optional patches from a pluggable
 // NetworkingExtensions server.
 // The server can return a set of patches which Gloo Mesh will apply before writing configuration to the cluster.

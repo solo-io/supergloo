@@ -26,6 +26,7 @@ message AccessLogRecordSpec {
 
     // Specify criteria for recording access logs. A request must match all specified criteria to be recorded.
     message Filter {
+        // TODO make oneof, https://github.com/solo-io/gloo-mesh-enterprise/issues/167
         // Matches against a response status code. Omit to match any status code.
         .common.mesh.gloo.solo.io.StatusCodeMatcher status_code_matcher = 1;
 
@@ -37,7 +38,7 @@ message AccessLogRecordSpec {
 message AccessLogRecordStatus {
 
     // The most recent generation observed in the the AccessLogRecord metadata.
-    // If the observedGeneration does not match generation, the controller has not processed the most
+    // If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
     // recent version of this resource.
     int64 observed_generation = 1;
 

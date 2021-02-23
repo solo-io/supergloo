@@ -33,11 +33,12 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-// TLS connection mode
+// TLS connection mode. Enums correspond to those
+// [defined here](https://github.com/istio/api/blob/00636152b9d9254b614828a65723840282a177d3/networking/v1beta1/destination_rule.proto#L886)
 type TrafficPolicySpec_Policy_MTLS_Istio_TLSmode int32
 
 const (
-	// Do not setup a TLS connection to the upstream endpoint.
+	// Do not originate a TLS connection to the upstream endpoint.
 	TrafficPolicySpec_Policy_MTLS_Istio_DISABLE TrafficPolicySpec_Policy_MTLS_Istio_TLSmode = 0
 	// Originate a TLS connection to the upstream endpoint.
 	TrafficPolicySpec_Policy_MTLS_Istio_SIMPLE TrafficPolicySpec_Policy_MTLS_Istio_TLSmode = 1
@@ -90,38 +91,25 @@ func (TrafficPolicySpec_Policy_MTLS_Istio_TLSmode) EnumDescriptor() ([]byte, []i
 	return file_github_com_solo_io_gloo_mesh_api_networking_v1alpha2_traffic_policy_proto_rawDescGZIP(), []int{0, 1, 7, 0, 0}
 }
 
-//
-//A TrafficPolicy applies some L7 routing features to an existing mesh.
-//Describes specify the following for all requests:
-//- originating from from **source workload**
-//- sent to **destination targets**
-//- matching one or more **request matcher**
+// Applies L7 routing and post-routing configuration on selected network edges.
 type TrafficPolicySpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//
-	//Requests originating from these workloads will have the rule applied.
-	//Leave empty to have all workloads in the mesh apply these rules.
-	//
-	//Note: Source Selectors are ignored when TrafficPolicies are
-	//applied to pods in a Linkerd mesh. TrafficPolicies will apply to
-	//all selected destinations in Linkerd, regardless of the source.
-	//
-	//Note: If using the TrafficTargetSelector.Matcher, specifying clusters is currently not supported in Istio.
+	// Specify the Workloads (traffic sources) this TrafficPolicy applies to.
+	// Omit to apply to all Workloads.
 	SourceSelector []*v1alpha2.WorkloadSelector `protobuf:"bytes,1,rep,name=source_selector,json=sourceSelector,proto3" json:"source_selector,omitempty"`
-	//
-	//Requests destined for these Kubernetes services will have the rule applied.
-	//Leave empty to apply to all destination Kubernetes services in the mesh.
+	// Specify the TrafficTargets (traffic targets) this TrafficPolicy applies to.
+	// Omit to apply to all TrafficTargets.
 	DestinationSelector []*v1alpha2.TrafficTargetSelector `protobuf:"bytes,2,rep,name=destination_selector,json=destinationSelector,proto3" json:"destination_selector,omitempty"`
-	//
-	//If specified, this rule will only apply to http requests matching these conditions.
-	//Within a single matcher, all conditions must be satisfied for a match to occur.
-	//Between matchers, at least one matcher must be satisfied for the TrafficPolicy to apply.
-	//NB: Linkerd only supports matching on Request Path and Method.
+	// Specify criteria that HTTP requests must satisfy for the TrafficPolicy to apply.
+	// Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur.
+	// Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply.
+	// Omit to apply to any HTTP request.
 	HttpRequestMatchers []*TrafficPolicySpec_HttpMatcher `protobuf:"bytes,3,rep,name=http_request_matchers,json=httpRequestMatchers,proto3" json:"http_request_matchers,omitempty"`
-	Policy              *TrafficPolicySpec_Policy        `protobuf:"bytes,4,opt,name=policy,proto3" json:"policy,omitempty"`
+	// Specify L7 routing and post-routing configuration.
+	Policy *TrafficPolicySpec_Policy `protobuf:"bytes,4,opt,name=policy,proto3" json:"policy,omitempty"`
 }
 
 func (x *TrafficPolicySpec) Reset() {
@@ -190,17 +178,16 @@ type TrafficPolicyStatus struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The most recent generation observed in the the TrafficPolicy metadata.
-	// if the observedGeneration does not match generation, the controller has not received the most
+	// If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
 	// recent version of this resource.
 	ObservedGeneration int64 `protobuf:"varint,1,opt,name=observed_generation,json=observedGeneration,proto3" json:"observed_generation,omitempty"`
 	// The state of the overall resource.
-	// It will only show accepted if it has been successfully
-	// applied to all target meshes.
+	// It will only show accepted if it has been successfully applied to all selected TrafficTargets.
 	State ApprovalState `protobuf:"varint,2,opt,name=state,proto3,enum=networking.mesh.gloo.solo.io.ApprovalState" json:"state,omitempty"`
-	// The status of the TrafficPolicy for each TrafficTarget to which it has been applied.
+	// The status of the TrafficPolicy for each selected TrafficTarget.
 	// A TrafficPolicy may be Accepted for some TrafficTargets and rejected for others.
 	TrafficTargets map[string]*ApprovalStatus `protobuf:"bytes,3,rep,name=traffic_targets,json=trafficTargets,proto3" json:"traffic_targets,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// The list of Workloads to which this policy has been applied.
+	// The list of selected Workloads for which this policy has been applied.
 	Workloads []string `protobuf:"bytes,4,rep,name=workloads,proto3" json:"workloads,omitempty"`
 	// Any errors found while processing this generation of the resource.
 	Errors []string `protobuf:"bytes,5,rep,name=errors,proto3" json:"errors,omitempty"`
@@ -273,24 +260,24 @@ func (x *TrafficPolicyStatus) GetErrors() []string {
 	return nil
 }
 
-// Parameters for matching routes. All specified conditions must be satisfied for a match to occur.
+// Specify HTTP request level match criteria. All specified conditions must be satisfied for a match to occur.
 type TrafficPolicySpec_HttpMatcher struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Specify match criteria against the targeted path.
+	//
 	// Types that are assignable to PathSpecifier:
 	//	*TrafficPolicySpec_HttpMatcher_Prefix
 	//	*TrafficPolicySpec_HttpMatcher_Exact
 	//	*TrafficPolicySpec_HttpMatcher_Regex
 	PathSpecifier isTrafficPolicySpec_HttpMatcher_PathSpecifier `protobuf_oneof:"path_specifier"`
-	// Specifies a set of headers which requests must match in entirety (all headers must match).
+	// Specify a set of headers which requests must match in entirety (all headers must match).
 	Headers []*v1alpha2.HeaderMatcher `protobuf:"bytes,4,rep,name=headers,proto3" json:"headers,omitempty"`
-	//
-	//Specifies a set of URL query parameters which requests must match in entirety (all query params must match).
-	//The router will check the query string from the *path* header against all the specified query parameters
+	// Specify a set of URL query parameters which requests must match in entirety (all query params must match).
 	QueryParameters []*TrafficPolicySpec_HttpMatcher_QueryParameterMatcher `protobuf:"bytes,5,rep,name=query_parameters,json=queryParameters,proto3" json:"query_parameters,omitempty"`
-	// HTTP Method/Verb to match on. If none specified, the matcher will ignore the HTTP Method
+	// Specify an HTTP Method/Verb to match against.
 	Method *TrafficPolicySpec_HttpMatcher_HttpMethod `protobuf:"bytes,6,opt,name=method,proto3" json:"method,omitempty"`
 }
 
@@ -380,26 +367,17 @@ type isTrafficPolicySpec_HttpMatcher_PathSpecifier interface {
 }
 
 type TrafficPolicySpec_HttpMatcher_Prefix struct {
-	//
-	//If specified, the route is a prefix rule meaning that the prefix must
-	//match the beginning of the *:path* header.
+	// If specified, the targeted path must begin with the prefix.
 	Prefix string `protobuf:"bytes,1,opt,name=prefix,proto3,oneof"`
 }
 
 type TrafficPolicySpec_HttpMatcher_Exact struct {
-	//
-	//If specified, the route is an exact path rule meaning that the path must
-	//exactly match the *:path* header once the query string is removed.
+	// If specified, the targeted path must exactly match the value.
 	Exact string `protobuf:"bytes,2,opt,name=exact,proto3,oneof"`
 }
 
 type TrafficPolicySpec_HttpMatcher_Regex struct {
-	//
-	//If specified, the route is a regular expression rule meaning that the
-	//regex must match the *:path* header once the query string is removed. The entire path
-	//(without the query string) must match the regex. The rule will not match if only a
-	//sub-sequence of the *:path* header matches the regex. The regex grammar is defined `here
-	//<http://en.cppreference.com/w/cpp/regex/ecmascript>`_.
+	// If specified, the targeted path must match the regex.
 	Regex string `protobuf:"bytes,3,opt,name=regex,proto3,oneof"`
 }
 
@@ -409,34 +387,29 @@ func (*TrafficPolicySpec_HttpMatcher_Exact) isTrafficPolicySpec_HttpMatcher_Path
 
 func (*TrafficPolicySpec_HttpMatcher_Regex) isTrafficPolicySpec_HttpMatcher_PathSpecifier() {}
 
-// Configuration affecting traffic routing and post-routing behavior.
+// Specify L7 routing and post-routing configuration.
 type TrafficPolicySpec_Policy struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//
-	//Enables traffic shifting, i.e. to reroute requests to a different service,
-	//to a subset of pods based on their label, and/or split traffic between multiple services.
+	// Shift traffic to a different destination.
 	TrafficShift *TrafficPolicySpec_Policy_MultiDestination `protobuf:"bytes,4,opt,name=traffic_shift,json=trafficShift,proto3" json:"traffic_shift,omitempty"`
-	// Enable fault injection on requests.
+	// Inject faulty responses.
 	FaultInjection *TrafficPolicySpec_Policy_FaultInjection `protobuf:"bytes,5,opt,name=fault_injection,json=faultInjection,proto3" json:"fault_injection,omitempty"`
 	// Set a timeout on requests.
 	RequestTimeout *duration.Duration `protobuf:"bytes,6,opt,name=request_timeout,json=requestTimeout,proto3" json:"request_timeout,omitempty"`
 	// Set a retry policy on requests.
 	Retries *TrafficPolicySpec_Policy_RetryPolicy `protobuf:"bytes,7,opt,name=retries,proto3" json:"retries,omitempty"`
-	//
-	//Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to
-	//https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
-	//for further details about cross origin resource sharing.
+	// Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this link](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS)
+	// for further details about cross origin resource sharing.
 	CorsPolicy *TrafficPolicySpec_Policy_CorsPolicy `protobuf:"bytes,8,opt,name=cors_policy,json=corsPolicy,proto3" json:"cors_policy,omitempty"`
-	// Mirror HTTP traffic to a another destination. Traffic will still be sent to its original destination as normal.
+	// Mirror traffic to a another destination (traffic will be sent to its original destination in addition to the mirrored destinations).
 	Mirror *TrafficPolicySpec_Policy_Mirror `protobuf:"bytes,9,opt,name=mirror,proto3" json:"mirror,omitempty"`
 	// Manipulate request and response headers.
 	HeaderManipulation *TrafficPolicySpec_Policy_HeaderManipulation `protobuf:"bytes,10,opt,name=header_manipulation,json=headerManipulation,proto3" json:"header_manipulation,omitempty"`
-	//
-	//Configure outlier detection on the targeted services.
-	//Setting this field requires an empty source_selector because it must apply to all traffic.
+	// Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
+	// Specifying this field requires an empty `source_selector` because it must apply to all traffic.
 	OutlierDetection *TrafficPolicySpec_Policy_OutlierDetection `protobuf:"bytes,11,opt,name=outlier_detection,json=outlierDetection,proto3" json:"outlier_detection,omitempty"`
 	// Configure mTLS settings. If specified will override global default defined in Settings.
 	Mtls *TrafficPolicySpec_Policy_MTLS `protobuf:"bytes,12,opt,name=mtls,proto3" json:"mtls,omitempty"`
@@ -537,6 +510,7 @@ func (x *TrafficPolicySpec_Policy) GetMtls() *TrafficPolicySpec_Policy_MTLS {
 	return nil
 }
 
+// TODO(harveyxia) make string
 // Express an optional HttpMethod by wrapping it in a nillable message.
 type TrafficPolicySpec_HttpMatcher_HttpMethod struct {
 	state         protoimpl.MessageState
@@ -585,28 +559,17 @@ func (x *TrafficPolicySpec_HttpMatcher_HttpMethod) GetMethod() types.HttpMethodV
 	return types.HttpMethodValue_GET
 }
 
-//
-//Query parameter matching treats the query string of a request's :path header
-//as an ampersand-separated list of keys and/or key=value elements.
+// Specify match criteria against the target URL's query parameters.
 type TrafficPolicySpec_HttpMatcher_QueryParameterMatcher struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//
-	//Specifies the name of a key that must be present in the requested
-	//path*'s query string.
+	// Specify the name of a key that must be present in the requested path's query string.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	//
-	//Specifies the value of the key. If the value is absent, a request
-	//that contains the key in its query string will match, whether the
-	//key appears with a value (e.g., "?debug=true") or not (e.g., "?debug")
+	// Specify the value of the query parameter keyed on `name`.
 	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
-	//
-	//Specifies whether the query parameter value is a regular expression.
-	//Defaults to false. The entire query parameter value (i.e., the part to
-	//the right of the equals sign in "key=value") must match the regex.
-	//E.g., the regex "\d+$" will match "123" but not "a123" or "123a".
+	// If true, treat `value` as a regular expression.
 	Regex bool `protobuf:"varint,3,opt,name=regex,proto3" json:"regex,omitempty"`
 }
 
@@ -663,13 +626,7 @@ func (x *TrafficPolicySpec_HttpMatcher_QueryParameterMatcher) GetRegex() bool {
 	return false
 }
 
-//
-//RetryPolicy contains mesh-specific retry configuration.
-//Different meshes support different Retry features.
-//Gloo Mesh's RetryPolicy exposes config for multiple meshes simultaneously,
-//allowing the same TrafficPolicy to apply retries to different mesh types.
-//The configuration applied to the target mesh will use the corresponding
-//config for each type, while other config types will be ignored.
+// Specify retries for failed requests.
 type TrafficPolicySpec_Policy_RetryPolicy struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -677,7 +634,7 @@ type TrafficPolicySpec_Policy_RetryPolicy struct {
 
 	// Number of retries for a given request
 	Attempts int32 `protobuf:"varint,1,opt,name=attempts,proto3" json:"attempts,omitempty"`
-	// Timeout per retry attempt for a given request. format: 1h/1m/1s/1ms. MUST BE >=1ms.
+	// Timeout per retry attempt for a given request. Format: `1h`/`1m`/`1s`/`1ms`. *Must be >= 1ms*.
 	PerTryTimeout *duration.Duration `protobuf:"bytes,2,opt,name=per_try_timeout,json=perTryTimeout,proto3" json:"per_try_timeout,omitempty"`
 }
 
@@ -727,12 +684,13 @@ func (x *TrafficPolicySpec_Policy_RetryPolicy) GetPerTryTimeout() *duration.Dura
 	return nil
 }
 
+// Specify a traffic shift destination.
 type TrafficPolicySpec_Policy_MultiDestination struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// A traffic shift destination.
+	// Specify weighted traffic shift destinations.
 	Destinations []*TrafficPolicySpec_Policy_MultiDestination_WeightedDestination `protobuf:"bytes,1,rep,name=destinations,proto3" json:"destinations,omitempty"`
 }
 
@@ -775,28 +733,21 @@ func (x *TrafficPolicySpec_Policy_MultiDestination) GetDestinations() []*Traffic
 	return nil
 }
 
-//
-//FaultInjection can be used to specify one or more faults to inject
-//while forwarding http requests to the destination specified in a route.
-//Faults include aborting the Http request from downstream service, and/or delaying
-//proxying of requests. A fault rule MUST HAVE delay or abort.
+// Specify one or more faults to inject for the selected network edge.
 type TrafficPolicySpec_Policy_FaultInjection struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//
-	//The _fixedDelay_ field is used to indicate the amount of delay in seconds.
-	//The optional _percentage_ field can be used to only delay a certain
-	//percentage of requests. If left unspecified, all request will be delayed.
+	// Specify the type of fault to inject.
 	//
 	// Types that are assignable to FaultInjectionType:
 	//	*TrafficPolicySpec_Policy_FaultInjection_FixedDelay
 	//	*TrafficPolicySpec_Policy_FaultInjection_ExponentialDelay
 	//	*TrafficPolicySpec_Policy_FaultInjection_Abort_
 	FaultInjectionType isTrafficPolicySpec_Policy_FaultInjection_FaultInjectionType `protobuf_oneof:"fault_injection_type"`
-	// Percentage of requests to be faulted with the error code provided. Values range between 0 and 100
-	Percentage float64 `protobuf:"fixed64,5,opt,name=percentage,proto3" json:"percentage,omitempty"`
+	// Percentage of requests to be faulted. Values range between 0 and 100. If omitted all requests will be faulted.
+	Percentage float64 `protobuf:"fixed64,4,opt,name=percentage,proto3" json:"percentage,omitempty"`
 }
 
 func (x *TrafficPolicySpec_Policy_FaultInjection) Reset() {
@@ -871,21 +822,18 @@ type isTrafficPolicySpec_Policy_FaultInjection_FaultInjectionType interface {
 }
 
 type TrafficPolicySpec_Policy_FaultInjection_FixedDelay struct {
-	//
-	//Add a fixed delay before forwarding the request. Format:
-	//1h/1m/1s/1ms. MUST be >=1ms.
+	// Add a delay of a fixed duration before sending the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms.
 	FixedDelay *duration.Duration `protobuf:"bytes,1,opt,name=fixed_delay,json=fixedDelay,proto3,oneof"`
 }
 
 type TrafficPolicySpec_Policy_FaultInjection_ExponentialDelay struct {
+	// TODO(harveyxia) remove
 	// $hide_from_docs
 	ExponentialDelay *duration.Duration `protobuf:"bytes,2,opt,name=exponential_delay,json=exponentialDelay,proto3,oneof"`
 }
 
 type TrafficPolicySpec_Policy_FaultInjection_Abort_ struct {
-	//
-	//Abort Http request attempts and return error codes back to downstream
-	//service, giving the impression that the upstream service is faulty.
+	// Abort the request and return the specified error code back to traffic source.
 	Abort *TrafficPolicySpec_Policy_FaultInjection_Abort `protobuf:"bytes,3,opt,name=abort,proto3,oneof"`
 }
 
@@ -898,20 +846,20 @@ func (*TrafficPolicySpec_Policy_FaultInjection_ExponentialDelay) isTrafficPolicy
 func (*TrafficPolicySpec_Policy_FaultInjection_Abort_) isTrafficPolicySpec_Policy_FaultInjection_FaultInjectionType() {
 }
 
-// Manipulate request and response headers.
+// Specify modifications to request and response headers.
 type TrafficPolicySpec_Policy_HeaderManipulation struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	// HTTP headers to remove before returning a response to the caller.
-	RemoveResponseHeaders []string `protobuf:"bytes,12,rep,name=remove_response_headers,json=removeResponseHeaders,proto3" json:"remove_response_headers,omitempty"`
+	RemoveResponseHeaders []string `protobuf:"bytes,1,rep,name=remove_response_headers,json=removeResponseHeaders,proto3" json:"remove_response_headers,omitempty"`
 	// Additional HTTP headers to add before returning a response to the caller.
-	AppendResponseHeaders map[string]string `protobuf:"bytes,13,rep,name=append_response_headers,json=appendResponseHeaders,proto3" json:"append_response_headers,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	AppendResponseHeaders map[string]string `protobuf:"bytes,2,rep,name=append_response_headers,json=appendResponseHeaders,proto3" json:"append_response_headers,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// HTTP headers to remove before forwarding a request to the destination service.
-	RemoveRequestHeaders []string `protobuf:"bytes,14,rep,name=remove_request_headers,json=removeRequestHeaders,proto3" json:"remove_request_headers,omitempty"`
+	RemoveRequestHeaders []string `protobuf:"bytes,3,rep,name=remove_request_headers,json=removeRequestHeaders,proto3" json:"remove_request_headers,omitempty"`
 	// Additional HTTP headers to add before forwarding a request to the destination service.
-	AppendRequestHeaders map[string]string `protobuf:"bytes,15,rep,name=append_request_headers,json=appendRequestHeaders,proto3" json:"append_request_headers,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	AppendRequestHeaders map[string]string `protobuf:"bytes,4,rep,name=append_request_headers,json=appendRequestHeaders,proto3" json:"append_request_headers,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *TrafficPolicySpec_Policy_HeaderManipulation) Reset() {
@@ -974,36 +922,30 @@ func (x *TrafficPolicySpec_Policy_HeaderManipulation) GetAppendRequestHeaders() 
 	return nil
 }
 
+// Specify Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this link](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS)
+// for further details about cross origin resource sharing.
 type TrafficPolicySpec_Policy_CorsPolicy struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//
-	//String patterns that match allowed origins.
-	//An origin is allowed if any of the string matchers match.
-	//If a match is found, then the outgoing Access-Control-Allow-Origin would be set to the origin as provided by the client.
+	// String patterns that match allowed origins. An origin is allowed if any of the string matchers match.
 	AllowOrigins []*TrafficPolicySpec_Policy_CorsPolicy_StringMatch `protobuf:"bytes,7,rep,name=allow_origins,json=allowOrigins,proto3" json:"allow_origins,omitempty"`
-	//
-	//List of HTTP methods allowed to access the resource. The content will
-	//be serialized into the Access-Control-Allow-Methods header.
+	// List of HTTP methods allowed to access the resource. The content will
+	// be serialized to the `Access-Control-Allow-Methods` header.
 	AllowMethods []string `protobuf:"bytes,2,rep,name=allow_methods,json=allowMethods,proto3" json:"allow_methods,omitempty"`
-	//
-	//List of HTTP headers that can be used when requesting the
-	//resource. Serialized to Access-Control-Allow-Headers header.
+	// List of HTTP headers that can be used when requesting the
+	// resource. Serialized to the `Access-Control-Allow-Headers` header.
 	AllowHeaders []string `protobuf:"bytes,3,rep,name=allow_headers,json=allowHeaders,proto3" json:"allow_headers,omitempty"`
-	//
-	//A white list of HTTP headers that the browsers are allowed to
-	//access. Serialized into Access-Control-Expose-Headers header.
+	// A list of HTTP headers that browsers are allowed to
+	// access. Serialized to the `Access-Control-Expose-Headers` header.
 	ExposeHeaders []string `protobuf:"bytes,4,rep,name=expose_headers,json=exposeHeaders,proto3" json:"expose_headers,omitempty"`
-	//
-	//Specifies how long the results of a preflight request can be
-	//cached. Translates to the `Access-Control-Max-Age` header.
+	// Specify how long the results of a preflight request can be
+	// cached. Serialized to the `Access-Control-Max-Age` header.
 	MaxAge *duration.Duration `protobuf:"bytes,5,opt,name=max_age,json=maxAge,proto3" json:"max_age,omitempty"`
-	//
-	//Indicates whether the caller is allowed to send the actual request
-	//(not the preflight) using credentials. Translates to
-	//`Access-Control-Allow-Credentials` header.
+	// Indicates whether the caller is allowed to send the actual request
+	// (not the preflight) using credentials. Translates to the
+	// `Access-Control-Allow-Credentials` header.
 	AllowCredentials *wrappers.BoolValue `protobuf:"bytes,6,opt,name=allow_credentials,json=allowCredentials,proto3" json:"allow_credentials,omitempty"`
 }
 
@@ -1081,22 +1023,20 @@ func (x *TrafficPolicySpec_Policy_CorsPolicy) GetAllowCredentials() *wrappers.Bo
 	return nil
 }
 
+// Mirror traffic to a another destination (traffic will be sent to its original destination in addition to the mirrored destinations).
 type TrafficPolicySpec_Policy_Mirror struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Different destination types can be selected mirroring traffic.
+	// Platform specific mirror destinations.
 	//
 	// Types that are assignable to DestinationType:
 	//	*TrafficPolicySpec_Policy_Mirror_KubeService
 	DestinationType isTrafficPolicySpec_Policy_Mirror_DestinationType `protobuf_oneof:"destination_type"`
-	//
-	//Percentage of traffic to mirror. If absent, 100% will be mirrored.
-	//Values range between 0 and 100
+	// Percentage of traffic to mirror. If omitted all traffic will be mirrored. Values must be between 0 and 100.
 	Percentage float64 `protobuf:"fixed64,2,opt,name=percentage,proto3" json:"percentage,omitempty"`
-	// Port on the destination Kubernetes service to receive traffic. If multiple are found, and none are specified,
-	// then the configuration will be considered invalid.
+	// Port on the destination to receive traffic. Required if the destination exposes multiple ports.
 	Port uint32 `protobuf:"varint,3,opt,name=port,proto3" json:"port,omitempty"`
 }
 
@@ -1165,30 +1105,28 @@ type isTrafficPolicySpec_Policy_Mirror_DestinationType interface {
 }
 
 type TrafficPolicySpec_Policy_Mirror_KubeService struct {
-	// Name/namespace/cluster of a Kubernetes service.
+	// Reference (name, namespace, Gloo Mesh cluster) to a Kubernetes service.
 	KubeService *v1.ClusterObjectRef `protobuf:"bytes,1,opt,name=kube_service,json=kubeService,proto3,oneof"`
 }
 
 func (*TrafficPolicySpec_Policy_Mirror_KubeService) isTrafficPolicySpec_Policy_Mirror_DestinationType() {
 }
 
-//
-//Configure outlier detection settings on targeted services. If set, source selectors must be empty.
-//Outlier detection settings apply to all incoming traffic.
+// Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
+// Specifying this field requires an empty `source_selector` because it must apply to all traffic.
 type TrafficPolicySpec_Policy_OutlierDetection struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Number of errors before a host is ejected from the connection pool. Defaults to 5.
+	// The number of errors before a host is ejected from the connection pool. A default will be used if not set.
 	ConsecutiveErrors uint32 `protobuf:"varint,1,opt,name=consecutive_errors,json=consecutiveErrors,proto3" json:"consecutive_errors,omitempty"`
-	// Time interval between ejection sweep analysis. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 10s.
+	// The time interval between ejection sweep analysis. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.
 	Interval *duration.Duration `protobuf:"bytes,2,opt,name=interval,proto3" json:"interval,omitempty"`
-	// Minimum ejection duration. Format: 1h/1m/1s/1ms. MUST BE >=1ms. Defaults to 30s.
+	// The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.
 	BaseEjectionTime *duration.Duration `protobuf:"bytes,3,opt,name=base_ejection_time,json=baseEjectionTime,proto3" json:"base_ejection_time,omitempty"`
-	// Maximum % of hosts in the load balancing pool for the upstream service that can be ejected,
-	// but will eject at least one host regardless of the value. MUST BE >= 0 and <= 100.
-	// Defaults to 100%, allowing all hosts to be ejected from the pool.
+	// The maximum percentage of hosts that can be ejected from the load balancing pool.
+	// At least one host will be ejected regardless of the value. Must be between 0 and 100. A default will be used if not set.
 	MaxEjectionPercent uint32 `protobuf:"varint,4,opt,name=max_ejection_percent,json=maxEjectionPercent,proto3" json:"max_ejection_percent,omitempty"`
 }
 
@@ -1258,7 +1196,7 @@ type TrafficPolicySpec_Policy_MTLS struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Istio TLS settings
+	// Istio TLS settings.
 	Istio *TrafficPolicySpec_Policy_MTLS_Istio `protobuf:"bytes,1,opt,name=istio,proto3" json:"istio,omitempty"`
 }
 
@@ -1301,19 +1239,21 @@ func (x *TrafficPolicySpec_Policy_MTLS) GetIstio() *TrafficPolicySpec_Policy_MTL
 	return nil
 }
 
+// Specify a traffic shift destination along with a weight.
 type TrafficPolicySpec_Policy_MultiDestination_WeightedDestination struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The different destination types can be selected for a traffic shift.
+	// Platform specific destinations.
 	//
 	// Types that are assignable to DestinationType:
 	//	*TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService
 	//	*TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_FailoverService
 	//	*TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestination
 	DestinationType isTrafficPolicySpec_Policy_MultiDestination_WeightedDestination_DestinationType `protobuf_oneof:"destination_type"`
-	// Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100.
+	// Specify the proportion of traffic to be forwarded to this destination.
+	// Weights across all of the `destinations` must sum to 100.
 	Weight uint32 `protobuf:"varint,2,opt,name=weight,proto3" json:"weight,omitempty"`
 }
 
@@ -1389,17 +1329,17 @@ type isTrafficPolicySpec_Policy_MultiDestination_WeightedDestination_Destination
 }
 
 type TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService struct {
-	// The use kubeService to shift traffic a Kubernetes Service/subset.
+	// Specify a Kubernetes Service.
 	KubeService *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination `protobuf:"bytes,1,opt,name=kube_service,json=kubeService,proto3,oneof"`
 }
 
 type TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_FailoverService struct {
-	// A traffic shift destination targeting a FailoverService.
+	// Specify a FailoverService.
 	FailoverService *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_FailoverServiceDestination `protobuf:"bytes,3,opt,name=failover_service,json=failoverService,proto3,oneof"`
 }
 
 type TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestination struct {
-	// A traffic shift destination targeting a VirtualDestination.
+	// Specify a VirtualDestination.
 	VirtualDestination *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestinationReference `protobuf:"bytes,4,opt,name=virtual_destination,json=virtualDestination,proto3,oneof"`
 }
 
@@ -1412,21 +1352,21 @@ func (*TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_FailoverSer
 func (*TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestination) isTrafficPolicySpec_Policy_MultiDestination_WeightedDestination_DestinationType() {
 }
 
-// A traffic shift destination which lives in kubernetes.
+// A Kubernetes destination.
 type TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The name of the destination service.
+	// The name of the service.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// The namespace of the destination service.
+	// The namespace of the service.
 	Namespace string `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	// The cluster of the destination Kubernetes service (as it is registered with Gloo Mesh).
+	// The Gloo Mesh cluster name (registration name) of the service.
 	ClusterName string `protobuf:"bytes,3,opt,name=cluster_name,json=clusterName,proto3" json:"cluster_name,omitempty"`
-	// Subset routing is currently only supported on Istio.
+	// Specify, by labels, a subset of service instances to route to.
 	Subset map[string]string `protobuf:"bytes,4,rep,name=subset,proto3" json:"subset,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Port on the destination Kubernetes service to receive traffic. Required if the service exposes more than one port.
+	// Port on the service to receive traffic. Required if the service exposes more than one port.
 	Port uint32 `protobuf:"varint,5,opt,name=port,proto3" json:"port,omitempty"`
 }
 
@@ -1498,6 +1438,7 @@ func (x *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDesti
 	return 0
 }
 
+// TODO(harveyxia) remove
 // A traffic shift destination that references a FailoverService.
 type TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_FailoverServiceDestination struct {
 	state         protoimpl.MessageState
@@ -1566,17 +1507,17 @@ func (x *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_FailoverS
 	return nil
 }
 
-// A traffic shift destination that references a VirtualDestination.
+// Specify a VirtualDestination traffic shift destination.
 type TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestinationReference struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The name of the VirtualDestination.
+	// The name of the VirtualDestination object.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// The namespace of the VirtualDestination.
+	// The namespace of the VirtualDestination object.
 	Namespace string `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	// Subset routing is currently only supported for Istio backing services.
+	// Specify, by labels, a subset of service instances backing the VirtualDestination to route to.
 	Subset map[string]string `protobuf:"bytes,3,rep,name=subset,proto3" json:"subset,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
@@ -1634,18 +1575,14 @@ func (x *TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDe
 	return nil
 }
 
-//
-//The _httpStatus_ field is used to indicate the HTTP status code to
-//return to the caller. The optional _percentage_ field can be used to only
-//abort a certain percentage of requests. If not specified, all requests are
-//aborted.
+// Abort the request and return the specified error code back to traffic source.
 type TrafficPolicySpec_Policy_FaultInjection_Abort struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// REQUIRED. HTTP status code to use to abort the Http request.
-	HttpStatus int32 `protobuf:"varint,4,opt,name=http_status,json=httpStatus,proto3" json:"http_status,omitempty"`
+	// **Required**. HTTP status code to use to abort the request.
+	HttpStatus int32 `protobuf:"varint,1,opt,name=http_status,json=httpStatus,proto3" json:"http_status,omitempty"`
 }
 
 func (x *TrafficPolicySpec_Policy_FaultInjection_Abort) Reset() {
@@ -1687,14 +1624,14 @@ func (x *TrafficPolicySpec_Policy_FaultInjection_Abort) GetHttpStatus() int32 {
 	return 0
 }
 
-//
-//Describes how to match a given string in HTTP headers. Match is
-//case-sensitive.
+// Describes how to match a given string in HTTP headers. Match is case-sensitive.
 type TrafficPolicySpec_Policy_CorsPolicy_StringMatch struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// The string match type.
+	//
 	// Types that are assignable to MatchType:
 	//	*TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact
 	//	*TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix
@@ -1790,8 +1727,7 @@ func (*TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix) isTrafficPolicySp
 func (*TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex) isTrafficPolicySpec_Policy_CorsPolicy_StringMatch_MatchType() {
 }
 
-// Istio TLS settings
-// Map onto the enums defined here https://github.com/istio/api/blob/00636152b9d9254b614828a65723840282a177d3/networking/v1beta1/destination_rule.proto#L886
+// Istio TLS settings.
 type TrafficPolicySpec_Policy_MTLS_Istio struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2120,19 +2056,19 @@ var file_github_com_solo_io_gloo_mesh_api_networking_v1alpha2_traffic_policy_pro
 	0x53, 0x70, 0x65, 0x63, 0x2e, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x2e, 0x46, 0x61, 0x75, 0x6c,
 	0x74, 0x49, 0x6e, 0x6a, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x41, 0x62, 0x6f, 0x72, 0x74,
 	0x48, 0x00, 0x52, 0x05, 0x61, 0x62, 0x6f, 0x72, 0x74, 0x12, 0x1e, 0x0a, 0x0a, 0x70, 0x65, 0x72,
-	0x63, 0x65, 0x6e, 0x74, 0x61, 0x67, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x01, 0x52, 0x0a, 0x70,
+	0x63, 0x65, 0x6e, 0x74, 0x61, 0x67, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x01, 0x52, 0x0a, 0x70,
 	0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x61, 0x67, 0x65, 0x1a, 0x28, 0x0a, 0x05, 0x41, 0x62, 0x6f,
 	0x72, 0x74, 0x12, 0x1f, 0x0a, 0x0b, 0x68, 0x74, 0x74, 0x70, 0x5f, 0x73, 0x74, 0x61, 0x74, 0x75,
-	0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0a, 0x68, 0x74, 0x74, 0x70, 0x53, 0x74, 0x61,
+	0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0a, 0x68, 0x74, 0x74, 0x70, 0x53, 0x74, 0x61,
 	0x74, 0x75, 0x73, 0x42, 0x16, 0x0a, 0x14, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x5f, 0x69, 0x6e, 0x6a,
 	0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x1a, 0xd0, 0x04, 0x0a, 0x12,
 	0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x4d, 0x61, 0x6e, 0x69, 0x70, 0x75, 0x6c, 0x61, 0x74, 0x69,
 	0x6f, 0x6e, 0x12, 0x36, 0x0a, 0x17, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x5f, 0x72, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x5f, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x73, 0x18, 0x0c, 0x20,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x5f, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x73, 0x18, 0x01, 0x20,
 	0x03, 0x28, 0x09, 0x52, 0x15, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f,
 	0x6e, 0x73, 0x65, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x73, 0x12, 0x9c, 0x01, 0x0a, 0x17, 0x61,
 	0x70, 0x70, 0x65, 0x6e, 0x64, 0x5f, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x5f, 0x68,
-	0x65, 0x61, 0x64, 0x65, 0x72, 0x73, 0x18, 0x0d, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x64, 0x2e, 0x6e,
+	0x65, 0x61, 0x64, 0x65, 0x72, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x64, 0x2e, 0x6e,
 	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65, 0x73, 0x68, 0x2e, 0x67,
 	0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e, 0x54, 0x72, 0x61, 0x66,
 	0x66, 0x69, 0x63, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x53, 0x70, 0x65, 0x63, 0x2e, 0x50, 0x6f,
@@ -2142,10 +2078,10 @@ var file_github_com_solo_io_gloo_mesh_api_networking_v1alpha2_traffic_policy_pro
 	0x72, 0x79, 0x52, 0x15, 0x61, 0x70, 0x70, 0x65, 0x6e, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
 	0x73, 0x65, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x73, 0x12, 0x34, 0x0a, 0x16, 0x72, 0x65, 0x6d,
 	0x6f, 0x76, 0x65, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x68, 0x65, 0x61, 0x64,
-	0x65, 0x72, 0x73, 0x18, 0x0e, 0x20, 0x03, 0x28, 0x09, 0x52, 0x14, 0x72, 0x65, 0x6d, 0x6f, 0x76,
+	0x65, 0x72, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x14, 0x72, 0x65, 0x6d, 0x6f, 0x76,
 	0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x73, 0x12,
 	0x99, 0x01, 0x0a, 0x16, 0x61, 0x70, 0x70, 0x65, 0x6e, 0x64, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x5f, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x73, 0x18, 0x0f, 0x20, 0x03, 0x28, 0x0b,
+	0x73, 0x74, 0x5f, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b,
 	0x32, 0x63, 0x2e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x6d, 0x65,
 	0x73, 0x68, 0x2e, 0x67, 0x6c, 0x6f, 0x6f, 0x2e, 0x73, 0x6f, 0x6c, 0x6f, 0x2e, 0x69, 0x6f, 0x2e,
 	0x54, 0x72, 0x61, 0x66, 0x66, 0x69, 0x63, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x53, 0x70, 0x65,
