@@ -40,8 +40,7 @@ func (opts *NetworkingOpts) AddToFlags(flags *pflag.FlagSet) {
 func Start(ctx context.Context, opts *NetworkingOpts) error {
 	return bootstrap.Start(
 		ctx,
-		"networking",
-		StartFunc(opts, func(_ bootstrap.StartParameters) ExtensionOpts {
+		StartFunc(opts, func(_ context.Context, _ bootstrap.StartParameters) ExtensionOpts {
 			return ExtensionOpts{}
 		}),
 		*opts.Options,
@@ -69,7 +68,7 @@ type networkingStarter struct {
 
 // start the main reconcile loop
 func (s networkingStarter) startReconciler(ctx context.Context, parameters bootstrap.StartParameters) error {
-	extensionOpts := s.makeExtensions(parameters)
+	extensionOpts := s.makeExtensions(ctx, parameters)
 	extensionOpts.initDefaults(parameters)
 
 	if err := startCertIssuer(
