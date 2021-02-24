@@ -3,8 +3,8 @@ package tests
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	commonv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha2"
-	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/test/utils"
 	skv2core "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,7 +26,7 @@ func AccessPolicyTest() {
 		Expect(err).ToNot(HaveOccurred())
 
 		By("restricting connectivity when global access policy enforcement is enabled", func() {
-			VirtualMesh.Spec.GlobalAccessPolicy = networkingv1alpha2.VirtualMeshSpec_ENABLED
+			VirtualMesh.Spec.GlobalAccessPolicy = networkingv1.VirtualMeshSpec_ENABLED
 			VirtualMeshManifest.CreateOrTruncate()
 			err := VirtualMeshManifest.AppendResources(VirtualMesh)
 			Expect(err).NotTo(HaveOccurred())
@@ -37,19 +37,19 @@ func AccessPolicyTest() {
 		})
 
 		By("restoring connectivity to the reviews service when AccessPolicy is created", func() {
-			accessPolicy := &networkingv1alpha2.AccessPolicy{
+			accessPolicy := &networkingv1.AccessPolicy{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "AccessPolicy",
-					APIVersion: networkingv1alpha2.SchemeGroupVersion.String(),
+					APIVersion: networkingv1.SchemeGroupVersion.String(),
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "allow-reviews",
 					Namespace: BookinfoNamespace,
 				},
-				Spec: networkingv1alpha2.AccessPolicySpec{
-					SourceSelector: []*commonv1alpha2.IdentitySelector{
+				Spec: networkingv1.AccessPolicySpec{
+					SourceSelector: []*commonv1.IdentitySelector{
 						{
-							KubeServiceAccountRefs: &commonv1alpha2.IdentitySelector_KubeServiceAccountRefs{
+							KubeServiceAccountRefs: &commonv1.IdentitySelector_KubeServiceAccountRefs{
 								ServiceAccounts: []*skv2core.ClusterObjectRef{
 									{
 										Name:        "bookinfo-productpage",
@@ -60,9 +60,9 @@ func AccessPolicyTest() {
 							},
 						},
 					},
-					DestinationSelector: []*commonv1alpha2.DestinationSelector{
+					DestinationSelector: []*commonv1.DestinationSelector{
 						{
-							KubeServiceRefs: &commonv1alpha2.DestinationSelector_KubeServiceRefs{
+							KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
 								Services: []*skv2core.ClusterObjectRef{
 									{
 										Name:        "reviews",
@@ -84,7 +84,7 @@ func AccessPolicyTest() {
 		})
 
 		By("restoring connectivity to all services when global access policy enforcement is disabled", func() {
-			VirtualMesh.Spec.GlobalAccessPolicy = networkingv1alpha2.VirtualMeshSpec_DISABLED
+			VirtualMesh.Spec.GlobalAccessPolicy = networkingv1.VirtualMeshSpec_DISABLED
 			VirtualMeshManifest.CreateOrTruncate()
 			err := VirtualMeshManifest.AppendResources(VirtualMesh)
 			Expect(err).NotTo(HaveOccurred())

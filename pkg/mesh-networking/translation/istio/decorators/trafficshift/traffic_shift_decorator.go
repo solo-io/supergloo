@@ -6,16 +6,16 @@ import (
 	"strings"
 
 	"github.com/rotisserie/eris"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/trafficpolicyutils"
 	"github.com/solo-io/k8s-utils/kubeutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
 
@@ -37,14 +37,14 @@ func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
 // handles setting Weighted Destinations on a VirtualService
 type trafficShiftDecorator struct {
 	clusterDomains hostutils.ClusterDomainRegistry
-	destinations   discoveryv1alpha2sets.DestinationSet
+	destinations   discoveryv1sets.DestinationSet
 }
 
 var _ decorators.TrafficPolicyVirtualServiceDecorator = &trafficShiftDecorator{}
 
 func NewTrafficShiftDecorator(
 	clusterDomains hostutils.ClusterDomainRegistry,
-	destinations discoveryv1alpha2sets.DestinationSet,
+	destinations discoveryv1sets.DestinationSet,
 ) *trafficShiftDecorator {
 	return &trafficShiftDecorator{
 		clusterDomains: clusterDomains,
@@ -57,9 +57,9 @@ func (d *trafficShiftDecorator) DecoratorName() string {
 }
 
 func (d *trafficShiftDecorator) ApplyTrafficPolicyToVirtualService(
-	appliedPolicy *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy,
-	destination *discoveryv1alpha2.Destination,
-	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+	destination *discoveryv1.Destination,
+	sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
@@ -77,8 +77,8 @@ func (d *trafficShiftDecorator) ApplyTrafficPolicyToVirtualService(
 }
 
 func (d *trafficShiftDecorator) translateTrafficShift(
-	destination *discoveryv1alpha2.Destination,
-	trafficPolicy *v1alpha2.TrafficPolicySpec,
+	destination *discoveryv1.Destination,
+	trafficPolicy *v1.TrafficPolicySpec,
 	sourceClusterName string,
 ) ([]*networkingv1alpha3spec.HTTPRouteDestination, error) {
 	trafficShift := trafficPolicy.GetPolicy().GetTrafficShift()
@@ -93,7 +93,7 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 		}
 		var trafficShiftDestination *networkingv1alpha3spec.HTTPRouteDestination
 		switch destinationType := weightedDest.DestinationType.(type) {
-		case *v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
+		case *v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
 			var err error
 			trafficShiftDestination, err = d.buildKubeTrafficShiftDestination(
 				destinationType.KubeService,
@@ -115,8 +115,8 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 }
 
 func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
-	kubeDest *v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination,
-	destination *discoveryv1alpha2.Destination,
+	kubeDest *v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination,
+	destination *discoveryv1.Destination,
 	weight uint32,
 	sourceClusterName string,
 ) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
@@ -129,7 +129,7 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 		return nil, eris.Errorf("nil kube destination on traffic shift")
 	}
 
-	svcRef := &v1.ClusterObjectRef{
+	svcRef := &skv2corev1.ClusterObjectRef{
 		Name:        kubeDest.Name,
 		Namespace:   kubeDest.Namespace,
 		ClusterName: kubeDest.ClusterName,
@@ -183,15 +183,15 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 // make all the necessary subsets for the destination rule for the given destination.
 // traverses all the applied traffic policies to find subsets matching this destination
 func MakeDestinationRuleSubsetsForDestination(
-	destination *discoveryv1alpha2.Destination,
-	allDestinations discoveryv1alpha2sets.DestinationSet,
+	destination *discoveryv1.Destination,
+	allDestinations discoveryv1sets.DestinationSet,
 	sourceClusterName string,
 ) []*networkingv1alpha3spec.Subset {
 	subsets := makeDestinationRuleSubsets(
 		allDestinations,
-		func(weightedDestination *v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination) bool {
+		func(weightedDestination *v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination) bool {
 			switch destType := weightedDestination.DestinationType.(type) {
-			case *v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
+			case *v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
 				return destinationutils.IsDestinationForKubeService(destination, destType.KubeService)
 			}
 			return false
@@ -234,8 +234,8 @@ func MakeFederatedSubsetLabel(clusterName string) map[string]string {
 }
 
 func makeDestinationRuleSubsets(
-	allDestinations discoveryv1alpha2sets.DestinationSet,
-	destinationMatchFunc func(weightedDestination *v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination) bool,
+	allDestinations discoveryv1sets.DestinationSet,
+	destinationMatchFunc func(weightedDestination *v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination) bool,
 ) []*networkingv1alpha3spec.Subset {
 	var uniqueSubsets []map[string]string
 	appendUniqueSubset := func(subsetLabels map[string]string) {
@@ -250,13 +250,13 @@ func makeDestinationRuleSubsets(
 		uniqueSubsets = append(uniqueSubsets, subsetLabels)
 	}
 
-	allDestinations.List(func(service *discoveryv1alpha2.Destination) bool {
+	allDestinations.List(func(service *discoveryv1.Destination) bool {
 		for _, policy := range service.Status.AppliedTrafficPolicies {
 			trafficShiftDestinations := policy.Spec.GetPolicy().GetTrafficShift().GetDestinations()
 			for _, dest := range trafficShiftDestinations {
 				if destinationMatchFunc(dest) {
 					switch destType := dest.DestinationType.(type) {
-					case *v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
+					case *v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
 						appendUniqueSubset(destType.KubeService.Subset)
 					}
 				}

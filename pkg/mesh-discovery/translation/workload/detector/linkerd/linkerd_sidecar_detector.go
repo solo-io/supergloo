@@ -8,8 +8,8 @@ package linkerd
 // 	"strings"
 //
 // 	"github.com/solo-io/go-utils/contextutils"
-// 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-// 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+// 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+// 	v1sets  "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 // 	"github.com/solo-io/skv2/contrib/pkg/sets"
 // 	corev1 "k8s.io/api/core/v1"
 // )
@@ -26,7 +26,7 @@ package linkerd
 // 	return &sidecarDetector{ctx: ctx}
 // }
 //
-// func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
+// func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1sets.MeshSet) *v1alpha2.Mesh {
 // 	if !containsSidecarContainer(pod.Spec.Containers) {
 // 		return nil
 // 	}

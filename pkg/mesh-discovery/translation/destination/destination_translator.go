@@ -4,7 +4,7 @@ import (
 	"context"
 
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/destination/detector"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -19,10 +19,10 @@ type Translator interface {
 		services corev1sets.ServiceSet,
 		pods corev1sets.PodSet,
 		nodes corev1sets.NodeSet,
-		workloads v1alpha2sets.WorkloadSet,
-		meshes v1alpha2sets.MeshSet,
+		workloads v1.WorkloadSet,
+		meshes v1.MeshSet,
 		endpoints corev1sets.EndpointsSet,
-	) v1alpha2sets.DestinationSet
+	) v1.DestinationSet
 }
 
 type translator struct {
@@ -39,12 +39,12 @@ func (t *translator) TranslateDestinations(
 	services corev1sets.ServiceSet,
 	pods corev1sets.PodSet,
 	nodes corev1sets.NodeSet,
-	workloads v1alpha2sets.WorkloadSet,
-	meshes v1alpha2sets.MeshSet,
+	workloads v1.WorkloadSet,
+	meshes v1.MeshSet,
 	endpoints corev1sets.EndpointsSet,
-) v1alpha2sets.DestinationSet {
+) v1.DestinationSet {
 
-	DestinationSet := v1alpha2sets.NewDestinationSet()
+	DestinationSet := v1.NewDestinationSet()
 
 	for _, service := range services.List() {
 		destination := t.destinationDetector.DetectDestination(

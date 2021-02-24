@@ -4,7 +4,7 @@ import (
 	"context"
 
 	corev1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/mesh/internal/flags"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	skcorev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -36,7 +36,7 @@ func Command(ctx context.Context, opts *flags.Options) *cobra.Command {
 
 func restartPods(ctx context.Context, c client.Client, meshRef *skcorev1.ObjectRef) error {
 	podClient := corev1.NewPodClient(c)
-	workloadClient := v1alpha2.NewWorkloadClient(c)
+	workloadClient := discoveryv1.NewWorkloadClient(c)
 	workloadList, err := workloadClient.ListWorkload(ctx)
 	if err != nil {
 		return err

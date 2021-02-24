@@ -10,7 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1sets0 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	destination "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination"
 	mesh "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh"
@@ -41,7 +41,7 @@ func (m *MockDependencyFactory) EXPECT() *MockDependencyFactoryMockRecorder {
 }
 
 // MakeDestinationTranslator mocks base method
-func (m *MockDependencyFactory) MakeDestinationTranslator(ctx context.Context, userSupplied input.RemoteSnapshot, clusters v1alpha1sets.KubernetesClusterSet, destinations v1alpha2sets.DestinationSet) destination.Translator {
+func (m *MockDependencyFactory) MakeDestinationTranslator(ctx context.Context, userSupplied input.RemoteSnapshot, clusters v1alpha1sets.KubernetesClusterSet, destinations v1sets0.DestinationSet) destination.Translator {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MakeDestinationTranslator", ctx, userSupplied, clusters, destinations)
 	ret0, _ := ret[0].(destination.Translator)
@@ -55,7 +55,7 @@ func (mr *MockDependencyFactoryMockRecorder) MakeDestinationTranslator(ctx, user
 }
 
 // MakeMeshTranslator mocks base method
-func (m *MockDependencyFactory) MakeMeshTranslator(ctx context.Context, userSupplied input.RemoteSnapshot, clusters v1alpha1sets.KubernetesClusterSet, secrets v1sets.SecretSet, workloads v1alpha2sets.WorkloadSet, destinations v1alpha2sets.DestinationSet) mesh.Translator {
+func (m *MockDependencyFactory) MakeMeshTranslator(ctx context.Context, userSupplied input.RemoteSnapshot, clusters v1alpha1sets.KubernetesClusterSet, secrets v1sets.SecretSet, workloads v1sets0.WorkloadSet, destinations v1sets0.DestinationSet) mesh.Translator {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MakeMeshTranslator", ctx, userSupplied, clusters, secrets, workloads, destinations)
 	ret0, _ := ret[0].(mesh.Translator)

@@ -1,9 +1,10 @@
 syntax = "proto3";
 package networking.mesh.gloo.solo.io;
-option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2";
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1";
 
-import "github.com/solo-io/gloo-mesh/api/common/v1alpha2/selectors.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -57,7 +58,7 @@ message AccessPolicyStatus {
 
     // The state of the overall resource.
     // It will only show accepted if it has been successfully applied to selected Destinations.
-    ApprovalState state = 2;
+    .common.mesh.gloo.solo.io.ApprovalState state = 2;
 
     // The status of the AccessPolicy for each Destination to which it has been applied.
     // An AccessPolicy may be accepted for some Destinations and rejected for others.

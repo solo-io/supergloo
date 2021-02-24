@@ -7,12 +7,12 @@ import (
 	"reflect"
 	"strings"
 
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -22,17 +22,17 @@ import (
 var (
 	// the key used to differentiate translated resources by
 	// the GlooMesh instance which produced them
-	OwnershipLabelKey = fmt.Sprintf("owner.%s", v1alpha2.SchemeGroupVersion.Group)
+	OwnershipLabelKey = fmt.Sprintf("owner.%s", v1.SchemeGroupVersion.Group)
 
 	// the key used to differentiate translated resources by
 	// the GlooMesh Agent instance which produced them
-	AgentLabelKey = fmt.Sprintf("agent.%s", v1alpha2.SchemeGroupVersion.Group)
+	AgentLabelKey = fmt.Sprintf("agent.%s", v1.SchemeGroupVersion.Group)
 
 	// Annotation key indicating that the resource configures a federated Destination
-	FederationLabelKey = fmt.Sprintf("federation.%s", v1alpha2.SchemeGroupVersion.Group)
+	FederationLabelKey = fmt.Sprintf("federation.%s", v1.SchemeGroupVersion.Group)
 
 	// Annotation key for tracking the parent resources that were translated in the creation of a child resource
-	ParentLabelkey = fmt.Sprintf("parents.%s", v1alpha2.SchemeGroupVersion.Group)
+	ParentLabelkey = fmt.Sprintf("parents.%s", v1.SchemeGroupVersion.Group)
 )
 
 // construct an ObjectMeta for a discovered resource from a source object (the object from which the resource was discovered)
@@ -50,7 +50,7 @@ func TranslatedObjectMeta(sourceObj ezkube.ClusterResourceId, annotations map[st
 // meshInstallation represents the mesh instance to which the object will be output
 func FederatedObjectMeta(
 	sourceObj ezkube.ClusterResourceId,
-	meshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	meshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 	annotations map[string]string,
 ) metav1.ObjectMeta {
 	if annotations == nil {
@@ -102,7 +102,7 @@ func AppendParent(
 	if annotations == nil {
 		annotations = make(map[string]string)
 	}
-	parentsAnnotation := make(map[string][]*v1.ObjectRef)
+	parentsAnnotation := make(map[string][]*skv2corev1.ObjectRef)
 	if paStr, ok := annotations[ParentLabelkey]; ok {
 		if err := json.Unmarshal([]byte(paStr), &parentsAnnotation); err != nil {
 			contextutils.LoggerFrom(ctx).Errorf("internal error: could not unmarshal %q annotation", ParentLabelkey)
@@ -112,7 +112,7 @@ func AppendParent(
 
 	typeParents, ok := parentsAnnotation[parentGVK.String()]
 	if !ok {
-		typeParents = make([]*v1.ObjectRef, 0, 1)
+		typeParents = make([]*skv2corev1.ObjectRef, 0, 1)
 	}
 	parentRef := ezkube.MakeObjectRef(parentId)
 	for _, parent := range typeParents {

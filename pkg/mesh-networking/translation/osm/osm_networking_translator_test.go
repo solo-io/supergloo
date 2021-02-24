@@ -5,7 +5,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	mock_output "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/smi/mocks"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
@@ -44,18 +44,18 @@ var _ = Describe("SmiNetworkingTranslator", func() {
 
 	It("should translate all meshes and traffictargets", func() {
 		in := input.NewInputLocalSnapshotManualBuilder("").
-			AddMeshes([]*discoveryv1alpha2.Mesh{
+			AddMeshes([]*discoveryv1.Mesh{
 				{
 					ObjectMeta: metav1.ObjectMeta{},
-					Spec:       discoveryv1alpha2.MeshSpec{},
-					Status:     discoveryv1alpha2.MeshStatus{},
+					Spec:       discoveryv1.MeshSpec{},
+					Status:     discoveryv1.MeshStatus{},
 				},
 			}).
-			AddDestinations([]*discoveryv1alpha2.Destination{
+			AddDestinations([]*discoveryv1.Destination{
 				{
 					ObjectMeta: metav1.ObjectMeta{},
-					Spec:       discoveryv1alpha2.DestinationSpec{},
-					Status:     discoveryv1alpha2.DestinationStatus{},
+					Spec:       discoveryv1.DestinationSpec{},
+					Status:     discoveryv1.DestinationStatus{},
 				},
 			}).
 			Build()

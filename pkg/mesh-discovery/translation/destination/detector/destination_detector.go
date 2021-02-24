@@ -5,14 +5,14 @@ import (
 	"strings"
 
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/localityutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/workloadutils"
 	"github.com/solo-io/go-utils/contextutils"
 	sets2 "github.com/solo-io/skv2/contrib/pkg/sets"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -43,10 +43,10 @@ type DestinationDetector interface {
 		service *corev1.Service,
 		pods corev1sets.PodSet,
 		nodes corev1sets.NodeSet,
-		workloads discoveryv1alpha2sets.WorkloadSet,
-		meshes discoveryv1alpha2sets.MeshSet,
+		workloads discoveryv1sets.WorkloadSet,
+		meshes discoveryv1sets.MeshSet,
 		endpoints corev1sets.EndpointsSet,
-	) *v1alpha2.Destination
+	) *v1.Destination
 }
 
 type destinationDetector struct{}
@@ -60,12 +60,12 @@ func (t *destinationDetector) DetectDestination(
 	service *corev1.Service,
 	pods corev1sets.PodSet,
 	nodes corev1sets.NodeSet,
-	workloads discoveryv1alpha2sets.WorkloadSet,
-	meshes discoveryv1alpha2sets.MeshSet,
+	workloads discoveryv1sets.WorkloadSet,
+	meshes discoveryv1sets.MeshSet,
 	endpoints corev1sets.EndpointsSet,
-) *v1alpha2.Destination {
+) *v1.Destination {
 
-	kubeService := &v1alpha2.DestinationSpec_KubeService{
+	kubeService := &v1.DestinationSpec_KubeService{
 		Ref:                    ezkube.MakeClusterObjectRef(service),
 		WorkloadSelectorLabels: service.Spec.Selector,
 		Labels:                 service.Labels,
@@ -79,10 +79,10 @@ func (t *destinationDetector) DetectDestination(
 	}
 	kubeService.Region = region
 
-	destination := &v1alpha2.Destination{
+	destination := &v1.Destination{
 		ObjectMeta: utils.DiscoveredObjectMeta(service),
-		Spec: v1alpha2.DestinationSpec{
-			Type: &v1alpha2.DestinationSpec_KubeService_{
+		Spec: v1.DestinationSpec{
+			Type: &v1.DestinationSpec_KubeService_{
 				KubeService: kubeService,
 			},
 		},
@@ -107,15 +107,15 @@ func (t *destinationDetector) DetectDestination(
 
 func addMeshForKubeService(
 	ctx context.Context,
-	tt *v1alpha2.Destination,
+	tt *v1.Destination,
 	service *corev1.Service,
-	meshWorkloads discoveryv1alpha2sets.WorkloadSet,
-	meshes discoveryv1alpha2sets.MeshSet,
+	meshWorkloads discoveryv1sets.WorkloadSet,
+	meshes discoveryv1sets.MeshSet,
 	endpoints corev1sets.EndpointsSet,
 	nodes corev1sets.NodeSet,
 ) bool {
 
-	var validMesh *v1.ObjectRef
+	var validMesh *skv2corev1.ObjectRef
 
 	// TODO: support subsets from services which have been discovered via the annotation
 	discoveryEnabled, ok := service.Annotations[DiscoveryMeshAnnotation]
@@ -125,12 +125,12 @@ func addMeshForKubeService(
 		for _, mesh := range meshes.List() {
 			mesh := mesh
 			switch typedMesh := mesh.Spec.GetType().(type) {
-			case *v1alpha2.MeshSpec_Osm:
+			case *v1.MeshSpec_Osm:
 				if typedMesh.Osm.GetInstallation().GetCluster() == service.GetClusterName() {
 					validMesh = ezkube.MakeObjectRef(mesh)
 					break
 				}
-			case *v1alpha2.MeshSpec_Istio_:
+			case *v1.MeshSpec_Istio_:
 				if typedMesh.Istio.GetInstallation().GetCluster() == service.GetClusterName() {
 					validMesh = ezkube.MakeObjectRef(mesh)
 					break
@@ -163,8 +163,8 @@ func addMeshForKubeService(
 
 func handleWorkloadDiscoveredMesh(
 	ctx context.Context,
-	tt *v1alpha2.Destination,
-	backingWorkloads v1alpha2.WorkloadSlice,
+	tt *v1.Destination,
+	backingWorkloads v1.WorkloadSlice,
 	endpoints corev1sets.EndpointsSet,
 	nodes corev1sets.NodeSet,
 ) {
@@ -190,17 +190,17 @@ func handleWorkloadDiscoveredMesh(
 
 func findEndpoints(
 	ctx context.Context,
-	backingWorkloads v1alpha2.WorkloadSlice,
+	backingWorkloads v1.WorkloadSlice,
 	endpoint *corev1.Endpoints,
 	nodes corev1sets.NodeSet,
-	kubeService *v1alpha2.DestinationSpec_KubeService,
+	kubeService *v1.DestinationSpec_KubeService,
 ) {
 
 	for _, epSub := range endpoint.Subsets {
-		sub := &v1alpha2.DestinationSpec_KubeService_EndpointsSubset{}
+		sub := &v1.DestinationSpec_KubeService_EndpointsSubset{}
 		for _, addr := range epSub.Addresses {
 			addr := addr
-			ep := &v1alpha2.DestinationSpec_KubeService_EndpointsSubset_Endpoint{
+			ep := &v1.DestinationSpec_KubeService_EndpointsSubset_Endpoint{
 				IpAddress: addr.IP,
 			}
 
@@ -242,7 +242,7 @@ func findEndpoints(
 
 		for _, port := range epSub.Ports {
 			port := port
-			svcPort := &v1alpha2.DestinationSpec_KubeService_KubeServicePort{
+			svcPort := &v1.DestinationSpec_KubeService_KubeServicePort{
 				Port:     uint32(port.Port),
 				Name:     port.Name,
 				Protocol: string(port.Protocol),
@@ -267,7 +267,7 @@ func findEndpoints(
 }
 
 // expects a list of just the workloads that back the service you're finding subsets for
-func findSubsets(backingWorkloads v1alpha2.WorkloadSlice) map[string]*v1alpha2.DestinationSpec_KubeService_Subset {
+func findSubsets(backingWorkloads v1.WorkloadSlice) map[string]*v1.DestinationSpec_KubeService_Subset {
 	uniqueLabels := make(map[string]sets.String)
 	for _, backingWorkload := range backingWorkloads {
 		for key, val := range backingWorkload.Spec.GetKubernetes().GetPodLabels() {
@@ -291,10 +291,10 @@ func findSubsets(backingWorkloads v1alpha2.WorkloadSlice) map[string]*v1alpha2.D
 				- v1
 				- v2
 	*/
-	subsets := make(map[string]*v1alpha2.DestinationSpec_KubeService_Subset)
+	subsets := make(map[string]*v1.DestinationSpec_KubeService_Subset)
 	for k, v := range uniqueLabels {
 		if v.Len() > 1 {
-			subsets[k] = &v1alpha2.DestinationSpec_KubeService_Subset{Values: v.List()}
+			subsets[k] = &v1.DestinationSpec_KubeService_Subset{Values: v.List()}
 		}
 	}
 	if len(subsets) == 0 {
@@ -304,9 +304,9 @@ func findSubsets(backingWorkloads v1alpha2.WorkloadSlice) map[string]*v1alpha2.D
 	return subsets
 }
 
-func convertPorts(service *corev1.Service) (ports []*v1alpha2.DestinationSpec_KubeService_KubeServicePort) {
+func convertPorts(service *corev1.Service) (ports []*v1.DestinationSpec_KubeService_KubeServicePort) {
 	for _, kubePort := range service.Spec.Ports {
-		ports = append(ports, &v1alpha2.DestinationSpec_KubeService_KubeServicePort{
+		ports = append(ports, &v1.DestinationSpec_KubeService_KubeServicePort{
 			Port:        uint32(kubePort.Port),
 			Name:        kubePort.Name,
 			Protocol:    string(kubePort.Protocol),

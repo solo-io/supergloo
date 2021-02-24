@@ -8,11 +8,11 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
-	commonv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha2"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
-	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
@@ -49,7 +49,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockDecorator = mock_trafficpolicy.NewMockTrafficPolicyVirtualServiceDecorator(ctrl)
 		virtualServiceTranslator = virtualservice.NewTranslator(nil, mockClusterDomainRegistry, mockDecoratorFactory)
-		in = input.NewInputLocalSnapshotManualBuilder("").AddSettings(settingsv1alpha2.SettingsSlice{{}}).Build()
+		in = input.NewInputLocalSnapshotManualBuilder("").AddSettings(settingsv1.SettingsSlice{{}}).Build()
 	})
 
 	AfterEach(func() {
@@ -60,19 +60,19 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		sourceSelectorLabels := map[string]string{"env": "dev"}
 		sourceSelectorNamespaces := []string{"n1", "n2"}
 
-		destination := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "traffic-target",
 			},
-			Spec: discoveryv1alpha2.DestinationSpec{
-				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
 							Name:        "traffic-target",
 							Namespace:   "traffic-target-namespace",
 							ClusterName: "traffic-target-cluster",
 						},
-						Ports: []*discoveryv1alpha2.DestinationSpec_KubeService_KubeServicePort{
+						Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 							{
 								Port:     8080,
 								Name:     "http1",
@@ -87,29 +87,29 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				},
 			},
-			Status: discoveryv1alpha2.DestinationStatus{
-				AppliedTrafficPolicies: []*discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
+			Status: discoveryv1.DestinationStatus{
+				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
 					{
 						Ref: &v1.ObjectRef{
 							Name:      "tp-1",
 							Namespace: "tp-namespace-1",
 						},
-						Spec: &networkingv1alpha2.TrafficPolicySpec{
-							SourceSelector: []*commonv1alpha2.WorkloadSelector{
+						Spec: &networkingv1.TrafficPolicySpec{
+							SourceSelector: []*commonv1.WorkloadSelector{
 								{
 									Labels:     sourceSelectorLabels,
 									Namespaces: sourceSelectorNamespaces,
 								},
 							},
-							HttpRequestMatchers: []*networkingv1alpha2.TrafficPolicySpec_HttpMatcher{
+							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
 								{
-									PathSpecifier: &networkingv1alpha2.TrafficPolicySpec_HttpMatcher_Exact{
+									PathSpecifier: &networkingv1.TrafficPolicySpec_HttpMatcher_Exact{
 										Exact: "path",
 									},
 									Method: "GET",
 								},
 								{
-									Headers: []*commonv1alpha2.HeaderMatcher{
+									Headers: []*commonv1.HeaderMatcher{
 										{
 											Name:        "name3",
 											Value:       "[a-z]+",
@@ -120,8 +120,8 @@ var _ = Describe("VirtualServiceTranslator", func() {
 									Method: "POST",
 								},
 							},
-							Policy: &networkingv1alpha2.TrafficPolicySpec_Policy{
-								Retries: &networkingv1alpha2.TrafficPolicySpec_Policy_RetryPolicy{
+							Policy: &networkingv1.TrafficPolicySpec_Policy{
+								Retries: &networkingv1.TrafficPolicySpec_Policy_RetryPolicy{
 									Attempts: 5,
 								},
 							},
@@ -132,22 +132,22 @@ var _ = Describe("VirtualServiceTranslator", func() {
 							Name:      "tp-2",
 							Namespace: "tp-namespace-2",
 						},
-						Spec: &networkingv1alpha2.TrafficPolicySpec{
-							SourceSelector: []*commonv1alpha2.WorkloadSelector{
+						Spec: &networkingv1.TrafficPolicySpec{
+							SourceSelector: []*commonv1.WorkloadSelector{
 								{
 									Labels:     sourceSelectorLabels,
 									Namespaces: sourceSelectorNamespaces,
 								},
 							},
-							HttpRequestMatchers: []*networkingv1alpha2.TrafficPolicySpec_HttpMatcher{
+							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
 								{
-									PathSpecifier: &networkingv1alpha2.TrafficPolicySpec_HttpMatcher_Exact{
+									PathSpecifier: &networkingv1.TrafficPolicySpec_HttpMatcher_Exact{
 										Exact: "path",
 									},
 									Method: "GET",
 								},
 								{
-									Headers: []*commonv1alpha2.HeaderMatcher{
+									Headers: []*commonv1.HeaderMatcher{
 										{
 											Name:        "name3",
 											Value:       "[a-z]+",
@@ -158,10 +158,10 @@ var _ = Describe("VirtualServiceTranslator", func() {
 									Method: "POST",
 								},
 							},
-							Policy: &networkingv1alpha2.TrafficPolicySpec_Policy{
-								FaultInjection: &networkingv1alpha2.TrafficPolicySpec_Policy_FaultInjection{
-									FaultInjectionType: &networkingv1alpha2.TrafficPolicySpec_Policy_FaultInjection_Abort_{
-										Abort: &networkingv1alpha2.TrafficPolicySpec_Policy_FaultInjection_Abort{
+							Policy: &networkingv1.TrafficPolicySpec_Policy{
+								FaultInjection: &networkingv1.TrafficPolicySpec_Policy_FaultInjection{
+									FaultInjectionType: &networkingv1.TrafficPolicySpec_Policy_FaultInjection_Abort_{
+										Abort: &networkingv1.TrafficPolicySpec_Policy_FaultInjection_Abort{
 											HttpStatus: 500,
 										},
 									},
@@ -432,9 +432,9 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				gomock.Any(),
 			).DoAndReturn(
 			func(
-				appliedPolicy *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy,
-				service *discoveryv1alpha2.Destination,
-				sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+				service *discoveryv1.Destination,
+				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
@@ -456,9 +456,9 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				gomock.Any(),
 			).DoAndReturn(
 			func(
-				appliedPolicy *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy,
-				service *discoveryv1alpha2.Destination,
-				sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+				service *discoveryv1.Destination,
+				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
@@ -474,25 +474,25 @@ var _ = Describe("VirtualServiceTranslator", func() {
 	It("should translate for a federated Destination", func() {
 		sourceSelectorLabels := map[string]string{"env": "dev"}
 		sourceSelectorNamespaces := []string{"n1", "n2"}
-		meshInstallation := &discoveryv1alpha2.MeshSpec_MeshInstallation{
+		meshInstallation := &discoveryv1.MeshSpec_MeshInstallation{
 			Namespace: "foobar",
 			Cluster:   "mgmt-cluster",
 		}
 
-		destination := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:        "traffic-target",
 				ClusterName: "remote-cluster",
 			},
-			Spec: discoveryv1alpha2.DestinationSpec{
-				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
 							Name:        "traffic-target",
 							Namespace:   "traffic-target-namespace",
 							ClusterName: "traffic-target-cluster",
 						},
-						Ports: []*discoveryv1alpha2.DestinationSpec_KubeService_KubeServicePort{
+						Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 							{
 								Port:     8080,
 								Name:     "http1",
@@ -507,29 +507,29 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				},
 			},
-			Status: discoveryv1alpha2.DestinationStatus{
-				AppliedTrafficPolicies: []*discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
+			Status: discoveryv1.DestinationStatus{
+				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
 					{
 						Ref: &v1.ObjectRef{
 							Name:      "tp-1",
 							Namespace: "tp-namespace-1",
 						},
-						Spec: &networkingv1alpha2.TrafficPolicySpec{
-							SourceSelector: []*commonv1alpha2.WorkloadSelector{
+						Spec: &networkingv1.TrafficPolicySpec{
+							SourceSelector: []*commonv1.WorkloadSelector{
 								{
 									Labels:     sourceSelectorLabels,
 									Namespaces: sourceSelectorNamespaces,
 								},
 							},
-							HttpRequestMatchers: []*networkingv1alpha2.TrafficPolicySpec_HttpMatcher{
+							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
 								{
-									PathSpecifier: &networkingv1alpha2.TrafficPolicySpec_HttpMatcher_Exact{
+									PathSpecifier: &networkingv1.TrafficPolicySpec_HttpMatcher_Exact{
 										Exact: "path",
 									},
 									Method: "GET",
 								},
 								{
-									Headers: []*commonv1alpha2.HeaderMatcher{
+									Headers: []*commonv1.HeaderMatcher{
 										{
 											Name:        "name3",
 											Value:       "[a-z]+",
@@ -540,8 +540,8 @@ var _ = Describe("VirtualServiceTranslator", func() {
 									Method: "POST",
 								},
 							},
-							Policy: &networkingv1alpha2.TrafficPolicySpec_Policy{
-								Retries: &networkingv1alpha2.TrafficPolicySpec_Policy_RetryPolicy{
+							Policy: &networkingv1.TrafficPolicySpec_Policy{
+								Retries: &networkingv1.TrafficPolicySpec_Policy_RetryPolicy{
 									Attempts: 5,
 								},
 							},
@@ -794,9 +794,9 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				gomock.Any(),
 			).DoAndReturn(
 			func(
-				appliedPolicy *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy,
-				service *discoveryv1alpha2.Destination,
-				sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+				service *discoveryv1.Destination,
+				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
@@ -816,19 +816,19 @@ var _ = Describe("VirtualServiceTranslator", func() {
 	})
 
 	It("should not output a VirtualService if translated VirtualService has no HttpRoutes", func() {
-		destination := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "traffic-target",
 			},
-			Spec: discoveryv1alpha2.DestinationSpec{
-				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
 							Name:        "traffic-target",
 							Namespace:   "traffic-target-namespace",
 							ClusterName: "traffic-target-cluster",
 						},
-						Ports: []*discoveryv1alpha2.DestinationSpec_KubeService_KubeServicePort{
+						Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 							{
 								Port:     8080,
 								Name:     "http1",
@@ -838,16 +838,16 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				},
 			},
-			Status: discoveryv1alpha2.DestinationStatus{
-				AppliedTrafficPolicies: []*discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
+			Status: discoveryv1.DestinationStatus{
+				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
 					{
 						Ref: &v1.ObjectRef{
 							Name:      "tp-1",
 							Namespace: "tp-namespace-1",
 						},
-						Spec: &networkingv1alpha2.TrafficPolicySpec{
-							Policy: &networkingv1alpha2.TrafficPolicySpec_Policy{
-								OutlierDetection: &networkingv1alpha2.TrafficPolicySpec_Policy_OutlierDetection{
+						Spec: &networkingv1.TrafficPolicySpec{
+							Policy: &networkingv1.TrafficPolicySpec_Policy{
+								OutlierDetection: &networkingv1.TrafficPolicySpec_Policy_OutlierDetection{
 									ConsecutiveErrors: 5,
 								},
 							},
@@ -886,19 +886,19 @@ var _ = Describe("VirtualServiceTranslator", func() {
 	})
 
 	It("should not output an HttpRoute if TrafficPolicy's WorkloadSelector does not select source cluster", func() {
-		destination := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "traffic-target",
 			},
-			Spec: discoveryv1alpha2.DestinationSpec{
-				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
 							Name:        "traffic-target",
 							Namespace:   "traffic-target-namespace",
 							ClusterName: "traffic-target-cluster",
 						},
-						Ports: []*discoveryv1alpha2.DestinationSpec_KubeService_KubeServicePort{
+						Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 							{
 								Port:     8080,
 								Name:     "http1",
@@ -908,21 +908,21 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				},
 			},
-			Status: discoveryv1alpha2.DestinationStatus{
-				AppliedTrafficPolicies: []*discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
+			Status: discoveryv1.DestinationStatus{
+				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
 					{
 						Ref: &v1.ObjectRef{
 							Name:      "tp-1",
 							Namespace: "tp-namespace-1",
 						},
-						Spec: &networkingv1alpha2.TrafficPolicySpec{
-							SourceSelector: []*commonv1alpha2.WorkloadSelector{
+						Spec: &networkingv1.TrafficPolicySpec{
+							SourceSelector: []*commonv1.WorkloadSelector{
 								{
 									Clusters: []string{"foobar"},
 								},
 							},
-							Policy: &networkingv1alpha2.TrafficPolicySpec_Policy{
-								OutlierDetection: &networkingv1alpha2.TrafficPolicySpec_Policy_OutlierDetection{
+							Policy: &networkingv1.TrafficPolicySpec_Policy{
+								OutlierDetection: &networkingv1.TrafficPolicySpec_Policy_OutlierDetection{
 									ConsecutiveErrors: 5,
 								},
 							},
@@ -950,19 +950,19 @@ var _ = Describe("VirtualServiceTranslator", func() {
 	})
 
 	It("should not output a VirtualService if it contains a host that is already configured by an existing VirtualService not owned by Gloo Mesh", func() {
-		destination := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "traffic-target",
 			},
-			Spec: discoveryv1alpha2.DestinationSpec{
-				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
 							Name:        "traffic-target",
 							Namespace:   "traffic-target-namespace",
 							ClusterName: "traffic-target-cluster",
 						},
-						Ports: []*discoveryv1alpha2.DestinationSpec_KubeService_KubeServicePort{
+						Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 							{
 								Port:     8080,
 								Name:     "http1",
@@ -972,21 +972,21 @@ var _ = Describe("VirtualServiceTranslator", func() {
 					},
 				},
 			},
-			Status: discoveryv1alpha2.DestinationStatus{
-				AppliedTrafficPolicies: []*discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
+			Status: discoveryv1.DestinationStatus{
+				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
 					{
 						Ref: &v1.ObjectRef{
 							Name:      "tp-1",
 							Namespace: "tp-namespace-1",
 						},
-						Spec: &networkingv1alpha2.TrafficPolicySpec{
-							SourceSelector: []*commonv1alpha2.WorkloadSelector{
+						Spec: &networkingv1.TrafficPolicySpec{
+							SourceSelector: []*commonv1.WorkloadSelector{
 								{
 									Clusters: []string{"traffic-target-cluster"},
 								},
 							},
-							Policy: &networkingv1alpha2.TrafficPolicySpec_Policy{
-								Retries: &networkingv1alpha2.TrafficPolicySpec_Policy_RetryPolicy{
+							Policy: &networkingv1.TrafficPolicySpec_Policy{
+								Retries: &networkingv1.TrafficPolicySpec_Policy_RetryPolicy{
 									Attempts: 5,
 								},
 							},
@@ -997,13 +997,13 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		}
 
 		in = input.NewInputLocalSnapshotManualBuilder("").
-			AddSettings(settingsv1alpha2.SettingsSlice{
+			AddSettings(settingsv1.SettingsSlice{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      defaults.DefaultSettingsName,
 						Namespace: defaults.DefaultPodNamespace,
 					},
-					Spec: settingsv1alpha2.SettingsSpec{},
+					Spec: settingsv1.SettingsSpec{},
 				},
 			}).
 			Build()
@@ -1044,9 +1044,9 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				gomock.Any(),
 			).DoAndReturn(
 			func(
-				appliedPolicy *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy,
-				service *discoveryv1alpha2.Destination,
-				sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+				service *discoveryv1.Destination,
+				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 				output *networkingv1alpha3spec.HTTPRoute,
 				registerField decorators.RegisterField,
 			) error {
@@ -1063,7 +1063,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				destination,
 				destination.Status.AppliedTrafficPolicies[0].Ref,
 				gomock.Any()).
-			DoAndReturn(func(destination *discoveryv1alpha2.Destination, trafficPolicy ezkube.ResourceId, err error) {
+			DoAndReturn(func(destination *discoveryv1.Destination, trafficPolicy ezkube.ResourceId, err error) {
 				Expect(err).To(testutils.HaveInErrorChain(
 					eris.Errorf("Unable to translate AppliedTrafficPolicies to VirtualService, applies to hosts %+v that are already configured by the existing VirtualService %s",
 						[]string{"local-hostname"},

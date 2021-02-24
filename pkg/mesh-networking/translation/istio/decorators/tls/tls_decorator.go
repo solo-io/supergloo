@@ -2,8 +2,8 @@ package tls
 
 import (
 	"github.com/rotisserie/eris"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
@@ -34,8 +34,8 @@ func (d *tlsDecorator) DecoratorName() string {
 }
 
 func (d *tlsDecorator) ApplyTrafficPolicyToDestinationRule(
-	appliedPolicy *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy,
-	_ *discoveryv1alpha2.Destination,
+	appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+	_ *discoveryv1.Destination,
 	output *networkingv1alpha3spec.DestinationRule,
 	registerField decorators.RegisterField,
 ) error {
@@ -54,7 +54,7 @@ func (d *tlsDecorator) ApplyTrafficPolicyToDestinationRule(
 }
 
 func (d *tlsDecorator) translateTlsSettings(
-	trafficPolicy *v1alpha2.TrafficPolicySpec,
+	trafficPolicy *v1.TrafficPolicySpec,
 ) (*networkingv1alpha3spec.ClientTLSSettings, error) {
 	// If TrafficPolicy doesn't specify mTLS configuration, use global default populated upstream during initialization.
 	istioMtls := trafficPolicy.GetPolicy().GetMtls().GetIstio()
@@ -70,13 +70,13 @@ func (d *tlsDecorator) translateTlsSettings(
 	}, nil
 }
 
-func MapIstioTlsMode(tlsMode v1alpha2.TrafficPolicySpec_Policy_MTLS_Istio_TLSmode) (networkingv1alpha3spec.ClientTLSSettings_TLSmode, error) {
+func MapIstioTlsMode(tlsMode v1.TrafficPolicySpec_Policy_MTLS_Istio_TLSmode) (networkingv1alpha3spec.ClientTLSSettings_TLSmode, error) {
 	switch tlsMode {
-	case v1alpha2.TrafficPolicySpec_Policy_MTLS_Istio_DISABLE:
+	case v1.TrafficPolicySpec_Policy_MTLS_Istio_DISABLE:
 		return networkingv1alpha3spec.ClientTLSSettings_DISABLE, nil
-	case v1alpha2.TrafficPolicySpec_Policy_MTLS_Istio_SIMPLE:
+	case v1.TrafficPolicySpec_Policy_MTLS_Istio_SIMPLE:
 		return networkingv1alpha3spec.ClientTLSSettings_SIMPLE, nil
-	case v1alpha2.TrafficPolicySpec_Policy_MTLS_Istio_ISTIO_MUTUAL:
+	case v1.TrafficPolicySpec_Policy_MTLS_Istio_ISTIO_MUTUAL:
 		return networkingv1alpha3spec.ClientTLSSettings_ISTIO_MUTUAL, nil
 	default:
 		return 0, eris.Errorf("unrecognized Istio TLS mode %s", tlsMode)

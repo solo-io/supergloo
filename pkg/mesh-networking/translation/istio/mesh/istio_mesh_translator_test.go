@@ -9,7 +9,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh"
@@ -49,23 +49,23 @@ var _ = Describe("IstioMeshTranslator", func() {
 		outputs := istio.NewBuilder(context.TODO(), "")
 		localOutputs := local.NewBuilder(context.TODO(), "")
 
-		istioMesh := &discoveryv1alpha2.Mesh{
+		istioMesh := &discoveryv1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "mesh-1",
 				Namespace: "mesh-namespace-1",
 			},
-			Spec: discoveryv1alpha2.MeshSpec{
-				Type: &discoveryv1alpha2.MeshSpec_Istio_{
-					Istio: &discoveryv1alpha2.MeshSpec_Istio{
-						Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+			Spec: discoveryv1.MeshSpec{
+				Type: &discoveryv1.MeshSpec_Istio_{
+					Istio: &discoveryv1.MeshSpec_Istio{
+						Installation: &discoveryv1.MeshSpec_MeshInstallation{
 							Cluster:   "cluster-1",
 							Namespace: "istio-system",
 						},
 					},
 				},
 			},
-			Status: discoveryv1alpha2.MeshStatus{
-				AppliedVirtualMesh: &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{},
+			Status: discoveryv1.MeshStatus{
+				AppliedVirtualMesh: &discoveryv1.MeshStatus_AppliedVirtualMesh{},
 			},
 		}
 

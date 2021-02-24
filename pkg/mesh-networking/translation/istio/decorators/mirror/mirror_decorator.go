@@ -2,9 +2,9 @@ package mirror
 
 import (
 	"github.com/rotisserie/eris"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
@@ -28,14 +28,14 @@ func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
 // handles setting Mirror on a VirtualService
 type mirrorDecorator struct {
 	clusterDomains hostutils.ClusterDomainRegistry
-	destinations   discoveryv1alpha2sets.DestinationSet
+	destinations   discoveryv1sets.DestinationSet
 }
 
 var _ decorators.TrafficPolicyVirtualServiceDecorator = &mirrorDecorator{}
 
 func NewMirrorDecorator(
 	clusterDomains hostutils.ClusterDomainRegistry,
-	destinations discoveryv1alpha2sets.DestinationSet,
+	destinations discoveryv1sets.DestinationSet,
 ) *mirrorDecorator {
 	return &mirrorDecorator{
 		clusterDomains: clusterDomains,
@@ -48,9 +48,9 @@ func (d *mirrorDecorator) DecoratorName() string {
 }
 
 func (d *mirrorDecorator) ApplyTrafficPolicyToVirtualService(
-	appliedPolicy *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy,
-	destination *discoveryv1alpha2.Destination,
-	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+	destination *discoveryv1.Destination,
+	sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
@@ -70,8 +70,8 @@ func (d *mirrorDecorator) ApplyTrafficPolicyToVirtualService(
 
 // If federatedClusterName is non-empty, it indicates translation for a federated VirtualService, so use it as the source cluster name.
 func (d *mirrorDecorator) translateMirror(
-	destination *discoveryv1alpha2.Destination,
-	trafficPolicy *v1alpha2.TrafficPolicySpec,
+	destination *discoveryv1.Destination,
+	trafficPolicy *v1.TrafficPolicySpec,
 	sourceClusterName string,
 ) (*networkingv1alpha3spec.Destination, *networkingv1alpha3spec.Percent, error) {
 	mirror := trafficPolicy.GetPolicy().GetMirror()
@@ -84,7 +84,7 @@ func (d *mirrorDecorator) translateMirror(
 
 	var translatedMirror *networkingv1alpha3spec.Destination
 	switch destinationType := mirror.DestinationType.(type) {
-	case *v1alpha2.TrafficPolicySpec_Policy_Mirror_KubeService:
+	case *v1.TrafficPolicySpec_Policy_Mirror_KubeService:
 		var err error
 		translatedMirror, err = d.makeKubeDestinationMirror(
 			destinationType,
@@ -105,9 +105,9 @@ func (d *mirrorDecorator) translateMirror(
 }
 
 func (d *mirrorDecorator) makeKubeDestinationMirror(
-	mirrorDest *v1alpha2.TrafficPolicySpec_Policy_Mirror_KubeService,
+	mirrorDest *v1.TrafficPolicySpec_Policy_Mirror_KubeService,
 	port uint32,
-	destination *discoveryv1alpha2.Destination,
+	destination *discoveryv1.Destination,
 	sourceClusterName string,
 ) (*networkingv1alpha3spec.Destination, error) {
 	destinationRef := mirrorDest.KubeService

@@ -18,32 +18,32 @@ var (
 	glooMeshApiRoot = "pkg/api"
 )
 
-var GlooMeshSettingsGroup = makeGroup("settings", "v1alpha2", []ResourceToGenerate{
+var GlooMeshSettingsGroup = makeGroup("settings", "v1", []ResourceToGenerate{
 	{Kind: "Settings"},
 })
 
-var GlooMeshDiscoveryGroup = makeGroup("discovery", "v1alpha2", []ResourceToGenerate{
+var GlooMeshDiscoveryGroup = makeGroup("discovery", "v1", []ResourceToGenerate{
 	{Kind: "Destination"},
 	{Kind: "Workload"},
 	{Kind: "Mesh"},
 })
 
-var GlooMeshNetworkingGroup = makeGroup("networking", "v1alpha2", []ResourceToGenerate{
+var GlooMeshNetworkingGroup = makeGroup("networking", "v1", []ResourceToGenerate{
 	{Kind: "TrafficPolicy"},
 	{Kind: "AccessPolicy"},
 	{Kind: "VirtualMesh"},
 })
 
-var GlooMeshEnterpriseNetworkingGroup = makeGroup("networking.enterprise", "v1alpha1", []ResourceToGenerate{
+var GlooMeshEnterpriseNetworkingGroup = makeGroup("networking.enterprise", "v1beta1", []ResourceToGenerate{
 	{Kind: "WasmDeployment"},
 	{Kind: "VirtualDestination"},
 })
 
-var GlooMeshEnterpriseObservabilityGroup = makeGroup("observability.enterprise", "v1alpha1", []ResourceToGenerate{
+var GlooMeshEnterpriseObservabilityGroup = makeGroup("observability.enterprise", "v1", []ResourceToGenerate{
 	{Kind: "AccessLogRecord"},
 })
 
-var GlooMeshEnterpriseRbacGroup = makeGroup("rbac.enterprise", "v1alpha1", []ResourceToGenerate{
+var GlooMeshEnterpriseRbacGroup = makeGroup("rbac.enterprise", "v1", []ResourceToGenerate{
 	{Kind: "Role", ShortNames: []string{"gmrole", "gmroles"}},
 	{Kind: "RoleBinding", ShortNames: []string{"gmrolebinding", "gmrolebindings"}},
 })
@@ -58,14 +58,14 @@ var GlooMeshGroups = []model.Group{
 }
 
 var CertAgentGroups = []model.Group{
-	makeGroup("certificates", "v1alpha2", []ResourceToGenerate{
+	makeGroup("certificates", "v1", []ResourceToGenerate{
 		{Kind: "IssuedCertificate"},
 		{Kind: "CertificateRequest"},
 		{Kind: "PodBounceDirective"},
 	}),
 }
 
-var XdsAgentGroup = makeGroup("xds.agent.enterprise", "v1alpha1", []ResourceToGenerate{
+var XdsAgentGroup = makeGroup("xds.agent.enterprise", "v1beta1", []ResourceToGenerate{
 	{Kind: "XdsConfig"},
 })
 

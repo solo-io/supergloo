@@ -21,8 +21,8 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	discovery_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	discovery_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	discovery_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	discovery_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 )
 
 // this error can occur if constructing a Partitioned Snapshot from a resource
@@ -36,17 +36,17 @@ var SnapshotGVKs = []schema.GroupVersionKind{
 
 	schema.GroupVersionKind{
 		Group:   "discovery.mesh.gloo.solo.io",
-		Version: "v1alpha2",
+		Version: "v1",
 		Kind:    "Destination",
 	},
 	schema.GroupVersionKind{
 		Group:   "discovery.mesh.gloo.solo.io",
-		Version: "v1alpha2",
+		Version: "v1",
 		Kind:    "Workload",
 	},
 	schema.GroupVersionKind{
 		Group:   "discovery.mesh.gloo.solo.io",
-		Version: "v1alpha2",
+		Version: "v1",
 		Kind:    "Mesh",
 	},
 }
@@ -104,9 +104,9 @@ func NewLabelPartitionedSnapshot(
 	name,
 	labelKey string, // the key by which to partition the resources
 
-	destinations discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet,
-	workloads discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet,
-	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
+	destinations discovery_mesh_gloo_solo_io_v1_sets.DestinationSet,
+	workloads discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet,
+	meshes discovery_mesh_gloo_solo_io_v1_sets.MeshSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
@@ -139,9 +139,9 @@ func NewSinglePartitionedSnapshot(
 	name string,
 	snapshotLabels map[string]string, // a single set of labels shared by all resources
 
-	destinations discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet,
-	workloads discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet,
-	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
+	destinations discovery_mesh_gloo_solo_io_v1_sets.DestinationSet,
+	workloads discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet,
+	meshes discovery_mesh_gloo_solo_io_v1_sets.MeshSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
 ) (Snapshot, error) {
 
@@ -209,8 +209,8 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 	}.SyncMultiCluster(ctx, multiClusterClient, errHandler)
 }
 
-func partitionDestinationsByLabel(labelKey string, set discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet) ([]LabeledDestinationSet, error) {
-	setsByLabel := map[string]discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet{}
+func partitionDestinationsByLabel(labelKey string, set discovery_mesh_gloo_solo_io_v1_sets.DestinationSet) ([]LabeledDestinationSet, error) {
+	setsByLabel := map[string]discovery_mesh_gloo_solo_io_v1_sets.DestinationSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
@@ -223,7 +223,7 @@ func partitionDestinationsByLabel(labelKey string, set discovery_mesh_gloo_solo_
 
 		setForValue, ok := setsByLabel[labelValue]
 		if !ok {
-			setForValue = discovery_mesh_gloo_solo_io_v1alpha2_sets.NewDestinationSet()
+			setForValue = discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet()
 			setsByLabel[labelValue] = setForValue
 		}
 		setForValue.Insert(obj)
@@ -253,8 +253,8 @@ func partitionDestinationsByLabel(labelKey string, set discovery_mesh_gloo_solo_
 	return partitionedDestinations, nil
 }
 
-func partitionWorkloadsByLabel(labelKey string, set discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet) ([]LabeledWorkloadSet, error) {
-	setsByLabel := map[string]discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet{}
+func partitionWorkloadsByLabel(labelKey string, set discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet) ([]LabeledWorkloadSet, error) {
+	setsByLabel := map[string]discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
@@ -267,7 +267,7 @@ func partitionWorkloadsByLabel(labelKey string, set discovery_mesh_gloo_solo_io_
 
 		setForValue, ok := setsByLabel[labelValue]
 		if !ok {
-			setForValue = discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet()
+			setForValue = discovery_mesh_gloo_solo_io_v1_sets.NewWorkloadSet()
 			setsByLabel[labelValue] = setForValue
 		}
 		setForValue.Insert(obj)
@@ -297,8 +297,8 @@ func partitionWorkloadsByLabel(labelKey string, set discovery_mesh_gloo_solo_io_
 	return partitionedWorkloads, nil
 }
 
-func partitionMeshesByLabel(labelKey string, set discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet) ([]LabeledMeshSet, error) {
-	setsByLabel := map[string]discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet{}
+func partitionMeshesByLabel(labelKey string, set discovery_mesh_gloo_solo_io_v1_sets.MeshSet) ([]LabeledMeshSet, error) {
+	setsByLabel := map[string]discovery_mesh_gloo_solo_io_v1_sets.MeshSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
@@ -311,7 +311,7 @@ func partitionMeshesByLabel(labelKey string, set discovery_mesh_gloo_solo_io_v1a
 
 		setForValue, ok := setsByLabel[labelValue]
 		if !ok {
-			setForValue = discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet()
+			setForValue = discovery_mesh_gloo_solo_io_v1_sets.NewMeshSet()
 			setsByLabel[labelValue] = setForValue
 		}
 		setForValue.Insert(obj)
@@ -356,17 +356,17 @@ func (s snapshot) Meshes() []LabeledMeshSet {
 func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
-	destinationSet := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewDestinationSet()
+	destinationSet := discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet()
 	for _, set := range s.destinations {
 		destinationSet = destinationSet.Union(set.Set())
 	}
 	snapshotMap["destinations"] = destinationSet.List()
-	workloadSet := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet()
+	workloadSet := discovery_mesh_gloo_solo_io_v1_sets.NewWorkloadSet()
 	for _, set := range s.workloads {
 		workloadSet = workloadSet.Union(set.Set())
 	}
 	snapshotMap["workloads"] = workloadSet.List()
-	meshSet := discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet()
+	meshSet := discovery_mesh_gloo_solo_io_v1_sets.NewMeshSet()
 	for _, set := range s.meshes {
 		meshSet = meshSet.Union(set.Set())
 	}
@@ -385,18 +385,18 @@ type LabeledDestinationSet interface {
 	Labels() map[string]string
 
 	// returns the set of Destinationes with the given labels
-	Set() discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet
+	Set() discovery_mesh_gloo_solo_io_v1_sets.DestinationSet
 
 	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
 	Generic() output.ResourceList
 }
 
 type labeledDestinationSet struct {
-	set    discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet
+	set    discovery_mesh_gloo_solo_io_v1_sets.DestinationSet
 	labels map[string]string
 }
 
-func NewLabeledDestinationSet(set discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet, labels map[string]string) (LabeledDestinationSet, error) {
+func NewLabeledDestinationSet(set discovery_mesh_gloo_solo_io_v1_sets.DestinationSet, labels map[string]string) (LabeledDestinationSet, error) {
 	// validate that each Destination contains the labels, else this is not a valid LabeledDestinationSet
 	for _, item := range set.List() {
 		for k, v := range labels {
@@ -414,7 +414,7 @@ func (l *labeledDestinationSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledDestinationSet) Set() discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet {
+func (l *labeledDestinationSet) Set() discovery_mesh_gloo_solo_io_v1_sets.DestinationSet {
 	return l.set
 }
 
@@ -426,7 +426,7 @@ func (l labeledDestinationSet) Generic() output.ResourceList {
 
 	// enable list func for garbage collection
 	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
-		var list discovery_mesh_gloo_solo_io_v1alpha2.DestinationList
+		var list discovery_mesh_gloo_solo_io_v1.DestinationList
 		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
 			return nil, err
 		}
@@ -453,18 +453,18 @@ type LabeledWorkloadSet interface {
 	Labels() map[string]string
 
 	// returns the set of Workloades with the given labels
-	Set() discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
+	Set() discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet
 
 	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
 	Generic() output.ResourceList
 }
 
 type labeledWorkloadSet struct {
-	set    discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
+	set    discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet
 	labels map[string]string
 }
 
-func NewLabeledWorkloadSet(set discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet, labels map[string]string) (LabeledWorkloadSet, error) {
+func NewLabeledWorkloadSet(set discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet, labels map[string]string) (LabeledWorkloadSet, error) {
 	// validate that each Workload contains the labels, else this is not a valid LabeledWorkloadSet
 	for _, item := range set.List() {
 		for k, v := range labels {
@@ -482,7 +482,7 @@ func (l *labeledWorkloadSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledWorkloadSet) Set() discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet {
+func (l *labeledWorkloadSet) Set() discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet {
 	return l.set
 }
 
@@ -494,7 +494,7 @@ func (l labeledWorkloadSet) Generic() output.ResourceList {
 
 	// enable list func for garbage collection
 	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
-		var list discovery_mesh_gloo_solo_io_v1alpha2.WorkloadList
+		var list discovery_mesh_gloo_solo_io_v1.WorkloadList
 		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
 			return nil, err
 		}
@@ -521,18 +521,18 @@ type LabeledMeshSet interface {
 	Labels() map[string]string
 
 	// returns the set of Meshes with the given labels
-	Set() discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
+	Set() discovery_mesh_gloo_solo_io_v1_sets.MeshSet
 
 	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
 	Generic() output.ResourceList
 }
 
 type labeledMeshSet struct {
-	set    discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
+	set    discovery_mesh_gloo_solo_io_v1_sets.MeshSet
 	labels map[string]string
 }
 
-func NewLabeledMeshSet(set discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet, labels map[string]string) (LabeledMeshSet, error) {
+func NewLabeledMeshSet(set discovery_mesh_gloo_solo_io_v1_sets.MeshSet, labels map[string]string) (LabeledMeshSet, error) {
 	// validate that each Mesh contains the labels, else this is not a valid LabeledMeshSet
 	for _, item := range set.List() {
 		for k, v := range labels {
@@ -550,7 +550,7 @@ func (l *labeledMeshSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledMeshSet) Set() discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet {
+func (l *labeledMeshSet) Set() discovery_mesh_gloo_solo_io_v1_sets.MeshSet {
 	return l.set
 }
 
@@ -562,7 +562,7 @@ func (l labeledMeshSet) Generic() output.ResourceList {
 
 	// enable list func for garbage collection
 	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
-		var list discovery_mesh_gloo_solo_io_v1alpha2.MeshList
+		var list discovery_mesh_gloo_solo_io_v1.MeshList
 		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
 			return nil, err
 		}
@@ -586,9 +586,9 @@ type builder struct {
 	name     string
 	clusters []string
 
-	destinations discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet
-	workloads    discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
-	meshes       discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
+	destinations discovery_mesh_gloo_solo_io_v1_sets.DestinationSet
+	workloads    discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet
+	meshes       discovery_mesh_gloo_solo_io_v1_sets.MeshSet
 }
 
 func NewBuilder(ctx context.Context, name string) *builder {
@@ -596,9 +596,9 @@ func NewBuilder(ctx context.Context, name string) *builder {
 		ctx:  ctx,
 		name: name,
 
-		destinations: discovery_mesh_gloo_solo_io_v1alpha2_sets.NewDestinationSet(),
-		workloads:    discovery_mesh_gloo_solo_io_v1alpha2_sets.NewWorkloadSet(),
-		meshes:       discovery_mesh_gloo_solo_io_v1alpha2_sets.NewMeshSet(),
+		destinations: discovery_mesh_gloo_solo_io_v1_sets.NewDestinationSet(),
+		workloads:    discovery_mesh_gloo_solo_io_v1_sets.NewWorkloadSet(),
+		meshes:       discovery_mesh_gloo_solo_io_v1_sets.NewMeshSet(),
 	}
 }
 
@@ -607,22 +607,22 @@ func NewBuilder(ctx context.Context, name string) *builder {
 type Builder interface {
 
 	// add Destinations to the collected outputs
-	AddDestinations(destinations ...*discovery_mesh_gloo_solo_io_v1alpha2.Destination)
+	AddDestinations(destinations ...*discovery_mesh_gloo_solo_io_v1.Destination)
 
 	// get the collected Destinations
-	GetDestinations() discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet
+	GetDestinations() discovery_mesh_gloo_solo_io_v1_sets.DestinationSet
 
 	// add Workloads to the collected outputs
-	AddWorkloads(workloads ...*discovery_mesh_gloo_solo_io_v1alpha2.Workload)
+	AddWorkloads(workloads ...*discovery_mesh_gloo_solo_io_v1.Workload)
 
 	// get the collected Workloads
-	GetWorkloads() discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet
+	GetWorkloads() discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet
 
 	// add Meshes to the collected outputs
-	AddMeshes(meshes ...*discovery_mesh_gloo_solo_io_v1alpha2.Mesh)
+	AddMeshes(meshes ...*discovery_mesh_gloo_solo_io_v1.Mesh)
 
 	// get the collected Meshes
-	GetMeshes() discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet
+	GetMeshes() discovery_mesh_gloo_solo_io_v1_sets.MeshSet
 
 	// build the collected outputs into a label-partitioned snapshot
 	BuildLabelPartitionedSnapshot(labelKey string) (Snapshot, error)
@@ -650,7 +650,7 @@ type Builder interface {
 	Generic() resource.ClusterSnapshot
 }
 
-func (b *builder) AddDestinations(destinations ...*discovery_mesh_gloo_solo_io_v1alpha2.Destination) {
+func (b *builder) AddDestinations(destinations ...*discovery_mesh_gloo_solo_io_v1.Destination) {
 	for _, obj := range destinations {
 		if obj == nil {
 			continue
@@ -659,7 +659,7 @@ func (b *builder) AddDestinations(destinations ...*discovery_mesh_gloo_solo_io_v
 		b.destinations.Insert(obj)
 	}
 }
-func (b *builder) AddWorkloads(workloads ...*discovery_mesh_gloo_solo_io_v1alpha2.Workload) {
+func (b *builder) AddWorkloads(workloads ...*discovery_mesh_gloo_solo_io_v1.Workload) {
 	for _, obj := range workloads {
 		if obj == nil {
 			continue
@@ -668,7 +668,7 @@ func (b *builder) AddWorkloads(workloads ...*discovery_mesh_gloo_solo_io_v1alpha
 		b.workloads.Insert(obj)
 	}
 }
-func (b *builder) AddMeshes(meshes ...*discovery_mesh_gloo_solo_io_v1alpha2.Mesh) {
+func (b *builder) AddMeshes(meshes ...*discovery_mesh_gloo_solo_io_v1.Mesh) {
 	for _, obj := range meshes {
 		if obj == nil {
 			continue
@@ -678,13 +678,13 @@ func (b *builder) AddMeshes(meshes ...*discovery_mesh_gloo_solo_io_v1alpha2.Mesh
 	}
 }
 
-func (b *builder) GetDestinations() discovery_mesh_gloo_solo_io_v1alpha2_sets.DestinationSet {
+func (b *builder) GetDestinations() discovery_mesh_gloo_solo_io_v1_sets.DestinationSet {
 	return b.destinations
 }
-func (b *builder) GetWorkloads() discovery_mesh_gloo_solo_io_v1alpha2_sets.WorkloadSet {
+func (b *builder) GetWorkloads() discovery_mesh_gloo_solo_io_v1_sets.WorkloadSet {
 	return b.workloads
 }
-func (b *builder) GetMeshes() discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet {
+func (b *builder) GetMeshes() discovery_mesh_gloo_solo_io_v1_sets.MeshSet {
 	return b.meshes
 }
 
@@ -764,7 +764,7 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
 	destinationDelta := b.GetDestinations().Delta(other.GetDestinations())
 	destinationGvk := schema.GroupVersionKind{
 		Group:   "discovery.mesh.gloo.solo.io",
-		Version: "v1alpha2",
+		Version: "v1",
 		Kind:    "Destination",
 	}
 	delta.AddInserted(destinationGvk, destinationDelta.Inserted)
@@ -773,7 +773,7 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
 	workloadDelta := b.GetWorkloads().Delta(other.GetWorkloads())
 	workloadGvk := schema.GroupVersionKind{
 		Group:   "discovery.mesh.gloo.solo.io",
-		Version: "v1alpha2",
+		Version: "v1",
 		Kind:    "Workload",
 	}
 	delta.AddInserted(workloadGvk, workloadDelta.Inserted)
@@ -782,7 +782,7 @@ func (b *builder) Delta(other Builder) output.SnapshotDelta {
 	meshDelta := b.GetMeshes().Delta(other.GetMeshes())
 	meshGvk := schema.GroupVersionKind{
 		Group:   "discovery.mesh.gloo.solo.io",
-		Version: "v1alpha2",
+		Version: "v1",
 		Kind:    "Mesh",
 	}
 	delta.AddInserted(meshGvk, meshDelta.Inserted)
@@ -801,7 +801,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 		cluster := obj.GetClusterName()
 		gvk := schema.GroupVersionKind{
 			Group:   "discovery.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "Destination",
 		}
 		clusterSnapshots.Insert(cluster, gvk, obj)
@@ -810,7 +810,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 		cluster := obj.GetClusterName()
 		gvk := schema.GroupVersionKind{
 			Group:   "discovery.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "Workload",
 		}
 		clusterSnapshots.Insert(cluster, gvk, obj)
@@ -819,7 +819,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 		cluster := obj.GetClusterName()
 		gvk := schema.GroupVersionKind{
 			Group:   "discovery.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "Mesh",
 		}
 		clusterSnapshots.Insert(cluster, gvk, obj)

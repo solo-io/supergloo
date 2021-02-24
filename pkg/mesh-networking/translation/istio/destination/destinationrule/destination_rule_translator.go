@@ -4,10 +4,10 @@ import (
 	"context"
 	"reflect"
 
-	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
-	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/tls"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/utils"
@@ -17,9 +17,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rotisserie/eris"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/fieldutils"
@@ -44,26 +44,26 @@ type Translator interface {
 	Translate(
 		ctx context.Context,
 		in input.LocalSnapshot,
-		destination *discoveryv1alpha2.Destination,
-		sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+		destination *discoveryv1.Destination,
+		sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 		reporter reporting.Reporter,
 	) *networkingv1alpha3.DestinationRule
 }
 
 type translator struct {
-	settings             *settingsv1alpha2.Settings
+	settings             *settingsv1.Settings
 	userDestinationRules v1alpha3sets.DestinationRuleSet
 	clusterDomains       hostutils.ClusterDomainRegistry
 	decoratorFactory     decorators.Factory
-	destinations         discoveryv1alpha2sets.DestinationSet
+	destinations         discoveryv1sets.DestinationSet
 }
 
 func NewTranslator(
-	settings *settingsv1alpha2.Settings,
+	settings *settingsv1.Settings,
 	userDestinationRules v1alpha3sets.DestinationRuleSet,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
-	destinations discoveryv1alpha2sets.DestinationSet,
+	destinations discoveryv1sets.DestinationSet,
 ) Translator {
 	return &translator{
 		settings:             settings,
@@ -80,8 +80,8 @@ func NewTranslator(
 func (t *translator) Translate(
 	ctx context.Context,
 	in input.LocalSnapshot,
-	destination *discoveryv1alpha2.Destination,
-	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	destination *discoveryv1.Destination,
+	sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 	reporter reporting.Reporter,
 ) *networkingv1alpha3.DestinationRule {
 	kubeService := destination.Spec.GetKubeService()
@@ -177,7 +177,7 @@ func registerFieldFunc(
 			destinationRule,
 			fieldPtr,
 			[]ezkube.ResourceId{policy},
-			&v1alpha2.TrafficPolicy{},
+			&v1.TrafficPolicy{},
 			0, //TODO(ilackarms): priority
 		); err != nil {
 			return err
@@ -187,9 +187,9 @@ func registerFieldFunc(
 }
 
 func (t *translator) initializeDestinationRule(
-	destination *discoveryv1alpha2.Destination,
-	mtlsDefault *v1alpha2.TrafficPolicySpec_Policy_MTLS,
-	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	destination *discoveryv1.Destination,
+	mtlsDefault *v1.TrafficPolicySpec_Policy_MTLS,
+	sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 ) (*networkingv1alpha3.DestinationRule, error) {
 	var meta metav1.ObjectMeta
 	if sourceMeshInstallation != nil {

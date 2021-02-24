@@ -3,8 +3,8 @@ package hostutils
 import (
 	"fmt"
 
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -47,12 +47,12 @@ type ClusterDomainRegistry interface {
 
 type clusterDomainRegistry struct {
 	clusters     skv1alpha1sets.KubernetesClusterSet
-	destinations v1alpha2sets.DestinationSet
+	destinations discoveryv1sets.DestinationSet
 }
 
 func NewClusterDomainRegistry(
 	clusters skv1alpha1sets.KubernetesClusterSet,
-	destinations v1alpha2sets.DestinationSet,
+	destinations discoveryv1sets.DestinationSet,
 ) ClusterDomainRegistry {
 	return &clusterDomainRegistry{
 		clusters:     clusters,
@@ -102,7 +102,7 @@ func (c *clusterDomainRegistry) GetDestinationFQDN(originatingCluster string, de
 }
 
 // Construct a federated FQDN for the given service, using the provided hostname suffix if provided, otherwise use default suffix.
-func BuildFederatedFQDN(serviceRef ezkube.ClusterResourceId, virtualMeshSpec *v1alpha2.VirtualMeshSpec) string {
+func BuildFederatedFQDN(serviceRef ezkube.ClusterResourceId, virtualMeshSpec *v1.VirtualMeshSpec) string {
 	return fmt.Sprintf(
 		"%s.%s.svc.%s.%v",
 		serviceRef.GetName(),
@@ -112,7 +112,7 @@ func BuildFederatedFQDN(serviceRef ezkube.ClusterResourceId, virtualMeshSpec *v1
 	)
 }
 
-func GetFederatedHostnameSuffix(virtualMeshSpec *v1alpha2.VirtualMeshSpec) string {
+func GetFederatedHostnameSuffix(virtualMeshSpec *v1.VirtualMeshSpec) string {
 	federatedHostnameSuffix := virtualMeshSpec.GetFederation().GetHostnameSuffix()
 	if federatedHostnameSuffix == "" {
 		federatedHostnameSuffix = DefaultHostnameSuffix

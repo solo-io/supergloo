@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/printing"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -52,7 +52,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 }
 
 func describeDestinations(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
-	destinationClient := discoveryv1alpha2.NewDestinationClient(c)
+	destinationClient := discoveryv1.NewDestinationClient(c)
 	destinationList, err := destinationClient.ListDestination(ctx)
 	if err != nil {
 		return "", err
@@ -108,7 +108,7 @@ type destinationMetadata struct {
 	FederatedToMeshes []*v1.ObjectRef
 }
 
-func matchDestination(destination discoveryv1alpha2.Destination, searchTerms []string) bool {
+func matchDestination(destination discoveryv1.Destination, searchTerms []string) bool {
 	// do not apply matching when there are no search strings
 	if len(searchTerms) == 0 {
 		return true
@@ -123,7 +123,7 @@ func matchDestination(destination discoveryv1alpha2.Destination, searchTerms []s
 	return false
 }
 
-func describeDestination(destination *discoveryv1alpha2.Destination) destinationDescription {
+func describeDestination(destination *discoveryv1.Destination) destinationDescription {
 	meshMeta := getDestinationMetadata(destination)
 	var trafficPolicies []*v1.ObjectRef
 	for _, fs := range destination.Status.AppliedTrafficPolicies {
@@ -142,9 +142,9 @@ func describeDestination(destination *discoveryv1alpha2.Destination) destination
 	}
 }
 
-func getDestinationMetadata(destination *discoveryv1alpha2.Destination) destinationMetadata {
+func getDestinationMetadata(destination *discoveryv1.Destination) destinationMetadata {
 	switch destination.Spec.GetType().(type) {
-	case *discoveryv1alpha2.DestinationSpec_KubeService_:
+	case *discoveryv1.DestinationSpec_KubeService_:
 		kubeServiceRef := destination.Spec.GetKubeService().Ref
 		return destinationMetadata{
 			Type:              "kubernetes service",

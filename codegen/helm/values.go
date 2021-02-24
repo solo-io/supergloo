@@ -2,8 +2,8 @@ package helm
 
 import (
 	"github.com/golang/protobuf/jsonpb"
-	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
-	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 )
 
@@ -25,10 +25,10 @@ type SettingsRef struct {
 }
 
 // we must use a custom Settings type here in order to ensure protos are marshalled to json properly
-type SettingsValues settingsv1alpha2.SettingsSpec
+type SettingsValues settingsv1.SettingsSpec
 
 func (v SettingsValues) MarshalJSON() ([]byte, error) {
-	settings := settingsv1alpha2.SettingsSpec(v)
+	settings := settingsv1.SettingsSpec(v)
 	js, err := (&jsonpb.Marshaler{EmitDefaults: true}).MarshalToString(&settings)
 	return []byte(js), err
 }
@@ -43,18 +43,18 @@ func DefaultValues() ChartValues {
 			},
 		},
 		Settings: SettingsValues{
-			Mtls: &networkingv1alpha2.TrafficPolicySpec_Policy_MTLS{
-				Istio: &networkingv1alpha2.TrafficPolicySpec_Policy_MTLS_Istio{
-					TlsMode: networkingv1alpha2.TrafficPolicySpec_Policy_MTLS_Istio_ISTIO_MUTUAL,
+			Mtls: &networkingv1.TrafficPolicySpec_Policy_MTLS{
+				Istio: &networkingv1.TrafficPolicySpec_Policy_MTLS_Istio{
+					TlsMode: networkingv1.TrafficPolicySpec_Policy_MTLS_Istio_ISTIO_MUTUAL,
 				},
 			},
 			// needed to ensure that generated yaml uses "{}" for empty message instead of "null", which causes a schema validation error
-			Discovery: &settingsv1alpha2.DiscoverySettings{
-				Istio: &settingsv1alpha2.DiscoverySettings_Istio{},
+			Discovery: &settingsv1.DiscoverySettings{
+				Istio: &settingsv1.DiscoverySettings_Istio{},
 			},
-			Relay: &settingsv1alpha2.RelaySettings{
+			Relay: &settingsv1.RelaySettings{
 				Enabled: false,
-				Server:  &settingsv1alpha2.GrpcServer{},
+				Server:  &settingsv1.GrpcServer{},
 			},
 		},
 		DisallowIntersectingConfig: false,

@@ -1,9 +1,10 @@
 syntax = "proto3";
 package networking.mesh.gloo.solo.io;
-option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2";
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 
@@ -145,7 +146,7 @@ message VirtualMeshStatus {
 
     // The state of the overall resource. It will only show accepted if it has been successfully
     // applied to all selected Meshes.
-    ApprovalState state = 2;
+    .common.mesh.gloo.solo.io.ApprovalState state = 2;
 
     // Any errors found while processing this generation of the resource.
     repeated string errors = 3;

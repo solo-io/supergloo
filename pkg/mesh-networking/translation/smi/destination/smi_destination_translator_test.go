@@ -8,14 +8,14 @@ import (
 	smiaccessv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
 	smispecsv1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
 	smisplitv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha2"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	mock_output "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/smi/mocks"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/smi/destination"
 	mock_access "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/smi/destination/access/mocks"
 	mock_split "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/smi/destination/split/mocks"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 )
 
 var _ = Describe("SmiDestinationTranslator", func() {
@@ -43,9 +43,9 @@ var _ = Describe("SmiDestinationTranslator", func() {
 	})
 
 	It("should translate when an smi Destination", func() {
-		destination := &v1alpha2.Destination{
-			Spec: v1alpha2.DestinationSpec{
-				Mesh: &v1.ObjectRef{
+		destination := &v1.Destination{
+			Spec: v1.DestinationSpec{
+				Mesh: &skv2corev1.ObjectRef{
 					Name:      "hello",
 					Namespace: "world",
 				},

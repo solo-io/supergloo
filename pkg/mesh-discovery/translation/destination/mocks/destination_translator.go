@@ -10,7 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1sets0 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 )
 
 // MockTranslator is a mock of Translator interface
@@ -37,10 +37,10 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // TranslateDestinations mocks base method
-func (m *MockTranslator) TranslateDestinations(ctx context.Context, services v1sets.ServiceSet, pods v1sets.PodSet, nodes v1sets.NodeSet, workloads v1alpha2sets.WorkloadSet, meshes v1alpha2sets.MeshSet, endpoints v1sets.EndpointsSet) v1alpha2sets.DestinationSet {
+func (m *MockTranslator) TranslateDestinations(ctx context.Context, services v1sets.ServiceSet, pods v1sets.PodSet, nodes v1sets.NodeSet, workloads v1sets0.WorkloadSet, meshes v1sets0.MeshSet, endpoints v1sets.EndpointsSet) v1sets0.DestinationSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranslateDestinations", ctx, services, pods, nodes, workloads, meshes, endpoints)
-	ret0, _ := ret[0].(v1alpha2sets.DestinationSet)
+	ret0, _ := ret[0].(v1sets0.DestinationSet)
 	return ret0
 }
 

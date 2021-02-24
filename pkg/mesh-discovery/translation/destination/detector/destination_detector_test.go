@@ -6,11 +6,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
-	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"istio.io/api/label"
 	corev1 "k8s.io/api/core/v1"
@@ -32,7 +32,7 @@ var _ = Describe("DestinationDetector", func() {
 		selectorLabels = map[string]string{"select": "me"}
 		serviceLabels  = map[string]string{"app": "coolapp"}
 
-		mesh = &skv1.ObjectRef{
+		mesh = &skv2corev1.ObjectRef{
 			Name:      "mesh",
 			Namespace: "any",
 		}
@@ -46,24 +46,24 @@ var _ = Describe("DestinationDetector", func() {
 		return labels
 	}
 
-	buildDeployment := func(subset string) *skv1.ClusterObjectRef {
-		return &skv1.ClusterObjectRef{
+	buildDeployment := func(subset string) *skv2corev1.ClusterObjectRef {
+		return &skv2corev1.ClusterObjectRef{
 			Name:        "deployment-" + subset,
 			Namespace:   serviceNs,
 			ClusterName: serviceCluster,
 		}
 	}
 
-	makeWorkload := func(subset string) *v1alpha2.Workload {
+	makeWorkload := func(subset string) *v1.Workload {
 		labels := buildLabels(subset)
-		return &v1alpha2.Workload{
+		return &v1.Workload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "some-workload-" + subset,
 				Namespace: serviceNs,
 			},
-			Spec: v1alpha2.WorkloadSpec{
-				Type: &v1alpha2.WorkloadSpec_Kubernetes{
-					Kubernetes: &v1alpha2.WorkloadSpec_KubernetesWorkload{
+			Spec: v1.WorkloadSpec{
+				Type: &v1.WorkloadSpec_Kubernetes{
+					Kubernetes: &v1.WorkloadSpec_KubernetesWorkload{
 						Controller:         buildDeployment(subset),
 						PodLabels:          labels,
 						ServiceAccountName: "any",
@@ -128,15 +128,15 @@ var _ = Describe("DestinationDetector", func() {
 
 		destination := detector.DetectDestination(ctx, svc, pods, nodes, workloads, meshes, endpoints)
 
-		Expect(destination).To(Equal(&v1alpha2.Destination{
+		Expect(destination).To(Equal(&v1.Destination{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
-			Spec: v1alpha2.DestinationSpec{
-				Type: &v1alpha2.DestinationSpec_KubeService_{
-					KubeService: &v1alpha2.DestinationSpec_KubeService{
+			Spec: v1.DestinationSpec{
+				Type: &v1.DestinationSpec_KubeService_{
+					KubeService: &v1.DestinationSpec_KubeService{
 						Ref:                    ezkube.MakeClusterObjectRef(svc),
 						WorkloadSelectorLabels: svc.Spec.Selector,
 						Labels:                 svc.Labels,
-						Ports: []*v1alpha2.DestinationSpec_KubeService_KubeServicePort{
+						Ports: []*v1.DestinationSpec_KubeService_KubeServicePort{
 							{
 								Port:        1234,
 								Name:        "port1",
@@ -149,7 +149,7 @@ var _ = Describe("DestinationDetector", func() {
 								Protocol: "UDP",
 							},
 						},
-						Subsets: map[string]*v1alpha2.DestinationSpec_KubeService_Subset{
+						Subsets: map[string]*v1.DestinationSpec_KubeService_Subset{
 							"subset": {
 								Values: []string{"v1", "v2"},
 							},
@@ -212,15 +212,15 @@ var _ = Describe("DestinationDetector", func() {
 
 		destination := detector.DetectDestination(ctx, svc, pods, nodes, workloads, meshes, endpoints)
 
-		Expect(destination).To(Equal(&v1alpha2.Destination{
+		Expect(destination).To(Equal(&v1.Destination{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
-			Spec: v1alpha2.DestinationSpec{
-				Type: &v1alpha2.DestinationSpec_KubeService_{
-					KubeService: &v1alpha2.DestinationSpec_KubeService{
+			Spec: v1.DestinationSpec{
+				Type: &v1.DestinationSpec_KubeService_{
+					KubeService: &v1.DestinationSpec_KubeService{
 						Ref:                    ezkube.MakeClusterObjectRef(svc),
 						WorkloadSelectorLabels: svc.Spec.Selector,
 						Labels:                 svc.Labels,
-						Ports: []*v1alpha2.DestinationSpec_KubeService_KubeServicePort{
+						Ports: []*v1.DestinationSpec_KubeService_KubeServicePort{
 							{
 								Port:        1234,
 								Name:        "port1",
@@ -233,14 +233,14 @@ var _ = Describe("DestinationDetector", func() {
 								Protocol: "UDP",
 							},
 						},
-						Subsets: map[string]*v1alpha2.DestinationSpec_KubeService_Subset{
+						Subsets: map[string]*v1.DestinationSpec_KubeService_Subset{
 							"subset": {
 								Values: []string{"v1", "v2"},
 							},
 						},
-						EndpointSubsets: []*v1alpha2.DestinationSpec_KubeService_EndpointsSubset{
+						EndpointSubsets: []*v1.DestinationSpec_KubeService_EndpointsSubset{
 							{
-								Endpoints: []*v1alpha2.DestinationSpec_KubeService_EndpointsSubset_Endpoint{
+								Endpoints: []*v1.DestinationSpec_KubeService_EndpointsSubset_Endpoint{
 									{
 										IpAddress: "1",
 										Labels:    buildLabels("v1"),
@@ -250,7 +250,7 @@ var _ = Describe("DestinationDetector", func() {
 										Labels:    buildLabels("v2"),
 									},
 								},
-								Ports: []*v1alpha2.DestinationSpec_KubeService_KubeServicePort{
+								Ports: []*v1.DestinationSpec_KubeService_KubeServicePort{
 									{
 										Port:        7000,
 										Name:        "port1",
@@ -272,15 +272,15 @@ var _ = Describe("DestinationDetector", func() {
 		workloads := v1alpha2sets.NewWorkloadSet()
 		pods := v1sets.NewPodSet()
 		nodes := v1sets.NewNodeSet()
-		meshes := v1alpha2sets.NewMeshSet(&v1alpha2.Mesh{
+		meshes := v1alpha2sets.NewMeshSet(&v1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "hello",
 				Namespace: defaults.GetPodNamespace(),
 			},
-			Spec: v1alpha2.MeshSpec{
-				Type: &v1alpha2.MeshSpec_Osm{
-					Osm: &v1alpha2.MeshSpec_OSM{
-						Installation: &v1alpha2.MeshSpec_MeshInstallation{
+			Spec: v1.MeshSpec{
+				Type: &v1.MeshSpec_Osm{
+					Osm: &v1.MeshSpec_OSM{
+						Installation: &v1.MeshSpec_MeshInstallation{
 							Cluster: serviceCluster,
 						},
 					},
@@ -296,15 +296,15 @@ var _ = Describe("DestinationDetector", func() {
 
 		destination := detector.DetectDestination(ctx, svc, pods, nodes, workloads, meshes, endpoints)
 
-		Expect(destination).To(Equal(&v1alpha2.Destination{
+		Expect(destination).To(Equal(&v1.Destination{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
-			Spec: v1alpha2.DestinationSpec{
-				Type: &v1alpha2.DestinationSpec_KubeService_{
-					KubeService: &v1alpha2.DestinationSpec_KubeService{
+			Spec: v1.DestinationSpec{
+				Type: &v1.DestinationSpec_KubeService_{
+					KubeService: &v1.DestinationSpec_KubeService{
 						Ref:                    ezkube.MakeClusterObjectRef(svc),
 						WorkloadSelectorLabels: svc.Spec.Selector,
 						Labels:                 svc.Labels,
-						Ports: []*v1alpha2.DestinationSpec_KubeService_KubeServicePort{
+						Ports: []*v1.DestinationSpec_KubeService_KubeServicePort{
 							{
 								Port:        1234,
 								Name:        "port1",
@@ -319,7 +319,7 @@ var _ = Describe("DestinationDetector", func() {
 						},
 					},
 				},
-				Mesh: &skv1.ObjectRef{
+				Mesh: &skv2corev1.ObjectRef{
 					Name:      "hello",
 					Namespace: defaults.GetPodNamespace(),
 				},
@@ -401,16 +401,16 @@ var _ = Describe("DestinationDetector", func() {
 
 		destination := detector.DetectDestination(ctx, svc, pods, nodes, workloads, meshes, endpoints)
 
-		Expect(destination).To(Equal(&v1alpha2.Destination{
+		Expect(destination).To(Equal(&v1.Destination{
 			ObjectMeta: utils.DiscoveredObjectMeta(svc),
-			Spec: v1alpha2.DestinationSpec{
-				Type: &v1alpha2.DestinationSpec_KubeService_{
-					KubeService: &v1alpha2.DestinationSpec_KubeService{
+			Spec: v1.DestinationSpec{
+				Type: &v1.DestinationSpec_KubeService_{
+					KubeService: &v1.DestinationSpec_KubeService{
 						Region:                 "region1",
 						Ref:                    ezkube.MakeClusterObjectRef(svc),
 						WorkloadSelectorLabels: svc.Spec.Selector,
 						Labels:                 svc.Labels,
-						Ports: []*v1alpha2.DestinationSpec_KubeService_KubeServicePort{
+						Ports: []*v1.DestinationSpec_KubeService_KubeServicePort{
 							{
 								Port:        1234,
 								Name:        "port1",
@@ -423,30 +423,30 @@ var _ = Describe("DestinationDetector", func() {
 								Protocol: "UDP",
 							},
 						},
-						Subsets: map[string]*v1alpha2.DestinationSpec_KubeService_Subset{
+						Subsets: map[string]*v1.DestinationSpec_KubeService_Subset{
 							"subset": {
 								Values: []string{"v1", "v2"},
 							},
 						},
-						EndpointSubsets: []*v1alpha2.DestinationSpec_KubeService_EndpointsSubset{
+						EndpointSubsets: []*v1.DestinationSpec_KubeService_EndpointsSubset{
 							{
-								Endpoints: []*v1alpha2.DestinationSpec_KubeService_EndpointsSubset_Endpoint{
+								Endpoints: []*v1.DestinationSpec_KubeService_EndpointsSubset_Endpoint{
 									{
 										IpAddress: "1",
-										SubLocality: &v1alpha2.SubLocality{
+										SubLocality: &v1.SubLocality{
 											Zone:    "zone1",
 											SubZone: "subzone1",
 										},
 									},
 									{
 										IpAddress: "2",
-										SubLocality: &v1alpha2.SubLocality{
+										SubLocality: &v1.SubLocality{
 											Zone:    "zone2",
 											SubZone: "subzone2",
 										},
 									},
 								},
-								Ports: []*v1alpha2.DestinationSpec_KubeService_KubeServicePort{
+								Ports: []*v1.DestinationSpec_KubeService_KubeServicePort{
 									{
 										Port:        7000,
 										Name:        "port1",

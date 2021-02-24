@@ -11,8 +11,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/labelutils"
 	appsv1 "k8s.io/api/apps/v1"
@@ -80,7 +80,7 @@ var _ = Describe("IstioMeshDetector", func() {
 		})
 	}
 
-	settings := &settingsv1alpha2.DiscoverySettings{}
+	settings := &settingsv1.DiscoverySettings{}
 
 	It("does not detect Istio when it is not there", func() {
 
@@ -126,16 +126,16 @@ var _ = Describe("IstioMeshDetector", func() {
 		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshes).To(HaveLen(1))
-		Expect(meshes[0]).To(Equal(&discoveryv1alpha2.Mesh{
+		Expect(meshes[0]).To(Equal(&discoveryv1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "istio-pilot-namespace-cluster",
 				Namespace: defaults.GetPodNamespace(),
 				Labels:    labelutils.ClusterLabels(clusterName),
 			},
-			Spec: discoveryv1alpha2.MeshSpec{
-				Type: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+			Spec: discoveryv1.MeshSpec{
+				Type: &discoveryv1.MeshSpec_Istio_{Istio: &discoveryv1.MeshSpec_Istio{
 					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
-					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+					Installation: &discoveryv1.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
 						Cluster:   clusterName,
 						Version:   "latest",
@@ -163,16 +163,16 @@ var _ = Describe("IstioMeshDetector", func() {
 		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(meshes).To(HaveLen(1))
-		Expect(meshes[0]).To(Equal(&discoveryv1alpha2.Mesh{
+		Expect(meshes[0]).To(Equal(&discoveryv1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "istiod-namespace-cluster",
 				Namespace: defaults.GetPodNamespace(),
 				Labels:    labelutils.ClusterLabels(clusterName),
 			},
-			Spec: discoveryv1alpha2.MeshSpec{
-				Type: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+			Spec: discoveryv1.MeshSpec{
+				Type: &discoveryv1.MeshSpec_Istio_{Istio: &discoveryv1.MeshSpec_Istio{
 					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
-					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+					Installation: &discoveryv1.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
 						Cluster:   clusterName,
 						PodLabels: map[string]string{"app": "istiod"},
@@ -256,16 +256,16 @@ var _ = Describe("IstioMeshDetector", func() {
 		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
 
-		expectedMesh := &discoveryv1alpha2.Mesh{
+		expectedMesh := &discoveryv1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "istiod-namespace-cluster",
 				Namespace: istioNamespace,
 				Labels:    labelutils.ClusterLabels(clusterName),
 			},
-			Spec: discoveryv1alpha2.MeshSpec{
-				Type: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+			Spec: discoveryv1.MeshSpec{
+				Type: &discoveryv1.MeshSpec_Istio_{Istio: &discoveryv1.MeshSpec_Istio{
 					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
-					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+					Installation: &discoveryv1.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
 						Cluster:   clusterName,
 						Version:   "latest",
@@ -273,7 +273,7 @@ var _ = Describe("IstioMeshDetector", func() {
 					},
 					TrustDomain:          trustDomain,
 					IstiodServiceAccount: serviceAccountName,
-					IngressGateways: []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo{{
+					IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
 						WorkloadLabels:   workloadLabels,
 						ExternalAddress:  "external.domain",
 						ExternalTlsPort:  5678,
@@ -351,9 +351,9 @@ var _ = Describe("IstioMeshDetector", func() {
 		inRemote.AddServices(services.List())
 		inRemote.AddPods(pods.List())
 		inRemote.AddNodes(nodes.List())
-		settings := &settingsv1alpha2.DiscoverySettings{
-			Istio: &settingsv1alpha2.DiscoverySettings_Istio{
-				IngressGatewayDetectors: map[string]*settingsv1alpha2.DiscoverySettings_Istio_IngressGatewayDetector{
+		settings := &settingsv1.DiscoverySettings{
+			Istio: &settingsv1.DiscoverySettings_Istio{
+				IngressGatewayDetectors: map[string]*settingsv1.DiscoverySettings_Istio_IngressGatewayDetector{
 					"*": {
 						GatewayWorkloadLabels: map[string]string{"mykey": "myvalue"},
 						GatewayTlsPortName:    "myport",
@@ -368,16 +368,16 @@ var _ = Describe("IstioMeshDetector", func() {
 		meshes, err := detector.DetectMeshes(inRemote.Build(), settings)
 		Expect(err).NotTo(HaveOccurred())
 
-		expectedMesh := &discoveryv1alpha2.Mesh{
+		expectedMesh := &discoveryv1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "istiod-namespace-cluster",
 				Namespace: defaults.GetPodNamespace(),
 				Labels:    labelutils.ClusterLabels(clusterName),
 			},
-			Spec: discoveryv1alpha2.MeshSpec{
-				Type: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+			Spec: discoveryv1.MeshSpec{
+				Type: &discoveryv1.MeshSpec_Istio_{Istio: &discoveryv1.MeshSpec_Istio{
 					SmartDnsProxyingEnabled: smartDnsProxyingEnabled,
-					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+					Installation: &discoveryv1.MeshSpec_MeshInstallation{
 						Namespace: meshNs,
 						Cluster:   clusterName,
 						Version:   "latest",
@@ -385,7 +385,7 @@ var _ = Describe("IstioMeshDetector", func() {
 					},
 					TrustDomain:          trustDomain,
 					IstiodServiceAccount: serviceAccountName,
-					IngressGateways: []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo{{
+					IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
 						WorkloadLabels:   workloadLabels,
 						ExternalAddress:  "external.domain",
 						ExternalTlsPort:  5678,

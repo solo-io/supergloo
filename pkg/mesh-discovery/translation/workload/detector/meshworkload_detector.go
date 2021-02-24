@@ -8,8 +8,8 @@ import (
 
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/types"
 	"github.com/solo-io/go-utils/contextutils"
@@ -25,8 +25,8 @@ import (
 type WorkloadDetector interface {
 	DetectWorkload(
 		workload types.Workload,
-		meshes v1alpha2sets.MeshSet,
-	) *v1alpha2.Workload
+		meshes v1sets.MeshSet,
+	) *v1.Workload
 }
 
 const (
@@ -58,8 +58,8 @@ func NewWorkloadDetector(
 
 func (d workloadDetector) DetectWorkload(
 	workload types.Workload,
-	meshes v1alpha2sets.MeshSet,
-) *v1alpha2.Workload {
+	meshes v1sets.MeshSet,
+) *v1.Workload {
 	podsForWorkload := d.getPodsForWorkload(workload)
 
 	mesh := d.getMeshForPods(podsForWorkload, meshes)
@@ -77,11 +77,11 @@ func (d workloadDetector) DetectWorkload(
 	// append workload kind for uniqueness
 	outputMeta.Name += "-" + strings.ToLower(workload.Kind())
 
-	return &v1alpha2.Workload{
+	return &v1.Workload{
 		ObjectMeta: outputMeta,
-		Spec: v1alpha2.WorkloadSpec{
-			Type: &v1alpha2.WorkloadSpec_Kubernetes{
-				Kubernetes: &v1alpha2.WorkloadSpec_KubernetesWorkload{
+		Spec: v1.WorkloadSpec{
+			Type: &v1.WorkloadSpec_Kubernetes{
+				Kubernetes: &v1.WorkloadSpec_KubernetesWorkload{
 					Controller:         controllerRef,
 					PodLabels:          labels,
 					ServiceAccountName: serviceAccount,
@@ -92,7 +92,7 @@ func (d workloadDetector) DetectWorkload(
 	}
 }
 
-func (d workloadDetector) getMeshForPods(pods corev1sets.PodSet, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
+func (d workloadDetector) getMeshForPods(pods corev1sets.PodSet, meshes v1sets.MeshSet) *v1.Mesh {
 	// as long as one pod is detected for a mesh, consider the set owned by that mesh.
 	for _, pod := range pods.List() {
 		if mesh := d.detector.DetectMeshSidecar(pod, meshes); mesh != nil {

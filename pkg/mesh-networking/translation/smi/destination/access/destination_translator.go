@@ -8,9 +8,9 @@ import (
 	"github.com/rotisserie/eris"
 	smiaccessv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
 	smispecsv1alpha3 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/workloadutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
@@ -34,7 +34,7 @@ type Translator interface {
 	Translate(
 		ctx context.Context,
 		in input.LocalSnapshot,
-		destination *discoveryv1alpha2.Destination,
+		destination *discoveryv1.Destination,
 		reporter reporting.Reporter,
 	) ([]*smiaccessv1alpha2.TrafficTarget, []*smispecsv1alpha3.HTTPRouteGroup)
 }
@@ -58,7 +58,7 @@ type translator struct{}
 func (t *translator) Translate(
 	ctx context.Context,
 	in input.LocalSnapshot,
-	destination *discoveryv1alpha2.Destination,
+	destination *discoveryv1.Destination,
 	reporter reporting.Reporter,
 ) ([]*smiaccessv1alpha2.TrafficTarget, []*smispecsv1alpha3.HTTPRouteGroup) {
 	logger := contextutils.LoggerFrom(ctx).With(zap.String("translator", "access"))
@@ -217,8 +217,8 @@ func (t *translator) Translate(
 		}
 
 		// Append the Destination as a parent to each output route group
-		metautils.AppendParent(ctx, routeGroup, ap.GetRef(), v1alpha2.AccessPolicy{}.GVK())
-		metautils.AppendParent(ctx, trafficTarget, ap.GetRef(), v1alpha2.AccessPolicy{}.GVK())
+		metautils.AppendParent(ctx, routeGroup, ap.GetRef(), v1.AccessPolicy{}.GVK())
+		metautils.AppendParent(ctx, trafficTarget, ap.GetRef(), v1.AccessPolicy{}.GVK())
 
 		httpRouteGroups = append(httpRouteGroups, routeGroup)
 		trafficTargets = append(trafficTargets, trafficTargetsByAp...)

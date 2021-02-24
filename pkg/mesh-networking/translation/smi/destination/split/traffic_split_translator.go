@@ -6,13 +6,13 @@ import (
 
 	"github.com/rotisserie/eris"
 	smislpitv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha2"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
@@ -29,7 +29,7 @@ type Translator interface {
 	Translate(
 		ctx context.Context,
 		in input.LocalSnapshot,
-		destination *discoveryv1alpha2.Destination,
+		destination *discoveryv1.Destination,
 		reporter reporting.Reporter,
 	) *smislpitv1alpha2.TrafficSplit
 }
@@ -67,7 +67,7 @@ type translator struct{}
 func (t *translator) Translate(
 	ctx context.Context,
 	_ input.LocalSnapshot,
-	destination *discoveryv1alpha2.Destination,
+	destination *discoveryv1.Destination,
 	reporter reporting.Reporter,
 ) *smislpitv1alpha2.TrafficSplit {
 	kubeService := destination.Spec.GetKubeService()
@@ -77,7 +77,7 @@ func (t *translator) Translate(
 		return nil
 	}
 
-	var appliedTrafficPolicy *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy
+	var appliedTrafficPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy
 
 	for _, tp := range destination.Status.GetAppliedTrafficPolicies() {
 		validate(tp, destination, reporter)
@@ -125,14 +125,14 @@ func (t *translator) Translate(
 
 	// Append the applied TrafficPolicy as the parent to the traffic split
 	// Done here to avoid duplicating the logic to find the applied TrafficPolicy in the SMI Destination translator
-	metautils.AppendParent(ctx, trafficSplit, appliedTrafficPolicy.GetRef(), v1alpha2.TrafficPolicy{}.GVK())
+	metautils.AppendParent(ctx, trafficSplit, appliedTrafficPolicy.GetRef(), v1.TrafficPolicy{}.GVK())
 
 	return trafficSplit
 }
 
 func validate(
-	tp *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy,
-	destination *discoveryv1alpha2.Destination,
+	tp *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+	destination *discoveryv1.Destination,
 	reporter reporting.Reporter,
 ) {
 	if tp.GetSpec().GetPolicy().GetCorsPolicy() != nil {
@@ -187,9 +187,9 @@ func validate(
 }
 
 func buildBackends(
-	tp *v1.ObjectRef,
-	multiDest *v1alpha2.TrafficPolicySpec_Policy_MultiDestination,
-	meshKubeService *discoveryv1alpha2.DestinationSpec_KubeService,
+	tp *skv2corev1.ObjectRef,
+	multiDest *v1.TrafficPolicySpec_Policy_MultiDestination,
+	meshKubeService *discoveryv1.DestinationSpec_KubeService,
 ) ([]smislpitv1alpha2.TrafficSplitBackend, error) {
 	var result []smislpitv1alpha2.TrafficSplitBackend
 	for idx, dest := range multiDest.GetDestinations() {

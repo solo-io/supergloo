@@ -8,7 +8,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/test/data"
 	. "github.com/solo-io/gloo-mesh/test/e2e"
@@ -19,7 +19,7 @@ import (
 
 var (
 	err                 error
-	VirtualMesh         *networkingv1alpha2.VirtualMesh
+	VirtualMesh         *networkingv1.VirtualMesh
 	VirtualMeshManifest utils.Manifest
 )
 

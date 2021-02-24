@@ -6,11 +6,11 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
-	commonv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha2"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	discovery_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	securityv1beta1spec "istio.io/api/security/v1beta1"
@@ -40,7 +40,7 @@ type Translator interface {
 	// Note that the input snapshot DestinationSet contains the given Destination.
 	Translate(
 		in input.LocalSnapshot,
-		destination *discoveryv1alpha2.Destination,
+		destination *discoveryv1.Destination,
 		reporter reporting.Reporter,
 	) *securityv1beta1.AuthorizationPolicy
 }
@@ -53,7 +53,7 @@ func NewTranslator() Translator {
 
 func (t *translator) Translate(
 	in input.LocalSnapshot,
-	destination *discoveryv1alpha2.Destination,
+	destination *discoveryv1.Destination,
 	reporter reporting.Reporter,
 ) *securityv1beta1.AuthorizationPolicy {
 	kubeService := destination.Spec.GetKubeService()
@@ -84,7 +84,7 @@ func (t *translator) Translate(
 }
 
 func (t *translator) initializeAuthorizationPolicy(
-	destination *discoveryv1alpha2.Destination,
+	destination *discoveryv1.Destination,
 ) *securityv1beta1.AuthorizationPolicy {
 	meta := metautils.TranslatedObjectMeta(
 		destination.Spec.GetKubeService().Ref,
@@ -107,8 +107,8 @@ func (t *translator) initializeAuthorizationPolicy(
 	and a single Rule_To containing the rules specified in the AccessPolicy.
 */
 func (t *translator) translateAccessPolicy(
-	accessPolicy *v1alpha2.AccessPolicySpec,
-	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
+	accessPolicy *v1.AccessPolicySpec,
+	meshes discoveryv1sets.MeshSet,
 ) (*securityv1beta1spec.Rule, error) {
 	var fromRules []*securityv1beta1spec.Rule_From
 	for _, sourceSelector := range accessPolicy.SourceSelector {
@@ -125,7 +125,7 @@ func (t *translator) translateAccessPolicy(
 	}, nil
 }
 
-func buildToRules(accessPolicy *v1alpha2.AccessPolicySpec) []*securityv1beta1spec.Rule_To {
+func buildToRules(accessPolicy *v1.AccessPolicySpec) []*securityv1beta1spec.Rule_To {
 	allowedPaths := accessPolicy.AllowedPaths
 	allowedMethods := accessPolicy.AllowedMethods
 	allowedPorts := convertIntsToStrings(accessPolicy.AllowedPorts)
@@ -145,8 +145,8 @@ func buildToRules(accessPolicy *v1alpha2.AccessPolicySpec) []*securityv1beta1spe
 // Generate all fully qualified principal names for specified service accounts.
 // Reference: https://istio.io/docs/reference/config/security/authorization-policy/#Source
 func (t *translator) buildSource(
-	sources *commonv1alpha2.IdentitySelector,
-	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
+	sources *commonv1.IdentitySelector,
+	meshes discoveryv1sets.MeshSet,
 ) (*securityv1beta1spec.Rule_From, error) {
 	if sources.GetKubeIdentityMatcher() == nil && sources.GetKubeServiceAccountRefs() == nil {
 		// allow any source identity
@@ -175,8 +175,8 @@ func (t *translator) buildSource(
 
 // Parse a list of principals and namespaces from a KubeIdentityMatcher.
 func parseIdentityMatcher(
-	kubeIdentityMatcher *commonv1alpha2.IdentitySelector_KubeIdentityMatcher,
-	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
+	kubeIdentityMatcher *commonv1.IdentitySelector_KubeIdentityMatcher,
+	meshes discoveryv1sets.MeshSet,
 ) ([]string, []string, error) {
 	var principals []string
 	var namespaces []string
@@ -212,8 +212,8 @@ func parseIdentityMatcher(
 }
 
 func parseServiceAccountRefs(
-	kubeServiceAccountRefs *commonv1alpha2.IdentitySelector_KubeServiceAccountRefs,
-	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
+	kubeServiceAccountRefs *commonv1.IdentitySelector_KubeServiceAccountRefs,
+	meshes discoveryv1sets.MeshSet,
 ) ([]string, error) {
 	if kubeServiceAccountRefs == nil {
 		return nil, nil
@@ -241,13 +241,13 @@ func parseServiceAccountRefs(
 */
 func getTrustDomainsForClusters(
 	clusterNames []string,
-	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
+	meshes discoveryv1sets.MeshSet,
 ) ([]string, error) {
 	var errs *multierror.Error
 	var trustDomains []string
 	// omitted cluster name denotes all clusters
 	if len(clusterNames) == 0 || len(clusterNames) == 1 && clusterNames[0] == "" {
-		meshes.List(func(mesh *discoveryv1alpha2.Mesh) (_ bool) {
+		meshes.List(func(mesh *discoveryv1.Mesh) (_ bool) {
 			if domain := mesh.Spec.GetIstio().GetTrustDomain(); domain != "" {
 				trustDomains = append(trustDomains, domain)
 			}
@@ -269,10 +269,10 @@ func getTrustDomainsForClusters(
 // Fetch trust domains by cluster so we can attribute missing trust domains to the problematic clusterName and report back to user.
 func getTrustDomainForCluster(
 	clusterName string,
-	meshes discovery_mesh_gloo_solo_io_v1alpha2_sets.MeshSet,
+	meshes discoveryv1sets.MeshSet,
 ) (string, error) {
 	var trustDomain string
-	for _, mesh := range meshes.List(func(mesh *discoveryv1alpha2.Mesh) bool {
+	for _, mesh := range meshes.List(func(mesh *discoveryv1.Mesh) bool {
 		istio := mesh.Spec.GetIstio()
 		return istio == nil || istio.GetInstallation().GetCluster() != clusterName
 	}) {

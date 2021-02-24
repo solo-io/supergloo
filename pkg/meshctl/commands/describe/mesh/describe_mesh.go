@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/printing"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -53,7 +53,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 }
 
 func describeMeshes(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
-	meshClient := discoveryv1alpha2.NewMeshClient(c)
+	meshClient := discoveryv1.NewMeshClient(c)
 	meshList, err := meshClient.ListMesh(ctx)
 	if err != nil {
 		return "", err
@@ -114,7 +114,7 @@ type meshMetadata struct {
 	Version      string
 }
 
-func matchMesh(mesh discoveryv1alpha2.Mesh, searchTerms []string) bool {
+func matchMesh(mesh discoveryv1.Mesh, searchTerms []string) bool {
 	// do not apply matching when there are no search strings
 	if len(searchTerms) == 0 {
 		return true
@@ -129,7 +129,7 @@ func matchMesh(mesh discoveryv1alpha2.Mesh, searchTerms []string) bool {
 	return false
 }
 
-func describeMesh(mesh *discoveryv1alpha2.Mesh) meshDescription {
+func describeMesh(mesh *discoveryv1.Mesh) meshDescription {
 	meshMeta := getMeshMetadata(mesh)
 
 	var virtualDestinations []*v1.ObjectRef
@@ -144,7 +144,7 @@ func describeMesh(mesh *discoveryv1alpha2.Mesh) meshDescription {
 	}
 }
 
-func getMeshMetadata(mesh *discoveryv1alpha2.Mesh) meshMetadata {
+func getMeshMetadata(mesh *discoveryv1.Mesh) meshMetadata {
 	var meshType string
 	if mesh.Spec.GetAwsAppMesh() != nil {
 		appmesh := mesh.Spec.GetAwsAppMesh()
@@ -156,18 +156,18 @@ func getMeshMetadata(mesh *discoveryv1alpha2.Mesh) meshMetadata {
 			Clusters:     appmesh.Clusters,
 		}
 	}
-	var meshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation
+	var meshInstallation *discoveryv1.MeshSpec_MeshInstallation
 	switch mesh.Spec.GetType().(type) {
-	case *discoveryv1alpha2.MeshSpec_Istio_:
+	case *discoveryv1.MeshSpec_Istio_:
 		meshType = "istio"
 		meshInstallation = mesh.Spec.GetIstio().Installation
-	case *discoveryv1alpha2.MeshSpec_Linkerd:
+	case *discoveryv1.MeshSpec_Linkerd:
 		meshType = "linkerd"
 		meshInstallation = mesh.Spec.GetLinkerd().Installation
-	case *discoveryv1alpha2.MeshSpec_ConsulConnect:
+	case *discoveryv1.MeshSpec_ConsulConnect:
 		meshType = "consulconnect"
 		meshInstallation = mesh.Spec.GetConsulConnect().Installation
-	case *discoveryv1alpha2.MeshSpec_Osm:
+	case *discoveryv1.MeshSpec_Osm:
 		meshType = "osm"
 		meshInstallation = mesh.Spec.GetOsm().Installation
 	}

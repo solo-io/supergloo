@@ -11,7 +11,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/destinationrule"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/virtualservice"
 
-	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 
@@ -35,15 +35,15 @@ type DependencyFactory interface {
 		ctx context.Context,
 		userSupplied input.RemoteSnapshot,
 		clusters skv1alpha1sets.KubernetesClusterSet,
-		destinations discoveryv1alpha2sets.DestinationSet,
+		destinations discoveryv1sets.DestinationSet,
 	) destination.Translator
 	MakeMeshTranslator(
 		ctx context.Context,
 		userSupplied input.RemoteSnapshot,
 		clusters skv1alpha1sets.KubernetesClusterSet,
 		secrets corev1sets.SecretSet,
-		workloads discoveryv1alpha2sets.WorkloadSet,
-		destinations discoveryv1alpha2sets.DestinationSet,
+		workloads discoveryv1sets.WorkloadSet,
+		destinations discoveryv1sets.DestinationSet,
 	) mesh.Translator
 }
 
@@ -57,7 +57,7 @@ func (d dependencyFactoryImpl) MakeDestinationTranslator(
 	ctx context.Context,
 	userSupplied input.RemoteSnapshot,
 	clusters skv1alpha1sets.KubernetesClusterSet,
-	destinations discoveryv1alpha2sets.DestinationSet,
+	destinations discoveryv1sets.DestinationSet,
 ) destination.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters, destinations)
 	decoratorFactory := decorators.NewFactory()
@@ -70,8 +70,8 @@ func (d dependencyFactoryImpl) MakeMeshTranslator(
 	userSupplied input.RemoteSnapshot,
 	clusters skv1alpha1sets.KubernetesClusterSet,
 	secrets corev1sets.SecretSet,
-	workloads discoveryv1alpha2sets.WorkloadSet,
-	destinations discoveryv1alpha2sets.DestinationSet,
+	workloads discoveryv1sets.WorkloadSet,
+	destinations discoveryv1sets.DestinationSet,
 ) mesh.Translator {
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters, destinations)
 

@@ -1,12 +1,12 @@
 syntax = "proto3";
 package settings.mesh.gloo.solo.io;
-option go_package = "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2";
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
 
-import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/traffic_policy.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
 
 // Configure system-wide settings and defaults. Settings specified in networking policies take precedence over those specified here.
 message SettingsSpec {
@@ -107,7 +107,7 @@ message SettingsStatus {
 
     // The state of the overall resource.
     // It will only show accepted if no processing errors encountered.
-    .networking.mesh.gloo.solo.io.ApprovalState state = 2;
+    .common.mesh.gloo.solo.io.ApprovalState state = 2;
 
     // Any errors encountered while processing Settings object.
     repeated string errors = 3;

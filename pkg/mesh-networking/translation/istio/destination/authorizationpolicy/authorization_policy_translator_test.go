@@ -4,10 +4,10 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	commonv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha2"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/authorizationpolicy"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -31,14 +31,14 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 	})
 
 	It("should translate a rule for each AccessPolicy applied to a Destination", func() {
-		destination := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "ms",
 				Namespace: "ms-namespace",
 			},
-			Spec: discoveryv1alpha2.DestinationSpec{
-				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
 							Name:        "kube-service",
 							Namespace:   "kube-service-namespace",
@@ -50,13 +50,13 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 					},
 				},
 			},
-			Status: discoveryv1alpha2.DestinationStatus{
-				AppliedAccessPolicies: []*discoveryv1alpha2.DestinationStatus_AppliedAccessPolicy{
+			Status: discoveryv1.DestinationStatus{
+				AppliedAccessPolicies: []*discoveryv1.DestinationStatus_AppliedAccessPolicy{
 					{
-						Spec: &networkingv1alpha2.AccessPolicySpec{
-							SourceSelector: []*commonv1alpha2.IdentitySelector{
+						Spec: &networkingv1.AccessPolicySpec{
+							SourceSelector: []*commonv1.IdentitySelector{
 								{
-									KubeIdentityMatcher: &commonv1alpha2.IdentitySelector_KubeIdentityMatcher{
+									KubeIdentityMatcher: &commonv1.IdentitySelector_KubeIdentityMatcher{
 										Namespaces: []string{"source-namespace1", "source-namespace2", "source-namespace3"},
 										Clusters:   []string{"cluster1", "cluster2"},
 									},
@@ -68,10 +68,10 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 						},
 					},
 					{
-						Spec: &networkingv1alpha2.AccessPolicySpec{
-							SourceSelector: []*commonv1alpha2.IdentitySelector{
+						Spec: &networkingv1.AccessPolicySpec{
+							SourceSelector: []*commonv1.IdentitySelector{
 								{
-									KubeServiceAccountRefs: &commonv1alpha2.IdentitySelector_KubeServiceAccountRefs{
+									KubeServiceAccountRefs: &commonv1.IdentitySelector_KubeServiceAccountRefs{
 										ServiceAccounts: []*v1.ClusterObjectRef{
 											{
 												Name:        "sa",
@@ -87,15 +87,15 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 				},
 			},
 		}
-		meshes := []*discoveryv1alpha2.Mesh{
+		meshes := []*discoveryv1.Mesh{
 			{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "mesh1",
 				},
-				Spec: discoveryv1alpha2.MeshSpec{
-					Type: &discoveryv1alpha2.MeshSpec_Istio_{
-						Istio: &discoveryv1alpha2.MeshSpec_Istio{
-							Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+				Spec: discoveryv1.MeshSpec{
+					Type: &discoveryv1.MeshSpec_Istio_{
+						Istio: &discoveryv1.MeshSpec_Istio{
+							Installation: &discoveryv1.MeshSpec_MeshInstallation{
 								Cluster: "cluster1",
 							},
 							TrustDomain: "cluster1.local",
@@ -107,10 +107,10 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "mesh2",
 				},
-				Spec: discoveryv1alpha2.MeshSpec{
-					Type: &discoveryv1alpha2.MeshSpec_Istio_{
-						Istio: &discoveryv1alpha2.MeshSpec_Istio{
-							Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+				Spec: discoveryv1.MeshSpec{
+					Type: &discoveryv1.MeshSpec_Istio_{
+						Istio: &discoveryv1.MeshSpec_Istio{
+							Installation: &discoveryv1.MeshSpec_MeshInstallation{
 								Cluster: "cluster2",
 							},
 							TrustDomain: "cluster2.local",
@@ -179,14 +179,14 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 	})
 
 	It("should handle wildcard (empty) cluster source selectors", func() {
-		destination := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "ms",
 				Namespace: "ms-namespace",
 			},
-			Spec: discoveryv1alpha2.DestinationSpec{
-				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
 							Name:        "kube-service",
 							Namespace:   "kube-service-namespace",
@@ -198,18 +198,18 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 					},
 				},
 			},
-			Status: discoveryv1alpha2.DestinationStatus{
-				AppliedAccessPolicies: []*discoveryv1alpha2.DestinationStatus_AppliedAccessPolicy{
+			Status: discoveryv1.DestinationStatus{
+				AppliedAccessPolicies: []*discoveryv1.DestinationStatus_AppliedAccessPolicy{
 					{
-						Spec: &networkingv1alpha2.AccessPolicySpec{
-							SourceSelector: []*commonv1alpha2.IdentitySelector{
+						Spec: &networkingv1.AccessPolicySpec{
+							SourceSelector: []*commonv1.IdentitySelector{
 								{
-									KubeIdentityMatcher: &commonv1alpha2.IdentitySelector_KubeIdentityMatcher{
+									KubeIdentityMatcher: &commonv1.IdentitySelector_KubeIdentityMatcher{
 										Namespaces: []string{"ns1"},
 									},
 								},
 								{
-									KubeServiceAccountRefs: &commonv1alpha2.IdentitySelector_KubeServiceAccountRefs{
+									KubeServiceAccountRefs: &commonv1.IdentitySelector_KubeServiceAccountRefs{
 										ServiceAccounts: []*v1.ClusterObjectRef{
 											{
 												Name:      "sa2",
@@ -227,15 +227,15 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 				},
 			},
 		}
-		meshes := []*discoveryv1alpha2.Mesh{
+		meshes := []*discoveryv1.Mesh{
 			{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "mesh1",
 				},
-				Spec: discoveryv1alpha2.MeshSpec{
-					Type: &discoveryv1alpha2.MeshSpec_Istio_{
-						Istio: &discoveryv1alpha2.MeshSpec_Istio{
-							Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+				Spec: discoveryv1.MeshSpec{
+					Type: &discoveryv1.MeshSpec_Istio_{
+						Istio: &discoveryv1.MeshSpec_Istio{
+							Installation: &discoveryv1.MeshSpec_MeshInstallation{
 								Cluster: "cluster1",
 							},
 							TrustDomain: "cluster1.local",
@@ -247,10 +247,10 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "mesh2",
 				},
-				Spec: discoveryv1alpha2.MeshSpec{
-					Type: &discoveryv1alpha2.MeshSpec_Istio_{
-						Istio: &discoveryv1alpha2.MeshSpec_Istio{
-							Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+				Spec: discoveryv1.MeshSpec{
+					Type: &discoveryv1.MeshSpec_Istio_{
+						Istio: &discoveryv1.MeshSpec_Istio{
+							Installation: &discoveryv1.MeshSpec_MeshInstallation{
 								Cluster: "cluster2",
 							},
 							TrustDomain: "cluster2.local",

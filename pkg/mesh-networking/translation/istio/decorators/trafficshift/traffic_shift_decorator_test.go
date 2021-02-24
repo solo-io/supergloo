@@ -5,14 +5,14 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	mock_hostutils "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils/mocks"
 	"github.com/solo-io/go-utils/testutils"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/api/networking/v1alpha3"
 )
 
@@ -32,16 +32,16 @@ var _ = Describe("TrafficShiftDecorator", func() {
 
 	It("should decorate mirror with selected port", func() {
 		destinations := v1alpha2sets.NewDestinationSet(
-			&discoveryv1alpha2.Destination{
-				Spec: discoveryv1alpha2.DestinationSpec{
-					Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-						KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
-							Ref: &v1.ClusterObjectRef{
+			&discoveryv1.Destination{
+				Spec: discoveryv1.DestinationSpec{
+					Type: &discoveryv1.DestinationSpec_KubeService_{
+						KubeService: &discoveryv1.DestinationSpec_KubeService{
+							Ref: &skv2corev1.ClusterObjectRef{
 								Name:        "traffic-shift",
 								Namespace:   "namespace",
 								ClusterName: "cluster",
 							},
-							Ports: []*discoveryv1alpha2.DestinationSpec_KubeService_KubeServicePort{
+							Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "http1",
@@ -58,11 +58,11 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				},
 			})
 		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, destinations)
-		originalService := &discoveryv1alpha2.Destination{
-			Spec: discoveryv1alpha2.DestinationSpec{
-				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
-						Ref: &v1.ClusterObjectRef{
+		originalService := &discoveryv1.Destination{
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
+						Ref: &skv2corev1.ClusterObjectRef{
 							ClusterName: "local-cluster",
 						},
 					},
@@ -72,14 +72,14 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
-			Spec: &v1alpha2.TrafficPolicySpec{
-				Policy: &v1alpha2.TrafficPolicySpec_Policy{
-					TrafficShift: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination{
-						Destinations: []*v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+			Spec: &v1.TrafficPolicySpec{
+				Policy: &v1.TrafficPolicySpec_Policy{
+					TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
+						Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
 							{
-								DestinationType: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-									KubeService: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+								DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+									KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
 										Name:        "traffic-shift",
 										Namespace:   "namespace",
 										ClusterName: "cluster",
@@ -98,7 +98,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		mockClusterDomainRegistry.
 			EXPECT().
 			GetDestinationFQDN(originalService.Spec.GetKubeService().Ref.ClusterName,
-				&v1.ClusterObjectRef{
+				&skv2corev1.ClusterObjectRef{
 					Name:        appliedPolicy.Spec.GetPolicy().GetTrafficShift().Destinations[0].GetKubeService().Name,
 					Namespace:   appliedPolicy.Spec.GetPolicy().GetTrafficShift().Destinations[0].GetKubeService().Namespace,
 					ClusterName: appliedPolicy.Spec.GetPolicy().GetTrafficShift().Destinations[0].GetKubeService().ClusterName,
@@ -124,16 +124,16 @@ var _ = Describe("TrafficShiftDecorator", func() {
 
 	It("should decorate mirror for federated Destination with selected port", func() {
 		destinations := v1alpha2sets.NewDestinationSet(
-			&discoveryv1alpha2.Destination{
-				Spec: discoveryv1alpha2.DestinationSpec{
-					Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-						KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
-							Ref: &v1.ClusterObjectRef{
+			&discoveryv1.Destination{
+				Spec: discoveryv1.DestinationSpec{
+					Type: &discoveryv1.DestinationSpec_KubeService_{
+						KubeService: &discoveryv1.DestinationSpec_KubeService{
+							Ref: &skv2corev1.ClusterObjectRef{
 								Name:        "traffic-shift",
 								Namespace:   "namespace",
 								ClusterName: "cluster",
 							},
-							Ports: []*discoveryv1alpha2.DestinationSpec_KubeService_KubeServicePort{
+							Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "http1",
@@ -150,11 +150,11 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				},
 			})
 		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, destinations)
-		originalService := &discoveryv1alpha2.Destination{
-			Spec: discoveryv1alpha2.DestinationSpec{
-				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
-						Ref: &v1.ClusterObjectRef{
+		originalService := &discoveryv1.Destination{
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
+						Ref: &skv2corev1.ClusterObjectRef{
 							ClusterName: "local-cluster",
 						},
 					},
@@ -164,14 +164,14 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
-			Spec: &v1alpha2.TrafficPolicySpec{
-				Policy: &v1alpha2.TrafficPolicySpec_Policy{
-					TrafficShift: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination{
-						Destinations: []*v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+			Spec: &v1.TrafficPolicySpec{
+				Policy: &v1.TrafficPolicySpec_Policy{
+					TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
+						Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
 							{
-								DestinationType: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-									KubeService: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+								DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+									KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
 										Name:        "traffic-shift",
 										Namespace:   "namespace",
 										ClusterName: "cluster",
@@ -186,7 +186,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 			},
 		}
 
-		sourceMeshInstallation := &discoveryv1alpha2.MeshSpec_MeshInstallation{
+		sourceMeshInstallation := &discoveryv1.MeshSpec_MeshInstallation{
 			Cluster: "federated-cluster-name",
 		}
 		globalTrafficShiftHostname := "name.namespace.svc.local-cluster.global"
@@ -194,7 +194,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 			EXPECT().
 			GetDestinationFQDN(
 				sourceMeshInstallation.GetCluster(),
-				&v1.ClusterObjectRef{
+				&skv2corev1.ClusterObjectRef{
 					Name:        appliedPolicy.Spec.GetPolicy().GetTrafficShift().Destinations[0].GetKubeService().Name,
 					Namespace:   appliedPolicy.Spec.GetPolicy().GetTrafficShift().Destinations[0].GetKubeService().Namespace,
 					ClusterName: appliedPolicy.Spec.GetPolicy().GetTrafficShift().Destinations[0].GetKubeService().ClusterName,
@@ -226,16 +226,16 @@ var _ = Describe("TrafficShiftDecorator", func() {
 
 	It("should throw error if traffic shift destination has multiple ports but TrafficPolicy does not specify which port", func() {
 		destinations := v1alpha2sets.NewDestinationSet(
-			&discoveryv1alpha2.Destination{
-				Spec: discoveryv1alpha2.DestinationSpec{
-					Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-						KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
-							Ref: &v1.ClusterObjectRef{
+			&discoveryv1.Destination{
+				Spec: discoveryv1.DestinationSpec{
+					Type: &discoveryv1.DestinationSpec_KubeService_{
+						KubeService: &discoveryv1.DestinationSpec_KubeService{
+							Ref: &skv2corev1.ClusterObjectRef{
 								Name:        "traffic-shift",
 								Namespace:   "namespace",
 								ClusterName: "cluster",
 							},
-							Ports: []*discoveryv1alpha2.DestinationSpec_KubeService_KubeServicePort{
+							Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "http1",
@@ -252,11 +252,11 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				},
 			})
 		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, destinations)
-		originalService := &discoveryv1alpha2.Destination{
-			Spec: discoveryv1alpha2.DestinationSpec{
-				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
-						Ref: &v1.ClusterObjectRef{
+		originalService := &discoveryv1.Destination{
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
+						Ref: &skv2corev1.ClusterObjectRef{
 							ClusterName: "local-cluster",
 						},
 					},
@@ -266,14 +266,14 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicyMissingPort := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
-			Spec: &v1alpha2.TrafficPolicySpec{
-				Policy: &v1alpha2.TrafficPolicySpec_Policy{
-					TrafficShift: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination{
-						Destinations: []*v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+		appliedPolicyMissingPort := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+			Spec: &v1.TrafficPolicySpec{
+				Policy: &v1.TrafficPolicySpec_Policy{
+					TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
+						Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
 							{
-								DestinationType: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-									KubeService: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+								DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+									KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
 										Name:        "traffic-shift",
 										Namespace:   "namespace",
 										ClusterName: "cluster",
@@ -286,14 +286,14 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				},
 			},
 		}
-		appliedPolicyNonexistentPort := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
-			Spec: &v1alpha2.TrafficPolicySpec{
-				Policy: &v1alpha2.TrafficPolicySpec_Policy{
-					TrafficShift: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination{
-						Destinations: []*v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+		appliedPolicyNonexistentPort := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+			Spec: &v1.TrafficPolicySpec{
+				Policy: &v1.TrafficPolicySpec_Policy{
+					TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
+						Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
 							{
-								DestinationType: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-									KubeService: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+								DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+									KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
 										Name:        "traffic-shift",
 										Namespace:   "namespace",
 										ClusterName: "cluster",
@@ -312,7 +312,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		mockClusterDomainRegistry.
 			EXPECT().
 			GetDestinationFQDN(originalService.Spec.GetKubeService().Ref.ClusterName,
-				&v1.ClusterObjectRef{
+				&skv2corev1.ClusterObjectRef{
 					Name:        appliedPolicyMissingPort.Spec.GetPolicy().GetTrafficShift().Destinations[0].GetKubeService().Name,
 					Namespace:   appliedPolicyMissingPort.Spec.GetPolicy().GetTrafficShift().Destinations[0].GetKubeService().Namespace,
 					ClusterName: appliedPolicyMissingPort.Spec.GetPolicy().GetTrafficShift().Destinations[0].GetKubeService().ClusterName,
@@ -328,16 +328,16 @@ var _ = Describe("TrafficShiftDecorator", func() {
 
 	It("should not decorate traffic shift if error during field registration", func() {
 		destinations := v1alpha2sets.NewDestinationSet(
-			&discoveryv1alpha2.Destination{
-				Spec: discoveryv1alpha2.DestinationSpec{
-					Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-						KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
-							Ref: &v1.ClusterObjectRef{
+			&discoveryv1.Destination{
+				Spec: discoveryv1.DestinationSpec{
+					Type: &discoveryv1.DestinationSpec_KubeService_{
+						KubeService: &discoveryv1.DestinationSpec_KubeService{
+							Ref: &skv2corev1.ClusterObjectRef{
 								Name:        "traffic-shift",
 								Namespace:   "namespace",
 								ClusterName: "cluster",
 							},
-							Ports: []*discoveryv1alpha2.DestinationSpec_KubeService_KubeServicePort{
+							Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 								{
 									Port:     9080,
 									Name:     "http1",
@@ -354,11 +354,11 @@ var _ = Describe("TrafficShiftDecorator", func() {
 				},
 			})
 		trafficShiftDecorator = trafficshift.NewTrafficShiftDecorator(mockClusterDomainRegistry, destinations)
-		originalService := &discoveryv1alpha2.Destination{
-			Spec: discoveryv1alpha2.DestinationSpec{
-				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
-						Ref: &v1.ClusterObjectRef{
+		originalService := &discoveryv1.Destination{
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
+						Ref: &skv2corev1.ClusterObjectRef{
 							ClusterName: "local-cluster",
 						},
 					},
@@ -370,14 +370,14 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return testErr
 		}
-		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
-			Spec: &v1alpha2.TrafficPolicySpec{
-				Policy: &v1alpha2.TrafficPolicySpec_Policy{
-					TrafficShift: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination{
-						Destinations: []*v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+			Spec: &v1.TrafficPolicySpec{
+				Policy: &v1.TrafficPolicySpec_Policy{
+					TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
+						Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
 							{
-								DestinationType: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-									KubeService: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+								DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+									KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
 										Name:        "traffic-shift",
 										Namespace:   "namespace",
 										ClusterName: "cluster",
@@ -396,7 +396,7 @@ var _ = Describe("TrafficShiftDecorator", func() {
 		mockClusterDomainRegistry.
 			EXPECT().
 			GetDestinationFQDN(originalService.Spec.GetKubeService().Ref.ClusterName,
-				&v1.ClusterObjectRef{
+				&skv2corev1.ClusterObjectRef{
 					Name:        appliedPolicy.Spec.GetPolicy().GetTrafficShift().Destinations[0].GetKubeService().Name,
 					Namespace:   appliedPolicy.Spec.GetPolicy().GetTrafficShift().Destinations[0].GetKubeService().Namespace,
 					ClusterName: appliedPolicy.Spec.GetPolicy().GetTrafficShift().Destinations[0].GetKubeService().ClusterName,

@@ -10,7 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -39,10 +39,10 @@ func (m *MockSettingsSnapshot) EXPECT() *MockSettingsSnapshotMockRecorder {
 }
 
 // Settings mocks base method
-func (m *MockSettingsSnapshot) Settings() v1alpha2sets.SettingsSet {
+func (m *MockSettingsSnapshot) Settings() v1sets.SettingsSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Settings")
-	ret0, _ := ret[0].(v1alpha2sets.SettingsSet)
+	ret0, _ := ret[0].(v1sets.SettingsSet)
 	return ret0
 }
 

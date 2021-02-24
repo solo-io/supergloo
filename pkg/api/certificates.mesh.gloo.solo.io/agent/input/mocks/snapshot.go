@@ -11,7 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	input "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
+	v1sets0 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -40,10 +40,10 @@ func (m *MockSnapshot) EXPECT() *MockSnapshotMockRecorder {
 }
 
 // IssuedCertificates mocks base method
-func (m *MockSnapshot) IssuedCertificates() v1alpha2sets.IssuedCertificateSet {
+func (m *MockSnapshot) IssuedCertificates() v1sets0.IssuedCertificateSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IssuedCertificates")
-	ret0, _ := ret[0].(v1alpha2sets.IssuedCertificateSet)
+	ret0, _ := ret[0].(v1sets0.IssuedCertificateSet)
 	return ret0
 }
 
@@ -54,10 +54,10 @@ func (mr *MockSnapshotMockRecorder) IssuedCertificates() *gomock.Call {
 }
 
 // CertificateRequests mocks base method
-func (m *MockSnapshot) CertificateRequests() v1alpha2sets.CertificateRequestSet {
+func (m *MockSnapshot) CertificateRequests() v1sets0.CertificateRequestSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CertificateRequests")
-	ret0, _ := ret[0].(v1alpha2sets.CertificateRequestSet)
+	ret0, _ := ret[0].(v1sets0.CertificateRequestSet)
 	return ret0
 }
 
@@ -68,10 +68,10 @@ func (mr *MockSnapshotMockRecorder) CertificateRequests() *gomock.Call {
 }
 
 // PodBounceDirectives mocks base method
-func (m *MockSnapshot) PodBounceDirectives() v1alpha2sets.PodBounceDirectiveSet {
+func (m *MockSnapshot) PodBounceDirectives() v1sets0.PodBounceDirectiveSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PodBounceDirectives")
-	ret0, _ := ret[0].(v1alpha2sets.PodBounceDirectiveSet)
+	ret0, _ := ret[0].(v1sets0.PodBounceDirectiveSet)
 	return ret0
 }
 

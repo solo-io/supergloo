@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector/osm"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/labelutils"
@@ -83,16 +83,16 @@ var _ = Describe("OsmMeshDetector", func() {
 		)
 
 		deployment := osmController("osm-controller")
-		expected := &v1alpha2.Mesh{
+		expected := &v1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "osm-controller-namespace-cluster",
 				Namespace: defaults.GetPodNamespace(),
 				Labels:    labelutils.ClusterLabels(clusterName),
 			},
-			Spec: v1alpha2.MeshSpec{
-				Type: &v1alpha2.MeshSpec_Osm{
-					Osm: &v1alpha2.MeshSpec_OSM{
-						Installation: &v1alpha2.MeshSpec_MeshInstallation{
+			Spec: v1.MeshSpec{
+				Type: &v1.MeshSpec_Osm{
+					Osm: &v1.MeshSpec_OSM{
+						Installation: &v1.MeshSpec_MeshInstallation{
 							Namespace: meshNs,
 							Cluster:   clusterName,
 							Version:   "latest",

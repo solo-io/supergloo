@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -63,7 +63,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 			},
 		}
 
-		expected := v1alpha2.Mesh{
+		expected := v1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s-%s", meshName1, "us-east-2", "1234"),
 				Namespace: "gloo-mesh",
@@ -71,9 +71,9 @@ var _ = Describe("AppMesh MeshDetector", func() {
 					"owner.discovery.mesh.gloo.solo.io": "gloo-mesh",
 				},
 			},
-			Spec: v1alpha2.MeshSpec{
-				Type: &v1alpha2.MeshSpec_AwsAppMesh_{
-					AwsAppMesh: &v1alpha2.MeshSpec_AwsAppMesh{
+			Spec: v1.MeshSpec{
+				Type: &v1.MeshSpec_AwsAppMesh_{
+					AwsAppMesh: &v1.MeshSpec_AwsAppMesh{
 						AwsName:      meshName1,
 						Region:       "us-east-2",
 						AwsAccountId: "1234",
@@ -128,7 +128,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 			},
 		}
 
-		expected1 := v1alpha2.Mesh{
+		expected1 := v1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s-%s", meshName1, "us-east-2", "1234"),
 				Namespace: "gloo-mesh",
@@ -136,9 +136,9 @@ var _ = Describe("AppMesh MeshDetector", func() {
 					"owner.discovery.mesh.gloo.solo.io": "gloo-mesh",
 				},
 			},
-			Spec: v1alpha2.MeshSpec{
-				Type: &v1alpha2.MeshSpec_AwsAppMesh_{
-					AwsAppMesh: &v1alpha2.MeshSpec_AwsAppMesh{
+			Spec: v1.MeshSpec{
+				Type: &v1.MeshSpec_AwsAppMesh_{
+					AwsAppMesh: &v1.MeshSpec_AwsAppMesh{
 						AwsName:      meshName1,
 						Region:       "us-east-2",
 						AwsAccountId: "1234",
@@ -148,7 +148,7 @@ var _ = Describe("AppMesh MeshDetector", func() {
 				},
 			},
 		}
-		expected2 := v1alpha2.Mesh{
+		expected2 := v1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s-%s", meshName2, "us-east-2", "1234"),
 				Namespace: "gloo-mesh",
@@ -156,9 +156,9 @@ var _ = Describe("AppMesh MeshDetector", func() {
 					"owner.discovery.mesh.gloo.solo.io": "gloo-mesh",
 				},
 			},
-			Spec: v1alpha2.MeshSpec{
-				Type: &v1alpha2.MeshSpec_AwsAppMesh_{
-					AwsAppMesh: &v1alpha2.MeshSpec_AwsAppMesh{
+			Spec: v1.MeshSpec{
+				Type: &v1.MeshSpec_AwsAppMesh_{
+					AwsAppMesh: &v1.MeshSpec_AwsAppMesh{
 						AwsName:      meshName2,
 						Region:       "us-east-2",
 						AwsAccountId: "1234",

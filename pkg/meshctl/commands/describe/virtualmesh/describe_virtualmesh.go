@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
-	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/printing"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -53,7 +53,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 }
 
 func describeVirtualMeshes(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
-	virtualMeshClient := networkingv1alpha2.NewVirtualMeshClient(c)
+	virtualMeshClient := networkingv1.NewVirtualMeshClient(c)
 	virtualMeshList, err := virtualMeshClient.ListVirtualMesh(ctx)
 	if err != nil {
 		return "", err
@@ -100,7 +100,7 @@ type virtualMeshNet struct {
 	GlobalAccessPolicy string
 }
 
-func matchVirtualMesh(virtualMesh networkingv1alpha2.VirtualMesh, searchTerms []string) bool {
+func matchVirtualMesh(virtualMesh networkingv1.VirtualMesh, searchTerms []string) bool {
 	// do not apply matching when there are no search strings
 	if len(searchTerms) == 0 {
 		return true
@@ -115,7 +115,7 @@ func matchVirtualMesh(virtualMesh networkingv1alpha2.VirtualMesh, searchTerms []
 	return false
 }
 
-func describeVirtualMesh(virtualMesh *networkingv1alpha2.VirtualMesh) virtualMeshDescription {
+func describeVirtualMesh(virtualMesh *networkingv1.VirtualMesh) virtualMeshDescription {
 	virtualMeshMeta := getVirtualMeshMetadata(virtualMesh)
 	virtualMeshNet := getVirtualMeshNet(virtualMesh)
 
@@ -131,7 +131,7 @@ func describeVirtualMesh(virtualMesh *networkingv1alpha2.VirtualMesh) virtualMes
 	}
 }
 
-func getVirtualMeshMetadata(virtualMesh *networkingv1alpha2.VirtualMesh) v1.ClusterObjectRef {
+func getVirtualMeshMetadata(virtualMesh *networkingv1.VirtualMesh) v1.ClusterObjectRef {
 	return v1.ClusterObjectRef{
 		Name:        virtualMesh.Name,
 		Namespace:   virtualMesh.Namespace,
@@ -139,7 +139,7 @@ func getVirtualMeshMetadata(virtualMesh *networkingv1alpha2.VirtualMesh) v1.Clus
 	}
 }
 
-func getVirtualMeshNet(virtualMesh *networkingv1alpha2.VirtualMesh) virtualMeshNet {
+func getVirtualMeshNet(virtualMesh *networkingv1.VirtualMesh) virtualMeshNet {
 	return virtualMeshNet{
 		GlobalAccessPolicy: virtualMesh.Spec.GlobalAccessPolicy.String(),
 	}

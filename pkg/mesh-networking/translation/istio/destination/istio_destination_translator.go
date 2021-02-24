@@ -6,8 +6,8 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/settingsutils"
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
@@ -31,7 +31,7 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.LocalSnapshot,
-		destination *discoveryv1alpha2.Destination,
+		destination *discoveryv1.Destination,
 		outputs istio.Builder,
 		reporter reporting.Reporter,
 	)
@@ -50,7 +50,7 @@ func NewTranslator(
 	userSupplied input.RemoteSnapshot,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
-	destinations discoveryv1alpha2sets.DestinationSet,
+	destinations discoveryv1sets.DestinationSet,
 ) Translator {
 	var existingVirtualServices v1alpha3sets.VirtualServiceSet
 	var existingDestinationRules v1alpha3sets.DestinationRuleSet
@@ -70,7 +70,7 @@ func NewTranslator(
 // translate the appropriate resources for the given Destination.
 func (t *translator) Translate(
 	in input.LocalSnapshot,
-	destination *discoveryv1alpha2.Destination,
+	destination *discoveryv1.Destination,
 	outputs istio.Builder,
 	reporter reporting.Reporter,
 ) {
@@ -99,8 +99,8 @@ func (t *translator) Translate(
 
 func (t *translator) isIstioDestination(
 	ctx context.Context,
-	destination *discoveryv1alpha2.Destination,
-	allMeshes discoveryv1alpha2sets.MeshSet,
+	destination *discoveryv1.Destination,
+	allMeshes discoveryv1sets.MeshSet,
 ) bool {
 	meshRef := destination.Spec.Mesh
 	if meshRef == nil {

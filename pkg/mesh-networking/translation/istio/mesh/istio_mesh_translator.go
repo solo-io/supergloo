@@ -7,7 +7,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/mtls"
 
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/access"
@@ -25,7 +25,7 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.LocalSnapshot,
-		mesh *discoveryv1alpha2.Mesh,
+		mesh *discoveryv1.Mesh,
 		istioOutputs istio.Builder,
 		localOutputs local.Builder,
 		reporter reporting.Reporter,
@@ -56,7 +56,7 @@ func NewTranslator(
 // translate the appropriate resources for the given Mesh.
 func (t *translator) Translate(
 	in input.LocalSnapshot,
-	mesh *discoveryv1alpha2.Mesh,
+	mesh *discoveryv1.Mesh,
 	istioOutputs istio.Builder,
 	localOutputs local.Builder,
 	reporter reporting.Reporter,

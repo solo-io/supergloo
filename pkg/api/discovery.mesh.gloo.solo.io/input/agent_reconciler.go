@@ -33,8 +33,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	settings_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
-	settings_mesh_gloo_solo_io_v1alpha2_controllers "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/controller"
+	settings_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
+	settings_mesh_gloo_solo_io_v1_controllers "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1/controller"
 
 	appmesh_k8s_aws_v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	appmesh_k8s_aws_v1beta2_controllers "github.com/solo-io/external-apis/pkg/api/appmesh/appmesh.k8s.aws/v1beta2/controller"
@@ -49,7 +49,7 @@ import (
 // the multiClusterAgentReconciler reconciles events for input resources across clusters
 // this private interface is used to ensure that the generated struct implements the intended functions
 type multiClusterAgentReconciler interface {
-	settings_mesh_gloo_solo_io_v1alpha2_controllers.MulticlusterSettingsReconciler
+	settings_mesh_gloo_solo_io_v1_controllers.MulticlusterSettingsReconciler
 
 	appmesh_k8s_aws_v1beta2_controllers.MulticlusterMeshReconciler
 
@@ -126,7 +126,7 @@ func RegisterMultiClusterAgentReconciler(
 
 	// initialize reconcile loops
 
-	settings_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterSettingsReconcileLoop("Settings", clusters, options.Settings).AddMulticlusterSettingsReconciler(ctx, r, predicates...)
+	settings_mesh_gloo_solo_io_v1_controllers.NewMulticlusterSettingsReconcileLoop("Settings", clusters, options.Settings).AddMulticlusterSettingsReconciler(ctx, r, predicates...)
 
 	appmesh_k8s_aws_v1beta2_controllers.NewMulticlusterMeshReconcileLoop("Mesh", clusters, options.Meshes).AddMulticlusterMeshReconciler(ctx, r, predicates...)
 
@@ -150,7 +150,7 @@ func RegisterMultiClusterAgentReconciler(
 	return r.base
 }
 
-func (r *multiClusterAgentReconcilerImpl) ReconcileSettings(clusterName string, obj *settings_mesh_gloo_solo_io_v1alpha2.Settings) (reconcile.Result, error) {
+func (r *multiClusterAgentReconcilerImpl) ReconcileSettings(clusterName string, obj *settings_mesh_gloo_solo_io_v1.Settings) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileRemoteGeneric(obj)
 }
@@ -318,7 +318,7 @@ func (r *multiClusterAgentReconcilerImpl) ReconcileStatefulSetDeletion(clusterNa
 // the singleClusterAgentReconciler reconciles events for input resources across clusters
 // this private interface is used to ensure that the generated struct implements the intended functions
 type singleClusterAgentReconciler interface {
-	settings_mesh_gloo_solo_io_v1alpha2_controllers.SettingsReconciler
+	settings_mesh_gloo_solo_io_v1_controllers.SettingsReconciler
 
 	appmesh_k8s_aws_v1beta2_controllers.MeshReconciler
 
@@ -365,7 +365,7 @@ func RegisterSingleClusterAgentReconciler(
 
 	// initialize reconcile loops
 
-	if err := settings_mesh_gloo_solo_io_v1alpha2_controllers.NewSettingsReconcileLoop("Settings", mgr, options).RunSettingsReconciler(ctx, r, predicates...); err != nil {
+	if err := settings_mesh_gloo_solo_io_v1_controllers.NewSettingsReconcileLoop("Settings", mgr, options).RunSettingsReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
 	}
 
@@ -405,7 +405,7 @@ func RegisterSingleClusterAgentReconciler(
 	return r.base, nil
 }
 
-func (r *singleClusterAgentReconcilerImpl) ReconcileSettings(obj *settings_mesh_gloo_solo_io_v1alpha2.Settings) (reconcile.Result, error) {
+func (r *singleClusterAgentReconcilerImpl) ReconcileSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 

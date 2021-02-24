@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/stats"
 
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/settingsutils"
@@ -12,10 +13,9 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/gloo-mesh/codegen/io"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1beta1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
-	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
@@ -302,13 +302,13 @@ func (r *networkingReconciler) syncSettings(ctx *context.Context, in input.Local
 
 	*ctx = settingsutils.ContextWithSettings(*ctx, settings)
 
-	settings.Status = settingsv1alpha2.SettingsStatus{
+	settings.Status = settingsv1.SettingsStatus{
 		ObservedGeneration: settings.Generation,
-		State:              networkingv1alpha2.ApprovalState_ACCEPTED,
+		State:              commonv1.ApprovalState_ACCEPTED,
 	}
 
 	// update configured NetworkExtensionServers for the extension clients which are called inside the translator.
-	return r.extensionClients.ConfigureServers(settings.Spec.NetworkingExtensionServers, func(_ *v1alpha1.PushNotification) {
+	return r.extensionClients.ConfigureServers(settings.Spec.NetworkingExtensionServers, func(_ *v1beta1.PushNotification) {
 		// ignore error because underlying impl should never error here
 		_, _ = r.reconciler.ReconcileLocalGeneric(pushNotificationId)
 	})

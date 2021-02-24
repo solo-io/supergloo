@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/test/extensions"
 	"github.com/solo-io/gloo-mesh/test/utils"
@@ -25,10 +25,10 @@ func NetworkingExtensionsTest() {
 		manifest, err = utils.NewManifest("default-settings.yaml")
 		Expect(err).NotTo(HaveOccurred())
 		// update settings to remove our extensions server
-		err = manifest.AppendResources(&v1alpha2.Settings{
+		err = manifest.AppendResources(&settingsv1.Settings{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Settings",
-				APIVersion: v1alpha2.SchemeGroupVersion.String(),
+				APIVersion: settingsv1.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: glooMeshNamespace,
@@ -64,17 +64,17 @@ func NetworkingExtensionsTest() {
 			}()
 
 			// update settings to connect our extensions server
-			err = manifest.AppendResources(&v1alpha2.Settings{
+			err = manifest.AppendResources(&settingsv1.Settings{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "Settings",
-					APIVersion: v1alpha2.SchemeGroupVersion.String(),
+					APIVersion: settingsv1.SchemeGroupVersion.String(),
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: glooMeshNamespace,
 					Name:      "settings", // the default/expected name
 				},
-				Spec: v1alpha2.SettingsSpec{
-					NetworkingExtensionServers: []*v1alpha2.GrpcServer{{
+				Spec: settingsv1.SettingsSpec{
+					NetworkingExtensionServers: []*settingsv1.GrpcServer{{
 						// use the machine's docker host address
 						Address:                    fmt.Sprintf("%v:%v", extensions.DockerHostAddress, extensions.ExtensionsServerPort),
 						Insecure:                   true,

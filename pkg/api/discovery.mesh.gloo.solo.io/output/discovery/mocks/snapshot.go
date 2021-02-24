@@ -10,8 +10,8 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	discovery "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/output/discovery"
-	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	output "github.com/solo-io/skv2/contrib/pkg/output"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	resource "github.com/solo-io/skv2/pkg/resource"
@@ -160,10 +160,10 @@ func (mr *MockLabeledDestinationSetMockRecorder) Labels() *gomock.Call {
 }
 
 // Set mocks base method
-func (m *MockLabeledDestinationSet) Set() v1alpha2sets.DestinationSet {
+func (m *MockLabeledDestinationSet) Set() v1sets.DestinationSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
-	ret0, _ := ret[0].(v1alpha2sets.DestinationSet)
+	ret0, _ := ret[0].(v1sets.DestinationSet)
 	return ret0
 }
 
@@ -225,10 +225,10 @@ func (mr *MockLabeledWorkloadSetMockRecorder) Labels() *gomock.Call {
 }
 
 // Set mocks base method
-func (m *MockLabeledWorkloadSet) Set() v1alpha2sets.WorkloadSet {
+func (m *MockLabeledWorkloadSet) Set() v1sets.WorkloadSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
-	ret0, _ := ret[0].(v1alpha2sets.WorkloadSet)
+	ret0, _ := ret[0].(v1sets.WorkloadSet)
 	return ret0
 }
 
@@ -290,10 +290,10 @@ func (mr *MockLabeledMeshSetMockRecorder) Labels() *gomock.Call {
 }
 
 // Set mocks base method
-func (m *MockLabeledMeshSet) Set() v1alpha2sets.MeshSet {
+func (m *MockLabeledMeshSet) Set() v1sets.MeshSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
-	ret0, _ := ret[0].(v1alpha2sets.MeshSet)
+	ret0, _ := ret[0].(v1sets.MeshSet)
 	return ret0
 }
 
@@ -341,7 +341,7 @@ func (m *MockBuilder) EXPECT() *MockBuilderMockRecorder {
 }
 
 // AddDestinations mocks base method
-func (m *MockBuilder) AddDestinations(destinations ...*v1alpha2.Destination) {
+func (m *MockBuilder) AddDestinations(destinations ...*v1.Destination) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range destinations {
@@ -357,10 +357,10 @@ func (mr *MockBuilderMockRecorder) AddDestinations(destinations ...interface{}) 
 }
 
 // GetDestinations mocks base method
-func (m *MockBuilder) GetDestinations() v1alpha2sets.DestinationSet {
+func (m *MockBuilder) GetDestinations() v1sets.DestinationSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDestinations")
-	ret0, _ := ret[0].(v1alpha2sets.DestinationSet)
+	ret0, _ := ret[0].(v1sets.DestinationSet)
 	return ret0
 }
 
@@ -371,7 +371,7 @@ func (mr *MockBuilderMockRecorder) GetDestinations() *gomock.Call {
 }
 
 // AddWorkloads mocks base method
-func (m *MockBuilder) AddWorkloads(workloads ...*v1alpha2.Workload) {
+func (m *MockBuilder) AddWorkloads(workloads ...*v1.Workload) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range workloads {
@@ -387,10 +387,10 @@ func (mr *MockBuilderMockRecorder) AddWorkloads(workloads ...interface{}) *gomoc
 }
 
 // GetWorkloads mocks base method
-func (m *MockBuilder) GetWorkloads() v1alpha2sets.WorkloadSet {
+func (m *MockBuilder) GetWorkloads() v1sets.WorkloadSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetWorkloads")
-	ret0, _ := ret[0].(v1alpha2sets.WorkloadSet)
+	ret0, _ := ret[0].(v1sets.WorkloadSet)
 	return ret0
 }
 
@@ -401,7 +401,7 @@ func (mr *MockBuilderMockRecorder) GetWorkloads() *gomock.Call {
 }
 
 // AddMeshes mocks base method
-func (m *MockBuilder) AddMeshes(meshes ...*v1alpha2.Mesh) {
+func (m *MockBuilder) AddMeshes(meshes ...*v1.Mesh) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range meshes {
@@ -417,10 +417,10 @@ func (mr *MockBuilderMockRecorder) AddMeshes(meshes ...interface{}) *gomock.Call
 }
 
 // GetMeshes mocks base method
-func (m *MockBuilder) GetMeshes() v1alpha2sets.MeshSet {
+func (m *MockBuilder) GetMeshes() v1sets.MeshSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMeshes")
-	ret0, _ := ret[0].(v1alpha2sets.MeshSet)
+	ret0, _ := ret[0].(v1sets.MeshSet)
 	return ret0
 }
 

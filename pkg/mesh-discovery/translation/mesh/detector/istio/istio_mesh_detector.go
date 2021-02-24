@@ -10,8 +10,8 @@ import (
 	"github.com/rotisserie/eris"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/dockerutils"
@@ -56,8 +56,8 @@ func NewMeshDetector(
 }
 
 // returns a mesh for each deployment that contains the istiod image
-func (d *meshDetector) DetectMeshes(in input.DiscoveryInputSnapshot, settings *settingsv1alpha2.DiscoverySettings) (v1alpha2.MeshSlice, error) {
-	var meshes v1alpha2.MeshSlice
+func (d *meshDetector) DetectMeshes(in input.DiscoveryInputSnapshot, settings *settingsv1.DiscoverySettings) (v1.MeshSlice, error) {
+	var meshes v1.MeshSlice
 	var errs error
 	for _, deployment := range in.Deployments().List() {
 		mesh, err := d.detectMesh(deployment, in, settings)
@@ -72,7 +72,7 @@ func (d *meshDetector) DetectMeshes(in input.DiscoveryInputSnapshot, settings *s
 	return meshes, errs
 }
 
-func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.DiscoveryInputSnapshot, settings *settingsv1alpha2.DiscoverySettings) (*v1alpha2.Mesh, error) {
+func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.DiscoveryInputSnapshot, settings *settingsv1.DiscoverySettings) (*v1.Mesh, error) {
 	version, err := d.getIstiodVersion(deployment)
 	if err != nil {
 		return nil, err
@@ -112,12 +112,12 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Discov
 	if err != nil {
 		contextutils.LoggerFrom(d.ctx).Warnf("could not get region for cluster: %s", deployment.ClusterName)
 	}
-	mesh := &v1alpha2.Mesh{
+	mesh := &v1.Mesh{
 		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
-		Spec: v1alpha2.MeshSpec{
-			Type: &v1alpha2.MeshSpec_Istio_{
-				Istio: &v1alpha2.MeshSpec_Istio{
-					Installation: &v1alpha2.MeshSpec_MeshInstallation{
+		Spec: v1.MeshSpec{
+			Type: &v1.MeshSpec_Istio_{
+				Istio: &v1.MeshSpec_Istio{
+					Installation: &v1.MeshSpec_MeshInstallation{
 						Namespace: deployment.Namespace,
 						Cluster:   deployment.ClusterName,
 						PodLabels: deployment.Spec.Selector.MatchLabels,
@@ -147,9 +147,9 @@ func getIngressGateways(
 	allServices corev1sets.ServiceSet,
 	allPods corev1sets.PodSet,
 	allNodes corev1sets.NodeSet,
-) []*v1alpha2.MeshSpec_Istio_IngressGatewayInfo {
+) []*v1.MeshSpec_Istio_IngressGatewayInfo {
 	ingressSvcs := getIngressServices(allServices, namespace, clusterName, workloadLabels)
-	var ingressGateways []*v1alpha2.MeshSpec_Istio_IngressGatewayInfo
+	var ingressGateways []*v1.MeshSpec_Istio_IngressGatewayInfo
 	for _, svc := range ingressSvcs {
 		gateway, err := getIngressGateway(svc, workloadLabels, tlsPortName, allPods, allNodes)
 		if err != nil {
@@ -167,7 +167,7 @@ func getIngressGateway(
 	tlsPortName string,
 	allPods corev1sets.PodSet,
 	allNodes corev1sets.NodeSet,
-) (*v1alpha2.MeshSpec_Istio_IngressGatewayInfo, error) {
+) (*v1.MeshSpec_Istio_IngressGatewayInfo, error) {
 	var (
 		tlsPort *corev1.ServicePort
 	)
@@ -230,7 +230,7 @@ func getIngressGateway(
 		containerPort = tlsPort.Port
 	}
 
-	return &v1alpha2.MeshSpec_Istio_IngressGatewayInfo{
+	return &v1.MeshSpec_Istio_IngressGatewayInfo{
 		WorkloadLabels:   workloadLabels,
 		ExternalAddress:  externalAddress,
 		ExternalTlsPort:  externalPort,
@@ -370,12 +370,12 @@ type Agent struct {
 func getAgent(
 	cluster string,
 	pods corev1sets.PodSet,
-) *v1alpha2.MeshSpec_AgentInfo {
+) *v1.MeshSpec_AgentInfo {
 	agentNamespace := getCertAgentNamespace(cluster, pods)
 	if agentNamespace == "" {
 		return nil
 	}
-	return &v1alpha2.MeshSpec_AgentInfo{
+	return &v1.MeshSpec_AgentInfo{
 		AgentNamespace: agentNamespace,
 	}
 }

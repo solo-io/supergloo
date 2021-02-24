@@ -10,7 +10,7 @@ var (
 	CertificateIssuerInputTypes = Snapshot{
 		schema.GroupVersion{
 			Group:   "certificates." + constants.GlooMeshApiGroupSuffix,
-			Version: "v1alpha2",
+			Version: "v1",
 		}: {
 			"IssuedCertificate",
 			"CertificateRequest",
@@ -20,7 +20,7 @@ var (
 	CertificateAgentInputTypes = Snapshot{
 		schema.GroupVersion{
 			Group:   "certificates." + constants.GlooMeshApiGroupSuffix,
-			Version: "v1alpha2",
+			Version: "v1",
 		}: {
 			"IssuedCertificate",
 			"CertificateRequest",
@@ -38,7 +38,7 @@ var (
 		Snapshot: Snapshot{
 			schema.GroupVersion{
 				Group:   "certificates." + constants.GlooMeshApiGroupSuffix,
-				Version: "v1alpha2",
+				Version: "v1",
 			}: {
 				"CertificateRequest",
 			},

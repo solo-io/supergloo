@@ -7,13 +7,13 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	smislpitv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha2"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/smi/destination/split"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -31,7 +31,7 @@ var _ = Describe("TrafficSplitTranslator", func() {
 
 	It("will return nothing if no traffic policies are applied", func() {
 		in := input.NewInputLocalSnapshotManualBuilder("").Build()
-		destination := &discoveryv1alpha2.Destination{}
+		destination := &discoveryv1.Destination{}
 
 		ts := NewTranslator().Translate(ctx, in, destination, mockReporter)
 		Expect(ts).To(BeNil())
@@ -40,32 +40,32 @@ var _ = Describe("TrafficSplitTranslator", func() {
 	It("can build a proper traffic shift", func() {
 		ns := "default"
 		in := input.NewInputLocalSnapshotManualBuilder("").Build()
-		destination := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{},
-			Spec: discoveryv1alpha2.DestinationSpec{
-				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
-						Ref: &v1.ClusterObjectRef{
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
+						Ref: &skv2corev1.ClusterObjectRef{
 							Name:      "service",
 							Namespace: ns,
 						},
 					},
 				},
 			},
-			Status: discoveryv1alpha2.DestinationStatus{
-				AppliedTrafficPolicies: []*discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
+			Status: discoveryv1.DestinationStatus{
+				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
 					{
-						Ref: &v1.ObjectRef{
+						Ref: &skv2corev1.ObjectRef{
 							Name:      "tt",
 							Namespace: ns,
 						},
-						Spec: &v1alpha2.TrafficPolicySpec{
-							Policy: &v1alpha2.TrafficPolicySpec_Policy{
-								TrafficShift: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination{
-									Destinations: []*v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+						Spec: &v1.TrafficPolicySpec{
+							Policy: &v1.TrafficPolicySpec_Policy{
+								TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
+									Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
 										{
-											DestinationType: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-												KubeService: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+											DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+												KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
 													Name:      "one",
 													Namespace: ns,
 												},
@@ -73,8 +73,8 @@ var _ = Describe("TrafficSplitTranslator", func() {
 											Weight: 40,
 										},
 										{
-											DestinationType: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-												KubeService: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+											DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+												KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
 													Name:      "two",
 													Namespace: ns,
 												},
@@ -110,7 +110,7 @@ var _ = Describe("TrafficSplitTranslator", func() {
 			},
 		}
 		expectedTT.Annotations = map[string]string{
-			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=TrafficPolicy":[{"name":"tt","namespace":"default"}]}`,
+			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=TrafficPolicy":[{"name":"tt","namespace":"default"}]}`,
 		}
 
 		ts := NewTranslator().Translate(ctx, in, destination, mockReporter)

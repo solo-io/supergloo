@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
-	commonv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha2"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
@@ -16,9 +16,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/rotisserie/eris"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
@@ -48,8 +48,8 @@ type Translator interface {
 	Translate(
 		ctx context.Context,
 		in input.LocalSnapshot,
-		destination *discoveryv1alpha2.Destination,
-		sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+		destination *discoveryv1.Destination,
+		sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 		reporter reporting.Reporter,
 	) *networkingv1alpha3.VirtualService
 }
@@ -77,8 +77,8 @@ func NewTranslator(
 func (t *translator) Translate(
 	_ context.Context,
 	in input.LocalSnapshot,
-	destination *discoveryv1alpha2.Destination,
-	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	destination *discoveryv1.Destination,
+	sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 	reporter reporting.Reporter,
 ) *networkingv1alpha3.VirtualService {
 	kubeService := destination.Spec.GetKubeService()
@@ -186,9 +186,9 @@ func (t *translator) Translate(
 // ensure that only a single VirtualService HTTPRoute gets created per TrafficPolicy request matcher
 // by first grouping TrafficPolicies by semantically equivalent request matchers
 func groupAppliedTpsByRequestMatcher(
-	appliedTps []*discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy,
-) [][]*discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy {
-	var allGroupedTps [][]*discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy
+	appliedTps []*discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+) [][]*discoveryv1.DestinationStatus_AppliedTrafficPolicy {
+	var allGroupedTps [][]*discoveryv1.DestinationStatus_AppliedTrafficPolicy
 
 	for _, appliedTp := range appliedTps {
 		var grouped bool
@@ -202,19 +202,19 @@ func groupAppliedTpsByRequestMatcher(
 		}
 		// create new group
 		if !grouped {
-			allGroupedTps = append(allGroupedTps, []*discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{appliedTp})
+			allGroupedTps = append(allGroupedTps, []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{appliedTp})
 		}
 	}
 
 	return allGroupedTps
 }
 
-func requestMatchersEqual(tp1, tp2 *v1alpha2.TrafficPolicySpec) bool {
+func requestMatchersEqual(tp1, tp2 *v1.TrafficPolicySpec) bool {
 	return workloadSelectorListsEqual(tp1.GetSourceSelector(), tp2.GetSourceSelector()) &&
 		httpRequestMatchersEqual(tp1.GetHttpRequestMatchers(), tp2.GetHttpRequestMatchers())
 }
 
-func httpRequestMatchersEqual(matchers1, matchers2 []*v1alpha2.TrafficPolicySpec_HttpMatcher) bool {
+func httpRequestMatchersEqual(matchers1, matchers2 []*v1.TrafficPolicySpec_HttpMatcher) bool {
 	if len(matchers1) != len(matchers2) {
 		return false
 	}
@@ -227,13 +227,13 @@ func httpRequestMatchersEqual(matchers1, matchers2 []*v1alpha2.TrafficPolicySpec
 }
 
 // return true if workload selectors' labels and namespaces are equivalent, ignore clusters
-func workloadSelectorsEqual(ws1, ws2 *commonv1alpha2.WorkloadSelector) bool {
+func workloadSelectorsEqual(ws1, ws2 *commonv1.WorkloadSelector) bool {
 	return reflect.DeepEqual(ws1.Labels, ws2.Labels) &&
 		sets.NewString(ws1.Namespaces...).Equal(sets.NewString(ws2.Namespaces...))
 }
 
 // return true if two lists of WorkloadSelectors are semantically equivalent, abstracting away order
-func workloadSelectorListsEqual(wsList1, wsList2 []*commonv1alpha2.WorkloadSelector) bool {
+func workloadSelectorListsEqual(wsList1, wsList2 []*commonv1.WorkloadSelector) bool {
 	if len(wsList1) != len(wsList2) {
 		return false
 	}
@@ -273,7 +273,7 @@ func registerFieldFunc(
 			virtualService,
 			fieldPtr,
 			[]ezkube.ResourceId{policyRef},
-			&v1alpha2.TrafficPolicy{},
+			&v1.TrafficPolicy{},
 			0, // TODO(ilackarms): priority
 		); err != nil {
 			return err
@@ -283,8 +283,8 @@ func registerFieldFunc(
 }
 
 func (t *translator) initializeVirtualService(
-	destination *discoveryv1alpha2.Destination,
-	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	destination *discoveryv1.Destination,
+	sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 	destinationFQDN string,
 ) *networkingv1alpha3.VirtualService {
 	var meta metav1.ObjectMeta
@@ -310,7 +310,7 @@ func (t *translator) initializeVirtualService(
 }
 
 // Returns nil to prevent translating the trafficPolicy if the sourceClusterName is not selected by the WorkloadSelector
-func initializeBaseRoute(trafficPolicy *v1alpha2.TrafficPolicySpec, sourceClusterName string) *networkingv1alpha3spec.HTTPRoute {
+func initializeBaseRoute(trafficPolicy *v1.TrafficPolicySpec, sourceClusterName string) *networkingv1alpha3spec.HTTPRoute {
 	if !selectorutils.WorkloadSelectorContainsCluster(trafficPolicy.SourceSelector, sourceClusterName) {
 		return nil
 	}
@@ -340,7 +340,7 @@ func (t *translator) setDefaultDestination(
 // if the service has multiple service ports defined
 func duplicateRouteForEachPort(
 	baseRoute *networkingv1alpha3spec.HTTPRoute,
-	ports []*discoveryv1alpha2.DestinationSpec_KubeService_KubeServicePort,
+	ports []*discoveryv1.DestinationSpec_KubeService_KubeServicePort,
 ) []*networkingv1alpha3spec.HTTPRoute {
 	if len(ports) == 1 {
 		// no need to specify port for single-port service
@@ -391,7 +391,7 @@ func splitRouteByMatchers(baseRoute *networkingv1alpha3spec.HTTPRoute) []*networ
 }
 
 func translateRequestMatchers(
-	trafficPolicy *v1alpha2.TrafficPolicySpec,
+	trafficPolicy *v1.TrafficPolicySpec,
 ) []*networkingv1alpha3spec.HTTPMatchRequest {
 	// Generate HttpMatchRequests for SourceSelector, one per namespace.
 	var sourceMatchers []*networkingv1alpha3spec.HTTPMatchRequest
@@ -447,7 +447,7 @@ func translateRequestMatchers(
 	return translatedRequestMatchers
 }
 
-func translateRequestMatcherHeaders(matchers []*commonv1alpha2.HeaderMatcher) (
+func translateRequestMatcherHeaders(matchers []*commonv1.HeaderMatcher) (
 	map[string]*networkingv1alpha3spec.StringMatch, map[string]*networkingv1alpha3spec.StringMatch,
 ) {
 	headerMatchers := map[string]*networkingv1alpha3spec.StringMatch{}
@@ -480,7 +480,7 @@ func translateRequestMatcherHeaders(matchers []*commonv1alpha2.HeaderMatcher) (
 	return headerMatchers, inverseHeaderMatchers
 }
 
-func translateRequestMatcherQueryParams(matchers []*v1alpha2.TrafficPolicySpec_HttpMatcher_QueryParameterMatcher) map[string]*networkingv1alpha3spec.StringMatch {
+func translateRequestMatcherQueryParams(matchers []*v1.TrafficPolicySpec_HttpMatcher_QueryParameterMatcher) map[string]*networkingv1alpha3spec.StringMatch {
 	var translatedQueryParamMatcher map[string]*networkingv1alpha3spec.StringMatch
 	if matchers != nil {
 		translatedQueryParamMatcher = map[string]*networkingv1alpha3spec.StringMatch{}
@@ -499,14 +499,14 @@ func translateRequestMatcherQueryParams(matchers []*v1alpha2.TrafficPolicySpec_H
 	return translatedQueryParamMatcher
 }
 
-func translateRequestMatcherPathSpecifier(matcher *v1alpha2.TrafficPolicySpec_HttpMatcher) *networkingv1alpha3spec.StringMatch {
+func translateRequestMatcherPathSpecifier(matcher *v1.TrafficPolicySpec_HttpMatcher) *networkingv1alpha3spec.StringMatch {
 	if matcher != nil && matcher.GetPathSpecifier() != nil {
 		switch pathSpecifierType := matcher.GetPathSpecifier().(type) {
-		case *v1alpha2.TrafficPolicySpec_HttpMatcher_Exact:
+		case *v1.TrafficPolicySpec_HttpMatcher_Exact:
 			return &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: pathSpecifierType.Exact}}
-		case *v1alpha2.TrafficPolicySpec_HttpMatcher_Prefix:
+		case *v1.TrafficPolicySpec_HttpMatcher_Prefix:
 			return &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Prefix{Prefix: pathSpecifierType.Prefix}}
-		case *v1alpha2.TrafficPolicySpec_HttpMatcher_Regex:
+		case *v1.TrafficPolicySpec_HttpMatcher_Regex:
 			return &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: pathSpecifierType.Regex}}
 		}
 	}

@@ -1,41 +1,41 @@
 package data
 
 import (
-	commonv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha2"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // shifts traffic to a subset in the local cluster
 func LocalTrafficShiftPolicy(
 	name, namespace string,
-	destinationService *v1.ClusterObjectRef,
+	destinationService *skv2corev1.ClusterObjectRef,
 	subset map[string]string,
-	port uint32) *v1alpha2.TrafficPolicy {
-	return &v1alpha2.TrafficPolicy{
+	port uint32) *v1.TrafficPolicy {
+	return &v1.TrafficPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "TrafficPolicy",
-			APIVersion: v1alpha2.SchemeGroupVersion.String(),
+			APIVersion: v1.SchemeGroupVersion.String(),
 		},
-		Spec: v1alpha2.TrafficPolicySpec{
+		Spec: v1.TrafficPolicySpec{
 			SourceSelector: nil,
-			DestinationSelector: []*commonv1alpha2.DestinationSelector{
+			DestinationSelector: []*commonv1.DestinationSelector{
 				{
-					KubeServiceRefs: &commonv1alpha2.DestinationSelector_KubeServiceRefs{
-						Services: []*v1.ClusterObjectRef{destinationService},
+					KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+						Services: []*skv2corev1.ClusterObjectRef{destinationService},
 					},
 				},
 			},
-			Policy: &v1alpha2.TrafficPolicySpec_Policy{
-				TrafficShift: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination{
-					Destinations: []*v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{{
-						DestinationType: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-							KubeService: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+			Policy: &v1.TrafficPolicySpec_Policy{
+				TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
+					Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{{
+						DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+							KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
 								Namespace:   destinationService.GetNamespace(),
 								Name:        destinationService.GetName(),
 								ClusterName: destinationService.GetClusterName(),
@@ -53,33 +53,33 @@ func LocalTrafficShiftPolicy(
 // shifts traffic to a subset in the remote cluster
 func RemoteTrafficShiftPolicy(
 	name, namespace string,
-	destinationService *v1.ClusterObjectRef,
+	destinationService *skv2corev1.ClusterObjectRef,
 	subsetCluster string,
 	subset map[string]string,
-	port uint32) *v1alpha2.TrafficPolicy {
-	return &v1alpha2.TrafficPolicy{
+	port uint32) *v1.TrafficPolicy {
+	return &v1.TrafficPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "TrafficPolicy",
-			APIVersion: v1alpha2.SchemeGroupVersion.String(),
+			APIVersion: v1.SchemeGroupVersion.String(),
 		},
-		Spec: v1alpha2.TrafficPolicySpec{
+		Spec: v1.TrafficPolicySpec{
 			SourceSelector: nil,
-			DestinationSelector: []*commonv1alpha2.DestinationSelector{
+			DestinationSelector: []*commonv1.DestinationSelector{
 				{
-					KubeServiceRefs: &commonv1alpha2.DestinationSelector_KubeServiceRefs{
-						Services: []*v1.ClusterObjectRef{destinationService},
+					KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+						Services: []*skv2corev1.ClusterObjectRef{destinationService},
 					},
 				},
 			},
-			Policy: &v1alpha2.TrafficPolicySpec_Policy{
-				TrafficShift: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination{
-					Destinations: []*v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{{
-						DestinationType: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-							KubeService: &v1alpha2.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+			Policy: &v1.TrafficPolicySpec_Policy{
+				TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
+					Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{{
+						DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+							KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
 								Namespace:   destinationService.GetNamespace(),
 								Name:        destinationService.GetName(),
 								ClusterName: subsetCluster,

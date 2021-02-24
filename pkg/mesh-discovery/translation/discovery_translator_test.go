@@ -12,9 +12,9 @@ import (
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/output/discovery"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
+	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation"
 	mock_destination "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/destination/mocks"
 	mock_translator_internal "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/internal/mocks"
@@ -76,7 +76,7 @@ var _ = Describe("Translator", func() {
 			daemonSets,
 			statefulSets,
 		)
-		settings := &settingsv1alpha2.DiscoverySettings{}
+		settings := &settingsv1.DiscoverySettings{}
 
 		mockDependencyFactory.EXPECT().MakeMeshTranslator(ctx).Return(mockMeshTranslator)
 		mockDependencyFactory.EXPECT().MakeWorkloadTranslator(ctx, inRemote).Return(mockWorkloadTranslator)
@@ -84,9 +84,9 @@ var _ = Describe("Translator", func() {
 
 		labeledMeta := metav1.ObjectMeta{Labels: labelutils.ClusterLabels("cluster")}
 
-		meshes := v1alpha2sets.NewMeshSet(&v1alpha2.Mesh{ObjectMeta: labeledMeta})
-		workloads := v1alpha2sets.NewWorkloadSet(&v1alpha2.Workload{ObjectMeta: labeledMeta})
-		destinations := v1alpha2sets.NewDestinationSet(&v1alpha2.Destination{ObjectMeta: labeledMeta})
+		meshes := v1sets.NewMeshSet(&v1.Mesh{ObjectMeta: labeledMeta})
+		workloads := v1sets.NewWorkloadSet(&v1.Workload{ObjectMeta: labeledMeta})
+		destinations := v1sets.NewDestinationSet(&v1.Destination{ObjectMeta: labeledMeta})
 
 		mockMeshTranslator.EXPECT().TranslateMeshes(inRemote, settings).Return(meshes)
 		mockWorkloadTranslator.EXPECT().TranslateWorkloads(deployments, daemonSets, statefulSets, meshes).Return(workloads)

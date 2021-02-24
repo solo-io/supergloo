@@ -4,13 +4,13 @@ import (
 	"context"
 	"strings"
 
-	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/dockerutils"
@@ -35,8 +35,8 @@ func NewMeshDetector(
 }
 
 // returns a mesh for each deployment that contains the osm controller image
-func (d *meshDetector) DetectMeshes(in input.DiscoveryInputSnapshot, _ *settingsv1alpha2.DiscoverySettings) (v1alpha2.MeshSlice, error) {
-	var meshes v1alpha2.MeshSlice
+func (d *meshDetector) DetectMeshes(in input.DiscoveryInputSnapshot, _ *settingsv1.DiscoverySettings) (v1.MeshSlice, error) {
+	var meshes v1.MeshSlice
 	var errs error
 	for _, deployment := range in.Deployments().List() {
 		mesh, err := d.detectMesh(deployment)
@@ -51,7 +51,7 @@ func (d *meshDetector) DetectMeshes(in input.DiscoveryInputSnapshot, _ *settings
 	return meshes, errs
 }
 
-func (d *meshDetector) detectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh, error) {
+func (d *meshDetector) detectMesh(deployment *appsv1.Deployment) (*v1.Mesh, error) {
 	version, err := getOsmControllerVersion(deployment)
 	if err != nil {
 		return nil, err
@@ -59,12 +59,12 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment) (*v1alpha2.Mesh
 	if version == "" {
 		return nil, nil
 	}
-	return &v1alpha2.Mesh{
+	return &v1.Mesh{
 		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
-		Spec: v1alpha2.MeshSpec{
-			Type: &v1alpha2.MeshSpec_Osm{
-				Osm: &v1alpha2.MeshSpec_OSM{
-					Installation: &v1alpha2.MeshSpec_MeshInstallation{
+		Spec: v1.MeshSpec{
+			Type: &v1.MeshSpec_Osm{
+				Osm: &v1.MeshSpec_OSM{
+					Installation: &v1.MeshSpec_MeshInstallation{
 						Namespace: deployment.Namespace,
 						Cluster:   deployment.ClusterName,
 						PodLabels: deployment.Spec.Selector.MatchLabels,

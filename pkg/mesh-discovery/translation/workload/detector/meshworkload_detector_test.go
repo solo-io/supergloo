@@ -10,8 +10,8 @@ import (
 	. "github.com/onsi/gomega"
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/detector"
 	mock_detector "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/detector/mocks"
@@ -98,7 +98,7 @@ var _ = Describe("WorkloadDetector", func() {
 		return pod
 	}
 
-	mesh := &v1alpha2.Mesh{
+	mesh := &v1.Mesh{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "mesh",
 			Namespace: "gloo-mesh",
@@ -120,7 +120,7 @@ var _ = Describe("WorkloadDetector", func() {
 			mockSidecarDetector,
 		)
 
-		meshes := v1alpha2sets.NewMeshSet()
+		meshes := v1sets.NewMeshSet()
 
 		mockSidecarDetector.EXPECT().DetectMeshSidecar(pod, meshes).Return(mesh)
 
@@ -130,11 +130,11 @@ var _ = Describe("WorkloadDetector", func() {
 		// expect appended workload kind
 		outputMeta.Name += "-deployment"
 
-		Expect(workload).To(Equal(&v1alpha2.Workload{
+		Expect(workload).To(Equal(&v1.Workload{
 			ObjectMeta: outputMeta,
-			Spec: v1alpha2.WorkloadSpec{
-				Type: &v1alpha2.WorkloadSpec_Kubernetes{
-					Kubernetes: &v1alpha2.WorkloadSpec_KubernetesWorkload{
+			Spec: v1.WorkloadSpec{
+				Type: &v1.WorkloadSpec_Kubernetes{
+					Kubernetes: &v1.WorkloadSpec_KubernetesWorkload{
 						Controller:         ezkube.MakeClusterObjectRef(deployment),
 						PodLabels:          podLabels,
 						ServiceAccountName: serviceAccountName,

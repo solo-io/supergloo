@@ -6,7 +6,8 @@ import (
 	"strings"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -23,15 +24,15 @@ func (c *networkingCrdCheck) GetDescription() string {
 
 func (c *networkingCrdCheck) Run(ctx context.Context, client client.Client, _ string) *Failure {
 	var allErrors []error
-	tpList, err := v1alpha2.NewTrafficPolicyClient(client).ListTrafficPolicy(ctx)
+	tpList, err := networkingv1.NewTrafficPolicyClient(client).ListTrafficPolicy(ctx)
 	if err != nil {
 		allErrors = append(allErrors, err)
 	}
-	apList, err := v1alpha2.NewAccessPolicyClient(client).ListAccessPolicy(ctx)
+	apList, err := networkingv1.NewAccessPolicyClient(client).ListAccessPolicy(ctx)
 	if err != nil {
 		allErrors = append(allErrors, err)
 	}
-	vmList, err := v1alpha2.NewVirtualMeshClient(client).ListVirtualMesh(ctx)
+	vmList, err := networkingv1.NewVirtualMeshClient(client).ListVirtualMesh(ctx)
 	if err != nil {
 		allErrors = append(allErrors, err)
 	}
@@ -55,7 +56,7 @@ func (c *networkingCrdCheck) Run(ctx context.Context, client client.Client, _ st
 	return nil
 }
 
-func (c *networkingCrdCheck) checkTrafficPolicies(tpList *v1alpha2.TrafficPolicyList) []error {
+func (c *networkingCrdCheck) checkTrafficPolicies(tpList *networkingv1.TrafficPolicyList) []error {
 	if tpList == nil {
 		return nil
 	}
@@ -69,7 +70,7 @@ func (c *networkingCrdCheck) checkTrafficPolicies(tpList *v1alpha2.TrafficPolicy
 	return errs
 }
 
-func (c *networkingCrdCheck) checkAccessPolicies(apList *v1alpha2.AccessPolicyList) []error {
+func (c *networkingCrdCheck) checkAccessPolicies(apList *networkingv1.AccessPolicyList) []error {
 	if apList == nil {
 		return nil
 	}
@@ -83,7 +84,7 @@ func (c *networkingCrdCheck) checkAccessPolicies(apList *v1alpha2.AccessPolicyLi
 	return errs
 }
 
-func (c *networkingCrdCheck) checkVirtualMeshes(vmList *v1alpha2.VirtualMeshList) []error {
+func (c *networkingCrdCheck) checkVirtualMeshes(vmList *networkingv1.VirtualMeshList) []error {
 	if vmList == nil {
 		return nil
 	}
@@ -100,13 +101,13 @@ func (c *networkingCrdCheck) checkVirtualMeshes(vmList *v1alpha2.VirtualMeshList
 // This struct captures metadata common to all networking CRD statuses
 type networkingCrdStatus interface {
 	GetObservedGeneration() int64
-	GetState() v1alpha2.ApprovalState
+	GetState() commonv1.ApprovalState
 }
 
 func (c *networkingCrdCheck) checkStatus(kind string, id ezkube.ResourceId, generation int64, status networkingCrdStatus) error {
 	var errorStrings []string
 	resourceKey := fmt.Sprintf("%s %s.%s", kind, id.GetName(), id.GetNamespace())
-	if status.GetState() != v1alpha2.ApprovalState_ACCEPTED {
+	if status.GetState() != commonv1.ApprovalState_ACCEPTED {
 		errorStrings = append(errorStrings, fmt.Sprintf("approval state is %s", status.GetState().String()))
 	}
 	if status.GetObservedGeneration() != generation {

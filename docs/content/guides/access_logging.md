@@ -241,7 +241,7 @@ First ensure that the Gloo Mesh settings object disables Istio mTLS. This will a
 us to modify mTLS settings for specific traffic targets.
 
 {{< highlight yaml "hl_lines=10" >}}
-apiVersion: settings.mesh.gloo.solo.io/v1alpha2
+apiVersion: settings.mesh.gloo.solo.io/v1
 kind: Settings
 metadata:
   name: settings

@@ -1,12 +1,13 @@
 syntax = "proto3";
 package networking.enterprise.mesh.gloo.solo.io;
 
-option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1";
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1alpha2/selectors.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/traffic_policy.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
@@ -137,7 +138,7 @@ message VirtualDestinationStatus {
 
     // The state of the overall resource, will only show accepted if it has been successfully
     // applied to all exported to Meshes.
-    .networking.mesh.gloo.solo.io.ApprovalState state = 2;
+    .common.mesh.gloo.solo.io.ApprovalState state = 2;
 
     // The status of the VirtualDestination for each Mesh to which it has been exported to.
     map<string, .networking.mesh.gloo.solo.io.ApprovalStatus> meshes = 3;

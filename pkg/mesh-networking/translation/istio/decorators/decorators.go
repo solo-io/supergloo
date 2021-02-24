@@ -1,7 +1,7 @@
 package decorators
 
 import (
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
@@ -67,8 +67,8 @@ type VirtualDestinationEntryDecorator interface {
 	Decorator
 
 	ApplyVirtualMeshToServiceEntry(
-		appliedVirtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
-		service *discoveryv1alpha2.Destination,
+		appliedVirtualMesh *discoveryv1.MeshStatus_AppliedVirtualMesh,
+		service *discoveryv1.Destination,
 		output *networkingv1alpha3spec.ServiceEntry,
 		registerField RegisterField,
 	) error
@@ -84,8 +84,8 @@ type TrafficPolicyDestinationRuleDecorator interface {
 	Decorator
 
 	ApplyTrafficPolicyToDestinationRule(
-		appliedPolicy *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy,
-		service *discoveryv1alpha2.Destination,
+		appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+		service *discoveryv1.Destination,
 		output *networkingv1alpha3spec.DestinationRule,
 		registerField RegisterField,
 	) error
@@ -102,9 +102,9 @@ type TrafficPolicyVirtualServiceDecorator interface {
 	Decorator
 
 	ApplyTrafficPolicyToVirtualService(
-		appliedPolicy *discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy,
-		destination *discoveryv1alpha2.Destination,
-		sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+		appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+		destination *discoveryv1.Destination,
+		sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 		output *networkingv1alpha3spec.HTTPRoute,
 		registerField RegisterField,
 	) error

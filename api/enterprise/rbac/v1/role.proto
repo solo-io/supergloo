@@ -1,11 +1,11 @@
 syntax = "proto3";
 package rbac.enterprise.mesh.gloo.solo.io;
 
-option go_package = "github.com/solo-io/gloo-mesh/pkg/api/rbac.enterprise.mesh.gloo.solo.io/v1alpha1";
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/rbac.enterprise.mesh.gloo.solo.io/v1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1alpha2/selectors.proto";
-import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1alpha1/virtual_destination.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/virtual_destination.proto";
 
 /*
     A role represents a set of permissions for creating, updating, and deleting Gloo Mesh configuration objects.

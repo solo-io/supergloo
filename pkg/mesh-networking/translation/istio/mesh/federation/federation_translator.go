@@ -8,11 +8,11 @@ import (
 	envoy_api_v2_listener "github.com/envoyproxy/go-control-plane/envoy/api/v2/listener"
 	"github.com/gogo/protobuf/types"
 	"github.com/rotisserie/eris"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
@@ -25,7 +25,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/k8s-utils/kubeutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -56,8 +56,8 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.LocalSnapshot,
-		mesh *discoveryv1alpha2.Mesh,
-		virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
+		mesh *discoveryv1.Mesh,
+		virtualMesh *discoveryv1.MeshStatus_AppliedVirtualMesh,
 		outputs istio.Builder,
 		reporter reporting.Reporter,
 	)
@@ -65,14 +65,14 @@ type Translator interface {
 
 type translator struct {
 	ctx                       context.Context
-	destinations              discoveryv1alpha2sets.DestinationSet
+	destinations              discoveryv1sets.DestinationSet
 	virtualServiceTranslator  virtualservice.Translator
 	destinationRuleTranslator destinationrule.Translator
 }
 
 func NewTranslator(
 	ctx context.Context,
-	destinations discoveryv1alpha2sets.DestinationSet,
+	destinations discoveryv1sets.DestinationSet,
 	virtualServiceTranslator virtualservice.Translator,
 	destinationRuleTranslator destinationrule.Translator,
 ) Translator {
@@ -87,8 +87,8 @@ func NewTranslator(
 // translate the appropriate resources for the given Mesh.
 func (t *translator) Translate(
 	in input.LocalSnapshot,
-	mesh *discoveryv1alpha2.Mesh,
-	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
+	mesh *discoveryv1.Mesh,
+	virtualMesh *discoveryv1.MeshStatus_AppliedVirtualMesh,
 	outputs istio.Builder,
 	reporter reporting.Reporter,
 ) {
@@ -118,7 +118,7 @@ func (t *translator) Translate(
 
 	istioCluster := istioMesh.Installation.Cluster
 
-	kubeCluster, err := in.KubernetesClusters().Find(&v1.ObjectRef{
+	kubeCluster, err := in.KubernetesClusters().Find(&skv2corev1.ObjectRef{
 		Name:      istioCluster,
 		Namespace: defaults.GetPodNamespace(),
 	})
@@ -232,20 +232,20 @@ func (t *translator) Translate(
 			}
 
 			// Append the VirtualMesh as a parent to the output service entry
-			metautils.AppendParent(t.ctx, se, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+			metautils.AppendParent(t.ctx, se, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
 
 			outputs.AddServiceEntries(se)
 
 			// Translate VirtualServices for federated Destinations, can be nil
 			vs := t.virtualServiceTranslator.Translate(t.ctx, in, destination, istioMesh.Installation, reporter)
 			// Append the VirtualMesh as a parent to the output virtual service
-			metautils.AppendParent(t.ctx, vs, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+			metautils.AppendParent(t.ctx, vs, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
 			outputs.AddVirtualServices(vs)
 
 			// Translate DestinationRules for federated Destinations, can be nil
 			dr := t.destinationRuleTranslator.Translate(t.ctx, in, destination, istioMesh.Installation, reporter)
 			// Append the VirtualMesh as a parent to the output destination rule
-			metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+			metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
 			outputs.AddDestinationRules(dr)
 
 			// Update AppliedFederation data on Destination's status
@@ -319,21 +319,21 @@ func (t *translator) Translate(
 	}
 
 	// Append the VirtualMesh as a parent to each output resource
-	metautils.AppendParent(t.ctx, gw, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
-	metautils.AppendParent(t.ctx, ef, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+	metautils.AppendParent(t.ctx, gw, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
+	metautils.AppendParent(t.ctx, ef, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
 
 	outputs.AddGateways(gw)
 	outputs.AddEnvoyFilters(ef)
 }
 
 func updateDestinationFederationStatus(
-	destination *discoveryv1alpha2.Destination,
+	destination *discoveryv1.Destination,
 	federatedHostname string,
-	mesh *v1.ObjectRef,
-	groupedMeshes []*v1.ObjectRef,
+	mesh *skv2corev1.ObjectRef,
+	groupedMeshes []*skv2corev1.ObjectRef,
 	flatNetwork bool,
 ) {
-	var federatedToMeshes []*v1.ObjectRef
+	var federatedToMeshes []*skv2corev1.ObjectRef
 
 	// don't include the mesh of the Destination itself in the list of federated meshes
 	for _, ref := range groupedMeshes {
@@ -343,7 +343,7 @@ func updateDestinationFederationStatus(
 		federatedToMeshes = append(federatedToMeshes, mesh)
 	}
 
-	destination.Status.AppliedFederation = &discoveryv1alpha2.DestinationStatus_AppliedFederation{
+	destination.Status.AppliedFederation = &discoveryv1.DestinationStatus_AppliedFederation{
 		FederatedHostname: federatedHostname,
 		FederatedToMeshes: federatedToMeshes,
 		FlatNetwork:       flatNetwork,
@@ -353,16 +353,16 @@ func updateDestinationFederationStatus(
 // DestinationsForMesh returns all Destinations which belong to a given mesh
 // exported for use in enterprise
 func DestinationsForMesh(
-	mesh *discoveryv1alpha2.Mesh,
-	destinations discoveryv1alpha2sets.DestinationSet,
-) []*discoveryv1alpha2.Destination {
-	return destinations.List(func(service *discoveryv1alpha2.Destination) bool {
+	mesh *discoveryv1.Mesh,
+	destinations discoveryv1sets.DestinationSet,
+) []*discoveryv1.Destination {
+	return destinations.List(func(service *discoveryv1.Destination) bool {
 		return !ezkube.RefsMatch(service.Spec.Mesh, mesh)
 	})
 }
 
 func buildTcpRewritePatch(
-	istioMesh *discoveryv1alpha2.MeshSpec_Istio,
+	istioMesh *discoveryv1.MeshSpec_Istio,
 	clusterName string,
 	clusterDomain string,
 	federatedHostnameSuffix string,
@@ -423,7 +423,7 @@ func buildTcpRewritePatchAsConfig(clusterName, clusterDomain, federatedHostnameS
 
 // ConvertKubePortProtocol converts protocol of k8s Service port to application level protocol
 // exported for use in enterprise
-func ConvertKubePortProtocol(port *discoveryv1alpha2.DestinationSpec_KubeService_KubeServicePort) string {
+func ConvertKubePortProtocol(port *discoveryv1.DestinationSpec_KubeService_KubeServicePort) string {
 	var appProtocol *string
 	if port.AppProtocol != "" {
 		appProtocol = pointer.StringPtr(port.AppProtocol)

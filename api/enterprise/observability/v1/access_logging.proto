@@ -1,12 +1,13 @@
 syntax = "proto3";
 package observability.enterprise.mesh.gloo.solo.io;
 
-option go_package = "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1alpha1";
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/observability.enterprise.mesh.gloo.solo.io/v1";
 
-import "github.com/solo-io/gloo-mesh/api/common/v1alpha2/request_matchers.proto";
-import "github.com/solo-io/gloo-mesh/api/common/v1alpha2/selectors.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/validation_state.proto";
-import "github.com/solo-io/gloo-mesh/api/networking/v1alpha2/traffic_policy.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/request_matchers.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 
 /*
@@ -47,7 +48,7 @@ message AccessLogRecordStatus {
 
     // The state of the overall resource, will only show accepted if it has been successfully
     // applied to all target workloads.
-    .networking.mesh.gloo.solo.io.ApprovalState state = 2;
+    .common.mesh.gloo.solo.io.ApprovalState state = 2;
 
     // Any errors encountered during processing. Also reported to any Workloads that this object applies to.
     repeated string errors = 3;

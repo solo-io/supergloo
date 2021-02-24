@@ -8,8 +8,8 @@ package linkerd_test
 //
 // 	. "github.com/onsi/ginkgo"
 // 	. "github.com/onsi/gomega"
-// 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-// 	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+// 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+// 	v1sets  "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 // 	. "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/detector/linkerd"
 // 	corev1 "k8s.io/api/core/v1"
 // 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,8 +39,8 @@ package linkerd_test
 // 		}
 // 	}
 //
-// 	linkerdMeshes := func(cluster string) v1alpha2sets.MeshSet {
-// 		return v1alpha2sets.NewMeshSet(
+// 	linkerdMeshes := func(cluster string) v1sets.MeshSet {
+// 		return v1sets.NewMeshSet(
 // 			&v1alpha2.Mesh{
 // 				ObjectMeta: metav1.ObjectMeta{
 // 					Namespace: "linkerd-system",
@@ -80,7 +80,7 @@ package linkerd_test
 // 	It("does not detect workload when sidecar mesh is not present", func() {
 // 		pod := pod()
 //
-// 		meshes := v1alpha2sets.NewMeshSet()
+// 		meshes := v1sets.NewMeshSet()
 //
 // 		workload := detector.DetectMeshSidecar(pod, meshes)
 // 		Expect(workload).To(BeNil())

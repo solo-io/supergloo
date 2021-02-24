@@ -5,14 +5,14 @@ import (
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	mock_output "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio/mocks"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
 	mock_authorizationpolicy "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/authorizationpolicy/mocks"
 	mock_destinationrule "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/destinationrule/mocks"
 	mock_virtualservice "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/virtualservice/mocks"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/security/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -50,9 +50,9 @@ var _ = Describe("IstioDestinationTranslator", func() {
 	})
 
 	It("should translate", func() {
-		destination := &v1alpha2.Destination{
-			Spec: v1alpha2.DestinationSpec{
-				Mesh: &v1.ObjectRef{
+		destination := &discoveryv1.Destination{
+			Spec: discoveryv1.DestinationSpec{
+				Mesh: &skv2corev1.ObjectRef{
 					Name:      "hello",
 					Namespace: "world",
 				},
@@ -60,15 +60,15 @@ var _ = Describe("IstioDestinationTranslator", func() {
 		}
 
 		in := input.NewInputLocalSnapshotManualBuilder("").
-			AddMeshes([]*v1alpha2.Mesh{
+			AddMeshes([]*discoveryv1.Mesh{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      destination.Spec.GetMesh().GetName(),
 						Namespace: destination.Spec.GetMesh().GetNamespace(),
 					},
-					Spec: v1alpha2.MeshSpec{
-						Type: &v1alpha2.MeshSpec_Istio_{
-							Istio: &v1alpha2.MeshSpec_Istio{},
+					Spec: discoveryv1.MeshSpec{
+						Type: &discoveryv1.MeshSpec_Istio_{
+							Istio: &discoveryv1.MeshSpec_Istio{},
 						},
 					},
 				},

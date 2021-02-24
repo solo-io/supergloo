@@ -1,9 +1,9 @@
 package trafficpolicyutils
 
-import discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+import discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 
 func ContainsPort(
-	destKubeServicePorts []*discoveryv1alpha2.DestinationSpec_KubeService_KubeServicePort,
+	destKubeServicePorts []*discoveryv1.DestinationSpec_KubeService_KubeServicePort,
 	port uint32,
 ) bool {
 	for _, destPort := range destKubeServicePorts {

@@ -8,9 +8,9 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	reconcile "github.com/solo-io/skv2/pkg/reconcile"
-	v1 "k8s.io/api/core/v1"
+	v10 "k8s.io/api/core/v1"
 )
 
 // MockmultiClusterReconciler is a mock of multiClusterReconciler interface
@@ -37,7 +37,7 @@ func (m *MockmultiClusterReconciler) EXPECT() *MockmultiClusterReconcilerMockRec
 }
 
 // ReconcileIssuedCertificate mocks base method
-func (m *MockmultiClusterReconciler) ReconcileIssuedCertificate(clusterName string, obj *v1alpha2.IssuedCertificate) (reconcile.Result, error) {
+func (m *MockmultiClusterReconciler) ReconcileIssuedCertificate(clusterName string, obj *v1.IssuedCertificate) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileIssuedCertificate", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -52,7 +52,7 @@ func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileIssuedCertificate(clu
 }
 
 // ReconcileCertificateRequest mocks base method
-func (m *MockmultiClusterReconciler) ReconcileCertificateRequest(clusterName string, obj *v1alpha2.CertificateRequest) (reconcile.Result, error) {
+func (m *MockmultiClusterReconciler) ReconcileCertificateRequest(clusterName string, obj *v1.CertificateRequest) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileCertificateRequest", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -67,7 +67,7 @@ func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileCertificateRequest(cl
 }
 
 // ReconcilePodBounceDirective mocks base method
-func (m *MockmultiClusterReconciler) ReconcilePodBounceDirective(clusterName string, obj *v1alpha2.PodBounceDirective) (reconcile.Result, error) {
+func (m *MockmultiClusterReconciler) ReconcilePodBounceDirective(clusterName string, obj *v1.PodBounceDirective) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcilePodBounceDirective", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -82,7 +82,7 @@ func (mr *MockmultiClusterReconcilerMockRecorder) ReconcilePodBounceDirective(cl
 }
 
 // ReconcileSecret mocks base method
-func (m *MockmultiClusterReconciler) ReconcileSecret(clusterName string, obj *v1.Secret) (reconcile.Result, error) {
+func (m *MockmultiClusterReconciler) ReconcileSecret(clusterName string, obj *v10.Secret) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileSecret", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -97,7 +97,7 @@ func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileSecret(clusterName, o
 }
 
 // ReconcileConfigMap mocks base method
-func (m *MockmultiClusterReconciler) ReconcileConfigMap(clusterName string, obj *v1.ConfigMap) (reconcile.Result, error) {
+func (m *MockmultiClusterReconciler) ReconcileConfigMap(clusterName string, obj *v10.ConfigMap) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileConfigMap", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -112,7 +112,7 @@ func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileConfigMap(clusterName
 }
 
 // ReconcilePod mocks base method
-func (m *MockmultiClusterReconciler) ReconcilePod(clusterName string, obj *v1.Pod) (reconcile.Result, error) {
+func (m *MockmultiClusterReconciler) ReconcilePod(clusterName string, obj *v10.Pod) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcilePod", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -150,7 +150,7 @@ func (m *MocksingleClusterReconciler) EXPECT() *MocksingleClusterReconcilerMockR
 }
 
 // ReconcileIssuedCertificate mocks base method
-func (m *MocksingleClusterReconciler) ReconcileIssuedCertificate(obj *v1alpha2.IssuedCertificate) (reconcile.Result, error) {
+func (m *MocksingleClusterReconciler) ReconcileIssuedCertificate(obj *v1.IssuedCertificate) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileIssuedCertificate", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -165,7 +165,7 @@ func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileIssuedCertificate(ob
 }
 
 // ReconcileCertificateRequest mocks base method
-func (m *MocksingleClusterReconciler) ReconcileCertificateRequest(obj *v1alpha2.CertificateRequest) (reconcile.Result, error) {
+func (m *MocksingleClusterReconciler) ReconcileCertificateRequest(obj *v1.CertificateRequest) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileCertificateRequest", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -180,7 +180,7 @@ func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileCertificateRequest(o
 }
 
 // ReconcilePodBounceDirective mocks base method
-func (m *MocksingleClusterReconciler) ReconcilePodBounceDirective(obj *v1alpha2.PodBounceDirective) (reconcile.Result, error) {
+func (m *MocksingleClusterReconciler) ReconcilePodBounceDirective(obj *v1.PodBounceDirective) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcilePodBounceDirective", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -195,7 +195,7 @@ func (mr *MocksingleClusterReconcilerMockRecorder) ReconcilePodBounceDirective(o
 }
 
 // ReconcileSecret mocks base method
-func (m *MocksingleClusterReconciler) ReconcileSecret(obj *v1.Secret) (reconcile.Result, error) {
+func (m *MocksingleClusterReconciler) ReconcileSecret(obj *v10.Secret) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileSecret", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -210,7 +210,7 @@ func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileSecret(obj interface
 }
 
 // ReconcileConfigMap mocks base method
-func (m *MocksingleClusterReconciler) ReconcileConfigMap(obj *v1.ConfigMap) (reconcile.Result, error) {
+func (m *MocksingleClusterReconciler) ReconcileConfigMap(obj *v10.ConfigMap) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileConfigMap", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -225,7 +225,7 @@ func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileConfigMap(obj interf
 }
 
 // ReconcilePod mocks base method
-func (m *MocksingleClusterReconciler) ReconcilePod(obj *v1.Pod) (reconcile.Result, error) {
+func (m *MocksingleClusterReconciler) ReconcilePod(obj *v10.Pod) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcilePod", obj)
 	ret0, _ := ret[0].(reconcile.Result)

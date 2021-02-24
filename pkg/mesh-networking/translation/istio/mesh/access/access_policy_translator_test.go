@@ -6,9 +6,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
-	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/access"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -28,15 +28,15 @@ var _ = Describe("AccessPolicyTranslator", func() {
 	})
 
 	It("should translate an AuthorizationPolicy for the ingress gateway and in the installation namespace", func() {
-		mesh := &discoveryv1alpha2.Mesh{
-			Spec: discoveryv1alpha2.MeshSpec{
-				Type: &discoveryv1alpha2.MeshSpec_Istio_{
-					Istio: &discoveryv1alpha2.MeshSpec_Istio{
-						Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+		mesh := &discoveryv1.Mesh{
+			Spec: discoveryv1.MeshSpec{
+				Type: &discoveryv1.MeshSpec_Istio_{
+					Istio: &discoveryv1.MeshSpec_Istio{
+						Installation: &discoveryv1.MeshSpec_MeshInstallation{
 							Namespace: "istio-system",
 							Cluster:   "cluster-name",
 						},
-						IngressGateways: []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo{
+						IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{
 							{
 								WorkloadLabels: map[string]string{
 									"istio": "ingressgateway",
@@ -53,14 +53,14 @@ var _ = Describe("AccessPolicyTranslator", func() {
 					},
 				},
 			},
-			Status: discoveryv1alpha2.MeshStatus{
-				AppliedVirtualMesh: &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
+			Status: discoveryv1.MeshStatus{
+				AppliedVirtualMesh: &discoveryv1.MeshStatus_AppliedVirtualMesh{
 					Ref: &v1.ObjectRef{
 						Name:      "virtual-mesh",
 						Namespace: "gloo-mesh",
 					},
-					Spec: &networkingv1alpha2.VirtualMeshSpec{
-						GlobalAccessPolicy: networkingv1alpha2.VirtualMeshSpec_ENABLED,
+					Spec: &networkingv1.VirtualMeshSpec{
+						GlobalAccessPolicy: networkingv1.VirtualMeshSpec_ENABLED,
 					},
 				},
 			},
@@ -73,7 +73,7 @@ var _ = Describe("AccessPolicyTranslator", func() {
 					ClusterName: "cluster-name",
 					Labels:      metautils.TranslatedObjectLabels(),
 					Annotations: map[string]string{
-						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"virtual-mesh","namespace":"gloo-mesh"}]}`,
+						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=VirtualMesh":[{"name":"virtual-mesh","namespace":"gloo-mesh"}]}`,
 					},
 				},
 				Spec: securityv1beta1spec.AuthorizationPolicy{
@@ -95,7 +95,7 @@ var _ = Describe("AccessPolicyTranslator", func() {
 					ClusterName: "cluster-name",
 					Labels:      metautils.TranslatedObjectLabels(),
 					Annotations: map[string]string{
-						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"virtual-mesh","namespace":"gloo-mesh"}]}`,
+						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=VirtualMesh":[{"name":"virtual-mesh","namespace":"gloo-mesh"}]}`,
 					},
 				},
 				Spec: securityv1beta1spec.AuthorizationPolicy{
@@ -117,7 +117,7 @@ var _ = Describe("AccessPolicyTranslator", func() {
 					ClusterName: "cluster-name",
 					Labels:      metautils.TranslatedObjectLabels(),
 					Annotations: map[string]string{
-						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"virtual-mesh","namespace":"gloo-mesh"}]}`,
+						metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=VirtualMesh":[{"name":"virtual-mesh","namespace":"gloo-mesh"}]}`,
 					},
 				},
 				Spec: securityv1beta1spec.AuthorizationPolicy{},
@@ -129,20 +129,20 @@ var _ = Describe("AccessPolicyTranslator", func() {
 	})
 
 	It("should not translate any AuthorizationPolicies", func() {
-		mesh := &discoveryv1alpha2.Mesh{
-			Spec: discoveryv1alpha2.MeshSpec{
-				Type: &discoveryv1alpha2.MeshSpec_Istio_{
-					Istio: &discoveryv1alpha2.MeshSpec_Istio{
-						Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+		mesh := &discoveryv1.Mesh{
+			Spec: discoveryv1.MeshSpec{
+				Type: &discoveryv1.MeshSpec_Istio_{
+					Istio: &discoveryv1.MeshSpec_Istio{
+						Installation: &discoveryv1.MeshSpec_MeshInstallation{
 							Namespace: "istio-system",
 						},
 					},
 				},
 			},
-			Status: discoveryv1alpha2.MeshStatus{
-				AppliedVirtualMesh: &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
-					Spec: &networkingv1alpha2.VirtualMeshSpec{
-						GlobalAccessPolicy: networkingv1alpha2.VirtualMeshSpec_DISABLED,
+			Status: discoveryv1.MeshStatus{
+				AppliedVirtualMesh: &discoveryv1.MeshStatus_AppliedVirtualMesh{
+					Spec: &networkingv1.VirtualMeshSpec{
+						GlobalAccessPolicy: networkingv1.VirtualMeshSpec_DISABLED,
 					},
 				},
 			},

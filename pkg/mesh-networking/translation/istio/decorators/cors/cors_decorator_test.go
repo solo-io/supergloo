@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/cors"
 	"github.com/solo-io/go-utils/testutils"
@@ -30,14 +30,14 @@ var _ = Describe("CorsDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
-			Spec: &v1alpha2.TrafficPolicySpec{
-				Policy: &v1alpha2.TrafficPolicySpec_Policy{
-					CorsPolicy: &v1alpha2.TrafficPolicySpec_Policy_CorsPolicy{
-						AllowOrigins: []*v1alpha2.TrafficPolicySpec_Policy_CorsPolicy_StringMatch{
-							{MatchType: &v1alpha2.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact{Exact: "exact"}},
-							{MatchType: &v1alpha2.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix{Prefix: "prefix"}},
-							{MatchType: &v1alpha2.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex{Regex: "regex"}},
+		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+			Spec: &v1.TrafficPolicySpec{
+				Policy: &v1.TrafficPolicySpec_Policy{
+					CorsPolicy: &v1.TrafficPolicySpec_Policy_CorsPolicy{
+						AllowOrigins: []*v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch{
+							{MatchType: &v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Exact{Exact: "exact"}},
+							{MatchType: &v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Prefix{Prefix: "prefix"}},
+							{MatchType: &v1.TrafficPolicySpec_Policy_CorsPolicy_StringMatch_Regex{Regex: "regex"}},
 						},
 						AllowMethods:     []string{"GET", "POST"},
 						AllowHeaders:     []string{"Header1", "Header2"},
@@ -70,10 +70,10 @@ var _ = Describe("CorsDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return testErr
 		}
-		appliedPolicy := &discoveryv1alpha2.DestinationStatus_AppliedTrafficPolicy{
-			Spec: &v1alpha2.TrafficPolicySpec{
-				Policy: &v1alpha2.TrafficPolicySpec_Policy{
-					CorsPolicy: &v1alpha2.TrafficPolicySpec_Policy_CorsPolicy{},
+		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+			Spec: &v1.TrafficPolicySpec{
+				Policy: &v1.TrafficPolicySpec_Policy{
+					CorsPolicy: &v1.TrafficPolicySpec_Policy_CorsPolicy{},
 				},
 			},
 		}

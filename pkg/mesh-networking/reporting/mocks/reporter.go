@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 )
 
@@ -36,7 +36,7 @@ func (m *MockReporter) EXPECT() *MockReporterMockRecorder {
 }
 
 // ReportTrafficPolicyToDestination mocks base method
-func (m *MockReporter) ReportTrafficPolicyToDestination(destination *v1alpha2.Destination, trafficPolicy ezkube.ResourceId, err error) {
+func (m *MockReporter) ReportTrafficPolicyToDestination(destination *v1.Destination, trafficPolicy ezkube.ResourceId, err error) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "ReportTrafficPolicyToDestination", destination, trafficPolicy, err)
 }
@@ -48,7 +48,7 @@ func (mr *MockReporterMockRecorder) ReportTrafficPolicyToDestination(destination
 }
 
 // ReportAccessPolicyToDestination mocks base method
-func (m *MockReporter) ReportAccessPolicyToDestination(destination *v1alpha2.Destination, accessPolicy ezkube.ResourceId, err error) {
+func (m *MockReporter) ReportAccessPolicyToDestination(destination *v1.Destination, accessPolicy ezkube.ResourceId, err error) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "ReportAccessPolicyToDestination", destination, accessPolicy, err)
 }
@@ -60,7 +60,7 @@ func (mr *MockReporterMockRecorder) ReportAccessPolicyToDestination(destination,
 }
 
 // ReportVirtualMeshToMesh mocks base method
-func (m *MockReporter) ReportVirtualMeshToMesh(mesh *v1alpha2.Mesh, virtualMesh ezkube.ResourceId, err error) {
+func (m *MockReporter) ReportVirtualMeshToMesh(mesh *v1.Mesh, virtualMesh ezkube.ResourceId, err error) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "ReportVirtualMeshToMesh", mesh, virtualMesh, err)
 }
@@ -72,7 +72,7 @@ func (mr *MockReporterMockRecorder) ReportVirtualMeshToMesh(mesh, virtualMesh, e
 }
 
 // ReportFailoverServiceToMesh mocks base method
-func (m *MockReporter) ReportFailoverServiceToMesh(mesh *v1alpha2.Mesh, failoverService ezkube.ResourceId, err error) {
+func (m *MockReporter) ReportFailoverServiceToMesh(mesh *v1.Mesh, failoverService ezkube.ResourceId, err error) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "ReportFailoverServiceToMesh", mesh, failoverService, err)
 }

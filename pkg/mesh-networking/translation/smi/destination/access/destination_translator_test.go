@@ -10,10 +10,10 @@ import (
 	"github.com/openservicemesh/osm/pkg/constants"
 	"github.com/servicemeshinterface/smi-sdk-go/pkg/apis/access/v1alpha2"
 	"github.com/servicemeshinterface/smi-sdk-go/pkg/apis/specs/v1alpha3"
-	commonv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1alpha2"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/smi/destination/access"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
@@ -41,15 +41,15 @@ var _ = Describe("DestinationTranslator", func() {
 	It("will report an error if no backing workloads exist", func() {
 		in := input.NewInputLocalSnapshotManualBuilder("").Build()
 
-		destination := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{},
-			Spec: discoveryv1alpha2.DestinationSpec{
-				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{},
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{},
 				},
 			},
-			Status: discoveryv1alpha2.DestinationStatus{
-				AppliedAccessPolicies: []*discoveryv1alpha2.DestinationStatus_AppliedAccessPolicy{
+			Status: discoveryv1.DestinationStatus{
+				AppliedAccessPolicies: []*discoveryv1.DestinationStatus_AppliedAccessPolicy{
 					{
 						Ref: &v1.ObjectRef{
 							Name:      "hello",
@@ -78,14 +78,14 @@ var _ = Describe("DestinationTranslator", func() {
 		ns := "default"
 		podLabels := map[string]string{"we": "match"}
 		in := input.NewInputLocalSnapshotManualBuilder("").
-			AddWorkloads([]*discoveryv1alpha2.Workload{
+			AddWorkloads([]*discoveryv1.Workload{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "one",
 					},
-					Spec: discoveryv1alpha2.WorkloadSpec{
-						Type: &discoveryv1alpha2.WorkloadSpec_Kubernetes{
-							Kubernetes: &discoveryv1alpha2.WorkloadSpec_KubernetesWorkload{
+					Spec: discoveryv1.WorkloadSpec{
+						Type: &discoveryv1.WorkloadSpec_Kubernetes{
+							Kubernetes: &discoveryv1.WorkloadSpec_KubernetesWorkload{
 								Controller: &v1.ClusterObjectRef{
 									Namespace: ns,
 								},
@@ -99,9 +99,9 @@ var _ = Describe("DestinationTranslator", func() {
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "two",
 					},
-					Spec: discoveryv1alpha2.WorkloadSpec{
-						Type: &discoveryv1alpha2.WorkloadSpec_Kubernetes{
-							Kubernetes: &discoveryv1alpha2.WorkloadSpec_KubernetesWorkload{
+					Spec: discoveryv1.WorkloadSpec{
+						Type: &discoveryv1.WorkloadSpec_Kubernetes{
+							Kubernetes: &discoveryv1.WorkloadSpec_KubernetesWorkload{
 								Controller: &v1.ClusterObjectRef{
 									Namespace: ns,
 								},
@@ -114,11 +114,11 @@ var _ = Describe("DestinationTranslator", func() {
 			}).
 			Build()
 
-		destination := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{},
-			Spec: discoveryv1alpha2.DestinationSpec{
-				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
 							Namespace: ns,
 						},
@@ -126,8 +126,8 @@ var _ = Describe("DestinationTranslator", func() {
 					},
 				},
 			},
-			Status: discoveryv1alpha2.DestinationStatus{
-				AppliedAccessPolicies: []*discoveryv1alpha2.DestinationStatus_AppliedAccessPolicy{
+			Status: discoveryv1.DestinationStatus{
+				AppliedAccessPolicies: []*discoveryv1.DestinationStatus_AppliedAccessPolicy{
 					{
 						Ref: &v1.ObjectRef{
 							Name:      "hello",
@@ -155,14 +155,14 @@ var _ = Describe("DestinationTranslator", func() {
 		ns := "default"
 		podLabels := map[string]string{"we": "match"}
 		in := input.NewInputLocalSnapshotManualBuilder("").
-			AddWorkloads([]*discoveryv1alpha2.Workload{
+			AddWorkloads([]*discoveryv1.Workload{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "one",
 					},
-					Spec: discoveryv1alpha2.WorkloadSpec{
-						Type: &discoveryv1alpha2.WorkloadSpec_Kubernetes{
-							Kubernetes: &discoveryv1alpha2.WorkloadSpec_KubernetesWorkload{
+					Spec: discoveryv1.WorkloadSpec{
+						Type: &discoveryv1.WorkloadSpec_Kubernetes{
+							Kubernetes: &discoveryv1.WorkloadSpec_KubernetesWorkload{
 								Controller: &v1.ClusterObjectRef{
 									Namespace: ns,
 								},
@@ -175,14 +175,14 @@ var _ = Describe("DestinationTranslator", func() {
 			}).
 			Build()
 
-		destination := &discoveryv1alpha2.Destination{
+		destination := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "name",
 				Namespace: ns,
 			},
-			Spec: discoveryv1alpha2.DestinationSpec{
-				Type: &discoveryv1alpha2.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1alpha2.DestinationSpec_KubeService{
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
 						Ref: &v1.ClusterObjectRef{
 							Name:      "name",
 							Namespace: ns,
@@ -191,17 +191,17 @@ var _ = Describe("DestinationTranslator", func() {
 					},
 				},
 			},
-			Status: discoveryv1alpha2.DestinationStatus{
-				AppliedAccessPolicies: []*discoveryv1alpha2.DestinationStatus_AppliedAccessPolicy{
+			Status: discoveryv1.DestinationStatus{
+				AppliedAccessPolicies: []*discoveryv1.DestinationStatus_AppliedAccessPolicy{
 					{
 						Ref: &v1.ObjectRef{
 							Name:      "hello",
 							Namespace: "world",
 						},
-						Spec: &networkingv1alpha2.AccessPolicySpec{
-							SourceSelector: []*commonv1alpha2.IdentitySelector{
+						Spec: &networkingv1.AccessPolicySpec{
+							SourceSelector: []*commonv1.IdentitySelector{
 								{
-									KubeServiceAccountRefs: &commonv1alpha2.IdentitySelector_KubeServiceAccountRefs{
+									KubeServiceAccountRefs: &commonv1.IdentitySelector_KubeServiceAccountRefs{
 										ServiceAccounts: []*v1.ClusterObjectRef{
 											{
 												Name:      "sa",
@@ -237,7 +237,7 @@ var _ = Describe("DestinationTranslator", func() {
 		}
 		expectedHRG.Name += "." + refernceString
 		expectedHRG.Annotations = map[string]string{
-			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=AccessPolicy":[{"name":"hello","namespace":"world"}]}`,
+			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=AccessPolicy":[{"name":"hello","namespace":"world"}]}`,
 		}
 
 		expectedTT := &v1alpha2.TrafficTarget{
@@ -269,7 +269,7 @@ var _ = Describe("DestinationTranslator", func() {
 		}
 		expectedTT.Name += "." + refernceString
 		expectedTT.Annotations = map[string]string{
-			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=AccessPolicy":[{"name":"hello","namespace":"world"}]}`,
+			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=AccessPolicy":[{"name":"hello","namespace":"world"}]}`,
 		}
 
 		tt, hrg := NewTranslator().Translate(ctx, in, destination, reporter)

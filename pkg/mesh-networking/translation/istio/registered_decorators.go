@@ -15,5 +15,6 @@ import (
 	_ "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/outlierdetection"
 	_ "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/retries"
 	_ "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/timeout"
+	_ "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/tls"
 	_ "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 )

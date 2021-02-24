@@ -28,8 +28,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	certificates_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/controller"
+	certificates_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificates_mesh_gloo_solo_io_v1_controllers "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/controller"
 
 	v1_controllers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
 	v1 "k8s.io/api/core/v1"
@@ -38,9 +38,9 @@ import (
 // the multiClusterReconciler reconciles events for input resources across clusters
 // this private interface is used to ensure that the generated struct implements the intended functions
 type multiClusterReconciler interface {
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers.MulticlusterIssuedCertificateReconciler
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers.MulticlusterCertificateRequestReconciler
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers.MulticlusterPodBounceDirectiveReconciler
+	certificates_mesh_gloo_solo_io_v1_controllers.MulticlusterIssuedCertificateReconciler
+	certificates_mesh_gloo_solo_io_v1_controllers.MulticlusterCertificateRequestReconciler
+	certificates_mesh_gloo_solo_io_v1_controllers.MulticlusterPodBounceDirectiveReconciler
 
 	v1_controllers.MulticlusterSecretReconciler
 	v1_controllers.MulticlusterConfigMapReconciler
@@ -96,11 +96,11 @@ func RegisterMultiClusterReconciler(
 
 	// initialize reconcile loops
 
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterIssuedCertificateReconcileLoop("IssuedCertificate", clusters, options.IssuedCertificates).AddMulticlusterIssuedCertificateReconciler(ctx, r, predicates...)
+	certificates_mesh_gloo_solo_io_v1_controllers.NewMulticlusterIssuedCertificateReconcileLoop("IssuedCertificate", clusters, options.IssuedCertificates).AddMulticlusterIssuedCertificateReconciler(ctx, r, predicates...)
 
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterCertificateRequestReconcileLoop("CertificateRequest", clusters, options.CertificateRequests).AddMulticlusterCertificateRequestReconciler(ctx, r, predicates...)
+	certificates_mesh_gloo_solo_io_v1_controllers.NewMulticlusterCertificateRequestReconcileLoop("CertificateRequest", clusters, options.CertificateRequests).AddMulticlusterCertificateRequestReconciler(ctx, r, predicates...)
 
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewMulticlusterPodBounceDirectiveReconcileLoop("PodBounceDirective", clusters, options.PodBounceDirectives).AddMulticlusterPodBounceDirectiveReconciler(ctx, r, predicates...)
+	certificates_mesh_gloo_solo_io_v1_controllers.NewMulticlusterPodBounceDirectiveReconcileLoop("PodBounceDirective", clusters, options.PodBounceDirectives).AddMulticlusterPodBounceDirectiveReconciler(ctx, r, predicates...)
 
 	v1_controllers.NewMulticlusterSecretReconcileLoop("Secret", clusters, options.Secrets).AddMulticlusterSecretReconciler(ctx, r, predicates...)
 
@@ -110,7 +110,7 @@ func RegisterMultiClusterReconciler(
 	return r.base
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileIssuedCertificate(clusterName string, obj *certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate) (reconcile.Result, error) {
+func (r *multiClusterReconcilerImpl) ReconcileIssuedCertificate(clusterName string, obj *certificates_mesh_gloo_solo_io_v1.IssuedCertificate) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileRemoteGeneric(obj)
 }
@@ -125,7 +125,7 @@ func (r *multiClusterReconcilerImpl) ReconcileIssuedCertificateDeletion(clusterN
 	return err
 }
 
-func (r *multiClusterReconcilerImpl) ReconcileCertificateRequest(clusterName string, obj *certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequest) (reconcile.Result, error) {
+func (r *multiClusterReconcilerImpl) ReconcileCertificateRequest(clusterName string, obj *certificates_mesh_gloo_solo_io_v1.CertificateRequest) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileRemoteGeneric(obj)
 }
@@ -140,7 +140,7 @@ func (r *multiClusterReconcilerImpl) ReconcileCertificateRequestDeletion(cluster
 	return err
 }
 
-func (r *multiClusterReconcilerImpl) ReconcilePodBounceDirective(clusterName string, obj *certificates_mesh_gloo_solo_io_v1alpha2.PodBounceDirective) (reconcile.Result, error) {
+func (r *multiClusterReconcilerImpl) ReconcilePodBounceDirective(clusterName string, obj *certificates_mesh_gloo_solo_io_v1.PodBounceDirective) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileRemoteGeneric(obj)
 }
@@ -203,9 +203,9 @@ func (r *multiClusterReconcilerImpl) ReconcilePodDeletion(clusterName string, ob
 // the singleClusterReconciler reconciles events for input resources across clusters
 // this private interface is used to ensure that the generated struct implements the intended functions
 type singleClusterReconciler interface {
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers.IssuedCertificateReconciler
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers.CertificateRequestReconciler
-	certificates_mesh_gloo_solo_io_v1alpha2_controllers.PodBounceDirectiveReconciler
+	certificates_mesh_gloo_solo_io_v1_controllers.IssuedCertificateReconciler
+	certificates_mesh_gloo_solo_io_v1_controllers.CertificateRequestReconciler
+	certificates_mesh_gloo_solo_io_v1_controllers.PodBounceDirectiveReconciler
 
 	v1_controllers.SecretReconciler
 	v1_controllers.ConfigMapReconciler
@@ -243,13 +243,13 @@ func RegisterSingleClusterReconciler(
 
 	// initialize reconcile loops
 
-	if err := certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewIssuedCertificateReconcileLoop("IssuedCertificate", mgr, options).RunIssuedCertificateReconciler(ctx, r, predicates...); err != nil {
+	if err := certificates_mesh_gloo_solo_io_v1_controllers.NewIssuedCertificateReconcileLoop("IssuedCertificate", mgr, options).RunIssuedCertificateReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
 	}
-	if err := certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewCertificateRequestReconcileLoop("CertificateRequest", mgr, options).RunCertificateRequestReconciler(ctx, r, predicates...); err != nil {
+	if err := certificates_mesh_gloo_solo_io_v1_controllers.NewCertificateRequestReconcileLoop("CertificateRequest", mgr, options).RunCertificateRequestReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
 	}
-	if err := certificates_mesh_gloo_solo_io_v1alpha2_controllers.NewPodBounceDirectiveReconcileLoop("PodBounceDirective", mgr, options).RunPodBounceDirectiveReconciler(ctx, r, predicates...); err != nil {
+	if err := certificates_mesh_gloo_solo_io_v1_controllers.NewPodBounceDirectiveReconcileLoop("PodBounceDirective", mgr, options).RunPodBounceDirectiveReconciler(ctx, r, predicates...); err != nil {
 		return nil, err
 	}
 
@@ -266,7 +266,7 @@ func RegisterSingleClusterReconciler(
 	return r.base, nil
 }
 
-func (r *singleClusterReconcilerImpl) ReconcileIssuedCertificate(obj *certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate) (reconcile.Result, error) {
+func (r *singleClusterReconcilerImpl) ReconcileIssuedCertificate(obj *certificates_mesh_gloo_solo_io_v1.IssuedCertificate) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 
@@ -279,7 +279,7 @@ func (r *singleClusterReconcilerImpl) ReconcileIssuedCertificateDeletion(obj rec
 	return err
 }
 
-func (r *singleClusterReconcilerImpl) ReconcileCertificateRequest(obj *certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequest) (reconcile.Result, error) {
+func (r *singleClusterReconcilerImpl) ReconcileCertificateRequest(obj *certificates_mesh_gloo_solo_io_v1.CertificateRequest) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 
@@ -292,7 +292,7 @@ func (r *singleClusterReconcilerImpl) ReconcileCertificateRequestDeletion(obj re
 	return err
 }
 
-func (r *singleClusterReconcilerImpl) ReconcilePodBounceDirective(obj *certificates_mesh_gloo_solo_io_v1alpha2.PodBounceDirective) (reconcile.Result, error) {
+func (r *singleClusterReconcilerImpl) ReconcilePodBounceDirective(obj *certificates_mesh_gloo_solo_io_v1.PodBounceDirective) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 

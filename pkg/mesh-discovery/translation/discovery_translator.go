@@ -6,7 +6,7 @@ import (
 
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/output/discovery"
-	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	internal "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/internal"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/labelutils"
 )
@@ -19,7 +19,7 @@ type Translator interface {
 	Translate(
 		ctx context.Context,
 		in input.DiscoveryInputSnapshot,
-		settings *settingsv1alpha2.DiscoverySettings,
+		settings *settingsv1.DiscoverySettings,
 	) (discovery.Snapshot, error)
 }
 
@@ -37,7 +37,7 @@ func NewTranslator(dependencyFactory internal.DependencyFactory) Translator {
 func (t translator) Translate(
 	ctx context.Context,
 	in input.DiscoveryInputSnapshot,
-	settings *settingsv1alpha2.DiscoverySettings,
+	settings *settingsv1.DiscoverySettings,
 ) (discovery.Snapshot, error) {
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(ctx)
