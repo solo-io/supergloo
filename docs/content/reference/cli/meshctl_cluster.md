@@ -22,4 +22,5 @@ Interacting with remote Kubernetes clusters registered to Gloo Mesh
 
 * [meshctl](../meshctl)	 - The Command Line Interface for managing Gloo Mesh.
 * [meshctl cluster deregister](../meshctl_cluster_deregister)	 - Deregister a Kubernetes cluster from Gloo Mesh, cleaning up any associated resources
+* [meshctl cluster register](../meshctl_cluster_register)	 - Register a Kubernetes cluster with Gloo Mesh
 

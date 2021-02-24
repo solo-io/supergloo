@@ -1,13 +1,13 @@
 ---
-title: "meshctl oss install"
+title: "meshctl install community"
 weight: 5
 ---
-## meshctl oss install
+## meshctl install community
 
-Install Gloo Mesh OSS
+Install the community certificate agent
 
 ```
-meshctl oss install [flags]
+meshctl install community [flags]
 ```
 
 ### Options
@@ -22,7 +22,7 @@ meshctl oss install [flags]
       --cluster-domain string            The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. Defaults to 'cluster.local'. Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
       --cluster-name string              Name with which to register the cluster running Gloo Mesh, only applies if --register is also set (default "mgmt-cluster")
   -d, --dry-run                          Output installation manifest
-  -h, --help                             help for install
+  -h, --help                             help for community
       --kubeconfig string                path to the kubeconfig from which the management cluster will be accessed
       --kubecontext string               name of the kubeconfig context to use for the management cluster
       --namespace string                 namespace in which to install Gloo Mesh (default "gloo-mesh")
@@ -39,5 +39,5 @@ meshctl oss install [flags]
 
 ### SEE ALSO
 
-* [meshctl oss](../meshctl_oss)	 - Install Gloo Mesh
+* [meshctl install](../meshctl_install)	 - Install Gloo Mesh
 

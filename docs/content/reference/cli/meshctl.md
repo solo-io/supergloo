@@ -22,8 +22,8 @@ The Command Line Interface for managing Gloo Mesh.
 * [meshctl demo](../meshctl_demo)	 - Bootstrap environments for various demos demonstrating Gloo Mesh functionality.
 * [meshctl describe](../meshctl_describe)	 - Human readable description of discovered resources and applicable configuration
 * [meshctl init-plugin-manager](../meshctl_init-plugin-manager)	 - Install the Gloo Mesh Enterprise CLI plugin manager
+* [meshctl install](../meshctl_install)	 - Install Gloo Mesh
 * [meshctl mesh](../meshctl_mesh)	 - Operations on a specific mesh
-* [meshctl oss](../meshctl_oss)	 - Install Gloo Mesh
 * [meshctl uninstall](../meshctl_uninstall)	 - Uninstall Gloo Mesh from the referenced cluster
 * [meshctl version](../meshctl_version)	 - Display the version of meshctl and installed Gloo Mesh components
 

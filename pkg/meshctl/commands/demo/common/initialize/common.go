@@ -52,7 +52,7 @@ func installGlooMesh(ctx context.Context, cluster string, box packr.Box) error {
 		cluster, gloomesh.GlooMeshChartUriTemplate,
 		version.Version,
 		nil,
-	).InstallGlooMesh(ctx); err != nil {
+	).InstallChart(ctx); err != nil {
 		return eris.Wrap(err, "Error installing Gloo Mesh")
 	}
 
@@ -78,7 +78,7 @@ func installGlooMeshEnterprise(ctx context.Context, cluster, version, licenseKey
 		cluster, gloomesh.GlooMeshEnterpriseChartUriTemplate,
 		version,
 		map[string]string{"licenseKey": licenseKey},
-	).InstallGlooMeshEnterprise(ctx); err != nil {
+	).InstallChart(ctx); err != nil {
 		return eris.Wrap(err, "Error installing Gloo Mesh")
 	}
 
@@ -86,17 +86,16 @@ func installGlooMeshEnterprise(ctx context.Context, cluster, version, licenseKey
 	return nil
 }
 
-func getGlooMeshInstaller(cluster, chartTemplate, chartVersion string, values map[string]string) gloomesh.Installer {
-	return gloomesh.Installer{
-		HelmChartPath:  fmt.Sprintf(chartTemplate, chartVersion),
-		HelmValuesPath: "",
-		KubeConfig:     "",
-		KubeContext:    fmt.Sprintf("kind-%s", cluster),
-		Namespace:      defaults.DefaultPodNamespace,
-		ReleaseName:    helm.Chart.Data.Name,
-		Values:         values,
-		Verbose:        true,
-		DryRun:         false,
+func getGlooMeshInstaller(cluster, chartTemplate, chartVersion string, values map[string]string) installhelm.Installer {
+	return installhelm.Installer{
+		ChartUri:    fmt.Sprintf(chartTemplate, chartVersion),
+		KubeConfig:  "",
+		KubeContext: fmt.Sprintf("kind-%s", cluster),
+		Namespace:   defaults.DefaultPodNamespace,
+		ReleaseName: helm.Chart.Data.Name,
+		Values:      values,
+		Verbose:     true,
+		DryRun:      false,
 	}
 }
 
@@ -110,7 +109,7 @@ func registerCluster(ctx context.Context, mgmtCluster, cluster string, installEn
 	mgmtKubeContext := fmt.Sprintf("kind-%s", mgmtCluster)
 	remoteKubeContext := fmt.Sprintf("kind-%s", cluster)
 
-	registrantOpts := &registration.RegistrantOptions{
+	registrantOpts := registration.RegistrantOptions{
 		KubeConfigPath: "",
 		MgmtContext:    mgmtKubeContext,
 		RemoteContext:  remoteKubeContext,
@@ -122,17 +121,16 @@ func registerCluster(ctx context.Context, mgmtCluster, cluster string, installEn
 			APIServerAddress: apiServerAddress,
 			ClusterDomain:    "",
 		},
-		CertAgent: registration.AgentInstallOptions{
-			ChartPath:   fmt.Sprintf(gloomesh.CertAgentChartUriTemplate, version.Version),
-			ChartValues: "",
-		},
-		EnterpriseAgent: registration.AgentInstallOptions{
-			Install: installEnterpriseAgent,
-		},
-		Verbose: true,
+		AgentChartPathOverride: fmt.Sprintf(gloomesh.CertAgentChartUriTemplate, version.Version),
+		AgentChartValues:       "",
+		Verbose:                true,
 	}
 
-	registrant, err := registration.NewRegistrant(registrantOpts)
+	registrant, err := registration.NewRegistrant(
+		registrantOpts,
+		gloomesh.CertAgentReleaseName,
+		gloomesh.CertAgentChartUriTemplate,
+	)
 	if err != nil {
 		return eris.Wrapf(err, "initializing registrant for cluster %s", cluster)
 	}
