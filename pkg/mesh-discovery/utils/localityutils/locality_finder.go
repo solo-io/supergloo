@@ -82,7 +82,7 @@ func GetSubLocality(
 	}
 
 	// get the sub-zone (Istio-specific)
-	if subZone, ok := node.Labels[label.IstioSubZone]; ok {
+	if subZone, ok := node.Labels[label.TopologySubzone.Name]; ok {
 		subLocality.SubZone = subZone
 	}
 

@@ -374,7 +374,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 					Labels: map[string]string{
 						corev1.LabelZoneRegionStable:        "region1",
 						corev1.LabelZoneFailureDomainStable: "zone1",
-						label.IstioSubZone:                  "subzone1",
+						label.TopologySubzone.Name:          "subzone1",
 					},
 				},
 			},
@@ -385,7 +385,7 @@ var _ = Describe("TrafficTargetDetector", func() {
 					Labels: map[string]string{
 						corev1.LabelZoneRegionStable:        "region1",
 						corev1.LabelZoneFailureDomainStable: "zone2",
-						label.IstioSubZone:                  "subzone2",
+						label.TopologySubzone.Name:          "subzone2",
 					},
 				},
 			},
