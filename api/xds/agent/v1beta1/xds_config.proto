@@ -1,0 +1,59 @@
+syntax = "proto3";
+package xds.agent.enterprise.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+/*
+    XdsConfigs are used to issue xDS Configuration Resources to running Envoy instances.
+    They are created by Gloo Mesh for processing by an agent running on managed clusters.
+
+    The agent will serve the specified xDS configuration resources on its grpc-xds port (default 9977)
+    to the Envoy instances (nodes) defined in the XDSConfigSpec.
+
+    This feature is currently only available in Gloo Mesh Enterprise.
+*/
+message XdsConfigSpec {
+
+    // The Workloads that will receive this xDS Configuration.
+    repeated .core.skv2.solo.io.ObjectRef workloads = 1;
+
+    // The xDS resources to serve to the nodes.
+    // Mapped by type URL.
+   repeated TypedResources types = 2;
+
+    // A set of resources of a single type (typeURL).
+    message TypedResources {
+
+        // The type URL of the resources in the given set.
+        string type_url = 1;
+
+        // Stored as compressed, base-64 encoded raw bytes.
+        repeated Resource resources  = 2;
+    }
+
+    // A single named resource.
+    message Resource {
+
+        // Name of the resource as referenced by xDS.
+        string name = 1;
+
+        // Stored as compressed, base-64 encoded raw bytes.
+        bytes compressed_data = 2;
+    }
+}
+
+// The XdsConfig status is written by the CertificateRequesting agent.
+message XdsConfigStatus {
+
+    // The most recent generation observed in the the XdsConfig metadata.
+    // If the `observedGeneration` does not match `metadata.generation`, the Gloo Mesh agent has not processed the most
+    // recent version of this XdsConfig.
+    int64 observed_generation = 1;
+
+    // Any error observed which prevented the XdsConfig from being processed.
+    // If the error is empty, the request has been processed successfully.
+    string error = 2;
+}
