@@ -136,6 +136,18 @@ message TrafficPolicySpec {
                 map<string, string> subset = 3;
             }
 
+            // A traffic shift destination that references a VirtualDestination.
+            message VirtualDestinationReference {
+                // The name of the VirtualDestination.
+                string name = 1;
+
+                // The namespace of the VirtualDestination.
+                string namespace = 2;
+
+                // Subset routing is currently only supported for Istio backing services.
+                map<string, string> subset = 3;
+            }
+
             // The different destination types can be selected for a traffic shift.
             oneof destination_type {
                 // The use kubeService to shift traffic a Kubernetes Service/subset.
@@ -143,6 +155,9 @@ message TrafficPolicySpec {
 
                 // A traffic shift destination targeting a FailoverService.
                 FailoverServiceDestination failover_service = 3;
+
+                // A traffic shift destination targeting a VirtualDestination.
+                VirtualDestinationReference virtual_destination = 4;
             }
 
             // Weights across all of the destinations must sum to 100. Each is interpreted as a percent from 0-100.

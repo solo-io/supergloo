@@ -9,6 +9,8 @@ import "google/protobuf/wrappers.proto";
 
 import "extproto/ext.proto";
 option (extproto.equal_all) = true;
+// Generate hash functions for sublocality for easier grouping
+option (extproto.hash_all) = true;
 
 /**
     The TrafficTarget is an abstraction for a traffic target which we have discovered to be part of a
@@ -90,16 +92,24 @@ message TrafficTargetSpec {
             repeated string values = 1;
         }
 
+        // The region the service resides in, typically representing a large geographic area.
+        // All of the service's endpoints will be in this region.
+        string region = 6;
+
         // A series of IP addresses and their associated ports.
-        // The list of ip + port pairs is the cartesian product of the following lists
+        // The list of IP + port pairs is the cartesian product of the two lists.
         message EndpointsSubset {
 
             // An endpoint exposed by the service
             message Endpoint {
                 // IP address
                 string ip_address = 1;
-                // Labels which belong to this IP, these are taken from the backing workload instance.
+
+                // Labels which belong to this IP. These are taken from the backing workload instance.
                 map<string, string> labels = 2;
+
+                // The zone/sub-zone of the endpoint.
+                SubLocality sub_locality = 3;
             }
 
             repeated Endpoint endpoints = 1;
@@ -107,13 +117,18 @@ message TrafficTargetSpec {
             repeated KubeServicePort ports = 2;
         }
 
-        // Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs.
-        // This API mirrors the kubernetes Endpoints API.
-        // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
-        repeated EndpointsSubset endpoint_subsets = 6;
+        // Each endpoints subset is a group of endpoints arranged in terms of IP/port pairs.
+        // This API mirrors the [Kubernetes Endpoints API](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core).
+        repeated EndpointsSubset endpoint_subsets = 7;
 
     }
 
+}
+
+// A subdivision of a region representing a set of physically colocated compute resources.
+message SubLocality {
+    string zone = 1;
+    string sub_zone = 2;
 }
 
 message TrafficTargetStatus {

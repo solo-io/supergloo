@@ -118,6 +118,7 @@ rules:
   - networking.enterprise.mesh.gloo.solo.io
   resources:
   - wasmdeployments
+  - virtualdestinations
   verbs:
   - get
   - list
@@ -176,6 +177,7 @@ rules:
   - networking.enterprise.mesh.gloo.solo.io
   resources:
   - wasmdeployments/status
+  - virtualdestinations/status
   verbs:
   - get
   - update

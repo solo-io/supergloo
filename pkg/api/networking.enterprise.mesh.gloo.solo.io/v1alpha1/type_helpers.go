@@ -5,3 +5,6 @@ package v1alpha1
 
 // WasmDeploymentSlice represents a slice of *WasmDeployment
 type WasmDeploymentSlice []*WasmDeployment
+
+// VirtualDestinationSlice represents a slice of *VirtualDestination
+type VirtualDestinationSlice []*VirtualDestination
