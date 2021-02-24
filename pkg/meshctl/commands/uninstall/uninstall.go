@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/gloo-mesh/codegen/helm"
+	helmgen "github.com/solo-io/gloo-mesh/codegen/helm"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -29,37 +29,33 @@ func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command
 }
 
 type options struct {
-	kubeconfig  string
-	kubecontext string
+	verbose bool
+	dryRun  bool
+
+	kubeCfgPath string
+	kubeContext string
 	namespace   string
 	releaseName string
-	verbose     bool
-	dryRun      bool
 }
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
-	utils.AddManagementKubeconfigFlags(&o.kubeconfig, &o.kubecontext, flags)
+	utils.AddManagementKubeconfigFlags(&o.kubeCfgPath, &o.kubeContext, flags)
 	flags.BoolVarP(&o.dryRun, "dry-run", "d", false, "Output installation manifest")
-	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace in which to install Gloo Mesh")
-	flags.StringVar(&o.releaseName, "release-name", helm.Chart.Data.Name, "Helm release name")
+	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace in which to uninstall Gloo Mesh from")
+	flags.StringVar(&o.releaseName, "release-name", helmgen.Chart.Data.Name, "Helm release name")
 }
 
 func uninstall(ctx context.Context, opts *options) error {
-	if err := uninstallGlooMesh(ctx, opts); err != nil {
-		return eris.Wrap(err, "uninstalling gloo-mesh")
-	}
-	return nil
-}
-
-func uninstallGlooMesh(ctx context.Context, opts *options) error {
-	return gloomesh.Uninstaller{
-		KubeConfig:  opts.kubeconfig,
-		KubeContext: opts.kubecontext,
+	if err := (helm.Uninstaller{
+		KubeConfig:  opts.kubeCfgPath,
+		KubeContext: opts.kubeContext,
 		Namespace:   opts.namespace,
 		ReleaseName: opts.releaseName,
 		Verbose:     opts.verbose,
 		DryRun:      opts.dryRun,
-	}.UninstallGlooMesh(
-		ctx,
-	)
+	}).UninstallChart(ctx); err != nil {
+		return eris.Wrap(err, "uninstalling gloo-mesh")
+	}
+
+	return nil
 }

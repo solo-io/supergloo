@@ -6,14 +6,18 @@ import (
 
 	"github.com/rotisserie/eris"
 	"github.com/sirupsen/logrus"
+	appsv1 "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1"
 	"github.com/solo-io/gloo-mesh/codegen/io"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/enterprise"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/dockerutils"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var gloomeshRbacRequirements = func() []rbacv1.PolicyRule {
@@ -28,23 +32,19 @@ var gloomeshRbacRequirements = func() []rbacv1.PolicyRule {
 	return policyRules
 }()
 
-type Registrant struct {
-	*RegistrantOptions
-}
-
 type RegistrantOptions struct {
-	KubeConfigPath     string
-	MgmtContext        string
-	RemoteContext      string
-	Registration       register.RegistrationOptions
-	AgentCrdsChartPath string
-	CertAgent          AgentInstallOptions
-	EnterpriseAgent    AgentInstallOptions
-	Verbose            bool
+	KubeConfigPath         string
+	MgmtContext            string
+	RemoteContext          string
+	Registration           register.RegistrationOptions
+	AgentCrdsChartPath     string
+	AgentChartPathOverride string
+	AgentChartValues       string
+	Verbose                bool
 }
 
 // Initialize a ClientConfig for the management and remote clusters from the options.
-func (m *RegistrantOptions) ConstructClientConfigs() (mgmtKubeCfg clientcmd.ClientConfig, remoteKubeCfg clientcmd.ClientConfig, err error) {
+func (m *RegistrantOptions) ConstructClientConfigs() (mgmtKubeCfg, remoteKubeCfg clientcmd.ClientConfig, err error) {
 	mgmtKubeCfg, err = kubeconfig.GetClientConfigWithContext(m.KubeConfigPath, m.MgmtContext, "")
 	if err != nil {
 		return nil, nil, err
@@ -56,34 +56,36 @@ func (m *RegistrantOptions) ConstructClientConfigs() (mgmtKubeCfg clientcmd.Clie
 	return mgmtKubeCfg, remoteKubeCfg, nil
 }
 
-func NewRegistrant(opts *RegistrantOptions) (*Registrant, error) {
-	registrant := &Registrant{opts}
-	registrant.Registration.ClusterRoles = []*rbacv1.ClusterRole{
+type Registrant struct {
+	// Optionally set a version manually
+	VersionOverride string
+
+	opts              RegistrantOptions
+	agentReleaseName  string
+	agentChartPathTpl string // Will replace single %s with version
+}
+
+func NewRegistrant(opts RegistrantOptions, agentReleaseName, agentChartPathTpl string) (*Registrant, error) {
+	registrant := &Registrant{"", opts, agentReleaseName, agentChartPathTpl}
+	registrant.opts.Registration.ClusterRoles = []*rbacv1.ClusterRole{
 		{
 			ObjectMeta: metav1.ObjectMeta{
-				Namespace: registrant.Registration.RemoteNamespace,
+				Namespace: registrant.opts.Registration.RemoteNamespace,
 				Name:      "gloomesh-remote-access",
 			},
 			Rules: gloomeshRbacRequirements,
 		},
 	}
 	// Convert kubeconfig path and context into ClientConfig for Registration
-	mgmtClientConfig, remoteClientConfig, err := registrant.ConstructClientConfigs()
+	mgmtClientConfig, remoteClientConfig, err := registrant.opts.ConstructClientConfigs()
 	if err != nil {
 		return nil, err
 	}
-	registrant.Registration.KubeCfg = mgmtClientConfig
-	registrant.Registration.RemoteKubeCfg = remoteClientConfig
+	registrant.opts.Registration.KubeCfg = mgmtClientConfig
+	registrant.opts.Registration.RemoteKubeCfg = remoteClientConfig
 	// We need to explicitly pass the remote context because of this open issue: https://github.com/kubernetes/client-go/issues/735
-	registrant.Registration.RemoteCtx = opts.RemoteContext
+	registrant.opts.Registration.RemoteCtx = opts.RemoteContext
 	return registrant, nil
-}
-
-// Options for installing agents (cert-agent, enterprise-agent)
-type AgentInstallOptions struct {
-	Install     bool // If true, install the agent
-	ChartPath   string
-	ChartValues string
 }
 
 func (r *Registrant) RegisterCluster(ctx context.Context) error {
@@ -92,29 +94,106 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 		return err
 	}
 
-	// The cert-agent should always be installed since it's required for the VirtualMesh API.
-	if err := r.installCertAgent(ctx); err != nil {
+	if err := r.installAgent(ctx); err != nil {
 		return err
 	}
 
-	// Users can opt out of installing the Enterprise Agent since it's only required for the WasmDeployment API.
-	if r.EnterpriseAgent.Install {
-		enterpriseNetworkingVersion, err := enterprise.GetEnterpriseNetworkingVersion(ctx, r.KubeConfigPath, r.MgmtContext)
-		if err != nil {
-			return err
-		}
+	return r.registerCluster(ctx)
+}
 
-		// If Enterprise Networking is present or the user explicitly provided a chart path, install the agent.
-		if enterpriseNetworkingVersion != "" || r.EnterpriseAgent.ChartPath != "" {
-			if err := r.installEnterpriseAgent(ctx, enterpriseNetworkingVersion); err != nil {
-				return err
+func (r *Registrant) registerCluster(ctx context.Context) error {
+	logrus.Debugf("registering cluster with opts %+v\n", r.opts.Registration)
+
+	if err := r.opts.Registration.RegisterCluster(ctx); err != nil {
+		return err
+	}
+
+	logrus.Infof("successfully registered cluster %v", r.opts.Registration.ClusterName)
+	return nil
+}
+
+func (r *Registrant) installAgentCrds(ctx context.Context) error {
+	chartPath, err := r.getChartPath(ctx, r.opts.AgentCrdsChartPath, gloomesh.AgentCrdsChartUriTemplate)
+	if err != nil {
+		return err
+	}
+
+	return helm.Installer{
+		KubeConfig:  r.opts.KubeConfigPath,
+		KubeContext: r.opts.RemoteContext,
+		ChartUri:    chartPath,
+		Namespace:   r.opts.Registration.RemoteNamespace,
+		ReleaseName: gloomesh.AgentCrdsReleaseName,
+		Verbose:     r.opts.Verbose,
+	}.InstallChart(ctx)
+}
+
+func (r *Registrant) installAgent(ctx context.Context) error {
+	chartPath, err := r.getChartPath(ctx, r.opts.AgentChartPathOverride, r.agentChartPathTpl)
+	if err != nil {
+		return err
+	}
+
+	return helm.Installer{
+		KubeConfig:  r.opts.KubeConfigPath,
+		KubeContext: r.opts.RemoteContext,
+		ChartUri:    chartPath,
+		ValuesFile:  r.opts.AgentChartValues,
+		Namespace:   r.opts.Registration.RemoteNamespace,
+		ReleaseName: gloomesh.AgentCrdsReleaseName,
+		Verbose:     r.opts.Verbose,
+	}.InstallChart(ctx)
+}
+
+func (r *Registrant) getChartPath(ctx context.Context, pathOverride, pathTemplate string) (string, error) {
+	// Use manual chart override path first
+	if pathOverride != "" {
+		return r.opts.AgentCrdsChartPath, nil
+	}
+	// Then use manually set version
+	if r.VersionOverride != "" {
+		return fmt.Sprintf(pathTemplate, r.VersionOverride), nil
+	}
+
+	// Lastly, determine version from Gloo Mesh deployment
+	version, err := r.getGlooMeshVersion(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf(pathTemplate, version), nil
+}
+
+func (r *Registrant) getGlooMeshVersion(ctx context.Context) (string, error) {
+	kubeClient, err := utils.BuildClient(r.opts.KubeConfigPath, r.opts.MgmtContext)
+	if err != nil {
+		return "", err
+	}
+
+	depClient := appsv1.NewDeploymentClient(kubeClient)
+	deployments, err := depClient.ListDeployment(ctx, &client.ListOptions{Namespace: r.opts.Registration.Namespace})
+	if err != nil {
+		return "", err
+	}
+
+	// Find the (enterprise-)networking deployment and return the tag of the
+	// gloo-mesh image, in the event of multiple containers, the name of the
+	// main container will be (enterprise-)networking as well.
+	for _, deployment := range deployments.Items {
+		if deployment.Name == "networking" || deployment.Name == "enterprise-networking" {
+			for _, container := range deployment.Spec.Template.Spec.Containers {
+				if container.Name == deployment.Name {
+					image, err := dockerutils.ParseImageName(container.Image)
+					if err != nil {
+						return "", err
+					}
+					return image.Tag, err
+				}
 			}
-		} else {
-			logrus.Debug("Enterprise Networking not found in management cluster, skipping Enterprise Agent install.")
 		}
 	}
 
-	return r.registerCluster(ctx)
+	return "", eris.New("unable to find Gloo Mesh deployment in management cluster")
 }
 
 func (r *Registrant) DeregisterCluster(ctx context.Context) error {
@@ -126,103 +205,25 @@ func (r *Registrant) DeregisterCluster(ctx context.Context) error {
 		return err
 	}
 
-	if err := r.uninstallEnterpriseAgent(ctx); err != nil {
-		return err
-	}
-
-	return r.Registration.DeregisterCluster(ctx)
-}
-
-func (r *Registrant) registerCluster(ctx context.Context) error {
-	logrus.Debugf("registering cluster with opts %+v\n", r.Registration)
-
-	if err := r.Registration.RegisterCluster(ctx); err != nil {
-		return err
-	}
-
-	logrus.Infof("successfully registered cluster %v", r.Registration.ClusterName)
-	return nil
-}
-
-func (r *Registrant) installAgentCrds(ctx context.Context) error {
-	return gloomesh.Installer{
-		HelmChartPath: r.AgentCrdsChartPath,
-		KubeConfig:    r.KubeConfigPath,
-		KubeContext:   r.RemoteContext,
-		Namespace:     r.Registration.RemoteNamespace,
-		Verbose:       r.Verbose,
-	}.InstallAgentCrds(
-		ctx,
-	)
+	return r.opts.Registration.DeregisterCluster(ctx)
 }
 
 func (r *Registrant) uninstallAgentCrds(ctx context.Context) error {
-	return gloomesh.Uninstaller{
-		KubeConfig:  r.KubeConfigPath,
-		KubeContext: r.RemoteContext,
-		Namespace:   r.Registration.RemoteNamespace,
-		Verbose:     r.Verbose,
-	}.UninstallAgentCrds(
-		ctx,
-	)
-}
-
-func (r *Registrant) installCertAgent(ctx context.Context) error {
-	return gloomesh.Installer{
-		HelmChartPath:  r.CertAgent.ChartPath,
-		HelmValuesPath: r.CertAgent.ChartValues,
-		KubeConfig:     r.KubeConfigPath,
-		KubeContext:    r.RemoteContext,
-		Namespace:      r.Registration.RemoteNamespace,
-		Verbose:        r.Verbose,
-	}.InstallCertAgent(
-		ctx,
-	)
+	return helm.Uninstaller{
+		KubeConfig:  r.opts.KubeConfigPath,
+		KubeContext: r.opts.RemoteContext,
+		ReleaseName: gloomesh.AgentCrdsReleaseName,
+		Namespace:   r.opts.Registration.RemoteNamespace,
+		Verbose:     r.opts.Verbose,
+	}.UninstallChart(ctx)
 }
 
 func (r *Registrant) uninstallCertAgent(ctx context.Context) error {
-	return gloomesh.Uninstaller{
-		KubeConfig:  r.KubeConfigPath,
-		KubeContext: r.RemoteContext,
-		Namespace:   r.Registration.RemoteNamespace,
-		Verbose:     r.Verbose,
-	}.UninstallCertAgent(
-		ctx,
-	)
-}
-
-func (r *Registrant) installEnterpriseAgent(ctx context.Context, enterpriseNetworkingVersion string) error {
-	if r.EnterpriseAgent.ChartPath == "" {
-		if enterpriseNetworkingVersion != "" {
-			// If we know the user's Enterprise Networking version, install the corresponding Enterprise Agent.
-			r.EnterpriseAgent.ChartPath = fmt.Sprintf(gloomesh.EnterpriseAgentChartUriTemplate, enterpriseNetworkingVersion)
-		} else {
-			return eris.New("Failed to install Enterprise Agent: no Enterprise Networking detected and no chart override provided.")
-		}
-	} else if enterpriseNetworkingVersion == "" {
-		logrus.Warn("Gloo Mesh Enterprise Networking not detected. Enterprise Agent installation will proceed because a chart " +
-			"override was provided, but Wasm features depend on the presence of Enterprise Networking.")
-	}
-
-	return gloomesh.Installer{
-		HelmChartPath:  r.EnterpriseAgent.ChartPath,
-		HelmValuesPath: r.EnterpriseAgent.ChartValues,
-		KubeConfig:     r.KubeConfigPath,
-		KubeContext:    r.RemoteContext,
-		Namespace:      r.Registration.RemoteNamespace,
-		Verbose:        r.Verbose,
-	}.InstallEnterpriseAgent(
-		ctx,
-	)
-}
-
-func (r *Registrant) uninstallEnterpriseAgent(ctx context.Context) error {
-	return gloomesh.Uninstaller{
-		KubeConfig:  r.KubeConfigPath,
-		KubeContext: r.RemoteContext,
-		Namespace:   r.Registration.RemoteNamespace,
-		Verbose:     r.Verbose,
-	}.UninstallEnterpriseAgent(
-		ctx,
-	)
+	return helm.Uninstaller{
+		KubeConfig:  r.opts.KubeConfigPath,
+		KubeContext: r.opts.RemoteContext,
+		ReleaseName: r.agentReleaseName,
+		Namespace:   r.opts.Registration.RemoteNamespace,
+		Verbose:     r.opts.Verbose,
+	}.UninstallChart(ctx)
 }
