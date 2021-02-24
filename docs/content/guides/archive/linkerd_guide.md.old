@@ -365,7 +365,7 @@ Kubernetes Mesh Services:
 +---------------------------------+-----------------+-----------+--------------+
 {{< /tab >}}
 {{< tab name="kubectl" codelang="shell" >}}
-kubectl get traffictarget -n gloo-mesh
+kubectl get destination -n gloo-mesh
 
 NAME                                             AGE
 details-bookinfo-linkerd-cluster                 15m

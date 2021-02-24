@@ -267,7 +267,7 @@ Now let's deploy a Wasm filter with a WasmDeployment:
 
 ```bash
 cat <<EOF | kubectl apply --context ${MGMT_CONTEXT} -f-
-apiVersion: networking.enterprise.mesh.gloo.solo.io/v1alpha1
+apiVersion: networking.enterprise.mesh.gloo.solo.io/v1beta1
 kind: WasmDeployment
 metadata:
   labels:

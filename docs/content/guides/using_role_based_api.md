@@ -29,7 +29,7 @@ Be sure to review the assumptions and satisfy the pre-requisites from the [Guide
 
 The role-based API in Gloo Mesh Enterprise uses a `Role` Custom Resource Definition to create Custom Resources that represent roles you would like to define. The roles are then bound to users with a `RoleBinding` CRD. 
 
-The Roles are used to target some combination of *Workloads*, *Traffic Targets*, *Meshes*, and *Virtual Meshes* and define actions the role is allowed to perform on the targets.
+The Roles are used to target some combination of *Workloads*, *Destinations*, *Meshes*, and *Virtual Meshes* and define actions the role is allowed to perform on the targets.
 
 When you install Gloo Mesh Enterprise with the default settings, the role-based API is enabled by default. This comes with an implicit **deny** on all operations that are not explicitly allowed by a Role and RoleBinding.
 
@@ -49,7 +49,7 @@ Let's try and create a network policy on our Gloo Mesh Enterprise deployment wit
 ```shell
 MGMT_CONTEXT=<your management plane cluster>
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
-apiVersion: networking.mesh.gloo.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
 metadata:
   namespace: gloo-mesh
@@ -81,7 +81,7 @@ Let's dig into some example roles starting with the admin role referenced above.
 The `full-admin-role` defined below is granting permissions to perform all actions on all scopes. Obviously this role should be treated with caution.
 
 ```yaml
-apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1alpha1
+apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1
 kind: Role
 metadata:
   name: full-admin-role
@@ -90,7 +90,7 @@ spec:
   trafficPolicyScopes:
     - trafficPolicyActions:
         - ALL
-      trafficTargetSelectors:
+      destinationSelectors:
         - kubeServiceMatcher:
             labels:
               "*": "*"
@@ -128,7 +128,7 @@ spec:
               - name: "*"
                 namespace: "*"
                 clusterName: "*"
-      trafficTargetSelectors:
+      destinationSelectors:
         - kubeServiceMatcher:
             labels:
               "*": "*"
@@ -170,7 +170,7 @@ kubectl --context $MGMT_CONTEXT apply -f full-admin-role.yaml
 Next we will create the RoleBinding for the `kubernetes-admin` user. You may need to change the username depending on the configuration of your management cluster running Gloo Mesh Enterprise.
 
 ```yaml
-apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1alpha1
+apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1
 kind: RoleBinding
 metadata:
   labels:
@@ -196,7 +196,7 @@ Now if we try to create a Gloo Mesh resource again, the result should be success
 
 ```shell
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
-apiVersion: networking.mesh.gloo.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
 metadata:
   namespace: gloo-mesh
@@ -223,30 +223,30 @@ Excellent! Let's take a look at another potential role and try binding it to a d
 
 ### Traffic Consumer Role
 
-If you've been following the guides, you should already have the bookstore app deployed. The role assignment defined below allows the assignee permissions to operate workloads that originate requests to a set of traffic targets. They are granted permissions for configuring client-side networking policies affecting the route between their workload(s) and the relevant traffic targets.
+If you've been following the guides, you should already have the bookstore app deployed. The role assignment defined below allows the assignee permissions to operate workloads that originate requests to a set of Destinations. They are granted permissions for configuring client-side networking policies affecting the route between their workload(s) and the relevant Destinations.
 
-Specifically, the role allows the TrafficPolicyActions: `RETRIES`, `REQUEST_TIMEOUT`, and `FAULT_INJECTION`. We are also using TrafficTargetSelectors to select the `ratings` service running in the `bookinfo` namespace on any registered cluster. The WorkloadSelectors configuration selects version `v1` of the app `productpage` in the namespace `bookinfo` running on any registered cluster.
+Specifically, the role allows the TrafficPolicyActions: `RETRIES`, `REQUEST_TIMEOUT`, and `FAULT_INJECTION`. We are also using DestinationSelectors to select the `ratings` service running in the `bookinfo` namespace on any registered cluster. The WorkloadSelectors configuration selects version `v1` of the app `productpage` in the namespace `bookinfo` running on any registered cluster.
 
-The Traffic Consumer Role also creates an AccessPolicyScope defining where access policies could be created, restricted by identity and traffic target. Using the Identity selector, we are restricting identities to the `productpage` service account on the `bookinfo` namespace on any registered cluster. Using the TrafficTargetSelector we are restricting traffic targets to the `ratings` service running in the `bookinfo` namespace on any registered cluster
+The Traffic Consumer Role also creates an AccessPolicyScope defining where access policies could be created, restricted by identity and Destination. Using the Identity selector, we are restricting identities to the `productpage` service account on the `bookinfo` namespace on any registered cluster. Using the DestinationSelector we are restricting Destinations to the `ratings` service running in the `bookinfo` namespace on any registered cluster
 
-The end result is that the role allows the management of AccessPolicies for a specific identity and traffic target, and allows a small number of TrafficPolicyActions on a specific service and workload. This type of fine-grained permissions could then be bound to a developer or operator responsible for managing traffic.
+The end result is that the role allows the management of AccessPolicies for a specific identity and Destination, and allows a small number of TrafficPolicyActions on a specific service and workload. This type of fine-grained permissions could then be bound to a developer or operator responsible for managing traffic.
 
 ```yaml
-apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1alpha1
+apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1
 kind: Role
 metadata:
-  name: traffic-target-consumer-role
+  name: destination-consumer-role
   namespace: gloo-mesh
 spec:
-  # A traffic target consumer has the ability to configure policies that affect the network edge between
-  # a specific workload and an upstream traffic target.
+  # A Destination consumer has the ability to configure policies that affect the network edge between
+  # a specific workload and an upstream Destination.
   trafficPolicyScopes:
     - trafficPolicyActions:
         - RETRIES
         - REQUEST_TIMEOUT
         - FAULT_INJECTION
-      trafficTargetSelectors:
-        # The absence of kubeServiceMatcher disallows selecting traffic targets by kubeServiceMatcher
+      destinationSelectors:
+        # The absence of kubeServiceMatcher disallows selecting Destinations by kubeServiceMatcher
         - kubeServiceRefs:
             services:
               - name: ratings
@@ -269,8 +269,8 @@ spec:
               - name: "productpage"
                 namespace: "bookinfo"
                 clusterName: "*"
-    - trafficTargetSelectors:
-        # The absence of kubeServiceMatcher disallows selecting traffic targets by kubeServiceMatcher
+    - destinationSelectors:
+        # The absence of kubeServiceMatcher disallows selecting Destinations by kubeServiceMatcher
         - kubeServiceRefs:
             services:
               - name: ratings
@@ -278,35 +278,35 @@ spec:
                 clusterName: "*"
 ```
 
-You can save the above role to the file `traffic-target-consumer.yaml` and deploy it with the following command:
+You can save the above role to the file `destination-consumer.yaml` and deploy it with the following command:
 
 ```shell
-kubectl --context $MGMT_CONTEXT apply -f traffic-target-consumer.yaml
+kubectl --context $MGMT_CONTEXT apply -f destination-consumer.yaml
 ```
 
 Now we can bind the role to our junior operator, Gloo.
 
 ```yaml
-apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1alpha1
+apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1
 kind: RoleBinding
 metadata:
   labels:
     app: gloo-mesh
-  name: traffic-target-consumer-role-binding
+  name: destination-consumer-role-binding
   namespace: gloo-mesh
 spec:
   roleRef:
-    name: traffic-target-consumer-role
+    name: destination-consumer-role
     namespace: gloo-mesh
   subjects:
     - kind: User
       name: Gloo
 ```
 
-You can save the above binding to the file `traffic-target-consumer-binding.yaml` and deploy it with the following command:
+You can save the above binding to the file `destination-consumer-binding.yaml` and deploy it with the following command:
 
 ```shell
-kubectl --context $MGMT_CONTEXT apply -f traffic-target-consumer-binding.yaml
+kubectl --context $MGMT_CONTEXT apply -f destination-consumer-binding.yaml
 ```
 
 ## Summary and Next Steps

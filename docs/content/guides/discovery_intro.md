@@ -15,7 +15,7 @@ In this guide we will learn about the four main discovery capabilities in the co
     - Representation of a service mesh control plane that has been discovered 
 3. **Workloads**
     - Representation of a pod that is a member of a service mesh; this is often determined by the presence of an injected proxy sidecar
-4. **TrafficTargets**
+4. **Destinations**
     - Representation of a Kubernetes service that is backed by Workload pods, e.g. pods that are a member of the service mesh
 
 
@@ -89,7 +89,7 @@ kubectl -n gloo-mesh get mesh istiod-istio-system-remote-cluster -oyaml
 (snipped for brevity)
 
 {{< highlight yaml >}}
-apiVersion: discovery.mesh.gloo.solo.io/v1alpha2
+apiVersion: discovery.mesh.gloo.solo.io/v1
 kind: Mesh
 metadata:
   annotations:
@@ -103,7 +103,7 @@ metadata:
   name: istiod-istio-system-remote-cluster
   namespace: gloo-mesh
   resourceVersion: "3218"
-  selfLink: /apis/discovery.mesh.gloo.solo.io/v1alpha2/namespaces/gloo-mesh/meshes/istiod-istio-system-remote-cluster
+  selfLink: /apis/discovery.mesh.gloo.solo.io/v1/namespaces/gloo-mesh/meshes/istiod-istio-system-remote-cluster
   uid: 7c079983-3ece-4aed-b71a-bf56c8cd6267
 spec:
   agentInfo:
@@ -150,12 +150,12 @@ reviews-v2-bookinfo-mgmt-cluster-deployment                     3m53s
 reviews-v3-bookinfo-remote-cluster-deployment                   2m
 ```
 
-### Discover Traffic Targets
+### Discover Destinations
 
 Similarly for the `bookinfo` services:
 
 ```shell
-kubectl -n gloo-mesh get traffictargets
+kubectl -n gloo-mesh get destinations
 ```
 
 ```

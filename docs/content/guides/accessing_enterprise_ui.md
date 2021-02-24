@@ -37,7 +37,7 @@ Now that you’re connected, let’s explore the UI.
 
 ## Exploring the Admin Dashboard
 
-The main page of the dashboard starts with an **Overview** of the resources under management of Gloo Mesh, such as *Clusters*, *Workloads*, and *Traffic Targets*.
+The main page of the dashboard starts with an **Overview** of the resources under management of Gloo Mesh, such as *Clusters*, *Workloads*, and *Destinations*.
 
 ![Gloo Mesh Admin Dashboard resources]({{% versioned_link_path fromRoot="/img/admin-resources.png" %}})
 
@@ -63,7 +63,7 @@ The purpose of the Admin Dashboard is to view the status of Gloo Mesh and manage
 
 ### Meshes
 
-The **Meshes** area provides a view of virtual meshes and each service mesh that is not part of a virtual mesh. You can view the health of each mesh, as well as information about traffic targets, workloads, failovers, and more.
+The **Meshes** area provides a view of virtual meshes and each service mesh that is not part of a virtual mesh. You can view the health of each mesh, as well as information about Destinations, workloads, failovers, and more.
 
 ![Gloo Mesh Admin Dashboard Meshes]({{% versioned_link_path fromRoot="/img/meshes-view.png" %}})
 
@@ -71,13 +71,13 @@ Clicking on a details link will provide in-depth information about each category
 
 ![Gloo Mesh Admin Dashboard Mesh Details]({{% versioned_link_path fromRoot="/img/meshes-details.png" %}})
 
-By clicking on one of the traffic targets in the list, we can see more information about the target's configuration, policies, and any associated workloads.
+By clicking on one of the Destinations in the list, we can see more information about the target's configuration, policies, and any associated workloads.
 
-![Gloo Mesh Admin Dashboard traffic target details]({{% versioned_link_path fromRoot="/img/traffic-target-details.png" %}})
+![Gloo Mesh Admin Dashboard Destination details]({{% versioned_link_path fromRoot="/img/destination-details.png" %}})
 
 ### Policies
 
-The **Policies** area allows us to explore the configured policy rules that have been created, and quickly assess what workloads, traffic targets, and meshes they are associated with.
+The **Policies** area allows us to explore the configured policy rules that have been created, and quickly assess what workloads, Destinations, and meshes they are associated with.
 
 ![Gloo Mesh Admin Dashboard Policies Details]({{% versioned_link_path fromRoot="/img/policies-details.png" %}})
 
