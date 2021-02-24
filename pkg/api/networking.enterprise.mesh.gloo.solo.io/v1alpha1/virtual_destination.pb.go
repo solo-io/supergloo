@@ -268,7 +268,7 @@ type VirtualDestinationStatus struct {
 	State v1alpha2.ApprovalState `protobuf:"varint,2,opt,name=state,proto3,enum=networking.mesh.gloo.solo.io.ApprovalState" json:"state,omitempty"`
 	// The status of the VirtualDestination for each Mesh to which it has been applied.
 	Meshes map[string]*v1alpha2.ApprovalStatus `protobuf:"bytes,3,rep,name=meshes,proto3" json:"meshes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// The traffic targets that comprise this Global Service.
+	// The traffic targets that comprise this Virtual Destination.
 	SelectedTrafficTargets []*VirtualDestinationStatus_SelectedTrafficTarget `protobuf:"bytes,4,rep,name=selected_traffic_targets,json=selectedTrafficTargets,proto3" json:"selected_traffic_targets,omitempty"`
 	// Any errors found while processing this generation of the resource.
 	Errors []string `protobuf:"bytes,5,rep,name=errors,proto3" json:"errors,omitempty"`

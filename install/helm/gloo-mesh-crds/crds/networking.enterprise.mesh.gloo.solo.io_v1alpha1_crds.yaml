@@ -519,7 +519,7 @@ spec:
               format: int64
               type: integer
             selectedTrafficTargets:
-              description: The traffic targets that comprise this Global Service.
+              description: The traffic targets that comprise this Virtual Destination.
               items:
                 properties:
                   ref:

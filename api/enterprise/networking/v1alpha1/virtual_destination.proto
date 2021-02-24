@@ -124,7 +124,7 @@ message VirtualDestinationStatus {
   // The status of the VirtualDestination for each Mesh to which it has been applied.
   map<string, .networking.mesh.gloo.solo.io.ApprovalStatus> meshes = 3;
 
-  // The traffic targets that comprise this Global Service.
+  // The traffic targets that comprise this Virtual Destination.
   repeated SelectedTrafficTarget selected_traffic_targets = 4;
 
   // Any errors found while processing this generation of the resource.
