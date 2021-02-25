@@ -42,7 +42,7 @@ We will install Istio with a suitable configuration for a multi-cluster demonstr
 
 Let's install Istio into both the management plane **AND** the remote cluster. The configuration below assumes that you are using the Kind clusters created in the Setup guide. The contexts for those clusters should be `kind-mgmt-cluster` and `kind-remote-cluster`. Both clusters are using a NodePort to expose the ingress gateway for Istio. If you are deploying Istio on different cluster setup, update your context and gateway settings accordingly.
 
-The manifest for Istio 1.7 is different from prior versions, so be sure to select the correct tab for the version of Istio you plan to install. The manifests below were tested using Istio 1.7.3 and 1.8.1.
+The manifest for Istio 1.7 is different from other versions, so be sure to select the correct tab for the version of Istio you plan to install. The manifests below were tested using Istio 1.7.3, 1.8.3, and 1.9.0.
 
 Before running the following, make sure your context names are set as environment variables:
 ```shell

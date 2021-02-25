@@ -29,16 +29,12 @@ meshctl cluster register \
   --remote-context $REMOTE_CONTEXT
 {{< /tab >}}
 {{< tab name="Kind (MacOS)" codelang="shell" >}}
-# Note that for MacOS, you will need to add
-# 127.0.0.1 host.docker.internal
-# to your /etc/hosts file for this address to resolve
-
-ADDRESS=host.docker.internal
+ADDRESS=$(docker inspect remote-cluster-control-plane | jq -r '.[0].NetworkSettings.Networks.kind.IPAddress')
 
 meshctl cluster register \
   --cluster-name remote-cluster \
   --remote-context $REMOTE_CONTEXT \
-  --api-server-address ${ADDRESS}
+  --api-server-address ${ADDRESS}:6443
 {{< /tab >}}
 {{< tab name="Kind (Linux)" codelang="shell" >}}
 ADDRESS=$(docker exec "remote-cluster-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')
@@ -108,19 +104,15 @@ meshctl cluster register \
   --remote-context $MGMT_CONTEXT
 {{< /tab >}}
 {{< tab name="Kind (MacOS)" codelang="shell" >}}
-# Note that for MacOS, you will need to add
-# 127.0.0.1 host.docker.internal
-# to your /etc/hosts file for this address to resolve
-
-ADDRESS=host.docker.internal
+ADDRESS=$(docker inspect mgmt-cluster-control-plane | jq -r '.[0].NetworkSettings.Networks.kind.IPAddress')
 
 meshctl cluster register \
   --cluster-name mgmt-cluster \
   --remote-context $MGMT_CONTEXT \
-  --api-server-address ${ADDRESS}
+  --api-server-address ${ADDRESS}:6443
 {{< /tab >}}
 {{< tab name="Kind (Linux)" codelang="shell" >}}
-ADDRESS=$(docker exec "remote-cluster-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')
+ADDRESS=$(docker exec "mgmt-cluster-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')
 
 meshctl cluster register \
   --cluster-name mgmt-cluster \
