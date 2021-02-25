@@ -102,7 +102,9 @@ MGMT_CONTEXT=your_management_plane_context
 You can automatically register the cluster on which you deploy Gloo Mesh (for example, if you have a mesh running there as well) with the `--register` CLI flag when you're first installing with `meshctl`.
 
 ```shell
-meshctl install --register --context $MGMT_CONTEXT
+meshctl cluster register \
+  --cluster-name mgmt-cluster \
+  --remote-context $MGMT_CONTEXT 
 ```
 
 By default, when you register like this, the cluster name will be `mgmt-cluster`. If you run the following, you should see the cluster registered:
