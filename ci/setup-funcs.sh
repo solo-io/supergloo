@@ -657,7 +657,7 @@ function register_cluster() {
   # load cert-agent image
   kind load docker-image --name "${cluster}" "${AGENT_IMAGE}"
 
-  go run "${PROJECT_ROOT}/cmd/meshctl/main.go" cluster register \
+  go run "${PROJECT_ROOT}/cmd/meshctl/main.go" cluster register community \
     --cluster-name "${cluster}" \
     --mgmt-context "kind-${mgmtCluster}" \
     --remote-context "kind-${cluster}" \
