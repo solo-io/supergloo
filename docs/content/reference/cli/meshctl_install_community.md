@@ -26,7 +26,7 @@ meshctl install community [flags]
       --kubeconfig string                path to the kubeconfig from which the management cluster will be accessed
       --kubecontext string               name of the kubeconfig context to use for the management cluster
       --namespace string                 namespace in which to install Gloo Mesh (default "gloo-mesh")
-  -r, --register                         Register the cluster running Gloo Mesh
+  -r, --register                         Register the cluster running Gloo Mesh (default: false)
       --release-name string              Helm release name (default "gloo-mesh")
       --version string                   Version to install, defaults to latest if omitted
 ```

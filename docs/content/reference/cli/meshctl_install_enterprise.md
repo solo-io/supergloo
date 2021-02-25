@@ -27,7 +27,7 @@ meshctl install enterprise [flags]
       --kubecontext string                     name of the kubeconfig context to use for the management cluster
       --license string                         Gloo Mesh Enterprise license key
       --namespace string                       namespace in which to install Gloo Mesh (default "gloo-mesh")
-  -r, --register                               Register the cluster running Gloo Mesh
+  -r, --register                               Register the cluster running Gloo Mesh (default: false)
       --release-name string                    Helm release name (default "gloo-mesh")
       --skip-rbac                              Skip installation of the RBAC Webhook
       --skip-ui                                Skip installation of the Gloo Mesh UI
