@@ -28,7 +28,6 @@ var gloomeshRbacRequirements = func() []rbacv1.PolicyRule {
 	policyRules = append(policyRules, io.SmiNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	policyRules = append(policyRules, io.CertificateIssuerInputTypes.RbacPoliciesWatch()...)
 	policyRules = append(policyRules, io.CertificateIssuerInputTypes.RbacPoliciesUpdateStatus()...)
-
 	return policyRules
 }()
 
@@ -93,21 +92,17 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 	if err := r.installAgentCrds(ctx); err != nil {
 		return err
 	}
-
 	if err := r.installAgent(ctx); err != nil {
 		return err
 	}
-
 	return r.registerCluster(ctx)
 }
 
 func (r *Registrant) registerCluster(ctx context.Context) error {
 	logrus.Debugf("registering cluster with opts %+v\n", r.opts.Registration)
-
 	if err := r.opts.Registration.RegisterCluster(ctx); err != nil {
 		return err
 	}
-
 	logrus.Infof("successfully registered cluster %v", r.opts.Registration.ClusterName)
 	return nil
 }
@@ -117,7 +112,6 @@ func (r *Registrant) installAgentCrds(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
 	return helm.Installer{
 		KubeConfig:  r.opts.KubeConfigPath,
 		KubeContext: r.opts.RemoteContext,
@@ -133,14 +127,13 @@ func (r *Registrant) installAgent(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
 	return helm.Installer{
 		KubeConfig:  r.opts.KubeConfigPath,
 		KubeContext: r.opts.RemoteContext,
 		ChartUri:    chartPath,
 		ValuesFile:  r.opts.AgentChartValues,
 		Namespace:   r.opts.Registration.RemoteNamespace,
-		ReleaseName: gloomesh.AgentCrdsReleaseName,
+		ReleaseName: r.agentReleaseName,
 		Verbose:     r.opts.Verbose,
 	}.InstallChart(ctx)
 }
@@ -154,13 +147,11 @@ func (r *Registrant) getChartPath(ctx context.Context, pathOverride, pathTemplat
 	if r.VersionOverride != "" {
 		return fmt.Sprintf(pathTemplate, r.VersionOverride), nil
 	}
-
 	// Lastly, determine version from Gloo Mesh deployment
 	version, err := r.getGlooMeshVersion(ctx)
 	if err != nil {
 		return "", err
 	}
-
 	return fmt.Sprintf(pathTemplate, version), nil
 }
 
@@ -169,13 +160,11 @@ func (r *Registrant) getGlooMeshVersion(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
 	depClient := appsv1.NewDeploymentClient(kubeClient)
 	deployments, err := depClient.ListDeployment(ctx, &client.ListOptions{Namespace: r.opts.Registration.Namespace})
 	if err != nil {
 		return "", err
 	}
-
 	// Find the (enterprise-)networking deployment and return the tag of the
 	// gloo-mesh image, in the event of multiple containers, the name of the
 	// main container will be (enterprise-)networking as well.
@@ -200,11 +189,9 @@ func (r *Registrant) DeregisterCluster(ctx context.Context) error {
 	if err := r.uninstallAgentCrds(ctx); err != nil {
 		return err
 	}
-
-	if err := r.uninstallCertAgent(ctx); err != nil {
+	if err := r.uninstallAgent(ctx); err != nil {
 		return err
 	}
-
 	return r.opts.Registration.DeregisterCluster(ctx)
 }
 
@@ -218,7 +205,7 @@ func (r *Registrant) uninstallAgentCrds(ctx context.Context) error {
 	}.UninstallChart(ctx)
 }
 
-func (r *Registrant) uninstallCertAgent(ctx context.Context) error {
+func (r *Registrant) uninstallAgent(ctx context.Context) error {
 	return helm.Uninstaller{
 		KubeConfig:  r.opts.KubeConfigPath,
 		KubeContext: r.opts.RemoteContext,

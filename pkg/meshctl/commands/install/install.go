@@ -60,7 +60,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet, agentName, agentFlagPrefix st
 	flags.StringVar(&o.releaseName, "release-name", helm.Chart.Data.Name, "Helm release name")
 	flags.StringVar(&o.version, "version", "", "Version to install, defaults to latest if omitted")
 
-	flags.BoolVarP(&o.register, "register", "r", false, "Register the cluster running Gloo Mesh")
+	flags.BoolVarP(&o.register, "register", "r", false, "Register the cluster running Gloo Mesh (default: false)")
 	flags.StringVar(&o.clusterName, "cluster-name", "mgmt-cluster",
 		"Name with which to register the cluster running Gloo Mesh, only applies if --register is also set")
 	flags.StringVar(&o.apiServerAddress, "api-server-address", "", "Swap out the address of the remote cluster's k8s API server for the value of this flag. Set this flag when the address of the cluster domain used by the Gloo Mesh is different than that specified in the local kubeconfig.")
@@ -150,6 +150,7 @@ func installCommunity(ctx context.Context, opts options) error {
 		if err != nil {
 			return eris.Wrap(err, "initializing registrant")
 		}
+		registrant.VersionOverride = opts.version
 		if err := registrant.RegisterCluster(ctx); err != nil {
 			return eris.Wrap(err, "registering management-plane cluster")
 		}
@@ -220,6 +221,7 @@ func installEnterprise(ctx context.Context, opts enterpriseOptions) error {
 			gloomesh.EnterpriseAgentReleaseName,
 			gloomesh.EnterpriseAgentChartUriTemplate,
 		)
+		registrant.VersionOverride = opts.version
 		if err != nil {
 			return eris.Wrap(err, "initializing registrant")
 		}
