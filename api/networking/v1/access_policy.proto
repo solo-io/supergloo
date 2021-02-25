@@ -24,7 +24,7 @@ message AccessPolicySpec {
     repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selector = 2;
 
     /*
-        *Optional.* A list of HTTP paths or gRPC methods to allow.
+        Optional. A list of HTTP paths or gRPC methods to allow.
         gRPC methods must be presented as fully-qualified name in the form of
         "/packageName.serviceName/methodName" and are case sensitive.
         Exact match, prefix match, and suffix match are supported for paths.
@@ -36,14 +36,14 @@ message AccessPolicySpec {
     repeated string allowed_paths = 3;
 
     /*
-        *Optional.* A list of HTTP methods to allow (e.g., "GET", "POST").
+        Optional. A list of HTTP methods to allow (e.g., "GET", "POST").
         It is ignored in gRPC case because the value is always "POST".
         If not specified, allows any method.
     */
     repeated string allowed_methods = 4;
 
     /*
-        *Optional.* A list of ports which to allow.
+        Optional. A list of ports which to allow.
         If not set any port is allowed.
     */
     repeated uint32 allowed_ports = 5;

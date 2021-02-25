@@ -1429,7 +1429,7 @@ type TrafficPolicySpec_Policy_FaultInjection_Abort struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// **Required**. HTTP status code to use to abort the request.
+	// Required. HTTP status code to use to abort the request.
 	HttpStatus int32 `protobuf:"varint,1,opt,name=http_status,json=httpStatus,proto3" json:"http_status,omitempty"`
 }
 

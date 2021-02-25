@@ -193,7 +193,7 @@ message TrafficPolicySpec {
             // Abort the request and return the specified error code back to traffic source.
             message Abort {
 
-                // **Required**. HTTP status code to use to abort the request.
+                // Required. HTTP status code to use to abort the request.
                 int32 http_status = 1;
             }
 

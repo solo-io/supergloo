@@ -44,7 +44,7 @@ type AccessPolicySpec struct {
 	// Leave empty to apply the AccessPolicy to all Destinations.
 	DestinationSelector []*v1.DestinationSelector `protobuf:"bytes,2,rep,name=destination_selector,json=destinationSelector,proto3" json:"destination_selector,omitempty"`
 	//
-	//Optional.* A list of HTTP paths or gRPC methods to allow.
+	//Optional. A list of HTTP paths or gRPC methods to allow.
 	//gRPC methods must be presented as fully-qualified name in the form of
 	//"/packageName.serviceName/methodName" and are case sensitive.
 	//Exact match, prefix match, and suffix match are supported for paths.
@@ -54,12 +54,12 @@ type AccessPolicySpec struct {
 	//If not specified, allow any path.
 	AllowedPaths []string `protobuf:"bytes,3,rep,name=allowed_paths,json=allowedPaths,proto3" json:"allowed_paths,omitempty"`
 	//
-	//Optional.* A list of HTTP methods to allow (e.g., "GET", "POST").
+	//Optional. A list of HTTP methods to allow (e.g., "GET", "POST").
 	//It is ignored in gRPC case because the value is always "POST".
 	//If not specified, allows any method.
 	AllowedMethods []string `protobuf:"bytes,4,rep,name=allowed_methods,json=allowedMethods,proto3" json:"allowed_methods,omitempty"`
 	//
-	//Optional.* A list of ports which to allow.
+	//Optional. A list of ports which to allow.
 	//If not set any port is allowed.
 	AllowedPorts []uint32 `protobuf:"varint,5,rep,packed,name=allowed_ports,json=allowedPorts,proto3" json:"allowed_ports,omitempty"`
 }

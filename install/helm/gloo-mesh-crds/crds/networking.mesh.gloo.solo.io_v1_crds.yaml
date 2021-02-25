@@ -251,7 +251,7 @@ spec:
                       description: Abort the request and return the specified error code back to traffic source.
                       properties:
                         httpStatus:
-                          description: '**Required**. HTTP status code to use to abort the request.'
+                          description: Required. HTTP status code to use to abort the request.
                           format: int32
                           type: integer
                       type: object
@@ -572,7 +572,7 @@ spec:
           properties:
             allowedMethods:
               description: |-
-                *Optional.* A list of HTTP methods to allow (e.g., "GET", "POST").
+                Optional. A list of HTTP methods to allow (e.g., "GET", "POST").
                        It is ignored in gRPC case because the value is always "POST".
                        If not specified, allows any method.
               items:
@@ -580,7 +580,7 @@ spec:
               type: array
             allowedPaths:
               description: |-
-                *Optional.* A list of HTTP paths or gRPC methods to allow.
+                Optional. A list of HTTP paths or gRPC methods to allow.
                        gRPC methods must be presented as fully-qualified name in the form of
                        "/packageName.serviceName/methodName" and are case sensitive.
                        Exact match, prefix match, and suffix match are supported for paths.
@@ -593,7 +593,7 @@ spec:
               type: array
             allowedPorts:
               description: |-
-                *Optional.* A list of ports which to allow.
+                Optional. A list of ports which to allow.
                        If not set any port is allowed.
               items:
                 maximum: 4294967295

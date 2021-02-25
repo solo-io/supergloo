@@ -190,7 +190,7 @@ Abort the request and return the specified error code back to traffic source.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| httpStatus | int32 |  | Required**. HTTP status code to use to abort the request. |
+| httpStatus | int32 |  | Required. HTTP status code to use to abort the request. |
   
 
 

@@ -38,9 +38,9 @@ Grants communication permission between selected identities (i.e. traffic source
 | ----- | ---- | ----- | ----------- |
 | sourceSelector | [][common.mesh.gloo.solo.io.IdentitySelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.IdentitySelector" >}}) | repeated | Specify the identities of Workloads (i.e. traffic sources) for which to apply this AccessPolicy. Leave empty to apply the AccessPolicy to all Workloads colocated in the destination's Mesh. |
   | destinationSelector | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | Specify the Destinations for which to apply this AccessPolicy. Leave empty to apply the AccessPolicy to all Destinations. |
-  | allowedPaths | []string | repeated | Optional.* A list of HTTP paths or gRPC methods to allow. gRPC methods must be presented as fully-qualified name in the form of "/packageName.serviceName/methodName" and are case sensitive. Exact match, prefix match, and suffix match are supported for paths. For example, the path "/books/review" matches "/books/review" (exact match), "*books/" (suffix match), or "/books*" (prefix match).<br>If not specified, allow any path. |
-  | allowedMethods | []string | repeated | Optional.* A list of HTTP methods to allow (e.g., "GET", "POST"). It is ignored in gRPC case because the value is always "POST". If not specified, allows any method. |
-  | allowedPorts | []uint32 | repeated | Optional.* A list of ports which to allow. If not set any port is allowed. |
+  | allowedPaths | []string | repeated | Optional. A list of HTTP paths or gRPC methods to allow. gRPC methods must be presented as fully-qualified name in the form of "/packageName.serviceName/methodName" and are case sensitive. Exact match, prefix match, and suffix match are supported for paths. For example, the path "/books/review" matches "/books/review" (exact match), "*books/" (suffix match), or "/books*" (prefix match).<br>If not specified, allow any path. |
+  | allowedMethods | []string | repeated | Optional. A list of HTTP methods to allow (e.g., "GET", "POST"). It is ignored in gRPC case because the value is always "POST". If not specified, allows any method. |
+  | allowedPorts | []uint32 | repeated | Optional. A list of ports which to allow. If not set any port is allowed. |
   
 
 

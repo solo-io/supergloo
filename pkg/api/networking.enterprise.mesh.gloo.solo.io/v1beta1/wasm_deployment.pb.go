@@ -379,7 +379,7 @@ type UriSource struct {
 
 	// The HTTP URI from which to fetch the filter.
 	Uri string `protobuf:"bytes,1,opt,name=uri,proto3" json:"uri,omitempty"`
-	// **Required**. The Sha256 Checksum of the filter binary (will be verified by the proxy).
+	// Required. The Sha256 Checksum of the filter binary (will be verified by the proxy).
 	Sha string `protobuf:"bytes,2,opt,name=sha,proto3" json:"sha,omitempty"`
 }
 

@@ -59,7 +59,7 @@ Specify options for fetching WASM Filters from an HTTP URI.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | uri | string |  | The HTTP URI from which to fetch the filter. |
-  | sha | string |  | Required**. The Sha256 Checksum of the filter binary (will be verified by the proxy). |
+  | sha | string |  | Required. The Sha256 Checksum of the filter binary (will be verified by the proxy). |
   
 
 

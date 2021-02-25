@@ -109,7 +109,7 @@ message UriSource {
     // The HTTP URI from which to fetch the filter.
     string uri = 1;
 
-    // **Required**. The Sha256 Checksum of the filter binary (will be verified by the proxy).
+    // Required. The Sha256 Checksum of the filter binary (will be verified by the proxy).
     string sha = 2;
 }
 

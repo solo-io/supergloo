@@ -72,7 +72,7 @@ message VirtualDestinationSpec {
 
         // The list of Destinations backing the VirtualDestination, ordered by decreasing priority.
         // All Destinations must be either in the same Mesh or in Meshes that are grouped under a common VirtualMesh.
-        // **Required**, cannot be omitted.
+        // Required, cannot be omitted.
         repeated BackingDestination destinations = 1;
     }
 
@@ -85,7 +85,7 @@ message VirtualDestinationSpec {
         // Selectors for the Destinations backing the VirtualDestination.
         // All Destinations must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
         // Currently only one Destination per cluster can be selected, more than one per cluster will be considered invalid.
-        // **Required**, cannot be omitted.
+        // Required, cannot be omitted.
         repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selectors = 1;
 
         // Directives describing the locality failover behavior.

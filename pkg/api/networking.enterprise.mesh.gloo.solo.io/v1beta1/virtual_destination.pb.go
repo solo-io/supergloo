@@ -459,7 +459,7 @@ type VirtualDestinationSpec_BackingDestinationList struct {
 
 	// The list of Destinations backing the VirtualDestination, ordered by decreasing priority.
 	// All Destinations must be either in the same Mesh or in Meshes that are grouped under a common VirtualMesh.
-	// **Required**, cannot be omitted.
+	// Required, cannot be omitted.
 	Destinations []*BackingDestination `protobuf:"bytes,1,rep,name=destinations,proto3" json:"destinations,omitempty"`
 }
 
@@ -514,7 +514,7 @@ type VirtualDestinationSpec_LocalityConfig struct {
 	// Selectors for the Destinations backing the VirtualDestination.
 	// All Destinations must be either in the same mesh or in meshes that are grouped under a common VirtualMesh.
 	// Currently only one Destination per cluster can be selected, more than one per cluster will be considered invalid.
-	// **Required**, cannot be omitted.
+	// Required, cannot be omitted.
 	DestinationSelectors []*v11.DestinationSelector `protobuf:"bytes,1,rep,name=destination_selectors,json=destinationSelectors,proto3" json:"destination_selectors,omitempty"`
 	// Directives describing the locality failover behavior.
 	FailoverDirectives []*VirtualDestinationSpec_LocalityConfig_LocalityFailoverDirective `protobuf:"bytes,2,rep,name=failover_directives,json=failoverDirectives,proto3" json:"failover_directives,omitempty"`
