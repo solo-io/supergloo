@@ -93,28 +93,11 @@ remote-cluster-gloomesh-remote-access-clusterrole-binding   13m
 
 #### Register the management cluster
 
-There are multiple ways to register the management cluster. Again, let's store the name of the cluster context in a variable:
+First, let's store the name of the management cluster context in a variable:
 
 ```shell
 MGMT_CONTEXT=your_management_plane_context
 ```
-
-You can automatically register the cluster on which you deploy Gloo Mesh (for example, if you have a mesh running there as well) with the `--register` CLI flag when you're first installing with `meshctl`.
-
-```shell
-meshctl install --register --context $MGMT_CONTEXT
-```
-
-By default, when you register like this, the cluster name will be `mgmt-cluster`. If you run the following, you should see the cluster registered:
-
-```shell
-kubectl get kubernetescluster -n gloo-mesh
-
-NAMESPACE          NAME               AGE
-gloo-mesh          mgmt-cluster       10s
-```
-
-If you choose not to register the management cluster during installation, you can always register the cluster using the `meshctl cluster register` command we used in the previous section.
 
 Select the *Kind* tab if you are running Kubernetes in Docker.
 
@@ -124,12 +107,20 @@ meshctl cluster register \
   --cluster-name mgmt-cluster \
   --remote-context $MGMT_CONTEXT
 {{< /tab >}}
-{{< tab name="Kind" codelang="shell" >}}
-# For macOS
+{{< tab name="Kind (MacOS)" codelang="shell" >}}
+# Note that for MacOS, you will need to add
+# 127.0.0.1 host.docker.internal
+# to your /etc/hosts file for this address to resolve
+
 ADDRESS=host.docker.internal
 
-# For Linux
-ADDRESS=$(docker exec "mgmt-cluster-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')
+meshctl cluster register \
+  --cluster-name mgmt-cluster \
+  --remote-context $MGMT_CONTEXT \
+  --api-server-address ${ADDRESS}
+{{< /tab >}}
+{{< tab name="Kind (Linux)" codelang="shell" >}}
+ADDRESS=$(docker exec "remote-cluster-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')
 
 meshctl cluster register \
   --cluster-name mgmt-cluster \
