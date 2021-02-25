@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1296
+    description: Update cluster registration doc to reference the management cluster correctly.
