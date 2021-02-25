@@ -16,7 +16,7 @@ Istio builds.
 
 To install Gloo Mesh Istio, simply override the `tag` and `hub` parameters on the [Istio Operator](https://istio.io/latest/docs/reference/config/istio.operator.v1alpha1/)
 resource at install time. The `hub` value must equal `gcr.io/istio-enterprise` and the `tag` value should equal the
-desired tag of Gloo Mesh Istio. For example, use tag `1.7.5-fips1` to install Gloo Mesh Istio builds that are compliant
+desired tag of Gloo Mesh Istio. For example, use tag `1.7.5-fips2` to install Gloo Mesh Istio builds that are compliant
 with Federal Information Processing Standards.
 
 The following install commands are lifted from the [Installing Istio Multicluster guide]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}),
@@ -34,7 +34,7 @@ spec:
   # This value is required for Gloo Mesh Istio
   hub: gcr.io/istio-enterprise
   # This value can be any Gloo Mesh Istio tag
-  tag: 1.7.5-fips1
+  tag: 1.7.5-fips2
   profile: minimal
   addonComponents:
     istiocoredns:
