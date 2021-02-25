@@ -160,15 +160,6 @@ spec:
               - name: "*"
                 namespace: "*"
                 clusterName: "*"
-  failoverServiceScopes:
-    - meshRefs:
-        - name: "*"
-          namespace: "*"
-      backingServices:
-        - kubeService:
-            name: "*"
-            namespace: "*"
-            clusterName: "*"
 ```
 
 This role allows complete access for configuring any aspect of any service mesh entity.
@@ -234,20 +225,11 @@ spec:
               - name: "*"
                 namespace: "*"
                 clusterName: "mgmt-cluster"
-  failoverServiceScopes:
-    - meshRefs:
-        - name: istiod-istio-system-mgmt-cluster
-          namespace: gloo-mesh
-      backingServices:
-        - kubeService:
-            name: "*"
-            namespace: "*"
-            clusterName: "*"
 ```
 
 Assuming that the `istiod-istio-system-mgmt-cluster` mesh is the only control plane present on the `mgmt-cluster` cluster, this role allows access 
 for configuring TrafficPolicies and AccessPolicies that affect only Destinations controlled by the 
-`istiod-istio-system-mgmt-cluster` mesh, and only FailoverServices that exist on that mesh.
+`istiod-istio-system-mgmt-cluster` mesh.
 
 **Destination Publisher**
 
@@ -283,7 +265,6 @@ spec:
           clusters:
             - "*"
   # An empty virtualMeshScopes field means that no virtual mesh actions are allowed
-  # An empty failoverServiceScopes field means that no failover services can be applied by this role bearer
   accessPolicyScopes:
     - identitySelectors:
         - kubeServiceAccountRefs:
@@ -338,7 +319,6 @@ spec:
           clusters:
             - "*"
   # An empty virtualMeshScopes field means that no virtual mesh actions are allowed
-  # An empty failoverServiceScopes field means that no failover services can be applied by this role bearer
   accessPolicyScopes:
     - identitySelectors:
         - kubeServiceAccountRefs:
