@@ -104,7 +104,7 @@ func (t *translator) isIstioDestination(
 ) bool {
 	meshRef := destination.Spec.GetMesh()
 	if meshRef == nil {
-		if _, ok := destination.Spec.Type.(*discoveryv1.DiscoverySpec_KubeService_); ok {
+		if _, ok := destination.Spec.Type.(*discoveryv1.DestinationSpec_KubeService_); ok {
 			// Is KubeService, MeshRef is required
 			contextutils.LoggerFrom(ctx).Errorf("internal error: KubeService destination %v missing mesh ref", sets.Key(destination))
 		} else {
