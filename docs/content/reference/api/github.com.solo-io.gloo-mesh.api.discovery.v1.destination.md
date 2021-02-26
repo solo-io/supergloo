@@ -27,6 +27,7 @@ title: "destination.proto"
   - [DestinationSpec.KubeService.EndpointsSubset](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset)
   - [DestinationSpec.KubeService.EndpointsSubset.Endpoint](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint)
   - [DestinationSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry)
+  - [DestinationSpec.KubeService.EndpointsSubset.Endpoint.SubLocality](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.SubLocality)
   - [DestinationSpec.KubeService.KubeServicePort](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.KubeServicePort)
   - [DestinationSpec.KubeService.LabelsEntry](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.LabelsEntry)
   - [DestinationSpec.KubeService.Subset](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.Subset)
@@ -36,7 +37,6 @@ title: "destination.proto"
   - [DestinationStatus.AppliedAccessPolicy](#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy)
   - [DestinationStatus.AppliedFederation](#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation)
   - [DestinationStatus.AppliedTrafficPolicy](#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy)
-  - [SubLocality](#discovery.mesh.gloo.solo.io.SubLocality)
 
 
 
@@ -176,7 +176,7 @@ An endpoint exposed by this service.
 | ----- | ---- | ----- | ----------- |
 | ipAddress | string |  |  |
   | labels | [][discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry" >}}) | repeated | Labels which belong to this IP. These are taken from the backing workload instance. |
-  | subLocality | [discovery.mesh.gloo.solo.io.SubLocality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.SubLocality" >}}) |  | The zone and sub-zone (if controlled by Istio) of the endpoint. |
+  | subLocality | [discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.SubLocality]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.SubLocality" >}}) |  | The zone and sub-zone (if controlled by Istio) of the endpoint. |
   
 
 
@@ -193,6 +193,22 @@ An endpoint exposed by this service.
 | ----- | ---- | ----- | ----------- |
 | key | string |  |  |
   | value | string |  |  |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.SubLocality"></a>
+
+### DestinationSpec.KubeService.EndpointsSubset.Endpoint.SubLocality
+A subdivision of a region representing a set of physically colocated compute resources.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| zone | string |  | A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information. |
+  | subZone | string |  | A subdivision of zone. Only applies to Istio-controlled Destinations, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information. |
   
 
 
@@ -344,22 +360,6 @@ Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/git
 | ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the TrafficPolicy object. |
   | observedGeneration | int64 |  | The observed generation of the accepted TrafficPolicy. |
   | spec | [networking.mesh.gloo.solo.io.TrafficPolicySpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec" >}}) |  | The spec of the last known valid TrafficPolicy. |
-  
-
-
-
-
-
-<a name="discovery.mesh.gloo.solo.io.SubLocality"></a>
-
-### SubLocality
-A subdivision of a region representing a set of physically colocated compute resources.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| zone | string |  | A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information. |
-  | subZone | string |  | A subdivision of zone. Only applies to Istio-controlled Destinations, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information. |
   
 
 

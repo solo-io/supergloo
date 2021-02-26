@@ -6,13 +6,14 @@ import (
 
 	"github.com/Masterminds/semver"
 	envoy_api_v2_listener "github.com/envoyproxy/go-control-plane/envoy/api/v2/listener"
+	envoy_config_listener_v3 "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
 	"github.com/gogo/protobuf/types"
 	"github.com/rotisserie/eris"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
-	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
@@ -42,7 +43,7 @@ import (
 const (
 	// NOTE(ilackarms): we may want to support federating over non-tls port at some point.
 	defaultGatewayProtocol = "TLS"
-	defaultGatewayPortName = "tls"
+	DefaultGatewayPortName = "tls"
 
 	envoySniClusterFilterName        = "envoy.filters.network.sni_cluster"
 	envoyTcpClusterRewriteFilterName = "envoy.filters.network.tcp_cluster_rewrite"
@@ -159,7 +160,7 @@ func (t *translator) Translate(
 
 	// istio gateway names must be DNS-1123 labels
 	// hyphens are legal, dots are not, so we convert here
-	gwName := kubeutils.SanitizeNameV2(fmt.Sprintf("%v-%v", virtualMesh.Ref.Name, virtualMesh.Ref.Namespace))
+	gwName := BuildGatewayName(virtualMesh)
 	gw := &networkingv1alpha3.Gateway{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        gwName,
@@ -172,7 +173,7 @@ func (t *translator) Translate(
 				Port: &networkingv1alpha3spec.Port{
 					Number:   ingressGateway.TlsContainerPort,
 					Protocol: defaultGatewayProtocol,
-					Name:     defaultGatewayPortName,
+					Name:     DefaultGatewayPortName,
 				},
 				Hosts: []string{"*." + federatedHostnameSuffix},
 				Tls: &networkingv1alpha3spec.ServerTLSSettings{
@@ -183,11 +184,38 @@ func (t *translator) Translate(
 		},
 	}
 
-	ef := &networkingv1alpha3.EnvoyFilter{
+	ef := BuildTcpRewriteEnvoyFilter(
+		ingressGateway,
+		istioMesh.GetInstallation(),
+		tcpRewritePatch,
+		fmt.Sprintf("%v.%v", virtualMesh.Ref.Name, virtualMesh.Ref.Namespace),
+	)
+
+	// Append the virtual mesh as a parent to each output resource
+	metautils.AppendParent(t.ctx, gw, virtualMesh.GetRef(), networkingv1.VirtualMesh{}.GVK())
+	metautils.AppendParent(t.ctx, ef, virtualMesh.GetRef(), networkingv1.VirtualMesh{}.GVK())
+
+	outputs.AddGateways(gw)
+	outputs.AddEnvoyFilters(ef)
+}
+
+func BuildGatewayName(virtualMesh *discoveryv1.MeshStatus_AppliedVirtualMesh) string {
+	return kubeutils.SanitizeNameV2(
+		fmt.Sprintf("%s-%s", virtualMesh.GetRef().GetName(), virtualMesh.GetRef().GetNamespace()),
+	)
+}
+
+func BuildTcpRewriteEnvoyFilter(
+	ingressGateway *discoveryv1.MeshSpec_Istio_IngressGatewayInfo,
+	istioInstallation *discoveryv1.MeshSpec_MeshInstallation,
+	tcpRewritePatch *types.Struct,
+	name string,
+) *networkingv1alpha3.EnvoyFilter {
+	return &networkingv1alpha3.EnvoyFilter{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        fmt.Sprintf("%v.%v", virtualMesh.Ref.Name, virtualMesh.Ref.Namespace),
-			Namespace:   istioNamespace,
-			ClusterName: istioCluster,
+			Name:        name,
+			Namespace:   istioInstallation.GetNamespace(),
+			ClusterName: istioInstallation.GetCluster(),
 			Labels:      metautils.TranslatedObjectLabels(),
 		},
 		Spec: networkingv1alpha3spec.EnvoyFilter{
@@ -215,13 +243,6 @@ func (t *translator) Translate(
 			}},
 		},
 	}
-
-	// Append the VirtualMesh as a parent to each output resource
-	metautils.AppendParent(t.ctx, gw, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
-	metautils.AppendParent(t.ctx, ef, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
-
-	outputs.AddGateways(gw)
-	outputs.AddEnvoyFilters(ef)
 }
 
 // translateKubeServiceDestination takes a KubeService Destination and adds a ServiceEntry
@@ -324,20 +345,20 @@ func (t *translator) translateKubeServiceDestination(
 		}
 
 		// Append the virtual mesh as a parent to the output service entry
-		metautils.AppendParent(t.ctx, se, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
+		metautils.AppendParent(t.ctx, se, virtualMesh.GetRef(), networkingv1.VirtualMesh{}.GVK())
 
 		outputs.AddServiceEntries(se)
 
 		// Translate VirtualServices for federated Destinations, can be nil
 		vs := t.virtualServiceTranslator.Translate(t.ctx, in, destination, istioMesh.Installation, reporter)
 		// Append the virtual mesh as a parent to the output virtual service
-		metautils.AppendParent(t.ctx, vs, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
+		metautils.AppendParent(t.ctx, vs, virtualMesh.GetRef(), networkingv1.VirtualMesh{}.GVK())
 		outputs.AddVirtualServices(vs)
 
 		// Translate DestinationRules for federated Destinations, can be nil
 		dr := t.destinationRuleTranslator.Translate(t.ctx, in, destination, istioMesh.Installation, reporter)
 		// Append the virtual mesh as a parent to the output destination rule
-		metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
+		metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), networkingv1.VirtualMesh{}.GVK())
 		outputs.AddDestinationRules(dr)
 
 		// Update AppliedFederation data on a Destination's status
@@ -402,6 +423,19 @@ func buildTcpRewritePatch(
 	clusterDomain string,
 	federatedHostnameSuffix string,
 ) (*types.Struct, error) {
+	if clusterDomain == "" {
+		clusterDomain = defaults.DefaultClusterDomain
+	}
+	clusterPattern := fmt.Sprintf("\\.%s.%s$", clusterName, federatedHostnameSuffix)
+	clusterReplacement := "." + clusterDomain
+	return BuildTcpRewritePatch(istioMesh, clusterPattern, clusterReplacement)
+}
+
+// BuildTcpRewritePatch Public to be used in enterprise
+func BuildTcpRewritePatch(
+	istioMesh *discoveryv1.MeshSpec_Istio,
+	clusterPattern, clusterReplacement string,
+) (*types.Struct, error) {
 	version, err := semver.NewVersion(istioMesh.Installation.Version)
 	if err != nil {
 		return nil, err
@@ -412,38 +446,33 @@ func buildTcpRewritePatch(
 	}
 	// If Istio version less than 1.7.x, use untyped config
 	if constraint.Check(version) {
-		return buildTcpRewritePatchAsConfig(clusterName, clusterDomain, federatedHostnameSuffix)
+		return buildTcpRewritePatchAsConfig(clusterPattern, clusterReplacement)
+
 	}
 	// If Istio version >= 1.7.x, used typed config
-	return buildTcpRewritePatchAsTypedConfig(clusterName, clusterDomain, federatedHostnameSuffix)
+	return buildTcpRewritePatchAsTypedConfig(clusterPattern, clusterReplacement)
 }
 
-func buildTcpRewritePatchAsTypedConfig(clusterName, clusterDomain, federatedHostnameSuffix string) (*types.Struct, error) {
-	if clusterDomain == "" {
-		clusterDomain = defaults.DefaultClusterDomain
-	}
+func buildTcpRewritePatchAsTypedConfig(clusterPattern, clusterReplacement string) (*types.Struct, error) {
 	tcpClusterRewrite, err := protoutils.MessageToAnyWithError(&v2alpha1.TcpClusterRewrite{
-		ClusterPattern:     fmt.Sprintf("\\.%s.%s$", clusterName, federatedHostnameSuffix),
-		ClusterReplacement: "." + clusterDomain,
+		ClusterPattern:     clusterPattern,
+		ClusterReplacement: clusterReplacement,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return protoutils.GolangMessageToGogoStruct(&envoy_api_v2_listener.Filter{
+	return protoutils.GolangMessageToGogoStruct(&envoy_config_listener_v3.Filter{
 		Name: envoyTcpClusterRewriteFilterName,
-		ConfigType: &envoy_api_v2_listener.Filter_TypedConfig{
+		ConfigType: &envoy_config_listener_v3.Filter_TypedConfig{
 			TypedConfig: tcpClusterRewrite,
 		},
 	})
 }
 
-func buildTcpRewritePatchAsConfig(clusterName, clusterDomain, federatedHostnameSuffix string) (*types.Struct, error) {
-	if clusterDomain == "" {
-		clusterDomain = defaults.DefaultClusterDomain
-	}
+func buildTcpRewritePatchAsConfig(clusterPattern, clusterReplacement string) (*types.Struct, error) {
 	tcpRewrite, err := protoutils.GogoMessageToGolangStruct(&v2alpha1.TcpClusterRewrite{
-		ClusterPattern:     fmt.Sprintf("\\.%s.%s$", clusterName, federatedHostnameSuffix),
-		ClusterReplacement: "." + clusterDomain,
+		ClusterPattern:     clusterPattern,
+		ClusterReplacement: clusterReplacement,
 	})
 	if err != nil {
 		return nil, err

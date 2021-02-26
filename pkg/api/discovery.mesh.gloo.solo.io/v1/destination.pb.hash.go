@@ -110,30 +110,6 @@ func (m *DestinationSpec) Hash(hasher hash.Hash64) (uint64, error) {
 }
 
 // Hash function
-func (m *SubLocality) Hash(hasher hash.Hash64) (uint64, error) {
-	if m == nil {
-		return 0, nil
-	}
-	if hasher == nil {
-		hasher = fnv.New64()
-	}
-	var err error
-	if _, err = hasher.Write([]byte("discovery.mesh.gloo.solo.io.github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1.SubLocality")); err != nil {
-		return 0, err
-	}
-
-	if _, err = hasher.Write([]byte(m.GetZone())); err != nil {
-		return 0, err
-	}
-
-	if _, err = hasher.Write([]byte(m.GetSubZone())); err != nil {
-		return 0, err
-	}
-
-	return hasher.Sum64(), nil
-}
-
-// Hash function
 func (m *DestinationStatus) Hash(hasher hash.Hash64) (uint64, error) {
 	if m == nil {
 		return 0, nil
@@ -662,6 +638,30 @@ func (m *DestinationSpec_KubeService_EndpointsSubset_Endpoint) Hash(hasher hash.
 				return 0, err
 			}
 		}
+	}
+
+	return hasher.Sum64(), nil
+}
+
+// Hash function
+func (m *DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality) Hash(hasher hash.Hash64) (uint64, error) {
+	if m == nil {
+		return 0, nil
+	}
+	if hasher == nil {
+		hasher = fnv.New64()
+	}
+	var err error
+	if _, err = hasher.Write([]byte("discovery.mesh.gloo.solo.io.github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1.DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality")); err != nil {
+		return 0, err
+	}
+
+	if _, err = hasher.Write([]byte(m.GetZone())); err != nil {
+		return 0, err
+	}
+
+	if _, err = hasher.Write([]byte(m.GetSubZone())); err != nil {
+		return 0, err
 	}
 
 	return hasher.Sum64(), nil
