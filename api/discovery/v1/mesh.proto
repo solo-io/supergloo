@@ -144,12 +144,6 @@ message MeshSpec {
         // determined from the value of the [Kubernetes region topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesioregion)
         // on any Kubernetes node associated with the cluster of this mesh.
         string region = 5;
-
-        // List of zone and sub zone pairs for this mesh.
-        // Zone is determined from the value of the [Kubernetes zone topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone),
-        // on any Kubernetes node associated with the cluster of this mesh.
-        // Sub zones only apply to Istio meshes, [see their documentation](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
-        repeated SubLocality sub_localities = 6;
     }
 
     // Describes the Gloo Mesh agent which may be installed

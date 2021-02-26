@@ -85,22 +85,22 @@ message DestinationSpec {
                 // Labels which belong to this IP. These are taken from the backing workload instance.
                 map<string, string> labels = 2;
 
+                // A subdivision of a region representing a set of physically colocated compute resources.
+                message SubLocality {
+
+                    // A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
+                    string zone = 1;
+
+                    // A subdivision of zone. Only applies to Istio-controlled Destinations, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
+                    string sub_zone = 2;
+                }
+
                 // The zone and sub-zone (if controlled by Istio) of the endpoint.
                 SubLocality sub_locality = 3;
             }
         }
     }
 
-}
-
-// A subdivision of a region representing a set of physically colocated compute resources.
-message SubLocality {
-
-    // A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
-    string zone = 1;
-
-    // A subdivision of zone. Only applies to Istio-controlled Destinations, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
-    string sub_zone = 2;
 }
 
 message DestinationStatus {
