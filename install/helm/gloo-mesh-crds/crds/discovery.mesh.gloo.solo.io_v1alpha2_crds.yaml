@@ -38,9 +38,8 @@ spec:
               properties:
                 endpointSubsets:
                   description: |-
-                    Each endpoints subset is a group of endpoint arranged in terms of ip/port pairs.
-                    This API mirrors the kubernetes Endpoints API.
-                    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core
+                    Each endpoints subset is a group of endpoints arranged in terms of IP/port pairs.
+                    This API mirrors the [Kubernetes Endpoints API](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#endpoints-v1-core).
                   items:
                     properties:
                       endpoints:
@@ -52,7 +51,15 @@ spec:
                             labels:
                               additionalProperties:
                                 type: string
-                              description: Labels which belong to this IP, these are taken from the backing workload instance.
+                              description: Labels which belong to this IP. These are taken from the backing workload instance.
+                              type: object
+                            subLocality:
+                              description: The zone/sub-zone of the endpoint.
+                              properties:
+                                subZone:
+                                  type: string
+                                zone:
+                                  type: string
                               type: object
                           type: object
                         type: array
@@ -111,6 +118,11 @@ spec:
                       description: namespace of the resource being referenced
                       type: string
                   type: object
+                region:
+                  description: |-
+                    The region the service resides in, typically representing a large geographic area.
+                    All of the service's endpoints will be in this region.
+                  type: string
                 subsets:
                   additionalProperties:
                     properties:
@@ -817,10 +829,14 @@ spec:
                                     - kubeService
                                   - required:
                                     - failoverService
+                                  - required:
+                                    - virtualDestination
                               - required:
                                 - kubeService
                               - required:
                                 - failoverService
+                              - required:
+                                - virtualDestination
                               properties:
                                 failoverService:
                                   description: A traffic shift destination targeting a FailoverService.
@@ -858,6 +874,21 @@ spec:
                                       additionalProperties:
                                         type: string
                                       description: Subset routing is currently only supported on Istio.
+                                      type: object
+                                  type: object
+                                virtualDestination:
+                                  description: A traffic shift destination targeting a VirtualDestination.
+                                  properties:
+                                    name:
+                                      description: The name of the VirtualDestination.
+                                      type: string
+                                    namespace:
+                                      description: The namespace of the VirtualDestination.
+                                      type: string
+                                    subset:
+                                      additionalProperties:
+                                        type: string
+                                      description: Subset routing is currently only supported for Istio backing services.
                                       type: object
                                   type: object
                                 weight:
@@ -1139,6 +1170,19 @@ spec:
                         type: string
                       description: the labels on the control plane pods (read from the deployment)
                       type: object
+                    region:
+                      description: The region of the cluster in which the control plane has been installed.
+                      type: string
+                    subLocalities:
+                      description: List of zone+sub_zone pairs which this mesh is a part of
+                      items:
+                        properties:
+                          subZone:
+                            type: string
+                          zone:
+                            type: string
+                        type: object
+                      type: array
                     version:
                       description: |-
                         Version of the Mesh that has been installed.
@@ -1215,6 +1259,19 @@ spec:
                         type: string
                       description: the labels on the control plane pods (read from the deployment)
                       type: object
+                    region:
+                      description: The region of the cluster in which the control plane has been installed.
+                      type: string
+                    subLocalities:
+                      description: List of zone+sub_zone pairs which this mesh is a part of
+                      items:
+                        properties:
+                          subZone:
+                            type: string
+                          zone:
+                            type: string
+                        type: object
+                      type: array
                     version:
                       description: |-
                         Version of the Mesh that has been installed.
@@ -1246,6 +1303,19 @@ spec:
                         type: string
                       description: the labels on the control plane pods (read from the deployment)
                       type: object
+                    region:
+                      description: The region of the cluster in which the control plane has been installed.
+                      type: string
+                    subLocalities:
+                      description: List of zone+sub_zone pairs which this mesh is a part of
+                      items:
+                        properties:
+                          subZone:
+                            type: string
+                          zone:
+                            type: string
+                        type: object
+                      type: array
                     version:
                       description: |-
                         Version of the Mesh that has been installed.
@@ -1270,6 +1340,19 @@ spec:
                         type: string
                       description: the labels on the control plane pods (read from the deployment)
                       type: object
+                    region:
+                      description: The region of the cluster in which the control plane has been installed.
+                      type: string
+                    subLocalities:
+                      description: List of zone+sub_zone pairs which this mesh is a part of
+                      items:
+                        properties:
+                          subZone:
+                            type: string
+                          zone:
+                            type: string
+                        type: object
+                      type: array
                     version:
                       description: |-
                         Version of the Mesh that has been installed.
@@ -1360,6 +1443,31 @@ spec:
                             description: Protocol of the requests sent to the FailoverService, must be one of HTTP, HTTPS, GRPC, HTTP2, MONGO, TCP, TLS.
                             type: string
                         type: object
+                    type: object
+                type: object
+              type: array
+            appliedVirtualDestinations:
+              description: The FailoverServices, if any, which applies to this mesh.
+              items:
+                properties:
+                  errors:
+                    description: Any errors encountered while processing the referenced VirtualDestination object.
+                    items:
+                      type: string
+                    type: array
+                  observedGeneration:
+                    description: The observed generation of the accepted VirtualDestination.
+                    format: int64
+                    type: integer
+                  ref:
+                    description: Reference to the VirtualDestination.
+                    properties:
+                      name:
+                        description: name of the resource being referenced
+                        type: string
+                      namespace:
+                        description: namespace of the resource being referenced
+                        type: string
                     type: object
                 type: object
               type: array

@@ -8,11 +8,13 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
 	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/localityutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/workloadutils"
 	"github.com/solo-io/go-utils/contextutils"
 	sets2 "github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/utils/pointer"
@@ -39,6 +41,8 @@ type TrafficTargetDetector interface {
 	DetectTrafficTarget(
 		ctx context.Context,
 		service *corev1.Service,
+		pods corev1sets.PodSet,
+		nodes corev1sets.NodeSet,
 		workloads discoveryv1alpha2sets.WorkloadSet,
 		meshes discoveryv1alpha2sets.MeshSet,
 		endpoints corev1sets.EndpointsSet,
@@ -54,7 +58,9 @@ func NewTrafficTargetDetector() TrafficTargetDetector {
 func (t *trafficTargetDetector) DetectTrafficTarget(
 	ctx context.Context,
 	service *corev1.Service,
-	meshWorkloads discoveryv1alpha2sets.WorkloadSet,
+	pods corev1sets.PodSet,
+	nodes corev1sets.NodeSet,
+	workloads discoveryv1alpha2sets.WorkloadSet,
 	meshes discoveryv1alpha2sets.MeshSet,
 	endpoints corev1sets.EndpointsSet,
 ) *v1alpha2.TrafficTarget {
@@ -65,6 +71,13 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 		Labels:                 service.Labels,
 		Ports:                  convertPorts(service),
 	}
+
+	// add locality to the traffic target
+	region, err := localityutils.GetServiceRegion(service, pods, nodes)
+	if err != nil {
+		contextutils.LoggerFrom(ctx).Warnw("could not get region for traffic target", zap.Error(err))
+	}
+	kubeService.Region = region
 
 	trafficTarget := &v1alpha2.TrafficTarget{
 		ObjectMeta: utils.DiscoveredObjectMeta(service),
@@ -80,9 +93,10 @@ func (t *trafficTargetDetector) DetectTrafficTarget(
 		ctx,
 		trafficTarget,
 		service,
-		meshWorkloads,
+		workloads,
 		meshes,
 		endpoints,
+		nodes,
 	)
 	if !validTrafficTarget {
 		return nil
@@ -98,6 +112,7 @@ func addMeshForKubeService(
 	meshWorkloads discoveryv1alpha2sets.WorkloadSet,
 	meshes discoveryv1alpha2sets.MeshSet,
 	endpoints corev1sets.EndpointsSet,
+	nodes corev1sets.NodeSet,
 ) bool {
 
 	var validMesh *v1.ObjectRef
@@ -142,7 +157,7 @@ func addMeshForKubeService(
 	if len(backingWorkloads) == 0 {
 		return false
 	}
-	handleWorkloadDiscoveredMesh(ctx, tt, backingWorkloads, endpoints)
+	handleWorkloadDiscoveredMesh(ctx, tt, backingWorkloads, endpoints, nodes)
 	return true
 }
 
@@ -151,6 +166,7 @@ func handleWorkloadDiscoveredMesh(
 	tt *v1alpha2.TrafficTarget,
 	backingWorkloads v1alpha2.WorkloadSlice,
 	endpoints corev1sets.EndpointsSet,
+	nodes corev1sets.NodeSet,
 ) {
 
 	// all backing workloads should be in the same mesh
@@ -169,43 +185,58 @@ func handleWorkloadDiscoveredMesh(
 	}
 
 	// dervive endpoints from kubernetes endpoints, and backing workloads
-	tt.Spec.GetKubeService().EndpointSubsets = findEndpoints(ctx, backingWorkloads, ep)
+	findEndpoints(ctx, backingWorkloads, ep, nodes, tt.Spec.GetKubeService())
 }
 
 func findEndpoints(
 	ctx context.Context,
 	backingWorkloads v1alpha2.WorkloadSlice,
 	endpoint *corev1.Endpoints,
-) []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset {
-
-	var result []*v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset
+	nodes corev1sets.NodeSet,
+	kubeService *v1alpha2.TrafficTargetSpec_KubeService,
+) {
 
 	for _, epSub := range endpoint.Subsets {
 		sub := &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset{}
 		for _, addr := range epSub.Addresses {
 			addr := addr
-			if addr.TargetRef == nil {
+			ep := &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint{
+				IpAddress: addr.IP,
+			}
+
+			if addr.NodeName != nil {
+				subLocality, err := localityutils.GetSubLocality(kubeService.GetRef().GetClusterName(), *addr.NodeName, nodes)
+				if err != nil {
+					// Log the error but continue processing. We just won't be able to get a locality for this address
+					contextutils.LoggerFrom(ctx).Warnw("could not get locality for address", "error", err)
+				} else {
+					ep.SubLocality = subLocality
+				}
+			} else {
+				contextutils.LoggerFrom(ctx).Warnw("address does not have a node", "address", addr)
+			}
+
+			if addr.TargetRef != nil {
+				for _, workload := range backingWorkloads {
+					kubeWorkload := workload.Spec.GetKubernetes()
+					if kubeWorkload == nil {
+						continue
+					}
+					// Check if TargetRef points to a child of a backing workload to get the labels
+					if addr.TargetRef.Namespace == kubeWorkload.GetController().GetNamespace() &&
+						strings.HasPrefix(addr.TargetRef.Name, kubeWorkload.GetController().GetName()+"-") {
+						ep.Labels = kubeWorkload.GetPodLabels()
+						break
+					}
+				}
+			} else {
 				contextutils.LoggerFrom(ctx).Debugf(
 					"skipping endpoint subset addr (%v) because targetRef is nil",
 					addr,
 				)
-				continue
 			}
 
-			for _, workload := range backingWorkloads {
-				kubeWorkload := workload.Spec.GetKubernetes()
-				if kubeWorkload == nil {
-					continue
-				}
-				// Check if TargetRef points to a child of a backing workload to get the labels
-				if addr.TargetRef.Namespace == kubeWorkload.GetController().GetNamespace() &&
-					strings.HasPrefix(addr.TargetRef.Name, kubeWorkload.GetController().GetName()+"-") {
-					sub.Endpoints = append(sub.Endpoints, &v1alpha2.TrafficTargetSpec_KubeService_EndpointsSubset_Endpoint{
-						IpAddress: addr.IP,
-						Labels:    kubeWorkload.PodLabels,
-					})
-				}
-			}
+			sub.Endpoints = append(sub.Endpoints, ep)
 
 		}
 
@@ -231,10 +262,8 @@ func findEndpoints(
 			continue
 		}
 
-		result = append(result, sub)
+		kubeService.EndpointSubsets = append(kubeService.EndpointSubsets, sub)
 	}
-
-	return result
 }
 
 // expects a list of just the workloads that back the service you're finding subsets for

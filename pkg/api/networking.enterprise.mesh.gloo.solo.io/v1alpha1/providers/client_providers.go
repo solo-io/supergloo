@@ -44,3 +44,31 @@ func WasmDeploymentClientFromConfigFactoryProvider() WasmDeploymentClientFromCon
 		return clients.WasmDeployments(), nil
 	}
 }
+
+// Provider for VirtualDestinationClient from Clientset
+func VirtualDestinationClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1alpha1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestinationClient {
+	return clients.VirtualDestinations()
+}
+
+// Provider for VirtualDestination Client from Client
+func VirtualDestinationClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestinationClient {
+	return networking_enterprise_mesh_gloo_solo_io_v1alpha1.NewVirtualDestinationClient(client)
+}
+
+type VirtualDestinationClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestinationClient
+
+func VirtualDestinationClientFactoryProvider() VirtualDestinationClientFactory {
+	return VirtualDestinationClientProvider
+}
+
+type VirtualDestinationClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestinationClient, error)
+
+func VirtualDestinationClientFromConfigFactoryProvider() VirtualDestinationClientFromConfigFactory {
+	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestinationClient, error) {
+		clients, err := networking_enterprise_mesh_gloo_solo_io_v1alpha1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.VirtualDestinations(), nil
+	}
+}
