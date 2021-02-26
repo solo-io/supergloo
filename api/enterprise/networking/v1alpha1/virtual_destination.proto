@@ -98,6 +98,11 @@ message VirtualDestinationSpec {
     }
 
     // Outlier detection to determine the health of the selected services.
+    // If not set will default to the folling:
+    // consecutiveGatewayErrors: 10
+    // consecutive5XXErrors: 10
+    // interval: 5s
+    // baseEjectionTime: 120s
     networking.mesh.gloo.solo.io.TrafficPolicySpec.OutlierDetection outlier_detection = 3;
   }
 }
