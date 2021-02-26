@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1296
+    Description: Fix and simplify cluster registration docs, particularly for Kind users on MacOS.

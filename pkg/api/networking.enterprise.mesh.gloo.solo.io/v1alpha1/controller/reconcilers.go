@@ -133,3 +133,120 @@ func (r genericWasmDeploymentFinalizer) Finalize(object ezkube.Object) error {
 	}
 	return r.finalizingReconciler.FinalizeWasmDeployment(obj)
 }
+
+// Reconcile Upsert events for the VirtualDestination Resource.
+// implemented by the user
+type VirtualDestinationReconciler interface {
+	ReconcileVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the VirtualDestination Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type VirtualDestinationDeletionReconciler interface {
+	ReconcileVirtualDestinationDeletion(req reconcile.Request) error
+}
+
+type VirtualDestinationReconcilerFuncs struct {
+	OnReconcileVirtualDestination         func(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) (reconcile.Result, error)
+	OnReconcileVirtualDestinationDeletion func(req reconcile.Request) error
+}
+
+func (f *VirtualDestinationReconcilerFuncs) ReconcileVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) (reconcile.Result, error) {
+	if f.OnReconcileVirtualDestination == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileVirtualDestination(obj)
+}
+
+func (f *VirtualDestinationReconcilerFuncs) ReconcileVirtualDestinationDeletion(req reconcile.Request) error {
+	if f.OnReconcileVirtualDestinationDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileVirtualDestinationDeletion(req)
+}
+
+// Reconcile and finalize the VirtualDestination Resource
+// implemented by the user
+type VirtualDestinationFinalizer interface {
+	VirtualDestinationReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	VirtualDestinationFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) error
+}
+
+type VirtualDestinationReconcileLoop interface {
+	RunVirtualDestinationReconciler(ctx context.Context, rec VirtualDestinationReconciler, predicates ...predicate.Predicate) error
+}
+
+type virtualDestinationReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewVirtualDestinationReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) VirtualDestinationReconcileLoop {
+	return &virtualDestinationReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination{}, options),
+	}
+}
+
+func (c *virtualDestinationReconcileLoop) RunVirtualDestinationReconciler(ctx context.Context, reconciler VirtualDestinationReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericVirtualDestinationReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(VirtualDestinationFinalizer); ok {
+		reconcilerWrapper = genericVirtualDestinationFinalizer{
+			genericVirtualDestinationReconciler: genericReconciler,
+			finalizingReconciler:                finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericVirtualDestinationHandler implements a generic reconcile.Reconciler
+type genericVirtualDestinationReconciler struct {
+	reconciler VirtualDestinationReconciler
+}
+
+func (r genericVirtualDestinationReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: VirtualDestination handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileVirtualDestination(obj)
+}
+
+func (r genericVirtualDestinationReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(VirtualDestinationDeletionReconciler); ok {
+		return deletionReconciler.ReconcileVirtualDestinationDeletion(request)
+	}
+	return nil
+}
+
+// genericVirtualDestinationFinalizer implements a generic reconcile.FinalizingReconciler
+type genericVirtualDestinationFinalizer struct {
+	genericVirtualDestinationReconciler
+	finalizingReconciler VirtualDestinationFinalizer
+}
+
+func (r genericVirtualDestinationFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.VirtualDestinationFinalizerName()
+}
+
+func (r genericVirtualDestinationFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination)
+	if !ok {
+		return errors.Errorf("internal error: VirtualDestination handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeVirtualDestination(obj)
+}

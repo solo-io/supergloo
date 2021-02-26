@@ -55,7 +55,8 @@ nodes:
     kind: InitConfiguration
     nodeRegistration:
       kubeletExtraArgs:
-        node-labels: "ingress-ready=true"
+        # Populate nodes with region/zone info, which are used by VirtualDestination locality-based failover (Enterprise-only)
+        node-labels: "ingress-ready=true,topology.kubernetes.io/region=us-east-1,topology.kubernetes.io/zone=us-east-1c"
 kubeadmConfigPatches:
 - |
   kind: InitConfiguration
@@ -527,12 +528,6 @@ function install_istio() {
   cluster=$1
   port=$2
   K="kubectl --context=kind-${cluster}"
-
-  # return non-zero exit code if enterpriseNetworkingGrpcPort is unset
-  if [[-z ${enterpriseNetworkingGrpcPort}]]; then
-    echo "unable to fetch enterprise-networking grpc port"
-    return 1
-  fi
 
   if istioctl version | grep -E -- '1.7'
   then

@@ -129,3 +129,118 @@ func (mr *MockMulticlusterWasmDeploymentReconcileLoopMockRecorder) AddMulticlust
 	varargs := append([]interface{}{ctx, rec}, predicates...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterWasmDeploymentReconciler", reflect.TypeOf((*MockMulticlusterWasmDeploymentReconcileLoop)(nil).AddMulticlusterWasmDeploymentReconciler), varargs...)
 }
+
+// MockMulticlusterVirtualDestinationReconciler is a mock of MulticlusterVirtualDestinationReconciler interface
+type MockMulticlusterVirtualDestinationReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterVirtualDestinationReconcilerMockRecorder
+}
+
+// MockMulticlusterVirtualDestinationReconcilerMockRecorder is the mock recorder for MockMulticlusterVirtualDestinationReconciler
+type MockMulticlusterVirtualDestinationReconcilerMockRecorder struct {
+	mock *MockMulticlusterVirtualDestinationReconciler
+}
+
+// NewMockMulticlusterVirtualDestinationReconciler creates a new mock instance
+func NewMockMulticlusterVirtualDestinationReconciler(ctrl *gomock.Controller) *MockMulticlusterVirtualDestinationReconciler {
+	mock := &MockMulticlusterVirtualDestinationReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterVirtualDestinationReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockMulticlusterVirtualDestinationReconciler) EXPECT() *MockMulticlusterVirtualDestinationReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileVirtualDestination mocks base method
+func (m *MockMulticlusterVirtualDestinationReconciler) ReconcileVirtualDestination(clusterName string, obj *v1alpha1.VirtualDestination) (reconcile.Result, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileVirtualDestination", clusterName, obj)
+	ret0, _ := ret[0].(reconcile.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileVirtualDestination indicates an expected call of ReconcileVirtualDestination
+func (mr *MockMulticlusterVirtualDestinationReconcilerMockRecorder) ReconcileVirtualDestination(clusterName, obj interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualDestination", reflect.TypeOf((*MockMulticlusterVirtualDestinationReconciler)(nil).ReconcileVirtualDestination), clusterName, obj)
+}
+
+// MockMulticlusterVirtualDestinationDeletionReconciler is a mock of MulticlusterVirtualDestinationDeletionReconciler interface
+type MockMulticlusterVirtualDestinationDeletionReconciler struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterVirtualDestinationDeletionReconcilerMockRecorder
+}
+
+// MockMulticlusterVirtualDestinationDeletionReconcilerMockRecorder is the mock recorder for MockMulticlusterVirtualDestinationDeletionReconciler
+type MockMulticlusterVirtualDestinationDeletionReconcilerMockRecorder struct {
+	mock *MockMulticlusterVirtualDestinationDeletionReconciler
+}
+
+// NewMockMulticlusterVirtualDestinationDeletionReconciler creates a new mock instance
+func NewMockMulticlusterVirtualDestinationDeletionReconciler(ctrl *gomock.Controller) *MockMulticlusterVirtualDestinationDeletionReconciler {
+	mock := &MockMulticlusterVirtualDestinationDeletionReconciler{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterVirtualDestinationDeletionReconcilerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockMulticlusterVirtualDestinationDeletionReconciler) EXPECT() *MockMulticlusterVirtualDestinationDeletionReconcilerMockRecorder {
+	return m.recorder
+}
+
+// ReconcileVirtualDestinationDeletion mocks base method
+func (m *MockMulticlusterVirtualDestinationDeletionReconciler) ReconcileVirtualDestinationDeletion(clusterName string, req reconcile.Request) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileVirtualDestinationDeletion", clusterName, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReconcileVirtualDestinationDeletion indicates an expected call of ReconcileVirtualDestinationDeletion
+func (mr *MockMulticlusterVirtualDestinationDeletionReconcilerMockRecorder) ReconcileVirtualDestinationDeletion(clusterName, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileVirtualDestinationDeletion", reflect.TypeOf((*MockMulticlusterVirtualDestinationDeletionReconciler)(nil).ReconcileVirtualDestinationDeletion), clusterName, req)
+}
+
+// MockMulticlusterVirtualDestinationReconcileLoop is a mock of MulticlusterVirtualDestinationReconcileLoop interface
+type MockMulticlusterVirtualDestinationReconcileLoop struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterVirtualDestinationReconcileLoopMockRecorder
+}
+
+// MockMulticlusterVirtualDestinationReconcileLoopMockRecorder is the mock recorder for MockMulticlusterVirtualDestinationReconcileLoop
+type MockMulticlusterVirtualDestinationReconcileLoopMockRecorder struct {
+	mock *MockMulticlusterVirtualDestinationReconcileLoop
+}
+
+// NewMockMulticlusterVirtualDestinationReconcileLoop creates a new mock instance
+func NewMockMulticlusterVirtualDestinationReconcileLoop(ctrl *gomock.Controller) *MockMulticlusterVirtualDestinationReconcileLoop {
+	mock := &MockMulticlusterVirtualDestinationReconcileLoop{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterVirtualDestinationReconcileLoopMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockMulticlusterVirtualDestinationReconcileLoop) EXPECT() *MockMulticlusterVirtualDestinationReconcileLoopMockRecorder {
+	return m.recorder
+}
+
+// AddMulticlusterVirtualDestinationReconciler mocks base method
+func (m *MockMulticlusterVirtualDestinationReconcileLoop) AddMulticlusterVirtualDestinationReconciler(ctx context.Context, rec controller.MulticlusterVirtualDestinationReconciler, predicates ...predicate.Predicate) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, rec}
+	for _, a := range predicates {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "AddMulticlusterVirtualDestinationReconciler", varargs...)
+}
+
+// AddMulticlusterVirtualDestinationReconciler indicates an expected call of AddMulticlusterVirtualDestinationReconciler
+func (mr *MockMulticlusterVirtualDestinationReconcileLoopMockRecorder) AddMulticlusterVirtualDestinationReconciler(ctx, rec interface{}, predicates ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, rec}, predicates...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMulticlusterVirtualDestinationReconciler", reflect.TypeOf((*MockMulticlusterVirtualDestinationReconcileLoop)(nil).AddMulticlusterVirtualDestinationReconciler), varargs...)
+}

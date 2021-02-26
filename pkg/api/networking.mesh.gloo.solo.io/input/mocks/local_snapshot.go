@@ -170,6 +170,20 @@ func (mr *MockLocalSnapshotMockRecorder) WasmDeployments() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WasmDeployments", reflect.TypeOf((*MockLocalSnapshot)(nil).WasmDeployments))
 }
 
+// VirtualDestinations mocks base method
+func (m *MockLocalSnapshot) VirtualDestinations() v1alpha1sets.VirtualDestinationSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VirtualDestinations")
+	ret0, _ := ret[0].(v1alpha1sets.VirtualDestinationSet)
+	return ret0
+}
+
+// VirtualDestinations indicates an expected call of VirtualDestinations
+func (mr *MockLocalSnapshotMockRecorder) VirtualDestinations() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualDestinations", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualDestinations))
+}
+
 // AccessLogRecords mocks base method
 func (m *MockLocalSnapshot) AccessLogRecords() v1alpha1sets0.AccessLogRecordSet {
 	m.ctrl.T.Helper()

@@ -329,6 +329,118 @@ spec:
                     type: array
                 type: object
               type: array
+            virtualDestinationScopes:
+              description: A set of VirtualDestination configuration permissions. Permission granularity is defined at the object level.
+              items:
+                properties:
+                  meshRefs:
+                    description: A list of permitted mesh references.
+                    items:
+                      properties:
+                        name:
+                          description: name of the resource being referenced
+                          type: string
+                        namespace:
+                          description: namespace of the resource being referenced
+                          type: string
+                      type: object
+                    type: array
+                  serviceSelectors:
+                    description: A list of permitted backing service selectors.
+                    items:
+                      properties:
+                        kubeServiceMatcher:
+                          description: A KubeServiceMatcher matches kubernetes services by their labels, namespaces, and/or clusters.
+                          properties:
+                            clusters:
+                              description: |-
+                                If specified, match k8s Services if they exist in one of the specified clusters.
+                                           When used in a networking policy, omission matches any cluster.
+                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any cluster.
+                              items:
+                                type: string
+                              type: array
+                            labels:
+                              additionalProperties:
+                                type: string
+                              description: |-
+                                If specified, all labels must exist on k8s Service.
+                                           When used in a networking policy, omission matches any labels.
+                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any label key and/or value.
+                              type: object
+                            namespaces:
+                              description: |-
+                                If specified, match k8s Services if they exist in one of the specified namespaces.
+                                           When used in a networking policy, omission matches any namespace.
+                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any namespace.
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        kubeServiceRefs:
+                          description: Match individual k8s Services by direct reference.
+                          properties:
+                            services:
+                              description: |-
+                                Match k8s Services by direct reference.
+                                           When used in a networking policy, omission of any field (name, namespace, or clusterName) allows matching any value for that field.
+                                           When used in a Role, a wildcard `"*"` must be explicitly used to match any value for the given field.
+                              items:
+                                properties:
+                                  clusterName:
+                                    description: name of the cluster in which the resource exists
+                                    type: string
+                                  name:
+                                    description: name of the resource being referenced
+                                    type: string
+                                  namespace:
+                                    description: namespace of the resource being referenced
+                                    type: string
+                                type: object
+                              type: array
+                          type: object
+                      type: object
+                    type: array
+                  services:
+                    description: A list of permitted backing services.
+                    items:
+                      oneOf:
+                      - not:
+                          anyOf:
+                          - required:
+                            - kubeService
+                      - required:
+                        - kubeService
+                      properties:
+                        kubeService:
+                          description: Name/namespace/cluster of a kubernetes service.
+                          properties:
+                            clusterName:
+                              description: name of the cluster in which the resource exists
+                              type: string
+                            name:
+                              description: name of the resource being referenced
+                              type: string
+                            namespace:
+                              description: namespace of the resource being referenced
+                              type: string
+                          type: object
+                      type: object
+                    type: array
+                  virtualMeshRefs:
+                    description: A list of permitted virtual mesh references.
+                    items:
+                      properties:
+                        name:
+                          description: name of the resource being referenced
+                          type: string
+                        namespace:
+                          description: namespace of the resource being referenced
+                          type: string
+                      type: object
+                    type: array
+                type: object
+              type: array
             virtualMeshScopes:
               description: A set of VirtualMesh configuration permissions. Permission granularity is defined at the field level.
               items:
