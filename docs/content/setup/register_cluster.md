@@ -9,7 +9,23 @@ Once you have Gloo Mesh or Gloo Mesh Enterprise installed, the next step is to r
 
 This guide will walk you through the basics of registering clusters using the `meshctl` tool. We will be using the two cluster contexts mentioned in the Gloo Mesh installation guide, `mgmt-cluster-context` and `remote-cluster-context`. Your cluster context names will likely differ, so please substitute the proper values.
 
-## Register A Cluster
+## Register a Cluster in Relay Mode
+
+{{% notice note %}} Gloo Mesh Enterprise is required for this feature. {{% /notice %}}
+
+Relay is an alternative mode of deploying Gloo Mesh that confers several advantages discussed in [this document]({{% versioned_link_path fromRoot="/concepts/relay" %}}).
+Cluster registration in relay mode simply consists of installing the relay agent.
+
+**Register with meshctl**
+
+Register with `meshctl cluster register enterprise`, see details about usage and parameters [here]({{% versioned_link_path fromRoot="/reference/cli/meshctl_cluster_register_enterprise" %}}).
+
+**Register with Helm**
+
+Install the relay agent from the Helm repository located at `https://storage.googleapis.com/gloo-mesh-enterprise/enterprise-agent`.
+Make sure to review the Helm values options before installing.
+
+## Register A Cluster in Non-Relay Mode
 
 In order to identify a cluster as being managed by Gloo Mesh, we have to *register* it in our installation. Registration ensures we are aware of the cluster, and we have proper credentials to communicate with the Kubernetes API server in that cluster.
 
