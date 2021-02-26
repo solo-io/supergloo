@@ -228,8 +228,8 @@ func httpRequestMatchersEqual(matchers1, matchers2 []*v1.TrafficPolicySpec_HttpM
 
 // return true if workload selectors' labels and namespaces are equivalent, ignore clusters
 func workloadSelectorsEqual(ws1, ws2 *commonv1.WorkloadSelector) bool {
-	return reflect.DeepEqual(ws1.Labels, ws2.Labels) &&
-		sets.NewString(ws1.Namespaces...).Equal(sets.NewString(ws2.Namespaces...))
+	return reflect.DeepEqual(ws1.GetKubeWorkloadMatcher().Labels, ws2.GetKubeWorkloadMatcher().Labels) &&
+		sets.NewString(ws1.GetKubeWorkloadMatcher().Namespaces...).Equal(sets.NewString(ws2.GetKubeWorkloadMatcher().Namespaces...))
 }
 
 // return true if two lists of WorkloadSelectors are semantically equivalent, abstracting away order
@@ -397,19 +397,21 @@ func translateRequestMatchers(
 	var sourceMatchers []*networkingv1alpha3spec.HTTPMatchRequest
 	// Set SourceNamespace and SourceLabels.
 	for _, sourceSelector := range trafficPolicy.GetSourceSelector() {
-		if len(sourceSelector.GetLabels()) > 0 ||
-			len(sourceSelector.GetNamespaces()) > 0 {
-			if len(sourceSelector.GetNamespaces()) > 0 {
-				for _, namespace := range sourceSelector.GetNamespaces() {
+
+		sourceWorkloadMatcher := sourceSelector.GetKubeWorkloadMatcher()
+		if len(sourceWorkloadMatcher.GetLabels()) > 0 ||
+			len(sourceWorkloadMatcher.GetNamespaces()) > 0 {
+			if len(sourceWorkloadMatcher.GetNamespaces()) > 0 {
+				for _, namespace := range sourceWorkloadMatcher.GetNamespaces() {
 					matchRequest := &networkingv1alpha3spec.HTTPMatchRequest{
 						SourceNamespace: namespace,
-						SourceLabels:    sourceSelector.GetLabels(),
+						SourceLabels:    sourceWorkloadMatcher.GetLabels(),
 					}
 					sourceMatchers = append(sourceMatchers, matchRequest)
 				}
 			} else {
 				sourceMatchers = append(sourceMatchers, &networkingv1alpha3spec.HTTPMatchRequest{
-					SourceLabels: sourceSelector.GetLabels(),
+					SourceLabels: sourceWorkloadMatcher.GetLabels(),
 				})
 			}
 		}
