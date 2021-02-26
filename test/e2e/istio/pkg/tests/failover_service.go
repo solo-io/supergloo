@@ -42,7 +42,7 @@ func FailoverServiceTest() {
 
 		failoverServiceHostname := fmt.Sprintf("reviews-failover.bookinfo.%s", hostutils.GetFederatedHostnameSuffix(&VirtualMesh.Spec))
 		curlFailoverService := func() string {
-			return CurlFromProductpage(fmt.Sprintf("http://%s:9080/reviews/1", failoverServiceHostname))
+			return curlFromProductpage(fmt.Sprintf("http://%s:9080/reviews/1", failoverServiceHostname))
 		}
 
 		By("creating a new FailoverService with the prerequisite TrafficPolicy and VirtualMesh", func() {
