@@ -120,23 +120,17 @@ func (d *meshDetector) detectMesh(
 		contextutils.LoggerFrom(d.ctx).Warnw("could not get region for cluster", deployment.ClusterName, zap.Error(err))
 	}
 
-	subLocalities, err := localityutils.GetUniqueClusterSubLocalities(deployment.GetClusterName(), in.Nodes())
-	if err != nil {
-		contextutils.LoggerFrom(d.ctx).Warnw("could not get sub localities for cluster", deployment.ClusterName, zap.Error(err))
-	}
-
 	mesh := &discoveryv1.Mesh{
 		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
 		Spec: discoveryv1.MeshSpec{
 			Type: &discoveryv1.MeshSpec_Istio_{
 				Istio: &discoveryv1.MeshSpec_Istio{
 					Installation: &discoveryv1.MeshSpec_MeshInstallation{
-						Namespace:     deployment.Namespace,
-						Cluster:       deployment.ClusterName,
-						PodLabels:     deployment.Spec.Selector.MatchLabels,
-						Version:       version,
-						Region:        region,
-						SubLocalities: subLocalities,
+						Namespace: deployment.Namespace,
+						Cluster:   deployment.ClusterName,
+						PodLabels: deployment.Spec.Selector.MatchLabels,
+						Version:   version,
+						Region:    region,
 					},
 					SmartDnsProxyingEnabled: isSmartDnsProxyingEnabled(meshConfig),
 					TrustDomain:             meshConfig.TrustDomain,
