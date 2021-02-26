@@ -37,13 +37,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	certificates_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
-	certificates_mesh_gloo_solo_io_v1alpha2_types "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
-	certificates_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
+	certificates_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificates_mesh_gloo_solo_io_v1_types "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificates_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 
-	xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1"
-	xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_types "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1"
-	xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
+	xds_agent_enterprise_mesh_gloo_solo_io_v1beta1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1"
+	xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_types "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1"
+	xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1/sets"
 
 	networking_istio_io_v1alpha3 "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3"
 	networking_istio_io_v1alpha3_sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
@@ -59,18 +59,18 @@ var RemoteSnapshotGVKs = []schema.GroupVersionKind{
 
 	schema.GroupVersionKind{
 		Group:   "certificates.mesh.gloo.solo.io",
-		Version: "v1alpha2",
+		Version: "v1",
 		Kind:    "IssuedCertificate",
 	},
 	schema.GroupVersionKind{
 		Group:   "certificates.mesh.gloo.solo.io",
-		Version: "v1alpha2",
+		Version: "v1",
 		Kind:    "PodBounceDirective",
 	},
 
 	schema.GroupVersionKind{
 		Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
-		Version: "v1alpha1",
+		Version: "v1beta1",
 		Kind:    "XdsConfig",
 	},
 
@@ -111,12 +111,12 @@ var RemoteSnapshotGVKs = []schema.GroupVersionKind{
 type RemoteSnapshot interface {
 
 	// return the set of input IssuedCertificates
-	IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
+	IssuedCertificates() certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet
 	// return the set of input PodBounceDirectives
-	PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+	PodBounceDirectives() certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet
 
 	// return the set of input XdsConfigs
-	XdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+	XdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet
 
 	// return the set of input DestinationRules
 	DestinationRules() networking_istio_io_v1alpha3_sets.DestinationRuleSet
@@ -170,10 +170,10 @@ type RemoteSyncStatusOptions struct {
 type snapshotRemote struct {
 	name string
 
-	issuedCertificates  certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
-	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+	issuedCertificates  certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet
+	podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet
 
-	xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+	xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet
 
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet
 	envoyFilters     networking_istio_io_v1alpha3_sets.EnvoyFilterSet
@@ -187,10 +187,10 @@ type snapshotRemote struct {
 func NewRemoteSnapshot(
 	name string,
 
-	issuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet,
-	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
+	issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet,
+	podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet,
 
-	xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet,
+	xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet,
 
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
 	envoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
@@ -221,10 +221,10 @@ func NewRemoteSnapshotFromGeneric(
 	genericSnapshot resource.ClusterSnapshot,
 ) RemoteSnapshot {
 
-	issuedCertificateSet := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
-	podBounceDirectiveSet := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+	issuedCertificateSet := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
+	podBounceDirectiveSet := certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
 
-	xdsConfigSet := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
+	xdsConfigSet := xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewXdsConfigSet()
 
 	destinationRuleSet := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
 	envoyFilterSet := networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet()
@@ -238,31 +238,31 @@ func NewRemoteSnapshotFromGeneric(
 
 		issuedCertificates := snapshot[schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "IssuedCertificate",
 		}]
 
 		for _, issuedCertificate := range issuedCertificates {
-			issuedCertificateSet.Insert(issuedCertificate.(*certificates_mesh_gloo_solo_io_v1alpha2_types.IssuedCertificate))
+			issuedCertificateSet.Insert(issuedCertificate.(*certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate))
 		}
 		podBounceDirectives := snapshot[schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "PodBounceDirective",
 		}]
 
 		for _, podBounceDirective := range podBounceDirectives {
-			podBounceDirectiveSet.Insert(podBounceDirective.(*certificates_mesh_gloo_solo_io_v1alpha2_types.PodBounceDirective))
+			podBounceDirectiveSet.Insert(podBounceDirective.(*certificates_mesh_gloo_solo_io_v1_types.PodBounceDirective))
 		}
 
 		xdsConfigs := snapshot[schema.GroupVersionKind{
 			Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
-			Version: "v1alpha1",
+			Version: "v1beta1",
 			Kind:    "XdsConfig",
 		}]
 
 		for _, xdsConfig := range xdsConfigs {
-			xdsConfigSet.Insert(xdsConfig.(*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_types.XdsConfig))
+			xdsConfigSet.Insert(xdsConfig.(*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_types.XdsConfig))
 		}
 
 		destinationRules := snapshot[schema.GroupVersionKind{
@@ -336,15 +336,15 @@ func NewRemoteSnapshotFromGeneric(
 	)
 }
 
-func (s snapshotRemote) IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet {
+func (s snapshotRemote) IssuedCertificates() certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet {
 	return s.issuedCertificates
 }
 
-func (s snapshotRemote) PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet {
+func (s snapshotRemote) PodBounceDirectives() certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet {
 	return s.podBounceDirectives
 }
 
-func (s snapshotRemote) XdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet {
+func (s snapshotRemote) XdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet {
 	return s.xdsConfigs
 }
 
@@ -520,10 +520,10 @@ func NewMultiClusterRemoteBuilder(
 
 func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name string, opts RemoteBuildOptions) (RemoteSnapshot, error) {
 
-	issuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
-	podBounceDirectives := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+	issuedCertificates := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
+	podBounceDirectives := certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
 
-	xdsConfigs := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
+	xdsConfigs := xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewXdsConfigSet()
 
 	destinationRules := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
 	envoyFilters := networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet()
@@ -584,8 +584,8 @@ func (b *multiClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name stri
 	return outputSnap, errs
 }
 
-func (b *multiClusterRemoteBuilder) insertIssuedCertificatesFromCluster(ctx context.Context, cluster string, issuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ResourceRemoteBuildOptions) error {
-	issuedCertificateClient, err := certificates_mesh_gloo_solo_io_v1alpha2.NewMulticlusterIssuedCertificateClient(b.client).Cluster(cluster)
+func (b *multiClusterRemoteBuilder) insertIssuedCertificatesFromCluster(ctx context.Context, cluster string, issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet, opts ResourceRemoteBuildOptions) error {
+	issuedCertificateClient, err := certificates_mesh_gloo_solo_io_v1.NewMulticlusterIssuedCertificateClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -598,7 +598,7 @@ func (b *multiClusterRemoteBuilder) insertIssuedCertificatesFromCluster(ctx cont
 
 		gvk := schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "IssuedCertificate",
 		}
 
@@ -626,8 +626,8 @@ func (b *multiClusterRemoteBuilder) insertIssuedCertificatesFromCluster(ctx cont
 
 	return nil
 }
-func (b *multiClusterRemoteBuilder) insertPodBounceDirectivesFromCluster(ctx context.Context, cluster string, podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet, opts ResourceRemoteBuildOptions) error {
-	podBounceDirectiveClient, err := certificates_mesh_gloo_solo_io_v1alpha2.NewMulticlusterPodBounceDirectiveClient(b.client).Cluster(cluster)
+func (b *multiClusterRemoteBuilder) insertPodBounceDirectivesFromCluster(ctx context.Context, cluster string, podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet, opts ResourceRemoteBuildOptions) error {
+	podBounceDirectiveClient, err := certificates_mesh_gloo_solo_io_v1.NewMulticlusterPodBounceDirectiveClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -640,7 +640,7 @@ func (b *multiClusterRemoteBuilder) insertPodBounceDirectivesFromCluster(ctx con
 
 		gvk := schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "PodBounceDirective",
 		}
 
@@ -669,8 +669,8 @@ func (b *multiClusterRemoteBuilder) insertPodBounceDirectivesFromCluster(ctx con
 	return nil
 }
 
-func (b *multiClusterRemoteBuilder) insertXdsConfigsFromCluster(ctx context.Context, cluster string, xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet, opts ResourceRemoteBuildOptions) error {
-	xdsConfigClient, err := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.NewMulticlusterXdsConfigClient(b.client).Cluster(cluster)
+func (b *multiClusterRemoteBuilder) insertXdsConfigsFromCluster(ctx context.Context, cluster string, xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet, opts ResourceRemoteBuildOptions) error {
+	xdsConfigClient, err := xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.NewMulticlusterXdsConfigClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -683,7 +683,7 @@ func (b *multiClusterRemoteBuilder) insertXdsConfigsFromCluster(ctx context.Cont
 
 		gvk := schema.GroupVersionKind{
 			Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
-			Version: "v1alpha1",
+			Version: "v1beta1",
 			Kind:    "XdsConfig",
 		}
 
@@ -993,10 +993,10 @@ func NewSingleClusterRemoteBuilderWithClusterName(
 
 func (b *singleClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name string, opts RemoteBuildOptions) (RemoteSnapshot, error) {
 
-	issuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
-	podBounceDirectives := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+	issuedCertificates := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
+	podBounceDirectives := certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
 
-	xdsConfigs := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
+	xdsConfigs := xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewXdsConfigSet()
 
 	destinationRules := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
 	envoyFilters := networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet()
@@ -1053,12 +1053,12 @@ func (b *singleClusterRemoteBuilder) BuildSnapshot(ctx context.Context, name str
 	return outputSnap, errs
 }
 
-func (b *singleClusterRemoteBuilder) insertIssuedCertificates(ctx context.Context, issuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ResourceRemoteBuildOptions) error {
+func (b *singleClusterRemoteBuilder) insertIssuedCertificates(ctx context.Context, issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet, opts ResourceRemoteBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "IssuedCertificate",
 		}
 
@@ -1073,7 +1073,7 @@ func (b *singleClusterRemoteBuilder) insertIssuedCertificates(ctx context.Contex
 		}
 	}
 
-	issuedCertificateList, err := certificates_mesh_gloo_solo_io_v1alpha2.NewIssuedCertificateClient(b.mgr.GetClient()).ListIssuedCertificate(ctx, opts.ListOptions...)
+	issuedCertificateList, err := certificates_mesh_gloo_solo_io_v1.NewIssuedCertificateClient(b.mgr.GetClient()).ListIssuedCertificate(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -1086,12 +1086,12 @@ func (b *singleClusterRemoteBuilder) insertIssuedCertificates(ctx context.Contex
 
 	return nil
 }
-func (b *singleClusterRemoteBuilder) insertPodBounceDirectives(ctx context.Context, podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet, opts ResourceRemoteBuildOptions) error {
+func (b *singleClusterRemoteBuilder) insertPodBounceDirectives(ctx context.Context, podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet, opts ResourceRemoteBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "PodBounceDirective",
 		}
 
@@ -1106,7 +1106,7 @@ func (b *singleClusterRemoteBuilder) insertPodBounceDirectives(ctx context.Conte
 		}
 	}
 
-	podBounceDirectiveList, err := certificates_mesh_gloo_solo_io_v1alpha2.NewPodBounceDirectiveClient(b.mgr.GetClient()).ListPodBounceDirective(ctx, opts.ListOptions...)
+	podBounceDirectiveList, err := certificates_mesh_gloo_solo_io_v1.NewPodBounceDirectiveClient(b.mgr.GetClient()).ListPodBounceDirective(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -1120,12 +1120,12 @@ func (b *singleClusterRemoteBuilder) insertPodBounceDirectives(ctx context.Conte
 	return nil
 }
 
-func (b *singleClusterRemoteBuilder) insertXdsConfigs(ctx context.Context, xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet, opts ResourceRemoteBuildOptions) error {
+func (b *singleClusterRemoteBuilder) insertXdsConfigs(ctx context.Context, xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet, opts ResourceRemoteBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
 			Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
-			Version: "v1alpha1",
+			Version: "v1beta1",
 			Kind:    "XdsConfig",
 		}
 
@@ -1140,7 +1140,7 @@ func (b *singleClusterRemoteBuilder) insertXdsConfigs(ctx context.Context, xdsCo
 		}
 	}
 
-	xdsConfigList, err := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.NewXdsConfigClient(b.mgr.GetClient()).ListXdsConfig(ctx, opts.ListOptions...)
+	xdsConfigList, err := xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.NewXdsConfigClient(b.mgr.GetClient()).ListXdsConfig(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -1374,10 +1374,10 @@ func (i *inMemoryRemoteBuilder) BuildSnapshot(ctx context.Context, name string, 
 		return nil, err
 	}
 
-	issuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
-	podBounceDirectives := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+	issuedCertificates := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
+	podBounceDirectives := certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
 
-	xdsConfigs := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
+	xdsConfigs := xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewXdsConfigSet()
 
 	destinationRules := networking_istio_io_v1alpha3_sets.NewDestinationRuleSet()
 	envoyFilters := networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet()
@@ -1390,13 +1390,13 @@ func (i *inMemoryRemoteBuilder) BuildSnapshot(ctx context.Context, name string, 
 	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject) {
 		switch obj := obj.(type) {
 		// insert IssuedCertificates
-		case *certificates_mesh_gloo_solo_io_v1alpha2_types.IssuedCertificate:
+		case *certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate:
 			issuedCertificates.Insert(obj)
 		// insert PodBounceDirectives
-		case *certificates_mesh_gloo_solo_io_v1alpha2_types.PodBounceDirective:
+		case *certificates_mesh_gloo_solo_io_v1_types.PodBounceDirective:
 			podBounceDirectives.Insert(obj)
 		// insert XdsConfigs
-		case *xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_types.XdsConfig:
+		case *xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_types.XdsConfig:
 			xdsConfigs.Insert(obj)
 		// insert DestinationRules
 		case *networking_istio_io_v1alpha3_types.DestinationRule:

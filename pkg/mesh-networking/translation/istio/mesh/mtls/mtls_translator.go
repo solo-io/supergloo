@@ -8,8 +8,9 @@ import (
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	"github.com/solo-io/gloo-mesh/pkg/common/version"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 
-	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
 	"github.com/solo-io/skv2/pkg/ezkube"
 
@@ -18,19 +19,18 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
 	"istio.io/istio/pkg/spiffe"
 	"istio.io/istio/security/pkg/pki/util"
 	corev1 "k8s.io/api/core/v1"
 
-	certificatesv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	certificatesv1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 )
 
 //go:generate mockgen -source ./mtls_translator.go -destination mocks/mtls_translator.go
@@ -50,12 +50,12 @@ const (
 )
 
 var (
-	signingCertSecretType = corev1.SecretType(fmt.Sprintf("%s/generated_signing_cert", certificatesv1alpha2.SchemeGroupVersion.Group))
+	signingCertSecretType = corev1.SecretType(fmt.Sprintf("%s/generated_signing_cert", certificatesv1.SchemeGroupVersion.Group))
 
 	// used when the user provides a nil root cert
-	defaultSelfSignedRootCa = &v1alpha2.VirtualMeshSpec_RootCertificateAuthority{
-		CaSource: &v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Generated{
-			Generated: &v1alpha2.VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert{
+	defaultSelfSignedRootCa = &v1.VirtualMeshSpec_RootCertificateAuthority{
+		CaSource: &v1.VirtualMeshSpec_RootCertificateAuthority_Generated{
+			Generated: &v1.VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert{
 				TtlDays:         defaultRootCertTTLDays,
 				RsaKeySizeBytes: defaultRootCertRsaKeySize,
 				OrgName:         defaultOrgName,
@@ -76,8 +76,8 @@ type Translator interface {
 	// Output resources will be added to the istio.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
-		mesh *discoveryv1alpha2.Mesh,
-		virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
+		mesh *discoveryv1.Mesh,
+		virtualMesh *discoveryv1.MeshStatus_AppliedVirtualMesh,
 		istioOutputs istio.Builder,
 		localOutputs local.Builder,
 		reporter reporting.Reporter,
@@ -87,10 +87,10 @@ type Translator interface {
 type translator struct {
 	ctx       context.Context
 	secrets   corev1sets.SecretSet
-	workloads discoveryv1alpha2sets.WorkloadSet
+	workloads discoveryv1sets.WorkloadSet
 }
 
-func NewTranslator(ctx context.Context, secrets corev1sets.SecretSet, workloads discoveryv1alpha2sets.WorkloadSet) Translator {
+func NewTranslator(ctx context.Context, secrets corev1sets.SecretSet, workloads discoveryv1sets.WorkloadSet) Translator {
 	return &translator{
 		ctx:       ctx,
 		secrets:   secrets,
@@ -100,15 +100,15 @@ func NewTranslator(ctx context.Context, secrets corev1sets.SecretSet, workloads 
 
 // translate the appropriate resources for the given Mesh.
 func (t *translator) Translate(
-	mesh *discoveryv1alpha2.Mesh,
-	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
+	mesh *discoveryv1.Mesh,
+	virtualMesh *discoveryv1.MeshStatus_AppliedVirtualMesh,
 	istioOutputs istio.Builder,
 	localOutputs local.Builder,
 	reporter reporting.Reporter,
 ) {
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {
-		contextutils.LoggerFrom(t.ctx).Debugf("ignoring non istio mesh %v %T", sets.Key(mesh), mesh.Spec.MeshType)
+		contextutils.LoggerFrom(t.ctx).Debugf("ignoring non istio mesh %v %T", sets.Key(mesh), mesh.Spec.Type)
 		return
 	}
 
@@ -118,15 +118,15 @@ func (t *translator) Translate(
 }
 
 func (t *translator) updateMtlsOutputs(
-	mesh *discoveryv1alpha2.Mesh,
-	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
+	mesh *discoveryv1.Mesh,
+	virtualMesh *discoveryv1.MeshStatus_AppliedVirtualMesh,
 	istioOutputs istio.Builder,
 	localOutputs local.Builder,
 ) error {
 	mtlsConfig := virtualMesh.Spec.MtlsConfig
 	if mtlsConfig == nil {
 		// nothing to do
-		contextutils.LoggerFrom(t.ctx).Debugf("no translation for virtual mesh %v which has no mTLS configuration", sets.Key(mesh))
+		contextutils.LoggerFrom(t.ctx).Debugf("no translation for VirtualMesh %v which has no mTLS configuration", sets.Key(mesh))
 		return nil
 	}
 
@@ -135,7 +135,7 @@ func (t *translator) updateMtlsOutputs(
 	}
 
 	switch trustModel := mtlsConfig.TrustModel.(type) {
-	case *v1alpha2.VirtualMeshSpec_MTLSConfig_Shared:
+	case *v1.VirtualMeshSpec_MTLSConfig_Shared:
 		return t.configureSharedTrust(
 			mesh,
 			trustModel.Shared,
@@ -144,7 +144,7 @@ func (t *translator) updateMtlsOutputs(
 			localOutputs,
 			mtlsConfig.AutoRestartPods,
 		)
-	case *v1alpha2.VirtualMeshSpec_MTLSConfig_Limited:
+	case *v1.VirtualMeshSpec_MTLSConfig_Limited:
 		return eris.Errorf("limited trust not supported in version %v of Gloo Mesh", version.Version)
 	}
 
@@ -154,9 +154,9 @@ func (t *translator) updateMtlsOutputs(
 // will create the secret if it is self-signed,
 // otherwise will return the user-provided secret ref in the mtls config
 func (t *translator) configureSharedTrust(
-	mesh *discoveryv1alpha2.Mesh,
-	sharedTrust *v1alpha2.VirtualMeshSpec_MTLSConfig_SharedTrust,
-	virtualMeshRef *v1.ObjectRef,
+	mesh *discoveryv1.Mesh,
+	sharedTrust *v1.VirtualMeshSpec_MTLSConfig_SharedTrust,
+	virtualMeshRef *skv2corev1.ObjectRef,
 	istioOutputs istio.Builder,
 	localOutputs local.Builder,
 	autoRestartPods bool,
@@ -185,9 +185,9 @@ func (t *translator) configureSharedTrust(
 		autoRestartPods,
 	)
 
-	// Append the virtual mesh as a parent to each output resource
-	metautils.AppendParent(t.ctx, issuedCertificate, virtualMeshRef, v1alpha2.VirtualMesh{}.GVK())
-	metautils.AppendParent(t.ctx, podBounceDirective, virtualMeshRef, v1alpha2.VirtualMesh{}.GVK())
+	// Append the VirtualMesh as a parent to each output resource
+	metautils.AppendParent(t.ctx, issuedCertificate, virtualMeshRef, v1.VirtualMesh{}.GVK())
+	metautils.AppendParent(t.ctx, podBounceDirective, virtualMeshRef, v1.VirtualMesh{}.GVK())
 
 	istioOutputs.AddIssuedCertificates(issuedCertificate)
 	istioOutputs.AddPodBounceDirectives(podBounceDirective)
@@ -197,22 +197,22 @@ func (t *translator) configureSharedTrust(
 // will create the secret if it is self-signed,
 // otherwise will return the user-provided secret ref in the mtls config
 func (t *translator) getOrCreateRootCaSecret(
-	rootCA *v1alpha2.VirtualMeshSpec_RootCertificateAuthority,
-	virtualMeshRef *v1.ObjectRef,
+	rootCA *v1.VirtualMeshSpec_RootCertificateAuthority,
+	virtualMeshRef *skv2corev1.ObjectRef,
 	localOutputs local.Builder,
-) (*v1.ObjectRef, error) {
+) (*skv2corev1.ObjectRef, error) {
 	if rootCA == nil || rootCA.CaSource == nil {
 		rootCA = defaultSelfSignedRootCa
 	}
 
-	var rootCaSecret *v1.ObjectRef
+	var rootCaSecret *skv2corev1.ObjectRef
 	switch caType := rootCA.CaSource.(type) {
-	case *v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Generated:
+	case *v1.VirtualMeshSpec_RootCertificateAuthority_Generated:
 		generatedSecretName := virtualMeshRef.Name + "." + virtualMeshRef.Namespace
 		// write the signing secret to the gloomesh namespace
 		generatedSecretNamespace := defaults.GetPodNamespace()
 		// use the existing secret if it exists
-		rootCaSecret = &v1.ObjectRef{
+		rootCaSecret = &skv2corev1.ObjectRef{
 			Name:      generatedSecretName,
 			Namespace: generatedSecretNamespace,
 		}
@@ -238,11 +238,11 @@ func (t *translator) getOrCreateRootCaSecret(
 			}
 		}
 
-		// Append the virtual mesh as a parent to the output secret
-		metautils.AppendParent(t.ctx, selfSignedCertSecret, virtualMeshRef, v1alpha2.VirtualMesh{}.GVK())
+		// Append the VirtualMesh as a parent to the output secret
+		metautils.AppendParent(t.ctx, selfSignedCertSecret, virtualMeshRef, v1.VirtualMesh{}.GVK())
 
 		localOutputs.AddSecrets(selfSignedCertSecret)
-	case *v1alpha2.VirtualMeshSpec_RootCertificateAuthority_Secret:
+	case *v1.VirtualMeshSpec_RootCertificateAuthority_Secret:
 		rootCaSecret = caType.Secret
 	}
 
@@ -250,20 +250,20 @@ func (t *translator) getOrCreateRootCaSecret(
 }
 
 func (t *translator) constructIssuedCertificate(
-	mesh *discoveryv1alpha2.Mesh,
-	rootCaSecret *v1.ObjectRef,
+	mesh *discoveryv1.Mesh,
+	rootCaSecret *skv2corev1.ObjectRef,
 	agentNamespace string,
 	autoRestartPods bool,
-) (*certificatesv1alpha2.IssuedCertificate, *certificatesv1alpha2.PodBounceDirective) {
+) (*certificatesv1.IssuedCertificate, *certificatesv1.PodBounceDirective) {
 	istioMesh := mesh.Spec.GetIstio()
 
-	trustDomain := istioMesh.GetCitadelInfo().GetTrustDomain()
+	trustDomain := istioMesh.GetTrustDomain()
 	if trustDomain == "" {
 		trustDomain = defaultTrustDomain
 	}
-	citadelServiceAccount := istioMesh.GetCitadelInfo().GetCitadelServiceAccount()
-	if citadelServiceAccount == "" {
-		citadelServiceAccount = defaultCitadelServiceAccount
+	istiodServiceAccount := istioMesh.GetIstiodServiceAccount()
+	if istiodServiceAccount == "" {
+		istiodServiceAccount = defaultCitadelServiceAccount
 	}
 	istioNamespace := istioMesh.GetInstallation().GetNamespace()
 	if istioNamespace == "" {
@@ -272,7 +272,7 @@ func (t *translator) constructIssuedCertificate(
 
 	// the default location of the istio CA Certs secret
 	// the certificate workflow will produce a cert with this ref
-	istioCaCerts := &v1.ObjectRef{
+	istioCaCerts := &skv2corev1.ObjectRef{
 		Name:      istioCaSecretName,
 		Namespace: istioNamespace,
 	}
@@ -290,13 +290,13 @@ func (t *translator) constructIssuedCertificate(
 	// get the pods that need to be bounced for this mesh
 	podsToBounce := getPodsToBounce(mesh, t.workloads, autoRestartPods)
 	var (
-		podBounceDirective *certificatesv1alpha2.PodBounceDirective
-		podBounceRef       *v1.ObjectRef
+		podBounceDirective *certificatesv1.PodBounceDirective
+		podBounceRef       *skv2corev1.ObjectRef
 	)
 	if len(podsToBounce) > 0 {
-		podBounceDirective = &certificatesv1alpha2.PodBounceDirective{
+		podBounceDirective = &certificatesv1.PodBounceDirective{
 			ObjectMeta: issuedCertificateMeta,
-			Spec: certificatesv1alpha2.PodBounceDirectiveSpec{
+			Spec: certificatesv1.PodBounceDirectiveSpec{
 				PodsToBounce: podsToBounce,
 			},
 		}
@@ -304,10 +304,10 @@ func (t *translator) constructIssuedCertificate(
 	}
 
 	// issue a certificate to the mesh agent
-	return &certificatesv1alpha2.IssuedCertificate{
+	return &certificatesv1.IssuedCertificate{
 		ObjectMeta: issuedCertificateMeta,
-		Spec: certificatesv1alpha2.IssuedCertificateSpec{
-			Hosts:                    []string{buildSpiffeURI(trustDomain, istioNamespace, citadelServiceAccount)},
+		Spec: certificatesv1.IssuedCertificateSpec{
+			Hosts:                    []string{buildSpiffeURI(trustDomain, istioNamespace, istiodServiceAccount)},
 			Org:                      defaultIstioOrg,
 			SigningCertificateSecret: rootCaSecret,
 			IssuedCertificateSecret:  istioCaCerts,
@@ -324,7 +324,7 @@ const (
 )
 
 func generateSelfSignedCert(
-	builtinCA *v1alpha2.VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert,
+	builtinCA *v1.VirtualMeshSpec_RootCertificateAuthority_SelfSignedCert,
 ) (*secrets.RootCAData, error) {
 	org := defaultOrgName
 	if builtinCA.GetOrgName() != "" {
@@ -362,7 +362,7 @@ func buildSpiffeURI(trustDomain, namespace, serviceAccount string) string {
 }
 
 // get selectors for all the pods in a mesh; they need to be bounced (including the mesh control plane itself)
-func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha2sets.WorkloadSet, autoRestartPods bool) []*certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector {
+func getPodsToBounce(mesh *discoveryv1.Mesh, allWorkloads discoveryv1sets.WorkloadSet, autoRestartPods bool) []*certificatesv1.PodBounceDirectiveSpec_PodSelector {
 	// if autoRestartPods is false, we rely on the user to manually restart their pods
 	if !autoRestartPods {
 		return nil
@@ -372,7 +372,7 @@ func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha
 
 	// bounce the control plane pod first
 	// order matters
-	podsToBounce := []*certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector{
+	podsToBounce := []*certificatesv1.PodBounceDirectiveSpec_PodSelector{
 		{
 			Namespace: istioInstall.Namespace,
 			Labels:    istioInstall.PodLabels,
@@ -383,16 +383,16 @@ func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha
 
 	// bounce the ingress gateway pods
 	for _, gateway := range istioMesh.IngressGateways {
-		podsToBounce = append(podsToBounce, &certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector{
+		podsToBounce = append(podsToBounce, &certificatesv1.PodBounceDirectiveSpec_PodSelector{
 			Namespace: istioInstall.Namespace,
 			Labels:    gateway.WorkloadLabels,
-			RootCertSync: &certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector_RootCertSync{
-				SecretRef: &v1.ObjectRef{
+			RootCertSync: &certificatesv1.PodBounceDirectiveSpec_PodSelector_RootCertSync{
+				SecretRef: &skv2corev1.ObjectRef{
 					Name:      istioCaSecretName,
 					Namespace: istioInstall.Namespace,
 				},
 				SecretKey: secrets.RootCertID,
-				ConfigMapRef: &v1.ObjectRef{
+				ConfigMapRef: &skv2corev1.ObjectRef{
 					Name:      istioCaConfigMapName,
 					Namespace: istioInstall.Namespace,
 				},
@@ -402,20 +402,20 @@ func getPodsToBounce(mesh *discoveryv1alpha2.Mesh, allWorkloads discoveryv1alpha
 	}
 
 	// collect selectors from workloads matching this mesh
-	allWorkloads.List(func(workload *discoveryv1alpha2.Workload) bool {
+	allWorkloads.List(func(workload *discoveryv1.Workload) bool {
 		kubeWorkload := workload.Spec.GetKubernetes()
 
 		if kubeWorkload != nil && ezkube.RefsMatch(workload.Spec.Mesh, mesh) {
-			podsToBounce = append(podsToBounce, &certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector{
+			podsToBounce = append(podsToBounce, &certificatesv1.PodBounceDirectiveSpec_PodSelector{
 				Namespace: kubeWorkload.Controller.GetNamespace(),
 				Labels:    kubeWorkload.PodLabels,
-				RootCertSync: &certificatesv1alpha2.PodBounceDirectiveSpec_PodSelector_RootCertSync{
-					SecretRef: &v1.ObjectRef{
+				RootCertSync: &certificatesv1.PodBounceDirectiveSpec_PodSelector_RootCertSync{
+					SecretRef: &skv2corev1.ObjectRef{
 						Name:      istioCaSecretName,
 						Namespace: istioInstall.Namespace,
 					},
 					SecretKey: secrets.RootCertID,
-					ConfigMapRef: &v1.ObjectRef{
+					ConfigMapRef: &skv2corev1.ObjectRef{
 						Name:      istioCaConfigMapName,
 						Namespace: kubeWorkload.Controller.GetNamespace(),
 					},

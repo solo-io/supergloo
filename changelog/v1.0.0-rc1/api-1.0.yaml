@@ -1,0 +1,7 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: Update Gloo Mesh API to 1.0
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/142
+  - type: FIX
+    description: Make AccessLogRecord's filter a oneof to indicate mutual exclusiveness.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/167

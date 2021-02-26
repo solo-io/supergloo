@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/go-utils/contextutils"
 
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -28,7 +28,7 @@ func NewSidecarDetector(ctx context.Context) *sidecarDetector {
 	return &sidecarDetector{ctx: ctx}
 }
 
-func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
+func (d sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1sets.MeshSet) *v1.Mesh {
 	sidecarContainer := getSidecar(pod.Spec.Containers)
 	if sidecarContainer == nil {
 		return nil

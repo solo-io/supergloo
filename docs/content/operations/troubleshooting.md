@@ -17,7 +17,7 @@ One of the first places to always start is `meshctl check`. This command is your
 * Checking the [minimum supported Kubernetes minor version](https://github.com/solo-io/gloo-mesh/blob/master/pkg/version/version.go#L13)
 * Checking that the `install` [namespace exists (default, `gloo-mesh`)](https://github.com/solo-io/gloo-mesh/blob/master/cli/pkg/tree/check/healthcheck/internal/install_namespace_existence.go#L23)
 * Verifying the Gloo Mesh components [are installed and running](https://github.com/solo-io/gloo-mesh/blob/master/cli/pkg/tree/check/healthcheck/internal/gloomesh_components_health.go#L36)
-* Verify none of the `TrafficTargets` have [any federation errors](https://github.com/solo-io/gloo-mesh/blob/master/cli/pkg/tree/check/healthcheck/internal/federation_decision_check.go#L43)
+* Verify none of the `Destinations` have [any federation errors](https://github.com/solo-io/gloo-mesh/blob/master/cli/pkg/tree/check/healthcheck/internal/federation_decision_check.go#L43)
 
 The last bullet in the list, checking federation status, is likely the most helpful especially after you've tried to apply a `VirtualMesh`. Often it's best to check the `VirtualMesh` CR `status` field to make sure it doesn't see any issues:
 
@@ -39,7 +39,7 @@ the state of the system.
 Consider the following TrafficPolicy resource:
 
 ```yaml
-apiVersion: networking.mesh.gloo.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
 metadata:
   generation: 1
@@ -58,7 +58,7 @@ spec:
 status:
   observedGeneration: 1
   state: ACCEPTED
-  trafficTargets:
+  destinations:
     reviews-bookinfo-mgmt-cluster.gloo-mesh.:
       state: ACCEPTED
     reviews-bookinfo-remote-cluster.gloo-mesh.:
@@ -87,17 +87,17 @@ should be to check the logs of Gloo Mesh pods (detailed below).
 The `status.state` field reports the overall state of the resource. The exact semantics of this field depend on the CRD in question, 
 so check the protobuf documentation for details.
 
-**TrafficTargets:**
+**Destinations:**
 
-Networking configuration CRDs operate on traffic targets, which are discovered by Gloo Mesh's discovery comoponent.
+Networking configuration CRDs operate on Destinations, which are discovered by Gloo Mesh's discovery comoponent.
 The TrafficPolicy CRD *selects* traffic destinations (`spec.destinationSelector`) to configure.
-Configuration can successfully apply to some traffic targets but not others. This per-target state is reflected in the `status.trafficTargets` 
+Configuration can successfully apply to some Destinations but not others. This per-target state is reflected in the `status.destinations` 
 field.
 
-If a traffic target does not appear in this list, it can mean either that the traffic target was not
+If a Destination does not appear in this list, it can mean either that the Destination was not
 selected properly (see the [proto documentation for ServiceSelector]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.mesh.gloo.solo.io.ServiceSelector" %}}) for detailed semantics),
-or that the traffic target has not been discovered. You can examine discovered traffic targets by using `meshctl describe traffictarget`
-(this command will also show all networking configuration applied to each traffic target).
+or that the Destination has not been discovered. You can examine discovered Destinations by using `meshctl describe destination`
+(this command will also show all networking configuration applied to each Destination).
 
 **Workloads:**
 
@@ -108,7 +108,7 @@ This field shows all workloads, i.e. traffic origins, that the policy applies to
 Knowing how to get logs from the Gloo Mesh components is crucial for getting feedback about what's happening. Gloo Mesh has three core components:
 
 * `cert-agent` - responsible for creating certificate/key pairs and issuing a Certificate Signing Request for a particular mesh -- this is used in Mesh identity federation; this component is not available in the default install, only when a cluster is registered
-* `mesh-discovery` - responsible for discovering Meshes, periodically querying clusters and control planes for their `TrafficTarget`s and `Workload`s. 
+* `mesh-discovery` - responsible for discovering Meshes, periodically querying clusters and control planes for their `Destination`s and `Workload`s. 
 * `mesh-networking` - responsible for orchestrating federation events, traffic policy updates, and access-control policy rules
 
 When troubleshooting various parts of the Gloo Mesh functionality, you will likely want to see the logs for some of these components. For example, when creating a new `VirtualMesh` and you see something like `PROCESSING_ERROR` in the `federation` status, check the logs for the `mesh-networking` component like this:

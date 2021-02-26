@@ -5,8 +5,8 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
-	mock_destinationrule "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/destinationrule/mocks"
-	mock_virtualservice "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice/mocks"
+	mock_destinationrule "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/destinationrule/mocks"
+	mock_virtualservice "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/virtualservice/mocks"
 	"github.com/solo-io/gloo-mesh/test/data"
 	"istio.io/istio/pkg/config/protocol"
 
@@ -14,13 +14,13 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	istiov1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/federation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	skv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
@@ -34,25 +34,25 @@ var _ = Describe("FederationTranslator", func() {
 	mockVirtualServiceTranslator := mock_virtualservice.NewMockTranslator(ctrl)
 	mockDestinationRuleTranslator := mock_destinationrule.NewMockTranslator(ctrl)
 
-	It("translates federation resources for a virtual mesh", func() {
+	It("translates federation resources for a VirtualMesh", func() {
 
 		namespace := "namespace"
 		clusterName := "cluster"
 
-		mesh := &discoveryv1alpha2.Mesh{
+		mesh := &discoveryv1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "config-namespace",
 				Name:      "federated-mesh",
 			},
-			Spec: discoveryv1alpha2.MeshSpec{
-				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+			Spec: discoveryv1.MeshSpec{
+				Type: &discoveryv1.MeshSpec_Istio_{Istio: &discoveryv1.MeshSpec_Istio{
 					SmartDnsProxyingEnabled: true,
-					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+					Installation: &discoveryv1.MeshSpec_MeshInstallation{
 						Namespace: namespace,
 						Cluster:   clusterName,
 						Version:   "1.8.1",
 					},
-					IngressGateways: []*discoveryv1alpha2.MeshSpec_Istio_IngressGatewayInfo{{
+					IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
 						ExternalAddress:  "mesh-gateway.dns.name",
 						ExternalTlsPort:  8181,
 						TlsContainerPort: 9191,
@@ -62,15 +62,15 @@ var _ = Describe("FederationTranslator", func() {
 			},
 		}
 
-		clientMesh := &discoveryv1alpha2.Mesh{
+		clientMesh := &discoveryv1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "config-namespace",
 				Name:      "client-mesh",
 			},
-			Spec: discoveryv1alpha2.MeshSpec{
-				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{Istio: &discoveryv1alpha2.MeshSpec_Istio{
+			Spec: discoveryv1.MeshSpec{
+				Type: &discoveryv1.MeshSpec_Istio_{Istio: &discoveryv1.MeshSpec_Istio{
 					SmartDnsProxyingEnabled: true,
-					Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+					Installation: &discoveryv1.MeshSpec_MeshInstallation{
 						Namespace: "remote-namespace",
 						Cluster:   "remote-cluster",
 					},
@@ -81,8 +81,8 @@ var _ = Describe("FederationTranslator", func() {
 		meshRef := ezkube.MakeObjectRef(mesh)
 		clientMeshRef := ezkube.MakeObjectRef(clientMesh)
 
-		makeTrafficSplit := func(backingService *v1.ClusterObjectRef, subset map[string]string) *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy {
-			return &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{Spec: &data.RemoteTrafficShiftPolicy(
+		makeTrafficSplit := func(backingService *skv2corev1.ClusterObjectRef, subset map[string]string) *discoveryv1.DestinationStatus_AppliedTrafficPolicy {
+			return &discoveryv1.DestinationStatus_AppliedTrafficPolicy{Spec: &data.RemoteTrafficShiftPolicy(
 				"",
 				"",
 				backingService,
@@ -93,17 +93,17 @@ var _ = Describe("FederationTranslator", func() {
 			).Spec}
 		}
 
-		backingService := &v1.ClusterObjectRef{
+		backingService := &skv2corev1.ClusterObjectRef{
 			Name:        "some-svc",
 			Namespace:   "some-ns",
 			ClusterName: clusterName,
 		}
-		trafficTarget1 := &discoveryv1alpha2.TrafficTarget{
+		destination1 := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{},
-			Spec: discoveryv1alpha2.TrafficTargetSpec{
-				Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{KubeService: &discoveryv1.DestinationSpec_KubeService{
 					Ref: backingService,
-					Ports: []*discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort{
+					Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
 						{
 							Port:     1234,
 							Name:     "http",
@@ -124,8 +124,8 @@ var _ = Describe("FederationTranslator", func() {
 				Mesh: meshRef,
 			},
 			// include some applied subsets
-			Status: discoveryv1alpha2.TrafficTargetStatus{
-				AppliedTrafficPolicies: []*discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
+			Status: discoveryv1.DestinationStatus{
+				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
 					makeTrafficSplit(backingService, map[string]string{"foo": "bar"}),
 					makeTrafficSplit(backingService, map[string]string{"foo": "baz"}),
 					makeTrafficSplit(backingService, map[string]string{"bar": "qux"}),
@@ -133,17 +133,17 @@ var _ = Describe("FederationTranslator", func() {
 			},
 		}
 
-		vMesh := &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{
-			Ref: &v1.ObjectRef{
+		vMesh := &discoveryv1.MeshStatus_AppliedVirtualMesh{
+			Ref: &skv2corev1.ObjectRef{
 				Name:      "my-virtual-mesh",
 				Namespace: "config-namespace",
 			},
-			Spec: &v1alpha2.VirtualMeshSpec{
-				Meshes: []*v1.ObjectRef{
+			Spec: &v1.VirtualMeshSpec{
+				Meshes: []*skv2corev1.ObjectRef{
 					meshRef,
 					clientMeshRef,
 				},
-				Federation: &v1alpha2.VirtualMeshSpec_Federation{
+				Federation: &v1.VirtualMeshSpec_Federation{
 					HostnameSuffix: "soloio",
 				},
 			},
@@ -157,27 +157,26 @@ var _ = Describe("FederationTranslator", func() {
 		}
 
 		in := input.NewInputLocalSnapshotManualBuilder("ignored").
-			AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget1}).
-			AddMeshes(discoveryv1alpha2.MeshSlice{mesh, clientMesh}).
+			AddDestinations(discoveryv1.DestinationSlice{destination1}).
+			AddMeshes(discoveryv1.MeshSlice{mesh, clientMesh}).
 			AddKubernetesClusters(skv1alpha1.KubernetesClusterSlice{kubeCluster}).
 			Build()
 
 		expectedVS := &networkingv1alpha3.VirtualService{}
 		mockVirtualServiceTranslator.
 			EXPECT().
-			Translate(ctx, in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
+			Translate(ctx, in, destination1, clientMesh.Spec.GetIstio().Installation, nil).
 			Return(expectedVS)
 
 		expectedDR := &networkingv1alpha3.DestinationRule{}
 		mockDestinationRuleTranslator.
 			EXPECT().
-			Translate(ctx, in, trafficTarget1, clientMesh.Spec.GetIstio().Installation, nil).
+			Translate(ctx, in, destination1, clientMesh.Spec.GetIstio().Installation, nil).
 			Return(expectedDR)
 
 		t := NewTranslator(
 			ctx,
-			in.TrafficTargets(),
-			in.FailoverServices(),
+			in.Destinations(),
 			mockVirtualServiceTranslator,
 			mockDestinationRuleTranslator,
 		)
@@ -208,7 +207,7 @@ var expectedGateway = &networkingv1alpha3.Gateway{
 		ClusterName: "cluster",
 		Labels:      metautils.TranslatedObjectLabels(),
 		Annotations: map[string]string{
-			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
 		},
 	},
 	Spec: networkingv1alpha3spec.Gateway{
@@ -237,7 +236,7 @@ var expectedEnvoyFilter = &networkingv1alpha3.EnvoyFilter{
 		ClusterName: "cluster",
 		Labels:      metautils.TranslatedObjectLabels(),
 		Annotations: map[string]string{
-			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
 		},
 	},
 	Spec: networkingv1alpha3spec.EnvoyFilter{
@@ -306,7 +305,7 @@ var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1a
 		ClusterName: "remote-cluster",
 		Labels:      metautils.TranslatedObjectLabels(),
 		Annotations: map[string]string{
-			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1alpha2, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
+			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
 		},
 	},
 	Spec: networkingv1alpha3spec.ServiceEntry{

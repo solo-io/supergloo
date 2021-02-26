@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	corev1 "k8s.io/api/core/v1"
@@ -35,7 +35,7 @@ func NewSidecarDetector(ctx context.Context) *sidecarDetector {
 /*
 	OSM uses vanilla envoy sidecars currently, specifically `envoyproxy/envoy-alpine`.
 */
-func (s *sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1alpha2sets.MeshSet) *v1alpha2.Mesh {
+func (s *sidecarDetector) DetectMeshSidecar(pod *corev1.Pod, meshes v1sets.MeshSet) *v1.Mesh {
 	if !(containsInitContainer(pod.Spec.InitContainers) && containsSidecar(pod.Spec.Containers)) {
 		return nil
 	}

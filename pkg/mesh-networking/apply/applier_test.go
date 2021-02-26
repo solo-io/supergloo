@@ -6,13 +6,14 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -22,19 +23,19 @@ import (
 var _ = Describe("Applier", func() {
 	Context("applied traffic policies", func() {
 		var (
-			trafficTarget = &discoveryv1alpha2.TrafficTarget{
+			destination = &discoveryv1.Destination{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "ms1",
 					Namespace: "ns",
 				},
-				Spec: discoveryv1alpha2.TrafficTargetSpec{
-					Mesh: &v1.ObjectRef{
+				Spec: discoveryv1.DestinationSpec{
+					Mesh: &skv2corev1.ObjectRef{
 						Name:      "mesh1",
 						Namespace: "ns",
 					},
-					Type: &discoveryv1alpha2.TrafficTargetSpec_KubeService_{
-						KubeService: &discoveryv1alpha2.TrafficTargetSpec_KubeService{
-							Ref: &v1.ClusterObjectRef{
+					Type: &discoveryv1.DestinationSpec_KubeService_{
+						KubeService: &discoveryv1.DestinationSpec_KubeService{
+							Ref: &skv2corev1.ClusterObjectRef{
 								Name:        "svc-name",
 								Namespace:   "svc-namespace",
 								ClusterName: "svc-cluster",
@@ -43,50 +44,54 @@ var _ = Describe("Applier", func() {
 					},
 				},
 			}
-			workload = &discoveryv1alpha2.Workload{
+			workload = &discoveryv1.Workload{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "wkld1",
 					Namespace: "ns",
 				},
-				Spec: discoveryv1alpha2.WorkloadSpec{
-					Mesh: &v1.ObjectRef{
+				Spec: discoveryv1.WorkloadSpec{
+					Mesh: &skv2corev1.ObjectRef{
 						Name:      "mesh1",
 						Namespace: "ns",
 					},
 				},
 			}
-			mesh = &discoveryv1alpha2.Mesh{
+			mesh = &discoveryv1.Mesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "mesh1",
 					Namespace: "ns",
 				},
 			}
-			trafficPolicy1 = &v1alpha2.TrafficPolicy{
+			trafficPolicy1 = &v1.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "tp1",
 					Namespace: "ns",
 				},
-				Spec: v1alpha2.TrafficPolicySpec{
-					// fill an arbitrary part of the spec
-					Mirror: &v1alpha2.TrafficPolicySpec_Mirror{},
+				Spec: v1.TrafficPolicySpec{
+					Policy: &v1.TrafficPolicySpec_Policy{
+						// fill an arbitrary part of the spec
+						Mirror: &v1.TrafficPolicySpec_Policy_Mirror{},
+					},
 				},
 			}
-			trafficPolicy2 = &v1alpha2.TrafficPolicy{
+			trafficPolicy2 = &v1.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "tp2",
 					Namespace: "ns",
 				},
-				Spec: v1alpha2.TrafficPolicySpec{
-					// fill an arbitrary part of the spec
-					FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{},
+				Spec: v1.TrafficPolicySpec{
+					Policy: &v1.TrafficPolicySpec_Policy{
+						// fill an arbitrary part of the spec
+						FaultInjection: &v1.TrafficPolicySpec_Policy_FaultInjection{},
+					},
 				},
 			}
 
 			snap = input.NewInputLocalSnapshotManualBuilder("").
-				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
-				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy1, trafficPolicy2}).
-				AddWorkloads(discoveryv1alpha2.WorkloadSlice{workload}).
-				AddMeshes(discoveryv1alpha2.MeshSlice{mesh}).
+				AddDestinations(discoveryv1.DestinationSlice{destination}).
+				AddTrafficPolicies(v1.TrafficPolicySlice{trafficPolicy1, trafficPolicy2}).
+				AddWorkloads(discoveryv1.WorkloadSlice{workload}).
+				AddMeshes(discoveryv1.MeshSlice{mesh}).
 				Build()
 		)
 
@@ -98,40 +103,40 @@ var _ = Describe("Applier", func() {
 			applier.Apply(context.TODO(), snap, nil)
 		})
 		It("updates status on input traffic policies", func() {
-			Expect(trafficPolicy1.Status.TrafficTargets).To(HaveKey(sets.Key(trafficTarget)))
-			Expect(trafficPolicy1.Status.TrafficTargets[sets.Key(trafficTarget)]).To(Equal(&v1alpha2.ApprovalStatus{
+			Expect(trafficPolicy1.Status.Destinations).To(HaveKey(sets.Key(destination)))
+			Expect(trafficPolicy1.Status.Destinations[sets.Key(destination)]).To(Equal(&v1.ApprovalStatus{
 				AcceptanceOrder: 0,
-				State:           v1alpha2.ApprovalState_ACCEPTED,
+				State:           commonv1.ApprovalState_ACCEPTED,
 			}))
 			Expect(trafficPolicy1.Status.Workloads).To(HaveLen(1))
 			Expect(trafficPolicy1.Status.Workloads[0]).To(Equal(sets.Key(workload)))
-			Expect(trafficPolicy2.Status.TrafficTargets).To(HaveKey(sets.Key(trafficTarget)))
-			Expect(trafficPolicy2.Status.TrafficTargets[sets.Key(trafficTarget)]).To(Equal(&v1alpha2.ApprovalStatus{
+			Expect(trafficPolicy2.Status.Destinations).To(HaveKey(sets.Key(destination)))
+			Expect(trafficPolicy2.Status.Destinations[sets.Key(destination)]).To(Equal(&v1.ApprovalStatus{
 				AcceptanceOrder: 1,
-				State:           v1alpha2.ApprovalState_ACCEPTED,
+				State:           commonv1.ApprovalState_ACCEPTED,
 			}))
 			Expect(trafficPolicy2.Status.Workloads).To(HaveLen(1))
 			Expect(trafficPolicy2.Status.Workloads[0]).To(Equal(sets.Key(workload)))
 
 		})
-		It("updates status on input traffic target policies", func() {
-			Expect(trafficTarget.Status.AppliedTrafficPolicies).To(HaveLen(2))
-			Expect(trafficTarget.Status.AppliedTrafficPolicies[0].Ref).To(Equal(ezkube.MakeObjectRef(trafficPolicy1)))
-			Expect(trafficTarget.Status.AppliedTrafficPolicies[0].Spec).To(Equal(&trafficPolicy1.Spec))
-			Expect(trafficTarget.Status.AppliedTrafficPolicies[1].Ref).To(Equal(ezkube.MakeObjectRef(trafficPolicy2)))
-			Expect(trafficTarget.Status.AppliedTrafficPolicies[1].Spec).To(Equal(&trafficPolicy2.Spec))
-			Expect(trafficTarget.Status.LocalFqdn).To(Equal("svc-name.svc-namespace.svc.cluster.local"))
+		It("updates status on input Destination policies", func() {
+			Expect(destination.Status.AppliedTrafficPolicies).To(HaveLen(2))
+			Expect(destination.Status.AppliedTrafficPolicies[0].Ref).To(Equal(ezkube.MakeObjectRef(trafficPolicy1)))
+			Expect(destination.Status.AppliedTrafficPolicies[0].Spec).To(Equal(&trafficPolicy1.Spec))
+			Expect(destination.Status.AppliedTrafficPolicies[1].Ref).To(Equal(ezkube.MakeObjectRef(trafficPolicy2)))
+			Expect(destination.Status.AppliedTrafficPolicies[1].Spec).To(Equal(&trafficPolicy2.Spec))
+			Expect(destination.Status.LocalFqdn).To(Equal("svc-name.svc-namespace.svc.cluster.local"))
 		})
 	})
 	Context("invalid traffic policies", func() {
 		var (
-			trafficTarget = &discoveryv1alpha2.TrafficTarget{
+			destination = &discoveryv1.Destination{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "ms1",
 					Namespace: "ns",
 				},
 			}
-			trafficPolicy = &v1alpha2.TrafficPolicy{
+			trafficPolicy = &v1.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "tp1",
 					Namespace: "ns",
@@ -139,101 +144,101 @@ var _ = Describe("Applier", func() {
 			}
 
 			snap = input.NewInputLocalSnapshotManualBuilder("").
-				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
-				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy}).
+				AddDestinations(discoveryv1.DestinationSlice{destination}).
+				AddTrafficPolicies(v1.TrafficPolicySlice{trafficPolicy}).
 				Build()
 		)
 
 		BeforeEach(func() {
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// report = reject
-				reporter.ReportTrafficPolicyToTrafficTarget(trafficTarget, trafficPolicy, errors.New("did an oopsie"))
+				reporter.ReportTrafficPolicyToDestination(destination, trafficPolicy, errors.New("did an oopsie"))
 			}}
 			applier := NewApplier(translator)
 			applier.Apply(context.TODO(), snap, nil)
 		})
 		It("updates status on input traffic policies", func() {
-			Expect(trafficPolicy.Status.TrafficTargets).To(HaveKey(sets.Key(trafficTarget)))
-			Expect(trafficPolicy.Status.TrafficTargets[sets.Key(trafficTarget)]).To(Equal(&v1alpha2.ApprovalStatus{
+			Expect(trafficPolicy.Status.Destinations).To(HaveKey(sets.Key(destination)))
+			Expect(trafficPolicy.Status.Destinations[sets.Key(destination)]).To(Equal(&v1.ApprovalStatus{
 				AcceptanceOrder: 0,
-				State:           v1alpha2.ApprovalState_INVALID,
+				State:           commonv1.ApprovalState_INVALID,
 				Errors:          []string{"did an oopsie"},
 			}))
 		})
-		It("does not add the policy to the traffic target status", func() {
-			Expect(trafficTarget.Status.AppliedTrafficPolicies).To(HaveLen(0))
+		It("does not add the policy to the Destination status", func() {
+			Expect(destination.Status.AppliedTrafficPolicies).To(HaveLen(0))
 		})
 	})
 
 	Context("setting workloads status", func() {
 		var (
-			trafficTarget = &discoveryv1alpha2.TrafficTarget{
+			destination = &discoveryv1.Destination{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "ms1",
 					Namespace: "ns",
 				},
-				Spec: discoveryv1alpha2.TrafficTargetSpec{
-					Mesh: &v1.ObjectRef{
+				Spec: discoveryv1.DestinationSpec{
+					Mesh: &skv2corev1.ObjectRef{
 						Name:      "mesh1",
 						Namespace: "ns",
 					},
 				},
 			}
-			workload1 = &discoveryv1alpha2.Workload{
+			workload1 = &discoveryv1.Workload{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "wkld1",
 					Namespace: "ns",
 				},
-				Spec: discoveryv1alpha2.WorkloadSpec{
-					Mesh: &v1.ObjectRef{
+				Spec: discoveryv1.WorkloadSpec{
+					Mesh: &skv2corev1.ObjectRef{
 						Name:      "mesh1",
 						Namespace: "ns",
 					},
 				},
 			}
-			workload2 = &discoveryv1alpha2.Workload{
+			workload2 = &discoveryv1.Workload{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "wkld2",
 					Namespace: "ns",
 				},
-				Spec: discoveryv1alpha2.WorkloadSpec{
-					Mesh: &v1.ObjectRef{
+				Spec: discoveryv1.WorkloadSpec{
+					Mesh: &skv2corev1.ObjectRef{
 						Name:      "mesh2",
 						Namespace: "ns",
 					},
 				},
 			}
-			mesh1 = &discoveryv1alpha2.Mesh{
+			mesh1 = &discoveryv1.Mesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "mesh1",
 					Namespace: "ns",
 				},
 			}
-			mesh2 = &discoveryv1alpha2.Mesh{
+			mesh2 = &discoveryv1.Mesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "mesh2",
 					Namespace: "ns",
 				},
 			}
-			virtualMesh = &v1alpha2.VirtualMesh{
+			virtualMesh = &v1.VirtualMesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "vmesh1",
 					Namespace: "ns",
 				},
-				Spec: v1alpha2.VirtualMeshSpec{
-					Meshes: []*v1.ObjectRef{
+				Spec: v1.VirtualMeshSpec{
+					Meshes: []*skv2corev1.ObjectRef{
 						{Name: "mesh1", Namespace: "ns"},
 						{Name: "mesh2", Namespace: "ns"},
 					},
 				},
 			}
-			trafficPolicy = &v1alpha2.TrafficPolicy{
+			trafficPolicy = &v1.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "tp1",
 					Namespace: "ns",
 				},
 			}
-			accessPolicy = &v1alpha2.AccessPolicy{
+			accessPolicy = &v1.AccessPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "ap1",
 					Namespace: "ns",
@@ -243,11 +248,11 @@ var _ = Describe("Applier", func() {
 
 		It("sets policy workloads using mesh", func() {
 			snap := input.NewInputLocalSnapshotManualBuilder("").
-				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy}).
-				AddAccessPolicies(v1alpha2.AccessPolicySlice{accessPolicy}).
-				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
-				AddWorkloads(discoveryv1alpha2.WorkloadSlice{workload1, workload2}).
-				AddMeshes(discoveryv1alpha2.MeshSlice{mesh1, mesh2}).
+				AddTrafficPolicies(v1.TrafficPolicySlice{trafficPolicy}).
+				AddAccessPolicies(v1.AccessPolicySlice{accessPolicy}).
+				AddDestinations(discoveryv1.DestinationSlice{destination}).
+				AddWorkloads(discoveryv1.WorkloadSlice{workload1, workload2}).
+				AddMeshes(discoveryv1.MeshSlice{mesh1, mesh2}).
 				Build()
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// no report = accept
@@ -255,20 +260,20 @@ var _ = Describe("Applier", func() {
 			applier := NewApplier(translator)
 			applier.Apply(context.TODO(), snap, nil)
 
-			// trafficTarget and workload1 are both in mesh1
+			// destination and workload1 are both in mesh1
 			Expect(trafficPolicy.Status.Workloads).To(HaveLen(1))
 			Expect(trafficPolicy.Status.Workloads[0]).To(Equal(sets.Key(workload1)))
 			Expect(accessPolicy.Status.Workloads).To(HaveLen(1))
 			Expect(accessPolicy.Status.Workloads[0]).To(Equal(sets.Key(workload1)))
 		})
-		It("sets policy workloads using virtual mesh", func() {
+		It("sets policy workloads using VirtualMesh", func() {
 			snap := input.NewInputLocalSnapshotManualBuilder("").
-				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy}).
-				AddAccessPolicies(v1alpha2.AccessPolicySlice{accessPolicy}).
-				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
-				AddWorkloads(discoveryv1alpha2.WorkloadSlice{workload1, workload2}).
-				AddMeshes(discoveryv1alpha2.MeshSlice{mesh1, mesh2}).
-				AddVirtualMeshes(v1alpha2.VirtualMeshSlice{virtualMesh}).
+				AddTrafficPolicies(v1.TrafficPolicySlice{trafficPolicy}).
+				AddAccessPolicies(v1.AccessPolicySlice{accessPolicy}).
+				AddDestinations(discoveryv1.DestinationSlice{destination}).
+				AddWorkloads(discoveryv1.WorkloadSlice{workload1, workload2}).
+				AddMeshes(discoveryv1.MeshSlice{mesh1, mesh2}).
+				AddVirtualMeshes(v1.VirtualMeshSlice{virtualMesh}).
 				Build()
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// no report = accept
@@ -276,8 +281,8 @@ var _ = Describe("Applier", func() {
 			applier := NewApplier(translator)
 			applier.Apply(context.TODO(), snap, nil)
 
-			// trafficTarget is in mesh1, workload1 is in mesh1, and workload2 is in mesh2.
-			// since mesh1 and mesh2 are in the same virtual mesh, both workloads are returned
+			// destination is in mesh1, workload1 is in mesh1, and workload2 is in mesh2.
+			// since mesh1 and mesh2 are in the same VirtualMesh, both workloads are returned
 			Expect(trafficPolicy.Status.Workloads).To(HaveLen(2))
 			Expect(trafficPolicy.Status.Workloads[0]).To(Equal(sets.Key(workload1)))
 			Expect(trafficPolicy.Status.Workloads[1]).To(Equal(sets.Key(workload2)))
@@ -288,11 +293,11 @@ var _ = Describe("Applier", func() {
 		It("sets no policy workloads when there is no matching mesh", func() {
 			workload1.Spec.Mesh.Name = "mesh2"
 			snap := input.NewInputLocalSnapshotManualBuilder("").
-				AddTrafficPolicies(v1alpha2.TrafficPolicySlice{trafficPolicy}).
-				AddAccessPolicies(v1alpha2.AccessPolicySlice{accessPolicy}).
-				AddTrafficTargets(discoveryv1alpha2.TrafficTargetSlice{trafficTarget}).
-				AddWorkloads(discoveryv1alpha2.WorkloadSlice{workload1, workload2}).
-				AddMeshes(discoveryv1alpha2.MeshSlice{mesh1, mesh2}).
+				AddTrafficPolicies(v1.TrafficPolicySlice{trafficPolicy}).
+				AddAccessPolicies(v1.AccessPolicySlice{accessPolicy}).
+				AddDestinations(discoveryv1.DestinationSlice{destination}).
+				AddWorkloads(discoveryv1.WorkloadSlice{workload1, workload2}).
+				AddMeshes(discoveryv1.MeshSlice{mesh1, mesh2}).
 				Build()
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// no report = accept
@@ -300,7 +305,7 @@ var _ = Describe("Applier", func() {
 			applier := NewApplier(translator)
 			applier.Apply(context.TODO(), snap, nil)
 
-			// trafficTarget is in mesh1, but both workloads are in mesh2
+			// destination is in mesh1, but both workloads are in mesh2
 			Expect(trafficPolicy.Status.Workloads).To(BeNil())
 			Expect(accessPolicy.Status.Workloads).To(BeNil())
 		})

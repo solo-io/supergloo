@@ -53,12 +53,12 @@ func (s *osmTranslator) Translate(
 		meshTranslator.Translate(ctx, in, mesh, outputs, reporter)
 	}
 
-	trafficTargetTranslator := s.dependencies.MakeTrafficTargetTranslator()
+	destinationTranslator := s.dependencies.MakeDestinationTranslator()
 
-	for _, trafficTarget := range in.TrafficTargets().List() {
-		trafficTarget := trafficTarget
+	for _, destination := range in.Destinations().List() {
+		destination := destination
 
-		trafficTargetTranslator.Translate(ctx, in, trafficTarget, outputs, reporter)
+		destinationTranslator.Translate(ctx, in, destination, outputs, reporter)
 	}
 
 	s.totalTranslates++

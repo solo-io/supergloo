@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
 	reconcile "github.com/solo-io/skv2/pkg/reconcile"
 )
 
@@ -36,7 +36,7 @@ func (m *MockmultiClusterReconciler) EXPECT() *MockmultiClusterReconcilerMockRec
 }
 
 // ReconcileIssuedCertificate mocks base method
-func (m *MockmultiClusterReconciler) ReconcileIssuedCertificate(clusterName string, obj *v1alpha2.IssuedCertificate) (reconcile.Result, error) {
+func (m *MockmultiClusterReconciler) ReconcileIssuedCertificate(clusterName string, obj *v1.IssuedCertificate) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileIssuedCertificate", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -51,7 +51,7 @@ func (mr *MockmultiClusterReconcilerMockRecorder) ReconcileIssuedCertificate(clu
 }
 
 // ReconcileCertificateRequest mocks base method
-func (m *MockmultiClusterReconciler) ReconcileCertificateRequest(clusterName string, obj *v1alpha2.CertificateRequest) (reconcile.Result, error) {
+func (m *MockmultiClusterReconciler) ReconcileCertificateRequest(clusterName string, obj *v1.CertificateRequest) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileCertificateRequest", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -89,7 +89,7 @@ func (m *MocksingleClusterReconciler) EXPECT() *MocksingleClusterReconcilerMockR
 }
 
 // ReconcileIssuedCertificate mocks base method
-func (m *MocksingleClusterReconciler) ReconcileIssuedCertificate(obj *v1alpha2.IssuedCertificate) (reconcile.Result, error) {
+func (m *MocksingleClusterReconciler) ReconcileIssuedCertificate(obj *v1.IssuedCertificate) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileIssuedCertificate", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -104,7 +104,7 @@ func (mr *MocksingleClusterReconcilerMockRecorder) ReconcileIssuedCertificate(ob
 }
 
 // ReconcileCertificateRequest mocks base method
-func (m *MocksingleClusterReconciler) ReconcileCertificateRequest(obj *v1alpha2.CertificateRequest) (reconcile.Result, error) {
+func (m *MocksingleClusterReconciler) ReconcileCertificateRequest(obj *v1.CertificateRequest) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileCertificateRequest", obj)
 	ret0, _ := ret[0].(reconcile.Result)

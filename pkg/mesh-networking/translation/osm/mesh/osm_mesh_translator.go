@@ -3,7 +3,7 @@ package mesh
 import (
 	"context"
 
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/smi"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
@@ -19,7 +19,7 @@ type Translator interface {
 	Translate(
 		ctx context.Context,
 		in input.LocalSnapshot,
-		mesh *discoveryv1alpha2.Mesh,
+		mesh *discoveryv1.Mesh,
 		outputs smi.Builder,
 		reporter reporting.Reporter,
 	)
@@ -37,7 +37,7 @@ func NewTranslator() Translator {
 func (t *translator) Translate(
 	ctx context.Context,
 	in input.LocalSnapshot,
-	mesh *discoveryv1alpha2.Mesh,
+	mesh *discoveryv1.Mesh,
 	outputs smi.Builder,
 	reporter reporting.Reporter,
 ) {
