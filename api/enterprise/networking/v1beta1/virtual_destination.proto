@@ -73,7 +73,7 @@ message VirtualDestinationSpec {
         // The list of Destinations backing the VirtualDestination, ordered by decreasing priority.
         // All Destinations must be either in the same Mesh or in Meshes that are grouped under a common VirtualMesh.
         // Required, cannot be omitted.
-        repeated BackingDestination destinations = 1;
+        repeated VirtualDestinationBackingDestination destinations = 1;
     }
 
     // Enables failover based on locality. When a client workload makes a request to the VirtualDestination, Gloo Mesh will
@@ -112,7 +112,7 @@ message VirtualDestinationSpec {
             // The locality's sub-zone. Currently this value is not used.
             string sub_zone = 3;
         }
-        
+
         // Outlier detection to determine the health of the selected services.
         // If not set will default to the folling:
         // consecutiveGatewayErrors: 10
@@ -124,7 +124,8 @@ message VirtualDestinationSpec {
 }
 
 // A backing Destination.
-message BackingDestination {
+// Has to be at the top level, as cue does not function well with referencing nested messages.
+message VirtualDestinationBackingDestination {
 
     // Platform specific Destinations.
     oneof type {
@@ -160,6 +161,6 @@ message VirtualDestinationStatus {
         .core.skv2.solo.io.ClusterObjectRef ref = 1;
 
         // The platform-specific destination that the Destination object represents.
-        BackingDestination destination = 2;
+        VirtualDestinationBackingDestination destination = 2;
     }
 }
