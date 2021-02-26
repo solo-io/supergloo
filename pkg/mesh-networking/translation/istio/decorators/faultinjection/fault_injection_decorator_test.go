@@ -6,8 +6,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/faultinjection"
 	"github.com/solo-io/go-utils/testutils"
@@ -29,15 +29,17 @@ var _ = Describe("FaultInjectionDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
-			Spec: &v1alpha2.TrafficPolicySpec{
-				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
-					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_Abort_{
-						Abort: &v1alpha2.TrafficPolicySpec_FaultInjection_Abort{
-							HttpStatus: 404,
+		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+			Spec: &v1.TrafficPolicySpec{
+				Policy: &v1.TrafficPolicySpec_Policy{
+					FaultInjection: &v1.TrafficPolicySpec_Policy_FaultInjection{
+						FaultInjectionType: &v1.TrafficPolicySpec_Policy_FaultInjection_Abort_{
+							Abort: &v1.TrafficPolicySpec_Policy_FaultInjection_Abort{
+								HttpStatus: 404,
+							},
 						},
+						Percentage: 50,
 					},
-					Percentage: 50,
 				},
 			},
 		}
@@ -56,13 +58,15 @@ var _ = Describe("FaultInjectionDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
-			Spec: &v1alpha2.TrafficPolicySpec{
-				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
-					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_FixedDelay{
-						FixedDelay: &duration.Duration{Seconds: 2},
+		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+			Spec: &v1.TrafficPolicySpec{
+				Policy: &v1.TrafficPolicySpec_Policy{
+					FaultInjection: &v1.TrafficPolicySpec_Policy_FaultInjection{
+						FaultInjectionType: &v1.TrafficPolicySpec_Policy_FaultInjection_FixedDelay{
+							FixedDelay: &duration.Duration{Seconds: 2},
+						},
+						Percentage: 50,
 					},
-					Percentage: 50,
 				},
 			},
 		}
@@ -77,41 +81,18 @@ var _ = Describe("FaultInjectionDecorator", func() {
 		Expect(output.Fault).To(Equal(expectedFaultInjection))
 	})
 
-	It("should set fault injection of type exponential delay", func() {
-		registerField := func(fieldPtr, val interface{}) error {
-			return nil
-		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
-			Spec: &v1alpha2.TrafficPolicySpec{
-				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
-					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_ExponentialDelay{
-						ExponentialDelay: &duration.Duration{Seconds: 2},
-					},
-					Percentage: 50,
-				},
-			},
-		}
-		expectedFaultInjection := &v1alpha3.HTTPFaultInjection{
-			Delay: &v1alpha3.HTTPFaultInjection_Delay{
-				HttpDelayType: &v1alpha3.HTTPFaultInjection_Delay_ExponentialDelay{ExponentialDelay: &types.Duration{Seconds: 2}},
-				Percentage:    &v1alpha3.Percent{Value: 50},
-			},
-		}
-		err := faulInjectionDecorator.ApplyTrafficPolicyToVirtualService(appliedPolicy, nil, nil, output, registerField)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(output.Fault).To(Equal(expectedFaultInjection))
-	})
-
 	It("should not set fault injection if error during field registration", func() {
 		testErr := eris.New("registration error")
 		registerField := func(fieldPtr, val interface{}) error {
 			return testErr
 		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
-			Spec: &v1alpha2.TrafficPolicySpec{
-				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
-					FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_ExponentialDelay{
-						ExponentialDelay: &duration.Duration{Seconds: 2},
+		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+			Spec: &v1.TrafficPolicySpec{
+				Policy: &v1.TrafficPolicySpec_Policy{
+					FaultInjection: &v1.TrafficPolicySpec_Policy_FaultInjection{
+						FaultInjectionType: &v1.TrafficPolicySpec_Policy_FaultInjection_FixedDelay{
+							FixedDelay: &duration.Duration{Seconds: 2},
+						},
 					},
 				},
 			},
@@ -125,10 +106,12 @@ var _ = Describe("FaultInjectionDecorator", func() {
 		registerField := func(fieldPtr, val interface{}) error {
 			return nil
 		}
-		appliedPolicy := &discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy{
-			Spec: &v1alpha2.TrafficPolicySpec{
-				FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
-					Percentage: 50,
+		appliedPolicy := &discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+			Spec: &v1.TrafficPolicySpec{
+				Policy: &v1.TrafficPolicySpec_Policy{
+					FaultInjection: &v1.TrafficPolicySpec_Policy_FaultInjection{
+						Percentage: 50,
+					},
 				},
 			},
 		}

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
-	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/printing"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -53,7 +53,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 }
 
 func describeAccessPolicies(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
-	accessPolicyClient := networkingv1alpha2.NewAccessPolicyClient(c)
+	accessPolicyClient := networkingv1.NewAccessPolicyClient(c)
 	accessPolicyList, err := accessPolicyClient.ListAccessPolicy(ctx)
 	if err != nil {
 		return "", err
@@ -106,7 +106,7 @@ type accessPolicyFilters struct {
 	AllowedPorts   []string
 }
 
-func matchAccessPolicy(accessPolicy networkingv1alpha2.AccessPolicy, searchTerms []string) bool {
+func matchAccessPolicy(accessPolicy networkingv1.AccessPolicy, searchTerms []string) bool {
 	// do not apply matching when there are no search strings
 	if len(searchTerms) == 0 {
 		return true
@@ -121,7 +121,7 @@ func matchAccessPolicy(accessPolicy networkingv1alpha2.AccessPolicy, searchTerms
 	return false
 }
 
-func describeAccessPolicy(accessPolicy *networkingv1alpha2.AccessPolicy) accessPolicyDescription {
+func describeAccessPolicy(accessPolicy *networkingv1.AccessPolicy) accessPolicyDescription {
 	accessPolicyMeta := getAccessPolicyMetadata(accessPolicy)
 	accessPolicyFilters := getAccessPolicyFilters(accessPolicy)
 
@@ -147,7 +147,7 @@ func describeAccessPolicy(accessPolicy *networkingv1alpha2.AccessPolicy) accessP
 	}
 }
 
-func getAccessPolicyMetadata(accessPolicy *networkingv1alpha2.AccessPolicy) v1.ClusterObjectRef {
+func getAccessPolicyMetadata(accessPolicy *networkingv1.AccessPolicy) v1.ClusterObjectRef {
 	return v1.ClusterObjectRef{
 		Name:        accessPolicy.Name,
 		Namespace:   accessPolicy.Namespace,
@@ -155,7 +155,7 @@ func getAccessPolicyMetadata(accessPolicy *networkingv1alpha2.AccessPolicy) v1.C
 	}
 }
 
-func getAccessPolicyFilters(accessPolicy *networkingv1alpha2.AccessPolicy) accessPolicyFilters {
+func getAccessPolicyFilters(accessPolicy *networkingv1.AccessPolicy) accessPolicyFilters {
 	filters := accessPolicyFilters{
 		AllowedPaths:   accessPolicy.Spec.AllowedPaths,
 		AllowedMethods: make([]string, len(accessPolicy.Spec.GetAllowedMethods())),
@@ -163,7 +163,7 @@ func getAccessPolicyFilters(accessPolicy *networkingv1alpha2.AccessPolicy) acces
 	}
 
 	for i, method := range accessPolicy.Spec.GetAllowedMethods() {
-		filters.AllowedMethods[i] = method.String()
+		filters.AllowedMethods[i] = method
 	}
 
 	for i, port := range accessPolicy.Spec.GetAllowedPorts() {

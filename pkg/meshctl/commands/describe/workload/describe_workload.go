@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/printing"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -53,7 +53,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 }
 
 func describeWorkloads(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
-	workloadClient := discoveryv1alpha2.NewWorkloadClient(c)
+	workloadClient := discoveryv1.NewWorkloadClient(c)
 	workloadList, err := workloadClient.ListWorkload(ctx)
 	if err != nil {
 		return "", err
@@ -113,7 +113,7 @@ type workloadKubernetes struct {
 	Controller     *v1.ClusterObjectRef
 }
 
-func matchWorkload(workload discoveryv1alpha2.Workload, searchTerms []string) bool {
+func matchWorkload(workload discoveryv1.Workload, searchTerms []string) bool {
 	// do not apply matching when there are no search strings
 	if len(searchTerms) == 0 {
 		return true
@@ -128,7 +128,7 @@ func matchWorkload(workload discoveryv1alpha2.Workload, searchTerms []string) bo
 	return false
 }
 
-func describeWorkload(workload *discoveryv1alpha2.Workload) workloadDescription {
+func describeWorkload(workload *discoveryv1.Workload) workloadDescription {
 	workloadMeta := getWorkloadMetadata(workload)
 	workloadKubernetes := getWorkloadKubernetes(workload)
 	return workloadDescription{
@@ -138,7 +138,7 @@ func describeWorkload(workload *discoveryv1alpha2.Workload) workloadDescription 
 	}
 }
 
-func getWorkloadMetadata(workload *discoveryv1alpha2.Workload) v1.ClusterObjectRef {
+func getWorkloadMetadata(workload *discoveryv1.Workload) v1.ClusterObjectRef {
 	return v1.ClusterObjectRef{
 		Name:        workload.Name,
 		Namespace:   workload.Namespace,
@@ -146,7 +146,7 @@ func getWorkloadMetadata(workload *discoveryv1alpha2.Workload) v1.ClusterObjectR
 	}
 }
 
-func getWorkloadKubernetes(workload *discoveryv1alpha2.Workload) workloadKubernetes {
+func getWorkloadKubernetes(workload *discoveryv1.Workload) workloadKubernetes {
 	return workloadKubernetes{
 		ServiceAccount: workload.Spec.GetKubernetes().ServiceAccountName,
 		PodLabels:      workload.Spec.GetKubernetes().GetPodLabels(),

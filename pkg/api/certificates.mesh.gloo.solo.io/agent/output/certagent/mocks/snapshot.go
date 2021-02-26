@@ -11,12 +11,12 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	certagent "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/output/certagent"
-	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	v1sets0 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 	output "github.com/solo-io/skv2/contrib/pkg/output"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	resource "github.com/solo-io/skv2/pkg/resource"
-	v1 "k8s.io/api/core/v1"
+	v10 "k8s.io/api/core/v1"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -148,10 +148,10 @@ func (mr *MockLabeledCertificateRequestSetMockRecorder) Labels() *gomock.Call {
 }
 
 // Set mocks base method
-func (m *MockLabeledCertificateRequestSet) Set() v1alpha2sets.CertificateRequestSet {
+func (m *MockLabeledCertificateRequestSet) Set() v1sets0.CertificateRequestSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
-	ret0, _ := ret[0].(v1alpha2sets.CertificateRequestSet)
+	ret0, _ := ret[0].(v1sets0.CertificateRequestSet)
 	return ret0
 }
 
@@ -264,7 +264,7 @@ func (m *MockBuilder) EXPECT() *MockBuilderMockRecorder {
 }
 
 // AddCertificateRequests mocks base method
-func (m *MockBuilder) AddCertificateRequests(certificateRequests ...*v1alpha2.CertificateRequest) {
+func (m *MockBuilder) AddCertificateRequests(certificateRequests ...*v1.CertificateRequest) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range certificateRequests {
@@ -280,10 +280,10 @@ func (mr *MockBuilderMockRecorder) AddCertificateRequests(certificateRequests ..
 }
 
 // GetCertificateRequests mocks base method
-func (m *MockBuilder) GetCertificateRequests() v1alpha2sets.CertificateRequestSet {
+func (m *MockBuilder) GetCertificateRequests() v1sets0.CertificateRequestSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCertificateRequests")
-	ret0, _ := ret[0].(v1alpha2sets.CertificateRequestSet)
+	ret0, _ := ret[0].(v1sets0.CertificateRequestSet)
 	return ret0
 }
 
@@ -294,7 +294,7 @@ func (mr *MockBuilderMockRecorder) GetCertificateRequests() *gomock.Call {
 }
 
 // AddSecrets mocks base method
-func (m *MockBuilder) AddSecrets(secrets ...*v1.Secret) {
+func (m *MockBuilder) AddSecrets(secrets ...*v10.Secret) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range secrets {

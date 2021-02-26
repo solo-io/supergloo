@@ -61,7 +61,7 @@ for which to enable collection as well as request/response level filter criteria
 For demonstration purposes let's create the following object:
 
 ```yaml
-apiVersion: observability.enterprise.mesh.gloo.solo.io/v1alpha1
+apiVersion: observability.enterprise.mesh.gloo.solo.io/v1
 kind: AccessLogRecord
 metadata:
   name: access-log-all
@@ -238,10 +238,10 @@ To showcase this, we will contrive a network error and see how access logs can h
 in diagnosing the problem.
 
 First ensure that the Gloo Mesh settings object disables Istio mTLS. This will allow
-us to modify mTLS settings for specific traffic targets.
+us to modify mTLS settings for specific Destinations.
 
 {{< highlight yaml "hl_lines=10" >}}
-apiVersion: settings.mesh.gloo.solo.io/v1alpha2
+apiVersion: settings.mesh.gloo.solo.io/v1
 kind: Settings
 metadata:
   name: settings
@@ -273,7 +273,7 @@ spec:
       caCertificates: /etc/certs/rootcacerts.pem
 ```
 
-Sending a request from the `productpage` pod to the ratings traffic target should yield 
+Sending a request from the `productpage` pod to the ratings Destination should yield 
 the following access log:
 
 {{< highlight json "hl_lines=10" >}}

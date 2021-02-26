@@ -9,27 +9,25 @@ import (
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh"
 	mock_access "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/access/mocks"
-	mock_failoverservice "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/failoverservice/mocks"
 	mock_federation "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/federation/mocks"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var _ = Describe("IstioMeshTranslator", func() {
 	var (
-		ctrl                          *gomock.Controller
-		ctx                           context.Context
-		mockMtlsTranslator            *mock_mtls.MockTranslator
-		mockFederationTranslator      *mock_federation.MockTranslator
-		mockAccessTranslator          *mock_access.MockTranslator
-		mockFailoverServiceTranslator *mock_failoverservice.MockTranslator
-		mockReporter                  *mock_reporting.MockReporter
-		in                            input.LocalSnapshot
-		istioMeshTranslator           mesh.Translator
+		ctrl                     *gomock.Controller
+		ctx                      context.Context
+		mockMtlsTranslator       *mock_mtls.MockTranslator
+		mockFederationTranslator *mock_federation.MockTranslator
+		mockAccessTranslator     *mock_access.MockTranslator
+		mockReporter             *mock_reporting.MockReporter
+		in                       input.LocalSnapshot
+		istioMeshTranslator      mesh.Translator
 	)
 
 	BeforeEach(func() {
@@ -38,10 +36,9 @@ var _ = Describe("IstioMeshTranslator", func() {
 		mockMtlsTranslator = mock_mtls.NewMockTranslator(ctrl)
 		mockFederationTranslator = mock_federation.NewMockTranslator(ctrl)
 		mockAccessTranslator = mock_access.NewMockTranslator(ctrl)
-		mockFailoverServiceTranslator = mock_failoverservice.NewMockTranslator(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		in = input.NewInputLocalSnapshotManualBuilder("").Build()
-		istioMeshTranslator = mesh.NewTranslator(ctx, mockMtlsTranslator, mockFederationTranslator, mockAccessTranslator, mockFailoverServiceTranslator)
+		istioMeshTranslator = mesh.NewTranslator(ctx, mockMtlsTranslator, mockFederationTranslator, mockAccessTranslator)
 	})
 
 	AfterEach(func() {
@@ -52,26 +49,23 @@ var _ = Describe("IstioMeshTranslator", func() {
 		outputs := istio.NewBuilder(context.TODO(), "")
 		localOutputs := local.NewBuilder(context.TODO(), "")
 
-		istioMesh := &discoveryv1alpha2.Mesh{
+		istioMesh := &discoveryv1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "mesh-1",
 				Namespace: "mesh-namespace-1",
 			},
-			Spec: discoveryv1alpha2.MeshSpec{
-				MeshType: &discoveryv1alpha2.MeshSpec_Istio_{
-					Istio: &discoveryv1alpha2.MeshSpec_Istio{
-						Installation: &discoveryv1alpha2.MeshSpec_MeshInstallation{
+			Spec: discoveryv1.MeshSpec{
+				Type: &discoveryv1.MeshSpec_Istio_{
+					Istio: &discoveryv1.MeshSpec_Istio{
+						Installation: &discoveryv1.MeshSpec_MeshInstallation{
 							Cluster:   "cluster-1",
 							Namespace: "istio-system",
 						},
 					},
 				},
 			},
-			Status: discoveryv1alpha2.MeshStatus{
-				AppliedFailoverServices: []*discoveryv1alpha2.MeshStatus_AppliedFailoverService{
-					{},
-				},
-				AppliedVirtualMesh: &discoveryv1alpha2.MeshStatus_AppliedVirtualMesh{},
+			Status: discoveryv1.MeshStatus{
+				AppliedVirtualMesh: &discoveryv1.MeshStatus_AppliedVirtualMesh{},
 			},
 		}
 
@@ -86,10 +80,6 @@ var _ = Describe("IstioMeshTranslator", func() {
 		mockAccessTranslator.
 			EXPECT().
 			Translate(istioMesh, istioMesh.Status.AppliedVirtualMesh, outputs)
-
-		mockFailoverServiceTranslator.
-			EXPECT().
-			Translate(in, istioMesh, istioMesh.Status.AppliedFailoverServices[0], outputs, mockReporter)
 
 		istioMeshTranslator.Translate(in, istioMesh, outputs, localOutputs, mockReporter)
 	})

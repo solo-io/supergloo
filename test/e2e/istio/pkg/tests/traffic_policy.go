@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/gloo-mesh/test/e2e"
 	"github.com/solo-io/gloo-mesh/test/utils"
@@ -101,20 +101,22 @@ func TrafficPolicyTest() {
 		})
 
 		By("creating TrafficPolicy that overrides default mTLS settings for reviews traffic target", func() {
-			tp := &v1alpha2.TrafficPolicy{
+			tp := &networkingv1.TrafficPolicy{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "TrafficPolicy",
-					APIVersion: v1alpha2.SchemeGroupVersion.String(),
+					APIVersion: networkingv1.SchemeGroupVersion.String(),
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        "mtls-disable",
 					Namespace:   BookinfoNamespace,
 					ClusterName: MgmtClusterName,
 				},
-				Spec: v1alpha2.TrafficPolicySpec{
-					Mtls: &v1alpha2.TrafficPolicySpec_MTLS{
-						Istio: &v1alpha2.TrafficPolicySpec_MTLS_Istio{
-							TlsMode: v1alpha2.TrafficPolicySpec_MTLS_Istio_DISABLE,
+				Spec: networkingv1.TrafficPolicySpec{
+					Policy: &networkingv1.TrafficPolicySpec_Policy{
+						Mtls: &networkingv1.TrafficPolicySpec_Policy_MTLS{
+							Istio: &networkingv1.TrafficPolicySpec_Policy_MTLS_Istio{
+								TlsMode: networkingv1.TrafficPolicySpec_Policy_MTLS_Istio_DISABLE,
+							},
 						},
 					},
 				},

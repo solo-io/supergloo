@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"net/http"
 
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/gloo-mesh/test/data"
 	"github.com/solo-io/gloo-mesh/test/e2e"
 	"github.com/solo-io/gloo-mesh/test/utils"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -42,7 +43,7 @@ func FederationTest() {
 
 		By("with federation enabled, TrafficShifts can be used for subsets across meshes ", func() {
 			// create cross cluster traffic shift
-			trafficShiftReviewsV3 := data.RemoteTrafficShiftPolicy("bookinfo-policy", BookinfoNamespace, &v1.ClusterObjectRef{
+			trafficShiftReviewsV3 := data.RemoteTrafficShiftPolicy("bookinfo-policy", BookinfoNamespace, &skv2corev1.ClusterObjectRef{
 				Name:        "reviews",
 				Namespace:   BookinfoNamespace,
 				ClusterName: MgmtClusterName,
@@ -67,35 +68,39 @@ func FederationTest() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// Create TrafficPolicy with fault injection applied to remote cluster
-			faultInjectionPolicy := &v1alpha2.TrafficPolicy{
+			faultInjectionPolicy := &networkingv1.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "remote-fault-injection",
 					Namespace: BookinfoNamespace,
 				},
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "TrafficPolicy",
-					APIVersion: v1alpha2.SchemeGroupVersion.String(),
+					APIVersion: networkingv1.SchemeGroupVersion.String(),
 				},
-				Spec: v1alpha2.TrafficPolicySpec{
+				Spec: networkingv1.TrafficPolicySpec{
 					SourceSelector: nil,
-					DestinationSelector: []*v1alpha2.TrafficTargetSelector{{
-						KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
-							Services: []*v1.ClusterObjectRef{
-								{
-									Name:        "reviews",
-									Namespace:   BookinfoNamespace,
-									ClusterName: RemoteClusterName,
+					DestinationSelector: []*commonv1.DestinationSelector{
+						{
+							KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+								Services: []*skv2corev1.ClusterObjectRef{
+									{
+										Name:        "reviews",
+										Namespace:   BookinfoNamespace,
+										ClusterName: RemoteClusterName,
+									},
 								},
 							},
 						},
-					}},
-					FaultInjection: &v1alpha2.TrafficPolicySpec_FaultInjection{
-						FaultInjectionType: &v1alpha2.TrafficPolicySpec_FaultInjection_Abort_{
-							&v1alpha2.TrafficPolicySpec_FaultInjection_Abort{
-								HttpStatus: http.StatusTeapot,
+					},
+					Policy: &networkingv1.TrafficPolicySpec_Policy{
+						FaultInjection: &networkingv1.TrafficPolicySpec_Policy_FaultInjection{
+							FaultInjectionType: &networkingv1.TrafficPolicySpec_Policy_FaultInjection_Abort_{
+								&networkingv1.TrafficPolicySpec_Policy_FaultInjection_Abort{
+									HttpStatus: http.StatusTeapot,
+								},
 							},
+							Percentage: 100,
 						},
-						Percentage: 100,
 					},
 				},
 			}
@@ -119,50 +124,54 @@ func FederationTest() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// Create TrafficPolicy with fault injection applied to remote cluster
-			trafficPolicy := &v1alpha2.TrafficPolicy{
+			trafficPolicy := &networkingv1.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "remote-mirror-and-shift",
 					Namespace: BookinfoNamespace,
 				},
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "TrafficPolicy",
-					APIVersion: v1alpha2.SchemeGroupVersion.String(),
+					APIVersion: networkingv1.SchemeGroupVersion.String(),
 				},
-				Spec: v1alpha2.TrafficPolicySpec{
+				Spec: networkingv1.TrafficPolicySpec{
 					SourceSelector: nil,
-					DestinationSelector: []*v1alpha2.TrafficTargetSelector{{
-						KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
-							Services: []*v1.ClusterObjectRef{
-								{
-									Name:        "reviews",
-									Namespace:   BookinfoNamespace,
-									ClusterName: RemoteClusterName,
-								},
-							},
-						},
-					}},
-					Mirror: &v1alpha2.TrafficPolicySpec_Mirror{
-						DestinationType: &v1alpha2.TrafficPolicySpec_Mirror_KubeService{
-							KubeService: &v1.ClusterObjectRef{
-								Name:        "reviews",
-								Namespace:   BookinfoNamespace,
-								ClusterName: MgmtClusterName,
-							},
-						},
-						Percentage: 50,
-						Port:       9080,
-					},
-					TrafficShift: &v1alpha2.TrafficPolicySpec_MultiDestination{
-						Destinations: []*v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination{
-							{
-								DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
-									KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
+					DestinationSelector: []*commonv1.DestinationSelector{
+						{
+							KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+								Services: []*skv2corev1.ClusterObjectRef{
+									{
 										Name:        "reviews",
 										Namespace:   BookinfoNamespace,
-										ClusterName: MgmtClusterName,
+										ClusterName: RemoteClusterName,
 									},
 								},
-								Weight: 50,
+							},
+						},
+					},
+					Policy: &networkingv1.TrafficPolicySpec_Policy{
+						Mirror: &networkingv1.TrafficPolicySpec_Policy_Mirror{
+							DestinationType: &networkingv1.TrafficPolicySpec_Policy_Mirror_KubeService{
+								KubeService: &skv2corev1.ClusterObjectRef{
+									Name:        "reviews",
+									Namespace:   BookinfoNamespace,
+									ClusterName: MgmtClusterName,
+								},
+							},
+							Percentage: 50,
+							Port:       9080,
+						},
+						TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
+							Destinations: []*networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+								{
+									DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+										KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+											Name:        "reviews",
+											Namespace:   BookinfoNamespace,
+											ClusterName: MgmtClusterName,
+										},
+									},
+									Weight: 50,
+								},
 							},
 						},
 					},
@@ -186,7 +195,7 @@ func FederationTest() {
 						Namespace:   BookinfoNamespace,
 						ClusterName: RemoteClusterName,
 					},
-					&discoveryv1alpha2.MeshSpec_MeshInstallation{
+					&discoveryv1.MeshSpec_MeshInstallation{
 						Namespace: "istio-system",
 						Cluster:   MgmtClusterName,
 					},

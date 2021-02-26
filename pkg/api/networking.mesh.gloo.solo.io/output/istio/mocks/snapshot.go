@@ -11,16 +11,16 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
-	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 	istio "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
-	v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1"
-	v1alpha1sets "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
+	v1beta1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1"
+	v1beta1sets0 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1/sets"
 	output "github.com/solo-io/skv2/contrib/pkg/output"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	resource "github.com/solo-io/skv2/pkg/resource"
 	v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
-	v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
+	v1beta10 "istio.io/client-go/pkg/apis/security/v1beta1"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -250,10 +250,10 @@ func (mr *MockLabeledIssuedCertificateSetMockRecorder) Labels() *gomock.Call {
 }
 
 // Set mocks base method
-func (m *MockLabeledIssuedCertificateSet) Set() v1alpha2sets.IssuedCertificateSet {
+func (m *MockLabeledIssuedCertificateSet) Set() v1sets.IssuedCertificateSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
-	ret0, _ := ret[0].(v1alpha2sets.IssuedCertificateSet)
+	ret0, _ := ret[0].(v1sets.IssuedCertificateSet)
 	return ret0
 }
 
@@ -315,10 +315,10 @@ func (mr *MockLabeledPodBounceDirectiveSetMockRecorder) Labels() *gomock.Call {
 }
 
 // Set mocks base method
-func (m *MockLabeledPodBounceDirectiveSet) Set() v1alpha2sets.PodBounceDirectiveSet {
+func (m *MockLabeledPodBounceDirectiveSet) Set() v1sets.PodBounceDirectiveSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
-	ret0, _ := ret[0].(v1alpha2sets.PodBounceDirectiveSet)
+	ret0, _ := ret[0].(v1sets.PodBounceDirectiveSet)
 	return ret0
 }
 
@@ -380,10 +380,10 @@ func (mr *MockLabeledXdsConfigSetMockRecorder) Labels() *gomock.Call {
 }
 
 // Set mocks base method
-func (m *MockLabeledXdsConfigSet) Set() v1alpha1sets.XdsConfigSet {
+func (m *MockLabeledXdsConfigSet) Set() v1beta1sets0.XdsConfigSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set")
-	ret0, _ := ret[0].(v1alpha1sets.XdsConfigSet)
+	ret0, _ := ret[0].(v1beta1sets0.XdsConfigSet)
 	return ret0
 }
 
@@ -821,7 +821,7 @@ func (m *MockBuilder) EXPECT() *MockBuilderMockRecorder {
 }
 
 // AddIssuedCertificates mocks base method
-func (m *MockBuilder) AddIssuedCertificates(issuedCertificates ...*v1alpha2.IssuedCertificate) {
+func (m *MockBuilder) AddIssuedCertificates(issuedCertificates ...*v1.IssuedCertificate) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range issuedCertificates {
@@ -837,10 +837,10 @@ func (mr *MockBuilderMockRecorder) AddIssuedCertificates(issuedCertificates ...i
 }
 
 // GetIssuedCertificates mocks base method
-func (m *MockBuilder) GetIssuedCertificates() v1alpha2sets.IssuedCertificateSet {
+func (m *MockBuilder) GetIssuedCertificates() v1sets.IssuedCertificateSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetIssuedCertificates")
-	ret0, _ := ret[0].(v1alpha2sets.IssuedCertificateSet)
+	ret0, _ := ret[0].(v1sets.IssuedCertificateSet)
 	return ret0
 }
 
@@ -851,7 +851,7 @@ func (mr *MockBuilderMockRecorder) GetIssuedCertificates() *gomock.Call {
 }
 
 // AddPodBounceDirectives mocks base method
-func (m *MockBuilder) AddPodBounceDirectives(podBounceDirectives ...*v1alpha2.PodBounceDirective) {
+func (m *MockBuilder) AddPodBounceDirectives(podBounceDirectives ...*v1.PodBounceDirective) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range podBounceDirectives {
@@ -867,10 +867,10 @@ func (mr *MockBuilderMockRecorder) AddPodBounceDirectives(podBounceDirectives ..
 }
 
 // GetPodBounceDirectives mocks base method
-func (m *MockBuilder) GetPodBounceDirectives() v1alpha2sets.PodBounceDirectiveSet {
+func (m *MockBuilder) GetPodBounceDirectives() v1sets.PodBounceDirectiveSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPodBounceDirectives")
-	ret0, _ := ret[0].(v1alpha2sets.PodBounceDirectiveSet)
+	ret0, _ := ret[0].(v1sets.PodBounceDirectiveSet)
 	return ret0
 }
 
@@ -881,7 +881,7 @@ func (mr *MockBuilderMockRecorder) GetPodBounceDirectives() *gomock.Call {
 }
 
 // AddXdsConfigs mocks base method
-func (m *MockBuilder) AddXdsConfigs(xdsConfigs ...*v1alpha1.XdsConfig) {
+func (m *MockBuilder) AddXdsConfigs(xdsConfigs ...*v1beta1.XdsConfig) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range xdsConfigs {
@@ -897,10 +897,10 @@ func (mr *MockBuilderMockRecorder) AddXdsConfigs(xdsConfigs ...interface{}) *gom
 }
 
 // GetXdsConfigs mocks base method
-func (m *MockBuilder) GetXdsConfigs() v1alpha1sets.XdsConfigSet {
+func (m *MockBuilder) GetXdsConfigs() v1beta1sets0.XdsConfigSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetXdsConfigs")
-	ret0, _ := ret[0].(v1alpha1sets.XdsConfigSet)
+	ret0, _ := ret[0].(v1beta1sets0.XdsConfigSet)
 	return ret0
 }
 
@@ -1061,7 +1061,7 @@ func (mr *MockBuilderMockRecorder) GetVirtualServices() *gomock.Call {
 }
 
 // AddAuthorizationPolicies mocks base method
-func (m *MockBuilder) AddAuthorizationPolicies(authorizationPolicies ...*v1beta1.AuthorizationPolicy) {
+func (m *MockBuilder) AddAuthorizationPolicies(authorizationPolicies ...*v1beta10.AuthorizationPolicy) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range authorizationPolicies {

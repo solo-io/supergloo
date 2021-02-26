@@ -38,7 +38,7 @@ kubectl scale deployment -n gloo-mesh networking --replicas 0
 kubectl scale deployment -n gloo-mesh discovery --replicas 0
 ```
 
-3\. Delete all resources in the `discovery.gloo.mesh.gloo.solo.io` API group such as `meshes`, `traffictargets`, and `workloads`.
+3\. Delete all resources in the `discovery.gloo.mesh.gloo.solo.io` API group such as `meshes`, `destinations`, and `workloads`.
 These resources will be recreated when `discovery` is scaled back up later in the upgrade process. Deleting these
 resources ensures that the latest discovery implementation will recreate them with the structure it expects. 
 
@@ -82,7 +82,7 @@ and CRDs are updated to a version compatible with the version of Gloo Mesh you a
 [setup guide on registering a cluster]({{% versioned_link_path fromRoot="/setup/register_cluster" %}})
 and be sure to use the same cluster names and contexts that were used at the initial cluster registration time.
 
-8\. Scale the `discovery` deployment to one replica, and wait for all `discovery` resources such as `meshes`, `traffictargets`,
+8\. Scale the `discovery` deployment to one replica, and wait for all `discovery` resources such as `meshes`, `destinations`,
 and `workloads` to be written to the management cluster. This may take a few minutes, and will ensure that the `networking`
 component has access to all the data it needs to continue processing user-provided network configuration. Discovery is
 complete when the pod no longer outputs a steady stream of logs or when all expected resources can be found on the cluster.

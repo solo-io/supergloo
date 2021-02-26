@@ -3,9 +3,9 @@ package localityutils
 import (
 	"github.com/rotisserie/eris"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/api/label"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -42,7 +42,7 @@ func GetServiceRegion(service *corev1.Service, pods corev1sets.PodSet, nodes cor
 	// pick any pod; all of the pods' nodes should be in the same region
 	pod := matchingPods[0]
 	// get the node that the pod is running on
-	node, err := nodes.Find(&skv1.ClusterObjectRef{
+	node, err := nodes.Find(&skv2corev1.ClusterObjectRef{
 		ClusterName: pod.ClusterName,
 		Name:        pod.Spec.NodeName,
 	})
@@ -58,8 +58,8 @@ func GetSubLocality(
 	clusterName string,
 	nodeName string,
 	nodes corev1sets.NodeSet,
-) (*v1alpha2.SubLocality, error) {
-	node, err := nodes.Find(&skv1.ClusterObjectRef{
+) (*v1.SubLocality, error) {
+	node, err := nodes.Find(&skv2corev1.ClusterObjectRef{
 		ClusterName: clusterName,
 		Name:        nodeName,
 	})
@@ -77,7 +77,7 @@ func GetSubLocality(
 		return nil, eris.Errorf("failed to find zone label on node %s", node.GetName())
 	}
 
-	subLocality := &v1alpha2.SubLocality{
+	subLocality := &v1.SubLocality{
 		Zone: zone,
 	}
 

@@ -365,7 +365,7 @@ Kubernetes Mesh Services:
 +---------------------------------+-----------------+-----------+--------------+
 {{< /tab >}}
 {{< tab name="kubectl" codelang="shell" >}}
-kubectl get traffictarget -n gloo-mesh
+kubectl get destination -n gloo-mesh
 
 NAME                                             AGE
 details-bookinfo-linkerd-cluster                 15m
@@ -417,7 +417,7 @@ meshctl create trafficpolicy # run interactively
 {{< /tab >}}
 {{< tab name="kubectl" codelang="shell" >}}
 cat <<EOF | kubectl apply -f -
-apiVersion: networking.mesh.gloo.solo.io/v1alpha1
+apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
 metadata:
   name: reviews-v3-shift
@@ -429,14 +429,15 @@ spec:
         app: reviews
   httpRequestMatchers:
   - prefix: /
-  trafficShift:
-    destinations:
-    - destination:
-        name: reviews-v3
-        namespace: bookinfo
-        cluster: linkerd-cluster
-      port: 9080
-      weight: 1
+  policy:
+    trafficShift:
+      destinations:
+      - destination:
+          name: reviews-v3
+          namespace: bookinfo
+          cluster: linkerd-cluster
+        port: 9080
+        weight: 1
 EOF
 {{< /tab >}}
 {{< /tabs >}}

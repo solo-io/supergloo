@@ -7,10 +7,11 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/test/e2e"
 	"github.com/solo-io/gloo-mesh/test/utils"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -41,19 +42,19 @@ var _ = Describe("OsmE2e", func() {
 		manifest, err := utils.NewManifest("osm_test.yaml")
 		Expect(err).ToNot(HaveOccurred())
 
-		trafficPolicy := &v1alpha2.TrafficPolicy{
+		trafficPolicy := &networkingv1.TrafficPolicy{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "test-policy",
 			},
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "TrafficPolicy",
-				APIVersion: v1alpha2.SchemeGroupVersion.String(),
+				APIVersion: networkingv1.SchemeGroupVersion.String(),
 			},
-			Spec: v1alpha2.TrafficPolicySpec{
-				DestinationSelector: []*v1alpha2.TrafficTargetSelector{
+			Spec: networkingv1.TrafficPolicySpec{
+				DestinationSelector: []*commonv1.DestinationSelector{
 					{
-						KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
-							Services: []*v1.ClusterObjectRef{
+						KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+							Services: []*skv2corev1.ClusterObjectRef{
 								{
 									Name:        bookStore,
 									Namespace:   bookStore,
@@ -63,45 +64,47 @@ var _ = Describe("OsmE2e", func() {
 						},
 					},
 				},
-				TrafficShift: &v1alpha2.TrafficPolicySpec_MultiDestination{
-					Destinations: []*v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination{
-						{
-							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
-								KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
-									Name:        fmt.Sprintf("%s-v1", bookStore),
-									Namespace:   bookStore,
-									ClusterName: mgmtClusterName,
+				Policy: &networkingv1.TrafficPolicySpec_Policy{
+					TrafficShift: &networkingv1.TrafficPolicySpec_Policy_MultiDestination{
+						Destinations: []*networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+							{
+								DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+									KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+										Name:        fmt.Sprintf("%s-v1", bookStore),
+										Namespace:   bookStore,
+										ClusterName: mgmtClusterName,
+									},
 								},
+								Weight: 50,
 							},
-							Weight: 50,
-						},
-						{
-							DestinationType: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService{
-								KubeService: &v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination{
-									Name:        fmt.Sprintf("%s-v2", bookStore),
-									Namespace:   bookStore,
-									ClusterName: mgmtClusterName,
+							{
+								DestinationType: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+									KubeService: &networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+										Name:        fmt.Sprintf("%s-v2", bookStore),
+										Namespace:   bookStore,
+										ClusterName: mgmtClusterName,
+									},
 								},
+								Weight: 50,
 							},
-							Weight: 50,
 						},
 					},
 				},
 			},
 		}
-		accessPolicy := &v1alpha2.AccessPolicy{
+		accessPolicy := &networkingv1.AccessPolicy{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "test-policy",
 			},
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "AccessPolicy",
-				APIVersion: v1alpha2.SchemeGroupVersion.String(),
+				APIVersion: networkingv1.SchemeGroupVersion.String(),
 			},
-			Spec: v1alpha2.AccessPolicySpec{
-				SourceSelector: []*v1alpha2.IdentitySelector{
+			Spec: networkingv1.AccessPolicySpec{
+				SourceSelector: []*commonv1.IdentitySelector{
 					{
-						KubeServiceAccountRefs: &v1alpha2.IdentitySelector_KubeServiceAccountRefs{
-							ServiceAccounts: []*v1.ClusterObjectRef{
+						KubeServiceAccountRefs: &commonv1.IdentitySelector_KubeServiceAccountRefs{
+							ServiceAccounts: []*skv2corev1.ClusterObjectRef{
 								{
 									Name:        bookThief,
 									Namespace:   bookThief,
@@ -111,10 +114,10 @@ var _ = Describe("OsmE2e", func() {
 						},
 					},
 				},
-				DestinationSelector: []*v1alpha2.TrafficTargetSelector{
+				DestinationSelector: []*commonv1.DestinationSelector{
 					{
-						KubeServiceRefs: &v1alpha2.TrafficTargetSelector_KubeServiceRefs{
-							Services: []*v1.ClusterObjectRef{
+						KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+							Services: []*skv2corev1.ClusterObjectRef{
 								{
 									Name:        fmt.Sprintf("%s-v1", bookStore),
 									Namespace:   bookStore,

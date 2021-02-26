@@ -9,8 +9,8 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	input "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 )
 
 // MockTranslator is a mock of Translator interface
@@ -37,10 +37,10 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // TranslateMeshes mocks base method
-func (m *MockTranslator) TranslateMeshes(in input.DiscoveryInputSnapshot, settings *v1alpha2.DiscoverySettings) v1alpha2sets.MeshSet {
+func (m *MockTranslator) TranslateMeshes(in input.DiscoveryInputSnapshot, settings *v1.DiscoverySettings) v1sets.MeshSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranslateMeshes", in, settings)
-	ret0, _ := ret[0].(v1alpha2sets.MeshSet)
+	ret0, _ := ret[0].(v1sets.MeshSet)
 	return ret0
 }
 

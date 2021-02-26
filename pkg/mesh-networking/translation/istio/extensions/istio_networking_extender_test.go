@@ -3,6 +3,7 @@ package extensions_test
 import (
 	"context"
 
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1beta1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
@@ -11,8 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	mock_istio_extensions "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/extensions/mocks"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
@@ -22,7 +22,7 @@ import (
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/extensions"
 )
 
-//go:generate mockgen -destination mocks/mock_extensions_client.go -package mock_extensions github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1 NetworkingExtensionsClient,NetworkingExtensions_WatchPushNotificationsClient
+//go:generate mockgen -destination mocks/mock_extensions_client.go -package mock_extensions github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1beta1 NetworkingExtensionsClient,NetworkingExtensions_WatchPushNotificationsClient
 
 var _ = Describe("IstioNetworkingExtender", func() {
 	var (
@@ -45,31 +45,31 @@ var _ = Describe("IstioNetworkingExtender", func() {
 	})
 
 	It("applies patches to istio outputs", func() {
-		mesh := &discoveryv1alpha2.Mesh{
+		mesh := &discoveryv1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "mesh",
 				Namespace: "namespace",
 			},
 		}
 
-		workload := &discoveryv1alpha2.Workload{
+		workload := &discoveryv1.Workload{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "workload",
 				Namespace: "namespace",
 			},
 		}
 
-		trafficTarget := &discoveryv1alpha2.TrafficTarget{
+		destination := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "traffictarget",
+				Name:      "destination",
 				Namespace: "namespace",
 			},
 		}
 
 		inputs := input.NewInputLocalSnapshotManualBuilder("istio-extender-test").
-			AddMeshes([]*discoveryv1alpha2.Mesh{mesh}).
-			AddWorkloads([]*discoveryv1alpha2.Workload{workload}).
-			AddTrafficTargets([]*discoveryv1alpha2.TrafficTarget{trafficTarget}).
+			AddMeshes([]*discoveryv1.Mesh{mesh}).
+			AddWorkloads([]*discoveryv1.Workload{workload}).
+			AddDestinations([]*discoveryv1.Destination{destination}).
 			Build()
 
 		outputs := istio.NewBuilder(ctx, "test")
@@ -99,10 +99,10 @@ var _ = Describe("IstioNetworkingExtender", func() {
 		})
 
 		clientset.EXPECT().GetClients().Return(mockClients)
-		client.EXPECT().GetExtensionPatches(ctx, &v1alpha1.ExtensionPatchRequest{
+		client.EXPECT().GetExtensionPatches(ctx, &v1beta1.ExtensionPatchRequest{
 			Inputs:  extensions.InputSnapshotToProto(inputs),
 			Outputs: OutputsToProto(outputs),
-		}).Return(&v1alpha1.ExtensionPatchResponse{
+		}).Return(&v1beta1.ExtensionPatchResponse{
 			PatchedOutputs: OutputsToProto(expectedOutputs),
 		}, nil)
 

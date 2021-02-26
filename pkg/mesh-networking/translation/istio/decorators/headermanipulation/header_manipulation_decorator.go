@@ -1,8 +1,8 @@
 package headermanipulation
 
 import (
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
@@ -33,9 +33,9 @@ func (d *headerManipulationDecorator) DecoratorName() string {
 }
 
 func (d *headerManipulationDecorator) ApplyTrafficPolicyToVirtualService(
-	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
-	_ *discoveryv1alpha2.TrafficTarget,
-	_ *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+	_ *discoveryv1.Destination,
+	_ *discoveryv1.MeshSpec_MeshInstallation,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
@@ -50,9 +50,9 @@ func (d *headerManipulationDecorator) ApplyTrafficPolicyToVirtualService(
 }
 
 func (d *headerManipulationDecorator) translateHeaderManipulation(
-	trafficPolicy *v1alpha2.TrafficPolicySpec,
+	trafficPolicy *v1.TrafficPolicySpec,
 ) *networkingv1alpha3spec.Headers {
-	headerManipulation := trafficPolicy.GetHeaderManipulation()
+	headerManipulation := trafficPolicy.GetPolicy().GetHeaderManipulation()
 	if headerManipulation == nil {
 		return nil
 	}

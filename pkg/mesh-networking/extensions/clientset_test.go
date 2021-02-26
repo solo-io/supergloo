@@ -9,7 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1beta1"
 	mock_extensions "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/extensions/mocks"
 
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
@@ -33,12 +33,12 @@ var _ = Describe("Clientset", func() {
 	It("watches notifications and calls a push function on receipt of notification", func() {
 		ctx, cancel := context.WithCancel(ctx)
 
-		client.EXPECT().WatchPushNotifications(ctx, &v1alpha1.WatchPushNotificationsRequest{}).Return(notificationStream, nil).AnyTimes()
+		client.EXPECT().WatchPushNotifications(ctx, &v1beta1.WatchPushNotificationsRequest{}).Return(notificationStream, nil).AnyTimes()
 
-		notificationStream.EXPECT().Recv().Return(&v1alpha1.PushNotification{}, nil).AnyTimes()
+		notificationStream.EXPECT().Recv().Return(&v1beta1.PushNotification{}, nil).AnyTimes()
 
 		counter := atomic.Int32{}
-		err := Clients{client}.WatchPushNotifications(ctx, func(*v1alpha1.PushNotification) {
+		err := Clients{client}.WatchPushNotifications(ctx, func(*v1beta1.PushNotification) {
 			counter.Inc()
 		})
 		Expect(err).NotTo(HaveOccurred())

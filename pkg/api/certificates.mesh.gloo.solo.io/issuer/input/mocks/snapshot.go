@@ -10,7 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	input "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -39,10 +39,10 @@ func (m *MockSnapshot) EXPECT() *MockSnapshotMockRecorder {
 }
 
 // IssuedCertificates mocks base method
-func (m *MockSnapshot) IssuedCertificates() v1alpha2sets.IssuedCertificateSet {
+func (m *MockSnapshot) IssuedCertificates() v1sets.IssuedCertificateSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IssuedCertificates")
-	ret0, _ := ret[0].(v1alpha2sets.IssuedCertificateSet)
+	ret0, _ := ret[0].(v1sets.IssuedCertificateSet)
 	return ret0
 }
 
@@ -53,10 +53,10 @@ func (mr *MockSnapshotMockRecorder) IssuedCertificates() *gomock.Call {
 }
 
 // CertificateRequests mocks base method
-func (m *MockSnapshot) CertificateRequests() v1alpha2sets.CertificateRequestSet {
+func (m *MockSnapshot) CertificateRequests() v1sets.CertificateRequestSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CertificateRequests")
-	ret0, _ := ret[0].(v1alpha2sets.CertificateRequestSet)
+	ret0, _ := ret[0].(v1sets.CertificateRequestSet)
 	return ret0
 }
 

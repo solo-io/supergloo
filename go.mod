@@ -26,7 +26,6 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/aws/aws-app-mesh-controller-for-k8s v1.1.1
 	github.com/aws/aws-sdk-go v1.36.19
-	github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker v1.13.1 // indirect
 	github.com/envoyproxy/go-control-plane v0.9.9-0.20210115003313-31f9241a16e6

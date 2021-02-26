@@ -21,8 +21,8 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	certificates_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
-	certificates_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
+	certificates_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificates_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	v1 "k8s.io/api/core/v1"
@@ -39,7 +39,7 @@ var SnapshotGVKs = []schema.GroupVersionKind{
 
 	schema.GroupVersionKind{
 		Group:   "certificates.mesh.gloo.solo.io",
-		Version: "v1alpha2",
+		Version: "v1",
 		Kind:    "CertificateRequest",
 	},
 
@@ -98,7 +98,7 @@ func NewLabelPartitionedSnapshot(
 	name,
 	labelKey string, // the key by which to partition the resources
 
-	certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet,
+	certificateRequests certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet,
 
 	secrets v1_sets.SecretSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
@@ -128,7 +128,7 @@ func NewSinglePartitionedSnapshot(
 	name string,
 	snapshotLabels map[string]string, // a single set of labels shared by all resources
 
-	certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet,
+	certificateRequests certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet,
 
 	secrets v1_sets.SecretSet,
 	clusters ...string, // the set of clusters to apply the snapshot to. only required for multicluster snapshots.
@@ -187,8 +187,8 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 	}.SyncMultiCluster(ctx, multiClusterClient, errHandler)
 }
 
-func partitionCertificateRequestsByLabel(labelKey string, set certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet) ([]LabeledCertificateRequestSet, error) {
-	setsByLabel := map[string]certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet{}
+func partitionCertificateRequestsByLabel(labelKey string, set certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet) ([]LabeledCertificateRequestSet, error) {
+	setsByLabel := map[string]certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
@@ -201,7 +201,7 @@ func partitionCertificateRequestsByLabel(labelKey string, set certificates_mesh_
 
 		setForValue, ok := setsByLabel[labelValue]
 		if !ok {
-			setForValue = certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
+			setForValue = certificates_mesh_gloo_solo_io_v1_sets.NewCertificateRequestSet()
 			setsByLabel[labelValue] = setForValue
 		}
 		setForValue.Insert(obj)
@@ -286,7 +286,7 @@ func (s snapshot) Secrets() []LabeledSecretSet {
 func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
-	certificateRequestSet := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
+	certificateRequestSet := certificates_mesh_gloo_solo_io_v1_sets.NewCertificateRequestSet()
 	for _, set := range s.certificateRequests {
 		certificateRequestSet = certificateRequestSet.Union(set.Set())
 	}
@@ -311,18 +311,18 @@ type LabeledCertificateRequestSet interface {
 	Labels() map[string]string
 
 	// returns the set of CertificateRequestes with the given labels
-	Set() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
+	Set() certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet
 
 	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
 	Generic() output.ResourceList
 }
 
 type labeledCertificateRequestSet struct {
-	set    certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
+	set    certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet
 	labels map[string]string
 }
 
-func NewLabeledCertificateRequestSet(set certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet, labels map[string]string) (LabeledCertificateRequestSet, error) {
+func NewLabeledCertificateRequestSet(set certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet, labels map[string]string) (LabeledCertificateRequestSet, error) {
 	// validate that each CertificateRequest contains the labels, else this is not a valid LabeledCertificateRequestSet
 	for _, item := range set.List() {
 		for k, v := range labels {
@@ -340,7 +340,7 @@ func (l *labeledCertificateRequestSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledCertificateRequestSet) Set() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet {
+func (l *labeledCertificateRequestSet) Set() certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet {
 	return l.set
 }
 
@@ -352,7 +352,7 @@ func (l labeledCertificateRequestSet) Generic() output.ResourceList {
 
 	// enable list func for garbage collection
 	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
-		var list certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequestList
+		var list certificates_mesh_gloo_solo_io_v1.CertificateRequestList
 		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
 			return nil, err
 		}
@@ -444,7 +444,7 @@ type builder struct {
 	name     string
 	clusters []string
 
-	certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
+	certificateRequests certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet
 
 	secrets v1_sets.SecretSet
 }
@@ -454,7 +454,7 @@ func NewBuilder(ctx context.Context, name string) *builder {
 		ctx:  ctx,
 		name: name,
 
-		certificateRequests: certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet(),
+		certificateRequests: certificates_mesh_gloo_solo_io_v1_sets.NewCertificateRequestSet(),
 
 		secrets: v1_sets.NewSecretSet(),
 	}
@@ -465,10 +465,10 @@ func NewBuilder(ctx context.Context, name string) *builder {
 type Builder interface {
 
 	// add CertificateRequests to the collected outputs
-	AddCertificateRequests(certificateRequests ...*certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequest)
+	AddCertificateRequests(certificateRequests ...*certificates_mesh_gloo_solo_io_v1.CertificateRequest)
 
 	// get the collected CertificateRequests
-	GetCertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
+	GetCertificateRequests() certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet
 
 	// add Secrets to the collected outputs
 	AddSecrets(secrets ...*v1.Secret)
@@ -499,7 +499,7 @@ type Builder interface {
 	Generic() resource.ClusterSnapshot
 }
 
-func (b *builder) AddCertificateRequests(certificateRequests ...*certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequest) {
+func (b *builder) AddCertificateRequests(certificateRequests ...*certificates_mesh_gloo_solo_io_v1.CertificateRequest) {
 	for _, obj := range certificateRequests {
 		if obj == nil {
 			continue
@@ -518,7 +518,7 @@ func (b *builder) AddSecrets(secrets ...*v1.Secret) {
 	}
 }
 
-func (b *builder) GetCertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet {
+func (b *builder) GetCertificateRequests() certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet {
 	return b.certificateRequests
 }
 
@@ -601,7 +601,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 		cluster := obj.GetClusterName()
 		gvk := schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "CertificateRequest",
 		}
 		clusterSnapshots.Insert(cluster, gvk, obj)

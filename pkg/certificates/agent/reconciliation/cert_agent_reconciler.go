@@ -11,8 +11,8 @@ import (
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/agent/output/certagent"
-	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/agent/utils"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
@@ -38,7 +38,7 @@ var (
 	// secrets the agent doesn't own
 	agentLabels = func() map[string]string {
 		labels := map[string]string{
-			fmt.Sprintf("agent.%v", v1alpha2.SchemeGroupVersion.Group): defaults.GetPodNamespace(),
+			fmt.Sprintf("agent.%v", v1.SchemeGroupVersion.Group): defaults.GetPodNamespace(),
 		}
 		if agentCluster := defaults.GetAgentCluster(); agentCluster != "" {
 			labels[metautils.AgentLabelKey] = agentCluster
@@ -46,8 +46,8 @@ var (
 		return labels
 	}
 
-	privateKeySecretType        = corev1.SecretType(fmt.Sprintf("%s/generated_private_key", v1alpha2.SchemeGroupVersion.Group))
-	issuedCertificateSecretType = corev1.SecretType(fmt.Sprintf("%s/issued_certificate", v1alpha2.SchemeGroupVersion.Group))
+	privateKeySecretType        = corev1.SecretType(fmt.Sprintf("%s/generated_private_key", v1.SchemeGroupVersion.Group))
+	issuedCertificateSecretType = corev1.SecretType(fmt.Sprintf("%s/issued_certificate", v1.SchemeGroupVersion.Group))
 )
 
 type certAgentReconciler struct {
@@ -98,7 +98,7 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 			outputs,
 		); err != nil {
 			issuedCertificate.Status.Error = err.Error()
-			issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_FAILED
+			issuedCertificate.Status.State = v1.IssuedCertificateStatus_FAILED
 		}
 	}
 	outSnap, err := outputs.BuildSinglePartitionedSnapshot(agentLabels())
@@ -121,7 +121,7 @@ func (r *certAgentReconciler) reconcile(_ ezkube.ResourceId) (bool, error) {
 }
 
 func (r *certAgentReconciler) reconcileIssuedCertificate(
-	issuedCertificate *v1alpha2.IssuedCertificate,
+	issuedCertificate *v1.IssuedCertificate,
 	inputSecrets corev1sets.SecretSet,
 	inputPods corev1sets.PodSet,
 	inputConfigMaps corev1sets.ConfigMapSet,
@@ -131,7 +131,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 ) error {
 	// if observed generation is out of sync, treat the issued certificate as Pending (spec has been modified)
 	if issuedCertificate.Status.ObservedGeneration != issuedCertificate.Generation {
-		issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_PENDING
+		issuedCertificate.Status.State = v1.IssuedCertificateStatus_PENDING
 	}
 
 	// reset & update status
@@ -140,7 +140,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 
 	// state-machine style processor
 	switch issuedCertificate.Status.State {
-	case v1alpha2.IssuedCertificateStatus_FINISHED:
+	case v1.IssuedCertificateStatus_FINISHED:
 		// ensure issued cert secret exists, nothing to do for this issued certificate
 		if issuedCertificateSecret, err := inputSecrets.Find(issuedCertificate.Spec.IssuedCertificateSecret); err == nil {
 			// add secret output to prevent it from being GC'ed
@@ -149,10 +149,10 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		}
 		// otherwise, restart the workflow from PENDING
 		fallthrough
-	case v1alpha2.IssuedCertificateStatus_FAILED:
+	case v1.IssuedCertificateStatus_FAILED:
 		// restart the workflow from PENDING
 		fallthrough
-	case v1alpha2.IssuedCertificateStatus_PENDING:
+	case v1.IssuedCertificateStatus_PENDING:
 		// create a new private key
 		privateKey, err := utils.GeneratePrivateKey()
 		if err != nil {
@@ -177,21 +177,21 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		if err != nil {
 			return err
 		}
-		certificateRequest := &v1alpha2.CertificateRequest{
+		certificateRequest := &v1.CertificateRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      issuedCertificate.Name,
 				Namespace: issuedCertificate.Namespace,
 				Labels:    agentLabels(),
 			},
-			Spec: v1alpha2.CertificateRequestSpec{
+			Spec: v1.CertificateRequestSpec{
 				CertificateSigningRequest: csrBytes,
 			},
 		}
 		outputs.AddCertificateRequests(certificateRequest)
 
 		// set status to REQUESTED
-		issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_REQUESTED
-	case v1alpha2.IssuedCertificateStatus_REQUESTED:
+		issuedCertificate.Status.State = v1.IssuedCertificateStatus_REQUESTED
+	case v1.IssuedCertificateStatus_REQUESTED:
 
 		// retrieve private key
 		privateKeySecret, err := inputSecrets.Find(issuedCertificate)
@@ -211,7 +211,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		}
 
 		switch certificateRequest.Status.State {
-		case v1alpha2.CertificateRequestStatus_PENDING:
+		case v1.CertificateRequestStatus_PENDING:
 			contextutils.LoggerFrom(r.ctx).Infof("waiting for certificate request %v to be signed by Issuer", sets.Key(certificateRequest))
 
 			// add secret and certrequest to output to prevent them from being GC'ed
@@ -221,7 +221,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 			// if the certificate signing request has not been
 			// fulfilled, return and wait for the next reconcile
 			return nil
-		case v1alpha2.CertificateRequestStatus_FAILED:
+		case v1.CertificateRequestStatus_FAILED:
 			return eris.Errorf("certificate request %v failed to be signed by Issuer: %v", sets.Key(certificateRequest), certificateRequest.Status.Error)
 		}
 
@@ -250,8 +250,8 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		outputs.AddSecrets(issuedCertificateSecret)
 
 		// mark issued certificate as ISSUED
-		issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_ISSUED
-	case v1alpha2.IssuedCertificateStatus_ISSUED:
+		issuedCertificate.Status.State = v1.IssuedCertificateStatus_ISSUED
+	case v1.IssuedCertificateStatus_ISSUED:
 		// ensure issued cert secret exists, if not, return an error (restart the workflow)
 		if issuedCertificateSecret, err := inputSecrets.Find(issuedCertificate.Spec.IssuedCertificateSecret); err != nil {
 			return err
@@ -281,7 +281,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 		}
 
 		// mark issued certificate as finished
-		issuedCertificate.Status.State = v1alpha2.IssuedCertificateStatus_FINISHED
+		issuedCertificate.Status.State = v1.IssuedCertificateStatus_FINISHED
 	default:
 		return eris.Errorf("unknown issued certificate state: %v", issuedCertificate.Status.State)
 	}
@@ -295,7 +295,7 @@ func (r *certAgentReconciler) reconcileIssuedCertificate(
 // 1. istiod control plane has come back online after it has been restarted
 // 2. istio's root cert has been propagated to all istio-controlled namespaces for consumption by the data plane.
 // this will cause the reconcile to end early and persist the IssuedCertificate in the Issued state
-func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceDirective, allPods corev1sets.PodSet, allConfigMaps corev1sets.ConfigMapSet, allSecrets corev1sets.SecretSet) (bool, error) {
+func (r *certAgentReconciler) bouncePods(podBounceDirective *v1.PodBounceDirective, allPods corev1sets.PodSet, allConfigMaps corev1sets.ConfigMapSet, allSecrets corev1sets.SecretSet) (bool, error) {
 
 	// create a client here to call for deletions
 	podClient := corev1client.NewPodClient(r.localClient)
@@ -373,7 +373,7 @@ func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceD
 		// update the status to show we've bounced this selector already
 		podBounceDirective.Status.PodsBounced = append(
 			podBounceDirective.Status.PodsBounced,
-			&v1alpha2.PodBounceDirectiveStatus_BouncedPodSet{BouncedPods: bouncedPods},
+			&v1.PodBounceDirectiveStatus_BouncedPodSet{BouncedPods: bouncedPods},
 		)
 
 		if selector.WaitForReplicas > 0 {
@@ -389,7 +389,7 @@ func (r *certAgentReconciler) bouncePods(podBounceDirective *v1alpha2.PodBounceD
 // indicates whether replacements for the deleted pods to be ready
 func replacementsReady(
 	currentPods corev1sets.PodSet,
-	podSelector *v1alpha2.PodBounceDirectiveSpec_PodSelector,
+	podSelector *v1.PodBounceDirectiveSpec_PodSelector,
 	deletedPodNames []string,
 ) bool {
 	if podSelector.WaitForReplicas == 0 {
@@ -412,7 +412,7 @@ func replacementsReady(
 	return len(currentReadyPods) >= int(podSelector.WaitForReplicas)
 }
 
-func isPodSelected(pod *corev1.Pod, podSelector *v1alpha2.PodBounceDirectiveSpec_PodSelector) bool {
+func isPodSelected(pod *corev1.Pod, podSelector *v1.PodBounceDirectiveSpec_PodSelector) bool {
 	return podSelector.Namespace == pod.Namespace &&
 		labels.SelectorFromSet(podSelector.Labels).Matches(labels.Set(pod.Labels))
 }

@@ -129,7 +129,7 @@ OSM_CLUSTER=osm_installation_cluster_name
 
 ```shell script
 kubectl apply -f - <<EOF
-apiVersion: networking.mesh.gloo.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1
 kind: AccessPolicy
 metadata:
   name: osm-access-policy
@@ -153,7 +153,7 @@ spec:
 
 ---
 
-apiVersion: networking.mesh.gloo.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
 metadata:
   name: osm-traffic-policy

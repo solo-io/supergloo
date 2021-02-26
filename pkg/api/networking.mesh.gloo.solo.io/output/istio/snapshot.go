@@ -21,11 +21,11 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	certificates_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
-	certificates_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
+	certificates_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificates_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 
-	xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1"
-	xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
+	xds_agent_enterprise_mesh_gloo_solo_io_v1beta1 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1"
+	xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1/sets"
 
 	networking_istio_io_v1alpha3_sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	networking_istio_io_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -45,18 +45,18 @@ var SnapshotGVKs = []schema.GroupVersionKind{
 
 	schema.GroupVersionKind{
 		Group:   "certificates.mesh.gloo.solo.io",
-		Version: "v1alpha2",
+		Version: "v1",
 		Kind:    "IssuedCertificate",
 	},
 	schema.GroupVersionKind{
 		Group:   "certificates.mesh.gloo.solo.io",
-		Version: "v1alpha2",
+		Version: "v1",
 		Kind:    "PodBounceDirective",
 	},
 
 	schema.GroupVersionKind{
 		Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
-		Version: "v1alpha1",
+		Version: "v1beta1",
 		Kind:    "XdsConfig",
 	},
 
@@ -176,10 +176,10 @@ func NewLabelPartitionedSnapshot(
 	name,
 	labelKey string, // the key by which to partition the resources
 
-	issuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet,
-	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
+	issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet,
+	podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet,
 
-	xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet,
+	xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet,
 
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
 	envoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
@@ -250,10 +250,10 @@ func NewSinglePartitionedSnapshot(
 	name string,
 	snapshotLabels map[string]string, // a single set of labels shared by all resources
 
-	issuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet,
-	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
+	issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet,
+	podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet,
 
-	xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet,
+	xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet,
 
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet,
 	envoyFilters networking_istio_io_v1alpha3_sets.EnvoyFilterSet,
@@ -395,8 +395,8 @@ func (s *snapshot) ApplyMultiCluster(ctx context.Context, multiClusterClient mul
 	}.SyncMultiCluster(ctx, multiClusterClient, errHandler)
 }
 
-func partitionIssuedCertificatesByLabel(labelKey string, set certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet) ([]LabeledIssuedCertificateSet, error) {
-	setsByLabel := map[string]certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet{}
+func partitionIssuedCertificatesByLabel(labelKey string, set certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet) ([]LabeledIssuedCertificateSet, error) {
+	setsByLabel := map[string]certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
@@ -409,7 +409,7 @@ func partitionIssuedCertificatesByLabel(labelKey string, set certificates_mesh_g
 
 		setForValue, ok := setsByLabel[labelValue]
 		if !ok {
-			setForValue = certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
+			setForValue = certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
 			setsByLabel[labelValue] = setForValue
 		}
 		setForValue.Insert(obj)
@@ -439,8 +439,8 @@ func partitionIssuedCertificatesByLabel(labelKey string, set certificates_mesh_g
 	return partitionedIssuedCertificates, nil
 }
 
-func partitionPodBounceDirectivesByLabel(labelKey string, set certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet) ([]LabeledPodBounceDirectiveSet, error) {
-	setsByLabel := map[string]certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet{}
+func partitionPodBounceDirectivesByLabel(labelKey string, set certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet) ([]LabeledPodBounceDirectiveSet, error) {
+	setsByLabel := map[string]certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
@@ -453,7 +453,7 @@ func partitionPodBounceDirectivesByLabel(labelKey string, set certificates_mesh_
 
 		setForValue, ok := setsByLabel[labelValue]
 		if !ok {
-			setForValue = certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+			setForValue = certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
 			setsByLabel[labelValue] = setForValue
 		}
 		setForValue.Insert(obj)
@@ -483,8 +483,8 @@ func partitionPodBounceDirectivesByLabel(labelKey string, set certificates_mesh_
 	return partitionedPodBounceDirectives, nil
 }
 
-func partitionXdsConfigsByLabel(labelKey string, set xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet) ([]LabeledXdsConfigSet, error) {
-	setsByLabel := map[string]xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet{}
+func partitionXdsConfigsByLabel(labelKey string, set xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet) ([]LabeledXdsConfigSet, error) {
+	setsByLabel := map[string]xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet{}
 
 	for _, obj := range set.List() {
 		if obj.Labels == nil {
@@ -497,7 +497,7 @@ func partitionXdsConfigsByLabel(labelKey string, set xds_agent_enterprise_mesh_g
 
 		setForValue, ok := setsByLabel[labelValue]
 		if !ok {
-			setForValue = xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
+			setForValue = xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewXdsConfigSet()
 			setsByLabel[labelValue] = setForValue
 		}
 		setForValue.Insert(obj)
@@ -830,18 +830,18 @@ func (s snapshot) AuthorizationPolicies() []LabeledAuthorizationPolicySet {
 func (s snapshot) MarshalJSON() ([]byte, error) {
 	snapshotMap := map[string]interface{}{"name": s.name}
 
-	issuedCertificateSet := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
+	issuedCertificateSet := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
 	for _, set := range s.issuedCertificates {
 		issuedCertificateSet = issuedCertificateSet.Union(set.Set())
 	}
 	snapshotMap["issuedCertificates"] = issuedCertificateSet.List()
-	podBounceDirectiveSet := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+	podBounceDirectiveSet := certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
 	for _, set := range s.podBounceDirectives {
 		podBounceDirectiveSet = podBounceDirectiveSet.Union(set.Set())
 	}
 	snapshotMap["podBounceDirectives"] = podBounceDirectiveSet.List()
 
-	xdsConfigSet := xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet()
+	xdsConfigSet := xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewXdsConfigSet()
 	for _, set := range s.xdsConfigs {
 		xdsConfigSet = xdsConfigSet.Union(set.Set())
 	}
@@ -892,18 +892,18 @@ type LabeledIssuedCertificateSet interface {
 	Labels() map[string]string
 
 	// returns the set of IssuedCertificatees with the given labels
-	Set() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
+	Set() certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet
 
 	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
 	Generic() output.ResourceList
 }
 
 type labeledIssuedCertificateSet struct {
-	set    certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
+	set    certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet
 	labels map[string]string
 }
 
-func NewLabeledIssuedCertificateSet(set certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet, labels map[string]string) (LabeledIssuedCertificateSet, error) {
+func NewLabeledIssuedCertificateSet(set certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet, labels map[string]string) (LabeledIssuedCertificateSet, error) {
 	// validate that each IssuedCertificate contains the labels, else this is not a valid LabeledIssuedCertificateSet
 	for _, item := range set.List() {
 		for k, v := range labels {
@@ -921,7 +921,7 @@ func (l *labeledIssuedCertificateSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledIssuedCertificateSet) Set() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet {
+func (l *labeledIssuedCertificateSet) Set() certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet {
 	return l.set
 }
 
@@ -933,7 +933,7 @@ func (l labeledIssuedCertificateSet) Generic() output.ResourceList {
 
 	// enable list func for garbage collection
 	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
-		var list certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificateList
+		var list certificates_mesh_gloo_solo_io_v1.IssuedCertificateList
 		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
 			return nil, err
 		}
@@ -960,18 +960,18 @@ type LabeledPodBounceDirectiveSet interface {
 	Labels() map[string]string
 
 	// returns the set of PodBounceDirectivees with the given labels
-	Set() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+	Set() certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet
 
 	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
 	Generic() output.ResourceList
 }
 
 type labeledPodBounceDirectiveSet struct {
-	set    certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+	set    certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet
 	labels map[string]string
 }
 
-func NewLabeledPodBounceDirectiveSet(set certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet, labels map[string]string) (LabeledPodBounceDirectiveSet, error) {
+func NewLabeledPodBounceDirectiveSet(set certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet, labels map[string]string) (LabeledPodBounceDirectiveSet, error) {
 	// validate that each PodBounceDirective contains the labels, else this is not a valid LabeledPodBounceDirectiveSet
 	for _, item := range set.List() {
 		for k, v := range labels {
@@ -989,7 +989,7 @@ func (l *labeledPodBounceDirectiveSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledPodBounceDirectiveSet) Set() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet {
+func (l *labeledPodBounceDirectiveSet) Set() certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet {
 	return l.set
 }
 
@@ -1001,7 +1001,7 @@ func (l labeledPodBounceDirectiveSet) Generic() output.ResourceList {
 
 	// enable list func for garbage collection
 	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
-		var list certificates_mesh_gloo_solo_io_v1alpha2.PodBounceDirectiveList
+		var list certificates_mesh_gloo_solo_io_v1.PodBounceDirectiveList
 		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
 			return nil, err
 		}
@@ -1028,18 +1028,18 @@ type LabeledXdsConfigSet interface {
 	Labels() map[string]string
 
 	// returns the set of XdsConfiges with the given labels
-	Set() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+	Set() xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet
 
 	// converts the set to a generic format which can be applied by the Snapshot.Apply functions
 	Generic() output.ResourceList
 }
 
 type labeledXdsConfigSet struct {
-	set    xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+	set    xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet
 	labels map[string]string
 }
 
-func NewLabeledXdsConfigSet(set xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet, labels map[string]string) (LabeledXdsConfigSet, error) {
+func NewLabeledXdsConfigSet(set xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet, labels map[string]string) (LabeledXdsConfigSet, error) {
 	// validate that each XdsConfig contains the labels, else this is not a valid LabeledXdsConfigSet
 	for _, item := range set.List() {
 		for k, v := range labels {
@@ -1057,7 +1057,7 @@ func (l *labeledXdsConfigSet) Labels() map[string]string {
 	return l.labels
 }
 
-func (l *labeledXdsConfigSet) Set() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet {
+func (l *labeledXdsConfigSet) Set() xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet {
 	return l.set
 }
 
@@ -1069,7 +1069,7 @@ func (l labeledXdsConfigSet) Generic() output.ResourceList {
 
 	// enable list func for garbage collection
 	listFunc := func(ctx context.Context, cli client.Client) ([]ezkube.Object, error) {
-		var list xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfigList
+		var list xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfigList
 		if err := cli.List(ctx, &list, client.MatchingLabels(l.labels)); err != nil {
 			return nil, err
 		}
@@ -1501,10 +1501,10 @@ type builder struct {
 	name     string
 	clusters []string
 
-	issuedCertificates  certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
-	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+	issuedCertificates  certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet
+	podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet
 
-	xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+	xdsConfigs xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet
 
 	destinationRules networking_istio_io_v1alpha3_sets.DestinationRuleSet
 	envoyFilters     networking_istio_io_v1alpha3_sets.EnvoyFilterSet
@@ -1520,10 +1520,10 @@ func NewBuilder(ctx context.Context, name string) *builder {
 		ctx:  ctx,
 		name: name,
 
-		issuedCertificates:  certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet(),
-		podBounceDirectives: certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet(),
+		issuedCertificates:  certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet(),
+		podBounceDirectives: certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet(),
 
-		xdsConfigs: xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.NewXdsConfigSet(),
+		xdsConfigs: xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewXdsConfigSet(),
 
 		destinationRules: networking_istio_io_v1alpha3_sets.NewDestinationRuleSet(),
 		envoyFilters:     networking_istio_io_v1alpha3_sets.NewEnvoyFilterSet(),
@@ -1540,22 +1540,22 @@ func NewBuilder(ctx context.Context, name string) *builder {
 type Builder interface {
 
 	// add IssuedCertificates to the collected outputs
-	AddIssuedCertificates(issuedCertificates ...*certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate)
+	AddIssuedCertificates(issuedCertificates ...*certificates_mesh_gloo_solo_io_v1.IssuedCertificate)
 
 	// get the collected IssuedCertificates
-	GetIssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
+	GetIssuedCertificates() certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet
 
 	// add PodBounceDirectives to the collected outputs
-	AddPodBounceDirectives(podBounceDirectives ...*certificates_mesh_gloo_solo_io_v1alpha2.PodBounceDirective)
+	AddPodBounceDirectives(podBounceDirectives ...*certificates_mesh_gloo_solo_io_v1.PodBounceDirective)
 
 	// get the collected PodBounceDirectives
-	GetPodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+	GetPodBounceDirectives() certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet
 
 	// add XdsConfigs to the collected outputs
-	AddXdsConfigs(xdsConfigs ...*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig)
+	AddXdsConfigs(xdsConfigs ...*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig)
 
 	// get the collected XdsConfigs
-	GetXdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet
+	GetXdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet
 
 	// add DestinationRules to the collected outputs
 	AddDestinationRules(destinationRules ...*networking_istio_io_v1alpha3.DestinationRule)
@@ -1616,7 +1616,7 @@ type Builder interface {
 	Generic() resource.ClusterSnapshot
 }
 
-func (b *builder) AddIssuedCertificates(issuedCertificates ...*certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate) {
+func (b *builder) AddIssuedCertificates(issuedCertificates ...*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) {
 	for _, obj := range issuedCertificates {
 		if obj == nil {
 			continue
@@ -1625,7 +1625,7 @@ func (b *builder) AddIssuedCertificates(issuedCertificates ...*certificates_mesh
 		b.issuedCertificates.Insert(obj)
 	}
 }
-func (b *builder) AddPodBounceDirectives(podBounceDirectives ...*certificates_mesh_gloo_solo_io_v1alpha2.PodBounceDirective) {
+func (b *builder) AddPodBounceDirectives(podBounceDirectives ...*certificates_mesh_gloo_solo_io_v1.PodBounceDirective) {
 	for _, obj := range podBounceDirectives {
 		if obj == nil {
 			continue
@@ -1634,7 +1634,7 @@ func (b *builder) AddPodBounceDirectives(podBounceDirectives ...*certificates_me
 		b.podBounceDirectives.Insert(obj)
 	}
 }
-func (b *builder) AddXdsConfigs(xdsConfigs ...*xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1.XdsConfig) {
+func (b *builder) AddXdsConfigs(xdsConfigs ...*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig) {
 	for _, obj := range xdsConfigs {
 		if obj == nil {
 			continue
@@ -1698,14 +1698,14 @@ func (b *builder) AddAuthorizationPolicies(authorizationPolicies ...*security_is
 	}
 }
 
-func (b *builder) GetIssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet {
+func (b *builder) GetIssuedCertificates() certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet {
 	return b.issuedCertificates
 }
-func (b *builder) GetPodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet {
+func (b *builder) GetPodBounceDirectives() certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet {
 	return b.podBounceDirectives
 }
 
-func (b *builder) GetXdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1alpha1_sets.XdsConfigSet {
+func (b *builder) GetXdsConfigs() xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_sets.XdsConfigSet {
 	return b.xdsConfigs
 }
 
@@ -1854,7 +1854,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 		cluster := obj.GetClusterName()
 		gvk := schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "IssuedCertificate",
 		}
 		clusterSnapshots.Insert(cluster, gvk, obj)
@@ -1863,7 +1863,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 		cluster := obj.GetClusterName()
 		gvk := schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "PodBounceDirective",
 		}
 		clusterSnapshots.Insert(cluster, gvk, obj)
@@ -1873,7 +1873,7 @@ func (b *builder) Generic() resource.ClusterSnapshot {
 		cluster := obj.GetClusterName()
 		gvk := schema.GroupVersionKind{
 			Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
-			Version: "v1alpha1",
+			Version: "v1beta1",
 			Kind:    "XdsConfig",
 		}
 		clusterSnapshots.Insert(cluster, gvk, obj)

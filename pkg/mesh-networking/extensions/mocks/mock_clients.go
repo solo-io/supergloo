@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	extensions "github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
 )
 
@@ -36,7 +36,7 @@ func (m *MockClientset) EXPECT() *MockClientsetMockRecorder {
 }
 
 // ConfigureServers mocks base method
-func (m *MockClientset) ConfigureServers(extensionsServerOptions []*v1alpha2.GrpcServer, pushFn extensions.PushFunc) error {
+func (m *MockClientset) ConfigureServers(extensionsServerOptions []*v1.GrpcServer, pushFn extensions.PushFunc) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConfigureServers", extensionsServerOptions, pushFn)
 	ret0, _ := ret[0].(error)

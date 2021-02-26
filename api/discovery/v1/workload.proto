@@ -1,0 +1,96 @@
+syntax = "proto3";
+package discovery.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+// Describes a workload controlled by a discovered service mesh.
+message WorkloadSpec {
+
+    // Describes platform specific properties of the workload.
+    oneof type {
+
+        // Information describing workloads backed by Kubernetes Pods.
+        KubernetesWorkload kubernetes = 1;
+    }
+
+    // The Mesh with which this Workload is associated.
+    .core.skv2.solo.io.ObjectRef mesh = 4;
+
+    // Metadata specific to an App Mesh controlled workload.
+    AppMesh app_mesh = 5;
+
+    // Describes a Kubernetes workload (e.g. a Deployment or DaemonSet).
+    message KubernetesWorkload {
+
+        // Resource reference to the Kubernetes Pod controller (i.e. Deployment, ReplicaSet, DaemonSet) for this Workload..
+        .core.skv2.solo.io.ClusterObjectRef controller = 1;
+
+        // Labels on the Pod itself (read from `metadata.labels`), which are used to determine which Services front this workload.
+        map<string, string> pod_labels = 2;
+
+        // Service account associated with the Pods owned by this controller.
+        string service_account_name = 3;
+    }
+
+    // Metadata specific to an App Mesh controlled workload.
+    message AppMesh {
+
+        // The value of the env var APPMESH_VIRTUAL_NODE_NAME on the App Mesh envoy proxy container.
+        string virtual_node_name = 1;
+
+        // Ports exposed by this workload. Needed for declaring App Mesh VirtualNode listeners.
+        repeated ContainerPort ports = 2;
+
+        // Kubernetes application container ports.
+        message ContainerPort {
+            uint32 port = 1;
+            string protocol = 2;
+        }
+
+    }
+
+}
+
+message WorkloadStatus {
+
+    // The observed generation of the Workload.
+    // When this matches the Workload's `metadata.generation` it indicates that Gloo Mesh
+    // has processed the latest version of the Workload.
+    int64 observed_generation = 1;
+
+    // The set of AccessLogRecords that have been applied to this Workload.
+    repeated AppliedAccessLogRecord applied_access_log_records = 2;
+
+    // The set of WasmDeployments that have been applied to this Workload.
+    repeated AppliedWasmDeployment applied_wasm_deployments = 3;
+
+    // Describes an [AccessLogRecord]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.observability.v1alpha1.access_logging/" >}}) that applies to this Workload.
+    message AppliedAccessLogRecord {
+
+        // Reference to the AccessLogRecord object.
+        .core.skv2.solo.io.ObjectRef ref = 1;
+
+        // The observed generation of the accepted AccessLogRecord.
+        int64 observedGeneration = 2;
+
+        // Any errors encountered while processing the AccessLogRecord object
+        repeated string errors = 3;
+    }
+
+    // Describes a [WasmDeployment]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.wasm_deployment/" >}}) that applies to this Workload.
+    message AppliedWasmDeployment {
+
+        // Reference to the WasmDeployment object.
+        .core.skv2.solo.io.ObjectRef ref = 1;
+
+        // The observed generation of the WasmDeployment.
+        int64 observedGeneration = 2;
+
+        // Any errors encountered while processing the WasmDeployment object.
+        repeated string errors = 3;
+    }
+}

@@ -9,20 +9,20 @@ import (
 	"github.com/solo-io/go-utils/hashutils"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
-	"github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1beta1"
+	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/go-utils/contextutils"
 )
 
 //go:generate mockgen -source ./clients.go -destination mocks/mock_clients.go
 
 // A PushFunc handles push notifications from an Extensions Server
-type PushFunc func(notification *v1alpha1.PushNotification)
+type PushFunc func(notification *v1beta1.PushNotification)
 
 // Clients provides a convenience wrapper for a set of clients to communicate with multiple Extension Servers
-type Clients []v1alpha1.NetworkingExtensionsClient
+type Clients []v1beta1.NetworkingExtensionsClient
 
-func NewClientsFromSettings(ctx context.Context, extensionsServerOptions []*v1alpha2.GrpcServer) (Clients, error) {
+func NewClientsFromSettings(ctx context.Context, extensionsServerOptions []*settingsv1.GrpcServer) (Clients, error) {
 	var extensionsClients Clients
 	for _, extensionsServer := range extensionsServerOptions {
 		extensionsServerAddr := extensionsServer.GetAddress()
@@ -38,7 +38,7 @@ func NewClientsFromSettings(ctx context.Context, extensionsServerOptions []*v1al
 		if err != nil {
 			return nil, err
 		}
-		extensionsClients = append(extensionsClients, v1alpha1.NewNetworkingExtensionsClient(grpcConnection))
+		extensionsClients = append(extensionsClients, v1beta1.NewNetworkingExtensionsClient(grpcConnection))
 	}
 	return extensionsClients, nil
 }
@@ -54,7 +54,7 @@ func (c Clients) WatchPushNotifications(ctx context.Context, pushFn PushFunc) er
 }
 
 // handles push notifications for an individual connection stream
-func handlePushesForever(ctx context.Context, exClient v1alpha1.NetworkingExtensionsClient, pushFn PushFunc) {
+func handlePushesForever(ctx context.Context, exClient v1beta1.NetworkingExtensionsClient, pushFn PushFunc) {
 	for {
 		if err := startNotificationWatch(ctx, exClient, pushFn); err != nil {
 			contextutils.LoggerFrom(ctx).Errorf("failed to start push notification watch with client %+v", exClient)
@@ -68,8 +68,8 @@ func handlePushesForever(ctx context.Context, exClient v1alpha1.NetworkingExtens
 	}
 }
 
-func startNotificationWatch(ctx context.Context, exClient v1alpha1.NetworkingExtensionsClient, pushFn PushFunc) (err error) {
-	notifications, err := exClient.WatchPushNotifications(ctx, &v1alpha1.WatchPushNotificationsRequest{})
+func startNotificationWatch(ctx context.Context, exClient v1beta1.NetworkingExtensionsClient, pushFn PushFunc) (err error) {
+	notifications, err := exClient.WatchPushNotifications(ctx, &v1beta1.WatchPushNotificationsRequest{})
 	if err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func startNotificationWatch(ctx context.Context, exClient v1alpha1.NetworkingExt
 type Clientset interface {
 	// ConfigureServers updates the set of servers this Clientset is configured with.
 	// Restarts the notification watches if servers were updated, using the new pushFn to handle notification pushes.
-	ConfigureServers(extensionsServerOptions []*v1alpha2.GrpcServer, pushFn PushFunc) error
+	ConfigureServers(extensionsServerOptions []*settingsv1.GrpcServer, pushFn PushFunc) error
 
 	// GetClients returns the set of Extension clients that are cached with this Clientset.
 	// Must be called after UpdateServers
@@ -115,7 +115,7 @@ type cachedClients struct {
 	clients     Clients
 }
 
-func (c *clientset) ConfigureServers(extensionsServerOptions []*v1alpha2.GrpcServer, pushFn PushFunc) error {
+func (c *clientset) ConfigureServers(extensionsServerOptions []*settingsv1.GrpcServer, pushFn PushFunc) error {
 	optionsHash, err := hashutils.HashAllSafe(nil, extensionsServerOptions)
 	if err != nil {
 		return err

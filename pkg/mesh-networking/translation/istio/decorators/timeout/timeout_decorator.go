@@ -2,8 +2,8 @@ package timeout
 
 import (
 	"github.com/gogo/protobuf/types"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/gogoutils"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
@@ -36,9 +36,9 @@ func (d *timeoutDecorator) DecoratorName() string {
 }
 
 func (d *timeoutDecorator) ApplyTrafficPolicyToVirtualService(
-	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
-	_ *discoveryv1alpha2.TrafficTarget,
-	_ *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+	_ *discoveryv1.Destination,
+	_ *discoveryv1.MeshSpec_MeshInstallation,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
@@ -56,7 +56,7 @@ func (d *timeoutDecorator) ApplyTrafficPolicyToVirtualService(
 }
 
 func (d *timeoutDecorator) translateTimeout(
-	trafficPolicy *v1alpha2.TrafficPolicySpec,
+	trafficPolicy *v1.TrafficPolicySpec,
 ) (*types.Duration, error) {
-	return gogoutils.DurationProtoToGogo(trafficPolicy.RequestTimeout), nil
+	return gogoutils.DurationProtoToGogo(trafficPolicy.GetPolicy().GetRequestTimeout()), nil
 }
