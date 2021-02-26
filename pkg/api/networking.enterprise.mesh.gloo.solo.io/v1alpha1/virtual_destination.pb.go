@@ -516,6 +516,11 @@ type VirtualDestinationSpec_LocalityConfig struct {
 	// Directives describing the locality failover behavior.
 	FailoverDirectives []*VirtualDestinationSpec_LocalityConfig_LocalityFailoverDirective `protobuf:"bytes,2,rep,name=failover_directives,json=failoverDirectives,proto3" json:"failover_directives,omitempty"`
 	// Outlier detection to determine the health of the selected services.
+	// If not set will default to the folling:
+	// consecutiveGatewayErrors: 10
+	// consecutive5XXErrors: 10
+	// interval: 5s
+	// baseEjectionTime: 120s
 	OutlierDetection *v1alpha2.TrafficPolicySpec_OutlierDetection `protobuf:"bytes,3,opt,name=outlier_detection,json=outlierDetection,proto3" json:"outlier_detection,omitempty"`
 }
 
