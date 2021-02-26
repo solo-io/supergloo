@@ -61,7 +61,7 @@ func (t *translator) isOSMDestination(
 	destination *discoveryv1.Destination,
 	allMeshes discoveryv1sets.MeshSet,
 ) bool {
-	meshRef := destination.Spec.GetMesh()
+	meshRef := destination.Spec.Mesh
 	if meshRef == nil {
 		if _, ok := destination.Spec.Type.(*discoveryv1.DestinationSpec_KubeService_); ok {
 			// Is KubeService, MeshRef is required

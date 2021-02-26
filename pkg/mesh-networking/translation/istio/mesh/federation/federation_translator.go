@@ -385,13 +385,13 @@ func DestinationsForMesh(
 		// Always return external services, they apply to all meshes
 		// TODO: Revisit once we have an API for expressing which meshes the
 		// external service should be exported to. For now, export to all.
-		if service.Spec.GetMesh() == nil {
+		if service.Spec.Mesh == nil {
 			if _, ok := service.Spec.Type.(*discoveryv1.DestinationSpec_ExternalService_); ok {
 				// Is External service
 				return false
 			}
 		}
-		return !ezkube.RefsMatch(service.Spec.GetMesh(), mesh)
+		return !ezkube.RefsMatch(service.Spec.Mesh, mesh)
 
 	})
 }
