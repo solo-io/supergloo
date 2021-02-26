@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/gloo-mesh/codegen/helm"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
-	installhelm "github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -42,11 +42,11 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 	utils.AddManagementKubeconfigFlags(&o.kubeCfgPath, &o.kubeContext, flags)
 	flags.BoolVarP(&o.dryRun, "dry-run", "d", false, "Output installation manifest")
 	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace in which to uninstall Gloo Mesh from")
-	flags.StringVar(&o.releaseName, "release-name", helm.Chart.Data.Name, "Helm release name")
+	flags.StringVar(&o.releaseName, "release-name", gloomesh.GlooMeshReleaseName, "Helm release name")
 }
 
 func uninstall(ctx context.Context, opts *options) error {
-	if err := (installhelm.Uninstaller{
+	if err := (helm.Uninstaller{
 		KubeConfig:  opts.kubeCfgPath,
 		KubeContext: opts.kubeContext,
 		Namespace:   opts.namespace,

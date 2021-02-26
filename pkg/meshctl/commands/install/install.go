@@ -5,10 +5,9 @@ import (
 	"fmt"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/gloo-mesh/codegen/helm"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
-	installhelm "github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"github.com/solo-io/skv2/pkg/multicluster/register"
@@ -17,29 +16,36 @@ import (
 )
 
 func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command {
+	opts := &options{GlobalFlags: globalFlags}
 	cmd := &cobra.Command{
 		Use:   "install",
 		Short: "Install Gloo Mesh",
+		Long: `Install the Gloo Mesh management plan to a Kubernetes cluster.
+
+Go to https://www.solo.io/products/gloo-mesh/ to learn more about the
+difference between the editions.
+`,
 	}
 
 	cmd.AddCommand(
-		communityCommand(ctx, globalFlags),
-		enterpriseCommand(ctx, globalFlags),
+		communityCommand(ctx, opts),
+		enterpriseCommand(ctx, opts),
 	)
+
+	opts.addToFlags(cmd.PersistentFlags())
 
 	return cmd
 }
 
 type options struct {
-	verbose bool
-	dryRun  bool
+	*utils.GlobalFlags
+	dryRun bool
 
 	kubeCfgPath     string
 	kubeContext     string
 	namespace       string
 	chartPath       string
 	chartValuesFile string
-	releaseName     string
 	version         string
 
 	register           bool
@@ -47,43 +53,38 @@ type options struct {
 	apiServerAddress   string
 	clusterDomain      string
 	agentCrdsChartPath string
-	agentChartPath     string
-	agentValuesPath    string
 }
 
-func (o *options) addToFlags(flags *pflag.FlagSet, agentName, agentFlagPrefix string) {
+func (o *options) addToFlags(flags *pflag.FlagSet) {
 	utils.AddManagementKubeconfigFlags(&o.kubeCfgPath, &o.kubeContext, flags)
 	flags.BoolVarP(&o.dryRun, "dry-run", "d", false, "Output installation manifest")
 	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace in which to install Gloo Mesh")
-	flags.StringVar(&o.chartPath, "chart-file", "", "Path to a local Helm chart for installing Gloo Mesh. If unset, this command will install Gloo Mesh from the publicly released Helm chart.")
+	flags.StringVar(&o.chartPath, "chart-file", "", "Path to a local Helm chart for installing Gloo Mesh.\nIf unset, this command will install Gloo Mesh from the publicly released Helm chart.")
 	flags.StringVar(&o.chartValuesFile, "chart-values-file", "", "File containing value overrides for the Gloo Mesh Helm chart")
-	flags.StringVar(&o.releaseName, "release-name", helm.Chart.Data.Name, "Helm release name")
 	flags.StringVar(&o.version, "version", "", "Version to install, defaults to latest if omitted")
 
-	flags.BoolVarP(&o.register, "register", "r", false, "Register the cluster running Gloo Mesh (default: false)")
+	flags.BoolVarP(&o.register, "register", "r", false, "Also register the cluster")
 	flags.StringVar(&o.clusterName, "cluster-name", "mgmt-cluster",
 		"Name with which to register the cluster running Gloo Mesh, only applies if --register is also set")
-	flags.StringVar(&o.apiServerAddress, "api-server-address", "", "Swap out the address of the remote cluster's k8s API server for the value of this flag. Set this flag when the address of the cluster domain used by the Gloo Mesh is different than that specified in the local kubeconfig.")
-	flags.StringVar(&o.clusterDomain, "cluster-domain", "", "The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. Defaults to 'cluster.local'. Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/")
-	flags.StringVar(&o.agentCrdsChartPath, "agent-crds-chart-file", "", "Path to a local Helm chart for installing CRDs needed by remote agents. If unset, this command will install the agent CRDs from the publicly released Helm chart.")
-	utils.AddAgentFlags(&o.agentChartPath, &o.agentValuesPath, flags, agentName, agentFlagPrefix)
+	flags.StringVar(&o.apiServerAddress, "api-server-address", "", "Swap out the address of the remote cluster's k8s API server for the value of this flag.\nSet this flag when the address of the cluster domain used by the Gloo Mesh is different than that specified in the local kubeconfig.")
+	flags.StringVar(&o.clusterDomain, "cluster-domain", "", "The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. Defaults to 'cluster.local'.\nRead more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/")
+	flags.StringVar(&o.agentCrdsChartPath, "agent-crds-chart-file", "", "Path to a local Helm chart for installing CRDs needed by remote agents.\nIf unset, this command will install the agent CRDs from the publicly released Helm chart.")
 }
 
-func (o *options) getInstaller(chartUriTemplate string) installhelm.Installer {
+func (o *options) getInstaller(chartUriTemplate string) helm.Installer {
 	// User-specified chartPath takes precedence over specified version.
 	if o.chartPath == "" {
 		o.chartPath = fmt.Sprintf(chartUriTemplate, o.version)
 	}
 
-	return installhelm.Installer{
+	return helm.Installer{
 		ChartUri:    o.chartPath,
 		ValuesFile:  o.chartValuesFile,
 		KubeConfig:  o.kubeCfgPath,
 		KubeContext: o.kubeContext,
 		Namespace:   o.namespace,
-		ReleaseName: o.releaseName,
 		Values:      make(map[string]string),
-		Verbose:     o.verbose,
+		Verbose:     o.Verbose,
 		DryRun:      o.dryRun,
 	}
 }
@@ -101,42 +102,71 @@ func (o *options) getRegistrationOptions() registration.RegistrantOptions {
 			APIServerAddress: o.apiServerAddress,
 			ClusterDomain:    o.clusterDomain,
 		},
-		AgentCrdsChartPath:     o.agentCrdsChartPath,
-		AgentChartPathOverride: o.agentChartPath,
-		AgentChartValues:       o.agentValuesPath,
-		Verbose:                o.verbose,
+		AgentCrdsChartPath: o.agentCrdsChartPath,
+		Verbose:            o.Verbose,
 	}
 }
 
-func communityCommand(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command {
-	opts := options{}
+func communityCommand(ctx context.Context, installOpts *options) *cobra.Command {
+	opts := communityOptions{options: installOpts}
 	cmd := &cobra.Command{
 		Use:   "community",
-		Short: "Install the community certificate agent",
+		Short: "Install the open source community edition",
+		Example: `  # Install to the currently selected Kubernetes context
+  meshctl install community
+
+  # Install to and register the currently selected Kubernetes context
+  meshctl install community --register
+
+  # Install to a different context
+  meshctl install --kubecontext=some-context community`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.verbose = globalFlags.Verbose
 			return installCommunity(ctx, opts)
 		},
 	}
 
-	opts.addToFlags(cmd.Flags(), "Certificate Agent", "cert-agent-")
+	opts.addToFlags(cmd.Flags())
 	cmd.SilenceUsage = true
 	return cmd
 }
 
-func installCommunity(ctx context.Context, opts options) error {
+type communityOptions struct {
+	*options
+	releaseName         string
+	certAgentChartPath  string
+	certAgentValuesPath string
+}
+
+func (o *communityOptions) addToFlags(flags *pflag.FlagSet) {
+	flags.StringVar(&o.releaseName, "release-name", gloomesh.GlooMeshReleaseName, "Helm release name")
+	utils.AddAgentFlags(&o.certAgentChartPath, &o.certAgentValuesPath, flags, "Certificate Agent", "cert-agent-")
+}
+
+func (o communityOptions) getInstaller() helm.Installer {
+	ins := o.options.getInstaller(gloomesh.GlooMeshChartUriTemplate)
+	ins.ReleaseName = o.releaseName
+	return ins
+}
+
+func (o communityOptions) getRegistrationOptions() registration.RegistrantOptions {
+	reg := o.options.getRegistrationOptions()
+	reg.AgentChartPathOverride, reg.AgentChartValues = o.certAgentChartPath, o.certAgentValuesPath
+	return reg
+}
+
+func installCommunity(ctx context.Context, opts communityOptions) error {
 	const (
 		repoURI   = "https://storage.googleapis.com/gloo-mesh"
 		chartName = "gloo-mesh"
 	)
 	if opts.version == "" {
-		version, err := installhelm.GetLatestChartVersion(repoURI, chartName)
+		version, err := helm.GetLatestChartVersion(repoURI, chartName)
 		if err != nil {
 			return err
 		}
 		opts.version = version
 	}
-	if err := opts.getInstaller(gloomesh.GlooMeshChartUriTemplate).InstallChart(ctx); err != nil {
+	if err := opts.getInstaller().InstallChart(ctx); err != nil {
 		return eris.Wrap(err, "installing gloo-mesh")
 	}
 
@@ -159,28 +189,20 @@ func installCommunity(ctx context.Context, opts options) error {
 	return nil
 }
 
-type enterpriseOptions struct {
-	options
-	licenseKey string
-	skipUI     bool
-	skipRBAC   bool
-}
-
-func (o *enterpriseOptions) addToFlags(flags *pflag.FlagSet) {
-	o.options.addToFlags(flags, "Enterprise Agent", "enterprise-agent-")
-	flags.StringVar(&o.licenseKey, "license", "", "Gloo Mesh Enterprise license key")
-	cobra.MarkFlagRequired(flags, "license")
-	flags.BoolVar(&o.skipUI, "skip-ui", false, "Skip installation of the Gloo Mesh UI")
-	flags.BoolVar(&o.skipRBAC, "skip-rbac", false, "Skip installation of the RBAC Webhook")
-}
-
-func enterpriseCommand(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command {
-	opts := enterpriseOptions{}
+func enterpriseCommand(ctx context.Context, installOpts *options) *cobra.Command {
+	opts := enterpriseOptions{options: installOpts}
 	cmd := &cobra.Command{
 		Use:   "enterprise",
-		Short: "Install the enterprise agent",
+		Short: "Install the enterprise editionn (requires a license)",
+		Example: `  # Install to the currently selected Kubernetes context
+  meshctl install enterprise --license=<my_license>
+
+  # Install to and register the currently selected Kubernetes context
+  meshctl install enterprise --license=<my_license> --register
+
+  # Don't install the UI
+  meshctl install enterprise --license=<my_license> --skip-ui`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.verbose = globalFlags.Verbose
 			return installEnterprise(ctx, opts)
 		},
 	}
@@ -190,28 +212,59 @@ func enterpriseCommand(ctx context.Context, globalFlags *utils.GlobalFlags) *cob
 	return cmd
 }
 
+type enterpriseOptions struct {
+	*options
+	releaseName     string
+	agentChartPath  string
+	agentValuesPath string
+	licenseKey      string
+	skipUI          bool
+	skipRBAC        bool
+}
+
+func (o *enterpriseOptions) addToFlags(flags *pflag.FlagSet) {
+	flags.StringVar(&o.releaseName, "release-name", gloomesh.GlooMeshEnterpriseReleaseName, "Helm release name")
+	flags.StringVar(&o.licenseKey, "license", "", "Gloo Mesh Enterprise license key (required)")
+	cobra.MarkFlagRequired(flags, "license")
+	flags.BoolVar(&o.skipUI, "skip-ui", false, "Skip installation of the Gloo Mesh UI")
+	flags.BoolVar(&o.skipRBAC, "skip-rbac", false, "Skip installation of the RBAC Webhook")
+	utils.AddAgentFlags(&o.agentChartPath, &o.agentValuesPath, flags, "Enterprise Agent", "enterprise-agent-")
+}
+
+func (o enterpriseOptions) getInstaller() helm.Installer {
+	ins := o.options.getInstaller(gloomesh.GlooMeshEnterpriseChartUriTemplate)
+	ins.ReleaseName = o.releaseName
+	ins.Values["licenseKey"] = o.licenseKey
+	if o.skipUI {
+		ins.Values["gloo-mesh-ui.enabled"] = "false"
+	}
+	if o.skipRBAC {
+		ins.Values["rbac-webhook.enabled"] = "false"
+	}
+
+	return ins
+}
+
+func (o enterpriseOptions) getRegistrationOptions() registration.RegistrantOptions {
+	reg := o.options.getRegistrationOptions()
+	reg.AgentChartPathOverride, reg.AgentChartValues = o.agentChartPath, o.agentValuesPath
+	return reg
+}
+
 func installEnterprise(ctx context.Context, opts enterpriseOptions) error {
 	const (
 		repoURI   = "https://storage.googleapis.com/gloo-mesh-enterprise"
 		chartName = "gloo-mesh-enterprise"
 	)
 	if opts.version == "" {
-		version, err := installhelm.GetLatestChartVersion(repoURI, chartName)
+		version, err := helm.GetLatestChartVersion(repoURI, chartName)
 		if err != nil {
 			return err
 		}
 		opts.version = version
 	}
 
-	installer := opts.getInstaller(gloomesh.GlooMeshEnterpriseChartUriTemplate)
-	installer.Values["licenseKey"] = opts.licenseKey
-	if opts.skipUI {
-		installer.Values["gloo-mesh-ui.enabled"] = "false"
-	}
-	if opts.skipRBAC {
-		installer.Values["rbac-webhook.enabled"] = "false"
-	}
-	if err := installer.InstallChart(ctx); err != nil {
+	if err := opts.getInstaller().InstallChart(ctx); err != nil {
 		return eris.Wrap(err, "installing gloo-mesh-enterprise")
 	}
 	if opts.register && !opts.dryRun {
