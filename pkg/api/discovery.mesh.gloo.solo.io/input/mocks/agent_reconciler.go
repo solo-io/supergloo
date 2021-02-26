@@ -9,10 +9,10 @@ import (
 
 	v1beta2 "github.com/aws/aws-app-mesh-controller-for-k8s/apis/appmesh/v1beta2"
 	gomock "github.com/golang/mock/gomock"
-	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	reconcile "github.com/solo-io/skv2/pkg/reconcile"
-	v1 "k8s.io/api/apps/v1"
-	v10 "k8s.io/api/core/v1"
+	v10 "k8s.io/api/apps/v1"
+	v11 "k8s.io/api/core/v1"
 )
 
 // MockmultiClusterAgentReconciler is a mock of multiClusterAgentReconciler interface
@@ -39,7 +39,7 @@ func (m *MockmultiClusterAgentReconciler) EXPECT() *MockmultiClusterAgentReconci
 }
 
 // ReconcileSettings mocks base method
-func (m *MockmultiClusterAgentReconciler) ReconcileSettings(clusterName string, obj *v1alpha2.Settings) (reconcile.Result, error) {
+func (m *MockmultiClusterAgentReconciler) ReconcileSettings(clusterName string, obj *v1.Settings) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileSettings", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -69,7 +69,7 @@ func (mr *MockmultiClusterAgentReconcilerMockRecorder) ReconcileMesh(clusterName
 }
 
 // ReconcileConfigMap mocks base method
-func (m *MockmultiClusterAgentReconciler) ReconcileConfigMap(clusterName string, obj *v10.ConfigMap) (reconcile.Result, error) {
+func (m *MockmultiClusterAgentReconciler) ReconcileConfigMap(clusterName string, obj *v11.ConfigMap) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileConfigMap", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -84,7 +84,7 @@ func (mr *MockmultiClusterAgentReconcilerMockRecorder) ReconcileConfigMap(cluste
 }
 
 // ReconcileService mocks base method
-func (m *MockmultiClusterAgentReconciler) ReconcileService(clusterName string, obj *v10.Service) (reconcile.Result, error) {
+func (m *MockmultiClusterAgentReconciler) ReconcileService(clusterName string, obj *v11.Service) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileService", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -99,7 +99,7 @@ func (mr *MockmultiClusterAgentReconcilerMockRecorder) ReconcileService(clusterN
 }
 
 // ReconcilePod mocks base method
-func (m *MockmultiClusterAgentReconciler) ReconcilePod(clusterName string, obj *v10.Pod) (reconcile.Result, error) {
+func (m *MockmultiClusterAgentReconciler) ReconcilePod(clusterName string, obj *v11.Pod) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcilePod", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -114,7 +114,7 @@ func (mr *MockmultiClusterAgentReconcilerMockRecorder) ReconcilePod(clusterName,
 }
 
 // ReconcileEndpoints mocks base method
-func (m *MockmultiClusterAgentReconciler) ReconcileEndpoints(clusterName string, obj *v10.Endpoints) (reconcile.Result, error) {
+func (m *MockmultiClusterAgentReconciler) ReconcileEndpoints(clusterName string, obj *v11.Endpoints) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileEndpoints", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -129,7 +129,7 @@ func (mr *MockmultiClusterAgentReconcilerMockRecorder) ReconcileEndpoints(cluste
 }
 
 // ReconcileNode mocks base method
-func (m *MockmultiClusterAgentReconciler) ReconcileNode(clusterName string, obj *v10.Node) (reconcile.Result, error) {
+func (m *MockmultiClusterAgentReconciler) ReconcileNode(clusterName string, obj *v11.Node) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileNode", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -144,7 +144,7 @@ func (mr *MockmultiClusterAgentReconcilerMockRecorder) ReconcileNode(clusterName
 }
 
 // ReconcileDeployment mocks base method
-func (m *MockmultiClusterAgentReconciler) ReconcileDeployment(clusterName string, obj *v1.Deployment) (reconcile.Result, error) {
+func (m *MockmultiClusterAgentReconciler) ReconcileDeployment(clusterName string, obj *v10.Deployment) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileDeployment", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -159,7 +159,7 @@ func (mr *MockmultiClusterAgentReconcilerMockRecorder) ReconcileDeployment(clust
 }
 
 // ReconcileReplicaSet mocks base method
-func (m *MockmultiClusterAgentReconciler) ReconcileReplicaSet(clusterName string, obj *v1.ReplicaSet) (reconcile.Result, error) {
+func (m *MockmultiClusterAgentReconciler) ReconcileReplicaSet(clusterName string, obj *v10.ReplicaSet) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileReplicaSet", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -174,7 +174,7 @@ func (mr *MockmultiClusterAgentReconcilerMockRecorder) ReconcileReplicaSet(clust
 }
 
 // ReconcileDaemonSet mocks base method
-func (m *MockmultiClusterAgentReconciler) ReconcileDaemonSet(clusterName string, obj *v1.DaemonSet) (reconcile.Result, error) {
+func (m *MockmultiClusterAgentReconciler) ReconcileDaemonSet(clusterName string, obj *v10.DaemonSet) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileDaemonSet", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -189,7 +189,7 @@ func (mr *MockmultiClusterAgentReconcilerMockRecorder) ReconcileDaemonSet(cluste
 }
 
 // ReconcileStatefulSet mocks base method
-func (m *MockmultiClusterAgentReconciler) ReconcileStatefulSet(clusterName string, obj *v1.StatefulSet) (reconcile.Result, error) {
+func (m *MockmultiClusterAgentReconciler) ReconcileStatefulSet(clusterName string, obj *v10.StatefulSet) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileStatefulSet", clusterName, obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -227,7 +227,7 @@ func (m *MocksingleClusterAgentReconciler) EXPECT() *MocksingleClusterAgentRecon
 }
 
 // ReconcileSettings mocks base method
-func (m *MocksingleClusterAgentReconciler) ReconcileSettings(obj *v1alpha2.Settings) (reconcile.Result, error) {
+func (m *MocksingleClusterAgentReconciler) ReconcileSettings(obj *v1.Settings) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileSettings", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -257,7 +257,7 @@ func (mr *MocksingleClusterAgentReconcilerMockRecorder) ReconcileMesh(obj interf
 }
 
 // ReconcileConfigMap mocks base method
-func (m *MocksingleClusterAgentReconciler) ReconcileConfigMap(obj *v10.ConfigMap) (reconcile.Result, error) {
+func (m *MocksingleClusterAgentReconciler) ReconcileConfigMap(obj *v11.ConfigMap) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileConfigMap", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -272,7 +272,7 @@ func (mr *MocksingleClusterAgentReconcilerMockRecorder) ReconcileConfigMap(obj i
 }
 
 // ReconcileService mocks base method
-func (m *MocksingleClusterAgentReconciler) ReconcileService(obj *v10.Service) (reconcile.Result, error) {
+func (m *MocksingleClusterAgentReconciler) ReconcileService(obj *v11.Service) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileService", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -287,7 +287,7 @@ func (mr *MocksingleClusterAgentReconcilerMockRecorder) ReconcileService(obj int
 }
 
 // ReconcilePod mocks base method
-func (m *MocksingleClusterAgentReconciler) ReconcilePod(obj *v10.Pod) (reconcile.Result, error) {
+func (m *MocksingleClusterAgentReconciler) ReconcilePod(obj *v11.Pod) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcilePod", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -302,7 +302,7 @@ func (mr *MocksingleClusterAgentReconcilerMockRecorder) ReconcilePod(obj interfa
 }
 
 // ReconcileEndpoints mocks base method
-func (m *MocksingleClusterAgentReconciler) ReconcileEndpoints(obj *v10.Endpoints) (reconcile.Result, error) {
+func (m *MocksingleClusterAgentReconciler) ReconcileEndpoints(obj *v11.Endpoints) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileEndpoints", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -317,7 +317,7 @@ func (mr *MocksingleClusterAgentReconcilerMockRecorder) ReconcileEndpoints(obj i
 }
 
 // ReconcileNode mocks base method
-func (m *MocksingleClusterAgentReconciler) ReconcileNode(obj *v10.Node) (reconcile.Result, error) {
+func (m *MocksingleClusterAgentReconciler) ReconcileNode(obj *v11.Node) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileNode", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -332,7 +332,7 @@ func (mr *MocksingleClusterAgentReconcilerMockRecorder) ReconcileNode(obj interf
 }
 
 // ReconcileDeployment mocks base method
-func (m *MocksingleClusterAgentReconciler) ReconcileDeployment(obj *v1.Deployment) (reconcile.Result, error) {
+func (m *MocksingleClusterAgentReconciler) ReconcileDeployment(obj *v10.Deployment) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileDeployment", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -347,7 +347,7 @@ func (mr *MocksingleClusterAgentReconcilerMockRecorder) ReconcileDeployment(obj 
 }
 
 // ReconcileReplicaSet mocks base method
-func (m *MocksingleClusterAgentReconciler) ReconcileReplicaSet(obj *v1.ReplicaSet) (reconcile.Result, error) {
+func (m *MocksingleClusterAgentReconciler) ReconcileReplicaSet(obj *v10.ReplicaSet) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileReplicaSet", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -362,7 +362,7 @@ func (mr *MocksingleClusterAgentReconcilerMockRecorder) ReconcileReplicaSet(obj 
 }
 
 // ReconcileDaemonSet mocks base method
-func (m *MocksingleClusterAgentReconciler) ReconcileDaemonSet(obj *v1.DaemonSet) (reconcile.Result, error) {
+func (m *MocksingleClusterAgentReconciler) ReconcileDaemonSet(obj *v10.DaemonSet) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileDaemonSet", obj)
 	ret0, _ := ret[0].(reconcile.Result)
@@ -377,7 +377,7 @@ func (mr *MocksingleClusterAgentReconcilerMockRecorder) ReconcileDaemonSet(obj i
 }
 
 // ReconcileStatefulSet mocks base method
-func (m *MocksingleClusterAgentReconciler) ReconcileStatefulSet(obj *v1.StatefulSet) (reconcile.Result, error) {
+func (m *MocksingleClusterAgentReconciler) ReconcileStatefulSet(obj *v10.StatefulSet) (reconcile.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReconcileStatefulSet", obj)
 	ret0, _ := ret[0].(reconcile.Result)

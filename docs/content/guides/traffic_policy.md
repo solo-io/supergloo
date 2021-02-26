@@ -15,7 +15,7 @@ In this guide we will examine how Gloo Mesh can configure Istio to apply retry a
     - Representation of a service mesh control plane that has been discovered 
 3. **Workloads**
     - Representation of a pod that is a member of a service mesh; this is often determined by the presence of an injected proxy sidecar
-4. **TrafficTargets**
+4. **Destinations**
     - Representation of a Kubernetes service that is backed by Workload pods, e.g. pods that are a member of the service mesh
 
 
@@ -89,7 +89,7 @@ Now we can verify that Gloo Mesh has discovered the Pet Store application and co
 
 ### Configure Traffic Policy
 
-With our Pet Store application deployed and wired up to Istio, let's make sure that Gloo Mesh has discovered it by checking for *Workload* and *TrafficTarget* resources.
+With our Pet Store application deployed and wired up to Istio, let's make sure that Gloo Mesh has discovered it by checking for *Workload* and *Destination* resources.
 
 ```shell
 kubectl get workloads -n gloo-mesh
@@ -102,10 +102,10 @@ istio-ingressgateway-istio-system-remote-cluster-deployment       3h4m
 petstore-default-mgmt-cluster-deployment                          3h4m
 ```
 
-If you've also deployed the Bookstore application, you may see entries for that as well. We can see the naming for the Pet Store application is the deployment name, followed by the namespace, and then the cluster name. We can also check for the *TrafficTarget*, which represents the service associated with the pods in the Workload resource.
+If you've also deployed the Bookstore application, you may see entries for that as well. We can see the naming for the Pet Store application is the deployment name, followed by the namespace, and then the cluster name. We can also check for the *Destination*, which represents the service associated with the pods in the Workload resource.
 
 ```shell
-kubectl get traffictarget -n gloo-mesh
+kubectl get destination -n gloo-mesh
 ```
 
 ```shell
@@ -115,13 +115,13 @@ istio-ingressgateway-istio-system-remote-cluster       3h6m
 petstore-default-mgmt-cluster                          3h7m
 ```
 
-We are going to create a TrafficPolicy that uses the `petstore-default-mgmt-cluster` as a TrafficTarget. Within the TrafficPolicy, we are going to set a retry limit and timeout for the service. You can find more information about the options available for [TrafficPolicy in the API reference section]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy/" %}}).
+We are going to create a TrafficPolicy that uses the `petstore-default-mgmt-cluster` as a Destination. Within the TrafficPolicy, we are going to set a retry limit and timeout for the service. You can find more information about the options available for [TrafficPolicy in the API reference section]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy/" %}}).
 
 Here is the configuration we will apply:
 
 ```shell
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
-apiVersion: networking.mesh.gloo.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
 metadata:
   namespace: gloo-mesh
@@ -133,10 +133,11 @@ spec:
         - clusterName: mgmt-cluster
           name: petstore
           namespace: default
-  requestTimeout: 100ms
-  retries:
-    attempts: 5
-    perTryTimeout: 5ms
+  policy:
+    requestTimeout: 100ms
+    retries:
+      attempts: 5
+      perTryTimeout: 5ms
 EOF
 ```
 
@@ -155,8 +156,8 @@ metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
       {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"service":"petstore"},"name":"petstore","namespace":"default"},"spec":{"ports":[{"port":8080,"protocol":"TCP"}],"selector":{"app":"petstore"}}}
-    parents.networking.mesh.gloo.solo.io: '{"discovery.mesh.gloo.solo.io/v1alpha2,
-      Kind=TrafficTarget":[{"name":"petstore-default-mgmt-cluster","namespace":"gloo-mesh"}]}'
+    parents.networking.mesh.gloo.solo.io: '{"discovery.mesh.gloo.solo.io/v1,
+      Kind=Destination":[{"name":"petstore-default-mgmt-cluster","namespace":"gloo-mesh"}]}'
   creationTimestamp: "2020-12-16T20:39:22Z"
   generation: 1
   labels:

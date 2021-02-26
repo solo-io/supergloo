@@ -47,7 +47,7 @@ In the previous guide, [we created a VirtualMesh resource]({{% versioned_link_pa
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.mesh.gloo.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1
 kind: VirtualMesh
 metadata:
   name: virtual-mesh
@@ -68,7 +68,7 @@ spec:
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
-apiVersion: networking.mesh.gloo.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1
 kind: VirtualMesh
 metadata:
   name: virtual-mesh
@@ -121,7 +121,7 @@ In this configuration, we select sources (in this case the `productpage` service
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.mesh.gloo.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1
 kind: AccessPolicy
 metadata:
   namespace: gloo-mesh
@@ -141,7 +141,7 @@ EOF
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
-apiVersion: networking.mesh.gloo.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1
 kind: AccessPolicy
 metadata:
   namespace: gloo-mesh
@@ -173,7 +173,7 @@ In this next configuration, we enable traffic from `reviews` to `ratings`:
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="shell">}}
-apiVersion: networking.mesh.gloo.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1
 kind: AccessPolicy
 metadata:
   namespace: gloo-mesh
@@ -194,7 +194,7 @@ spec:
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context $MGMT_CONTEXT -f - <<EOF
-apiVersion: networking.mesh.gloo.solo.io/v1alpha2
+apiVersion: networking.mesh.gloo.solo.io/v1
 kind: AccessPolicy
 metadata:
   namespace: gloo-mesh

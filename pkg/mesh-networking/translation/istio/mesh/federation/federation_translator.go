@@ -8,25 +8,24 @@ import (
 	envoy_api_v2_listener "github.com/envoyproxy/go-control-plane/envoy/api/v2/listener"
 	"github.com/gogo/protobuf/types"
 	"github.com/rotisserie/eris"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/destinationrule"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/traffictarget/virtualservice"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/destinationrule"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/virtualservice"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/protoutils"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/traffictargetutils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/k8s-utils/kubeutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -57,8 +56,8 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.LocalSnapshot,
-		mesh *discoveryv1alpha2.Mesh,
-		virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
+		mesh *discoveryv1.Mesh,
+		virtualMesh *discoveryv1.MeshStatus_AppliedVirtualMesh,
 		outputs istio.Builder,
 		reporter reporting.Reporter,
 	)
@@ -66,23 +65,20 @@ type Translator interface {
 
 type translator struct {
 	ctx                       context.Context
-	trafficTargets            discoveryv1alpha2sets.TrafficTargetSet
-	failoverServices          v1alpha2sets.FailoverServiceSet
+	destinations              discoveryv1sets.DestinationSet
 	virtualServiceTranslator  virtualservice.Translator
 	destinationRuleTranslator destinationrule.Translator
 }
 
 func NewTranslator(
 	ctx context.Context,
-	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
-	failoverServices v1alpha2sets.FailoverServiceSet,
+	destinations discoveryv1sets.DestinationSet,
 	virtualServiceTranslator virtualservice.Translator,
 	destinationRuleTranslator destinationrule.Translator,
 ) Translator {
 	return &translator{
 		ctx:                       ctx,
-		trafficTargets:            trafficTargets,
-		failoverServices:          failoverServices,
+		destinations:              destinations,
 		virtualServiceTranslator:  virtualServiceTranslator,
 		destinationRuleTranslator: destinationRuleTranslator,
 	}
@@ -91,18 +87,18 @@ func NewTranslator(
 // translate the appropriate resources for the given Mesh.
 func (t *translator) Translate(
 	in input.LocalSnapshot,
-	mesh *discoveryv1alpha2.Mesh,
-	virtualMesh *discoveryv1alpha2.MeshStatus_AppliedVirtualMesh,
+	mesh *discoveryv1.Mesh,
+	virtualMesh *discoveryv1.MeshStatus_AppliedVirtualMesh,
 	outputs istio.Builder,
 	reporter reporting.Reporter,
 ) {
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {
-		contextutils.LoggerFrom(t.ctx).Debugf("ignoring non istio mesh %v %T", sets.Key(mesh), mesh.Spec.MeshType)
+		contextutils.LoggerFrom(t.ctx).Debugf("ignoring non istio mesh %v %T", sets.Key(mesh), mesh.Spec.Type)
 		return
 	}
 	if virtualMesh == nil || len(virtualMesh.Spec.Meshes) < 2 {
-		contextutils.LoggerFrom(t.ctx).Debugf("ignoring istio mesh %v which is not federated with other meshes in a virtual mesh", sets.Key(mesh))
+		contextutils.LoggerFrom(t.ctx).Debugf("ignoring istio mesh %v which is not federated with other meshes in a VirtualMesh", sets.Key(mesh))
 		return
 	}
 	if len(istioMesh.IngressGateways) < 1 {
@@ -113,16 +109,16 @@ func (t *translator) Translate(
 	// Currently, we just default to using the first one in the list.
 	ingressGateway := istioMesh.IngressGateways[0]
 
-	trafficTargets := ServicesForMesh(mesh, in.TrafficTargets())
+	destinations := DestinationsForMesh(mesh, in.Destinations())
 
-	if len(trafficTargets) == 0 {
+	if len(destinations) == 0 {
 		contextutils.LoggerFrom(t.ctx).Debugf("no services found in istio mesh %v", sets.Key(mesh))
 		return
 	}
 
 	istioCluster := istioMesh.Installation.Cluster
 
-	kubeCluster, err := in.KubernetesClusters().Find(&v1.ObjectRef{
+	kubeCluster, err := in.KubernetesClusters().Find(&skv2corev1.ObjectRef{
 		Name:      istioCluster,
 		Namespace: defaults.GetPodNamespace(),
 	})
@@ -147,6 +143,7 @@ func (t *translator) Translate(
 		return
 	}
 
+<<<<<<< HEAD
 	for _, trafficTarget := range trafficTargets {
 		switch trafficTarget.Spec.Type.(type) {
 		case *discoveryv1alpha2.TrafficTargetSpec_KubeService_:
@@ -159,6 +156,122 @@ func (t *translator) Translate(
 			contextutils.LoggerFrom(t.ctx).Debugf("skipping traffic target %v (only kubeService or externalService supported)")
 			continue
 		}
+=======
+	for _, destination := range destinations {
+		meshKubeService := destination.Spec.GetKubeService()
+		if meshKubeService == nil {
+			// should never happen
+			contextutils.LoggerFrom(t.ctx).Debugf("skipping Destination %v (only kube types supported)", err)
+			continue
+		}
+
+		serviceEntryIp, err := destinationutils.ConstructUniqueIpForKubeService(meshKubeService.Ref)
+		if err != nil {
+			// should never happen
+			contextutils.LoggerFrom(t.ctx).Errorf("unexpected error: failed to generate service entry ip: %v", err)
+			continue
+		}
+
+		federatedHostname := hostutils.BuildFederatedFQDN(
+			meshKubeService.GetRef(),
+			virtualMesh.Spec,
+		)
+
+		endpointPorts := make(map[string]uint32)
+		var ports []*networkingv1alpha3spec.Port
+		for _, port := range destination.Spec.GetKubeService().GetPorts() {
+			ports = append(ports, &networkingv1alpha3spec.Port{
+				Number:   port.Port,
+				Protocol: ConvertKubePortProtocol(port),
+				Name:     port.Name,
+			})
+			endpointPorts[port.Name] = ingressGateway.ExternalTlsPort
+		}
+
+		// NOTE(ilackarms): we use these labels to support federated subsets.
+		// the values don't actually matter; but the subset names should
+		// match those on the DestinationRule for the Destination in the
+		// remote cluster.
+		// based on: https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
+		clusterLabels := trafficshift.MakeFederatedSubsetLabel(istioCluster)
+
+		endpoints := []*networkingv1alpha3spec.WorkloadEntry{{
+			Address: ingressGateway.ExternalAddress,
+			Ports:   endpointPorts,
+			Labels:  clusterLabels,
+		}}
+
+		// list all meshes in the VirtualMesh
+		for _, ref := range virtualMesh.Spec.Meshes {
+			groupedMesh, err := in.Meshes().Find(ref)
+			if err != nil {
+				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, err)
+				continue
+			}
+
+			istioMesh := groupedMesh.Spec.GetIstio()
+			if istioMesh == nil {
+				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, eris.Errorf("non-istio mesh %v cannot be used in VirtualMesh", sets.Key(groupedMesh)))
+				continue
+			}
+
+			if federatedHostnameSuffix != hostutils.DefaultHostnameSuffix && !istioMesh.SmartDnsProxyingEnabled {
+				reporter.ReportVirtualMeshToMesh(mesh, virtualMesh.Ref, eris.Errorf(
+					"mesh %v does not have smart DNS proxying enabled (hostname suffix can only be specified if all grouped istio meshes have it enabled)",
+					sets.Key(groupedMesh),
+				))
+				continue
+			}
+
+			// only translate output resources for client meshes
+			if ezkube.RefsMatch(ref, mesh) {
+				continue
+			}
+
+			se := &networkingv1alpha3.ServiceEntry{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        federatedHostname,
+					Namespace:   istioMesh.Installation.Namespace,
+					ClusterName: istioMesh.Installation.Cluster,
+					Labels:      metautils.TranslatedObjectLabels(),
+				},
+				Spec: networkingv1alpha3spec.ServiceEntry{
+					Addresses:  []string{serviceEntryIp.String()},
+					Hosts:      []string{federatedHostname},
+					Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
+					Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
+					Endpoints:  endpoints,
+					Ports:      ports,
+				},
+			}
+
+			// Append the VirtualMesh as a parent to the output service entry
+			metautils.AppendParent(t.ctx, se, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
+
+			outputs.AddServiceEntries(se)
+
+			// Translate VirtualServices for federated Destinations, can be nil
+			vs := t.virtualServiceTranslator.Translate(t.ctx, in, destination, istioMesh.Installation, reporter)
+			// Append the VirtualMesh as a parent to the output virtual service
+			metautils.AppendParent(t.ctx, vs, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
+			outputs.AddVirtualServices(vs)
+
+			// Translate DestinationRules for federated Destinations, can be nil
+			dr := t.destinationRuleTranslator.Translate(t.ctx, in, destination, istioMesh.Installation, reporter)
+			// Append the VirtualMesh as a parent to the output destination rule
+			metautils.AppendParent(t.ctx, dr, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
+			outputs.AddDestinationRules(dr)
+
+			// Update AppliedFederation data on Destination's status
+			updateDestinationFederationStatus(
+				destination,
+				federatedHostname,
+				ezkube.MakeObjectRef(groupedMesh),
+				virtualMesh.Spec.Meshes,
+				virtualMesh.Spec.GetFederation().GetFlatNetwork(),
+			)
+		}
+>>>>>>> main
 	}
 
 	// istio gateway names must be DNS-1123 labels
@@ -220,14 +333,15 @@ func (t *translator) Translate(
 		},
 	}
 
-	// Append the virtual mesh as a parent to each output resource
-	metautils.AppendParent(t.ctx, gw, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
-	metautils.AppendParent(t.ctx, ef, virtualMesh.GetRef(), v1alpha2.VirtualMesh{}.GVK())
+	// Append the VirtualMesh as a parent to each output resource
+	metautils.AppendParent(t.ctx, gw, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
+	metautils.AppendParent(t.ctx, ef, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
 
 	outputs.AddGateways(gw)
 	outputs.AddEnvoyFilters(ef)
 }
 
+<<<<<<< HEAD
 // translateKubeServiceTrafficTarget takes a KubeService TrafficTarget and adds a ServiceEntry
 // to the output for every other cluster in the mesh (not the cluster hosting the KubeService),
 // so that the KubeService can be accessed from any cluster in the mesh via a federated hostname.
@@ -357,14 +471,22 @@ func (t *translator) translateKubeServiceTrafficTarget(
 
 func setKubeServiceTTFederationStatus(
 	trafficTarget *discoveryv1alpha2.TrafficTarget,
+=======
+func updateDestinationFederationStatus(
+	destination *discoveryv1.Destination,
+>>>>>>> main
 	federatedHostname string,
-	mesh *v1.ObjectRef,
-	groupedMeshes []*v1.ObjectRef,
+	mesh *skv2corev1.ObjectRef,
+	groupedMeshes []*skv2corev1.ObjectRef,
 	flatNetwork bool,
 ) {
-	var federatedToMeshes []*v1.ObjectRef
+	var federatedToMeshes []*skv2corev1.ObjectRef
 
+<<<<<<< HEAD
 	// don't include the mesh of the traffic target itself in the list of federated meshes,
+=======
+	// don't include the mesh of the Destination itself in the list of federated meshes
+>>>>>>> main
 	for _, ref := range groupedMeshes {
 		if ezkube.RefsMatch(ref, mesh) {
 			continue
@@ -372,15 +494,16 @@ func setKubeServiceTTFederationStatus(
 		federatedToMeshes = append(federatedToMeshes, mesh)
 	}
 
-	trafficTarget.Status.AppliedFederation = &discoveryv1alpha2.TrafficTargetStatus_AppliedFederation{
+	destination.Status.AppliedFederation = &discoveryv1.DestinationStatus_AppliedFederation{
 		FederatedHostname: federatedHostname,
 		FederatedToMeshes: federatedToMeshes,
 		FlatNetwork:       flatNetwork,
 	}
 }
 
-// ServicesForMesh returns all TrafficTargets which belong to a given mesh
+// DestinationsForMesh returns all Destinations which belong to a given mesh
 // exported for use in enterprise
+<<<<<<< HEAD
 func ServicesForMesh(
 	mesh *discoveryv1alpha2.Mesh,
 	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
@@ -396,11 +519,19 @@ func ServicesForMesh(
 			}
 		}
 		return !ezkube.RefsMatch(service.Spec.GetMesh(), mesh)
+=======
+func DestinationsForMesh(
+	mesh *discoveryv1.Mesh,
+	destinations discoveryv1sets.DestinationSet,
+) []*discoveryv1.Destination {
+	return destinations.List(func(service *discoveryv1.Destination) bool {
+		return !ezkube.RefsMatch(service.Spec.Mesh, mesh)
+>>>>>>> main
 	})
 }
 
 func buildTcpRewritePatch(
-	istioMesh *discoveryv1alpha2.MeshSpec_Istio,
+	istioMesh *discoveryv1.MeshSpec_Istio,
 	clusterName string,
 	clusterDomain string,
 	federatedHostnameSuffix string,
@@ -461,7 +592,7 @@ func buildTcpRewritePatchAsConfig(clusterName, clusterDomain, federatedHostnameS
 
 // ConvertKubePortProtocol converts protocol of k8s Service port to application level protocol
 // exported for use in enterprise
-func ConvertKubePortProtocol(port *discoveryv1alpha2.TrafficTargetSpec_KubeService_KubeServicePort) string {
+func ConvertKubePortProtocol(port *discoveryv1.DestinationSpec_KubeService_KubeServicePort) string {
 	var appProtocol *string
 	if port.AppProtocol != "" {
 		appProtocol = pointer.StringPtr(port.AppProtocol)

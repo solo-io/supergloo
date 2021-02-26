@@ -41,7 +41,7 @@ rules:
   resources:
   - meshes
   - workloads
-  - traffictargets
+  - destinations
   verbs:
   - '*'
 
@@ -101,7 +101,7 @@ rules:
   resources:
   - meshes
   - workloads
-  - traffictargets
+  - destinations
   verbs:
   - get
   - list
@@ -129,7 +129,6 @@ rules:
   - trafficpolicies
   - accesspolicies
   - virtualmeshes
-  - failoverservices
   verbs:
   - get
   - list
@@ -162,7 +161,7 @@ rules:
   resources:
   - meshes/status
   - workloads/status
-  - traffictargets/status
+  - destinations/status
   verbs:
   - get
   - update
@@ -187,7 +186,6 @@ rules:
   - trafficpolicies/status
   - accesspolicies/status
   - virtualmeshes/status
-  - failoverservices/status
   verbs:
   - get
   - update

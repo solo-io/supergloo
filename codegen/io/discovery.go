@@ -31,7 +31,7 @@ var (
 	DiscoveryLocalInputTypes = Snapshot{
 		schema.GroupVersion{
 			Group:   "settings." + constants.GlooMeshApiGroupSuffix,
-			Version: "v1alpha2",
+			Version: "v1",
 		}: {
 			"Settings",
 		},
@@ -42,11 +42,11 @@ var (
 		Snapshot: Snapshot{
 			schema.GroupVersion{
 				Group:   "discovery." + constants.GlooMeshApiGroupSuffix,
-				Version: "v1alpha2",
+				Version: "v1",
 			}: {
 				"Mesh",
 				"Workload",
-				"TrafficTarget",
+				"Destination",
 			},
 		},
 	}

@@ -3,11 +3,11 @@ package mesh
 import (
 	"context"
 
-	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
 
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -17,7 +17,7 @@ import (
 
 // the mesh translator converts deployments with control plane images into Mesh CRs
 type Translator interface {
-	TranslateMeshes(in input.DiscoveryInputSnapshot, settings *settingsv1alpha2.DiscoverySettings) v1alpha2sets.MeshSet
+	TranslateMeshes(in input.DiscoveryInputSnapshot, settings *settingsv1.DiscoverySettings) v1sets.MeshSet
 }
 
 type translator struct {
@@ -33,8 +33,8 @@ func NewTranslator(
 	return &translator{ctx: ctx, meshDetector: meshDetector}
 }
 
-func (t *translator) TranslateMeshes(in input.DiscoveryInputSnapshot, settings *settingsv1alpha2.DiscoverySettings) v1alpha2sets.MeshSet {
-	meshSet := v1alpha2sets.NewMeshSet()
+func (t *translator) TranslateMeshes(in input.DiscoveryInputSnapshot, settings *settingsv1.DiscoverySettings) v1sets.MeshSet {
+	meshSet := v1sets.NewMeshSet()
 	meshes, err := t.meshDetector.DetectMeshes(in, settings)
 	if err != nil {
 		contextutils.LoggerFrom(t.ctx).Warnw("ecnountered error discovering meshes", "err", err)

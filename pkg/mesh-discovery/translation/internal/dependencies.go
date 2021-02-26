@@ -7,12 +7,12 @@ import (
 	appmeshsidecar "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/detector/appmesh"
 
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/destination"
+	destinationdetector "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/destination/detector"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh"
 	meshdetector "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector/istio"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector/osm"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/traffictarget"
-	traffictargetdetector "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/traffictarget/detector"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload"
 	workloaddetector "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/detector"
 	istiosidecar "github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/detector/istio"
@@ -35,7 +35,7 @@ type DependencyFactory interface {
 		in input.DiscoveryInputSnapshot,
 	) workload.Translator
 
-	MakeTrafficTargetTranslator() traffictarget.Translator
+	MakeDestinationTranslator() destination.Translator
 }
 
 type DependencyFactoryImpl struct{}
@@ -72,7 +72,7 @@ func (d DependencyFactoryImpl) MakeWorkloadTranslator(
 	return workload.NewTranslator(ctx, workloadDetector)
 }
 
-func (d DependencyFactoryImpl) MakeTrafficTargetTranslator() traffictarget.Translator {
-	return traffictarget.NewTranslator(traffictargetdetector.NewTrafficTargetDetector())
+func (d DependencyFactoryImpl) MakeDestinationTranslator() destination.Translator {
+	return destination.NewTranslator(destinationdetector.NewDestinationDetector())
 
 }

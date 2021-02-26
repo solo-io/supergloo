@@ -7,11 +7,11 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/traffictargetutils"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,8 +40,8 @@ var (
 
 // testExtensionsServer is an e2e implementation of a grpc extensions service for Networking
 // that adds a route to an HelloWorld server running on the local machine (reachable via `host.docker.internal` from inside KinD)
-func getCreateMeshPatchesFunc() func(ctx context.Context, mesh *v1alpha2.MeshSpec) (istio.Builder, error) {
-	return func(ctx context.Context, mesh *v1alpha2.MeshSpec) (istio.Builder, error) {
+func getCreateMeshPatchesFunc() func(ctx context.Context, mesh *discoveryv1.MeshSpec) (istio.Builder, error) {
+	return func(ctx context.Context, mesh *discoveryv1.MeshSpec) (istio.Builder, error) {
 		istioMesh := mesh.GetIstio()
 		if istioMesh == nil {
 			return nil, nil
@@ -60,7 +60,7 @@ func getCreateMeshPatchesFunc() func(ctx context.Context, mesh *v1alpha2.MeshSpe
 
 		outputs := istio.NewBuilder(ctx, "test-extensions-server")
 
-		serviceEntryIp, err := traffictargetutils.ConstructUniqueIpForKubeService(&v1.ClusterObjectRef{
+		serviceEntryIp, err := destinationutils.ConstructUniqueIpForKubeService(&skv2corev1.ClusterObjectRef{
 			Name:        resourceName,
 			Namespace:   resourceNamespace,
 			ClusterName: resourceCluster,

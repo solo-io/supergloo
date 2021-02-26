@@ -79,7 +79,7 @@ rules:
 - apiGroups:
   - access.smi-spec.io
   resources:
-  - traffictargets
+  - destinations
   verbs:
   - '*'
 - apiGroups:

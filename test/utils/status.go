@@ -5,13 +5,13 @@ import (
 
 	. "github.com/onsi/gomega"
 
-	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func AssertTrafficPolicyStatuses(
 	ctx context.Context,
-	trafficPolicy networkingv1alpha2.TrafficPolicyClient,
+	trafficPolicy networkingv1.TrafficPolicyClient,
 	namespace string,
 ) {
 
@@ -29,7 +29,7 @@ func AssertTrafficPolicyStatuses(
 
 func AssertVirtualMeshStatuses(
 	ctx context.Context,
-	virtualMesh networkingv1alpha2.VirtualMeshClient,
+	virtualMesh networkingv1.VirtualMeshClient,
 	namespace string,
 ) {
 	EventuallyWithOffset(1, func() bool {

@@ -3,8 +3,8 @@ package hostutils
 import (
 	"fmt"
 
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -46,17 +46,17 @@ type ClusterDomainRegistry interface {
 }
 
 type clusterDomainRegistry struct {
-	clusters       skv1alpha1sets.KubernetesClusterSet
-	trafficTargets v1alpha2sets.TrafficTargetSet
+	clusters     skv1alpha1sets.KubernetesClusterSet
+	destinations discoveryv1sets.DestinationSet
 }
 
 func NewClusterDomainRegistry(
 	clusters skv1alpha1sets.KubernetesClusterSet,
-	trafficTargets v1alpha2sets.TrafficTargetSet,
+	destinations discoveryv1sets.DestinationSet,
 ) ClusterDomainRegistry {
 	return &clusterDomainRegistry{
-		clusters:       clusters,
-		trafficTargets: trafficTargets,
+		clusters:     clusters,
+		destinations: destinations,
 	}
 }
 
@@ -75,34 +75,34 @@ func (c *clusterDomainRegistry) GetClusterDomain(clusterName string) string {
 	return clusterDomain
 }
 
-func (c *clusterDomainRegistry) GetLocalFQDN(trafficTargetRef ezkube.ClusterResourceId) string {
-	return fmt.Sprintf("%s.%s.svc.%s", trafficTargetRef.GetName(), trafficTargetRef.GetNamespace(), c.GetClusterDomain(trafficTargetRef.GetClusterName()))
+func (c *clusterDomainRegistry) GetLocalFQDN(destinationRef ezkube.ClusterResourceId) string {
+	return fmt.Sprintf("%s.%s.svc.%s", destinationRef.GetName(), destinationRef.GetNamespace(), c.GetClusterDomain(destinationRef.GetClusterName()))
 }
 
-func (c *clusterDomainRegistry) GetFederatedFQDN(trafficTargetRef ezkube.ClusterResourceId) string {
-	trafficTarget, err := c.trafficTargets.Find(&skv1.ObjectRef{
-		Name:      utils.DiscoveredResourceName(trafficTargetRef),
+func (c *clusterDomainRegistry) GetFederatedFQDN(destinationRef ezkube.ClusterResourceId) string {
+	destination, err := c.destinations.Find(&skv1.ObjectRef{
+		Name:      utils.DiscoveredResourceName(destinationRef),
 		Namespace: defaults.GetPodNamespace(),
 	})
-	if err != nil || trafficTarget.Status.GetAppliedFederation().GetFederatedHostname() == "" {
-		return fmt.Sprintf("%s.%s.svc.%s.%v", trafficTargetRef.GetName(), trafficTargetRef.GetNamespace(), trafficTargetRef.GetClusterName(), DefaultHostnameSuffix)
+	if err != nil || destination.Status.GetAppliedFederation().GetFederatedHostname() == "" {
+		return fmt.Sprintf("%s.%s.svc.%s.%v", destinationRef.GetName(), destinationRef.GetNamespace(), destinationRef.GetClusterName(), DefaultHostnameSuffix)
 	} else {
-		return trafficTarget.Status.GetAppliedFederation().GetFederatedHostname()
+		return destination.Status.GetAppliedFederation().GetFederatedHostname()
 	}
 }
 
 func (c *clusterDomainRegistry) GetDestinationFQDN(originatingCluster string, destination ezkube.ClusterResourceId) string {
 	if destination.GetClusterName() == originatingCluster {
-		// hostname will use the cluster local domain if the destination is in the same cluster as the target TrafficTarget
+		// hostname will use the cluster local domain if the destination is in the same cluster as the target Destination
 		return c.GetLocalFQDN(destination)
 	} else {
-		// hostname will use the cross-cluster domain if the destination is in a different cluster than the target TrafficTarget
+		// hostname will use the cross-cluster domain if the destination is in a different cluster than the target Destination
 		return c.GetFederatedFQDN(destination)
 	}
 }
 
 // Construct a federated FQDN for the given service, using the provided hostname suffix if provided, otherwise use default suffix.
-func BuildFederatedFQDN(serviceRef ezkube.ClusterResourceId, virtualMeshSpec *v1alpha2.VirtualMeshSpec) string {
+func BuildFederatedFQDN(serviceRef ezkube.ClusterResourceId, virtualMeshSpec *v1.VirtualMeshSpec) string {
 	return fmt.Sprintf(
 		"%s.%s.svc.%s.%v",
 		serviceRef.GetName(),
@@ -112,7 +112,7 @@ func BuildFederatedFQDN(serviceRef ezkube.ClusterResourceId, virtualMeshSpec *v1
 	)
 }
 
-func GetFederatedHostnameSuffix(virtualMeshSpec *v1alpha2.VirtualMeshSpec) string {
+func GetFederatedHostnameSuffix(virtualMeshSpec *v1.VirtualMeshSpec) string {
 	federatedHostnameSuffix := virtualMeshSpec.GetFederation().GetHostnameSuffix()
 	if federatedHostnameSuffix == "" {
 		federatedHostnameSuffix = DefaultHostnameSuffix

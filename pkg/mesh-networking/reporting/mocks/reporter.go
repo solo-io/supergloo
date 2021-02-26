@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 )
 
@@ -35,32 +35,32 @@ func (m *MockReporter) EXPECT() *MockReporterMockRecorder {
 	return m.recorder
 }
 
-// ReportTrafficPolicyToTrafficTarget mocks base method
-func (m *MockReporter) ReportTrafficPolicyToTrafficTarget(trafficTarget *v1alpha2.TrafficTarget, trafficPolicy ezkube.ResourceId, err error) {
+// ReportTrafficPolicyToDestination mocks base method
+func (m *MockReporter) ReportTrafficPolicyToDestination(destination *v1.Destination, trafficPolicy ezkube.ResourceId, err error) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReportTrafficPolicyToTrafficTarget", trafficTarget, trafficPolicy, err)
+	m.ctrl.Call(m, "ReportTrafficPolicyToDestination", destination, trafficPolicy, err)
 }
 
-// ReportTrafficPolicyToTrafficTarget indicates an expected call of ReportTrafficPolicyToTrafficTarget
-func (mr *MockReporterMockRecorder) ReportTrafficPolicyToTrafficTarget(trafficTarget, trafficPolicy, err interface{}) *gomock.Call {
+// ReportTrafficPolicyToDestination indicates an expected call of ReportTrafficPolicyToDestination
+func (mr *MockReporterMockRecorder) ReportTrafficPolicyToDestination(destination, trafficPolicy, err interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportTrafficPolicyToTrafficTarget", reflect.TypeOf((*MockReporter)(nil).ReportTrafficPolicyToTrafficTarget), trafficTarget, trafficPolicy, err)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportTrafficPolicyToDestination", reflect.TypeOf((*MockReporter)(nil).ReportTrafficPolicyToDestination), destination, trafficPolicy, err)
 }
 
-// ReportAccessPolicyToTrafficTarget mocks base method
-func (m *MockReporter) ReportAccessPolicyToTrafficTarget(trafficTarget *v1alpha2.TrafficTarget, accessPolicy ezkube.ResourceId, err error) {
+// ReportAccessPolicyToDestination mocks base method
+func (m *MockReporter) ReportAccessPolicyToDestination(destination *v1.Destination, accessPolicy ezkube.ResourceId, err error) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReportAccessPolicyToTrafficTarget", trafficTarget, accessPolicy, err)
+	m.ctrl.Call(m, "ReportAccessPolicyToDestination", destination, accessPolicy, err)
 }
 
-// ReportAccessPolicyToTrafficTarget indicates an expected call of ReportAccessPolicyToTrafficTarget
-func (mr *MockReporterMockRecorder) ReportAccessPolicyToTrafficTarget(trafficTarget, accessPolicy, err interface{}) *gomock.Call {
+// ReportAccessPolicyToDestination indicates an expected call of ReportAccessPolicyToDestination
+func (mr *MockReporterMockRecorder) ReportAccessPolicyToDestination(destination, accessPolicy, err interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportAccessPolicyToTrafficTarget", reflect.TypeOf((*MockReporter)(nil).ReportAccessPolicyToTrafficTarget), trafficTarget, accessPolicy, err)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportAccessPolicyToDestination", reflect.TypeOf((*MockReporter)(nil).ReportAccessPolicyToDestination), destination, accessPolicy, err)
 }
 
 // ReportVirtualMeshToMesh mocks base method
-func (m *MockReporter) ReportVirtualMeshToMesh(mesh *v1alpha2.Mesh, virtualMesh ezkube.ResourceId, err error) {
+func (m *MockReporter) ReportVirtualMeshToMesh(mesh *v1.Mesh, virtualMesh ezkube.ResourceId, err error) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "ReportVirtualMeshToMesh", mesh, virtualMesh, err)
 }
@@ -72,7 +72,7 @@ func (mr *MockReporterMockRecorder) ReportVirtualMeshToMesh(mesh, virtualMesh, e
 }
 
 // ReportFailoverServiceToMesh mocks base method
-func (m *MockReporter) ReportFailoverServiceToMesh(mesh *v1alpha2.Mesh, failoverService ezkube.ResourceId, err error) {
+func (m *MockReporter) ReportFailoverServiceToMesh(mesh *v1.Mesh, failoverService ezkube.ResourceId, err error) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "ReportFailoverServiceToMesh", mesh, failoverService, err)
 }

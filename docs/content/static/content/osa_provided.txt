@@ -3,7 +3,6 @@ Name|Version|License
 [Masterminds/semver](https://github.com/Masterminds/semver)|v1.5.0|MIT License
 [aws/aws-app-mesh-controller-for-k8s](https://github.com/aws/aws-app-mesh-controller-for-k8s)|v1.1.1|Apache License 2.0
 [aws/aws-sdk-go](https://github.com/aws/aws-sdk-go)|v1.36.19|Apache License 2.0
-[udpa/go](https://github.com/cncf/udpa)|v0.0.0-20201120205902-5459f2c99403|Apache License 2.0
 [docker/distribution](https://github.com/docker/distribution)|v2.7.1+incompatible|Apache License 2.0
 [envoyproxy/go-control-plane](https://github.com/envoyproxy/go-control-plane)|v0.9.9-0.20210115003313-31f9241a16e6|Apache License 2.0
 [gertd/go-pluralize](https://github.com/gertd/go-pluralize)|v0.1.1|MIT License

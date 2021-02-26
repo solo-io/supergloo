@@ -1,0 +1,114 @@
+syntax = "proto3";
+package settings.mesh.gloo.solo.io;
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1";
+
+import "extproto/ext.proto";
+option (extproto.equal_all) = true;
+
+import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
+import "github.com/solo-io/gloo-mesh/api/networking/v1/traffic_policy.proto";
+
+// Configure system-wide settings and defaults. Settings specified in networking policies take precedence over those specified here.
+message SettingsSpec {
+
+    // Configure default mTLS settings for Destinations.
+    .networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MTLS mtls = 1;
+
+    // Configure Gloo Mesh networking to communicate with one or more external gRPC NetworkingExtensions servers.
+    // Updates will be applied by the servers in the order they are listed (servers towards the end of the list take precedence).
+    // Note: Extension Servers have full write access to the output objects written by Gloo Mesh.
+    repeated GrpcServer networking_extension_servers = 2;
+
+    // Settings for Gloo Mesh discovery.
+    DiscoverySettings discovery = 3;
+
+    // Enable and configure use of Relay mode to communicate with remote clusters. This is an enterprise-only feature.
+    RelaySettings relay = 4;
+
+}
+
+// RelaySettings contains options for configuring Gloo Mesh to use Relay for cluster management.
+// Relay provides a way for connecting Gloo Mesh to remote Kubernetes Clusters
+// without the need to share credentials and access to remote Kube API Servers
+// from the management cluster (the Gloo Mesh controllers).
+//
+// Relay instead uses a streaming gRPC API to pass discovery data
+// from remote clusters to the management cluster, and push
+// configuration from the management cluster to the remote clusters.
+//
+// Architecturally, it includes a Relay-agent which is installed to remote Kube clusters at
+// registration time, which then connects directly to the Relay Server in the management cluster.
+// to push its discovery data and pull its mesh configuration.
+//
+//
+// To configure Gloo Mesh to use Relay, make sure to read the
+// [relay installation guide]({{< versioned_link_path fromRoot="/guides/setup/install_gloo_mesh" >}}) and
+// [relay cluster registration guide]({{< versioned_link_path fromRoot="/guides/setup/register_cluster" >}}).
+message RelaySettings {
+
+    // Enable the use of Relay for cluster management.
+    // If relay is enabled, make sure to follow the [relay cluster registration guide]({{< versioned_link_path fromRoot="/guides/setup/register_cluster#relay" >}})
+    // for registering your clusters.
+    bool enabled = 1;
+
+    // Connection info for the Relay Server. Gloo Mesh will fetch discovery resources from this server
+    // and push translated outputs to this server.
+    // Note: currently this field has no effect as the relay server runs in-process of the networking Pod.
+    GrpcServer server = 2;
+}
+
+// Settings for Gloo Mesh discovery.
+message DiscoverySettings {
+
+    // Istio-specific discovery settings
+    Istio istio = 1;
+
+    // Istio-specific discovery settings
+    message Istio {
+
+        // Configure discovery of ingress gateways per cluster. The key to the map is either a Gloo Mesh cluster name or
+        // `*` denoting all clusters. If an entry is found for a given cluster, it will be used. Otherwise, the
+        // wildcard entry will be used if it exists. Lastly, we will fall back to a set of default values.
+        map<string, IngressGatewayDetector> ingress_gateway_detectors = 1;
+
+        // Configure discovery of ingress gateways.
+        message IngressGatewayDetector {
+
+            // Workload labels used to detect ingress gateways for an Istio deployment.
+            // If not specified, will default to `{"istio": "ingressgateway"}`.
+            map<string, string> gateway_workload_labels = 1;
+
+            // The name of the TLS port used to detect ingress gateways. Kubernetes services must have a port with this name
+            // in order to be recognized as an ingress gateway. If not specified, will default to `tls`.
+            string gateway_tls_port_name = 2;
+        }
+    }
+}
+
+// Options for connecting to an external gRPC server.
+message GrpcServer {
+
+    // TCP address of the gRPC Server (including port).
+    string address = 1;
+
+    // If true communicate over HTTP rather than HTTPS.
+    bool insecure = 2;
+
+    // If true Gloo Mesh will automatically attempt to reconnect to the server after encountering network failures.
+    bool reconnect_on_network_failures = 3;
+}
+
+message SettingsStatus {
+
+    // The most recent generation observed in the the Settings metadata.
+    // If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most
+    // recent version of this resource.
+    int64 observed_generation = 1;
+
+    // The state of the overall resource.
+    // It will only show accepted if no processing errors encountered.
+    .common.mesh.gloo.solo.io.ApprovalState state = 2;
+
+    // Any errors encountered while processing Settings object.
+    repeated string errors = 3;
+}

@@ -17,37 +17,36 @@ var (
 	NetworkingInputTypes = Snapshot{
 		schema.GroupVersion{
 			Group:   "discovery." + constants.GlooMeshApiGroupSuffix,
-			Version: "v1alpha2",
+			Version: "v1",
 		}: {
 			"Mesh",
 			"Workload",
-			"TrafficTarget",
+			"Destination",
 		},
 		schema.GroupVersion{
 			Group:   "networking." + constants.GlooMeshApiGroupSuffix,
-			Version: "v1alpha2",
+			Version: "v1",
 		}: {
 			"TrafficPolicy",
 			"AccessPolicy",
 			"VirtualMesh",
-			"FailoverService",
 		},
 		schema.GroupVersion{
 			Group:   "settings." + constants.GlooMeshApiGroupSuffix,
-			Version: "v1alpha2",
+			Version: "v1",
 		}: {
 			"Settings",
 		},
 		schema.GroupVersion{
 			Group:   "networking.enterprise." + constants.GlooMeshApiGroupSuffix,
-			Version: "v1alpha1",
+			Version: "v1beta1",
 		}: {
 			"WasmDeployment",
 			"VirtualDestination",
 		},
 		schema.GroupVersion{
 			Group:   "observability.enterprise." + constants.GlooMeshApiGroupSuffix,
-			Version: "v1alpha1",
+			Version: "v1",
 		}: {
 			"AccessLogRecord",
 		},
@@ -74,14 +73,14 @@ var (
 			},
 			schema.GroupVersion{
 				Group:   "certificates." + constants.GlooMeshApiGroupSuffix,
-				Version: "v1alpha2",
+				Version: "v1",
 			}: {
 				"IssuedCertificate",
 				"PodBounceDirective",
 			},
 			schema.GroupVersion{
 				Group:   "xds.agent.enterprise." + constants.GlooMeshApiGroupSuffix,
-				Version: "v1alpha1",
+				Version: "v1beta1",
 			}: {
 				"XdsConfig",
 			},

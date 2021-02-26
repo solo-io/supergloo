@@ -5,11 +5,12 @@ import (
 	"sort"
 
 	"github.com/rotisserie/eris"
-	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
+	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
@@ -18,90 +19,74 @@ import (
 	any errors (i.e. references to non-existent discovery entities) to the offending resource status.
 */
 type ConfigTargetValidator interface {
-	// Validate mesh references declared on FailoverServices.
-	ValidateFailoverServices(
-		failoverServices v1alpha2.FailoverServiceSlice,
-	)
-
-	// Validate traffic target references declared on TrafficPolicies.
+	// Validate Destination references declared on TrafficPolicies.
 	ValidateTrafficPolicies(
-		trafficPolicies v1alpha2.TrafficPolicySlice,
+		trafficPolicies v1.TrafficPolicySlice,
 	)
 
 	// Validate mesh references declared on VirtualMeshes.
-	// Also validate that all referenced meshes are contained in at most one virtual mesh.
+	// Also validate that all referenced meshes are contained in at most one VirtualMesh.
 	ValidateVirtualMeshes(
-		virtualMeshes v1alpha2.VirtualMeshSlice,
+		virtualMeshes v1.VirtualMeshSlice,
 	)
 
-	// Validate traffic target references declared on AccessPolicies.
+	// Validate Destination references declared on AccessPolicies.
 	ValidateAccessPolicies(
-		accessPolicies v1alpha2.AccessPolicySlice,
+		accessPolicies v1.AccessPolicySlice,
 	)
 }
 
 type configTargetValidator struct {
-	meshes         discoveryv1alpha2sets.MeshSet
-	trafficTargets discoveryv1alpha2sets.TrafficTargetSet
+	meshes       discoveryv1sets.MeshSet
+	destinations discoveryv1sets.DestinationSet
 }
 
 func NewConfigTargetValidator(
-	meshes discoveryv1alpha2sets.MeshSet,
-	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+	meshes discoveryv1sets.MeshSet,
+	destinations discoveryv1sets.DestinationSet,
 ) ConfigTargetValidator {
 	return &configTargetValidator{
-		meshes:         meshes,
-		trafficTargets: trafficTargets,
+		meshes:       meshes,
+		destinations: destinations,
 	}
 }
 
-func (c *configTargetValidator) ValidateFailoverServices(failoverServices v1alpha2.FailoverServiceSlice) {
-	for _, failoverService := range failoverServices {
-		errs := c.validateMeshReferences(failoverService.Spec.Meshes)
-		if len(errs) == 0 {
-			continue
-		}
-		failoverService.Status.State = v1alpha2.ApprovalState_INVALID
-		failoverService.Status.Errors = getErrStrings(errs)
-	}
-}
-
-func (c *configTargetValidator) ValidateVirtualMeshes(virtualMeshes v1alpha2.VirtualMeshSlice) {
+func (c *configTargetValidator) ValidateVirtualMeshes(virtualMeshes v1.VirtualMeshSlice) {
 	for _, virtualMesh := range virtualMeshes {
 		errs := c.validateVirtualMesh(virtualMesh)
 		if len(errs) == 0 {
 			continue
 		}
-		virtualMesh.Status.State = v1alpha2.ApprovalState_INVALID
+		virtualMesh.Status.State = commonv1.ApprovalState_INVALID
 		virtualMesh.Status.Errors = getErrStrings(errs)
 	}
 
 	validateOneVirtualMeshPerMesh(virtualMeshes)
 }
 
-func (c *configTargetValidator) ValidateTrafficPolicies(trafficPolicies v1alpha2.TrafficPolicySlice) {
+func (c *configTargetValidator) ValidateTrafficPolicies(trafficPolicies v1.TrafficPolicySlice) {
 	for _, trafficPolicy := range trafficPolicies {
-		errs := c.validateTrafficTargetReferences(trafficPolicy.Spec.DestinationSelector)
+		errs := c.validateDestinationReferences(trafficPolicy.Spec.DestinationSelector)
 		if len(errs) == 0 {
 			continue
 		}
-		trafficPolicy.Status.State = v1alpha2.ApprovalState_INVALID
+		trafficPolicy.Status.State = commonv1.ApprovalState_INVALID
 		trafficPolicy.Status.Errors = getErrStrings(errs)
 	}
 }
 
-func (c *configTargetValidator) ValidateAccessPolicies(accessPolicies v1alpha2.AccessPolicySlice) {
+func (c *configTargetValidator) ValidateAccessPolicies(accessPolicies v1.AccessPolicySlice) {
 	for _, accessPolicy := range accessPolicies {
-		errs := c.validateTrafficTargetReferences(accessPolicy.Spec.DestinationSelector)
+		errs := c.validateDestinationReferences(accessPolicy.Spec.DestinationSelector)
 		if len(errs) == 0 {
 			continue
 		}
-		accessPolicy.Status.State = v1alpha2.ApprovalState_INVALID
+		accessPolicy.Status.State = commonv1.ApprovalState_INVALID
 		accessPolicy.Status.Errors = getErrStrings(errs)
 	}
 }
 
-func (c *configTargetValidator) validateMeshReferences(meshRefs []*v1.ObjectRef) []error {
+func (c *configTargetValidator) validateMeshReferences(meshRefs []*skv2corev1.ObjectRef) []error {
 	var errs []error
 	for _, meshRef := range meshRefs {
 		if _, err := c.meshes.Find(meshRef); err != nil {
@@ -111,26 +96,26 @@ func (c *configTargetValidator) validateMeshReferences(meshRefs []*v1.ObjectRef)
 	return errs
 }
 
-func (c *configTargetValidator) validateTrafficTargetReferences(serviceSelectors []*v1alpha2.TrafficTargetSelector) []error {
+func (c *configTargetValidator) validateDestinationReferences(serviceSelectors []*commonv1.DestinationSelector) []error {
 	var errs []error
 	for _, destinationSelector := range serviceSelectors {
 		kubeServiceRefs := destinationSelector.GetKubeServiceRefs()
-		// only validate traffic targets selected by direct reference
+		// only validate Destinations selected by direct reference
 		if kubeServiceRefs == nil {
 			continue
 		}
 		for _, ref := range kubeServiceRefs.Services {
 			if !c.kubeServiceExists(ref) {
-				errs = append(errs, eris.Errorf("TrafficTarget %s not found", sets.Key(ref)))
+				errs = append(errs, eris.Errorf("Destination %s not found", sets.Key(ref)))
 			}
 		}
 	}
 	return errs
 }
 
-func (c *configTargetValidator) kubeServiceExists(ref *v1.ClusterObjectRef) bool {
-	for _, trafficTarget := range c.trafficTargets.List() {
-		kubeService := trafficTarget.Spec.GetKubeService()
+func (c *configTargetValidator) kubeServiceExists(ref *skv2corev1.ClusterObjectRef) bool {
+	for _, destination := range c.destinations.List() {
+		kubeService := destination.Spec.GetKubeService()
 		if kubeService == nil {
 			continue
 		}
@@ -141,7 +126,7 @@ func (c *configTargetValidator) kubeServiceExists(ref *v1.ClusterObjectRef) bool
 	return false
 }
 
-func (c *configTargetValidator) validateVirtualMesh(virtualMesh *v1alpha2.VirtualMesh) []error {
+func (c *configTargetValidator) validateVirtualMesh(virtualMesh *v1.VirtualMesh) []error {
 	var errs []error
 	meshRefErrors := c.validateMeshReferences(virtualMesh.Spec.Meshes)
 	if meshRefErrors != nil {
@@ -160,22 +145,22 @@ func getErrStrings(errs []error) []string {
 
 // For each VirtualMesh, sort them by accepted date, then invalidate if it applies to a Mesh that
 // is already grouped into a VirtualMesh.
-func validateOneVirtualMeshPerMesh(virtualMeshes []*v1alpha2.VirtualMesh) {
+func validateOneVirtualMeshPerMesh(virtualMeshes []*v1.VirtualMesh) {
 	sortVirtualMeshesByAcceptedDate(virtualMeshes)
 
-	vMeshesPerMesh := map[string]*v1alpha2.VirtualMesh{}
-	invalidVirtualMeshes := v1alpha2sets.NewVirtualMeshSet()
+	vMeshesPerMesh := map[string]*v1.VirtualMesh{}
+	invalidVirtualMeshes := v1sets.NewVirtualMeshSet()
 
 	// track accepted index
 	var acceptedIndex uint32
 	// Invalidate VirtualMesh if it applies to a Mesh that already has an applied VirtualMesh.
 	for _, vMesh := range virtualMeshes {
-		if vMesh.Status.State != v1alpha2.ApprovalState_ACCEPTED {
+		if vMesh.Status.State != commonv1.ApprovalState_ACCEPTED {
 			continue
 		}
 		vMesh := vMesh
 		for _, mesh := range vMesh.Spec.Meshes {
-			// Ignore virtual mesh if previously invalidated.
+			// Ignore VirtualMesh if previously invalidated.
 			if invalidVirtualMeshes.Has(vMesh) {
 				continue
 			}
@@ -186,7 +171,7 @@ func validateOneVirtualMeshPerMesh(virtualMeshes []*v1alpha2.VirtualMesh) {
 				vMeshesPerMesh[meshKey] = vMesh
 				acceptedIndex++
 			} else {
-				vMesh.Status.State = v1alpha2.ApprovalState_INVALID
+				vMesh.Status.State = commonv1.ApprovalState_INVALID
 				vMesh.Status.Errors = append(
 					vMesh.Status.Errors,
 					fmt.Sprintf("Includes a Mesh (%s.%s) that already is grouped in a VirtualMesh (%s.%s)",
@@ -200,14 +185,14 @@ func validateOneVirtualMeshPerMesh(virtualMeshes []*v1alpha2.VirtualMesh) {
 	}
 }
 
-// sort the set of virtual meshes in the order in which they were accepted.
+// sort the set of VirtualMeshes in the order in which they were accepted.
 // VMeshes which were accepted first and have not changed (i.e. their observedGeneration is up-to-date) take precedence.
 // Next are vMeshes that were previously accepted but whose observedGeneration is out of date. This permits vmeshes which were modified but formerly correct to maintain
 // their acceptance status ahead of vmeshes which were unmodified and previously rejected.
 // Next will be the vmeshes which have been modified and rejected.
 // Finally, vmeshes which are rejected and modified
-func sortVirtualMeshesByAcceptedDate(virtualMeshes v1alpha2.VirtualMeshSlice) {
-	isUpToDate := func(vm *v1alpha2.VirtualMesh) bool {
+func sortVirtualMeshesByAcceptedDate(virtualMeshes v1.VirtualMeshSlice) {
+	isUpToDate := func(vm *v1.VirtualMesh) bool {
 		return vm.Status.ObservedGeneration == vm.Generation
 	}
 
@@ -218,8 +203,8 @@ func sortVirtualMeshesByAcceptedDate(virtualMeshes v1alpha2.VirtualMeshSlice) {
 		state2 := vMesh2.Status.State
 
 		switch {
-		case state1 == v1alpha2.ApprovalState_ACCEPTED:
-			if state2 != v1alpha2.ApprovalState_ACCEPTED {
+		case state1 == commonv1.ApprovalState_ACCEPTED:
+			if state2 != commonv1.ApprovalState_ACCEPTED {
 				// accepted comes before non accepted
 				return true
 			}
@@ -230,7 +215,7 @@ func sortVirtualMeshesByAcceptedDate(virtualMeshes v1alpha2.VirtualMeshSlice) {
 			}
 
 			return true
-		case state2 == v1alpha2.ApprovalState_ACCEPTED:
+		case state2 == commonv1.ApprovalState_ACCEPTED:
 			// accepted comes before non accepted
 			return false
 		default:

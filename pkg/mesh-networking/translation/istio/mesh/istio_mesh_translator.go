@@ -7,11 +7,10 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/mtls"
 
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/access"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/failoverservice"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/federation"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -26,7 +25,7 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		in input.LocalSnapshot,
-		mesh *discoveryv1alpha2.Mesh,
+		mesh *discoveryv1.Mesh,
 		istioOutputs istio.Builder,
 		localOutputs local.Builder,
 		reporter reporting.Reporter,
@@ -34,11 +33,10 @@ type Translator interface {
 }
 
 type translator struct {
-	ctx                       context.Context
-	mtlsTranslator            mtls.Translator
-	federationTranslator      federation.Translator
-	accessTranslator          access.Translator
-	failoverServiceTranslator failoverservice.Translator
+	ctx                  context.Context
+	mtlsTranslator       mtls.Translator
+	federationTranslator federation.Translator
+	accessTranslator     access.Translator
 }
 
 func NewTranslator(
@@ -46,28 +44,26 @@ func NewTranslator(
 	mtlsTranslator mtls.Translator,
 	federationTranslator federation.Translator,
 	accessTranslator access.Translator,
-	failoverServiceTranslator failoverservice.Translator,
 ) Translator {
 	return &translator{
-		ctx:                       ctx,
-		mtlsTranslator:            mtlsTranslator,
-		federationTranslator:      federationTranslator,
-		accessTranslator:          accessTranslator,
-		failoverServiceTranslator: failoverServiceTranslator,
+		ctx:                  ctx,
+		mtlsTranslator:       mtlsTranslator,
+		federationTranslator: federationTranslator,
+		accessTranslator:     accessTranslator,
 	}
 }
 
 // translate the appropriate resources for the given Mesh.
 func (t *translator) Translate(
 	in input.LocalSnapshot,
-	mesh *discoveryv1alpha2.Mesh,
+	mesh *discoveryv1.Mesh,
 	istioOutputs istio.Builder,
 	localOutputs local.Builder,
 	reporter reporting.Reporter,
 ) {
 	istioMesh := mesh.Spec.GetIstio()
 	if istioMesh == nil {
-		contextutils.LoggerFrom(t.ctx).Debugf("ignoring non istio mesh %v %T", sets.Key(mesh), mesh.Spec.MeshType)
+		contextutils.LoggerFrom(t.ctx).Debugf("ignoring non istio mesh %v %T", sets.Key(mesh), mesh.Spec.Type)
 		return
 	}
 
@@ -79,9 +75,5 @@ func (t *translator) Translate(
 		t.mtlsTranslator.Translate(mesh, appliedVirtualMesh, istioOutputs, localOutputs, reporter)
 		t.federationTranslator.Translate(in, mesh, appliedVirtualMesh, istioOutputs, reporter)
 		t.accessTranslator.Translate(mesh, appliedVirtualMesh, istioOutputs)
-	}
-
-	for _, failoverService := range mesh.Status.AppliedFailoverServices {
-		t.failoverServiceTranslator.Translate(in, mesh, failoverService, istioOutputs, reporter)
 	}
 }

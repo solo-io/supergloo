@@ -4,10 +4,9 @@ import (
 	"context"
 
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/accesspolicy"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/failoverservice"
+	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/destinations"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/mesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/trafficpolicy"
-	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/traffictarget"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/virtualmesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/workload"
 	"github.com/spf13/cobra"
@@ -21,8 +20,7 @@ func Command(ctx context.Context) *cobra.Command {
 
 	cmd.AddCommand(
 		mesh.Command(ctx),
-		traffictarget.Command(ctx),
-		failoverservice.Command(ctx),
+		destinations.Command(ctx),
 		virtualmesh.Command(ctx),
 		workload.Command(ctx),
 		accesspolicy.Command(ctx),

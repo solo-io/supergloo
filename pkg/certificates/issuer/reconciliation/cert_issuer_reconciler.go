@@ -9,8 +9,8 @@ import (
 	"github.com/rotisserie/eris"
 	corev1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
-	"github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/common/secrets"
 	"github.com/solo-io/gloo-mesh/pkg/certificates/issuer/utils"
 	"github.com/solo-io/go-utils/contextutils"
@@ -65,17 +65,17 @@ func (r *certIssuerReconciler) reconcile(_ ezkube.ClusterResourceId) (bool, erro
 		if err := r.reconcileCertificateRequest(certificateRequest, inputSnap.IssuedCertificates()); err != nil {
 			contextutils.LoggerFrom(r.ctx).Warnf("certificate request could not be processed: %v", err)
 			certificateRequest.Status.Error = err.Error()
-			certificateRequest.Status.State = v1alpha2.CertificateRequestStatus_FAILED
+			certificateRequest.Status.State = v1.CertificateRequestStatus_FAILED
 		}
 	}
 
 	return false, r.syncInputStatuses(r.ctx, inputSnap)
 }
 
-func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v1alpha2.CertificateRequest, issuedCertificates v1alpha2sets.IssuedCertificateSet) error {
+func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v1.CertificateRequest, issuedCertificates v1sets.IssuedCertificateSet) error {
 	// if observed generation is out of sync, treat the issued certificate as Pending (spec has been modified)
 	if certificateRequest.Status.ObservedGeneration != certificateRequest.Generation {
-		certificateRequest.Status.State = v1alpha2.CertificateRequestStatus_PENDING
+		certificateRequest.Status.State = v1.CertificateRequestStatus_PENDING
 	}
 
 	// reset & update status
@@ -83,17 +83,17 @@ func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v
 	certificateRequest.Status.Error = ""
 
 	switch certificateRequest.Status.State {
-	case v1alpha2.CertificateRequestStatus_FINISHED:
+	case v1.CertificateRequestStatus_FINISHED:
 		if len(certificateRequest.Status.SignedCertificate) > 0 {
 			contextutils.LoggerFrom(r.ctx).Debugf("skipping cert request %v which has already been fulfilled", sets.Key(certificateRequest))
 			return nil
 		}
 		// else treat as pending
 		fallthrough
-	case v1alpha2.CertificateRequestStatus_FAILED:
+	case v1.CertificateRequestStatus_FAILED:
 		// restart the workflow from PENDING
 		fallthrough
-	case v1alpha2.CertificateRequestStatus_PENDING:
+	case v1.CertificateRequestStatus_PENDING:
 		//
 	default:
 		return eris.Errorf("unknown certificate request state: %v", certificateRequest.Status.State)
@@ -122,9 +122,9 @@ func (r *certIssuerReconciler) reconcileCertificateRequest(certificateRequest *v
 		return eris.Wrapf(err, "failed to generate signed cert for certificate request %v", sets.Key(certificateRequest))
 	}
 
-	certificateRequest.Status = v1alpha2.CertificateRequestStatus{
+	certificateRequest.Status = v1.CertificateRequestStatus{
 		ObservedGeneration: certificateRequest.Generation,
-		State:              v1alpha2.CertificateRequestStatus_FINISHED,
+		State:              v1.CertificateRequestStatus_FINISHED,
 		SignedCertificate:  signedCert,
 		SigningRootCa:      signingCA.RootCert,
 	}
