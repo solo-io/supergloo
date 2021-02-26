@@ -58,7 +58,7 @@ func GetSubLocality(
 	clusterName string,
 	nodeName string,
 	nodes corev1sets.NodeSet,
-) (*discoveryv1.SubLocality, error) {
+) (*discoveryv1.DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality, error) {
 	node, err := nodes.Find(&skv2corev1.ClusterObjectRef{
 		ClusterName: clusterName,
 		Name:        nodeName,
@@ -72,7 +72,7 @@ func GetSubLocality(
 
 func getSubLocality(
 	node *corev1.Node,
-) (*discoveryv1.SubLocality, error) {
+) (*discoveryv1.DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality, error) {
 
 	// get the zone labels from the node. check both the stable and deprecated labels
 	var zone string
@@ -84,7 +84,7 @@ func getSubLocality(
 		return nil, eris.Errorf("failed to find zone label on node %s", node.GetName())
 	}
 
-	subLocality := &discoveryv1.SubLocality{
+	subLocality := &discoveryv1.DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality{
 		Zone: zone,
 	}
 
