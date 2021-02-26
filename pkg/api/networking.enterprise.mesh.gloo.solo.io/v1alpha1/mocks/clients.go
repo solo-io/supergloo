@@ -88,6 +88,20 @@ func (mr *MockClientsetMockRecorder) WasmDeployments() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WasmDeployments", reflect.TypeOf((*MockClientset)(nil).WasmDeployments))
 }
 
+// VirtualDestinations mocks base method
+func (m *MockClientset) VirtualDestinations() v1alpha1.VirtualDestinationClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VirtualDestinations")
+	ret0, _ := ret[0].(v1alpha1.VirtualDestinationClient)
+	return ret0
+}
+
+// VirtualDestinations indicates an expected call of VirtualDestinations
+func (mr *MockClientsetMockRecorder) VirtualDestinations() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualDestinations", reflect.TypeOf((*MockClientset)(nil).VirtualDestinations))
+}
+
 // MockWasmDeploymentReader is a mock of WasmDeploymentReader interface
 type MockWasmDeploymentReader struct {
 	ctrl     *gomock.Controller
@@ -590,4 +604,508 @@ func (m *MockMulticlusterWasmDeploymentClient) Cluster(cluster string) (v1alpha1
 func (mr *MockMulticlusterWasmDeploymentClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterWasmDeploymentClient)(nil).Cluster), cluster)
+}
+
+// MockVirtualDestinationReader is a mock of VirtualDestinationReader interface
+type MockVirtualDestinationReader struct {
+	ctrl     *gomock.Controller
+	recorder *MockVirtualDestinationReaderMockRecorder
+}
+
+// MockVirtualDestinationReaderMockRecorder is the mock recorder for MockVirtualDestinationReader
+type MockVirtualDestinationReaderMockRecorder struct {
+	mock *MockVirtualDestinationReader
+}
+
+// NewMockVirtualDestinationReader creates a new mock instance
+func NewMockVirtualDestinationReader(ctrl *gomock.Controller) *MockVirtualDestinationReader {
+	mock := &MockVirtualDestinationReader{ctrl: ctrl}
+	mock.recorder = &MockVirtualDestinationReaderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockVirtualDestinationReader) EXPECT() *MockVirtualDestinationReaderMockRecorder {
+	return m.recorder
+}
+
+// GetVirtualDestination mocks base method
+func (m *MockVirtualDestinationReader) GetVirtualDestination(ctx context.Context, key client.ObjectKey) (*v1alpha1.VirtualDestination, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVirtualDestination", ctx, key)
+	ret0, _ := ret[0].(*v1alpha1.VirtualDestination)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVirtualDestination indicates an expected call of GetVirtualDestination
+func (mr *MockVirtualDestinationReaderMockRecorder) GetVirtualDestination(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVirtualDestination", reflect.TypeOf((*MockVirtualDestinationReader)(nil).GetVirtualDestination), ctx, key)
+}
+
+// ListVirtualDestination mocks base method
+func (m *MockVirtualDestinationReader) ListVirtualDestination(ctx context.Context, opts ...client.ListOption) (*v1alpha1.VirtualDestinationList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListVirtualDestination", varargs...)
+	ret0, _ := ret[0].(*v1alpha1.VirtualDestinationList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListVirtualDestination indicates an expected call of ListVirtualDestination
+func (mr *MockVirtualDestinationReaderMockRecorder) ListVirtualDestination(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVirtualDestination", reflect.TypeOf((*MockVirtualDestinationReader)(nil).ListVirtualDestination), varargs...)
+}
+
+// MockVirtualDestinationWriter is a mock of VirtualDestinationWriter interface
+type MockVirtualDestinationWriter struct {
+	ctrl     *gomock.Controller
+	recorder *MockVirtualDestinationWriterMockRecorder
+}
+
+// MockVirtualDestinationWriterMockRecorder is the mock recorder for MockVirtualDestinationWriter
+type MockVirtualDestinationWriterMockRecorder struct {
+	mock *MockVirtualDestinationWriter
+}
+
+// NewMockVirtualDestinationWriter creates a new mock instance
+func NewMockVirtualDestinationWriter(ctrl *gomock.Controller) *MockVirtualDestinationWriter {
+	mock := &MockVirtualDestinationWriter{ctrl: ctrl}
+	mock.recorder = &MockVirtualDestinationWriterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockVirtualDestinationWriter) EXPECT() *MockVirtualDestinationWriterMockRecorder {
+	return m.recorder
+}
+
+// CreateVirtualDestination mocks base method
+func (m *MockVirtualDestinationWriter) CreateVirtualDestination(ctx context.Context, obj *v1alpha1.VirtualDestination, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateVirtualDestination", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateVirtualDestination indicates an expected call of CreateVirtualDestination
+func (mr *MockVirtualDestinationWriterMockRecorder) CreateVirtualDestination(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVirtualDestination", reflect.TypeOf((*MockVirtualDestinationWriter)(nil).CreateVirtualDestination), varargs...)
+}
+
+// DeleteVirtualDestination mocks base method
+func (m *MockVirtualDestinationWriter) DeleteVirtualDestination(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteVirtualDestination", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteVirtualDestination indicates an expected call of DeleteVirtualDestination
+func (mr *MockVirtualDestinationWriterMockRecorder) DeleteVirtualDestination(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVirtualDestination", reflect.TypeOf((*MockVirtualDestinationWriter)(nil).DeleteVirtualDestination), varargs...)
+}
+
+// UpdateVirtualDestination mocks base method
+func (m *MockVirtualDestinationWriter) UpdateVirtualDestination(ctx context.Context, obj *v1alpha1.VirtualDestination, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateVirtualDestination", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateVirtualDestination indicates an expected call of UpdateVirtualDestination
+func (mr *MockVirtualDestinationWriterMockRecorder) UpdateVirtualDestination(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVirtualDestination", reflect.TypeOf((*MockVirtualDestinationWriter)(nil).UpdateVirtualDestination), varargs...)
+}
+
+// PatchVirtualDestination mocks base method
+func (m *MockVirtualDestinationWriter) PatchVirtualDestination(ctx context.Context, obj *v1alpha1.VirtualDestination, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchVirtualDestination", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchVirtualDestination indicates an expected call of PatchVirtualDestination
+func (mr *MockVirtualDestinationWriterMockRecorder) PatchVirtualDestination(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchVirtualDestination", reflect.TypeOf((*MockVirtualDestinationWriter)(nil).PatchVirtualDestination), varargs...)
+}
+
+// DeleteAllOfVirtualDestination mocks base method
+func (m *MockVirtualDestinationWriter) DeleteAllOfVirtualDestination(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfVirtualDestination", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfVirtualDestination indicates an expected call of DeleteAllOfVirtualDestination
+func (mr *MockVirtualDestinationWriterMockRecorder) DeleteAllOfVirtualDestination(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfVirtualDestination", reflect.TypeOf((*MockVirtualDestinationWriter)(nil).DeleteAllOfVirtualDestination), varargs...)
+}
+
+// UpsertVirtualDestination mocks base method
+func (m *MockVirtualDestinationWriter) UpsertVirtualDestination(ctx context.Context, obj *v1alpha1.VirtualDestination, transitionFuncs ...v1alpha1.VirtualDestinationTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range transitionFuncs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertVirtualDestination", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertVirtualDestination indicates an expected call of UpsertVirtualDestination
+func (mr *MockVirtualDestinationWriterMockRecorder) UpsertVirtualDestination(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertVirtualDestination", reflect.TypeOf((*MockVirtualDestinationWriter)(nil).UpsertVirtualDestination), varargs...)
+}
+
+// MockVirtualDestinationStatusWriter is a mock of VirtualDestinationStatusWriter interface
+type MockVirtualDestinationStatusWriter struct {
+	ctrl     *gomock.Controller
+	recorder *MockVirtualDestinationStatusWriterMockRecorder
+}
+
+// MockVirtualDestinationStatusWriterMockRecorder is the mock recorder for MockVirtualDestinationStatusWriter
+type MockVirtualDestinationStatusWriterMockRecorder struct {
+	mock *MockVirtualDestinationStatusWriter
+}
+
+// NewMockVirtualDestinationStatusWriter creates a new mock instance
+func NewMockVirtualDestinationStatusWriter(ctrl *gomock.Controller) *MockVirtualDestinationStatusWriter {
+	mock := &MockVirtualDestinationStatusWriter{ctrl: ctrl}
+	mock.recorder = &MockVirtualDestinationStatusWriterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockVirtualDestinationStatusWriter) EXPECT() *MockVirtualDestinationStatusWriterMockRecorder {
+	return m.recorder
+}
+
+// UpdateVirtualDestinationStatus mocks base method
+func (m *MockVirtualDestinationStatusWriter) UpdateVirtualDestinationStatus(ctx context.Context, obj *v1alpha1.VirtualDestination, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateVirtualDestinationStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateVirtualDestinationStatus indicates an expected call of UpdateVirtualDestinationStatus
+func (mr *MockVirtualDestinationStatusWriterMockRecorder) UpdateVirtualDestinationStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVirtualDestinationStatus", reflect.TypeOf((*MockVirtualDestinationStatusWriter)(nil).UpdateVirtualDestinationStatus), varargs...)
+}
+
+// PatchVirtualDestinationStatus mocks base method
+func (m *MockVirtualDestinationStatusWriter) PatchVirtualDestinationStatus(ctx context.Context, obj *v1alpha1.VirtualDestination, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchVirtualDestinationStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchVirtualDestinationStatus indicates an expected call of PatchVirtualDestinationStatus
+func (mr *MockVirtualDestinationStatusWriterMockRecorder) PatchVirtualDestinationStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchVirtualDestinationStatus", reflect.TypeOf((*MockVirtualDestinationStatusWriter)(nil).PatchVirtualDestinationStatus), varargs...)
+}
+
+// MockVirtualDestinationClient is a mock of VirtualDestinationClient interface
+type MockVirtualDestinationClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockVirtualDestinationClientMockRecorder
+}
+
+// MockVirtualDestinationClientMockRecorder is the mock recorder for MockVirtualDestinationClient
+type MockVirtualDestinationClientMockRecorder struct {
+	mock *MockVirtualDestinationClient
+}
+
+// NewMockVirtualDestinationClient creates a new mock instance
+func NewMockVirtualDestinationClient(ctrl *gomock.Controller) *MockVirtualDestinationClient {
+	mock := &MockVirtualDestinationClient{ctrl: ctrl}
+	mock.recorder = &MockVirtualDestinationClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockVirtualDestinationClient) EXPECT() *MockVirtualDestinationClientMockRecorder {
+	return m.recorder
+}
+
+// GetVirtualDestination mocks base method
+func (m *MockVirtualDestinationClient) GetVirtualDestination(ctx context.Context, key client.ObjectKey) (*v1alpha1.VirtualDestination, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVirtualDestination", ctx, key)
+	ret0, _ := ret[0].(*v1alpha1.VirtualDestination)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVirtualDestination indicates an expected call of GetVirtualDestination
+func (mr *MockVirtualDestinationClientMockRecorder) GetVirtualDestination(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVirtualDestination", reflect.TypeOf((*MockVirtualDestinationClient)(nil).GetVirtualDestination), ctx, key)
+}
+
+// ListVirtualDestination mocks base method
+func (m *MockVirtualDestinationClient) ListVirtualDestination(ctx context.Context, opts ...client.ListOption) (*v1alpha1.VirtualDestinationList, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListVirtualDestination", varargs...)
+	ret0, _ := ret[0].(*v1alpha1.VirtualDestinationList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListVirtualDestination indicates an expected call of ListVirtualDestination
+func (mr *MockVirtualDestinationClientMockRecorder) ListVirtualDestination(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVirtualDestination", reflect.TypeOf((*MockVirtualDestinationClient)(nil).ListVirtualDestination), varargs...)
+}
+
+// CreateVirtualDestination mocks base method
+func (m *MockVirtualDestinationClient) CreateVirtualDestination(ctx context.Context, obj *v1alpha1.VirtualDestination, opts ...client.CreateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateVirtualDestination", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateVirtualDestination indicates an expected call of CreateVirtualDestination
+func (mr *MockVirtualDestinationClientMockRecorder) CreateVirtualDestination(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVirtualDestination", reflect.TypeOf((*MockVirtualDestinationClient)(nil).CreateVirtualDestination), varargs...)
+}
+
+// DeleteVirtualDestination mocks base method
+func (m *MockVirtualDestinationClient) DeleteVirtualDestination(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteVirtualDestination", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteVirtualDestination indicates an expected call of DeleteVirtualDestination
+func (mr *MockVirtualDestinationClientMockRecorder) DeleteVirtualDestination(ctx, key interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVirtualDestination", reflect.TypeOf((*MockVirtualDestinationClient)(nil).DeleteVirtualDestination), varargs...)
+}
+
+// UpdateVirtualDestination mocks base method
+func (m *MockVirtualDestinationClient) UpdateVirtualDestination(ctx context.Context, obj *v1alpha1.VirtualDestination, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateVirtualDestination", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateVirtualDestination indicates an expected call of UpdateVirtualDestination
+func (mr *MockVirtualDestinationClientMockRecorder) UpdateVirtualDestination(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVirtualDestination", reflect.TypeOf((*MockVirtualDestinationClient)(nil).UpdateVirtualDestination), varargs...)
+}
+
+// PatchVirtualDestination mocks base method
+func (m *MockVirtualDestinationClient) PatchVirtualDestination(ctx context.Context, obj *v1alpha1.VirtualDestination, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchVirtualDestination", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchVirtualDestination indicates an expected call of PatchVirtualDestination
+func (mr *MockVirtualDestinationClientMockRecorder) PatchVirtualDestination(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchVirtualDestination", reflect.TypeOf((*MockVirtualDestinationClient)(nil).PatchVirtualDestination), varargs...)
+}
+
+// DeleteAllOfVirtualDestination mocks base method
+func (m *MockVirtualDestinationClient) DeleteAllOfVirtualDestination(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllOfVirtualDestination", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllOfVirtualDestination indicates an expected call of DeleteAllOfVirtualDestination
+func (mr *MockVirtualDestinationClientMockRecorder) DeleteAllOfVirtualDestination(ctx interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllOfVirtualDestination", reflect.TypeOf((*MockVirtualDestinationClient)(nil).DeleteAllOfVirtualDestination), varargs...)
+}
+
+// UpsertVirtualDestination mocks base method
+func (m *MockVirtualDestinationClient) UpsertVirtualDestination(ctx context.Context, obj *v1alpha1.VirtualDestination, transitionFuncs ...v1alpha1.VirtualDestinationTransitionFunction) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range transitionFuncs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpsertVirtualDestination", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertVirtualDestination indicates an expected call of UpsertVirtualDestination
+func (mr *MockVirtualDestinationClientMockRecorder) UpsertVirtualDestination(ctx, obj interface{}, transitionFuncs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, transitionFuncs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertVirtualDestination", reflect.TypeOf((*MockVirtualDestinationClient)(nil).UpsertVirtualDestination), varargs...)
+}
+
+// UpdateVirtualDestinationStatus mocks base method
+func (m *MockVirtualDestinationClient) UpdateVirtualDestinationStatus(ctx context.Context, obj *v1alpha1.VirtualDestination, opts ...client.UpdateOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateVirtualDestinationStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateVirtualDestinationStatus indicates an expected call of UpdateVirtualDestinationStatus
+func (mr *MockVirtualDestinationClientMockRecorder) UpdateVirtualDestinationStatus(ctx, obj interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVirtualDestinationStatus", reflect.TypeOf((*MockVirtualDestinationClient)(nil).UpdateVirtualDestinationStatus), varargs...)
+}
+
+// PatchVirtualDestinationStatus mocks base method
+func (m *MockVirtualDestinationClient) PatchVirtualDestinationStatus(ctx context.Context, obj *v1alpha1.VirtualDestination, patch client.Patch, opts ...client.PatchOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, obj, patch}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PatchVirtualDestinationStatus", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchVirtualDestinationStatus indicates an expected call of PatchVirtualDestinationStatus
+func (mr *MockVirtualDestinationClientMockRecorder) PatchVirtualDestinationStatus(ctx, obj, patch interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, obj, patch}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchVirtualDestinationStatus", reflect.TypeOf((*MockVirtualDestinationClient)(nil).PatchVirtualDestinationStatus), varargs...)
+}
+
+// MockMulticlusterVirtualDestinationClient is a mock of MulticlusterVirtualDestinationClient interface
+type MockMulticlusterVirtualDestinationClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockMulticlusterVirtualDestinationClientMockRecorder
+}
+
+// MockMulticlusterVirtualDestinationClientMockRecorder is the mock recorder for MockMulticlusterVirtualDestinationClient
+type MockMulticlusterVirtualDestinationClientMockRecorder struct {
+	mock *MockMulticlusterVirtualDestinationClient
+}
+
+// NewMockMulticlusterVirtualDestinationClient creates a new mock instance
+func NewMockMulticlusterVirtualDestinationClient(ctrl *gomock.Controller) *MockMulticlusterVirtualDestinationClient {
+	mock := &MockMulticlusterVirtualDestinationClient{ctrl: ctrl}
+	mock.recorder = &MockMulticlusterVirtualDestinationClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockMulticlusterVirtualDestinationClient) EXPECT() *MockMulticlusterVirtualDestinationClientMockRecorder {
+	return m.recorder
+}
+
+// Cluster mocks base method
+func (m *MockMulticlusterVirtualDestinationClient) Cluster(cluster string) (v1alpha1.VirtualDestinationClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cluster", cluster)
+	ret0, _ := ret[0].(v1alpha1.VirtualDestinationClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Cluster indicates an expected call of Cluster
+func (mr *MockMulticlusterVirtualDestinationClientMockRecorder) Cluster(cluster interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cluster", reflect.TypeOf((*MockMulticlusterVirtualDestinationClient)(nil).Cluster), cluster)
 }

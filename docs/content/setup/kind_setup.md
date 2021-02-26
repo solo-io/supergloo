@@ -39,7 +39,8 @@ nodes:
     kind: InitConfiguration
     nodeRegistration:
       kubeletExtraArgs:
-        node-labels: "ingress-ready=true"
+        # Populate nodes with region/zone info, which are used by VirtualDestination locality-based failover (Enterprise-only)
+        node-labels: "ingress-ready=true,topology.kubernetes.io/region=us-east-1,topology.kubernetes.io/zone=us-east-1b"
 kubeadmConfigPatches:
 - |
   kind: InitConfiguration
@@ -66,7 +67,8 @@ nodes:
     kind: InitConfiguration
     nodeRegistration:
       kubeletExtraArgs:
-        node-labels: "ingress-ready=true"
+        # Populate nodes with region/zone info, which are used by VirtualDestination locality-based failover (Enterprise-only)
+        node-labels: "ingress-ready=true,topology.kubernetes.io/region=us-east-1,topology.kubernetes.io/zone=us-east-1c"
 kubeadmConfigPatches:
 - |
   kind: InitConfiguration

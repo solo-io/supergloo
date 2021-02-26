@@ -17,6 +17,8 @@ type Translator interface {
 	TranslateTrafficTargets(
 		ctx context.Context,
 		services corev1sets.ServiceSet,
+		pods corev1sets.PodSet,
+		nodes corev1sets.NodeSet,
 		workloads v1alpha2sets.WorkloadSet,
 		meshes v1alpha2sets.MeshSet,
 		endpoints corev1sets.EndpointsSet,
@@ -35,6 +37,8 @@ func NewTranslator(trafficTargetDetector detector.TrafficTargetDetector) Transla
 func (t *translator) TranslateTrafficTargets(
 	ctx context.Context,
 	services corev1sets.ServiceSet,
+	pods corev1sets.PodSet,
+	nodes corev1sets.NodeSet,
 	workloads v1alpha2sets.WorkloadSet,
 	meshes v1alpha2sets.MeshSet,
 	endpoints corev1sets.EndpointsSet,
@@ -46,6 +50,8 @@ func (t *translator) TranslateTrafficTargets(
 		trafficTarget := t.trafficTargetDetector.DetectTrafficTarget(
 			ctx,
 			service,
+			pods,
+			nodes,
 			workloads,
 			meshes,
 			endpoints,

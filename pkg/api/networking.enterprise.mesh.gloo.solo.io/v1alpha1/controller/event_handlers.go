@@ -123,3 +123,110 @@ func (h genericWasmDeploymentHandler) Generic(object client.Object) error {
 	}
 	return h.handler.GenericWasmDeployment(obj)
 }
+
+// Handle events for the VirtualDestination Resource
+// DEPRECATED: Prefer reconciler pattern.
+type VirtualDestinationEventHandler interface {
+	CreateVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) error
+	UpdateVirtualDestination(old, new *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) error
+	DeleteVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) error
+	GenericVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) error
+}
+
+type VirtualDestinationEventHandlerFuncs struct {
+	OnCreate  func(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) error
+	OnUpdate  func(old, new *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) error
+	OnDelete  func(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) error
+	OnGeneric func(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) error
+}
+
+func (f *VirtualDestinationEventHandlerFuncs) CreateVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *VirtualDestinationEventHandlerFuncs) DeleteVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *VirtualDestinationEventHandlerFuncs) UpdateVirtualDestination(objOld, objNew *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *VirtualDestinationEventHandlerFuncs) GenericVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type VirtualDestinationEventWatcher interface {
+	AddEventHandler(ctx context.Context, h VirtualDestinationEventHandler, predicates ...predicate.Predicate) error
+}
+
+type virtualDestinationEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewVirtualDestinationEventWatcher(name string, mgr manager.Manager) VirtualDestinationEventWatcher {
+	return &virtualDestinationEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination{}),
+	}
+}
+
+func (c *virtualDestinationEventWatcher) AddEventHandler(ctx context.Context, h VirtualDestinationEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericVirtualDestinationHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericVirtualDestinationHandler implements a generic events.EventHandler
+type genericVirtualDestinationHandler struct {
+	handler VirtualDestinationEventHandler
+}
+
+func (h genericVirtualDestinationHandler) Create(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination)
+	if !ok {
+		return errors.Errorf("internal error: VirtualDestination handler received event for %T", object)
+	}
+	return h.handler.CreateVirtualDestination(obj)
+}
+
+func (h genericVirtualDestinationHandler) Delete(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination)
+	if !ok {
+		return errors.Errorf("internal error: VirtualDestination handler received event for %T", object)
+	}
+	return h.handler.DeleteVirtualDestination(obj)
+}
+
+func (h genericVirtualDestinationHandler) Update(old, new client.Object) error {
+	objOld, ok := old.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination)
+	if !ok {
+		return errors.Errorf("internal error: VirtualDestination handler received event for %T", old)
+	}
+	objNew, ok := new.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination)
+	if !ok {
+		return errors.Errorf("internal error: VirtualDestination handler received event for %T", new)
+	}
+	return h.handler.UpdateVirtualDestination(objOld, objNew)
+}
+
+func (h genericVirtualDestinationHandler) Generic(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1alpha1.VirtualDestination)
+	if !ok {
+		return errors.Errorf("internal error: VirtualDestination handler received event for %T", object)
+	}
+	return h.handler.GenericVirtualDestination(obj)
+}
