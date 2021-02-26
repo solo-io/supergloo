@@ -133,10 +133,11 @@ spec:
         - clusterName: mgmt-cluster
           name: petstore
           namespace: default
-  requestTimeout: 100ms
-  retries:
-    attempts: 5
-    perTryTimeout: 5ms
+  policy:
+    requestTimeout: 100ms
+    retries:
+      attempts: 5
+      perTryTimeout: 5ms
 EOF
 ```
 

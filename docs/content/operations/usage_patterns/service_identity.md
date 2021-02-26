@@ -140,13 +140,14 @@ spec:
       labels:
         app: bookstore
         service: reviews
-  requestTimeout: 100ms
-  mirror:
-    kubeService:
-      name: http-monitoring
-      namespace: monitoring
-      clusterName: cluster-one
-    port: 80
+  policy:
+    requestTimeout: 100ms
+    mirror:
+      kubeService:
+        name: http-monitoring
+        namespace: monitoring
+        clusterName: cluster-one
+      port: 80
 ```
 
 Traffic Policies can also apply settings like fault injection, request timeouts, retries, CORS policy and more. By using consistently applied labels, the proper Traffic Policies can be automatically applied.
