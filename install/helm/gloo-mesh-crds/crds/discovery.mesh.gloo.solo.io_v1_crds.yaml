@@ -37,15 +37,21 @@ spec:
           properties:
             externalService:
               description: |-
-                ExternalService is a Traffic Target representing a service
+                ExternalService is a Destination representing a service
                 external to the Mesh. It can be used to expose a given hostname
                 or IP address to all clusters in the Virtual Mesh.
               properties:
                 addresses:
+                  description: |-
+                    The List of addresses which will resolve to this service for
+                    services within the Virtual Mesh.
                   items:
                     type: string
                   type: array
                 endpoints:
+                  description: |-
+                    List of endpoints, to which any requests to this Destionation
+                    will be load balanced across.
                   items:
                     properties:
                       address:
@@ -59,12 +65,17 @@ spec:
                     type: object
                   type: array
                 hosts:
+                  description: |-
+                    The list of hosts which will resolve to this Destination for
+                    services within the Virtual Mesh.
                   items:
                     type: string
                   type: array
                 name:
+                  description: The name of the service
                   type: string
                 ports:
+                  description: The associated ports of the external service
                   items:
                     properties:
                       name:
@@ -79,7 +90,9 @@ spec:
                   type: array
               type: object
             kubeService:
-              description: Describes the Kubernetes service backing this Destination.
+              description: |-
+                KubeService is a kube-native Destination representing a kubernetes
+                service running inside of a kubernetes cluster.
               properties:
                 endpointSubsets:
                   description: |-
@@ -185,8 +198,8 @@ spec:
               type: object
             mesh:
               description: |-
-                The mesh with which this traffic target is associated. Can be omitted if the
-                traffic target isn't associated with any particular mesh, eg for externalservices.
+                The mesh that controls this Destination. Can be omitted if the
+                Destination isn't associated with any particular mesh, eg for External Services.
               properties:
                 name:
                   description: name of the resource being referenced

@@ -82,7 +82,7 @@ func (m *DestinationSpec) Hash(hasher hash.Hash64) (uint64, error) {
 			}
 		}
 
-	case *TrafficTargetSpec_ExternalService_:
+	case *DestinationSpec_ExternalService_:
 
 		if h, ok := interface{}(m.GetExternalService()).(safe_hasher.SafeHasher); ok {
 			if _, err = hasher.Write([]byte("ExternalService")); err != nil {
@@ -227,95 +227,7 @@ func (m *DestinationStatus) Hash(hasher hash.Hash64) (uint64, error) {
 }
 
 // Hash function
-<<<<<<< HEAD:pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/traffic_target.pb.hash.go
-func (m *TrafficTargetSpec_ExternalService) Hash(hasher hash.Hash64) (uint64, error) {
-	if m == nil {
-		return 0, nil
-	}
-	if hasher == nil {
-		hasher = fnv.New64()
-	}
-	var err error
-	if _, err = hasher.Write([]byte("discovery.mesh.gloo.solo.io.github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2.TrafficTargetSpec_ExternalService")); err != nil {
-		return 0, err
-	}
-
-	if _, err = hasher.Write([]byte(m.GetName())); err != nil {
-		return 0, err
-	}
-
-	for _, v := range m.GetHosts() {
-
-		if _, err = hasher.Write([]byte(v)); err != nil {
-			return 0, err
-		}
-
-	}
-
-	for _, v := range m.GetAddresses() {
-
-		if _, err = hasher.Write([]byte(v)); err != nil {
-			return 0, err
-		}
-
-	}
-
-	for _, v := range m.GetPorts() {
-
-		if h, ok := interface{}(v).(safe_hasher.SafeHasher); ok {
-			if _, err = hasher.Write([]byte("")); err != nil {
-				return 0, err
-			}
-			if _, err = h.Hash(hasher); err != nil {
-				return 0, err
-			}
-		} else {
-			if fieldValue, err := hashstructure.Hash(v, nil); err != nil {
-				return 0, err
-			} else {
-				if _, err = hasher.Write([]byte("")); err != nil {
-					return 0, err
-				}
-				if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
-					return 0, err
-				}
-			}
-		}
-
-	}
-
-	for _, v := range m.GetEndpoints() {
-
-		if h, ok := interface{}(v).(safe_hasher.SafeHasher); ok {
-			if _, err = hasher.Write([]byte("")); err != nil {
-				return 0, err
-			}
-			if _, err = h.Hash(hasher); err != nil {
-				return 0, err
-			}
-		} else {
-			if fieldValue, err := hashstructure.Hash(v, nil); err != nil {
-				return 0, err
-			} else {
-				if _, err = hasher.Write([]byte("")); err != nil {
-					return 0, err
-				}
-				if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
-					return 0, err
-				}
-			}
-		}
-
-	}
-
-	return hasher.Sum64(), nil
-}
-
-// Hash function
-func (m *TrafficTargetSpec_KubeService) Hash(hasher hash.Hash64) (uint64, error) {
-=======
 func (m *DestinationSpec_KubeService) Hash(hasher hash.Hash64) (uint64, error) {
->>>>>>> main:pkg/api/discovery.mesh.gloo.solo.io/v1/destination.pb.hash.go
 	if m == nil {
 		return 0, nil
 	}
@@ -488,8 +400,7 @@ func (m *DestinationSpec_KubeService) Hash(hasher hash.Hash64) (uint64, error) {
 }
 
 // Hash function
-<<<<<<< HEAD:pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/traffic_target.pb.hash.go
-func (m *TrafficTargetSpec_ExternalService_ExtEndpoint) Hash(hasher hash.Hash64) (uint64, error) {
+func (m *DestinationSpec_ExternalService) Hash(hasher hash.Hash64) (uint64, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -497,56 +408,7 @@ func (m *TrafficTargetSpec_ExternalService_ExtEndpoint) Hash(hasher hash.Hash64)
 		hasher = fnv.New64()
 	}
 	var err error
-	if _, err = hasher.Write([]byte("discovery.mesh.gloo.solo.io.github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2.TrafficTargetSpec_ExternalService_ExtEndpoint")); err != nil {
-		return 0, err
-	}
-
-	if _, err = hasher.Write([]byte(m.GetAddress())); err != nil {
-		return 0, err
-	}
-
-	{
-		var result uint64
-		innerHash := fnv.New64()
-		for k, v := range m.GetPorts() {
-			innerHash.Reset()
-
-			err = binary.Write(innerHash, binary.LittleEndian, v)
-			if err != nil {
-				return 0, err
-			}
-
-			if _, err = innerHash.Write([]byte(k)); err != nil {
-				return 0, err
-			}
-
-			result = result ^ innerHash.Sum64()
-		}
-		err = binary.Write(hasher, binary.LittleEndian, result)
-		if err != nil {
-			return 0, err
-		}
-
-	}
-
-	return hasher.Sum64(), nil
-}
-
-// Hash function
-func (m *TrafficTargetSpec_ExternalService_ServicePort) Hash(hasher hash.Hash64) (uint64, error) {
-	if m == nil {
-		return 0, nil
-	}
-	if hasher == nil {
-		hasher = fnv.New64()
-	}
-	var err error
-	if _, err = hasher.Write([]byte("discovery.mesh.gloo.solo.io.github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2.TrafficTargetSpec_ExternalService_ServicePort")); err != nil {
-		return 0, err
-	}
-
-	err = binary.Write(hasher, binary.LittleEndian, m.GetNumber())
-	if err != nil {
+	if _, err = hasher.Write([]byte("discovery.mesh.gloo.solo.io.github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1.DestinationSpec_ExternalService")); err != nil {
 		return 0, err
 	}
 
@@ -554,18 +416,75 @@ func (m *TrafficTargetSpec_ExternalService_ServicePort) Hash(hasher hash.Hash64)
 		return 0, err
 	}
 
-	if _, err = hasher.Write([]byte(m.GetProtocol())); err != nil {
-		return 0, err
+	for _, v := range m.GetHosts() {
+
+		if _, err = hasher.Write([]byte(v)); err != nil {
+			return 0, err
+		}
+
+	}
+
+	for _, v := range m.GetAddresses() {
+
+		if _, err = hasher.Write([]byte(v)); err != nil {
+			return 0, err
+		}
+
+	}
+
+	for _, v := range m.GetPorts() {
+
+		if h, ok := interface{}(v).(safe_hasher.SafeHasher); ok {
+			if _, err = hasher.Write([]byte("")); err != nil {
+				return 0, err
+			}
+			if _, err = h.Hash(hasher); err != nil {
+				return 0, err
+			}
+		} else {
+			if fieldValue, err := hashstructure.Hash(v, nil); err != nil {
+				return 0, err
+			} else {
+				if _, err = hasher.Write([]byte("")); err != nil {
+					return 0, err
+				}
+				if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+					return 0, err
+				}
+			}
+		}
+
+	}
+
+	for _, v := range m.GetEndpoints() {
+
+		if h, ok := interface{}(v).(safe_hasher.SafeHasher); ok {
+			if _, err = hasher.Write([]byte("")); err != nil {
+				return 0, err
+			}
+			if _, err = h.Hash(hasher); err != nil {
+				return 0, err
+			}
+		} else {
+			if fieldValue, err := hashstructure.Hash(v, nil); err != nil {
+				return 0, err
+			} else {
+				if _, err = hasher.Write([]byte("")); err != nil {
+					return 0, err
+				}
+				if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+					return 0, err
+				}
+			}
+		}
+
 	}
 
 	return hasher.Sum64(), nil
 }
 
 // Hash function
-func (m *TrafficTargetSpec_KubeService_KubeServicePort) Hash(hasher hash.Hash64) (uint64, error) {
-=======
 func (m *DestinationSpec_KubeService_KubeServicePort) Hash(hasher hash.Hash64) (uint64, error) {
->>>>>>> main:pkg/api/discovery.mesh.gloo.solo.io/v1/destination.pb.hash.go
 	if m == nil {
 		return 0, nil
 	}
@@ -743,6 +662,79 @@ func (m *DestinationSpec_KubeService_EndpointsSubset_Endpoint) Hash(hasher hash.
 				return 0, err
 			}
 		}
+	}
+
+	return hasher.Sum64(), nil
+}
+
+// Hash function
+func (m *DestinationSpec_ExternalService_ExtEndpoint) Hash(hasher hash.Hash64) (uint64, error) {
+	if m == nil {
+		return 0, nil
+	}
+	if hasher == nil {
+		hasher = fnv.New64()
+	}
+	var err error
+	if _, err = hasher.Write([]byte("discovery.mesh.gloo.solo.io.github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1.DestinationSpec_ExternalService_ExtEndpoint")); err != nil {
+		return 0, err
+	}
+
+	if _, err = hasher.Write([]byte(m.GetAddress())); err != nil {
+		return 0, err
+	}
+
+	{
+		var result uint64
+		innerHash := fnv.New64()
+		for k, v := range m.GetPorts() {
+			innerHash.Reset()
+
+			err = binary.Write(innerHash, binary.LittleEndian, v)
+			if err != nil {
+				return 0, err
+			}
+
+			if _, err = innerHash.Write([]byte(k)); err != nil {
+				return 0, err
+			}
+
+			result = result ^ innerHash.Sum64()
+		}
+		err = binary.Write(hasher, binary.LittleEndian, result)
+		if err != nil {
+			return 0, err
+		}
+
+	}
+
+	return hasher.Sum64(), nil
+}
+
+// Hash function
+func (m *DestinationSpec_ExternalService_ServicePort) Hash(hasher hash.Hash64) (uint64, error) {
+	if m == nil {
+		return 0, nil
+	}
+	if hasher == nil {
+		hasher = fnv.New64()
+	}
+	var err error
+	if _, err = hasher.Write([]byte("discovery.mesh.gloo.solo.io.github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1.DestinationSpec_ExternalService_ServicePort")); err != nil {
+		return 0, err
+	}
+
+	err = binary.Write(hasher, binary.LittleEndian, m.GetNumber())
+	if err != nil {
+		return 0, err
+	}
+
+	if _, err = hasher.Write([]byte(m.GetName())); err != nil {
+		return 0, err
+	}
+
+	if _, err = hasher.Write([]byte(m.GetProtocol())); err != nil {
+		return 0, err
 	}
 
 	return hasher.Sum64(), nil
