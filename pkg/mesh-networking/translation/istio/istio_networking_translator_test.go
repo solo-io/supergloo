@@ -10,7 +10,7 @@ import (
 	mock_istio_output "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio/mocks"
 	mock_local_output "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local/mocks"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
-	mock_traffictarget "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/mocks"
+	mock_destination "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/mocks"
 	mock_extensions "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/extensions/mocks"
 	mock_istio "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/internal/mocks"
 	mock_mesh "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/mocks"
@@ -29,7 +29,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		mockReporter              *mock_reporting.MockReporter
 		mockIstioOutputs          *mock_istio_output.MockBuilder
 		mockLocalOutputs          *mock_local_output.MockBuilder
-		mockDestinationTranslator *mock_traffictarget.MockTranslator
+		mockDestinationTranslator *mock_destination.MockTranslator
 		mockMeshTranslator        *mock_mesh.MockTranslator
 		mockDependencyFactory     *mock_istio.MockDependencyFactory
 		translator                Translator
@@ -41,7 +41,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		ctxWithValue = contextutils.WithLogger(context.TODO(), "istio-translator-0")
 		mockIstioExtender = mock_extensions.NewMockIstioExtender(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
-		mockDestinationTranslator = mock_traffictarget.NewMockTranslator(ctrl)
+		mockDestinationTranslator = mock_destination.NewMockTranslator(ctrl)
 		mockMeshTranslator = mock_mesh.NewMockTranslator(ctrl)
 		mockDependencyFactory = mock_istio.NewMockDependencyFactory(ctrl)
 		mockIstioOutputs = mock_istio_output.NewMockBuilder(ctrl)

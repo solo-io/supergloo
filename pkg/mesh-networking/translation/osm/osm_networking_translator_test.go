@@ -9,7 +9,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	mock_output "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/smi/mocks"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
-	mock_traffictarget "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm/destination/mocks"
+	mock_destination "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm/destination/mocks"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm/internal/mocks"
 	mock_mesh "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/osm/mesh/mocks"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,7 +23,7 @@ var _ = Describe("SmiNetworkingTranslator", func() {
 		mockOutputs               *mock_output.MockBuilder
 		mockDependencyFactory     *MockDependencyFactory
 		mockMeshTranslator        *mock_mesh.MockTranslator
-		mockDestinationTranslator *mock_traffictarget.MockTranslator
+		mockDestinationTranslator *mock_destination.MockTranslator
 		translator                *osmTranslator
 	)
 
@@ -34,7 +34,7 @@ var _ = Describe("SmiNetworkingTranslator", func() {
 		mockDependencyFactory = NewMockDependencyFactory(ctrl)
 		mockOutputs = mock_output.NewMockBuilder(ctrl)
 		mockMeshTranslator = mock_mesh.NewMockTranslator(ctrl)
-		mockDestinationTranslator = mock_traffictarget.NewMockTranslator(ctrl)
+		mockDestinationTranslator = mock_destination.NewMockTranslator(ctrl)
 		translator = &osmTranslator{dependencies: mockDependencyFactory}
 	})
 
@@ -42,7 +42,7 @@ var _ = Describe("SmiNetworkingTranslator", func() {
 		ctrl.Finish()
 	})
 
-	It("should translate all meshes and traffictargets", func() {
+	It("should translate all meshes and destinations", func() {
 		in := input.NewInputLocalSnapshotManualBuilder("").
 			AddMeshes([]*discoveryv1.Mesh{
 				{
