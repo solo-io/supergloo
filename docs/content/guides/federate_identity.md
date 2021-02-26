@@ -25,7 +25,8 @@ Be sure to review the assumptions and satisfy the pre-requisites from the [Guide
 
 ## Enforce mTLS
 
-Apply the following yaml to both your management plane and remote cluster:
+Apply the following yaml to both your management plane and remote cluster,
+assuming that istio-system is the root namespace for the istio deployment:
 
 ```shell
 apiVersion: "security.istio.io/v1beta1"
