@@ -142,7 +142,7 @@ Represents permissions for configuring VirtualDestinations.
 | virtualMeshRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | A list of permitted virtual mesh references. |
   | meshRefs | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | A list of permitted mesh references. |
   | destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | A list of permitted backing service selectors. |
-  | destinations | [][networking.enterprise.mesh.gloo.solo.io.BackingDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.BackingDestination" >}}) | repeated | A list of permitted backing Destinations. |
+  | destinations | [][networking.enterprise.mesh.gloo.solo.io.VirtualDestinationBackingDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationBackingDestination" >}}) | repeated | A list of permitted backing Destinations. |
   
 
 

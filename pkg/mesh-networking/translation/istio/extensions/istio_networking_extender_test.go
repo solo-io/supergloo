@@ -3,23 +3,20 @@ package extensions_test
 import (
 	"context"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1beta1"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
-	mock_extensions "github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions/mocks"
-
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1beta1"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
+	mock_extensions "github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions/mocks"
+	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/extensions"
 	mock_istio_extensions "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/extensions/mocks"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/extensions"
 )
 
 //go:generate mockgen -destination mocks/mock_extensions_client.go -package mock_extensions github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1beta1 NetworkingExtensionsClient,NetworkingExtensions_WatchPushNotificationsClient
