@@ -1,12 +1,12 @@
 package utils
 
 import (
-	settingsv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
+	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 )
 
 // Get the workload labels and TLS port name used to detect ingress gateways in the given cluster.
-func GetIngressGatewayDetector(settings *settingsv1alpha2.DiscoverySettings, clusterName string) (*settingsv1alpha2.DiscoverySettings_Istio_IngressGatewayDetector, error) {
+func GetIngressGatewayDetector(settings *settingsv1.DiscoverySettings, clusterName string) (*settingsv1.DiscoverySettings_Istio_IngressGatewayDetector, error) {
 	var labels map[string]string
 	var portName string
 
@@ -37,7 +37,7 @@ func GetIngressGatewayDetector(settings *settingsv1alpha2.DiscoverySettings, clu
 		portName = defaults.DefaultGatewayPortName
 	}
 
-	return &settingsv1alpha2.DiscoverySettings_Istio_IngressGatewayDetector{
+	return &settingsv1.DiscoverySettings_Istio_IngressGatewayDetector{
 		GatewayWorkloadLabels: labels,
 		GatewayTlsPortName:    portName,
 	}, nil

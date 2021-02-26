@@ -29,9 +29,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	settings_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
-	settings_mesh_gloo_solo_io_v1alpha2_types "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
-	settings_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
+	settings_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
+	settings_mesh_gloo_solo_io_v1_types "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
+	settings_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1/sets"
 )
 
 // SnapshotGVKs is a list of the GVKs included in this snapshot
@@ -39,7 +39,7 @@ var SettingsSnapshotGVKs = []schema.GroupVersionKind{
 
 	schema.GroupVersionKind{
 		Group:   "settings.mesh.gloo.solo.io",
-		Version: "v1alpha2",
+		Version: "v1",
 		Kind:    "Settings",
 	},
 }
@@ -48,7 +48,7 @@ var SettingsSnapshotGVKs = []schema.GroupVersionKind{
 type SettingsSnapshot interface {
 
 	// return the set of input Settings
-	Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+	Settings() settings_mesh_gloo_solo_io_v1_sets.SettingsSet
 	// update the status of all input objects which support
 	// the Status subresource (across multiple clusters)
 	SyncStatusesMultiCluster(ctx context.Context, mcClient multicluster.Client, opts SettingsSyncStatusOptions) error
@@ -69,13 +69,13 @@ type SettingsSyncStatusOptions struct {
 type snapshotSettings struct {
 	name string
 
-	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+	settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet
 }
 
 func NewSettingsSnapshot(
 	name string,
 
-	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet,
+	settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet,
 
 ) SettingsSnapshot {
 	return &snapshotSettings{
@@ -90,18 +90,18 @@ func NewSettingsSnapshotFromGeneric(
 	genericSnapshot resource.ClusterSnapshot,
 ) SettingsSnapshot {
 
-	settingsSet := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+	settingsSet := settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet()
 
 	for _, snapshot := range genericSnapshot {
 
 		settings := snapshot[schema.GroupVersionKind{
 			Group:   "settings.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "Settings",
 		}]
 
 		for _, settings := range settings {
-			settingsSet.Insert(settings.(*settings_mesh_gloo_solo_io_v1alpha2_types.Settings))
+			settingsSet.Insert(settings.(*settings_mesh_gloo_solo_io_v1_types.Settings))
 		}
 
 	}
@@ -111,7 +111,7 @@ func NewSettingsSnapshotFromGeneric(
 	)
 }
 
-func (s snapshotSettings) Settings() settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet {
+func (s snapshotSettings) Settings() settings_mesh_gloo_solo_io_v1_sets.SettingsSet {
 	return s.settings
 }
 
@@ -194,7 +194,7 @@ func NewMultiClusterSettingsBuilder(
 
 func (b *multiClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name string, opts SettingsBuildOptions) (SettingsSnapshot, error) {
 
-	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+	settings := settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet()
 
 	var errs error
 
@@ -215,8 +215,8 @@ func (b *multiClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name st
 	return outputSnap, errs
 }
 
-func (b *multiClusterSettingsBuilder) insertSettingsFromCluster(ctx context.Context, cluster string, settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceSettingsBuildOptions) error {
-	settingsClient, err := settings_mesh_gloo_solo_io_v1alpha2.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
+func (b *multiClusterSettingsBuilder) insertSettingsFromCluster(ctx context.Context, cluster string, settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet, opts ResourceSettingsBuildOptions) error {
+	settingsClient, err := settings_mesh_gloo_solo_io_v1.NewMulticlusterSettingsClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -229,7 +229,7 @@ func (b *multiClusterSettingsBuilder) insertSettingsFromCluster(ctx context.Cont
 
 		gvk := schema.GroupVersionKind{
 			Group:   "settings.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "Settings",
 		}
 
@@ -285,7 +285,7 @@ func NewSingleClusterSettingsBuilderWithClusterName(
 
 func (b *singleClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name string, opts SettingsBuildOptions) (SettingsSnapshot, error) {
 
-	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+	settings := settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet()
 
 	var errs error
 
@@ -302,12 +302,12 @@ func (b *singleClusterSettingsBuilder) BuildSnapshot(ctx context.Context, name s
 	return outputSnap, errs
 }
 
-func (b *singleClusterSettingsBuilder) insertSettings(ctx context.Context, settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet, opts ResourceSettingsBuildOptions) error {
+func (b *singleClusterSettingsBuilder) insertSettings(ctx context.Context, settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet, opts ResourceSettingsBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
 			Group:   "settings.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "Settings",
 		}
 
@@ -322,7 +322,7 @@ func (b *singleClusterSettingsBuilder) insertSettings(ctx context.Context, setti
 		}
 	}
 
-	settingsList, err := settings_mesh_gloo_solo_io_v1alpha2.NewSettingsClient(b.mgr.GetClient()).ListSettings(ctx, opts.ListOptions...)
+	settingsList, err := settings_mesh_gloo_solo_io_v1.NewSettingsClient(b.mgr.GetClient()).ListSettings(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -356,12 +356,12 @@ func (i *inMemorySettingsBuilder) BuildSnapshot(ctx context.Context, name string
 		return nil, err
 	}
 
-	settings := settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet()
+	settings := settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet()
 
 	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject) {
 		switch obj := obj.(type) {
 		// insert Settings
-		case *settings_mesh_gloo_solo_io_v1alpha2_types.Settings:
+		case *settings_mesh_gloo_solo_io_v1_types.Settings:
 			settings.Insert(obj)
 		}
 	})

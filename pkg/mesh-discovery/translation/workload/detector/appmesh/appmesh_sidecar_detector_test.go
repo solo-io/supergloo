@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	. "github.com/onsi/gomega"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -56,21 +56,21 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 			},
 		}
 
-		mesh := &v1alpha2.Mesh{
+		mesh := &v1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", meshName, "some-cluster"),
 				Namespace: "gloo-mesh",
 			},
-			Spec: v1alpha2.MeshSpec{
-				MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
-					AwsAppMesh: &v1alpha2.MeshSpec_AwsAppMesh{
+			Spec: v1.MeshSpec{
+				Type: &v1.MeshSpec_AwsAppMesh_{
+					AwsAppMesh: &v1.MeshSpec_AwsAppMesh{
 						AwsName: meshName,
 					},
 				},
 			},
 		}
 
-		actual := sidecarDetector.DetectMeshSidecar(injectedPod, v1alpha2sets.NewMeshSet(mesh))
+		actual := sidecarDetector.DetectMeshSidecar(injectedPod, v1sets.NewMeshSet(mesh))
 		Expect(actual).To(Equal(mesh))
 	})
 
@@ -91,21 +91,21 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 			},
 		}
 
-		mesh := &v1alpha2.Mesh{
+		mesh := &v1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", meshName, "some-cluster"),
 				Namespace: "gloo-mesh",
 			},
-			Spec: v1alpha2.MeshSpec{
-				MeshType: &v1alpha2.MeshSpec_AwsAppMesh_{
-					AwsAppMesh: &v1alpha2.MeshSpec_AwsAppMesh{
+			Spec: v1.MeshSpec{
+				Type: &v1.MeshSpec_AwsAppMesh_{
+					AwsAppMesh: &v1.MeshSpec_AwsAppMesh{
 						AwsName: meshName,
 					},
 				},
 			},
 		}
 
-		actual := sidecarDetector.DetectMeshSidecar(plainPod, v1alpha2sets.NewMeshSet(mesh))
+		actual := sidecarDetector.DetectMeshSidecar(plainPod, v1sets.NewMeshSet(mesh))
 		Expect(actual).To(BeNil())
 	})
 
@@ -141,17 +141,17 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 			},
 		}
 
-		mesh := &v1alpha2.Mesh{
+		mesh := &v1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", meshName, "some-cluster"),
 				Namespace: "gloo-mesh",
 			},
-			Spec: v1alpha2.MeshSpec{
-				MeshType: &v1alpha2.MeshSpec_Istio_{},
+			Spec: v1.MeshSpec{
+				Type: &v1.MeshSpec_Istio_{},
 			},
 		}
 
-		actual := sidecarDetector.DetectMeshSidecar(injectedPod, v1alpha2sets.NewMeshSet(mesh))
+		actual := sidecarDetector.DetectMeshSidecar(injectedPod, v1sets.NewMeshSet(mesh))
 		Expect(actual).To(BeNil())
 	})
 
@@ -187,17 +187,17 @@ var _ = Describe("AppMesh SidecarDetector", func() {
 			},
 		}
 
-		mesh := &v1alpha2.Mesh{
+		mesh := &v1.Mesh{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", meshName, "some-cluster"),
 				Namespace: "gloo-mesh",
 			},
-			Spec: v1alpha2.MeshSpec{
-				MeshType: &v1alpha2.MeshSpec_Istio_{},
+			Spec: v1.MeshSpec{
+				Type: &v1.MeshSpec_Istio_{},
 			},
 		}
 
-		actual := sidecarDetector.DetectMeshSidecar(injectedPod, v1alpha2sets.NewMeshSet(mesh))
+		actual := sidecarDetector.DetectMeshSidecar(injectedPod, v1sets.NewMeshSet(mesh))
 		Expect(actual).To(BeNil())
 	})
 

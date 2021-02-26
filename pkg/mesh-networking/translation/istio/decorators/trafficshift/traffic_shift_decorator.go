@@ -6,20 +6,18 @@ import (
 	"strings"
 
 	"github.com/rotisserie/eris"
-	discoveryv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
-	discoveryv1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1"
-	v1alpha1sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2/sets"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1"
+	v1beta1sets "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1/sets"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/failoverserviceutils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/trafficpolicyutils"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/traffictargetutils"
 	"github.com/solo-io/k8s-utils/kubeutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 )
@@ -35,8 +33,7 @@ func init() {
 func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
 	return NewTrafficShiftDecorator(
 		params.ClusterDomains,
-		params.Snapshot.TrafficTargets(),
-		params.Snapshot.FailoverServices(),
+		params.Snapshot.Destinations(),
 		params.Snapshot.VirtualDestinations(),
 	)
 }
@@ -44,23 +41,20 @@ func decoratorConstructor(params decorators.Parameters) decorators.Decorator {
 // handles setting Weighted Destinations on a VirtualService
 type trafficShiftDecorator struct {
 	clusterDomains      hostutils.ClusterDomainRegistry
-	trafficTargets      discoveryv1alpha2sets.TrafficTargetSet
-	failoverServices    v1alpha2sets.FailoverServiceSet
-	virtualDestinations v1alpha1sets.VirtualDestinationSet
+	virtualDestinations v1beta1sets.VirtualDestinationSet
+	destinations        discoveryv1sets.DestinationSet
 }
 
 var _ decorators.TrafficPolicyVirtualServiceDecorator = &trafficShiftDecorator{}
 
 func NewTrafficShiftDecorator(
 	clusterDomains hostutils.ClusterDomainRegistry,
-	trafficTargets discoveryv1alpha2sets.TrafficTargetSet,
-	failoverServices v1alpha2sets.FailoverServiceSet,
-	virtualDestinations v1alpha1sets.VirtualDestinationSet,
+	destinations discoveryv1sets.DestinationSet,
+	virtualDestinations v1beta1sets.VirtualDestinationSet,
 ) *trafficShiftDecorator {
 	return &trafficShiftDecorator{
 		clusterDomains:      clusterDomains,
-		trafficTargets:      trafficTargets,
-		failoverServices:    failoverServices,
+		destinations:        destinations,
 		virtualDestinations: virtualDestinations,
 	}
 }
@@ -70,13 +64,13 @@ func (d *trafficShiftDecorator) DecoratorName() string {
 }
 
 func (d *trafficShiftDecorator) ApplyTrafficPolicyToVirtualService(
-	appliedPolicy *discoveryv1alpha2.TrafficTargetStatus_AppliedTrafficPolicy,
-	trafficTarget *discoveryv1alpha2.TrafficTarget,
-	sourceMeshInstallation *discoveryv1alpha2.MeshSpec_MeshInstallation,
+	appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+	destination *discoveryv1.Destination,
+	sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 	output *networkingv1alpha3spec.HTTPRoute,
 	registerField decorators.RegisterField,
 ) error {
-	trafficShiftDestinations, err := d.translateTrafficShift(trafficTarget, appliedPolicy.Spec, sourceMeshInstallation.GetCluster())
+	trafficShiftDestinations, err := d.translateTrafficShift(destination, appliedPolicy.Spec, sourceMeshInstallation.GetCluster())
 	if err != nil {
 		return err
 	}
@@ -90,53 +84,44 @@ func (d *trafficShiftDecorator) ApplyTrafficPolicyToVirtualService(
 }
 
 func (d *trafficShiftDecorator) translateTrafficShift(
-	trafficTarget *discoveryv1alpha2.TrafficTarget,
-	trafficPolicy *v1alpha2.TrafficPolicySpec,
+	destination *discoveryv1.Destination,
+	trafficPolicy *networkingv1.TrafficPolicySpec,
 	sourceClusterName string,
 ) ([]*networkingv1alpha3spec.HTTPRouteDestination, error) {
-	trafficShift := trafficPolicy.GetTrafficShift()
+	trafficShift := trafficPolicy.GetPolicy().GetTrafficShift()
 	if trafficShift == nil {
 		return nil, nil
 	}
 
 	var shiftedDestinations []*networkingv1alpha3spec.HTTPRouteDestination
-	for _, destination := range trafficShift.Destinations {
-		if destination.DestinationType == nil {
+	for _, weightedDest := range trafficShift.Destinations {
+		if weightedDest.DestinationType == nil {
 			return nil, eris.Errorf("must set a destination type on traffic shift destination")
 		}
 		var trafficShiftDestination *networkingv1alpha3spec.HTTPRouteDestination
-		switch destinationType := destination.DestinationType.(type) {
-		case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService:
+		switch destinationType := weightedDest.DestinationType.(type) {
+		case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
 			var err error
 			trafficShiftDestination, err = d.buildKubeTrafficShiftDestination(
 				destinationType.KubeService,
-				trafficTarget,
-				destination.Weight,
+				destination,
+				weightedDest.Weight,
 				sourceClusterName,
 			)
 			if err != nil {
 				return nil, err
 			}
-		case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService:
-			var err error
-			trafficShiftDestination, err = d.buildFailoverServiceDestination(
-				destinationType.FailoverService,
-				destination.Weight,
-			)
-			if err != nil {
-				return nil, err
-			}
-		case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_VirtualDestination:
+		case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestination:
 			var err error
 			trafficShiftDestination, err = d.buildVirtualDestinationDestination(
 				destinationType.VirtualDestination,
-				destination.Weight,
+				weightedDest.Weight,
 			)
 			if err != nil {
 				return nil, err
 			}
 		default:
-			return nil, eris.Errorf("unsupported traffic shift destination type: %T", destination.DestinationType)
+			return nil, eris.Errorf("unsupported traffic shift destination type: %T", weightedDest.DestinationType)
 		}
 		shiftedDestinations = append(shiftedDestinations, trafficShiftDestination)
 
@@ -146,36 +131,36 @@ func (d *trafficShiftDecorator) translateTrafficShift(
 }
 
 func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
-	kubeDest *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeDestination,
-	trafficTarget *discoveryv1alpha2.TrafficTarget,
+	kubeDest *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination,
+	destination *discoveryv1.Destination,
 	weight uint32,
 	sourceClusterName string,
 ) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
-	originalKubeService := trafficTarget.Spec.GetKubeService()
+	originalKubeService := destination.Spec.GetKubeService()
 
 	if originalKubeService == nil {
-		return nil, eris.Errorf("traffic shift only supported for kube traffic targets")
+		return nil, eris.Errorf("traffic shift only supported for kube Destinations")
 	}
 	if kubeDest == nil {
 		return nil, eris.Errorf("nil kube destination on traffic shift")
 	}
 
-	svcRef := &v1.ClusterObjectRef{
+	svcRef := &skv2corev1.ClusterObjectRef{
 		Name:        kubeDest.Name,
 		Namespace:   kubeDest.Namespace,
 		ClusterName: kubeDest.ClusterName,
 	}
 
-	// validate destination service is a known traffictarget
-	trafficShiftService, err := traffictargetutils.FindTrafficTargetForKubeService(d.trafficTargets.List(), svcRef)
+	// validate destination service is a known destination
+	trafficShiftService, err := destinationutils.FindDestinationForKubeService(d.destinations.List(), svcRef)
 	if err != nil {
 		return nil, eris.Wrapf(err, "invalid traffic shift destination %s", sets.Key(svcRef))
 	}
 	trafficShiftKubeService := trafficShiftService.Spec.GetKubeService()
 
-	// An empty sourceClusterName indicates translation for VirtualService local to trafficTarget
+	// An empty sourceClusterName indicates translation for VirtualService local to Destination
 	if sourceClusterName == "" {
-		sourceClusterName = trafficTarget.Spec.GetKubeService().GetRef().GetClusterName()
+		sourceClusterName = destination.Spec.GetKubeService().GetRef().GetClusterName()
 	}
 
 	destinationHost := d.clusterDomains.GetDestinationFQDN(sourceClusterName, svcRef)
@@ -189,7 +174,7 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 			Number: port,
 		}
 	} else {
-		// validate that traffic target only has one port
+		// validate that Destination only has one port
 		if numPorts := len(trafficShiftKubeService.Ports); numPorts > 1 {
 			return nil, eris.Errorf("must provide port for traffic shift destination service %v with multiple ports (%v) defined", sets.Key(trafficShiftKubeService.Ref), numPorts)
 		}
@@ -211,27 +196,8 @@ func (d *trafficShiftDecorator) buildKubeTrafficShiftDestination(
 	return httpRouteDestination, nil
 }
 
-func (d *trafficShiftDecorator) buildFailoverServiceDestination(
-	failoverServiceDest *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverServiceDestination,
-	weight uint32,
-) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
-	failoverService, err := d.failoverServices.Find(ezkube.MakeObjectRef(failoverServiceDest))
-	if err != nil {
-		return nil, eris.Wrapf(err, "invalid traffic shift destination %s, VirtualDestination not found", sets.Key(failoverServiceDest))
-	}
-
-	httpRouteDestination := d.buildHttpRouteDestination(
-		failoverService.Spec.GetHostname(),
-		failoverServiceDest.GetSubset(),
-		failoverService.Spec.GetPort().GetNumber(),
-		weight,
-	)
-
-	return httpRouteDestination, nil
-}
-
 func (d *trafficShiftDecorator) buildVirtualDestinationDestination(
-	virtualDestinationDest *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_VirtualDestinationReference,
+	virtualDestinationDest *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_VirtualDestinationReference,
 	weight uint32,
 ) (*networkingv1alpha3spec.HTTPRouteDestination, error) {
 	virtualDestination, err := d.virtualDestinations.Find(ezkube.MakeObjectRef(virtualDestinationDest))
@@ -272,33 +238,15 @@ func (d *trafficShiftDecorator) buildHttpRouteDestination(
 	return httpRouteDestination
 }
 
-// make all the necessary subsets for the destination rule for the given FailoverService.
-// traverses all the applied traffic policies to find subsets matching this FailoverService
-func MakeDestinationRuleSubsetsForFailoverService(
-	failoverService *discoveryv1alpha2.MeshStatus_AppliedFailoverService,
-	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
-) []*networkingv1alpha3spec.Subset {
-	return makeDestinationRuleSubsets(
-		allTrafficTargets,
-		func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool {
-			failoverDestination := weightedDestination.GetFailoverService()
-			if failoverDestination == nil {
-				return false
-			}
-			return ezkube.RefsMatch(failoverService.Ref, failoverDestination)
-		},
-	)
-}
-
 // make all the necessary subsets for the destination rule for the given VirtualDestination.
 // traverses all the applied traffic policies to find subsets matching this VirtualDestination
 func MakeDestinationRuleSubsetsForVirtualDestination(
-	virtualDestination *v1alpha1.VirtualDestination,
-	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
+	virtualDestination *v1beta1.VirtualDestination,
+	allTrafficTargets discoveryv1sets.DestinationSet,
 ) []*networkingv1alpha3spec.Subset {
 	return makeDestinationRuleSubsets(
 		allTrafficTargets,
-		func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool {
+		func(weightedDestination *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination) bool {
 			virtualDestinationDest := weightedDestination.GetVirtualDestination()
 			if virtualDestinationDest == nil {
 				return false
@@ -308,45 +256,38 @@ func MakeDestinationRuleSubsetsForVirtualDestination(
 	)
 }
 
-// make all the necessary subsets for the destination rule for the given traffictarget.
-// traverses all the applied traffic policies to find subsets matching this traffictarget
-func MakeDestinationRuleSubsetsForTrafficTarget(
-	trafficTarget *discoveryv1alpha2.TrafficTarget,
-	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
-	failoverServices v1alpha2sets.FailoverServiceSet,
+// make all the necessary subsets for the destination rule for the given destination.
+// traverses all the applied traffic policies to find subsets matching this destination
+func MakeDestinationRuleSubsetsForDestination(
+	destination *discoveryv1.Destination,
+	allDestinations discoveryv1sets.DestinationSet,
 	sourceClusterName string,
 ) []*networkingv1alpha3spec.Subset {
 	subsets := makeDestinationRuleSubsets(
-		allTrafficTargets,
-		func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool {
+		allDestinations,
+		func(weightedDestination *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination) bool {
 			switch destType := weightedDestination.DestinationType.(type) {
-			case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService:
-				return traffictargetutils.IsTrafficTargetForKubeService(trafficTarget, destType.KubeService)
-			case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService:
-				failoverService, err := failoverServices.Find(destType.FailoverService)
-				if err != nil {
-					return false
-				}
-				return failoverserviceutils.ContainsTrafficTarget(failoverService, trafficTarget)
+			case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
+				return destinationutils.IsDestinationForKubeService(destination, destType.KubeService)
 			}
 			return false
 		},
 	)
 
-	// NOTE(ilackarms): we make subsets here for the client-side destination rule for a federated traffic target,
+	// NOTE(ilackarms): we make subsets here for the client-side destination rule for a federated Destination,
 	// which contain all the matching subset names for the remote destination rule.
 	// the labels for the subsets must match the labels on the ServiceEntry Endpoint(s).
 	// Based on https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
 	//
 	// If flat-networking is enabled, we leave the subset info as there is no ingress involved
 	if sourceClusterName != "" &&
-		sourceClusterName != trafficTarget.ClusterName &&
-		!trafficTarget.Status.GetAppliedFederation().GetFlatNetwork() {
+		sourceClusterName != destination.ClusterName &&
+		!destination.Status.GetAppliedFederation().GetFlatNetwork() {
 		for _, subset := range subsets {
 			// only the name of the subset matters here.
 			// the labels must match those on the ServiceEntry's endpoints.
-			subset.Labels = MakeFederatedSubsetLabel(trafficTarget.Spec.GetKubeService().Ref.ClusterName)
-			// we also remove the traffic policy, leaving
+			subset.Labels = MakeFederatedSubsetLabel(destination.Spec.GetKubeService().Ref.ClusterName)
+			// we also remove the TrafficPolicy, leaving
 			// it to the server-side DestinationRule to enforce.
 			subset.TrafficPolicy = nil
 		}
@@ -355,11 +296,11 @@ func MakeDestinationRuleSubsetsForTrafficTarget(
 	return subsets
 }
 
-// clusterName corresponds to the cluster name for the federated traffic target.
+// clusterName corresponds to the cluster name for the federated Destination.
 //
 // NOTE(ilackarms): we use these labels to support federated subsets.
 // the values don't actually matter; but the subset names should
-// match those on the DestinationRule for the TrafficTarget in the
+// match those on the DestinationRule for the Destination in the
 // remote cluster.
 // based on: https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
 func MakeFederatedSubsetLabel(clusterName string) map[string]string {
@@ -369,8 +310,8 @@ func MakeFederatedSubsetLabel(clusterName string) map[string]string {
 }
 
 func makeDestinationRuleSubsets(
-	allTrafficTargets discoveryv1alpha2sets.TrafficTargetSet,
-	destinationMatchFunc func(weightedDestination *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination) bool,
+	allDestinations discoveryv1sets.DestinationSet,
+	destinationMatchFunc func(weightedDestination *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination) bool,
 ) []*networkingv1alpha3spec.Subset {
 	var uniqueSubsets []map[string]string
 	appendUniqueSubset := func(subsetLabels map[string]string) {
@@ -385,16 +326,14 @@ func makeDestinationRuleSubsets(
 		uniqueSubsets = append(uniqueSubsets, subsetLabels)
 	}
 
-	allTrafficTargets.List(func(service *discoveryv1alpha2.TrafficTarget) bool {
+	allDestinations.List(func(service *discoveryv1.Destination) bool {
 		for _, policy := range service.Status.AppliedTrafficPolicies {
-			trafficShiftDestinations := policy.Spec.GetTrafficShift().GetDestinations()
+			trafficShiftDestinations := policy.Spec.GetPolicy().GetTrafficShift().GetDestinations()
 			for _, dest := range trafficShiftDestinations {
 				if destinationMatchFunc(dest) {
 					switch destType := dest.DestinationType.(type) {
-					case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_KubeService:
+					case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
 						appendUniqueSubset(destType.KubeService.Subset)
-					case *v1alpha2.TrafficPolicySpec_MultiDestination_WeightedDestination_FailoverService:
-						appendUniqueSubset(destType.FailoverService.Subset)
 					}
 				}
 			}

@@ -9,18 +9,18 @@ import (
 
 	"go.uber.org/atomic"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/extensions"
 	"google.golang.org/grpc"
 
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1alpha1"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1beta1"
 )
 
 const ExtensionsServerPort = 2345
 
 type testExtensionsServer struct {
-	createMeshPatches func(ctx context.Context, mesh *v1alpha2.MeshSpec) (istio.Builder, error)
+	createMeshPatches func(ctx context.Context, mesh *v1.MeshSpec) (istio.Builder, error)
 	hasConnected      *atomic.Bool
 }
 
@@ -36,14 +36,14 @@ func (t *testExtensionsServer) Run() error {
 		return err
 	}
 	grpcSrv := grpc.NewServer()
-	v1alpha1.RegisterNetworkingExtensionsServer(grpcSrv, t)
+	v1beta1.RegisterNetworkingExtensionsServer(grpcSrv, t)
 	return grpcSrv.Serve(l)
 }
 
-func (t *testExtensionsServer) GetExtensionPatches(ctx context.Context, request *v1alpha1.ExtensionPatchRequest) (*v1alpha1.ExtensionPatchResponse, error) {
+func (t *testExtensionsServer) GetExtensionPatches(ctx context.Context, request *v1beta1.ExtensionPatchRequest) (*v1beta1.ExtensionPatchResponse, error) {
 	inputs := extensionutils.InputSnapshotFromProto("test-server", request.Inputs)
 
-	var patches []*v1alpha1.GeneratedObject
+	var patches []*v1beta1.GeneratedObject
 	for _, mesh := range inputs.Meshes().List() {
 		mesh := mesh // shadow for pointer
 		outputs, err := t.createMeshPatches(ctx, &mesh.Spec)
@@ -52,13 +52,13 @@ func (t *testExtensionsServer) GetExtensionPatches(ctx context.Context, request 
 		}
 		patches = append(patches, extensions.OutputsToProto(outputs)...)
 	}
-	return &v1alpha1.ExtensionPatchResponse{PatchedOutputs: patches}, nil
+	return &v1beta1.ExtensionPatchResponse{PatchedOutputs: patches}, nil
 }
 
-func (t *testExtensionsServer) WatchPushNotifications(request *v1alpha1.WatchPushNotificationsRequest, server v1alpha1.NetworkingExtensions_WatchPushNotificationsServer) error {
+func (t *testExtensionsServer) WatchPushNotifications(request *v1beta1.WatchPushNotificationsRequest, server v1beta1.NetworkingExtensions_WatchPushNotificationsServer) error {
 
 	// one to start
-	if err := server.Send(&v1alpha1.PushNotification{}); err != nil {
+	if err := server.Send(&v1beta1.PushNotification{}); err != nil {
 		return err
 	}
 

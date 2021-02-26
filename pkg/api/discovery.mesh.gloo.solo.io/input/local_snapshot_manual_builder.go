@@ -6,21 +6,21 @@
 package input
 
 import (
-	settings_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2"
-	settings_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1alpha2/sets"
+	settings_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
+	settings_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1/sets"
 )
 
 type InputSettingsSnapshotManualBuilder struct {
 	name string
 
-	settings settings_mesh_gloo_solo_io_v1alpha2_sets.SettingsSet
+	settings settings_mesh_gloo_solo_io_v1_sets.SettingsSet
 }
 
 func NewInputSettingsSnapshotManualBuilder(name string) *InputSettingsSnapshotManualBuilder {
 	return &InputSettingsSnapshotManualBuilder{
 		name: name,
 
-		settings: settings_mesh_gloo_solo_io_v1alpha2_sets.NewSettingsSet(),
+		settings: settings_mesh_gloo_solo_io_v1_sets.NewSettingsSet(),
 	}
 }
 
@@ -31,7 +31,7 @@ func (i *InputSettingsSnapshotManualBuilder) Build() SettingsSnapshot {
 		i.settings,
 	)
 }
-func (i *InputSettingsSnapshotManualBuilder) AddSettings(settings []*settings_mesh_gloo_solo_io_v1alpha2.Settings) *InputSettingsSnapshotManualBuilder {
+func (i *InputSettingsSnapshotManualBuilder) AddSettings(settings []*settings_mesh_gloo_solo_io_v1.Settings) *InputSettingsSnapshotManualBuilder {
 	i.settings.Insert(settings...)
 	return i
 }

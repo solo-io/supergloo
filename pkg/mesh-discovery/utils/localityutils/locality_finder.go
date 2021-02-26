@@ -3,9 +3,9 @@ package localityutils
 import (
 	"github.com/rotisserie/eris"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
-	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/api/label"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -29,12 +29,12 @@ func GetClusterRegion(clusterName string, nodes corev1sets.NodeSet) (string, err
 // Exists as a sub component so it can be used in enterprise
 // Not thread safe
 type UniqueSubLocalities struct {
-	subLocalities map[string]map[string]*v1alpha2.SubLocality
+	subLocalities map[string]map[string]*discoveryv1.SubLocality
 }
 
-func (u *UniqueSubLocalities) Add(subLocality *v1alpha2.SubLocality) {
+func (u *UniqueSubLocalities) Add(subLocality *discoveryv1.SubLocality) {
 	if u.subLocalities == nil {
-		u.subLocalities = map[string]map[string]*v1alpha2.SubLocality{}
+		u.subLocalities = map[string]map[string]*discoveryv1.SubLocality{}
 	}
 
 	// We do not care to add sub localities with empty zones to the list.
@@ -51,16 +51,16 @@ func (u *UniqueSubLocalities) Add(subLocality *v1alpha2.SubLocality) {
 		// Add the new sublocality in the existing zone
 		zone[subLocality.GetSubZone()] = subLocality
 	} else {
-		u.subLocalities[subLocality.GetZone()] = map[string]*v1alpha2.SubLocality{
+		u.subLocalities[subLocality.GetZone()] = map[string]*discoveryv1.SubLocality{
 			subLocality.GetSubZone(): subLocality,
 		}
 	}
 
 }
 
-func (u *UniqueSubLocalities) List() []*v1alpha2.SubLocality {
+func (u *UniqueSubLocalities) List() []*discoveryv1.SubLocality {
 
-	var result []*v1alpha2.SubLocality
+	var result []*discoveryv1.SubLocality
 
 	for _, byZone := range u.subLocalities {
 		for _, bySubZone := range byZone {
@@ -74,7 +74,7 @@ func (u *UniqueSubLocalities) List() []*v1alpha2.SubLocality {
 func GetUniqueClusterSubLocalities(
 	clusterName string,
 	nodes corev1sets.NodeSet,
-) ([]*v1alpha2.SubLocality, error) {
+) ([]*discoveryv1.SubLocality, error) {
 
 	// Map to ensure uniqueness of sub_localities being added to
 	localities := &UniqueSubLocalities{}
@@ -110,7 +110,7 @@ func GetServiceRegion(service *corev1.Service, pods corev1sets.PodSet, nodes cor
 	// pick any pod; all of the pods' nodes should be in the same region
 	pod := matchingPods[0]
 	// get the node that the pod is running on
-	node, err := nodes.Find(&skv1.ClusterObjectRef{
+	node, err := nodes.Find(&skv2corev1.ClusterObjectRef{
 		ClusterName: pod.ClusterName,
 		Name:        pod.Spec.NodeName,
 	})
@@ -126,8 +126,8 @@ func GetSubLocality(
 	clusterName string,
 	nodeName string,
 	nodes corev1sets.NodeSet,
-) (*v1alpha2.SubLocality, error) {
-	node, err := nodes.Find(&skv1.ClusterObjectRef{
+) (*discoveryv1.SubLocality, error) {
+	node, err := nodes.Find(&skv2corev1.ClusterObjectRef{
 		ClusterName: clusterName,
 		Name:        nodeName,
 	})
@@ -140,7 +140,7 @@ func GetSubLocality(
 
 func getSubLocality(
 	node *corev1.Node,
-) (*v1alpha2.SubLocality, error) {
+) (*discoveryv1.SubLocality, error) {
 
 	// get the zone labels from the node. check both the stable and deprecated labels
 	var zone string
@@ -152,7 +152,7 @@ func getSubLocality(
 		return nil, eris.Errorf("failed to find zone label on node %s", node.GetName())
 	}
 
-	subLocality := &v1alpha2.SubLocality{
+	subLocality := &discoveryv1.SubLocality{
 		Zone: zone,
 	}
 

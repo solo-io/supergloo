@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2"
+	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	istio "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 )
 
@@ -36,7 +36,7 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(mesh *v1alpha2.Mesh, virtualMesh *v1alpha2.MeshStatus_AppliedVirtualMesh, outputs istio.Builder) {
+func (m *MockTranslator) Translate(mesh *v1.Mesh, virtualMesh *v1.MeshStatus_AppliedVirtualMesh, outputs istio.Builder) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Translate", mesh, virtualMesh, outputs)
 }

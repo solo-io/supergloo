@@ -1,0 +1,141 @@
+syntax = "proto3";
+package rbac.enterprise.mesh.gloo.solo.io;
+
+option go_package = "github.com/solo-io/gloo-mesh/pkg/api/rbac.enterprise.mesh.gloo.solo.io/v1";
+
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
+import "github.com/solo-io/gloo-mesh/api/enterprise/networking/v1beta1/virtual_destination.proto";
+
+/*
+    A role represents a set of permissions for creating, updating, and deleting Gloo Mesh configuration objects.
+    A role consists of a set of scopes for each policy type. Depending on the policy type,
+    the permission granularity is defined at the field level or at the object level.
+*/
+message RoleSpec {
+
+    // A set of TrafficPolicy configuration permissions. Permission granularity is defined at the field level.
+    repeated TrafficPolicyScope traffic_policy_scopes = 1;
+
+    // A set of VirtualMesh configuration permissions. Permission granularity is defined at the field level.
+    repeated VirtualMeshScope virtual_mesh_scopes = 2;
+
+    // A set of AccessPolicy configuration permissions. Permission granularity is defined at the object level.
+    repeated AccessPolicyScope access_policy_scopes = 3;
+
+    // A set of VirtualDestination configuration permissions. Permission granularity is defined at the object level.
+    repeated VirtualDestinationScope virtual_destination_scopes = 4;
+
+    // A set of WasmDeployment configuration permissions. Permission granularity is defined at the object level.
+    repeated WasmDeploymentScope wasm_deployment_scopes = 5;
+
+    // A set of AccessLogRecord configuration permissions. Permission granularity is defined at the object level.
+    repeated AccessLogRecordScope access_log_record_scopes = 6;
+
+    // Represents permissions for configuring TrafficPolicies.
+    message TrafficPolicyScope {
+
+        // A list of permitted TrafficPolicy configuration actions.
+        repeated TrafficPolicyActions traffic_policy_actions = 1;
+
+        // A list of permitted Destination selectors.
+        repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selectors = 2;
+
+        // A list of permitted Workload selectors.
+        repeated .common.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 3;
+
+        // Enums representing fields on the TrafficPolicy CRD.
+        enum TrafficPolicyActions {
+            UNKNOWN_TRAFFIC_POLICY_ACTION = 0;
+            ALL = 1;
+            TRAFFIC_SHIFT = 2;
+            FAULT_INJECTION = 3;
+            REQUEST_TIMEOUT = 4;
+            RETRIES = 5;
+            CORS_POLICY = 6;
+            MIRROR = 7;
+            HEADER_MANIPULATION = 8;
+            OUTLIER_DETECTION = 9;
+            MTLS_CONFIG = 10;
+        }
+    }
+
+    // Represents permissions for configuring VirtualMeshes.
+    message VirtualMeshScope {
+
+        // A list of permitted VirtualMesh configuration actions.
+        repeated VirtualMeshActions virtual_mesh_actions = 1;
+
+        // A list of permitted mesh references.
+        repeated .core.skv2.solo.io.ObjectRef mesh_refs = 2;
+
+        // Enums representing fields on the VirtualMesh CRD.
+        enum VirtualMeshActions {
+            UNKNOWN_VIRTUAL_MESH_ACTION = 0;
+            ALL = 1;
+            MTLS_CONFIG = 2;
+            FEDERATION = 3;
+            GLOBAL_ACCESS_POLICY = 4;
+        }
+    }
+
+    // Represents permissions for configuring AccessPolicies.
+    message AccessPolicyScope {
+
+        // A list of permitted identity selectors.
+        repeated .common.mesh.gloo.solo.io.IdentitySelector identity_selectors = 1;
+
+        // A list of permitted Destination selectors.
+        repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selectors = 2;
+    }
+
+    // Represents permissions for configuring VirtualDestinations.
+    message VirtualDestinationScope {
+
+        // A list of permitted virtual mesh references.
+        repeated .core.skv2.solo.io.ObjectRef virtual_mesh_refs = 1;
+
+        // A list of permitted mesh references.
+        repeated .core.skv2.solo.io.ObjectRef mesh_refs = 2;
+
+        // A list of permitted backing service selectors.
+        repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selectors = 3;
+
+        // A list of permitted backing Destinations.
+        repeated .networking.enterprise.mesh.gloo.solo.io.BackingDestination destinations = 4;
+    }
+
+    // Represents permissions for configuring WasmDeployments.
+    message WasmDeploymentScope {
+
+        // A list of permitted Workload selectors.
+        repeated .common.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 1;
+    }
+
+    // Represents permissions for configuring AccessLogRecords.
+    message AccessLogRecordScope {
+
+        // A list of permitted Workload selectors.
+        repeated .common.mesh.gloo.solo.io.WorkloadSelector workload_selectors = 1;
+    }
+}
+
+message RoleStatus {
+
+    // The observed generation of the Role.
+    // When this matches the Role's `metadata.generation` it indicates that Gloo Mesh
+    // has processed the latest version of the Role.
+    int64 observed_generation = 1;
+}
+
+message RoleBindingSpec {
+
+    // Specify by reference the Kubernetes Users or Groups the Role should apply to.
+    repeated core.skv2.solo.io.TypedObjectRef subjects = 1;
+
+    // Specify by reference the Gloo Mesh Role to bind.
+    core.skv2.solo.io.ObjectRef role_ref = 2;
+}
+
+message RoleBindingStatus {
+}

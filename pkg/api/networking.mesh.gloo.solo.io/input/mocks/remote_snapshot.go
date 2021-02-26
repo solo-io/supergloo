@@ -11,9 +11,9 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	v1beta1sets "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/sets"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	v1alpha1sets "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1alpha1/sets"
+	v1beta1sets0 "github.com/solo-io/gloo-mesh/pkg/api/xds.agent.enterprise.mesh.gloo.solo.io/v1beta1/sets"
 	multicluster "github.com/solo-io/skv2/pkg/multicluster"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -42,10 +42,10 @@ func (m *MockRemoteSnapshot) EXPECT() *MockRemoteSnapshotMockRecorder {
 }
 
 // IssuedCertificates mocks base method
-func (m *MockRemoteSnapshot) IssuedCertificates() v1alpha2sets.IssuedCertificateSet {
+func (m *MockRemoteSnapshot) IssuedCertificates() v1sets.IssuedCertificateSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IssuedCertificates")
-	ret0, _ := ret[0].(v1alpha2sets.IssuedCertificateSet)
+	ret0, _ := ret[0].(v1sets.IssuedCertificateSet)
 	return ret0
 }
 
@@ -56,10 +56,10 @@ func (mr *MockRemoteSnapshotMockRecorder) IssuedCertificates() *gomock.Call {
 }
 
 // PodBounceDirectives mocks base method
-func (m *MockRemoteSnapshot) PodBounceDirectives() v1alpha2sets.PodBounceDirectiveSet {
+func (m *MockRemoteSnapshot) PodBounceDirectives() v1sets.PodBounceDirectiveSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PodBounceDirectives")
-	ret0, _ := ret[0].(v1alpha2sets.PodBounceDirectiveSet)
+	ret0, _ := ret[0].(v1sets.PodBounceDirectiveSet)
 	return ret0
 }
 
@@ -70,10 +70,10 @@ func (mr *MockRemoteSnapshotMockRecorder) PodBounceDirectives() *gomock.Call {
 }
 
 // XdsConfigs mocks base method
-func (m *MockRemoteSnapshot) XdsConfigs() v1alpha1sets.XdsConfigSet {
+func (m *MockRemoteSnapshot) XdsConfigs() v1beta1sets0.XdsConfigSet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "XdsConfigs")
-	ret0, _ := ret[0].(v1alpha1sets.XdsConfigSet)
+	ret0, _ := ret[0].(v1beta1sets0.XdsConfigSet)
 	return ret0
 }
 

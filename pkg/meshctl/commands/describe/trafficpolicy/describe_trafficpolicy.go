@@ -7,7 +7,8 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
-	networkingv1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1alpha2"
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/describe/printing"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
@@ -53,7 +54,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 }
 
 func describeTrafficPolicies(ctx context.Context, c client.Client, searchTerms []string) (string, error) {
-	trafficPolicyClient := networkingv1alpha2.NewTrafficPolicyClient(c)
+	trafficPolicyClient := networkingv1.NewTrafficPolicyClient(c)
 	trafficPolicyList, err := trafficPolicyClient.ListTrafficPolicy(ctx)
 	if err != nil {
 		return "", err
@@ -85,7 +86,7 @@ func describeTrafficPolicies(ctx context.Context, c client.Client, searchTerms [
 	return buf.String(), nil
 }
 
-func formattedWorkloadSelectors(sels []*networkingv1alpha2.WorkloadSelector) string {
+func formattedWorkloadSelectors(sels []*commonv1.WorkloadSelector) string {
 	if len(sels) < 1 {
 		return ""
 	}
@@ -104,7 +105,7 @@ func formattedWorkloadSelectors(sels []*networkingv1alpha2.WorkloadSelector) str
 	return s.String()
 }
 
-func formattedHttpMatchers(sels []*networkingv1alpha2.TrafficPolicySpec_HttpMatcher) string {
+func formattedHttpMatchers(sels []*networkingv1.TrafficPolicySpec_HttpMatcher) string {
 	if len(sels) < 1 {
 		return ""
 	}
@@ -113,7 +114,7 @@ func formattedHttpMatchers(sels []*networkingv1alpha2.TrafficPolicySpec_HttpMatc
 		s.WriteString(printing.FormattedField("Prefix", matcher.GetPrefix()))
 		s.WriteString(printing.FormattedField("Exact", matcher.GetExact()))
 		s.WriteString(printing.FormattedField("Regex", matcher.GetRegex()))
-		s.WriteString(printing.FormattedField("Method", matcher.GetMethod().Method.String()))
+		s.WriteString(printing.FormattedField("Method", matcher.GetMethod()))
 		s.WriteString("HEADERS\n")
 		for _, header := range matcher.GetHeaders() {
 			val := header.Value
@@ -139,12 +140,12 @@ func formattedHttpMatchers(sels []*networkingv1alpha2.TrafficPolicySpec_HttpMatc
 
 type trafficPolicyDescription struct {
 	Metadata            *v1.ClusterObjectRef
-	SourceWorkloads     []*networkingv1alpha2.WorkloadSelector
+	SourceWorkloads     []*commonv1.WorkloadSelector
 	DestinationServices []*v1.ClusterObjectRef
-	HttpMatchers        []*networkingv1alpha2.TrafficPolicySpec_HttpMatcher
+	HttpMatchers        []*networkingv1.TrafficPolicySpec_HttpMatcher
 }
 
-func matchTrafficPolicy(trafficPolicy networkingv1alpha2.TrafficPolicy, searchTerms []string) bool {
+func matchTrafficPolicy(trafficPolicy networkingv1.TrafficPolicy, searchTerms []string) bool {
 	// do not apply matching when there are no search strings
 	if len(searchTerms) == 0 {
 		return true
@@ -159,7 +160,7 @@ func matchTrafficPolicy(trafficPolicy networkingv1alpha2.TrafficPolicy, searchTe
 	return false
 }
 
-func describeTrafficPolicy(trafficPolicy *networkingv1alpha2.TrafficPolicy) trafficPolicyDescription {
+func describeTrafficPolicy(trafficPolicy *networkingv1.TrafficPolicy) trafficPolicyDescription {
 	trafficPolicyMeta := getTrafficPolicyMetadata(trafficPolicy)
 
 	var destinationServices []*v1.ClusterObjectRef
@@ -177,7 +178,7 @@ func describeTrafficPolicy(trafficPolicy *networkingv1alpha2.TrafficPolicy) traf
 	}
 }
 
-func getTrafficPolicyMetadata(trafficPolicy *networkingv1alpha2.TrafficPolicy) v1.ClusterObjectRef {
+func getTrafficPolicyMetadata(trafficPolicy *networkingv1.TrafficPolicy) v1.ClusterObjectRef {
 	return v1.ClusterObjectRef{
 		Name:        trafficPolicy.Name,
 		Namespace:   trafficPolicy.Namespace,

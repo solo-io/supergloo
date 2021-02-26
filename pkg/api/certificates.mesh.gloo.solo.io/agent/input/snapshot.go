@@ -34,9 +34,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	certificates_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
-	certificates_mesh_gloo_solo_io_v1alpha2_types "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
-	certificates_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
+	certificates_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificates_mesh_gloo_solo_io_v1_types "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificates_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	v1_sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
@@ -48,17 +48,17 @@ var SnapshotGVKs = []schema.GroupVersionKind{
 
 	schema.GroupVersionKind{
 		Group:   "certificates.mesh.gloo.solo.io",
-		Version: "v1alpha2",
+		Version: "v1",
 		Kind:    "IssuedCertificate",
 	},
 	schema.GroupVersionKind{
 		Group:   "certificates.mesh.gloo.solo.io",
-		Version: "v1alpha2",
+		Version: "v1",
 		Kind:    "CertificateRequest",
 	},
 	schema.GroupVersionKind{
 		Group:   "certificates.mesh.gloo.solo.io",
-		Version: "v1alpha2",
+		Version: "v1",
 		Kind:    "PodBounceDirective",
 	},
 
@@ -83,11 +83,11 @@ var SnapshotGVKs = []schema.GroupVersionKind{
 type Snapshot interface {
 
 	// return the set of input IssuedCertificates
-	IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
+	IssuedCertificates() certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet
 	// return the set of input CertificateRequests
-	CertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
+	CertificateRequests() certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet
 	// return the set of input PodBounceDirectives
-	PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+	PodBounceDirectives() certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet
 
 	// return the set of input Secrets
 	Secrets() v1_sets.SecretSet
@@ -126,9 +126,9 @@ type SyncStatusOptions struct {
 type snapshot struct {
 	name string
 
-	issuedCertificates  certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
-	certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
-	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet
+	issuedCertificates  certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet
+	certificateRequests certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet
+	podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet
 
 	secrets    v1_sets.SecretSet
 	configMaps v1_sets.ConfigMapSet
@@ -138,9 +138,9 @@ type snapshot struct {
 func NewSnapshot(
 	name string,
 
-	issuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet,
-	certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet,
-	podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet,
+	issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet,
+	certificateRequests certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet,
+	podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet,
 
 	secrets v1_sets.SecretSet,
 	configMaps v1_sets.ConfigMapSet,
@@ -164,9 +164,9 @@ func NewSnapshotFromGeneric(
 	genericSnapshot resource.ClusterSnapshot,
 ) Snapshot {
 
-	issuedCertificateSet := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
-	certificateRequestSet := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
-	podBounceDirectiveSet := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+	issuedCertificateSet := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
+	certificateRequestSet := certificates_mesh_gloo_solo_io_v1_sets.NewCertificateRequestSet()
+	podBounceDirectiveSet := certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
 
 	secretSet := v1_sets.NewSecretSet()
 	configMapSet := v1_sets.NewConfigMapSet()
@@ -176,30 +176,30 @@ func NewSnapshotFromGeneric(
 
 		issuedCertificates := snapshot[schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "IssuedCertificate",
 		}]
 
 		for _, issuedCertificate := range issuedCertificates {
-			issuedCertificateSet.Insert(issuedCertificate.(*certificates_mesh_gloo_solo_io_v1alpha2_types.IssuedCertificate))
+			issuedCertificateSet.Insert(issuedCertificate.(*certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate))
 		}
 		certificateRequests := snapshot[schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "CertificateRequest",
 		}]
 
 		for _, certificateRequest := range certificateRequests {
-			certificateRequestSet.Insert(certificateRequest.(*certificates_mesh_gloo_solo_io_v1alpha2_types.CertificateRequest))
+			certificateRequestSet.Insert(certificateRequest.(*certificates_mesh_gloo_solo_io_v1_types.CertificateRequest))
 		}
 		podBounceDirectives := snapshot[schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "PodBounceDirective",
 		}]
 
 		for _, podBounceDirective := range podBounceDirectives {
-			podBounceDirectiveSet.Insert(podBounceDirective.(*certificates_mesh_gloo_solo_io_v1alpha2_types.PodBounceDirective))
+			podBounceDirectiveSet.Insert(podBounceDirective.(*certificates_mesh_gloo_solo_io_v1_types.PodBounceDirective))
 		}
 
 		secrets := snapshot[schema.GroupVersionKind{
@@ -242,15 +242,15 @@ func NewSnapshotFromGeneric(
 	)
 }
 
-func (s snapshot) IssuedCertificates() certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet {
+func (s snapshot) IssuedCertificates() certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet {
 	return s.issuedCertificates
 }
 
-func (s snapshot) CertificateRequests() certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet {
+func (s snapshot) CertificateRequests() certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet {
 	return s.certificateRequests
 }
 
-func (s snapshot) PodBounceDirectives() certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet {
+func (s snapshot) PodBounceDirectives() certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet {
 	return s.podBounceDirectives
 }
 
@@ -401,9 +401,9 @@ func NewMultiClusterBuilder(
 
 func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
-	issuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
-	certificateRequests := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
-	podBounceDirectives := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+	issuedCertificates := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
+	certificateRequests := certificates_mesh_gloo_solo_io_v1_sets.NewCertificateRequestSet()
+	podBounceDirectives := certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
 
 	secrets := v1_sets.NewSecretSet()
 	configMaps := v1_sets.NewConfigMapSet()
@@ -448,8 +448,8 @@ func (b *multiClusterBuilder) BuildSnapshot(ctx context.Context, name string, op
 	return outputSnap, errs
 }
 
-func (b *multiClusterBuilder) insertIssuedCertificatesFromCluster(ctx context.Context, cluster string, issuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ResourceBuildOptions) error {
-	issuedCertificateClient, err := certificates_mesh_gloo_solo_io_v1alpha2.NewMulticlusterIssuedCertificateClient(b.client).Cluster(cluster)
+func (b *multiClusterBuilder) insertIssuedCertificatesFromCluster(ctx context.Context, cluster string, issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet, opts ResourceBuildOptions) error {
+	issuedCertificateClient, err := certificates_mesh_gloo_solo_io_v1.NewMulticlusterIssuedCertificateClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -462,7 +462,7 @@ func (b *multiClusterBuilder) insertIssuedCertificatesFromCluster(ctx context.Co
 
 		gvk := schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "IssuedCertificate",
 		}
 
@@ -490,8 +490,8 @@ func (b *multiClusterBuilder) insertIssuedCertificatesFromCluster(ctx context.Co
 
 	return nil
 }
-func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.Context, cluster string, certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet, opts ResourceBuildOptions) error {
-	certificateRequestClient, err := certificates_mesh_gloo_solo_io_v1alpha2.NewMulticlusterCertificateRequestClient(b.client).Cluster(cluster)
+func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.Context, cluster string, certificateRequests certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet, opts ResourceBuildOptions) error {
+	certificateRequestClient, err := certificates_mesh_gloo_solo_io_v1.NewMulticlusterCertificateRequestClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -504,7 +504,7 @@ func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.C
 
 		gvk := schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "CertificateRequest",
 		}
 
@@ -532,8 +532,8 @@ func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.C
 
 	return nil
 }
-func (b *multiClusterBuilder) insertPodBounceDirectivesFromCluster(ctx context.Context, cluster string, podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet, opts ResourceBuildOptions) error {
-	podBounceDirectiveClient, err := certificates_mesh_gloo_solo_io_v1alpha2.NewMulticlusterPodBounceDirectiveClient(b.client).Cluster(cluster)
+func (b *multiClusterBuilder) insertPodBounceDirectivesFromCluster(ctx context.Context, cluster string, podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet, opts ResourceBuildOptions) error {
+	podBounceDirectiveClient, err := certificates_mesh_gloo_solo_io_v1.NewMulticlusterPodBounceDirectiveClient(b.client).Cluster(cluster)
 	if err != nil {
 		return err
 	}
@@ -546,7 +546,7 @@ func (b *multiClusterBuilder) insertPodBounceDirectivesFromCluster(ctx context.C
 
 		gvk := schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "PodBounceDirective",
 		}
 
@@ -729,9 +729,9 @@ func NewSingleClusterBuilderWithClusterName(
 
 func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, opts BuildOptions) (Snapshot, error) {
 
-	issuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
-	certificateRequests := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
-	podBounceDirectives := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+	issuedCertificates := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
+	certificateRequests := certificates_mesh_gloo_solo_io_v1_sets.NewCertificateRequestSet()
+	podBounceDirectives := certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
 
 	secrets := v1_sets.NewSecretSet()
 	configMaps := v1_sets.NewConfigMapSet()
@@ -772,12 +772,12 @@ func (b *singleClusterBuilder) BuildSnapshot(ctx context.Context, name string, o
 	return outputSnap, errs
 }
 
-func (b *singleClusterBuilder) insertIssuedCertificates(ctx context.Context, issuedCertificates certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet, opts ResourceBuildOptions) error {
+func (b *singleClusterBuilder) insertIssuedCertificates(ctx context.Context, issuedCertificates certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet, opts ResourceBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "IssuedCertificate",
 		}
 
@@ -792,7 +792,7 @@ func (b *singleClusterBuilder) insertIssuedCertificates(ctx context.Context, iss
 		}
 	}
 
-	issuedCertificateList, err := certificates_mesh_gloo_solo_io_v1alpha2.NewIssuedCertificateClient(b.mgr.GetClient()).ListIssuedCertificate(ctx, opts.ListOptions...)
+	issuedCertificateList, err := certificates_mesh_gloo_solo_io_v1.NewIssuedCertificateClient(b.mgr.GetClient()).ListIssuedCertificate(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -805,12 +805,12 @@ func (b *singleClusterBuilder) insertIssuedCertificates(ctx context.Context, iss
 
 	return nil
 }
-func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet, opts ResourceBuildOptions) error {
+func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, certificateRequests certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet, opts ResourceBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "CertificateRequest",
 		}
 
@@ -825,7 +825,7 @@ func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, ce
 		}
 	}
 
-	certificateRequestList, err := certificates_mesh_gloo_solo_io_v1alpha2.NewCertificateRequestClient(b.mgr.GetClient()).ListCertificateRequest(ctx, opts.ListOptions...)
+	certificateRequestList, err := certificates_mesh_gloo_solo_io_v1.NewCertificateRequestClient(b.mgr.GetClient()).ListCertificateRequest(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -838,12 +838,12 @@ func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, ce
 
 	return nil
 }
-func (b *singleClusterBuilder) insertPodBounceDirectives(ctx context.Context, podBounceDirectives certificates_mesh_gloo_solo_io_v1alpha2_sets.PodBounceDirectiveSet, opts ResourceBuildOptions) error {
+func (b *singleClusterBuilder) insertPodBounceDirectives(ctx context.Context, podBounceDirectives certificates_mesh_gloo_solo_io_v1_sets.PodBounceDirectiveSet, opts ResourceBuildOptions) error {
 
 	if opts.Verifier != nil {
 		gvk := schema.GroupVersionKind{
 			Group:   "certificates.mesh.gloo.solo.io",
-			Version: "v1alpha2",
+			Version: "v1",
 			Kind:    "PodBounceDirective",
 		}
 
@@ -858,7 +858,7 @@ func (b *singleClusterBuilder) insertPodBounceDirectives(ctx context.Context, po
 		}
 	}
 
-	podBounceDirectiveList, err := certificates_mesh_gloo_solo_io_v1alpha2.NewPodBounceDirectiveClient(b.mgr.GetClient()).ListPodBounceDirective(ctx, opts.ListOptions...)
+	podBounceDirectiveList, err := certificates_mesh_gloo_solo_io_v1.NewPodBounceDirectiveClient(b.mgr.GetClient()).ListPodBounceDirective(ctx, opts.ListOptions...)
 	if err != nil {
 		return err
 	}
@@ -992,9 +992,9 @@ func (i *inMemoryBuilder) BuildSnapshot(ctx context.Context, name string, opts B
 		return nil, err
 	}
 
-	issuedCertificates := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet()
-	certificateRequests := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet()
-	podBounceDirectives := certificates_mesh_gloo_solo_io_v1alpha2_sets.NewPodBounceDirectiveSet()
+	issuedCertificates := certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet()
+	certificateRequests := certificates_mesh_gloo_solo_io_v1_sets.NewCertificateRequestSet()
+	podBounceDirectives := certificates_mesh_gloo_solo_io_v1_sets.NewPodBounceDirectiveSet()
 
 	secrets := v1_sets.NewSecretSet()
 	configMaps := v1_sets.NewConfigMapSet()
@@ -1003,13 +1003,13 @@ func (i *inMemoryBuilder) BuildSnapshot(ctx context.Context, name string, opts B
 	genericSnap.ForEachObject(func(cluster string, gvk schema.GroupVersionKind, obj resource.TypedObject) {
 		switch obj := obj.(type) {
 		// insert IssuedCertificates
-		case *certificates_mesh_gloo_solo_io_v1alpha2_types.IssuedCertificate:
+		case *certificates_mesh_gloo_solo_io_v1_types.IssuedCertificate:
 			issuedCertificates.Insert(obj)
 		// insert CertificateRequests
-		case *certificates_mesh_gloo_solo_io_v1alpha2_types.CertificateRequest:
+		case *certificates_mesh_gloo_solo_io_v1_types.CertificateRequest:
 			certificateRequests.Insert(obj)
 		// insert PodBounceDirectives
-		case *certificates_mesh_gloo_solo_io_v1alpha2_types.PodBounceDirective:
+		case *certificates_mesh_gloo_solo_io_v1_types.PodBounceDirective:
 			podBounceDirectives.Insert(obj)
 		// insert Secrets
 		case *v1_types.Secret:

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	appsv1sets "github.com/solo-io/external-apis/pkg/api/k8s/apps/v1/sets"
-	v1alpha2sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1alpha2/sets"
+	v1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/detector"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/workload/types"
 	"github.com/solo-io/go-utils/contextutils"
@@ -15,7 +15,7 @@ import (
 
 // the mesh-workload translator converts deployments with injected sidecars into Workload CRs
 type Translator interface {
-	TranslateWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet, meshes v1alpha2sets.MeshSet) v1alpha2sets.WorkloadSet
+	TranslateWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet, meshes v1sets.MeshSet) v1sets.WorkloadSet
 }
 
 type translator struct {
@@ -27,7 +27,7 @@ func NewTranslator(ctx context.Context, workloadDetector detector.WorkloadDetect
 	return &translator{ctx: ctx, workloadDetector: workloadDetector}
 }
 
-func (t *translator) TranslateWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet, meshes v1alpha2sets.MeshSet) v1alpha2sets.WorkloadSet {
+func (t *translator) TranslateWorkloads(deployments appsv1sets.DeploymentSet, daemonSets appsv1sets.DaemonSetSet, statefulSets appsv1sets.StatefulSetSet, meshes v1sets.MeshSet) v1sets.WorkloadSet {
 	var workloads []types.Workload
 	for _, deployment := range deployments.List() {
 		workloads = append(workloads, types.ToWorkload(deployment))
@@ -39,7 +39,7 @@ func (t *translator) TranslateWorkloads(deployments appsv1sets.DeploymentSet, da
 		workloads = append(workloads, types.ToWorkload(statefulSet))
 	}
 
-	workloadSet := v1alpha2sets.NewWorkloadSet()
+	workloadSet := v1sets.NewWorkloadSet()
 
 	for _, workload := range workloads {
 		workload := t.workloadDetector.DetectWorkload(workload, meshes)

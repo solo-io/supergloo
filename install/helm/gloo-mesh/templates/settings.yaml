@@ -2,7 +2,7 @@
 {{- $settings := $.Values.settings}}
 
 kind: Settings
-apiVersion: settings.mesh.gloo.solo.io/v1alpha2
+apiVersion: settings.mesh.gloo.solo.io/v1
 metadata:
   name: settings
   namespace: {{ $.Release.Namespace }}

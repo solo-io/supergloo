@@ -6,23 +6,23 @@
 package input
 
 import (
-	certificates_mesh_gloo_solo_io_v1alpha2 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2"
-	certificates_mesh_gloo_solo_io_v1alpha2_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1alpha2/sets"
+	certificates_mesh_gloo_solo_io_v1 "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1"
+	certificates_mesh_gloo_solo_io_v1_sets "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/v1/sets"
 )
 
 type InputSnapshotManualBuilder struct {
 	name string
 
-	issuedCertificates  certificates_mesh_gloo_solo_io_v1alpha2_sets.IssuedCertificateSet
-	certificateRequests certificates_mesh_gloo_solo_io_v1alpha2_sets.CertificateRequestSet
+	issuedCertificates  certificates_mesh_gloo_solo_io_v1_sets.IssuedCertificateSet
+	certificateRequests certificates_mesh_gloo_solo_io_v1_sets.CertificateRequestSet
 }
 
 func NewInputSnapshotManualBuilder(name string) *InputSnapshotManualBuilder {
 	return &InputSnapshotManualBuilder{
 		name: name,
 
-		issuedCertificates:  certificates_mesh_gloo_solo_io_v1alpha2_sets.NewIssuedCertificateSet(),
-		certificateRequests: certificates_mesh_gloo_solo_io_v1alpha2_sets.NewCertificateRequestSet(),
+		issuedCertificates:  certificates_mesh_gloo_solo_io_v1_sets.NewIssuedCertificateSet(),
+		certificateRequests: certificates_mesh_gloo_solo_io_v1_sets.NewCertificateRequestSet(),
 	}
 }
 
@@ -34,11 +34,11 @@ func (i *InputSnapshotManualBuilder) Build() Snapshot {
 		i.certificateRequests,
 	)
 }
-func (i *InputSnapshotManualBuilder) AddIssuedCertificates(issuedCertificates []*certificates_mesh_gloo_solo_io_v1alpha2.IssuedCertificate) *InputSnapshotManualBuilder {
+func (i *InputSnapshotManualBuilder) AddIssuedCertificates(issuedCertificates []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) *InputSnapshotManualBuilder {
 	i.issuedCertificates.Insert(issuedCertificates...)
 	return i
 }
-func (i *InputSnapshotManualBuilder) AddCertificateRequests(certificateRequests []*certificates_mesh_gloo_solo_io_v1alpha2.CertificateRequest) *InputSnapshotManualBuilder {
+func (i *InputSnapshotManualBuilder) AddCertificateRequests(certificateRequests []*certificates_mesh_gloo_solo_io_v1.CertificateRequest) *InputSnapshotManualBuilder {
 	i.certificateRequests.Insert(certificateRequests...)
 	return i
 }
