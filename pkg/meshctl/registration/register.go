@@ -57,8 +57,7 @@ func (m *RegistrantOptions) ConstructClientConfigs() (mgmtKubeCfg, remoteKubeCfg
 
 type Registrant struct {
 	// Optionally set a version manually
-	VersionOverride string
-
+	VersionOverride   string
 	opts              RegistrantOptions
 	agentReleaseName  string
 	agentChartPathTpl string // Will replace single %s with version
@@ -181,7 +180,6 @@ func (r *Registrant) getGlooMeshVersion(ctx context.Context) (string, error) {
 			}
 		}
 	}
-
 	return "", eris.New("unable to find Gloo Mesh deployment in management cluster")
 }
 

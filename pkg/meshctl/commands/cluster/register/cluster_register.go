@@ -7,8 +7,10 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
+	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command {
@@ -115,7 +117,23 @@ func enterpriseCommand(ctx context.Context, regOpts *options) *cobra.Command {
 				return err
 			}
 
-			return registrant.RegisterCluster(ctx)
+			if err := registrant.RegisterCluster(ctx); err != nil {
+				return err
+			}
+			kubeClient, err := utils.BuildClient(opts.KubeConfigPath, opts.MgmtContext)
+			if err != nil {
+				return err
+			}
+			clusterClient := v1alpha1.NewKubernetesClusterClient(kubeClient)
+			return clusterClient.CreateKubernetesCluster(ctx, &v1alpha1.KubernetesCluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      opts.Registration.ClusterName,
+					Namespace: opts.Registration.Namespace,
+				},
+				Spec: v1alpha1.KubernetesClusterSpec{
+					ClusterDomain: opts.Registration.ClusterDomain,
+				},
+			})
 		},
 	}
 
