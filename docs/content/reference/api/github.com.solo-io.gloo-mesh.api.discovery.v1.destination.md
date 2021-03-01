@@ -20,8 +20,8 @@ title: "destination.proto"
 ## Table of Contents
   - [DestinationSpec](#discovery.mesh.gloo.solo.io.DestinationSpec)
   - [DestinationSpec.ExternalService](#discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService)
-  - [DestinationSpec.ExternalService.ExtEndpoint](#discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExtEndpoint)
-  - [DestinationSpec.ExternalService.ExtEndpoint.PortsEntry](#discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExtEndpoint.PortsEntry)
+  - [DestinationSpec.ExternalService.ExternalEndpoint](#discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint)
+  - [DestinationSpec.ExternalService.ExternalEndpoint.PortsEntry](#discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint.PortsEntry)
   - [DestinationSpec.ExternalService.ServicePort](#discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ServicePort)
   - [DestinationSpec.KubeService](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService)
   - [DestinationSpec.KubeService.EndpointsSubset](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset)
@@ -73,32 +73,32 @@ Describes a service external to the mesh
   | hosts | []string | repeated | The list of hosts which will resolve to this Destination for services within the Virtual Mesh. |
   | addresses | []string | repeated | The List of addresses which will resolve to this service for services within the Virtual Mesh. |
   | ports | [][discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ServicePort]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ServicePort" >}}) | repeated | The associated ports of the external service |
-  | endpoints | [][discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExtEndpoint]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExtEndpoint" >}}) | repeated | List of endpoints, to which any requests to this Destionation will be load balanced across. |
+  | endpoints | [][discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint" >}}) | repeated | List of endpoints, to which any requests to this Destionation will be load balanced across. |
   
 
 
 
 
 
-<a name="discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExtEndpoint"></a>
+<a name="discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint"></a>
 
-### DestinationSpec.ExternalService.ExtEndpoint
-ExtEndpoint represents the address/port(s) of the external service which will receive requests sent to this Destination.
+### DestinationSpec.ExternalService.ExternalEndpoint
+ExternalEndpoint represents the address/port(s) of the external service which will receive requests sent to this Destination.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| address | string |  |  |
-  | ports | [][discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExtEndpoint.PortsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExtEndpoint.PortsEntry" >}}) | repeated |  |
+| address | string |  | The address of the external service. Can be a domain or an IP. |
+  | ports | [][discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint.PortsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint.PortsEntry" >}}) | repeated | The port(s) of the external endpoint. Eg: `https: 443` |
   
 
 
 
 
 
-<a name="discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExtEndpoint.PortsEntry"></a>
+<a name="discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint.PortsEntry"></a>
 
-### DestinationSpec.ExternalService.ExtEndpoint.PortsEntry
+### DestinationSpec.ExternalService.ExternalEndpoint.PortsEntry
 
 
 
@@ -115,14 +115,14 @@ ExtEndpoint represents the address/port(s) of the external service which will re
 <a name="discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ServicePort"></a>
 
 ### DestinationSpec.ExternalService.ServicePort
-
+ServicePort describes a port accessible on this Destination
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| number | uint32 |  |  |
-  | name | string |  |  |
-  | protocol | string |  |  |
+| number | uint32 |  | The port number. Must be a valid, non-negative integer port number. |
+  | name | string |  | A label for the port, eg "http" |
+  | protocol | string |  | The protocol used in communications with this Destination MUST BE one of HTTP|HTTPS|GRPC|HTTP2|MONGO|TCP|TLS. |
   
 
 

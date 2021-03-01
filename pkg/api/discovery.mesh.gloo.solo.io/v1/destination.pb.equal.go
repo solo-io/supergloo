@@ -584,14 +584,14 @@ func (m *DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality) Equal
 }
 
 // Equal function
-func (m *DestinationSpec_ExternalService_ExtEndpoint) Equal(that interface{}) bool {
+func (m *DestinationSpec_ExternalService_ExternalEndpoint) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*DestinationSpec_ExternalService_ExtEndpoint)
+	target, ok := that.(*DestinationSpec_ExternalService_ExternalEndpoint)
 	if !ok {
-		that2, ok := that.(DestinationSpec_ExternalService_ExtEndpoint)
+		that2, ok := that.(DestinationSpec_ExternalService_ExternalEndpoint)
 		if ok {
 			target = &that2
 		} else {

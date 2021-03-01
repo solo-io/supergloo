@@ -150,6 +150,8 @@ func (t *translator) Translate(
 			t.translateKubeServiceDestination(destination, reporter, virtualMesh, in, outputs, mesh)
 		case *discoveryv1.DestinationSpec_ExternalService_:
 			// External (non-k8s) service scenario, handled by enterprise networking
+			// TODO: Might want to warn user if they have external destinations
+			// configured with OSS Gloo Mesh
 			continue
 		default:
 			// Should never happen

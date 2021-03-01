@@ -668,7 +668,7 @@ func (m *DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality) Hash(
 }
 
 // Hash function
-func (m *DestinationSpec_ExternalService_ExtEndpoint) Hash(hasher hash.Hash64) (uint64, error) {
+func (m *DestinationSpec_ExternalService_ExternalEndpoint) Hash(hasher hash.Hash64) (uint64, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -676,7 +676,7 @@ func (m *DestinationSpec_ExternalService_ExtEndpoint) Hash(hasher hash.Hash64) (
 		hasher = fnv.New64()
 	}
 	var err error
-	if _, err = hasher.Write([]byte("discovery.mesh.gloo.solo.io.github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1.DestinationSpec_ExternalService_ExtEndpoint")); err != nil {
+	if _, err = hasher.Write([]byte("discovery.mesh.gloo.solo.io.github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1.DestinationSpec_ExternalService_ExternalEndpoint")); err != nil {
 		return 0, err
 	}
 

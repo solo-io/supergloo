@@ -55,12 +55,14 @@ spec:
                   items:
                     properties:
                       address:
+                        description: The address of the external service. Can be a domain or an IP.
                         type: string
                       ports:
                         additionalProperties:
                           maximum: 4294967295
                           minimum: 0
                           type: integer
+                        description: 'The port(s) of the external endpoint. Eg: `https: 443`'
                         type: object
                     type: object
                   type: array
@@ -79,12 +81,17 @@ spec:
                   items:
                     properties:
                       name:
+                        description: A label for the port, eg "http"
                         type: string
                       number:
+                        description: The port number. Must be a valid, non-negative integer port number.
                         maximum: 4294967295
                         minimum: 0
                         type: integer
                       protocol:
+                        description: |-
+                          The protocol used in communications with this Destination
+                          MUST BE one of HTTP|HTTPS|GRPC|HTTP2|MONGO|TCP|TLS.
                         type: string
                     type: object
                   type: array

@@ -68,7 +68,7 @@ func (t *translator) isOSMDestination(
 			contextutils.LoggerFrom(ctx).Errorf("internal error: KubeService destination %v missing mesh ref", sets.Key(destination))
 		} else {
 			// Not KubeService, MeshRef not required
-			contextutils.LoggerFrom(ctx).Debugf("destination %v has no mesh ref - is not OSM destination", sets.Key(destination))
+			// TODO: Publish this as a metric in the future
 		}
 		return false
 	}
