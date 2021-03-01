@@ -113,6 +113,7 @@ message VirtualMeshSpec {
 
         // If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations,
         // rather than through an ingress gateway. This mode requires a flat network environment.
+        // This feature is exclusive to Gloo Mesh Enterprise.
         bool flat_network = 2;
 
         // Configure the suffix for hostnames of Destinations federated within this VirtualMesh.
