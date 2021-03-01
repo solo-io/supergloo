@@ -294,20 +294,6 @@ func (mr *MockBuilderMockRecorder) Clone() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockBuilder)(nil).Clone))
 }
 
-// Delta mocks base method
-func (m *MockBuilder) Delta(newSnap local.Builder) output.SnapshotDelta {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delta", newSnap)
-	ret0, _ := ret[0].(output.SnapshotDelta)
-	return ret0
-}
-
-// Delta indicates an expected call of Delta
-func (mr *MockBuilderMockRecorder) Delta(newSnap interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delta", reflect.TypeOf((*MockBuilder)(nil).Delta), newSnap)
-}
-
 // Generic mocks base method
 func (m *MockBuilder) Generic() resource.ClusterSnapshot {
 	m.ctrl.T.Helper()

@@ -782,30 +782,34 @@ spec:
                           Omit to apply to all Workloads.
                         items:
                           properties:
-                            clusters:
-                              description: |-
-                                If specified, match Kubernetes workloads if they exist in one of the specified clusters.
-                                       When used in a networking policy, omission matches any cluster.
-                                       When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
-                              items:
-                                type: string
-                              type: array
-                            labels:
-                              additionalProperties:
-                                type: string
-                              description: |-
-                                If specified, all labels must exist on Kubernetes workload.
-                                       When used in a networking policy, omission matches any labels.
-                                       When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                            kubeWorkloadMatcher:
+                              description: Match Kubernetes workloads by their labels, namespaces, and/or clusters.
+                              properties:
+                                clusters:
+                                  description: |-
+                                    If specified, match Kubernetes workloads if they exist in one of the specified clusters.
+                                               When used in a networking policy, omission matches any cluster.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+                                  items:
+                                    type: string
+                                  type: array
+                                labels:
+                                  additionalProperties:
+                                    type: string
+                                  description: |-
+                                    If specified, all labels must exist on Kubernetes workload.
+                                           When used in a networking policy, omission matches any labels.
+                                           When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                                  type: object
+                                namespaces:
+                                  description: |-
+                                    If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
+                                               When used in a networking policy, omission matches any namespace.
+                                               When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+                                  items:
+                                    type: string
+                                  type: array
                               type: object
-                            namespaces:
-                              description: |-
-                                If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
-                                       When used in a networking policy, omission matches any namespace.
-                                       When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
-                              items:
-                                type: string
-                              type: array
                           type: object
                         type: array
                     type: object
@@ -1082,22 +1086,6 @@ spec:
                         determined from the value of the [Kubernetes region topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesioregion)
                         on any Kubernetes node associated with the cluster of this mesh.
                       type: string
-                    subLocalities:
-                      description: |-
-                        List of zone and sub zone pairs for this mesh.
-                        Zone is determined from the value of the [Kubernetes zone topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone),
-                        on any Kubernetes node associated with the cluster of this mesh.
-                        Sub zones only apply to Istio meshes, [see their documentation](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
-                      items:
-                        properties:
-                          subZone:
-                            description: A subdivision of zone. Only applies to Istio-controlled Destinations, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
-                            type: string
-                          zone:
-                            description: A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
-                            type: string
-                        type: object
-                      type: array
                     version:
                       description: |-
                         The version of the Mesh that has been installed, which is determined using the image tag on the
@@ -1163,22 +1151,6 @@ spec:
                         determined from the value of the [Kubernetes region topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesioregion)
                         on any Kubernetes node associated with the cluster of this mesh.
                       type: string
-                    subLocalities:
-                      description: |-
-                        List of zone and sub zone pairs for this mesh.
-                        Zone is determined from the value of the [Kubernetes zone topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone),
-                        on any Kubernetes node associated with the cluster of this mesh.
-                        Sub zones only apply to Istio meshes, [see their documentation](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
-                      items:
-                        properties:
-                          subZone:
-                            description: A subdivision of zone. Only applies to Istio-controlled Destinations, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
-                            type: string
-                          zone:
-                            description: A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
-                            type: string
-                        type: object
-                      type: array
                     version:
                       description: |-
                         The version of the Mesh that has been installed, which is determined using the image tag on the
@@ -1223,22 +1195,6 @@ spec:
                         determined from the value of the [Kubernetes region topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesioregion)
                         on any Kubernetes node associated with the cluster of this mesh.
                       type: string
-                    subLocalities:
-                      description: |-
-                        List of zone and sub zone pairs for this mesh.
-                        Zone is determined from the value of the [Kubernetes zone topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone),
-                        on any Kubernetes node associated with the cluster of this mesh.
-                        Sub zones only apply to Istio meshes, [see their documentation](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
-                      items:
-                        properties:
-                          subZone:
-                            description: A subdivision of zone. Only applies to Istio-controlled Destinations, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
-                            type: string
-                          zone:
-                            description: A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
-                            type: string
-                        type: object
-                      type: array
                     version:
                       description: |-
                         The version of the Mesh that has been installed, which is determined using the image tag on the
@@ -1269,22 +1225,6 @@ spec:
                         determined from the value of the [Kubernetes region topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesioregion)
                         on any Kubernetes node associated with the cluster of this mesh.
                       type: string
-                    subLocalities:
-                      description: |-
-                        List of zone and sub zone pairs for this mesh.
-                        Zone is determined from the value of the [Kubernetes zone topology label](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone),
-                        on any Kubernetes node associated with the cluster of this mesh.
-                        Sub zones only apply to Istio meshes, [see their documentation](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
-                      items:
-                        properties:
-                          subZone:
-                            description: A subdivision of zone. Only applies to Istio-controlled Destinations, see [here](https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/) for more information.
-                            type: string
-                          zone:
-                            description: A subdivision of a geographical region, see [here](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone) for more information.
-                            type: string
-                        type: object
-                      type: array
                     version:
                       description: |-
                         The version of the Mesh that has been installed, which is determined using the image tag on the

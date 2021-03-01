@@ -18,7 +18,7 @@ title: "virtual_destination.proto"
 
 
 ## Table of Contents
-  - [BackingDestination](#networking.enterprise.mesh.gloo.solo.io.BackingDestination)
+  - [VirtualDestinationBackingDestination](#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationBackingDestination)
   - [VirtualDestinationSpec](#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec)
   - [VirtualDestinationSpec.BackingDestinationList](#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.BackingDestinationList)
   - [VirtualDestinationSpec.LocalityConfig](#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig)
@@ -36,10 +36,10 @@ title: "virtual_destination.proto"
 
 
 
-<a name="networking.enterprise.mesh.gloo.solo.io.BackingDestination"></a>
+<a name="networking.enterprise.mesh.gloo.solo.io.VirtualDestinationBackingDestination"></a>
 
-### BackingDestination
-A backing Destination.
+### VirtualDestinationBackingDestination
+A backing Destination. Has to be at the top level, as cue does not function well with referencing nested messages.
 
 
 | Field | Type | Label | Description |
@@ -79,7 +79,7 @@ Failover priority is determined by an explicitly provided static ordering of Des
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| destinations | [][networking.enterprise.mesh.gloo.solo.io.BackingDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.BackingDestination" >}}) | repeated | The list of Destinations backing the VirtualDestination, ordered by decreasing priority. All Destinations must be either in the same Mesh or in Meshes that are grouped under a common VirtualMesh. Required, cannot be omitted. |
+| destinations | [][networking.enterprise.mesh.gloo.solo.io.VirtualDestinationBackingDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationBackingDestination" >}}) | repeated | The list of Destinations backing the VirtualDestination, ordered by decreasing priority. All Destinations must be either in the same Mesh or in Meshes that are grouped under a common VirtualMesh. Required, cannot be omitted. |
   
 
 
@@ -96,7 +96,7 @@ Enables failover based on locality. When a client workload makes a request to th
 | ----- | ---- | ----- | ----------- |
 | destinationSelectors | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | Selectors for the Destinations backing the VirtualDestination. All Destinations must be either in the same mesh or in meshes that are grouped under a common VirtualMesh. Currently only one Destination per cluster can be selected, more than one per cluster will be considered invalid. Required, cannot be omitted. |
   | failoverDirectives | [][networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig.LocalityFailoverDirective]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.LocalityConfig.LocalityFailoverDirective" >}}) | repeated | Directives describing the locality failover behavior. |
-  | outlierDetection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection" >}}) |  | Outlier detection to determine the health of the selected Destinations. |
+  | outlierDetection | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.OutlierDetection" >}}) |  | Outlier detection to determine the health of the selected services. If not set will default to the folling: consecutiveGatewayErrors: 10 consecutive5XXErrors: 10 interval: 5s baseEjectionTime: 120s |
   
 
 
@@ -211,7 +211,7 @@ The port on which the VirtualDestination listens.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | ref | [core.skv2.solo.io.ClusterObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ClusterObjectRef" >}}) |  | Reference to the Destination object. |
-  | destination | [networking.enterprise.mesh.gloo.solo.io.BackingDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.BackingDestination" >}}) |  | The platform-specific destination that the Destination object represents. |
+  | destination | [networking.enterprise.mesh.gloo.solo.io.VirtualDestinationBackingDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationBackingDestination" >}}) |  | The platform-specific destination that the Destination object represents. |
   
 
 

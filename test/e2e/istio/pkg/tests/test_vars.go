@@ -33,30 +33,31 @@ var (
 	}
 
 	CurlReviews = func() string {
-		return curlFromProductpage("http://reviews:9080/reviews/1")
+		return CurlFromProductpage("http://reviews:9080/reviews/1")
 	}
 
 	CurlHelloServer = func() string {
-		return curlFromProductpage(fmt.Sprintf("http://%v:%v/", extensions.HelloServerHostname, extensions.HelloServerPort))
+		return CurlFromProductpage(fmt.Sprintf("http://%v:%v/", extensions.HelloServerHostname, extensions.HelloServerPort))
 	}
 
 	CurlRemoteReviews = func(federatedSuffix string) func() string {
 		return func() string {
-			return curlFromProductpage(fmt.Sprintf("http://reviews.%v.svc.%v.%s:9080/reviews/1", BookinfoNamespace, RemoteClusterName, federatedSuffix))
+			return CurlFromProductpage(fmt.Sprintf("http://reviews.%v.svc.%v.%s:9080/reviews/1", BookinfoNamespace, RemoteClusterName, federatedSuffix))
 		}
 	}
 
 	CurlRatings = func() string {
-		return curlFromProductpage("http://ratings:9080/ratings/1")
+		return CurlFromProductpage("http://ratings:9080/ratings/1")
 	}
 
 	CurlUrl = func(url string) func() string {
 		return func() string {
-			return curlFromProductpage(url)
+			return CurlFromProductpage(url)
 		}
 	}
 
-	curlFromProductpage = func(url string) string {
+	// Public to be used in enterprise
+	CurlFromProductpage = func(url string) string {
 		env := e2e.GetEnv()
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute/2)
 		defer cancel()

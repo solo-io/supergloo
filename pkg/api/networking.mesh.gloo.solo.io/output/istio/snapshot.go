@@ -1612,9 +1612,6 @@ type Builder interface {
 	// create a clone of this builder (deepcopying all resources)
 	Clone() Builder
 
-	// return the difference between the snapshot in this builder's and another
-	Delta(newSnap Builder) output.SnapshotDelta
-
 	// convert this snapshot to its generic form
 	Generic() resource.ClusterSnapshot
 }
@@ -1844,99 +1841,6 @@ func (b *builder) Clone() Builder {
 		clone.AddCluster(cluster)
 	}
 	return clone
-}
-
-func (b *builder) Delta(other Builder) output.SnapshotDelta {
-	delta := output.SnapshotDelta{}
-	if b == nil {
-		return delta
-	}
-
-	// calcualte delta between IssuedCertificates
-	issuedCertificateDelta := b.GetIssuedCertificates().Delta(other.GetIssuedCertificates())
-	issuedCertificateGvk := schema.GroupVersionKind{
-		Group:   "certificates.mesh.gloo.solo.io",
-		Version: "v1",
-		Kind:    "IssuedCertificate",
-	}
-	delta.AddInserted(issuedCertificateGvk, issuedCertificateDelta.Inserted)
-	delta.AddRemoved(issuedCertificateGvk, issuedCertificateDelta.Removed)
-	// calcualte delta between PodBounceDirectives
-	podBounceDirectiveDelta := b.GetPodBounceDirectives().Delta(other.GetPodBounceDirectives())
-	podBounceDirectiveGvk := schema.GroupVersionKind{
-		Group:   "certificates.mesh.gloo.solo.io",
-		Version: "v1",
-		Kind:    "PodBounceDirective",
-	}
-	delta.AddInserted(podBounceDirectiveGvk, podBounceDirectiveDelta.Inserted)
-	delta.AddRemoved(podBounceDirectiveGvk, podBounceDirectiveDelta.Removed)
-
-	// calcualte delta between XdsConfigs
-	xdsConfigDelta := b.GetXdsConfigs().Delta(other.GetXdsConfigs())
-	xdsConfigGvk := schema.GroupVersionKind{
-		Group:   "xds.agent.enterprise.mesh.gloo.solo.io",
-		Version: "v1beta1",
-		Kind:    "XdsConfig",
-	}
-	delta.AddInserted(xdsConfigGvk, xdsConfigDelta.Inserted)
-	delta.AddRemoved(xdsConfigGvk, xdsConfigDelta.Removed)
-
-	// calcualte delta between DestinationRules
-	destinationRuleDelta := b.GetDestinationRules().Delta(other.GetDestinationRules())
-	destinationRuleGvk := schema.GroupVersionKind{
-		Group:   "networking.istio.io",
-		Version: "v1alpha3",
-		Kind:    "DestinationRule",
-	}
-	delta.AddInserted(destinationRuleGvk, destinationRuleDelta.Inserted)
-	delta.AddRemoved(destinationRuleGvk, destinationRuleDelta.Removed)
-	// calcualte delta between EnvoyFilters
-	envoyFilterDelta := b.GetEnvoyFilters().Delta(other.GetEnvoyFilters())
-	envoyFilterGvk := schema.GroupVersionKind{
-		Group:   "networking.istio.io",
-		Version: "v1alpha3",
-		Kind:    "EnvoyFilter",
-	}
-	delta.AddInserted(envoyFilterGvk, envoyFilterDelta.Inserted)
-	delta.AddRemoved(envoyFilterGvk, envoyFilterDelta.Removed)
-	// calcualte delta between Gateways
-	gatewayDelta := b.GetGateways().Delta(other.GetGateways())
-	gatewayGvk := schema.GroupVersionKind{
-		Group:   "networking.istio.io",
-		Version: "v1alpha3",
-		Kind:    "Gateway",
-	}
-	delta.AddInserted(gatewayGvk, gatewayDelta.Inserted)
-	delta.AddRemoved(gatewayGvk, gatewayDelta.Removed)
-	// calcualte delta between ServiceEntries
-	serviceEntryDelta := b.GetServiceEntries().Delta(other.GetServiceEntries())
-	serviceEntryGvk := schema.GroupVersionKind{
-		Group:   "networking.istio.io",
-		Version: "v1alpha3",
-		Kind:    "ServiceEntry",
-	}
-	delta.AddInserted(serviceEntryGvk, serviceEntryDelta.Inserted)
-	delta.AddRemoved(serviceEntryGvk, serviceEntryDelta.Removed)
-	// calcualte delta between VirtualServices
-	virtualServiceDelta := b.GetVirtualServices().Delta(other.GetVirtualServices())
-	virtualServiceGvk := schema.GroupVersionKind{
-		Group:   "networking.istio.io",
-		Version: "v1alpha3",
-		Kind:    "VirtualService",
-	}
-	delta.AddInserted(virtualServiceGvk, virtualServiceDelta.Inserted)
-	delta.AddRemoved(virtualServiceGvk, virtualServiceDelta.Removed)
-
-	// calcualte delta between AuthorizationPolicies
-	authorizationPolicyDelta := b.GetAuthorizationPolicies().Delta(other.GetAuthorizationPolicies())
-	authorizationPolicyGvk := schema.GroupVersionKind{
-		Group:   "security.istio.io",
-		Version: "v1beta1",
-		Kind:    "AuthorizationPolicy",
-	}
-	delta.AddInserted(authorizationPolicyGvk, authorizationPolicyDelta.Inserted)
-	delta.AddRemoved(authorizationPolicyGvk, authorizationPolicyDelta.Removed)
-	return delta
 }
 
 // convert this snapshot to its generic form

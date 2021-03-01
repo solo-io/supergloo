@@ -26,7 +26,8 @@ title: "selectors.proto"
   - [IdentitySelector.KubeIdentityMatcher](#common.mesh.gloo.solo.io.IdentitySelector.KubeIdentityMatcher)
   - [IdentitySelector.KubeServiceAccountRefs](#common.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs)
   - [WorkloadSelector](#common.mesh.gloo.solo.io.WorkloadSelector)
-  - [WorkloadSelector.LabelsEntry](#common.mesh.gloo.solo.io.WorkloadSelector.LabelsEntry)
+  - [WorkloadSelector.KubeWorkloadMatcher](#common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher)
+  - [WorkloadSelector.KubeWorkloadMatcher.LabelsEntry](#common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher.LabelsEntry)
 
 
 
@@ -53,7 +54,7 @@ Select Destinations using one or more platform-specific selectors.
 <a name="common.mesh.gloo.solo.io.DestinationSelector.KubeServiceMatcher"></a>
 
 ### DestinationSelector.KubeServiceMatcher
-
+Match Kubernetes Services by their labels, namespaces, and/or clusters.
 
 
 | Field | Type | Label | Description |
@@ -86,7 +87,7 @@ Select Destinations using one or more platform-specific selectors.
 <a name="common.mesh.gloo.solo.io.DestinationSelector.KubeServiceRefs"></a>
 
 ### DestinationSelector.KubeServiceRefs
-
+Match Kubernetes Services by direct reference.
 
 
 | Field | Type | Label | Description |
@@ -153,7 +154,22 @@ Select Workloads using one or more platform-specific selectors.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| labels | [][common.mesh.gloo.solo.io.WorkloadSelector.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.WorkloadSelector.LabelsEntry" >}}) | repeated | If specified, all labels must exist on Kubernetes workload. When used in a networking policy, omission matches any labels. When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value. |
+| kubeWorkloadMatcher | [common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher" >}}) |  | Match Kubernetes workloads by their labels, namespaces, and/or clusters. |
+  
+
+
+
+
+
+<a name="common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher"></a>
+
+### WorkloadSelector.KubeWorkloadMatcher
+Match Kubernetes workloads by their labels, namespaces, and/or clusters.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| labels | [][common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher.LabelsEntry" >}}) | repeated | If specified, all labels must exist on Kubernetes workload. When used in a networking policy, omission matches any labels. When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value. |
   | namespaces | []string | repeated | If specified, match Kubernetes workloads if they exist in one of the specified namespaces. When used in a networking policy, omission matches any namespace. When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace. |
   | clusters | []string | repeated | If specified, match Kubernetes workloads if they exist in one of the specified clusters. When used in a networking policy, omission matches any cluster. When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster. |
   
@@ -162,9 +178,9 @@ Select Workloads using one or more platform-specific selectors.
 
 
 
-<a name="common.mesh.gloo.solo.io.WorkloadSelector.LabelsEntry"></a>
+<a name="common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher.LabelsEntry"></a>
 
-### WorkloadSelector.LabelsEntry
+### WorkloadSelector.KubeWorkloadMatcher.LabelsEntry
 
 
 

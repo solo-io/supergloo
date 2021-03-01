@@ -23,7 +23,7 @@ type ExtensionOpts struct {
 	CertIssuerReconciler CertIssuerReconcilerExtensionOpts
 }
 
-type MakeExtensionOpts func(parameters bootstrap.StartParameters) ExtensionOpts
+type MakeExtensionOpts func(ctx context.Context, parameters bootstrap.StartParameters) ExtensionOpts
 
 func (opts *ExtensionOpts) initDefaults(parameters bootstrap.StartParameters) {
 	opts.NetworkingReconciler.initDefaults(parameters)

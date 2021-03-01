@@ -466,23 +466,6 @@ func (m *MeshSpec_MeshInstallation) Equal(that interface{}) bool {
 		return false
 	}
 
-	if len(m.GetSubLocalities()) != len(target.GetSubLocalities()) {
-		return false
-	}
-	for idx, v := range m.GetSubLocalities() {
-
-		if h, ok := interface{}(v).(equality.Equalizer); ok {
-			if !h.Equal(target.GetSubLocalities()[idx]) {
-				return false
-			}
-		} else {
-			if !proto.Equal(v, target.GetSubLocalities()[idx]) {
-				return false
-			}
-		}
-
-	}
-
 	return true
 }
 

@@ -3,7 +3,7 @@ package localityutils
 import (
 	"github.com/rotisserie/eris"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
-	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"istio.io/api/label"
@@ -58,7 +58,7 @@ func GetSubLocality(
 	clusterName string,
 	nodeName string,
 	nodes corev1sets.NodeSet,
-) (*v1.SubLocality, error) {
+) (*discoveryv1.DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality, error) {
 	node, err := nodes.Find(&skv2corev1.ClusterObjectRef{
 		ClusterName: clusterName,
 		Name:        nodeName,
@@ -66,6 +66,13 @@ func GetSubLocality(
 	if err != nil {
 		return nil, eris.Wrapf(err, "failed to find node with name %s on cluster %s", nodeName, clusterName)
 	}
+
+	return getSubLocality(node)
+}
+
+func getSubLocality(
+	node *corev1.Node,
+) (*discoveryv1.DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality, error) {
 
 	// get the zone labels from the node. check both the stable and deprecated labels
 	var zone string
@@ -77,7 +84,7 @@ func GetSubLocality(
 		return nil, eris.Errorf("failed to find zone label on node %s", node.GetName())
 	}
 
-	subLocality := &v1.SubLocality{
+	subLocality := &discoveryv1.DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality{
 		Zone: zone,
 	}
 

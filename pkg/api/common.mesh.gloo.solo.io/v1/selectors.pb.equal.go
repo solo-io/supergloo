@@ -90,37 +90,14 @@ func (m *WorkloadSelector) Equal(that interface{}) bool {
 		return false
 	}
 
-	if len(m.GetLabels()) != len(target.GetLabels()) {
-		return false
-	}
-	for k, v := range m.GetLabels() {
-
-		if strings.Compare(v, target.GetLabels()[k]) != 0 {
+	if h, ok := interface{}(m.GetKubeWorkloadMatcher()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetKubeWorkloadMatcher()) {
 			return false
 		}
-
-	}
-
-	if len(m.GetNamespaces()) != len(target.GetNamespaces()) {
-		return false
-	}
-	for idx, v := range m.GetNamespaces() {
-
-		if strings.Compare(v, target.GetNamespaces()[idx]) != 0 {
+	} else {
+		if !proto.Equal(m.GetKubeWorkloadMatcher(), target.GetKubeWorkloadMatcher()) {
 			return false
 		}
-
-	}
-
-	if len(m.GetClusters()) != len(target.GetClusters()) {
-		return false
-	}
-	for idx, v := range m.GetClusters() {
-
-		if strings.Compare(v, target.GetClusters()[idx]) != 0 {
-			return false
-		}
-
 	}
 
 	return true
@@ -261,6 +238,63 @@ func (m *DestinationSelector_KubeServiceRefs) Equal(that interface{}) bool {
 			if !proto.Equal(v, target.GetServices()[idx]) {
 				return false
 			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
+func (m *WorkloadSelector_KubeWorkloadMatcher) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*WorkloadSelector_KubeWorkloadMatcher)
+	if !ok {
+		that2, ok := that.(WorkloadSelector_KubeWorkloadMatcher)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if len(m.GetLabels()) != len(target.GetLabels()) {
+		return false
+	}
+	for k, v := range m.GetLabels() {
+
+		if strings.Compare(v, target.GetLabels()[k]) != 0 {
+			return false
+		}
+
+	}
+
+	if len(m.GetNamespaces()) != len(target.GetNamespaces()) {
+		return false
+	}
+	for idx, v := range m.GetNamespaces() {
+
+		if strings.Compare(v, target.GetNamespaces()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	if len(m.GetClusters()) != len(target.GetClusters()) {
+		return false
+	}
+	for idx, v := range m.GetClusters() {
+
+		if strings.Compare(v, target.GetClusters()[idx]) != 0 {
+			return false
 		}
 
 	}

@@ -4,14 +4,13 @@ import (
 	"context"
 	"strings"
 
-	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
-
 	"github.com/hashicorp/go-multierror"
 	"github.com/rotisserie/eris"
 	corev1sets "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/input"
-	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
+	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/mesh/detector"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/translation/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-discovery/utils/dockerutils"
@@ -19,6 +18,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"go.uber.org/zap"
 	istiov1alpha1 "istio.io/api/mesh/v1alpha1"
 	"istio.io/istio/pkg/util/gogoprotomarshal"
 	appsv1 "k8s.io/api/apps/v1"
@@ -56,8 +56,11 @@ func NewMeshDetector(
 }
 
 // returns a mesh for each deployment that contains the istiod image
-func (d *meshDetector) DetectMeshes(in input.DiscoveryInputSnapshot, settings *settingsv1.DiscoverySettings) (v1.MeshSlice, error) {
-	var meshes v1.MeshSlice
+func (d *meshDetector) DetectMeshes(
+	in input.DiscoveryInputSnapshot,
+	settings *settingsv1.DiscoverySettings,
+) (discoveryv1.MeshSlice, error) {
+	var meshes discoveryv1.MeshSlice
 	var errs error
 	for _, deployment := range in.Deployments().List() {
 		mesh, err := d.detectMesh(deployment, in, settings)
@@ -72,7 +75,11 @@ func (d *meshDetector) DetectMeshes(in input.DiscoveryInputSnapshot, settings *s
 	return meshes, errs
 }
 
-func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.DiscoveryInputSnapshot, settings *settingsv1.DiscoverySettings) (*v1.Mesh, error) {
+func (d *meshDetector) detectMesh(
+	deployment *appsv1.Deployment,
+	in input.DiscoveryInputSnapshot,
+	settings *settingsv1.DiscoverySettings,
+) (*discoveryv1.Mesh, error) {
 	version, err := d.getIstiodVersion(deployment)
 	if err != nil {
 		return nil, err
@@ -110,14 +117,15 @@ func (d *meshDetector) detectMesh(deployment *appsv1.Deployment, in input.Discov
 
 	region, err := localityutils.GetClusterRegion(deployment.ClusterName, in.Nodes())
 	if err != nil {
-		contextutils.LoggerFrom(d.ctx).Warnf("could not get region for cluster: %s", deployment.ClusterName)
+		contextutils.LoggerFrom(d.ctx).Warnw("could not get region for cluster", deployment.ClusterName, zap.Error(err))
 	}
-	mesh := &v1.Mesh{
+
+	mesh := &discoveryv1.Mesh{
 		ObjectMeta: utils.DiscoveredObjectMeta(deployment),
-		Spec: v1.MeshSpec{
-			Type: &v1.MeshSpec_Istio_{
-				Istio: &v1.MeshSpec_Istio{
-					Installation: &v1.MeshSpec_MeshInstallation{
+		Spec: discoveryv1.MeshSpec{
+			Type: &discoveryv1.MeshSpec_Istio_{
+				Istio: &discoveryv1.MeshSpec_Istio{
+					Installation: &discoveryv1.MeshSpec_MeshInstallation{
 						Namespace: deployment.Namespace,
 						Cluster:   deployment.ClusterName,
 						PodLabels: deployment.Spec.Selector.MatchLabels,
@@ -144,14 +152,14 @@ func getIngressGateways(
 	clusterName string,
 	workloadLabels map[string]string,
 	tlsPortName string,
-	allServices corev1sets.ServiceSet,
-	allPods corev1sets.PodSet,
-	allNodes corev1sets.NodeSet,
-) []*v1.MeshSpec_Istio_IngressGatewayInfo {
-	ingressSvcs := getIngressServices(allServices, namespace, clusterName, workloadLabels)
-	var ingressGateways []*v1.MeshSpec_Istio_IngressGatewayInfo
+	services corev1sets.ServiceSet,
+	pods corev1sets.PodSet,
+	nodes corev1sets.NodeSet,
+) []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo {
+	ingressSvcs := getIngressServices(services, namespace, clusterName, workloadLabels)
+	var ingressGateways []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo
 	for _, svc := range ingressSvcs {
-		gateway, err := getIngressGateway(svc, workloadLabels, tlsPortName, allPods, allNodes)
+		gateway, err := getIngressGateway(svc, workloadLabels, tlsPortName, pods, nodes)
 		if err != nil {
 			contextutils.LoggerFrom(ctx).Warnw("detection failed for matching istio ingress service", "error", err, "service", sets.Key(svc))
 			continue
@@ -165,9 +173,9 @@ func getIngressGateway(
 	svc *corev1.Service,
 	workloadLabels map[string]string,
 	tlsPortName string,
-	allPods corev1sets.PodSet,
-	allNodes corev1sets.NodeSet,
-) (*v1.MeshSpec_Istio_IngressGatewayInfo, error) {
+	pods corev1sets.PodSet,
+	nodes corev1sets.NodeSet,
+) (*discoveryv1.MeshSpec_Istio_IngressGatewayInfo, error) {
 	var (
 		tlsPort *corev1.ServicePort
 	)
@@ -195,8 +203,8 @@ func getIngressGateway(
 			svc.ClusterName,
 			svc.Namespace,
 			workloadLabels,
-			allPods,
-			allNodes,
+			pods,
+			nodes,
 		)
 		if err != nil {
 			return nil, err
@@ -230,7 +238,7 @@ func getIngressGateway(
 		containerPort = tlsPort.Port
 	}
 
-	return &v1.MeshSpec_Istio_IngressGatewayInfo{
+	return &discoveryv1.MeshSpec_Istio_IngressGatewayInfo{
 		WorkloadLabels:   workloadLabels,
 		ExternalAddress:  externalAddress,
 		ExternalTlsPort:  externalPort,
@@ -239,12 +247,12 @@ func getIngressGateway(
 }
 
 func getIngressServices(
-	allServices corev1sets.ServiceSet,
+	services corev1sets.ServiceSet,
 	namespace string,
 	clusterName string,
 	workloadLabels map[string]string,
 ) []*corev1.Service {
-	return allServices.List(func(svc *corev1.Service) bool {
+	return services.List(func(svc *corev1.Service) bool {
 		return svc.Namespace != namespace ||
 			svc.ClusterName != clusterName ||
 			!labels.SelectorFromSet(workloadLabels).Matches(labels.Set(svc.Spec.Selector))
@@ -370,12 +378,12 @@ type Agent struct {
 func getAgent(
 	cluster string,
 	pods corev1sets.PodSet,
-) *v1.MeshSpec_AgentInfo {
+) *discoveryv1.MeshSpec_AgentInfo {
 	agentNamespace := getCertAgentNamespace(cluster, pods)
 	if agentNamespace == "" {
 		return nil
 	}
-	return &v1.MeshSpec_AgentInfo{
+	return &discoveryv1.MeshSpec_AgentInfo{
 		AgentNamespace: agentNamespace,
 	}
 }
