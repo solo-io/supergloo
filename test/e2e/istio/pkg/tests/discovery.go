@@ -44,13 +44,13 @@ func DiscoveryTest() {
 			By("enabling flat networking on the virtual mesh", func() {
 
 				env := e2e.GetEnv()
-				trafficTargetMgmtClient := env.Management.DestinationClient
+				destinationMgmtClient := env.Management.DestinationClient
 
 				Eventually(func() error {
 					var multiErr *multierror.Error
-					mgmtTrafficTargets, err := trafficTargetMgmtClient.ListDestination(ctx)
+					mgmtDestinations, err := destinationMgmtClient.ListDestination(ctx)
 					Expect(err).NotTo(HaveOccurred())
-					for _, v := range mgmtTrafficTargets.Items {
+					for _, v := range mgmtDestinations.Items {
 						if len(v.Spec.GetKubeService().GetEndpointSubsets()) == 0 {
 							multiErr = multierror.Append(multiErr, eris.Errorf(
 								"%s has no endpoints",

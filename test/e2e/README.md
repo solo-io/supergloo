@@ -8,7 +8,7 @@ The e2e tests currently run against a KIND cluster which is created via `ci/setu
 To run tests:
 
 ```shell script
-make run-tests TEST_PKG=test/e2e
+RUN_E2E=true TEST_PKG=test/e2e make run-tests 
 ```
 
 The e2e suite will automatically run `ci/setup-kind.sh` and teardown the cluster on test teardown.
