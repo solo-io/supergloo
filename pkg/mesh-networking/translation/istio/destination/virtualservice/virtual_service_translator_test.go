@@ -97,8 +97,10 @@ var _ = Describe("VirtualServiceTranslator", func() {
 						Spec: &networkingv1.TrafficPolicySpec{
 							SourceSelector: []*commonv1.WorkloadSelector{
 								{
-									Labels:     sourceSelectorLabels,
-									Namespaces: sourceSelectorNamespaces,
+									KubeWorkloadMatcher: &commonv1.WorkloadSelector_KubeWorkloadMatcher{
+										Labels:     sourceSelectorLabels,
+										Namespaces: sourceSelectorNamespaces,
+									},
 								},
 							},
 							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
@@ -135,8 +137,10 @@ var _ = Describe("VirtualServiceTranslator", func() {
 						Spec: &networkingv1.TrafficPolicySpec{
 							SourceSelector: []*commonv1.WorkloadSelector{
 								{
-									Labels:     sourceSelectorLabels,
-									Namespaces: sourceSelectorNamespaces,
+									KubeWorkloadMatcher: &commonv1.WorkloadSelector_KubeWorkloadMatcher{
+										Labels:     sourceSelectorLabels,
+										Namespaces: sourceSelectorNamespaces,
+									},
 								},
 							},
 							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
@@ -517,8 +521,10 @@ var _ = Describe("VirtualServiceTranslator", func() {
 						Spec: &networkingv1.TrafficPolicySpec{
 							SourceSelector: []*commonv1.WorkloadSelector{
 								{
-									Labels:     sourceSelectorLabels,
-									Namespaces: sourceSelectorNamespaces,
+									KubeWorkloadMatcher: &commonv1.WorkloadSelector_KubeWorkloadMatcher{
+										Labels:     sourceSelectorLabels,
+										Namespaces: sourceSelectorNamespaces,
+									},
 								},
 							},
 							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
@@ -918,7 +924,9 @@ var _ = Describe("VirtualServiceTranslator", func() {
 						Spec: &networkingv1.TrafficPolicySpec{
 							SourceSelector: []*commonv1.WorkloadSelector{
 								{
-									Clusters: []string{"foobar"},
+									KubeWorkloadMatcher: &commonv1.WorkloadSelector_KubeWorkloadMatcher{
+										Clusters: []string{"foobar"},
+									},
 								},
 							},
 							Policy: &networkingv1.TrafficPolicySpec_Policy{
@@ -982,7 +990,9 @@ var _ = Describe("VirtualServiceTranslator", func() {
 						Spec: &networkingv1.TrafficPolicySpec{
 							SourceSelector: []*commonv1.WorkloadSelector{
 								{
-									Clusters: []string{"traffic-target-cluster"},
+									KubeWorkloadMatcher: &commonv1.WorkloadSelector_KubeWorkloadMatcher{
+										Clusters: []string{"traffic-target-cluster"},
+									},
 								},
 							},
 							Policy: &networkingv1.TrafficPolicySpec_Policy{

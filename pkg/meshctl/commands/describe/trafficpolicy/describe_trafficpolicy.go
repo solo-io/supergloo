@@ -92,6 +92,7 @@ func formattedWorkloadSelectors(sels []*commonv1.WorkloadSelector) string {
 	}
 	var s strings.Builder
 	for i, sel := range sels {
+		sel := sel.GetKubeWorkloadMatcher()
 		s.WriteString(printing.FormattedField("Namespaces", strings.Join(sel.Namespaces, ", ")))
 		s.WriteString(printing.FormattedField("Clusters", strings.Join(sel.Clusters, ", ")))
 		s.WriteString("LABELS\n")
