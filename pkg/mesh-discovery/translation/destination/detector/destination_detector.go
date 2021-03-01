@@ -14,7 +14,6 @@ import (
 	sets2 "github.com/solo-io/skv2/contrib/pkg/sets"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
-	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/utils/pointer"
@@ -74,10 +73,10 @@ func (t *destinationDetector) DetectDestination(
 
 	// add locality to the destination
 	region, err := localityutils.GetServiceRegion(service, pods, nodes)
-	if err != nil {
-		contextutils.LoggerFrom(ctx).Warnw("could not get region for destination", zap.Error(err))
+	// Don't log error as it can happen while in a healthy state
+	if err == nil {
+		kubeService.Region = region
 	}
-	kubeService.Region = region
 
 	destination := &v1.Destination{
 		ObjectMeta: utils.DiscoveredObjectMeta(service),
@@ -206,10 +205,8 @@ func findEndpoints(
 
 			if addr.NodeName != nil {
 				subLocality, err := localityutils.GetSubLocality(kubeService.GetRef().GetClusterName(), *addr.NodeName, nodes)
-				if err != nil {
-					// Log the error but continue processing. We just won't be able to get a locality for this address
-					contextutils.LoggerFrom(ctx).Warnw("could not get locality for address", "error", err)
-				} else {
+				// Don't log the error but continue processing as this error can happen continuously while in a healthy state
+				if err == nil {
 					ep.SubLocality = subLocality
 				}
 			} else {
