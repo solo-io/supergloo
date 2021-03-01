@@ -1,31 +1,15 @@
 ---
-title: "Register a Cluster with Gloo Mesh"
-menuTitle: Register Cluster
-description: Registering a cluster with Gloo Mesh's management plane
+title: "Community Cluster Registration"
+menuTitle: Register a Cluster with Gloo Mesh Community Edition
+description: Registering a cluster with Gloo Mesh community edition
 weight: 30
 ---
 
-Once you have Gloo Mesh or Gloo Mesh Enterprise installed, the next step is to register Kubernetes clusters that will have service meshes you want to manage. The registration process creates a service account, cluster-role, and cluster-role association on the target cluster granting the service account the necessary permissions to monitor and make changes to the cluster. The current cluster-role definition is documented in the [References]({{% versioned_link_path fromRoot="/reference/cluster_role" %}}) section of the documentation.
+Once you have Gloo Mesh or Gloo Mesh Enterprise installed, the next step is to register Kubernetes clusters that will have service meshes you want to manage. The registration process creates a service account, cluster-role, and cluster-role association on the target cluster granting the service account the necessary permissions to monitor and make changes to the cluster. The current cluster-role definition is documented in the [references]({{% versioned_link_path fromRoot="/reference/cluster_role" %}}) section of the documentation.
 
 This guide will walk you through the basics of registering clusters using the `meshctl` tool. We will be using the two cluster contexts mentioned in the Gloo Mesh installation guide, `mgmt-cluster-context` and `remote-cluster-context`. Your cluster context names will likely differ, so please substitute the proper values.
 
-## Register a Cluster in Relay Mode
-
-{{% notice note %}} Gloo Mesh Enterprise is required for this feature. {{% /notice %}}
-
-Relay is an alternative mode of deploying Gloo Mesh that confers several advantages discussed in [this document]({{% versioned_link_path fromRoot="/concepts/relay" %}}).
-Cluster registration in relay mode simply consists of installing the relay agent.
-
-**Register with meshctl**
-
-Register with `meshctl cluster register enterprise`, see details about usage and parameters [here]({{% versioned_link_path fromRoot="/reference/cli/meshctl_cluster_register_enterprise" %}}).
-
-**Register with Helm**
-
-Install the relay agent from the Helm repository located at `https://storage.googleapis.com/gloo-mesh-enterprise/enterprise-agent`.
-Make sure to review the Helm values options before installing.
-
-## Register A Cluster in Non-Relay Mode
+## Register A Cluster
 
 In order to identify a cluster as being managed by Gloo Mesh, we have to *register* it in our installation. Registration ensures we are aware of the cluster, and we have proper credentials to communicate with the Kubernetes API server in that cluster.
 
@@ -41,24 +25,24 @@ We will register the cluster with the `meshctl cluster register` command. We wil
 {{< tabs >}}
 {{< tab name="Kubernetes" codelang="shell" >}}
 meshctl cluster register \
-  --cluster-name remote-cluster \
-  --remote-context $REMOTE_CONTEXT
+--cluster-name remote-cluster \
+--remote-context $REMOTE_CONTEXT
 {{< /tab >}}
 {{< tab name="Kind (MacOS)" codelang="shell" >}}
 ADDRESS=$(docker inspect remote-cluster-control-plane | jq -r '.[0].NetworkSettings.Networks.kind.IPAddress')
 
 meshctl cluster register \
-  --cluster-name remote-cluster \
-  --remote-context $REMOTE_CONTEXT \
-  --api-server-address ${ADDRESS}:6443
+--cluster-name remote-cluster \
+--remote-context $REMOTE_CONTEXT \
+--api-server-address ${ADDRESS}:6443
 {{< /tab >}}
 {{< tab name="Kind (Linux)" codelang="shell" >}}
 ADDRESS=$(docker exec "remote-cluster-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')
 
 meshctl cluster register \
-  --cluster-name remote-cluster \
-  --remote-context $REMOTE_CONTEXT \
-  --api-server-address ${ADDRESS}:6443
+--cluster-name remote-cluster \
+--remote-context $REMOTE_CONTEXT \
+--api-server-address ${ADDRESS}:6443
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -116,24 +100,24 @@ Select the *Kind* tab if you are running Kubernetes in Docker.
 {{< tabs >}}
 {{< tab name="Kubernetes" codelang="shell" >}}
 meshctl cluster register \
-  --cluster-name mgmt-cluster \
-  --remote-context $MGMT_CONTEXT
+--cluster-name mgmt-cluster \
+--remote-context $MGMT_CONTEXT
 {{< /tab >}}
 {{< tab name="Kind (MacOS)" codelang="shell" >}}
 ADDRESS=$(docker inspect mgmt-cluster-control-plane | jq -r '.[0].NetworkSettings.Networks.kind.IPAddress')
 
 meshctl cluster register \
-  --cluster-name mgmt-cluster \
-  --remote-context $MGMT_CONTEXT \
-  --api-server-address ${ADDRESS}:6443
+--cluster-name mgmt-cluster \
+--remote-context $MGMT_CONTEXT \
+--api-server-address ${ADDRESS}:6443
 {{< /tab >}}
 {{< tab name="Kind (Linux)" codelang="shell" >}}
 ADDRESS=$(docker exec "mgmt-cluster-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')
 
 meshctl cluster register \
-  --cluster-name mgmt-cluster \
-  --remote-context $MGMT_CONTEXT \
-  --api-server-address ${ADDRESS}:6443
+--cluster-name mgmt-cluster \
+--remote-context $MGMT_CONTEXT \
+--api-server-address ${ADDRESS}:6443
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -149,7 +133,7 @@ To go into slightly more detail about what just happened:
 * That service account's auth token was stored in a secret in the management plane cluster
 * The Gloo Mesh CSR agent was deployed in the remote cluster
 * Future communications that Gloo Mesh does to the remote cluster's Kubernetes API server
- will be done using the service account auth token
+  will be done using the service account auth token
 
 ## Next Steps
 
