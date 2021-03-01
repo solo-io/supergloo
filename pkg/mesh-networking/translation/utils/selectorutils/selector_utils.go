@@ -15,11 +15,13 @@ func SelectorMatchesWorkload(selectors []*commonv1.WorkloadSelector, workload *d
 
 	for _, selector := range selectors {
 		kubeWorkload := workload.Spec.GetKubernetes()
+
+		kubeWorkloadMatcher := selector.GetKubeWorkloadMatcher()
 		if kubeWorkload != nil {
 			if kubeWorkloadMatches(
-				selector.GetLabels(),
-				selector.GetNamespaces(),
-				selector.GetClusters(),
+				kubeWorkloadMatcher.GetLabels(),
+				kubeWorkloadMatcher.GetNamespaces(),
+				kubeWorkloadMatcher.GetClusters(),
 				kubeWorkload,
 			) {
 				return true
@@ -104,7 +106,9 @@ func WorkloadSelectorContainsCluster(selectors []*commonv1.WorkloadSelector, clu
 	}
 
 	for _, selector := range selectors {
-		if len(selector.Clusters) == 0 || stringutils.ContainsString(clusterName, selector.Clusters) {
+		clusters := selector.GetKubeWorkloadMatcher().Clusters
+
+		if len(clusters) == 0 || stringutils.ContainsString(clusterName, clusters) {
 			return true
 		}
 	}

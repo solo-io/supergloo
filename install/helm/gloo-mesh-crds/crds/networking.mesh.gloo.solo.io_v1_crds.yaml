@@ -446,30 +446,34 @@ spec:
                 Omit to apply to all Workloads.
               items:
                 properties:
-                  clusters:
-                    description: |-
-                      If specified, match Kubernetes workloads if they exist in one of the specified clusters.
-                             When used in a networking policy, omission matches any cluster.
-                             When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
-                    items:
-                      type: string
-                    type: array
-                  labels:
-                    additionalProperties:
-                      type: string
-                    description: |-
-                      If specified, all labels must exist on Kubernetes workload.
-                             When used in a networking policy, omission matches any labels.
-                             When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                  kubeWorkloadMatcher:
+                    description: Match Kubernetes workloads by their labels, namespaces, and/or clusters.
+                    properties:
+                      clusters:
+                        description: |-
+                          If specified, match Kubernetes workloads if they exist in one of the specified clusters.
+                                     When used in a networking policy, omission matches any cluster.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+                        items:
+                          type: string
+                        type: array
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          If specified, all labels must exist on Kubernetes workload.
+                                 When used in a networking policy, omission matches any labels.
+                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                        type: object
+                      namespaces:
+                        description: |-
+                          If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
+                                     When used in a networking policy, omission matches any namespace.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+                        items:
+                          type: string
+                        type: array
                     type: object
-                  namespaces:
-                    description: |-
-                      If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
-                             When used in a networking policy, omission matches any namespace.
-                             When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
-                    items:
-                      type: string
-                    type: array
                 type: object
               type: array
           type: object
