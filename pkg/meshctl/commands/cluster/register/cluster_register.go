@@ -96,7 +96,7 @@ func (o *communityOptions) addToFlags(flags *pflag.FlagSet) {
 }
 
 func enterpriseCommand(ctx context.Context, regOpts *options) *cobra.Command {
-	opts := (*enterpriseOptions)(regOpts)
+	opts := enterpriseOptions{options: regOpts}
 	cmd := &cobra.Command{
 		Use:   "enterprise [cluster name]",
 		Short: "Register using the enterprise agent",
@@ -109,7 +109,7 @@ func enterpriseCommand(ctx context.Context, regOpts *options) *cobra.Command {
 		RunE: func(_ *cobra.Command, args []string) error {
 			opts.Registration.ClusterName = args[0]
 			registrant, err := registration.NewRegistrant(
-				registration.RegistrantOptions(*opts),
+				registration.RegistrantOptions(*opts.options),
 				gloomesh.EnterpriseAgentReleaseName,
 				gloomesh.EnterpriseAgentChartUriTemplate,
 			)
@@ -117,6 +117,10 @@ func enterpriseCommand(ctx context.Context, regOpts *options) *cobra.Command {
 				return err
 			}
 
+			registrant.AgentValues["relay.serverAddress"] = opts.relayServerAddress
+			registrant.AgentValues["relay.authority"] = "enterprise-networking.gloo-mesh"
+			registrant.AgentValues["relay.insecure"] = "true"
+			registrant.AgentValues["relay.cluster"] = opts.Registration.ClusterName
 			if err := registrant.RegisterCluster(ctx); err != nil {
 				return err
 			}
@@ -139,12 +143,17 @@ func enterpriseCommand(ctx context.Context, regOpts *options) *cobra.Command {
 
 	opts.addToFlags(cmd.Flags())
 	cmd.SilenceUsage = true
+	cmd.MarkFlagRequired("relay-server-address")
 	return cmd
 }
 
-type enterpriseOptions options
+type enterpriseOptions struct {
+	*options
+	relayServerAddress string
+}
 
 func (o *enterpriseOptions) addToFlags(flags *pflag.FlagSet) {
+	flags.StringVar(&o.relayServerAddress, "relay-server-address", "", "The address that the enterprise agentw will communicate with the relay server via.")
 	flags.StringVar(&o.AgentChartPathOverride, "enterprise-agent-chart-file", "",
 		"Path to a local Helm chart for installing the Enterprise Agent.\n"+
 			"If unset, this command will install the Enterprise Agent from the publicly released Helm chart.",

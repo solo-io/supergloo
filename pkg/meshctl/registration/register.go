@@ -56,15 +56,16 @@ func (m *RegistrantOptions) ConstructClientConfigs() (mgmtKubeCfg, remoteKubeCfg
 }
 
 type Registrant struct {
-	// Optionally set a version manually
-	VersionOverride   string
+	VersionOverride string            // Optionally set a version manually
+	AgentValues     map[string]string // Optionally set agent values
+
 	opts              RegistrantOptions
 	agentReleaseName  string
 	agentChartPathTpl string // Will replace single %s with version
 }
 
 func NewRegistrant(opts RegistrantOptions, agentReleaseName, agentChartPathTpl string) (*Registrant, error) {
-	registrant := &Registrant{"", opts, agentReleaseName, agentChartPathTpl}
+	registrant := &Registrant{"", make(map[string]string), opts, agentReleaseName, agentChartPathTpl}
 	registrant.opts.Registration.ClusterRoles = []*rbacv1.ClusterRole{
 		{
 			ObjectMeta: metav1.ObjectMeta{
@@ -130,6 +131,7 @@ func (r *Registrant) installAgent(ctx context.Context) error {
 		KubeConfig:  r.opts.KubeConfigPath,
 		KubeContext: r.opts.RemoteContext,
 		ChartUri:    chartPath,
+		Values:      r.AgentValues,
 		ValuesFile:  r.opts.AgentChartValues,
 		Namespace:   r.opts.Registration.RemoteNamespace,
 		ReleaseName: r.agentReleaseName,
@@ -180,6 +182,7 @@ func (r *Registrant) getGlooMeshVersion(ctx context.Context) (string, error) {
 			}
 		}
 	}
+
 	return "", eris.New("unable to find Gloo Mesh deployment in management cluster")
 }
 
