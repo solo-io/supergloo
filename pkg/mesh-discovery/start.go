@@ -27,7 +27,6 @@ func (opts *DiscoveryOpts) AddToFlags(flags *pflag.FlagSet) {
 func Start(ctx context.Context, opts DiscoveryOpts) error {
 	return bootstrap.Start(
 		ctx,
-		"discovery",
 		StartFunc(opts.agentCluster),
 		*opts.Options,
 		schemes.SchemeBuilder,

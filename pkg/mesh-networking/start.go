@@ -38,26 +38,25 @@ func (opts *NetworkingOpts) AddToFlags(flags *pflag.FlagSet) {
 // which processes k8s storage events to produce
 // discovered resources.
 func Start(ctx context.Context, opts *NetworkingOpts) error {
-	return StartExtended(ctx, opts, func(_ bootstrap.StartParameters) ExtensionOpts {
-		return ExtensionOpts{}
-	}, false)
+	return bootstrap.Start(
+		ctx,
+		StartFunc(opts, func(_ context.Context, _ bootstrap.StartParameters) ExtensionOpts {
+			return ExtensionOpts{}
+		}),
+		*opts.Options,
+		schemes.SchemeBuilder,
+		false,
+	)
 }
 
 // custom entryoint for the Networking Reconciler. Used to allow running a customized/extended version of the Networking Reconciler.
 // disableMultiCluster - disable multi cluster manager and clientset from being initialized
-func StartExtended(ctx context.Context, opts *NetworkingOpts, makeExtensions MakeExtensionOpts, disableMultiCluster bool) error {
+func StartFunc(opts *NetworkingOpts, makeExtensions MakeExtensionOpts) bootstrap.StartFunc {
 	starter := networkingStarter{
 		NetworkingOpts: opts,
 		makeExtensions: makeExtensions,
 	}
-	return bootstrap.Start(
-		ctx,
-		"networking",
-		starter.startReconciler,
-		*opts.Options,
-		schemes.SchemeBuilder,
-		disableMultiCluster,
-	)
+	return starter.startReconciler
 }
 
 type networkingStarter struct {
@@ -69,7 +68,7 @@ type networkingStarter struct {
 
 // start the main reconcile loop
 func (s networkingStarter) startReconciler(ctx context.Context, parameters bootstrap.StartParameters) error {
-	extensionOpts := s.makeExtensions(parameters)
+	extensionOpts := s.makeExtensions(ctx, parameters)
 	extensionOpts.initDefaults(parameters)
 
 	if err := startCertIssuer(
