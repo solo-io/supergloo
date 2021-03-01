@@ -2,7 +2,7 @@
 title: "Install Gloo Mesh Istio"
 menuTitle: Install Gloo Mesh Istio
 description: Installing Gloo Mesh Istio
-weight: 100
+weight: 10
 ---
 
 {{% notice note %}}

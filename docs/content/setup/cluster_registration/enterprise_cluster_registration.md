@@ -1,6 +1,6 @@
 ---
-title: "Enterprise Cluster Registration"
-menuTitle: Register a Cluster with Gloo Mesh Enterprise Edition
+title: "Enterprise"
+menuTitle: Enterprise
 description: Registering a cluster with Gloo Mesh enterprise edition
 weight: 30
 ---
@@ -34,3 +34,5 @@ spec:
 **Register with meshctl**
 
 Register with `meshctl cluster register enterprise`, see details about usage and parameters [here]({{% versioned_link_path fromRoot="/reference/cli/meshctl_cluster_register_enterprise" %}}).
+
+[comment]: <> (TODO add example command here once https://github.com/solo-io/gloo-mesh/pull/1290 is done)

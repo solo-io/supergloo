@@ -1,7 +1,7 @@
 ---
-title: "Install Gloo Mesh"
-menuTitle: Install Gloo Mesh
-description: Installing Gloo Mesh on a management cluster.
+title: "Community"
+menuTitle: Community
+description: Installing Gloo Mesh Community
 weight: 20
 ---
 

@@ -1,6 +1,6 @@
 ---
-title: "Community Cluster Registration"
-menuTitle: Register a Cluster with Gloo Mesh Community Edition
+title: "Community"
+menuTitle: Community
 description: Registering a cluster with Gloo Mesh community edition
 weight: 30
 ---

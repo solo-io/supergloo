@@ -2,7 +2,7 @@
 title: "Using Kind for Gloo Mesh Setup"
 menuTitle: Using Kind
 description: Deploying clusters with Kind for a Gloo Mesh Setup
-weight: 10
+weight: 11
 ---
 
 The installation of Gloo Mesh assumes that you have access to at least one Kubernetes cluster, and preferably two for following the multi-cluster guides. If you do not have access to remote clusters, you can instead spin up two local clusters using Kubernetes in Docker (Kind). Be aware that this will use a significant amount of RAM when both clusters are running with Istio and Gloo Mesh installed. We recommend a workstation with a minimum of 16GB, preferably 32GB if possible.
