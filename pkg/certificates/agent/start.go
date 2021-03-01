@@ -15,7 +15,7 @@ import (
 // which processes k8s storage events to produce
 // discovered resources.
 func Start(ctx context.Context, opts bootstrap.Options) error {
-	return bootstrap.Start(ctx, "cert-agent", StartFunc, opts, schemes.SchemeBuilder, true)
+	return bootstrap.Start(ctx, StartFunc, opts, schemes.SchemeBuilder, true)
 }
 
 // start the main reconcile loop

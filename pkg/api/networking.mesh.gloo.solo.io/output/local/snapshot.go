@@ -329,9 +329,6 @@ type Builder interface {
 	// create a clone of this builder (deepcopying all resources)
 	Clone() Builder
 
-	// return the difference between the snapshot in this builder's and another
-	Delta(newSnap Builder) output.SnapshotDelta
-
 	// convert this snapshot to its generic form
 	Generic() resource.ClusterSnapshot
 }
@@ -402,24 +399,6 @@ func (b *builder) Clone() Builder {
 		clone.AddCluster(cluster)
 	}
 	return clone
-}
-
-func (b *builder) Delta(other Builder) output.SnapshotDelta {
-	delta := output.SnapshotDelta{}
-	if b == nil {
-		return delta
-	}
-
-	// calcualte delta between Secrets
-	secretDelta := b.GetSecrets().Delta(other.GetSecrets())
-	secretGvk := schema.GroupVersionKind{
-		Group:   "",
-		Version: "v1",
-		Kind:    "Secret",
-	}
-	delta.AddInserted(secretGvk, secretDelta.Inserted)
-	delta.AddRemoved(secretGvk, secretDelta.Removed)
-	return delta
 }
 
 // convert this snapshot to its generic form

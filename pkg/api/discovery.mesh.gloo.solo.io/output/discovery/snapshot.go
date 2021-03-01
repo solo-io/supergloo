@@ -643,9 +643,6 @@ type Builder interface {
 	// create a clone of this builder (deepcopying all resources)
 	Clone() Builder
 
-	// return the difference between the snapshot in this builder's and another
-	Delta(newSnap Builder) output.SnapshotDelta
-
 	// convert this snapshot to its generic form
 	Generic() resource.ClusterSnapshot
 }
@@ -752,42 +749,6 @@ func (b *builder) Clone() Builder {
 		clone.AddCluster(cluster)
 	}
 	return clone
-}
-
-func (b *builder) Delta(other Builder) output.SnapshotDelta {
-	delta := output.SnapshotDelta{}
-	if b == nil {
-		return delta
-	}
-
-	// calcualte delta between Destinations
-	destinationDelta := b.GetDestinations().Delta(other.GetDestinations())
-	destinationGvk := schema.GroupVersionKind{
-		Group:   "discovery.mesh.gloo.solo.io",
-		Version: "v1",
-		Kind:    "Destination",
-	}
-	delta.AddInserted(destinationGvk, destinationDelta.Inserted)
-	delta.AddRemoved(destinationGvk, destinationDelta.Removed)
-	// calcualte delta between Workloads
-	workloadDelta := b.GetWorkloads().Delta(other.GetWorkloads())
-	workloadGvk := schema.GroupVersionKind{
-		Group:   "discovery.mesh.gloo.solo.io",
-		Version: "v1",
-		Kind:    "Workload",
-	}
-	delta.AddInserted(workloadGvk, workloadDelta.Inserted)
-	delta.AddRemoved(workloadGvk, workloadDelta.Removed)
-	// calcualte delta between Meshes
-	meshDelta := b.GetMeshes().Delta(other.GetMeshes())
-	meshGvk := schema.GroupVersionKind{
-		Group:   "discovery.mesh.gloo.solo.io",
-		Version: "v1",
-		Kind:    "Mesh",
-	}
-	delta.AddInserted(meshGvk, meshDelta.Inserted)
-	delta.AddRemoved(meshGvk, meshDelta.Removed)
-	return delta
 }
 
 // convert this snapshot to its generic form
