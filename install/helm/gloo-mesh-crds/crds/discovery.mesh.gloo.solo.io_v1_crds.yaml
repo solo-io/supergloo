@@ -1363,6 +1363,7 @@ spec:
                           description: |-
                             If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations,
                             rather than through an ingress gateway. This mode requires a flat network environment.
+                            This feature is exclusive to Gloo Mesh Enterprise.
                           type: boolean
                         hostnameSuffix:
                           description: |-
