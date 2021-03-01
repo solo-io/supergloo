@@ -350,6 +350,8 @@ spec:
     defaultConfig:
       envoyAccessLogService:
         address: enterprise-agent.gloo-mesh:9977
+      envoyMetricsService:
+        address: enterprise-agent.gloo-mesh:9977
       proxyMetadata:
         # annotate Gloo Mesh cluster name for envoy requests (i.e. access logs, metrics)
         GLOO_MESH_CLUSTER_NAME: ${cluster}
@@ -393,6 +395,8 @@ spec:
     enableAutoMtls: true
     defaultConfig:
       envoyAccessLogService:
+        address: enterprise-agent.gloo-mesh:9977
+      envoyMetricsService:
         address: enterprise-agent.gloo-mesh:9977
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts
@@ -449,6 +453,8 @@ spec:
     enableAutoMtls: true
     defaultConfig:
       envoyAccessLogService:
+        address: enterprise-agent.gloo-mesh:9977
+      envoyMetricsService:
         address: enterprise-agent.gloo-mesh:9977
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts
