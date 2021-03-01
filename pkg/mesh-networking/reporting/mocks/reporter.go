@@ -5,11 +5,10 @@
 package mock_reporting
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
+	reflect "reflect"
 )
 
 // MockReporter is a mock of Reporter interface
@@ -69,28 +68,4 @@ func (m *MockReporter) ReportVirtualMeshToMesh(mesh *v1.Mesh, virtualMesh ezkube
 func (mr *MockReporterMockRecorder) ReportVirtualMeshToMesh(mesh, virtualMesh, err interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportVirtualMeshToMesh", reflect.TypeOf((*MockReporter)(nil).ReportVirtualMeshToMesh), mesh, virtualMesh, err)
-}
-
-// ReportFailoverServiceToMesh mocks base method
-func (m *MockReporter) ReportFailoverServiceToMesh(mesh *v1.Mesh, failoverService ezkube.ResourceId, err error) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReportFailoverServiceToMesh", mesh, failoverService, err)
-}
-
-// ReportFailoverServiceToMesh indicates an expected call of ReportFailoverServiceToMesh
-func (mr *MockReporterMockRecorder) ReportFailoverServiceToMesh(mesh, failoverService, err interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportFailoverServiceToMesh", reflect.TypeOf((*MockReporter)(nil).ReportFailoverServiceToMesh), mesh, failoverService, err)
-}
-
-// ReportFailoverService mocks base method
-func (m *MockReporter) ReportFailoverService(failoverService ezkube.ResourceId, errs []error) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ReportFailoverService", failoverService, errs)
-}
-
-// ReportFailoverService indicates an expected call of ReportFailoverService
-func (mr *MockReporterMockRecorder) ReportFailoverService(failoverService, errs interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportFailoverService", reflect.TypeOf((*MockReporter)(nil).ReportFailoverService), failoverService, errs)
 }
