@@ -433,14 +433,14 @@ var _ = Describe("DestinationDetector", func() {
 								Endpoints: []*v1.DestinationSpec_KubeService_EndpointsSubset_Endpoint{
 									{
 										IpAddress: "1",
-										SubLocality: &v1.SubLocality{
+										SubLocality: &v1.DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality{
 											Zone:    "zone1",
 											SubZone: "subzone1",
 										},
 									},
 									{
 										IpAddress: "2",
-										SubLocality: &v1.SubLocality{
+										SubLocality: &v1.DestinationSpec_KubeService_EndpointsSubset_Endpoint_SubLocality{
 											Zone:    "zone2",
 											SubZone: "subzone2",
 										},

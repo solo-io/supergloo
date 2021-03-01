@@ -372,7 +372,13 @@ spec:
                     type: object
                   type: array
                 outlierDetection:
-                  description: Outlier detection to determine the health of the selected Destinations.
+                  description: |-
+                    Outlier detection to determine the health of the selected services.
+                    If not set will default to the folling:
+                    consecutiveGatewayErrors: 10
+                    consecutive5XXErrors: 10
+                    interval: 5s
+                    baseEjectionTime: 120s
                   properties:
                     baseEjectionTime:
                       description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'

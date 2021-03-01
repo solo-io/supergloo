@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/rotisserie/eris"
+	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
@@ -16,12 +17,20 @@ import (
 var ipAssignableSubnet = "240.0.0.0/4"
 
 const (
-	kubeService     = "kube-service"
-	failoverService = "failover-service"
+	kubeService   = "kube-service"
+	localResource = "local-resource"
 )
 
 func ConstructUniqueIpForKubeService(kubeServiceRef ezkube.ClusterResourceId) (net.IP, error) {
 	return constructUniqueIp(kubeServiceRef, kubeService)
+}
+
+func ConstructUniqueIpForLocalResource(resourceRef ezkube.ResourceId) (net.IP, error) {
+	return constructUniqueIp(&skv2corev1.ClusterObjectRef{
+		Name:        resourceRef.GetName(),
+		Namespace:   resourceRef.GetNamespace(),
+		ClusterName: "",
+	}, localResource)
 }
 
 func constructUniqueIp(clusterObjectRef ezkube.ClusterResourceId, scope string) (net.IP, error) {

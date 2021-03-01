@@ -102,7 +102,7 @@ message RoleSpec {
         repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selectors = 3;
 
         // A list of permitted backing Destinations.
-        repeated .networking.enterprise.mesh.gloo.solo.io.BackingDestination destinations = 4;
+        repeated .networking.enterprise.mesh.gloo.solo.io.VirtualDestinationBackingDestination destinations = 4;
     }
 
     // Represents permissions for configuring WasmDeployments.

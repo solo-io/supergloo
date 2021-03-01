@@ -146,14 +146,14 @@ func (m *VirtualDestinationSpec) Equal(that interface{}) bool {
 }
 
 // Equal function
-func (m *BackingDestination) Equal(that interface{}) bool {
+func (m *VirtualDestinationBackingDestination) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil
 	}
 
-	target, ok := that.(*BackingDestination)
+	target, ok := that.(*VirtualDestinationBackingDestination)
 	if !ok {
-		that2, ok := that.(BackingDestination)
+		that2, ok := that.(VirtualDestinationBackingDestination)
 		if ok {
 			target = &that2
 		} else {
@@ -168,8 +168,8 @@ func (m *BackingDestination) Equal(that interface{}) bool {
 
 	switch m.Type.(type) {
 
-	case *BackingDestination_KubeService:
-		if _, ok := target.Type.(*BackingDestination_KubeService); !ok {
+	case *VirtualDestinationBackingDestination_KubeService:
+		if _, ok := target.Type.(*VirtualDestinationBackingDestination_KubeService); !ok {
 			return false
 		}
 
