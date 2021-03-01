@@ -7,26 +7,36 @@ weight: 5
 Remove the enterprise agent
 
 ```
-meshctl cluster deregister enterprise [flags]
+meshctl cluster deregister enterprise [cluster name] [flags]
+```
+
+### Examples
+
+```
+  # Deregister the current context
+  meshctl cluster deregister enterprise mgmt-cluster
+
+  # Deregister a different context when the current one is the management cluster
+  meshctl cluster deregister enterprise remote-cluster
 ```
 
 ### Options
 
 ```
-      --api-server-address string     Swap out the address of the remote cluster's k8s API server for the value of this flag. Set this flag when the address of the cluster domain used by the Gloo Mesh is different than that specified in the local kubeconfig.
-      --cluster-name string           name of the cluster to deregister
-      --federation-namespace string   namespace of the Gloo Mesh control plane in which the secret for the deregistered cluster will be created (default "gloo-mesh")
-  -h, --help                          help for enterprise
-      --kubeconfig string             path to the kubeconfig from which the registered cluster will be accessed
-      --mgmt-context string           name of the kubeconfig context to use for the management cluster
-      --remote-context string         name of the kubeconfig context to use for the remote cluster
-      --remote-namespace string       namespace in the target cluster where a service account enabling remote access will be created. If the namespace does not exist it will be created. (default "gloo-mesh")
+  -h, --help   help for enterprise
 ```
 
 ### Options inherited from parent commands
 
 ```
-  -v, --verbose   enable verbose logging
+      --api-server-address string   Swap out the address of the remote cluster's k8s API server for the value of this flag. Set this flag when the address of the cluster domain used by the Gloo Mesh is different than that specified in the local kubeconfig.
+      --cluster-name string         name of the cluster to deregister
+      --kubeconfig string           path to the kubeconfig from which the registered cluster will be accessed
+      --mgmt-context string         name of the kubeconfig context to use for the management cluster
+      --mgmt-namespace string       namespace of the Gloo Mesh control plane in which the secret for the deregistered cluster will be created (default "gloo-mesh")
+      --remote-context string       name of the kubeconfig context to use for the remote cluster
+      --remote-namespace string     namespace in the target cluster where a service account enabling remote access will be created. If the namespace does not exist it will be created. (default "gloo-mesh")
+  -v, --verbose                     Enable verbose logging
 ```
 
 ### SEE ALSO

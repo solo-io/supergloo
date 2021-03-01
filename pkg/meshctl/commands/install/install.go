@@ -139,7 +139,15 @@ type communityOptions struct {
 
 func (o *communityOptions) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.releaseName, "release-name", gloomesh.GlooMeshReleaseName, "Helm release name")
-	utils.AddAgentFlags(&o.certAgentChartPath, &o.certAgentValuesPath, flags, "Certificate Agent", "cert-agent-")
+	flags.StringVar(&o.certAgentChartPath, "cert-agent-chart-file", "",
+		"Path to a local Helm chart for installing the Certificate Agent.\n"+
+			"If unset, this command will install the Certificate Agent from the publicly released Helm chart.",
+	)
+	flags.StringVar(
+		&o.certAgentValuesPath, "cert-agent-chart-values", "",
+		"Path to a Helm values.yaml file for customizing the installation of the Certificate Agent.\n"+
+			"If unset, this command will install the Certificate Agent with default Helm values.",
+	)
 }
 
 func (o communityOptions) getInstaller() helm.Installer {
@@ -228,7 +236,15 @@ func (o *enterpriseOptions) addToFlags(flags *pflag.FlagSet) {
 	cobra.MarkFlagRequired(flags, "license")
 	flags.BoolVar(&o.skipUI, "skip-ui", false, "Skip installation of the Gloo Mesh UI")
 	flags.BoolVar(&o.skipRBAC, "skip-rbac", false, "Skip installation of the RBAC Webhook")
-	utils.AddAgentFlags(&o.agentChartPath, &o.agentValuesPath, flags, "Enterprise Agent", "enterprise-agent-")
+	flags.StringVar(&o.agentChartPath, "enterprise-agent-chart-file", "",
+		"Path to a local Helm chart for installing the Enterprise Agent.\n"+
+			"If unset, this command will install the Enterprise Agent from the publicly released Helm chart.",
+	)
+	flags.StringVar(
+		&o.agentValuesPath, "enterprise-agent-chart-values", "",
+		"Path to a Helm values.yaml file for customizing the installation of the Enterprise Agent.\n"+
+			"If unset, this command will install the Enterprise Agent with default Helm values.",
+	)
 }
 
 func (o enterpriseOptions) getInstaller() helm.Installer {
@@ -274,10 +290,10 @@ func installEnterprise(ctx context.Context, opts enterpriseOptions) error {
 			gloomesh.EnterpriseAgentReleaseName,
 			gloomesh.EnterpriseAgentChartUriTemplate,
 		)
-		registrant.VersionOverride = opts.version
 		if err != nil {
 			return eris.Wrap(err, "initializing registrant")
 		}
+		registrant.VersionOverride = opts.version
 		if err := registrant.RegisterCluster(ctx); err != nil {
 			return eris.Wrap(err, "registering management-plane cluster")
 		}

@@ -141,7 +141,7 @@ func (r *Registrant) installAgent(ctx context.Context) error {
 func (r *Registrant) getChartPath(ctx context.Context, pathOverride, pathTemplate string) (string, error) {
 	// Use manual chart override path first
 	if pathOverride != "" {
-		return r.opts.AgentCrdsChartPath, nil
+		return pathOverride, nil
 	}
 	// Then use manually set version
 	if r.VersionOverride != "" {

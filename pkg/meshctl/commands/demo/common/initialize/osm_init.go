@@ -39,10 +39,6 @@ deployments.
 }
 
 func initOSMCmd(ctx context.Context, mgmtCluster string, opts *flags.Options) error {
-	if err := opts.Validate(); err != nil {
-		return err
-	}
-
 	box := packr.NewBox("./scripts")
 
 	// management cluster
@@ -54,20 +50,20 @@ func initOSMCmd(ctx context.Context, mgmtCluster string, opts *flags.Options) er
 		return err
 	}
 
-	// install GlooMesh to management cluster
-	if err := installGlooMesh(ctx, mgmtCluster, box); err != nil {
+	// install GlooMesh Enterprise to management cluster, if enabled
+	var err error
+	if opts.Enterprise {
+		err = installGlooMeshEnterprise(ctx, mgmtCluster, opts.EnterpriseVersion, opts.LicenseKey, box)
+	} else {
+		// install GlooMesh to management cluster
+		err = installGlooMesh(ctx, mgmtCluster, box)
+	}
+	if err != nil {
 		return err
 	}
 
-	// install GlooMesh Enterprise to management cluster, if enabled
-	if opts.Enterprise {
-		if err := installGlooMeshEnterprise(ctx, mgmtCluster, opts.EnterpriseVersion, opts.LicenseKey, box); err != nil {
-			return err
-		}
-	}
-
 	// register management cluster
-	if err := registerCluster(ctx, mgmtCluster, mgmtCluster, opts.Enterprise, box); err != nil {
+	if err := registerCluster(ctx, mgmtCluster, mgmtCluster, opts.Enterprise, opts.EnterpriseVersion, box); err != nil {
 		return err
 	}
 

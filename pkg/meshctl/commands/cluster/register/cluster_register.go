@@ -49,7 +49,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 }
 
 func communityCommand(ctx context.Context, regOpts *options) *cobra.Command {
-	opts := (*enterpriseOptions)(regOpts)
+	opts := (*communityOptions)(regOpts)
 	cmd := &cobra.Command{
 		Use:   "community [cluster name]",
 		Short: "Register using the community certificate agent",
@@ -82,7 +82,15 @@ func communityCommand(ctx context.Context, regOpts *options) *cobra.Command {
 type communityOptions options
 
 func (o *communityOptions) addToFlags(flags *pflag.FlagSet) {
-	utils.AddAgentFlags(&o.AgentChartPathOverride, &o.AgentChartValues, flags, "Certificate Agent", "cert-agent-")
+	flags.StringVar(&o.AgentChartPathOverride, "cert-agent-chart-file", "",
+		"Path to a local Helm chart for installing the Certificate Agent.\n"+
+			"If unset, this command will install the Certificate Agent from the publicly released Helm chart.",
+	)
+	flags.StringVar(
+		&o.AgentChartValues, "cert-agent-chart-values", "",
+		"Path to a Helm values.yaml file for customizing the installation of the Certificate Agent.\n"+
+			"If unset, this command will install the Certificate Agent with default Helm values.",
+	)
 }
 
 func enterpriseCommand(ctx context.Context, regOpts *options) *cobra.Command {
@@ -119,5 +127,13 @@ func enterpriseCommand(ctx context.Context, regOpts *options) *cobra.Command {
 type enterpriseOptions options
 
 func (o *enterpriseOptions) addToFlags(flags *pflag.FlagSet) {
-	utils.AddAgentFlags(&o.AgentChartPathOverride, &o.AgentChartValues, flags, "Enterprise Agent", "enterprsie-agent-")
+	flags.StringVar(&o.AgentChartPathOverride, "enterprise-agent-chart-file", "",
+		"Path to a local Helm chart for installing the Enterprise Agent.\n"+
+			"If unset, this command will install the Enterprise Agent from the publicly released Helm chart.",
+	)
+	flags.StringVar(
+		&o.AgentChartValues, "enterprise-agent-chart-values", "",
+		"Path to a Helm values.yaml file for customizing the installation of the Enterprise Agent.\n"+
+			"If unset, this command will install the Enterprise Agent with default Helm values.",
+	)
 }

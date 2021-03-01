@@ -99,7 +99,13 @@ func getGlooMeshInstaller(cluster, chartTemplate, chartVersion string, values ma
 	}
 }
 
-func registerCluster(ctx context.Context, mgmtCluster, cluster string, installEnterpriseAgent bool, box packr.Box) error {
+func registerCluster(
+	ctx context.Context,
+	mgmtCluster, cluster string,
+	enterprise bool,
+	enterpriseVersion string,
+	box packr.Box,
+) error {
 	fmt.Printf("Registering cluster %s with cert-agent image\n", cluster)
 	apiServerAddress, err := getApiAddress(cluster, box)
 	if err != nil {
@@ -110,9 +116,8 @@ func registerCluster(ctx context.Context, mgmtCluster, cluster string, installEn
 	remoteKubeContext := fmt.Sprintf("kind-%s", cluster)
 
 	registrantOpts := registration.RegistrantOptions{
-		KubeConfigPath: "",
-		MgmtContext:    mgmtKubeContext,
-		RemoteContext:  remoteKubeContext,
+		MgmtContext:   mgmtKubeContext,
+		RemoteContext: remoteKubeContext,
 		Registration: register.RegistrationOptions{
 			ClusterName:      cluster,
 			RemoteCtx:        remoteKubeContext,
@@ -121,18 +126,30 @@ func registerCluster(ctx context.Context, mgmtCluster, cluster string, installEn
 			APIServerAddress: apiServerAddress,
 			ClusterDomain:    "",
 		},
-		AgentChartPathOverride: fmt.Sprintf(gloomesh.CertAgentChartUriTemplate, version.Version),
-		AgentChartValues:       "",
-		Verbose:                true,
+		Verbose: true,
 	}
 
-	registrant, err := registration.NewRegistrant(
-		registrantOpts,
-		gloomesh.CertAgentReleaseName,
-		gloomesh.CertAgentChartUriTemplate,
-	)
+	var registrant *registration.Registrant
+	if enterprise {
+		registrant, err = registration.NewRegistrant(
+			registrantOpts,
+			gloomesh.CertAgentReleaseName,
+			gloomesh.CertAgentChartUriTemplate,
+		)
+	} else {
+		registrant, err = registration.NewRegistrant(
+			registrantOpts,
+			gloomesh.EnterpriseAgentReleaseName,
+			gloomesh.EnterpriseAgentChartUriTemplate,
+		)
+	}
 	if err != nil {
 		return eris.Wrapf(err, "initializing registrant for cluster %s", cluster)
+	}
+	if enterprise && enterpriseVersion != "" {
+		registrant.VersionOverride = enterpriseVersion
+	} else if !enterprise {
+		registrant.VersionOverride = version.Version
 	}
 	if err := registrant.RegisterCluster(ctx); err != nil {
 		return eris.Wrapf(err, "registering cluster %s", cluster)

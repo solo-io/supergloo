@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/rotisserie/eris"
-
 	"github.com/gobuffalo/packr"
+	"github.com/rotisserie/eris"
 	"github.com/spf13/cobra"
 
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/demo/internal/flags"
@@ -40,10 +39,6 @@ management-plane as well as Istio, and the other will just run Istio.
 }
 
 func initIstioCmd(ctx context.Context, mgmtCluster, remoteCluster string, opts *flags.Options) error {
-	if err := opts.Validate(); err != nil {
-		return err
-	}
-
 	box := packr.NewBox("./scripts")
 
 	// make sure istio version is supported
@@ -68,25 +63,25 @@ func initIstioCmd(ctx context.Context, mgmtCluster, remoteCluster string, opts *
 		return err
 	}
 
-	// install GlooMesh to management cluster
-	if err := installGlooMesh(ctx, mgmtCluster, box); err != nil {
-		return err
-	}
-
 	// install GlooMesh Enterprise to management cluster, if enabled
 	if opts.Enterprise {
 		if err := installGlooMeshEnterprise(ctx, mgmtCluster, opts.EnterpriseVersion, opts.LicenseKey, box); err != nil {
 			return err
 		}
+	} else {
+		// install GlooMesh to management cluster
+		if err := installGlooMesh(ctx, mgmtCluster, box); err != nil {
+			return err
+		}
 	}
 
 	// register management cluster
-	if err := registerCluster(ctx, mgmtCluster, mgmtCluster, opts.Enterprise, box); err != nil {
+	if err := registerCluster(ctx, mgmtCluster, mgmtCluster, opts.Enterprise, opts.EnterpriseVersion, box); err != nil {
 		return err
 	}
 
 	// register remote cluster
-	if err := registerCluster(ctx, mgmtCluster, remoteCluster, opts.Enterprise, box); err != nil {
+	if err := registerCluster(ctx, mgmtCluster, remoteCluster, opts.Enterprise, opts.EnterpriseVersion, box); err != nil {
 		return err
 	}
 
