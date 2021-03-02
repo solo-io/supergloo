@@ -350,20 +350,16 @@ func validateAndReturnVirtualMesh(
 type applyReporter struct {
 	// NOTE(ilackarms): map access should be synchronous (called in a single context),
 	// so locking should not be necessary.
-	unappliedTrafficPolicies  map[*discoveryv1.Destination]map[string][]error
-	unappliedAccessPolicies   map[*discoveryv1.Destination]map[string][]error
-	unappliedFailoverServices map[*discoveryv1.Mesh]map[string][]error
-	unappliedVirtualMeshes    map[*discoveryv1.Mesh]map[string][]error
-	invalidFailoverServices   map[string][]error
+	unappliedTrafficPolicies map[*discoveryv1.Destination]map[string][]error
+	unappliedAccessPolicies  map[*discoveryv1.Destination]map[string][]error
+	unappliedVirtualMeshes   map[*discoveryv1.Mesh]map[string][]error
 }
 
 func newApplyReporter() *applyReporter {
 	return &applyReporter{
-		unappliedTrafficPolicies:  map[*discoveryv1.Destination]map[string][]error{},
-		unappliedAccessPolicies:   map[*discoveryv1.Destination]map[string][]error{},
-		unappliedFailoverServices: map[*discoveryv1.Mesh]map[string][]error{},
-		unappliedVirtualMeshes:    map[*discoveryv1.Mesh]map[string][]error{},
-		invalidFailoverServices:   map[string][]error{},
+		unappliedTrafficPolicies: map[*discoveryv1.Destination]map[string][]error{},
+		unappliedAccessPolicies:  map[*discoveryv1.Destination]map[string][]error{},
+		unappliedVirtualMeshes:   map[*discoveryv1.Mesh]map[string][]error{},
 	}
 }
 
@@ -405,28 +401,6 @@ func (v *applyReporter) ReportVirtualMeshToMesh(mesh *discoveryv1.Mesh, virtualM
 	v.unappliedVirtualMeshes[mesh] = invalidVirtualMeshesForMesh
 }
 
-func (v *applyReporter) ReportFailoverServiceToMesh(mesh *discoveryv1.Mesh, failoverService ezkube.ResourceId, err error) {
-	invalidFailoverServicesForMesh := v.unappliedFailoverServices[mesh]
-	if invalidFailoverServicesForMesh == nil {
-		invalidFailoverServicesForMesh = map[string][]error{}
-	}
-	key := sets.Key(failoverService)
-	errs := invalidFailoverServicesForMesh[key]
-	errs = append(errs, err)
-	invalidFailoverServicesForMesh[key] = errs
-	v.unappliedFailoverServices[mesh] = invalidFailoverServicesForMesh
-}
-
-func (v *applyReporter) ReportFailoverService(failoverService ezkube.ResourceId, newErrs []error) {
-	key := sets.Key(failoverService)
-	errs := v.invalidFailoverServices[key]
-	if errs == nil {
-		errs = []error{}
-	}
-	errs = append(errs, newErrs...)
-	v.invalidFailoverServices[key] = errs
-}
-
 func (v *applyReporter) getTrafficPolicyErrors(destination *discoveryv1.Destination, trafficPolicy ezkube.ResourceId) []error {
 	invalidTrafficPoliciesForDestination, ok := v.unappliedTrafficPolicies[destination]
 	if !ok {
@@ -449,25 +423,6 @@ func (v *applyReporter) getAccessPolicyErrors(destination *discoveryv1.Destinati
 		return nil
 	}
 	return apErrors
-}
-
-func (v *applyReporter) getFailoverServiceErrors(mesh *discoveryv1.Mesh, failoverService ezkube.ResourceId) []error {
-	var errs []error
-	// Mesh-dependent errors
-	invalidAccessPoliciesForDestination, ok := v.unappliedFailoverServices[mesh]
-	if ok {
-		fsErrors, ok := invalidAccessPoliciesForDestination[sets.Key(failoverService)]
-		if ok {
-			errs = append(errs, fsErrors...)
-		}
-	}
-
-	// Mesh-independent errors
-	fsErrs := v.invalidFailoverServices[sets.Key(failoverService)]
-	if fsErrs != nil {
-		errs = append(errs, fsErrs...)
-	}
-	return errs
 }
 
 func (v *applyReporter) getVirtualMeshErrors(mesh *discoveryv1.Mesh, virtualMesh ezkube.ResourceId) []error {
