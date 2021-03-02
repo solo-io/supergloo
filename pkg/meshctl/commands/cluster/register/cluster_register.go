@@ -115,7 +115,7 @@ func enterpriseCommand(ctx context.Context, regOpts *options) *cobra.Command {
 type enterpriseOptions enterprise.RegistrationOptions
 
 func (o *enterpriseOptions) addToFlags(flags *pflag.FlagSet) {
-	flags.StringVar(&o.RelayServerAddress, "relay-server-address", "", "The address that the enterprise agentw will communicate with the relay server via.")
+	flags.StringVar(&o.RelayServerAddress, "relay-server-address", "", "The address via which the enterprise agent will communicate with the relay server.")
 	flags.StringVar(&o.AgentChartPathOverride, "enterprise-agent-chart-file", "",
 		"Path to a local Helm chart for installing the Enterprise Agent.\n"+
 			"If unset, this command will install the Enterprise Agent from the publicly released Helm chart.",

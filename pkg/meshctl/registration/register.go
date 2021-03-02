@@ -102,7 +102,7 @@ func NewRegistrant(opts Options) (*Registrant, error) {
 	// We need to explicitly pass the remote context because of this open issue: https://github.com/kubernetes/client-go/issues/735
 	registrant.Registration.RemoteCtx = opts.RemoteContext
 	registrant.Registration.Namespace = opts.MgmtNamespace
-	registrant.Registration.RemoteNamespace = opts.RemoteContext
+	registrant.Registration.RemoteNamespace = opts.RemoteNamespace
 	registrant.Registration.ClusterName = opts.ClusterName
 	registrant.Registration.ClusterDomain = opts.ClusterDomain
 	registrant.Registration.APIServerAddress = opts.ApiServerAddress

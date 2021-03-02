@@ -28,7 +28,7 @@ meshctl cluster register enterprise [cluster name] [flags]
       --enterprise-agent-chart-values string   Path to a Helm values.yaml file for customizing the installation of the Enterprise Agent.
                                                If unset, this command will install the Enterprise Agent with default Helm values.
   -h, --help                                   help for enterprise
-      --relay-server-address string            The address that the enterprise agentw will communicate with the relay server via.
+      --relay-server-address string            The address via which the enterprise agent will communicate with the relay server.
 ```
 
 ### Options inherited from parent commands
