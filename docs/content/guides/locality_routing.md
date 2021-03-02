@@ -62,7 +62,7 @@ EOF
 For demonstration purposes, we're setting `consecutiveErrors` to 1 and `maxEjectionPercent` to 100 to more easily trigger the failover. However, these should most likely not be used in production scenarios.
 {{% /notice %}}
 
-The `virtualMesh` field indicates the control planes that the VirtualDestination is visible to. It will be visible to all meshes in the `VirtualMesh`. A list of meshes can optionally be supplied here as well. 
+The `virtualMesh` field indicates the control planes that the VirtualDestination is visible to. It will be visible to all meshes in the `VirtualMesh`. Alternatively, a list of meshes can be supplied here instead. 
 
 Once applied, run the following:
 
