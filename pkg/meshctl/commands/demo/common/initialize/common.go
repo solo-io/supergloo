@@ -16,7 +16,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	installhelm "github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
-	"github.com/solo-io/skv2/pkg/multicluster/register"
 )
 
 const (
@@ -115,41 +114,30 @@ func registerCluster(
 	mgmtKubeContext := fmt.Sprintf("kind-%s", mgmtCluster)
 	remoteKubeContext := fmt.Sprintf("kind-%s", cluster)
 
-	registrantOpts := registration.RegistrantOptions{
-		MgmtContext:   mgmtKubeContext,
-		RemoteContext: remoteKubeContext,
-		Registration: register.RegistrationOptions{
-			ClusterName:      cluster,
-			RemoteCtx:        remoteKubeContext,
-			Namespace:        defaults.DefaultPodNamespace,
-			RemoteNamespace:  defaults.DefaultPodNamespace,
-			APIServerAddress: apiServerAddress,
-			ClusterDomain:    "",
-		},
-		Verbose: true,
+	registrantOpts := registration.Options{
+		MgmtContext:      mgmtKubeContext,
+		RemoteContext:    remoteKubeContext,
+		ClusterName:      cluster,
+		MgmtNamespace:    defaults.DefaultPodNamespace,
+		RemoteNamespace:  defaults.DefaultPodNamespace,
+		ApiServerAddress: apiServerAddress,
+		ClusterDomain:    "",
+		Verbose:          true,
 	}
 
 	var registrant *registration.Registrant
 	if enterprise {
-		registrant, err = registration.NewRegistrant(
-			registrantOpts,
-			gloomesh.CertAgentReleaseName,
-			gloomesh.CertAgentChartUriTemplate,
-		)
+		registrant, err = registration.NewRegistrant(registrantOpts)
 	} else {
-		registrant, err = registration.NewRegistrant(
-			registrantOpts,
-			gloomesh.EnterpriseAgentReleaseName,
-			gloomesh.EnterpriseAgentChartUriTemplate,
-		)
+		registrant, err = registration.NewRegistrant(registrantOpts)
 	}
 	if err != nil {
 		return eris.Wrapf(err, "initializing registrant for cluster %s", cluster)
 	}
 	if enterprise && enterpriseVersion != "" {
-		registrant.VersionOverride = enterpriseVersion
+		registrant.Version = enterpriseVersion
 	} else if !enterprise {
-		registrant.VersionOverride = version.Version
+		registrant.Version = version.Version
 	}
 	if err := registrant.RegisterCluster(ctx); err != nil {
 		return eris.Wrapf(err, "registering cluster %s", cluster)

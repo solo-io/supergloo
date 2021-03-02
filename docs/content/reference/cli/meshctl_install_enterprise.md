@@ -4,7 +4,7 @@ weight: 5
 ---
 ## meshctl install enterprise
 
-Install the enterprise editionn (requires a license)
+Install Gloo Mesh Enterprise (requires a license)
 
 ```
 meshctl install enterprise [flags]
@@ -32,6 +32,7 @@ meshctl install enterprise [flags]
                                                If unset, this command will install the Enterprise Agent with default Helm values.
   -h, --help                                   help for enterprise
       --license string                         Gloo Mesh Enterprise license key (required)
+      --relay-server-address string            The address that the enterprise agentw will communicate with the relay server via.
       --release-name string                    Helm release name (default "gloo-mesh-enterprise")
       --skip-rbac                              Skip installation of the RBAC Webhook
       --skip-ui                                Skip installation of the Gloo Mesh UI
@@ -40,23 +41,19 @@ meshctl install enterprise [flags]
 ### Options inherited from parent commands
 
 ```
-      --agent-crds-chart-file string   Path to a local Helm chart for installing CRDs needed by remote agents.
-                                       If unset, this command will install the agent CRDs from the publicly released Helm chart.
-      --api-server-address string      Swap out the address of the remote cluster's k8s API server for the value of this flag.
-                                       Set this flag when the address of the cluster domain used by the Gloo Mesh is different than that specified in the local kubeconfig.
-      --chart-file string              Path to a local Helm chart for installing Gloo Mesh.
-                                       If unset, this command will install Gloo Mesh from the publicly released Helm chart.
-      --chart-values-file string       File containing value overrides for the Gloo Mesh Helm chart
-      --cluster-domain string          The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. Defaults to 'cluster.local'.
-                                       Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
-      --cluster-name string            Name with which to register the cluster running Gloo Mesh, only applies if --register is also set (default "mgmt-cluster")
-  -d, --dry-run                        Output installation manifest
-      --kubeconfig string              Path to the kubeconfig from which the management cluster will be accessed
-      --kubecontext string             Name of the kubeconfig context to use for the management cluster
-      --namespace string               namespace in which to install Gloo Mesh (default "gloo-mesh")
-  -r, --register                       Also register the cluster
-  -v, --verbose                        Enable verbose logging
-      --version string                 Version to install, defaults to latest if omitted
+      --chart-file string          Path to a local Helm chart for installing Gloo Mesh.
+                                   If unset, this command will install Gloo Mesh from the publicly released Helm chart.
+      --chart-values-file string   File containing value overrides for the Gloo Mesh Helm chart
+      --cluster-domain string      The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. Defaults to 'cluster.local'.
+                                   Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
+      --cluster-name string        Name with which to register the cluster running Gloo Mesh, only applies if --register is also set (default "mgmt-cluster")
+  -d, --dry-run                    Output installation manifest
+      --kubeconfig string          Path to the kubeconfig from which the management cluster will be accessed
+      --kubecontext string         Name of the kubeconfig context to use for the management cluster
+      --namespace string           namespace in which to install Gloo Mesh (default "gloo-mesh")
+  -r, --register                   Also register the cluster
+  -v, --verbose                    Enable verbose logging
+      --version string             Version to install, defaults to latest if omitted
 ```
 
 ### SEE ALSO
