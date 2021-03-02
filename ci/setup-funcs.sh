@@ -371,6 +371,9 @@ spec:
       controlPlaneSecurityEnabled: true
       podDNSSearchNamespaces:
       - global
+      # needed for annotating istio metrics with cluster
+      multiCluster:
+        clusterName: ${cluster}
 EOF
 }
 
@@ -429,6 +432,9 @@ spec:
   values:
     global:
       pilotCertProvider: istiod
+      # needed for annotating istio metrics with cluster
+      multiCluster:
+        clusterName: ${cluster}
 EOF
 }
 
@@ -487,6 +493,9 @@ spec:
   values:
     global:
       pilotCertProvider: istiod
+      # needed for annotating istio metrics with cluster
+      multiCluster:
+        clusterName: ${cluster}
 EOF
 }
 
