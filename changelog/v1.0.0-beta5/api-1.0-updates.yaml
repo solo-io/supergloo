@@ -1,0 +1,4 @@
+changelog:
+  - type: BREAKING_CHANGE
+    description: Group Kubernetes matches into its own message inside WorkloadSelector.
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/142

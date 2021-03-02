@@ -238,7 +238,9 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						Spec: &v1.TrafficPolicySpec{
 							SourceSelector: []*commonv1.WorkloadSelector{
 								{
-									Clusters: []string{"traffic-target-cluster"},
+									KubeWorkloadMatcher: &commonv1.WorkloadSelector_KubeWorkloadMatcher{
+										Clusters: []string{"traffic-target-cluster"},
+									},
 								},
 							},
 						},
@@ -251,7 +253,9 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						Spec: &v1.TrafficPolicySpec{
 							SourceSelector: []*commonv1.WorkloadSelector{
 								{
-									Clusters: []string{"different-cluster"},
+									KubeWorkloadMatcher: &commonv1.WorkloadSelector_KubeWorkloadMatcher{
+										Clusters: []string{"different-cluster"},
+									},
 								},
 							},
 						},
@@ -422,7 +426,9 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						Spec: &v1.TrafficPolicySpec{
 							SourceSelector: []*commonv1.WorkloadSelector{
 								{
-									Clusters: []string{sourceMeshInstallation.Cluster},
+									KubeWorkloadMatcher: &commonv1.WorkloadSelector_KubeWorkloadMatcher{
+										Clusters: []string{sourceMeshInstallation.Cluster},
+									},
 								},
 							},
 						},
@@ -527,7 +533,9 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						Spec: &v1.TrafficPolicySpec{
 							SourceSelector: []*commonv1.WorkloadSelector{
 								{
-									Clusters: []string{"traffic-target-cluster"},
+									KubeWorkloadMatcher: &commonv1.WorkloadSelector_KubeWorkloadMatcher{
+										Clusters: []string{"traffic-target-cluster"},
+									},
 								},
 							},
 							Policy: &v1.TrafficPolicySpec_Policy{

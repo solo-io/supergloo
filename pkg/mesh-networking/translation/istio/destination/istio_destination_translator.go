@@ -104,7 +104,13 @@ func (t *translator) isIstioDestination(
 ) bool {
 	meshRef := destination.Spec.Mesh
 	if meshRef == nil {
-		contextutils.LoggerFrom(ctx).Errorf("internal error: destination %v missing mesh ref", sets.Key(destination))
+		if _, ok := destination.Spec.Type.(*discoveryv1.DestinationSpec_KubeService_); ok {
+			// Is KubeService, MeshRef is required
+			contextutils.LoggerFrom(ctx).Errorf("internal error: KubeService destination %v missing mesh ref", sets.Key(destination))
+		} else {
+			// Not KubeService, MeshRef not required
+			// TODO: Publish this as a metric in the future
+		}
 		return false
 	}
 	mesh, err := allMeshes.Find(meshRef)

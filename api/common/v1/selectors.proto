@@ -17,6 +17,7 @@ message DestinationSelector {
     // Match Kubernetes Services by direct reference.
     KubeServiceRefs kube_service_refs = 2;
 
+    // Match Kubernetes Services by their labels, namespaces, and/or clusters.
     message KubeServiceMatcher {
 
         /*
@@ -41,6 +42,7 @@ message DestinationSelector {
         repeated string clusters = 3;
     }
 
+    // Match Kubernetes Services by direct reference.
     message KubeServiceRefs {
         /*
             Match Kubernetes Services by direct reference.
@@ -53,26 +55,33 @@ message DestinationSelector {
 
 // Select Workloads using one or more platform-specific selectors.
 message WorkloadSelector {
-    /*
+
+    // Match Kubernetes workloads by their labels, namespaces, and/or clusters.
+    KubeWorkloadMatcher kube_workload_matcher = 1;
+
+    // Match Kubernetes workloads by their labels, namespaces, and/or clusters.
+    message KubeWorkloadMatcher {
+        /*
         If specified, all labels must exist on Kubernetes workload.
         When used in a networking policy, omission matches any labels.
         When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
     */
-    map<string, string> labels = 1;
+        map<string, string> labels = 1;
 
-    /*
-        If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
-        When used in a networking policy, omission matches any namespace.
-        When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
-    */
-    repeated string namespaces = 2;
+        /*
+            If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
+            When used in a networking policy, omission matches any namespace.
+            When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+        */
+        repeated string namespaces = 2;
 
-    /*
-        If specified, match Kubernetes workloads if they exist in one of the specified clusters.
-        When used in a networking policy, omission matches any cluster.
-        When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
-    */
-    repeated string clusters = 3;
+        /*
+            If specified, match Kubernetes workloads if they exist in one of the specified clusters.
+            When used in a networking policy, omission matches any cluster.
+            When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+        */
+        repeated string clusters = 3;
+    }
 }
 
 // Select Destination identities using one or more platform-specific selectors.
