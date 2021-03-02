@@ -39,6 +39,6 @@ The edition registered must match the edition installed on the management cluste
 ### SEE ALSO
 
 * [meshctl cluster](../meshctl_cluster)	 - Interacting with remote Kubernetes clusters registered to Gloo Mesh
-* [meshctl cluster register community](../meshctl_cluster_register_community)	 - Register using the community certificate agent
-* [meshctl cluster register enterprise](../meshctl_cluster_register_enterprise)	 - Register using the enterprise agent
+* [meshctl cluster register community](../meshctl_cluster_register_community)	 - Register a cluster for Gloo Mesh community edition
+* [meshctl cluster register enterprise](../meshctl_cluster_register_enterprise)	 - Register a cluster for Gloo Mesh enterprise editio
 

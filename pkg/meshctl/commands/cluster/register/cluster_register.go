@@ -7,10 +7,8 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
-	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command {
@@ -54,7 +52,7 @@ func communityCommand(ctx context.Context, regOpts *options) *cobra.Command {
 	opts := (*communityOptions)(regOpts)
 	cmd := &cobra.Command{
 		Use:   "community [cluster name]",
-		Short: "Register using the community certificate agent",
+		Short: "Register a cluster for Gloo Mesh community edition",
 		Example: `  # Register the current cluster
   meshctl cluster register community mgmt-cluster
 
@@ -99,7 +97,7 @@ func enterpriseCommand(ctx context.Context, regOpts *options) *cobra.Command {
 	opts := enterpriseOptions{options: regOpts}
 	cmd := &cobra.Command{
 		Use:   "enterprise [cluster name]",
-		Short: "Register using the enterprise agent",
+		Short: "Register a cluster for Gloo Mesh enterprise editio",
 		Example: `  # Register the current context
   meshctl cluster register enterprise mgmt-cluster
 
@@ -121,23 +119,7 @@ func enterpriseCommand(ctx context.Context, regOpts *options) *cobra.Command {
 			registrant.AgentValues["relay.authority"] = "enterprise-networking.gloo-mesh"
 			registrant.AgentValues["relay.insecure"] = "true"
 			registrant.AgentValues["relay.cluster"] = opts.Registration.ClusterName
-			if err := registrant.RegisterCluster(ctx); err != nil {
-				return err
-			}
-			kubeClient, err := utils.BuildClient(opts.KubeConfigPath, opts.MgmtContext)
-			if err != nil {
-				return err
-			}
-			clusterClient := v1alpha1.NewKubernetesClusterClient(kubeClient)
-			return clusterClient.CreateKubernetesCluster(ctx, &v1alpha1.KubernetesCluster{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      opts.Registration.ClusterName,
-					Namespace: opts.Registration.Namespace,
-				},
-				Spec: v1alpha1.KubernetesClusterSpec{
-					ClusterDomain: opts.Registration.ClusterDomain,
-				},
-			})
+			return registrant.RegisterCluster(ctx)
 		},
 	}
 

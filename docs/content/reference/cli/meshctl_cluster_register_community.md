@@ -4,7 +4,7 @@ weight: 5
 ---
 ## meshctl cluster register community
 
-Register using the community certificate agent
+Register a cluster for Gloo Mesh community edition
 
 ```
 meshctl cluster register community [cluster name] [flags]

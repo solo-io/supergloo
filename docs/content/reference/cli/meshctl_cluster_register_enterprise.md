@@ -4,7 +4,7 @@ weight: 5
 ---
 ## meshctl cluster register enterprise
 
-Register using the enterprise agent
+Register a cluster for Gloo Mesh enterprise editio
 
 ```
 meshctl cluster register enterprise [cluster name] [flags]
@@ -28,6 +28,7 @@ meshctl cluster register enterprise [cluster name] [flags]
       --enterprise-agent-chart-values string   Path to a Helm values.yaml file for customizing the installation of the Enterprise Agent.
                                                If unset, this command will install the Enterprise Agent with default Helm values.
   -h, --help                                   help for enterprise
+      --relay-server-address string            The address that the enterprise agentw will communicate with the relay server via.
 ```
 
 ### Options inherited from parent commands
