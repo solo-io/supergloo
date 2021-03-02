@@ -2,6 +2,7 @@ package enterprise
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
@@ -14,7 +15,8 @@ import (
 
 type RegistrationOptions struct {
 	registration.Options
-	RelayServerAddress string
+	RelayServerAddress  string
+	RelayServerInsecure bool
 }
 
 func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
@@ -33,7 +35,7 @@ func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
 		Values: map[string]string{
 			"relay.serverAddress": opts.RelayServerAddress,
 			"relay.authority":     "enterprise-networking.gloo-mesh",
-			"relay.insecure":      "true",
+			"relay.insecure":      strconv.FormatBool(opts.RelayServerInsecure),
 			"relay.cluster":       opts.ClusterName,
 		},
 	}).InstallChart(ctx); err != nil {

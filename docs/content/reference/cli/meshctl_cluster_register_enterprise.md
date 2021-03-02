@@ -29,6 +29,7 @@ meshctl cluster register enterprise [cluster name] [flags]
                                                If unset, this command will install the Enterprise Agent with default Helm values.
   -h, --help                                   help for enterprise
       --relay-server-address string            The address via which the enterprise agent will communicate with the relay server.
+      --relay-server-insecure                  Communicate with the relay server over an insecure connection. (default true)
 ```
 
 ### Options inherited from parent commands

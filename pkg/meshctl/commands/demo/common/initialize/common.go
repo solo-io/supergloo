@@ -157,8 +157,11 @@ func registerEnterpriseCluster(ctx context.Context, regOpts registration.Options
 	if err != nil {
 		return err
 	}
-	regOpts.RelayServerAddress = relayServerAddress
-	if err := enterprise.RegisterCluster(ctx, enterprise.RegistrationOptions{Options: regOpts}); err != nil {
+	entOpts := enterprise.RegistrationOptions{
+		Options:            regOpts,
+		RelayServerAddress: relayServerAddress,
+	}
+	if err := enterprise.RegisterCluster(ctx, entOpts); err != nil {
 		return err
 	}
 	fmt.Printf("Successfully registered cluster %s\n", regOpts.ClusterName)

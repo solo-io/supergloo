@@ -40,7 +40,6 @@ type Options struct {
 	ApiServerAddress       string
 	ClusterName            string
 	ClusterDomain          string
-	RelayServerAddress     string
 	Verbose                bool
 }
 
