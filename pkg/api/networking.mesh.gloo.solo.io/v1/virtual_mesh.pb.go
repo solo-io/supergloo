@@ -440,6 +440,7 @@ type VirtualMeshSpec_Federation struct {
 	Mode isVirtualMeshSpec_Federation_Mode `protobuf_oneof:"mode"`
 	// If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations,
 	// rather than through an ingress gateway. This mode requires a flat network environment.
+	// This feature is exclusive to Gloo Mesh Enterprise.
 	FlatNetwork bool `protobuf:"varint,2,opt,name=flat_network,json=flatNetwork,proto3" json:"flat_network,omitempty"`
 	// Configure the suffix for hostnames of Destinations federated within this VirtualMesh.
 	// Currently this is only supported for Istio with [smart DNS proxying enabled](https://istio.io/latest/blog/2020/dns-proxy/),
