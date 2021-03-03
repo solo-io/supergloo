@@ -137,7 +137,6 @@ spec:
   - kubeServiceMatcher:
       namespaces:
       - bookinfo
-EOF
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
