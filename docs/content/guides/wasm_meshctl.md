@@ -22,6 +22,8 @@ In particular, you will need to have installed Gloo Mesh Enterprise and register
 
 You will also need the wasm plugin for `meshctl`. It can be installed by running the following one-liner:
 
+TODO -- reference the meshctl plugin guide, shorten to `meshctl plugin install wasm`
+
 ```shell
 curl -sL http://run.solo.io/meshctl-wasm/install | sh
 ```
