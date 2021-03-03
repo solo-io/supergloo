@@ -24,23 +24,20 @@ We will register the cluster with the `meshctl cluster register community` comma
 
 {{< tabs >}}
 {{< tab name="Kubernetes" codelang="shell" >}}
-meshctl cluster register community \
-  --cluster-name remote-cluster \
+meshctl cluster register community remote-cluster \
   --remote-context $REMOTE_CONTEXT
 {{< /tab >}}
 {{< tab name="Kind (MacOS)" codelang="shell" >}}
 ADDRESS=$(docker inspect remote-cluster-control-plane | jq -r '.[0].NetworkSettings.Networks.kind.IPAddress')
 
-meshctl cluster register community \
-  --cluster-name remote-cluster \
+meshctl cluster register community remote-cluster \
   --remote-context $REMOTE_CONTEXT \
   --api-server-address ${ADDRESS}:6443
 {{< /tab >}}
 {{< tab name="Kind (Linux)" codelang="shell" >}}
 ADDRESS=$(docker exec "remote-cluster-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')
 
-meshctl cluster register community \
-  --cluster-name remote-cluster \
+meshctl cluster register community remote-cluster \
   --remote-context $REMOTE_CONTEXT \
   --api-server-address ${ADDRESS}:6443
 {{< /tab >}}
@@ -116,23 +113,20 @@ Select the *Kind* tab if you are running Kubernetes in Docker.
 
 {{< tabs >}}
 {{< tab name="Kubernetes" codelang="shell" >}}
-meshctl cluster register community \
-  --cluster-name mgmt-cluster \
+meshctl cluster register community mgmt-cluster \
   --remote-context $MGMT_CONTEXT
 {{< /tab >}}
 {{< tab name="Kind (MacOS)" codelang="shell" >}}
 ADDRESS=$(docker inspect mgmt-cluster-control-plane | jq -r '.[0].NetworkSettings.Networks.kind.IPAddress')
 
-meshctl cluster register \
-  --cluster-name mgmt-cluster \
+meshctl cluster register community mgmt-cluster \
   --remote-context $MGMT_CONTEXT \
   --api-server-address ${ADDRESS}:6443
 {{< /tab >}}
 {{< tab name="Kind (Linux)" codelang="shell" >}}
 ADDRESS=$(docker exec "mgmt-cluster-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')
 
-meshctl cluster register community \
-  --cluster-name mgmt-cluster \
+meshctl cluster register community mgmt-cluster \
   --remote-context $MGMT_CONTEXT \
   --api-server-address ${ADDRESS}:6443
 {{< /tab >}}
