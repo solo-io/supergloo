@@ -350,6 +350,8 @@ spec:
     defaultConfig:
       envoyAccessLogService:
         address: enterprise-agent.gloo-mesh:9977
+      envoyMetricsService:
+        address: enterprise-agent.gloo-mesh:9977
       proxyMetadata:
         # annotate Gloo Mesh cluster name for envoy requests (i.e. access logs, metrics)
         GLOO_MESH_CLUSTER_NAME: ${cluster}
@@ -369,6 +371,9 @@ spec:
       controlPlaneSecurityEnabled: true
       podDNSSearchNamespaces:
       - global
+      # needed for annotating istio metrics with cluster
+      multiCluster:
+        clusterName: ${cluster}
 EOF
 }
 
@@ -394,61 +399,7 @@ spec:
     defaultConfig:
       envoyAccessLogService:
         address: enterprise-agent.gloo-mesh:9977
-      proxyMetadata:
-        # Enable Istio agent to handle DNS requests for known hosts
-        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
-        ISTIO_META_DNS_CAPTURE: "true"
-        # annotate Gloo Mesh cluster name for envoy requests (i.e. access logs, metrics)
-        GLOO_MESH_CLUSTER_NAME: ${cluster}
-  components:
-    # Istio Gateway feature
-    ingressGateways:
-    - name: istio-ingressgateway
-      enabled: true
-      k8s:
-        env:
-          - name: ISTIO_META_ROUTER_MODE
-            value: "sni-dnat"
-        service:
-          type: NodePort
-          ports:
-            - port: 80
-              targetPort: 8080
-              name: http2
-            - port: 443
-              targetPort: 8443
-              name: https
-            - port: 15443
-              targetPort: 15443
-              name: tls
-              nodePort: ${port}
-  values:
-    global:
-      pilotCertProvider: istiod
-EOF
-}
-
-# Operator spec for istio 1.9.x
-function install_istio_1_9() {
-  cluster=$1
-  port=$2
-  K="kubectl --context=kind-${cluster}"
-
-  echo "installing istio to ${cluster}..."
-
-  cat << EOF | istioctl manifest install -y --context "kind-${cluster}" -f -
-apiVersion: install.istio.io/v1alpha1
-kind: IstioOperator
-metadata:
-  name: example-istiooperator
-  namespace: istio-system
-spec:
-  hub: gcr.io/istio-release
-  profile: preview
-  meshConfig:
-    enableAutoMtls: true
-    defaultConfig:
-      envoyAccessLogService:
+      envoyMetricsService:
         address: enterprise-agent.gloo-mesh:9977
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts
@@ -481,6 +432,70 @@ spec:
   values:
     global:
       pilotCertProvider: istiod
+      # needed for annotating istio metrics with cluster
+      multiCluster:
+        clusterName: ${cluster}
+EOF
+}
+
+# Operator spec for istio 1.9.x
+function install_istio_1_9() {
+  cluster=$1
+  port=$2
+  K="kubectl --context=kind-${cluster}"
+
+  echo "installing istio to ${cluster}..."
+
+  cat << EOF | istioctl manifest install -y --context "kind-${cluster}" -f -
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: example-istiooperator
+  namespace: istio-system
+spec:
+  hub: gcr.io/istio-release
+  profile: preview
+  meshConfig:
+    enableAutoMtls: true
+    defaultConfig:
+      envoyAccessLogService:
+        address: enterprise-agent.gloo-mesh:9977
+      envoyMetricsService:
+        address: enterprise-agent.gloo-mesh:9977
+      proxyMetadata:
+        # Enable Istio agent to handle DNS requests for known hosts
+        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
+        ISTIO_META_DNS_CAPTURE: "true"
+        # annotate Gloo Mesh cluster name for envoy requests (i.e. access logs, metrics)
+        GLOO_MESH_CLUSTER_NAME: ${cluster}
+  components:
+    # Istio Gateway feature
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        env:
+          - name: ISTIO_META_ROUTER_MODE
+            value: "sni-dnat"
+        service:
+          type: NodePort
+          ports:
+            - port: 80
+              targetPort: 8080
+              name: http2
+            - port: 443
+              targetPort: 8443
+              name: https
+            - port: 15443
+              targetPort: 15443
+              name: tls
+              nodePort: ${port}
+  values:
+    global:
+      pilotCertProvider: istiod
+      # needed for annotating istio metrics with cluster
+      multiCluster:
+        clusterName: ${cluster}
 EOF
 }
 
