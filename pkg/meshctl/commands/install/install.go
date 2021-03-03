@@ -220,7 +220,7 @@ type enterpriseOptions struct {
 }
 
 func (o *enterpriseOptions) addToFlags(flags *pflag.FlagSet) {
-	flags.StringVar(&o.releaseName, "release-name", gloomesh.GlooMeshEnterpriseReleaseName, "Helm release name")
+	flags.StringVar(&o.releaseName, "release-name", gloomesh.GlooMeshReleaseName, "Helm release name")
 	flags.StringVar(&o.licenseKey, "license", "", "Gloo Mesh Enterprise license key (required)")
 	cobra.MarkFlagRequired(flags, "license")
 	flags.BoolVar(&o.skipUI, "skip-ui", false, "Skip installation of the Gloo Mesh UI")

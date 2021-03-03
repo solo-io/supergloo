@@ -61,7 +61,7 @@ func communityCommand(ctx context.Context, deregOpts *options) *cobra.Command {
 		Example: `  # Deregister the current context
   meshctl cluster deregister community mgmt-cluster
 
-  # Deregister a different context when the current one is the management cluster
+  # Deregister a remote cluster when the current context is the management cluster
   meshctl cluster deregister community remote-cluster`,
 		RunE: func(_ *cobra.Command, args []string) error {
 			opts.ClusterName = args[0]

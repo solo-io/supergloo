@@ -9,7 +9,6 @@ const (
 	GlooMeshEnterpriseChartUriTemplate = GlooMeshEnterpriseRepoURI + "/gloo-mesh-enterprise/gloo-mesh-enterprise-%s.tgz"
 	EnterpriseAgentChartUriTemplate    = GlooMeshEnterpriseRepoURI + "/enterprise-agent/enterprise-agent-%s.tgz"
 	GlooMeshReleaseName                = "gloo-mesh"
-	GlooMeshEnterpriseReleaseName      = "gloo-mesh-enterprise"
 	AgentCrdsReleaseName               = "agent-crds"
 	CertAgentReleaseName               = "cert-agent"
 	EnterpriseAgentReleaseName         = "enterprise-agent"

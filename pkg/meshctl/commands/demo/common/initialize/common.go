@@ -96,7 +96,7 @@ func installGlooMeshEnterprise(ctx context.Context, cluster, version, licenseKey
 		ChartUri:    fmt.Sprintf(gloomesh.GlooMeshEnterpriseChartUriTemplate, version),
 		KubeContext: "kind-" + cluster,
 		Namespace:   defaults.DefaultPodNamespace,
-		ReleaseName: gloomesh.GlooMeshEnterpriseReleaseName,
+		ReleaseName: gloomesh.GlooMeshReleaseName,
 		Values:      map[string]string{"licenseKey": licenseKey},
 		Verbose:     true,
 	}).InstallChart(ctx); err != nil {
