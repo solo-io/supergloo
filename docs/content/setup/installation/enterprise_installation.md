@@ -44,3 +44,7 @@ helm install enterprise-networking enterprise-networking/enterprise-networking -
 ## meshctl
 
 Instructions for installing Gloo Mesh Enterprise via meshctl are coming soon.
+
+## Next Steps
+
+Now that we have Gloo Mesh Enterprise installed, let's [register a cluster]({{< versioned_link_path fromRoot="/setup/cluster_registration/enterprise" >}}).

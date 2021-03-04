@@ -23,9 +23,13 @@ Also note that the Enterprise Agent's version should match that of the `enterpri
 management cluster. Run `meshctl version` on the management cluster to review the `enterprise-networking` version.
 
 ```bash
-helm upgrade --install enterprise-agent enterprise-agent/enterprise-agent --namespace gloo-mesh \
-  --set relay.serverAddress=${SERVER_ADDRESS} --set relay.authority=enterprise-networking.gloo-mesh \
-  --set relay.cluster=mgmt-cluster --kube-context=kind-mgmt-cluster --version ${ENTERPRISE_NETWORKING_VERSION}
+helm install enterprise-agent enterprise-agent/enterprise-agent \
+  --namespace gloo-mesh \
+  --set relay.serverAddress=${SERVER_ADDRESS} \
+  --set relay.authority=enterprise-networking.gloo-mesh \
+  --set relay.cluster=${CLUSTER_NAME} \
+  --kube-context=${CLUSTER_CONTEXT} \
+  --version ${ENTERPRISE_NETWORKING_VERSION}
 ```
 
 2. Create a `KubernetesCluster` object. The `metadata.name` of the object must

@@ -68,6 +68,14 @@ spec:
               number: 9900
 ```
 
+To get the address of this ingress for use during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}), run:
+
+```shell
+mgmtIngressAddress=$(kubectl get node -ojson | jq -r ".items[0].status.addresses[0].address")
+mgmtIngressPort=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+ingressAddress=${mgmtIngressAddress}:${mgmtIngressPort}
+```
+
 ## Establishing Trust Between Agents and Server
 
 #### Manual Certificate Creation
@@ -154,8 +162,10 @@ openssl x509 -req \
   -extensions v3_req -extfile "${RELAY_SIGNING_CERT_NAME}.conf"
 ```
 
-Next, we'll create secrets on the management and remote clusters with all the requisite generated certificates. On the
-management cluster, we need the root cert, server cert, and signing cert. On the remote, we just need the root cert.
+Next, we'll create secrets on the management and remote clusters with all the requisite generated certificates. Let's
+define the management cluster as the cluster where we'll install the Gloo Mesh control plane, and the remote cluster as
+a cluster running a service mesh we would like Gloo Mesh to discover and configure. On the management cluster, we need
+the root cert, server cert, and signing cert. On the remote clusters, we just need the root cert.
 
 ```bash
 MGMT_CLUSTER=mgmt-cluster
