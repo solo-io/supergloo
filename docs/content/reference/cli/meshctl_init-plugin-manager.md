@@ -13,6 +13,7 @@ meshctl init-plugin-manager [flags]
 ### Options
 
 ```
+  -f, --force            Delete any existing plugin data if found and reinitialize
       --gm-home string   Gloo Mesh home directory (default: $HOME/.gloo-mesh)
   -h, --help             help for init-plugin-manager
 ```

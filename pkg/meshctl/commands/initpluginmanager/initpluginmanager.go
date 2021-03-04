@@ -2,11 +2,13 @@ package initpluginmanager
 
 import (
 	"context"
-	"io"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 
 	"github.com/rotisserie/eris"
 	"github.com/sirupsen/logrus"
@@ -20,40 +22,124 @@ func Command(ctx context.Context) *cobra.Command {
 		Use:   "init-plugin-manager",
 		Short: "Install the Gloo Mesh Enterprise CLI plugin manager",
 		// TODO(ryantking): Add link to plugin docs after written
-		RunE: func(cmd *cobra.Command, args []string) error {
-			script, err := downloadScript(ctx)
+		RunE: func(*cobra.Command, []string) error {
+			home, err := opts.getHome()
 			if err != nil {
 				return err
 			}
-			defer script.Close()
-			installCmd := exec.Command("sh")
-			installCmd.Stdin = script
-			installCmd.Stdout = os.Stdout
-			installCmd.Stderr = os.Stderr
-			if opts.home != "" {
-				installCmd.Env = append(installCmd.Env, "MESHCTL_HOME="+opts.home)
+			if err := checkExisting(home, opts.force); err != nil {
+				return err
+			}
+			binary, err := downloadTempBinary(ctx, home)
+			if err != nil {
+				return err
+			}
+			const defaultIndexURL = "https://github.com/solo-io/meshctl-plugin-index.git"
+			if out, err := binary.run("index", "add", "default", defaultIndexURL); err != nil {
+				fmt.Println(out)
+				return err
+			}
+			if out, err := binary.run("install", "plugin"); err != nil {
+				fmt.Println(out)
+				return err
 			}
 
-			return installCmd.Run()
+			homeStr := opts.home
+			if homeStr == "" {
+				homeStr = "$HOME/.gloo-mesh"
+			}
+			fmt.Printf(`The meshctl plugin manager was successfully installed 🎉
+
+Add the meshctl plugins to your path with:
+  export PATH=%s/bin:$PATH
+
+Now run:
+  meshctl plugin --help     # see the commands available to you
+
+Please see visit the Gloo Mesh website for more info:  https://www.solo.io/products/gloo-mesh/
+`, homeStr)
+			return nil
 		},
 	}
-
 	opts.addToFlags(cmd.Flags())
 	cmd.SilenceUsage = true
 	return cmd
 }
 
 type options struct {
-	home string
+	home  string
+	force bool
 }
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.home, "gm-home", "", "Gloo Mesh home directory (default: $HOME/.gloo-mesh)")
+	flags.BoolVarP(&o.force, "force", "f", false, "Delete any existing plugin data if found and reinitialize")
 }
 
-func downloadScript(ctx context.Context) (io.ReadCloser, error) {
-	const uri = "https://run.solo.io/meshctl-plugin/install"
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, nil)
+func (o options) getHome() (string, error) {
+	if o.home != "" {
+		return o.home, nil
+	}
+	userHome, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(userHome, ".gloo-mesh"), nil
+}
+
+type pluginBinary struct {
+	path string
+	home string
+}
+
+func checkExisting(home string, force bool) error {
+	dirty := false
+	for _, dir := range []string{"index", "receipts", "store"} {
+		if _, err := os.Stat(filepath.Join(home, dir)); err == nil {
+			dirty = true
+			break
+		} else if !os.IsNotExist(err) {
+			return err
+		}
+	}
+
+	if !dirty {
+		return nil
+	}
+	if !force {
+		return eris.Errorf("found existing plugin manager files in %s, rerun with -f to delete and reinstall", home)
+	}
+	for _, dir := range []string{"index", "receipts", "store"} {
+		fmt.Println(filepath.Join(home, dir))
+		os.RemoveAll(filepath.Join(home, dir))
+	}
+	binFiles, err := ioutil.ReadDir(filepath.Join(home, "bin"))
+	if err != nil {
+		return err
+	}
+	for _, file := range binFiles {
+		if file.Name() != "meshctl" {
+			fmt.Println(filepath.Join(home, "bin", file.Name()))
+			os.Remove(filepath.Join(home, "bin", file.Name()))
+		}
+	}
+
+	return nil
+}
+
+func downloadTempBinary(ctx context.Context, home string) (*pluginBinary, error) {
+	tempDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		return nil, err
+	}
+	binPath := filepath.Join(tempDir, "plugin")
+
+	url := fmt.Sprintf(
+		"https://storage.googleapis.com/gloo-mesh-enterprise/meshctl-plugins/plugin/v1.0.0-beta7/meshctl-plugin-%s-%s",
+		runtime.GOOS, runtime.GOARCH,
+	)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -61,17 +147,25 @@ func downloadScript(ctx context.Context) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer res.Body.Close()
+	b, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
 	if res.StatusCode != http.StatusOK {
-		b, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			logrus.WithError(err).Debug("could not read response body")
-		} else {
-			logrus.Debugf("response body: %s", string(b))
-		}
-		res.Body.Close()
-
+		logrus.Debug(string(b))
 		return nil, eris.Errorf("could not download script: %d %s", res.StatusCode, res.Status)
 	}
+	if err := ioutil.WriteFile(binPath, b, 0755); err != nil {
+		return nil, err
+	}
 
-	return res.Body, nil
+	return &pluginBinary{binPath, home}, nil
+}
+
+func (binary pluginBinary) run(args ...string) (string, error) {
+	cmd := exec.Command(binary.path, args...)
+	cmd.Env = append(cmd.Env, "MESHCTL_HOME="+binary.home)
+	out, err := cmd.CombinedOutput()
+	return string(out), err
 }

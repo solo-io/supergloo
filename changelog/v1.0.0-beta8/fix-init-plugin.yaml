@@ -1,0 +1,12 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/188
+    resolvesIssue: false
+    description: Implement install script logic directly.
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/188
+    resolvesIssue: false
+    description: Remove references to `$HOME/.meshctl`
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1312
+    description: Adds logic to support the forced re-initialize of the plugin manager.
