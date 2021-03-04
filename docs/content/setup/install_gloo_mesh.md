@@ -61,7 +61,7 @@ Once you have the `meshctl` tool, you can install Gloo Mesh onto a cluster actin
 
 {{< tabs >}}
 {{< tab name="Gloo Mesh" codelang="shell" >}}
-meshctl install
+meshctl install community
 {{< /tab >}}
 {{< tab name="Gloo Mesh Enterprise" codelang="shell">}}
 meshctl install enterprise --license LICENSE_KEY_STRING
@@ -71,7 +71,7 @@ meshctl install enterprise --license LICENSE_KEY_STRING
 If you're not using the context for the `mgmt-cluster`, you can explicitly specify it using the `--kubecontext` option:
 
 ```shell
-meshctl install --kubecontext $MGMT_CONTEXT
+meshctl install community --kubecontext $MGMT_CONTEXT
 ```
 
 You should see output similar to this:
@@ -89,9 +89,6 @@ To undo the installation, run `uninstall`:
 {{< tab name="Gloo Mesh" codelang="shell" >}}
 meshctl uninstall
 {{< /tab >}}
-{{< tab name="Gloo Mesh Enterprise" codelang="shell">}}
-meshctl uninstall enterprise
-{{< /tab >}}
 {{< /tabs >}}
 
 ### Installing with `kubectl apply`
@@ -100,7 +97,7 @@ If you prefer working directly with the Kubernetes resources, (either to use `ku
 
 {{< tabs >}}
 {{< tab name="Gloo Mesh" codelang="shell" >}}
-meshctl install --dry-run
+meshctl install community --dry-run
 {{< /tab >}}
 {{< tab name="Gloo Mesh Enterprise" codelang="shell">}}
 meshctl install enterprise --license LICENSE_KEY_STRING --dry-run
@@ -111,7 +108,7 @@ You can use this output to later run `kubectl apply`:
 
 {{< tabs >}}
 {{< tab name="Gloo Mesh" codelang="shell" >}}
-meshctl install --dry-run | kubectl apply -f -
+meshctl install community --dry-run | kubectl apply -f -
 {{< /tab >}}
 {{< tab name="Gloo Mesh Enterprise" codelang="shell">}}
 meshctl install enterprise --license LICENSE_KEY_STRING --dry-run | kubectl apply -f -
@@ -126,7 +123,7 @@ To undo the installation, run:
 
 {{< tabs >}}
 {{< tab name="Gloo Mesh" codelang="shell" >}}
-meshctl install --dry-run | kubectl delete -f -
+meshctl install community --dry-run | kubectl delete -f -
 {{< /tab >}}
 {{< tab name="Gloo Mesh Enterprise" codelang="shell">}}
 meshctl install enterprise --license LICENSE_KEY_STRING --dry-run | kubectl delete -f -

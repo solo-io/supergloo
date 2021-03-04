@@ -12,7 +12,7 @@ import (
 )
 
 func OsmCommand(ctx context.Context, mgmtCluster string) *cobra.Command {
-	opts := &flags.Options{}
+	opts := flags.Options{}
 	cmd := &cobra.Command{
 		Use:   "init",
 		Short: "Bootstrap an OSM demo with Gloo Mesh",
@@ -38,11 +38,7 @@ deployments.
 	return cmd
 }
 
-func initOSMCmd(ctx context.Context, mgmtCluster string, opts *flags.Options) error {
-	if err := opts.Validate(); err != nil {
-		return err
-	}
-
+func initOSMCmd(ctx context.Context, mgmtCluster string, opts flags.Options) error {
 	box := packr.NewBox("./scripts")
 
 	// management cluster
@@ -55,19 +51,12 @@ func initOSMCmd(ctx context.Context, mgmtCluster string, opts *flags.Options) er
 	}
 
 	// install GlooMesh to management cluster
-	if err := installGlooMesh(ctx, mgmtCluster, box); err != nil {
+	if err := installGlooMesh(ctx, mgmtCluster, opts, box); err != nil {
 		return err
 	}
 
-	// install GlooMesh Enterprise to management cluster, if enabled
-	if opts.Enterprise {
-		if err := installGlooMeshEnterprise(ctx, mgmtCluster, opts.EnterpriseVersion, opts.LicenseKey, box); err != nil {
-			return err
-		}
-	}
-
 	// register management cluster
-	if err := registerCluster(ctx, mgmtCluster, mgmtCluster, opts.Enterprise, box); err != nil {
+	if err := registerCluster(ctx, mgmtCluster, mgmtCluster, opts, box); err != nil {
 		return err
 	}
 

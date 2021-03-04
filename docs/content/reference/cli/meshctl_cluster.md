@@ -15,7 +15,7 @@ Interacting with remote Kubernetes clusters registered to Gloo Mesh
 ### Options inherited from parent commands
 
 ```
-  -v, --verbose   enable verbose logging
+  -v, --verbose   Enable verbose logging
 ```
 
 ### SEE ALSO

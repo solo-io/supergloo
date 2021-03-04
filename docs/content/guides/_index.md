@@ -44,14 +44,12 @@ We also assume you've [registered]({{% versioned_link_path fromRoot="/setup/#reg
 
 
 ```shell
-meshctl cluster register \
-  --cluster-name mgmt-cluster \
+meshctl cluster register community mgmt-cluster \
   --remote-context $MGMT_CONTEXT
 ```
 
 ```shell
-meshctl cluster register \
-  --cluster-name remote-cluster \
+meshctl cluster register community remote-cluster \
   --remote-context $REMOTE_CONTEXT
 ```
 
