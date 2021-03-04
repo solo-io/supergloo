@@ -42,7 +42,7 @@ kind load docker-image --name "${cluster}" "${agentImage}"
 
 ## install to kube
 
-go run "${PROJECT_ROOT}/cmd/meshctl/main.go" install \
+go run "${PROJECT_ROOT}/cmd/meshctl/main.go" install community \
   --kubecontext kind-"${cluster}" \
   --chart-file "${gloomeshChart}" \
   --namespace gloo-mesh \

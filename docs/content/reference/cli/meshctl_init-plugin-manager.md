@@ -20,7 +20,7 @@ meshctl init-plugin-manager [flags]
 ### Options inherited from parent commands
 
 ```
-  -v, --verbose   enable verbose logging
+  -v, --verbose   Enable verbose logging
 ```
 
 ### SEE ALSO

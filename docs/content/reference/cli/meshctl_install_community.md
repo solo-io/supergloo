@@ -1,41 +1,41 @@
 ---
-title: "meshctl install enterprise"
+title: "meshctl install community"
 weight: 5
 ---
-## meshctl install enterprise
+## meshctl install community
 
-Install Gloo Mesh Enterprise (requires a license)
+Install Gloo Mesh Community
 
 ```
-meshctl install enterprise [flags]
+meshctl install community [flags]
 ```
 
 ### Examples
 
 ```
   # Install to the currently selected Kubernetes context
-  meshctl install enterprise --license=<my_license>
+  meshctl install community
 
   # Install to and register the currently selected Kubernetes context
-  meshctl install enterprise --license=<my_license> --register
+  meshctl install community --register
 
-  # Don't install the UI
-  meshctl install enterprise --license=<my_license> --skip-ui
+  # Install to a different context
+  meshctl install --kubecontext=some-context community
 ```
 
 ### Options
 
 ```
-      --enterprise-agent-chart-file string     Path to a local Helm chart for installing the Enterprise Agent.
-                                               If unset, this command will install the Enterprise Agent from the publicly released Helm chart.
-      --enterprise-agent-chart-values string   Path to a Helm values.yaml file for customizing the installation of the Enterprise Agent.
-                                               If unset, this command will install the Enterprise Agent with default Helm values.
-  -h, --help                                   help for enterprise
-      --license string                         Gloo Mesh Enterprise license key (required)
-      --relay-server-address string            The address that the enterprise agentw will communicate with the relay server via.
-      --release-name string                    Helm release name (default "gloo-mesh")
-      --skip-rbac                              Skip installation of the RBAC Webhook
-      --skip-ui                                Skip installation of the Gloo Mesh UI
+      --agent-crds-chart-file string     Path to a local Helm chart for installing CRDs needed by remote agents.
+                                         If unset, this command will install the agent CRDs from the publicly released Helm chart.
+      --api-server-address string        Swap out the address of the remote cluster's k8s API server for the value of this flag.
+                                         Set this flag when the address of the cluster domain used by the Gloo Mesh is different than that specified in the local kubeconfig.
+      --cert-agent-chart-file string     Path to a local Helm chart for installing the Certificate Agent.
+                                         If unset, this command will install the Certificate Agent from the publicly released Helm chart.
+      --cert-agent-chart-values string   Path to a Helm values.yaml file for customizing the installation of the Certificate Agent.
+                                         If unset, this command will install the Certificate Agent with default Helm values.
+  -h, --help                             help for community
+      --release-name string              Helm release name (default "gloo-mesh")
 ```
 
 ### Options inherited from parent commands
