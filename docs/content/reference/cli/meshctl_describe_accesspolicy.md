@@ -14,15 +14,15 @@ meshctl describe accesspolicy [flags]
 
 ```
   -h, --help                 help for accesspolicy
-      --kubeconfig string    path to the kubeconfig from which the management cluster will be accessed
-      --kubecontext string   name of the kubeconfig context to use for the management cluster
+      --kubeconfig string    Path to the kubeconfig from which the management cluster will be accessed
+      --kubecontext string   Name of the kubeconfig context to use for the management cluster
   -s, --search strings       A list of terms to match access policy names against
 ```
 
 ### Options inherited from parent commands
 
 ```
-  -v, --verbose   enable verbose logging
+  -v, --verbose   Enable verbose logging
 ```
 
 ### SEE ALSO
