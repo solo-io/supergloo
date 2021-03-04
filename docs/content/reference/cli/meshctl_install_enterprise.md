@@ -33,7 +33,7 @@ meshctl install enterprise [flags]
   -h, --help                                   help for enterprise
       --license string                         Gloo Mesh Enterprise license key (required)
       --relay-server-address string            The address that the enterprise agentw will communicate with the relay server via.
-      --release-name string                    Helm release name (default "gloo-mesh-enterprise")
+      --release-name string                    Helm release name (default "gloo-mesh")
       --skip-rbac                              Skip installation of the RBAC Webhook
       --skip-ui                                Skip installation of the Gloo Mesh UI
 ```
