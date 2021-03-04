@@ -95,6 +95,7 @@ At a high level, the script achieves the following:
 3. Create a signing certificate (`RELAY_SIGNING_CERT_NAME`), derived from the root certificate,
    which is used by the relay server to issue certificates for relay agents once initial trust has been established.
 
+{{% notice note %}} The following was tested with OpenSSL 1.1.1h  22 Sep 2020 {{% /notice %}}
 
 ```bash
 RELAY_ROOT_CERT_NAME=relay-root
