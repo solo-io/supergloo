@@ -31,7 +31,6 @@ require (
 	github.com/envoyproxy/go-control-plane v0.9.9-0.20210115003313-31f9241a16e6
 	github.com/fatih/color v1.10.0
 	github.com/gertd/go-pluralize v0.1.1
-	github.com/go-git/go-git/v5 v5.2.0
 	github.com/go-logr/zapr v0.3.0 // indirect
 	github.com/go-openapi/spec v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.6

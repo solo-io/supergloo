@@ -2,7 +2,7 @@ site/*
 site-latest/*
 site-versioned/*
 themes/
-
-# changelog should be generated at release time
+ci
+gloo-mesh-temp
 content/reference/changelog
 
