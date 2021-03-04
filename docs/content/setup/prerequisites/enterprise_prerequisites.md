@@ -30,7 +30,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
   name: gloo-mesh-ingress
-  namespace: your-namespace
+  namespace: gloo-mesh
 spec:
   selector:
     istio: ingressgateway
@@ -50,12 +50,12 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: gloo-mesh-ingress
-  namespace: your-namespace
+  namespace: gloo-mesh
 spec:
   hosts:
     - "enterprise-networking.gloo-mesh"
   gateways:
-    - your-namespace/gloo-mesh-ingress
+    - gloo-mesh/gloo-mesh-ingress
   tls:
     - match:
         - port: 443
@@ -90,6 +90,10 @@ At a high level, the script achieves the following:
 
 ```bash
 RELAY_ROOT_CERT_NAME=relay-root
+RELAY_SERVER_CERT_NAME=relay-server-tls
+RELAY_SIGNING_CERT_NAME=relay-tls-signing
+
+echo "creating root cert ..."
 
 openssl req -new -newkey rsa:4096 -x509 -sha256 \
         -days 3650 -nodes -out ${RELAY_ROOT_CERT_NAME}.crt -keyout ${RELAY_ROOT_CERT_NAME}.key \
@@ -98,8 +102,6 @@ openssl req -new -newkey rsa:4096 -x509 -sha256 \
 
 
 echo "creating grpc server tls cert ..."
-
-RELAY_SERVER_CERT_NAME=relay-server-tls
 
 # server cert
 cat > "${RELAY_SERVER_CERT_NAME}.conf" <<EOF
@@ -126,7 +128,7 @@ openssl x509 -req \
   -extensions v3_req -extfile "${RELAY_SERVER_CERT_NAME}.conf"
 
 echo "creating identity server signing cert ..."
-RELAY_SIGNING_CERT_NAME=relay-tls-signing
+
 # signing cert
 cat > "${RELAY_SIGNING_CERT_NAME}.conf" <<EOF
 [req]
@@ -150,7 +152,22 @@ openssl x509 -req \
   -set_serial 0 \
   -in ${RELAY_SIGNING_CERT_NAME}.csr -out ${RELAY_SIGNING_CERT_NAME}.crt \
   -extensions v3_req -extfile "${RELAY_SIGNING_CERT_NAME}.conf"
+```
 
+Next, we'll create secrets on the management and remote clusters with all the requisite generated certificates. On the
+management cluster, we need the root cert, server cert, and signing cert. On the remote, we just need the root cert.
+
+```bash
+MGMT_CLUSTER=mgmt-cluster
+MGMT_CONTEXT=kind-mgmt-cluster
+
+REMOTE_CLUSTER=remote-cluster
+REMOTE_CONTEXT=kind-remote-cluster
+
+# ensure gloo-mesh namespace exists on both mgmt and remote clusters
+for context in ${MGMT_CONTEXT} ${REMOTE_CONTEXT}; do
+  kubectl --context ${context} create namespace gloo-mesh
+done
 
 # create secrets from certs
 
@@ -164,12 +181,12 @@ kubectl create secret generic ${RELAY_SERVER_CERT_NAME}-secret \
   --namespace gloo-mesh
 
 # Note: ${RELAY_ROOT_CERT_NAME}-tls-secret must match the agent Helm value `relay.rootTlsSecret.Name`
-for cluster in ${MGMT_CLUSTER} ${REMOTE_CLUSTER}; do
-echo "creating matching root cert for agent in cluster ${cluster}..."
+for context in ${MGMT_CONTEXT} ${REMOTE_CONTEXT}; do
+echo "creating matching root cert for agent in cluster context ${context}..."
   kubectl create secret generic ${RELAY_ROOT_CERT_NAME}-tls-secret \
   --from-file=ca.crt=${RELAY_ROOT_CERT_NAME}.crt \
   --dry-run=client -oyaml | kubectl apply -f- \
-   --context kind-${cluster} \
+   --context ${context} \
   --namespace gloo-mesh
 done
 
@@ -179,27 +196,24 @@ kubectl create secret generic ${RELAY_SIGNING_CERT_NAME}-secret \
   --from-file=tls.crt=${RELAY_SIGNING_CERT_NAME}.crt \
   --from-file=ca.crt=${RELAY_ROOT_CERT_NAME}.crt \
   --dry-run=client -oyaml | kubectl apply -f- \
-  --context kind-${MGMT_CLUSTER} \
+  --context ${MGMT_CONTEXT} \
   --namespace gloo-mesh
 ```
 
-Lastly, in order to establish initial trust, we need to create a token shared by the relay server and all potential relay agents.
+Last, in order to establish initial trust, we need to create a token shared by the relay server and all potential relay agents.
 This is used by the server to initially verify the identity of a relay agent before issuing a certificate for that agent.
 
 ```shell
-for cluster in ${MGMT_CLUSTER} ${REMOTE_CLUSTER}; do
-  echo "creating shared identity token in ${cluster}..."
-  kubectl apply --context kind-${cluster} -f- <<EOF
+for context in ${MGMT_CONTEXT} ${REMOTE_CONTEXT}; do
+  echo "creating shared identity token in cluster context ${context}..."
+  kubectl apply --context ${context} -f- <<EOF
 kind: Secret
 apiVersion: v1
 metadata:
   name: relay-identity-token-secret
   namespace: gloo-mesh
-data:
+stringData:
   token: "your-token-value-of-choice"
 EOF
+done
 ```
-
-#### meschtl
-
-[comment]: <> (TODO document meshctl command once available)

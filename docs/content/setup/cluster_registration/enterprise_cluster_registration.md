@@ -12,9 +12,21 @@ Cluster registration in relay mode simply consists of installing the relay agent
 
 **Register with Helm**
 
-1. Install the relay agent from the Helm repository located at `https://storage.googleapis.com/gloo-mesh-enterprise/enterprise-agent`.
-Make sure to review the Helm values options before installing. The value of `relay.cluster` will
-be the name by which the cluster is referenced in all Gloo Mesh configuration.
+1. Install the Enterprise Agent from the Helm repository located at `https://storage.googleapis.com/gloo-mesh-enterprise/enterprise-agent`.
+Make sure to review the Helm values options before installing. Some notable values include:
+
+* `relay.cluster` will be the name by which the cluster is referenced in all Gloo Mesh configuration.
+* `relay.serverAddress` is the address by which the Gloo Mesh management plane can be accessed. See the [Gloo Mesh Enterprise prerequisites]({{% versioned_link_path fromRoot="/setup/enterprise_prerequisites" %}}) for more details.
+* `relay.authority` is the host header that will be passed to the server on the Gloo Mesh management plane.
+
+Also note that the Enterprise Agent's version should match that of the `enterprise-networking` component running on the
+management cluster. Run `meshctl version` on the management cluster to review the `enterprise-networking` version.
+
+```bash
+helm upgrade --install enterprise-agent enterprise-agent/enterprise-agent --namespace gloo-mesh \
+  --set relay.serverAddress=${SERVER_ADDRESS} --set relay.authority=enterprise-networking.gloo-mesh \
+  --set relay.cluster=mgmt-cluster --kube-context=kind-mgmt-cluster --version ${ENTERPRISE_NETWORKING_VERSION}
+```
 
 2. Create a `KubernetesCluster` object. The `metadata.name` of the object must
 match the value passed for `relay.cluster` in the Helm chart above. The `spec.clusterDomain` must 
@@ -33,6 +45,4 @@ spec:
 
 **Register with meshctl**
 
-Register with `meshctl cluster register enterprise`, see details about usage and parameters [here]({{% versioned_link_path fromRoot="/reference/cli/meshctl_cluster_register_enterprise" %}}).
-
-[comment]: <> (TODO add example command here once https://github.com/solo-io/gloo-mesh/pull/1290 is done)
+Instructions for registering a cluster to Gloo Mesh Enterprise with meshctl are coming soon.
