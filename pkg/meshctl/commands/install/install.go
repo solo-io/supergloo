@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/gloo-mesh/pkg/common/version"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/install/enterprise"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/install/internal/flags"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
@@ -30,6 +31,9 @@ func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command
 }
 
 func install(ctx context.Context, opts *flags.Options) error {
+	if opts.Version == "" {
+		opts.Version = version.Version
+	}
 	if err := opts.GetInstaller(gloomesh.GlooMeshChartUriTemplate).InstallGlooMesh(ctx); err != nil {
 		return eris.Wrap(err, "installing gloo-mesh")
 	}
