@@ -213,6 +213,7 @@ kubectl create secret generic ${RELAY_SIGNING_CERT_NAME}-secret \
 
 Last, in order to establish initial trust, we need to create a token shared by the relay server and all potential relay agents.
 This is used by the server to initially verify the identity of a relay agent before issuing a certificate for that agent.
+All registered clusters as well as the management cluster must have the same token value.
 
 ```shell
 for context in ${MGMT_CONTEXT} ${REMOTE_CONTEXT}; do
