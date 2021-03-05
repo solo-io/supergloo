@@ -6,11 +6,12 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/hashicorp/go-version"
 	"github.com/rotisserie/eris"
 	"gopkg.in/yaml.v2"
 )
 
-func GetLatestChartVersion(repoURI, chartName string) (string, error) {
+func GetLatestChartVersion(repoURI, chartName string, stable bool) (string, error) {
 	res, err := http.Get(fmt.Sprintf("%s/%s/index.yaml", repoURI, chartName))
 	if err != nil {
 		return "", err
@@ -37,5 +38,20 @@ func GetLatestChartVersion(repoURI, chartName string) (string, error) {
 	}
 
 	// entries are sorted by version so the first will have the latest
+
+	if stable {
+		// To install the latest stable version, we will iterate through the entry versions
+		// until we find one with no prerelease descriptors (e.g. beta, rc).
+		for _, entry := range entries {
+			if entryVersion, err := version.NewVersion(entry.Version); err != nil {
+				// skip this invalid version
+			} else {
+				if entryVersion.Prerelease() == "" {
+					return entry.Version, nil
+				}
+			}
+		}
+	}
+
 	return entries[0].Version, nil
 }

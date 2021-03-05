@@ -51,7 +51,7 @@ func install(ctx context.Context, opts *options) error {
 		chartName = "gloo-mesh-enterprise"
 	)
 	if opts.Version == "" {
-		version, err := helm.GetLatestChartVersion(repoURI, chartName)
+		version, err := helm.GetLatestChartVersion(repoURI, chartName, true)
 		if err != nil {
 			return err
 		}
