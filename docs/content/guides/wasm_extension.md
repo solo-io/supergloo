@@ -37,7 +37,7 @@ Set your environment variables like so to reference the management and remote cl
 ```shell
 export MGMT_CONTEXT=kind-mgmt-cluster
 export REMOTE_CONTEXT=kind-remote-cluster
-export ENTERPRISE_EXTENDER_VERSION=0.2.0
+export ENTERPRISE_EXTENDER_VERSION=0.4.0
 ```
 
 ## Prepare the Envoy sidecar to fetch Wasm filters
@@ -274,7 +274,7 @@ Now let's deploy a Wasm filter with a WasmDeployment:
 
 ```bash
 cat <<EOF | kubectl apply --context ${MGMT_CONTEXT} -f-
-apiVersion: networking.enterprise.mesh.gloo.solo.io/v1alpha1
+apiVersion: networking.enterprise.mesh.gloo.solo.io/v1beta1
 kind: WasmDeployment
 metadata:
   labels:
