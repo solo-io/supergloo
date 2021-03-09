@@ -43,7 +43,6 @@ Name|Version|License
 [k8s.io/apiextensions-apiserver](https://k8s.io/apiextensions-apiserver)|v0.19.7|Apache License 2.0
 [k8s.io/apimachinery](https://k8s.io/apimachinery)|v0.19.7|Apache License 2.0
 [k8s.io/client-go](https://k8s.io/client-go)|v0.19.7|Apache License 2.0
-[k8s.io/helm](https://k8s.io/helm)|v2.12.2+incompatible|Apache License 2.0
 [k8s.io/kubernetes](https://k8s.io/kubernetes)|v1.13.0|Apache License 2.0
 [k8s.io/utils](https://k8s.io/utils)|v0.0.0-20201110183641-67b214c5f920|Apache License 2.0
 [sigs.k8s.io/controller-runtime](https://sigs.k8s.io/controller-runtime)|v0.7.0|Apache License 2.0
