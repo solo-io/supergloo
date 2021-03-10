@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1276
+    description: Rename the gloo-mesh-apiserver pod to dashboard, and update the `meshctl dashboard` command.
+    resolvesIssue: false
