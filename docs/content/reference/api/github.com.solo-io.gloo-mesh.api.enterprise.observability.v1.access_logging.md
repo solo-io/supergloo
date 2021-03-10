@@ -38,6 +38,9 @@ Describes a record of access logs sourced from a set of workloads and optionally
 | ----- | ---- | ----- | ----------- |
 | workloadSelectors | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Select the workloads to be configured to emit access logs. Leave empty to apply to all workloads managed by Gloo Mesh. |
   | filters | [][observability.enterprise.mesh.gloo.solo.io.AccessLogRecordSpec.Filter]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.observability.v1.access_logging#observability.enterprise.mesh.gloo.solo.io.AccessLogRecordSpec.Filter" >}}) | repeated | Configure criteria for determining which access logs will be recorded. The list is disjunctive, a request will be recorded if it matches any filter. Leave empty to emit all access logs. |
+  | includedRequestHeaders | []string | repeated | Specify request headers to include in access logs. |
+  | includedResponseHeaders | []string | repeated | Specify response headers to include in access logs. |
+  | includedResponseTrailers | []string | repeated | Specify response trailers to include in access logs. |
   
 
 

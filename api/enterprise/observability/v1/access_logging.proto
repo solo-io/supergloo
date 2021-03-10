@@ -25,6 +25,15 @@ message AccessLogRecordSpec {
     // Leave empty to emit all access logs.
     repeated Filter filters = 2;
 
+    // Specify request headers to include in access logs.
+    repeated string included_request_headers = 3;
+
+    // Specify response headers to include in access logs.
+    repeated string included_response_headers = 4;
+
+    // Specify response trailers to include in access logs.
+    repeated string included_response_trailers = 5;
+
     // Specify criteria for recording access logs. A request must match all specified criteria to be recorded.
     message Filter {
 

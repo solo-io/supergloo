@@ -87,6 +87,21 @@ spec:
                     type: object
                 type: object
               type: array
+            includedRequestHeaders:
+              description: Specify request headers to include in access logs.
+              items:
+                type: string
+              type: array
+            includedResponseHeaders:
+              description: Specify response headers to include in access logs.
+              items:
+                type: string
+              type: array
+            includedResponseTrailers:
+              description: Specify response trailers to include in access logs.
+              items:
+                type: string
+              type: array
             workloadSelectors:
               description: |-
                 Select the workloads to be configured to emit access logs.
