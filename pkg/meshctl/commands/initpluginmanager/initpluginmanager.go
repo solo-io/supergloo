@@ -50,13 +50,10 @@ func Command(ctx context.Context) *cobra.Command {
 				homeStr = "$HOME/.gloo-mesh"
 			}
 			fmt.Printf(`The meshctl plugin manager was successfully installed 🎉
-
 Add the meshctl plugins to your path with:
   export PATH=%s/bin:$PATH
-
 Now run:
   meshctl plugin --help     # see the commands available to you
-
 Please see visit the Gloo Mesh website for more info:  https://www.solo.io/products/gloo-mesh/
 `, homeStr)
 			return nil
@@ -94,8 +91,9 @@ type pluginBinary struct {
 }
 
 func checkExisting(home string, force bool) error {
+	pluginDirs := []string{"index", "receipts", "store"}
 	dirty := false
-	for _, dir := range []string{"index", "receipts", "store"} {
+	for _, dir := range pluginDirs {
 		if _, err := os.Stat(filepath.Join(home, dir)); err == nil {
 			dirty = true
 			break
@@ -109,7 +107,7 @@ func checkExisting(home string, force bool) error {
 	if !force {
 		return eris.Errorf("found existing plugin manager files in %s, rerun with -f to delete and reinstall", home)
 	}
-	for _, dir := range []string{"index", "receipts", "store"} {
+	for _, dir := range pluginDirs {
 		os.RemoveAll(filepath.Join(home, dir))
 	}
 	binFiles, err := ioutil.ReadDir(filepath.Join(home, "bin"))
@@ -155,12 +153,12 @@ func downloadTempBinary(ctx context.Context, home string) (*pluginBinary, error)
 	}
 	if res.StatusCode != http.StatusOK {
 		logrus.Debug(string(b))
-		return nil, eris.Errorf("could not download script: %d %s", res.StatusCode, res.Status)
+		return nil, eris.Errorf("could not download plugin manager binary: %d %s", res.StatusCode, res.Status)
 	}
 	if err := ioutil.WriteFile(binPath, b, 0755); err != nil {
 		return nil, err
 	}
-	return &pluginBinary{binPath, home}, nil
+	return &pluginBinary{path: binPath, home: home}, nil
 }
 
 func (binary pluginBinary) run(args ...string) (string, error) {
