@@ -11,7 +11,6 @@ import (
 // Generated Deepcopy methods for TrafficPolicy
 
 func (in *TrafficPolicy) DeepCopyInto(out *TrafficPolicy) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
@@ -72,7 +71,6 @@ func (in *TrafficPolicyList) DeepCopyObject() runtime.Object {
 // Generated Deepcopy methods for AccessPolicy
 
 func (in *AccessPolicy) DeepCopyInto(out *AccessPolicy) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
@@ -133,7 +131,6 @@ func (in *AccessPolicyList) DeepCopyObject() runtime.Object {
 // Generated Deepcopy methods for VirtualMesh
 
 func (in *VirtualMesh) DeepCopyInto(out *VirtualMesh) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 

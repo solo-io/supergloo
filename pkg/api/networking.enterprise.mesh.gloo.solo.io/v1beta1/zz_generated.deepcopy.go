@@ -11,7 +11,6 @@ import (
 // Generated Deepcopy methods for WasmDeployment
 
 func (in *WasmDeployment) DeepCopyInto(out *WasmDeployment) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
@@ -72,7 +71,6 @@ func (in *WasmDeploymentList) DeepCopyObject() runtime.Object {
 // Generated Deepcopy methods for VirtualDestination
 
 func (in *VirtualDestination) DeepCopyInto(out *VirtualDestination) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 

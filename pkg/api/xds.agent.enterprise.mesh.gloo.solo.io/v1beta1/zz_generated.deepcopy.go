@@ -11,7 +11,6 @@ import (
 // Generated Deepcopy methods for XdsConfig
 
 func (in *XdsConfig) DeepCopyInto(out *XdsConfig) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
