@@ -45,7 +45,9 @@ kubectl config use-context $MGMT_CONTEXT
 Note that these contexts need not be different; you may install and manage a service mesh in the same cluster as Gloo Mesh. For the purposes of this guide, though, we will assume they are different.
 {{% /notice %}}
 
-The following directions show how to install both Gloo Mesh and Gloo Mesh Enterprise. Select the tab that meets your scenario. If you are deploying Gloo Mesh Enterprise, you should also follow our guide on configuring Role-based API control.
+The following directions show how to install both Gloo Mesh and Gloo Mesh Enterprise. Select the tab that meets your scenario. 
+
+If you are deploying Gloo Mesh Enterprise, make sure you have followed the [prerequisites guide]({{% versioned_link_path fromRoot="/setup/prerequisites/enterprise_prerequisites/" %}}). We also recommend following our guide on [configuring Role-based API control]({{% versioned_link_path fromRoot="/guides/configure_role_based_api//" %}}).
 
 ### Installing with `meshctl`
 

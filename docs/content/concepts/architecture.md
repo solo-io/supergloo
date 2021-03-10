@@ -5,7 +5,7 @@ description: Understanding Gloo Mesh Architecture
 weight: 20
 ---
 
-This document details the architecture of Gloo Mesh, which informs how Gloo Mesh is deployed and operated.
+This document details the architecture of Gloo Mesh using the *standard* deployment model. The deployment model informs how Gloo Mesh is deployed and operated. Gloo Mesh Enterprise provides an [alternative *relay* model]({{% versioned_link_path fromRoot="/concepts/relay/" %}}) which differs from the standard deployment model by adopting a distributed push architecture.
 
 ## Components
 
