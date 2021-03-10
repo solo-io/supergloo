@@ -188,7 +188,7 @@ kubectl create secret generic ${RELAY_SERVER_CERT_NAME}-secret \
   --from-file=tls.crt=${RELAY_SERVER_CERT_NAME}.crt \
   --from-file=ca.crt=${RELAY_ROOT_CERT_NAME}.crt \
   --dry-run=client -oyaml | kubectl apply -f- \
-   --context kind-${MGMT_CLUSTER} \
+   --context ${MGMT_CONTEXT} \
   --namespace gloo-mesh
 
 # Note: ${RELAY_ROOT_CERT_NAME}-tls-secret must match the agent Helm value `relay.rootTlsSecret.Name`
