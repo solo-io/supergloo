@@ -119,3 +119,26 @@ message IdentitySelector {
         repeated .core.skv2.solo.io.ClusterObjectRef service_accounts = 1;
     }
 }
+
+// Select individual Meshes control planes using one or more platform-specific selectors.
+message MeshSelector {
+
+    oneof mesh_type {
+        // Select an Istio mesh based on the Kubernetes namespace and cluster in which its control plane is installed.
+        IstioMeshRef istio_ref = 1;
+    }
+
+    message IstioMeshRef {
+
+        /*
+            Select an istio control plane (`istiod`) in the given namespace.
+        */
+        string namespace = 1;
+
+        /*
+            Select an istio control plane (`istiod`) in the given cluster.
+        */
+        string cluster = 2;
+    }
+
+}

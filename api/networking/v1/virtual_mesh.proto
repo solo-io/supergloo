@@ -4,6 +4,7 @@ option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.s
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
@@ -15,7 +16,11 @@ option (extproto.equal_all) = true;
 message VirtualMeshSpec {
 
     // Specify the Meshes configured by this VirtualMesh.
+    // Deprecated: Use meshSelector
     repeated .core.skv2.solo.io.ObjectRef meshes = 1;
+
+    // Selectors for the Meshes backing this VirtualMesh.
+    repeated .common.mesh.gloo.solo.io.MeshSelector mesh_selectors = 10;
 
     // Specify mTLS options.
     MTLSConfig mtls_config = 2;

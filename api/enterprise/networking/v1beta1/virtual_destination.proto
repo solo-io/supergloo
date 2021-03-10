@@ -62,7 +62,12 @@ message VirtualDestinationSpec {
 
     // A list of Mesh references.
     message MeshList {
+        // DEPRECATED: use meshSelectors.
         repeated .core.skv2.solo.io.ObjectRef meshes = 1;
+
+        // Selectors for the Meshes that this VirtualDestination will be visible to. If multiple meshes are specified, they must
+        // all belong to the same VirtualMesh.
+        repeated .common.mesh.gloo.solo.io.MeshSelector mesh_selectors = 2;
     }
 
     // Failover priority is determined by an explicitly provided static ordering of Destinations.
