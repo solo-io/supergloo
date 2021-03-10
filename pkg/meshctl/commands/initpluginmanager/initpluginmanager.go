@@ -16,6 +16,8 @@ import (
 	"github.com/spf13/pflag"
 )
 
+const tempBinaryVersion = "v1.0.0-beta7"
+
 func Command(ctx context.Context) *cobra.Command {
 	opts := &options{}
 	cmd := &cobra.Command{
@@ -43,7 +45,6 @@ func Command(ctx context.Context) *cobra.Command {
 				fmt.Println(out)
 				return err
 			}
-
 			homeStr := opts.home
 			if homeStr == "" {
 				homeStr = "$HOME/.gloo-mesh"
@@ -84,7 +85,6 @@ func (o options) getHome() (string, error) {
 	if err != nil {
 		return "", err
 	}
-
 	return filepath.Join(userHome, ".gloo-mesh"), nil
 }
 
@@ -103,7 +103,6 @@ func checkExisting(home string, force bool) error {
 			return err
 		}
 	}
-
 	if !dirty {
 		return nil
 	}
@@ -111,7 +110,6 @@ func checkExisting(home string, force bool) error {
 		return eris.Errorf("found existing plugin manager files in %s, rerun with -f to delete and reinstall", home)
 	}
 	for _, dir := range []string{"index", "receipts", "store"} {
-		fmt.Println(filepath.Join(home, dir))
 		os.RemoveAll(filepath.Join(home, dir))
 	}
 	binFiles, err := ioutil.ReadDir(filepath.Join(home, "bin"))
@@ -120,11 +118,9 @@ func checkExisting(home string, force bool) error {
 	}
 	for _, file := range binFiles {
 		if file.Name() != "meshctl" {
-			fmt.Println(filepath.Join(home, "bin", file.Name()))
 			os.Remove(filepath.Join(home, "bin", file.Name()))
 		}
 	}
-
 	return nil
 }
 
@@ -134,10 +130,15 @@ func downloadTempBinary(ctx context.Context, home string) (*pluginBinary, error)
 		return nil, err
 	}
 	binPath := filepath.Join(tempDir, "plugin")
-
+	if runtime.GOARCH != "amd64" {
+		return nil, eris.Errorf("unsupported architecture: %s", runtime.GOARCH)
+	}
+	if runtime.GOOS != "darwin" && runtime.GOOS != "linux" {
+		return nil, eris.Errorf("unsupported operating system: %s", runtime.GOOS)
+	}
 	url := fmt.Sprintf(
-		"https://storage.googleapis.com/gloo-mesh-enterprise/meshctl-plugins/plugin/v1.0.0-beta7/meshctl-plugin-%s-%s",
-		runtime.GOOS, runtime.GOARCH,
+		"https://storage.googleapis.com/gloo-mesh-enterprise/meshctl-plugins/plugin/%s/meshctl-plugin-%s-%s",
+		tempBinaryVersion, runtime.GOOS, runtime.GOARCH,
 	)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -159,7 +160,6 @@ func downloadTempBinary(ctx context.Context, home string) (*pluginBinary, error)
 	if err := ioutil.WriteFile(binPath, b, 0755); err != nil {
 		return nil, err
 	}
-
 	return &pluginBinary{binPath, home}, nil
 }
 
