@@ -15,8 +15,8 @@ To add your new Wasm filter to the mesh, all you need is a `WasmDeployment` Kube
 In this guide we will enable a Wasm filter for use by an Envoy proxy. The filter will add a custom header to the response from the reviews service in the bookinfo application. To do this, we will walk through the following steps:
 
 1. Prepare the Envoy sidecar to fetch Wasm filters
-1. Ensure the Enterprise Networking feature is enabled
-1. Ensure the Enterprise agent is installed
+1. Ensure the Enterprise Extender feature is enabled
+1. Ensure the Wasm agent is installed
 1. Deploy the Wasm filter and validate
 
 ## Before you begin
@@ -37,12 +37,12 @@ Set your environment variables like so to reference the management and remote cl
 ```shell
 export MGMT_CONTEXT=kind-mgmt-cluster
 export REMOTE_CONTEXT=kind-remote-cluster
-export ENTERPRISE_NETWORKING_VERSION=0.2.0
+export ENTERPRISE_EXTENDER_VERSION=0.4.0
 ```
 
 ## Prepare the Envoy sidecar to fetch Wasm filters
 
-Our Envoy instances will fetch their wasm filters from an [envoy cluster](https://www.envoyproxy.io/docs/envoy/latest/api-v2/clusters/clusters) that must be defined in the static bootstrap config. We must therefore perform a one-time operation to add the `enterprise-agent` as a cluster in the Envoy bootstrap.
+Our Envoy instances will fetch their wasm filters from an [envoy cluster](https://www.envoyproxy.io/docs/envoy/latest/api-v2/clusters/clusters) that must be defined in the static bootstrap config. We must therefore perform a one-time operation to add the `wasm-agent` as a cluster in the Envoy bootstrap.
 
 To do so, let's create a ConfigMap containing the custom additions to the Envoy bootstrap:
 
@@ -58,18 +58,18 @@ data:
     {
       "static_resources": {
         "clusters": [{
-          "name": "enterprise_agent_cluster",
+          "name": "wasm_agent_cluster",
           "type" : "STRICT_DNS",
           "connect_timeout": "1s",
           "lb_policy": "ROUND_ROBIN",
           "load_assignment": {
-            "cluster_name": "enterprise_agent_cluster",
+            "cluster_name": "wasm_agent_cluster",
             "endpoints": [{
               "lb_endpoints": [{
                 "endpoint": {
                   "address":{
                     "socket_address": {
-                      "address": "enterprise-agent.gloo-mesh.svc.cluster.local",
+                      "address": "wasm-agent.gloo-mesh.svc.cluster.local",
                       "port_value": 9977
                     }
                   }
@@ -116,25 +116,25 @@ kubectl patch deployment -n bookinfo reviews-v3 --context ${REMOTE_CONTEXT} \
 
 Now our deployment is wasm-ready.
 
-##  Ensure the Enterprise Networking feature is enabled
+##  Ensure the Enterprise Extender feature is enabled
 
-The default installation of Gloo Mesh Enterprise should already have the Enterprise Networking feature included. We can check by running the following:
+The default installation of Gloo Mesh Enterprise should already have the Enterprise Extender feature included. We can check by running the following:
 
 ```shell
-kubectl get deployment/enterprise-networking -n gloo-mesh
+kubectl get deployment/enterprise-extender -n gloo-mesh
 ```
 
 You should see the following:
 
 ```shell
 NAME                  READY   UP-TO-DATE   AVAILABLE   AGE
-enterprise-networking   1/1     1            1           53m
+enterprise-extender   1/1     1            1           53m
 ```
 
-If there is no output, you will need to update your installation to include the Enterprise Networking feature. You can add the feature in by creating the following YAML file. Be sure to update the license key value before running the Helm upgrade.
+If there is no output, you will need to update your installation to include the Enterprise Extender feature. You can add the feature in by creating the following YAML file. Be sure to update the license key value before running the Helm upgrade.
 
 ```
-# create values.yaml file to configure gloo-mesh to use the enterprise-networking
+# create values.yaml file to configure gloo-mesh to use the enterprise-extender
 cat > gloo-mesh-values.yaml << EOF
 licenseKey: <your-license-key>
 
@@ -146,9 +146,16 @@ gloo-mesh-ui:
 rbac-webhook:
   enabled: true
 
-# Set to false to omit installing Gloo Mesh Enterprise Networking
-enterprise-networking:
+# Set to false to omit installing the Gloo Mesh Enterprise Extender
+gloo-mesh-extender:
   enabled: true
+
+gloo-mesh:
+  settings:
+    networkingExtensionServers:
+      - address: enterprise-extender:9900
+        insecure: true
+        reconnectOnNetworkFailures: true
 EOF
 
 # install upgrade from helm chart
@@ -161,27 +168,27 @@ helm upgrade --install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enter
 You can run the following command to verify the deployment was successful.
 
 ```shell
-kubectl get deployment/enterprise-networking -n gloo-mesh
+kubectl get deployment/enterprise-extender -n gloo-mesh
 ```
 
-The next step is to install the `enterprise-agent` on the remote cluster.
+The next step is to install the `wasm-agent` on the remote cluster.
 
-## Ensure the Enterprise agent is installed
+## Ensure the Wasm agent is installed
 
-If you registered the `remote-cluster` after having installed Enterprise Networking, meshctl should have already installed the Wasm agent on your behalf. Run the following command to verify presence of the Enterprise agent.
+If you registered the `remote-cluster` after having installed the Enterprise Extender, meshctl should have already installed the Wasm agent on your behalf. Run the following command to verify presence of the Wasm agent.
 
 ```shell
-kubectl get deployment/enterprise-agent -n gloo-mesh --context $REMOTE_CONTEXT
+kubectl get deployment/wasm-agent -n gloo-mesh --context $REMOTE_CONTEXT
 ```
 
 You should see the following:
 
 ```shell
 NAME         READY   UP-TO-DATE   AVAILABLE   AGE
-enterprise-agent   1/1     1            1           55m
+wasm-agent   1/1     1            1           55m
 ```
 
-If not, we will register the `remote-cluster` to install the enterprise-agent. Even if you already registered the cluster, we will re-run the registration command and include the `--install-enterprise-agent` flag to add the Enterprise agent.
+If not, we will register the `remote-cluster` to install the wasm-agent. Even if you already registered the cluster, we will re-run the registration command and include the `--install-wasm-agent` flag to add the Wasm agent.
 
 If using `kind` or another docker-based Kubernetes distro, the cluster registration command requires an additional flag `--api-server-address` along with the API server address and port. Use the command on the Kind tab if that is the case.
 
@@ -191,7 +198,7 @@ meshctl cluster register \
     --cluster-name remote-cluster \
     --mgmt-context "${MGMT_CONTEXT}" \
     --remote-context "${REMOTE_CONTEXT}" \
-    --install-enterprise-agent --enterprise-agent-chart-file=https://storage.googleapis.com/gloo-mesh-enterprise/enterprise-agent/enterprise-agent-${ENTERPRISE_NETWORKING_VERSION}.tgz
+    --install-wasm-agent --wasm-agent-chart-file=https://storage.googleapis.com/gloo-mesh-enterprise/wasm-agent/wasm-agent-${ENTERPRISE_EXTENDER_VERSION}.tgz
 {{< /tab >}}
 {{< tab name="Kind" codelang="shell" >}}
 # For macOS
@@ -205,7 +212,7 @@ meshctl cluster register \
     --mgmt-context "${MGMT_CONTEXT}" \
     --remote-context "${REMOTE_CONTEXT}" \
     --api-server-address ${ADDRESS}:6443 \
-    --install-enterprise-agent --enterprise-agent-chart-file=https://storage.googleapis.com/gloo-mesh-enterprise/enterprise-agent/enterprise-agent-${ENTERPRISE_NETWORKING_VERSION}.tgz
+    --install-wasm-agent --wasm-agent-chart-file=https://storage.googleapis.com/gloo-mesh-enterprise/wasm-agent/wasm-agent-${ENTERPRISE_EXTENDER_VERSION}.tgz
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -214,9 +221,9 @@ We can validate the agent has been deployed by running the following:
 ```shell
 kubectl get pods -n gloo-mesh --context $REMOTE_CONTEXT
 
-NAME                                READY   STATUS    RESTARTS   AGE
-cert-agent-d449599d9-26mz7          1/1     Running   0          38m
-enterprise-agent-7f56898555-lc5pn   1/1     Running   0          18s
+NAME                          READY   STATUS    RESTARTS   AGE
+cert-agent-d449599d9-26mz7    1/1     Running   0          38m
+wasm-agent-7f56898555-lc5pn   1/1     Running   0          18s
 ```
 
 ## Deploy the Wasm filter and validate
@@ -267,7 +274,7 @@ Now let's deploy a Wasm filter with a WasmDeployment:
 
 ```bash
 cat <<EOF | kubectl apply --context ${MGMT_CONTEXT} -f-
-apiVersion: networking.enterprise.mesh.gloo.solo.io/v1alpha1
+apiVersion: networking.enterprise.mesh.gloo.solo.io/v1beta1
 kind: WasmDeployment
 metadata:
   labels:
