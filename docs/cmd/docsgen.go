@@ -34,8 +34,6 @@ func main() {
 			OutputDir: "content/reference/changelog",
 			OtherRepos: []docsgen.ChangelogConfig{
 				{Name: "Gloo Mesh Enterprise", Repo: "gloo-mesh-enterprise", Fname: "enterprise"},
-				{Name: "Gloo Mesh UI", Repo: "gloo-mesh-ui", Fname: "ui"},
-				{Name: "Gloo Mesh Enterprise Helm Chart", Repo: "gloo-mesh-enterprise-helm", Fname: "enterprise-helm"},
 			},
 		},
 		DocsRoot: "docs",
