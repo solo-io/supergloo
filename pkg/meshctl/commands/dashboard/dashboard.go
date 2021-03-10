@@ -78,7 +78,7 @@ func getStaticPort(ctx context.Context, kubeconfigPath, kubectx, namespace strin
 	if err != nil {
 		return "", err
 	}
-	dep, err := client.AppsV1().Deployments(namespace).Get(ctx, "gloo-mesh-apiserver", metav1.GetOptions{})
+	dep, err := client.AppsV1().Deployments(namespace).Get(ctx, "dashboard", metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			fmt.Printf("No Gloo Mesh dashboard found as part of the installation in namespace %s. "+
