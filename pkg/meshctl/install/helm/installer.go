@@ -150,7 +150,10 @@ func output(release *release.Release, dryRun bool, isUpgrade bool) {
 		if isUpgrade {
 			verb = "upgrading"
 		}
-		logrus.Infof("finished %s chart %s as release", verb, release.Chart.Name())
+		logrus.Infof(
+			"Finished %s chart '%s' as release %s:%s",
+			verb, release.Chart.Name(), release.Namespace, release.Name,
+		)
 		logrus.Debugf("%v", release.Manifest)
 	}
 }
