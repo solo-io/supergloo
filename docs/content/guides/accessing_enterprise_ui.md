@@ -21,13 +21,13 @@ The Admin Dashboard runs on a pod in the Gloo Mesh Enterprise deployment and is 
 Anyone who can reach the Admin Dashboard has unauthenticated access to view the configuration and resources managed by the Gloo Mesh.
 {{< /notice >}}
 
-Access to the Admin Dashboard should be restricted to only those who need to administer the Gloo Mesh. The `gloo-mesh-console` service is of the type ClusterIP, so it is not exposed outside of the cluster.
+Access to the Admin Dashboard should be restricted to only those who need to administer the Gloo Mesh. The `dashboard` service is of the type ClusterIP, so it is not exposed outside of the cluster.
 
 ## Connecting to the Admin Dashboard
 
-The Admin Dashboard is served from the gloo-mesh-console service on port 8090. You can connect using the `meshctl dashboard` command or by using the port-forward feature of kubectl. For this guide we will use port-forwarding. The following command assumes that you have deployed the Gloo Mesh to the namespace gloo-mesh. From a command prompt, run the following to set up port-forwarding for the gloo-mesh-console service.
+The Admin Dashboard is served from the dashboard service on port 8090. You can connect using the `meshctl dashboard` command or by using the port-forward feature of kubectl. For this guide we will use port-forwarding. The following command assumes that you have deployed the Gloo Mesh to the namespace gloo-mesh. From a command prompt, run the following to set up port-forwarding for the dashboard service.
 
-kubectl port-forward -n gloo-mesh svc/gloo-mesh-console 8090:8090
+kubectl port-forward -n gloo-mesh svc/dashboard 8090:8090
 
 Once the port-forwarding starts, you can open your browser and connect to http://localhost:8090. You will be taken to a webpage that looks similar to this:
 
