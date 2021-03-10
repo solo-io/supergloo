@@ -107,7 +107,7 @@ func getStaticPort(ctx context.Context, kubeconfigPath, kubectx, namespace strin
 
 func forwardPort(namespace, localPort, kubePort string) (*exec.Cmd, error) {
 	cmd := exec.Command(
-		"kubectl", "port-forward", "-n", namespace, "deployment/gloo-mesh-apiserver", localPort+":"+kubePort,
+		"kubectl", "port-forward", "-n", namespace, "deployment/dashboard", localPort+":"+kubePort,
 	)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
