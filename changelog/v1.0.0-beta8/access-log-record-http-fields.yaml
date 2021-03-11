@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/212
+    description: Extend the AccessLogRecord CRD with options for including HTTP request/response header/trailers.
+    resolvesIssue: false

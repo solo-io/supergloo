@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/rotisserie/eris"
+	"github.com/sirupsen/logrus"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
@@ -46,6 +47,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 }
 
 func uninstall(ctx context.Context, opts *options) error {
+	logrus.Info("Uninstalling Helm chart")
 	if err := (helm.Uninstaller{
 		KubeConfig:  opts.kubeCfgPath,
 		KubeContext: opts.kubeContext,

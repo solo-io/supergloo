@@ -3,6 +3,7 @@ package register
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/enterprise"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
@@ -64,6 +65,7 @@ func communityCommand(ctx context.Context, regOpts *options) *cobra.Command {
 				return err
 			}
 
+			logrus.Info("Registering cluster")
 			return registrant.RegisterCluster(ctx)
 		},
 	}
@@ -100,6 +102,7 @@ func enterpriseCommand(ctx context.Context, regOpts *options) *cobra.Command {
   meshctl cluster register --remote-context=my-context enterprise remote-cluster`,
 		Args: cobra.MinimumNArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {
+			logrus.Infof("Registering cluster")
 			opts.Options = registration.Options(*regOpts)
 			opts.ClusterName = args[0]
 			return enterprise.RegisterCluster(ctx, enterprise.RegistrationOptions(opts))

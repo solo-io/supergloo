@@ -46,9 +46,9 @@ func (i Uninstaller) UninstallChart(ctx context.Context) error {
 		if err != nil {
 			return eris.Wrapf(err, "uninstalling helm release %s", releaseName)
 		}
-		logrus.Infof("finished uninstalling release %s", releaseName)
+		logrus.Infof("Finished uninstalling release %s", releaseName)
 	} else {
-		logrus.Infof("release %s does not exist, nothing to uninstall", releaseName)
+		logrus.Warnf("release %s does not exist, nothing to uninstall", releaseName)
 	}
 
 	return nil
