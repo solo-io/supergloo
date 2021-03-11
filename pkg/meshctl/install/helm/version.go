@@ -23,13 +23,6 @@ func GetLatestChartMajorVersion(repoURI, chartName string, stable bool, major in
 	})
 }
 
-func GetLatestChartMinorVersion(repoURI, chartName string, stable bool, major, minor int) (string, error) {
-	return getLatestChartVersion(repoURI, chartName, func(version version.Version) bool {
-		return version.Segments()[0] == major && version.Segments()[1] == minor &&
-			(!stable || version.Prerelease() != "")
-	})
-}
-
 func getLatestChartVersion(
 	repoURI, chartName string,
 	isVersionCopmatible func(version version.Version) bool,
