@@ -11,12 +11,16 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type RegistrationOptions struct {
 	registration.Options
+	AgentChartPathOverride string
+	AgentChartValuesPath   string
+
 	RelayServerAddress  string
 	RelayServerInsecure bool
 
@@ -73,9 +77,10 @@ func ensureCerts(ctx context.Context, opts RegistrationOptions) error {
 			},
 			Data: s.Data,
 		}
-		// write it to the remote cluster
+		// Write it to the remote cluster. Note that we use create to make sure we don't overwrite
+		// anything that already exist.
 		err = remoteKubeSecretClient.CreateSecret(ctx, copiedSecret)
-		if err != nil {
+		if err != nil && !apierrors.IsAlreadyExists(err) {
 			return err
 		}
 	}
@@ -109,7 +114,7 @@ func ensureCerts(ctx context.Context, opts RegistrationOptions) error {
 		}
 		// write it to the remote cluster
 		err = remoteKubeSecretClient.CreateSecret(ctx, copiedSecret)
-		if err != nil {
+		if err != nil && !apierrors.IsAlreadyExists(err) {
 			return err
 		}
 

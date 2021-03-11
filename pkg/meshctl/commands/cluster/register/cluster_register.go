@@ -48,7 +48,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 }
 
 func communityCommand(ctx context.Context, regOpts *options) *cobra.Command {
-	opts := (*communityOptions)(regOpts)
+	opts := communityOptions{}
 	cmd := &cobra.Command{
 		Use:   "community [cluster name]",
 		Short: "Register a cluster for Gloo Mesh community edition",
@@ -59,8 +59,11 @@ func communityCommand(ctx context.Context, regOpts *options) *cobra.Command {
   meshctl cluster register --remote-context=my-context community remote-cluster`,
 		Args: cobra.MinimumNArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {
+			regOpts.AgentChartPathOverride = opts.AgentChartPathOverride
+			regOpts.AgentChartValuesPath = opts.AgentChartValuesPath
+			opts.Options = registration.Options(*regOpts)
 			opts.ClusterName = args[0]
-			registrant, err := registration.NewRegistrant(registration.Options(*opts))
+			registrant, err := registration.NewRegistrant(registration.Options(*regOpts))
 			if err != nil {
 				return err
 			}
@@ -75,7 +78,12 @@ func communityCommand(ctx context.Context, regOpts *options) *cobra.Command {
 	return cmd
 }
 
-type communityOptions options
+type communityOptions struct {
+	registration.Options
+
+	AgentChartPathOverride string
+	AgentChartValuesPath   string
+}
 
 func (o *communityOptions) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.ApiServerAddress, "api-server-address", "", "Swap out the address of the remote cluster's k8s API server for the value of this flag.\nSet this flag when the address of the cluster domain used by the Gloo Mesh is different than that specified in the local kubeconfig.")
@@ -119,7 +127,7 @@ type enterpriseOptions enterprise.RegistrationOptions
 
 func (o *enterpriseOptions) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.RelayServerAddress, "relay-server-address", "", "The address via which the enterprise agent will communicate with the relay server.")
-	flags.BoolVar(&o.RelayServerInsecure, "relay-server-insecure", true, "Communicate with the relay server over an insecure connection.")
+	flags.BoolVar(&o.RelayServerInsecure, "relay-server-insecure", false, "Communicate with the relay server over an insecure connection.")
 
 	flags.StringVar(&o.RootCASecretName, "root-ca-secret-name", "", "Secret name for the root CA for communication with relay server.")
 	flags.StringVar(&o.RootCASecretNamespace, "root-ca-secret-namespace", "", "Secret namespace for the root CA for communication with relay server.")

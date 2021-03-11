@@ -254,28 +254,34 @@ func newCLISettings(kubeConfig, kubeContext, namespace string) *cli.EnvSettings 
 }
 
 func downloadChart(chartArchiveUri string) (*chart.Chart, error) {
-	// 1. Get a reader to the chart file (remote URL or local file path)
-	chartFileReader, err := getResource(chartArchiveUri)
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = chartFileReader.Close() }()
+	charFilePath := ""
+	if fi, err := os.Stat(chartArchiveUri); err == nil && fi.IsDir() {
+		charFilePath = chartArchiveUri
+	} else {
 
-	// 2. Write chart to a temporary file
-	chartBytes, err := ioutil.ReadAll(chartFileReader)
-	if err != nil {
-		return nil, err
-	}
+		// 1. Get a reader to the chart file (remote URL or local file path)
+		chartFileReader, err := getResource(chartArchiveUri)
+		if err != nil {
+			return nil, err
+		}
+		defer func() { _ = chartFileReader.Close() }()
 
-	chartFile, err := ioutil.TempFile("", "temp-helm-chart")
-	if err != nil {
-		return nil, err
-	}
-	charFilePath := chartFile.Name()
-	defer func() { _ = os.RemoveAll(charFilePath) }()
+		// 2. Write chart to a temporary file
+		chartBytes, err := ioutil.ReadAll(chartFileReader)
+		if err != nil {
+			return nil, err
+		}
 
-	if err := ioutil.WriteFile(charFilePath, chartBytes, tempChartFilePermissions); err != nil {
-		return nil, err
+		chartFile, err := ioutil.TempFile("", "temp-helm-chart")
+		if err != nil {
+			return nil, err
+		}
+		charFilePath = chartFile.Name()
+		defer func() { _ = os.RemoveAll(charFilePath) }()
+
+		if err := ioutil.WriteFile(charFilePath, chartBytes, tempChartFilePermissions); err != nil {
+			return nil, err
+		}
 	}
 
 	// 3. Load the chart file
