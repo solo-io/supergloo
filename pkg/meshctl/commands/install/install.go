@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/go-version"
 	"github.com/rotisserie/eris"
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	cliversion "github.com/solo-io/gloo-mesh/pkg/common/version"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/enterprise"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
@@ -167,11 +169,7 @@ func installCommunity(ctx context.Context, opts communityOptions) error {
 		chartName = "gloo-mesh"
 	)
 	if opts.version == "" {
-		version, err := helm.GetLatestChartVersion(repoURI, chartName)
-		if err != nil {
-			return err
-		}
-		opts.version = version
+		opts.version = cliversion.Version
 	}
 	logrus.Info("Installing Helm chart")
 	if err := opts.getInstaller().InstallChart(ctx); err != nil {
@@ -276,7 +274,14 @@ func installEnterprise(ctx context.Context, opts enterpriseOptions) error {
 		chartName = "gloo-mesh-enterprise"
 	)
 	if opts.version == "" {
-		version, err := helm.GetLatestChartVersion(repoURI, chartName)
+		cliVersion, err := version.NewVersion(cliversion.Version)
+		if err != nil {
+			return eris.Wrapf(err, "invalid CLI version: %s", cliversion.Version)
+		}
+		version, err := helm.GetLatestChartMinorVersion(
+			repoURI, chartName, true,
+			cliVersion.Segments()[0], cliVersion.Segments()[1],
+		)
 		if err != nil {
 			return err
 		}
