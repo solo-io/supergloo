@@ -102,7 +102,21 @@ func enterpriseCommand(ctx context.Context, regOpts *options) *cobra.Command {
 	opts := enterpriseOptions{}
 	cmd := &cobra.Command{
 		Use:   "enterprise [cluster name]",
-		Short: "Register a cluster for Gloo Mesh enterprise editio",
+		Short: "Register a cluster for Gloo Mesh enterprise edition",
+		Long: `In the process of registering a cluster, an agent (called the relay agent)
+will be installed on the remote cluster. To establish trust between the relay agent and
+Gloo-Mesh, mTLS is used.
+
+The relay agent can either be provided with a client certificate, or a bootstrap token. If provided
+with a bootstrap token, the relay agent will then exchange it for a client certificate and save it
+as a secret in the cluster. Once the client certificate secret exist, the bootstrap token is not 
+longer needed and can be discarded.
+
+For the relay agent to trust Gloo Mesh a root CA is needed.
+
+To make the registration process easy, this command will try to copy the root CA and 
+bootstrap token from the gloo-mesh cluster, if these are not explicitly provided in the command line flags.
+`,
 		Example: `  # Register the current context
   meshctl cluster register enterprise mgmt-cluster
 
@@ -132,10 +146,10 @@ func (o *enterpriseOptions) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.RootCASecretName, "root-ca-secret-name", "", "Secret name for the root CA for communication with relay server.")
 	flags.StringVar(&o.RootCASecretNamespace, "root-ca-secret-namespace", "", "Secret namespace for the root CA for communication with relay server.")
 
-	flags.StringVar(&o.ClientCertSecretName, "client-cert-secret-name", "", "Secret name for the client cert for communication with relay server.")
+	flags.StringVar(&o.ClientCertSecretName, "client-cert-secret-name", "", "Secret name for the client cert for communication with relay server. Note that if a bootstrap token is provided, then a client certificate will be created automatically.")
 	flags.StringVar(&o.ClientCertSecretNamespace, "client-cert-secret-namespace", "", "Secret namespace for the client cert for communication with relay server.")
 
-	flags.StringVar(&o.TokenSecretName, "token-secret-name", "", "Secret name for the bootstrap token. This token will be used to boostrap a client certificate from relay server.")
+	flags.StringVar(&o.TokenSecretName, "token-secret-name", "", "Secret name for the bootstrap token. This token will be used to boostrap a client certificate from relay server. Not needed if already have a client certificate.")
 	flags.StringVar(&o.TokenSecretNamespace, "token-secret-namespace", "", "Secret namespace for the bootstrap token.")
 	flags.StringVar(&o.TokenSecretKey, "token-secret-key", "token", "Secret namespace for the bootstrap token.")
 

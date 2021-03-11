@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	. "github.com/logrusorgru/aurora/v3"
 	"github.com/rotisserie/eris"
@@ -155,14 +156,23 @@ func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
 		if err != nil {
 			return err
 		}
-		if opts.RootCASecretName != "" {
-			values["relay.rootTlsSecret.name"] = opts.RootCASecretName
-			values["relay.rootTlsSecret.namespace"] = opts.RootCASecretNamespace
+
+		// we should have root tls name by here
+		values["relay.rootTlsSecret.name"] = opts.RootCASecretName
+		values["relay.rootTlsSecret.namespace"] = opts.RootCASecretNamespace
+
+		// relay needs a client cert provided, even if it doesnt exist, so it can write to it.
+		if opts.ClientCertSecretName == "" {
+			opts.ClientCertSecretName = "relay-client-tls-secret"
 		}
-		if opts.ClientCertSecretName != "" {
-			values["relay.clientCertSecret.name"] = opts.RootCASecretName
-			values["relay.clientCertSecret.namespace"] = opts.RootCASecretNamespace
-		} else if opts.TokenSecretName != "" {
+		if opts.ClientCertSecretNamespace == "" {
+			opts.ClientCertSecretNamespace = opts.RemoteNamespace
+		}
+		values["relay.clientCertSecret.name"] = opts.ClientCertSecretName
+		values["relay.clientCertSecret.namespace"] = opts.ClientCertSecretNamespace
+
+		// only copy token secret if we have one
+		if opts.TokenSecretName != "" {
 			values["relay.tokenSecret.name"] = opts.TokenSecretName
 			values["relay.tokenSecret.namespace"] = opts.TokenSecretNamespace
 			values["relay.tokenSecret.key"] = opts.TokenSecretKey
@@ -200,10 +210,55 @@ func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
 			ClusterDomain: opts.ClusterDomain,
 		},
 	})
-	if err == nil {
-		logrus.Info("✅ Done registering cluster!")
+	if err != nil {
+		return err
 	}
-	return err
+
+	if !opts.RelayServerInsecure {
+		logrus.Info("⌚ Waiting for relay agent to have a client certificate")
+		err = waitForClientCert(ctx, opts)
+		if err != nil {
+			return err
+		}
+	}
+
+	logrus.Info("✅ Done registering cluster!")
+	return nil
+}
+
+func waitForClientCert(ctx context.Context, opts RegistrationOptions) error {
+
+	remoteKubeClient, err := utils.BuildClient(opts.KubeConfigPath, opts.RemoteContext)
+	if err != nil {
+		return err
+	}
+	remoteKubeSecretClient := v1.NewSecretClient(remoteKubeClient)
+	clientCert := client.ObjectKey{
+		Name:      opts.ClientCertSecretName,
+		Namespace: opts.ClientCertSecretNamespace,
+	}
+
+	timeout := time.After(time.Minute)
+
+	for {
+		_, err = remoteKubeSecretClient.GetSecret(ctx, clientCert)
+		if !apierrors.IsNotFound(err) {
+			return err
+		}
+		if err == nil {
+			break
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-timeout:
+			return eris.Errorf("timed out waiting for client cert")
+		case <-time.After(5 * time.Second):
+			logrus.Info("\t Checking...")
+		}
+	}
+	logrus.Info("📃 Client certificate found in remote cluster")
+	return nil
 }
 
 func DeregisterCluster(ctx context.Context, opts RegistrationOptions) error {
