@@ -13,13 +13,13 @@ import (
 
 func GetLatestChartVersion(repoURI, chartName string, stable bool) (string, error) {
 	return getLatestChartVersion(repoURI, chartName, func(version version.Version) bool {
-		return !stable || version.Prerelease() != ""
+		return !stable || version.Prerelease() == ""
 	})
 }
 
 func GetLatestChartMajorVersion(repoURI, chartName string, stable bool, major int) (string, error) {
 	return getLatestChartVersion(repoURI, chartName, func(version version.Version) bool {
-		return version.Segments()[0] == major && (!stable || version.Prerelease() != "")
+		return version.Segments()[0] == major && (!stable || version.Prerelease() == "")
 	})
 }
 
