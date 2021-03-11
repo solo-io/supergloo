@@ -179,7 +179,7 @@ kubectl get pods -n gloo-mesh
 
 NAME                                   READY   STATUS    RESTARTS   AGE
 discovery-67444fcf85-rdh7j             1/1     Running   0          4m5s
-gloo-mesh-apiserver-6469d4b5f6-7b85g   3/3     Running   0          4m5s
+dashboard-6469d4b5f6-7b85g             3/3     Running   0          4m5s
 networking-5dcb4d44d5-jzxk6            1/1     Running   0          4m5s
 rbac-webhook-6fd7898df8-wkvpj          1/1     Running   0          4m5s
 {{< /tab >}}

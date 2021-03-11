@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/rotisserie/eris"
+	"github.com/sirupsen/logrus"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/enterprise"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
@@ -76,6 +77,7 @@ func (o *options) getInstaller(chartUriTemplate string) helm.Installer {
 		o.chartPath = fmt.Sprintf(chartUriTemplate, o.version)
 	}
 
+	logrus.Debugf("installing chart from %s", o.chartPath)
 	return helm.Installer{
 		ChartUri:    o.chartPath,
 		ValuesFile:  o.chartValuesFile,
@@ -171,11 +173,13 @@ func installCommunity(ctx context.Context, opts communityOptions) error {
 		}
 		opts.version = version
 	}
+	logrus.Info("Installing Helm chart")
 	if err := opts.getInstaller().InstallChart(ctx); err != nil {
 		return eris.Wrap(err, "installing gloo-mesh")
 	}
 
 	if opts.register && !opts.dryRun {
+		logrus.Info("Registering cluster")
 		registrant, err := registration.NewRegistrant(opts.getRegistrationOptions())
 		if err != nil {
 			return eris.Wrap(err, "initializing registrant")
@@ -270,10 +274,12 @@ func installEnterprise(ctx context.Context, opts enterpriseOptions) error {
 		opts.version = version
 	}
 
+	logrus.Info("Installing Helm chart")
 	if err := opts.getInstaller().InstallChart(ctx); err != nil {
 		return eris.Wrap(err, "installing gloo-mesh-enterprise")
 	}
 	if opts.register && !opts.dryRun {
+		logrus.Info("Registering cluster")
 		return enterprise.RegisterCluster(ctx, opts.getRegistrationOptions())
 	}
 

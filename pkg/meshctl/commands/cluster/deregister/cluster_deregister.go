@@ -3,6 +3,7 @@ package deregister
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/enterprise"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/registration"
@@ -70,6 +71,7 @@ func communityCommand(ctx context.Context, deregOpts *options) *cobra.Command {
 				return err
 			}
 
+			logrus.Infof("Deregistering cluster: %s", opts.ClusterName)
 			return registrant.DeregisterCluster(ctx)
 		},
 	}

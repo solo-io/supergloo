@@ -120,11 +120,20 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 }
 
 func (r *Registrant) registerCluster(ctx context.Context) error {
-	logrus.Debugf("registering cluster with opts %+v\n", r.Registration)
+	logrus.Debug("%+v", r.Registration)
 	if err := r.Registration.RegisterCluster(ctx); err != nil {
 		return err
 	}
-	logrus.Infof("successfully registered cluster %v", r.Registration.ClusterName)
+	logrus.Infof("Successfully registered cluster: %s", r.Registration.ClusterName)
+	return nil
+}
+
+func (r *Registrant) deregisterCluster(ctx context.Context) error {
+	logrus.Debug("%+v", r.Registration)
+	if err := r.Registration.DeregisterCluster(ctx); err != nil {
+		return err
+	}
+	logrus.Infof("Successfully deregistered cluster: %s", r.Registration.ClusterName)
 	return nil
 }
 
@@ -167,7 +176,7 @@ func (r *Registrant) DeregisterCluster(ctx context.Context) error {
 	if err := r.uninstallCertAgent(ctx); err != nil {
 		return err
 	}
-	return r.Registration.DeregisterCluster(ctx)
+	return r.deregisterCluster(ctx)
 }
 
 func (r *Registrant) uninstallAgentCrds(ctx context.Context) error {

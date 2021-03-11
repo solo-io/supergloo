@@ -1,10 +1,12 @@
 package commands
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/check"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/cluster"
@@ -39,7 +41,11 @@ func RootCommand(ctx context.Context) *cobra.Command {
 				logrus.SetLevel(logrus.DebugLevel)
 			}
 		},
+		SilenceErrors: true,
 	}
+
+	// Use custom logrus formatter
+	logrus.SetFormatter(logFormatter{})
 
 	// set global CLI flags
 	globalFlags.AddToFlags(cmd.PersistentFlags())
@@ -69,4 +75,30 @@ func RootCommand(ctx context.Context) *cobra.Command {
 	}
 
 	return cmd
+}
+
+type logFormatter struct{}
+
+func (logFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+	var buf bytes.Buffer
+	switch entry.Level {
+	case logrus.DebugLevel:
+		color.New(color.FgRed).Fprintln(&buf, entry.Message)
+	case logrus.InfoLevel:
+		fmt.Fprintln(&buf, entry.Message)
+	case logrus.WarnLevel:
+		color.New(color.FgYellow).Fprint(&buf, "warning: ")
+		fmt.Fprintln(&buf, entry.Message)
+	case logrus.ErrorLevel:
+		color.New(color.FgRed).Fprint(&buf, "error: ")
+		fmt.Fprintln(&buf, entry.Message)
+	case logrus.FatalLevel:
+		color.New(color.FgRed).Fprint(&buf, "fatal: ")
+		fmt.Fprintln(&buf, entry.Message)
+	case logrus.PanicLevel:
+		color.New(color.FgRed).Fprint(&buf, "panic: ")
+		fmt.Fprintln(&buf, entry.Message)
+	}
+
+	return buf.Bytes(), nil
 }
