@@ -7,8 +7,15 @@ weight: 100
 
 {{% notice note %}} Gloo Mesh Enterprise is required for this feature. {{% /notice %}}
 
+Gloo Mesh Enterprise uses a Kubernetes cluster to host the management plane (Gloo Mesh) while each service mesh can run on its own independent cluster. If you don't have access to multiple clusters, see the [Getting Started Guide]({{% versioned_link_path fromRoot="/getting_started/" %}}) to get started with Kubernetes in Docker, or refer to our [Using Kind]({{% versioned_link_path fromRoot="/setup/kind_setup" %}}) setup guide to provision two clusters.
+
+{{% notice note %}}
+Gloo Mesh Enterprise is the paid version of Gloo Mesh including the Gloo Mesh UI and multi-cluster role-based access control. To complete the installation you will need a license key. You can get a trial license by [requesting a demo](https://www.solo.io/products/gloo-mesh/) from the website.
+{{% /notice %}}
+
 This document describes how to install Gloo Mesh Enterprise.
-A conceptual overview of the Gloo Mesh Enterprise architecture can be found [here]({{% versioned_link_path fromRoot="/concepts/relay" %}}).
+
+A conceptual overview of the Gloo Mesh Enterprise architecture can be found [here]({{% versioned_link_path fromRoot="/concepts/relay" %}}). Make sure you have followed the [prerequisites guide]({{% versioned_link_path fromRoot="/setup/prerequisites/enterprise_prerequisites/" %}}). We also recommend following our guide on [configuring Role-based API control]({{% versioned_link_path fromRoot="/guides/configure_role_based_api//" %}}).
 
 ## Helm
 
