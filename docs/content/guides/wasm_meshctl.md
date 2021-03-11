@@ -20,12 +20,10 @@ In this guide we will walk through how you can use the wasm plugin for the `mesh
 To illustrate these concepts, we will assume that you have already followed the [Wasm Extension Guide for Gloo Mesh Enterprise]({{% versioned_link_path fromRoot="/guides/wasm_extension/#ensure-the-enterprise-networking-feature-is-enabled" %}}) to get all the necessary components ready for the deploy step.
 In particular, you will need to have installed Gloo Mesh Enterprise and registered your clusters such that `enterprise-networking` is running on the management cluster and `enterprise-agent` is available on registered clusters; `meshctl-wasm` will take care of the rest.
 
-You will also need the wasm plugin for `meshctl`. It can be installed by running the following one-liner:
-
-TODO -- reference the meshctl plugin guide, shorten to `meshctl plugin install wasm`
+You will also need the wasm plugin for `meshctl`. Assuming you've [initialized the meshctl plugin manager]({{% versioned_link_path fromRoot="/guides/meshctl_plugins" %}}), it can be installed with the following:
 
 ```shell
-curl -sL http://run.solo.io/meshctl-wasm/install | sh
+meshctl plugin install wasm
 ```
 
 We will be pushing our filter to the publicly hosted WebAssembly Hub, so you will need to sign up for a user account following [this guide](https://docs.solo.io/web-assembly-hub/latest/tutorial_code/push_tutorials/basic_push/#create-a-user-on-webassemblyhub-io-https-webassemblyhub-io).
