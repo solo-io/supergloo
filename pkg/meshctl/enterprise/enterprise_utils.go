@@ -2,8 +2,12 @@ package enterprise
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
+	. "github.com/logrusorgru/aurora/v3"
+	"github.com/rotisserie/eris"
+	"github.com/sirupsen/logrus"
 	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
@@ -65,7 +69,13 @@ func ensureCerts(ctx context.Context, opts RegistrationOptions) error {
 			Name:      defaultRootCA,
 			Namespace: opts.MgmtNamespace,
 		}
+
+		if err = utils.EnsureNamespace(ctx, remoteKubeClient, opts.RemoteNamespace); err != nil {
+			return eris.Wrapf(err, "creating namespace")
+		}
 		// no root cert, try copy it over
+		logrus.Info("📃 Copying root CA ", Bold(fmt.Sprintf("%s.%s", mgmtRootCaNameNamespace.Name, mgmtRootCaNameNamespace.Namespace)), " to remote cluster from management cluster")
+
 		s, err := mgmtKubeSecretClient.GetSecret(ctx, mgmtRootCaNameNamespace)
 		if err != nil {
 			return err
@@ -100,6 +110,10 @@ func ensureCerts(ctx context.Context, opts RegistrationOptions) error {
 			Name:      defaultToken,
 			Namespace: opts.MgmtNamespace,
 		}
+		if err = utils.EnsureNamespace(ctx, remoteKubeClient, opts.RemoteNamespace); err != nil {
+			return eris.Wrapf(err, "creating namespace")
+		}
+		logrus.Info("📃 Copying bootstrap token ", Bold(fmt.Sprintf("%s.%s", opts.TokenSecretName, opts.TokenSecretNamespace)), " to remote cluster from management cluster")
 		// no root cert, try copy it over
 		s, err := mgmtKubeSecretClient.GetSecret(ctx, mgmtTokenNameNamespace)
 		if err != nil {
@@ -141,12 +155,10 @@ func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
 		if err != nil {
 			return err
 		}
-
 		if opts.RootCASecretName != "" {
 			values["relay.rootTlsSecret.name"] = opts.RootCASecretName
 			values["relay.rootTlsSecret.namespace"] = opts.RootCASecretNamespace
 		}
-
 		if opts.ClientCertSecretName != "" {
 			values["relay.clientCertSecret.name"] = opts.RootCASecretName
 			values["relay.clientCertSecret.namespace"] = opts.RootCASecretNamespace
@@ -156,6 +168,7 @@ func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
 			values["relay.tokenSecret.key"] = opts.TokenSecretKey
 		}
 	}
+	logrus.Info("💻 Installing relay agent in the remote cluster")
 
 	if err := (helm.Installer{
 		KubeConfig:  opts.KubeConfigPath,
@@ -175,7 +188,10 @@ func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
 		return err
 	}
 	clusterClient := v1alpha1.NewKubernetesClusterClient(kubeClient)
-	return clusterClient.CreateKubernetesCluster(ctx, &v1alpha1.KubernetesCluster{
+
+	logrus.Info("📃 Creating ", Bold(opts.ClusterName+" KubernetesCluster CRD"), " in management cluster")
+
+	err = clusterClient.CreateKubernetesCluster(ctx, &v1alpha1.KubernetesCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      opts.ClusterName,
 			Namespace: opts.MgmtNamespace,
@@ -184,6 +200,10 @@ func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
 			ClusterDomain: opts.ClusterDomain,
 		},
 	})
+	if err == nil {
+		logrus.Info("✅ Done registering cluster!")
+	}
+	return err
 }
 
 func DeregisterCluster(ctx context.Context, opts RegistrationOptions) error {

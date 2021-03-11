@@ -12,17 +12,14 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/release"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -65,7 +62,7 @@ func (i Installer) InstallChart(ctx context.Context) error {
 	}
 
 	if !dryRun {
-		if err = ensureNamespace(ctx, kubeClient, namespace); err != nil {
+		if err = utils.EnsureNamespace(ctx, kubeClient, namespace); err != nil {
 			return eris.Wrapf(err, "creating namespace")
 		}
 	}
@@ -205,16 +202,6 @@ func updateReleaseManifestWithCrds(chartObj *chart.Chart, release *release.Relea
 	}
 	fmt.Fprintf(manifest, release.Manifest)
 	release.Manifest = manifest.String()
-}
-
-func ensureNamespace(ctx context.Context, kubeClient client.Client, namespace string) error {
-	namespaces := v1.NewNamespaceClient(kubeClient)
-	return namespaces.UpsertNamespace(ctx, &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: namespace,
-		},
-		Spec: corev1.NamespaceSpec{Finalizers: []corev1.FinalizerName{"kubernetes"}},
-	})
 }
 
 // Returns an action configuration that can be used to create Helm actions and the Helm env settings.
