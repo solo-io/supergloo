@@ -67,7 +67,7 @@ func installGlooMesh(ctx context.Context, cluster string, box packr.Box) error {
 func installGlooMeshEnterprise(ctx context.Context, cluster, version, licenseKey string, box packr.Box) error {
 	fmt.Printf("Deploying Gloo Mesh Enterprise to %s from images\n", cluster)
 	if version == "" {
-		v, err := installhelm.GetLatestChartVersion(gloomesh.GlooMeshEnterpriseRepoURI, "gloo-mesh-enterprise")
+		v, err := installhelm.GetLatestChartVersion(gloomesh.GlooMeshEnterpriseRepoURI, "gloo-mesh-enterprise", true)
 		if err != nil {
 			return err
 		}

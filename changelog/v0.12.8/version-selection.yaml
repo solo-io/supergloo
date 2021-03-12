@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1330
+    resolvesIssue: false
+    description: Adds better version selection logic to get the latest stable version of enterprise that matches the major/minor version of community.
