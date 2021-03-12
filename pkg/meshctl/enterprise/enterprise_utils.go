@@ -40,23 +40,25 @@ type RegistrationOptions struct {
 	TokenSecretKey       string
 }
 
-func ensureCerts(ctx context.Context, opts RegistrationOptions) error {
+func ensureCerts(ctx context.Context, opts *RegistrationOptions) (bool, error) {
 	// if secure, and no user data was given, attempt to deduce the required parameters.
 	const defaultRootCA = "relay-root-tls-secret"
 	const defaultToken = "relay-identity-token-secret"
 
+	createdBootstrapToken := false
+
 	if opts.RootCASecretName != "" && (opts.ClientCertSecretName != "" || opts.TokenSecretName != "") {
 		// we have all the data we need: root ca and either a client cert or a token.
 		// nothing to be done here
-		return nil
+		return createdBootstrapToken, nil
 	}
 	mgmtKubeClient, err := utils.BuildClient(opts.KubeConfigPath, opts.MgmtContext)
 	if err != nil {
-		return err
+		return createdBootstrapToken, err
 	}
 	remoteKubeClient, err := utils.BuildClient(opts.KubeConfigPath, opts.RemoteContext)
 	if err != nil {
-		return err
+		return createdBootstrapToken, err
 	}
 	mgmtKubeSecretClient := v1.NewSecretClient(mgmtKubeClient)
 	remoteKubeSecretClient := v1.NewSecretClient(remoteKubeClient)
@@ -72,33 +74,35 @@ func ensureCerts(ctx context.Context, opts RegistrationOptions) error {
 		}
 
 		if err = utils.EnsureNamespace(ctx, remoteKubeClient, opts.RemoteNamespace); err != nil {
-			return eris.Wrapf(err, "creating namespace")
+			return createdBootstrapToken, eris.Wrapf(err, "creating namespace")
 		}
 		// no root cert, try copy it over
 		logrus.Info("📃 Copying root CA ", Bold(fmt.Sprintf("%s.%s", mgmtRootCaNameNamespace.Name, mgmtRootCaNameNamespace.Namespace)), " to remote cluster from management cluster")
 
 		s, err := mgmtKubeSecretClient.GetSecret(ctx, mgmtRootCaNameNamespace)
 		if err != nil {
-			return err
+			return createdBootstrapToken, err
 		}
 		copiedSecret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      opts.RootCASecretName,
 				Namespace: opts.RootCASecretNamespace,
 			},
-			Data: s.Data,
+			Data: map[string][]byte{
+				"ca.crt": s.Data["ca.crt"],
+			},
 		}
 		// Write it to the remote cluster. Note that we use create to make sure we don't overwrite
 		// anything that already exist.
 		err = remoteKubeSecretClient.CreateSecret(ctx, copiedSecret)
 		if err != nil && !apierrors.IsAlreadyExists(err) {
-			return err
+			return createdBootstrapToken, err
 		}
 	}
 
 	if opts.ClientCertSecretName != "" {
 		// if we now have a client cert, we have everything we need
-		return nil
+		return createdBootstrapToken, nil
 	}
 
 	if opts.TokenSecretName == "" {
@@ -112,13 +116,13 @@ func ensureCerts(ctx context.Context, opts RegistrationOptions) error {
 			Namespace: opts.MgmtNamespace,
 		}
 		if err = utils.EnsureNamespace(ctx, remoteKubeClient, opts.RemoteNamespace); err != nil {
-			return eris.Wrapf(err, "creating namespace")
+			return createdBootstrapToken, eris.Wrapf(err, "creating namespace")
 		}
 		logrus.Info("📃 Copying bootstrap token ", Bold(fmt.Sprintf("%s.%s", opts.TokenSecretName, opts.TokenSecretNamespace)), " to remote cluster from management cluster")
 		// no root cert, try copy it over
 		s, err := mgmtKubeSecretClient.GetSecret(ctx, mgmtTokenNameNamespace)
 		if err != nil {
-			return err
+			return createdBootstrapToken, err
 		}
 		copiedSecret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
@@ -130,11 +134,11 @@ func ensureCerts(ctx context.Context, opts RegistrationOptions) error {
 		// write it to the remote cluster
 		err = remoteKubeSecretClient.CreateSecret(ctx, copiedSecret)
 		if err != nil && !apierrors.IsAlreadyExists(err) {
-			return err
+			return createdBootstrapToken, err
 		}
-
+		createdBootstrapToken = true
 	}
-	return nil
+	return createdBootstrapToken, nil
 }
 
 func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
@@ -149,10 +153,10 @@ func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
 		"relay.insecure":      strconv.FormatBool(opts.RelayServerInsecure),
 		"relay.cluster":       opts.ClusterName,
 	}
-
+	bootstrapTokenCreated := false
 	if !opts.RelayServerInsecure {
 		// read root cert from existing cluster if not provided in command line
-		err = ensureCerts(ctx, opts)
+		bootstrapTokenCreated, err = ensureCerts(ctx, &opts)
 		if err != nil {
 			return err
 		}
@@ -216,9 +220,27 @@ func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
 
 	if !opts.RelayServerInsecure {
 		logrus.Info("⌚ Waiting for relay agent to have a client certificate")
-		err = waitForClientCert(ctx, opts)
+
+		remoteKubeClient, err := utils.BuildClient(opts.KubeConfigPath, opts.RemoteContext)
 		if err != nil {
 			return err
+		}
+		remoteKubeSecretClient := v1.NewSecretClient(remoteKubeClient)
+
+		err = waitForClientCert(ctx, remoteKubeSecretClient, opts)
+		if err != nil {
+			return err
+		}
+		if bootstrapTokenCreated {
+			logrus.Info("🗑 Removing bootstrap token")
+			key := client.ObjectKey{
+				Name:      opts.TokenSecretName,
+				Namespace: opts.TokenSecretNamespace,
+			}
+			err = remoteKubeSecretClient.DeleteSecret(ctx, key)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -226,22 +248,17 @@ func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
 	return nil
 }
 
-func waitForClientCert(ctx context.Context, opts RegistrationOptions) error {
+func waitForClientCert(ctx context.Context, remoteKubeSecretClient v1.SecretClient, opts RegistrationOptions) error {
 
-	remoteKubeClient, err := utils.BuildClient(opts.KubeConfigPath, opts.RemoteContext)
-	if err != nil {
-		return err
-	}
-	remoteKubeSecretClient := v1.NewSecretClient(remoteKubeClient)
 	clientCert := client.ObjectKey{
 		Name:      opts.ClientCertSecretName,
 		Namespace: opts.ClientCertSecretNamespace,
 	}
 
-	timeout := time.After(time.Minute)
+	timeout := time.After(2 * time.Minute)
 
 	for {
-		_, err = remoteKubeSecretClient.GetSecret(ctx, clientCert)
+		_, err := remoteKubeSecretClient.GetSecret(ctx, clientCert)
 		if !apierrors.IsNotFound(err) {
 			return err
 		}
