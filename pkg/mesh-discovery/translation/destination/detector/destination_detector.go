@@ -106,7 +106,7 @@ func (t *destinationDetector) DetectDestination(
 
 func addMeshForKubeService(
 	ctx context.Context,
-	tt *v1.Destination,
+	dest *v1.Destination,
 	service *corev1.Service,
 	meshWorkloads discoveryv1sets.WorkloadSet,
 	meshes discoveryv1sets.MeshSet,
@@ -146,45 +146,45 @@ func addMeshForKubeService(
 	}
 
 	if validMesh != nil {
-		tt.Spec.Mesh = validMesh
+		dest.Spec.Mesh = validMesh
 		return true
 	}
 
 	// if no mesh was found from the annotation, check the workloads
-	backingWorkloads := workloadutils.FindBackingWorkloads(tt.Spec.GetKubeService(), meshWorkloads)
+	backingWorkloads := workloadutils.FindBackingWorkloads(dest.Spec.GetKubeService(), meshWorkloads)
 	// If there are no backing workloads, then we cannot find the associated mesh
 	if len(backingWorkloads) == 0 {
 		return false
 	}
-	handleWorkloadDiscoveredMesh(ctx, tt, backingWorkloads, endpoints, nodes)
+	handleWorkloadDiscoveredMesh(ctx, dest, backingWorkloads, endpoints, nodes)
 	return true
 }
 
 func handleWorkloadDiscoveredMesh(
 	ctx context.Context,
-	tt *v1.Destination,
+	dest *v1.Destination,
 	backingWorkloads v1.WorkloadSlice,
 	endpoints corev1sets.EndpointsSet,
 	nodes corev1sets.NodeSet,
 ) {
 
 	// all backing workloads should be in the same mesh
-	tt.Spec.Mesh = backingWorkloads[0].Spec.Mesh
+	dest.Spec.Mesh = backingWorkloads[0].Spec.Mesh
 
 	// derive subsets from backing workloads
-	tt.Spec.GetKubeService().Subsets = findSubsets(backingWorkloads)
+	dest.Spec.GetKubeService().Subsets = findSubsets(backingWorkloads)
 
-	ep, err := endpoints.Find(tt.Spec.GetKubeService().GetRef())
+	ep, err := endpoints.Find(dest.Spec.GetKubeService().GetRef())
 	if err != nil {
 		contextutils.LoggerFrom(ctx).Errorf(
 			"endpoints could not be found for kube service %s",
-			sets2.TypedKey(tt.Spec.GetKubeService().GetRef()),
+			sets2.TypedKey(dest.Spec.GetKubeService().GetRef()),
 		)
 		return
 	}
 
 	// dervive endpoints from kubernetes endpoints, and backing workloads
-	findEndpoints(ctx, backingWorkloads, ep, nodes, tt.Spec.GetKubeService())
+	findEndpoints(ctx, backingWorkloads, ep, nodes, dest.Spec.GetKubeService())
 }
 
 func findEndpoints(

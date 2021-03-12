@@ -18,6 +18,20 @@ func FindBackingWorkloads(
 	})
 }
 
+// Public to be used in enterprise
+func FindDestinationForWorkload(
+	workload *v1.Workload,
+	destinations v1alpha2sets.DestinationSet,
+) *v1.Destination {
+	matchingDestinations := destinations.List(func(dest *v1.Destination) bool {
+		return !isBackingKubeWorkload(dest.Spec.GetKubeService(), workload.Spec.GetKubernetes())
+	})
+	if len(matchingDestinations) == 0 {
+		return nil
+	}
+	return matchingDestinations[0]
+}
+
 func isBackingKubeWorkload(
 	service *v1.DestinationSpec_KubeService,
 	kubeWorkload *v1.WorkloadSpec_KubernetesWorkload,
