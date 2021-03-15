@@ -53,7 +53,8 @@ meshctl install enterprise [flags]
       --namespace string           namespace in which to install Gloo Mesh (default "gloo-mesh")
   -r, --register                   Also register the cluster
   -v, --verbose                    Enable verbose logging
-      --version string             Version to install, defaults to latest if omitted
+      --version string             Version to install.
+                                   Community defaults to meshctl version, enterprise defaults to latest
 ```
 
 ### SEE ALSO
