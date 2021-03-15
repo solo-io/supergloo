@@ -11,7 +11,6 @@ import (
 // Generated Deepcopy methods for Settings
 
 func (in *Settings) DeepCopyInto(out *Settings) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 

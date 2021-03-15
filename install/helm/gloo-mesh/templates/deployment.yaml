@@ -89,7 +89,7 @@ metadata:
 spec:
   selector:
     app: discovery
-  type: ClusterIP
+  type: {{ $discovery.serviceType }}
   ports:
   - name: metrics
     port: {{ $discovery.ports.metrics }}
@@ -186,7 +186,7 @@ metadata:
 spec:
   selector:
     app: networking
-  type: ClusterIP
+  type: {{ $networking.serviceType }}
   ports:
   - name: metrics
     port: {{ $networking.ports.metrics }}

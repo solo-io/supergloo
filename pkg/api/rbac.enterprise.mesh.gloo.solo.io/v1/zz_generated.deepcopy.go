@@ -11,7 +11,6 @@ import (
 // Generated Deepcopy methods for Role
 
 func (in *Role) DeepCopyInto(out *Role) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
@@ -72,7 +71,6 @@ func (in *RoleList) DeepCopyObject() runtime.Object {
 // Generated Deepcopy methods for RoleBinding
 
 func (in *RoleBinding) DeepCopyInto(out *RoleBinding) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 

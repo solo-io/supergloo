@@ -11,7 +11,6 @@ import (
 // Generated Deepcopy methods for IssuedCertificate
 
 func (in *IssuedCertificate) DeepCopyInto(out *IssuedCertificate) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
@@ -72,7 +71,6 @@ func (in *IssuedCertificateList) DeepCopyObject() runtime.Object {
 // Generated Deepcopy methods for CertificateRequest
 
 func (in *CertificateRequest) DeepCopyInto(out *CertificateRequest) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
@@ -133,7 +131,6 @@ func (in *CertificateRequestList) DeepCopyObject() runtime.Object {
 // Generated Deepcopy methods for PodBounceDirective
 
 func (in *PodBounceDirective) DeepCopyInto(out *PodBounceDirective) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
