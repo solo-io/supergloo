@@ -26,7 +26,7 @@ func GetLatestChartMinorVersion(repoURI, chartName string, stable bool, major, m
 
 func getLatestChartVersion(
 	repoURI, chartName string,
-	isVersionCopmatible func(version version.Version) bool,
+	isVersionCompatible func(version version.Version) bool,
 ) (string, error) {
 	versions, err := getChartVersions(repoURI, chartName)
 	if err != nil {
@@ -35,7 +35,7 @@ func getLatestChartVersion(
 	latestVersion := version.Must(version.NewVersion("0"))
 	foundVersion := false
 	for i, version := range versions {
-		if !isVersionCopmatible(version) {
+		if !isVersionCompatible(version) {
 			continue
 		}
 
