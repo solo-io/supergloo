@@ -86,7 +86,7 @@ metadata:
 spec:
   selector:
     app: cert-agent
-  type: ClusterIP
+  type: {{ $certAgent.serviceType }}
   ports:
   - name: metrics
     port: {{ $certAgent.ports.metrics }}
