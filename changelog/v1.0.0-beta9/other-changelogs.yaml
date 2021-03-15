@@ -1,4 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/168
-    description: Add Enterprise, the UI, and Helm chart to the changelog on the doc site.
