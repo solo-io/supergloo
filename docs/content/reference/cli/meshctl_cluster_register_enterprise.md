@@ -4,7 +4,24 @@ weight: 5
 ---
 ## meshctl cluster register enterprise
 
-Register a cluster for Gloo Mesh enterprise editio
+Register a cluster for Gloo Mesh enterprise edition
+
+### Synopsis
+
+In the process of registering a cluster, an agent (called the relay agent)
+will be installed on the remote cluster. To establish trust between the relay agent and
+Gloo-Mesh, mTLS is used.
+
+The relay agent can either be provided with a client certificate, or a bootstrap token. If provided
+with a bootstrap token, the relay agent will then exchange it for a client certificate and save it
+as a secret in the cluster. Once the client certificate secret exist, the bootstrap token is not 
+longer needed and can be discarded.
+
+For the relay agent to trust Gloo Mesh a root CA is needed.
+
+To make the registration process easy, this command will try to copy the root CA and 
+bootstrap token from the gloo-mesh cluster, if these are not explicitly provided in the command line flags.
+
 
 ```
 meshctl cluster register enterprise [cluster name] [flags]
@@ -23,13 +40,20 @@ meshctl cluster register enterprise [cluster name] [flags]
 ### Options
 
 ```
+      --client-cert-secret-name string         Secret name for the client cert for communication with relay server. Note that if a bootstrap token is provided, then a client certificate will be created automatically.
+      --client-cert-secret-namespace string    Secret namespace for the client cert for communication with relay server.
       --enterprise-agent-chart-file string     Path to a local Helm chart for installing the Enterprise Agent.
                                                If unset, this command will install the Enterprise Agent from the publicly released Helm chart.
       --enterprise-agent-chart-values string   Path to a Helm values.yaml file for customizing the installation of the Enterprise Agent.
                                                If unset, this command will install the Enterprise Agent with default Helm values.
   -h, --help                                   help for enterprise
       --relay-server-address string            The address via which the enterprise agent will communicate with the relay server.
-      --relay-server-insecure                  Communicate with the relay server over an insecure connection. (default true)
+      --relay-server-insecure                  Communicate with the relay server over an insecure connection.
+      --root-ca-secret-name string             Secret name for the root CA for communication with relay server.
+      --root-ca-secret-namespace string        Secret namespace for the root CA for communication with relay server.
+      --token-secret-key string                Secret namespace for the bootstrap token. (default "token")
+      --token-secret-name string               Secret name for the bootstrap token. This token will be used to boostrap a client certificate from relay server. Not needed if already have a client certificate.
+      --token-secret-namespace string          Secret namespace for the bootstrap token.
 ```
 
 ### Options inherited from parent commands
