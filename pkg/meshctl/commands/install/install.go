@@ -65,7 +65,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace in which to install Gloo Mesh")
 	flags.StringVar(&o.chartPath, "chart-file", "", "Path to a local Helm chart for installing Gloo Mesh.\nIf unset, this command will install Gloo Mesh from the publicly released Helm chart.")
 	flags.StringVar(&o.chartValuesFile, "chart-values-file", "", "File containing value overrides for the Gloo Mesh Helm chart")
-	flags.StringVar(&o.version, "version", "", "Version to install.\nCommunity defaults to meshctl version, enterprise defaults to latest")
+	flags.StringVar(&o.version, "version", "", "Version to install.\nCommunity defaults to meshctl version, enterprise defaults to latest stable")
 
 	flags.BoolVarP(&o.register, "register", "r", false, "Also register the cluster")
 	flags.StringVar(&o.clusterName, "cluster-name", "mgmt-cluster",

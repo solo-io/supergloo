@@ -30,7 +30,7 @@ difference between the editions.
       --namespace string           namespace in which to install Gloo Mesh (default "gloo-mesh")
   -r, --register                   Also register the cluster
       --version string             Version to install.
-                                   Community defaults to meshctl version, enterprise defaults to latest
+                                   Community defaults to meshctl version, enterprise defaults to latest stable
 ```
 
 ### Options inherited from parent commands

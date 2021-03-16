@@ -54,7 +54,7 @@ meshctl install enterprise [flags]
   -r, --register                   Also register the cluster
   -v, --verbose                    Enable verbose logging
       --version string             Version to install.
-                                   Community defaults to meshctl version, enterprise defaults to latest
+                                   Community defaults to meshctl version, enterprise defaults to latest stable
 ```
 
 ### SEE ALSO
