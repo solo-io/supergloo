@@ -11,7 +11,6 @@ import (
 // Generated Deepcopy methods for Destination
 
 func (in *Destination) DeepCopyInto(out *Destination) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
@@ -72,7 +71,6 @@ func (in *DestinationList) DeepCopyObject() runtime.Object {
 // Generated Deepcopy methods for Workload
 
 func (in *Workload) DeepCopyInto(out *Workload) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
@@ -133,7 +131,6 @@ func (in *WorkloadList) DeepCopyObject() runtime.Object {
 // Generated Deepcopy methods for Mesh
 
 func (in *Mesh) DeepCopyInto(out *Mesh) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 

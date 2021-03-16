@@ -31,7 +31,6 @@ require (
 	github.com/envoyproxy/go-control-plane v0.9.9-0.20210115003313-31f9241a16e6
 	github.com/fatih/color v1.10.0
 	github.com/gertd/go-pluralize v0.1.1
-	github.com/go-git/go-git/v5 v5.2.0
 	github.com/go-logr/zapr v0.3.0 // indirect
 	github.com/go-openapi/spec v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.6
@@ -64,7 +63,7 @@ require (
 	github.com/solo-io/go-utils v0.20.4
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
-	github.com/solo-io/skv2 v0.17.7
+	github.com/solo-io/skv2 v0.17.10
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.5.1
 	github.com/spf13/cobra v1.1.1

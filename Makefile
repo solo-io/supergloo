@@ -99,7 +99,7 @@ operator-gen: clear-vendor-any
 # Generate Reference documentation
 .PHONY: generated-reference-docs
 generated-reference-docs: clear-vendor-any update-licenses
-	SKIP_CHANGELOG_GENERATION=true go run codegen/docs/docsgen.go
+	SKIP_CHANGELOG_GENERATION=true go run docs/cmd/docsgen.go
 
 #----------------------------------------------------------------------------------
 # Build

@@ -30,6 +30,7 @@ site-common: clean
 	if [ ! -d themes/hugo-theme-soloio ]; then git clone https://github.com/solo-io/hugo-theme-soloio themes/hugo-theme-soloio; fi
 	# style updates for putting docs in the dev-portal repo, see details here https://github.com/solo-io/hugo-theme-soloio/commit/e0c50784a92fb7f61c635ff9a6e3a010f636f550
 	git -C themes/hugo-theme-soloio checkout $(SOLO_HUGO_THEME)
+	go run cmd/docsgen.go
 
 .PHONY: site-test
 site-test: site-common
@@ -46,7 +47,7 @@ serve-site: site-test
 
 .PHONY: clean
 clean:
-	rm -rf ./site ./resources ./site-latest ./site-versioned ./themes
+	rm -rf ./site ./resources ./site-latest ./site-versioned ./themes ./ci ./gloo-mesh-temp
 
 
 .PHONY: tagged
@@ -75,3 +76,7 @@ latest: site-release
 .PHONY: check-links
 check-links: site-release
 	htmlproofer ./site-latest/ --empty-alt-ignore  --allow-hash-href --url-ignore "/localhost/,/github.com/solo-io/solo-projects/"
+
+.PHONY: build-site
+build-site: clean
+	./build-docs.sh

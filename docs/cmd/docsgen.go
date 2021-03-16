@@ -17,9 +17,7 @@ func main() {
 	if err != nil {
 		log.Fatal("failed to initialize vendor_any manager")
 	}
-
 	anyvendorImports := anyvendor.AnyVendorImports()
-
 	if err = mgr.Ensure(ctx, anyvendorImports.ToAnyvendorConfig()); err != nil {
 		log.Fatal("failed to import protos")
 	}
@@ -33,19 +31,15 @@ func main() {
 			OutputDir: "content/reference/cli",
 		},
 		Changelog: docsgen.ChangelogOptions{
-			Repos: []docsgen.ChangelogConfig{
-				{Name: "Open Source Gloo Mesh", Repo: "gloo-mesh", Path: "open_source"},
-				// TODO(ryantking): Get enterprise changelog generation setup properly then enable this
-				// {Name: "Gloo Mesh Enterprise", Repo: "gloo-mesh-enterprise", Path: "enterprise"}
-			},
 			OutputDir: "content/reference/changelog",
+			OtherRepos: []docsgen.ChangelogConfig{
+				{Name: "Gloo Mesh Enterprise", Repo: "gloo-mesh-enterprise", Fname: "enterprise"},
+			},
 		},
 		DocsRoot: "docs",
 	}
-
 	if err := docsgen.Execute(docsGen); err != nil {
 		log.Fatal(err)
 	}
-
 	log.Printf("Finished generating docs\n")
 }

@@ -11,7 +11,6 @@ import (
 // Generated Deepcopy methods for AccessLogRecord
 
 func (in *AccessLogRecord) DeepCopyInto(out *AccessLogRecord) {
-	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
 
