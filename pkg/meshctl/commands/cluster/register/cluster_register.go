@@ -48,7 +48,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 }
 
 func communityCommand(ctx context.Context, regOpts *options) *cobra.Command {
-	opts := communityOptions{}
+	opts := communityOptions{Options: (*registration.Options)(regOpts)}
 	cmd := &cobra.Command{
 		Use:   "community [cluster name]",
 		Short: "Register a cluster for Gloo Mesh community edition",
@@ -78,7 +78,7 @@ func communityCommand(ctx context.Context, regOpts *options) *cobra.Command {
 }
 
 type communityOptions struct {
-	registration.Options
+	*registration.Options
 
 	AgentChartPathOverride string
 	AgentChartValuesPath   string
