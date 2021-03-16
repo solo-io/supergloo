@@ -61,8 +61,7 @@ func communityCommand(ctx context.Context, regOpts *options) *cobra.Command {
 		RunE: func(_ *cobra.Command, args []string) error {
 			regOpts.AgentChartPathOverride = opts.AgentChartPathOverride
 			regOpts.AgentChartValuesPath = opts.AgentChartValuesPath
-			opts.Options = registration.Options(*regOpts)
-			opts.ClusterName = args[0]
+			regOpts.ClusterName = args[0]
 			registrant, err := registration.NewRegistrant(registration.Options(*regOpts))
 			if err != nil {
 				return err
