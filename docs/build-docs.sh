@@ -76,12 +76,6 @@ for version in "${versions[@]}"; do
     git checkout tags/v"$version"
   fi
 
-  # Fix the cidranger checksum issue on old version
-  # Only required until we remove support for versions before 0.12.7
-  if [[ "$version" != "1."* ]] && [[ "$version" != "0.12."* ]]; then
-    sed -i 's#h1:L7Msw4X7EQK7zMVjOtv7o8xMyjv1rJcNlYlMgGwP7ko=#h1:9U1yz7WPYDwf0vpNWFaeRh0bjwz5RVgRy/9UEQfHl0g=#' go.sum
-  fi
-
   # Replace version with "latest" if it's the latest version. This enables URLs with "/latest/..."
   [[ "$version" ==  "$latestVersion" ]] && version="latest"
 
