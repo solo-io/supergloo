@@ -231,7 +231,10 @@ func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
 		if err != nil {
 			return err
 		}
-		if bootstrapTokenCreated {
+		if bootstrapTokenCreated && opts.MgmtContext != opts.RemoteContext {
+			// Delete the bootstrap token from the registered cluster
+			// if it was created by this command invocation and the registered
+			// cluster is not the management cluster.
 			logrus.Info("🗑 Removing bootstrap token")
 			key := client.ObjectKey{
 				Name:      opts.TokenSecretName,
