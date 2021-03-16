@@ -3,6 +3,7 @@ package federation
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/Masterminds/semver"
 	envoy_api_v2_listener "github.com/envoyproxy/go-control-plane/envoy/api/v2/listener"
@@ -144,20 +145,40 @@ func (t *translator) Translate(
 		return
 	}
 
-	for _, destination := range destinations {
-		switch destination.Spec.Type.(type) {
-		case *discoveryv1.DestinationSpec_KubeService_:
-			t.translateKubeServiceDestination(destination, reporter, virtualMesh, in, outputs, mesh)
-		case *discoveryv1.DestinationSpec_ExternalService_:
-			// External (non-k8s) service scenario, handled by enterprise networking
-			// TODO: Might want to warn user if they have external destinations
-			// configured with OSS Gloo Mesh
-			continue
-		default:
-			// Should never happen
-			contextutils.LoggerFrom(t.ctx).Debugf("skipping destination %v (only kubeService or externalService supported)")
-			continue
+	processDestination := func(destinations []*discoveryv1.Destination) {
+		for _, destination := range destinations {
+			switch destination.Spec.Type.(type) {
+			case *discoveryv1.DestinationSpec_KubeService_:
+				t.translateKubeServiceDestination(destination, reporter, virtualMesh, in, outputs, mesh)
+			case *discoveryv1.DestinationSpec_ExternalService_:
+				// External (non-k8s) service scenario, handled by enterprise networking
+				// TODO: Might want to warn user if they have external destinations
+				// configured with OSS Gloo Mesh
+				continue
+			default:
+				// Should never happen
+				contextutils.LoggerFrom(t.ctx).Debugf("skipping destination %v (only kubeService or externalService supported)")
+				continue
+			}
 		}
+	}
+
+	if len(destinations) < 100 {
+		processDestination(destinations)
+	} else {
+		parallel := 8
+		var wg sync.WaitGroup
+		procWg := func(destinations []*discoveryv1.Destination) {
+			processDestination(destinations)
+			wg.Done()
+		}
+		wg.Add(parallel)
+		batchsize := len(destinations) / parallel
+		for i := 0; i < parallel-1; i++ {
+			go procWg(destinations[i*batchsize : (i+1)*batchsize])
+		}
+		go procWg(destinations[(parallel-1)*batchsize:])
+		wg.Wait()
 	}
 
 	// istio gateway names must be DNS-1123 labels
