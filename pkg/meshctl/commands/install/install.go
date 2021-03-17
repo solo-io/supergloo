@@ -255,10 +255,19 @@ func (o enterpriseOptions) getInstaller() helm.Installer {
 }
 
 func (o enterpriseOptions) getRegistrationOptions() enterprise.RegistrationOptions {
-	return enterprise.RegistrationOptions{
+	if o.relayServerAddress == "" {
+		const localRelayServerAddressFormat = "enterprise-networking.%s.svc.cluster.local:9900"
+		namespacedLocalRelayServerAddress := fmt.Sprintf(localRelayServerAddressFormat, o.namespace)
+		logrus.Infof("No relay server address provided, defaulting to %s", namespacedLocalRelayServerAddress)
+		o.relayServerAddress = namespacedLocalRelayServerAddress
+	}
+
+	registrationOptions := enterprise.RegistrationOptions{
 		Options:            o.options.getRegistrationOptions(),
 		RelayServerAddress: o.relayServerAddress,
 	}
+
+	return registrationOptions
 }
 
 func installEnterprise(ctx context.Context, opts enterpriseOptions) error {
