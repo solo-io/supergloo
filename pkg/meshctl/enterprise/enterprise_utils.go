@@ -138,9 +138,17 @@ func ensureCerts(ctx context.Context, opts *RegistrationOptions) (bool, error) {
 		// write it to the remote cluster
 		err = remoteKubeSecretClient.CreateSecret(ctx, copiedSecret)
 		if err != nil && !apierrors.IsAlreadyExists(err) {
+			// A write error occurred.
 			return createdBootstrapToken, err
+		} else if err != nil && apierrors.IsAlreadyExists(err) {
+			// The user either provisioned their own token secret, or
+			// we're on the management cluster and using the server's
+			// token secret.
+			createdBootstrapToken = false
+		} else {
+			// Successfully created the bootstrap token on a remote cluster.
+			createdBootstrapToken = true
 		}
-		createdBootstrapToken = true
 	}
 	return createdBootstrapToken, nil
 }
@@ -235,10 +243,9 @@ func RegisterCluster(ctx context.Context, opts RegistrationOptions) error {
 		if err != nil {
 			return err
 		}
-		if bootstrapTokenCreated && opts.MgmtContext != opts.RemoteContext {
+		if bootstrapTokenCreated {
 			// Delete the bootstrap token from the registered cluster
-			// if it was created by this command invocation and the registered
-			// cluster is not the management cluster.
+			// if it was created by this command invocation.
 			logrus.Info("🗑 Removing bootstrap token")
 			key := client.ObjectKey{
 				Name:      opts.TokenSecretName,
