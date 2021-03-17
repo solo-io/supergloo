@@ -128,7 +128,9 @@ Once you've installed Gloo Mesh, verify what components were installed:
 
 ```shell
 kubectl get pods -n gloo-mesh
+```
 
+```shell
 NAME                          READY   STATUS    RESTARTS   AGE
 discovery-66675cf6fd-cdlpq    1/1     Running   0          32m
 networking-6d7686564d-ngrdq   1/1     Running   0          32m
@@ -152,7 +154,7 @@ Management Configuration
 
 ## Next steps
 
-With Gloo Mesh installed, the next step is to [register clusters with Gloo Mesh]({{% versioned_link_path fromRoot="/setup/register_cluster" %}}) and discover the service meshes running on those clusters.
+With Gloo Mesh installed, the next step is to [register clusters with Gloo Mesh]({{% versioned_link_path fromRoot="/setup/cluster_registration/community_cluster_registration" %}}) and discover the service meshes running on those clusters.
 
 
 
