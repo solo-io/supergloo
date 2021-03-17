@@ -326,7 +326,10 @@ func makeDestinationRuleSubsets(
 		uniqueSubsets = append(uniqueSubsets, subsetLabels)
 	}
 
-	allDestinations.List(func(service *discoveryv1.Destination) bool {
+	// TODO(yuval-k): Once exposed, use a function that provides iteration without sorting
+	// and coping
+	for _, genericSvc := range allDestinations.Generic().Map() {
+		service := genericSvc.(*discoveryv1.Destination)
 		for _, policy := range service.Status.AppliedTrafficPolicies {
 			trafficShiftDestinations := policy.Spec.GetPolicy().GetTrafficShift().GetDestinations()
 			for _, dest := range trafficShiftDestinations {
@@ -338,8 +341,7 @@ func makeDestinationRuleSubsets(
 				}
 			}
 		}
-		return true
-	})
+	}
 
 	var subsets []*networkingv1alpha3spec.Subset
 	for _, subsetLabels := range uniqueSubsets {
