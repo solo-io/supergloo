@@ -104,11 +104,13 @@ type Options struct {
 
 func Execute(opts Options) error {
 	rootDir := filepath.Join(moduleRoot, opts.DocsRoot)
-	if err := generateCliReference(rootDir, opts.Cli); err != nil {
-		return err
-	}
-	if err := generateApiDocs(rootDir, opts.Proto); err != nil {
-		return err
+	if os.Getenv("ONLY_CHANGELOG") == "" {
+		if err := generateCliReference(rootDir, opts.Cli); err != nil {
+			return err
+		}
+		if err := generateApiDocs(rootDir, opts.Proto); err != nil {
+			return err
+		}
 	}
 	if err := generateChangelog(rootDir, opts.Changelog); err != nil {
 		return err
