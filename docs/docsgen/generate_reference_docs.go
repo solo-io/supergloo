@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -104,7 +105,7 @@ type Options struct {
 
 func Execute(opts Options) error {
 	rootDir := filepath.Join(moduleRoot, opts.DocsRoot)
-	if os.Getenv("ONLY_CHANGELOG") == "" {
+	if !checkEnvVariable("ONLY_CHANGELOG") {
 		if err := generateCliReference(rootDir, opts.Cli); err != nil {
 			return err
 		}
@@ -133,7 +134,7 @@ func generateCliReference(root string, opts CliOptions) error {
 }
 
 func generateChangelog(root string, opts ChangelogOptions) error {
-	if os.Getenv("SKIP_CHANGELOG_GENERATION") != "" {
+	if checkEnvVariable("SKIP_CHANGELOG_GENERATION") {
 		return nil
 	}
 	// flush directory for idempotence
@@ -251,4 +252,13 @@ func getGitVersion() (string, error) {
 	}
 
 	return strings.TrimSpace(string(version)), nil
+}
+
+func checkEnvVariable(key string) bool {
+	val := os.Getenv(key)
+	if val == "" {
+		return false
+	}
+	b, err := strconv.ParseBool(val)
+	return err != nil || b // treat set env variables as true
 }
