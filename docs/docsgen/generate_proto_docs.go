@@ -60,6 +60,9 @@ func generateProtoDocs(protoDir, templateFile, destDir string) error {
 	links = collectLinks(destDir, docsTemplate)
 
 	templateContents, err := ioutil.ReadFile(templateFile)
+	if err != nil {
+		return err
+	}
 
 	tmpl, err := template.New(templateFile).Funcs(templateFuncs(links)).Parse(string(templateContents))
 	if err != nil {
@@ -107,6 +110,9 @@ func removeDescriptions(file *gendoc.File) {
 func generateProtoDocsIndex(descriptors *gendoc.Template, links map[string]string, destDir string) error {
 
 	templateContents, err := ioutil.ReadFile(protoIndexTemplate)
+	if err != nil {
+		return err
+	}
 
 	tmpl, err := template.New(protoIndexTemplate).Funcs(templateFuncs(links)).Parse(string(templateContents))
 	if err != nil {
