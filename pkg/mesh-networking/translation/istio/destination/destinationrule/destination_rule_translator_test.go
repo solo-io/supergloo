@@ -2,9 +2,11 @@ package destinationrule_test
 
 import (
 	"context"
+	"sort"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
+	"github.com/golang/protobuf/proto"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rotisserie/eris"
@@ -483,12 +485,30 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			ApplyTrafficPolicyToDestinationRule(
 				destination.Status.AppliedTrafficPolicies[0],
 				destination,
-				&expectedDestinatonRule.Spec,
+				gomock.Any(),
 				gomock.Any(),
 			).
-			Return(nil)
+			DoAndReturn(func(
+				_ *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+				service *discoveryv1.Destination,
+				destinationRuleSpec *networkingv1alpha3spec.DestinationRule,
+				_ decorators.RegisterField,
+			) error {
+				// sort subsets for deterministic comparison
+				sort.Slice(destinationRuleSpec.Subsets, func(i, j int) bool {
+					return destinationRuleSpec.Subsets[i].Name < destinationRuleSpec.Subsets[j].Name
+				})
+
+				Expect(proto.Equal(destinationRuleSpec, &expectedDestinatonRule.Spec)).To(BeTrue())
+				return nil
+			})
 
 		destinationRule := destinationRuleTranslator.Translate(ctx, in, destination, sourceMeshInstallation, mockReporter)
+
+		// sort subsets for deterministic comparison
+		sort.Slice(destinationRule.Spec.Subsets, func(i, j int) bool {
+			return destinationRule.Spec.Subsets[i].Name < destinationRule.Spec.Subsets[j].Name
+		})
 		Expect(destinationRule).To(Equal(expectedDestinatonRule))
 	})
 
