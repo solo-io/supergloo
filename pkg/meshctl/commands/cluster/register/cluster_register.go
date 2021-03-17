@@ -48,7 +48,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 }
 
 func communityCommand(ctx context.Context, regOpts *options) *cobra.Command {
-	opts := (*communityOptions)(regOpts)
+	opts := communityOptions{Options: (*registration.Options)(regOpts)}
 	cmd := &cobra.Command{
 		Use:   "community [cluster name]",
 		Short: "Register a cluster for Gloo Mesh community edition",
@@ -59,8 +59,10 @@ func communityCommand(ctx context.Context, regOpts *options) *cobra.Command {
   meshctl cluster register --remote-context=my-context community remote-cluster`,
 		Args: cobra.MinimumNArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {
-			opts.ClusterName = args[0]
-			registrant, err := registration.NewRegistrant(registration.Options(*opts))
+			regOpts.AgentChartPathOverride = opts.AgentChartPathOverride
+			regOpts.AgentChartValuesPath = opts.AgentChartValuesPath
+			regOpts.ClusterName = args[0]
+			registrant, err := registration.NewRegistrant(registration.Options(*regOpts))
 			if err != nil {
 				return err
 			}
@@ -75,7 +77,12 @@ func communityCommand(ctx context.Context, regOpts *options) *cobra.Command {
 	return cmd
 }
 
-type communityOptions options
+type communityOptions struct {
+	*registration.Options
+
+	AgentChartPathOverride string
+	AgentChartValuesPath   string
+}
 
 func (o *communityOptions) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.ApiServerAddress, "api-server-address", "", "Swap out the address of the remote cluster's k8s API server for the value of this flag.\nSet this flag when the address of the cluster domain used by the Gloo Mesh is different than that specified in the local kubeconfig.")
@@ -94,7 +101,21 @@ func enterpriseCommand(ctx context.Context, regOpts *options) *cobra.Command {
 	opts := enterpriseOptions{}
 	cmd := &cobra.Command{
 		Use:   "enterprise [cluster name]",
-		Short: "Register a cluster for Gloo Mesh enterprise editio",
+		Short: "Register a cluster for Gloo Mesh enterprise edition",
+		Long: `In the process of registering a cluster, an agent (called the relay agent)
+will be installed on the remote cluster. To establish trust between the relay agent and
+Gloo-Mesh, mTLS is used.
+
+The relay agent can either be provided with a client certificate, or a bootstrap token. If provided
+with a bootstrap token, the relay agent will then exchange it for a client certificate and save it
+as a secret in the cluster. Once the client certificate secret exist, the bootstrap token is not 
+longer needed and can be discarded.
+
+For the relay agent to trust Gloo Mesh a root CA is needed.
+
+To make the registration process easy, this command will try to copy the root CA and 
+bootstrap token from the gloo-mesh cluster, if these are not explicitly provided in the command line flags.
+`,
 		Example: `  # Register the current context
   meshctl cluster register enterprise mgmt-cluster
 
@@ -119,7 +140,18 @@ type enterpriseOptions enterprise.RegistrationOptions
 
 func (o *enterpriseOptions) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.RelayServerAddress, "relay-server-address", "", "The address via which the enterprise agent will communicate with the relay server.")
-	flags.BoolVar(&o.RelayServerInsecure, "relay-server-insecure", true, "Communicate with the relay server over an insecure connection.")
+	flags.BoolVar(&o.RelayServerInsecure, "relay-server-insecure", false, "Communicate with the relay server over an insecure connection.")
+
+	flags.StringVar(&o.RootCASecretName, "root-ca-secret-name", "", "Secret name for the root CA for communication with relay server.")
+	flags.StringVar(&o.RootCASecretNamespace, "root-ca-secret-namespace", "", "Secret namespace for the root CA for communication with relay server.")
+
+	flags.StringVar(&o.ClientCertSecretName, "client-cert-secret-name", "", "Secret name for the client cert for communication with relay server. Note that if a bootstrap token is provided, then a client certificate will be created automatically.")
+	flags.StringVar(&o.ClientCertSecretNamespace, "client-cert-secret-namespace", "", "Secret namespace for the client cert for communication with relay server.")
+
+	flags.StringVar(&o.TokenSecretName, "token-secret-name", "", "Secret name for the bootstrap token. This token will be used to boostrap a client certificate from relay server. Not needed if already have a client certificate.")
+	flags.StringVar(&o.TokenSecretNamespace, "token-secret-namespace", "", "Secret namespace for the bootstrap token.")
+	flags.StringVar(&o.TokenSecretKey, "token-secret-key", "token", "Secret namespace for the bootstrap token.")
+
 	flags.StringVar(&o.AgentChartPathOverride, "enterprise-agent-chart-file", "",
 		"Path to a local Helm chart for installing the Enterprise Agent.\n"+
 			"If unset, this command will install the Enterprise Agent from the publicly released Helm chart.",
