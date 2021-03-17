@@ -44,6 +44,7 @@ func ensureCerts(ctx context.Context, opts *RegistrationOptions) (bool, error) {
 	// if secure, and no user data was given, attempt to deduce the required parameters.
 	const defaultRootCA = "relay-root-tls-secret"
 	const defaultToken = "relay-identity-token-secret"
+	const defaultTokenSecretKey = "token"
 
 	createdBootstrapToken := false
 
@@ -110,6 +111,9 @@ func ensureCerts(ctx context.Context, opts *RegistrationOptions) (bool, error) {
 		opts.TokenSecretName = defaultToken
 		if opts.TokenSecretNamespace == "" {
 			opts.TokenSecretNamespace = opts.RemoteNamespace
+		}
+		if opts.TokenSecretKey == "" {
+			opts.TokenSecretKey = defaultTokenSecretKey
 		}
 		mgmtTokenNameNamespace := client.ObjectKey{
 			Name:      defaultToken,
