@@ -14,12 +14,15 @@ import (
 
 func GetLatestChartVersion(repoURI, chartName string, stable bool) (string, error) {
 	return getLatestChartVersion(repoURI, chartName, func(version version.Version) bool {
+		// Do not allow prereleaes if stable is true.
 		return !stable || version.Prerelease() == ""
 	})
 }
 
 func GetLatestChartMinorVersion(repoURI, chartName string, stable bool, major, minor int) (string, error) {
 	return getLatestChartVersion(repoURI, chartName, func(version version.Version) bool {
+		// Compatible versions will have the given major and minor version.
+		// Do not allow prereleaes if stable is true.
 		return version.Segments()[0] == major && version.Segments()[1] == minor &&
 			(!stable || version.Prerelease() == "")
 	})
