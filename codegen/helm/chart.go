@@ -102,7 +102,9 @@ var CertAgentChart = &model.Chart{
 		Description: "Helm chart for the Gloo Mesh Certificate Agent.",
 		Version:     version.Version,
 	},
-	Values: nil,
+	Values: ChartValues{
+		VerboseMode: false,
+	},
 }
 
 var (
@@ -143,7 +145,7 @@ func discoveryOperator() model.Operator {
 			"--metrics-port={{ $.Values.discovery.ports.metrics }}",
 			"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
 			"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
-			"--verbose",
+			"--verbose={{ $.Values.verbose }}",
 		},
 		Env: []v1.EnvVar{
 			{
@@ -198,7 +200,7 @@ func NetworkingOperator(name string) model.Operator {
 			"--metrics-port={{ $.Values." + strcase.ToLowerCamel(name) + ".ports.metrics }}",
 			"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
 			"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
-			"--verbose",
+			"--verbose={{ $.Values.verbose }}",
 			"--disallow-intersecting-config={{ $.Values.disallowIntersectingConfig }}",
 			"--watch-output-types={{ $.Values.watchOutputTypes }}",
 		},
@@ -252,7 +254,7 @@ func certAgentOperator() model.Operator {
 		Rbac: rbacPolicies,
 		Args: []string{
 			"--metrics-port={{ $.Values.certAgent.ports.metrics }}",
-			"--verbose",
+			"--verbose={{ $.Values.verbose }}",
 		},
 		Env: []v1.EnvVar{
 			{
