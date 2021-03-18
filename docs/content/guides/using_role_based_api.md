@@ -79,121 +79,36 @@ Let's dig into some example roles starting with the admin role referenced above.
 
 ### Admin Role
 
-The `full-admin-role` defined below is granting permissions to perform all actions on all scopes. Obviously this role should be treated with caution.
-
-```yaml
-apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1
-kind: Role
-metadata:
-  name: full-admin-role
-  namespace: gloo-mesh
-spec:
-  trafficPolicyScopes:
-    - trafficPolicyActions:
-        - ALL
-      destinationSelectors:
-        - kubeServiceMatcher:
-            labels:
-              "*": "*"
-            namespaces:
-              - "*"
-            clusters:
-              - "*"
-        - kubeServiceRefs:
-            services:
-              - name: "*"
-                namespace: "*"
-                clusterName: "*"
-      workloadSelectors:
-        - labels:
-            "*": "*"
-          namespaces:
-            - "*"
-          clusters:
-            - "*"
-  virtualMeshScopes:
-    - virtualMeshActions:
-        - ALL
-      meshRefs:
-        - name: "*"
-          namespace: "*"
-  accessPolicyScopes:
-    - identitySelectors:
-        - kubeIdentityMatcher:
-            namespaces:
-              - "*"
-            clusters:
-              - "*"
-          kubeServiceAccountRefs:
-            serviceAccounts:
-              - name: "*"
-                namespace: "*"
-                clusterName: "*"
-      destinationSelectors:
-        - kubeServiceMatcher:
-            labels:
-              "*": "*"
-            namespaces:
-              - "*"
-            clusters:
-              - "*"
-          kubeServiceRefs:
-            services:
-              - name: "*"
-                namespace: "*"
-                clusterName: "*"
-  failoverServiceScopes:
-    - meshRefs:
-        - name: "*"
-          namespace: "*"
-      backingServices:
-        - kubeService:
-            name: "*"
-            namespace: "*"
-            clusterName: "*"
-  wasmDeploymentScopes:
-    - workloadSelectors:
-        - labels:
-            "*": "*"
-          namespaces:
-            - "*"
-          clusters:
-            - "*"
-```
-
-You can save the above role to the file `full-admin-role.yaml` and deploy it with the following command:
+Gloo Mesh's RBAC webhook component ships with an admin role that grants permissions to perform
+all actions on any object. Run the following command to view the admin role object:
 
 ```shell
-MGMT_CONTEXT=<your management plane cluster>
-kubectl --context $MGMT_CONTEXT apply -f full-admin-role.yaml
-``` 
+# add the Helm repo containing the rbac-webhook
+helm repo add rbac-webhook https://storage.googleapis.com/gloo-mesh-enterprise/rbac-webhook
 
-Next we will create the RoleBinding for the `kubernetes-admin` user. You may need to change the username depending on the configuration of your management cluster running Gloo Mesh Enterprise.
-
-```yaml
-apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1
-kind: RoleBinding
-metadata:
-  labels:
-    app: gloo-mesh
-  name: full-admin-role-binding
-  namespace: gloo-mesh
-spec:
-  roleRef:
-    name: full-admin-role
-    namespace: gloo-mesh
-  subjects:
-    - kind: User
-      name: kubernetes-admin
+# show the admin-role object
+helm template rbac-webhook/rbac-webhook -s templates/admin-role.yaml
 ```
 
-You can save the above binding to the file `full-admin-role-binding.yaml` and deploy it with the following command:
+Kubernetes Users and Groups can assume this role at install time by 
+specifying the `adminSubjects` Helm value. You can view this Helm value with the following commands:
 
 ```shell
-kubectl --context $MGMT_CONTEXT apply -f full-admin-role-binding.yaml
+# show the available Helm values
+helm show values rbac-webhook/rbac-webhook
 ```
 
-Now if we try to create a Gloo Mesh resource again, the result should be successful:
+You should see the following stanza whose values you can override:
+
+```yaml
+adminSubjects:
+- kind: User
+  name: kubernetes-admin
+createAdminRole: true
+```
+
+Assuming that you've granted yourself admin permissions, if we try to create a Gloo Mesh resource again,
+the result should be successful:
 
 ```shell
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
@@ -222,13 +137,13 @@ trafficpolicy.networking.mesh.gloo.solo.io/petstore created
 
 Excellent! Let's take a look at another potential role and try binding it to a different user.
 
-### Traffic Consumer Role
+### Destination Consumer Role
 
 If you've been following the guides, you should already have the bookstore app deployed. The role assignment defined below allows the assignee permissions to operate workloads that originate requests to a set of Destinations. They are granted permissions for configuring client-side networking policies affecting the route between their workload(s) and the relevant Destinations.
 
 Specifically, the role allows the TrafficPolicyActions: `RETRIES`, `REQUEST_TIMEOUT`, and `FAULT_INJECTION`. We are also using DestinationSelectors to select the `ratings` service running in the `bookinfo` namespace on any registered cluster. The WorkloadSelectors configuration selects version `v1` of the app `productpage` in the namespace `bookinfo` running on any registered cluster.
 
-The Traffic Consumer Role also creates an AccessPolicyScope defining where access policies could be created, restricted by identity and Destination. Using the Identity selector, we are restricting identities to the `productpage` service account on the `bookinfo` namespace on any registered cluster. Using the DestinationSelector we are restricting Destinations to the `ratings` service running in the `bookinfo` namespace on any registered cluster
+The Destination Consumer Role also creates an AccessPolicyScope defining where access policies could be created, restricted by identity and Destination. Using the Identity selector, we are restricting identities to the `productpage` service account on the `bookinfo` namespace on any registered cluster. Using the DestinationSelector we are restricting Destinations to the `ratings` service running in the `bookinfo` namespace on any registered cluster
 
 The end result is that the role allows the management of AccessPolicies for a specific identity and Destination, and allows a small number of TrafficPolicyActions on a specific service and workload. This type of fine-grained permissions could then be bound to a developer or operator responsible for managing traffic.
 
@@ -254,13 +169,14 @@ spec:
                 namespace: bookinfo
                 clusterName: "*"
       workloadSelectors:
-        - labels:
-            app: productpage
-            version: v1
-          namespaces:
-            - bookinfo
-          clusters:
-            - "*"
+        - kubeWorkloadMatcher:
+            labels:
+              app: productpage
+              version: v1
+            namespaces:
+              - bookinfo
+            clusters:
+              - "*"
   # An empty virtualMeshScopes field means that no virtual mesh actions are allowed
   # An empty failoverServiceScopes field means that no failover services can be applied by this role bearer
   accessPolicyScopes:
