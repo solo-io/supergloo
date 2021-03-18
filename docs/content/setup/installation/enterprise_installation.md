@@ -106,7 +106,7 @@ helm show values enterprise-networking/enterprise-networking
 
 ```shell
 helm install enterprise-networking enterprise-networking/enterprise-networking --namespace gloo-mesh \
-  --set licenseKey=${GLOO_MESH_ENTERRISE_LICENSE_KEY}
+  --set licenseKey=${GLOO_MESH_ENTERPRISE_LICENSE_KEY}
 ```
 
 ### Verify install
