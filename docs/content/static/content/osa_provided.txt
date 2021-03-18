@@ -40,6 +40,7 @@ Name|Version|License
 [istio.io/api](https://istio.io/api)|v0.0.0-20210121191246-a7d07ed40d49|Apache License 2.0
 [istio.io/client-go](https://istio.io/client-go)|v0.0.0-20200908160912-f99162621a1a|Apache License 2.0
 [istio.io/istio](https://istio.io/istio)|v0.0.0-20210126155301-c18b82ae7269|Apache License 2.0
+[istio.io/tools](https://istio.io/tools)|v0.0.0-20210315160310-4552b88a5091|Apache License 2.0
 [k8s.io/api](https://k8s.io/api)|v0.19.7|Apache License 2.0
 [k8s.io/apiextensions-apiserver](https://k8s.io/apiextensions-apiserver)|v0.19.7|Apache License 2.0
 [k8s.io/apimachinery](https://k8s.io/apimachinery)|v0.19.7|Apache License 2.0
