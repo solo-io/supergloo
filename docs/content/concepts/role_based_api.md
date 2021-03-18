@@ -123,12 +123,13 @@ spec:
                 namespace: "*"
                 clusterName: "*"
       workloadSelectors:
-        - labels:
-            "*": "*"
-          namespaces:
-            - "*"
-          clusters:
-            - "*"
+        - kubeWorkloadMatcher:
+            labels:
+              "*": "*"
+            namespaces:
+              - "*"
+            clusters:
+              - "*"
   virtualMeshScopes:
     - virtualMeshActions:
         - ALL
@@ -193,12 +194,13 @@ spec:
                 namespace: "*"
                 clusterName: "mgmt-cluster"
       workloadSelectors:
-        - labels:
-            "*": "*"
-          namespaces:
-            - "*"
-          clusters:
-            - "mgmt-cluster"
+        - kubeWorkloadMatcher:
+            labels:
+              "*": "*"
+            namespaces:
+              - "*"
+            clusters:
+              - "mgmt-cluster"
   # An empty virtualMeshScopes field means that no virtual mesh actions are allowed
   accessPolicyScopes:
     - identitySelectors:
@@ -258,12 +260,13 @@ spec:
                 namespace: gloo-mesh
                 clusterName: remote-cluster
       workloadSelectors:
-        - labels:
-            "*": "*"
-          namespaces:
-            - "*"
-          clusters:
-            - "*"
+        - kubeWorkloadMatcher:
+            labels:
+              "*": "*"
+            namespaces:
+              - "*"
+            clusters:
+              - "*"
   # An empty virtualMeshScopes field means that no virtual mesh actions are allowed
   accessPolicyScopes:
     - identitySelectors:
@@ -311,13 +314,14 @@ spec:
                 namespace: bookinfo
                 clusterName: "*"
       workloadSelectors:
-        - labels:
-            app: productpage
-            version: v1
-          namespaces:
-            - bookinfo
-          clusters:
-            - "*"
+        - kubeWorkloadMatcher:
+            labels:
+              app: productpage
+              version: v1
+            namespaces:
+              - bookinfo
+            clusters:
+              - "*"
   # An empty virtualMeshScopes field means that no virtual mesh actions are allowed
   accessPolicyScopes:
     - identitySelectors:
