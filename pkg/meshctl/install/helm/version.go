@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sort"
 
 	"github.com/hashicorp/go-version"
 	"github.com/rotisserie/eris"
@@ -32,27 +33,19 @@ func getLatestChartVersion(
 	if err != nil {
 		return "", nil
 	}
-	latestVersion := version.Must(version.NewVersion("0"))
-	foundVersion := false
-	for i, version := range versions {
-		if !isVersionCompatible(version) {
-			continue
-		}
+	logrus.Debugf("available versions: %v", versions)
 
-		if version.GreaterThan(latestVersion) {
-			latestVersion = &versions[i]
-			foundVersion = true
+	for _, version := range versions {
+		if isVersionCompatible(*version) {
+			logrus.Debugf("installing chart version %s", version.Original())
+			return version.Original(), nil
 		}
 	}
-	if !foundVersion {
-		logrus.Debug("available versions: %v", versions)
-		return "", eris.New("chart version not found")
-	}
 
-	return latestVersion.Original(), nil
+	return "", eris.New("compatible chart version not found")
 }
 
-func getChartVersions(repoURI, chartName string) ([]version.Version, error) {
+func getChartVersions(repoURI, chartName string) (version.Collection, error) {
 	res, err := http.Get(fmt.Sprintf("%s/%s/index.yaml", repoURI, chartName))
 	if err != nil {
 		return nil, err
@@ -79,15 +72,17 @@ func getChartVersions(repoURI, chartName string) ([]version.Version, error) {
 		logrus.Debug(string(b))
 		return nil, eris.Errorf("chart not found in index: %s", chartName)
 	}
-	versions := make([]version.Version, 0, len(chartReleases))
+	versions := make(version.Collection, 0, len(chartReleases))
 	for _, release := range chartReleases {
 		version, err := version.NewVersion(release.Version)
 		if err != nil {
 			logrus.Warnf("invalid release version: %s", release.Version)
 			continue
 		}
-		versions = append(versions, *version)
+		versions = append(versions, version)
 	}
+
+	sort.Sort(sort.Reverse(versions)) // Sort from newest to oldest
 
 	return versions, nil
 }
