@@ -7,7 +7,7 @@ weight: 30
 
 Once you have Gloo Mesh or Gloo Mesh Enterprise installed, the next step is to register Kubernetes clusters that will have service meshes you want to manage. The registration process creates a service account, cluster-role, and cluster-role association on the target cluster granting the service account the necessary permissions to monitor and make changes to the cluster. The current cluster-role definition is documented in the [references]({{% versioned_link_path fromRoot="/reference/cluster_role" %}}) section of the documentation.
 
-This guide will walk you through the basics of registering clusters using the `meshctl` tool. We will be using the two cluster contexts mentioned in the Gloo Mesh installation guide, `mgmt-cluster-context` and `remote-cluster-context`. Your cluster context names will likely differ, so please substitute the proper values.
+This guide will walk you through the basics of registering clusters using the `meshctl` tool. We will be using the two cluster contexts mentioned in the Gloo Mesh installation guide, `kind-mgmt-cluster` and `kind-remote-cluster`. Your cluster context names will likely differ, so please substitute the proper values.
 
 ## Register A Cluster
 
