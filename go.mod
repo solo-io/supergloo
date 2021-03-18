@@ -40,6 +40,7 @@ require (
 	github.com/golang/protobuf v1.4.3
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/hashicorp/go-multierror v1.1.0
+	github.com/hashicorp/go-version v1.2.1
 	github.com/iancoleman/strcase v0.1.3
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
 	github.com/logrusorgru/aurora/v3 v3.0.0

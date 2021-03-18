@@ -29,7 +29,8 @@ difference between the editions.
       --kubecontext string         Name of the kubeconfig context to use for the management cluster
       --namespace string           namespace in which to install Gloo Mesh (default "gloo-mesh")
   -r, --register                   Also register the cluster
-      --version string             Version to install, defaults to latest if omitted
+      --version string             Version to install.
+                                   Community defaults to meshctl version, enterprise defaults to latest stable
 ```
 
 ### Options inherited from parent commands
