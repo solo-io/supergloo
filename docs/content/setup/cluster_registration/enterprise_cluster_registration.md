@@ -14,7 +14,7 @@ This guide will walk you through the basics of registering clusters using the `m
 
 ## Register A Cluster
 
-In order to identify a cluster as being managed by Gloo Mesh Enterprise, we have to *register* it in our installation. Registration ensures we are aware of the cluster, and we have properly configured a remote relay agent to talk to the local relay server. In this example, we will register our remote cluster with Gloo Mesh Enterprise running on the management cluster.
+In order to identify a cluster as being managed by Gloo Mesh Enterprise, we have to *register* it in our installation. Registration ensures we are aware of the cluster, and we have properly configured a remote relay *agent* to talk to the local relay *server*. In this example, we will register our remote cluster with Gloo Mesh Enterprise running on the management cluster.
 
 ### Register with `meshctl`
 
@@ -26,7 +26,7 @@ To register our remote cluster, there are a few key pieces of information we nee
 1. `**remote-context**` - The Kubernetes context with access to the remote cluster being registered.
 1. `**relay-server-address**` - The address of the relay server running on the management cluster.
 
-Following the [Gloo Mesh Enterprise prerequisites guide]({{% versioned_link_path fromRoot="/setup/enterprise_prerequisites" %}}), you should already have a virtual service for the relay server exposed on an ingress gateway. Assuming you are using kind and Istio, you can retrieve the ingress address by running the following commands.
+Following the [Gloo Mesh Enterprise prerequisites guide]({{% versioned_link_path fromRoot="/setup/enterprise_prerequisites" %}}), you should already have a virtual service for the relay server exposed on an ingress gateway. Assuming you are using Kind and Istio, you can retrieve the ingress address by running the following commands.
 
 ```shell
 MGMT_CONTEXT=kind-mgmt-cluster # Update value as needed
@@ -40,7 +40,7 @@ ingressAddress=${mgmtIngressAddress}:${mgmtIngressPort}
 Let's set variables for the remaining values:
 
 ```bash
-CLUSTER_NAME=remote-cluster
+CLUSTER_NAME=remote-cluster # Update value as needed
 REMOTE_CONTEXT=kind-remote-cluster # Update value as needed
 ```
 
@@ -69,9 +69,19 @@ Finished installing chart 'enterprise-agent' as release gloo-mesh:enterprise-age
 ✅ Done registering cluster!
 ```
 
+The `meshctl` command accomplished the following activities:
+
+* Created the `gloo-mesh` namespace
+* Copied over the root CA certificate to the remote cluster
+* Copied the boostrap token to the remote cluster
+* Installed the relay agent in the remote cluster
+* Created the KubernetesCluster CRD in the management cluster
+
+When registering a remote cluster using Helm, you will need to run through these tasks yourself. The next section details how to accomplish those tasks and install the relay agent with Helm.
+
 ### Register with Helm
 
-You can also register a remote cluster using the Enterprise Agent Helm repository. The same information used for `meshctl` registration will be needed here as well. This portion assumes you have run through the enterprise prerequisites, which includes the following actions on the remote cluster:
+You can also register a remote cluster using the Enterprise Agent Helm repository. The same information used for `meshctl` registration will be needed here as well. You will also need to complete the following pre-requisites before running the Helm installation.
 
 * Creating the `gloo-mesh` namespace
 * Copying over the self-signed root CA certificate from the management cluster (`relay-root-tls-secret`)
@@ -79,16 +89,44 @@ You can also register a remote cluster using the Enterprise Agent Helm repositor
 
 If you have not followed these steps, the relay agent deployment will fail.
 
-You can add the repository by running the following:
+#### Prerequisites
+
+First create the namespace in the remote cluster:
 
 ```shell
-helm repo add gloo-mesh-enterprise https://storage.googleapis.com/gloo-mesh-enterprise/gloo-mesh-enterprise
-helm repo update
+CLUSTER_NAME=remote-cluster
+REMOTE_CONTEXT=kind-remote-cluster # Update value as needed
+
+kubectl create ns gloo-mesh --context $REMOTE_CONTEXT
 ```
+
+Now we will get the value of the root CA certificate and create a secret in the remote cluster:
+
+```shell
+MGMT_CONTEXT=kind-mgmt-cluster # Update value as needed
+
+kubectl get secret relay-root-tls-secret -n gloo-mesh --context $MGMT_CONTEXT -o jsonpath='{.data.ca\.crt}' | base64 -d > ca.crt
+
+kubectl create secret generic relay-root-tls-secret -n gloo-mesh --context $REMOTE_CONTEXT --from-file ca.crt=ca.crt
+
+rm ca.crt
+```
+
+By adding the root CA certificate to the remote cluster, the installation of the relay agent will trust the TLS certificate from the relay server. We also need to copy over the bootstrap token used for initial communication. This token is only used to validate initial communication between the agent and server. Once the gRPC connection is established, the relay server will issue a client certificate to the relay agent to establish an mutually authenticated TLS session.
+
+```shell
+kubectl get secret relay-identity-token-secret -n gloo-mesh --context $MGMT_CONTEXT -o jsonpath='{.data.token}' | base64 -d > token
+
+kubectl create secret generic relay-identity-token-secret -n gloo-mesh --context $REMOTE_CONTEXT --from-file token=token
+
+rm token
+```
+
+With these tasks accomplished, we are now ready to deploy the relay agent using Helm.
 
 #### Install the Enterprise Agent
 
-Install the Enterprise Agent from the Helm repository located at `https://storage.googleapis.com/gloo-mesh-enterprise/enterprise-agent`.
+We are going to install the Enterprise Agent from the Helm repository located at `https://storage.googleapis.com/gloo-mesh-enterprise/enterprise-agent`.
 Make sure to review the Helm values options before installing. Some notable values include:
 
 * `relay.cluster` will be the name by which the cluster is referenced in all Gloo Mesh configuration.
@@ -98,7 +136,14 @@ Make sure to review the Helm values options before installing. Some notable valu
 Also note that the Enterprise Agent's version should match that of the `enterprise-networking` component running on the
 management cluster. Run `meshctl version` on the management cluster to review the `enterprise-networking` version.
 
-First we will get the ingress address for the relay server.
+If you haven't already, you can add the repository by running the following:
+
+```shell
+helm repo add gloo-mesh-enterprise https://storage.googleapis.com/gloo-mesh-enterprise/gloo-mesh-enterprise
+helm repo update
+```
+
+First we will get the ingress address for the relay server. These commands assume you have exposed the relay server through the Istio ingress gateway.
 
 ```shell
 MGMT_CONTEXT=kind-mgmt-cluster # Update value as needed
@@ -132,20 +177,56 @@ helm install enterprise-agent enterprise-agent/enterprise-agent \
 
 #### Add a Kubernetes Cluster Object
 
-We've successfully deployed the relay agent in the remote cluster. Now we need to add a `KubernetesCluster` object to make the relay server aware of the remote cluster. The `metadata.name` of the object must match the value passed for `relay.cluster` in the Helm chart above. The `spec.clusterDomain` must 
-match the [local cluster domain](https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/) of the Kubernetes cluster.
+We've successfully deployed the relay agent in the remote cluster. Now we need to add a `KubernetesCluster` object to the management cluster to make the relay server aware of the remote cluster. The `metadata.name` of the object must match the value passed for `relay.cluster` in the Helm chart above. The `spec.clusterDomain` must match the [local cluster domain](https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/) of the Kubernetes cluster.
 
 
 ```shell
-kubectl apply -f- <<EOF
+kubectl apply --context $MGMT_CONTEXT -f- <<EOF
 apiVersion: multicluster.solo.io/v1alpha1
 kind: KubernetesCluster
 metadata:
-  name: remote-cluster # Update value as needed
+  name: ${CLUSTER_NAME}
   namespace: gloo-mesh
 spec:
   clusterDomain: cluster.local
 EOF
 ```
 
+#### Validate the Registration
 
+We can validate the registration process by first checking to make sure the relay agent pod and secrets have been created on the remote cluster:
+
+```shell
+kubectl get pods -n gloo-mesh --context $REMOTE_CONTEXT
+
+NAME                                READY   STATUS    RESTARTS   AGE
+enterprise-agent-64fc8cc9c5-v7b97   1/1     Running   7          25m
+
+kubectl get secrets -n gloo-mesh --context $REMOTE_CONTEXT
+
+NAME                                     TYPE                                  DATA   AGE
+default-token-fcx9w                      kubernetes.io/service-account-token   3      18h
+enterprise-agent-token-55mvq             kubernetes.io/service-account-token   3      25m
+relay-client-tls-secret                  Opaque                                3      6m24s
+relay-identity-token-secret              Opaque                                1      29m
+relay-root-tls-secret                    Opaque                                1      18h
+sh.helm.release.v1.enterprise-agent.v1   helm.sh/release.v1                    1      25m
+```
+
+The `relay-client-tls-secret` secret is the client certificate issued by the relay server. Seeing that entry, we know at the very least communication between the relay agent and server was successful. 
+
+We can also check the logs on the `enterprise-networking` pod on the management cluster for communication from the remote cluster.
+
+```shell
+kubectl -n gloo-mesh --context $MGMT_CONTEXT logs deployment/enterprise-networking | grep $CLUSTER_NAME
+```
+
+You should see messages similar to:
+
+```shell
+{"level":"debug","ts":1616160185.5505846,"logger":"pull-resource-deltas","msg":"recieved request for delta: response_nonce:\"1\"","metadata":{":authority":["enterprise-networking.gloo-mesh.svc.cluster.local:11100"],"content-type":["application/grpc"],"user-agent":["grpc-go/1.34.0"],"x-cluster-id":["remote-cluster"]},"peer":"10.244.0.17:40074"}
+```
+
+## Next Steps
+
+And we're done! Any meshes in that cluster will be discovered and available for configuration by Gloo Mesh Enterprise. See the guide on [installing Istio]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}), to see how to easily get Istio running on that cluster.

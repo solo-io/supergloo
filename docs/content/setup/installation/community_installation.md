@@ -108,7 +108,7 @@ meshctl install --dry-run | kubectl delete -f -
 
 ### Install with Helm
 
-The Helm charts for Gloo Mesh support Helm 3. To install with Helm first add the Gloo Mesh or Gloo Mesh Enterprise Helm repository:
+The Helm charts for Gloo Mesh support Helm 3. To install with Helm first add the Gloo Mesh Helm repository:
 
 ```shell
 helm repo add gloo-mesh https://storage.googleapis.com/gloo-mesh/gloo-mesh

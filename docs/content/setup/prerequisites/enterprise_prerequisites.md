@@ -78,12 +78,13 @@ ingressAddress=${mgmtIngressAddress}:${mgmtIngressPort}
 
 ## Establishing Trust Between Agents and Server
 
-#### Manual Certificate Creation
+#### Manual Certificate Creation (Optional)
 
 As described in the [concept document]({{% versioned_link_path fromRoot="/concepts/relay" %}}),
-gRPC communication between agents and the server is secured with TLS.
+gRPC communication between agents and the server is authenticate and secured with mutual TLS.
 
-The following script illustrates how you can create these certificates manually.
+The following script illustrates how you can create these certificates manually. If you do not create certificates yourself, both the Helm chart and `meshctl` will create self-signed certificates for you.
+
 At a high level, the script achieves the following:
 
 1. Creates a root certificate (`RELAY_ROOT_CERT_NAME`). This is distributed to managed clusters
@@ -211,21 +212,4 @@ kubectl create secret generic ${RELAY_SIGNING_CERT_NAME}-secret \
   --namespace gloo-mesh
 ```
 
-Last, in order to establish initial trust, we need to create a token shared by the relay server and all potential relay agents.
-This is used by the server to initially verify the identity of a relay agent before issuing a certificate for that agent.
-All registered clusters as well as the management cluster must have the same token value.
-
-```shell
-for context in ${MGMT_CONTEXT} ${REMOTE_CONTEXT}; do
-  echo "creating shared identity token in cluster context ${context}..."
-  kubectl apply --context ${context} -f- <<EOF
-kind: Secret
-apiVersion: v1
-metadata:
-  name: relay-identity-token-secret
-  namespace: gloo-mesh
-stringData:
-  token: "your-token-value-of-choice"
-EOF
-done
-```
+You can also choose to use your own internal PKI to create and assign certificates to Gloo Mesh Enterprise. At a minimum, you would need the certificate chain to your PKI root CA, a server certificate for relay server communication, and a signing certificate the relay server can use to generate relay agent certificates. Please refer to your PKI documentation for more information.
