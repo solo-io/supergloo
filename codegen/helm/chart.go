@@ -140,7 +140,7 @@ func discoveryOperator() model.Operator {
 		Rbac: rbacPolicies,
 		Args: []string{
 			"discovery",
-			"--metrics-port={{ $.Values.discovery.ports.metrics }}",
+			"--metrics-port={{ $.Values.discovery.ports.metrics | default $.Values.defaultMetricsPort }}",
 			"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
 			"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
 			"--verbose={{ $.Values.verbose }}",
@@ -186,6 +186,7 @@ func NetworkingOperator(name string) model.Operator {
 		Rbac: rbacPolicies,
 		Args: []string{
 			"networking",
+			"--metrics-port={{ $.Values.defaultMetricsPort }}",
 			"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
 			"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
 			"--verbose={{ $.Values.verbose }}",
@@ -241,7 +242,7 @@ func certAgentOperator() model.Operator {
 		},
 		Rbac: rbacPolicies,
 		Args: []string{
-			"--metrics-port={{ $.Values.certAgent.ports.metrics }}",
+			"--metrics-port={{ $.Values.certAgent.ports.metrics | default $.Values.defaultMetricsPort }}",
 			"--verbose={{ $.Values.verbose }}",
 		},
 		Env: []v1.EnvVar{

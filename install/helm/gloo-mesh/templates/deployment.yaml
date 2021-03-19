@@ -31,7 +31,7 @@ spec:
       - image: {{ $discoveryImage.registry }}/{{ $discoveryImage.repository }}:{{ $discoveryImage.tag }}
         args:
         - discovery
-        - --metrics-port={{ $.Values.discovery.ports.metrics }}
+        - --metrics-port={{ $.Values.discovery.ports.metrics | default $.Values.defaultMetricsPort }}
         - --settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}
         - --settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}
         - --verbose={{ $.Values.verbose }}
@@ -126,6 +126,7 @@ spec:
       - image: {{ $networkingImage.registry }}/{{ $networkingImage.repository }}:{{ $networkingImage.tag }}
         args:
         - networking
+        - --metrics-port={{ $.Values.defaultMetricsPort }}
         - --settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}
         - --settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}
         - --verbose={{ $.Values.verbose }}
