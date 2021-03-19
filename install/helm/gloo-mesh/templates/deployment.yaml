@@ -126,7 +126,6 @@ spec:
       - image: {{ $networkingImage.registry }}/{{ $networkingImage.repository }}:{{ $networkingImage.tag }}
         args:
         - networking
-        - --metrics-port={{ $.Values.networking.ports.metrics }}
         - --settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}
         - --settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}
         - --verbose={{ $.Values.verbose }}
@@ -172,24 +171,6 @@ metadata:
   namespace: {{ $.Release.Namespace }}
 
 
-
----
-# Service for networking
-
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: networking
-  name: networking
-  namespace: {{ $.Release.Namespace }}
-spec:
-  selector:
-    app: networking
-  type: {{ $networking.serviceType }}
-  ports:
-  - name: metrics
-    port: {{ $networking.ports.metrics }}
 
 
 

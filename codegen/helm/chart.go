@@ -4,8 +4,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/iancoleman/strcase"
-
 	"github.com/solo-io/gloo-mesh/codegen/io"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/common/version"
@@ -185,19 +183,9 @@ func NetworkingOperator(name string) model.Operator {
 				},
 			},
 		},
-		Service: model.Service{
-			Type: v1.ServiceTypeClusterIP,
-			Ports: []model.ServicePort{
-				{
-					Name:        "metrics",
-					DefaultPort: int32(defaults.MetricsPort),
-				},
-			},
-		},
 		Rbac: rbacPolicies,
 		Args: []string{
 			"networking",
-			"--metrics-port={{ $.Values." + strcase.ToLowerCamel(name) + ".ports.metrics }}",
 			"--settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}",
 			"--settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}",
 			"--verbose={{ $.Values.verbose }}",
