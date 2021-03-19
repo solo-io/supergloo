@@ -103,7 +103,7 @@ var CertAgentChart = &model.Chart{
 		Version:     version.Version,
 	},
 	Values: ChartValues{
-		VerboseMode: false,
+		Verbose: false,
 	},
 }
 
