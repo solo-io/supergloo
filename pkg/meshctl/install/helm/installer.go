@@ -12,17 +12,14 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	v1 "github.com/solo-io/external-apis/pkg/api/k8s/core/v1"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/utils"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/cli/values"
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/release"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -65,7 +62,7 @@ func (i Installer) InstallChart(ctx context.Context) error {
 	}
 
 	if !dryRun {
-		if err = ensureNamespace(ctx, kubeClient, namespace); err != nil {
+		if err = utils.EnsureNamespace(ctx, kubeClient, namespace); err != nil {
 			return eris.Wrapf(err, "creating namespace")
 		}
 	}
@@ -150,7 +147,10 @@ func output(release *release.Release, dryRun bool, isUpgrade bool) {
 		if isUpgrade {
 			verb = "upgrading"
 		}
-		logrus.Infof("finished %s chart %s as release", verb, release.Chart.Name())
+		logrus.Infof(
+			"Finished %s chart '%s' as release %s:%s",
+			verb, release.Chart.Name(), release.Namespace, release.Name,
+		)
 		logrus.Debugf("%v", release.Manifest)
 	}
 }
@@ -204,16 +204,6 @@ func updateReleaseManifestWithCrds(chartObj *chart.Chart, release *release.Relea
 	release.Manifest = manifest.String()
 }
 
-func ensureNamespace(ctx context.Context, kubeClient client.Client, namespace string) error {
-	namespaces := v1.NewNamespaceClient(kubeClient)
-	return namespaces.UpsertNamespace(ctx, &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: namespace,
-		},
-		Spec: corev1.NamespaceSpec{Finalizers: []corev1.FinalizerName{"kubernetes"}},
-	})
-}
-
 // Returns an action configuration that can be used to create Helm actions and the Helm env settings.
 // We currently get the Helm storage driver from the standard HELM_DRIVER env (defaults to 'secret').
 func newActionConfig(kubeConfig, kubeContext, namespace string) (*action.Configuration, *cli.EnvSettings, error) {
@@ -251,28 +241,34 @@ func newCLISettings(kubeConfig, kubeContext, namespace string) *cli.EnvSettings 
 }
 
 func downloadChart(chartArchiveUri string) (*chart.Chart, error) {
-	// 1. Get a reader to the chart file (remote URL or local file path)
-	chartFileReader, err := getResource(chartArchiveUri)
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = chartFileReader.Close() }()
+	charFilePath := ""
+	if fi, err := os.Stat(chartArchiveUri); err == nil && fi.IsDir() {
+		charFilePath = chartArchiveUri
+	} else {
 
-	// 2. Write chart to a temporary file
-	chartBytes, err := ioutil.ReadAll(chartFileReader)
-	if err != nil {
-		return nil, err
-	}
+		// 1. Get a reader to the chart file (remote URL or local file path)
+		chartFileReader, err := getResource(chartArchiveUri)
+		if err != nil {
+			return nil, err
+		}
+		defer func() { _ = chartFileReader.Close() }()
 
-	chartFile, err := ioutil.TempFile("", "temp-helm-chart")
-	if err != nil {
-		return nil, err
-	}
-	charFilePath := chartFile.Name()
-	defer func() { _ = os.RemoveAll(charFilePath) }()
+		// 2. Write chart to a temporary file
+		chartBytes, err := ioutil.ReadAll(chartFileReader)
+		if err != nil {
+			return nil, err
+		}
 
-	if err := ioutil.WriteFile(charFilePath, chartBytes, tempChartFilePermissions); err != nil {
-		return nil, err
+		chartFile, err := ioutil.TempFile("", "temp-helm-chart")
+		if err != nil {
+			return nil, err
+		}
+		charFilePath = chartFile.Name()
+		defer func() { _ = os.RemoveAll(charFilePath) }()
+
+		if err := ioutil.WriteFile(charFilePath, chartBytes, tempChartFilePermissions); err != nil {
+			return nil, err
+		}
 	}
 
 	// 3. Load the chart file

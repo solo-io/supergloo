@@ -20,29 +20,26 @@ We will start by registering a remote cluster, i.e. a cluster not running the Gl
 ```shell
 REMOTE_CONTEXT=your_remote_context
 ```
-We will register the cluster with the `meshctl cluster register` command. We will assume that the management plane cluster (i.e. where `discovery` and `networking` are running) is your current kubeconfig context. If not, set the `--mgmt-context` flag. The kubeconfig context for the cluster we want to register to the management plane is specified with the `--remote-context` flag. If you are using Kind for your clusters, you will need to specify the `--api-server-address` flag along with the IP address and port of the Kubernetes API server. Select the Kind tab for the commands.
+We will register the cluster with the `meshctl cluster register community` command. We will assume that the management plane cluster (i.e. where `discovery` and `networking` are running) is your current kubeconfig context. If not, set the `--mgmt-context` flag. The kubeconfig context for the cluster we want to register to the management plane is specified with the `--remote-context` flag. If you are using Kind for your clusters, you will need to specify the `--api-server-address` flag along with the IP address and port of the Kubernetes API server. Select the Kind tab for the commands.
 
 {{< tabs >}}
 {{< tab name="Kubernetes" codelang="shell" >}}
-meshctl cluster register \
---cluster-name remote-cluster \
---remote-context $REMOTE_CONTEXT
+meshctl cluster register community remote-cluster \
+  --remote-context $REMOTE_CONTEXT
 {{< /tab >}}
 {{< tab name="Kind (MacOS)" codelang="shell" >}}
 ADDRESS=$(docker inspect remote-cluster-control-plane | jq -r '.[0].NetworkSettings.Networks.kind.IPAddress')
 
-meshctl cluster register \
---cluster-name remote-cluster \
---remote-context $REMOTE_CONTEXT \
---api-server-address ${ADDRESS}:6443
+meshctl cluster register community remote-cluster \
+  --remote-context $REMOTE_CONTEXT \
+  --api-server-address ${ADDRESS}:6443
 {{< /tab >}}
 {{< tab name="Kind (Linux)" codelang="shell" >}}
 ADDRESS=$(docker exec "remote-cluster-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')
 
-meshctl cluster register \
---cluster-name remote-cluster \
---remote-context $REMOTE_CONTEXT \
---api-server-address ${ADDRESS}:6443
+meshctl cluster register community remote-cluster \
+  --remote-context $REMOTE_CONTEXT \
+  --api-server-address ${ADDRESS}:6443
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -99,25 +96,22 @@ Select the *Kind* tab if you are running Kubernetes in Docker.
 
 {{< tabs >}}
 {{< tab name="Kubernetes" codelang="shell" >}}
-meshctl cluster register \
---cluster-name mgmt-cluster \
---remote-context $MGMT_CONTEXT
+meshctl cluster register community mgmt-cluster \
+  --remote-context $MGMT_CONTEXT
 {{< /tab >}}
 {{< tab name="Kind (MacOS)" codelang="shell" >}}
 ADDRESS=$(docker inspect mgmt-cluster-control-plane | jq -r '.[0].NetworkSettings.Networks.kind.IPAddress')
 
-meshctl cluster register \
---cluster-name mgmt-cluster \
---remote-context $MGMT_CONTEXT \
---api-server-address ${ADDRESS}:6443
+meshctl cluster register community mgmt-cluster \
+  --remote-context $MGMT_CONTEXT \
+  --api-server-address ${ADDRESS}:6443
 {{< /tab >}}
 {{< tab name="Kind (Linux)" codelang="shell" >}}
 ADDRESS=$(docker exec "mgmt-cluster-control-plane" ip addr show dev eth0 | sed -nE 's|\s*inet\s+([0-9.]+).*|\1|p')
 
-meshctl cluster register \
---cluster-name mgmt-cluster \
---remote-context $MGMT_CONTEXT \
---api-server-address ${ADDRESS}:6443
+meshctl cluster register community mgmt-cluster \
+  --remote-context $MGMT_CONTEXT \
+  --api-server-address ${ADDRESS}:6443
 {{< /tab >}}
 {{< /tabs >}}
 

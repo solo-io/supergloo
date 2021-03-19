@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Fix the implementation of the `--register` flag for `meshctl install enterprise`.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1339

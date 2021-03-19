@@ -1,0 +1,3 @@
+changelog:
+  - type: NON_USER_FACING
+    description: Don't use list method as it sorts the set, which degrades performance.

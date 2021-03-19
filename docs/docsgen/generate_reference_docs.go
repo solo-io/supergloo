@@ -2,15 +2,14 @@ package docsgen
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"text/template"
 
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/google/go-github/github"
 	"github.com/pkg/errors"
 	"github.com/solo-io/go-utils/clidoc"
@@ -21,19 +20,15 @@ import (
 
 var (
 	moduleRoot = util.GetModuleRoot()
-
-	cliIndex = `
+	cliIndex   = `
 ---
 title: "Command-Line Reference"
 description: | 
   Detailed descriptions and options for working with the Gloo Mesh CLI. 
 weight: 2
 ---
-
 This section contains generated reference documentation for the ` + "`" + `Gloo Mesh` + "`" + ` CLI.
-
 `
-
 	changelogIndex = `
 ---
 title: "Changelog"
@@ -41,11 +36,8 @@ description: |
   Section containing Changelogs for Gloo Mesh
 weight: 6
 ---
-
 Included in the sections below are Changelog for both Gloo Mesh OSS and Gloo Mesh Enterprise.
-
 {{% children description="true" %}}
-
 `
 	changelogTypes = `
 ---
@@ -53,49 +45,35 @@ title: Changelog Entry Types
 weight: 90
 description: Explanation of the entry types used in our changelogs
 ---
-
 You will find several different kinds of changelog entries:
-
 - **Dependency Bumps**
-
 A notice about a dependency in the project that had its version bumped in this release. Be sure to check for any
 "**Breaking Change**" entries accompanying a dependency bump. For example, a ` + "`gloo-mesh`" + `
 version bump in Gloo Mesh Enterprise may mean a change to a proto API.
-
 - **Breaking Changes**
-
 A notice of a non-backwards-compatible change to some API. This can include things like a changed
 proto format, a change to the Helm chart, and other breakages. Occasionally a breaking change
 may mean that the process to upgrade the product is slightly different; in that case, we will be sure
 to specify in the changelog how the break must be handled.
-
 - **Helm Changes**
-
 A notice of a change to our Helm chart. One of these entries does not by itself signify a breaking
 change to the Helm chart; you will find an accompanying "**Breaking Change**" entry in the release
 notes if that is the case.
-
 - **New Features**
-
 A description of a new feature that has been implemented in this release.
-
 - **Fixes**
-
 A description of a bug that was resolved in this release.
-
 `
-	changelogTmpl = `
----
+)
+
+var changelogTpl = template.Must(template.New("changelog").Parse(`---
 title: {{.Name}} 
 description: |
   Changelogs for {{.Name}}
 weight: {{.Weight}}
 ---
-
 {{.Body}}
-
-`
-)
+`))
 
 type CliOptions struct {
 	RootCmd   *cobra.Command
@@ -108,14 +86,14 @@ type ProtoOptions struct {
 }
 
 type ChangelogConfig struct {
-	Name string
-	Repo string
-	Path string
+	Name  string
+	Repo  string
+	Fname string
 }
 
 type ChangelogOptions struct {
-	Repos     []ChangelogConfig
-	OutputDir string
+	OutputDir  string
+	OtherRepos []ChangelogConfig
 }
 
 type Options struct {
@@ -127,11 +105,13 @@ type Options struct {
 
 func Execute(opts Options) error {
 	rootDir := filepath.Join(moduleRoot, opts.DocsRoot)
-	if err := generateCliReference(rootDir, opts.Cli); err != nil {
-		return err
-	}
-	if err := generateApiDocs(rootDir, opts.Proto); err != nil {
-		return err
+	if !checkEnvVariable("ONLY_CHANGELOG") {
+		if err := generateCliReference(rootDir, opts.Cli); err != nil {
+			return err
+		}
+		if err := generateApiDocs(rootDir, opts.Proto); err != nil {
+			return err
+		}
 	}
 	if err := generateChangelog(rootDir, opts.Changelog); err != nil {
 		return err
@@ -154,49 +134,35 @@ func generateCliReference(root string, opts CliOptions) error {
 }
 
 func generateChangelog(root string, opts ChangelogOptions) error {
-	if os.Getenv("SKIP_CHANGELOG_GENERATION") != "" {
-		fmt.Println("skipping changelog generation")
+	if checkEnvVariable("SKIP_CHANGELOG_GENERATION") {
 		return nil
 	}
-
 	// flush directory for idempotence
 	changelogDir := filepath.Join(root, opts.OutputDir)
 	os.RemoveAll(changelogDir)
 	os.MkdirAll(changelogDir, 0755)
-
 	version, err := getGitVersion()
 	if err != nil {
 		return err
 	}
 
-	client, err := buildGithubClient()
-	if err != nil {
+	// Generate community changelog
+	if err := generateChangelogMd(
+		"gloo-mesh", "Gloo Mesh Community", filepath.Join(changelogDir, "community.md"), version, 7,
+	); err != nil {
 		return err
 	}
 
-	type tplParams struct {
-		ChangelogConfig
-		Body   string
-		Weight int
-	}
-	tmpl := template.Must(template.New("changelog").Parse(changelogTmpl))
-	for i, cfg := range opts.Repos {
-		body, err := generateChangelogMD(client, cfg.Repo, version)
-		if err != nil {
-			return err
-		}
-		if err := func() error {
-			f, err := os.Create(filepath.Join(changelogDir, cfg.Path+".md"))
-			if err != nil {
-				return err
-			}
-			defer f.Close()
-			return tmpl.Execute(f, tplParams{ChangelogConfig: cfg, Body: body, Weight: 7 + i})
-		}(); err != nil {
+	// Generate changelog for other repos
+	for i, cfg := range opts.OtherRepos {
+		if err := generateChangelogMd(
+			cfg.Repo, cfg.Name, filepath.Join(changelogDir, cfg.Fname+".md"), "", 8+i,
+		); err != nil {
 			return err
 		}
 	}
 
+	// Write the reference
 	if err := ioutil.WriteFile(
 		filepath.Join(changelogDir, "changelog_types.md"), []byte(changelogTypes), 0644,
 	); err != nil {
@@ -205,18 +171,28 @@ func generateChangelog(root string, opts ChangelogOptions) error {
 	return ioutil.WriteFile(filepath.Join(changelogDir, "_index.md"), []byte(changelogIndex), 0644)
 }
 
-func buildGithubClient() (*github.Client, error) {
-	token := os.Getenv("GITHUB_TOKEN")
-	if token == "" {
-		return nil, errors.New("must set GITHUB_TOKEN environment variable")
+func generateChangelogMd(repo, name, path, cutoffVersion string, weight int) error {
+	body, err := buildChangelogBody(repo, cutoffVersion)
+	if err != nil {
+		return err
 	}
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-	tc := oauth2.NewClient(context.Background(), ts)
-	client := github.NewClient(tc)
-	return client, nil
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	return changelogTpl.Execute(f, struct {
+		Name   string
+		Body   string
+		Weight int
+	}{Name: name, Body: body, Weight: weight})
 }
 
-func generateChangelogMD(client *github.Client, repo, version string) (string, error) {
+func buildChangelogBody(repo, cutoffVersion string) (string, error) {
+	client, err := getGitHubClient()
+	if err != nil {
+		return "", err
+	}
 	releases, _, err := client.Repositories.ListReleases(
 		context.Background(),
 		"solo-io", repo,
@@ -225,61 +201,64 @@ func generateChangelogMD(client *github.Client, repo, version string) (string, e
 	if err != nil {
 		return "", err
 	}
-
-	var (
-		sb           strings.Builder
-		foundVersion = version == "" // Include all versions if none specified
-	)
+	var sb strings.Builder
+	passedCutoff := cutoffVersion == "" // If no cutoff version provided, include all versions
 	for _, release := range releases {
-		// Do not include versions after the provided version
-		if !foundVersion && release.GetTagName() == version {
-			foundVersion = true
-		} else if !foundVersion {
+		// Check if we've found the cutoff, and if we haven't, continue
+		if !passedCutoff && release.GetTagName() == cutoffVersion {
+			passedCutoff = true
+		} else if !passedCutoff {
 			continue
 		}
 
-		sb.WriteString("### " + *release.TagName + "\n\n")
-		sb.WriteString(*release.Body + "\n")
+		// Only write releases that have changelogs in their bodies
+		if release.GetBody() != "" {
+			sb.WriteString("### " + release.GetTagName() + "\n\n")
+			sb.WriteString(release.GetBody() + "\n")
+		}
+	}
+	return sb.String(), nil
+}
+
+var ghClient *github.Client
+
+func getGitHubClient() (*github.Client, error) {
+	if ghClient != nil {
+		return ghClient, nil
 	}
 
-	return sb.String(), nil
+	token := os.Getenv("GITHUB_TOKEN")
+	if token == "" {
+		return nil, errors.New("must set GITHUB_TOKEN environment variable")
+	}
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+	tc := oauth2.NewClient(context.Background(), ts)
+	ghClient = github.NewClient(tc)
+	return ghClient, nil
 }
 
 // getGitVersion finds the current version via the checked out git reference
 func getGitVersion() (string, error) {
-	repo, err := git.PlainOpen("./")
+	branch, err := exec.Command("git", "branch", "--show-current").Output()
 	if err != nil {
 		return "", err
 	}
-	headRef, err := repo.Head()
-	if err != nil {
-		return "", err
-	}
-	if headRef.Name().IsBranch() {
+	if len(branch) > 0 {
 		return "", nil
 	}
-
-	tagRefs, err := repo.Tags()
+	version, err := exec.Command("git", "describe", "--tags").Output()
 	if err != nil {
 		return "", err
 	}
 
-	var version string
-	if err := tagRefs.ForEach(func(tagRef *plumbing.Reference) error {
-		if version != "" {
-			return nil
-		}
-		if tagRef.Hash() == headRef.Hash() {
-			version = tagRef.Name().Short()
-		}
+	return strings.TrimSpace(string(version)), nil
+}
 
-		return nil
-	}); err != nil {
-		return "", err
+func checkEnvVariable(key string) bool {
+	val := os.Getenv(key)
+	if val == "" {
+		return false
 	}
-	if version == "" {
-		return "", fmt.Errorf("could not find version for revision %s", headRef.Hash().String())
-	}
-
-	return version, nil
+	b, err := strconv.ParseBool(val)
+	return err != nil || b // treat set env variables as true
 }

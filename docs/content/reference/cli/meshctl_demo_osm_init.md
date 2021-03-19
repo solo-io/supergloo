@@ -28,16 +28,17 @@ meshctl demo osm init [flags]
 ### Options
 
 ```
-      --enterprise                  install the enterprise features, requires a license key
-      --enterprise-version string   Gloo Mesh Enterprise version (defaults to latest)
-  -h, --help                        help for init
-      --license string              Gloo Mesh Enterprise license key
+      --enterprise       Install the enterprise features, requires a license key
+  -h, --help             help for init
+      --license string   Gloo Mesh Enterprise license key
+      --version string   Gloo Mesh version to install.
+                         Community defaults to meshctl version, enterprise defaults to latest
 ```
 
 ### Options inherited from parent commands
 
 ```
-  -v, --verbose   enable verbose logging
+  -v, --verbose   Enable verbose logging
 ```
 
 ### SEE ALSO

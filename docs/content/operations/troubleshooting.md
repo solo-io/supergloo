@@ -153,9 +153,9 @@ kubectl --context remote-cluster-context delete pod -n istio-system -l app=istio
 This is being [improved in future versions of Istio](https://github.com/istio/istio/issues/22993)
 {{% /notice %}}
 
-##### Communication across cluster isn't working
+##### Communication across clusters isn't working
 
-For communication in a [replicated control plane](https://istio.io/docs/setup/install/multicluster/gateways/), shared root-trust cluster, to work, Istio needs to be installed correctly with its Ingress Gateway. At the moment, either a LoadBalancer or NodePort can be used for the Ingress Gateway service. Either way, the Host for the NodePort or the IP for the LoadBalancer needs to be reachable between clusters.
+For communication in a [replicated control plane](https://istio.io/latest/docs/setup/install/multicluster/multi-primary_multi-network/), shared root-trust Virtual Mesh to work in the absence of a flat network, Istio needs to be installed correctly with its Ingress Gateway. At the moment, either a LoadBalancer or NodePort can be used for the Ingress Gateway service. Either way, the Host for the NodePort or the IP for the LoadBalancer needs to be reachable between clusters.
 
 For example, on a cloud provider like GKE, we may see something like this:
 
@@ -168,16 +168,17 @@ istiod                 ClusterIP      10.8.51.94    <none>           15012/TCP,4
 
 ```
 
-Note, the external-ip. Any `ServiceEntry` created for cross-cluster service discovery will use this external ip. The logic for getting the `ingressgateway` IP can be found in the [federation code base](https://github.com/solo-io/gloo-mesh/blob/master/pkg/mesh-networking/federation/dns/external_access_point_getter.go#L85) of the `mesh-networking` service.
+Note the external-ip. Any `ServiceEntry` created for cross-cluster service discovery will use this external ip.
 
 ##### Do cross-cluster service entries resolve DNS?
 
-They can, but they are not automatically configured by Gloo Mesh *yet*. Services in deployment targets (clusters) that are registered with Gloo Mesh are created and are routable within the Istio (or any mesh) sidecar proxy, but not directly (ie, `nslookup` will fail). 
+If you've installed Istio 1.8 or greater with [Smart DNS](https://istio.io/latest/blog/2020/dns-proxy/) enabled per our [Istio install guides]({{% versioned_link_path fromRoot="/guides/installing_istio/" %}}), then you're all set. The Istio sidecar agent is dynamically configured by Istiod to resolve host names for all accessible Kubernetes services and Istio service entries. The agent will then transparently intercept and resolve DNS queries.
 
-However, you can manually set up the DNS yourself. See the [customizing DNS for Istio routing]({{% versioned_link_path fromRoot="/operations/customize_dns" %}}) for more.
+If not, you can manually set up the DNS yourself. See the [customizing DNS for Istio routing]({{% versioned_link_path fromRoot="/operations/customize_dns" %}}) for more.
 
+##### What if I'm managing Istio installations across clusters on a flat network?
 
-This automation, to set up the DNS stubbing, is coming very soon (and this doc might be outdated by then). We will keep the docs as up to date as possible. 
+In a flat network environment, where pod IPs in one cluster are directly accessible via pods in another, you may wish to bypass the ingress gateways that typically mediate cross-cluster routing in a [multi-primary, multi-network deployment](https://istio.io/latest/docs/setup/install/multicluster/multi-primary_multi-network/). Gloo Mesh Enterprise users can leverage the [flat network flag]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#networking.mesh.gloo.solo.io.VirtualMeshSpec.Federation" %}}) on the Virtual Mesh API to configure Gloo Mesh to federate services such that remote services are accessed directly without first passing through an ingress gateway.
 
 ##### What Istio versions are supported?
 
@@ -185,12 +186,10 @@ Right now, Gloo Mesh supports Istio 1.7.x, 1.8.x and 1.9.x.
 
 {{% notice note %}}
 Istio versions 1.8.0, 1.8.1, and 1.8.2 have a [known issue](https://github.com/istio/istio/issues/28620) where sidecar proxies may fail to start
-under specific circumstances. This bug may surface in sidecars configured by Failover Services. This issue is resolved in Istio 1.8.3.
+under specific circumstances. This bug may surface in sidecars configured for static failover by Virtual Destinations. This issue is resolved in Istio 1.8.3.
 {{% /notice %}}
 
 
 ##### Found something else?
 
-If you've run into something else, please reach out the `@ceposta`, `@Joe Kelly`, or `@Harvey Xia` on the [Solo.io Slack](https://slack.solo.io) in the #gloo-mesh channel
-
-If you see an error like `resource version conflict` please chime in on [https://github.com/solo-io/gloo-mesh/issues/635](https://github.com/solo-io/gloo-mesh/issues/635)
+If you've run into something else, please reach out in the #gloo-mesh channel on the [Solo.io Slack](https://slack.solo.io) or file an issue on [GitHub](https://github.com/solo-io/gloo-mesh/issues).

@@ -5,8 +5,8 @@ Name|Version|License
 [aws/aws-sdk-go](https://github.com/aws/aws-sdk-go)|v1.36.19|Apache License 2.0
 [docker/distribution](https://github.com/docker/distribution)|v2.7.1+incompatible|Apache License 2.0
 [envoyproxy/go-control-plane](https://github.com/envoyproxy/go-control-plane)|v0.9.9-0.20210115003313-31f9241a16e6|Apache License 2.0
+[fatih/color](https://github.com/fatih/color)|v1.10.0|MIT License
 [gertd/go-pluralize](https://github.com/gertd/go-pluralize)|v0.1.1|MIT License
-[go-git/v5](https://github.com/go-git/go-git)|v5.2.0|Apache License 2.0
 [go-openapi/swag](https://github.com/go-openapi/swag)|v0.19.6|Apache License 2.0
 [gobuffalo/packr](https://github.com/gobuffalo/packr)|v1.30.1|MIT License
 [gogo/protobuf](https://github.com/gogo/protobuf)|v1.3.2|BSD 3-clause "New" or "Revised" License
@@ -14,6 +14,7 @@ Name|Version|License
 [google/go-github](https://github.com/google/go-github)|v17.0.0+incompatible|BSD 3-clause "New" or "Revised" License
 [iancoleman/strcase](https://github.com/iancoleman/strcase)|v0.1.3|MIT License
 [linkerd/linkerd2](https://github.com/linkerd/linkerd2)|v0.5.1-0.20200402173539-fee70c064bc0|Apache License 2.0
+[aurora/v3](https://github.com/logrusorgru/aurora)|v3.0.0|The Unlicense
 [mitchellh/hashstructure](https://github.com/mitchellh/hashstructure)|v1.0.0|MIT License
 [olekukonko/tablewriter](https://github.com/olekukonko/tablewriter)|v0.0.2|MIT License
 [onsi/ginkgo](https://github.com/onsi/ginkgo)|v1.14.1|MIT License
@@ -39,6 +40,7 @@ Name|Version|License
 [istio.io/api](https://istio.io/api)|v0.0.0-20210121191246-a7d07ed40d49|Apache License 2.0
 [istio.io/client-go](https://istio.io/client-go)|v0.0.0-20200908160912-f99162621a1a|Apache License 2.0
 [istio.io/istio](https://istio.io/istio)|v0.0.0-20210126155301-c18b82ae7269|Apache License 2.0
+[istio.io/tools](https://istio.io/tools)|v0.0.0-20210315160310-4552b88a5091|Apache License 2.0
 [k8s.io/api](https://k8s.io/api)|v0.19.7|Apache License 2.0
 [k8s.io/apiextensions-apiserver](https://k8s.io/apiextensions-apiserver)|v0.19.7|Apache License 2.0
 [k8s.io/apimachinery](https://k8s.io/apimachinery)|v0.19.7|Apache License 2.0

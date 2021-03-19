@@ -58,13 +58,13 @@ curl -sL https://run.solo.io/meshctl/install | sh
 Once you have the `meshctl` tool, you can install Gloo Mesh onto a cluster acting as the `mgmt-cluster` like this:
 
 ```shell
-meshctl install
+meshctl install community
 ```
 
 If you're not using the context for the `mgmt-cluster`, you can explicitly specify it using the `--kubecontext` option:
 
 ```shell
-meshctl install --kubecontext $MGMT_CONTEXT
+meshctl install community --kubecontext $MGMT_CONTEXT
 ```
 
 You should see output similar to this:
@@ -87,13 +87,13 @@ meshctl uninstall
 If you prefer working directly with the Kubernetes resources, (either to use `kubectl apply` or to put into CI/CD), `meshctl` can output `yaml` from the `install` (or any) command with the `--dry-run` flag:
 
 ```shell
-meshctl install --dry-run
+meshctl install community --dry-run
 ```
 
 You can use this output to later run `kubectl apply`:
 
 ```shell
-meshctl install --dry-run | kubectl apply -f -
+meshctl install community --dry-run | kubectl apply -f -
 ```
 
 {{% notice note %}}
@@ -103,7 +103,7 @@ Note that the `--dry-run` outputs the entire `yaml`, but does not take care of p
 To undo the installation, run:
 
 ```shell
-meshctl install --dry-run | kubectl delete -f -
+meshctl install community --dry-run | kubectl delete -f -
 ```
 
 ### Install with Helm

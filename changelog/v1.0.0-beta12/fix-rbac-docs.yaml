@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    description: Update the "Using Role Based API" doc to mention install time admin role. Fix RBAC docs with updated workload selector object.
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1344

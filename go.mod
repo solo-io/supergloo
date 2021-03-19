@@ -29,8 +29,8 @@ require (
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker v1.13.1 // indirect
 	github.com/envoyproxy/go-control-plane v0.9.9-0.20210115003313-31f9241a16e6
+	github.com/fatih/color v1.10.0
 	github.com/gertd/go-pluralize v0.1.1
-	github.com/go-git/go-git/v5 v5.2.0
 	github.com/go-logr/zapr v0.3.0 // indirect
 	github.com/go-openapi/spec v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.6
@@ -40,8 +40,10 @@ require (
 	github.com/golang/protobuf v1.4.3
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/hashicorp/go-multierror v1.1.0
+	github.com/hashicorp/go-version v1.2.1
 	github.com/iancoleman/strcase v0.1.3
 	github.com/linkerd/linkerd2 v0.5.1-0.20200402173539-fee70c064bc0
+	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/mitchellh/hashstructure v1.0.0
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.2
@@ -62,7 +64,7 @@ require (
 	github.com/solo-io/go-utils v0.20.4
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
-	github.com/solo-io/skv2 v0.17.7
+	github.com/solo-io/skv2 v0.17.10
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.5.1
 	github.com/spf13/cobra v1.1.1
@@ -77,6 +79,7 @@ require (
 	istio.io/api v0.0.0-20210121191246-a7d07ed40d49
 	istio.io/client-go v0.0.0-20200908160912-f99162621a1a
 	istio.io/istio v0.0.0-20210126155301-c18b82ae7269
+	istio.io/tools v0.0.0-20210315160310-4552b88a5091
 	k8s.io/api v0.20.1
 	k8s.io/apiextensions-apiserver v0.20.1
 	k8s.io/apimachinery v0.20.1

@@ -24,14 +24,14 @@ import (
 
 type NetworkingOpts struct {
 	*bootstrap.Options
-	disallowIntersectingConfig bool
-	watchOutputTypes           bool
+	DisallowIntersectingConfig bool
+	WatchOutputTypes           bool
 }
 
 func (opts *NetworkingOpts) AddToFlags(flags *pflag.FlagSet) {
 	opts.Options.AddToFlags(flags)
-	flags.BoolVar(&opts.disallowIntersectingConfig, "disallow-intersecting-config", false, "if true, Gloo Mesh will detect and report errors when outputting service mesh configuration that overlaps with existing config not managed by Gloo Mesh")
-	flags.BoolVar(&opts.watchOutputTypes, "watch-output-types", true, "if true, Gloo Mesh will resync upon changes to the service mesh config output by Gloo Mesh")
+	flags.BoolVar(&opts.DisallowIntersectingConfig, "disallow-intersecting-config", false, "if true, Gloo Mesh will detect and report errors when outputting service mesh configuration that overlaps with existing config not managed by Gloo Mesh")
+	flags.BoolVar(&opts.WatchOutputTypes, "watch-output-types", true, "if true, Gloo Mesh will watch for the service mesh config output by Gloo Mesh, and resync upon changes.")
 }
 
 // the mesh-networking controller is the Kubernetes Controller/Operator
@@ -117,8 +117,8 @@ func (s networkingStarter) startReconciler(ctx context.Context, parameters boots
 		parameters.VerboseMode,
 		&parameters.SettingsRef,
 		extensionClientset,
-		s.disallowIntersectingConfig,
-		s.watchOutputTypes,
+		s.DisallowIntersectingConfig,
+		s.WatchOutputTypes,
 	)
 }
 

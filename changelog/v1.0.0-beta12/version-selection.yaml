@@ -1,0 +1,5 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1330
+    resolvesIssue: false
+    description: Community now installs the matching CLI version and enterprise installs the latest version with the same major and minor number as the CLI.
