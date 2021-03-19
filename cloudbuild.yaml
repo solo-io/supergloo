@@ -64,10 +64,18 @@ steps:
   waitFor: ['prepare-workspace']
   id: 'make-helm-dir'
 
-- name: 'gcr.io/cloud-builders/docker'
+  # Log into GCR
+  # This command switches projects temporarily since the build is in a different
+  # project from GCR.
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: 'bash'
-  args: ['-c', 'docker login --username soloiobot --password $$CI_ADMIN_DOCKER_HUB_PASSWORD']
-  secretEnv: ['CI_ADMIN_DOCKER_HUB_PASSWORD']
+  args:
+  - '-c'
+  - |
+    gcloud auth login
+    gcloud config set project gloo-mesh
+    gcloud auth configure-docker
+    gcloud config set project $PROJECT_ID
   id: 'docker-login'
 
 - name: 'gcr.io/$PROJECT_ID/go-mod-make:0.2.6'

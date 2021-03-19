@@ -1,0 +1,105 @@
+name: Release
+
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  release-assets:
+    name: Github Release Assets
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.4.0
+        with:
+          access_token: ${{ github.token }}
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+      - run: git fetch --prune --unshallow
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.14
+      - name: Setup Cache
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+      - name: Upload Assets
+        run: make upload-github-release-assets
+        env:
+          TAGGED_VERSION: ${{ github.event.release.tag_name }}
+
+  docker-images:
+    name: Docker Images
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.4.0
+        with:
+          access_token: ${{ github.token }}
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+      - run: git fetch --prune --unshallow
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.14
+      - name: Setup Cache
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+      - name: Docker Login
+        uses: docker/login-action@v1
+        with:
+          registry: gcr.io
+          username: _json_key
+          password: ${{ secrets.GC_GHA_SA_JSON_KEY }}
+      - name: Push Images
+        run: make push-all-images
+        env:
+          TAGGED_VERSION: ${{ github.event.release.tag_name }}
+
+  helm-chart:
+    name: Helm Chart
+    runs-on: ubuntu-18.04
+    needs: docker-images
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.4.0
+        with:
+          access_token: ${{ github.token }}
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+      - run: git fetch --prune --unshallow
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+      - name: Install Protoc
+        uses: solo-io/setup-protoc@master
+        with:
+          version: '3.6.1'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Gcloud Login
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '290.0.1'
+          project_id: ${{ secrets.GC_GHA_SA_PROJECT_ID }}
+          service_account_key: ${{ secrets.GC_GHA_SA_JSON_KEY }}
+          export_default_credentials: true
+      - name: Setup Cache
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+      - name: Publish Chart to GCS
+        run: make publish-chart
+        env:
+          HELM_HOME: /root/.helm
+          TAGGED_VERSION: ${{ github.event.release.tag_name }}
