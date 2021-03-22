@@ -26,12 +26,12 @@ jobs:
             ${{ runner.os }}-go-
       - name: Install Protoc
         uses: solo-io/setup-protoc@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         with:
           version: '3.6.1'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check code gen
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
           ./ci/check-code-gen.sh
 
