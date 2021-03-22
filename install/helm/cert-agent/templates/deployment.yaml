@@ -30,7 +30,7 @@ spec:
       containers:
       - image: {{ $certAgentImage.registry }}/{{ $certAgentImage.repository }}:{{ $certAgentImage.tag }}
         args:
-        - --metrics-port={{ $.Values.certAgent.ports.metrics }}
+        - --metrics-port={{ $.Values.certAgent.ports.metrics | default $.Values.defaultMetricsPort }}
         - --verbose={{ $.Values.verbose }}
 {{- if $certAgent.env }}
         env:
