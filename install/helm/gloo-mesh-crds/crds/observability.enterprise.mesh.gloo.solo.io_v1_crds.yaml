@@ -87,6 +87,11 @@ spec:
                     type: object
                 type: object
               type: array
+            includedFilterStateObjects:
+              description: Specify filter state objects to include in access logs
+              items:
+                type: string
+              type: array
             includedRequestHeaders:
               description: Specify request headers to include in access logs.
               items:
