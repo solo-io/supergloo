@@ -59,8 +59,8 @@ meshctl cluster register enterprise [cluster name] [flags]
 ### Options inherited from parent commands
 
 ```
-      --cluster-domain string     The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. Defaults to 'cluster.local'.
-                                  Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
+      --cluster-domain string     The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. 
+                                  Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/ (default "cluster.local")
       --kubeconfig string         path to the kubeconfig from which the registered cluster will be accessed
       --mgmt-context string       name of the kubeconfig context to use for the management cluster
       --mgmt-namespace string     namespace of the Gloo Mesh control plane in which the secret for the registered cluster will be created (default "gloo-mesh")

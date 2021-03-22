@@ -15,8 +15,8 @@ The edition registered must match the edition installed on the management cluste
 ### Options
 
 ```
-      --cluster-domain string     The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. Defaults to 'cluster.local'.
-                                  Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
+      --cluster-domain string     The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. 
+                                  Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/ (default "cluster.local")
   -h, --help                      help for register
       --kubeconfig string         path to the kubeconfig from which the registered cluster will be accessed
       --mgmt-context string       name of the kubeconfig context to use for the management cluster

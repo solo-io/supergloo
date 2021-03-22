@@ -44,8 +44,8 @@ meshctl install community [flags]
       --chart-file string          Path to a local Helm chart for installing Gloo Mesh.
                                    If unset, this command will install Gloo Mesh from the publicly released Helm chart.
       --chart-values-file string   File containing value overrides for the Gloo Mesh Helm chart
-      --cluster-domain string      The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. Defaults to 'cluster.local'.
-                                   Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
+      --cluster-domain string      The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. 
+                                   Read more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/ (default "cluster.local")
       --cluster-name string        Name with which to register the cluster running Gloo Mesh, only applies if --register is also set (default "mgmt-cluster")
   -d, --dry-run                    Output installation manifest
       --kubeconfig string          Path to the kubeconfig from which the management cluster will be accessed
