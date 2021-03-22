@@ -21,7 +21,7 @@ Similar to the regular deployment mode, the management server watches for config
 
 ### Security Model
 
-The regular deployment mode requires the user to grant the Gloo Mesh management plane credentials to the Kubernetes API server for all managed clusters. This is undesirable from a security standpoint. Not only does the user have to provision credentials for all managed clusters, the Gloo Mesh management plane becomes a single point of compromise over a broad surface area.
+The regular deployment mode requires the user to grant the Gloo Mesh management plane credentials to the Kubernetes API server for all managed clusters. We've heard from some organizations that this is presents an undesirable security posture in large-scale deployments. Not only does the user have to provision credentials for all managed clusters, the Gloo Mesh management plane becomes a single point of compromise over a broad surface area.
 
 Relay mode's distributed push model for monitoring the state of managed clusters obviates the need to grant the management server direct access
 to Kubernetes API servers on managed clusters. The management server only requires a secure gRPC communication channel with its agents, the details of which are discussed below.
@@ -32,7 +32,7 @@ gRPC communication between the server and agents is secured through mTLS. Initia
 
 ### Components
 
-The deployment of the relay model will require a management cluster and one or more managed clusters. The management cluster will have a deployment called `enterprise-networking` running the relay server. The relay server is exposed via the `enterprise-networking` service on a default port of `9900/TCP`. The management cluster also has a properly configured ingress point allowing managed clusters to communicate with the relay server using a VirtualService listening on port 443. 
+The deployment of the relay model consists a management cluster and one or more managed clusters, where the management cluster can be registered in the system or not. The management cluster will have a deployment called `enterprise-networking` running the relay server. The relay server is exposed via the `enterprise-networking` service on a default port of `9900/TCP`. The management cluster will require a configured ingress point allowing managed clusters to communicate with the relay server. This can be achieved via an ingress gateway such as Istio or Gloo, or by setting the `enterprise-networking` service type to `LoadBalancer` if your Kubernetes cluster provider supports it. 
 
 Managed clusters will have the deployment `enterprise-agent` running the relay agent, which establishes a communication channel with the relay server using gRPC. The relay agent is exposed via the `enterprise-agent` service on the default ports of `9988` and `9977`.  Because all communication is outbound from the managed clusters, there does not need to be a ingress point configured for the relay agent.
 
