@@ -104,7 +104,7 @@ kubectl --context MGMT_CONTEXT -n gloo-mesh port-forward deploy/enterprise-netwo
 The following command will fetch up to 10 of the latest access logs.
 
 ```shell
-curl -XPOST 'enterprise-networking.gloo-mesh:8080/v0/observability/logs?pretty'
+curl -XPOST 'localhost:8080/v0/observability/logs?pretty'
 ```
 
 The response will look similar to:
@@ -219,7 +219,7 @@ make requests. This can be achieved using the same REST endpoint and setting the
 query parameter `?watch=1`, which will initiate a streaming connection.
 
 ```shell
-curl -XPOST 'enterprise-networking.gloo-mesh:8080/v0/observability/logs?watch=1&pretty'
+curl -XPOST 'localhost:8080/v0/observability/logs?watch=1&pretty'
 ```
 
 In a separate terminal context, perform curl requests and you will see access logs
