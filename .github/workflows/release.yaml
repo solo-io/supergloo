@@ -27,15 +27,10 @@ jobs:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-go-
-      - name: Setup Private Repo Permissions
-        env:
-          TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        run: |
-          git config --global url."https://${TOKEN}@github.com/solo-io/".insteadOf "https://github.com/solo-io/"
-
       - name: Upload Assets
         run: make upload-github-release-assets
         env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           TAGGED_VERSION: ${{ github.event.release.tag_name }}
 
   docker-images:
