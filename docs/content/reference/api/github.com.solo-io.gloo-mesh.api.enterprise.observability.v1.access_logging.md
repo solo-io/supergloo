@@ -41,7 +41,7 @@ Describes a record of access logs sourced from a set of workloads and optionally
   | includedRequestHeaders | []string | repeated | Specify request headers to include in access logs. |
   | includedResponseHeaders | []string | repeated | Specify response headers to include in access logs. |
   | includedResponseTrailers | []string | repeated | Specify response trailers to include in access logs. |
-  | includedFilterStateObjects | []string | repeated | Specify filterStateObjects to include in access logs |
+  | includedFilterStateObjects | []string | repeated | Specify filter state objects to include in access logs |
   
 
 
@@ -88,4 +88,3 @@ Specify criteria for recording access logs. A request must match all specified c
  <!-- end HasExtensions -->
 
  <!-- end services -->
-
