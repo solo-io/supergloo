@@ -34,7 +34,7 @@ spec:
         - --metrics-port={{ $.Values.discovery.ports.metrics }}
         - --settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}
         - --settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}
-        - --verbose
+        - --verbose={{ $.Values.verbose }}
 {{- if $discovery.env }}
         env:
 {{ toYaml $discovery.env | indent 10 }}
@@ -129,7 +129,7 @@ spec:
         - --metrics-port={{ $.Values.networking.ports.metrics }}
         - --settings-name={{ $.Values.glooMeshOperatorArgs.settingsRef.name }}
         - --settings-namespace={{ $.Values.glooMeshOperatorArgs.settingsRef.namespace }}
-        - --verbose
+        - --verbose={{ $.Values.verbose }}
         - --disallow-intersecting-config={{ $.Values.disallowIntersectingConfig }}
         - --watch-output-types={{ $.Values.watchOutputTypes }}
 {{- if $networking.env }}

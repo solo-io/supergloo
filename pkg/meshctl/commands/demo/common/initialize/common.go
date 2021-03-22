@@ -56,7 +56,7 @@ func getGlooMeshVersion(opts flags.Options) (string, error) {
 		return version.Version, nil
 	}
 	// Lastly find the latest version of the enterprise chart
-	return helm.GetLatestChartVersion(gloomesh.GlooMeshEnterpriseRepoURI, "gloo-mesh-enterprise")
+	return helm.GetLatestChartVersion(gloomesh.GlooMeshEnterpriseRepoURI, "gloo-mesh-enterprise", true)
 }
 
 func installGlooMesh(ctx context.Context, cluster string, opts flags.Options, box packr.Box) error {

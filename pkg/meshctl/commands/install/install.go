@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/go-version"
 	"github.com/rotisserie/eris"
 	"github.com/sirupsen/logrus"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
+	cliversion "github.com/solo-io/gloo-mesh/pkg/common/version"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/enterprise"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/helm"
@@ -63,7 +65,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.namespace, "namespace", defaults.DefaultPodNamespace, "namespace in which to install Gloo Mesh")
 	flags.StringVar(&o.chartPath, "chart-file", "", "Path to a local Helm chart for installing Gloo Mesh.\nIf unset, this command will install Gloo Mesh from the publicly released Helm chart.")
 	flags.StringVar(&o.chartValuesFile, "chart-values-file", "", "File containing value overrides for the Gloo Mesh Helm chart")
-	flags.StringVar(&o.version, "version", "", "Version to install, defaults to latest if omitted")
+	flags.StringVar(&o.version, "version", "", "Version to install.\nCommunity defaults to meshctl version, enterprise defaults to latest stable")
 
 	flags.BoolVarP(&o.register, "register", "r", false, "Also register the cluster")
 	flags.StringVar(&o.clusterName, "cluster-name", "mgmt-cluster",
@@ -167,11 +169,7 @@ func installCommunity(ctx context.Context, opts communityOptions) error {
 		chartName = "gloo-mesh"
 	)
 	if opts.version == "" {
-		version, err := helm.GetLatestChartVersion(repoURI, chartName)
-		if err != nil {
-			return err
-		}
-		opts.version = version
+		opts.version = cliversion.Version
 	}
 	logrus.Info("Installing Helm chart")
 	if err := opts.getInstaller().InstallChart(ctx); err != nil {
@@ -276,7 +274,14 @@ func installEnterprise(ctx context.Context, opts enterpriseOptions) error {
 		chartName = "gloo-mesh-enterprise"
 	)
 	if opts.version == "" {
-		version, err := helm.GetLatestChartVersion(repoURI, chartName)
+		cliVersion, err := version.NewVersion(cliversion.Version)
+		if err != nil {
+			return eris.Wrapf(err, "invalid CLI version: %s", cliversion.Version)
+		}
+		version, err := helm.GetLatestChartMinorVersion(
+			repoURI, chartName, true,
+			cliVersion.Segments()[0], cliVersion.Segments()[1],
+		)
 		if err != nil {
 			return err
 		}
