@@ -34,6 +34,9 @@ message AccessLogRecordSpec {
     // Specify response trailers to include in access logs.
     repeated string included_response_trailers = 5;
 
+    // Specify filter state objects to include in access logs
+    repeated string included_filter_state_objects = 6;
+
     // Specify criteria for recording access logs. A request must match all specified criteria to be recorded.
     message Filter {
 
