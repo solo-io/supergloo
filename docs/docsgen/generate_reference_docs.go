@@ -12,10 +12,16 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/pkg/errors"
+	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/clidoc"
 	"github.com/solo-io/skv2/codegen/util"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
+)
+
+const (
+	GithubOrg                  = "solo-io"
+	GlooMeshEnterpriseRepoName = "gloo-mesh-enterprise"
 )
 
 var (
@@ -113,7 +119,19 @@ func Execute(opts Options) error {
 			return err
 		}
 	}
-	if err := generateChangelog(rootDir, opts.Changelog); err != nil {
+
+	client, err := getGitHubClient()
+	if err != nil {
+		return eris.Errorf("error initializing Github client: %v", err)
+	}
+
+	// fetch Helm values docs from Gloo Mesh Enterprise
+	if err = copyHelmValuesDocsFromEnterprise(client, rootDir); err != nil {
+		return err
+	}
+
+	// generate changelog documentation
+	if err := generateChangelog(client, rootDir, opts.Changelog); err != nil {
 		return err
 	}
 	return nil
@@ -133,7 +151,7 @@ func generateCliReference(root string, opts CliOptions) error {
 	return ioutil.WriteFile(filepath.Join(cliDocsDir, "_index.md"), []byte(cliIndex), 0644)
 }
 
-func generateChangelog(root string, opts ChangelogOptions) error {
+func generateChangelog(client *github.Client, root string, opts ChangelogOptions) error {
 	if checkEnvVariable("SKIP_CHANGELOG_GENERATION") {
 		return nil
 	}
@@ -148,7 +166,7 @@ func generateChangelog(root string, opts ChangelogOptions) error {
 
 	// Generate community changelog
 	if err := generateChangelogMd(
-		"gloo-mesh", "Gloo Mesh Community", filepath.Join(changelogDir, "community.md"), version, 7,
+		client, "gloo-mesh", "Gloo Mesh Community", filepath.Join(changelogDir, "community.md"), version, 7,
 	); err != nil {
 		return err
 	}
@@ -156,7 +174,7 @@ func generateChangelog(root string, opts ChangelogOptions) error {
 	// Generate changelog for other repos
 	for i, cfg := range opts.OtherRepos {
 		if err := generateChangelogMd(
-			cfg.Repo, cfg.Name, filepath.Join(changelogDir, cfg.Fname+".md"), "", 8+i,
+			client, cfg.Repo, cfg.Name, filepath.Join(changelogDir, cfg.Fname+".md"), "", 8+i,
 		); err != nil {
 			return err
 		}
@@ -171,8 +189,8 @@ func generateChangelog(root string, opts ChangelogOptions) error {
 	return ioutil.WriteFile(filepath.Join(changelogDir, "_index.md"), []byte(changelogIndex), 0644)
 }
 
-func generateChangelogMd(repo, name, path, cutoffVersion string, weight int) error {
-	body, err := buildChangelogBody(repo, cutoffVersion)
+func generateChangelogMd(client *github.Client, repo, name, path, cutoffVersion string, weight int) error {
+	body, err := buildChangelogBody(client, repo, cutoffVersion)
 	if err != nil {
 		return err
 	}
@@ -188,14 +206,10 @@ func generateChangelogMd(repo, name, path, cutoffVersion string, weight int) err
 	}{Name: name, Body: body, Weight: weight})
 }
 
-func buildChangelogBody(repo, cutoffVersion string) (string, error) {
-	client, err := getGitHubClient()
-	if err != nil {
-		return "", err
-	}
+func buildChangelogBody(client *github.Client, repo, cutoffVersion string) (string, error) {
 	releases, _, err := client.Repositories.ListReleases(
 		context.Background(),
-		"solo-io", repo,
+		GithubOrg, repo,
 		&github.ListOptions{Page: 0, PerPage: 1000000},
 	)
 	if err != nil {
