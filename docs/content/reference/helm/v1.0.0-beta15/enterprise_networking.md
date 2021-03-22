@@ -32,6 +32,8 @@ weight: 2
 |settings.relay.server.reconnect_on_network_failures|bool|false||
 |disallowIntersectingConfig|bool|false||
 |watchOutputTypes|bool|true||
+|defaultMetricsPort|uint32|9091||
+|verbose|bool|false||
 |cluster|string||the cluster in which the management plane will deployed, if it is also a managed cluster|
 |relayTlsSecret|struct| |Reference to a Secret containing TLS Certificates used to secure the Networking gRPC Server with TLS.|
 |relayTlsSecret.name|string|relay-server-tls-secret||
@@ -50,3 +52,7 @@ weight: 2
 |metricsBackend.prometheus.url|string|http://prometheus-server|Specify the URL of the Prometheus server.|
 |Prometheus|struct| |Helm values for configuring Prometheus. See the [Prometheus Helm chart](https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus/values.yaml) for the complete set of values.|
 |selfSigned|bool|true|Provision self signed certificates and bootstrap token for the relay server.|
+|admin|struct| ||
+|admin.port|struct| ||
+|admin.port.name|string|admin||
+|admin.port.port|int32|11100||
