@@ -23,7 +23,7 @@ Similar to the regular deployment mode, the management server watches for config
 
 The regular deployment mode requires the user to grant the Gloo Mesh management plane credentials to the Kubernetes API server for all managed clusters. We've heard from some organizations that this is presents an undesirable security posture in large-scale deployments. Not only does the user have to provision credentials for all managed clusters, the Gloo Mesh management plane becomes a single point of compromise over a broad surface area.
 
-Relay mode's distributed push model for monitoring the state of managed clusters obviates the need to grant the management server direct access
+Relay mode's distributed pulls model for monitoring the state of managed clusters obviates the need to grant the management server direct access
 to Kubernetes API servers on managed clusters. The management server only requires a secure gRPC communication channel with its agents, the details of which are discussed below.
 
 ### Server-Agent Security
