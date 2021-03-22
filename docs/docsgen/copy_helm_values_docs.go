@@ -54,7 +54,7 @@ func copyHelmValuesDocsFromEnterprise(client *github.Client, rootDir string) err
 	}
 	var tags []string
 	for _, release := range releases {
-		if release.GetTagName() == "v1.0.0-beta12" {
+		if release.GetTagName() == "v1.0.0-beta13" {
 			break
 		}
 		tags = append(tags, release.GetTagName())
@@ -82,9 +82,7 @@ func copyHelmValuesDocsFromEnterprise(client *github.Client, rootDir string) err
 
 func copyHelmValuesDocs(client *github.Client, org, repo, tag, path, destinationFile string) error {
 	contents, _, _, err := client.Repositories.GetContents(context.Background(), org, repo, path, &github.RepositoryContentGetOptions{
-		// TODO(harveyxia) remove this once https://github.com/solo-io/gloo-mesh-enterprise/pull/285 is merged
-		Ref: "helm-values-docs",
-		//Ref: tag,
+		Ref: tag,
 	})
 	if err != nil {
 		return eris.Errorf("error fetching Helm values doc: %v", err)
