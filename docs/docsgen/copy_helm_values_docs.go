@@ -42,7 +42,7 @@ func copyHelmValuesDocsFromEnterprise(client *github.Client, rootDir string) err
 		return eris.Errorf("error creating Helm values index file: %v", err)
 	}
 
-	// generate Helm values docs for all versions > v1.0.0-beta13
+	// include Helm values docs for all versions > v1.0.0-beta14
 	releases, _, err := client.Repositories.ListReleases(
 		context.Background(),
 		GithubOrg,
@@ -54,7 +54,7 @@ func copyHelmValuesDocsFromEnterprise(client *github.Client, rootDir string) err
 	}
 	var tags []string
 	for _, release := range releases {
-		if release.GetTagName() == "v1.0.0-beta13" {
+		if release.GetTagName() == "v1.0.0-beta14" {
 			break
 		}
 		tags = append(tags, release.GetTagName())
