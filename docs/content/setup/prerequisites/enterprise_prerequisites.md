@@ -16,9 +16,20 @@ In order for relay agents to communicate with the relay server, the management c
 (i.e. the cluster on which the relay server is deployed) must be configured to accept
 ingress traffic, the exact procedure of which depends on your particular environment.
 
+**LoadBalancer Service Type**
+
+A simple way to expose the relay server to remote clusters is by setting the `enterprise-networking` service type to
+[LoadBalancer](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types).
+This can be done via Helm, by setting `enterprise-networking.enterpriseNetworking.serviceType=LoadBalancer` on the
+Gloo Mesh Enterprise Helm chart.
+
+LoadBalancer services are exposed to the externally via your Kubernetes cloud provider's load balancer. Note that this
+approach **does not** work by default with Kind cluster deployments, but is a good option for getting started if you're
+running your clusters via a managed service like Google Kubernetes Engine or Amazon's Elastic Kubernetes Service.
+
 **Istio Ingress Setup**
 
-For purposes of demonstration, the following describes how to configure a Kubernetes
+The enterprise-networking service can also be exposed via an ingress. The following describes how to configure a Kubernetes
 cluster ingress assuming [Istio's ingress gateway model](https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/).
 
 
@@ -68,7 +79,7 @@ spec:
               number: 9900
 ```
 
-To get the address of this ingress for use during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}), run:
+Assuming your ingress service is running on a node port, you can get the address of this ingress for use during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}), run:
 
 ```shell
 mgmtIngressAddress=$(kubectl get node -ojson | jq -r ".items[0].status.addresses[0].address")
@@ -78,7 +89,7 @@ ingressAddress=${mgmtIngressAddress}:${mgmtIngressPort}
 
 ## Establishing Trust Between Agents and Server
 
-#### Manual Certificate Creation (Optional)
+#### Manual Certificate Creation (Advanced)
 
 As described in the [concept document]({{% versioned_link_path fromRoot="/concepts/relay" %}}),
 gRPC communication between agents and the server is authenticate and secured with mutual TLS.
