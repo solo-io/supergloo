@@ -50,7 +50,7 @@ type AccessLogRecordSpec struct {
 	IncludedResponseHeaders []string `protobuf:"bytes,4,rep,name=included_response_headers,json=includedResponseHeaders,proto3" json:"included_response_headers,omitempty"`
 	// Specify response trailers to include in access logs.
 	IncludedResponseTrailers []string `protobuf:"bytes,5,rep,name=included_response_trailers,json=includedResponseTrailers,proto3" json:"included_response_trailers,omitempty"`
-	// Specify filterStateObjects to include in access logs
+	// Specify filter state objects to include in access logs
 	IncludedFilterStateObjects []string `protobuf:"bytes,6,rep,name=included_filter_state_objects,json=includedFilterStateObjects,proto3" json:"included_filter_state_objects,omitempty"`
 }
 
