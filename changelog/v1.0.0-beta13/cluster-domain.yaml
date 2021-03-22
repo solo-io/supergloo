@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1356
+    description: Set the cluster domain to `cluster.local` during enterprise registration.
