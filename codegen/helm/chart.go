@@ -7,7 +7,6 @@ import (
 	"github.com/solo-io/gloo-mesh/codegen/io"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/common/version"
-
 	"github.com/solo-io/skv2/codegen/model"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -16,7 +15,6 @@ import (
 
 // this file provides the source of truth for the Gloo Mesh Helm chart.
 // it is imported into the root level generate.go to generate the Portal manifest
-
 var (
 	registry = func() string {
 		registry := os.Getenv("IMAGE_REGISTRY")
@@ -25,7 +23,6 @@ var (
 		}
 		return registry
 	}()
-
 	// built-in skv2 templates we don't need
 	filterTemplates = func(outPath string) bool {
 		return outPath == "templates/namespace.yaml" ||
@@ -106,17 +103,14 @@ var CertAgentChart = &model.Chart{
 }
 
 var (
-	defaultRegistry = "soloio"
+	defaultRegistry = "gcr.io/gloo-mesh"
 )
 
 func discoveryOperator() model.Operator {
-
 	var rbacPolicies []rbacv1.PolicyRule
-
 	rbacPolicies = append(rbacPolicies, io.ClusterWatcherInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.DiscoveryLocalInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.DiscoveryOutputTypes.Snapshot.RbacPoliciesWrite()...)
-
 	return model.Operator{
 		Name: "discovery",
 		Deployment: model.Deployment{
@@ -160,9 +154,7 @@ func discoveryOperator() model.Operator {
 
 // exported for use in Enterprise chart
 func NetworkingOperator(name string) model.Operator {
-
 	var rbacPolicies []rbacv1.PolicyRule
-
 	rbacPolicies = append(rbacPolicies, io.ClusterWatcherInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.NetworkingInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.NetworkingInputTypes.RbacPoliciesUpdateStatus()...)
@@ -171,7 +163,6 @@ func NetworkingOperator(name string) model.Operator {
 	rbacPolicies = append(rbacPolicies, io.SmiNetworkingOutputTypes.Snapshot.RbacPoliciesWrite()...)
 	rbacPolicies = append(rbacPolicies, io.CertificateIssuerInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.CertificateIssuerInputTypes.RbacPoliciesUpdateStatus()...)
-
 	return model.Operator{
 		Name: name,
 		Deployment: model.Deployment{
@@ -207,9 +198,7 @@ func NetworkingOperator(name string) model.Operator {
 }
 
 func certAgentOperator() model.Operator {
-
 	var rbacPolicies []rbacv1.PolicyRule
-
 	rbacPolicies = append(rbacPolicies, io.CertificateAgentInputTypes.RbacPoliciesWatch()...)
 	rbacPolicies = append(rbacPolicies, io.CertificateAgentInputTypes.RbacPoliciesUpdateStatus()...)
 	rbacPolicies = append(rbacPolicies, io.CertificateAgentOutputTypes.Snapshot.RbacPoliciesWrite()...)
@@ -219,7 +208,6 @@ func certAgentOperator() model.Operator {
 		APIGroups: []string{""},
 		Resources: []string{"pods"},
 	})
-
 	return model.Operator{
 		Name: "cert-agent",
 		Deployment: model.Deployment{

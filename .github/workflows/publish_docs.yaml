@@ -32,12 +32,18 @@ jobs:
       run: |
         make install-go-tools
 
+    - name: Docker Login
+      uses: docker/login-action@v1
+      with:
+        registry: gcr.io
+        username: _json_key
+        password: ${{ secrets.GC_GHA_SA_JSON_KEY }}
+
     - name: Generate versioned docs site
       env:
         RELEASE: true
         GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       run: make -C docs build-site
-
     - name: Deploy to Firebase
       uses: w9jds/firebase-action@master
       with:
