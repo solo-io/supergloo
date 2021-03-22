@@ -1,0 +1,8 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/165
+    resolvesIssue: false
+    description: >
+      Allow access log records to specify additional filter state objects to include,
+      so that filters can add arbitrary data to access logs. This is particularly useful
+      in custom filters, such as WASM filters.

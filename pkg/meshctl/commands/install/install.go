@@ -70,7 +70,7 @@ func (o *options) addToFlags(flags *pflag.FlagSet) {
 	flags.BoolVarP(&o.register, "register", "r", false, "Also register the cluster")
 	flags.StringVar(&o.clusterName, "cluster-name", "mgmt-cluster",
 		"Name with which to register the cluster running Gloo Mesh, only applies if --register is also set")
-	flags.StringVar(&o.clusterDomain, "cluster-domain", "", "The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. Defaults to 'cluster.local'.\nRead more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/")
+	flags.StringVar(&o.clusterDomain, "cluster-domain", defaults.DefaultClusterDomain, "The Cluster Domain used by the Kubernetes DNS Service in the registered cluster. \nRead more: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/")
 }
 
 func (o *options) getInstaller(chartUriTemplate string) helm.Installer {

@@ -13,6 +13,7 @@ type ChartValues struct {
 	Settings                   SettingsValues       `json:"settings"`
 	DisallowIntersectingConfig bool                 `json:"disallowIntersectingConfig"`
 	WatchOutputTypes           bool                 `json:"watchOutputTypes"`
+	DefaultMetricsPort         uint32               `json:"defaultMetricsPort"`
 	Verbose                    bool                 `json:"verbose"`
 }
 
@@ -58,6 +59,7 @@ func DefaultValues() ChartValues {
 				Server:  &settingsv1.GrpcServer{},
 			},
 		},
+		DefaultMetricsPort:         uint32(defaults.MetricsPort),
 		DisallowIntersectingConfig: false,
 		WatchOutputTypes:           true,
 		Verbose:                    false,
