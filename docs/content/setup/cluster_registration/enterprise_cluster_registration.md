@@ -32,9 +32,9 @@ First, let's get the `relay-server-address`. Assuming you are using Kind and Ist
 MGMT_CONTEXT=kind-mgmt-cluster # Update value as needed
 kubectl config use-context $MGMT_CONTEXT
 
-mgmtIngressAddress=$(kubectl get node -ojson | jq -r ".items[0].status.addresses[0].address")
-mgmtIngressPort=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
-ingressAddress=${mgmtIngressAddress}:${mgmtIngressPort}
+MGMT_INGRESS_ADDRESS=$(kubectl get node -ojson | jq -r ".items[0].status.addresses[0].address")
+MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 ```
 
 Let's set variables for the remaining values:
@@ -49,7 +49,7 @@ Now we are ready to register the remote cluster:
 ```shell
 meshctl cluster register enterprise \
   --remote-context=$REMOTE_CONTEXT \
-  --relay-server-address $ingressAddress \
+  --relay-server-address $RELAY_ADDRESS \
   $CLUSTER_NAME
 ```
 
@@ -149,9 +149,9 @@ First we will get the ingress address for the relay server. These commands assum
 MGMT_CONTEXT=kind-mgmt-cluster # Update value as needed
 kubectl config use-context $MGMT_CONTEXT
 
-mgmtIngressAddress=$(kubectl get node -ojson | jq -r ".items[0].status.addresses[0].address")
-mgmtIngressPort=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
-ingressAddress=${mgmtIngressAddress}:${mgmtIngressPort}
+MGMT_INGRESS_ADDRESS=$(kubectl get node -ojson | jq -r ".items[0].status.addresses[0].address")
+MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 ```
 
 Then we will set our variables:
@@ -168,7 +168,7 @@ And now we will deploy the relay agent in the remote cluster.
 ```bash
 helm install enterprise-agent enterprise-agent/enterprise-agent \
   --namespace gloo-mesh \
-  --set relay.serverAddress=${ingressAddress} \
+  --set relay.serverAddress=${RELAY_ADDRESS} \
   --set relay.authority=enterprise-networking.gloo-mesh \
   --set relay.cluster=${CLUSTER_NAME} \
   --kube-context=${REMOTE_CONTEXT} \
