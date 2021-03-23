@@ -11,7 +11,7 @@ ifeq ($(TAGGED_VERSION),)
 endif
 VERSION ?= $(shell echo $(TAGGED_VERSION) | cut -c 2-)
 ### REPLACE with product name
-IMAGE_REGISTRY := soloio
+IMAGE_REGISTRY := gcr.io/gloo-mesh
 IMAGE_LEAF_NAME := gloo-mesh-docs
 IMAGE_REPO := $(IMAGE_REGISTRY)/$(IMAGE_LEAF_NAME)
 

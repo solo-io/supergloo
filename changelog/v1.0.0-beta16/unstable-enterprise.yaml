@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1362
+    description: Pre-release versions of meshctl will install the latest version of enterprise including pre-releases.

@@ -9,9 +9,10 @@ import (
 	"os/exec"
 
 	"github.com/gobuffalo/packr"
+	"github.com/hashicorp/go-version"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
-	"github.com/solo-io/gloo-mesh/pkg/common/version"
+	cliversion "github.com/solo-io/gloo-mesh/pkg/common/version"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/commands/demo/internal/flags"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/enterprise"
 	"github.com/solo-io/gloo-mesh/pkg/meshctl/install/gloomesh"
@@ -53,10 +54,20 @@ func getGlooMeshVersion(opts flags.Options) (string, error) {
 	}
 	// Then if its not enterprise, return the CLI version
 	if !opts.Enterprise {
-		return version.Version, nil
+		return cliversion.Version, nil
 	}
-	// Lastly find the latest version of the enterprise chart
-	return helm.GetLatestChartVersion(gloomesh.GlooMeshEnterpriseRepoURI, "gloo-mesh-enterprise", true)
+
+	cliVersion, err := version.NewVersion(cliversion.Version)
+	if err != nil {
+		return "", eris.Wrapf(err, "invalid CLI version: %s", cliversion.Version)
+	}
+	stable := cliVersion.Prerelease() == "" // Get latest stable if not using a pre-release CLI
+
+	// Lastly find the latest compatible version of the enterprise chart
+	return helm.GetLatestChartMinorVersion(
+		gloomesh.GlooMeshEnterpriseRepoURI, "gloo-mesh-enterprise", stable,
+		cliVersion.Segments()[0], cliVersion.Segments()[1],
+	)
 }
 
 func installGlooMesh(ctx context.Context, cluster string, opts flags.Options, box packr.Box) error {

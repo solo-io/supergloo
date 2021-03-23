@@ -1,0 +1,4 @@
+changelog:
+  - type: NON_USER_FACING
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1350
+    description: Sets up a github actions release workflow that uploads containers to GCR.
