@@ -4,7 +4,7 @@
 OUTDIR ?= _output
 PROJECT ?= gloo-mesh
 
-DOCKER_REPO ?= soloio
+DOCKER_REPO ?= gcr.io/gloo-mesh
 GLOOMESH_IMAGE ?= $(DOCKER_REPO)/gloo-mesh
 CA_IMAGE ?= $(DOCKER_REPO)/cert-agent
 
