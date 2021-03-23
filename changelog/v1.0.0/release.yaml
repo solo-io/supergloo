@@ -1,0 +1,4 @@
+changelog:
+  - type: BREAKING_CHANGE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1365
+    description: Gloo Mesh 1.0 is now available!
