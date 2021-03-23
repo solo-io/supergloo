@@ -93,14 +93,16 @@ helm repo add gloo-mesh-enterprise https://storage.googleapis.com/gloo-mesh-ente
 2. (optional) View available versions
 
 ```shell
-helm search repo enterprise-networking
+helm search repo gloo-mesh-enterprise
 ```
 
 3. (optional) View Helm values
 
 ```shell
-helm show values enterprise-networking/enterprise-networking
+helm show values gloo-mesh-enterprise/gloo-mesh-enterprise
 ```
+
+Note that the `gloo-mesh-enterprise` Helm chart bundles multiple components, including `enterprise-networking`, `rbac-webhook`, and `gloo-mesh-ui`. Each is versioned in step with the parent `gloo-mesh-enterprise` chart, and each has its own Helm values for advanced customization.
 
 4. Install
 

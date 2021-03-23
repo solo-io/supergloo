@@ -22,11 +22,11 @@ We can use the CLI tool `meshctl` to register our remote cluster. The command we
 
 To register our remote cluster, there are a few key pieces of information we need:
 
-1. `**cluster name**` - The name we would like to register the cluster with.
-1. `**remote-context**` - The Kubernetes context with access to the remote cluster being registered.
-1. `**relay-server-address**` - The address of the relay server running on the management cluster.
+1. **cluster name** - The name we would like to register the cluster with.
+1. **remote-context** - The Kubernetes context with access to the remote cluster being registered.
+1. **relay-server-address** - The address of the relay server running on the management cluster.
 
-Following the [Gloo Mesh Enterprise prerequisites guide]({{% versioned_link_path fromRoot="/setup/enterprise_prerequisites" %}}), you should already have a virtual service for the relay server exposed on an ingress gateway. Assuming you are using Kind and Istio, you can retrieve the ingress address by running the following commands.
+First, let's get the `relay-server-address`. Assuming you are using Kind and Istio with an ingress provisioned per the [Gloo Mesh Enterprise prerequisites guide]({{% versioned_link_path fromRoot="/setup/enterprise_prerequisites" %}}), you can retrieve the ingress address by running the following commands. If your cluster architecture is different or you exposed the `enterprise-networking` service in a different way, your steps will be different.
 
 ```shell
 MGMT_CONTEXT=kind-mgmt-cluster # Update value as needed
