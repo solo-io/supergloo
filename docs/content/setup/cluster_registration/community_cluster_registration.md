@@ -1,13 +1,13 @@
 ---
-title: "Register a Cluster with Gloo Mesh"
-menuTitle: Register Cluster
-description: Registering a cluster with Gloo Mesh's management plane
+title: "Community"
+menuTitle: Community
+description: Registering a cluster with Gloo Mesh community edition
 weight: 30
 ---
 
-Once you have Gloo Mesh or Gloo Mesh Enterprise installed, the next step is to register Kubernetes clusters that will have service meshes you want to manage. The registration process creates a service account, cluster-role, and cluster-role association on the target cluster granting the service account the necessary permissions to monitor and make changes to the cluster. The current cluster-role definition is documented in the [References]({{% versioned_link_path fromRoot="/reference/cluster_role" %}}) section of the documentation.
+Once you have Gloo Mesh installed, the next step is to register Kubernetes clusters that will have service meshes you want to manage. The registration process creates a service account, cluster-role, and cluster-role association on the target cluster granting the service account the necessary permissions to monitor and make changes to the cluster. The current cluster-role definition is documented in the [references]({{% versioned_link_path fromRoot="/reference/cluster_role" %}}) section of the documentation.
 
-This guide will walk you through the basics of registering clusters using the `meshctl` tool. We will be using the two cluster contexts mentioned in the Gloo Mesh installation guide, `mgmt-cluster-context` and `remote-cluster-context`. Your cluster context names will likely differ, so please substitute the proper values.
+This guide will walk you through the basics of registering clusters using the `meshctl` tool. We will be using the two cluster contexts mentioned in the Gloo Mesh installation guide, `kind-mgmt-cluster` and `kind-remote-cluster`. Your cluster context names will likely differ, so please substitute the proper values.
 
 ## Register A Cluster
 
@@ -92,23 +92,6 @@ First, let's store the name of the management cluster context in a variable:
 MGMT_CONTEXT=your_management_plane_context
 ```
 
-You can automatically register the cluster on which you deploy Gloo Mesh (for example, if you have a mesh running there as well) with the `--register` CLI flag when you're first installing with `meshctl`.
-
-```shell
-meshctl install community --register --context $MGMT_CONTEXT
-```
-
-By default, when you register like this, the cluster name will be `mgmt-cluster`. If you run the following, you should see the cluster registered:
-
-```shell
-kubectl get kubernetescluster -n gloo-mesh
-
-NAMESPACE          NAME               AGE
-gloo-mesh          mgmt-cluster       10s
-```
-
-If you choose not to register the management cluster during installation, you can always register the cluster using the `meshctl cluster register community` command we used in the previous section.
-
 Select the *Kind* tab if you are running Kubernetes in Docker.
 
 {{< tabs >}}
@@ -144,7 +127,7 @@ To go into slightly more detail about what just happened:
 * That service account's auth token was stored in a secret in the management plane cluster
 * The Gloo Mesh CSR agent was deployed in the remote cluster
 * Future communications that Gloo Mesh does to the remote cluster's Kubernetes API server
- will be done using the service account auth token
+  will be done using the service account auth token
 
 ## Next Steps
 
