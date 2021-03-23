@@ -278,8 +278,9 @@ func installEnterprise(ctx context.Context, opts enterpriseOptions) error {
 		if err != nil {
 			return eris.Wrapf(err, "invalid CLI version: %s", cliversion.Version)
 		}
+		stable := cliVersion.Prerelease() == "" // Get latest stable if not using a pre-release CLI
 		version, err := helm.GetLatestChartMinorVersion(
-			repoURI, chartName, true,
+			repoURI, chartName, stable,
 			cliVersion.Segments()[0], cliVersion.Segments()[1],
 		)
 		if err != nil {
