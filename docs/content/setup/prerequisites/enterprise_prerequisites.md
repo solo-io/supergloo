@@ -89,7 +89,7 @@ ingressAddress=${mgmtIngressAddress}:${mgmtIngressPort}
 
 ## Establishing Trust Between Agents and Server
 
-#### Manual Certificate Creation (Advanced)
+#### Manual Certificate Creation (Optional)
 
 As described in the [concept document]({{% versioned_link_path fromRoot="/concepts/relay" %}}),
 gRPC communication between agents and the server is authenticate and secured with mutual TLS.
