@@ -94,6 +94,9 @@ for version in "${versions[@]}"; do
   # Generate the versioned static site.
   make site-release
 
+  # Generate the search index
+  cat site-latest/index.json | node $workingDir/search/generate-search-index.js > site-latest/search-index.json
+
   # Copy over versioned static site to firebase content folder.
   mkdir -p "$docsSiteDir/public/gloo-mesh/$version"
   cp -a site-latest/. "$docsSiteDir/public/gloo-mesh/$version/"

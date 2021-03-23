@@ -18,7 +18,7 @@ IMAGE_REPO := $(IMAGE_REGISTRY)/$(IMAGE_LEAF_NAME)
 ### REPLACE with product name
 PRODUCT_SCOPE := gloo-mesh
 DOCS_VERSION := latest
-SOLO_HUGO_THEME := 5a29d20f92fabafb2e41ec0576320e284b624c5e
+SOLO_HUGO_THEME := 3817a468af3ee13f4d0fb9e645290a413cdf5e93
 
 #----------------------------------------------------------------------------------
 # Docs
