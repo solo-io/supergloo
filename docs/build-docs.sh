@@ -89,6 +89,7 @@ for version in "${versions[@]}"; do
   cp -a "$workingDir/layouts/partials/." layouts/partials/
   cp -f "$workingDir/Makefile" Makefile
   cp -af "$workingDir/docsgen/." docsgen
+  cp -f "$workingDir/docs.toml" docs.toml
   mkdir -p cmd
   cp -f "$workingDir/cmd/docsgen.go" cmd/docsgen.go
   # Generate the versioned static site.
