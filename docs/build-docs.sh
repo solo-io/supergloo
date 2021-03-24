@@ -89,10 +89,14 @@ for version in "${versions[@]}"; do
   cp -a "$workingDir/layouts/partials/." layouts/partials/
   cp -f "$workingDir/Makefile" Makefile
   cp -af "$workingDir/docsgen/." docsgen
+  cp -f "$workingDir/docs.toml" docs.toml
   mkdir -p cmd
   cp -f "$workingDir/cmd/docsgen.go" cmd/docsgen.go
   # Generate the versioned static site.
   make site-release
+
+  # Generate the search index
+  cat site-latest/index.json | node $workingDir/search/generate-search-index.js > site-latest/search-index.json
 
   # Copy over versioned static site to firebase content folder.
   mkdir -p "$docsSiteDir/public/gloo-mesh/$version"
