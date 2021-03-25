@@ -82,7 +82,7 @@ meshctl uninstall
 
 ## Helm
 
-You may prefer to use the Helm chart directly rather than using the `meshctl` CLI tool. This section will take you through the steps necessary to deploy a Gloo Mesh Enterprise installation from the Helm chart. The source for the Gloo Mesh Enterprise Helm chart is available on [GitHub](https://github.com/solo-io/gloo-mesh-enterprise-helm).
+You may prefer to use the Helm chart directly rather than using the `meshctl` CLI tool. This section will take you through the steps necessary to deploy a Gloo Mesh Enterprise installation from the Helm chart.
 
 1. Add the Helm repo
 
