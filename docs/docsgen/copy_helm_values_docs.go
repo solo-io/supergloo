@@ -9,17 +9,15 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/rotisserie/eris"
+	"github.com/stoewer/go-strcase"
 )
 
 var (
 	helmDocsDir = "content/reference/helm"
 
-	enterpriseNetworkingHelmValueDocPath = "enterprise-networking/codegen/helm/enterprise_networking_helm_values_reference.md"
-	enterpriseAgentHelmValueDocPath      = "enterprise-networking/codegen/helm/enterprise_agent_helm_values_reference.md"
-
-	fileMapping = map[string]string{
-		enterpriseNetworkingHelmValueDocPath: "%s/%s/enterprise_networking.md",
-		enterpriseAgentHelmValueDocPath:      "%s/%s/enterprise_agent.md",
+	enterpriseFileMapping = map[string]string{
+		"enterprise-networking/codegen/helm/enterprise_networking_helm_values_reference.md": "%s/%s/enterprise_networking.md",
+		"enterprise-networking/codegen/helm/enterprise_agent_helm_values_reference.md":      "%s/%s/enterprise_agent.md",
 	}
 
 	helmValuesIndex = `
@@ -32,21 +30,61 @@ weight: 2
 `
 )
 
-func copyHelmValuesDocsFromEnterprise(client *github.Client, rootDir string) error {
-	// flush directory for idempotence
+func copyHelmValuesDocsForAllCharts(client *github.Client, rootDir string) error {
+	// flush root directory for idempotence
 	helmDocsDir := filepath.Join(rootDir, helmDocsDir)
 	os.RemoveAll(helmDocsDir)
 	os.MkdirAll(helmDocsDir, 0755)
 
+	// create root index
 	if err := createFileIfNotExists(helmDocsDir+"/"+"_index.md", fmt.Sprintf(helmValuesIndex, "Helm Values Reference")); err != nil {
 		return eris.Errorf("error creating Helm values index file: %v", err)
 	}
 
-	// include Helm values docs for all versions > v1.0.0-beta14
+	if err := copyHelmValuesDocsForComponent(
+		client,
+		rootDir,
+		"Gloo Mesh Enterprise",
+		GlooMeshEnterpriseRepoName,
+		"v1.0.0-beta16",
+		enterpriseFileMapping,
+	); err != nil {
+		return err
+	}
+
+	//if err := copyHelmValuesDocsForComponent(client, rootDir, "Gloo Mesh", GlooMeshRepoName, "v1.0.0"); err != nil {
+	//	return err
+	//}
+
+	// TODO rbac-webook
+
+	return nil
+}
+
+// fetch Helm Values documentation from repo up to and including the version specified by earliestVerison
+// fileMapping specifies a mapping from the file path in the origin repo to the file path in this repo
+func copyHelmValuesDocsForComponent(
+	client *github.Client,
+	rootDir string,
+	componentName string,
+	repoName string,
+	earliestVersion string,
+	fileMapping map[string]string,
+) error {
+	// flush directory for idempotence
+	helmDocsDir := filepath.Join(rootDir, helmDocsDir, strcase.SnakeCase(componentName))
+	os.RemoveAll(helmDocsDir)
+	os.MkdirAll(helmDocsDir, 0755)
+
+	if err := createFileIfNotExists(helmDocsDir+"/"+"_index.md", fmt.Sprintf(helmValuesIndex, componentName)); err != nil {
+		return eris.Errorf("error creating Helm values index file: %v", err)
+	}
+
+	// include Helm values docs for all versions > earliestVersion
 	releases, _, err := client.Repositories.ListReleases(
 		context.Background(),
 		GithubOrg,
-		GlooMeshEnterpriseRepoName,
+		repoName,
 		&github.ListOptions{Page: 0, PerPage: 1000000},
 	)
 	if err != nil {
@@ -54,7 +92,7 @@ func copyHelmValuesDocsFromEnterprise(client *github.Client, rootDir string) err
 	}
 	var tags []string
 	for _, release := range releases {
-		if release.GetTagName() == "v1.0.0-beta14" {
+		if release.GetTagName() == earliestVersion {
 			break
 		}
 		tags = append(tags, release.GetTagName())
@@ -71,7 +109,7 @@ func copyHelmValuesDocsFromEnterprise(client *github.Client, rootDir string) err
 
 		for src, dest := range fileMapping {
 			dest = fmt.Sprintf(dest, helmDocsDir, tag)
-			if err := copyHelmValuesDocs(client, GithubOrg, GlooMeshEnterpriseRepoName, tag, src, dest); err != nil {
+			if err := copyHelmValuesDocs(client, GithubOrg, repoName, tag, src, dest); err != nil {
 				return err
 			}
 		}
