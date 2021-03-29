@@ -37,6 +37,18 @@ weight: 2
 |watchOutputTypes|bool|true||
 |defaultMetricsPort|uint32|9091||
 |verbose|bool|false||
+|networking|struct|{"image":{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"125m","memory":"256Mi"}},"serviceType":"","ports":{},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]}|Configuration for the networking deployment.|
+|networking.image|struct|{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the deployment image.|
+|networking.image.tag|string| |Tag for the container.|
+|networking.image.repository|string|gloo-mesh|Image name (repository).|
+|networking.image.registry|string|gcr.io/gloo-mesh|Image registry.|
+|networking.image.pullPolicy|string|IfNotPresent|Image pull policy.|
+|networking.image.pullSecret|string| |Image pull policy. |
+|networking.Resources|struct|{"requests":{"cpu":"125m","memory":"256Mi"}}|Specify deployment resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details.|
+|networking.serviceType|string| |Specify the service type. Can be either "ClusterIP", "NodePort", "LoadBalancer", or "ExternalName".|
+|networking.ports|map[string, uint32]| |Specify service ports as a map from port name to port number.|
+|networking.ports.<MAP_KEY>|uint32| |Specify service ports as a map from port name to port number.|
+|networking.Env[]|slice|[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]|Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details.|
 |discovery|struct|{"image":{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"125m","memory":"256Mi"}},"serviceType":"ClusterIP","ports":{"metrics":9091},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]}|Configuration for the discovery deployment.|
 |discovery.image|struct|{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the deployment image.|
 |discovery.image.tag|string| |Tag for the container.|
@@ -50,15 +62,3 @@ weight: 2
 |discovery.ports.<MAP_KEY>|uint32| |Specify service ports as a map from port name to port number.|
 |discovery.ports.metrics|uint32|9091|Specify service ports as a map from port name to port number.|
 |discovery.Env[]|slice|[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]|Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details.|
-|networking|struct|{"image":{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"},"resources":{"requests":{"cpu":"125m","memory":"256Mi"}},"serviceType":"","ports":{},"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]}|Configuration for the networking deployment.|
-|networking.image|struct|{"repository":"gloo-mesh","registry":"gcr.io/gloo-mesh","pullPolicy":"IfNotPresent"}|Specify the deployment image.|
-|networking.image.tag|string| |Tag for the container.|
-|networking.image.repository|string|gloo-mesh|Image name (repository).|
-|networking.image.registry|string|gcr.io/gloo-mesh|Image registry.|
-|networking.image.pullPolicy|string|IfNotPresent|Image pull policy.|
-|networking.image.pullSecret|string| |Image pull policy. |
-|networking.Resources|struct|{"requests":{"cpu":"125m","memory":"256Mi"}}|Specify deployment resource requirements. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core) for specification details.|
-|networking.serviceType|string| |Specify the service type. Can be either "ClusterIP", "NodePort", "LoadBalancer", or "ExternalName".|
-|networking.ports|map[string, uint32]| |Specify service ports as a map from port name to port number.|
-|networking.ports.<MAP_KEY>|uint32| |Specify service ports as a map from port name to port number.|
-|networking.Env[]|slice|[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}]|Specify environment variables for the deployment. See the [Kubernetes documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvarsource-v1-core) for specification details.|

@@ -9,15 +9,25 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/contextutils"
 	"github.com/stoewer/go-strcase"
 )
 
 var (
 	helmDocsDir = "content/reference/helm"
 
+	ossFileMapping = map[string]string{
+		"codegen/helm/gloo_mesh_helm_values_reference.md":  "%s/%s/gloo_mesh.md",
+		"codegen/helm/cert_agent_helm_values_reference.md": "%s/%s/cert_agent.md",
+	}
+
 	enterpriseFileMapping = map[string]string{
 		"enterprise-networking/codegen/helm/enterprise_networking_helm_values_reference.md": "%s/%s/enterprise_networking.md",
 		"enterprise-networking/codegen/helm/enterprise_agent_helm_values_reference.md":      "%s/%s/enterprise_agent.md",
+	}
+
+	rbacWwebookFileMapping = map[string]string{
+		"rbac-webhook/codegen/chart/rbac_webhook_helm_values_reference.md": "%s/%s/rbac_webhook.md",
 	}
 
 	helmValuesIndex = `
@@ -41,6 +51,19 @@ func copyHelmValuesDocsForAllCharts(client *github.Client, rootDir string) error
 		return eris.Errorf("error creating Helm values index file: %v", err)
 	}
 
+	// Gloo Mesh OSS
+	if err := copyHelmValuesDocsForComponent(
+		client,
+		rootDir,
+		"Gloo Mesh",
+		GlooMeshRepoName,
+		"v1.0.0-beta16",
+		ossFileMapping,
+	); err != nil {
+		return err
+	}
+
+	// Gloo Mesh Enterprise
 	if err := copyHelmValuesDocsForComponent(
 		client,
 		rootDir,
@@ -52,11 +75,17 @@ func copyHelmValuesDocsForAllCharts(client *github.Client, rootDir string) error
 		return err
 	}
 
-	//if err := copyHelmValuesDocsForComponent(client, rootDir, "Gloo Mesh", GlooMeshRepoName, "v1.0.0"); err != nil {
-	//	return err
-	//}
-
-	// TODO rbac-webook
+	// Gloo Mesh Enterprise RBAC Webhook
+	if err := copyHelmValuesDocsForComponent(
+		client,
+		rootDir,
+		"Enterprise RBAC Webhook",
+		GlooMeshEnterpriseRepoName,
+		"v1.0.0-beta16",
+		rbacWwebookFileMapping,
+	); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -119,11 +148,14 @@ func copyHelmValuesDocsForComponent(
 }
 
 func copyHelmValuesDocs(client *github.Client, org, repo, tag, path, destinationFile string) error {
-	contents, _, _, err := client.Repositories.GetContents(context.Background(), org, repo, path, &github.RepositoryContentGetOptions{
+	contents, _, resp, err := client.Repositories.GetContents(context.Background(), org, repo, path, &github.RepositoryContentGetOptions{
 		Ref: tag,
 	})
-	if err != nil {
+	if err != nil && resp.StatusCode != 404 {
 		return eris.Errorf("error fetching Helm values doc: %v", err)
+	} else if resp.StatusCode == 404 {
+		contextutils.LoggerFrom(context.Background()).Warnf("Helm values doc for repo: %s and path: %s not found", repo, path)
+		return nil
 	}
 
 	decodedContents, err := base64.StdEncoding.DecodeString(*contents.Content)
