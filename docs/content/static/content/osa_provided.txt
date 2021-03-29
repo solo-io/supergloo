@@ -30,6 +30,7 @@ Name|Version|License
 [spf13/afero](https://github.com/spf13/afero)|v1.5.1|Apache License 2.0
 [spf13/cobra](https://github.com/spf13/cobra)|v1.1.1|Apache License 2.0
 [spf13/pflag](https://github.com/spf13/pflag)|v1.0.5|BSD 3-clause "New" or "Revised" License
+[stoewer/go-strcase](https://github.com/stoewer/go-strcase)|v1.2.0|MIT License
 [go.uber.org/atomic](https://go.uber.org/atomic)|v1.7.0|MIT License
 [go.uber.org/zap](https://go.uber.org/zap)|v1.16.0|MIT License
 [x/oauth2](https://golang.org/x/oauth2)|v0.0.0-20201208152858-08078c50e5b5|BSD 3-clause "New" or "Revised" License

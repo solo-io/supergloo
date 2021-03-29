@@ -4,7 +4,9 @@ import (
 	"flag"
 	"log"
 	"os"
+	"path/filepath"
 
+	"github.com/rotisserie/eris"
 	externalapis "github.com/solo-io/external-apis/codegen"
 	"github.com/solo-io/gloo-mesh/codegen/anyvendor"
 	"github.com/solo-io/gloo-mesh/codegen/groups"
@@ -15,6 +17,7 @@ import (
 	skv1alpha1 "github.com/solo-io/skv2/api/multicluster/v1alpha1"
 	"github.com/solo-io/skv2/codegen"
 	"github.com/solo-io/skv2/codegen/model"
+	"github.com/solo-io/skv2/codegen/util"
 )
 
 func main() {
@@ -109,6 +112,14 @@ func run() error {
 		return nil
 	}
 
+	if err := generateHelmValuesDoc(helm.Chart, "Gloo Mesh", "gloo_mesh_helm_values_reference.md"); err != nil {
+		return err
+	}
+
+	if err := generateHelmValuesDoc(helm.Chart, "Cert Agent", "cert_agent_helm_values_reference.md"); err != nil {
+		return err
+	}
+
 	// TODO(ilackarms): we copy skv2 CRDs out of vendor_any into our helm chart.
 	// we should consider using skv2 to automate this step for us
 	if err := os.Rename(vendoredMultiClusterCRDs, importedMultiClusterCRDs); err != nil {
@@ -175,4 +186,37 @@ func makeAgentCrdsCommand() codegen.Command {
 		RenderProtos:    true,
 		Chart:           helm.AgentCrdsChart,
 	}
+}
+
+func generateHelmValuesDoc(chart *model.Chart, title string, filename string) error {
+	originalDir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	// change wd to codegen dir
+	codegenDir := util.MustGetThisDir()
+	if err := os.Chdir(codegenDir); err != nil {
+		log.Fatal(err)
+	}
+
+	helmValuesDoc := chart.GenerateHelmDoc(title)
+
+	filename = filepath.Join("helm", filename)
+
+	f, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0777)
+	if err != nil {
+		return eris.Errorf("error generating Helm values reference doc: %v", err)
+	}
+
+	if _, err := f.Write([]byte(helmValuesDoc)); err != nil {
+		return eris.Errorf("error generating Helm values reference doc: %v", err)
+	}
+
+	// change back to original directory
+	if err := os.Chdir(originalDir); err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
 }
