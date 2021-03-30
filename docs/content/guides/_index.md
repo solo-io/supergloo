@@ -86,7 +86,7 @@ The core components, including reviews-v1 and reviews-v2, are deployed to the ma
 
 {{% notice note %}}
 Be sure to switch the `kubeconfig` context to the `mgmt-cluster`
-{{% /notice %}
+{{% /notice %}}
 
 Before running the following, make sure your context names are set as environment variables:
 
