@@ -24,7 +24,7 @@ Be sure to review the assumptions and satisfy the pre-requisites from the [Guide
 We will now perform a *multi-cluster traffic split*, splitting traffic from the `productpage` service in the `mgmt-cluster` cluster between `reviews-v1`, `reviews-v2`, and `reviews-v3` running in the `remote-cluster` cluster.
 
 {{< tabs >}}
-{{< tab name="YAML file" codelang="shell">}}
+{{< tab name="YAML file" codelang="yaml">}}
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
 metadata:

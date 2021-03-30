@@ -52,7 +52,6 @@ Permissive mode is enabled by setting the environment variable `RBAC_PERMISSIVE_
 
 ```yaml
 licenseKey: LICENSE_KEY_STRING
-
 rbac-webhook:
   rbacWebhook:
     env:

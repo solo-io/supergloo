@@ -22,14 +22,18 @@ To illustrate these concepts, we will assume that:
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document.
 {{% /notice %}}
 
+Ensure you have the correct context names set in your environment:
+
+```shell
+MGMT_CONTEXT=your_management_plane_context
+REMOTE_CONTEXT=your_remote_context
+```
+
 ## Configure the Region and Zone for the Nodes
 
 Gloo Mesh uses the configured [region and zone labels](https://v1-18.docs.kubernetes.io/docs/reference/kubernetes-api/labels-annotations-taints/#topologykubernetesioregion) on nodes to indicate locality for services. If you do not already have the region and zone labels set, you will need to do so now. In our example, we will set the `mgmt-cluster` node to use `us-east-1` for the region and `us-east-1a` for the zone. The `remote-cluster` node will be set to `us-east-2` and `us-east-2b` respectively. In a cloud-based deployment, these labels will typically be set by the cloud provider.
 
 ```bash
-MGMT_CLUSTER=mgmt-cluster
-REMOTE_CLUSTER=remote-cluster
-
 kubectl label node $MGMT_CLUSTER-control-plane --context kind-$MGMT_CLUSTER \
   topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
 
@@ -43,7 +47,33 @@ Now we will create the VirtualDestination for the `reviews` service, composed of
 
 Apply the following config to the `mgmt-cluster` cluster:
  
-```yaml
+{{< tabs >}}
+{{< tab name="YAML file" codelang="yaml">}}
+apiVersion: networking.enterprise.mesh.gloo.solo.io/v1beta1
+kind: VirtualDestination
+metadata:
+  name: bookinfo-global
+  namespace: gloo-mesh
+spec:
+  hostname: reviews.global
+  port:
+    number: 9080
+    protocol: http
+  localized:
+    outlierDetection:
+      consecutiveErrors: 1
+      maxEjectionPercent: 100
+      interval: 5s
+      baseEjectionTime: 120s
+    destinationSelectors:
+    - kubeServiceMatcher:
+        labels:
+          app: reviews
+  virtualMesh:
+    name: virtual-mesh
+    namespace: gloo-mesh
+{{< /tab >}}
+{{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply -f - << EOF
 apiVersion: networking.enterprise.mesh.gloo.solo.io/v1beta1
 kind: VirtualDestination
@@ -69,7 +99,8 @@ spec:
     name: virtual-mesh
     namespace: gloo-mesh
 EOF
-```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{% notice note %}}
 For demonstration purposes, we're setting `consecutiveErrors` to 1 and `maxEjectionPercent` to 100 to more easily trigger the failover. However, these should most likely not be used in production scenarios.
@@ -97,7 +128,28 @@ To demonstrate locality routing functionality, we configure a traffic shift such
 
 Apply the following TrafficPolicy:
 
-```yaml
+{{< tabs >}}
+{{< tab name="YAML file" codelang="yaml">}}
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: TrafficPolicy
+metadata:
+  name: reviews-shift-failover
+  namespace: bookinfo
+spec:
+  destinationSelector:
+  - kubeServiceRefs:
+      services:
+      - clusterName: mgmt-cluster
+        name: reviews
+        namespace: bookinfo
+  policy:
+    trafficShift:
+      destinations:
+      - virtualDestination:
+          name: bookinfo-global
+          namespace: gloo-mesh
+{{< /tab >}}
+{{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply -f - << EOF
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
@@ -118,7 +170,8 @@ spec:
           name: bookinfo-global
           namespace: gloo-mesh
 EOF
-```
+{{< /tab >}}
+{{< /tabs >}}
 
 Now we can test the TrafficShift by accessing the reviews service from the bookinfo's product page. Port forward the `productpage` pod with the following command and open your web browser to [localhost:9080](http://localhost:9080/productpage?u=normal).
 
