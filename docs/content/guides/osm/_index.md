@@ -52,13 +52,10 @@ Waiting for deployment "osm-controller" rollout to finish: 0 of 1 updated replic
 deployment "osm-controller" successfully rolled out
 ```
 
-Next we will install Gloo Mesh, as outlined in the Setup guide for Gloo Mesh. Be sure to replace the `cluster-name` and `remote-context` values with the correct values for your environment.
+Next we will install Gloo Mesh, as outlined in the Setup guide for Gloo Mesh:
 
 ```shell
-MGMT_CONTEXT=your_management_plane_context
-
-meshctl install
-meshctl cluster register --cluster-name mgmt-cluster --remote-context $MGMT_CONTEXT
+meshctl install community --register
 ```
 
 Finally, we will deploy the sample application.
@@ -127,7 +124,56 @@ First, set the cluster name on which OSM is installed as an environment variable
 OSM_CLUSTER=osm_installation_cluster_name
 ```
 
-```shell script
+{{< tabs >}}
+{{< tab name="YAML file" codelang="yaml">}}
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: AccessPolicy
+metadata:
+  name: osm-access-policy
+  namespace: gloo-mesh
+spec:
+  destinationSelector:
+  - kubeServiceRefs:
+      services:
+      - clusterName: $OSM_CLUSTER
+        name: bookstore-v1
+        namespace: bookstore
+      - clusterName: $OSM_CLUSTER
+        name: bookstore-v2
+        namespace: bookstore
+  sourceSelector:
+  - kubeServiceAccountRefs:
+      serviceAccounts:
+      - clusterName: $OSM_CLUSTER
+        name: bookthief
+        namespace: bookthief
+---
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: TrafficPolicy
+metadata:
+  name: osm-traffic-policy
+  namespace: gloo-mesh
+spec:
+  trafficShift:
+    destinations:
+    - kubeService:
+        clusterName: $OSM_CLUSTER
+        name: bookstore-v1
+        namespace: bookstore
+      weight: 50
+    - kubeService:
+        clusterName: $OSM_CLUSTER
+        name: bookstore-v2
+        namespace: bookstore
+      weight: 50
+  destinationSelector:
+  - kubeServiceRefs:
+      services:
+      - clusterName: $OSM_CLUSTER
+        name: bookstore
+        namespace: bookstore
+{{< /tab >}}
+{{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply -f - <<EOF
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: AccessPolicy
@@ -150,9 +196,7 @@ spec:
       - clusterName: $OSM_CLUSTER
         name: bookthief
         namespace: bookthief
-
 ---
-
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
 metadata:
@@ -178,7 +222,9 @@ spec:
         name: bookstore
         namespace: bookstore
 EOF
-```
+{{< /tab >}}
+{{< /tabs >}}
+
 {{% notice note %}}
 For osm version v0.3.0, the namespace will have to be changed to `default`.
 {{% /notice %}}

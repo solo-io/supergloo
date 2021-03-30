@@ -50,7 +50,7 @@ Note that the `--cluster-name` is NOT the name of the cluster in your kubeconfig
 {{% /notice %}}
 
 ```shell
-INFO[0003] successfully registered cluster remote-cluster
+successfully registered cluster remote-cluster
 ```
 
 You can validate the registration by looking at the Custom Resource created in the management cluster:
@@ -116,7 +116,7 @@ meshctl cluster register community mgmt-cluster \
 {{< /tabs >}}
 
 ```
-INFO[0003] successfully registered cluster mgmt-cluster
+successfully registered cluster mgmt-cluster
 ```
 
 ## What happened?

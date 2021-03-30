@@ -84,17 +84,20 @@ You'll want to first have [Istio installed for multi-cluster]({{% versioned_link
 
 The core components, including reviews-v1 and reviews-v2, are deployed to the management plane cluster, while `reviews-v3` is deployed on the remote cluster.
 
-Deploy part of the bookinfo application to the `mgmt-cluster` cluster:
-
 {{% notice note %}}
 Be sure to switch the `kubeconfig` context to the `mgmt-cluster`
 {{% /notice %}}
 
+Before running the following, make sure your context names are set as environment variables:
+
 ```shell
-# Set the proper context value for each cluster
 MGMT_CONTEXT=your_management_plane_context
 REMOTE_CONTEXT=your_remote_context
+```
 
+Deploy part of the bookinfo application to the `mgmt-cluster` cluster:
+
+```shell
 kubectl config use-context $MGMT_CONTEXT
 
 kubectl create ns bookinfo

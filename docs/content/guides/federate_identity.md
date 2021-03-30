@@ -18,17 +18,24 @@ To illustrate these concepts, we will assume that:
 * Both `mgmt-cluster` and `remote-cluster` clusters are [registered with Gloo Mesh]({{% versioned_link_path fromRoot="/guides/#two-registered-clusters" %}})
 * The `bookinfo` app is [installed into both clusters]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployed-on-two-clusters" %}})
 
-
 {{% notice note %}}
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document.
 {{% /notice %}}
+
+Ensure you have the correct context names set in your environment:
+
+```shell
+MGMT_CONTEXT=your_management_plane_context
+REMOTE_CONTEXT=your_remote_context
+```
 
 ## Enforce mTLS
 
 Apply the following yaml to both your management plane and remote cluster,
 assuming that istio-system is the root namespace for the istio deployment:
 
-```shell
+{{< tabs >}}
+{{< tab name="YAML file" codelang="yaml">}}
 apiVersion: "security.istio.io/v1beta1"
 kind: "PeerAuthentication"
 metadata:
@@ -37,7 +44,30 @@ metadata:
 spec:
   mtls:
     mode: STRICT
-```
+{{< /tab >}}
+{{< tab name="CLI inline" codelang="shell" >}}
+kubectl apply --context $MGMT_CONTEXT -f - << EOF
+apiVersion: "security.istio.io/v1beta1"
+kind: "PeerAuthentication"
+metadata:
+  name: "default"
+  namespace: "istio-system"
+spec:
+  mtls:
+    mode: STRICT
+EOF
+kubectl apply --context $REMOTE_CONTEXT -f - << EOF
+apiVersion: "security.istio.io/v1beta1"
+kind: "PeerAuthentication"
+metadata:
+  name: "default"
+  namespace: "istio-system"
+spec:
+  mtls:
+    mode: STRICT
+EOF
+{{< /tab >}}
+{{< /tabs >}}
 
 This is an Istio setting. For more, see: https://istio.io/latest/docs/concepts/security/
 
@@ -46,9 +76,6 @@ This is an Istio setting. For more, see: https://istio.io/latest/docs/concepts/s
 We can see the certificate chain used to establish mTLS between Istio services in `mgmt-cluster` cluster and `remote-cluster` cluster and can compare them to be different. One way to see the certificates, is to use the `openssl s_client` tool with the `-showcerts` param when calling between two services. Let's try it on the `mgmt-cluster-cluster`:
 
 ```shell
-MGMT_CONTEXT=your_management_plane_context
-REMOTE_CONTEXT=your_remote_context
-
 kubectl --context $MGMT_CONTEXT -n bookinfo exec -it deploy/reviews-v1 -c istio-proxy \
 -- openssl s_client -showcerts -connect ratings.bookinfo:9080
 ```
