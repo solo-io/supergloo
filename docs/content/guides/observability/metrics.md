@@ -182,3 +182,6 @@ curl -XPOST --data '{
    "window":"300s"
 }' "localhost:8080/v0/observability/metrics/edge?pretty"
 ```
+
+For full documentation on the access log retrieval endpoint, see the
+[Swagger specification]({{% versioned_link_path fromRoot="/reference/swagger/metrics.swagger.json" %}}).

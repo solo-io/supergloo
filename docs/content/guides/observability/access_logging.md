@@ -253,6 +253,9 @@ curl -XPOST --data '{
 }' "localhost:8080/v0/observability/logs?&pretty"
 ```
 
+For full documentation on the access log retrieval endpoint, see the 
+[Swagger specification]({{% versioned_link_path fromRoot="/reference/swagger/access_logging.swagger.json" %}}).
+
 **Streaming Retrieval**
 
 While debugging, it can be helpful to observe the access logs in real time as you manually

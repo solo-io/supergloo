@@ -1,0 +1,717 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "access_logging.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Logging"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v0/observability/logs": {
+      "post": {
+        "summary": "Stream Envoy access logs as they are captured.",
+        "operationId": "Logging_WatchAccessLogs",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/ioAccessLog"
+                },
+                "error": {
+                  "$ref": "#/definitions/googlerpcStatus"
+                }
+              },
+              "title": "Stream result of ioAccessLog"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Select the workloads whose access logs should be streamed.\nLeave empty to stream access logs for all workloads.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WatchAccessLogsRequestWorkloadSelectors"
+            }
+          },
+          {
+            "name": "watch",
+            "description": "If true, stream access logs as they are received.\nOtherwise return a fixed number of access logs.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Logging"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "CertificatePropertiesSubjectAltName": {
+      "type": "object",
+      "properties": {
+        "uri": {
+          "type": "string"
+        },
+        "dns": {
+          "type": "string",
+          "title": "[#not-implemented-hide:]"
+        }
+      }
+    },
+    "HTTPAccessLogEntryHTTPVersion": {
+      "type": "string",
+      "enum": [
+        "PROTOCOL_UNSPECIFIED",
+        "HTTP10",
+        "HTTP11",
+        "HTTP2",
+        "HTTP3"
+      ],
+      "default": "PROTOCOL_UNSPECIFIED",
+      "title": "HTTP version"
+    },
+    "ResponseFlagsUnauthorized": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "$ref": "#/definitions/UnauthorizedReason"
+        }
+      }
+    },
+    "SocketAddressProtocol": {
+      "type": "string",
+      "enum": [
+        "TCP",
+        "UDP"
+      ],
+      "default": "TCP"
+    },
+    "TLSPropertiesCertificateProperties": {
+      "type": "object",
+      "properties": {
+        "subjectAltName": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CertificatePropertiesSubjectAltName"
+          },
+          "description": "SANs present in the certificate."
+        },
+        "subject": {
+          "type": "string",
+          "description": "The subject field of the certificate."
+        }
+      }
+    },
+    "TLSPropertiesTLSVersion": {
+      "type": "string",
+      "enum": [
+        "VERSION_UNSPECIFIED",
+        "TLSv1",
+        "TLSv1_1",
+        "TLSv1_2",
+        "TLSv1_3"
+      ],
+      "default": "VERSION_UNSPECIFIED"
+    },
+    "UnauthorizedReason": {
+      "type": "string",
+      "enum": [
+        "REASON_UNSPECIFIED",
+        "EXTERNAL_SERVICE"
+      ],
+      "default": "REASON_UNSPECIFIED",
+      "description": "- EXTERNAL_SERVICE: The request was denied by the external authorization service.",
+      "title": "Reasons why the request was unauthorized"
+    },
+    "WatchAccessLogsRequestWorkloadSelectors": {
+      "type": "object",
+      "properties": {
+        "workloadSelectors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ioWorkloadSelector"
+          }
+        }
+      },
+      "title": "NB: need to wrap repeated fields due to grpc-gateway limitation\nReference: https://github.com/grpc-ecosystem/grpc-gateway/issues/765"
+    },
+    "WorkloadSelectorKubeWorkloadMatcher": {
+      "type": "object",
+      "properties": {
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "If specified, all labels must exist on Kubernetes workload.\nWhen used in a networking policy, omission matches any labels.\nWhen used in a Gloo Mesh Role, a wildcard (`\"*\"`) must be specified to match any label key and/or value."
+        },
+        "namespaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "If specified, match Kubernetes workloads if they exist in one of the specified namespaces.\nWhen used in a networking policy, omission matches any namespace.\nWhen used in a Gloo Mesh Role, a wildcard (`\"*\"`) must be specified to match any namespace."
+        },
+        "clusters": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "If specified, match Kubernetes workloads if they exist in one of the specified clusters.\nWhen used in a networking policy, omission matches any cluster.\nWhen used in a Gloo Mesh Role, a wildcard (`\"*\"`) must be specified to match any cluster."
+        }
+      },
+      "description": "Match Kubernetes workloads by their labels, namespaces, and/or clusters."
+    },
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "ioAccessLog": {
+      "type": "object",
+      "properties": {
+        "workloadRef": {
+          "$ref": "#/definitions/ioClusterObjectRef",
+          "description": "Reference to the workload that emitted this access log."
+        },
+        "httpAccessLog": {
+          "$ref": "#/definitions/v3HTTPAccessLogEntry",
+          "description": "An Envoy access log."
+        }
+      }
+    },
+    "ioClusterObjectRef": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "name of the resource being referenced"
+        },
+        "namespace": {
+          "type": "string",
+          "title": "namespace of the resource being referenced"
+        },
+        "clusterName": {
+          "type": "string",
+          "title": "name of the cluster in which the resource exists"
+        }
+      },
+      "title": "Resource reference for a cross-cluster-scoped object"
+    },
+    "ioWorkloadSelector": {
+      "type": "object",
+      "properties": {
+        "kubeWorkloadMatcher": {
+          "$ref": "#/definitions/WorkloadSelectorKubeWorkloadMatcher",
+          "description": "Match Kubernetes workloads by their labels, namespaces, and/or clusters."
+        }
+      },
+      "description": "Select Workloads using one or more platform-specific selectors."
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      },
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := \u0026pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    },
+    "protobufNullValue": {
+      "type": "string",
+      "enum": [
+        "NULL_VALUE"
+      ],
+      "default": "NULL_VALUE",
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+    },
+    "v3AccessLogCommon": {
+      "type": "object",
+      "properties": {
+        "sampleRate": {
+          "type": "number",
+          "format": "double",
+          "description": "[#not-implemented-hide:]\nThis field indicates the rate at which this log entry was sampled.\nValid range is (0.0, 1.0]."
+        },
+        "downstreamRemoteAddress": {
+          "$ref": "#/definitions/v3Address",
+          "description": "This field is the remote/origin address on which the request from the user was received.\nNote: This may not be the physical peer. E.g, if the remote address is inferred from for\nexample the x-forwarder-for header, proxy protocol, etc."
+        },
+        "downstreamLocalAddress": {
+          "$ref": "#/definitions/v3Address",
+          "description": "This field is the local/destination address on which the request from the user was received."
+        },
+        "tlsProperties": {
+          "$ref": "#/definitions/v3TLSProperties",
+          "description": "If the connection is secure,S this field will contain TLS properties."
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The time that Envoy started servicing this request. This is effectively the time that the first\ndownstream byte is received."
+        },
+        "timeToLastRxByte": {
+          "type": "string",
+          "description": "Interval between the first downstream byte received and the last\ndownstream byte received (i.e. time it takes to receive a request)."
+        },
+        "timeToFirstUpstreamTxByte": {
+          "type": "string",
+          "description": "Interval between the first downstream byte received and the first upstream byte sent. There may\nby considerable delta between *time_to_last_rx_byte* and this value due to filters.\nAdditionally, the same caveats apply as documented in *time_to_last_downstream_tx_byte* about\nnot accounting for kernel socket buffer time, etc."
+        },
+        "timeToLastUpstreamTxByte": {
+          "type": "string",
+          "description": "Interval between the first downstream byte received and the last upstream byte sent. There may\nby considerable delta between *time_to_last_rx_byte* and this value due to filters.\nAdditionally, the same caveats apply as documented in *time_to_last_downstream_tx_byte* about\nnot accounting for kernel socket buffer time, etc."
+        },
+        "timeToFirstUpstreamRxByte": {
+          "type": "string",
+          "description": "Interval between the first downstream byte received and the first upstream\nbyte received (i.e. time it takes to start receiving a response)."
+        },
+        "timeToLastUpstreamRxByte": {
+          "type": "string",
+          "description": "Interval between the first downstream byte received and the last upstream\nbyte received (i.e. time it takes to receive a complete response)."
+        },
+        "timeToFirstDownstreamTxByte": {
+          "type": "string",
+          "description": "Interval between the first downstream byte received and the first downstream byte sent.\nThere may be a considerable delta between the *time_to_first_upstream_rx_byte* and this field\ndue to filters. Additionally, the same caveats apply as documented in\n*time_to_last_downstream_tx_byte* about not accounting for kernel socket buffer time, etc."
+        },
+        "timeToLastDownstreamTxByte": {
+          "type": "string",
+          "description": "Interval between the first downstream byte received and the last downstream byte sent.\nDepending on protocol, buffering, windowing, filters, etc. there may be a considerable delta\nbetween *time_to_last_upstream_rx_byte* and this field. Note also that this is an approximate\ntime. In the current implementation it does not include kernel socket buffer time. In the\ncurrent implementation it also does not include send window buffering inside the HTTP/2 codec.\nIn the future it is likely that work will be done to make this duration more accurate."
+        },
+        "upstreamRemoteAddress": {
+          "$ref": "#/definitions/v3Address",
+          "description": "The upstream remote/destination address that handles this exchange. This does not include\nretries."
+        },
+        "upstreamLocalAddress": {
+          "$ref": "#/definitions/v3Address",
+          "description": "The upstream local/origin address that handles this exchange. This does not include retries."
+        },
+        "upstreamCluster": {
+          "type": "string",
+          "description": "The upstream cluster that *upstream_remote_address* belongs to."
+        },
+        "responseFlags": {
+          "$ref": "#/definitions/v3ResponseFlags",
+          "description": "Flags indicating occurrences during request/response processing."
+        },
+        "metadata": {
+          "$ref": "#/definitions/v3Metadata",
+          "description": "All metadata encountered during request processing, including endpoint\nselection.\n\nThis can be used to associate IDs attached to the various configurations\nused to process this request with the access log entry. For example, a\nroute created from a higher level forwarding rule with some ID can place\nthat ID in this field and cross reference later. It can also be used to\ndetermine if a canary endpoint was used or not."
+        },
+        "upstreamTransportFailureReason": {
+          "type": "string",
+          "description": "If upstream connection failed due to transport socket (e.g. TLS handshake), provides the\nfailure reason from the transport socket. The format of this field depends on the configured\nupstream transport socket. Common TLS failures are in\n:ref:`TLS trouble shooting \u003carch_overview_ssl_trouble_shooting\u003e`."
+        },
+        "routeName": {
+          "type": "string",
+          "title": "The name of the route"
+        },
+        "downstreamDirectRemoteAddress": {
+          "$ref": "#/definitions/v3Address",
+          "description": "This field is the downstream direct remote address on which the request from the user was\nreceived. Note: This is always the physical peer, even if the remote address is inferred from\nfor example the x-forwarder-for header, proxy protocol, etc."
+        },
+        "filterStateObjects": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/protobufAny"
+          },
+          "description": "Map of filter state in stream info that have been configured to be logged. If the filter\nstate serialized to any message other than `google.protobuf.Any` it will be packed into\n`google.protobuf.Any`."
+        }
+      },
+      "title": "Defines fields that are shared by all Envoy access logs.\n[#next-free-field: 22]"
+    },
+    "v3Address": {
+      "type": "object",
+      "properties": {
+        "socketAddress": {
+          "$ref": "#/definitions/v3SocketAddress"
+        },
+        "pipe": {
+          "$ref": "#/definitions/v3Pipe"
+        },
+        "envoyInternalAddress": {
+          "$ref": "#/definitions/v3EnvoyInternalAddress",
+          "title": "[#not-implemented-hide:]"
+        }
+      },
+      "description": "Addresses specify either a logical or physical address and port, which are\nused to tell Envoy where to bind/listen, connect to upstream and find\nmanagement servers."
+    },
+    "v3EnvoyInternalAddress": {
+      "type": "object",
+      "properties": {
+        "serverListenerName": {
+          "type": "string",
+          "description": "[#not-implemented-hide:] The :ref:`listener name \u003cenvoy_api_field_config.listener.v3.Listener.name\u003e` of the destination internal listener."
+        }
+      },
+      "description": "[#not-implemented-hide:] The address represents an envoy internal listener.\nTODO(lambdai): Make this address available for listener and endpoint.\nTODO(asraa): When address available, remove workaround from test/server/server_fuzz_test.cc:30."
+    },
+    "v3HTTPAccessLogEntry": {
+      "type": "object",
+      "properties": {
+        "commonProperties": {
+          "$ref": "#/definitions/v3AccessLogCommon",
+          "description": "Common properties shared by all Envoy access logs."
+        },
+        "protocolVersion": {
+          "$ref": "#/definitions/HTTPAccessLogEntryHTTPVersion"
+        },
+        "request": {
+          "$ref": "#/definitions/v3HTTPRequestProperties",
+          "description": "Description of the incoming HTTP request."
+        },
+        "response": {
+          "$ref": "#/definitions/v3HTTPResponseProperties",
+          "description": "Description of the outgoing HTTP response."
+        }
+      }
+    },
+    "v3HTTPRequestProperties": {
+      "type": "object",
+      "properties": {
+        "requestMethod": {
+          "$ref": "#/definitions/v3RequestMethod",
+          "description": "The request method (RFC 7231/2616)."
+        },
+        "scheme": {
+          "type": "string",
+          "description": "The scheme portion of the incoming request URI."
+        },
+        "authority": {
+          "type": "string",
+          "description": "HTTP/2 ``:authority`` or HTTP/1.1 ``Host`` header value."
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The port of the incoming request URI\n(unused currently, as port is composed onto authority)."
+        },
+        "path": {
+          "type": "string",
+          "description": "The path portion from the incoming request URI."
+        },
+        "userAgent": {
+          "type": "string",
+          "description": "Value of the ``User-Agent`` request header."
+        },
+        "referer": {
+          "type": "string",
+          "description": "Value of the ``Referer`` request header."
+        },
+        "forwardedFor": {
+          "type": "string",
+          "description": "Value of the ``X-Forwarded-For`` request header."
+        },
+        "requestId": {
+          "type": "string",
+          "description": "This header is used by Envoy to uniquely identify a request.\nIt will be generated for all external requests and internal requests that\ndo not already have a request ID.",
+          "title": "Value of the ``X-Request-Id`` request header"
+        },
+        "originalPath": {
+          "type": "string",
+          "description": "Value of the ``X-Envoy-Original-Path`` request header."
+        },
+        "requestHeadersBytes": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Size of the HTTP request headers in bytes.\n\nThis value is captured from the OSI layer 7 perspective, i.e. it does not\ninclude overhead from framing or encoding at other networking layers."
+        },
+        "requestBodyBytes": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Size of the HTTP request body in bytes.\n\nThis value is captured from the OSI layer 7 perspective, i.e. it does not\ninclude overhead from framing or encoding at other networking layers."
+        },
+        "requestHeaders": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Map of additional headers that have been configured to be logged."
+        }
+      },
+      "title": "[#next-free-field: 14]"
+    },
+    "v3HTTPResponseProperties": {
+      "type": "object",
+      "properties": {
+        "responseCode": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The HTTP response code returned by Envoy."
+        },
+        "responseHeadersBytes": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Size of the HTTP response headers in bytes.\n\nThis value is captured from the OSI layer 7 perspective, i.e. it does not\ninclude overhead from framing or encoding at other networking layers."
+        },
+        "responseBodyBytes": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Size of the HTTP response body in bytes.\n\nThis value is captured from the OSI layer 7 perspective, i.e. it does not\ninclude overhead from framing or encoding at other networking layers."
+        },
+        "responseHeaders": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Map of additional headers configured to be logged."
+        },
+        "responseTrailers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Map of trailers configured to be logged."
+        },
+        "responseCodeDetails": {
+          "type": "string",
+          "description": "The HTTP response code details."
+        }
+      },
+      "title": "[#next-free-field: 7]"
+    },
+    "v3Metadata": {
+      "type": "object",
+      "properties": {
+        "filterMetadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          },
+          "description": "Key is the reverse DNS filter name, e.g. com.acme.widget. The envoy.*\nnamespace is reserved for Envoy's built-in filters."
+        }
+      },
+      "description": "Metadata provides additional inputs to filters based on matched listeners,\nfilter chains, routes and endpoints. It is structured as a map, usually from\nfilter name (in reverse DNS format) to metadata specific to the filter. Metadata\nkey-values for a filter are merged as connection and request handling occurs,\nwith later values for the same key overriding earlier values.\n\nAn example use of metadata is providing additional values to\nhttp_connection_manager in the envoy.http_connection_manager.access_log\nnamespace.\n\nAnother example use of metadata is to per service config info in cluster metadata, which may get\nconsumed by multiple filters.\n\nFor load balancing, Metadata provides a means to subset cluster endpoints.\nEndpoints have a Metadata object associated and routes contain a Metadata\nobject to match against. There are some well defined metadata used today for\nthis purpose:\n\n* ``{\"envoy.lb\": {\"canary\": \u003cbool\u003e }}`` This indicates the canary status of an\n  endpoint and is also used during header processing\n  (x-envoy-upstream-canary) and for stats purposes.\n[#next-major-version: move to type/metadata/v2]"
+    },
+    "v3Pipe": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Unix Domain Socket path. On Linux, paths starting with '@' will use the\nabstract namespace. The starting '@' is replaced by a null byte by Envoy.\nPaths starting with '@' will result in an error in environments other than\nLinux."
+        },
+        "mode": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The mode for the Pipe. Not applicable for abstract sockets."
+        }
+      }
+    },
+    "v3RequestMethod": {
+      "type": "string",
+      "enum": [
+        "METHOD_UNSPECIFIED",
+        "GET",
+        "HEAD",
+        "POST",
+        "PUT",
+        "DELETE",
+        "CONNECT",
+        "OPTIONS",
+        "TRACE",
+        "PATCH"
+      ],
+      "default": "METHOD_UNSPECIFIED",
+      "description": "HTTP request method."
+    },
+    "v3ResponseFlags": {
+      "type": "object",
+      "properties": {
+        "failedLocalHealthcheck": {
+          "type": "boolean",
+          "description": "Indicates local server healthcheck failed."
+        },
+        "noHealthyUpstream": {
+          "type": "boolean",
+          "description": "Indicates there was no healthy upstream."
+        },
+        "upstreamRequestTimeout": {
+          "type": "boolean",
+          "description": "Indicates an there was an upstream request timeout."
+        },
+        "localReset": {
+          "type": "boolean",
+          "description": "Indicates local codec level reset was sent on the stream."
+        },
+        "upstreamRemoteReset": {
+          "type": "boolean",
+          "description": "Indicates remote codec level reset was received on the stream."
+        },
+        "upstreamConnectionFailure": {
+          "type": "boolean",
+          "description": "Indicates there was a local reset by a connection pool due to an initial connection failure."
+        },
+        "upstreamConnectionTermination": {
+          "type": "boolean",
+          "description": "Indicates the stream was reset due to an upstream connection termination."
+        },
+        "upstreamOverflow": {
+          "type": "boolean",
+          "description": "Indicates the stream was reset because of a resource overflow."
+        },
+        "noRouteFound": {
+          "type": "boolean",
+          "description": "Indicates no route was found for the request."
+        },
+        "delayInjected": {
+          "type": "boolean",
+          "description": "Indicates that the request was delayed before proxying."
+        },
+        "faultInjected": {
+          "type": "boolean",
+          "description": "Indicates that the request was aborted with an injected error code."
+        },
+        "rateLimited": {
+          "type": "boolean",
+          "description": "Indicates that the request was rate-limited locally."
+        },
+        "unauthorizedDetails": {
+          "$ref": "#/definitions/ResponseFlagsUnauthorized",
+          "description": "Indicates if the request was deemed unauthorized and the reason for it."
+        },
+        "rateLimitServiceError": {
+          "type": "boolean",
+          "description": "Indicates that the request was rejected because there was an error in rate limit service."
+        },
+        "downstreamConnectionTermination": {
+          "type": "boolean",
+          "description": "Indicates the stream was reset due to a downstream connection termination."
+        },
+        "upstreamRetryLimitExceeded": {
+          "type": "boolean",
+          "description": "Indicates that the upstream retry limit was exceeded, resulting in a downstream error."
+        },
+        "streamIdleTimeout": {
+          "type": "boolean",
+          "description": "Indicates that the stream idle timeout was hit, resulting in a downstream 408."
+        },
+        "invalidEnvoyRequestHeaders": {
+          "type": "boolean",
+          "description": "Indicates that the request was rejected because an envoy request header failed strict\nvalidation."
+        },
+        "downstreamProtocolError": {
+          "type": "boolean",
+          "description": "Indicates there was an HTTP protocol error on the downstream request."
+        },
+        "upstreamMaxStreamDurationReached": {
+          "type": "boolean",
+          "description": "Indicates there was a max stream duration reached on the upstream request."
+        },
+        "responseFromCacheFilter": {
+          "type": "boolean",
+          "description": "Indicates the response was served from a cache filter."
+        },
+        "noFilterConfigFound": {
+          "type": "boolean",
+          "description": "Indicates that a filter configuration is not available."
+        },
+        "durationTimeout": {
+          "type": "boolean",
+          "description": "Indicates that request or connection exceeded the downstream connection duration."
+        }
+      },
+      "title": "Flags indicating occurrences during request/response processing.\n[#next-free-field: 24]"
+    },
+    "v3SocketAddress": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "$ref": "#/definitions/SocketAddressProtocol"
+        },
+        "address": {
+          "type": "string",
+          "description": "The address for this socket. :ref:`Listeners \u003cconfig_listeners\u003e` will bind\nto the address. An empty address is not allowed. Specify ``0.0.0.0`` or ``::``\nto bind to any address. [#comment:TODO(zuercher) reinstate when implemented:\nIt is possible to distinguish a Listener address via the prefix/suffix matching\nin :ref:`FilterChainMatch \u003cenvoy_api_msg_config.listener.v3.FilterChainMatch\u003e`.] When used\nwithin an upstream :ref:`BindConfig \u003cenvoy_api_msg_config.core.v3.BindConfig\u003e`, the address\ncontrols the source address of outbound connections. For :ref:`clusters\n\u003cenvoy_api_msg_config.cluster.v3.Cluster\u003e`, the cluster type determines whether the\naddress must be an IP (*STATIC* or *EDS* clusters) or a hostname resolved by DNS\n(*STRICT_DNS* or *LOGICAL_DNS* clusters). Address resolution can be customized\nvia :ref:`resolver_name \u003cenvoy_api_field_config.core.v3.SocketAddress.resolver_name\u003e`."
+        },
+        "portValue": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "namedPort": {
+          "type": "string",
+          "description": "This is only valid if :ref:`resolver_name\n\u003cenvoy_api_field_config.core.v3.SocketAddress.resolver_name\u003e` is specified below and the\nnamed resolver is capable of named port resolution."
+        },
+        "resolverName": {
+          "type": "string",
+          "description": "The name of the custom resolver. This must have been registered with Envoy. If\nthis is empty, a context dependent default applies. If the address is a concrete\nIP address, no resolution will occur. If address is a hostname this\nshould be set for resolution other than DNS. Specifying a custom resolver with\n*STRICT_DNS* or *LOGICAL_DNS* will generate an error at runtime."
+        },
+        "ipv4Compat": {
+          "type": "boolean",
+          "description": "When binding to an IPv6 address above, this enables `IPv4 compatibility\n\u003chttps://tools.ietf.org/html/rfc3493#page-11\u003e`_. Binding to ``::`` will\nallow both IPv4 and IPv6 connections, with peer IPv4 addresses mapped into\nIPv6 space as ``::FFFF:\u003cIPv4-address\u003e``."
+        }
+      },
+      "title": "[#next-free-field: 7]"
+    },
+    "v3TLSProperties": {
+      "type": "object",
+      "properties": {
+        "tlsVersion": {
+          "$ref": "#/definitions/TLSPropertiesTLSVersion",
+          "description": "Version of TLS that was negotiated."
+        },
+        "tlsCipherSuite": {
+          "type": "integer",
+          "format": "int64",
+          "description": "TLS cipher suite negotiated during handshake. The value is a\nfour-digit hex code defined by the IANA TLS Cipher Suite Registry\n(e.g. ``009C`` for ``TLS_RSA_WITH_AES_128_GCM_SHA256``).\n\nHere it is expressed as an integer."
+        },
+        "tlsSniHostname": {
+          "type": "string",
+          "description": "SNI hostname from handshake."
+        },
+        "localCertificateProperties": {
+          "$ref": "#/definitions/TLSPropertiesCertificateProperties",
+          "description": "Properties of the local certificate used to negotiate TLS."
+        },
+        "peerCertificateProperties": {
+          "$ref": "#/definitions/TLSPropertiesCertificateProperties",
+          "description": "Properties of the peer certificate used to negotiate TLS."
+        },
+        "tlsSessionId": {
+          "type": "string",
+          "description": "The TLS session ID."
+        }
+      },
+      "title": "Properties of a negotiated TLS connection.\n[#next-free-field: 7]"
+    }
+  }
+}
