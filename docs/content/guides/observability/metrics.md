@@ -1,5 +1,5 @@
 ---
-title: Metrics OOTB
+title: Metrics
 menuTitle: Metrics
 weight: 30
 ---
@@ -95,6 +95,8 @@ kubectl -n gloo-mesh port-forward deploy/enterprise-networking 8080
 # request metrics
 curl localhost:8080/metrics
 ```
+
+These metrics can be consumed by any custom Prometheus server.
 
 ### Prometheus UI
 
