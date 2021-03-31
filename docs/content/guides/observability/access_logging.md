@@ -228,6 +228,31 @@ The response will look similar to:
 }
 ```
 
+You can also filter the retrieved access logs by workload. The following
+request retrieves access logs for any Kubernetes workload with label `app: reviews`, or
+`app: productpage`.
+
+```shell
+curl -XPOST --data '{
+   "workloadSelectors":[
+      {
+         "kubeWorkloadMatcher":{
+            "labels":{
+               "app":"reviews"
+            }, "clusters": ["mgmt-cluster"]
+         }
+      },
+      {
+         "kubeWorkloadMatcher":{
+            "labels":{
+               "app":"productpage"
+            }
+         }
+      }
+   ]
+}' "localhost:8080/v0/observability/logs?&pretty"
+```
+
 **Streaming Retrieval**
 
 While debugging, it can be helpful to observe the access logs in real time as you manually
