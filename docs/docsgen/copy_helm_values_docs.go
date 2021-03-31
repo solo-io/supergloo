@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 
+	"github.com/Masterminds/semver"
 	"github.com/google/go-github/github"
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/contextutils"
@@ -57,7 +59,7 @@ func copyHelmValuesDocsForAllCharts(client *github.Client, rootDir string) error
 		rootDir,
 		"Gloo Mesh",
 		GlooMeshRepoName,
-		"v1.0.0-beta16",
+		"v1.0.0",
 		ossFileMapping,
 	); err != nil {
 		return err
@@ -69,7 +71,7 @@ func copyHelmValuesDocsForAllCharts(client *github.Client, rootDir string) error
 		rootDir,
 		"Gloo Mesh Enterprise",
 		GlooMeshEnterpriseRepoName,
-		"v1.0.0-beta16",
+		"v1.0.0",
 		enterpriseFileMapping,
 	); err != nil {
 		return err
@@ -81,7 +83,7 @@ func copyHelmValuesDocsForAllCharts(client *github.Client, rootDir string) error
 		rootDir,
 		"Enterprise RBAC Webhook",
 		GlooMeshEnterpriseRepoName,
-		"v1.0.0-beta16",
+		"v1.0.0",
 		rbacWwebookFileMapping,
 	); err != nil {
 		return err
@@ -119,15 +121,30 @@ func copyHelmValuesDocsForComponent(
 	if err != nil {
 		return eris.Errorf("error listing releases: %v", err)
 	}
-	var tags []string
+
+	// the github API returns releases sorted by release date, so we need to sort by version in order to enforce the earliest version lower bound
+	var versions []*semver.Version
 	for _, release := range releases {
-		if release.GetTagName() == earliestVersion {
+		tagName := release.GetTagName()
+		version, err := semver.NewVersion(tagName)
+		if err != nil {
+			return err
+		}
+		versions = append(versions, version)
+	}
+	sort.Reverse(semver.Collection(versions))
+
+	var tags []string
+	for _, version := range versions {
+		tags = append(tags, version.Original())
+		if version.Original() == earliestVersion {
 			break
 		}
-		tags = append(tags, release.GetTagName())
 	}
 
 	for _, tag := range tags {
+		contextutils.LoggerFrom(context.Background()).Infof("copying Helm values docs from %s/%s for release %s", GithubOrg, repoName, tag)
+
 		if err := os.Mkdir(helmDocsDir+"/"+tag, os.ModePerm); err != nil {
 			return eris.Errorf("error creating Helm docs directories: %v", err)
 		}
