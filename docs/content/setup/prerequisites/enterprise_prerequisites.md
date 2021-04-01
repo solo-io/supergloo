@@ -12,8 +12,6 @@ A conceptual overview of the Gloo Mesh Enterprise architecture can be found [her
 
 ## Ingress Setup
 
-{{% notice note %}}This type of ingress is recommended if you are using GKE or Amazon EKS.{{% /notice %}}
-
 In order for relay agents to communicate with the relay server, the management cluster
 (i.e. the cluster on which the relay server is deployed) must be configured to accept
 ingress traffic, the exact procedure of which depends on your particular environment.
@@ -25,11 +23,15 @@ A simple way to expose the relay server to remote clusters is by setting the `en
 This can be done via Helm, by setting `enterprise-networking.enterpriseNetworking.serviceType=LoadBalancer` on the
 Gloo Mesh Enterprise Helm chart.
 
+```shell script
+kubectl patch service -n istio-system istio-ingressgateway --type=json '-p=[{"op": "replace", "path": "/spec/type", "value":"LoadBalancer"}]'
+```
+
 LoadBalancer services are exposed to the externally via your Kubernetes cloud provider's load balancer. Note that this
 approach **does not** work by default with Kind cluster deployments, but is a good option for getting started if you're
 running your clusters via a managed service like Google Kubernetes Engine or Amazon's Elastic Kubernetes Service.
 
-Assuming your ingress service is running on a node port, you can get the address of this ingress for use during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}), run:
+You can get the address of this ingress for use during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}), by running:
 
 ```shell
 MGMT_INGRESS_ADDRESS=$(kubectl  -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
@@ -38,8 +40,6 @@ RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 ```
 
 **Istio Ingress Setup**
-
-{{% notice note %}}This type of ingress is recommended if you are using KinD.{{% /notice %}}
 
 The enterprise-networking service can also be exposed via an ingress. The following describes how to configure a Kubernetes
 cluster ingress assuming [Istio's ingress gateway model](https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/).
