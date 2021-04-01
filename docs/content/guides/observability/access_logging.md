@@ -229,8 +229,8 @@ The response will look similar to:
 ```
 
 You can also filter the retrieved access logs by workload. The following
-request retrieves access logs for any Kubernetes workload with label `app: reviews`, or
-`app: productpage`.
+request retrieves access logs for any Kubernetes workload with label `app: reviews` *and* in the cluster `mgmt-cluster`, or
+`app: productpage` from any cluster.
 
 ```shell
 curl -XPOST --data '{
@@ -239,7 +239,8 @@ curl -XPOST --data '{
          "kubeWorkloadMatcher":{
             "labels":{
                "app":"reviews"
-            }, "clusters": ["mgmt-cluster"]
+            },
+            "clusters": ["mgmt-cluster"]
          }
       },
       {
