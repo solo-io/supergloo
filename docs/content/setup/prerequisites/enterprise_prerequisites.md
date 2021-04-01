@@ -23,19 +23,15 @@ A simple way to expose the relay server to remote clusters is by setting the `en
 This can be done via Helm, by setting `enterprise-networking.enterpriseNetworking.serviceType=LoadBalancer` on the
 Gloo Mesh Enterprise Helm chart.
 
-```shell script
-kubectl patch service -n istio-system istio-ingressgateway --type=json '-p=[{"op": "replace", "path": "/spec/type", "value":"LoadBalancer"}]'
-```
-
 LoadBalancer services are exposed to the externally via your Kubernetes cloud provider's load balancer. Note that this
 approach **does not** work by default with Kind cluster deployments, but is a good option for getting started if you're
 running your clusters via a managed service like Google Kubernetes Engine or Amazon's Elastic Kubernetes Service.
 
-You can get the address of this ingress for use during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}), by running:
-
-```shell
-MGMT_INGRESS_ADDRESS=$(kubectl  -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].port}')
+If you have your enterprise-networking service set as a LoadBalancer type,
+get the relay address for [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}) by running:
+```shell script
+MGMT_INGRESS_ADDRESS=$(kubectl  -n gloo-mesh get service enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+MGMT_INGRESS_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
 RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 ```
 
@@ -43,7 +39,6 @@ RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 
 The enterprise-networking service can also be exposed via an ingress. The following describes how to configure a Kubernetes
 cluster ingress assuming [Istio's ingress gateway model](https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/).
-
 
 Create the following resources in the namespace of your choosing. Note that
 we assume that the `enterprise-networking` deployment exposes its gRPC port on `9900`.
@@ -91,11 +86,26 @@ spec:
               number: 9900
 ```
 
-Assuming your ingress service is running on a node port, you can get the address of this ingress for use during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}), run:
+Assuming your ingress service is running on a node port, you can get the address of this ingress for use
+during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}. Run:
 
 ```shell
 MGMT_INGRESS_ADDRESS=$(kubectl get node -ojson | jq -r ".items[0].status.addresses[0].address")
 MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
+```
+
+Another option is to set your ingress service as a LoadBalancer type.
+
+```shell script
+kubectl patch service -n istio-system istio-ingressgateway --type=json '-p=[{"op": "replace", "path": "/spec/type", "value":"LoadBalancer"}]'
+```
+
+If your ingress service is a LoadBalancer type, get the relay address for [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}) by running:
+
+```shell
+MGMT_INGRESS_ADDRESS=$(kubectl  -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].port}')
 RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 ```
 
