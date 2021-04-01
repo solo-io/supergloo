@@ -31,7 +31,6 @@ running your clusters via a managed service like Google Kubernetes Engine or Ama
 
 Assuming your ingress service is running on a node port, you can get the address of this ingress for use during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}), run:
 
-Or, you can get it by running:
 ```shell
 MGMT_INGRESS_ADDRESS=$(kubectl  -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].port}')
