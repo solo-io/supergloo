@@ -28,25 +28,33 @@ This guide assumes the following:
 
 ### Istio
 
-Each managed Istio control plane must be configured with the following values in the [`meshConfig`](https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/):
+Each managed Istio control plane must be installed with the following configuration in the [`IstioOperator` manifest](https://istio.io/latest/docs/reference/config/istio.operator.v1alpha1/).
 
 ```yaml
-meshConfig:
-  defaultConfig:
-    envoyMetricsService:
-      address: enterprise-agent.gloo-mesh:9977
-    proxyMetadata:
-      # annotate Gloo Mesh cluster name for envoy requests (i.e. access logs, metrics)
-      GLOO_MESH_CLUSTER_NAME: ${cluster}
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: example-istiooperator
+  namespace: istio-system
+spec:
+  meshConfig:
+    defaultConfig:
+      envoyMetricsService:
+        address: enterprise-agent.gloo-mesh:9977
+  values:
+    global:
+      # needed for annotating istio metrics with cluster
+      multiCluster:
+        clusterName: ${gloo-mesh-registered-cluster-name}
 ```
 
-This configuration can be provided at install time if installing using an [`IstioOperator` manifest](https://istio.io/latest/docs/reference/config/istio.operator.v1alpha1/).
-Alternatively, if Istio is already installed, these values can be updated through the Istio ConfigMap (located in the Istio root namespace, named `istio`).
-This also requires restarting all workloads for the Envoy configuration to take effect.
-
-This Istio configuration ensures that all Envoy proxies are configured to emit their metrics to 
+The `envoyMetricsService` config ensures that all Envoy proxies are configured to emit their metrics to 
 the Enterprise Agent, which acts as an [Envoy metrics service sink](https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/metrics/v3/metrics_service.proto#extension-envoy-stat-sinks-metrics-service).
 The Enterprise Agents then forward all received metrics to Enterprise Networking, where metrics across all managed clusters are centralized.
+
+The `multiCluster` config enables Istio collected metrics to be annotated with the Gloo Mesh registered cluster name.
+This allows for proper attribution of metrics in multicluster environments, and is particularly important for attributing
+requests that cross cluster boundaries.
 
 ### Gloo Mesh Enterprise
 
@@ -82,6 +90,9 @@ Then using a utility like [hey](https://github.com/rakyll/hey), send requests to
 # send 1 request per second
 hey -z 1h -c 1 -q 1 http://localhost:9080/productpage\?u\=normal
 ```
+
+Note that you may need to wait a few minutes before the metrics are returned from the Gloo Mesh API discussed below.
+The metrics need time to propagate from the Enovy proxies to the Gloo Mesh server, and for the Prometheus server to scrape the data from Gloo Mesh.
 
 ### Enterprise Networking Metrics Scrape Endpoint
 
