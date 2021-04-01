@@ -86,28 +86,23 @@ spec:
               number: 9900
 ```
 
-Assuming your ingress service is running on a node port, you can get the address of this ingress for use
-during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}. Run:
+You can set your ingress service as either a NodePort or LoadBalancer type.
+In either case, you can get the address of this ingress for use
+during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}) by running:
 
-```shell
+{{< tabs >}}
+{{< tab name="NodePort" codelang="yaml">}}
 MGMT_INGRESS_ADDRESS=$(kubectl get node -ojson | jq -r ".items[0].status.addresses[0].address")
 MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
 RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
-```
-
-Another option is to set your ingress service as a LoadBalancer type.
-
-```shell script
-kubectl patch service -n istio-system istio-ingressgateway --type=json '-p=[{"op": "replace", "path": "/spec/type", "value":"LoadBalancer"}]'
-```
-
-If your ingress service is a LoadBalancer type, get the relay address for [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}) by running:
-
-```shell
+{{< /tab >}}
+{{< tab name="LoadBalancer" codelang="yaml">}}
 MGMT_INGRESS_ADDRESS=$(kubectl  -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].port}')
 RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
-```
+{{< /tab >}}
+{{< /tabs >}}
+
 
 ## Establishing Trust Between Agents and Server
 
