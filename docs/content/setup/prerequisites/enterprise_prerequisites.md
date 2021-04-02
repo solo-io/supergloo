@@ -29,6 +29,7 @@ running your clusters via a managed service like Google Kubernetes Engine or Ama
 
 If you have your enterprise-networking service set as a LoadBalancer type,
 get the relay address for [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}) by running:
+
 ```shell script
 MGMT_INGRESS_ADDRESS=$(kubectl  -n gloo-mesh get service enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 MGMT_INGRESS_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')

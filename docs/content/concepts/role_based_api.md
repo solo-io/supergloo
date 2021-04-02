@@ -29,17 +29,17 @@ Permission scopes are defined against networking policy selectors. These selecto
 are affected by the policy. Each networking policy CRD has a different combination of selectors depending on which mesh entities it can affect.
 We detail the different scopes and their associated selectors below.
 
-**TrafficPolicyScope:** [TrafficPolicies]({{% versioned_link_path fromRoot="/reference/api/traffic_policy/" %}}) operate on routes between workloads and Destinations.
+**TrafficPolicyScope:** [TrafficPolicies]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy/" %}}) operate on routes between workloads and Destinations.
 Thus, the TrafficPolicyScope defines the set of permitted [WorkloadSelectors]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.mesh.gloo.solo.io.WorkloadSelector" %}}) 
 and [DestinationSelectors]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors.md#common.mesh.gloo.solo.io.DestinationSelector" %}}). In other words,
 a TrafficPolicyScope represents permission for creating TrafficPolicies that configure a specific set of workloads and associated Destinations.
 
-**AccessPolicyScope:** [AccessPolicies]({{% versioned_link_path fromRoot="/reference/api/access_policy/" %}}) operate on routes between identities (which represent a set of workloads) and Destinations.
+**AccessPolicyScope:** [AccessPolicies]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy/" %}}) operate on routes between identities (which represent a set of workloads) and Destinations.
 Thus, the AccessPolicyScope defines the set of permitted [IdentitySelectors]({{% versioned_link_path fromRoot="/reference/api/selectors/#networking.mesh.gloo.solo.io.IdentitySelector" %}}) 
 and [DestinationSelectors]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors.md#common.mesh.gloo.solo.io.DestinationSelector" %}}). In other words,
 an AccessPolicyScope represents permission for creating AccessPolicies that configure a specific set of identities and associated Destinations.
 
-**VirtualMeshScope:** [VirtualMeshes]({{% versioned_link_path fromRoot="/reference/api/virtual_mesh/" %}}) operate on discovered meshes.
+**VirtualMeshScope:** [VirtualMeshes]({{% versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh/" %}}) operate on discovered meshes.
 Thus, the VirtualMeshScope defines the set of permitted meshes by reference (name and namespace of the corresponding Mesh object). 
 In other words, a VirtualMeshScope represents permission for creating VirtualMeshes that group a set of discovered meshes.
 

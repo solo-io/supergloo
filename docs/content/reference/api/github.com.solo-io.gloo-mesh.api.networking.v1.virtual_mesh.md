@@ -121,7 +121,7 @@ Specify parameters for configuring the root certificate authority for a VirtualM
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | generated | [networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority.SelfSignedCert]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority.SelfSignedCert" >}}) |  | Generate a self-signed root certificate with the given options. |
-  | secret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to a Kubernetes Secret containing the root certificate authority. Provided secrets must conform to a specified format, [documented here]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}). |
+  | secret | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to a Kubernetes Secret containing the root certificate authority. Provided secrets must conform to a specified format, [documented here]({{< versioned_link_path fromRoot="/guides/federate_identity/" >}}). |
   
 
 
