@@ -28,7 +28,7 @@ var (
 		"enterprise-networking/codegen/helm/enterprise_agent_helm_values_reference.md":      "%s/%s/enterprise_agent.md",
 	}
 
-	rbacWwebookFileMapping = map[string]string{
+	rbacWebookFileMapping = map[string]string{
 		"rbac-webhook/codegen/chart/rbac_webhook_helm_values_reference.md": "%s/%s/rbac_webhook.md",
 	}
 
@@ -84,7 +84,7 @@ func copyHelmValuesDocsForAllCharts(client *github.Client, rootDir string) error
 		"Enterprise RBAC Webhook",
 		GlooMeshEnterpriseRepoName,
 		"v1.0.0",
-		rbacWwebookFileMapping,
+		rbacWebookFileMapping,
 	); err != nil {
 		return err
 	}
@@ -165,14 +165,11 @@ func copyHelmValuesDocsForComponent(
 }
 
 func copyHelmValuesDocs(client *github.Client, org, repo, tag, path, destinationFile string) error {
-	contents, _, resp, err := client.Repositories.GetContents(context.Background(), org, repo, path, &github.RepositoryContentGetOptions{
+	contents, _, _, err := client.Repositories.GetContents(context.Background(), org, repo, path, &github.RepositoryContentGetOptions{
 		Ref: tag,
 	})
-	if err != nil && resp.StatusCode != 404 {
+	if err != nil {
 		return eris.Errorf("error fetching Helm values doc: %v", err)
-	} else if resp.StatusCode == 404 {
-		contextutils.LoggerFrom(context.Background()).Warnf("Helm values doc for repo: %s and path: %s not found", repo, path)
-		return nil
 	}
 
 	decodedContents, err := base64.StdEncoding.DecodeString(*contents.Content)

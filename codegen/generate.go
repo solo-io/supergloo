@@ -200,6 +200,13 @@ func generateHelmValuesDoc(chart *model.Chart, title string, filename string) er
 		log.Fatal(err)
 	}
 
+	// change back to original directory
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
 	helmValuesDoc := chart.GenerateHelmDoc(title)
 
 	filename = filepath.Join("helm", filename)
@@ -211,11 +218,6 @@ func generateHelmValuesDoc(chart *model.Chart, title string, filename string) er
 
 	if _, err := f.Write([]byte(helmValuesDoc)); err != nil {
 		return eris.Errorf("error generating Helm values reference doc: %v", err)
-	}
-
-	// change back to original directory
-	if err := os.Chdir(originalDir); err != nil {
-		log.Fatal(err)
 	}
 
 	return nil
