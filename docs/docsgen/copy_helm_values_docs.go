@@ -133,11 +133,17 @@ func copyHelmValuesDocsForComponent(
 		versions = append(versions, version)
 	}
 	sort.Reverse(semver.Collection(versions))
+	versions = getLatestPerMinorVersion(versions)
+
+	earliestVersionSemver, err := semver.NewVersion(earliestVersion)
+	if err != nil {
+		return err
+	}
 
 	var tags []string
 	for _, version := range versions {
 		tags = append(tags, version.Original())
-		if version.Original() == earliestVersion {
+		if version.LessThan(earliestVersionSemver) || version.Equal(earliestVersionSemver) {
 			break
 		}
 	}
@@ -164,11 +170,42 @@ func copyHelmValuesDocsForComponent(
 	return nil
 }
 
+// returns the latest patch version for each minor version
+// expects versions to be sorted in reverse order
+func getLatestPerMinorVersion(sortedVersions []*semver.Version) []*semver.Version {
+	var latestVersions []*semver.Version
+
+	latestVersionForMinor, _ := semver.NewVersion("1.999999999.0")
+	for _, version := range sortedVersions {
+		if version.Minor() < latestVersionForMinor.Minor() {
+			latestVersions = append(latestVersions, version)
+			latestVersionForMinor = version
+		}
+	}
+
+	return latestVersions
+}
+
 func copyHelmValuesDocs(client *github.Client, org, repo, tag, path, destinationFile string) error {
-	contents, _, _, err := client.Repositories.GetContents(context.Background(), org, repo, path, &github.RepositoryContentGetOptions{
+	baseVersion, _ := semver.NewVersion("1.0.0")
+	tagVersion, err := semver.NewVersion(tag)
+	if err != nil {
+		return err
+	}
+
+	contents, _, resp, err := client.Repositories.GetContents(context.Background(), org, repo, path, &github.RepositoryContentGetOptions{
 		Ref: tag,
 	})
-	if err != nil {
+
+	// return error if expected doc files aren't found
+	if err != nil && resp != nil && resp.StatusCode == 404 {
+		// special case v1.0.0, for which the docs don't exist
+		if tagVersion.GreaterThan(baseVersion) {
+			return eris.Errorf("error fetching Helm values doc: %v", err)
+		} else {
+			return nil
+		}
+	} else if err != nil {
 		return eris.Errorf("error fetching Helm values doc: %v", err)
 	}
 
