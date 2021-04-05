@@ -260,7 +260,7 @@ When the Istio Operator has finished the installation (can take up to 90 seconds
 you should see the Istio control plane pods running successfully:
 
 ```shell
-kubectl get pods -n istio-system
+kubectl get pods -n istio-system --context $REMOTE_CONTEXT
 ```
 
 ```shell
