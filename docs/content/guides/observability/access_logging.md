@@ -1,6 +1,7 @@
 ---
 title: Access Logging
 menuTitle: Access Logging
+description: Guide on Gloo Mesh's logging features.
 weight: 30
 ---
 
