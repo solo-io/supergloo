@@ -305,9 +305,9 @@ func (b *multiClusterBuilder) insertIssuedCertificatesFromCluster(ctx context.Co
 	}
 
 	for _, item := range issuedCertificateList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		issuedCertificates.Insert(&item)
+		issuedCertificates.Insert(item)
 	}
 
 	return nil
@@ -347,9 +347,9 @@ func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.C
 	}
 
 	for _, item := range certificateRequestList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		certificateRequests.Insert(&item)
+		certificateRequests.Insert(item)
 	}
 
 	return nil
@@ -430,9 +430,9 @@ func (b *singleClusterBuilder) insertIssuedCertificates(ctx context.Context, iss
 	}
 
 	for _, item := range issuedCertificateList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		issuedCertificates.Insert(&item)
+		issuedCertificates.Insert(item)
 	}
 
 	return nil
@@ -463,9 +463,9 @@ func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, ce
 	}
 
 	for _, item := range certificateRequestList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		certificateRequests.Insert(&item)
+		certificateRequests.Insert(item)
 	}
 
 	return nil

@@ -562,9 +562,9 @@ func (b *multiClusterDiscoveryInputBuilder) insertMeshesFromCluster(ctx context.
 	}
 
 	for _, item := range meshList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		meshes.Insert(&item)
+		meshes.Insert(item)
 	}
 
 	return nil
@@ -605,9 +605,9 @@ func (b *multiClusterDiscoveryInputBuilder) insertConfigMapsFromCluster(ctx cont
 	}
 
 	for _, item := range configMapList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		configMaps.Insert(&item)
+		configMaps.Insert(item)
 	}
 
 	return nil
@@ -647,9 +647,9 @@ func (b *multiClusterDiscoveryInputBuilder) insertServicesFromCluster(ctx contex
 	}
 
 	for _, item := range serviceList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		services.Insert(&item)
+		services.Insert(item)
 	}
 
 	return nil
@@ -689,9 +689,9 @@ func (b *multiClusterDiscoveryInputBuilder) insertPodsFromCluster(ctx context.Co
 	}
 
 	for _, item := range podList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		pods.Insert(&item)
+		pods.Insert(item)
 	}
 
 	return nil
@@ -731,9 +731,9 @@ func (b *multiClusterDiscoveryInputBuilder) insertEndpointsFromCluster(ctx conte
 	}
 
 	for _, item := range endpointsList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		endpoints.Insert(&item)
+		endpoints.Insert(item)
 	}
 
 	return nil
@@ -773,9 +773,9 @@ func (b *multiClusterDiscoveryInputBuilder) insertNodesFromCluster(ctx context.C
 	}
 
 	for _, item := range nodeList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		nodes.Insert(&item)
+		nodes.Insert(item)
 	}
 
 	return nil
@@ -816,9 +816,9 @@ func (b *multiClusterDiscoveryInputBuilder) insertDeploymentsFromCluster(ctx con
 	}
 
 	for _, item := range deploymentList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		deployments.Insert(&item)
+		deployments.Insert(item)
 	}
 
 	return nil
@@ -858,9 +858,9 @@ func (b *multiClusterDiscoveryInputBuilder) insertReplicaSetsFromCluster(ctx con
 	}
 
 	for _, item := range replicaSetList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		replicaSets.Insert(&item)
+		replicaSets.Insert(item)
 	}
 
 	return nil
@@ -900,9 +900,9 @@ func (b *multiClusterDiscoveryInputBuilder) insertDaemonSetsFromCluster(ctx cont
 	}
 
 	for _, item := range daemonSetList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		daemonSets.Insert(&item)
+		daemonSets.Insert(item)
 	}
 
 	return nil
@@ -942,9 +942,9 @@ func (b *multiClusterDiscoveryInputBuilder) insertStatefulSetsFromCluster(ctx co
 	}
 
 	for _, item := range statefulSetList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		statefulSets.Insert(&item)
+		statefulSets.Insert(item)
 	}
 
 	return nil
@@ -1067,9 +1067,9 @@ func (b *singleClusterDiscoveryInputBuilder) insertMeshes(ctx context.Context, m
 	}
 
 	for _, item := range meshList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		meshes.Insert(&item)
+		meshes.Insert(item)
 	}
 
 	return nil
@@ -1101,9 +1101,9 @@ func (b *singleClusterDiscoveryInputBuilder) insertConfigMaps(ctx context.Contex
 	}
 
 	for _, item := range configMapList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		configMaps.Insert(&item)
+		configMaps.Insert(item)
 	}
 
 	return nil
@@ -1134,9 +1134,9 @@ func (b *singleClusterDiscoveryInputBuilder) insertServices(ctx context.Context,
 	}
 
 	for _, item := range serviceList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		services.Insert(&item)
+		services.Insert(item)
 	}
 
 	return nil
@@ -1167,9 +1167,9 @@ func (b *singleClusterDiscoveryInputBuilder) insertPods(ctx context.Context, pod
 	}
 
 	for _, item := range podList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		pods.Insert(&item)
+		pods.Insert(item)
 	}
 
 	return nil
@@ -1200,9 +1200,9 @@ func (b *singleClusterDiscoveryInputBuilder) insertEndpoints(ctx context.Context
 	}
 
 	for _, item := range endpointsList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		endpoints.Insert(&item)
+		endpoints.Insert(item)
 	}
 
 	return nil
@@ -1233,9 +1233,9 @@ func (b *singleClusterDiscoveryInputBuilder) insertNodes(ctx context.Context, no
 	}
 
 	for _, item := range nodeList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		nodes.Insert(&item)
+		nodes.Insert(item)
 	}
 
 	return nil
@@ -1267,9 +1267,9 @@ func (b *singleClusterDiscoveryInputBuilder) insertDeployments(ctx context.Conte
 	}
 
 	for _, item := range deploymentList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		deployments.Insert(&item)
+		deployments.Insert(item)
 	}
 
 	return nil
@@ -1300,9 +1300,9 @@ func (b *singleClusterDiscoveryInputBuilder) insertReplicaSets(ctx context.Conte
 	}
 
 	for _, item := range replicaSetList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		replicaSets.Insert(&item)
+		replicaSets.Insert(item)
 	}
 
 	return nil
@@ -1333,9 +1333,9 @@ func (b *singleClusterDiscoveryInputBuilder) insertDaemonSets(ctx context.Contex
 	}
 
 	for _, item := range daemonSetList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		daemonSets.Insert(&item)
+		daemonSets.Insert(item)
 	}
 
 	return nil
@@ -1366,9 +1366,9 @@ func (b *singleClusterDiscoveryInputBuilder) insertStatefulSets(ctx context.Cont
 	}
 
 	for _, item := range statefulSetList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		statefulSets.Insert(&item)
+		statefulSets.Insert(item)
 	}
 
 	return nil
