@@ -22,7 +22,7 @@ Name|Version|License
 [openservicemesh/osm](https://github.com/openservicemesh/osm)|v0.3.0|MIT License
 [pkg/browser](https://github.com/pkg/browser)|v0.0.0-20180916011732-0a3d74bf9ce4|BSD 2-clause "Simplified" License
 [pkg/errors](https://github.com/pkg/errors)|v0.9.1|BSD 2-clause "Simplified" License
-[pseudomuto/protoc-gen-doc](https://github.com/pseudomuto/protoc-gen-doc)|v1.3.2|MIT License
+[pseudomuto/protoc-gen-doc](https://github.com/pseudomuto/protoc-gen-doc)|v1.4.1|MIT License
 [pseudomuto/protokit](https://github.com/pseudomuto/protokit)|v0.2.0|MIT License
 [rotisserie/eris](https://github.com/rotisserie/eris)|v0.4.0|MIT License
 [servicemeshinterface/smi-sdk-go](https://github.com/servicemeshinterface/smi-sdk-go)|v0.4.1|Apache License 2.0
