@@ -1,6 +1,7 @@
 ---
 title: Metrics
 menuTitle: Metrics
+description: Guide on Gloo Mesh's metrics features.
 weight: 30
 ---
 
