@@ -116,7 +116,7 @@ func run() error {
 		return err
 	}
 
-	if err := generateHelmValuesDoc(helm.Chart, "Cert Agent", "cert_agent_helm_values_reference.md"); err != nil {
+	if err := generateHelmValuesDoc(helm.CertAgentChart, "Cert Agent", "cert_agent_helm_values_reference.md"); err != nil {
 		return err
 	}
 
