@@ -619,9 +619,9 @@ func (b *multiClusterRemoteBuilder) insertIssuedCertificatesFromCluster(ctx cont
 	}
 
 	for _, item := range issuedCertificateList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		issuedCertificates.Insert(&item)
+		issuedCertificates.Insert(item)
 	}
 
 	return nil
@@ -661,9 +661,9 @@ func (b *multiClusterRemoteBuilder) insertPodBounceDirectivesFromCluster(ctx con
 	}
 
 	for _, item := range podBounceDirectiveList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		podBounceDirectives.Insert(&item)
+		podBounceDirectives.Insert(item)
 	}
 
 	return nil
@@ -704,9 +704,9 @@ func (b *multiClusterRemoteBuilder) insertXdsConfigsFromCluster(ctx context.Cont
 	}
 
 	for _, item := range xdsConfigList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		xdsConfigs.Insert(&item)
+		xdsConfigs.Insert(item)
 	}
 
 	return nil
@@ -747,9 +747,9 @@ func (b *multiClusterRemoteBuilder) insertDestinationRulesFromCluster(ctx contex
 	}
 
 	for _, item := range destinationRuleList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		destinationRules.Insert(&item)
+		destinationRules.Insert(item)
 	}
 
 	return nil
@@ -789,9 +789,9 @@ func (b *multiClusterRemoteBuilder) insertEnvoyFiltersFromCluster(ctx context.Co
 	}
 
 	for _, item := range envoyFilterList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		envoyFilters.Insert(&item)
+		envoyFilters.Insert(item)
 	}
 
 	return nil
@@ -831,9 +831,9 @@ func (b *multiClusterRemoteBuilder) insertGatewaysFromCluster(ctx context.Contex
 	}
 
 	for _, item := range gatewayList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		gateways.Insert(&item)
+		gateways.Insert(item)
 	}
 
 	return nil
@@ -873,9 +873,9 @@ func (b *multiClusterRemoteBuilder) insertServiceEntriesFromCluster(ctx context.
 	}
 
 	for _, item := range serviceEntryList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		serviceEntries.Insert(&item)
+		serviceEntries.Insert(item)
 	}
 
 	return nil
@@ -915,9 +915,9 @@ func (b *multiClusterRemoteBuilder) insertVirtualServicesFromCluster(ctx context
 	}
 
 	for _, item := range virtualServiceList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		virtualServices.Insert(&item)
+		virtualServices.Insert(item)
 	}
 
 	return nil
@@ -958,9 +958,9 @@ func (b *multiClusterRemoteBuilder) insertAuthorizationPoliciesFromCluster(ctx c
 	}
 
 	for _, item := range authorizationPolicyList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		authorizationPolicies.Insert(&item)
+		authorizationPolicies.Insert(item)
 	}
 
 	return nil
@@ -1079,9 +1079,9 @@ func (b *singleClusterRemoteBuilder) insertIssuedCertificates(ctx context.Contex
 	}
 
 	for _, item := range issuedCertificateList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		issuedCertificates.Insert(&item)
+		issuedCertificates.Insert(item)
 	}
 
 	return nil
@@ -1112,9 +1112,9 @@ func (b *singleClusterRemoteBuilder) insertPodBounceDirectives(ctx context.Conte
 	}
 
 	for _, item := range podBounceDirectiveList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		podBounceDirectives.Insert(&item)
+		podBounceDirectives.Insert(item)
 	}
 
 	return nil
@@ -1146,9 +1146,9 @@ func (b *singleClusterRemoteBuilder) insertXdsConfigs(ctx context.Context, xdsCo
 	}
 
 	for _, item := range xdsConfigList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		xdsConfigs.Insert(&item)
+		xdsConfigs.Insert(item)
 	}
 
 	return nil
@@ -1180,9 +1180,9 @@ func (b *singleClusterRemoteBuilder) insertDestinationRules(ctx context.Context,
 	}
 
 	for _, item := range destinationRuleList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		destinationRules.Insert(&item)
+		destinationRules.Insert(item)
 	}
 
 	return nil
@@ -1213,9 +1213,9 @@ func (b *singleClusterRemoteBuilder) insertEnvoyFilters(ctx context.Context, env
 	}
 
 	for _, item := range envoyFilterList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		envoyFilters.Insert(&item)
+		envoyFilters.Insert(item)
 	}
 
 	return nil
@@ -1246,9 +1246,9 @@ func (b *singleClusterRemoteBuilder) insertGateways(ctx context.Context, gateway
 	}
 
 	for _, item := range gatewayList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		gateways.Insert(&item)
+		gateways.Insert(item)
 	}
 
 	return nil
@@ -1279,9 +1279,9 @@ func (b *singleClusterRemoteBuilder) insertServiceEntries(ctx context.Context, s
 	}
 
 	for _, item := range serviceEntryList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		serviceEntries.Insert(&item)
+		serviceEntries.Insert(item)
 	}
 
 	return nil
@@ -1312,9 +1312,9 @@ func (b *singleClusterRemoteBuilder) insertVirtualServices(ctx context.Context, 
 	}
 
 	for _, item := range virtualServiceList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		virtualServices.Insert(&item)
+		virtualServices.Insert(item)
 	}
 
 	return nil
@@ -1346,9 +1346,9 @@ func (b *singleClusterRemoteBuilder) insertAuthorizationPolicies(ctx context.Con
 	}
 
 	for _, item := range authorizationPolicyList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		authorizationPolicies.Insert(&item)
+		authorizationPolicies.Insert(item)
 	}
 
 	return nil

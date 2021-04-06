@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1382
+    description: Publish Helm values documentation for GME, OSS, and RBAC Webhook.
+    resolvesIssue: false
