@@ -250,9 +250,9 @@ func (b *multiClusterSettingsBuilder) insertSettingsFromCluster(ctx context.Cont
 	}
 
 	for _, item := range settingsList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		settings.Insert(&item)
+		settings.Insert(item)
 	}
 
 	return nil
@@ -328,9 +328,9 @@ func (b *singleClusterSettingsBuilder) insertSettings(ctx context.Context, setti
 	}
 
 	for _, item := range settingsList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		settings.Insert(&item)
+		settings.Insert(item)
 	}
 
 	return nil
