@@ -924,9 +924,9 @@ func (b *multiClusterLocalBuilder) insertSettingsFromCluster(ctx context.Context
 	}
 
 	for _, item := range settingsList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		settings.Insert(&item)
+		settings.Insert(item)
 	}
 
 	return nil
@@ -967,9 +967,9 @@ func (b *multiClusterLocalBuilder) insertDestinationsFromCluster(ctx context.Con
 	}
 
 	for _, item := range destinationList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		destinations.Insert(&item)
+		destinations.Insert(item)
 	}
 
 	return nil
@@ -1009,9 +1009,9 @@ func (b *multiClusterLocalBuilder) insertWorkloadsFromCluster(ctx context.Contex
 	}
 
 	for _, item := range workloadList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		workloads.Insert(&item)
+		workloads.Insert(item)
 	}
 
 	return nil
@@ -1051,9 +1051,9 @@ func (b *multiClusterLocalBuilder) insertMeshesFromCluster(ctx context.Context, 
 	}
 
 	for _, item := range meshList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		meshes.Insert(&item)
+		meshes.Insert(item)
 	}
 
 	return nil
@@ -1094,9 +1094,9 @@ func (b *multiClusterLocalBuilder) insertTrafficPoliciesFromCluster(ctx context.
 	}
 
 	for _, item := range trafficPolicyList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		trafficPolicies.Insert(&item)
+		trafficPolicies.Insert(item)
 	}
 
 	return nil
@@ -1136,9 +1136,9 @@ func (b *multiClusterLocalBuilder) insertAccessPoliciesFromCluster(ctx context.C
 	}
 
 	for _, item := range accessPolicyList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		accessPolicies.Insert(&item)
+		accessPolicies.Insert(item)
 	}
 
 	return nil
@@ -1178,9 +1178,9 @@ func (b *multiClusterLocalBuilder) insertVirtualMeshesFromCluster(ctx context.Co
 	}
 
 	for _, item := range virtualMeshList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		virtualMeshes.Insert(&item)
+		virtualMeshes.Insert(item)
 	}
 
 	return nil
@@ -1221,9 +1221,9 @@ func (b *multiClusterLocalBuilder) insertWasmDeploymentsFromCluster(ctx context.
 	}
 
 	for _, item := range wasmDeploymentList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		wasmDeployments.Insert(&item)
+		wasmDeployments.Insert(item)
 	}
 
 	return nil
@@ -1263,9 +1263,9 @@ func (b *multiClusterLocalBuilder) insertVirtualDestinationsFromCluster(ctx cont
 	}
 
 	for _, item := range virtualDestinationList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		virtualDestinations.Insert(&item)
+		virtualDestinations.Insert(item)
 	}
 
 	return nil
@@ -1306,9 +1306,9 @@ func (b *multiClusterLocalBuilder) insertAccessLogRecordsFromCluster(ctx context
 	}
 
 	for _, item := range accessLogRecordList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		accessLogRecords.Insert(&item)
+		accessLogRecords.Insert(item)
 	}
 
 	return nil
@@ -1349,9 +1349,9 @@ func (b *multiClusterLocalBuilder) insertSecretsFromCluster(ctx context.Context,
 	}
 
 	for _, item := range secretList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		secrets.Insert(&item)
+		secrets.Insert(item)
 	}
 
 	return nil
@@ -1392,9 +1392,9 @@ func (b *multiClusterLocalBuilder) insertKubernetesClustersFromCluster(ctx conte
 	}
 
 	for _, item := range kubernetesClusterList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		kubernetesClusters.Insert(&item)
+		kubernetesClusters.Insert(item)
 	}
 
 	return nil
@@ -1531,9 +1531,9 @@ func (b *singleClusterLocalBuilder) insertSettings(ctx context.Context, settings
 	}
 
 	for _, item := range settingsList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		settings.Insert(&item)
+		settings.Insert(item)
 	}
 
 	return nil
@@ -1565,9 +1565,9 @@ func (b *singleClusterLocalBuilder) insertDestinations(ctx context.Context, dest
 	}
 
 	for _, item := range destinationList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		destinations.Insert(&item)
+		destinations.Insert(item)
 	}
 
 	return nil
@@ -1598,9 +1598,9 @@ func (b *singleClusterLocalBuilder) insertWorkloads(ctx context.Context, workloa
 	}
 
 	for _, item := range workloadList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		workloads.Insert(&item)
+		workloads.Insert(item)
 	}
 
 	return nil
@@ -1631,9 +1631,9 @@ func (b *singleClusterLocalBuilder) insertMeshes(ctx context.Context, meshes dis
 	}
 
 	for _, item := range meshList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		meshes.Insert(&item)
+		meshes.Insert(item)
 	}
 
 	return nil
@@ -1665,9 +1665,9 @@ func (b *singleClusterLocalBuilder) insertTrafficPolicies(ctx context.Context, t
 	}
 
 	for _, item := range trafficPolicyList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		trafficPolicies.Insert(&item)
+		trafficPolicies.Insert(item)
 	}
 
 	return nil
@@ -1698,9 +1698,9 @@ func (b *singleClusterLocalBuilder) insertAccessPolicies(ctx context.Context, ac
 	}
 
 	for _, item := range accessPolicyList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		accessPolicies.Insert(&item)
+		accessPolicies.Insert(item)
 	}
 
 	return nil
@@ -1731,9 +1731,9 @@ func (b *singleClusterLocalBuilder) insertVirtualMeshes(ctx context.Context, vir
 	}
 
 	for _, item := range virtualMeshList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		virtualMeshes.Insert(&item)
+		virtualMeshes.Insert(item)
 	}
 
 	return nil
@@ -1765,9 +1765,9 @@ func (b *singleClusterLocalBuilder) insertWasmDeployments(ctx context.Context, w
 	}
 
 	for _, item := range wasmDeploymentList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		wasmDeployments.Insert(&item)
+		wasmDeployments.Insert(item)
 	}
 
 	return nil
@@ -1798,9 +1798,9 @@ func (b *singleClusterLocalBuilder) insertVirtualDestinations(ctx context.Contex
 	}
 
 	for _, item := range virtualDestinationList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		virtualDestinations.Insert(&item)
+		virtualDestinations.Insert(item)
 	}
 
 	return nil
@@ -1832,9 +1832,9 @@ func (b *singleClusterLocalBuilder) insertAccessLogRecords(ctx context.Context, 
 	}
 
 	for _, item := range accessLogRecordList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		accessLogRecords.Insert(&item)
+		accessLogRecords.Insert(item)
 	}
 
 	return nil
@@ -1866,9 +1866,9 @@ func (b *singleClusterLocalBuilder) insertSecrets(ctx context.Context, secrets v
 	}
 
 	for _, item := range secretList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		secrets.Insert(&item)
+		secrets.Insert(item)
 	}
 
 	return nil
@@ -1900,9 +1900,9 @@ func (b *singleClusterLocalBuilder) insertKubernetesClusters(ctx context.Context
 	}
 
 	for _, item := range kubernetesClusterList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		kubernetesClusters.Insert(&item)
+		kubernetesClusters.Insert(item)
 	}
 
 	return nil

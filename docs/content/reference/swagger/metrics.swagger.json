@@ -1,0 +1,384 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "metrics.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "MetricsSource"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v0/observability/metrics/edge": {
+      "post": {
+        "operationId": "MetricsSource_GetEdgeMetrics",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ioEdgeMetricsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ioEdgeMetricsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MetricsSource"
+        ]
+      }
+    },
+    "/v0/observability/metrics/node": {
+      "post": {
+        "operationId": "MetricsSource_GetNodeMetrics",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ioNodeMetricsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ioNodeMetricsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MetricsSource"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "EdgeMetricsResponseEdgeMetrics": {
+      "type": "object",
+      "properties": {
+        "sourceWorkloadRef": {
+          "$ref": "#/definitions/ioClusterObjectRef",
+          "description": "Reference to the source workload."
+        },
+        "targetWorkloadRef": {
+          "$ref": "#/definitions/ioClusterObjectRef",
+          "description": "Reference to the target workload."
+        },
+        "metrics": {
+          "$ref": "#/definitions/ioMetrics",
+          "description": "Metrics over time for a network edge with a single source and target."
+        }
+      },
+      "description": "Metrics over time for a single network edge."
+    },
+    "MetricsRequestLatencies": {
+      "type": "object",
+      "properties": {
+        "p99": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          },
+          "description": "99th percentile request latency."
+        },
+        "p90": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          },
+          "description": "90th percentile request latency."
+        },
+        "p50": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          },
+          "description": "50th percentile request latency."
+        }
+      },
+      "description": "Percentiles for request latencies, measured in milliseconds."
+    },
+    "NodeMetricsResponseNodeMetrics": {
+      "type": "object",
+      "properties": {
+        "workloadRef": {
+          "$ref": "#/definitions/ioClusterObjectRef",
+          "description": "Reference to the workload associated with the metrics."
+        },
+        "outgoingMetrics": {
+          "$ref": "#/definitions/ioMetrics",
+          "description": "Metrics over time for all requests originating from a single workload."
+        },
+        "incomingMetrics": {
+          "$ref": "#/definitions/ioMetrics",
+          "description": "Metrics over time for all requests targeting from a single workload."
+        }
+      },
+      "description": "Metrics for single node."
+    },
+    "WorkloadSelectorKubeWorkloadMatcher": {
+      "type": "object",
+      "properties": {
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "If specified, all labels must exist on Kubernetes workload.\nWhen used in a networking policy, omission matches any labels.\nWhen used in a Gloo Mesh Role, a wildcard (`\"*\"`) must be specified to match any label key and/or value."
+        },
+        "namespaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "If specified, match Kubernetes workloads if they exist in one of the specified namespaces.\nWhen used in a networking policy, omission matches any namespace.\nWhen used in a Gloo Mesh Role, a wildcard (`\"*\"`) must be specified to match any namespace."
+        },
+        "clusters": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "If specified, match Kubernetes workloads if they exist in one of the specified clusters.\nWhen used in a networking policy, omission matches any cluster.\nWhen used in a Gloo Mesh Role, a wildcard (`\"*\"`) must be specified to match any cluster."
+        }
+      },
+      "description": "Match Kubernetes workloads by their labels, namespaces, and/or clusters."
+    },
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "ioClusterObjectRef": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "name of the resource being referenced"
+        },
+        "namespace": {
+          "type": "string",
+          "title": "namespace of the resource being referenced"
+        },
+        "clusterName": {
+          "type": "string",
+          "title": "name of the cluster in which the resource exists"
+        }
+      },
+      "title": "Resource reference for a cross-cluster-scoped object"
+    },
+    "ioEdgeMetricsRequest": {
+      "type": "object",
+      "properties": {
+        "edgeSelectors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ioEdgeSelector"
+          },
+          "description": "Select the edges (i.e. (source, target) workload pairs) whose metrics should be retrieved.\nLeave empty to retrieve metrics for all edges."
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The time which the metrics represent. Defaults to the present time if not specified."
+        },
+        "window": {
+          "type": "string",
+          "description": "The duration over which the metrics are computed, floored to the minute.\nI.e. metrics are returned for the the time window defined by [`time - window`, `time`].\nDefaults to 5 minutes."
+        },
+        "step": {
+          "type": "string",
+          "description": "The duration for each sample in the range, floored to the minute.\nI.e. metrics are returned for the the time window defined by [`time - window`, `time`].\nDefaults to 2 minutes."
+        }
+      },
+      "description": "Request for metrics aggregated for one or more network edges over time."
+    },
+    "ioEdgeMetricsResponse": {
+      "type": "object",
+      "properties": {
+        "edgeMetrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EdgeMetricsResponseEdgeMetrics"
+          },
+          "description": "Metrics over time for a set of network edges."
+        }
+      },
+      "description": "Metrics aggregated for a network edge over time."
+    },
+    "ioEdgeSelector": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "$ref": "#/definitions/ioNodeSelector",
+          "description": "Specify the source workload. If omitted, retrieve edges targeting this workload and originating from any workload."
+        },
+        "target": {
+          "$ref": "#/definitions/ioNodeSelector",
+          "description": "Specify the target workload. If omitted, retrieve edges originating from this workload and targeting any workload."
+        }
+      },
+      "description": "Select the workloads whose metrics should be retrieved.\nLeave empty to retrieve metrics for all workloads."
+    },
+    "ioMetrics": {
+      "type": "object",
+      "properties": {
+        "timestamps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "requestCount": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          },
+          "description": "The number of requests."
+        },
+        "successCount": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          },
+          "description": "The number of successful requests."
+        },
+        "failureCount": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          },
+          "description": "The number of failed requests."
+        },
+        "requestLatencies": {
+          "$ref": "#/definitions/MetricsRequestLatencies",
+          "description": "Percentiles for request latencies, measured in milliseconds."
+        }
+      },
+      "description": "Metrics sampled over time."
+    },
+    "ioNodeMetricsRequest": {
+      "type": "object",
+      "properties": {
+        "nodeSelectors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ioNodeSelector"
+          },
+          "description": "Select the workloads whose metrics should be retrieved.\nLeave empty to retrieve metrics for all workloads."
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The time which the metrics represent. Defaults to the present time if not specified."
+        },
+        "window": {
+          "type": "string",
+          "description": "The duration over which the metrics are computed, floored to the minute.\nI.e. metrics are returned for the the time window defined by [`time - window`, `time`].\nDefaults to 5 minutes."
+        },
+        "step": {
+          "type": "string",
+          "description": "The duration for each sample in the range, floored to the minute.\nI.e. metrics are returned for the the time window defined by [`time - window`, `time`].\nIf omitted, defaults to the value of `window`, which represents a request for a single sample."
+        }
+      },
+      "description": "Request for metrics aggregated for a network node over time."
+    },
+    "ioNodeMetricsResponse": {
+      "type": "object",
+      "properties": {
+        "nodeMetrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/NodeMetricsResponseNodeMetrics"
+          },
+          "description": "Metrics for each selected node."
+        }
+      },
+      "description": "Metrics aggregated for one or more network nodes over time."
+    },
+    "ioNodeSelector": {
+      "type": "object",
+      "properties": {
+        "workloadSelector": {
+          "$ref": "#/definitions/ioWorkloadSelector",
+          "description": "Select workloads by matchers."
+        },
+        "workloadRef": {
+          "$ref": "#/definitions/ioClusterObjectRef",
+          "description": "Select workloads by direct reference."
+        }
+      },
+      "description": "Select the workloads whose metrics should be retrieved.\nLeave empty to retrieve metrics for all workloads."
+    },
+    "ioWorkloadSelector": {
+      "type": "object",
+      "properties": {
+        "kubeWorkloadMatcher": {
+          "$ref": "#/definitions/WorkloadSelectorKubeWorkloadMatcher",
+          "description": "Match Kubernetes workloads by their labels, namespaces, and/or clusters."
+        }
+      },
+      "description": "Select Workloads using one or more platform-specific selectors."
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    }
+  }
+}

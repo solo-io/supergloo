@@ -22,7 +22,7 @@ Name|Version|License
 [openservicemesh/osm](https://github.com/openservicemesh/osm)|v0.3.0|MIT License
 [pkg/browser](https://github.com/pkg/browser)|v0.0.0-20180916011732-0a3d74bf9ce4|BSD 2-clause "Simplified" License
 [pkg/errors](https://github.com/pkg/errors)|v0.9.1|BSD 2-clause "Simplified" License
-[pseudomuto/protoc-gen-doc](https://github.com/pseudomuto/protoc-gen-doc)|v1.3.2|MIT License
+[pseudomuto/protoc-gen-doc](https://github.com/pseudomuto/protoc-gen-doc)|v1.4.1|MIT License
 [pseudomuto/protokit](https://github.com/pseudomuto/protokit)|v0.2.0|MIT License
 [rotisserie/eris](https://github.com/rotisserie/eris)|v0.4.0|MIT License
 [servicemeshinterface/smi-sdk-go](https://github.com/servicemeshinterface/smi-sdk-go)|v0.4.1|Apache License 2.0
@@ -30,6 +30,7 @@ Name|Version|License
 [spf13/afero](https://github.com/spf13/afero)|v1.5.1|Apache License 2.0
 [spf13/cobra](https://github.com/spf13/cobra)|v1.1.1|Apache License 2.0
 [spf13/pflag](https://github.com/spf13/pflag)|v1.0.5|BSD 3-clause "New" or "Revised" License
+[stoewer/go-strcase](https://github.com/stoewer/go-strcase)|v1.2.0|MIT License
 [go.uber.org/atomic](https://go.uber.org/atomic)|v1.7.0|MIT License
 [go.uber.org/zap](https://go.uber.org/zap)|v1.16.0|MIT License
 [x/oauth2](https://golang.org/x/oauth2)|v0.0.0-20201208152858-08078c50e5b5|BSD 3-clause "New" or "Revised" License

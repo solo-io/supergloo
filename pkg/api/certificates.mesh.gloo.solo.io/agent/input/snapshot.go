@@ -483,9 +483,9 @@ func (b *multiClusterBuilder) insertIssuedCertificatesFromCluster(ctx context.Co
 	}
 
 	for _, item := range issuedCertificateList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		issuedCertificates.Insert(&item)
+		issuedCertificates.Insert(item)
 	}
 
 	return nil
@@ -525,9 +525,9 @@ func (b *multiClusterBuilder) insertCertificateRequestsFromCluster(ctx context.C
 	}
 
 	for _, item := range certificateRequestList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		certificateRequests.Insert(&item)
+		certificateRequests.Insert(item)
 	}
 
 	return nil
@@ -567,9 +567,9 @@ func (b *multiClusterBuilder) insertPodBounceDirectivesFromCluster(ctx context.C
 	}
 
 	for _, item := range podBounceDirectiveList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		podBounceDirectives.Insert(&item)
+		podBounceDirectives.Insert(item)
 	}
 
 	return nil
@@ -610,9 +610,9 @@ func (b *multiClusterBuilder) insertSecretsFromCluster(ctx context.Context, clus
 	}
 
 	for _, item := range secretList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		secrets.Insert(&item)
+		secrets.Insert(item)
 	}
 
 	return nil
@@ -652,9 +652,9 @@ func (b *multiClusterBuilder) insertConfigMapsFromCluster(ctx context.Context, c
 	}
 
 	for _, item := range configMapList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		configMaps.Insert(&item)
+		configMaps.Insert(item)
 	}
 
 	return nil
@@ -694,9 +694,9 @@ func (b *multiClusterBuilder) insertPodsFromCluster(ctx context.Context, cluster
 	}
 
 	for _, item := range podList.Items {
-		item := item               // pike
+		item := item.DeepCopy()    // pike + own
 		item.ClusterName = cluster // set cluster for in-memory processing
-		pods.Insert(&item)
+		pods.Insert(item)
 	}
 
 	return nil
@@ -798,9 +798,9 @@ func (b *singleClusterBuilder) insertIssuedCertificates(ctx context.Context, iss
 	}
 
 	for _, item := range issuedCertificateList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		issuedCertificates.Insert(&item)
+		issuedCertificates.Insert(item)
 	}
 
 	return nil
@@ -831,9 +831,9 @@ func (b *singleClusterBuilder) insertCertificateRequests(ctx context.Context, ce
 	}
 
 	for _, item := range certificateRequestList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		certificateRequests.Insert(&item)
+		certificateRequests.Insert(item)
 	}
 
 	return nil
@@ -864,9 +864,9 @@ func (b *singleClusterBuilder) insertPodBounceDirectives(ctx context.Context, po
 	}
 
 	for _, item := range podBounceDirectiveList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		podBounceDirectives.Insert(&item)
+		podBounceDirectives.Insert(item)
 	}
 
 	return nil
@@ -898,9 +898,9 @@ func (b *singleClusterBuilder) insertSecrets(ctx context.Context, secrets v1_set
 	}
 
 	for _, item := range secretList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		secrets.Insert(&item)
+		secrets.Insert(item)
 	}
 
 	return nil
@@ -931,9 +931,9 @@ func (b *singleClusterBuilder) insertConfigMaps(ctx context.Context, configMaps 
 	}
 
 	for _, item := range configMapList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		configMaps.Insert(&item)
+		configMaps.Insert(item)
 	}
 
 	return nil
@@ -964,9 +964,9 @@ func (b *singleClusterBuilder) insertPods(ctx context.Context, pods v1_sets.PodS
 	}
 
 	for _, item := range podList.Items {
-		item := item // pike
+		item := item.DeepCopy() // pike + own the item.
 		item.ClusterName = b.clusterName
-		pods.Insert(&item)
+		pods.Insert(item)
 	}
 
 	return nil
