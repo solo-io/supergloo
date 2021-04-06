@@ -22,6 +22,7 @@ import (
 const (
 	GithubOrg                  = "solo-io"
 	GlooMeshEnterpriseRepoName = "gloo-mesh-enterprise"
+	GlooMeshRepoName           = "gloo-mesh"
 )
 
 var (
@@ -126,7 +127,7 @@ func Execute(opts Options) error {
 	}
 
 	// fetch Helm values docs from Gloo Mesh Enterprise
-	if err = copyHelmValuesDocsFromEnterprise(client, rootDir); err != nil {
+	if err = copyHelmValuesDocsForAllCharts(client, rootDir); err != nil {
 		return err
 	}
 
