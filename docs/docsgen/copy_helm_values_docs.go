@@ -26,10 +26,7 @@ var (
 	enterpriseFileMapping = map[string]string{
 		"enterprise-networking/codegen/helm/enterprise_networking_helm_values_reference.md": "%s/%s/enterprise_networking.md",
 		"enterprise-networking/codegen/helm/enterprise_agent_helm_values_reference.md":      "%s/%s/enterprise_agent.md",
-	}
-
-	rbacWebookFileMapping = map[string]string{
-		"rbac-webhook/codegen/chart/rbac_webhook_helm_values_reference.md": "%s/%s/rbac_webhook.md",
+		"rbac-webhook/codegen/chart/rbac_webhook_helm_values_reference.md":                  "%s/%s/rbac_webhook.md",
 	}
 
 	helmValuesIndex = `
@@ -92,18 +89,6 @@ func copyHelmValuesDocsForAllCharts(client *github.Client, rootDir string) error
 		GlooMeshEnterpriseRepoName,
 		"v1.0.0",
 		enterpriseFileMapping,
-	); err != nil {
-		return err
-	}
-
-	// Gloo Mesh Enterprise RBAC Webhook
-	if err := copyHelmValuesDocsForComponent(
-		client,
-		rootDir,
-		"Enterprise RBAC Webhook",
-		GlooMeshEnterpriseRepoName,
-		"v1.0.0",
-		rbacWebookFileMapping,
 	); err != nil {
 		return err
 	}
