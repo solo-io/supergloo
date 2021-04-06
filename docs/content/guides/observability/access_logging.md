@@ -1,6 +1,7 @@
 ---
 title: Access Logging
 menuTitle: Access Logging
+description: Guide on Gloo Mesh's logging features.
 weight: 30
 ---
 
@@ -227,6 +228,35 @@ The response will look similar to:
   }
 }
 ```
+
+You can also filter the retrieved access logs by workload. The following
+request retrieves access logs for any Kubernetes workload with label `app: reviews` *and* in the cluster `mgmt-cluster`, or
+`app: productpage` from any cluster.
+
+```shell
+curl -XPOST --data '{
+   "workloadSelectors":[
+      {
+         "kubeWorkloadMatcher":{
+            "labels":{
+               "app":"reviews"
+            },
+            "clusters": ["mgmt-cluster"]
+         }
+      },
+      {
+         "kubeWorkloadMatcher":{
+            "labels":{
+               "app":"productpage"
+            }
+         }
+      }
+   ]
+}' "localhost:8080/v0/observability/logs?&pretty"
+```
+
+For full documentation on the access log retrieval endpoint, see the 
+[Swagger specification]({{% versioned_link_path fromRoot="/reference/swagger/access_logging.swagger.json" %}}).
 
 **Streaming Retrieval**
 
