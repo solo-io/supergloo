@@ -198,7 +198,9 @@ We can validate the registration process by first checking to make sure the rela
 
 ```shell
 kubectl get pods -n gloo-mesh --context $REMOTE_CONTEXT
+```
 
+```shell
 NAME                                READY   STATUS    RESTARTS   AGE
 enterprise-agent-64fc8cc9c5-v7b97   1/1     Running   7          25m
 

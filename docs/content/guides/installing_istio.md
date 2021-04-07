@@ -53,6 +53,49 @@ REMOTE_CONTEXT=your_remote_context
 #### Management plane install
 
 {{< tabs >}}
+{{< tab name="Istio 1.8 and Istio 1.9" codelang="shell" >}}
+cat << EOF | istioctl manifest install -y --context $MGMT_CONTEXT -f -
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: example-istiooperator
+  namespace: istio-system
+spec:
+  profile: minimal
+  meshConfig:
+    enableAutoMtls: true
+    defaultConfig:
+      proxyMetadata:
+        # Enable Istio agent to handle DNS requests for known hosts
+        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
+        ISTIO_META_DNS_CAPTURE: "true"
+  components:
+    # Istio Gateway feature
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        env:
+          - name: ISTIO_META_ROUTER_MODE
+            value: "sni-dnat"
+        service:
+          type: NodePort
+          ports:
+            - port: 80
+              targetPort: 8080
+              name: http2
+            - port: 443
+              targetPort: 8443
+              name: https
+            - port: 15443
+              targetPort: 15443
+              name: tls
+              nodePort: 32001
+  values:
+    global:
+      pilotCertProvider: istiod
+EOF
+{{< /tab >}}
 {{< tab name="Istio 1.7" codelang="shell" >}}
 cat << EOF | istioctl manifest install --context $MGMT_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
@@ -106,8 +149,13 @@ spec:
       - global
 EOF
 {{< /tab >}}
+{{< /tabs >}}
+
+#### Remote cluster install
+
+{{< tabs >}}
 {{< tab name="Istio 1.8 and Istio 1.9" codelang="shell" >}}
-cat << EOF | istioctl manifest install -y --context $MGMT_CONTEXT -f -
+cat << EOF | istioctl manifest install -y --context $REMOTE_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -143,17 +191,12 @@ spec:
             - port: 15443
               targetPort: 15443
               name: tls
-              nodePort: 32001
+              nodePort: 32000
   values:
     global:
       pilotCertProvider: istiod
 EOF
 {{< /tab >}}
-{{< /tabs >}}
-
-#### Remote cluster install
-
-{{< tabs >}}
 {{< tab name="Istio 1.7" codelang="shell" >}}
 cat << EOF | istioctl manifest install --context $REMOTE_CONTEXT -f -
 apiVersion: install.istio.io/v1alpha1
@@ -207,49 +250,6 @@ spec:
       - global
 EOF
 {{< /tab >}}
-{{< tab name="Istio 1.8 and Istio 1.9" codelang="shell" >}}
-cat << EOF | istioctl manifest install -y --context $REMOTE_CONTEXT -f -
-apiVersion: install.istio.io/v1alpha1
-kind: IstioOperator
-metadata:
-  name: example-istiooperator
-  namespace: istio-system
-spec:
-  profile: minimal
-  meshConfig:
-    enableAutoMtls: true
-    defaultConfig:
-      proxyMetadata:
-        # Enable Istio agent to handle DNS requests for known hosts
-        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
-        ISTIO_META_DNS_CAPTURE: "true"
-  components:
-    # Istio Gateway feature
-    ingressGateways:
-    - name: istio-ingressgateway
-      enabled: true
-      k8s:
-        env:
-          - name: ISTIO_META_ROUTER_MODE
-            value: "sni-dnat"
-        service:
-          type: NodePort
-          ports:
-            - port: 80
-              targetPort: 8080
-              name: http2
-            - port: 443
-              targetPort: 8443
-              name: https
-            - port: 15443
-              targetPort: 15443
-              name: tls
-              nodePort: 32000
-  values:
-    global:
-      pilotCertProvider: istiod
-EOF
-{{< /tab >}}
 {{< /tabs >}}
 
 With Gloo Mesh and Istio installed into the `mgmt-cluster`, and Istio installed into `remote-cluster`, we have an architecture that looks like this:
@@ -260,11 +260,12 @@ When the Istio Operator has finished the installation (can take up to 90 seconds
 you should see the Istio control plane pods running successfully:
 
 ```shell
-kubectl get pods -n istio-system
+kubectl get pods -n istio-system --context $REMOTE_CONTEXT
+```
 
+```shell
 NAME                                    READY   STATUS    RESTARTS   AGE
 istio-ingressgateway-746d597f7c-g6whv   1/1     Running   0          5d23h
-istiocoredns-7ffc9b7fcf-crhr2           2/2     Running   0          5d23h
 istiod-7795ccf9dc-vr4cq                 1/1     Running   0          5d22h
 ```
 
