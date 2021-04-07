@@ -16,7 +16,7 @@ In order for relay agents to communicate with the relay server, the management c
 (i.e. the cluster on which the relay server is deployed) must be configured to accept
 ingress traffic, the exact procedure of which depends on your particular environment.
 
-**LoadBalancer Service Type**
+**Option 1: LoadBalancer Service Type**
 
 A simple way to expose the relay server to remote clusters is by setting the `enterprise-networking` service type to
 [LoadBalancer](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types).
@@ -36,7 +36,7 @@ MGMT_INGRESS_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o js
 RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 ```
 
-**Istio Ingress Setup**
+**Option 2: Istio Ingress Setup**
 
 The enterprise-networking service can also be exposed via an ingress. The following describes how to configure a Kubernetes
 cluster ingress assuming [Istio's ingress gateway model](https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/).
