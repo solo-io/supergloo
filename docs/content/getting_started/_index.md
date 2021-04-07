@@ -45,7 +45,15 @@ To spin up two Kubernetes clusters with Kind, run:
 ```shell
 meshctl demo istio-multicluster init
 ```
-This will spin up two Kubernetes clusters in Docker with Istio installed on each. Additionally, this will install Gloo Mesh on one of the clusters. Both clusters will be **registered** with Gloo Mesh under the names `mgmt-cluster` and `remote-cluster`, which will be used throughout the documentation. The BookInfo sample application will also be deployed on both of the clusters under the `bookinfo` namespace.
+
+The command will do the following:
+
+* Create two kind clusters: `mgmt-cluster` and `remote-cluster`
+* Install Gloo Mesh Community on the `mgmt-cluster`
+* Install Istio on both clusters
+* Register both clusters with Gloo Mesh
+* Deploy BookInfo sample application on both clusters under the `bookinfo` namespace
+
 
 ```shell
 Creating cluster mgmt-cluster with ingress port 32001
