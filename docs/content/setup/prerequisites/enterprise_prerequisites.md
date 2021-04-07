@@ -87,7 +87,8 @@ spec:
               number: 9900
 ```
 
-You can set your ingress service as either a NodePort or LoadBalancer type.
+You can set your ingress service as either a NodePort or LoadBalancer type. The
+LoadBalancer type is usually better, but sometimes your environment doesn't allow it.
 In either case, you can get the address of this ingress for use
 during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}) by running:
 
@@ -104,6 +105,12 @@ RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 {{< /tab >}}
 {{< /tabs >}}
 
+If you are using a NodePort and are failing to connect to relay,
+that means you have multiple nodes, and the istio-ingressgateway isn't
+on the first one. Track down the host for the correct worker node and
+use that as the $MGMT_INGRESS_ADDRESS instead.
+
+For more on determining the correct ingress address, see the [envoy docs](https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/).
 
 ## Establishing Trust Between Agents and Server
 
