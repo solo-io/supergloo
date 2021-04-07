@@ -1,6 +1,6 @@
 
 ---
-title: "v1.0.0-beta15"
+title: "Gloo Mesh"
 description: Reference for Helm values. 
 weight: 2
 ---
