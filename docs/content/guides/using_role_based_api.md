@@ -150,10 +150,11 @@ spec:
         - clusterName: mgmt-cluster
           name: petstore
           namespace: default
-  requestTimeout: 100ms
-  retries:
-    attempts: 5
-    perTryTimeout: 5ms
+  policy:
+    requestTimeout: 100ms
+    retries:
+      attempts: 5
+      perTryTimeout: 5ms
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
@@ -169,10 +170,11 @@ spec:
         - clusterName: mgmt-cluster
           name: petstore
           namespace: default
-  requestTimeout: 100ms
-  retries:
-    attempts: 5
-    perTryTimeout: 5ms
+  policy:
+    requestTimeout: 100ms
+    retries:
+      attempts: 5
+      perTryTimeout: 5ms
 EOF
 {{< /tab >}}
 {{< /tabs >}}
