@@ -87,10 +87,12 @@ spec:
               number: 9900
 ```
 
-You can set your ingress service as either a NodePort or LoadBalancer type. The
-LoadBalancer type is usually better, but sometimes your environment doesn't allow it.
-In either case, you can get the address of this ingress for use
-during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}) by running:
+You can set your ingress service as either a NodePort or LoadBalancer type.
+From here, you need to find the address of this ingress to use
+during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}).
+
+Some useful scripts for finding the ingress address can be found below. Note
+that these scripts assume that 1) there is only one node, and 2) the ingress port is named "https":
 
 {{< tabs >}}
 {{< tab name="NodePort" codelang="yaml">}}
