@@ -25,6 +25,7 @@ We will now perform a *multi-cluster traffic split*, splitting traffic from the 
 
 {{< tabs >}}
 {{< tab name="YAML file" codelang="yaml">}}
+
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
 metadata:
@@ -37,27 +38,28 @@ spec:
         - clusterName: mgmt-cluster
           name: reviews
           namespace: bookinfo
-  trafficShift:
-    destinations:
-      - kubeService:
-          clusterName: remote-cluster
-          name: reviews
-          namespace: bookinfo
-        weight: 75
-      - kubeService:
-          clusterName: mgmt-cluster
-          name: reviews
-          namespace: bookinfo
-          subset:
-            version: v1
-        weight: 15
-      - kubeService:
-          clusterName: mgmt-cluster
-          name: reviews
-          namespace: bookinfo
-          subset:
-            version: v2
-        weight: 10
+  policy:
+    trafficShift:
+      destinations:
+        - kubeService:
+            clusterName: remote-cluster
+            name: reviews
+            namespace: bookinfo
+          weight: 75
+        - kubeService:
+            clusterName: mgmt-cluster
+            name: reviews
+            namespace: bookinfo
+            subset:
+              version: v1
+          weight: 15
+        - kubeService:
+            clusterName: mgmt-cluster
+            name: reviews
+            namespace: bookinfo
+            subset:
+              version: v2
+          weight: 10
 {{< /tab >}}
 {{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
@@ -73,27 +75,28 @@ spec:
         - clusterName: mgmt-cluster
           name: reviews
           namespace: bookinfo
-  trafficShift:
-    destinations:
-      - kubeService:
-          clusterName: remote-cluster
-          name: reviews
-          namespace: bookinfo
-        weight: 75
-      - kubeService:
-          clusterName: mgmt-cluster
-          name: reviews
-          namespace: bookinfo
-          subset:
-            version: v1
-        weight: 15
-      - kubeService:
-          clusterName: mgmt-cluster
-          name: reviews
-          namespace: bookinfo
-          subset:
-            version: v2
-        weight: 10
+  policy:
+    trafficShift:
+      destinations:
+        - kubeService:
+            clusterName: remote-cluster
+            name: reviews
+            namespace: bookinfo
+          weight: 75
+        - kubeService:
+            clusterName: mgmt-cluster
+            name: reviews
+            namespace: bookinfo
+            subset:
+              version: v1
+          weight: 15
+        - kubeService:
+            clusterName: mgmt-cluster
+            name: reviews
+            namespace: bookinfo
+            subset:
+              version: v2
+          weight: 10
 EOF
 {{< /tab >}}
 {{< /tabs >}}
