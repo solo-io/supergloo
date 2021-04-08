@@ -95,12 +95,12 @@ Some useful scripts for finding the ingress address can be found below. Note
 that these scripts assume that 1) there is only one node, and 2) the ingress port is named "https":
 
 {{< tabs >}}
-{{< tab name="NodePort" codelang="yaml">}}
+{{< tab name="NodePort" codelang="shell">}}
 MGMT_INGRESS_ADDRESS=$(kubectl get node -ojson | jq -r ".items[0].status.addresses[0].address")
 MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
 RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 {{< /tab >}}
-{{< tab name="LoadBalancer" codelang="yaml">}}
+{{< tab name="LoadBalancer" codelang="shell">}}
 MGMT_INGRESS_ADDRESS=$(kubectl  -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].port}')
 RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
@@ -108,7 +108,7 @@ RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 {{< /tabs >}}
 
 If you are using a NodePort and are failing to connect to relay,
-that means you have multiple nodes, and the istio-ingressgateway isn't
+that could mean you have multiple nodes, and the istio-ingressgateway isn't
 on the first one. Track down the host for the correct worker node and
 use that as the $MGMT_INGRESS_ADDRESS instead.
 
