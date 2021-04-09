@@ -14,7 +14,7 @@ Gloo-Mesh, mTLS is used.
 
 The relay agent can either be provided with a client certificate, or a bootstrap token. If provided
 with a bootstrap token, the relay agent will then exchange it for a client certificate and save it
-as a secret in the cluster. Once the client certificate secret exist, the bootstrap token is not 
+as a secret in the cluster. Once the client certificate secret exists, the bootstrap token is no
 longer needed and can be discarded.
 
 For the relay agent to trust Gloo Mesh a root CA is needed.

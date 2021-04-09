@@ -416,7 +416,7 @@ type VirtualMeshSpec_RootCertificateAuthority_Generated struct {
 
 type VirtualMeshSpec_RootCertificateAuthority_Secret struct {
 	// Reference to a Kubernetes Secret containing the root certificate authority.
-	// Provided secrets must conform to a specified format, [documented here]({{% versioned_link_path fromRoot="/guides/federate_identity/" %}}).
+	// Provided secrets must conform to a specified format, [documented here]({{< versioned_link_path fromRoot="/guides/federate_identity/" >}}).
 	Secret *v1.ObjectRef `protobuf:"bytes,2,opt,name=secret,proto3,oneof"`
 }
 
