@@ -91,11 +91,14 @@ You can set your ingress service as either a NodePort or LoadBalancer type.
 From here, you need to find the address of this ingress to use
 during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}).
 
-Some useful scripts for finding the ingress address can be found below. Note
-that these scripts assume that 1) there is only one node, and 2) the ingress port is named "https":
+Some useful scripts for finding the ingress address can be found below (we assume that the ingress port is named https.):
 
 {{< tabs >}}
 {{< tab name="NodePort" codelang="shell">}}
+// Note that this command fetches the IP address of the first node.
+If you have multiple nodes, make sure to fetch the IP of the node
+on which the istio-ingressgateway pod is deployed on (indicated by
+the pod's `spec.nodeName` field)
 MGMT_INGRESS_ADDRESS=$(kubectl get node -ojson | jq -r ".items[0].status.addresses[0].address")
 MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
 RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
