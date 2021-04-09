@@ -297,7 +297,7 @@ func (t *translator) translateKubeServiceDestination(
 	clusterLabels := trafficshift.MakeFederatedSubsetLabel(istioCluster)
 
 	endpoints := []*networkingv1alpha3spec.WorkloadEntry{{
-		Address: ingressGateway.ExternalAddress,
+		Address: ingressGateway.GetExternalAddress(),
 		Ports:   endpointPorts,
 		Labels:  clusterLabels,
 	}}
