@@ -16,7 +16,7 @@ In order for relay agents to communicate with the relay server, the management c
 (i.e. the cluster on which the relay server is deployed) must be configured to accept
 ingress traffic, the exact procedure of which depends on your particular environment.
 
-**LoadBalancer Service Type**
+**Option 1: LoadBalancer Service Type**
 
 A simple way to expose the relay server to remote clusters is by setting the `enterprise-networking` service type to
 [LoadBalancer](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types).
@@ -27,11 +27,19 @@ LoadBalancer services are exposed to the externally via your Kubernetes cloud pr
 approach **does not** work by default with Kind cluster deployments, but is a good option for getting started if you're
 running your clusters via a managed service like Google Kubernetes Engine or Amazon's Elastic Kubernetes Service.
 
-**Istio Ingress Setup**
+If you have your enterprise-networking service set as a LoadBalancer type,
+get the relay address for [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}) by running:
+
+```shell script
+MGMT_INGRESS_ADDRESS=$(kubectl  -n gloo-mesh get service enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+MGMT_INGRESS_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
+RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
+```
+
+**Option 2: Istio Ingress Setup**
 
 The enterprise-networking service can also be exposed via an ingress. The following describes how to configure a Kubernetes
 cluster ingress assuming [Istio's ingress gateway model](https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/).
-
 
 Create the following resources in the namespace of your choosing. Note that
 we assume that the `enterprise-networking` deployment exposes its gRPC port on `9900`.
@@ -79,13 +87,35 @@ spec:
               number: 9900
 ```
 
-Assuming your ingress service is running on a node port, you can get the address of this ingress for use during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}), run:
+You can set your ingress service as either a NodePort or LoadBalancer type.
+From here, you need to find the address of this ingress to use
+during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}).
 
-```shell
+Some useful scripts for finding the ingress address can be found below (we assume that the ingress port is named https):
+
+{{< tabs >}}
+{{< tab name="NodePort" codelang="shell">}}
+# Note that this command fetches the IP address of the first node.
+# If you have multiple nodes, make sure to fetch the IP of the node
+# on which the istio-ingressgateway pod is deployed (indicated by
+# the pod `spec.nodeName` field)
 MGMT_INGRESS_ADDRESS=$(kubectl get node -ojson | jq -r ".items[0].status.addresses[0].address")
 MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
 RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
-```
+{{< /tab >}}
+{{< tab name="LoadBalancer" codelang="shell">}}
+MGMT_INGRESS_ADDRESS=$(kubectl  -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].port}')
+RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
+{{< /tab >}}
+{{< /tabs >}}
+
+If you are using a NodePort and are failing to connect to relay,
+that could mean you have multiple nodes, and the istio-ingressgateway isn't
+on the first one. Track down the host for the correct worker node and
+use that as the $MGMT_INGRESS_ADDRESS instead.
+
+For more on determining the correct ingress address, see the [envoy docs](https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/).
 
 ## Establishing Trust Between Agents and Server
 
