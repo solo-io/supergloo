@@ -9,7 +9,7 @@ weight: 80
 
 OSM introduces a new API set of usage patterns for managing a service mesh. OSM is supported by Gloo Mesh, which can translate, configure, and manage instances of OSM in your environment. 
 
-In this guide, we will walk through the process of installing OSM and a sample application. Then we will use *Access Policies* and *Traffic Policies* from Gloo Mesh to configure the settings in OSM to allow communication between the services in the sample application. The sample application being installed is a variant of the Bookstore application. You can view the topology of the application [here](https://github.com/openservicemesh/osm/blob/main/img/book-thief-app-topology.jpg).
+In this guide, we will walk through the process of installing OSM and a sample application. Then we will use *Access Policies* and *Traffic Policies* from Gloo Mesh to configure the settings in OSM to allow communication between the services in the sample application. The sample application being installed is a variant of the Bookstore application. You can view the topology of the application [here](https://raw.githubusercontent.com/openservicemesh/osm/main/docs/content/docs/images/bookstore-app-topology.jpg).
 
 ## Before you begin
 To illustrate these concepts, we will assume that you have the following:
@@ -154,18 +154,19 @@ metadata:
   name: osm-traffic-policy
   namespace: gloo-mesh
 spec:
-  trafficShift:
-    destinations:
-    - kubeService:
-        clusterName: $OSM_CLUSTER
-        name: bookstore-v1
-        namespace: bookstore
-      weight: 50
-    - kubeService:
-        clusterName: $OSM_CLUSTER
-        name: bookstore-v2
-        namespace: bookstore
-      weight: 50
+  policy:
+    trafficShift:
+      destinations:
+      - kubeService:
+          clusterName: $OSM_CLUSTER
+          name: bookstore-v1
+          namespace: bookstore
+        weight: 50
+      - kubeService:
+          clusterName: $OSM_CLUSTER
+          name: bookstore-v2
+          namespace: bookstore
+        weight: 50
   destinationSelector:
   - kubeServiceRefs:
       services:
@@ -203,18 +204,19 @@ metadata:
   name: osm-traffic-policy
   namespace: gloo-mesh
 spec:
-  trafficShift:
-    destinations:
-    - kubeService:
-        clusterName: $OSM_CLUSTER
-        name: bookstore-v1
-        namespace: bookstore
-      weight: 50
-    - kubeService:
-        clusterName: $OSM_CLUSTER
-        name: bookstore-v2
-        namespace: bookstore
-      weight: 50
+  policy:
+    trafficShift:
+      destinations:
+      - kubeService:
+          clusterName: $OSM_CLUSTER
+          name: bookstore-v1
+          namespace: bookstore
+        weight: 50
+      - kubeService:
+          clusterName: $OSM_CLUSTER
+          name: bookstore-v2
+          namespace: bookstore
+        weight: 50
   destinationSelector:
   - kubeServiceRefs:
       services:
