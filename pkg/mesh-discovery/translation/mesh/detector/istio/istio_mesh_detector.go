@@ -190,13 +190,18 @@ func getIngressGateway(
 		return nil, eris.Errorf("no TLS port found on ingress gateway")
 	}
 
-	var (
-		// TODO(ilackarms): currently we only use one address to connect to the gateway.
-		// We can support multiple addresses per gateway for load balancing purposes in the future
+	// var (
+	// 	// TODO(ilackarms): currently we only use one address to connect to the gateway.
+	// 	// We can support multiple addresses per gateway for load balancing purposes in the future
 
-		externalAddress string
-		externalPort    uint32
-	)
+	// 	externalAddress string
+	// 	externalPort    uint32
+	// )
+
+	gatewayInfo := &discoveryv1.MeshSpec_Istio_IngressGatewayInfo{
+		WorkloadLabels: workloadLabels,
+	}
+
 	switch svc.Spec.Type {
 	case corev1.ServiceTypeNodePort:
 		addr, err := getNodeIp(
@@ -209,8 +214,10 @@ func getIngressGateway(
 		if err != nil {
 			return nil, err
 		}
-		externalAddress = addr
-		externalPort = uint32(tlsPort.NodePort)
+		gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalIp{
+			ExternalIp: addr,
+		}
+		gatewayInfo.ExternalTlsPort = uint32(tlsPort.NodePort)
 
 	case corev1.ServiceTypeLoadBalancer:
 		ingress := svc.Status.LoadBalancer.Ingress
@@ -218,11 +225,16 @@ func getIngressGateway(
 			return nil, eris.Errorf("no loadBalancer.ingress status reported for service")
 		}
 
-		externalAddress = ingress[0].Hostname
-		if externalAddress == "" {
-			externalAddress = ingress[0].IP
+		gatewayInfo.ExternalTlsPort = uint32(tlsPort.Port)
+
+		gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+			ExternalAddress: ingress[0].Hostname,
 		}
-		externalPort = uint32(tlsPort.Port)
+		if gatewayInfo.GetExternalAddress() == "" {
+			gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalIp{
+				ExternalIp: ingress[0].IP,
+			}
+		}
 
 	default:
 		return nil, eris.Errorf("unsupported service type %v for ingress gateway", svc.Spec.Type)
@@ -237,13 +249,9 @@ func getIngressGateway(
 	if containerPort == 0 {
 		containerPort = tlsPort.Port
 	}
+	gatewayInfo.TlsContainerPort = uint32(containerPort)
 
-	return &discoveryv1.MeshSpec_Istio_IngressGatewayInfo{
-		WorkloadLabels:   workloadLabels,
-		ExternalAddress:  externalAddress,
-		ExternalTlsPort:  externalPort,
-		TlsContainerPort: uint32(containerPort),
-	}, nil
+	return gatewayInfo, nil
 }
 
 func getIngressServices(
