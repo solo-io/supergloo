@@ -82,4 +82,6 @@ kubectl config use-context kind-mgmt-cluster
 ```
 
 ## Next Steps
-Now that you have two Kind clusters available, you are ready to proceed with the [installation of Gloo Mesh or Gloo Mesh Enterprise]({{% versioned_link_path fromRoot="/setup/install_gloo_mesh" %}}).
+Now that you have two Kind clusters available, you are ready to proceed with the installation of
+[Gloo Mesh]({{% versioned_link_path fromRoot="/setup/installation/community_installation" %}}) or
+[Gloo Mesh Enterprise]({{% versioned_link_path fromRoot="/setup/prerequisites/enterprise_prerequisites" %}}).

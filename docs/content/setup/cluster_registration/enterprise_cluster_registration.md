@@ -139,7 +139,7 @@ management cluster. Run `meshctl version` on the management cluster to review th
 If you haven't already, you can add the repository by running the following:
 
 ```shell
-helm repo add gloo-mesh-enterprise https://storage.googleapis.com/gloo-mesh-enterprise/gloo-mesh-enterprise
+helm repo add enterprise-agent https://storage.googleapis.com/gloo-mesh-enterprise/enterprise-agent
 helm repo update
 ```
 
