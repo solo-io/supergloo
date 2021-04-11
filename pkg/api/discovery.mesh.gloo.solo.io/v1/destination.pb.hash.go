@@ -489,6 +489,23 @@ func (m *DestinationSpec_KubeService_KubeServicePort) Hash(hasher hash.Hash64) (
 		return 0, err
 	}
 
+	switch m.TargetPort.(type) {
+
+	case *DestinationSpec_KubeService_KubeServicePort_TargetPortName:
+
+		if _, err = hasher.Write([]byte(m.GetTargetPortName())); err != nil {
+			return 0, err
+		}
+
+	case *DestinationSpec_KubeService_KubeServicePort_TargetPortNumber:
+
+		err = binary.Write(hasher, binary.LittleEndian, m.GetTargetPortNumber())
+		if err != nil {
+			return 0, err
+		}
+
+	}
+
 	return hasher.Sum64(), nil
 }
 

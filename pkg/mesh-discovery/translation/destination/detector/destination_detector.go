@@ -15,6 +15,7 @@ import (
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/utils/pointer"
 )
@@ -303,12 +304,24 @@ func findSubsets(backingWorkloads v1.WorkloadSlice) map[string]*v1.DestinationSp
 
 func convertPorts(service *corev1.Service) (ports []*v1.DestinationSpec_KubeService_KubeServicePort) {
 	for _, kubePort := range service.Spec.Ports {
-		ports = append(ports, &v1.DestinationSpec_KubeService_KubeServicePort{
+
+		discoveredPort := &v1.DestinationSpec_KubeService_KubeServicePort{
 			Port:        uint32(kubePort.Port),
 			Name:        kubePort.Name,
 			Protocol:    string(kubePort.Protocol),
 			AppProtocol: pointer.StringPtrDerefOr(kubePort.AppProtocol, ""),
-		})
+		}
+		// Add the target port depending on the type
+		if kubePort.TargetPort.Type == intstr.Int {
+			discoveredPort.TargetPort = &v1.DestinationSpec_KubeService_KubeServicePort_TargetPortNumber{
+				TargetPortNumber: uint32(kubePort.TargetPort.IntVal),
+			}
+		} else {
+			discoveredPort.TargetPort = &v1.DestinationSpec_KubeService_KubeServicePort_TargetPortName{
+				TargetPortName: kubePort.TargetPort.StrVal,
+			}
+		}
+		ports = append(ports, discoveredPort)
 	}
 	return ports
 }

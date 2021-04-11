@@ -131,6 +131,17 @@ spec:
                         type: array
                       ports:
                         items:
+                          oneOf:
+                          - not:
+                              anyOf:
+                              - required:
+                                - targetPortName
+                              - required:
+                                - targetPortNumber
+                          - required:
+                            - targetPortName
+                          - required:
+                            - targetPortNumber
                           properties:
                             appProtocol:
                               description: Available in Kubernetes 1.18+, describes the application protocol.
@@ -144,6 +155,12 @@ spec:
                               type: integer
                             protocol:
                               type: string
+                            targetPortName:
+                              type: string
+                            targetPortNumber:
+                              maximum: 4294967295
+                              minimum: 0
+                              type: integer
                           type: object
                         type: array
                     type: object
@@ -156,6 +173,17 @@ spec:
                 ports:
                   description: The ports exposed by the underlying service.
                   items:
+                    oneOf:
+                    - not:
+                        anyOf:
+                        - required:
+                          - targetPortName
+                        - required:
+                          - targetPortNumber
+                    - required:
+                      - targetPortName
+                    - required:
+                      - targetPortNumber
                     properties:
                       appProtocol:
                         description: Available in Kubernetes 1.18+, describes the application protocol.
@@ -169,6 +197,12 @@ spec:
                         type: integer
                       protocol:
                         type: string
+                      targetPortName:
+                        type: string
+                      targetPortNumber:
+                        maximum: 4294967295
+                        minimum: 0
+                        type: integer
                     type: object
                   type: array
                 ref:

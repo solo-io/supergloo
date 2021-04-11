@@ -69,6 +69,11 @@ message DestinationSpec {
 
             // Available in Kubernetes 1.18+, describes the application protocol.
             string app_protocol = 4;
+
+            oneof target_port {
+                string target_port_name = 5;
+                uint32 target_port_number = 6;
+            }
         }
 
         // Subsets for routing, based on labels.

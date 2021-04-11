@@ -227,6 +227,8 @@ Describes the service's ports. See [here](https://kubernetes.io/docs/concepts/se
   | name | string |  |  |
   | protocol | string |  |  |
   | appProtocol | string |  | Available in Kubernetes 1.18+, describes the application protocol. |
+  | targetPortName | string |  |  |
+  | targetPortNumber | uint32 |  |  |
   
 
 

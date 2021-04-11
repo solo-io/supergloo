@@ -354,6 +354,7 @@ func (x *VirtualDestinationStatus) GetErrors() []string {
 //    input port number will be used to find the target_port.
 //
 // Any other combination will be considered an error
+// NOTE: Static VirtualDestinations only support number (2).
 type VirtualDestinationSpec_Port struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

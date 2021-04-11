@@ -59,6 +59,7 @@ message VirtualDestinationSpec {
     //    input port number will be used to find the target_port.
     //
     // Any other combination will be considered an error
+    // NOTE: Static VirtualDestinations only support number (2).
     message Port {
 
         // Port number.
