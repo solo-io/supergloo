@@ -424,13 +424,16 @@ spec:
             port:
               description: The port on which the VirtualDestination listens.
               properties:
+                name:
+                  description: Name of the port which will be used
+                  type: string
                 number:
                   description: Port number.
                   maximum: 4294967295
                   minimum: 0
                   type: integer
                 protocol:
-                  description: Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`.
+                  description: (Optional) Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`.
                   type: string
               type: object
             static:

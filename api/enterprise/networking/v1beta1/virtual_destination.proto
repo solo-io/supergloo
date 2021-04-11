@@ -51,13 +51,24 @@ message VirtualDestinationSpec {
     }
 
     // The port on which the VirtualDestination listens.
+    // The target port of the VirtualDestination can be specified in 2 ways, in the following order of precedence:
+    // 1. If the name and the number are specified:
+    //    In this case the VirtualDestination will listen on the number specified, by number and target the ports specified by name.
+    // 2. The number is specified but not the name:
+    //    In this case the port number must match an existing port on all backends. If it does then the port matching the 
+    //    input port number will be used to find the target_port.
+    //
+    // Any other combination will be considered an error
     message Port {
 
         // Port number.
         uint32 number = 1;
 
-        // Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`.
+        // (Optional) Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`.
         string protocol = 2;
+
+        // Name of the port which will be used
+        string name = 3;
     }
 
     // A list of Mesh references.
