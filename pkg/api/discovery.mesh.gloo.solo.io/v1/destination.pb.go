@@ -414,8 +414,10 @@ type DestinationSpec_KubeService_KubeServicePort struct {
 	unknownFields protoimpl.UnknownFields
 
 	// External-facing port for this Kubernetes service (*not* the service's target port on the targeted pods).
-	Port     uint32 `protobuf:"varint,1,opt,name=port,proto3" json:"port,omitempty"`
-	Name     string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Port uint32 `protobuf:"varint,1,opt,name=port,proto3" json:"port,omitempty"`
+	// Name of the port
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...)
 	Protocol string `protobuf:"bytes,3,opt,name=protocol,proto3" json:"protocol,omitempty"`
 	// Available in Kubernetes 1.18+, describes the application protocol.
 	AppProtocol string `protobuf:"bytes,4,opt,name=app_protocol,json=appProtocol,proto3" json:"app_protocol,omitempty"`
@@ -639,8 +641,11 @@ type DestinationSpec_KubeService_EndpointPort struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Port     uint32 `protobuf:"varint,1,opt,name=port,proto3" json:"port,omitempty"`
-	Name     string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// Port on which the endpoints can be reached
+	Port uint32 `protobuf:"varint,1,opt,name=port,proto3" json:"port,omitempty"`
+	// Name of the port
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...)
 	Protocol string `protobuf:"bytes,3,opt,name=protocol,proto3" json:"protocol,omitempty"`
 	// Available in Kubernetes 1.18+, describes the application protocol.
 	AppProtocol string `protobuf:"bytes,4,opt,name=app_protocol,json=appProtocol,proto3" json:"app_protocol,omitempty"`

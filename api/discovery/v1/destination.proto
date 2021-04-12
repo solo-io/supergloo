@@ -63,8 +63,10 @@ message DestinationSpec {
             // External-facing port for this Kubernetes service (*not* the service's target port on the targeted pods).
             uint32 port = 1;
 
+            // Name of the port
             string name = 2;
-
+            
+            // Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...)
             string protocol = 3;
 
             // Available in Kubernetes 1.18+, describes the application protocol.
@@ -117,11 +119,14 @@ message DestinationSpec {
 
         // Describes the endpoints's ports. See [here](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoints-v1/) for more information.
         message EndpointPort {
-
+            
+            // Port on which the endpoints can be reached
             uint32 port = 1;
 
+            // Name of the port
             string name = 2;
 
+            // Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...)
             string protocol = 3;
 
             // Available in Kubernetes 1.18+, describes the application protocol.

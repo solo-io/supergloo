@@ -159,9 +159,9 @@ Describes the endpoints's ports. See [here](https://kubernetes.io/docs/reference
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| port | uint32 |  |  |
-  | name | string |  |  |
-  | protocol | string |  |  |
+| port | uint32 |  | Port on which the endpoints can be reached |
+  | name | string |  | Name of the port |
+  | protocol | string |  | Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...) |
   | appProtocol | string |  | Available in Kubernetes 1.18+, describes the application protocol. |
   
 
@@ -243,8 +243,8 @@ Describes the service's ports. See [here](https://kubernetes.io/docs/concepts/se
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | port | uint32 |  | External-facing port for this Kubernetes service (*not* the service's target port on the targeted pods). |
-  | name | string |  |  |
-  | protocol | string |  |  |
+  | name | string |  | Name of the port |
+  | protocol | string |  | Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...) |
   | appProtocol | string |  | Available in Kubernetes 1.18+, describes the application protocol. |
   | targetPortName | string |  | Name of the targer_port |
   | targetPortNumber | uint32 |  | Number of the target_port |
