@@ -142,11 +142,17 @@ var _ = Describe("DestinationDetector", func() {
 								Name:        "port1",
 								Protocol:    "TCP",
 								AppProtocol: "HTTP",
+								TargetPort: &v1.DestinationSpec_KubeService_KubeServicePort_TargetPortName{
+									TargetPortName: "http",
+								},
 							},
 							{
 								Port:     2345,
 								Name:     "port2",
 								Protocol: "UDP",
+								TargetPort: &v1.DestinationSpec_KubeService_KubeServicePort_TargetPortName{
+									TargetPortName: "grpc",
+								},
 							},
 						},
 						Subsets: map[string]*v1.DestinationSpec_KubeService_Subset{
@@ -226,11 +232,17 @@ var _ = Describe("DestinationDetector", func() {
 								Name:        "port1",
 								Protocol:    "TCP",
 								AppProtocol: "HTTP",
+								TargetPort: &v1.DestinationSpec_KubeService_KubeServicePort_TargetPortName{
+									TargetPortName: "http",
+								},
 							},
 							{
 								Port:     2345,
 								Name:     "port2",
 								Protocol: "UDP",
+								TargetPort: &v1.DestinationSpec_KubeService_KubeServicePort_TargetPortName{
+									TargetPortName: "grpc",
+								},
 							},
 						},
 						Subsets: map[string]*v1.DestinationSpec_KubeService_Subset{
@@ -310,11 +322,17 @@ var _ = Describe("DestinationDetector", func() {
 								Name:        "port1",
 								Protocol:    "TCP",
 								AppProtocol: "HTTP",
+								TargetPort: &v1.DestinationSpec_KubeService_KubeServicePort_TargetPortName{
+									TargetPortName: "http",
+								},
 							},
 							{
 								Port:     2345,
 								Name:     "port2",
 								Protocol: "UDP",
+								TargetPort: &v1.DestinationSpec_KubeService_KubeServicePort_TargetPortName{
+									TargetPortName: "grpc",
+								},
 							},
 						},
 					},
@@ -416,11 +434,17 @@ var _ = Describe("DestinationDetector", func() {
 								Name:        "port1",
 								Protocol:    "TCP",
 								AppProtocol: "HTTP",
+								TargetPort: &v1.DestinationSpec_KubeService_KubeServicePort_TargetPortName{
+									TargetPortName: "http",
+								},
 							},
 							{
 								Port:     2345,
 								Name:     "port2",
 								Protocol: "UDP",
+								TargetPort: &v1.DestinationSpec_KubeService_KubeServicePort_TargetPortName{
+									TargetPortName: "grpc",
+								},
 							},
 						},
 						Subsets: map[string]*v1.DestinationSpec_KubeService_Subset{
