@@ -138,7 +138,6 @@ spec:
                             name:
                               type: string
                             port:
-                              description: External-facing port for this Kubernetes service (*not* the service's target port on the targeted pods).
                               maximum: 4294967295
                               minimum: 0
                               type: integer

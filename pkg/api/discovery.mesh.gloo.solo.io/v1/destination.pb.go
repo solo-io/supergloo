@@ -639,7 +639,6 @@ type DestinationSpec_KubeService_EndpointPort struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// External-facing port for this Kubernetes service (*not* the service's target port on the targeted pods).
 	Port     uint32 `protobuf:"varint,1,opt,name=port,proto3" json:"port,omitempty"`
 	Name     string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Protocol string `protobuf:"bytes,3,opt,name=protocol,proto3" json:"protocol,omitempty"`
