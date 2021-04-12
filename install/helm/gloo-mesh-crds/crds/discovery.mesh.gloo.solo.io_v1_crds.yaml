@@ -1186,23 +1186,12 @@ spec:
                 ingressGateways:
                   description: Describes the ingress gateway.
                   items:
-                    oneOf:
-                    - not:
-                        anyOf:
-                        - required:
-                          - externalAddress
-                        - required:
-                          - externalIp
-                    - required:
-                      - externalAddress
-                    - required:
-                      - externalIp
                     properties:
                       externalAddress:
-                        description: Will be populated if the LoadBalancer Address is a DNS name
-                        type: string
-                      externalIp:
-                        description: Will be populated if the LoadBalancer Address is an IP
+                        description: |-
+                          The externally-reachable address on which the gateway is listening for TLS connections.
+                          This will be the address used for cross-cluster connectivity.
+                          Defaults to the LoadBalancer Address (or NodeIP) of the Kubernetes service (depending on its type).
                         type: string
                       externalTlsPort:
                         description: |-
