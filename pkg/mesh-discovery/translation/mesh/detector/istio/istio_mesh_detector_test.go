@@ -234,7 +234,7 @@ var _ = Describe("IstioMeshDetector", func() {
 					},
 					{
 						Type:    corev1.NodeExternalDNS,
-						Address: "external.domain",
+						Address: "12.34.56.78",
 					},
 				},
 			},
@@ -275,8 +275,8 @@ var _ = Describe("IstioMeshDetector", func() {
 					IstiodServiceAccount: serviceAccountName,
 					IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
 						WorkloadLabels: workloadLabels,
-						ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
-							ExternalAddress: "external.domain",
+						ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalIp{
+							ExternalIp: "12.34.56.78",
 						},
 						ExternalTlsPort:  5678,
 						TlsContainerPort: 1234,
@@ -335,7 +335,7 @@ var _ = Describe("IstioMeshDetector", func() {
 					},
 					{
 						Type:    corev1.NodeExternalDNS,
-						Address: "external.domain",
+						Address: "12.34.56.78",
 					},
 				},
 			},
@@ -389,8 +389,8 @@ var _ = Describe("IstioMeshDetector", func() {
 					IstiodServiceAccount: serviceAccountName,
 					IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
 						WorkloadLabels: workloadLabels,
-						ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
-							ExternalAddress: "external.domain",
+						ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalIp{
+							ExternalIp: "12.34.56.78",
 						},
 						ExternalTlsPort:  5678,
 						TlsContainerPort: 1234,
