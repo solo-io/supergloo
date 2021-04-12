@@ -15,7 +15,6 @@ import (
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/utils/pointer"
 )
@@ -240,13 +239,15 @@ func findEndpoints(
 
 		for _, port := range epSub.Ports {
 			port := port
-			epPort := &v1.DestinationSpec_KubeService_EndpointPort{
-				Port:        uint32(port.Port),
-				Name:        port.Name,
-				Protocol:    string(port.Protocol),
-				AppProtocol: pointer.StringPtrDerefOr(port.AppProtocol, ""),
+			svcPort := &v1.DestinationSpec_KubeService_KubeServicePort{
+				Port:     uint32(port.Port),
+				Name:     port.Name,
+				Protocol: string(port.Protocol),
 			}
-			sub.Ports = append(sub.Ports, epPort)
+			if port.AppProtocol != nil {
+				svcPort.AppProtocol = *port.AppProtocol
+			}
+			sub.Ports = append(sub.Ports, svcPort)
 		}
 
 		// Only add this subset to the list if any IPs matched the workload in question
@@ -302,24 +303,12 @@ func findSubsets(backingWorkloads v1.WorkloadSlice) map[string]*v1.DestinationSp
 
 func convertPorts(service *corev1.Service) (ports []*v1.DestinationSpec_KubeService_KubeServicePort) {
 	for _, kubePort := range service.Spec.Ports {
-
-		discoveredPort := &v1.DestinationSpec_KubeService_KubeServicePort{
+		ports = append(ports, &v1.DestinationSpec_KubeService_KubeServicePort{
 			Port:        uint32(kubePort.Port),
 			Name:        kubePort.Name,
 			Protocol:    string(kubePort.Protocol),
 			AppProtocol: pointer.StringPtrDerefOr(kubePort.AppProtocol, ""),
-		}
-		// Add the target port depending on the type
-		if kubePort.TargetPort.Type == intstr.Int {
-			discoveredPort.TargetPort = &v1.DestinationSpec_KubeService_KubeServicePort_TargetPortNumber{
-				TargetPortNumber: uint32(kubePort.TargetPort.IntVal),
-			}
-		} else {
-			discoveredPort.TargetPort = &v1.DestinationSpec_KubeService_KubeServicePort_TargetPortName{
-				TargetPortName: kubePort.TargetPort.StrVal,
-			}
-		}
-		ports = append(ports, discoveredPort)
+		})
 	}
 	return ports
 }

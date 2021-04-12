@@ -274,8 +274,10 @@ var _ = Describe("IstioMeshDetector", func() {
 					TrustDomain:          trustDomain,
 					IstiodServiceAccount: serviceAccountName,
 					IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
-						WorkloadLabels:   workloadLabels,
-						ExternalAddress:  "external.domain",
+						WorkloadLabels: workloadLabels,
+						ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+							ExternalAddress: "external.domain",
+						},
 						ExternalTlsPort:  5678,
 						TlsContainerPort: 1234,
 					}},
@@ -386,8 +388,10 @@ var _ = Describe("IstioMeshDetector", func() {
 					TrustDomain:          trustDomain,
 					IstiodServiceAccount: serviceAccountName,
 					IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
-						WorkloadLabels:   workloadLabels,
-						ExternalAddress:  "external.domain",
+						WorkloadLabels: workloadLabels,
+						ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
+							ExternalAddress: "external.domain",
+						},
 						ExternalTlsPort:  5678,
 						TlsContainerPort: 1234,
 					}},
