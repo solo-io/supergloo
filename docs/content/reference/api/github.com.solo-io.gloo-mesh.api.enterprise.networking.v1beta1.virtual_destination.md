@@ -154,14 +154,13 @@ A list of Mesh references.
 <a name="networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec.Port"></a>
 
 ### VirtualDestinationSpec.Port
-The port on which the VirtualDestination listens. The target port of the VirtualDestination can be specified in 2 ways, in the following order of precedence: 1. If the name and the number are specified:    In this case the VirtualDestination will listen on the number specified, by number and target the ports specified by name. 2. The number is specified but not the name:    In this case the port number must match an existing port on all backends. If it does then the port matching the     input port number will be used to find the target_port.<br>Any other combination will be considered an error NOTE: Static VirtualDestinations only support number (2).
+The port on which the VirtualDestination listens.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | number | uint32 |  | Port number. |
-  | protocol | string |  | (Optional) Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`. |
-  | name | string |  | Name of the port which will be used |
+  | protocol | string |  | Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`. |
   
 
 

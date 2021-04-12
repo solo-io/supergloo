@@ -190,13 +190,8 @@ func getIngressGateway(
 		return nil, eris.Errorf("no TLS port found on ingress gateway")
 	}
 
-	// var (
-	// 	// TODO(ilackarms): currently we only use one address to connect to the gateway.
-	// 	// We can support multiple addresses per gateway for load balancing purposes in the future
-
-	// 	externalAddress string
-	// 	externalPort    uint32
-	// )
+	// TODO(ilackarms): currently we only use one address to connect to the gateway.
+	// We can support multiple addresses per gateway for load balancing purposes in the future
 
 	gatewayInfo := &discoveryv1.MeshSpec_Istio_IngressGatewayInfo{
 		WorkloadLabels: workloadLabels,
