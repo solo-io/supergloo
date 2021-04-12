@@ -31,7 +31,8 @@ You can add `meshctl` to your PATH ([Windows](https://helpdeskgeek.com/windows-1
 The easiest way to get started is by using Kind to run local Kubernetes clusters in Docker. There is a `demo` command in meshctl that will create a full demonstration environment on your local system. All you need is Docker, Kind, and kubectl installed. 
 
 * [Docker](https://www.docker.com/products/docker-desktop) for desktop
-* [Kind](https://kind.sigs.k8s.io) Kubernetes in Docker
+* [Kind](https://kind.sigs.k8s.io), or Kubernetes in Docker
+* [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl), the Kubernetes CLI
 
 If you prefer to use an existing Kubernetes cluster, check out our [Setup Guide]({{% versioned_link_path fromRoot="/setup/" %}}).
 
@@ -47,7 +48,7 @@ meshctl demo istio-multicluster init --enterprise --license $GLOO_MESH_LICENSE_K
 {{< /tab >}}
 {{< /tabs >}}
 
-This will spin up two Kubernetes clusters in Docker with Istio installed on each. Additionally, this will install Gloo Mesh on one of the clusters. Both clusters will be **registered** with Gloo Mesh under the names `mgmt-cluster` and `remote-cluster`, which will be used throughout the documentation.
+This will spin up two Kubernetes clusters in Docker with Istio installed on both. Additionally, this will install Gloo Mesh on one of the clusters. Both clusters will be **registered** with Gloo Mesh under the names `mgmt-cluster` and `remote-cluster`, which will be used throughout the documentation.
 
 ```shell
 Creating cluster mgmt-cluster with ingress port 32001

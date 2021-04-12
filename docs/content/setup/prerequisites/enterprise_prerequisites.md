@@ -16,19 +16,17 @@ In order for relay agents to communicate with the relay server, the management c
 (i.e. the cluster on which the relay server is deployed) must be configured to accept
 ingress traffic, the exact procedure of which depends on your particular environment.
 
-**Option 1: LoadBalancer Service Type**
+##### Option 1: LoadBalancer Service Type
 
-A simple way to expose the relay server to remote clusters is by setting the `enterprise-networking` service type to
+Set the `enterprise-networking` service type to a
 [LoadBalancer](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types).
 This can be done via Helm, by setting `enterprise-networking.enterpriseNetworking.serviceType=LoadBalancer` on the
 Gloo Mesh Enterprise Helm chart.
 
-LoadBalancer services are exposed to the externally via your Kubernetes cloud provider's load balancer. Note that this
-approach **does not** work by default with Kind cluster deployments, but is a good option for getting started if you're
-running your clusters via a managed service like Google Kubernetes Engine or Amazon's Elastic Kubernetes Service.
+LoadBalancer services are exposed to the externally via your Kubernetes cloud provider's load balancer. If you are unable
+to use LoadBalancers use [Option 2]({{% versioned_link_path fromRoot="/setup/prerequisites/enterprise_prerequisites/#option-2-istio-ingress-setup" %}}).
 
-If you have your enterprise-networking service set as a LoadBalancer type,
-get the relay address for [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}) by running:
+Get the relay address for [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}) by running:
 
 ```shell script
 MGMT_INGRESS_ADDRESS=$(kubectl  -n gloo-mesh get service enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
@@ -36,7 +34,7 @@ MGMT_INGRESS_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o js
 RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 ```
 
-**Option 2: Istio Ingress Setup**
+##### Option 2: Istio Ingress Setup
 
 The enterprise-networking service can also be exposed via an ingress. The following describes how to configure a Kubernetes
 cluster ingress assuming [Istio's ingress gateway model](https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/).

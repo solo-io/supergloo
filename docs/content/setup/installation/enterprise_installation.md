@@ -31,7 +31,7 @@ Your actual context names will likely be different.
 To verify you're running the following commands in the correct context, run:
 
 ```shell
-MGMT_CONTEXT=kind-mgmt-cluster # Change value as needed
+MGMT_CONTEXT=$(kubectl config current-context) # Change value as needed
 REMOTE_CONTEXT=kind-remote-cluster # Change value as needed
 
 kubectl config use-context $MGMT_CONTEXT

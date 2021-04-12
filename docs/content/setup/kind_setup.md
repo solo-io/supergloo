@@ -1,15 +1,15 @@
 ---
-title: "Using Kind for Gloo Mesh Setup"
+title: "Gloo Mesh Setup Using Kind"
 menuTitle: Using Kind
 description: Deploying clusters with Kind for a Gloo Mesh Setup
-weight: 11
+weight: 1
 ---
 
 The installation of Gloo Mesh assumes that you have access to at least one Kubernetes cluster, and preferably two for following the multi-cluster guides. If you do not have access to remote clusters, you can instead spin up two local clusters using Kubernetes in Docker (Kind). Be aware that this will use a significant amount of RAM when both clusters are running with Istio and Gloo Mesh installed. We recommend a workstation with a minimum of 16GB, preferably 32GB if possible.
 
 This guide will walk you through deploying two Kind clusters referred to as the `mgmt-cluster` and `remote-cluster`. The mgmt-cluster will host the Gloo Mesh installation as well as a deployment of Istio. The remote-cluster will run Istio only, and will be used in later guides to demonstrate the multi-cluster management capabilities of Gloo Mesh.
 
-### Using Kind
+### Create your Kind Clusters
 
 Before you run Kind on your local workstation, you will need the following pre-requisites:
 
@@ -20,7 +20,7 @@ Once you have those pieces in place, you will simply run the following commands 
 
 ```bash
 # Create the mgmt-cluster
-#Set version, cluster name, and port
+# Set version, cluster name, and port
 kindImage=kindest/node:v1.17.5
 cluster=mgmt-cluster
 port=32001
@@ -77,11 +77,41 @@ kubeadmConfigPatches:
       authorization-mode: "AlwaysAllow"
 EOF
 
-#Switch to the mgmt-cluster context
+# Switch to the mgmt-cluster context
 kubectl config use-context kind-mgmt-cluster
 ```
 
-## Next Steps
-Now that you have two Kind clusters available, you are ready to proceed with the installation of
-[Gloo Mesh]({{% versioned_link_path fromRoot="/setup/installation/community_installation" %}}) or
-[Gloo Mesh Enterprise]({{% versioned_link_path fromRoot="/setup/prerequisites/enterprise_prerequisites" %}}).
+Set your environment variables:
+
+You should now have the following environment variables set:
+```shell script
+echo $MGMT_CONTEXT
+echo $REMOTE_CONTEXT
+```
+
+
+## Install Istio
+
+[Deploy Istio]({{% versioned_link_path fromRoot="/guides/installing_istio" %}}) or
+[Gloo Mesh Istio]({{% versioned_link_path fromRoot="/setup/gloo_mesh_istio/" %}})
+on both clusters.
+
+## Install Gloo Mesh
+
+##### OSS (community version)
+
+1) Follow the [Gloo Mesh installation instructions]({{% versioned_link_path fromRoot="/setup/installation/community_installation" %}}).
+
+2) [Register your clusters]({{% versioned_link_path fromRoot="/setup/cluster_registration/community_cluster_registration" %}}).
+
+##### Enterprise
+
+1) Go through the [Gloo Mesh Enterprise Prerequisites]({{% versioned_link_path fromRoot="/setup/prerequisites/enterprise_prerequisites" %}}).
+
+2) [Register your enterprise clusters]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}).
+
+## Follow our Guides
+
+3) Install the [bookinfo example deployment]({{% versioned_link_path fromRoot="/guides/#bookinfo-deployment" %}})
+
+4) Check out some of our other [guides]({{% versioned_link_path fromRoot="/guides" %}})!

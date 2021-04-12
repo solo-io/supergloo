@@ -2,7 +2,7 @@
 title: "Installation"
 menuTitle: Installation
 description: Setting up Gloo Mesh Installation
-weight: 2
+weight: 4
 ---
 
 The following guides provide detailed instructions for installing the Gloo Mesh management plane.
