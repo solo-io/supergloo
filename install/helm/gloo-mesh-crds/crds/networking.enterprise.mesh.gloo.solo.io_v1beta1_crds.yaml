@@ -433,7 +433,7 @@ spec:
                   minimum: 0
                   type: integer
                 protocol:
-                  description: (Optional) Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`.
+                  description: Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`.
                   type: string
               type: object
             static:

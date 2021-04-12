@@ -65,7 +65,7 @@ message VirtualDestinationSpec {
         // Port number.
         uint32 number = 1;
 
-        // (Optional) Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`.
+        // Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`.
         string protocol = 2;
 
         // Name of the port which will be used

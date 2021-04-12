@@ -160,7 +160,7 @@ The port on which the VirtualDestination listens. The target port of the Virtual
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | number | uint32 |  | Port number. |
-  | protocol | string |  | (Optional) Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`. |
+  | protocol | string |  | Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`. |
   | name | string |  | Name of the port which will be used |
   
 
