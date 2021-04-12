@@ -41,13 +41,17 @@ var _ = Describe("AccessPolicyTranslator", func() {
 								WorkloadLabels: map[string]string{
 									"istio": "ingressgateway",
 								},
-								ExternalAddress: "1.1.1.1",
+								ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalIp{
+									ExternalIp: "1.1.1.1",
+								},
 							},
 							{
 								WorkloadLabels: map[string]string{
 									"istio": "ingressgateway2",
 								},
-								ExternalAddress: "2.2.2.2",
+								ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalIp{
+									ExternalIp: "2.2.2.2",
+								},
 							},
 						},
 					},
