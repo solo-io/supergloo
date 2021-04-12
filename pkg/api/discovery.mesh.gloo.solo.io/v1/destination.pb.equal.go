@@ -530,6 +530,46 @@ func (m *DestinationSpec_KubeService_EndpointsSubset) Equal(that interface{}) bo
 }
 
 // Equal function
+func (m *DestinationSpec_KubeService_EndpointPort) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DestinationSpec_KubeService_EndpointPort)
+	if !ok {
+		that2, ok := that.(DestinationSpec_KubeService_EndpointPort)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if m.GetPort() != target.GetPort() {
+		return false
+	}
+
+	if strings.Compare(m.GetName(), target.GetName()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetProtocol(), target.GetProtocol()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetAppProtocol(), target.GetAppProtocol()) != 0 {
+		return false
+	}
+
+	return true
+}
+
+// Equal function
 func (m *DestinationSpec_KubeService_EndpointsSubset_Endpoint) Equal(that interface{}) bool {
 	if that == nil {
 		return m == nil

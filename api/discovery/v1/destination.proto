@@ -70,8 +70,11 @@ message DestinationSpec {
             // Available in Kubernetes 1.18+, describes the application protocol.
             string app_protocol = 4;
 
+            // target_port in kubernetes may either be a string referring to the port_name, or a number referring to the number
             oneof target_port {
+                // Name of the targer_port
                 string target_port_name = 5;
+                // Number of the target_port
                 uint32 target_port_number = 6;
             }
         }
@@ -87,7 +90,7 @@ message DestinationSpec {
 
             repeated Endpoint endpoints = 1;
 
-            repeated KubeServicePort ports = 2;
+            repeated EndpointPort ports = 2;
 
             // An endpoint exposed by this service.
             message Endpoint {
@@ -110,6 +113,19 @@ message DestinationSpec {
                 // The zone and sub-zone (if controlled by Istio) of the endpoint.
                 SubLocality sub_locality = 3;
             }
+        }
+
+        // Describes the endpoints's ports. See [here](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoints-v1/) for more information.
+        message EndpointPort {
+
+            uint32 port = 1;
+
+            string name = 2;
+
+            string protocol = 3;
+
+            // Available in Kubernetes 1.18+, describes the application protocol.
+            string app_protocol = 4;
         }
     }
 

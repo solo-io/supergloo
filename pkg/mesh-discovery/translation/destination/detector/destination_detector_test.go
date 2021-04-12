@@ -250,7 +250,7 @@ var _ = Describe("DestinationDetector", func() {
 										Labels:    buildLabels("v2"),
 									},
 								},
-								Ports: []*v1.DestinationSpec_KubeService_KubeServicePort{
+								Ports: []*v1.DestinationSpec_KubeService_EndpointPort{
 									{
 										Port:        7000,
 										Name:        "port1",
@@ -446,7 +446,7 @@ var _ = Describe("DestinationDetector", func() {
 										},
 									},
 								},
-								Ports: []*v1.DestinationSpec_KubeService_KubeServicePort{
+								Ports: []*v1.DestinationSpec_KubeService_EndpointPort{
 									{
 										Port:        7000,
 										Name:        "port1",

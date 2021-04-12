@@ -240,15 +240,13 @@ func findEndpoints(
 
 		for _, port := range epSub.Ports {
 			port := port
-			svcPort := &v1.DestinationSpec_KubeService_KubeServicePort{
-				Port:     uint32(port.Port),
-				Name:     port.Name,
-				Protocol: string(port.Protocol),
+			epPort := &v1.DestinationSpec_KubeService_EndpointPort{
+				Port:        uint32(port.Port),
+				Name:        port.Name,
+				Protocol:    string(port.Protocol),
+				AppProtocol: pointer.StringPtrDerefOr(port.AppProtocol, ""),
 			}
-			if port.AppProtocol != nil {
-				svcPort.AppProtocol = *port.AppProtocol
-			}
-			sub.Ports = append(sub.Ports, svcPort)
+			sub.Ports = append(sub.Ports, epPort)
 		}
 
 		// Only add this subset to the list if any IPs matched the workload in question

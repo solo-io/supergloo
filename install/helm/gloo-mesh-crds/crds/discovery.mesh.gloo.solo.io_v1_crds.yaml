@@ -131,17 +131,6 @@ spec:
                         type: array
                       ports:
                         items:
-                          oneOf:
-                          - not:
-                              anyOf:
-                              - required:
-                                - targetPortName
-                              - required:
-                                - targetPortNumber
-                          - required:
-                            - targetPortName
-                          - required:
-                            - targetPortNumber
                           properties:
                             appProtocol:
                               description: Available in Kubernetes 1.18+, describes the application protocol.
@@ -155,12 +144,6 @@ spec:
                               type: integer
                             protocol:
                               type: string
-                            targetPortName:
-                              type: string
-                            targetPortNumber:
-                              maximum: 4294967295
-                              minimum: 0
-                              type: integer
                           type: object
                         type: array
                     type: object
@@ -198,8 +181,10 @@ spec:
                       protocol:
                         type: string
                       targetPortName:
+                        description: Name of the targer_port
                         type: string
                       targetPortNumber:
+                        description: Number of the target_port
                         maximum: 4294967295
                         minimum: 0
                         type: integer
