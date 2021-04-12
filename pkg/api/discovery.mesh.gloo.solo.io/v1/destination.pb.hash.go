@@ -489,23 +489,6 @@ func (m *DestinationSpec_KubeService_KubeServicePort) Hash(hasher hash.Hash64) (
 		return 0, err
 	}
 
-	switch m.TargetPort.(type) {
-
-	case *DestinationSpec_KubeService_KubeServicePort_TargetPortName:
-
-		if _, err = hasher.Write([]byte(m.GetTargetPortName())); err != nil {
-			return 0, err
-		}
-
-	case *DestinationSpec_KubeService_KubeServicePort_TargetPortNumber:
-
-		err = binary.Write(hasher, binary.LittleEndian, m.GetTargetPortNumber())
-		if err != nil {
-			return 0, err
-		}
-
-	}
-
 	return hasher.Sum64(), nil
 }
 
@@ -592,39 +575,6 @@ func (m *DestinationSpec_KubeService_EndpointsSubset) Hash(hasher hash.Hash64) (
 			}
 		}
 
-	}
-
-	return hasher.Sum64(), nil
-}
-
-// Hash function
-func (m *DestinationSpec_KubeService_EndpointPort) Hash(hasher hash.Hash64) (uint64, error) {
-	if m == nil {
-		return 0, nil
-	}
-	if hasher == nil {
-		hasher = fnv.New64()
-	}
-	var err error
-	if _, err = hasher.Write([]byte("discovery.mesh.gloo.solo.io.github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1.DestinationSpec_KubeService_EndpointPort")); err != nil {
-		return 0, err
-	}
-
-	err = binary.Write(hasher, binary.LittleEndian, m.GetPort())
-	if err != nil {
-		return 0, err
-	}
-
-	if _, err = hasher.Write([]byte(m.GetName())); err != nil {
-		return 0, err
-	}
-
-	if _, err = hasher.Write([]byte(m.GetProtocol())); err != nil {
-		return 0, err
-	}
-
-	if _, err = hasher.Write([]byte(m.GetAppProtocol())); err != nil {
-		return 0, err
 	}
 
 	return hasher.Sum64(), nil
