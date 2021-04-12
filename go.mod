@@ -64,7 +64,7 @@ require (
 	github.com/solo-io/go-utils v0.20.4
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
-	github.com/solo-io/skv2 v0.17.13
+	github.com/solo-io/skv2 v0.17.14-0.20210413150311-9baf8912acaa
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.5.1
 	github.com/spf13/cobra v1.1.1

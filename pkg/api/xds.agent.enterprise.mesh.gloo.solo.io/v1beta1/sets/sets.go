@@ -18,6 +18,8 @@ type XdsConfigSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig) bool) []*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig) bool) []*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig
 	// Return the Set as a map of key to resource.
 	Map() map[string]*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig
 	// Insert a resource into the set.
@@ -88,6 +90,24 @@ func (s *xdsConfigSet) List(filterResource ...func(*xds_agent_enterprise_mesh_gl
 
 	var xdsConfigList []*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig
 	for _, obj := range s.Generic().List(genericFilters...) {
+		xdsConfigList = append(xdsConfigList, obj.(*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig))
+	}
+	return xdsConfigList
+}
+
+func (s *xdsConfigSet) UnsortedList(filterResource ...func(*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig) bool) []*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig))
+		})
+	}
+
+	var xdsConfigList []*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		xdsConfigList = append(xdsConfigList, obj.(*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig))
 	}
 	return xdsConfigList

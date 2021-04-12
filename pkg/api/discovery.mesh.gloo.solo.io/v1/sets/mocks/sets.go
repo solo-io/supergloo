@@ -70,6 +70,24 @@ func (mr *MockDestinationSetMockRecorder) List(filterResource ...interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockDestinationSet)(nil).List), filterResource...)
 }
 
+// UnsortedList mocks base method
+func (m *MockDestinationSet) UnsortedList(filterResource ...func(*v1.Destination) bool) []*v1.Destination {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.Destination)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockDestinationSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockDestinationSet)(nil).UnsortedList), filterResource...)
+}
+
 // Map mocks base method
 func (m *MockDestinationSet) Map() map[string]*v1.Destination {
 	m.ctrl.T.Helper()
@@ -294,6 +312,24 @@ func (mr *MockWorkloadSetMockRecorder) List(filterResource ...interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockWorkloadSet)(nil).List), filterResource...)
 }
 
+// UnsortedList mocks base method
+func (m *MockWorkloadSet) UnsortedList(filterResource ...func(*v1.Workload) bool) []*v1.Workload {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.Workload)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockWorkloadSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockWorkloadSet)(nil).UnsortedList), filterResource...)
+}
+
 // Map mocks base method
 func (m *MockWorkloadSet) Map() map[string]*v1.Workload {
 	m.ctrl.T.Helper()
@@ -516,6 +552,24 @@ func (m *MockMeshSet) List(filterResource ...func(*v1.Mesh) bool) []*v1.Mesh {
 func (mr *MockMeshSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMeshSet)(nil).List), filterResource...)
+}
+
+// UnsortedList mocks base method
+func (m *MockMeshSet) UnsortedList(filterResource ...func(*v1.Mesh) bool) []*v1.Mesh {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.Mesh)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockMeshSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockMeshSet)(nil).UnsortedList), filterResource...)
 }
 
 // Map mocks base method

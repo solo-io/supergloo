@@ -18,6 +18,8 @@ type TrafficPolicySet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*networking_mesh_gloo_solo_io_v1.TrafficPolicy) bool) []*networking_mesh_gloo_solo_io_v1.TrafficPolicy
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*networking_mesh_gloo_solo_io_v1.TrafficPolicy) bool) []*networking_mesh_gloo_solo_io_v1.TrafficPolicy
 	// Return the Set as a map of key to resource.
 	Map() map[string]*networking_mesh_gloo_solo_io_v1.TrafficPolicy
 	// Insert a resource into the set.
@@ -88,6 +90,24 @@ func (s *trafficPolicySet) List(filterResource ...func(*networking_mesh_gloo_sol
 
 	var trafficPolicyList []*networking_mesh_gloo_solo_io_v1.TrafficPolicy
 	for _, obj := range s.Generic().List(genericFilters...) {
+		trafficPolicyList = append(trafficPolicyList, obj.(*networking_mesh_gloo_solo_io_v1.TrafficPolicy))
+	}
+	return trafficPolicyList
+}
+
+func (s *trafficPolicySet) UnsortedList(filterResource ...func(*networking_mesh_gloo_solo_io_v1.TrafficPolicy) bool) []*networking_mesh_gloo_solo_io_v1.TrafficPolicy {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_mesh_gloo_solo_io_v1.TrafficPolicy))
+		})
+	}
+
+	var trafficPolicyList []*networking_mesh_gloo_solo_io_v1.TrafficPolicy
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		trafficPolicyList = append(trafficPolicyList, obj.(*networking_mesh_gloo_solo_io_v1.TrafficPolicy))
 	}
 	return trafficPolicyList
@@ -207,6 +227,8 @@ type AccessPolicySet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*networking_mesh_gloo_solo_io_v1.AccessPolicy) bool) []*networking_mesh_gloo_solo_io_v1.AccessPolicy
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*networking_mesh_gloo_solo_io_v1.AccessPolicy) bool) []*networking_mesh_gloo_solo_io_v1.AccessPolicy
 	// Return the Set as a map of key to resource.
 	Map() map[string]*networking_mesh_gloo_solo_io_v1.AccessPolicy
 	// Insert a resource into the set.
@@ -277,6 +299,24 @@ func (s *accessPolicySet) List(filterResource ...func(*networking_mesh_gloo_solo
 
 	var accessPolicyList []*networking_mesh_gloo_solo_io_v1.AccessPolicy
 	for _, obj := range s.Generic().List(genericFilters...) {
+		accessPolicyList = append(accessPolicyList, obj.(*networking_mesh_gloo_solo_io_v1.AccessPolicy))
+	}
+	return accessPolicyList
+}
+
+func (s *accessPolicySet) UnsortedList(filterResource ...func(*networking_mesh_gloo_solo_io_v1.AccessPolicy) bool) []*networking_mesh_gloo_solo_io_v1.AccessPolicy {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_mesh_gloo_solo_io_v1.AccessPolicy))
+		})
+	}
+
+	var accessPolicyList []*networking_mesh_gloo_solo_io_v1.AccessPolicy
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		accessPolicyList = append(accessPolicyList, obj.(*networking_mesh_gloo_solo_io_v1.AccessPolicy))
 	}
 	return accessPolicyList
@@ -396,6 +436,8 @@ type VirtualMeshSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*networking_mesh_gloo_solo_io_v1.VirtualMesh) bool) []*networking_mesh_gloo_solo_io_v1.VirtualMesh
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*networking_mesh_gloo_solo_io_v1.VirtualMesh) bool) []*networking_mesh_gloo_solo_io_v1.VirtualMesh
 	// Return the Set as a map of key to resource.
 	Map() map[string]*networking_mesh_gloo_solo_io_v1.VirtualMesh
 	// Insert a resource into the set.
@@ -466,6 +508,24 @@ func (s *virtualMeshSet) List(filterResource ...func(*networking_mesh_gloo_solo_
 
 	var virtualMeshList []*networking_mesh_gloo_solo_io_v1.VirtualMesh
 	for _, obj := range s.Generic().List(genericFilters...) {
+		virtualMeshList = append(virtualMeshList, obj.(*networking_mesh_gloo_solo_io_v1.VirtualMesh))
+	}
+	return virtualMeshList
+}
+
+func (s *virtualMeshSet) UnsortedList(filterResource ...func(*networking_mesh_gloo_solo_io_v1.VirtualMesh) bool) []*networking_mesh_gloo_solo_io_v1.VirtualMesh {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_mesh_gloo_solo_io_v1.VirtualMesh))
+		})
+	}
+
+	var virtualMeshList []*networking_mesh_gloo_solo_io_v1.VirtualMesh
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		virtualMeshList = append(virtualMeshList, obj.(*networking_mesh_gloo_solo_io_v1.VirtualMesh))
 	}
 	return virtualMeshList

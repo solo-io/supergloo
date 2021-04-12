@@ -18,6 +18,8 @@ type DestinationSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*discovery_mesh_gloo_solo_io_v1.Destination) bool) []*discovery_mesh_gloo_solo_io_v1.Destination
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*discovery_mesh_gloo_solo_io_v1.Destination) bool) []*discovery_mesh_gloo_solo_io_v1.Destination
 	// Return the Set as a map of key to resource.
 	Map() map[string]*discovery_mesh_gloo_solo_io_v1.Destination
 	// Insert a resource into the set.
@@ -88,6 +90,24 @@ func (s *destinationSet) List(filterResource ...func(*discovery_mesh_gloo_solo_i
 
 	var destinationList []*discovery_mesh_gloo_solo_io_v1.Destination
 	for _, obj := range s.Generic().List(genericFilters...) {
+		destinationList = append(destinationList, obj.(*discovery_mesh_gloo_solo_io_v1.Destination))
+	}
+	return destinationList
+}
+
+func (s *destinationSet) UnsortedList(filterResource ...func(*discovery_mesh_gloo_solo_io_v1.Destination) bool) []*discovery_mesh_gloo_solo_io_v1.Destination {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*discovery_mesh_gloo_solo_io_v1.Destination))
+		})
+	}
+
+	var destinationList []*discovery_mesh_gloo_solo_io_v1.Destination
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		destinationList = append(destinationList, obj.(*discovery_mesh_gloo_solo_io_v1.Destination))
 	}
 	return destinationList
@@ -207,6 +227,8 @@ type WorkloadSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*discovery_mesh_gloo_solo_io_v1.Workload) bool) []*discovery_mesh_gloo_solo_io_v1.Workload
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*discovery_mesh_gloo_solo_io_v1.Workload) bool) []*discovery_mesh_gloo_solo_io_v1.Workload
 	// Return the Set as a map of key to resource.
 	Map() map[string]*discovery_mesh_gloo_solo_io_v1.Workload
 	// Insert a resource into the set.
@@ -277,6 +299,24 @@ func (s *workloadSet) List(filterResource ...func(*discovery_mesh_gloo_solo_io_v
 
 	var workloadList []*discovery_mesh_gloo_solo_io_v1.Workload
 	for _, obj := range s.Generic().List(genericFilters...) {
+		workloadList = append(workloadList, obj.(*discovery_mesh_gloo_solo_io_v1.Workload))
+	}
+	return workloadList
+}
+
+func (s *workloadSet) UnsortedList(filterResource ...func(*discovery_mesh_gloo_solo_io_v1.Workload) bool) []*discovery_mesh_gloo_solo_io_v1.Workload {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*discovery_mesh_gloo_solo_io_v1.Workload))
+		})
+	}
+
+	var workloadList []*discovery_mesh_gloo_solo_io_v1.Workload
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		workloadList = append(workloadList, obj.(*discovery_mesh_gloo_solo_io_v1.Workload))
 	}
 	return workloadList
@@ -396,6 +436,8 @@ type MeshSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*discovery_mesh_gloo_solo_io_v1.Mesh) bool) []*discovery_mesh_gloo_solo_io_v1.Mesh
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*discovery_mesh_gloo_solo_io_v1.Mesh) bool) []*discovery_mesh_gloo_solo_io_v1.Mesh
 	// Return the Set as a map of key to resource.
 	Map() map[string]*discovery_mesh_gloo_solo_io_v1.Mesh
 	// Insert a resource into the set.
@@ -466,6 +508,24 @@ func (s *meshSet) List(filterResource ...func(*discovery_mesh_gloo_solo_io_v1.Me
 
 	var meshList []*discovery_mesh_gloo_solo_io_v1.Mesh
 	for _, obj := range s.Generic().List(genericFilters...) {
+		meshList = append(meshList, obj.(*discovery_mesh_gloo_solo_io_v1.Mesh))
+	}
+	return meshList
+}
+
+func (s *meshSet) UnsortedList(filterResource ...func(*discovery_mesh_gloo_solo_io_v1.Mesh) bool) []*discovery_mesh_gloo_solo_io_v1.Mesh {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*discovery_mesh_gloo_solo_io_v1.Mesh))
+		})
+	}
+
+	var meshList []*discovery_mesh_gloo_solo_io_v1.Mesh
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		meshList = append(meshList, obj.(*discovery_mesh_gloo_solo_io_v1.Mesh))
 	}
 	return meshList

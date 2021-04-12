@@ -70,6 +70,24 @@ func (mr *MockIssuedCertificateSetMockRecorder) List(filterResource ...interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockIssuedCertificateSet)(nil).List), filterResource...)
 }
 
+// UnsortedList mocks base method
+func (m *MockIssuedCertificateSet) UnsortedList(filterResource ...func(*v1.IssuedCertificate) bool) []*v1.IssuedCertificate {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.IssuedCertificate)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockIssuedCertificateSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockIssuedCertificateSet)(nil).UnsortedList), filterResource...)
+}
+
 // Map mocks base method
 func (m *MockIssuedCertificateSet) Map() map[string]*v1.IssuedCertificate {
 	m.ctrl.T.Helper()
@@ -294,6 +312,24 @@ func (mr *MockCertificateRequestSetMockRecorder) List(filterResource ...interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockCertificateRequestSet)(nil).List), filterResource...)
 }
 
+// UnsortedList mocks base method
+func (m *MockCertificateRequestSet) UnsortedList(filterResource ...func(*v1.CertificateRequest) bool) []*v1.CertificateRequest {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.CertificateRequest)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockCertificateRequestSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockCertificateRequestSet)(nil).UnsortedList), filterResource...)
+}
+
 // Map mocks base method
 func (m *MockCertificateRequestSet) Map() map[string]*v1.CertificateRequest {
 	m.ctrl.T.Helper()
@@ -516,6 +552,24 @@ func (m *MockPodBounceDirectiveSet) List(filterResource ...func(*v1.PodBounceDir
 func (mr *MockPodBounceDirectiveSetMockRecorder) List(filterResource ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockPodBounceDirectiveSet)(nil).List), filterResource...)
+}
+
+// UnsortedList mocks base method
+func (m *MockPodBounceDirectiveSet) UnsortedList(filterResource ...func(*v1.PodBounceDirective) bool) []*v1.PodBounceDirective {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.PodBounceDirective)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockPodBounceDirectiveSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockPodBounceDirectiveSet)(nil).UnsortedList), filterResource...)
 }
 
 // Map mocks base method

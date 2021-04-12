@@ -18,6 +18,8 @@ type WasmDeploymentSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment
 	// Return the Set as a map of key to resource.
 	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment
 	// Insert a resource into the set.
@@ -88,6 +90,24 @@ func (s *wasmDeploymentSet) List(filterResource ...func(*networking_enterprise_m
 
 	var wasmDeploymentList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment
 	for _, obj := range s.Generic().List(genericFilters...) {
+		wasmDeploymentList = append(wasmDeploymentList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment))
+	}
+	return wasmDeploymentList
+}
+
+func (s *wasmDeploymentSet) UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment))
+		})
+	}
+
+	var wasmDeploymentList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		wasmDeploymentList = append(wasmDeploymentList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment))
 	}
 	return wasmDeploymentList
@@ -207,6 +227,8 @@ type VirtualDestinationSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination
 	// Return the Set as a map of key to resource.
 	Map() map[string]*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination
 	// Insert a resource into the set.
@@ -277,6 +299,24 @@ func (s *virtualDestinationSet) List(filterResource ...func(*networking_enterpri
 
 	var virtualDestinationList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination
 	for _, obj := range s.Generic().List(genericFilters...) {
+		virtualDestinationList = append(virtualDestinationList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination))
+	}
+	return virtualDestinationList
+}
+
+func (s *virtualDestinationSet) UnsortedList(filterResource ...func(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) bool) []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination))
+		})
+	}
+
+	var virtualDestinationList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		virtualDestinationList = append(virtualDestinationList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination))
 	}
 	return virtualDestinationList
