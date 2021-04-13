@@ -1,4 +1,4 @@
 changelog:
-  - type: NEW_FEATURE
+  - type: FIX
     issueLink: https://github.com/solo-io/gloo-mesh-enterprise/issues/308
     description: Add guide on getting started with Gloo Mesh metrics features.
