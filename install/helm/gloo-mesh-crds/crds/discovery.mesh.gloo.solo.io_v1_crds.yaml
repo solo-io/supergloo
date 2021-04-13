@@ -1172,16 +1172,19 @@ spec:
                     - not:
                         anyOf:
                         - required:
-                          - externalAddress
+                          - dnsName
                         - required:
                           - externalIp
                     - required:
-                      - externalAddress
+                      - dnsName
                     - required:
                       - externalIp
                     properties:
-                      externalAddress:
+                      dnsName:
                         description: Will be populated if the LoadBalancer Address is a DNS name
+                        type: string
+                      externalAddress:
+                        description: Deprecated in favor of dns_name or external_ip
                         type: string
                       externalIp:
                         description: Will be populated if the LoadBalancer Address is an IP

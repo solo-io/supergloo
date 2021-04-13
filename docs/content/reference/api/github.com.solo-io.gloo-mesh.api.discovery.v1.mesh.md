@@ -136,7 +136,8 @@ Describes the ingress gateway.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | workloadLabels | [][discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.mesh#discovery.mesh.gloo.solo.io.MeshSpec.Istio.IngressGatewayInfo.WorkloadLabelsEntry" >}}) | repeated | Labels matching the workload backing the gateway. [Defaults to](https://github.com/istio/istio/blob/ab6cc48134a698d7ad218a83390fe27e8098919f/pkg/config/constants/constants.go#L73) `{"istio": "ingressgateway"}`. |
-  | externalAddress | string |  | Will be populated if the LoadBalancer Address is a DNS name |
+  | externalAddress | string |  | Deprecated in favor of dns_name or external_ip |
+  | dnsName | string |  | Will be populated if the LoadBalancer Address is a DNS name |
   | externalIp | string |  | Will be populated if the LoadBalancer Address is an IP |
   | externalTlsPort | uint32 |  | The externally-reachable port on which the gateway is listening for TLS connections. This will be the port used for cross-cluster connectivity. See the list of [common ports used by Istio](https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio). Defaults to 15443 (or the NodePort) of the Kubernetes service (depending on its type). |
   | tlsContainerPort | uint32 |  | Container port on which the gateway is listening for TLS connections. Defaults to 15443. |

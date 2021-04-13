@@ -212,6 +212,8 @@ func getIngressGateway(
 		gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalIp{
 			ExternalIp: addr,
 		}
+		// Continue to set deprecated field until it is removed
+		gatewayInfo.ExternalAddress = addr
 		gatewayInfo.ExternalTlsPort = uint32(tlsPort.NodePort)
 
 	case corev1.ServiceTypeLoadBalancer:
@@ -222,13 +224,17 @@ func getIngressGateway(
 
 		gatewayInfo.ExternalTlsPort = uint32(tlsPort.Port)
 
-		gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalAddress{
-			ExternalAddress: ingress[0].Hostname,
+		gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_DnsName{
+			DnsName: ingress[0].Hostname,
 		}
+		// Continue to set deprecated field until it is removed
+		gatewayInfo.ExternalAddress = ingress[0].Hostname
 		if gatewayInfo.GetExternalAddress() == "" {
 			gatewayInfo.ExternalAddressType = &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalIp{
 				ExternalIp: ingress[0].IP,
 			}
+			// Continue to set deprecated field until it is removed
+			gatewayInfo.ExternalAddress = ingress[0].IP
 		}
 
 	default:

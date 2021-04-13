@@ -296,7 +296,7 @@ func (t *translator) translateKubeServiceDestination(
 	// based on: https://istio.io/latest/blog/2019/multicluster-version-routing/#create-a-destination-rule-on-both-clusters-for-the-local-reviews-service
 	clusterLabels := trafficshift.MakeFederatedSubsetLabel(istioCluster)
 
-	address := ingressGateway.GetExternalAddress()
+	address := ingressGateway.GetDnsName()
 	if address == "" {
 		address = ingressGateway.GetExternalIp()
 	}
