@@ -106,25 +106,44 @@ Note that the `gloo-mesh-enterprise` Helm chart bundles multiple components, inc
 
 4. Install
 
-{{% notice note %}}If you are running Gloo Mesh Enterprise's management plane on a cluster you intend to register (i.e. also run a service mesh), set the `enterprise-networking.cluster` value to the cluster name you intend to set for the management cluster at registration time. {{% /notice %}}
+There are several important helm values to modify, depending on your setup.
+Here are several common cases:
+
+Case 1: Your Gloo Mesh control plane will be running on its own cluster.
+
+Case 2: You are running Gloo Mesh Enterprise's management plane on a cluster
+that you intend to register (i.e. also run a service mesh). In this case,
+set the `enterprise-networking.cluster` value to the cluster name you
+intend to set for the management cluster at registration time.
+
+Case 3: You intend to provide your own certificates. Note that
+the Helm value `selfSigned` is set to `true` by default.
+This means the Helm chart will create certificates for you if
+you do not supply them through values.
+
 
 {{< tabs >}}
-{{< tab name="remote cluster" codelang="shell">}}
+{{< tab name="Case 1" codelang="shell">}}
 kubectl create ns gloo-mesh
 
 helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --namespace gloo-mesh \
   --set licenseKey=${GLOO_MESH_LICENSE_KEY}
 {{< /tab >}}
-{{< tab name="management cluster" codelang="shell">}}
-$CLUSTER_NAME=mgmt-cluster # Update this value as needed
+{{< tab name="Case 2" codelang="shell">}}
+CLUSTER_NAME=mgmt-cluster # Update this value as needed
 kubectl create ns gloo-mesh
 
 helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --namespace gloo-mesh \
   --set licenseKey=${GLOO_MESH_LICENSE_KEY},enterprise-networking.cluster=$CLUSTER_NAME
 {{< /tab >}}
+{{< tab name="Case 3" codelang="shell">}}
+kubectl create ns gloo-mesh
+
+helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --namespace gloo-mesh \
+  --set licenseKey=${GLOO_MESH_LICENSE_KEY},enterprise-networking.selfSigned=false
+{{< /tab >}}
 {{< /tabs >}}
 
-{{% notice note %}}The Helm value `selfSigned` is set to `true` by default. This means the Helm chart will create certificates for you if you do not supply them through values.{{% /notice %}}
 
 ### Verify install
 Once you've installed Gloo Mesh, verify what components were installed:
