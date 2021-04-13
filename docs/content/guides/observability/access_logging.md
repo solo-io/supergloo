@@ -1,6 +1,7 @@
 ---
 title: Access Logging
 menuTitle: Access Logging
+description: Guide on Gloo Mesh's logging features.
 weight: 30
 ---
 
@@ -31,7 +32,7 @@ both `mgmt-cluster` and `remote-cluster` have the necessary configuration for
 Gloo Mesh access logging. View the Istio ConfigMap with the following command:
 
 ```shell
-kubectl --context MGMT_CONTEXT -n istio-system get configmap istio -oyaml
+kubectl --context $MGMT_CONTEXT -n istio-system get configmap istio -oyaml
 ```
 
 Ensure that the following highlighted entries exist in the ConfigMap:
@@ -60,7 +61,8 @@ for which to enable collection as well as request/response level filter criteria
 
 For demonstration purposes let's create the following object:
 
-```yaml
+{{< tabs >}}
+{{< tab name="YAML file" codelang="yaml">}}
 apiVersion: observability.enterprise.mesh.gloo.solo.io/v1
 kind: AccessLogRecord
 metadata:
@@ -71,7 +73,22 @@ spec:
     - headerMatcher:
         name: foo
         value: bar
-```
+{{< /tab >}}
+{{< tab name="CLI inline" codelang="shell" >}}
+kubectl apply --context $MGMT_CONTEXT -f - << EOF
+apiVersion: observability.enterprise.mesh.gloo.solo.io/v1
+kind: AccessLogRecord
+metadata:
+  name: access-log-all
+  namespace: gloo-mesh
+spec:
+  filters:
+  - headerMatcher:
+      name: foo
+      value: bar
+EOF
+{{< /tab >}}
+{{< /tabs >}}
 
 This will enable access log collection for all workloads in both clusters, but only
 for requests containing the header `"foo": "bar"`.
@@ -81,11 +98,11 @@ for requests containing the header `"foo": "bar"`.
 Let's first generate some access logs by making requests in both clusters:
 
 ```shell
-kubectl --context MGMT_CONTEXT -n bookinfo exec -it deploy/ratings-v1 -c ratings --  curl -H "foo: bar" -v reviews:9080/reviews/1
+kubectl --context $MGMT_CONTEXT -n bookinfo exec -it deploy/ratings-v1 -c ratings --  curl -H "foo: bar" -v reviews:9080/reviews/1
 ```
 
 ```shell
-kubectl --context REMOTE_CONTEXT -n bookinfo exec -it deploy/ratings-v1 -c ratings --  curl -H "foo: bar" -v reviews:9080/reviews/1
+kubectl --context $REMOTE_CONTEXT -n bookinfo exec -it deploy/ratings-v1 -c ratings --  curl -H "foo: bar" -v reviews:9080/reviews/1
 ```
 
 Assuming the access logs were collected successfully, we can now retrieve them, either
@@ -98,7 +115,7 @@ port to your local machine by running the following:
 
 ```shell
 # forward port 8080 from enterprise-networking to localhost:8080
-kubectl --context MGMT_CONTEXT -n gloo-mesh port-forward deploy/enterprise-networking 8080
+kubectl --context $MGMT_CONTEXT -n gloo-mesh port-forward deploy/enterprise-networking 8080
 ```
 
 The following command will fetch up to 10 of the latest access logs.
@@ -212,6 +229,35 @@ The response will look similar to:
 }
 ```
 
+You can also filter the retrieved access logs by workload. The following
+request retrieves access logs for any Kubernetes workload with label `app: reviews` *and* in the cluster `mgmt-cluster`, or
+`app: productpage` from any cluster.
+
+```shell
+curl -XPOST --data '{
+   "workloadSelectors":[
+      {
+         "kubeWorkloadMatcher":{
+            "labels":{
+               "app":"reviews"
+            },
+            "clusters": ["mgmt-cluster"]
+         }
+      },
+      {
+         "kubeWorkloadMatcher":{
+            "labels":{
+               "app":"productpage"
+            }
+         }
+      }
+   ]
+}' "localhost:8080/v0/observability/logs?&pretty"
+```
+
+For full documentation on the access log retrieval endpoint, see the 
+[Swagger specification]({{% versioned_link_path fromRoot="/reference/swagger/access_logging.swagger.json" %}}).
+
 **Streaming Retrieval**
 
 While debugging, it can be helpful to observe the access logs in real time as you manually
@@ -256,7 +302,8 @@ spec:
 Next, create the following Istio DestinationRule which is intentionally erroroneous,
 the referenced TLS secret data does not exist.
 
-```yaml
+{{< tabs >}}
+{{< tab name="YAML file" codelang="yaml">}}
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
@@ -271,7 +318,26 @@ spec:
       clientCertificate: /etc/certs/myclientcert.pem
       privateKey: /etc/certs/client_private_key.pem
       caCertificates: /etc/certs/rootcacerts.pem
-```
+{{< /tab >}}
+{{< tab name="CLI inline" codelang="shell" >}}
+kubectl apply --context $REMOTE_CONTEXT -f - << EOF
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: ratings
+  namespace: bookinfo
+spec:
+  host: ratings.bookinfo.svc.cluster.local
+    trafficPolicy:
+      tls:
+        mode: MUTUAL
+        # these files do not exist
+        clientCertificate: /etc/certs/myclientcert.pem
+        privateKey: /etc/certs/client_private_key.pem
+        caCertificates: /etc/certs/rootcacerts.pem
+EOF
+{{< /tab >}}
+{{< /tabs >}}
 
 Sending a request from the `productpage` pod to the ratings Destination should yield 
 the following access log:

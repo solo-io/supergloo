@@ -23,7 +23,6 @@ Be sure to review the assumptions and satisfy the pre-requisites from the [Guide
 
 ## Enforcing Access Control
 
-
 Ensure that your kubeconfig has the correct context set as its `currentContext`:
 
 ```shell
@@ -46,7 +45,7 @@ Let's use the Gloo Mesh [AccessPolicy]({{% versioned_link_path fromRoot="/refere
 In the previous guide, [we created a VirtualMesh resource]({{% versioned_link_path fromRoot="/guides/federate_identity/#creating-a-virtual-mesh" %}}), but we had access control disabled. Let's take a look at the same VirtualService, with access control enabled:
 
 {{< tabs >}}
-{{< tab name="YAML file" codelang="shell">}}
+{{< tab name="YAML file" codelang="yaml">}}
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: VirtualMesh
 metadata:
@@ -120,7 +119,7 @@ To allow traffic to continue as before, we apply the following two updates our c
 In this configuration, we select sources (in this case the `productpage` service account) and allow traffic the any service in the `bookinfo` namespace. Be sure to update the `clusterName` value as needed.
 
 {{< tabs >}}
-{{< tab name="YAML file" codelang="shell">}}
+{{< tab name="YAML file" codelang="yaml">}}
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: AccessPolicy
 metadata:
@@ -171,7 +170,7 @@ accesspolicy.networking.mesh.gloo.solo.io/productpage created
 In this next configuration, we enable traffic from `reviews` to `ratings`:
 
 {{< tabs >}}
-{{< tab name="YAML file" codelang="shell">}}
+{{< tab name="YAML file" codelang="yaml">}}
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: AccessPolicy
 metadata:

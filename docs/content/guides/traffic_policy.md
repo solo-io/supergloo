@@ -119,7 +119,27 @@ We are going to create a TrafficPolicy that uses the `petstore-default-mgmt-clus
 
 Here is the configuration we will apply:
 
-```shell
+{{< tabs >}}
+{{< tab name="YAML file" codelang="yaml">}}
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: TrafficPolicy
+metadata:
+  namespace: gloo-mesh
+  name: petstore
+spec:
+  destinationSelector:
+  - kubeServiceRefs:
+      services:
+      - clusterName: mgmt-cluster
+        name: petstore
+        namespace: default
+  policy:
+    requestTimeout: 100ms 
+    retries:
+      attempts: 5
+      perTryTimeout: 5ms
+{{< /tab >}}
+{{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
@@ -130,16 +150,17 @@ spec:
   destinationSelector:
   - kubeServiceRefs:
       services:
-        - clusterName: mgmt-cluster
-          name: petstore
-          namespace: default
+      - clusterName: mgmt-cluster
+        name: petstore
+        namespace: default
   policy:
-    requestTimeout: 100ms
+    requestTimeout: 100ms 
     retries:
       attempts: 5
       perTryTimeout: 5ms
 EOF
-```
+{{< /tab >}}
+{{< /tabs >}}
 
 We are using the `destinationSelector` property to specify a single Kubernetes service on the management cluster. We could specify multiple services across several clusters, along with setting up a Virtual Mesh and Multicluster communication. The request timeout is being set to 100ms and there is a maximum of five attempts before an error will be returned.
 

@@ -43,21 +43,20 @@ meshctl cluster register community remote-cluster \
 {{< /tab >}}
 {{< /tabs >}}
 
+```shell
+successfully registered cluster remote-cluster
+```
+
 The context we use must have adequate permissions on the target cluster to create the service account, cluster-role, and cluster-role assignment.
 
-{{% notice note %}}
-Note that the `--cluster-name` is NOT the name of the cluster in your kubeconfig file -- it's a name Gloo Mesh can use to refer to the cluster in various configurations. You can pick any name you want for this.
-{{% /notice %}}
-
-```shell
-INFO[0003] successfully registered cluster remote-cluster
-```
 
 You can validate the registration by looking at the Custom Resource created in the management cluster:
 
 ```shell
 kubectl get kubernetescluster -n gloo-mesh remote-cluster
+```
 
+```shell
 NAME             AGE
 remote-cluster   10m
 ```
@@ -66,20 +65,30 @@ The target cluster will also have the following elements created:
 
 ```shell
 kubectl get sa --context $REMOTE_CONTEXT -n gloo-mesh
+```
 
+```shell
 NAME             SECRETS   AGE
 cert-agent       1         11m
 default          1         11m
 remote-cluster   1         11
+```
 
+```shell
 kubectl get clusterrole --context $REMOTE_CONTEXT gloomesh-remote-access
+```
 
+```shell
 NAME                     AGE
 gloomesh-remote-access   12m
+```
 
+```shell
 kubectl get clusterrolebinding --context $REMOTE_CONTEXT \
   remote-cluster-gloomesh-remote-access-clusterrole-binding
+```
 
+```shell
 NAME                                                        AGE
 remote-cluster-gloomesh-remote-access-clusterrole-binding   13m
 ```
@@ -116,7 +125,7 @@ meshctl cluster register community mgmt-cluster \
 {{< /tabs >}}
 
 ```
-INFO[0003] successfully registered cluster mgmt-cluster
+successfully registered cluster mgmt-cluster
 ```
 
 ## What happened?

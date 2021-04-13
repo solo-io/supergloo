@@ -20,7 +20,7 @@ In this guide, we will walk through some deployment options when it comes to con
 The role-based API makes use of a `rbac-webhook` deployment and a ValidatingWebhookConfiguration. You can view the components by running the following on a cluster that has Gloo Edge Enterprise installed.
 
 ```shell
-kubectl get rbac-webhook -n gloo-mesh -oyaml
+kubectl get deployment rbac-webhook -n gloo-mesh -oyaml
 kubectl get ValidatingWebhookConfiguration rbac-webhook -oyaml
 ```
 
@@ -52,7 +52,6 @@ Permissive mode is enabled by setting the environment variable `RBAC_PERMISSIVE_
 
 ```yaml
 licenseKey: LICENSE_KEY_STRING
-
 rbac-webhook:
   rbacWebhook:
     env:

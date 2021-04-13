@@ -112,7 +112,7 @@ Note that the `gloo-mesh-enterprise` Helm chart bundles multiple components, inc
 kubectl create ns gloo-mesh
 
 helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --namespace gloo-mesh \
-  --set licenseKey=${GLOO_MESH_ENTERPRISE_LICENSE_KEY}
+  --set licenseKey=${GLOO_MESH_LICENSE_KEY}
 ```
 
 {{% notice note %}}The Helm value `selfSigned` is set to `true` by default. This means the Helm chart will create certificates for you if you do not supply them through values.{{% /notice %}}

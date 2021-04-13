@@ -25,6 +25,12 @@ To illustrate these concepts, we will assume that:
 Be sure to review the assumptions and satisfy the pre-requisites from the [Guides]({{% versioned_link_path fromRoot="/guides" %}}) top-level document.
 {{% /notice %}}
 
+Ensure you have the correct context names set in your environment:
+
+```shell
+MGMT_CONTEXT=your_management_plane_context
+```
+
 ## Role-based API
 
 The role-based API in Gloo Mesh Enterprise uses a `Role` Custom Resource Definition to create Custom Resources that represent roles you would like to define. The roles are then bound to users with a `RoleBinding` CRD. 
@@ -46,8 +52,27 @@ That might be good for testing, but certainly shouldn't be done in a production 
 
 Let's try and create a network policy on our Gloo Mesh Enterprise deployment without first creating a role and binding.
 
-```shell
-MGMT_CONTEXT=<your management plane cluster>
+{{< tabs >}}
+{{< tab name="YAML file" codelang="yaml">}}
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: TrafficPolicy
+metadata:
+  namespace: gloo-mesh
+  name: petstore
+spec:
+  destinationSelector:
+  - kubeServiceRefs:
+      services:
+        - clusterName: mgmt-cluster
+          name: petstore
+          namespace: default
+  policy:
+    requestTimeout: 100ms
+    retries:
+      attempts: 5
+      perTryTimeout: 5ms
+{{< /tab >}}
+{{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
@@ -67,7 +92,8 @@ spec:
       attempts: 5
       perTryTimeout: 5ms
 EOF
-```
+{{< /tab >}}
+{{< /tabs >}}
 
 ```shell
 Error from server (User kubernetes-admin does not have the permissions necessary to perform this action.): error when creating "STDIN": admission webhook "rbac-webhook.gloo-mesh.svc" denied the request: User kubernetes-admin does not have the permissions necessary to perform this action.
@@ -110,7 +136,27 @@ createAdminRole: true
 Assuming that you've granted yourself admin permissions, if we try to create a Gloo Mesh resource again,
 the result should be successful:
 
-```shell
+{{< tabs >}}
+{{< tab name="YAML file" codelang="yaml">}}
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: TrafficPolicy
+metadata:
+  namespace: gloo-mesh
+  name: petstore
+spec:
+  destinationSelector:
+  - kubeServiceRefs:
+      services:
+        - clusterName: mgmt-cluster
+          name: petstore
+          namespace: default
+  policy:
+    requestTimeout: 100ms
+    retries:
+      attempts: 5
+      perTryTimeout: 5ms
+{{< /tab >}}
+{{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply --context $MGMT_CONTEXT -f - << EOF
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
@@ -124,12 +170,14 @@ spec:
         - clusterName: mgmt-cluster
           name: petstore
           namespace: default
-  requestTimeout: 100ms
-  retries:
-    attempts: 5
-    perTryTimeout: 5ms
+  policy:
+    requestTimeout: 100ms
+    retries:
+      attempts: 5
+      perTryTimeout: 5ms
 EOF
-```
+{{< /tab >}}
+{{< /tabs >}}
 
 ```shell
 trafficpolicy.networking.mesh.gloo.solo.io/petstore created
@@ -147,7 +195,10 @@ The Destination Consumer Role also creates an AccessPolicyScope defining where a
 
 The end result is that the role allows the management of AccessPolicies for a specific identity and Destination, and allows a small number of TrafficPolicyActions on a specific service and workload. This type of fine-grained permissions could then be bound to a developer or operator responsible for managing traffic.
 
-```yaml
+You can deploy the following role:
+
+{{< tabs >}}
+{{< tab name="YAML file" codelang="yaml">}}
 apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1
 kind: Role
 metadata:
@@ -193,17 +244,64 @@ spec:
               - name: ratings
                 namespace: bookinfo
                 clusterName: "*"
-```
-
-You can save the above role to the file `destination-consumer.yaml` and deploy it with the following command:
-
-```shell
-kubectl --context $MGMT_CONTEXT apply -f destination-consumer.yaml
-```
+{{< /tab >}}
+{{< tab name="CLI inline" codelang="shell" >}}
+kubectl apply --context $MGMT_CONTEXT -f - << EOF
+apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1
+kind: Role
+metadata:
+  name: destination-consumer-role
+  namespace: gloo-mesh
+spec:
+  # A Destination consumer has the ability to configure policies that affect the network edge between
+  # a specific workload and an upstream Destination.
+  trafficPolicyScopes:
+    - trafficPolicyActions:
+        - RETRIES
+        - REQUEST_TIMEOUT
+        - FAULT_INJECTION
+      destinationSelectors:
+        # The absence of kubeServiceMatcher disallows selecting Destinations by kubeServiceMatcher
+        - kubeServiceRefs:
+            services:
+              - name: ratings
+                namespace: bookinfo
+                clusterName: "*"
+      workloadSelectors:
+        - kubeWorkloadMatcher:
+            labels:
+              app: productpage
+              version: v1
+            namespaces:
+              - bookinfo
+            clusters:
+              - "*"
+  # An empty virtualMeshScopes field means that no virtual mesh actions are allowed
+  # An empty failoverServiceScopes field means that no failover services can be applied by this role bearer
+  accessPolicyScopes:
+    - identitySelectors:
+        - kubeServiceAccountRefs:
+            serviceAccounts:
+              - name: "productpage"
+                namespace: "bookinfo"
+                clusterName: "*"
+    - destinationSelectors:
+        # The absence of kubeServiceMatcher disallows selecting Destinations by kubeServiceMatcher
+        - kubeServiceRefs:
+            services:
+              - name: ratings
+                namespace: bookinfo
+                clusterName: "*"
+EOF
+{{< /tab >}}
+{{< /tabs >}}
 
 Now we can bind the role to our junior operator, Gloo.
 
-```yaml
+You can now apply the following binding:
+
+{{< tabs >}}
+{{< tab name="YAML file" codelang="yaml">}}
 apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1
 kind: RoleBinding
 metadata:
@@ -218,13 +316,26 @@ spec:
   subjects:
     - kind: User
       name: Gloo
-```
-
-You can save the above binding to the file `destination-consumer-binding.yaml` and deploy it with the following command:
-
-```shell
-kubectl --context $MGMT_CONTEXT apply -f destination-consumer-binding.yaml
-```
+{{< /tab >}}
+{{< tab name="CLI inline" codelang="shell" >}}
+kubectl apply --context $MGMT_CONTEXT -f - << EOF
+apiVersion: rbac.enterprise.mesh.gloo.solo.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app: gloo-mesh
+  name: destination-consumer-role-binding
+  namespace: gloo-mesh
+spec:
+  roleRef:
+    name: destination-consumer-role
+    namespace: gloo-mesh
+  subjects:
+    - kind: User
+      name: Gloo
+EOF
+{{< /tab >}}
+{{< /tabs >}}
 
 ## Summary and Next Steps
 

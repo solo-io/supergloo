@@ -9,7 +9,7 @@ weight: 80
 
 OSM introduces a new API set of usage patterns for managing a service mesh. OSM is supported by Gloo Mesh, which can translate, configure, and manage instances of OSM in your environment. 
 
-In this guide, we will walk through the process of installing OSM and a sample application. Then we will use *Access Policies* and *Traffic Policies* from Gloo Mesh to configure the settings in OSM to allow communication between the services in the sample application. The sample application being installed is a variant of the Bookstore application. You can view the topology of the application [here](https://github.com/openservicemesh/osm/blob/main/img/book-thief-app-topology.jpg).
+In this guide, we will walk through the process of installing OSM and a sample application. Then we will use *Access Policies* and *Traffic Policies* from Gloo Mesh to configure the settings in OSM to allow communication between the services in the sample application. The sample application being installed is a variant of the Bookstore application. You can view the topology of the application [here](https://raw.githubusercontent.com/openservicemesh/osm/main/docs/content/docs/images/bookstore-app-topology.jpg).
 
 ## Before you begin
 To illustrate these concepts, we will assume that you have the following:
@@ -52,13 +52,10 @@ Waiting for deployment "osm-controller" rollout to finish: 0 of 1 updated replic
 deployment "osm-controller" successfully rolled out
 ```
 
-Next we will install Gloo Mesh, as outlined in the Setup guide for Gloo Mesh. Be sure to replace the `cluster-name` and `remote-context` values with the correct values for your environment.
+Next we will install Gloo Mesh, as outlined in the Setup guide for Gloo Mesh:
 
 ```shell
-MGMT_CONTEXT=your_management_plane_context
-
-meshctl install
-meshctl cluster register --cluster-name mgmt-cluster --remote-context $MGMT_CONTEXT
+meshctl install community --register
 ```
 
 Finally, we will deploy the sample application.
@@ -127,7 +124,57 @@ First, set the cluster name on which OSM is installed as an environment variable
 OSM_CLUSTER=osm_installation_cluster_name
 ```
 
-```shell script
+{{< tabs >}}
+{{< tab name="YAML file" codelang="yaml">}}
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: AccessPolicy
+metadata:
+  name: osm-access-policy
+  namespace: gloo-mesh
+spec:
+  destinationSelector:
+  - kubeServiceRefs:
+      services:
+      - clusterName: $OSM_CLUSTER
+        name: bookstore-v1
+        namespace: bookstore
+      - clusterName: $OSM_CLUSTER
+        name: bookstore-v2
+        namespace: bookstore
+  sourceSelector:
+  - kubeServiceAccountRefs:
+      serviceAccounts:
+      - clusterName: $OSM_CLUSTER
+        name: bookthief
+        namespace: bookthief
+---
+apiVersion: networking.mesh.gloo.solo.io/v1
+kind: TrafficPolicy
+metadata:
+  name: osm-traffic-policy
+  namespace: gloo-mesh
+spec:
+  policy:
+    trafficShift:
+      destinations:
+      - kubeService:
+          clusterName: $OSM_CLUSTER
+          name: bookstore-v1
+          namespace: bookstore
+        weight: 50
+      - kubeService:
+          clusterName: $OSM_CLUSTER
+          name: bookstore-v2
+          namespace: bookstore
+        weight: 50
+  destinationSelector:
+  - kubeServiceRefs:
+      services:
+      - clusterName: $OSM_CLUSTER
+        name: bookstore
+        namespace: bookstore
+{{< /tab >}}
+{{< tab name="CLI inline" codelang="shell" >}}
 kubectl apply -f - <<EOF
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: AccessPolicy
@@ -150,27 +197,26 @@ spec:
       - clusterName: $OSM_CLUSTER
         name: bookthief
         namespace: bookthief
-
 ---
-
 apiVersion: networking.mesh.gloo.solo.io/v1
 kind: TrafficPolicy
 metadata:
   name: osm-traffic-policy
   namespace: gloo-mesh
 spec:
-  trafficShift:
-    destinations:
-    - kubeService:
-        clusterName: $OSM_CLUSTER
-        name: bookstore-v1
-        namespace: bookstore
-      weight: 50
-    - kubeService:
-        clusterName: $OSM_CLUSTER
-        name: bookstore-v2
-        namespace: bookstore
-      weight: 50
+  policy:
+    trafficShift:
+      destinations:
+      - kubeService:
+          clusterName: $OSM_CLUSTER
+          name: bookstore-v1
+          namespace: bookstore
+        weight: 50
+      - kubeService:
+          clusterName: $OSM_CLUSTER
+          name: bookstore-v2
+          namespace: bookstore
+        weight: 50
   destinationSelector:
   - kubeServiceRefs:
       services:
@@ -178,7 +224,9 @@ spec:
         name: bookstore
         namespace: bookstore
 EOF
-```
+{{< /tab >}}
+{{< /tabs >}}
+
 {{% notice note %}}
 For osm version v0.3.0, the namespace will have to be changed to `default`.
 {{% /notice %}}

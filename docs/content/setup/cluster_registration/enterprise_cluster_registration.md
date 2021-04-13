@@ -139,7 +139,7 @@ management cluster. Run `meshctl version` on the management cluster to review th
 If you haven't already, you can add the repository by running the following:
 
 ```shell
-helm repo add gloo-mesh-enterprise https://storage.googleapis.com/gloo-mesh-enterprise/gloo-mesh-enterprise
+helm repo add enterprise-agent https://storage.googleapis.com/gloo-mesh-enterprise/enterprise-agent
 helm repo update
 ```
 
@@ -198,7 +198,9 @@ We can validate the registration process by first checking to make sure the rela
 
 ```shell
 kubectl get pods -n gloo-mesh --context $REMOTE_CONTEXT
+```
 
+```shell
 NAME                                READY   STATUS    RESTARTS   AGE
 enterprise-agent-64fc8cc9c5-v7b97   1/1     Running   7          25m
 
