@@ -23,12 +23,7 @@ Once you've downloaded the correct binary for your architecture, run the followi
 meshctl version
 ```
 
-You can add `meshctl` to your path for global access on the command line. See:
-
-
-* [Adding to your path on Windows](https://helpdeskgeek.com/windows-10/add-windows-path-environment-variable/)
-* [Adding to your path on Mac](https://osxdaily.com/2014/08/14/add-new-path-to-path-command-line/)
-* [Adding to your path on Linux](https://linuxize.com/post/how-to-add-directory-to-path-in-linux/)
+You can add `meshctl` to your PATH ([Windows](https://helpdeskgeek.com/windows-10/add-windows-path-environment-variable/) [Mac](https://osxdaily.com/2014/08/14/add-new-path-to-path-command-line/) [Linux](https://linuxize.com/post/how-to-add-directory-to-path-in-linux/)) for global access on the command line.
 
 
 ## Spinning up clusters with Kind (Kubernetes in Docker)
@@ -42,18 +37,23 @@ If you prefer to use an existing Kubernetes cluster, check out our [Setup Guide]
 
 To spin up two Kubernetes clusters with Kind, run:
 
-```shell
+{{< tabs >}}
+{{< tab name="Community" codelang="shell" >}}
 meshctl demo istio-multicluster init
-```
+{{< /tab >}}
+{{< tab name="Enterprise" codelang="shell" >}}
+GLOO_MESH_LICENSE_KEY=<your_key_here> # You'll need to supply your own key
+meshctl demo istio-multicluster init --enterprise --license $GLOO_MESH_LICENSE_KEY
+{{< /tab >}}
+{{< /tabs >}}
 
 The command will do the following:
 
 * Create two kind clusters: `mgmt-cluster` and `remote-cluster`
 * Install Gloo Mesh Community on the `mgmt-cluster`
 * Install Istio on both clusters
-* Register both clusters with Gloo Mesh
+* Register both clusters with Gloo Mesh under the names `mgmt-cluster` and `remote-cluster`
 * Deploy BookInfo sample application on both clusters under the `bookinfo` namespace
-
 
 ```shell
 Creating cluster mgmt-cluster with ingress port 32001
