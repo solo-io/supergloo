@@ -108,12 +108,21 @@ Note that the `gloo-mesh-enterprise` Helm chart bundles multiple components, inc
 
 {{% notice note %}}If you are running Gloo Mesh Enterprise's management plane on a cluster you intend to register (i.e. also run a service mesh), set the `enterprise-networking.cluster` value to the cluster name you intend to set for the management cluster at registration time. {{% /notice %}}
 
-```shell
+{{< tabs >}}
+{{< tab name="remote cluster" codelang="shell">}}
 kubectl create ns gloo-mesh
 
 helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --namespace gloo-mesh \
   --set licenseKey=${GLOO_MESH_LICENSE_KEY}
-```
+{{< /tab >}}
+{{< tab name="management cluster" codelang="shell">}}
+$CLUSTER_NAME=mgmt-cluster # Update this value as needed
+kubectl create ns gloo-mesh
+
+helm install gloo-mesh-enterprise gloo-mesh-enterprise/gloo-mesh-enterprise --namespace gloo-mesh \
+  --set licenseKey=${GLOO_MESH_LICENSE_KEY},enterprise-networking.cluster=$CLUSTER_NAME
+{{< /tab >}}
+{{< /tabs >}}
 
 {{% notice note %}}The Helm value `selfSigned` is set to `true` by default. This means the Helm chart will create certificates for you if you do not supply them through values.{{% /notice %}}
 
