@@ -278,6 +278,7 @@ var _ = Describe("IstioMeshDetector", func() {
 						ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalIp{
 							ExternalIp: "12.34.56.78",
 						},
+						ExternalAddress:  "12.34.56.78",
 						ExternalTlsPort:  5678,
 						TlsContainerPort: 1234,
 					}},
@@ -392,6 +393,7 @@ var _ = Describe("IstioMeshDetector", func() {
 						ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_ExternalIp{
 							ExternalIp: "12.34.56.78",
 						},
+						ExternalAddress:  "12.34.56.78",
 						ExternalTlsPort:  5678,
 						TlsContainerPort: 1234,
 					}},
