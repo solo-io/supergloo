@@ -74,7 +74,7 @@ message DestinationSpec {
 
             // target_port in kubernetes may either be a string referring to the port_name, or a number referring to the number
             oneof target_port {
-                // Name of the targer_port
+                // Name of the target port
                 string target_port_name = 5;
                 // Number of the target_port
                 uint32 target_port_number = 6;
