@@ -355,6 +355,7 @@ type VirtualDestinationSpec_Port struct {
 	// REQUIRED: Port number which the VirutalDestination will listen on.
 	Number uint32 `protobuf:"varint,1,opt,name=number,proto3" json:"number,omitempty"`
 	// OPTIONAL: Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`.
+	// Default: HTTP
 	Protocol string `protobuf:"bytes,2,opt,name=protocol,proto3" json:"protocol,omitempty"`
 	// REQUIRED: Name of the target_port which will be used
 	// All backing services must have the name or number specified by this field.
