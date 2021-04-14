@@ -1174,20 +1174,17 @@ spec:
                         - required:
                           - dnsName
                         - required:
-                          - externalIp
+                          - ip
                     - required:
                       - dnsName
                     - required:
-                      - externalIp
+                      - ip
                     properties:
                       dnsName:
                         description: Will be populated if the LoadBalancer Address is a DNS name
                         type: string
                       externalAddress:
-                        description: Deprecated in favor of dns_name or external_ip
-                        type: string
-                      externalIp:
-                        description: Will be populated if the LoadBalancer Address is an IP
+                        description: 'DEPRECATED: in favor of dns_name or external_ip'
                         type: string
                       externalTlsPort:
                         description: |-
@@ -1198,6 +1195,9 @@ spec:
                         maximum: 4294967295
                         minimum: 0
                         type: integer
+                      ip:
+                        description: Will be populated if the LoadBalancer Address is an IP
+                        type: string
                       tlsContainerPort:
                         description: |-
                           Container port on which the gateway is listening for TLS connections.
