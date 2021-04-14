@@ -298,7 +298,7 @@ func (t *translator) translateKubeServiceDestination(
 
 	address := ingressGateway.GetDnsName()
 	if address == "" {
-		address = ingressGateway.GetExternalIp()
+		address = ingressGateway.GetIp()
 	}
 	endpoints := []*networkingv1alpha3spec.WorkloadEntry{{
 		Address: address,

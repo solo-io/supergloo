@@ -130,7 +130,7 @@ func buildGlobalAuthPolicy(
 func ingressGatewayAuthPolicyName(ingressGateway *discoveryv1.MeshSpec_Istio_IngressGatewayInfo) string {
 	address := ingressGateway.GetDnsName()
 	if address == "" {
-		address = ingressGateway.GetExternalIp()
+		address = ingressGateway.GetIp()
 	}
 	return IngressGatewayAuthPolicyName + "-" + kubeutils.SanitizeNameV2(address)
 }
