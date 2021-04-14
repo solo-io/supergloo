@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1384
+    description: Explicitly document some important helm values when installing Gloo Mesh Enterprise.
