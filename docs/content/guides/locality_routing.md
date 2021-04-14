@@ -44,10 +44,10 @@ REMOTE_CLUSTER_NAME=remote-cluster
 Gloo Mesh uses the configured [region and zone labels](https://v1-18.docs.kubernetes.io/docs/reference/kubernetes-api/labels-annotations-taints/#topologykubernetesioregion) on nodes to indicate locality for services. If you do not already have the region and zone labels set, you will need to do so now. In our example, we will set the `mgmt-cluster` node to use `us-east-1` for the region and `us-east-1a` for the zone. The `remote-cluster` node will be set to `us-east-2` and `us-east-2b` respectively. In a cloud-based deployment, these labels will typically be set by the cloud provider.
 
 ```bash
-kubectl label node $MGMT_CLUSTER-control-plane --context $MGMT_CLUSTER_NAME \
+kubectl label node $MGMT_CLUSTER-control-plane --context $MGMT_CONTEXT \
   topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
 
-kubectl label node $REMOTE_CLUSTER-control-plane --context $REMOTE_CLUSTER_NAME \
+kubectl label node $REMOTE_CLUSTER-control-plane --context $REMOTE_CONTEXT \
   topology.kubernetes.io/region=us-east-2 topology.kubernetes.io/zone=us-east-2b
 ```
 
