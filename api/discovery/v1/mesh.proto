@@ -72,7 +72,7 @@ message MeshSpec {
                 string dns_name = 5;
 
                 // Will be populated if the LoadBalancer Address is an IP
-                string external_ip = 6;
+                string ip = 6;
             }
 
             // The externally-reachable port on which the gateway is listening for TLS connections.

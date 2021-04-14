@@ -128,7 +128,7 @@ func buildGlobalAuthPolicy(
 }
 
 func ingressGatewayAuthPolicyName(ingressGateway *discoveryv1.MeshSpec_Istio_IngressGatewayInfo) string {
-	address := ingressGateway.GetExternalAddress()
+	address := ingressGateway.GetDnsName()
 	if address == "" {
 		address = ingressGateway.GetExternalIp()
 	}
