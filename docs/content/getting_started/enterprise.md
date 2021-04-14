@@ -5,7 +5,12 @@ description: How to get started using Gloo Mesh Enterprise
 weight: 10
 ---
 
-The following guide describes how to get started with Gloo Mesh Enterprise on a managed Kubernetes environment such as GKE or EKS.
+The following guide describes how to get started with Gloo Mesh Enterprise on a managed Kubernetes environment such as GKE or EKS,
+covering installation, cluster registration, and multi-cluster traffic.
+
+<figure>
+    <img src="{{% versioned_link_path fromRoot="/img/enterprise-getting-started-diagram.png" %}}"/>
+</figure>
 
 ## Prerequisites
 
@@ -22,9 +27,7 @@ Three Kubernetes clusters, with contexts stored in the following environment var
 - REMOTE_CONTEXT2 - Context for a second cluster where you'll be running a service mesh and injected workloads.
 
 
-Lastly, ensure that you have a Gloo Mesh Enterprise license key stored in the environemtn variable `GLOO_MESH_LICENSE_KEY`.
-
-TODO joekelley diagram
+Lastly, ensure that you have a Gloo Mesh Enterprise license key stored in the environment variable `GLOO_MESH_LICENSE_KEY`.
 
 ## Installing Istio
 
@@ -251,6 +254,9 @@ istiod-istio-system-cluster1   68s
 istiod-istio-system-cluster2   28s
 ```
 
+To learn more about cluster registration and how it can be performed via Helm rather than meshctl, review the
+[enterprise cluster registration guide]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration/" %}}).
+
 ## Create a virtual mesh
 
 Next, let's bootstrap connectivity between the two distinct Istio service meshes by creating a Virtual Mesh.
@@ -452,4 +458,4 @@ meshctl dashboard
 
 ## Next Steps
 
-This is just the beginning of what's possible with Gloo Mesh Enterprise.
+This is just the beginning of what's possible with Gloo Mesh Enterprise. Review the [guides]({{% versioned_link_path fromRoot="/guides" %}}) to explore additional features.
