@@ -7,21 +7,35 @@ weight: 10
 
 The following guide describes how to get started with Gloo Mesh Enterprise on a managed Kubernetes environment such as GKE or EKS.
 
-## Before we begin
+## Prerequisites
 
-- meshctl
-- istioctl
-- jq (optional, but useful for rendering and navigating json)
-- 3 clusters with contexts MGMT_CONTEXT, REMOTE_CONTEXT1, REMOTE_CONTEXT2, where MGMT_CONTEXT points to the cluster that will
-run the Gloo Mesh management plane and REMOTE_CONTEXT1/2 point to clusters that are running Istio and application workloads. If
-desired, the management cluster can also run a service mesh and workloads to be discovered and managed by Gloo Mesh.
-- license key at GLOO_MESH_LICENSE_KEY
+Before we get started, ensure that you have the following tools installed:
+
+- kubectl - Command line utility for Kubernetes
+- meshctl - Command line utility for Gloo Mesh 
+- istioctl - Command line utility for Istio. This document assumes you are using istioctl v1.8 or v1.9.
+- jq (optional) - Utility for manipulating JSON
+
+Three Kubernetes clusters, with contexts stored in the following environment variables:
+- MGMT_CONTEXT - Context for the cluster where you'll be running the Gloo Mesh Enterprise management plane.
+- REMOTE_CONTEXT1 - Context for the cluster where you'll be running a service mesh and injected workloads.
+- REMOTE_CONTEXT2 - Context for a second cluster where you'll be running a service mesh and injected workloads.
+
+
+Lastly, ensure that you have a Gloo Mesh Enterprise license key stored in the environemtn variable `GLOO_MESH_LICENSE_KEY`.
 
 TODO joekelley diagram
 
-## TODO joekelley install istio
+## Installing Istio
 
-Let's install Istio on cluster 1:
+Gloo Mesh Enterprise will discover and configure Istio workloads running on all registered clusters. Let's begin by installing
+Istio on two of your clusters.
+
+These installation profiles are provided for their simplicity, but Gloo Mesh can discover and manage Istio deployments
+regardless of their installation options. However, to facilitate multi-cluster traffic later on in this guide, you should
+ensure that each Istio deployment has an externally accessible ingress gateway.
+
+To install Istio on cluster 1, run: 
 
 ```shell script
 cat << EOF | istioctl manifest install -y --context $REMOTE_CONTEXT1 -f -
@@ -111,23 +125,29 @@ spec:
 EOF
 ```
 
+If your installs were successful, you should see the following output after each command:
+```
+✔ Istio core installed
+✔ Istiod installed
+✔ Ingress gateways installed
+✔ Installation complete
+```
+
 ## Installing the management components
 
-Installing Gloo Mesh Enterprise with `meshctl` is a simple process. You will use the command `meshctl install enterprise` and supply the license key, as well as any chart values you want to update, and arguments pointing to the cluster where Gloo Mesh Enterprise will be installed. For our example, we are going to install Gloo Mesh Enterprise on the cluster `mgmt-cluster`. First, let's set a variable for the license key.
+The Gloo Mesh management plane is where all service mesh configuration will be provided and all discovery artifacts,
+including Meshes, Workloads, and Destinations will be aggregated. If you wish you may also run a service mesh and
+application workloads on the management cluster, but we will not for the purposes of this guide. To learn more about
+installation options for Gloo Mesh Enterprise, including how to deploy Gloo Mesh via helm, review the [Gloo Mesh Enterprise install guide]({{% versioned_link_path fromRoot="/setup/installation/enterprise_installation/" %}}).
+
+To get you up and running as quickly as possible, we will not install the Gloo Mesh Enterprise component responsible
+for enforcing the [role-based API]({{% versioned_link_path fromRoot="/concepts/role_based_api/" %}}) by including the
+`--skip-rbac` flag. If you wish to enable it, simply invoke the install command without this flag.
+
 
 ```shell
-GLOO_MESH_LICENSE_KEY=<your_key_here> # You'll need to supply your own key
+meshctl install enterprise --license $GLOO_MESH_LICENSE_KEY --skip-rbac
 ```
-
-If you are running Gloo Mesh Enterprise's management plane on a cluster you intend to register (i.e. also run a service mesh), set the `enterprise-networking.cluster` value to the cluster name you intend to set for the management cluster at registration time.
-
-TODO joekelley change default svc type to load balancer
-
-```shell
-meshctl install enterprise --license $GLOO_MESH_LICENSE_KEY
-```
-
-TODO joekelley override the default user or disable rbac
 
 You should see the following output from the command:
 
@@ -145,11 +165,10 @@ Once you've installed Gloo Mesh, verify that the following components were insta
 kubectl get pods -n gloo-mesh
 ```
 
-```shell
+```
 NAME                                     READY   STATUS    RESTARTS   AGE
 dashboard-6d6b944cdb-jcpvl               3/3     Running   0          4m2s
 enterprise-networking-84fc9fd6f5-rrbnq   1/1     Running   0          4m2s
-rbac-webhook-84865cb7dd-sbwp7            1/1     Running   0          4m2s
 ```
 
 Running the check command from meshctl will also verify everything was installed correctly:
@@ -158,7 +177,7 @@ Running the check command from meshctl will also verify everything was installed
 meshctl check
 ```
 
-```shell
+```
 Gloo Mesh
 -------------------
 ✅ Gloo Mesh pods are running
@@ -168,12 +187,10 @@ Management Configuration
 ✅ Gloo Mesh networking configuration resources are in a valid state
 ```
 
-TODO joekelley link to advanced options / install guide
-
 ## Register your remote clusters
 
-In order to register your remote clusters with the Gloo Mesh management plane, you'll need to know the external address
-of the `enterprise-networking` service. ** TODO joekelley link to relay architecture description. ** Because the service
+In order to register your remote clusters with the Gloo Mesh management plane via [Relay]({{% versioned_link_path fromRoot="/concepts/relay/" %}}),
+you'll need to know the external address of the `enterprise-networking` service. Because the service
 is of type LoadBalancer by default, your cloud provider will expose the service outside the cluster. You can determine
 the public address of the service with the following:
 
@@ -221,6 +238,9 @@ Finished installing chart 'enterprise-agent' as release gloo-mesh:enterprise-age
 ✅ Done registering cluster!
 ```
 
+Because we already installed Istio on each registered cluster, you can run the following to verify that Gloo Mesh
+has successfully discovered the remote meshes.
+
 ```shell script
 kubectl get mesh -n gloo-mesh
 ```
@@ -257,8 +277,8 @@ spec:
 EOF
 ```
 
-This kicks off a process by which each mesh is configured with certificates that share a common root of trust. To learn
-more about Gloo Mesh's Virtual Mesh concept, see TODO joekelley link here.
+This kicks off a process by which each mesh is configured with certificates that share a common root of trust. Learn more
+about Virtual Meshes in the [concepts documentation]({{% versioned_link_path fromRoot="/concepts/concepts/" %}})
 
 To verify that the Virtual Mesh has taken effect, run the following:
 
@@ -286,7 +306,7 @@ The Virtual Mesh status will be "Accepted" when your meshes are configured for m
 ## Multi-cluster traffic
 
 With our distinct Istio service meshes unified under a single Virtual Mesh, let's demonstrate how Gloo Mesh can facilitate
-splitting traffic across clusters.
+multi-cluster traffic.
 
 ### Deploy a distributed application
 
@@ -297,6 +317,7 @@ version 3 from the product page hosted on cluster 1, we will have to route to th
 To install bookinfo with reviews-v1 and reviews-v2 on cluster 1, run:
 
 ```shell script
+# prepare the default namespace for Istio sidecar injection
 kubectl --context $REMOTE_CONTEXT1 label namespace default istio-injection=enabled
 # deploy bookinfo application components for all versions less than v3
 kubectl --context $REMOTE_CONTEXT1 apply -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app,version notin (v3)'
@@ -324,6 +345,7 @@ reviews-v2-7d79d5bd5d-mpsk2       2/2     Running   0          2m34s
 To install bookinfo with reviews-v1, reviews-v2, and reviews-v3 on cluster 2, run:
 
 ```shell script
+# prepare the default namespace for Istio sidecar injection
 kubectl --context $REMOTE_CONTEXT2 label namespace default istio-injection=enabled
 # deploy all bookinfo service accounts and application components for all versions
 kubectl --context $REMOTE_CONTEXT2 apply -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml
@@ -345,49 +367,6 @@ ratings-v1-7dc98c7588-2n6bg       2/2     Running   0          2m21s
 reviews-v1-7f99cc4496-4r48m       2/2     Running   0          2m21s
 reviews-v2-7d79d5bd5d-cx9lp       2/2     Running   0          2m22s
 reviews-v3-7dbcdcbc56-trjdx       2/2     Running   0          2m22s
-```
-
-TODO joekelley maybe remove these since the UI will show it
-
-Note that at this stage, Gloo Mesh will have discovered all bookinfo workloads and services (destinations). To review
-those discovery artifacts, run:
-
-```shell script
-kubectl get workloads -n gloo-mesh
-```
-
-```
-details-v1-default-cluster1-deployment                  8m1s
-details-v1-default-cluster2-deployment                  68s
-istio-ingressgateway-istio-system-cluster1-deployment   106m
-istio-ingressgateway-istio-system-cluster2-deployment   105m
-productpage-v1-default-cluster1-deployment              8m1s
-productpage-v1-default-cluster2-deployment              67s
-ratings-v1-default-cluster1-deployment                  8m2s
-ratings-v1-default-cluster2-deployment                  68s
-reviews-v1-default-cluster1-deployment                  8m2s
-reviews-v1-default-cluster2-deployment                  67s
-reviews-v2-default-cluster1-deployment                  8m2s
-reviews-v2-default-cluster2-deployment                  67s
-reviews-v3-default-cluster2-deployment                  67s
-```
-
-```shell script
-kubectl get destination -n gloo-mesh
-```
-
-```
-NAME                                         AGE
-details-default-cluster1                     8m35s
-details-default-cluster2                     102s
-istio-ingressgateway-istio-system-cluster1   107m
-istio-ingressgateway-istio-system-cluster2   106m
-productpage-default-cluster1                 8m35s
-productpage-default-cluster2                 101s
-ratings-default-cluster1                     8m36s
-ratings-default-cluster2                     102s
-reviews-default-cluster1                     8m36s
-reviews-default-cluster2                     101s
 ```
 
 To access the bookinfo application, first determine the address of the ingress on cluster 1:
@@ -455,15 +434,22 @@ EOF
 Return to the bookinfo app in your web browser, refresh the page a few times, and you will see reviews-v3's red stars
 appear alongside the book reviews.
 
-## Launch dashboard
+## Launch the Gloo Mesh Enterprise dashboard
 
-To access the Gloo Mesh Enterprise dashboard, run:
+Gloo Mesh Enterprise ships with a dashboard which provides a single pane of glass through which you can observe the status
+of the meshes, workloads, and services running across all your clusters, as well as all the policies configuring the
+behavior of your network. To learn more about the dashboard, view [the guide]({{% versioned_link_path fromRoot="/guides/accessing_enterprise_ui/" %}}).
+
+<figure>
+    <img src="{{% versioned_link_path fromRoot="/img/dashboard.png" %}}"/>
+</figure>
+
+Access the Gloo Mesh Enterprise dashboard with:
 
 ```shell script
 meshctl dashboard
 ```
 
-From here you can review the clusters registered to Gloo Mesh, the status of the meshes, workloads, and services
-running there, as well as all the config we've applied in this guide.
+## Next Steps
 
-## Clean up
+This is just the beginning of what's possible with Gloo Mesh Enterprise.
