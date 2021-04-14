@@ -577,10 +577,19 @@ func getAppliedFederation(
 		&parentVirtualMesh.Spec,
 	)
 
+	var federatedToMeshes []*v1.ObjectRef
+	for _, groupedMeshRef := range parentVirtualMesh.Spec.GetMeshes() {
+		// only translate output resources for client meshes
+		if ezkube.RefsMatch(parentMesh, groupedMeshRef) {
+			continue
+		}
+		federatedToMeshes = append(federatedToMeshes, groupedMeshRef)
+	}
+
 	return &discoveryv1.DestinationStatus_AppliedFederation{
 		Ref:               parentMesh,
 		FederatedHostname: federatedHostname,
-		FederatedToMeshes: parentVirtualMesh.Spec.GetMeshes(),
+		FederatedToMeshes: federatedToMeshes,
 		FlatNetwork:       parentVirtualMesh.Spec.GetFederation().GetFlatNetwork(),
 	}
 }

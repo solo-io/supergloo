@@ -18,6 +18,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/destinationrule"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/federation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/virtualservice"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
@@ -30,13 +31,11 @@ import (
 	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
-	"istio.io/istio/pkg/config/kube"
-	"istio.io/istio/pkg/config/protocol"
 	"istio.io/istio/pkg/envoy/config/filter/network/tcp_cluster_rewrite/v2alpha1"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
 )
+
+// TODO(harveyxia) delete this whole pkg
 
 //go:generate mockgen -source ./federation_translator.go -destination mocks/federation_translator.go
 
@@ -283,7 +282,7 @@ func (t *translator) translateKubeServiceDestination(
 	for _, port := range destination.Spec.GetKubeService().GetPorts() {
 		ports = append(ports, &networkingv1alpha3spec.Port{
 			Number:   port.Port,
-			Protocol: ConvertKubePortProtocol(port),
+			Protocol: federation.ConvertKubePortProtocol(port),
 			Name:     port.Name,
 		})
 		endpointPorts[port.Name] = ingressGateway.ExternalTlsPort
@@ -485,18 +484,4 @@ func buildTcpRewritePatchAsConfig(clusterPattern, clusterReplacement string) (*t
 			Config: tcpRewrite,
 		},
 	})
-}
-
-// ConvertKubePortProtocol converts protocol of k8s Service port to application level protocol
-// exported for use in enterprise
-func ConvertKubePortProtocol(port *discoveryv1.DestinationSpec_KubeService_KubeServicePort) string {
-	var appProtocol *string
-	if port.AppProtocol != "" {
-		appProtocol = pointer.StringPtr(port.AppProtocol)
-	}
-	convertedProtocol := kube.ConvertProtocol(int32(port.Port), port.Name, corev1.Protocol(port.Protocol), appProtocol)
-	if convertedProtocol == protocol.Unsupported {
-		return port.Protocol
-	}
-	return string(convertedProtocol)
 }
