@@ -326,11 +326,8 @@ func makeDestinationRuleSubsets(
 		uniqueSubsets = append(uniqueSubsets, subsetLabels)
 	}
 
-	// TODO(yuval-k): Once exposed, use a function that provides iteration without sorting
-	// and coping
-	for _, genericSvc := range allDestinations.Generic().Map() {
-		service := genericSvc.(*discoveryv1.Destination)
-		for _, policy := range service.Status.AppliedTrafficPolicies {
+	for _, destination := range allDestinations.UnsortedList() {
+		for _, policy := range destination.Status.AppliedTrafficPolicies {
 			trafficShiftDestinations := policy.Spec.GetPolicy().GetTrafficShift().GetDestinations()
 			for _, dest := range trafficShiftDestinations {
 				if destinationMatchFunc(dest) {
