@@ -110,10 +110,10 @@ message DestinationSpec {
 
     // Describes a service external to the mesh
     message ExternalService {
-        
+
         // The name of the service
         string name = 1;
-        
+
         // The list of hosts which will resolve to this Destination for
         // services within the Virtual Mesh.
         repeated string hosts = 2;
@@ -132,7 +132,7 @@ message DestinationSpec {
         // ExternalEndpoint represents the address/port(s) of the external service
         // which will receive requests sent to this Destination.
         message ExternalEndpoint {
-            
+
             // The address of the external service. Can be a domain or an IP.
             string address = 1;
 
@@ -140,13 +140,13 @@ message DestinationSpec {
             map<string, uint32> ports = 2;
 
         }
-        
+
         // ServicePort describes a port accessible on this Destination
         message ServicePort {
-            
+
             // The port number. Must be a valid, non-negative integer port number.
             uint32 number = 1;
-            
+
             // A label for the port, eg "http"
             string name = 2;
 
@@ -211,19 +211,22 @@ message DestinationStatus {
     // Federation allows access to the Destination from other meshes/clusters.
     message AppliedFederation {
 
+        // Reference to the VirtualMesh object.
+        .core.skv2.solo.io.ObjectRef ref = 1;
+
         /*
             For any Workload that this Destination has been federated to (i.e., any Workload controlled by a Mesh whose reference appears in `federated_to_meshes`),
             that Workload will be able to reach this Destination using this DNS name.
             For Kubernetes Destinations this includes Workloads on clusters other than the one hosting this Destination.
         */
-        string federated_hostname = 1;
+        string federated_hostname = 2;
 
         // The list of Meshes which are able to resolve this Destination's `multicluster_dns_name`.
-        repeated .core.skv2.solo.io.ObjectRef federated_to_meshes = 2;
+        repeated .core.skv2.solo.io.ObjectRef federated_to_meshes = 3;
 
-        // Whether or not the Destination has been federated to the given meshes using a VirtualMesh where
+        // Whether the Destination has been federated to the given meshes using a VirtualMesh where
         // [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})
         // is true.
-        bool flat_network = 3;
+        bool flat_network = 4;
     }
 }

@@ -403,10 +403,20 @@ spec:
                   type: array
                 flatNetwork:
                   description: |-
-                    Whether or not the Destination has been federated to the given meshes using a VirtualMesh where
+                    Whether the Destination has been federated to the given meshes using a VirtualMesh where
                     [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})
                     is true.
                   type: boolean
+                ref:
+                  description: Reference to the VirtualMesh object.
+                  properties:
+                    name:
+                      description: name of the resource being referenced
+                      type: string
+                    namespace:
+                      description: namespace of the resource being referenced
+                      type: string
+                  type: object
               type: object
             appliedTrafficPolicies:
               description: The set of TrafficPolicies that have been applied to this Destination.
