@@ -72,11 +72,11 @@ message DestinationSpec {
             // Available in Kubernetes 1.18+, describes the application protocol.
             string app_protocol = 4;
 
-            // target_port in kubernetes may either be a string referring to the port_name, or a number referring to the number
+            // A Kubernetes Service's spec.targetPort can either be a string referring to the port name, or a number referring to the number. See [this reference](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/#ServiceSpec).
             oneof target_port {
                 // Name of the target port
                 string target_port_name = 5;
-                // Number of the target_port
+                // Number of the target port
                 uint32 target_port_number = 6;
             }
         }
