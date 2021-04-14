@@ -121,6 +121,7 @@ func applyPoliciesToConfigTargets(input input.LocalSnapshot) {
 	for _, destination := range input.Destinations().List() {
 		destination.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), destination)
 		destination.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), destination)
+		destination.Status.AppliedFederation = getAppliedFederation(input.VirtualMeshes().List(), destination)
 	}
 
 	for _, mesh := range input.Meshes().List() {
@@ -539,6 +540,49 @@ func getAppliedAccessPolicies(
 	}
 
 	return appliedPolicies
+}
+
+// return AppliedFederation if this Destination is federated by a VirtualMesh, otherwise return nil
+func getAppliedFederation(
+	virtualMeshes networkingv1.VirtualMeshSlice,
+	destination *discoveryv1.Destination,
+) *discoveryv1.DestinationStatus_AppliedFederation {
+
+	// TODO federation only supports Kubernetes services
+	kubeService := destination.Spec.GetKubeService()
+	if kubeService == nil {
+		return nil
+	}
+
+	// find Destination's parent mesh ref
+	var parentVirtualMesh *networkingv1.VirtualMesh
+	var parentMesh *v1.ObjectRef
+	for _, vMesh := range virtualMeshes {
+		for _, meshRef := range vMesh.Spec.GetMeshes() {
+			if ezkube.RefsMatch(destination.Spec.GetMesh(), meshRef) {
+				parentMesh = meshRef
+				// assumes constraint of one VirtualMesh per Mesh
+				parentVirtualMesh = vMesh
+			}
+		}
+	}
+
+	// no federation applied to this Destination
+	if parentVirtualMesh == nil {
+		return nil
+	}
+
+	federatedHostname := hostutils.BuildFederatedFQDN(
+		kubeService.GetRef(),
+		&parentVirtualMesh.Spec,
+	)
+
+	return &discoveryv1.DestinationStatus_AppliedFederation{
+		Ref:               parentMesh,
+		FederatedHostname: federatedHostname,
+		FederatedToMeshes: parentVirtualMesh.Spec.GetMeshes(),
+		FlatNetwork:       parentVirtualMesh.Spec.GetFederation().GetFlatNetwork(),
+	}
 }
 
 func getAppliedVirtualMesh(
