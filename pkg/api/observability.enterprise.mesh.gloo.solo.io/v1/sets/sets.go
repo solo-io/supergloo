@@ -18,6 +18,8 @@ type AccessLogRecordSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord) bool) []*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord) bool) []*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord
 	// Return the Set as a map of key to resource.
 	Map() map[string]*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord
 	// Insert a resource into the set.
@@ -86,8 +88,27 @@ func (s *accessLogRecordSet) List(filterResource ...func(*observability_enterpri
 		})
 	}
 
+	objs := s.Generic().List(genericFilters...)
+	accessLogRecordList := make([]*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord, 0, len(objs))
+	for _, obj := range objs {
+		accessLogRecordList = append(accessLogRecordList, obj.(*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord))
+	}
+	return accessLogRecordList
+}
+
+func (s *accessLogRecordSet) UnsortedList(filterResource ...func(*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord) bool) []*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord))
+		})
+	}
+
 	var accessLogRecordList []*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord
-	for _, obj := range s.Generic().List(genericFilters...) {
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		accessLogRecordList = append(accessLogRecordList, obj.(*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord))
 	}
 	return accessLogRecordList
