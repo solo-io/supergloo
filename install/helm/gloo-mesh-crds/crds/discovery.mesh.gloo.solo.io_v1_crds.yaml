@@ -185,10 +185,10 @@ spec:
                         description: Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...)
                         type: string
                       targetPortName:
-                        description: Name of the targer_port
+                        description: Name of the target port
                         type: string
                       targetPortNumber:
-                        description: Number of the target_port
+                        description: Number of the target port
                         maximum: 4294967295
                         minimum: 0
                         type: integer

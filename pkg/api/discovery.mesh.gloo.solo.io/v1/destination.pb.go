@@ -421,7 +421,7 @@ type DestinationSpec_KubeService_KubeServicePort struct {
 	Protocol string `protobuf:"bytes,3,opt,name=protocol,proto3" json:"protocol,omitempty"`
 	// Available in Kubernetes 1.18+, describes the application protocol.
 	AppProtocol string `protobuf:"bytes,4,opt,name=app_protocol,json=appProtocol,proto3" json:"app_protocol,omitempty"`
-	// target_port in kubernetes may either be a string referring to the port_name, or a number referring to the number
+	// A Kubernetes Service's spec.targetPort can either be a string referring to the port name, or a number referring to the number. See [this reference](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/#ServiceSpec).
 	//
 	// Types that are assignable to TargetPort:
 	//	*DestinationSpec_KubeService_KubeServicePort_TargetPortName
@@ -515,12 +515,12 @@ type isDestinationSpec_KubeService_KubeServicePort_TargetPort interface {
 }
 
 type DestinationSpec_KubeService_KubeServicePort_TargetPortName struct {
-	// Name of the targer_port
+	// Name of the target port
 	TargetPortName string `protobuf:"bytes,5,opt,name=target_port_name,json=targetPortName,proto3,oneof"`
 }
 
 type DestinationSpec_KubeService_KubeServicePort_TargetPortNumber struct {
-	// Number of the target_port
+	// Number of the target port
 	TargetPortNumber uint32 `protobuf:"varint,6,opt,name=target_port_number,json=targetPortNumber,proto3,oneof"`
 }
 
