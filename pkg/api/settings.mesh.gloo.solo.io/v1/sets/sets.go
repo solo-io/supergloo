@@ -88,8 +88,9 @@ func (s *settingsSet) List(filterResource ...func(*settings_mesh_gloo_solo_io_v1
 		})
 	}
 
-	var settingsList []*settings_mesh_gloo_solo_io_v1.Settings
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	settingsList := make([]*settings_mesh_gloo_solo_io_v1.Settings, 0, len(objs))
+	for _, obj := range objs {
 		settingsList = append(settingsList, obj.(*settings_mesh_gloo_solo_io_v1.Settings))
 	}
 	return settingsList

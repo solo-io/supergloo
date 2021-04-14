@@ -88,8 +88,9 @@ func (s *accessLogRecordSet) List(filterResource ...func(*observability_enterpri
 		})
 	}
 
-	var accessLogRecordList []*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	accessLogRecordList := make([]*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord, 0, len(objs))
+	for _, obj := range objs {
 		accessLogRecordList = append(accessLogRecordList, obj.(*observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord))
 	}
 	return accessLogRecordList

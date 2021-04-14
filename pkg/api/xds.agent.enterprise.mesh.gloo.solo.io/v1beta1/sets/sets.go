@@ -88,8 +88,9 @@ func (s *xdsConfigSet) List(filterResource ...func(*xds_agent_enterprise_mesh_gl
 		})
 	}
 
-	var xdsConfigList []*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	xdsConfigList := make([]*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig, 0, len(objs))
+	for _, obj := range objs {
 		xdsConfigList = append(xdsConfigList, obj.(*xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig))
 	}
 	return xdsConfigList

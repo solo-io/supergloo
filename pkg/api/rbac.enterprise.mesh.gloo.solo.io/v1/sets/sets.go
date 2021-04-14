@@ -88,8 +88,9 @@ func (s *roleSet) List(filterResource ...func(*rbac_enterprise_mesh_gloo_solo_io
 		})
 	}
 
-	var roleList []*rbac_enterprise_mesh_gloo_solo_io_v1.Role
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	roleList := make([]*rbac_enterprise_mesh_gloo_solo_io_v1.Role, 0, len(objs))
+	for _, obj := range objs {
 		roleList = append(roleList, obj.(*rbac_enterprise_mesh_gloo_solo_io_v1.Role))
 	}
 	return roleList
@@ -297,8 +298,9 @@ func (s *roleBindingSet) List(filterResource ...func(*rbac_enterprise_mesh_gloo_
 		})
 	}
 
-	var roleBindingList []*rbac_enterprise_mesh_gloo_solo_io_v1.RoleBinding
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	roleBindingList := make([]*rbac_enterprise_mesh_gloo_solo_io_v1.RoleBinding, 0, len(objs))
+	for _, obj := range objs {
 		roleBindingList = append(roleBindingList, obj.(*rbac_enterprise_mesh_gloo_solo_io_v1.RoleBinding))
 	}
 	return roleBindingList

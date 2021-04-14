@@ -88,8 +88,9 @@ func (s *trafficPolicySet) List(filterResource ...func(*networking_mesh_gloo_sol
 		})
 	}
 
-	var trafficPolicyList []*networking_mesh_gloo_solo_io_v1.TrafficPolicy
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	trafficPolicyList := make([]*networking_mesh_gloo_solo_io_v1.TrafficPolicy, 0, len(objs))
+	for _, obj := range objs {
 		trafficPolicyList = append(trafficPolicyList, obj.(*networking_mesh_gloo_solo_io_v1.TrafficPolicy))
 	}
 	return trafficPolicyList
@@ -297,8 +298,9 @@ func (s *accessPolicySet) List(filterResource ...func(*networking_mesh_gloo_solo
 		})
 	}
 
-	var accessPolicyList []*networking_mesh_gloo_solo_io_v1.AccessPolicy
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	accessPolicyList := make([]*networking_mesh_gloo_solo_io_v1.AccessPolicy, 0, len(objs))
+	for _, obj := range objs {
 		accessPolicyList = append(accessPolicyList, obj.(*networking_mesh_gloo_solo_io_v1.AccessPolicy))
 	}
 	return accessPolicyList
@@ -506,8 +508,9 @@ func (s *virtualMeshSet) List(filterResource ...func(*networking_mesh_gloo_solo_
 		})
 	}
 
-	var virtualMeshList []*networking_mesh_gloo_solo_io_v1.VirtualMesh
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	virtualMeshList := make([]*networking_mesh_gloo_solo_io_v1.VirtualMesh, 0, len(objs))
+	for _, obj := range objs {
 		virtualMeshList = append(virtualMeshList, obj.(*networking_mesh_gloo_solo_io_v1.VirtualMesh))
 	}
 	return virtualMeshList

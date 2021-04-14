@@ -88,8 +88,9 @@ func (s *issuedCertificateSet) List(filterResource ...func(*certificates_mesh_gl
 		})
 	}
 
-	var issuedCertificateList []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	issuedCertificateList := make([]*certificates_mesh_gloo_solo_io_v1.IssuedCertificate, 0, len(objs))
+	for _, obj := range objs {
 		issuedCertificateList = append(issuedCertificateList, obj.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate))
 	}
 	return issuedCertificateList
@@ -297,8 +298,9 @@ func (s *certificateRequestSet) List(filterResource ...func(*certificates_mesh_g
 		})
 	}
 
-	var certificateRequestList []*certificates_mesh_gloo_solo_io_v1.CertificateRequest
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	certificateRequestList := make([]*certificates_mesh_gloo_solo_io_v1.CertificateRequest, 0, len(objs))
+	for _, obj := range objs {
 		certificateRequestList = append(certificateRequestList, obj.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest))
 	}
 	return certificateRequestList
@@ -506,8 +508,9 @@ func (s *podBounceDirectiveSet) List(filterResource ...func(*certificates_mesh_g
 		})
 	}
 
-	var podBounceDirectiveList []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	podBounceDirectiveList := make([]*certificates_mesh_gloo_solo_io_v1.PodBounceDirective, 0, len(objs))
+	for _, obj := range objs {
 		podBounceDirectiveList = append(podBounceDirectiveList, obj.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective))
 	}
 	return podBounceDirectiveList

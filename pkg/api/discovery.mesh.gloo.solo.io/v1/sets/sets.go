@@ -88,8 +88,9 @@ func (s *destinationSet) List(filterResource ...func(*discovery_mesh_gloo_solo_i
 		})
 	}
 
-	var destinationList []*discovery_mesh_gloo_solo_io_v1.Destination
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	destinationList := make([]*discovery_mesh_gloo_solo_io_v1.Destination, 0, len(objs))
+	for _, obj := range objs {
 		destinationList = append(destinationList, obj.(*discovery_mesh_gloo_solo_io_v1.Destination))
 	}
 	return destinationList
@@ -297,8 +298,9 @@ func (s *workloadSet) List(filterResource ...func(*discovery_mesh_gloo_solo_io_v
 		})
 	}
 
-	var workloadList []*discovery_mesh_gloo_solo_io_v1.Workload
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	workloadList := make([]*discovery_mesh_gloo_solo_io_v1.Workload, 0, len(objs))
+	for _, obj := range objs {
 		workloadList = append(workloadList, obj.(*discovery_mesh_gloo_solo_io_v1.Workload))
 	}
 	return workloadList
@@ -506,8 +508,9 @@ func (s *meshSet) List(filterResource ...func(*discovery_mesh_gloo_solo_io_v1.Me
 		})
 	}
 
-	var meshList []*discovery_mesh_gloo_solo_io_v1.Mesh
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	meshList := make([]*discovery_mesh_gloo_solo_io_v1.Mesh, 0, len(objs))
+	for _, obj := range objs {
 		meshList = append(meshList, obj.(*discovery_mesh_gloo_solo_io_v1.Mesh))
 	}
 	return meshList

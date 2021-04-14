@@ -88,8 +88,9 @@ func (s *wasmDeploymentSet) List(filterResource ...func(*networking_enterprise_m
 		})
 	}
 
-	var wasmDeploymentList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	wasmDeploymentList := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment, 0, len(objs))
+	for _, obj := range objs {
 		wasmDeploymentList = append(wasmDeploymentList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment))
 	}
 	return wasmDeploymentList
@@ -297,8 +298,9 @@ func (s *virtualDestinationSet) List(filterResource ...func(*networking_enterpri
 		})
 	}
 
-	var virtualDestinationList []*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination
-	for _, obj := range s.Generic().List(genericFilters...) {
+	objs := s.Generic().List(genericFilters...)
+	virtualDestinationList := make([]*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination, 0, len(objs))
+	for _, obj := range objs {
 		virtualDestinationList = append(virtualDestinationList, obj.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination))
 	}
 	return virtualDestinationList
