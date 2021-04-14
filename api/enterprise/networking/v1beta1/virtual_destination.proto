@@ -61,6 +61,7 @@ message VirtualDestinationSpec {
         string protocol = 2;
 
         // REQUIRED: Name of the target_port which will be used
+        // All backing services must have the name or number specified by this field.
         oneof target_port {
             // If the target_name is specified, the VirtualDestination will attempt to find a port by this name on all backing services
             string target_name = 3;
