@@ -70,6 +70,24 @@ func (mr *MockXdsConfigSetMockRecorder) List(filterResource ...interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockXdsConfigSet)(nil).List), filterResource...)
 }
 
+// UnsortedList mocks base method
+func (m *MockXdsConfigSet) UnsortedList(filterResource ...func(*v1beta1.XdsConfig) bool) []*v1beta1.XdsConfig {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1beta1.XdsConfig)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockXdsConfigSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockXdsConfigSet)(nil).UnsortedList), filterResource...)
+}
+
 // Map mocks base method
 func (m *MockXdsConfigSet) Map() map[string]*v1beta1.XdsConfig {
 	m.ctrl.T.Helper()
