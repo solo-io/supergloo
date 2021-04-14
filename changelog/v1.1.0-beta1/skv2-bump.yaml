@@ -2,4 +2,4 @@ changelog:
   - type: DEPENDENCY_BUMP
     dependencyOwner: solo-io
     dependencyRepo: skv2
-    dependencyTag: v0.17.12
+    dependencyTag: v0.17.14
