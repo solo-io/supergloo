@@ -119,5 +119,28 @@ Finished installing chart 'enterprise-agent' as release gloo-mesh:enterprise-age
 ✅ Done registering cluster!
 ```
 
+TODO joekelley show output of mesh discovery
 
+## Create a virtual mesh
 
+TODO joekelley create a virtual mesh
+
+## Deploy a distributed application
+
+TODO joekelley install bookfino
+TODO joekelley show discovered workloads
+
+## Split traffic across clusters
+
+TODO joekelley do a multicluster traffic split
+
+- demonstrate bookinfo working one way
+- do a traffic split so that it routes to the remote cluster
+
+## Launch dashboard
+
+```shell script
+meshctl dashboard
+```
+
+## Clean up
