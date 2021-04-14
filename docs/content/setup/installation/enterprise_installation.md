@@ -106,8 +106,8 @@ Note that the `gloo-mesh-enterprise` Helm chart bundles multiple components, inc
 
 4. Install
 
-There are several important helm values to modify, depending on your setup.
-Here are several common cases:
+There are several [helm values]({{< versioned_link_path fromRoot="/reference/helm/gloo_mesh_enterprise" >}}) that you may have
+to modify, depending on your setup. Here are several examples:
 
 Case 1: Your Gloo Mesh control plane will be running on its own cluster.
 
@@ -116,10 +116,11 @@ that you intend to register (i.e. also run a service mesh). In this case,
 set the `enterprise-networking.cluster` value to the cluster name you
 intend to set for the management cluster at registration time.
 
-Case 3: You intend to provide your own certificates. Note that
-the Helm value `selfSigned` is set to `true` by default.
-This means the Helm chart will create certificates for you if
-you do not supply them through values.
+Case 3: You intend to provide your own certificates. The Helm value
+`selfSigned` is set to `true` by default. This means the Helm chart
+will create certificates for you if you do not supply them through values.
+Set `selfSigned` to `false` and follow the steps [here]({{< versioned_link_path fromRoot="/setup/prerequisites/enterprise_prerequisites/#manual-certificate-creation-optional" >}})
+to manually create certs.
 
 
 {{< tabs >}}
