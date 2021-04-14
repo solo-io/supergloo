@@ -72,3 +72,87 @@ func VirtualDestinationClientFromConfigFactoryProvider() VirtualDestinationClien
 		return clients.VirtualDestinations(), nil
 	}
 }
+
+// Provider for FederatedGatewayClient from Clientset
+func FederatedGatewayClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1beta1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGatewayClient {
+	return clients.FederatedGateways()
+}
+
+// Provider for FederatedGateway Client from Client
+func FederatedGatewayClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGatewayClient {
+	return networking_enterprise_mesh_gloo_solo_io_v1beta1.NewFederatedGatewayClient(client)
+}
+
+type FederatedGatewayClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGatewayClient
+
+func FederatedGatewayClientFactoryProvider() FederatedGatewayClientFactory {
+	return FederatedGatewayClientProvider
+}
+
+type FederatedGatewayClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGatewayClient, error)
+
+func FederatedGatewayClientFromConfigFactoryProvider() FederatedGatewayClientFromConfigFactory {
+	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGatewayClient, error) {
+		clients, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.FederatedGateways(), nil
+	}
+}
+
+// Provider for RouteTableClient from Clientset
+func RouteTableClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1beta1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTableClient {
+	return clients.RouteTables()
+}
+
+// Provider for RouteTable Client from Client
+func RouteTableClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTableClient {
+	return networking_enterprise_mesh_gloo_solo_io_v1beta1.NewRouteTableClient(client)
+}
+
+type RouteTableClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTableClient
+
+func RouteTableClientFactoryProvider() RouteTableClientFactory {
+	return RouteTableClientProvider
+}
+
+type RouteTableClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTableClient, error)
+
+func RouteTableClientFromConfigFactoryProvider() RouteTableClientFromConfigFactory {
+	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTableClient, error) {
+		clients, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.RouteTables(), nil
+	}
+}
+
+// Provider for DelegatedRouteTableClient from Clientset
+func DelegatedRouteTableClientFromClientsetProvider(clients networking_enterprise_mesh_gloo_solo_io_v1beta1.Clientset) networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTableClient {
+	return clients.DelegatedRouteTables()
+}
+
+// Provider for DelegatedRouteTable Client from Client
+func DelegatedRouteTableClientProvider(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTableClient {
+	return networking_enterprise_mesh_gloo_solo_io_v1beta1.NewDelegatedRouteTableClient(client)
+}
+
+type DelegatedRouteTableClientFactory func(client client.Client) networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTableClient
+
+func DelegatedRouteTableClientFactoryProvider() DelegatedRouteTableClientFactory {
+	return DelegatedRouteTableClientProvider
+}
+
+type DelegatedRouteTableClientFromConfigFactory func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTableClient, error)
+
+func DelegatedRouteTableClientFromConfigFactoryProvider() DelegatedRouteTableClientFromConfigFactory {
+	return func(cfg *rest.Config) (networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTableClient, error) {
+		clients, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewClientsetFromConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return clients.DelegatedRouteTables(), nil
+	}
+}

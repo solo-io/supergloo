@@ -43,6 +43,12 @@ type Clientset interface {
 	WasmDeployments() WasmDeploymentClient
 	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 	VirtualDestinations() VirtualDestinationClient
+	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+	FederatedGateways() FederatedGatewayClient
+	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+	RouteTables() RouteTableClient
+	// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+	DelegatedRouteTables() DelegatedRouteTableClient
 }
 
 type clientSet struct {
@@ -75,6 +81,21 @@ func (c *clientSet) WasmDeployments() WasmDeploymentClient {
 // clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
 func (c *clientSet) VirtualDestinations() VirtualDestinationClient {
 	return NewVirtualDestinationClient(c.client)
+}
+
+// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+func (c *clientSet) FederatedGateways() FederatedGatewayClient {
+	return NewFederatedGatewayClient(c.client)
+}
+
+// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+func (c *clientSet) RouteTables() RouteTableClient {
+	return NewRouteTableClient(c.client)
+}
+
+// clienset for the networking.enterprise.mesh.gloo.solo.io/v1beta1/v1beta1 APIs
+func (c *clientSet) DelegatedRouteTables() DelegatedRouteTableClient {
+	return NewDelegatedRouteTableClient(c.client)
 }
 
 // Reader knows how to read and list WasmDeployments.
@@ -359,4 +380,430 @@ func (m *multiclusterVirtualDestinationClient) Cluster(cluster string) (VirtualD
 		return nil, err
 	}
 	return NewVirtualDestinationClient(client), nil
+}
+
+// Reader knows how to read and list FederatedGateways.
+type FederatedGatewayReader interface {
+	// Get retrieves a FederatedGateway for the given object key
+	GetFederatedGateway(ctx context.Context, key client.ObjectKey) (*FederatedGateway, error)
+
+	// List retrieves list of FederatedGateways for a given namespace and list options.
+	ListFederatedGateway(ctx context.Context, opts ...client.ListOption) (*FederatedGatewayList, error)
+}
+
+// FederatedGatewayTransitionFunction instructs the FederatedGatewayWriter how to transition between an existing
+// FederatedGateway object and a desired on an Upsert
+type FederatedGatewayTransitionFunction func(existing, desired *FederatedGateway) error
+
+// Writer knows how to create, delete, and update FederatedGateways.
+type FederatedGatewayWriter interface {
+	// Create saves the FederatedGateway object.
+	CreateFederatedGateway(ctx context.Context, obj *FederatedGateway, opts ...client.CreateOption) error
+
+	// Delete deletes the FederatedGateway object.
+	DeleteFederatedGateway(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+	// Update updates the given FederatedGateway object.
+	UpdateFederatedGateway(ctx context.Context, obj *FederatedGateway, opts ...client.UpdateOption) error
+
+	// Patch patches the given FederatedGateway object.
+	PatchFederatedGateway(ctx context.Context, obj *FederatedGateway, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all FederatedGateway objects matching the given options.
+	DeleteAllOfFederatedGateway(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the FederatedGateway object.
+	UpsertFederatedGateway(ctx context.Context, obj *FederatedGateway, transitionFuncs ...FederatedGatewayTransitionFunction) error
+}
+
+// StatusWriter knows how to update status subresource of a FederatedGateway object.
+type FederatedGatewayStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given FederatedGateway object.
+	UpdateFederatedGatewayStatus(ctx context.Context, obj *FederatedGateway, opts ...client.UpdateOption) error
+
+	// Patch patches the given FederatedGateway object's subresource.
+	PatchFederatedGatewayStatus(ctx context.Context, obj *FederatedGateway, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on FederatedGateways.
+type FederatedGatewayClient interface {
+	FederatedGatewayReader
+	FederatedGatewayWriter
+	FederatedGatewayStatusWriter
+}
+
+type federatedGatewayClient struct {
+	client client.Client
+}
+
+func NewFederatedGatewayClient(client client.Client) *federatedGatewayClient {
+	return &federatedGatewayClient{client: client}
+}
+
+func (c *federatedGatewayClient) GetFederatedGateway(ctx context.Context, key client.ObjectKey) (*FederatedGateway, error) {
+	obj := &FederatedGateway{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *federatedGatewayClient) ListFederatedGateway(ctx context.Context, opts ...client.ListOption) (*FederatedGatewayList, error) {
+	list := &FederatedGatewayList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *federatedGatewayClient) CreateFederatedGateway(ctx context.Context, obj *FederatedGateway, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *federatedGatewayClient) DeleteFederatedGateway(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &FederatedGateway{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *federatedGatewayClient) UpdateFederatedGateway(ctx context.Context, obj *FederatedGateway, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *federatedGatewayClient) PatchFederatedGateway(ctx context.Context, obj *FederatedGateway, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *federatedGatewayClient) DeleteAllOfFederatedGateway(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &FederatedGateway{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *federatedGatewayClient) UpsertFederatedGateway(ctx context.Context, obj *FederatedGateway, transitionFuncs ...FederatedGatewayTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*FederatedGateway), desired.(*FederatedGateway)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
+func (c *federatedGatewayClient) UpdateFederatedGatewayStatus(ctx context.Context, obj *FederatedGateway, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *federatedGatewayClient) PatchFederatedGatewayStatus(ctx context.Context, obj *FederatedGateway, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides FederatedGatewayClients for multiple clusters.
+type MulticlusterFederatedGatewayClient interface {
+	// Cluster returns a FederatedGatewayClient for the given cluster
+	Cluster(cluster string) (FederatedGatewayClient, error)
+}
+
+type multiclusterFederatedGatewayClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterFederatedGatewayClient(client multicluster.Client) MulticlusterFederatedGatewayClient {
+	return &multiclusterFederatedGatewayClient{client: client}
+}
+
+func (m *multiclusterFederatedGatewayClient) Cluster(cluster string) (FederatedGatewayClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewFederatedGatewayClient(client), nil
+}
+
+// Reader knows how to read and list RouteTables.
+type RouteTableReader interface {
+	// Get retrieves a RouteTable for the given object key
+	GetRouteTable(ctx context.Context, key client.ObjectKey) (*RouteTable, error)
+
+	// List retrieves list of RouteTables for a given namespace and list options.
+	ListRouteTable(ctx context.Context, opts ...client.ListOption) (*RouteTableList, error)
+}
+
+// RouteTableTransitionFunction instructs the RouteTableWriter how to transition between an existing
+// RouteTable object and a desired on an Upsert
+type RouteTableTransitionFunction func(existing, desired *RouteTable) error
+
+// Writer knows how to create, delete, and update RouteTables.
+type RouteTableWriter interface {
+	// Create saves the RouteTable object.
+	CreateRouteTable(ctx context.Context, obj *RouteTable, opts ...client.CreateOption) error
+
+	// Delete deletes the RouteTable object.
+	DeleteRouteTable(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+	// Update updates the given RouteTable object.
+	UpdateRouteTable(ctx context.Context, obj *RouteTable, opts ...client.UpdateOption) error
+
+	// Patch patches the given RouteTable object.
+	PatchRouteTable(ctx context.Context, obj *RouteTable, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all RouteTable objects matching the given options.
+	DeleteAllOfRouteTable(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the RouteTable object.
+	UpsertRouteTable(ctx context.Context, obj *RouteTable, transitionFuncs ...RouteTableTransitionFunction) error
+}
+
+// StatusWriter knows how to update status subresource of a RouteTable object.
+type RouteTableStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given RouteTable object.
+	UpdateRouteTableStatus(ctx context.Context, obj *RouteTable, opts ...client.UpdateOption) error
+
+	// Patch patches the given RouteTable object's subresource.
+	PatchRouteTableStatus(ctx context.Context, obj *RouteTable, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on RouteTables.
+type RouteTableClient interface {
+	RouteTableReader
+	RouteTableWriter
+	RouteTableStatusWriter
+}
+
+type routeTableClient struct {
+	client client.Client
+}
+
+func NewRouteTableClient(client client.Client) *routeTableClient {
+	return &routeTableClient{client: client}
+}
+
+func (c *routeTableClient) GetRouteTable(ctx context.Context, key client.ObjectKey) (*RouteTable, error) {
+	obj := &RouteTable{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *routeTableClient) ListRouteTable(ctx context.Context, opts ...client.ListOption) (*RouteTableList, error) {
+	list := &RouteTableList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *routeTableClient) CreateRouteTable(ctx context.Context, obj *RouteTable, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *routeTableClient) DeleteRouteTable(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &RouteTable{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *routeTableClient) UpdateRouteTable(ctx context.Context, obj *RouteTable, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *routeTableClient) PatchRouteTable(ctx context.Context, obj *RouteTable, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *routeTableClient) DeleteAllOfRouteTable(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &RouteTable{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *routeTableClient) UpsertRouteTable(ctx context.Context, obj *RouteTable, transitionFuncs ...RouteTableTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*RouteTable), desired.(*RouteTable)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
+func (c *routeTableClient) UpdateRouteTableStatus(ctx context.Context, obj *RouteTable, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *routeTableClient) PatchRouteTableStatus(ctx context.Context, obj *RouteTable, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides RouteTableClients for multiple clusters.
+type MulticlusterRouteTableClient interface {
+	// Cluster returns a RouteTableClient for the given cluster
+	Cluster(cluster string) (RouteTableClient, error)
+}
+
+type multiclusterRouteTableClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterRouteTableClient(client multicluster.Client) MulticlusterRouteTableClient {
+	return &multiclusterRouteTableClient{client: client}
+}
+
+func (m *multiclusterRouteTableClient) Cluster(cluster string) (RouteTableClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewRouteTableClient(client), nil
+}
+
+// Reader knows how to read and list DelegatedRouteTables.
+type DelegatedRouteTableReader interface {
+	// Get retrieves a DelegatedRouteTable for the given object key
+	GetDelegatedRouteTable(ctx context.Context, key client.ObjectKey) (*DelegatedRouteTable, error)
+
+	// List retrieves list of DelegatedRouteTables for a given namespace and list options.
+	ListDelegatedRouteTable(ctx context.Context, opts ...client.ListOption) (*DelegatedRouteTableList, error)
+}
+
+// DelegatedRouteTableTransitionFunction instructs the DelegatedRouteTableWriter how to transition between an existing
+// DelegatedRouteTable object and a desired on an Upsert
+type DelegatedRouteTableTransitionFunction func(existing, desired *DelegatedRouteTable) error
+
+// Writer knows how to create, delete, and update DelegatedRouteTables.
+type DelegatedRouteTableWriter interface {
+	// Create saves the DelegatedRouteTable object.
+	CreateDelegatedRouteTable(ctx context.Context, obj *DelegatedRouteTable, opts ...client.CreateOption) error
+
+	// Delete deletes the DelegatedRouteTable object.
+	DeleteDelegatedRouteTable(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error
+
+	// Update updates the given DelegatedRouteTable object.
+	UpdateDelegatedRouteTable(ctx context.Context, obj *DelegatedRouteTable, opts ...client.UpdateOption) error
+
+	// Patch patches the given DelegatedRouteTable object.
+	PatchDelegatedRouteTable(ctx context.Context, obj *DelegatedRouteTable, patch client.Patch, opts ...client.PatchOption) error
+
+	// DeleteAllOf deletes all DelegatedRouteTable objects matching the given options.
+	DeleteAllOfDelegatedRouteTable(ctx context.Context, opts ...client.DeleteAllOfOption) error
+
+	// Create or Update the DelegatedRouteTable object.
+	UpsertDelegatedRouteTable(ctx context.Context, obj *DelegatedRouteTable, transitionFuncs ...DelegatedRouteTableTransitionFunction) error
+}
+
+// StatusWriter knows how to update status subresource of a DelegatedRouteTable object.
+type DelegatedRouteTableStatusWriter interface {
+	// Update updates the fields corresponding to the status subresource for the
+	// given DelegatedRouteTable object.
+	UpdateDelegatedRouteTableStatus(ctx context.Context, obj *DelegatedRouteTable, opts ...client.UpdateOption) error
+
+	// Patch patches the given DelegatedRouteTable object's subresource.
+	PatchDelegatedRouteTableStatus(ctx context.Context, obj *DelegatedRouteTable, patch client.Patch, opts ...client.PatchOption) error
+}
+
+// Client knows how to perform CRUD operations on DelegatedRouteTables.
+type DelegatedRouteTableClient interface {
+	DelegatedRouteTableReader
+	DelegatedRouteTableWriter
+	DelegatedRouteTableStatusWriter
+}
+
+type delegatedRouteTableClient struct {
+	client client.Client
+}
+
+func NewDelegatedRouteTableClient(client client.Client) *delegatedRouteTableClient {
+	return &delegatedRouteTableClient{client: client}
+}
+
+func (c *delegatedRouteTableClient) GetDelegatedRouteTable(ctx context.Context, key client.ObjectKey) (*DelegatedRouteTable, error) {
+	obj := &DelegatedRouteTable{}
+	if err := c.client.Get(ctx, key, obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+func (c *delegatedRouteTableClient) ListDelegatedRouteTable(ctx context.Context, opts ...client.ListOption) (*DelegatedRouteTableList, error) {
+	list := &DelegatedRouteTableList{}
+	if err := c.client.List(ctx, list, opts...); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (c *delegatedRouteTableClient) CreateDelegatedRouteTable(ctx context.Context, obj *DelegatedRouteTable, opts ...client.CreateOption) error {
+	return c.client.Create(ctx, obj, opts...)
+}
+
+func (c *delegatedRouteTableClient) DeleteDelegatedRouteTable(ctx context.Context, key client.ObjectKey, opts ...client.DeleteOption) error {
+	obj := &DelegatedRouteTable{}
+	obj.SetName(key.Name)
+	obj.SetNamespace(key.Namespace)
+	return c.client.Delete(ctx, obj, opts...)
+}
+
+func (c *delegatedRouteTableClient) UpdateDelegatedRouteTable(ctx context.Context, obj *DelegatedRouteTable, opts ...client.UpdateOption) error {
+	return c.client.Update(ctx, obj, opts...)
+}
+
+func (c *delegatedRouteTableClient) PatchDelegatedRouteTable(ctx context.Context, obj *DelegatedRouteTable, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Patch(ctx, obj, patch, opts...)
+}
+
+func (c *delegatedRouteTableClient) DeleteAllOfDelegatedRouteTable(ctx context.Context, opts ...client.DeleteAllOfOption) error {
+	obj := &DelegatedRouteTable{}
+	return c.client.DeleteAllOf(ctx, obj, opts...)
+}
+
+func (c *delegatedRouteTableClient) UpsertDelegatedRouteTable(ctx context.Context, obj *DelegatedRouteTable, transitionFuncs ...DelegatedRouteTableTransitionFunction) error {
+	genericTxFunc := func(existing, desired runtime.Object) error {
+		for _, txFunc := range transitionFuncs {
+			if err := txFunc(existing.(*DelegatedRouteTable), desired.(*DelegatedRouteTable)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	_, err := controllerutils.Upsert(ctx, c.client, obj, genericTxFunc)
+	return err
+}
+
+func (c *delegatedRouteTableClient) UpdateDelegatedRouteTableStatus(ctx context.Context, obj *DelegatedRouteTable, opts ...client.UpdateOption) error {
+	return c.client.Status().Update(ctx, obj, opts...)
+}
+
+func (c *delegatedRouteTableClient) PatchDelegatedRouteTableStatus(ctx context.Context, obj *DelegatedRouteTable, patch client.Patch, opts ...client.PatchOption) error {
+	return c.client.Status().Patch(ctx, obj, patch, opts...)
+}
+
+// Provides DelegatedRouteTableClients for multiple clusters.
+type MulticlusterDelegatedRouteTableClient interface {
+	// Cluster returns a DelegatedRouteTableClient for the given cluster
+	Cluster(cluster string) (DelegatedRouteTableClient, error)
+}
+
+type multiclusterDelegatedRouteTableClient struct {
+	client multicluster.Client
+}
+
+func NewMulticlusterDelegatedRouteTableClient(client multicluster.Client) MulticlusterDelegatedRouteTableClient {
+	return &multiclusterDelegatedRouteTableClient{client: client}
+}
+
+func (m *multiclusterDelegatedRouteTableClient) Cluster(cluster string) (DelegatedRouteTableClient, error) {
+	client, err := m.client.Cluster(cluster)
+	if err != nil {
+		return nil, err
+	}
+	return NewDelegatedRouteTableClient(client), nil
 }

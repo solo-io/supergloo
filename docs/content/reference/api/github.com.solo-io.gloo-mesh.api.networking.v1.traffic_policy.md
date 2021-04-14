@@ -19,8 +19,6 @@ title: "traffic_policy.proto"
 
 ## Table of Contents
   - [TrafficPolicySpec](#networking.mesh.gloo.solo.io.TrafficPolicySpec)
-  - [TrafficPolicySpec.HttpMatcher](#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher)
-  - [TrafficPolicySpec.HttpMatcher.QueryParameterMatcher](#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher.QueryParameterMatcher)
   - [TrafficPolicySpec.Policy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy)
   - [TrafficPolicySpec.Policy.CorsPolicy](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy)
   - [TrafficPolicySpec.Policy.CorsPolicy.StringMatch](#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.CorsPolicy.StringMatch)
@@ -60,45 +58,8 @@ Applies L7 routing and post-routing configuration on selected network edges.
 | ----- | ---- | ----- | ----------- |
 | sourceSelector | [][common.mesh.gloo.solo.io.WorkloadSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.WorkloadSelector" >}}) | repeated | Specify the Workloads (traffic sources) this TrafficPolicy applies to. Omit to apply to all Workloads. |
   | destinationSelector | [][common.mesh.gloo.solo.io.DestinationSelector]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.DestinationSelector" >}}) | repeated | Specify the Destinations (destinations) this TrafficPolicy applies to. Omit to apply to all Destinations. |
-  | httpRequestMatchers | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher" >}}) | repeated | Specify criteria that HTTP requests must satisfy for the TrafficPolicy to apply. Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur. Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply. Omit to apply to any HTTP request. |
+  | httpRequestMatchers | [][common.mesh.gloo.solo.io.HttpMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.request_matchers#common.mesh.gloo.solo.io.HttpMatcher" >}}) | repeated | Specify criteria that HTTP requests must satisfy for the TrafficPolicy to apply. Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur. Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply. Omit to apply to any HTTP request. |
   | policy | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy" >}}) |  | Specify L7 routing and post-routing configuration. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher"></a>
-
-### TrafficPolicySpec.HttpMatcher
-Specify HTTP request level match criteria. All specified conditions must be satisfied for a match to occur.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| prefix | string |  | If specified, the targeted path must begin with the prefix. |
-  | exact | string |  | If specified, the targeted path must exactly match the value. |
-  | regex | string |  | If specified, the targeted path must match the regex. |
-  | headers | [][common.mesh.gloo.solo.io.HeaderMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.request_matchers#common.mesh.gloo.solo.io.HeaderMatcher" >}}) | repeated | Specify a set of headers which requests must match in entirety (all headers must match). |
-  | queryParameters | [][networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher.QueryParameterMatcher]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher.QueryParameterMatcher" >}}) | repeated | Specify a set of URL query parameters which requests must match in entirety (all query params must match). |
-  | method | string |  | Specify an HTTP method to match against. |
-  
-
-
-
-
-
-<a name="networking.mesh.gloo.solo.io.TrafficPolicySpec.HttpMatcher.QueryParameterMatcher"></a>
-
-### TrafficPolicySpec.HttpMatcher.QueryParameterMatcher
-Specify match criteria against the target URL's query parameters.
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| name | string |  | Specify the name of a key that must be present in the requested path's query string. |
-  | value | string |  | Specify the value of the query parameter keyed on `name`. |
-  | regex | bool |  | If true, treat `value` as a regular expression. |
   
 
 

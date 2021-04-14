@@ -230,3 +230,324 @@ func (h genericVirtualDestinationHandler) Generic(object client.Object) error {
 	}
 	return h.handler.GenericVirtualDestination(obj)
 }
+
+// Handle events for the FederatedGateway Resource
+// DEPRECATED: Prefer reconciler pattern.
+type FederatedGatewayEventHandler interface {
+	CreateFederatedGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) error
+	UpdateFederatedGateway(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) error
+	DeleteFederatedGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) error
+	GenericFederatedGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) error
+}
+
+type FederatedGatewayEventHandlerFuncs struct {
+	OnCreate  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) error
+	OnUpdate  func(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) error
+	OnDelete  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) error
+	OnGeneric func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) error
+}
+
+func (f *FederatedGatewayEventHandlerFuncs) CreateFederatedGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *FederatedGatewayEventHandlerFuncs) DeleteFederatedGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *FederatedGatewayEventHandlerFuncs) UpdateFederatedGateway(objOld, objNew *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *FederatedGatewayEventHandlerFuncs) GenericFederatedGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type FederatedGatewayEventWatcher interface {
+	AddEventHandler(ctx context.Context, h FederatedGatewayEventHandler, predicates ...predicate.Predicate) error
+}
+
+type federatedGatewayEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewFederatedGatewayEventWatcher(name string, mgr manager.Manager) FederatedGatewayEventWatcher {
+	return &federatedGatewayEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway{}),
+	}
+}
+
+func (c *federatedGatewayEventWatcher) AddEventHandler(ctx context.Context, h FederatedGatewayEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericFederatedGatewayHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericFederatedGatewayHandler implements a generic events.EventHandler
+type genericFederatedGatewayHandler struct {
+	handler FederatedGatewayEventHandler
+}
+
+func (h genericFederatedGatewayHandler) Create(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway)
+	if !ok {
+		return errors.Errorf("internal error: FederatedGateway handler received event for %T", object)
+	}
+	return h.handler.CreateFederatedGateway(obj)
+}
+
+func (h genericFederatedGatewayHandler) Delete(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway)
+	if !ok {
+		return errors.Errorf("internal error: FederatedGateway handler received event for %T", object)
+	}
+	return h.handler.DeleteFederatedGateway(obj)
+}
+
+func (h genericFederatedGatewayHandler) Update(old, new client.Object) error {
+	objOld, ok := old.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway)
+	if !ok {
+		return errors.Errorf("internal error: FederatedGateway handler received event for %T", old)
+	}
+	objNew, ok := new.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway)
+	if !ok {
+		return errors.Errorf("internal error: FederatedGateway handler received event for %T", new)
+	}
+	return h.handler.UpdateFederatedGateway(objOld, objNew)
+}
+
+func (h genericFederatedGatewayHandler) Generic(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway)
+	if !ok {
+		return errors.Errorf("internal error: FederatedGateway handler received event for %T", object)
+	}
+	return h.handler.GenericFederatedGateway(obj)
+}
+
+// Handle events for the RouteTable Resource
+// DEPRECATED: Prefer reconciler pattern.
+type RouteTableEventHandler interface {
+	CreateRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+	UpdateRouteTable(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+	DeleteRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+	GenericRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+}
+
+type RouteTableEventHandlerFuncs struct {
+	OnCreate  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+	OnUpdate  func(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+	OnDelete  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+	OnGeneric func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+}
+
+func (f *RouteTableEventHandlerFuncs) CreateRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *RouteTableEventHandlerFuncs) DeleteRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *RouteTableEventHandlerFuncs) UpdateRouteTable(objOld, objNew *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *RouteTableEventHandlerFuncs) GenericRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type RouteTableEventWatcher interface {
+	AddEventHandler(ctx context.Context, h RouteTableEventHandler, predicates ...predicate.Predicate) error
+}
+
+type routeTableEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewRouteTableEventWatcher(name string, mgr manager.Manager) RouteTableEventWatcher {
+	return &routeTableEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable{}),
+	}
+}
+
+func (c *routeTableEventWatcher) AddEventHandler(ctx context.Context, h RouteTableEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericRouteTableHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericRouteTableHandler implements a generic events.EventHandler
+type genericRouteTableHandler struct {
+	handler RouteTableEventHandler
+}
+
+func (h genericRouteTableHandler) Create(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable)
+	if !ok {
+		return errors.Errorf("internal error: RouteTable handler received event for %T", object)
+	}
+	return h.handler.CreateRouteTable(obj)
+}
+
+func (h genericRouteTableHandler) Delete(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable)
+	if !ok {
+		return errors.Errorf("internal error: RouteTable handler received event for %T", object)
+	}
+	return h.handler.DeleteRouteTable(obj)
+}
+
+func (h genericRouteTableHandler) Update(old, new client.Object) error {
+	objOld, ok := old.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable)
+	if !ok {
+		return errors.Errorf("internal error: RouteTable handler received event for %T", old)
+	}
+	objNew, ok := new.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable)
+	if !ok {
+		return errors.Errorf("internal error: RouteTable handler received event for %T", new)
+	}
+	return h.handler.UpdateRouteTable(objOld, objNew)
+}
+
+func (h genericRouteTableHandler) Generic(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable)
+	if !ok {
+		return errors.Errorf("internal error: RouteTable handler received event for %T", object)
+	}
+	return h.handler.GenericRouteTable(obj)
+}
+
+// Handle events for the DelegatedRouteTable Resource
+// DEPRECATED: Prefer reconciler pattern.
+type DelegatedRouteTableEventHandler interface {
+	CreateDelegatedRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) error
+	UpdateDelegatedRouteTable(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) error
+	DeleteDelegatedRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) error
+	GenericDelegatedRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) error
+}
+
+type DelegatedRouteTableEventHandlerFuncs struct {
+	OnCreate  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) error
+	OnUpdate  func(old, new *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) error
+	OnDelete  func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) error
+	OnGeneric func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) error
+}
+
+func (f *DelegatedRouteTableEventHandlerFuncs) CreateDelegatedRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) error {
+	if f.OnCreate == nil {
+		return nil
+	}
+	return f.OnCreate(obj)
+}
+
+func (f *DelegatedRouteTableEventHandlerFuncs) DeleteDelegatedRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) error {
+	if f.OnDelete == nil {
+		return nil
+	}
+	return f.OnDelete(obj)
+}
+
+func (f *DelegatedRouteTableEventHandlerFuncs) UpdateDelegatedRouteTable(objOld, objNew *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) error {
+	if f.OnUpdate == nil {
+		return nil
+	}
+	return f.OnUpdate(objOld, objNew)
+}
+
+func (f *DelegatedRouteTableEventHandlerFuncs) GenericDelegatedRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) error {
+	if f.OnGeneric == nil {
+		return nil
+	}
+	return f.OnGeneric(obj)
+}
+
+type DelegatedRouteTableEventWatcher interface {
+	AddEventHandler(ctx context.Context, h DelegatedRouteTableEventHandler, predicates ...predicate.Predicate) error
+}
+
+type delegatedRouteTableEventWatcher struct {
+	watcher events.EventWatcher
+}
+
+func NewDelegatedRouteTableEventWatcher(name string, mgr manager.Manager) DelegatedRouteTableEventWatcher {
+	return &delegatedRouteTableEventWatcher{
+		watcher: events.NewWatcher(name, mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable{}),
+	}
+}
+
+func (c *delegatedRouteTableEventWatcher) AddEventHandler(ctx context.Context, h DelegatedRouteTableEventHandler, predicates ...predicate.Predicate) error {
+	handler := genericDelegatedRouteTableHandler{handler: h}
+	if err := c.watcher.Watch(ctx, handler, predicates...); err != nil {
+		return err
+	}
+	return nil
+}
+
+// genericDelegatedRouteTableHandler implements a generic events.EventHandler
+type genericDelegatedRouteTableHandler struct {
+	handler DelegatedRouteTableEventHandler
+}
+
+func (h genericDelegatedRouteTableHandler) Create(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable)
+	if !ok {
+		return errors.Errorf("internal error: DelegatedRouteTable handler received event for %T", object)
+	}
+	return h.handler.CreateDelegatedRouteTable(obj)
+}
+
+func (h genericDelegatedRouteTableHandler) Delete(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable)
+	if !ok {
+		return errors.Errorf("internal error: DelegatedRouteTable handler received event for %T", object)
+	}
+	return h.handler.DeleteDelegatedRouteTable(obj)
+}
+
+func (h genericDelegatedRouteTableHandler) Update(old, new client.Object) error {
+	objOld, ok := old.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable)
+	if !ok {
+		return errors.Errorf("internal error: DelegatedRouteTable handler received event for %T", old)
+	}
+	objNew, ok := new.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable)
+	if !ok {
+		return errors.Errorf("internal error: DelegatedRouteTable handler received event for %T", new)
+	}
+	return h.handler.UpdateDelegatedRouteTable(objOld, objNew)
+}
+
+func (h genericDelegatedRouteTableHandler) Generic(object client.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable)
+	if !ok {
+		return errors.Errorf("internal error: DelegatedRouteTable handler received event for %T", object)
+	}
+	return h.handler.GenericDelegatedRouteTable(obj)
+}

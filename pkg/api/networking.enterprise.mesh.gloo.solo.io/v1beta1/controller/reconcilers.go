@@ -250,3 +250,354 @@ func (r genericVirtualDestinationFinalizer) Finalize(object ezkube.Object) error
 	}
 	return r.finalizingReconciler.FinalizeVirtualDestination(obj)
 }
+
+// Reconcile Upsert events for the FederatedGateway Resource.
+// implemented by the user
+type FederatedGatewayReconciler interface {
+	ReconcileFederatedGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the FederatedGateway Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type FederatedGatewayDeletionReconciler interface {
+	ReconcileFederatedGatewayDeletion(req reconcile.Request) error
+}
+
+type FederatedGatewayReconcilerFuncs struct {
+	OnReconcileFederatedGateway         func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) (reconcile.Result, error)
+	OnReconcileFederatedGatewayDeletion func(req reconcile.Request) error
+}
+
+func (f *FederatedGatewayReconcilerFuncs) ReconcileFederatedGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) (reconcile.Result, error) {
+	if f.OnReconcileFederatedGateway == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileFederatedGateway(obj)
+}
+
+func (f *FederatedGatewayReconcilerFuncs) ReconcileFederatedGatewayDeletion(req reconcile.Request) error {
+	if f.OnReconcileFederatedGatewayDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileFederatedGatewayDeletion(req)
+}
+
+// Reconcile and finalize the FederatedGateway Resource
+// implemented by the user
+type FederatedGatewayFinalizer interface {
+	FederatedGatewayReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	FederatedGatewayFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeFederatedGateway(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) error
+}
+
+type FederatedGatewayReconcileLoop interface {
+	RunFederatedGatewayReconciler(ctx context.Context, rec FederatedGatewayReconciler, predicates ...predicate.Predicate) error
+}
+
+type federatedGatewayReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewFederatedGatewayReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) FederatedGatewayReconcileLoop {
+	return &federatedGatewayReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway{}, options),
+	}
+}
+
+func (c *federatedGatewayReconcileLoop) RunFederatedGatewayReconciler(ctx context.Context, reconciler FederatedGatewayReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericFederatedGatewayReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(FederatedGatewayFinalizer); ok {
+		reconcilerWrapper = genericFederatedGatewayFinalizer{
+			genericFederatedGatewayReconciler: genericReconciler,
+			finalizingReconciler:              finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericFederatedGatewayHandler implements a generic reconcile.Reconciler
+type genericFederatedGatewayReconciler struct {
+	reconciler FederatedGatewayReconciler
+}
+
+func (r genericFederatedGatewayReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: FederatedGateway handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileFederatedGateway(obj)
+}
+
+func (r genericFederatedGatewayReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(FederatedGatewayDeletionReconciler); ok {
+		return deletionReconciler.ReconcileFederatedGatewayDeletion(request)
+	}
+	return nil
+}
+
+// genericFederatedGatewayFinalizer implements a generic reconcile.FinalizingReconciler
+type genericFederatedGatewayFinalizer struct {
+	genericFederatedGatewayReconciler
+	finalizingReconciler FederatedGatewayFinalizer
+}
+
+func (r genericFederatedGatewayFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.FederatedGatewayFinalizerName()
+}
+
+func (r genericFederatedGatewayFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway)
+	if !ok {
+		return errors.Errorf("internal error: FederatedGateway handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeFederatedGateway(obj)
+}
+
+// Reconcile Upsert events for the RouteTable Resource.
+// implemented by the user
+type RouteTableReconciler interface {
+	ReconcileRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the RouteTable Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type RouteTableDeletionReconciler interface {
+	ReconcileRouteTableDeletion(req reconcile.Request) error
+}
+
+type RouteTableReconcilerFuncs struct {
+	OnReconcileRouteTable         func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) (reconcile.Result, error)
+	OnReconcileRouteTableDeletion func(req reconcile.Request) error
+}
+
+func (f *RouteTableReconcilerFuncs) ReconcileRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) (reconcile.Result, error) {
+	if f.OnReconcileRouteTable == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileRouteTable(obj)
+}
+
+func (f *RouteTableReconcilerFuncs) ReconcileRouteTableDeletion(req reconcile.Request) error {
+	if f.OnReconcileRouteTableDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileRouteTableDeletion(req)
+}
+
+// Reconcile and finalize the RouteTable Resource
+// implemented by the user
+type RouteTableFinalizer interface {
+	RouteTableReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	RouteTableFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) error
+}
+
+type RouteTableReconcileLoop interface {
+	RunRouteTableReconciler(ctx context.Context, rec RouteTableReconciler, predicates ...predicate.Predicate) error
+}
+
+type routeTableReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewRouteTableReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) RouteTableReconcileLoop {
+	return &routeTableReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable{}, options),
+	}
+}
+
+func (c *routeTableReconcileLoop) RunRouteTableReconciler(ctx context.Context, reconciler RouteTableReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericRouteTableReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(RouteTableFinalizer); ok {
+		reconcilerWrapper = genericRouteTableFinalizer{
+			genericRouteTableReconciler: genericReconciler,
+			finalizingReconciler:        finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericRouteTableHandler implements a generic reconcile.Reconciler
+type genericRouteTableReconciler struct {
+	reconciler RouteTableReconciler
+}
+
+func (r genericRouteTableReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: RouteTable handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileRouteTable(obj)
+}
+
+func (r genericRouteTableReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(RouteTableDeletionReconciler); ok {
+		return deletionReconciler.ReconcileRouteTableDeletion(request)
+	}
+	return nil
+}
+
+// genericRouteTableFinalizer implements a generic reconcile.FinalizingReconciler
+type genericRouteTableFinalizer struct {
+	genericRouteTableReconciler
+	finalizingReconciler RouteTableFinalizer
+}
+
+func (r genericRouteTableFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.RouteTableFinalizerName()
+}
+
+func (r genericRouteTableFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable)
+	if !ok {
+		return errors.Errorf("internal error: RouteTable handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeRouteTable(obj)
+}
+
+// Reconcile Upsert events for the DelegatedRouteTable Resource.
+// implemented by the user
+type DelegatedRouteTableReconciler interface {
+	ReconcileDelegatedRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the DelegatedRouteTable Resource.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type DelegatedRouteTableDeletionReconciler interface {
+	ReconcileDelegatedRouteTableDeletion(req reconcile.Request) error
+}
+
+type DelegatedRouteTableReconcilerFuncs struct {
+	OnReconcileDelegatedRouteTable         func(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) (reconcile.Result, error)
+	OnReconcileDelegatedRouteTableDeletion func(req reconcile.Request) error
+}
+
+func (f *DelegatedRouteTableReconcilerFuncs) ReconcileDelegatedRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) (reconcile.Result, error) {
+	if f.OnReconcileDelegatedRouteTable == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileDelegatedRouteTable(obj)
+}
+
+func (f *DelegatedRouteTableReconcilerFuncs) ReconcileDelegatedRouteTableDeletion(req reconcile.Request) error {
+	if f.OnReconcileDelegatedRouteTableDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileDelegatedRouteTableDeletion(req)
+}
+
+// Reconcile and finalize the DelegatedRouteTable Resource
+// implemented by the user
+type DelegatedRouteTableFinalizer interface {
+	DelegatedRouteTableReconciler
+
+	// name of the finalizer used by this handler.
+	// finalizer names should be unique for a single task
+	DelegatedRouteTableFinalizerName() string
+
+	// finalize the object before it is deleted.
+	// Watchers created with a finalizing handler will a
+	FinalizeDelegatedRouteTable(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) error
+}
+
+type DelegatedRouteTableReconcileLoop interface {
+	RunDelegatedRouteTableReconciler(ctx context.Context, rec DelegatedRouteTableReconciler, predicates ...predicate.Predicate) error
+}
+
+type delegatedRouteTableReconcileLoop struct {
+	loop reconcile.Loop
+}
+
+func NewDelegatedRouteTableReconcileLoop(name string, mgr manager.Manager, options reconcile.Options) DelegatedRouteTableReconcileLoop {
+	return &delegatedRouteTableReconcileLoop{
+		// empty cluster indicates this reconciler is built for the local cluster
+		loop: reconcile.NewLoop(name, "", mgr, &networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable{}, options),
+	}
+}
+
+func (c *delegatedRouteTableReconcileLoop) RunDelegatedRouteTableReconciler(ctx context.Context, reconciler DelegatedRouteTableReconciler, predicates ...predicate.Predicate) error {
+	genericReconciler := genericDelegatedRouteTableReconciler{
+		reconciler: reconciler,
+	}
+
+	var reconcilerWrapper reconcile.Reconciler
+	if finalizingReconciler, ok := reconciler.(DelegatedRouteTableFinalizer); ok {
+		reconcilerWrapper = genericDelegatedRouteTableFinalizer{
+			genericDelegatedRouteTableReconciler: genericReconciler,
+			finalizingReconciler:                 finalizingReconciler,
+		}
+	} else {
+		reconcilerWrapper = genericReconciler
+	}
+	return c.loop.RunReconciler(ctx, reconcilerWrapper, predicates...)
+}
+
+// genericDelegatedRouteTableHandler implements a generic reconcile.Reconciler
+type genericDelegatedRouteTableReconciler struct {
+	reconciler DelegatedRouteTableReconciler
+}
+
+func (r genericDelegatedRouteTableReconciler) Reconcile(object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: DelegatedRouteTable handler received event for %T", object)
+	}
+	return r.reconciler.ReconcileDelegatedRouteTable(obj)
+}
+
+func (r genericDelegatedRouteTableReconciler) ReconcileDeletion(request reconcile.Request) error {
+	if deletionReconciler, ok := r.reconciler.(DelegatedRouteTableDeletionReconciler); ok {
+		return deletionReconciler.ReconcileDelegatedRouteTableDeletion(request)
+	}
+	return nil
+}
+
+// genericDelegatedRouteTableFinalizer implements a generic reconcile.FinalizingReconciler
+type genericDelegatedRouteTableFinalizer struct {
+	genericDelegatedRouteTableReconciler
+	finalizingReconciler DelegatedRouteTableFinalizer
+}
+
+func (r genericDelegatedRouteTableFinalizer) FinalizerName() string {
+	return r.finalizingReconciler.DelegatedRouteTableFinalizerName()
+}
+
+func (r genericDelegatedRouteTableFinalizer) Finalize(object ezkube.Object) error {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable)
+	if !ok {
+		return errors.Errorf("internal error: DelegatedRouteTable handler received event for %T", object)
+	}
+	return r.finalizingReconciler.FinalizeDelegatedRouteTable(obj)
+}

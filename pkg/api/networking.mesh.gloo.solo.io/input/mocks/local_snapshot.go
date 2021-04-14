@@ -170,6 +170,48 @@ func (mr *MockLocalSnapshotMockRecorder) VirtualDestinations() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VirtualDestinations", reflect.TypeOf((*MockLocalSnapshot)(nil).VirtualDestinations))
 }
 
+// FederatedGateways mocks base method
+func (m *MockLocalSnapshot) FederatedGateways() v1beta1sets.FederatedGatewaySet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FederatedGateways")
+	ret0, _ := ret[0].(v1beta1sets.FederatedGatewaySet)
+	return ret0
+}
+
+// FederatedGateways indicates an expected call of FederatedGateways
+func (mr *MockLocalSnapshotMockRecorder) FederatedGateways() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FederatedGateways", reflect.TypeOf((*MockLocalSnapshot)(nil).FederatedGateways))
+}
+
+// RouteTables mocks base method
+func (m *MockLocalSnapshot) RouteTables() v1beta1sets.RouteTableSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RouteTables")
+	ret0, _ := ret[0].(v1beta1sets.RouteTableSet)
+	return ret0
+}
+
+// RouteTables indicates an expected call of RouteTables
+func (mr *MockLocalSnapshotMockRecorder) RouteTables() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteTables", reflect.TypeOf((*MockLocalSnapshot)(nil).RouteTables))
+}
+
+// DelegatedRouteTables mocks base method
+func (m *MockLocalSnapshot) DelegatedRouteTables() v1beta1sets.DelegatedRouteTableSet {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DelegatedRouteTables")
+	ret0, _ := ret[0].(v1beta1sets.DelegatedRouteTableSet)
+	return ret0
+}
+
+// DelegatedRouteTables indicates an expected call of DelegatedRouteTables
+func (mr *MockLocalSnapshotMockRecorder) DelegatedRouteTables() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DelegatedRouteTables", reflect.TypeOf((*MockLocalSnapshot)(nil).DelegatedRouteTables))
+}
+
 // AccessLogRecords mocks base method
 func (m *MockLocalSnapshot) AccessLogRecords() v1sets2.AccessLogRecordSet {
 	m.ctrl.T.Helper()

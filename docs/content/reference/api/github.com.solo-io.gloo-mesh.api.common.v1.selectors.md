@@ -25,10 +25,14 @@ title: "selectors.proto"
   - [IdentitySelector](#common.mesh.gloo.solo.io.IdentitySelector)
   - [IdentitySelector.KubeIdentityMatcher](#common.mesh.gloo.solo.io.IdentitySelector.KubeIdentityMatcher)
   - [IdentitySelector.KubeServiceAccountRefs](#common.mesh.gloo.solo.io.IdentitySelector.KubeServiceAccountRefs)
+  - [RouteTableSelector](#common.mesh.gloo.solo.io.RouteTableSelector)
+  - [RouteTableSelector.Expression](#common.mesh.gloo.solo.io.RouteTableSelector.Expression)
+  - [RouteTableSelector.LabelsEntry](#common.mesh.gloo.solo.io.RouteTableSelector.LabelsEntry)
   - [WorkloadSelector](#common.mesh.gloo.solo.io.WorkloadSelector)
   - [WorkloadSelector.KubeWorkloadMatcher](#common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher)
   - [WorkloadSelector.KubeWorkloadMatcher.LabelsEntry](#common.mesh.gloo.solo.io.WorkloadSelector.KubeWorkloadMatcher.LabelsEntry)
 
+  - [RouteTableSelector.Expression.Operator](#common.mesh.gloo.solo.io.RouteTableSelector.Expression.Operator)
 
 
 
@@ -146,6 +150,56 @@ Select Destination identities using one or more platform-specific selectors.
 
 
 
+<a name="common.mesh.gloo.solo.io.RouteTableSelector"></a>
+
+### RouteTableSelector
+Select route tables (or delegated route tables) for delegation by namespace, labels, or both.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| namespaces | []string | repeated | Delegate to Route Tables in these namespaces. If omitted, Gloo will only select Route Tables in the same namespace as the resource (FederatedGateway, Route Table or Delegated Route Table) that owns this selector. The reserved value "*" can be used to select Route Tables in all namespaces watched by Gloo. |
+  | labels | [][common.mesh.gloo.solo.io.RouteTableSelector.LabelsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.RouteTableSelector.LabelsEntry" >}}) | repeated | Delegate to Route Tables whose labels match the ones specified here. |
+  | expressions | [][common.mesh.gloo.solo.io.RouteTableSelector.Expression]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.RouteTableSelector.Expression" >}}) | repeated | Expressions allow for more flexible Route Tables label matching, such as equality-based requirements, set-based requirements, or a combination of both. https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#equality-based-requirement |
+  
+
+
+
+
+
+<a name="common.mesh.gloo.solo.io.RouteTableSelector.Expression"></a>
+
+### RouteTableSelector.Expression
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  | Kubernetes label key, must conform to Kubernetes syntax requirements https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set |
+  | operator | [common.mesh.gloo.solo.io.RouteTableSelector.Expression.Operator]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.selectors#common.mesh.gloo.solo.io.RouteTableSelector.Expression.Operator" >}}) |  | The operator can only be in, notin, =, ==, !=, exists, ! (DoesNotExist), gt (GreaterThan), lt (LessThan). |
+  | values | []string | repeated |  |
+  
+
+
+
+
+
+<a name="common.mesh.gloo.solo.io.RouteTableSelector.LabelsEntry"></a>
+
+### RouteTableSelector.LabelsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+  | value | string |  |  |
+  
+
+
+
+
+
 <a name="common.mesh.gloo.solo.io.WorkloadSelector"></a>
 
 ### WorkloadSelector
@@ -194,6 +248,25 @@ Match Kubernetes workloads by their labels, namespaces, and/or clusters.
 
 
  <!-- end messages -->
+
+
+<a name="common.mesh.gloo.solo.io.RouteTableSelector.Expression.Operator"></a>
+
+### RouteTableSelector.Expression.Operator
+Route Table Selector expression operator, while the set-based syntax differs from Kubernetes (kubernetes: `key: !mylabel`, gloo: `key: mylabel, operator: "!"` | kubernetes: `key: mylabel`, gloo: `key: mylabel, operator: exists`), the functionality remains the same.
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| Equals | 0 | = |
+| DoubleEquals | 1 | == |
+| NotEquals | 2 | != |
+| In | 3 | in |
+| NotIn | 4 | notin |
+| Exists | 5 | exists |
+| DoesNotExist | 6 | ! |
+| GreaterThan | 7 | gt |
+| LessThan | 8 | lt |
+
 
  <!-- end enums -->
 

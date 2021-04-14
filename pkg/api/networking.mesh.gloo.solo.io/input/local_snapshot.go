@@ -12,6 +12,9 @@
 // * VirtualMeshes
 // * WasmDeployments
 // * VirtualDestinations
+// * FederatedGateways
+// * RouteTables
+// * DelegatedRouteTables
 // * AccessLogRecords
 // * Secrets
 // * KubernetesClusters
@@ -120,6 +123,21 @@ var LocalSnapshotGVKs = []schema.GroupVersionKind{
 		Version: "v1beta1",
 		Kind:    "VirtualDestination",
 	},
+	schema.GroupVersionKind{
+		Group:   "networking.enterprise.mesh.gloo.solo.io",
+		Version: "v1beta1",
+		Kind:    "FederatedGateway",
+	},
+	schema.GroupVersionKind{
+		Group:   "networking.enterprise.mesh.gloo.solo.io",
+		Version: "v1beta1",
+		Kind:    "RouteTable",
+	},
+	schema.GroupVersionKind{
+		Group:   "networking.enterprise.mesh.gloo.solo.io",
+		Version: "v1beta1",
+		Kind:    "DelegatedRouteTable",
+	},
 
 	schema.GroupVersionKind{
 		Group:   "observability.enterprise.mesh.gloo.solo.io",
@@ -164,6 +182,12 @@ type LocalSnapshot interface {
 	WasmDeployments() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet
 	// return the set of input VirtualDestinations
 	VirtualDestinations() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet
+	// return the set of input FederatedGateways
+	FederatedGateways() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.FederatedGatewaySet
+	// return the set of input RouteTables
+	RouteTables() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet
+	// return the set of input DelegatedRouteTables
+	DelegatedRouteTables() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.DelegatedRouteTableSet
 
 	// return the set of input AccessLogRecords
 	AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
@@ -207,6 +231,12 @@ type LocalSyncStatusOptions struct {
 	WasmDeployment bool
 	// sync status of VirtualDestination objects
 	VirtualDestination bool
+	// sync status of FederatedGateway objects
+	FederatedGateway bool
+	// sync status of RouteTable objects
+	RouteTable bool
+	// sync status of DelegatedRouteTable objects
+	DelegatedRouteTable bool
 
 	// sync status of AccessLogRecord objects
 	AccessLogRecord bool
@@ -231,8 +261,11 @@ type snapshotLocal struct {
 	accessPolicies  networking_mesh_gloo_solo_io_v1_sets.AccessPolicySet
 	virtualMeshes   networking_mesh_gloo_solo_io_v1_sets.VirtualMeshSet
 
-	wasmDeployments     networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet
-	virtualDestinations networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet
+	wasmDeployments      networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet
+	virtualDestinations  networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet
+	federatedGateways    networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.FederatedGatewaySet
+	routeTables          networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet
+	delegatedRouteTables networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.DelegatedRouteTableSet
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet
 
@@ -256,6 +289,9 @@ func NewLocalSnapshot(
 
 	wasmDeployments networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.WasmDeploymentSet,
 	virtualDestinations networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet,
+	federatedGateways networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.FederatedGatewaySet,
+	routeTables networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet,
+	delegatedRouteTables networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.DelegatedRouteTableSet,
 
 	accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet,
 
@@ -267,18 +303,21 @@ func NewLocalSnapshot(
 	return &snapshotLocal{
 		name: name,
 
-		settings:            settings,
-		destinations:        destinations,
-		workloads:           workloads,
-		meshes:              meshes,
-		trafficPolicies:     trafficPolicies,
-		accessPolicies:      accessPolicies,
-		virtualMeshes:       virtualMeshes,
-		wasmDeployments:     wasmDeployments,
-		virtualDestinations: virtualDestinations,
-		accessLogRecords:    accessLogRecords,
-		secrets:             secrets,
-		kubernetesClusters:  kubernetesClusters,
+		settings:             settings,
+		destinations:         destinations,
+		workloads:            workloads,
+		meshes:               meshes,
+		trafficPolicies:      trafficPolicies,
+		accessPolicies:       accessPolicies,
+		virtualMeshes:        virtualMeshes,
+		wasmDeployments:      wasmDeployments,
+		virtualDestinations:  virtualDestinations,
+		federatedGateways:    federatedGateways,
+		routeTables:          routeTables,
+		delegatedRouteTables: delegatedRouteTables,
+		accessLogRecords:     accessLogRecords,
+		secrets:              secrets,
+		kubernetesClusters:   kubernetesClusters,
 	}
 }
 
@@ -299,6 +338,9 @@ func NewLocalSnapshotFromGeneric(
 
 	wasmDeploymentSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet()
 	virtualDestinationSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet()
+	federatedGatewaySet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewFederatedGatewaySet()
+	routeTableSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet()
+	delegatedRouteTableSet := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewDelegatedRouteTableSet()
 
 	accessLogRecordSet := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
@@ -392,6 +434,33 @@ func NewLocalSnapshotFromGeneric(
 		for _, virtualDestination := range virtualDestinations {
 			virtualDestinationSet.Insert(virtualDestination.(*networking_enterprise_mesh_gloo_solo_io_v1beta1_types.VirtualDestination))
 		}
+		federatedGateways := snapshot[schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "FederatedGateway",
+		}]
+
+		for _, federatedGateway := range federatedGateways {
+			federatedGatewaySet.Insert(federatedGateway.(*networking_enterprise_mesh_gloo_solo_io_v1beta1_types.FederatedGateway))
+		}
+		routeTables := snapshot[schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "RouteTable",
+		}]
+
+		for _, routeTable := range routeTables {
+			routeTableSet.Insert(routeTable.(*networking_enterprise_mesh_gloo_solo_io_v1beta1_types.RouteTable))
+		}
+		delegatedRouteTables := snapshot[schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "DelegatedRouteTable",
+		}]
+
+		for _, delegatedRouteTable := range delegatedRouteTables {
+			delegatedRouteTableSet.Insert(delegatedRouteTable.(*networking_enterprise_mesh_gloo_solo_io_v1beta1_types.DelegatedRouteTable))
+		}
 
 		accessLogRecords := snapshot[schema.GroupVersionKind{
 			Group:   "observability.enterprise.mesh.gloo.solo.io",
@@ -435,6 +504,9 @@ func NewLocalSnapshotFromGeneric(
 		virtualMeshSet,
 		wasmDeploymentSet,
 		virtualDestinationSet,
+		federatedGatewaySet,
+		routeTableSet,
+		delegatedRouteTableSet,
 		accessLogRecordSet,
 		secretSet,
 		kubernetesClusterSet,
@@ -475,6 +547,18 @@ func (s snapshotLocal) WasmDeployments() networking_enterprise_mesh_gloo_solo_io
 
 func (s snapshotLocal) VirtualDestinations() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.VirtualDestinationSet {
 	return s.virtualDestinations
+}
+
+func (s snapshotLocal) FederatedGateways() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.FederatedGatewaySet {
+	return s.federatedGateways
+}
+
+func (s snapshotLocal) RouteTables() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet {
+	return s.routeTables
+}
+
+func (s snapshotLocal) DelegatedRouteTables() networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.DelegatedRouteTableSet {
+	return s.delegatedRouteTables
 }
 
 func (s snapshotLocal) AccessLogRecords() observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet {
@@ -603,6 +687,42 @@ func (s snapshotLocal) SyncStatusesMultiCluster(ctx context.Context, mcClient mu
 			}
 		}
 	}
+	if opts.FederatedGateway {
+		for _, obj := range s.FederatedGateways().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.RouteTable {
+		for _, obj := range s.RouteTables().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.DelegatedRouteTable {
+		for _, obj := range s.DelegatedRouteTables().List() {
+			clusterClient, err := mcClient.Cluster(obj.ClusterName)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				continue
+			}
+			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
 
 	if opts.AccessLogRecord {
 		for _, obj := range s.AccessLogRecords().List() {
@@ -701,6 +821,27 @@ func (s snapshotLocal) SyncStatuses(ctx context.Context, c client.Client, opts L
 			}
 		}
 	}
+	if opts.FederatedGateway {
+		for _, obj := range s.FederatedGateways().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.RouteTable {
+		for _, obj := range s.RouteTables().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
+	if opts.DelegatedRouteTable {
+		for _, obj := range s.DelegatedRouteTables().List() {
+			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
+	}
 
 	if opts.AccessLogRecord {
 		for _, obj := range s.AccessLogRecords().List() {
@@ -732,6 +873,9 @@ func (s snapshotLocal) MarshalJSON() ([]byte, error) {
 	snapshotMap["virtualMeshes"] = s.virtualMeshes.List()
 	snapshotMap["wasmDeployments"] = s.wasmDeployments.List()
 	snapshotMap["virtualDestinations"] = s.virtualDestinations.List()
+	snapshotMap["federatedGateways"] = s.federatedGateways.List()
+	snapshotMap["routeTables"] = s.routeTables.List()
+	snapshotMap["delegatedRouteTables"] = s.delegatedRouteTables.List()
 	snapshotMap["accessLogRecords"] = s.accessLogRecords.List()
 	snapshotMap["secrets"] = s.secrets.List()
 	snapshotMap["kubernetesClusters"] = s.kubernetesClusters.List()
@@ -767,6 +911,12 @@ type LocalBuildOptions struct {
 	WasmDeployments ResourceLocalBuildOptions
 	// List options for composing a snapshot from VirtualDestinations
 	VirtualDestinations ResourceLocalBuildOptions
+	// List options for composing a snapshot from FederatedGateways
+	FederatedGateways ResourceLocalBuildOptions
+	// List options for composing a snapshot from RouteTables
+	RouteTables ResourceLocalBuildOptions
+	// List options for composing a snapshot from DelegatedRouteTables
+	DelegatedRouteTables ResourceLocalBuildOptions
 
 	// List options for composing a snapshot from AccessLogRecords
 	AccessLogRecords ResourceLocalBuildOptions
@@ -819,6 +969,9 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet()
 	virtualDestinations := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet()
+	federatedGateways := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewFederatedGatewaySet()
+	routeTables := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet()
+	delegatedRouteTables := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewDelegatedRouteTableSet()
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
@@ -857,6 +1010,15 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		if err := b.insertVirtualDestinationsFromCluster(ctx, cluster, virtualDestinations, opts.VirtualDestinations); err != nil {
 			errs = multierror.Append(errs, err)
 		}
+		if err := b.insertFederatedGatewaysFromCluster(ctx, cluster, federatedGateways, opts.FederatedGateways); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertRouteTablesFromCluster(ctx, cluster, routeTables, opts.RouteTables); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		if err := b.insertDelegatedRouteTablesFromCluster(ctx, cluster, delegatedRouteTables, opts.DelegatedRouteTables); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 		if err := b.insertAccessLogRecordsFromCluster(ctx, cluster, accessLogRecords, opts.AccessLogRecords); err != nil {
 			errs = multierror.Append(errs, err)
 		}
@@ -881,6 +1043,9 @@ func (b *multiClusterLocalBuilder) BuildSnapshot(ctx context.Context, name strin
 		virtualMeshes,
 		wasmDeployments,
 		virtualDestinations,
+		federatedGateways,
+		routeTables,
+		delegatedRouteTables,
 		accessLogRecords,
 		secrets,
 		kubernetesClusters,
@@ -1270,6 +1435,132 @@ func (b *multiClusterLocalBuilder) insertVirtualDestinationsFromCluster(ctx cont
 
 	return nil
 }
+func (b *multiClusterLocalBuilder) insertFederatedGatewaysFromCluster(ctx context.Context, cluster string, federatedGateways networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.FederatedGatewaySet, opts ResourceLocalBuildOptions) error {
+	federatedGatewayClient, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewMulticlusterFederatedGatewayClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "FederatedGateway",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	federatedGatewayList, err := federatedGatewayClient.ListFederatedGateway(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range federatedGatewayList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		federatedGateways.Insert(item)
+	}
+
+	return nil
+}
+func (b *multiClusterLocalBuilder) insertRouteTablesFromCluster(ctx context.Context, cluster string, routeTables networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet, opts ResourceLocalBuildOptions) error {
+	routeTableClient, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewMulticlusterRouteTableClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "RouteTable",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	routeTableList, err := routeTableClient.ListRouteTable(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range routeTableList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		routeTables.Insert(item)
+	}
+
+	return nil
+}
+func (b *multiClusterLocalBuilder) insertDelegatedRouteTablesFromCluster(ctx context.Context, cluster string, delegatedRouteTables networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.DelegatedRouteTableSet, opts ResourceLocalBuildOptions) error {
+	delegatedRouteTableClient, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewMulticlusterDelegatedRouteTableClient(b.client).Cluster(cluster)
+	if err != nil {
+		return err
+	}
+
+	if opts.Verifier != nil {
+		mgr, err := b.clusters.Cluster(cluster)
+		if err != nil {
+			return err
+		}
+
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "DelegatedRouteTable",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			cluster,
+			mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	delegatedRouteTableList, err := delegatedRouteTableClient.ListDelegatedRouteTable(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range delegatedRouteTableList.Items {
+		item := item.DeepCopy()    // pike + own
+		item.ClusterName = cluster // set cluster for in-memory processing
+		delegatedRouteTables.Insert(item)
+	}
+
+	return nil
+}
 
 func (b *multiClusterLocalBuilder) insertAccessLogRecordsFromCluster(ctx context.Context, cluster string, accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet, opts ResourceLocalBuildOptions) error {
 	accessLogRecordClient, err := observability_enterprise_mesh_gloo_solo_io_v1.NewMulticlusterAccessLogRecordClient(b.client).Cluster(cluster)
@@ -1439,6 +1730,9 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet()
 	virtualDestinations := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet()
+	federatedGateways := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewFederatedGatewaySet()
+	routeTables := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet()
+	delegatedRouteTables := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewDelegatedRouteTableSet()
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
@@ -1475,6 +1769,15 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 	if err := b.insertVirtualDestinations(ctx, virtualDestinations, opts.VirtualDestinations); err != nil {
 		errs = multierror.Append(errs, err)
 	}
+	if err := b.insertFederatedGateways(ctx, federatedGateways, opts.FederatedGateways); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertRouteTables(ctx, routeTables, opts.RouteTables); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := b.insertDelegatedRouteTables(ctx, delegatedRouteTables, opts.DelegatedRouteTables); err != nil {
+		errs = multierror.Append(errs, err)
+	}
 	if err := b.insertAccessLogRecords(ctx, accessLogRecords, opts.AccessLogRecords); err != nil {
 		errs = multierror.Append(errs, err)
 	}
@@ -1497,6 +1800,9 @@ func (b *singleClusterLocalBuilder) BuildSnapshot(ctx context.Context, name stri
 		virtualMeshes,
 		wasmDeployments,
 		virtualDestinations,
+		federatedGateways,
+		routeTables,
+		delegatedRouteTables,
 		accessLogRecords,
 		secrets,
 		kubernetesClusters,
@@ -1805,6 +2111,105 @@ func (b *singleClusterLocalBuilder) insertVirtualDestinations(ctx context.Contex
 
 	return nil
 }
+func (b *singleClusterLocalBuilder) insertFederatedGateways(ctx context.Context, federatedGateways networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.FederatedGatewaySet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "FederatedGateway",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	federatedGatewayList, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewFederatedGatewayClient(b.mgr.GetClient()).ListFederatedGateway(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range federatedGatewayList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		federatedGateways.Insert(item)
+	}
+
+	return nil
+}
+func (b *singleClusterLocalBuilder) insertRouteTables(ctx context.Context, routeTables networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.RouteTableSet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "RouteTable",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	routeTableList, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewRouteTableClient(b.mgr.GetClient()).ListRouteTable(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range routeTableList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		routeTables.Insert(item)
+	}
+
+	return nil
+}
+func (b *singleClusterLocalBuilder) insertDelegatedRouteTables(ctx context.Context, delegatedRouteTables networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.DelegatedRouteTableSet, opts ResourceLocalBuildOptions) error {
+
+	if opts.Verifier != nil {
+		gvk := schema.GroupVersionKind{
+			Group:   "networking.enterprise.mesh.gloo.solo.io",
+			Version: "v1beta1",
+			Kind:    "DelegatedRouteTable",
+		}
+
+		if resourceRegistered, err := opts.Verifier.VerifyServerResource(
+			"", // verify in the local cluster
+			b.mgr.GetConfig(),
+			gvk,
+		); err != nil {
+			return err
+		} else if !resourceRegistered {
+			return nil
+		}
+	}
+
+	delegatedRouteTableList, err := networking_enterprise_mesh_gloo_solo_io_v1beta1.NewDelegatedRouteTableClient(b.mgr.GetClient()).ListDelegatedRouteTable(ctx, opts.ListOptions...)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range delegatedRouteTableList.Items {
+		item := item.DeepCopy() // pike + own the item.
+		item.ClusterName = b.clusterName
+		delegatedRouteTables.Insert(item)
+	}
+
+	return nil
+}
 
 func (b *singleClusterLocalBuilder) insertAccessLogRecords(ctx context.Context, accessLogRecords observability_enterprise_mesh_gloo_solo_io_v1_sets.AccessLogRecordSet, opts ResourceLocalBuildOptions) error {
 
@@ -1940,6 +2345,9 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 
 	wasmDeployments := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewWasmDeploymentSet()
 	virtualDestinations := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewVirtualDestinationSet()
+	federatedGateways := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewFederatedGatewaySet()
+	routeTables := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewRouteTableSet()
+	delegatedRouteTables := networking_enterprise_mesh_gloo_solo_io_v1beta1_sets.NewDelegatedRouteTableSet()
 
 	accessLogRecords := observability_enterprise_mesh_gloo_solo_io_v1_sets.NewAccessLogRecordSet()
 
@@ -1976,6 +2384,15 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		// insert VirtualDestinations
 		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.VirtualDestination:
 			virtualDestinations.Insert(obj)
+		// insert FederatedGateways
+		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.FederatedGateway:
+			federatedGateways.Insert(obj)
+		// insert RouteTables
+		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.RouteTable:
+			routeTables.Insert(obj)
+		// insert DelegatedRouteTables
+		case *networking_enterprise_mesh_gloo_solo_io_v1beta1_types.DelegatedRouteTable:
+			delegatedRouteTables.Insert(obj)
 		// insert AccessLogRecords
 		case *observability_enterprise_mesh_gloo_solo_io_v1_types.AccessLogRecord:
 			accessLogRecords.Insert(obj)
@@ -2000,6 +2417,9 @@ func (i *inMemoryLocalBuilder) BuildSnapshot(ctx context.Context, name string, o
 		virtualMeshes,
 		wasmDeployments,
 		virtualDestinations,
+		federatedGateways,
+		routeTables,
+		delegatedRouteTables,
 		accessLogRecords,
 		secrets,
 		kubernetesClusters,

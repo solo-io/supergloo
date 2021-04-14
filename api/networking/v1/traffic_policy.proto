@@ -30,49 +30,10 @@ message TrafficPolicySpec {
     // Conditions defined within a single matcher are conjunctive, i.e. all conditions must be satisfied for a match to occur.
     // Conditions defined between different matchers are disjunctive, i.e. at least one matcher must be satisfied for the TrafficPolicy to apply.
     // Omit to apply to any HTTP request.
-    repeated HttpMatcher http_request_matchers = 3;
+    repeated .common.mesh.gloo.solo.io.HttpMatcher http_request_matchers = 3;
 
     // Specify L7 routing and post-routing configuration.
     Policy policy = 4;
-
-    // Specify HTTP request level match criteria. All specified conditions must be satisfied for a match to occur.
-    message HttpMatcher {
-
-        // Specify match criteria against the targeted path.
-        oneof path_specifier {
-
-            // If specified, the targeted path must begin with the prefix.
-            string prefix = 1;
-
-            // If specified, the targeted path must exactly match the value.
-            string exact = 2;
-
-            // If specified, the targeted path must match the regex.
-            string regex = 3;
-        }
-
-        // Specify a set of headers which requests must match in entirety (all headers must match).
-        repeated .common.mesh.gloo.solo.io.HeaderMatcher headers = 4;
-
-        // Specify a set of URL query parameters which requests must match in entirety (all query params must match).
-        repeated QueryParameterMatcher query_parameters = 5;
-
-        // Specify an HTTP method to match against.
-        string method = 6;
-
-        // Specify match criteria against the target URL's query parameters.
-        message QueryParameterMatcher {
-
-            // Specify the name of a key that must be present in the requested path's query string.
-            string name = 1;
-
-            // Specify the value of the query parameter keyed on `name`.
-            string value = 2;
-
-            // If true, treat `value` as a regular expression.
-            bool regex = 3;
-        }
-    }
 
     // Specify L7 routing and post-routing configuration.
     message Policy {

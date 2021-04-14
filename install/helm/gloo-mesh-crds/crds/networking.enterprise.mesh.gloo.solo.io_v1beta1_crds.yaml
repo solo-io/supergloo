@@ -580,3 +580,2085 @@ spec:
   - name: v1beta1
     served: true
     storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  labels:
+    app: gloo-mesh
+    app.kubernetes.io/name: gloo-mesh
+  name: federatedgateways.networking.enterprise.mesh.gloo.solo.io
+spec:
+  group: networking.enterprise.mesh.gloo.solo.io
+  names:
+    kind: FederatedGateway
+    listKind: FederatedGatewayList
+    plural: federatedgateways
+    singular: federatedgateway
+  preserveUnknownFields: false
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          description: |-
+            FederatedGateway is the top-level object for configuring ingress from a Mesh or VirtualMesh.
+               A single FederatedGateway can apply to multiple deployed ingress pods across meshes and clusters contained within a VirtualMesh.
+               FederatedGateways can route traffic to destination services which live in a specific cluster or mesh.
+               This allows FederatedGateways to route traffic from an ingress in one mesh to a service in another. In order to
+               perform cross-mesh routing, the Gateway Mesh and Destination mesh must be contained in a single VirtualMesh, with federation enabled.
+          properties:
+            bindAddress:
+              description: |-
+                The bind address the gateway should serve traffic on
+                This maps to the Envoy Listener address.
+                Defaults to "::" or "0.0.0.0".
+              type: string
+            bindPort:
+              description: |-
+                The bind port where the gateway workload will listen for connections.
+                This maps to the Envoy Listener port.
+              maximum: 4294967295
+              minimum: 0
+              type: integer
+            connectionHandlers:
+              description: |-
+                Each Gateway must implement one or more ConnectionHandlers.
+                A ConnectionHandler instructs the gateway how to handle clients
+                which have connected to the specified bind address.
+                Typically `connectionHandlers` will consist of a single `http` handler
+                which serves HTTP Routes defined in a set of RouteTables.
+                Multiple `connectionHandlers` can be specified to provide different behavior
+                on the same Gateway, e.g. one for TCP and one for HTTP traffic.
+              items:
+                oneOf:
+                - not:
+                    anyOf:
+                    - required:
+                      - http
+                    - required:
+                      - tcp
+                - required:
+                  - http
+                - required:
+                  - tcp
+                properties:
+                  connectionMatch:
+                    description: |-
+                      Additional options for matching a connection to a specific gateway.
+                      This is required when more than one `connectionHandler` is specified for a single gateway.
+                      Typically this is used to serve different
+                    properties:
+                      serverNames:
+                        description: |-
+                          If non-empty, a list of server names (e.g. SNI for TLS protocol) to consider when determining
+                          a `connectionMatch`. Those values will be compared against the server names of a new
+                          connection, when detected by one of the listener filters.
+
+                          The server name will be matched against all wildcard domains, i.e. `www.example.com`
+                          will be first matched against `www.example.com`, then `*.example.com`, then ``*.com`.
+
+                          Note that partial wildcards are not supported, and values like `*w.example.com` are invalid.
+                        items:
+                          type: string
+                        type: array
+                      transportProtocol:
+                        description: Protocol
+                        type: string
+                    type: object
+                  connectionOptions:
+                    description: Top level optional configuration for all routes on the ConnectionHandler.
+                    properties:
+                      enableProxyProtocol:
+                        description: enable PROXY protocol for this connection handler.
+                        type: boolean
+                      tlsContext:
+                        description: TODO
+                        properties:
+                          presented:
+                            description: |-
+                              If specified, the route will match against whether or not a certificate is presented.
+                              If not specified, certificate presentation status (true or false) will not be considered when route matching.
+                            nullable: true
+                            type: boolean
+                          validated:
+                            description: |-
+                              If specified, the route will match against whether or not a certificate is validated.
+                              If not specified, certificate validation status (true or false) will not be considered when route matching.
+                            nullable: true
+                            type: boolean
+                        type: object
+                    type: object
+                  http:
+                    properties:
+                      routeConfig:
+                        items:
+                          oneOf:
+                          - not:
+                              anyOf:
+                              - required:
+                                - routeSelector
+                              - required:
+                                - routeTable
+                          - required:
+                            - routeSelector
+                          - required:
+                            - routeTable
+                          properties:
+                            routeSelector:
+                              description: RouteSelector is used to specify which RouteTables should be attached to this gateway.
+                              properties:
+                                expressions:
+                                  description: |-
+                                    Expressions allow for more flexible Route Tables label matching, such as equality-based requirements, set-based requirements, or a combination of both.
+                                    https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#equality-based-requirement
+                                  items:
+                                    properties:
+                                      key:
+                                        description: |-
+                                          Kubernetes label key, must conform to Kubernetes syntax requirements
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
+                                        type: string
+                                      operator:
+                                        description: The operator can only be in, notin, =, ==, !=, exists, ! (DoesNotExist), gt (GreaterThan), lt (LessThan).
+                                        enum:
+                                        - Equals
+                                        - DoubleEquals
+                                        - NotEquals
+                                        - In
+                                        - NotIn
+                                        - Exists
+                                        - DoesNotExist
+                                        - GreaterThan
+                                        - LessThan
+                                        type: string
+                                      values:
+                                        items:
+                                          type: string
+                                        type: array
+                                    type: object
+                                  type: array
+                                labels:
+                                  additionalProperties:
+                                    type: string
+                                  description: Delegate to Route Tables whose labels match the ones specified here.
+                                  type: object
+                                namespaces:
+                                  description: |-
+                                    Delegate to Route Tables in these namespaces. If omitted, Gloo will only select Route Tables in the same namespace
+                                    as the resource (FederatedGateway, Route Table or Delegated Route Table) that owns this selector.
+                                    The reserved value "*" can be used to select Route Tables in all namespaces watched by Gloo.
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                            routeTable:
+                              description: RouteTable allows in-lining a route table directly in the Gateway Resource, for simple configs using fewer CRDs.
+                              properties:
+                                domains:
+                                  description: |-
+                                    The list of domains (i.e.: matching the `Host` header of a request) that belong to this virtual host.
+                                    Note that the wildcard will not match the empty string. e.g. “*-bar.foo.com” will match “baz-bar.foo.com”
+                                    but not “-bar.foo.com”. Additionally, a special entry “*” is allowed which will match any host/authority header.
+                                    Only a single virtual host on a gateway can match on “*”. A domain must be unique across all
+                                    virtual hosts on a gateway or the config will be invalidated by Gloo
+                                    Domains on virtual hosts obey the same rules as [Envoy Virtual Hosts](https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/route/route.proto)
+                                  items:
+                                    type: string
+                                  type: array
+                                routeTableOptions:
+                                  description: |-
+                                    Route table options contain additional configuration to be applied to all traffic served by the route table.
+                                    Some configuration here can be overridden by Route Options.
+                                  properties:
+                                    todoAddOptions:
+                                      type: string
+                                  type: object
+                                routes:
+                                  description: |-
+                                    The list of HTTP routes define routing actions to be taken for incoming HTTP requests whose host header matches
+                                    this virtual host. If the request matches more than one route in the list, the first route matched will be selected.
+                                    If the list of routes is empty, the virtual host will be ignored by Gloo.
+                                  items:
+                                    oneOf:
+                                    - not:
+                                        anyOf:
+                                        - required:
+                                          - routeAction
+                                        - properties:
+                                            redirectAction:
+                                              oneOf:
+                                              - not:
+                                                  anyOf:
+                                                  - required:
+                                                    - pathRedirect
+                                                  - required:
+                                                    - prefixRewrite
+                                              - required:
+                                                - pathRedirect
+                                              - required:
+                                                - prefixRewrite
+                                          required:
+                                          - redirectAction
+                                        - required:
+                                          - directResponseAction
+                                        - properties:
+                                            delegateAction:
+                                              oneOf:
+                                              - not:
+                                                  anyOf:
+                                                  - required:
+                                                    - ref
+                                                  - required:
+                                                    - selector
+                                              - required:
+                                                - ref
+                                              - required:
+                                                - selector
+                                          required:
+                                          - delegateAction
+                                    - required:
+                                      - routeAction
+                                    - properties:
+                                        redirectAction:
+                                          oneOf:
+                                          - not:
+                                              anyOf:
+                                              - required:
+                                                - pathRedirect
+                                              - required:
+                                                - prefixRewrite
+                                          - required:
+                                            - pathRedirect
+                                          - required:
+                                            - prefixRewrite
+                                      required:
+                                      - redirectAction
+                                    - required:
+                                      - directResponseAction
+                                    - properties:
+                                        delegateAction:
+                                          oneOf:
+                                          - not:
+                                              anyOf:
+                                              - required:
+                                                - ref
+                                              - required:
+                                                - selector
+                                          - required:
+                                            - ref
+                                          - required:
+                                            - selector
+                                      required:
+                                      - delegateAction
+                                    properties:
+                                      delegateAction:
+                                        description: Delegate routing actions for the given matcher to one or more DelegatedRouteTables.
+                                        properties:
+                                          ref:
+                                            description: Delegate to the Route Table resource with the given `name` and `namespace.
+                                            properties:
+                                              name:
+                                                description: name of the resource being referenced
+                                                type: string
+                                              namespace:
+                                                description: namespace of the resource being referenced
+                                                type: string
+                                            type: object
+                                          selector:
+                                            description: Delegate to the Delegated Route Tables that match the given selector.
+                                            properties:
+                                              expressions:
+                                                description: |-
+                                                  Expressions allow for more flexible Route Tables label matching, such as equality-based requirements, set-based requirements, or a combination of both.
+                                                  https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#equality-based-requirement
+                                                items:
+                                                  properties:
+                                                    key:
+                                                      description: |-
+                                                        Kubernetes label key, must conform to Kubernetes syntax requirements
+                                                        https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
+                                                      type: string
+                                                    operator:
+                                                      description: The operator can only be in, notin, =, ==, !=, exists, ! (DoesNotExist), gt (GreaterThan), lt (LessThan).
+                                                      enum:
+                                                      - Equals
+                                                      - DoubleEquals
+                                                      - NotEquals
+                                                      - In
+                                                      - NotIn
+                                                      - Exists
+                                                      - DoesNotExist
+                                                      - GreaterThan
+                                                      - LessThan
+                                                      type: string
+                                                    values:
+                                                      items:
+                                                        type: string
+                                                      type: array
+                                                  type: object
+                                                type: array
+                                              labels:
+                                                additionalProperties:
+                                                  type: string
+                                                description: Delegate to Route Tables whose labels match the ones specified here.
+                                                type: object
+                                              namespaces:
+                                                description: |-
+                                                  Delegate to Route Tables in these namespaces. If omitted, Gloo will only select Route Tables in the same namespace
+                                                  as the resource (FederatedGateway, Route Table or Delegated Route Table) that owns this selector.
+                                                  The reserved value "*" can be used to select Route Tables in all namespaces watched by Gloo.
+                                                items:
+                                                  type: string
+                                                type: array
+                                            type: object
+                                        type: object
+                                      directResponseAction:
+                                        description: Return an arbitrary HTTP response directly, without proxying.
+                                        properties:
+                                          body:
+                                            description: |-
+                                              Specifies the content of the response body. If this setting is omitted,
+                                              no body is included in the generated response.
+
+                                                Note: Headers can be specified using the Header Modification feature in the enclosing
+                                                Route, ConnectionHandler, or Gateway options.
+                                            type: string
+                                          status:
+                                            description: Specifies the HTTP response status to be returned.
+                                            maximum: 4294967295
+                                            minimum: 0
+                                            type: integer
+                                        type: object
+                                      matchers:
+                                        description: |-
+                                          Matchers contain parameters for matching requests (i.e., based on HTTP path, headers, etc.).
+                                          If empty, the route will match all requests (i.e, a single "/" path prefix matcher).
+                                          For delegated routes, any parent matcher must have a `prefix` path matcher.
+                                        items:
+                                          oneOf:
+                                          - not:
+                                              anyOf:
+                                              - required:
+                                                - prefix
+                                              - required:
+                                                - exact
+                                              - required:
+                                                - regex
+                                          - required:
+                                            - prefix
+                                          - required:
+                                            - exact
+                                          - required:
+                                            - regex
+                                          properties:
+                                            exact:
+                                              description: If specified, the targeted path must exactly match the value.
+                                              type: string
+                                            headers:
+                                              description: Specify a set of headers which requests must match in entirety (all headers must match).
+                                              items:
+                                                properties:
+                                                  invertMatch:
+                                                    description: |-
+                                                      If set to true, the result of the match will be inverted. Defaults to false.
+
+                                                         Examples:
+
+                                                             - name=foo, invert_match=true: matches if no header named `foo` is present
+                                                             - name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
+                                                             - name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present.
+                                                    type: boolean
+                                                  name:
+                                                    description: Specify the name of the header in the request.
+                                                    type: string
+                                                  regex:
+                                                    description: Specify whether the header value should be treated as regex.
+                                                    type: boolean
+                                                  value:
+                                                    description: |-
+                                                      Specify the value of the header. If the value is absent a request that
+                                                      has the name header will match, regardless of the header’s value.
+                                                    type: string
+                                                type: object
+                                              type: array
+                                            method:
+                                              description: Specify an HTTP method to match against.
+                                              type: string
+                                            prefix:
+                                              description: If specified, the targeted path must begin with the prefix.
+                                              type: string
+                                            queryParameters:
+                                              description: Specify a set of URL query parameters which requests must match in entirety (all query params must match).
+                                              items:
+                                                properties:
+                                                  name:
+                                                    description: Specify the name of a key that must be present in the requested path's query string.
+                                                    type: string
+                                                  regex:
+                                                    description: If true, treat `value` as a regular expression.
+                                                    type: boolean
+                                                  value:
+                                                    description: Specify the value of the query parameter keyed on `name`.
+                                                    type: string
+                                                type: object
+                                              type: array
+                                            regex:
+                                              description: If specified, the targeted path must match the regex.
+                                              type: string
+                                          type: object
+                                        type: array
+                                      name:
+                                        description: |-
+                                          The name provides a convenience for users to be able to refer to a route by name.
+                                          It includes names of vs, route, and route table ancestors of the route.
+                                        type: string
+                                      options:
+                                        description: |-
+                                          Route Options extend the behavior of routes.
+                                          Route options include configuration such as retries, rate limiting, and request/response transformation.
+                                          RouteOption behavior will be inherited by delegated routes which do not specify their own `options`
+                                        type: object
+                                      redirectAction:
+                                        description: Redirect actions tell the proxy to return a redirect response to the downstream client.
+                                        properties:
+                                          hostRedirect:
+                                            description: The host portion of the URL will be swapped with this value.
+                                            type: string
+                                          httpsRedirect:
+                                            description: The scheme portion of the URL will be swapped with "https".
+                                            type: boolean
+                                          pathRedirect:
+                                            description: The path portion of the URL will be swapped with this value.
+                                            type: string
+                                          prefixRewrite:
+                                            description: |-
+                                              Indicates that during redirection, the matched prefix (or path)
+                                              should be swapped with this value. This option allows redirect URLs be dynamically created
+                                              based on the request.
+
+                                                Pay attention to the use of trailing slashes as mentioned in
+                                                `RouteAction`'s `prefix_rewrite`.
+                                            type: string
+                                          responseCode:
+                                            description: |-
+                                              The HTTP status code to use in the redirect response. The default response
+                                              code is MOVED_PERMANENTLY (301).
+                                            enum:
+                                            - MOVED_PERMANENTLY
+                                            - FOUND
+                                            - SEE_OTHER
+                                            - TEMPORARY_REDIRECT
+                                            - PERMANENT_REDIRECT
+                                            type: string
+                                          stripQuery:
+                                            description: |-
+                                              Indicates that during redirection, the query portion of the URL will
+                                              be removed. Default value is false.
+                                            type: boolean
+                                        type: object
+                                      routeAction:
+                                        description: |-
+                                          This action is the primary action to be selected for most routes. The RouteAction tells the proxy to
+                                          route requests to an upstream.
+                                        properties:
+                                          destinations:
+                                            description: |-
+                                              Defines the destination upstream for routing
+                                              Some destinations require additional configuration for the route (e.g. AWS upstreams require a function name
+                                              to be specified).
+                                            items:
+                                              oneOf:
+                                              - not:
+                                                  anyOf:
+                                                  - required:
+                                                    - static
+                                                  - required:
+                                                    - virtual
+                                                  - required:
+                                                    - kube
+                                                  - required:
+                                                    - clusterHeader
+                                                  - {}
+                                              - required:
+                                                - static
+                                              - required:
+                                                - virtual
+                                              - required:
+                                                - kube
+                                              - required:
+                                                - clusterHeader
+                                              - not:
+                                                  anyOf:
+                                                  - {}
+                                                  - required:
+                                                    - static
+                                                  - required:
+                                                    - virtual
+                                                  - required:
+                                                    - kube
+                                                  - required:
+                                                    - clusterHeader
+                                              properties:
+                                                clusterHeader:
+                                                  description: |-
+                                                    Envoy will determine the cluster to route to by reading the value of the HTTP header named by cluster_header from the request headers.
+                                                    If the header is not found or the referenced cluster does not exist, Envoy will return a 404 response.
+                                                    Avoid using this whenever possible, it does not allow for custom filter configuration based on Virtual Host.
+                                                  type: string
+                                                destinationOptions:
+                                                  description: options applied when this destination is selected from a list of multiple destinations
+                                                  properties:
+                                                    headerModification:
+                                                      description: |-
+                                                        TODO: Some subset of traffic policy (whatever Istio supports)
+                                                        TODO: Use correct type for header_modification
+                                                      type: string
+                                                  type: object
+                                                kube:
+                                                  description: |-
+                                                    Reference to a Kubernetes Service. Note that the service must exist in the same mesh or virtual mesh (with federation enabled) as
+                                                    each gateway workload which routes to this destination.
+                                                  properties:
+                                                    clusterName:
+                                                      description: name of the cluster in which the resource exists
+                                                      type: string
+                                                    name:
+                                                      description: name of the resource being referenced
+                                                      type: string
+                                                    namespace:
+                                                      description: namespace of the resource being referenced
+                                                      type: string
+                                                  type: object
+                                                static:
+                                                  description: Reference to a gloo mesh Static Destination
+                                                  properties:
+                                                    name:
+                                                      description: name of the resource being referenced
+                                                      type: string
+                                                    namespace:
+                                                      description: namespace of the resource being referenced
+                                                      type: string
+                                                  type: object
+                                                virtual:
+                                                  description: Reference to a gloo mesh VirtualDestination
+                                                  properties:
+                                                    name:
+                                                      description: name of the resource being referenced
+                                                      type: string
+                                                    namespace:
+                                                      description: namespace of the resource being referenced
+                                                      type: string
+                                                  type: object
+                                                weight:
+                                                  description: |-
+                                                    Relative weight of this destination to others in the same route.
+                                                    If omitted, all destinations in the route will be load balanced between evenly.
+                                                  maximum: 4294967295
+                                                  minimum: 0
+                                                  type: integer
+                                              type: object
+                                            type: array
+                                        type: object
+                                    type: object
+                                  type: array
+                              type: object
+                          type: object
+                        type: array
+                      routeOptions:
+                        description: HTTP Listener Options // Root level DelegatedRouteTable + RouteTable + routes level
+                        type: object
+                    type: object
+                  tcp:
+                    properties:
+                      options:
+                        description: TCP Gateway configuration
+                        properties:
+                          tcpProxySettings:
+                            properties:
+                              idleTimeout:
+                                type: string
+                              maxConnectAttempts:
+                                description: |-
+                                  Contains various settings for Envoy's tcp proxy filter.
+                                  See here for more information: https://www.envoyproxy.io/docs/envoy/v1.10.0/api-v2/config/filter/network/tcp_proxy/v2/tcp_proxy.proto#envoy-api-msg-config-filter-network-tcp-proxy-v2-tcpproxy
+                                maximum: 4294967295
+                                minimum: 0
+                                nullable: true
+                                type: integer
+                              tunnelingConfig:
+                                description: |-
+                                  If set, this configures tunneling, e.g. configuration options to tunnel multiple TCP
+                                  payloads over a shared HTTP tunnel. If this message is absent, the payload
+                                  will be proxied upstream as per usual.
+                                properties:
+                                  hostname:
+                                    description: The hostname to send in the synthesized CONNECT headers to the upstream proxy.
+                                    type: string
+                                type: object
+                            type: object
+                        type: object
+                      tcpHosts:
+                        description: TCP hosts that the gateway can route to
+                        items:
+                          properties:
+                            destination:
+                              oneOf:
+                              - not:
+                                  anyOf:
+                                  - required:
+                                    - static
+                                  - required:
+                                    - virtual
+                                  - required:
+                                    - kube
+                                  - required:
+                                    - forwardSniClusterName
+                              - required:
+                                - static
+                              - required:
+                                - virtual
+                              - required:
+                                - kube
+                              - required:
+                                - forwardSniClusterName
+                              properties:
+                                forwardSniClusterName:
+                                  description: |-
+                                    Forwards the request to a cluster name matching the TLS SNI name
+                                    https://www.envoyproxy.io/docs/envoy/latest/api-v2/config/filter/network/sni_cluster/empty/sni_cluster
+                                    Note: This filter will only work properly with TLS connections in which the upstream SNI domain is specified
+                                  maxProperties: 0
+                                  type: object
+                                kube:
+                                  description: |-
+                                    Reference to a Kubernetes Service. Note that the service must exist in the same mesh or virtual mesh (with federation enabled) as
+                                    each gateway workload which routes to this destination.
+                                  properties:
+                                    clusterName:
+                                      description: name of the cluster in which the resource exists
+                                      type: string
+                                    name:
+                                      description: name of the resource being referenced
+                                      type: string
+                                    namespace:
+                                      description: namespace of the resource being referenced
+                                      type: string
+                                  type: object
+                                static:
+                                  description: Reference to a gloo mesh Static Destination
+                                  properties:
+                                    name:
+                                      description: name of the resource being referenced
+                                      type: string
+                                    namespace:
+                                      description: namespace of the resource being referenced
+                                      type: string
+                                  type: object
+                                virtual:
+                                  description: Reference to a gloo mesh VirtualDestination
+                                  properties:
+                                    name:
+                                      description: name of the resource being referenced
+                                      type: string
+                                    namespace:
+                                      description: namespace of the resource being referenced
+                                      type: string
+                                  type: object
+                                weight:
+                                  description: |-
+                                    Relative weight of this destination to others in the same route.
+                                    If omitted, all destinations in the route will be load balanced between evenly.
+                                  maximum: 4294967295
+                                  minimum: 0
+                                  type: integer
+                              type: object
+                            name:
+                              description: the logical name of the tcp host. names must be unique for each tcp host within a listener
+                              type: string
+                            sslConfig:
+                              description: If provided, the Gateway will serve TLS/SSL traffic for this set of routes
+                              oneOf:
+                              - not:
+                                  anyOf:
+                                  - required:
+                                    - secretRef
+                                  - required:
+                                    - sslFiles
+                                  - properties:
+                                      sds:
+                                        oneOf:
+                                        - not:
+                                            anyOf:
+                                            - required:
+                                              - callCredentials
+                                            - required:
+                                              - clusterName
+                                        - required:
+                                          - callCredentials
+                                        - required:
+                                          - clusterName
+                                    required:
+                                    - sds
+                                  - {}
+                              - required:
+                                - secretRef
+                              - required:
+                                - sslFiles
+                              - properties:
+                                  sds:
+                                    oneOf:
+                                    - not:
+                                        anyOf:
+                                        - required:
+                                          - callCredentials
+                                        - required:
+                                          - clusterName
+                                    - required:
+                                      - callCredentials
+                                    - required:
+                                      - clusterName
+                                required:
+                                - sds
+                              - not:
+                                  anyOf:
+                                  - {}
+                                  - required:
+                                    - secretRef
+                                  - required:
+                                    - sslFiles
+                                  - properties:
+                                      sds:
+                                        oneOf:
+                                        - not:
+                                            anyOf:
+                                            - required:
+                                              - callCredentials
+                                            - required:
+                                              - clusterName
+                                        - required:
+                                          - callCredentials
+                                        - required:
+                                          - clusterName
+                                    required:
+                                    - sds
+                              properties:
+                                alpnProtocols:
+                                  description: |-
+                                    Set Application Level Protocol Negotiation
+                                    If empty, defaults to ["h2", "http/1.1"].
+                                  items:
+                                    type: string
+                                  type: array
+                                parameters:
+                                  properties:
+                                    cipherSuites:
+                                      items:
+                                        type: string
+                                      type: array
+                                    ecdhCurves:
+                                      items:
+                                        type: string
+                                      type: array
+                                    maximumProtocolVersion:
+                                      enum:
+                                      - TLS_AUTO
+                                      - TLSv1_0
+                                      - TLSv1_1
+                                      - TLSv1_2
+                                      - TLSv1_3
+                                      type: string
+                                    minimumProtocolVersion:
+                                      enum:
+                                      - TLS_AUTO
+                                      - TLSv1_0
+                                      - TLSv1_1
+                                      - TLSv1_2
+                                      - TLSv1_3
+                                      type: string
+                                  type: object
+                                sds:
+                                  description: Use secret discovery service.
+                                  properties:
+                                    callCredentials:
+                                      description: Call credentials.
+                                      properties:
+                                        fileCredentialSource:
+                                          description: Call credentials are coming from a file,
+                                          properties:
+                                            header:
+                                              description: Header to carry the token.
+                                              type: string
+                                            tokenFileName:
+                                              description: File containing auth token.
+                                              type: string
+                                          type: object
+                                      type: object
+                                    certificatesSecretName:
+                                      description: The name of the secret containing the certificate
+                                      type: string
+                                    clusterName:
+                                      description: The name of the sds cluster in envoy
+                                      type: string
+                                    targetUri:
+                                      description: Target uri for the sds channel. currently only a unix domain socket is supported.
+                                      type: string
+                                    validationContextName:
+                                      description: The name of secret containing the validation context (i.e. root ca)
+                                      type: string
+                                  type: object
+                                secretRef:
+                                  description: |-
+                                    SecretRef contains the secret ref to a gloo tls secret or a kubernetes tls secret.
+                                    gloo tls secret can contain a root ca as well if verification is needed.
+                                  properties:
+                                    name:
+                                      description: name of the resource being referenced
+                                      type: string
+                                    namespace:
+                                      description: namespace of the resource being referenced
+                                      type: string
+                                  type: object
+                                sniDomains:
+                                  description: optional. the SNI domains that should be considered for TLS connections
+                                  items:
+                                    type: string
+                                  type: array
+                                sslFiles:
+                                  description: SSLFiles reference paths to certificates which are local to the proxy
+                                  properties:
+                                    rootCa:
+                                      description: for client cert validation. optional
+                                      type: string
+                                    tlsCert:
+                                      type: string
+                                    tlsKey:
+                                      type: string
+                                  type: object
+                                verifySubjectAltName:
+                                  description: |-
+                                    Verify that the Subject Alternative Name in the peer certificate is one of the specified values.
+                                    note that a root_ca must be provided if this option is used.
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                          type: object
+                        type: array
+                    type: object
+                type: object
+              type: array
+            gatewayOptions:
+              description: Options applied to all clients who connect to this gateway
+              properties:
+                perConnectionBufferLimitBytes:
+                  description: |-
+                    Soft limit on size of the listener's new connection read and write buffers. If unspecified, defaults to 1MiB
+                    For more info, check out the [Envoy docs](https://www.envoyproxy.io/docs/envoy/v1.17.1/api-v3/config/listener/v3/listener.proto)
+                  maximum: 4294967295
+                  minimum: 0
+                  nullable: true
+                  type: integer
+                trafficPolicy:
+                  description: |-
+                    options shared from TrafficPolicy
+                    OutlierDetection  and TrafficShift isn't supported on the route level.
+                    TODO: Discuss with team
+                    Traffic policy can be declared in-line here, or this
+                    gateway can be selected from a TrafficPolicy CRD.
+                  properties:
+                    corsPolicy:
+                      description: |-
+                        Set a Cross-Origin Resource Sharing policy (CORS) for requests. Refer to [this link](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS)
+                        for further details about cross origin resource sharing.
+                      properties:
+                        allowCredentials:
+                          description: |-
+                            Indicates whether the caller is allowed to send the actual request
+                            (not the preflight) using credentials. Translates to the
+                            `Access-Control-Allow-Credentials` header.
+                          nullable: true
+                          type: boolean
+                        allowHeaders:
+                          description: |-
+                            List of HTTP headers that can be used when requesting the
+                            resource. Serialized to the `Access-Control-Allow-Headers` header.
+                          items:
+                            type: string
+                          type: array
+                        allowMethods:
+                          description: |-
+                            List of HTTP methods allowed to access the resource. The content will
+                            be serialized to the `Access-Control-Allow-Methods` header.
+                          items:
+                            type: string
+                          type: array
+                        allowOrigins:
+                          description: String patterns that match allowed origins. An origin is allowed if any of the string matchers match.
+                          items:
+                            oneOf:
+                            - not:
+                                anyOf:
+                                - required:
+                                  - exact
+                                - required:
+                                  - prefix
+                                - required:
+                                  - regex
+                            - required:
+                              - exact
+                            - required:
+                              - prefix
+                            - required:
+                              - regex
+                            properties:
+                              exact:
+                                description: Exact string match.
+                                type: string
+                              prefix:
+                                description: Prefix-based match.
+                                type: string
+                              regex:
+                                description: ECMAscript style regex-based match.
+                                type: string
+                            type: object
+                          type: array
+                        exposeHeaders:
+                          description: |-
+                            A list of HTTP headers that browsers are allowed to
+                            access. Serialized to the `Access-Control-Expose-Headers` header.
+                          items:
+                            type: string
+                          type: array
+                        maxAge:
+                          description: |-
+                            Specify how long the results of a preflight request can be
+                            cached. Serialized to the `Access-Control-Max-Age` header.
+                          type: string
+                      type: object
+                    faultInjection:
+                      description: Inject faulty responses.
+                      oneOf:
+                      - not:
+                          anyOf:
+                          - required:
+                            - fixedDelay
+                          - required:
+                            - abort
+                      - required:
+                        - fixedDelay
+                      - required:
+                        - abort
+                      properties:
+                        abort:
+                          description: Abort the request and return the specified error code back to traffic source.
+                          properties:
+                            httpStatus:
+                              description: Required. HTTP status code to use to abort the request.
+                              format: int32
+                              type: integer
+                          type: object
+                        fixedDelay:
+                          description: 'Add a delay of a fixed duration before sending the request. Format: `1h`/`1m`/`1s`/`1ms`. MUST be >=1ms.'
+                          type: string
+                        percentage:
+                          description: Percentage of requests to be faulted. Values range between 0 and 100. If omitted all requests will be faulted.
+                          format: double
+                          type: number
+                      type: object
+                    headerManipulation:
+                      description: Manipulate request and response headers.
+                      properties:
+                        appendRequestHeaders:
+                          additionalProperties:
+                            type: string
+                          description: Additional HTTP headers to add before forwarding a request to the destination service.
+                          type: object
+                        appendResponseHeaders:
+                          additionalProperties:
+                            type: string
+                          description: Additional HTTP headers to add before returning a response to the caller.
+                          type: object
+                        removeRequestHeaders:
+                          description: HTTP headers to remove before forwarding a request to the destination service.
+                          items:
+                            type: string
+                          type: array
+                        removeResponseHeaders:
+                          description: HTTP headers to remove before returning a response to the caller.
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    mirror:
+                      description: Mirror traffic to a another destination (traffic will be sent to its original destination in addition to the mirrored destinations).
+                      oneOf:
+                      - not:
+                          anyOf:
+                          - required:
+                            - kubeService
+                      - required:
+                        - kubeService
+                      properties:
+                        kubeService:
+                          description: Reference (name, namespace, Gloo Mesh cluster) to a Kubernetes service.
+                          properties:
+                            clusterName:
+                              description: name of the cluster in which the resource exists
+                              type: string
+                            name:
+                              description: name of the resource being referenced
+                              type: string
+                            namespace:
+                              description: namespace of the resource being referenced
+                              type: string
+                          type: object
+                        percentage:
+                          description: Percentage of traffic to mirror. If omitted all traffic will be mirrored. Values must be between 0 and 100.
+                          format: double
+                          type: number
+                        port:
+                          description: Port on the destination to receive traffic. Required if the destination exposes multiple ports.
+                          maximum: 4294967295
+                          minimum: 0
+                          type: integer
+                      type: object
+                    mtls:
+                      description: Configure mTLS settings. If specified will override global default defined in Settings.
+                      properties:
+                        istio:
+                          description: Istio TLS settings.
+                          properties:
+                            tlsMode:
+                              description: TLS connection mode
+                              enum:
+                              - DISABLE
+                              - SIMPLE
+                              - ISTIO_MUTUAL
+                              type: string
+                          type: object
+                      type: object
+                    outlierDetection:
+                      description: |-
+                        Configure [outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier) on the selected destinations.
+                        Specifying this field requires an empty `source_selector` because it must apply to all traffic.
+                      properties:
+                        baseEjectionTime:
+                          description: 'The minimum ejection duration. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
+                          type: string
+                        consecutiveErrors:
+                          description: The number of errors before a host is ejected from the connection pool. A default will be used if not set.
+                          maximum: 4294967295
+                          minimum: 0
+                          type: integer
+                        interval:
+                          description: 'The time interval between ejection sweep analysis. Format: `1h`/`1m`/`1s`/`1ms`. Must be >= `1ms`. A default will be used if not set.'
+                          type: string
+                        maxEjectionPercent:
+                          description: |-
+                            The maximum percentage of hosts that can be ejected from the load balancing pool.
+                            At least one host will be ejected regardless of the value. Must be between 0 and 100. A default will be used if not set.
+                          maximum: 4294967295
+                          minimum: 0
+                          type: integer
+                      type: object
+                    requestTimeout:
+                      description: Set a timeout on requests.
+                      type: string
+                    retries:
+                      description: Set a retry policy on requests.
+                      properties:
+                        attempts:
+                          description: Number of retries for a given request
+                          format: int32
+                          type: integer
+                        perTryTimeout:
+                          description: 'Timeout per retry attempt for a given request. Format: `1h`/`1m`/`1s`/`1ms`. *Must be >= 1ms*.'
+                          type: string
+                      type: object
+                    trafficShift:
+                      description: Shift traffic to a different destination.
+                      properties:
+                        destinations:
+                          description: Specify weighted traffic shift destinations.
+                          items:
+                            oneOf:
+                            - not:
+                                anyOf:
+                                - required:
+                                  - kubeService
+                                - required:
+                                  - virtualDestination
+                            - required:
+                              - kubeService
+                            - required:
+                              - virtualDestination
+                            properties:
+                              kubeService:
+                                description: Specify a Kubernetes Service.
+                                properties:
+                                  clusterName:
+                                    description: The Gloo Mesh cluster name (registration name) of the service.
+                                    type: string
+                                  name:
+                                    description: The name of the service.
+                                    type: string
+                                  namespace:
+                                    description: The namespace of the service.
+                                    type: string
+                                  port:
+                                    description: Port on the service to receive traffic. Required if the service exposes more than one port.
+                                    maximum: 4294967295
+                                    minimum: 0
+                                    type: integer
+                                  subset:
+                                    additionalProperties:
+                                      type: string
+                                    description: Specify, by labels, a subset of service instances to route to.
+                                    type: object
+                                type: object
+                              virtualDestination:
+                                description: Specify a VirtualDestination.
+                                properties:
+                                  name:
+                                    description: The name of the VirtualDestination object.
+                                    type: string
+                                  namespace:
+                                    description: The namespace of the VirtualDestination object.
+                                    type: string
+                                  subset:
+                                    additionalProperties:
+                                      type: string
+                                    description: Specify, by labels, a subset of service instances backing the VirtualDestination to route to.
+                                    type: object
+                                type: object
+                              weight:
+                                description: |-
+                                  Specify the proportion of traffic to be forwarded to this destination.
+                                  Weights across all of the `destinations` must sum to 100.
+                                maximum: 4294967295
+                                minimum: 0
+                                type: integer
+                            type: object
+                          type: array
+                      type: object
+                  type: object
+              type: object
+            gatewayWorkloads:
+              description: |-
+                Select which gateway workloads (Envoy pods / Istio ingress-gateways) this config applies to.
+                Ingress pods selected must be in the same Mesh (or Federated VirtualMesh) as the Destination services
+                being routed to.
+              items:
+                properties:
+                  kubeWorkloadMatcher:
+                    description: Match Kubernetes workloads by their labels, namespaces, and/or clusters.
+                    properties:
+                      clusters:
+                        description: |-
+                          If specified, match Kubernetes workloads if they exist in one of the specified clusters.
+                                     When used in a networking policy, omission matches any cluster.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any cluster.
+                        items:
+                          type: string
+                        type: array
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          If specified, all labels must exist on Kubernetes workload.
+                                 When used in a networking policy, omission matches any labels.
+                                 When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any label key and/or value.
+                        type: object
+                      namespaces:
+                        description: |-
+                          If specified, match Kubernetes workloads if they exist in one of the specified namespaces.
+                                     When used in a networking policy, omission matches any namespace.
+                                     When used in a Gloo Mesh Role, a wildcard (`"*"`) must be specified to match any namespace.
+                        items:
+                          type: string
+                        type: array
+                    type: object
+                type: object
+              type: array
+          type: object
+        status:
+          type: object
+      type: object
+  versions:
+  - name: v1beta1
+    served: true
+    storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  labels:
+    app: gloo-mesh
+    app.kubernetes.io/name: gloo-mesh
+  name: routetables.networking.enterprise.mesh.gloo.solo.io
+spec:
+  group: networking.enterprise.mesh.gloo.solo.io
+  names:
+    kind: RouteTable
+    listKind: RouteTableList
+    plural: routetables
+    singular: routetable
+  preserveUnknownFields: false
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          description: |-
+            A `RouteTable` is used to configure routes. It is selected by a `FederatedGateway`, and may be attached
+               to more than one gateway. The `RouteTable` contains the top-level configuration and route options, such
+               as domains to match against, and any options to be shared by its routes. Routes can send traffic directly
+               to a service, or can delegate to a `DelegatedRouteTable` to perform further routing decisions.
+          properties:
+            domains:
+              description: |-
+                The list of domains (i.e.: matching the `Host` header of a request) that belong to this virtual host.
+                Note that the wildcard will not match the empty string. e.g. “*-bar.foo.com” will match “baz-bar.foo.com”
+                but not “-bar.foo.com”. Additionally, a special entry “*” is allowed which will match any host/authority header.
+                Only a single virtual host on a gateway can match on “*”. A domain must be unique across all
+                virtual hosts on a gateway or the config will be invalidated by Gloo
+                Domains on virtual hosts obey the same rules as [Envoy Virtual Hosts](https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/route/route.proto)
+              items:
+                type: string
+              type: array
+            routeTableOptions:
+              description: |-
+                Route table options contain additional configuration to be applied to all traffic served by the route table.
+                Some configuration here can be overridden by Route Options.
+              properties:
+                todoAddOptions:
+                  type: string
+              type: object
+            routes:
+              description: |-
+                The list of HTTP routes define routing actions to be taken for incoming HTTP requests whose host header matches
+                this virtual host. If the request matches more than one route in the list, the first route matched will be selected.
+                If the list of routes is empty, the virtual host will be ignored by Gloo.
+              items:
+                oneOf:
+                - not:
+                    anyOf:
+                    - required:
+                      - routeAction
+                    - properties:
+                        redirectAction:
+                          oneOf:
+                          - not:
+                              anyOf:
+                              - required:
+                                - pathRedirect
+                              - required:
+                                - prefixRewrite
+                          - required:
+                            - pathRedirect
+                          - required:
+                            - prefixRewrite
+                      required:
+                      - redirectAction
+                    - required:
+                      - directResponseAction
+                    - properties:
+                        delegateAction:
+                          oneOf:
+                          - not:
+                              anyOf:
+                              - required:
+                                - ref
+                              - required:
+                                - selector
+                          - required:
+                            - ref
+                          - required:
+                            - selector
+                      required:
+                      - delegateAction
+                - required:
+                  - routeAction
+                - properties:
+                    redirectAction:
+                      oneOf:
+                      - not:
+                          anyOf:
+                          - required:
+                            - pathRedirect
+                          - required:
+                            - prefixRewrite
+                      - required:
+                        - pathRedirect
+                      - required:
+                        - prefixRewrite
+                  required:
+                  - redirectAction
+                - required:
+                  - directResponseAction
+                - properties:
+                    delegateAction:
+                      oneOf:
+                      - not:
+                          anyOf:
+                          - required:
+                            - ref
+                          - required:
+                            - selector
+                      - required:
+                        - ref
+                      - required:
+                        - selector
+                  required:
+                  - delegateAction
+                properties:
+                  delegateAction:
+                    description: Delegate routing actions for the given matcher to one or more DelegatedRouteTables.
+                    properties:
+                      ref:
+                        description: Delegate to the Route Table resource with the given `name` and `namespace.
+                        properties:
+                          name:
+                            description: name of the resource being referenced
+                            type: string
+                          namespace:
+                            description: namespace of the resource being referenced
+                            type: string
+                        type: object
+                      selector:
+                        description: Delegate to the Delegated Route Tables that match the given selector.
+                        properties:
+                          expressions:
+                            description: |-
+                              Expressions allow for more flexible Route Tables label matching, such as equality-based requirements, set-based requirements, or a combination of both.
+                              https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#equality-based-requirement
+                            items:
+                              properties:
+                                key:
+                                  description: |-
+                                    Kubernetes label key, must conform to Kubernetes syntax requirements
+                                    https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
+                                  type: string
+                                operator:
+                                  description: The operator can only be in, notin, =, ==, !=, exists, ! (DoesNotExist), gt (GreaterThan), lt (LessThan).
+                                  enum:
+                                  - Equals
+                                  - DoubleEquals
+                                  - NotEquals
+                                  - In
+                                  - NotIn
+                                  - Exists
+                                  - DoesNotExist
+                                  - GreaterThan
+                                  - LessThan
+                                  type: string
+                                values:
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                            type: array
+                          labels:
+                            additionalProperties:
+                              type: string
+                            description: Delegate to Route Tables whose labels match the ones specified here.
+                            type: object
+                          namespaces:
+                            description: |-
+                              Delegate to Route Tables in these namespaces. If omitted, Gloo will only select Route Tables in the same namespace
+                              as the resource (FederatedGateway, Route Table or Delegated Route Table) that owns this selector.
+                              The reserved value "*" can be used to select Route Tables in all namespaces watched by Gloo.
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                    type: object
+                  directResponseAction:
+                    description: Return an arbitrary HTTP response directly, without proxying.
+                    properties:
+                      body:
+                        description: |-
+                          Specifies the content of the response body. If this setting is omitted,
+                          no body is included in the generated response.
+
+                            Note: Headers can be specified using the Header Modification feature in the enclosing
+                            Route, ConnectionHandler, or Gateway options.
+                        type: string
+                      status:
+                        description: Specifies the HTTP response status to be returned.
+                        maximum: 4294967295
+                        minimum: 0
+                        type: integer
+                    type: object
+                  matchers:
+                    description: |-
+                      Matchers contain parameters for matching requests (i.e., based on HTTP path, headers, etc.).
+                      If empty, the route will match all requests (i.e, a single "/" path prefix matcher).
+                      For delegated routes, any parent matcher must have a `prefix` path matcher.
+                    items:
+                      oneOf:
+                      - not:
+                          anyOf:
+                          - required:
+                            - prefix
+                          - required:
+                            - exact
+                          - required:
+                            - regex
+                      - required:
+                        - prefix
+                      - required:
+                        - exact
+                      - required:
+                        - regex
+                      properties:
+                        exact:
+                          description: If specified, the targeted path must exactly match the value.
+                          type: string
+                        headers:
+                          description: Specify a set of headers which requests must match in entirety (all headers must match).
+                          items:
+                            properties:
+                              invertMatch:
+                                description: |-
+                                  If set to true, the result of the match will be inverted. Defaults to false.
+
+                                     Examples:
+
+                                         - name=foo, invert_match=true: matches if no header named `foo` is present
+                                         - name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
+                                         - name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present.
+                                type: boolean
+                              name:
+                                description: Specify the name of the header in the request.
+                                type: string
+                              regex:
+                                description: Specify whether the header value should be treated as regex.
+                                type: boolean
+                              value:
+                                description: |-
+                                  Specify the value of the header. If the value is absent a request that
+                                  has the name header will match, regardless of the header’s value.
+                                type: string
+                            type: object
+                          type: array
+                        method:
+                          description: Specify an HTTP method to match against.
+                          type: string
+                        prefix:
+                          description: If specified, the targeted path must begin with the prefix.
+                          type: string
+                        queryParameters:
+                          description: Specify a set of URL query parameters which requests must match in entirety (all query params must match).
+                          items:
+                            properties:
+                              name:
+                                description: Specify the name of a key that must be present in the requested path's query string.
+                                type: string
+                              regex:
+                                description: If true, treat `value` as a regular expression.
+                                type: boolean
+                              value:
+                                description: Specify the value of the query parameter keyed on `name`.
+                                type: string
+                            type: object
+                          type: array
+                        regex:
+                          description: If specified, the targeted path must match the regex.
+                          type: string
+                      type: object
+                    type: array
+                  name:
+                    description: |-
+                      The name provides a convenience for users to be able to refer to a route by name.
+                      It includes names of vs, route, and route table ancestors of the route.
+                    type: string
+                  options:
+                    description: |-
+                      Route Options extend the behavior of routes.
+                      Route options include configuration such as retries, rate limiting, and request/response transformation.
+                      RouteOption behavior will be inherited by delegated routes which do not specify their own `options`
+                    type: object
+                  redirectAction:
+                    description: Redirect actions tell the proxy to return a redirect response to the downstream client.
+                    properties:
+                      hostRedirect:
+                        description: The host portion of the URL will be swapped with this value.
+                        type: string
+                      httpsRedirect:
+                        description: The scheme portion of the URL will be swapped with "https".
+                        type: boolean
+                      pathRedirect:
+                        description: The path portion of the URL will be swapped with this value.
+                        type: string
+                      prefixRewrite:
+                        description: |-
+                          Indicates that during redirection, the matched prefix (or path)
+                          should be swapped with this value. This option allows redirect URLs be dynamically created
+                          based on the request.
+
+                            Pay attention to the use of trailing slashes as mentioned in
+                            `RouteAction`'s `prefix_rewrite`.
+                        type: string
+                      responseCode:
+                        description: |-
+                          The HTTP status code to use in the redirect response. The default response
+                          code is MOVED_PERMANENTLY (301).
+                        enum:
+                        - MOVED_PERMANENTLY
+                        - FOUND
+                        - SEE_OTHER
+                        - TEMPORARY_REDIRECT
+                        - PERMANENT_REDIRECT
+                        type: string
+                      stripQuery:
+                        description: |-
+                          Indicates that during redirection, the query portion of the URL will
+                          be removed. Default value is false.
+                        type: boolean
+                    type: object
+                  routeAction:
+                    description: |-
+                      This action is the primary action to be selected for most routes. The RouteAction tells the proxy to
+                      route requests to an upstream.
+                    properties:
+                      destinations:
+                        description: |-
+                          Defines the destination upstream for routing
+                          Some destinations require additional configuration for the route (e.g. AWS upstreams require a function name
+                          to be specified).
+                        items:
+                          oneOf:
+                          - not:
+                              anyOf:
+                              - required:
+                                - static
+                              - required:
+                                - virtual
+                              - required:
+                                - kube
+                              - required:
+                                - clusterHeader
+                              - {}
+                          - required:
+                            - static
+                          - required:
+                            - virtual
+                          - required:
+                            - kube
+                          - required:
+                            - clusterHeader
+                          - not:
+                              anyOf:
+                              - {}
+                              - required:
+                                - static
+                              - required:
+                                - virtual
+                              - required:
+                                - kube
+                              - required:
+                                - clusterHeader
+                          properties:
+                            clusterHeader:
+                              description: |-
+                                Envoy will determine the cluster to route to by reading the value of the HTTP header named by cluster_header from the request headers.
+                                If the header is not found or the referenced cluster does not exist, Envoy will return a 404 response.
+                                Avoid using this whenever possible, it does not allow for custom filter configuration based on Virtual Host.
+                              type: string
+                            destinationOptions:
+                              description: options applied when this destination is selected from a list of multiple destinations
+                              properties:
+                                headerModification:
+                                  description: |-
+                                    TODO: Some subset of traffic policy (whatever Istio supports)
+                                    TODO: Use correct type for header_modification
+                                  type: string
+                              type: object
+                            kube:
+                              description: |-
+                                Reference to a Kubernetes Service. Note that the service must exist in the same mesh or virtual mesh (with federation enabled) as
+                                each gateway workload which routes to this destination.
+                              properties:
+                                clusterName:
+                                  description: name of the cluster in which the resource exists
+                                  type: string
+                                name:
+                                  description: name of the resource being referenced
+                                  type: string
+                                namespace:
+                                  description: namespace of the resource being referenced
+                                  type: string
+                              type: object
+                            static:
+                              description: Reference to a gloo mesh Static Destination
+                              properties:
+                                name:
+                                  description: name of the resource being referenced
+                                  type: string
+                                namespace:
+                                  description: namespace of the resource being referenced
+                                  type: string
+                              type: object
+                            virtual:
+                              description: Reference to a gloo mesh VirtualDestination
+                              properties:
+                                name:
+                                  description: name of the resource being referenced
+                                  type: string
+                                namespace:
+                                  description: namespace of the resource being referenced
+                                  type: string
+                              type: object
+                            weight:
+                              description: |-
+                                Relative weight of this destination to others in the same route.
+                                If omitted, all destinations in the route will be load balanced between evenly.
+                              maximum: 4294967295
+                              minimum: 0
+                              type: integer
+                          type: object
+                        type: array
+                    type: object
+                type: object
+              type: array
+          type: object
+        status:
+          type: object
+      type: object
+  versions:
+  - name: v1beta1
+    served: true
+    storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  labels:
+    app: gloo-mesh
+    app.kubernetes.io/name: gloo-mesh
+  name: delegatedroutetables.networking.enterprise.mesh.gloo.solo.io
+spec:
+  group: networking.enterprise.mesh.gloo.solo.io
+  names:
+    kind: DelegatedRouteTable
+    listKind: DelegatedRouteTableList
+    plural: delegatedroutetables
+    singular: delegatedroutetable
+  preserveUnknownFields: false
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          description: |-
+            DelegatedRouteTable is a resource which can be referenced either from the top level RouteTable resource, or from
+               other DelegatedRouteTables. It's primary use is to organizationally and logically separate the configuration of routes,
+               so that the responsbilities of route configuration and maintenance can be divided between teams where appropriate.
+          properties:
+            routes:
+              description: |-
+                The list of HTTP routes define routing actions to be taken for incoming HTTP requests whose host header matches
+                this virtual host. If the request matches more than one route in the list, the first route matched will be selected.
+                If the list of routes is empty, the virtual host will be ignored by Gloo.
+              items:
+                oneOf:
+                - not:
+                    anyOf:
+                    - required:
+                      - routeAction
+                    - properties:
+                        redirectAction:
+                          oneOf:
+                          - not:
+                              anyOf:
+                              - required:
+                                - pathRedirect
+                              - required:
+                                - prefixRewrite
+                          - required:
+                            - pathRedirect
+                          - required:
+                            - prefixRewrite
+                      required:
+                      - redirectAction
+                    - required:
+                      - directResponseAction
+                    - properties:
+                        delegateAction:
+                          oneOf:
+                          - not:
+                              anyOf:
+                              - required:
+                                - ref
+                              - required:
+                                - selector
+                          - required:
+                            - ref
+                          - required:
+                            - selector
+                      required:
+                      - delegateAction
+                - required:
+                  - routeAction
+                - properties:
+                    redirectAction:
+                      oneOf:
+                      - not:
+                          anyOf:
+                          - required:
+                            - pathRedirect
+                          - required:
+                            - prefixRewrite
+                      - required:
+                        - pathRedirect
+                      - required:
+                        - prefixRewrite
+                  required:
+                  - redirectAction
+                - required:
+                  - directResponseAction
+                - properties:
+                    delegateAction:
+                      oneOf:
+                      - not:
+                          anyOf:
+                          - required:
+                            - ref
+                          - required:
+                            - selector
+                      - required:
+                        - ref
+                      - required:
+                        - selector
+                  required:
+                  - delegateAction
+                properties:
+                  delegateAction:
+                    description: Delegate routing actions for the given matcher to one or more DelegatedRouteTables.
+                    properties:
+                      ref:
+                        description: Delegate to the Route Table resource with the given `name` and `namespace.
+                        properties:
+                          name:
+                            description: name of the resource being referenced
+                            type: string
+                          namespace:
+                            description: namespace of the resource being referenced
+                            type: string
+                        type: object
+                      selector:
+                        description: Delegate to the Delegated Route Tables that match the given selector.
+                        properties:
+                          expressions:
+                            description: |-
+                              Expressions allow for more flexible Route Tables label matching, such as equality-based requirements, set-based requirements, or a combination of both.
+                              https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#equality-based-requirement
+                            items:
+                              properties:
+                                key:
+                                  description: |-
+                                    Kubernetes label key, must conform to Kubernetes syntax requirements
+                                    https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
+                                  type: string
+                                operator:
+                                  description: The operator can only be in, notin, =, ==, !=, exists, ! (DoesNotExist), gt (GreaterThan), lt (LessThan).
+                                  enum:
+                                  - Equals
+                                  - DoubleEquals
+                                  - NotEquals
+                                  - In
+                                  - NotIn
+                                  - Exists
+                                  - DoesNotExist
+                                  - GreaterThan
+                                  - LessThan
+                                  type: string
+                                values:
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                            type: array
+                          labels:
+                            additionalProperties:
+                              type: string
+                            description: Delegate to Route Tables whose labels match the ones specified here.
+                            type: object
+                          namespaces:
+                            description: |-
+                              Delegate to Route Tables in these namespaces. If omitted, Gloo will only select Route Tables in the same namespace
+                              as the resource (FederatedGateway, Route Table or Delegated Route Table) that owns this selector.
+                              The reserved value "*" can be used to select Route Tables in all namespaces watched by Gloo.
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                    type: object
+                  directResponseAction:
+                    description: Return an arbitrary HTTP response directly, without proxying.
+                    properties:
+                      body:
+                        description: |-
+                          Specifies the content of the response body. If this setting is omitted,
+                          no body is included in the generated response.
+
+                            Note: Headers can be specified using the Header Modification feature in the enclosing
+                            Route, ConnectionHandler, or Gateway options.
+                        type: string
+                      status:
+                        description: Specifies the HTTP response status to be returned.
+                        maximum: 4294967295
+                        minimum: 0
+                        type: integer
+                    type: object
+                  matchers:
+                    description: |-
+                      Matchers contain parameters for matching requests (i.e., based on HTTP path, headers, etc.).
+                      If empty, the route will match all requests (i.e, a single "/" path prefix matcher).
+                      For delegated routes, any parent matcher must have a `prefix` path matcher.
+                    items:
+                      oneOf:
+                      - not:
+                          anyOf:
+                          - required:
+                            - prefix
+                          - required:
+                            - exact
+                          - required:
+                            - regex
+                      - required:
+                        - prefix
+                      - required:
+                        - exact
+                      - required:
+                        - regex
+                      properties:
+                        exact:
+                          description: If specified, the targeted path must exactly match the value.
+                          type: string
+                        headers:
+                          description: Specify a set of headers which requests must match in entirety (all headers must match).
+                          items:
+                            properties:
+                              invertMatch:
+                                description: |-
+                                  If set to true, the result of the match will be inverted. Defaults to false.
+
+                                     Examples:
+
+                                         - name=foo, invert_match=true: matches if no header named `foo` is present
+                                         - name=foo, value=bar, invert_match=true: matches if no header named `foo` with value `bar` is present
+                                         - name=foo, value=``\d{3}``, regex=true, invert_match=true: matches if no header named `foo` with a value consisting of three integers is present.
+                                type: boolean
+                              name:
+                                description: Specify the name of the header in the request.
+                                type: string
+                              regex:
+                                description: Specify whether the header value should be treated as regex.
+                                type: boolean
+                              value:
+                                description: |-
+                                  Specify the value of the header. If the value is absent a request that
+                                  has the name header will match, regardless of the header’s value.
+                                type: string
+                            type: object
+                          type: array
+                        method:
+                          description: Specify an HTTP method to match against.
+                          type: string
+                        prefix:
+                          description: If specified, the targeted path must begin with the prefix.
+                          type: string
+                        queryParameters:
+                          description: Specify a set of URL query parameters which requests must match in entirety (all query params must match).
+                          items:
+                            properties:
+                              name:
+                                description: Specify the name of a key that must be present in the requested path's query string.
+                                type: string
+                              regex:
+                                description: If true, treat `value` as a regular expression.
+                                type: boolean
+                              value:
+                                description: Specify the value of the query parameter keyed on `name`.
+                                type: string
+                            type: object
+                          type: array
+                        regex:
+                          description: If specified, the targeted path must match the regex.
+                          type: string
+                      type: object
+                    type: array
+                  name:
+                    description: |-
+                      The name provides a convenience for users to be able to refer to a route by name.
+                      It includes names of vs, route, and route table ancestors of the route.
+                    type: string
+                  options:
+                    description: |-
+                      Route Options extend the behavior of routes.
+                      Route options include configuration such as retries, rate limiting, and request/response transformation.
+                      RouteOption behavior will be inherited by delegated routes which do not specify their own `options`
+                    type: object
+                  redirectAction:
+                    description: Redirect actions tell the proxy to return a redirect response to the downstream client.
+                    properties:
+                      hostRedirect:
+                        description: The host portion of the URL will be swapped with this value.
+                        type: string
+                      httpsRedirect:
+                        description: The scheme portion of the URL will be swapped with "https".
+                        type: boolean
+                      pathRedirect:
+                        description: The path portion of the URL will be swapped with this value.
+                        type: string
+                      prefixRewrite:
+                        description: |-
+                          Indicates that during redirection, the matched prefix (or path)
+                          should be swapped with this value. This option allows redirect URLs be dynamically created
+                          based on the request.
+
+                            Pay attention to the use of trailing slashes as mentioned in
+                            `RouteAction`'s `prefix_rewrite`.
+                        type: string
+                      responseCode:
+                        description: |-
+                          The HTTP status code to use in the redirect response. The default response
+                          code is MOVED_PERMANENTLY (301).
+                        enum:
+                        - MOVED_PERMANENTLY
+                        - FOUND
+                        - SEE_OTHER
+                        - TEMPORARY_REDIRECT
+                        - PERMANENT_REDIRECT
+                        type: string
+                      stripQuery:
+                        description: |-
+                          Indicates that during redirection, the query portion of the URL will
+                          be removed. Default value is false.
+                        type: boolean
+                    type: object
+                  routeAction:
+                    description: |-
+                      This action is the primary action to be selected for most routes. The RouteAction tells the proxy to
+                      route requests to an upstream.
+                    properties:
+                      destinations:
+                        description: |-
+                          Defines the destination upstream for routing
+                          Some destinations require additional configuration for the route (e.g. AWS upstreams require a function name
+                          to be specified).
+                        items:
+                          oneOf:
+                          - not:
+                              anyOf:
+                              - required:
+                                - static
+                              - required:
+                                - virtual
+                              - required:
+                                - kube
+                              - required:
+                                - clusterHeader
+                              - {}
+                          - required:
+                            - static
+                          - required:
+                            - virtual
+                          - required:
+                            - kube
+                          - required:
+                            - clusterHeader
+                          - not:
+                              anyOf:
+                              - {}
+                              - required:
+                                - static
+                              - required:
+                                - virtual
+                              - required:
+                                - kube
+                              - required:
+                                - clusterHeader
+                          properties:
+                            clusterHeader:
+                              description: |-
+                                Envoy will determine the cluster to route to by reading the value of the HTTP header named by cluster_header from the request headers.
+                                If the header is not found or the referenced cluster does not exist, Envoy will return a 404 response.
+                                Avoid using this whenever possible, it does not allow for custom filter configuration based on Virtual Host.
+                              type: string
+                            destinationOptions:
+                              description: options applied when this destination is selected from a list of multiple destinations
+                              properties:
+                                headerModification:
+                                  description: |-
+                                    TODO: Some subset of traffic policy (whatever Istio supports)
+                                    TODO: Use correct type for header_modification
+                                  type: string
+                              type: object
+                            kube:
+                              description: |-
+                                Reference to a Kubernetes Service. Note that the service must exist in the same mesh or virtual mesh (with federation enabled) as
+                                each gateway workload which routes to this destination.
+                              properties:
+                                clusterName:
+                                  description: name of the cluster in which the resource exists
+                                  type: string
+                                name:
+                                  description: name of the resource being referenced
+                                  type: string
+                                namespace:
+                                  description: namespace of the resource being referenced
+                                  type: string
+                              type: object
+                            static:
+                              description: Reference to a gloo mesh Static Destination
+                              properties:
+                                name:
+                                  description: name of the resource being referenced
+                                  type: string
+                                namespace:
+                                  description: namespace of the resource being referenced
+                                  type: string
+                              type: object
+                            virtual:
+                              description: Reference to a gloo mesh VirtualDestination
+                              properties:
+                                name:
+                                  description: name of the resource being referenced
+                                  type: string
+                                namespace:
+                                  description: namespace of the resource being referenced
+                                  type: string
+                              type: object
+                            weight:
+                              description: |-
+                                Relative weight of this destination to others in the same route.
+                                If omitted, all destinations in the route will be load balanced between evenly.
+                              maximum: 4294967295
+                              minimum: 0
+                              type: integer
+                          type: object
+                        type: array
+                    type: object
+                type: object
+              type: array
+          type: object
+        status:
+          type: object
+      type: object
+  versions:
+  - name: v1beta1
+    served: true
+    storage: true

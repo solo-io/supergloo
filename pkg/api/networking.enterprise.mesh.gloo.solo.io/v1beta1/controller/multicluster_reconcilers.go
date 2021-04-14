@@ -159,3 +159,216 @@ func (g genericVirtualDestinationMulticlusterReconciler) Reconcile(cluster strin
 	}
 	return g.reconciler.ReconcileVirtualDestination(cluster, obj)
 }
+
+// Reconcile Upsert events for the FederatedGateway Resource across clusters.
+// implemented by the user
+type MulticlusterFederatedGatewayReconciler interface {
+	ReconcileFederatedGateway(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the FederatedGateway Resource across clusters.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type MulticlusterFederatedGatewayDeletionReconciler interface {
+	ReconcileFederatedGatewayDeletion(clusterName string, req reconcile.Request) error
+}
+
+type MulticlusterFederatedGatewayReconcilerFuncs struct {
+	OnReconcileFederatedGateway         func(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) (reconcile.Result, error)
+	OnReconcileFederatedGatewayDeletion func(clusterName string, req reconcile.Request) error
+}
+
+func (f *MulticlusterFederatedGatewayReconcilerFuncs) ReconcileFederatedGateway(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway) (reconcile.Result, error) {
+	if f.OnReconcileFederatedGateway == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileFederatedGateway(clusterName, obj)
+}
+
+func (f *MulticlusterFederatedGatewayReconcilerFuncs) ReconcileFederatedGatewayDeletion(clusterName string, req reconcile.Request) error {
+	if f.OnReconcileFederatedGatewayDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileFederatedGatewayDeletion(clusterName, req)
+}
+
+type MulticlusterFederatedGatewayReconcileLoop interface {
+	// AddMulticlusterFederatedGatewayReconciler adds a MulticlusterFederatedGatewayReconciler to the MulticlusterFederatedGatewayReconcileLoop.
+	AddMulticlusterFederatedGatewayReconciler(ctx context.Context, rec MulticlusterFederatedGatewayReconciler, predicates ...predicate.Predicate)
+}
+
+type multiclusterFederatedGatewayReconcileLoop struct {
+	loop multicluster.Loop
+}
+
+func (m *multiclusterFederatedGatewayReconcileLoop) AddMulticlusterFederatedGatewayReconciler(ctx context.Context, rec MulticlusterFederatedGatewayReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericFederatedGatewayMulticlusterReconciler{reconciler: rec}
+
+	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
+}
+
+func NewMulticlusterFederatedGatewayReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterFederatedGatewayReconcileLoop {
+	return &multiclusterFederatedGatewayReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway{}, options)}
+}
+
+type genericFederatedGatewayMulticlusterReconciler struct {
+	reconciler MulticlusterFederatedGatewayReconciler
+}
+
+func (g genericFederatedGatewayMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterFederatedGatewayDeletionReconciler); ok {
+		return deletionReconciler.ReconcileFederatedGatewayDeletion(cluster, req)
+	}
+	return nil
+}
+
+func (g genericFederatedGatewayMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.FederatedGateway)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: FederatedGateway handler received event for %T", object)
+	}
+	return g.reconciler.ReconcileFederatedGateway(cluster, obj)
+}
+
+// Reconcile Upsert events for the RouteTable Resource across clusters.
+// implemented by the user
+type MulticlusterRouteTableReconciler interface {
+	ReconcileRouteTable(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the RouteTable Resource across clusters.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type MulticlusterRouteTableDeletionReconciler interface {
+	ReconcileRouteTableDeletion(clusterName string, req reconcile.Request) error
+}
+
+type MulticlusterRouteTableReconcilerFuncs struct {
+	OnReconcileRouteTable         func(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) (reconcile.Result, error)
+	OnReconcileRouteTableDeletion func(clusterName string, req reconcile.Request) error
+}
+
+func (f *MulticlusterRouteTableReconcilerFuncs) ReconcileRouteTable(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable) (reconcile.Result, error) {
+	if f.OnReconcileRouteTable == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileRouteTable(clusterName, obj)
+}
+
+func (f *MulticlusterRouteTableReconcilerFuncs) ReconcileRouteTableDeletion(clusterName string, req reconcile.Request) error {
+	if f.OnReconcileRouteTableDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileRouteTableDeletion(clusterName, req)
+}
+
+type MulticlusterRouteTableReconcileLoop interface {
+	// AddMulticlusterRouteTableReconciler adds a MulticlusterRouteTableReconciler to the MulticlusterRouteTableReconcileLoop.
+	AddMulticlusterRouteTableReconciler(ctx context.Context, rec MulticlusterRouteTableReconciler, predicates ...predicate.Predicate)
+}
+
+type multiclusterRouteTableReconcileLoop struct {
+	loop multicluster.Loop
+}
+
+func (m *multiclusterRouteTableReconcileLoop) AddMulticlusterRouteTableReconciler(ctx context.Context, rec MulticlusterRouteTableReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericRouteTableMulticlusterReconciler{reconciler: rec}
+
+	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
+}
+
+func NewMulticlusterRouteTableReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterRouteTableReconcileLoop {
+	return &multiclusterRouteTableReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable{}, options)}
+}
+
+type genericRouteTableMulticlusterReconciler struct {
+	reconciler MulticlusterRouteTableReconciler
+}
+
+func (g genericRouteTableMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterRouteTableDeletionReconciler); ok {
+		return deletionReconciler.ReconcileRouteTableDeletion(cluster, req)
+	}
+	return nil
+}
+
+func (g genericRouteTableMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.RouteTable)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: RouteTable handler received event for %T", object)
+	}
+	return g.reconciler.ReconcileRouteTable(cluster, obj)
+}
+
+// Reconcile Upsert events for the DelegatedRouteTable Resource across clusters.
+// implemented by the user
+type MulticlusterDelegatedRouteTableReconciler interface {
+	ReconcileDelegatedRouteTable(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) (reconcile.Result, error)
+}
+
+// Reconcile deletion events for the DelegatedRouteTable Resource across clusters.
+// Deletion receives a reconcile.Request as we cannot guarantee the last state of the object
+// before being deleted.
+// implemented by the user
+type MulticlusterDelegatedRouteTableDeletionReconciler interface {
+	ReconcileDelegatedRouteTableDeletion(clusterName string, req reconcile.Request) error
+}
+
+type MulticlusterDelegatedRouteTableReconcilerFuncs struct {
+	OnReconcileDelegatedRouteTable         func(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) (reconcile.Result, error)
+	OnReconcileDelegatedRouteTableDeletion func(clusterName string, req reconcile.Request) error
+}
+
+func (f *MulticlusterDelegatedRouteTableReconcilerFuncs) ReconcileDelegatedRouteTable(clusterName string, obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable) (reconcile.Result, error) {
+	if f.OnReconcileDelegatedRouteTable == nil {
+		return reconcile.Result{}, nil
+	}
+	return f.OnReconcileDelegatedRouteTable(clusterName, obj)
+}
+
+func (f *MulticlusterDelegatedRouteTableReconcilerFuncs) ReconcileDelegatedRouteTableDeletion(clusterName string, req reconcile.Request) error {
+	if f.OnReconcileDelegatedRouteTableDeletion == nil {
+		return nil
+	}
+	return f.OnReconcileDelegatedRouteTableDeletion(clusterName, req)
+}
+
+type MulticlusterDelegatedRouteTableReconcileLoop interface {
+	// AddMulticlusterDelegatedRouteTableReconciler adds a MulticlusterDelegatedRouteTableReconciler to the MulticlusterDelegatedRouteTableReconcileLoop.
+	AddMulticlusterDelegatedRouteTableReconciler(ctx context.Context, rec MulticlusterDelegatedRouteTableReconciler, predicates ...predicate.Predicate)
+}
+
+type multiclusterDelegatedRouteTableReconcileLoop struct {
+	loop multicluster.Loop
+}
+
+func (m *multiclusterDelegatedRouteTableReconcileLoop) AddMulticlusterDelegatedRouteTableReconciler(ctx context.Context, rec MulticlusterDelegatedRouteTableReconciler, predicates ...predicate.Predicate) {
+	genericReconciler := genericDelegatedRouteTableMulticlusterReconciler{reconciler: rec}
+
+	m.loop.AddReconciler(ctx, genericReconciler, predicates...)
+}
+
+func NewMulticlusterDelegatedRouteTableReconcileLoop(name string, cw multicluster.ClusterWatcher, options reconcile.Options) MulticlusterDelegatedRouteTableReconcileLoop {
+	return &multiclusterDelegatedRouteTableReconcileLoop{loop: mc_reconcile.NewLoop(name, cw, &networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable{}, options)}
+}
+
+type genericDelegatedRouteTableMulticlusterReconciler struct {
+	reconciler MulticlusterDelegatedRouteTableReconciler
+}
+
+func (g genericDelegatedRouteTableMulticlusterReconciler) ReconcileDeletion(cluster string, req reconcile.Request) error {
+	if deletionReconciler, ok := g.reconciler.(MulticlusterDelegatedRouteTableDeletionReconciler); ok {
+		return deletionReconciler.ReconcileDelegatedRouteTableDeletion(cluster, req)
+	}
+	return nil
+}
+
+func (g genericDelegatedRouteTableMulticlusterReconciler) Reconcile(cluster string, object ezkube.Object) (reconcile.Result, error) {
+	obj, ok := object.(*networking_enterprise_mesh_gloo_solo_io_v1beta1.DelegatedRouteTable)
+	if !ok {
+		return reconcile.Result{}, errors.Errorf("internal error: DelegatedRouteTable handler received event for %T", object)
+	}
+	return g.reconciler.ReconcileDelegatedRouteTable(cluster, obj)
+}

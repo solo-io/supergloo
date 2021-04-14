@@ -31,3 +31,39 @@ func (in *VirtualDestinationStatus) DeepCopyInto(out *VirtualDestinationStatus) 
 	p := proto.Clone(in).(*VirtualDestinationStatus)
 	*out = *p
 }
+
+// DeepCopyInto for the FederatedGateway.Spec
+func (in *FederatedGatewaySpec) DeepCopyInto(out *FederatedGatewaySpec) {
+	p := proto.Clone(in).(*FederatedGatewaySpec)
+	*out = *p
+}
+
+// DeepCopyInto for the FederatedGateway.Status
+func (in *FederatedGatewayStatus) DeepCopyInto(out *FederatedGatewayStatus) {
+	p := proto.Clone(in).(*FederatedGatewayStatus)
+	*out = *p
+}
+
+// DeepCopyInto for the RouteTable.Spec
+func (in *RouteTableSpec) DeepCopyInto(out *RouteTableSpec) {
+	p := proto.Clone(in).(*RouteTableSpec)
+	*out = *p
+}
+
+// DeepCopyInto for the RouteTable.Status
+func (in *RouteTableStatus) DeepCopyInto(out *RouteTableStatus) {
+	p := proto.Clone(in).(*RouteTableStatus)
+	*out = *p
+}
+
+// DeepCopyInto for the DelegatedRouteTable.Spec
+func (in *DelegatedRouteTableSpec) DeepCopyInto(out *DelegatedRouteTableSpec) {
+	p := proto.Clone(in).(*DelegatedRouteTableSpec)
+	*out = *p
+}
+
+// DeepCopyInto for the DelegatedRouteTable.Status
+func (in *DelegatedRouteTableStatus) DeepCopyInto(out *DelegatedRouteTableStatus) {
+	p := proto.Clone(in).(*DelegatedRouteTableStatus)
+	*out = *p
+}

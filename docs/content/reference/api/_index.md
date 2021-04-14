@@ -42,6 +42,12 @@ These docs describe Gloo Mesh CRDs.
 
 ### networking.enterprise.mesh.gloo.solo.io
 
+  - [DelegatedRouteTable]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.delegated_route_table#networking.enterprise.mesh.gloo.solo.io.DelegatedRouteTableSpec" >}})
+
+  - [FederatedGateway]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec" >}})
+
+  - [RouteTable]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.route_table#networking.enterprise.mesh.gloo.solo.io.RouteTableSpec" >}})
+
   - [VirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.virtual_destination#networking.enterprise.mesh.gloo.solo.io.VirtualDestinationSpec" >}})
 
   - [WasmDeployment]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.wasm_deployment#networking.enterprise.mesh.gloo.solo.io.WasmDeploymentSpec" >}})

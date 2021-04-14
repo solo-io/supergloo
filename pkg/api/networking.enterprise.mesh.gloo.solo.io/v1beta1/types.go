@@ -78,7 +78,115 @@ type VirtualDestinationList struct {
 	Items           []VirtualDestination `json:"items"`
 }
 
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+
+// GroupVersionKind for FederatedGateway
+var FederatedGatewayGVK = schema.GroupVersionKind{
+	Group:   "networking.enterprise.mesh.gloo.solo.io",
+	Version: "v1beta1",
+	Kind:    "FederatedGateway",
+}
+
+// FederatedGateway is the Schema for the federatedGateway API
+type FederatedGateway struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   FederatedGatewaySpec   `json:"spec,omitempty"`
+	Status FederatedGatewayStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (FederatedGateway) GVK() schema.GroupVersionKind {
+	return FederatedGatewayGVK
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// FederatedGatewayList contains a list of FederatedGateway
+type FederatedGatewayList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []FederatedGateway `json:"items"`
+}
+
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+
+// GroupVersionKind for RouteTable
+var RouteTableGVK = schema.GroupVersionKind{
+	Group:   "networking.enterprise.mesh.gloo.solo.io",
+	Version: "v1beta1",
+	Kind:    "RouteTable",
+}
+
+// RouteTable is the Schema for the routeTable API
+type RouteTable struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   RouteTableSpec   `json:"spec,omitempty"`
+	Status RouteTableStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (RouteTable) GVK() schema.GroupVersionKind {
+	return RouteTableGVK
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// RouteTableList contains a list of RouteTable
+type RouteTableList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []RouteTable `json:"items"`
+}
+
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+
+// GroupVersionKind for DelegatedRouteTable
+var DelegatedRouteTableGVK = schema.GroupVersionKind{
+	Group:   "networking.enterprise.mesh.gloo.solo.io",
+	Version: "v1beta1",
+	Kind:    "DelegatedRouteTable",
+}
+
+// DelegatedRouteTable is the Schema for the delegatedRouteTable API
+type DelegatedRouteTable struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   DelegatedRouteTableSpec   `json:"spec,omitempty"`
+	Status DelegatedRouteTableStatus `json:"status,omitempty"`
+}
+
+// GVK returns the GroupVersionKind associated with the resource type.
+func (DelegatedRouteTable) GVK() schema.GroupVersionKind {
+	return DelegatedRouteTableGVK
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// DelegatedRouteTableList contains a list of DelegatedRouteTable
+type DelegatedRouteTableList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []DelegatedRouteTable `json:"items"`
+}
+
 func init() {
 	SchemeBuilder.Register(&WasmDeployment{}, &WasmDeploymentList{})
 	SchemeBuilder.Register(&VirtualDestination{}, &VirtualDestinationList{})
+	SchemeBuilder.Register(&FederatedGateway{}, &FederatedGatewayList{})
+	SchemeBuilder.Register(&RouteTable{}, &RouteTableList{})
+	SchemeBuilder.Register(&DelegatedRouteTable{}, &DelegatedRouteTableList{})
 }
