@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1425
+    description: Improve performance of TrafficShift decorator by using set's unsorted list method.

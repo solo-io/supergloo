@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1415
+    description: Add API to distinguish between hostnames and ips in our ingress gateway info.
+    resolvesIssue: false
