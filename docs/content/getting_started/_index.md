@@ -23,12 +23,7 @@ Once you've downloaded the correct binary for your architecture, run the followi
 meshctl version
 ```
 
-You can add `meshctl` to your path for global access on the command line. See:
-
-
-* [Adding to your path on Windows](https://helpdeskgeek.com/windows-10/add-windows-path-environment-variable/)
-* [Adding to your path on Mac](https://osxdaily.com/2014/08/14/add-new-path-to-path-command-line/)
-* [Adding to your path on Linux](https://linuxize.com/post/how-to-add-directory-to-path-in-linux/)
+You can add `meshctl` to your PATH ([Windows](https://helpdeskgeek.com/windows-10/add-windows-path-environment-variable/) [Mac](https://osxdaily.com/2014/08/14/add-new-path-to-path-command-line/) [Linux](https://linuxize.com/post/how-to-add-directory-to-path-in-linux/)) for global access on the command line.
 
 
 ## Spinning up clusters with Kind (Kubernetes in Docker)
@@ -42,10 +37,23 @@ If you prefer to use an existing Kubernetes cluster, check out our [Setup Guide]
 
 To spin up two Kubernetes clusters with Kind, run:
 
-```shell
+{{< tabs >}}
+{{< tab name="Community" codelang="shell" >}}
 meshctl demo istio-multicluster init
-```
-This will spin up two Kubernetes clusters in Docker with Istio installed on each. Additionally, this will install Gloo Mesh on one of the clusters. Both clusters will be **registered** with Gloo Mesh under the names `mgmt-cluster` and `remote-cluster`, which will be used throughout the documentation.
+{{< /tab >}}
+{{< tab name="Enterprise" codelang="shell" >}}
+GLOO_MESH_LICENSE_KEY=<your_key_here> # You'll need to supply your own key
+meshctl demo istio-multicluster init --enterprise --license $GLOO_MESH_LICENSE_KEY
+{{< /tab >}}
+{{< /tabs >}}
+
+The command will do the following:
+
+* Create two kind clusters: `mgmt-cluster` and `remote-cluster`
+* Install Gloo Mesh Community on the `mgmt-cluster`
+* Install Istio on both clusters
+* Register both clusters with Gloo Mesh under the names `mgmt-cluster` and `remote-cluster`
+* Deploy BookInfo sample application on both clusters under the `bookinfo` namespace
 
 ```shell
 Creating cluster mgmt-cluster with ingress port 32001
@@ -120,7 +128,9 @@ Management Configuration
 
 Setting up Kind and multiple clusters on your machine isn't always the easiest, and there may be some issues/hurdles you run into, especially on "company laptops" with extra security constraints. If you ran into any issues in the previous steps, please join us on the [Solo.io slack](https://slack.solo.io) and we'll be more than happy to help troubleshoot. 
 
-You should be ready to run the steps in the rest of the [Guides]({{% versioned_link_path fromRoot="/guides/" %}}).
+## Next steps
+
+In this quick-start guide, we installed Gloo Mesh and registered clusters. If these installation use cases were too simplistic or not representative of your environment, please check out our [Setup Guide]({{% versioned_link_path fromRoot="/setup/" %}}). Otherwise, please check out our [Guides]({{% versioned_link_path fromRoot="/guides/" %}}) to explore the power of Gloo Mesh.
 
 ### Clean up
 
@@ -129,7 +139,3 @@ Cleaning up this demo environment is as simple as running the following:
 ```shell
 meshctl demo istio-multicluster cleanup
 ```
-
-## Next steps
-
-In this quick-start guide, we installed Gloo Mesh. If these installation use cases were too simplistic or not representative of your environment, please check out our [Setup Guide]({{% versioned_link_path fromRoot="/setup/" %}}). Otherwise, please check out our [Guides]({{% versioned_link_path fromRoot="/guides/" %}}) to explore the power of Gloo Mesh.

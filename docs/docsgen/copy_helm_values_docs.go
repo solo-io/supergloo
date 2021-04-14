@@ -6,20 +6,27 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 
+	"github.com/Masterminds/semver"
 	"github.com/google/go-github/github"
 	"github.com/rotisserie/eris"
+	"github.com/solo-io/go-utils/contextutils"
+	"github.com/stoewer/go-strcase"
 )
 
 var (
 	helmDocsDir = "content/reference/helm"
 
-	enterpriseNetworkingHelmValueDocPath = "enterprise-networking/codegen/helm/enterprise_networking_helm_values_reference.md"
-	enterpriseAgentHelmValueDocPath      = "enterprise-networking/codegen/helm/enterprise_agent_helm_values_reference.md"
+	ossFileMapping = map[string]string{
+		"codegen/helm/gloo_mesh_helm_values_reference.md":  "%s/%s/gloo_mesh.md",
+		"codegen/helm/cert_agent_helm_values_reference.md": "%s/%s/cert_agent.md",
+	}
 
-	fileMapping = map[string]string{
-		enterpriseNetworkingHelmValueDocPath: "%s/%s/enterprise_networking.md",
-		enterpriseAgentHelmValueDocPath:      "%s/%s/enterprise_agent.md",
+	enterpriseFileMapping = map[string]string{
+		"enterprise-networking/codegen/helm/enterprise_networking_helm_values_reference.md": "%s/%s/enterprise_networking.md",
+		"enterprise-networking/codegen/helm/enterprise_agent_helm_values_reference.md":      "%s/%s/enterprise_agent.md",
+		"rbac-webhook/codegen/chart/rbac_webhook_helm_values_reference.md":                  "%s/%s/rbac_webhook.md",
 	}
 
 	helmValuesIndex = `
@@ -28,39 +35,126 @@ title: "%s"
 description: Reference for Helm values. 
 weight: 2
 ---
+
+The following pages provide reference documentation for Helm values for the various Gloo Mesh
+components. These components include:
+
+1. **Open source Gloo Mesh**: the OSS version of Gloo Mesh
+2. **Enterprise Networking (enterprise only)**: the management plane of Gloo Mesh Enterprise, deployed on the management cluster
+3. **Enterprise Agent (enterprise only)**: the agent of Gloo Mesh Enterprise, deployed on each managed cluster
+4. **RBAC Webhook (enterprise only)**: the Kubernetes webhook that enforces Gloo Mesh Enterprise's role-based API
+5. **Gloo Mesh UI (enterprise only)**: the UI for Gloo Mesh Enterprise
+
+Note that when providing Helm values for the bundled Gloo Mesh Enterprise chart 
+(located at https://storage.googleapis.com/gloo-mesh-enterprise/gloo-mesh-enterprise),
+values for each subchart must be prefixed accordingly:
+
+1. Values for the RBAC Webhook must be prefixed with "rbac-webhook".
+2. Values for Enterprise Networking must be prefixed with "enterprise-networking".
+3. Values for the Gloo Mesh UI must be prefixed with "gloo-mesh-ui".
+
+
 {{%% children description="true" %%}}
 `
 )
 
-func copyHelmValuesDocsFromEnterprise(client *github.Client, rootDir string) error {
-	// flush directory for idempotence
+func copyHelmValuesDocsForAllCharts(client *github.Client, rootDir string) error {
+	// flush root directory for idempotence
 	helmDocsDir := filepath.Join(rootDir, helmDocsDir)
 	os.RemoveAll(helmDocsDir)
 	os.MkdirAll(helmDocsDir, 0755)
 
+	// create root index
 	if err := createFileIfNotExists(helmDocsDir+"/"+"_index.md", fmt.Sprintf(helmValuesIndex, "Helm Values Reference")); err != nil {
 		return eris.Errorf("error creating Helm values index file: %v", err)
 	}
 
-	// include Helm values docs for all versions > v1.0.0-beta14
+	// Gloo Mesh OSS
+	if err := copyHelmValuesDocsForComponent(
+		client,
+		rootDir,
+		"Gloo Mesh",
+		GlooMeshRepoName,
+		"v1.0.0",
+		ossFileMapping,
+	); err != nil {
+		return err
+	}
+
+	// Gloo Mesh Enterprise
+	if err := copyHelmValuesDocsForComponent(
+		client,
+		rootDir,
+		"Gloo Mesh Enterprise",
+		GlooMeshEnterpriseRepoName,
+		"v1.0.0",
+		enterpriseFileMapping,
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// fetch Helm Values documentation from repo up to and including the version specified by earliestVerison
+// fileMapping specifies a mapping from the file path in the origin repo to the file path in this repo
+func copyHelmValuesDocsForComponent(
+	client *github.Client,
+	rootDir string,
+	componentName string,
+	repoName string,
+	earliestVersion string,
+	fileMapping map[string]string,
+) error {
+	// flush directory for idempotence
+	helmDocsDir := filepath.Join(rootDir, helmDocsDir, strcase.SnakeCase(componentName))
+	os.RemoveAll(helmDocsDir)
+	os.MkdirAll(helmDocsDir, 0755)
+
+	if err := createFileIfNotExists(helmDocsDir+"/"+"_index.md", fmt.Sprintf(helmValuesIndex, componentName)); err != nil {
+		return eris.Errorf("error creating Helm values index file: %v", err)
+	}
+
+	// include Helm values docs for all versions > earliestVersion
 	releases, _, err := client.Repositories.ListReleases(
 		context.Background(),
 		GithubOrg,
-		GlooMeshEnterpriseRepoName,
+		repoName,
 		&github.ListOptions{Page: 0, PerPage: 1000000},
 	)
 	if err != nil {
 		return eris.Errorf("error listing releases: %v", err)
 	}
-	var tags []string
+
+	// the github API returns releases sorted by release date, so we need to sort by version in order to enforce the earliest version lower bound
+	var versions []*semver.Version
 	for _, release := range releases {
-		if release.GetTagName() == "v1.0.0-beta14" {
+		tagName := release.GetTagName()
+		version, err := semver.NewVersion(tagName)
+		if err != nil {
+			return err
+		}
+		versions = append(versions, version)
+	}
+	sort.Reverse(semver.Collection(versions))
+	versions = getLatestPerMinorVersion(versions)
+
+	earliestVersionSemver, err := semver.NewVersion(earliestVersion)
+	if err != nil {
+		return err
+	}
+
+	var tags []string
+	for _, version := range versions {
+		tags = append(tags, version.Original())
+		if version.LessThan(earliestVersionSemver) || version.Equal(earliestVersionSemver) {
 			break
 		}
-		tags = append(tags, release.GetTagName())
 	}
 
 	for _, tag := range tags {
+		contextutils.LoggerFrom(context.Background()).Infof("copying Helm values docs from %s/%s for release %s", GithubOrg, repoName, tag)
+
 		if err := os.Mkdir(helmDocsDir+"/"+tag, os.ModePerm); err != nil {
 			return eris.Errorf("error creating Helm docs directories: %v", err)
 		}
@@ -71,7 +165,7 @@ func copyHelmValuesDocsFromEnterprise(client *github.Client, rootDir string) err
 
 		for src, dest := range fileMapping {
 			dest = fmt.Sprintf(dest, helmDocsDir, tag)
-			if err := copyHelmValuesDocs(client, GithubOrg, GlooMeshEnterpriseRepoName, tag, src, dest); err != nil {
+			if err := copyHelmValuesDocs(client, GithubOrg, repoName, tag, src, dest); err != nil {
 				return err
 			}
 		}
@@ -80,11 +174,42 @@ func copyHelmValuesDocsFromEnterprise(client *github.Client, rootDir string) err
 	return nil
 }
 
+// returns the latest patch version for each minor version
+// expects versions to be sorted in reverse order
+func getLatestPerMinorVersion(sortedVersions []*semver.Version) []*semver.Version {
+	var latestVersions []*semver.Version
+
+	latestVersionForMinor, _ := semver.NewVersion("1.999999999.0")
+	for _, version := range sortedVersions {
+		if version.Minor() < latestVersionForMinor.Minor() {
+			latestVersions = append(latestVersions, version)
+			latestVersionForMinor = version
+		}
+	}
+
+	return latestVersions
+}
+
 func copyHelmValuesDocs(client *github.Client, org, repo, tag, path, destinationFile string) error {
-	contents, _, _, err := client.Repositories.GetContents(context.Background(), org, repo, path, &github.RepositoryContentGetOptions{
+	baseVersion, _ := semver.NewVersion("1.0.0")
+	tagVersion, err := semver.NewVersion(tag)
+	if err != nil {
+		return err
+	}
+
+	contents, _, resp, err := client.Repositories.GetContents(context.Background(), org, repo, path, &github.RepositoryContentGetOptions{
 		Ref: tag,
 	})
-	if err != nil {
+
+	// return error if expected doc files aren't found
+	if err != nil && resp != nil && resp.StatusCode == 404 {
+		// special case v1.0.0, for which the docs don't exist
+		if tagVersion.GreaterThan(baseVersion) {
+			return eris.Errorf("error fetching Helm values doc: %v", err)
+		} else {
+			return nil
+		}
+	} else if err != nil {
 		return eris.Errorf("error fetching Helm values doc: %v", err)
 	}
 

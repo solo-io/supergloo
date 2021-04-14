@@ -64,11 +64,12 @@ require (
 	github.com/solo-io/go-utils v0.20.4
 	github.com/solo-io/k8s-utils v0.0.3
 	github.com/solo-io/protoc-gen-ext v0.0.15
-	github.com/solo-io/skv2 v0.17.12
+	github.com/solo-io/skv2 v0.17.14
 	github.com/solo-io/solo-kit v0.16.0
 	github.com/spf13/afero v1.5.1
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
+	github.com/stoewer/go-strcase v1.2.0
 	go.uber.org/atomic v1.7.0
 	go.uber.org/zap v1.16.0
 	golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5
