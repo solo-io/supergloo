@@ -263,8 +263,10 @@ istiod-istio-system-cluster1   68s
 istiod-istio-system-cluster2   28s
 ```
 
-To learn more about cluster registration and how it can be performed via Helm rather than meshctl, review the
-[enterprise cluster registration guide]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration/" %}}).
+Cluster registration installs the Gloo Mesh Enterprise agent on the registered cluster to handle Kubernetes I/O on behalf of the
+management plane. It also creates a KubernetesCluster resource on the management cluster to represent the cluster and store
+relevant data such as the cluster's local domain (e.g. "cluster.local"). To learn more about cluster registration and how
+it can be performed via Helm rather than meshctl, review the [enterprise cluster registration guide]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration/" %}}).
 
 ## Create a Virtual Mesh
 
