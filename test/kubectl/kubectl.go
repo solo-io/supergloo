@@ -3,8 +3,11 @@ package kubectl
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"strconv"
+	"time"
 
 	"github.com/solo-io/go-utils/testutils"
 
@@ -12,16 +15,53 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+var isAlpha = true
+
+func init() {
+	readerChan, _, err := testutils.KubectlOutChan(&bytes.Buffer{}, "version", "--client=true", "-o", "json")
+	if err != nil {
+		panic(err)
+	}
+	select {
+	case <-time.After(time.Minute):
+		panic("timeout")
+	case reader := <-readerChan:
+		data, err := ioutil.ReadAll(reader)
+		if err != nil {
+			panic(err)
+		}
+		cv := struct {
+			ClientVersion struct {
+				Minor string `json:"minor"`
+			} `json:"clientVersion"`
+		}{}
+		json.Unmarshal(data, &cv)
+
+		minor, _ := strconv.Atoi(cv.ClientVersion.Minor)
+		if minor >= 21 {
+			isAlpha = false
+		}
+	}
+}
+
 func CurlWithEphemeralPod(ctx context.Context, kubecontext, fromns, frompod string, args ...string) string {
-	createargs := []string{"alpha", "debug", "--quiet",
+
+	createargs := []string{"debug", "--quiet",
 		"--image=curlimages/curl@sha256:aa45e9d93122a3cfdf8d7de272e2798ea63733eeee6d06bd2ee4f2f8c4027d7c",
-		"--container=curl", frompod, "-n", fromns, "--", "sleep", "10h"}
+		"--container=curl-ephemeral", frompod, "-n", fromns}
+	if isAlpha {
+		createargs = append([]string{"alpha"}, createargs...)
+	} else {
+		createargs = append(createargs, "--image-pull-policy=IfNotPresent")
+	}
+	createargs = append(createargs, "--", "sleep", "10h")
+
 	// Execute curl commands from the same pod each time to avoid creating a burdensome number of ephemeral pods.
 	// create the curl pod; we do this every time and it will only work the first time, so ignore failures
 	executeNoFail(ctx, kubecontext, createargs...)
 	// note, we use sudo so that the curl is not from the istio-proxy user. we dont really need root.
 	args = append([]string{"exec",
-		"--container=curl", frompod, "-n", fromns, "--", "curl", "--connect-timeout", "1", "--max-time", "5"}, args...)
+		"--container=curl-ephemeral", frompod, "-n", fromns, "--", "curl", "--connect-timeout", "1", "--max-time", "5"}, args...)
 	return execute(ctx, kubecontext, args...)
 }
 
