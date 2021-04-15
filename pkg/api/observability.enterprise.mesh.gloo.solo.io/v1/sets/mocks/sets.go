@@ -70,6 +70,24 @@ func (mr *MockAccessLogRecordSetMockRecorder) List(filterResource ...interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockAccessLogRecordSet)(nil).List), filterResource...)
 }
 
+// UnsortedList mocks base method
+func (m *MockAccessLogRecordSet) UnsortedList(filterResource ...func(*v1.AccessLogRecord) bool) []*v1.AccessLogRecord {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range filterResource {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UnsortedList", varargs...)
+	ret0, _ := ret[0].([]*v1.AccessLogRecord)
+	return ret0
+}
+
+// UnsortedList indicates an expected call of UnsortedList
+func (mr *MockAccessLogRecordSetMockRecorder) UnsortedList(filterResource ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsortedList", reflect.TypeOf((*MockAccessLogRecordSet)(nil).UnsortedList), filterResource...)
+}
+
 // Map mocks base method
 func (m *MockAccessLogRecordSet) Map() map[string]*v1.AccessLogRecord {
 	m.ctrl.T.Helper()

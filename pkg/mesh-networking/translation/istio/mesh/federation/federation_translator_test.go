@@ -43,7 +43,9 @@ var _ = Describe("FederationTranslator", func() {
 						Version:   "1.8.1",
 					},
 					IngressGateways: []*discoveryv1.MeshSpec_Istio_IngressGatewayInfo{{
-						ExternalAddress:  "mesh-gateway.dns.name",
+						ExternalAddressType: &discoveryv1.MeshSpec_Istio_IngressGatewayInfo_DnsName{
+							DnsName: "mesh-gateway.dns.name",
+						},
 						ExternalTlsPort:  8181,
 						TlsContainerPort: 9191,
 						WorkloadLabels:   map[string]string{"gatewaylabels": "righthere"},
