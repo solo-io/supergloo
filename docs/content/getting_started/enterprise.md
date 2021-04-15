@@ -468,6 +468,81 @@ Access the Gloo Mesh Enterprise dashboard with:
 meshctl dashboard
 ```
 
+## Cleanup
+
+The Gloo Mesh management plane and registered clusters each require separate clean up steps. Administrators can deregister
+all clusters or individual clusters from the system and uninstall the management plane components.
+
+### Cluster deregistration
+
+To deregister a cluster, you must uninstall the `enterprise-agent` running on the remote cluster as well as the
+corresponding KubernetesCluster resource on the mangement cluster. Like cluster registration, meshctl can handle this for you.
+
+To deregister cluster 1, run:
+
+```shell script
+meshctl cluster deregister enterprise \
+  --mgmt-context $MGMT_CONTEXT \
+  --remote-context $REMOTE_CONTEXT1 \
+  cluster1
+```
+
+```
+Finished uninstalling release enterprise-agent
+```
+
+At this point, the management cluster has no knowledge of or connection to cluster1. To delete the CustomResourceDefinitions
+installed by meshctl on the registered cluster at registration time, as well as the gloo-mesh namespace run:
+
+```shell script
+for crd in $(kubectl get crd --context $REMOTE_CONTEXT1 | grep mesh.gloo | awk '{print $1}'); do kubectl --context $REMOTE_CONTEXT1 delete crd $crd; done
+kubectl --context $REMOTE_CONTEXT1 delete namespace gloo-mesh
+```
+
+
+
+To deregister cluster 2, run:
+
+```shell script
+meshctl cluster deregister enterprise \
+  --mgmt-context $MGMT_CONTEXT \
+  --remote-context $REMOTE_CONTEXT2 \
+  cluster2
+```
+
+```
+Finished uninstalling release enterprise-agent
+```
+
+At this point, the management cluster has no knowledge of or connection to cluster1. To delete the CustomResourceDefinitions
+installed by meshctl on the registered cluster at registration time, as well as the gloo-mesh namespace, run:
+
+```shell script
+for crd in $(kubectl get crd --context $REMOTE_CONTEXT2 | grep mesh.gloo | awk '{print $1}'); do kubectl --context $REMOTE_CONTEXT2 delete crd $crd; done
+kubectl --context $REMOTE_CONTEXT2 delete namespace gloo-mesh
+```
+
+### Uninstalling the management components
+
+To uninstall the Gloo Mesh management plane components, run:
+
+```shell script
+meshctl uninstall --kubecontext $MGMT_CONTEXT
+```
+
+```
+Uninstalling Helm chart
+Finished uninstalling release gloo-mesh
+```
+
+To delete the CustomResourceDefinitions installed by meshctl on the management cluster at install time, as well as the
+gloo-mesh namespace, run:
+
+```shell script
+for crd in $(kubectl get crd --context $MGMT_CONTEXT | grep mesh.gloo | awk '{print $1}'); do kubectl --context $MGMT_CONTEXT delete crd $crd; done
+kubectl --context $MGMT_CONTEXT delete namespace gloo-mesh
+```
+
 ## Next Steps
 
 This is just the beginning of what's possible with Gloo Mesh Enterprise. Review the [guides]({{% versioned_link_path fromRoot="/guides" %}}) to explore additional features.
