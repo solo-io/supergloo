@@ -1085,4 +1085,218 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		virtualServiceTranslator = virtualservice.NewTranslator(existingVirtualServices, mockClusterDomainRegistry, mockDecoratorFactory)
 		_ = virtualServiceTranslator.Translate(ctx, in, destination, nil, mockReporter)
 	})
+
+	It("should correctly order HttpRoutes according to presence of HttpMatchRequest", func() {
+		destination := &discoveryv1.Destination{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "traffic-target",
+			},
+			Spec: discoveryv1.DestinationSpec{
+				Type: &discoveryv1.DestinationSpec_KubeService_{
+					KubeService: &discoveryv1.DestinationSpec_KubeService{
+						Ref: &v1.ClusterObjectRef{
+							Name:        "traffic-target",
+							Namespace:   "traffic-target-namespace",
+							ClusterName: "traffic-target-cluster",
+						},
+						Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
+							{
+								Port:     8080,
+								Name:     "http1",
+								Protocol: "http",
+							},
+						},
+					},
+				},
+			},
+			Status: discoveryv1.DestinationStatus{
+				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+					{
+						Ref: &v1.ObjectRef{
+							Name:      "tp-1",
+							Namespace: "tp-namespace-1",
+						},
+						Spec: &networkingv1.TrafficPolicySpec{
+							DestinationSelector: []*commonv1.DestinationSelector{
+								{
+									KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+										Services: []*v1.ClusterObjectRef{
+											{
+												Name:        "reviews",
+												Namespace:   "bookinfo",
+												ClusterName: "mgmt-cluster",
+											},
+										},
+									},
+								},
+							},
+							HttpRequestMatchers: []*networkingv1.TrafficPolicySpec_HttpMatcher{
+								{
+									Headers: []*commonv1.HeaderMatcher{
+										{
+											Name:  "user-agent",
+											Value: "'.*Firefox.*'",
+											Regex: true,
+										},
+									},
+								},
+							},
+							Policy: &networkingv1.TrafficPolicySpec_Policy{
+								Retries: &networkingv1.TrafficPolicySpec_Policy_RetryPolicy{
+									Attempts: 5,
+								},
+							},
+						},
+					},
+					{
+						Ref: &v1.ObjectRef{
+							Name:      "tp-1",
+							Namespace: "tp-namespace-1",
+						},
+						Spec: &networkingv1.TrafficPolicySpec{
+							DestinationSelector: []*commonv1.DestinationSelector{
+								{
+									KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+										Services: []*v1.ClusterObjectRef{
+											{
+												Name:        "reviews",
+												Namespace:   "bookinfo",
+												ClusterName: "mgmt-cluster",
+											},
+										},
+									},
+								},
+							},
+							Policy: &networkingv1.TrafficPolicySpec_Policy{
+								Retries: &networkingv1.TrafficPolicySpec_Policy_RetryPolicy{
+									Attempts: 1,
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		in = input.NewInputLocalSnapshotManualBuilder("").
+			AddSettings(settingsv1.SettingsSlice{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      defaults.DefaultSettingsName,
+						Namespace: defaults.DefaultPodNamespace,
+					},
+					Spec: settingsv1.SettingsSpec{},
+				},
+			}).
+			Build()
+
+		mockClusterDomainRegistry.
+			EXPECT().
+			GetDestinationFQDN(destination.Spec.GetKubeService().Ref.ClusterName, destination.Spec.GetKubeService().Ref).
+			Return("local-hostname")
+
+		mockDecoratorFactory.
+			EXPECT().
+			MakeDecorators(decorators.Parameters{
+				ClusterDomains: mockClusterDomainRegistry,
+				Snapshot:       in,
+			}).
+			Return([]decorators.Decorator{mockDecorator})
+
+		mockDecorator.
+			EXPECT().
+			ApplyTrafficPolicyToVirtualService(
+				destination.Status.AppliedTrafficPolicies[0],
+				destination,
+				nil,
+				gomock.Any(),
+				gomock.Any(),
+			).DoAndReturn(
+			func(
+				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+				service *discoveryv1.Destination,
+				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+				output *networkingv1alpha3spec.HTTPRoute,
+				registerField decorators.RegisterField,
+			) error {
+				output.Retries = &networkingv1alpha3spec.HTTPRetry{
+					Attempts: destination.Status.AppliedTrafficPolicies[0].Spec.Policy.Retries.Attempts,
+				}
+				return nil
+			}).
+			Return(nil)
+
+		mockDecorator.
+			EXPECT().
+			ApplyTrafficPolicyToVirtualService(
+				destination.Status.AppliedTrafficPolicies[1],
+				destination,
+				nil,
+				gomock.Any(),
+				gomock.Any(),
+			).DoAndReturn(
+			func(
+				appliedPolicy *discoveryv1.DestinationStatus_AppliedTrafficPolicy,
+				service *discoveryv1.Destination,
+				sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
+				output *networkingv1alpha3spec.HTTPRoute,
+				registerField decorators.RegisterField,
+			) error {
+				output.Retries = &networkingv1alpha3spec.HTTPRetry{
+					Attempts: destination.Status.AppliedTrafficPolicies[1].Spec.Policy.Retries.Attempts,
+				}
+				return nil
+			}).
+			Return(nil)
+
+		expectedVirtualService := &networkingv1alpha3.VirtualService{
+			ObjectMeta: metautils.TranslatedObjectMeta(
+				destination.Spec.GetKubeService().Ref,
+				destination.Annotations,
+			),
+			Spec: networkingv1alpha3spec.VirtualService{
+				Hosts: []string{"local-hostname"},
+				Http: []*networkingv1alpha3spec.HTTPRoute{
+					{
+						Match: []*networkingv1alpha3spec.HTTPMatchRequest{
+							{
+								Headers: map[string]*networkingv1alpha3spec.StringMatch{
+									"user-agent": {
+										MatchType: &networkingv1alpha3spec.StringMatch_Regex{
+											Regex: "'.*Firefox.*'",
+										},
+									},
+								},
+							},
+						},
+						Route: []*networkingv1alpha3spec.HTTPRouteDestination{
+							{
+								Destination: &networkingv1alpha3spec.Destination{
+									Host: "local-hostname",
+								},
+							},
+						},
+						Retries: &networkingv1alpha3spec.HTTPRetry{
+							Attempts: 5,
+						},
+					},
+					{
+						Route: []*networkingv1alpha3spec.HTTPRouteDestination{
+							{
+								Destination: &networkingv1alpha3spec.Destination{
+									Host: "local-hostname",
+								},
+							},
+						},
+						Retries: &networkingv1alpha3spec.HTTPRetry{
+							Attempts: 1,
+						},
+					},
+				},
+			},
+		}
+
+		virtualService := virtualServiceTranslator.Translate(ctx, in, destination, nil, mockReporter)
+		Expect(virtualService).To(Equal(expectedVirtualService))
+	})
 })

@@ -18,6 +18,8 @@ type IssuedCertificateSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) bool) []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) bool) []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate
 	// Return the Set as a map of key to resource.
 	Map() map[string]*certificates_mesh_gloo_solo_io_v1.IssuedCertificate
 	// Insert a resource into the set.
@@ -86,8 +88,27 @@ func (s *issuedCertificateSet) List(filterResource ...func(*certificates_mesh_gl
 		})
 	}
 
+	objs := s.Generic().List(genericFilters...)
+	issuedCertificateList := make([]*certificates_mesh_gloo_solo_io_v1.IssuedCertificate, 0, len(objs))
+	for _, obj := range objs {
+		issuedCertificateList = append(issuedCertificateList, obj.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate))
+	}
+	return issuedCertificateList
+}
+
+func (s *issuedCertificateSet) UnsortedList(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate) bool) []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate))
+		})
+	}
+
 	var issuedCertificateList []*certificates_mesh_gloo_solo_io_v1.IssuedCertificate
-	for _, obj := range s.Generic().List(genericFilters...) {
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		issuedCertificateList = append(issuedCertificateList, obj.(*certificates_mesh_gloo_solo_io_v1.IssuedCertificate))
 	}
 	return issuedCertificateList
@@ -207,6 +228,8 @@ type CertificateRequestSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.CertificateRequest) bool) []*certificates_mesh_gloo_solo_io_v1.CertificateRequest
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.CertificateRequest) bool) []*certificates_mesh_gloo_solo_io_v1.CertificateRequest
 	// Return the Set as a map of key to resource.
 	Map() map[string]*certificates_mesh_gloo_solo_io_v1.CertificateRequest
 	// Insert a resource into the set.
@@ -275,8 +298,27 @@ func (s *certificateRequestSet) List(filterResource ...func(*certificates_mesh_g
 		})
 	}
 
+	objs := s.Generic().List(genericFilters...)
+	certificateRequestList := make([]*certificates_mesh_gloo_solo_io_v1.CertificateRequest, 0, len(objs))
+	for _, obj := range objs {
+		certificateRequestList = append(certificateRequestList, obj.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest))
+	}
+	return certificateRequestList
+}
+
+func (s *certificateRequestSet) UnsortedList(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.CertificateRequest) bool) []*certificates_mesh_gloo_solo_io_v1.CertificateRequest {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest))
+		})
+	}
+
 	var certificateRequestList []*certificates_mesh_gloo_solo_io_v1.CertificateRequest
-	for _, obj := range s.Generic().List(genericFilters...) {
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		certificateRequestList = append(certificateRequestList, obj.(*certificates_mesh_gloo_solo_io_v1.CertificateRequest))
 	}
 	return certificateRequestList
@@ -396,6 +438,8 @@ type PodBounceDirectiveSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective) bool) []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective) bool) []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective
 	// Return the Set as a map of key to resource.
 	Map() map[string]*certificates_mesh_gloo_solo_io_v1.PodBounceDirective
 	// Insert a resource into the set.
@@ -464,8 +508,27 @@ func (s *podBounceDirectiveSet) List(filterResource ...func(*certificates_mesh_g
 		})
 	}
 
+	objs := s.Generic().List(genericFilters...)
+	podBounceDirectiveList := make([]*certificates_mesh_gloo_solo_io_v1.PodBounceDirective, 0, len(objs))
+	for _, obj := range objs {
+		podBounceDirectiveList = append(podBounceDirectiveList, obj.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective))
+	}
+	return podBounceDirectiveList
+}
+
+func (s *podBounceDirectiveSet) UnsortedList(filterResource ...func(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective) bool) []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective))
+		})
+	}
+
 	var podBounceDirectiveList []*certificates_mesh_gloo_solo_io_v1.PodBounceDirective
-	for _, obj := range s.Generic().List(genericFilters...) {
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		podBounceDirectiveList = append(podBounceDirectiveList, obj.(*certificates_mesh_gloo_solo_io_v1.PodBounceDirective))
 	}
 	return podBounceDirectiveList

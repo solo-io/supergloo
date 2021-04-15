@@ -541,6 +541,33 @@ func (m *MeshSpec_Istio_IngressGatewayInfo) Equal(that interface{}) bool {
 		return false
 	}
 
+	switch m.ExternalAddressType.(type) {
+
+	case *MeshSpec_Istio_IngressGatewayInfo_DnsName:
+		if _, ok := target.ExternalAddressType.(*MeshSpec_Istio_IngressGatewayInfo_DnsName); !ok {
+			return false
+		}
+
+		if strings.Compare(m.GetDnsName(), target.GetDnsName()) != 0 {
+			return false
+		}
+
+	case *MeshSpec_Istio_IngressGatewayInfo_Ip:
+		if _, ok := target.ExternalAddressType.(*MeshSpec_Istio_IngressGatewayInfo_Ip); !ok {
+			return false
+		}
+
+		if strings.Compare(m.GetIp(), target.GetIp()) != 0 {
+			return false
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.ExternalAddressType != target.ExternalAddressType {
+			return false
+		}
+	}
+
 	return true
 }
 

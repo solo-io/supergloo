@@ -1,0 +1,7 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1414
+    description: Fix VirtualDestination port targeting to use target_port rather than the kubernetes service exposed port.
+    resolvesIssue: false
+
+

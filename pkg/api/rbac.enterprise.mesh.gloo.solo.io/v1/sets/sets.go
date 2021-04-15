@@ -18,6 +18,8 @@ type RoleSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*rbac_enterprise_mesh_gloo_solo_io_v1.Role) bool) []*rbac_enterprise_mesh_gloo_solo_io_v1.Role
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*rbac_enterprise_mesh_gloo_solo_io_v1.Role) bool) []*rbac_enterprise_mesh_gloo_solo_io_v1.Role
 	// Return the Set as a map of key to resource.
 	Map() map[string]*rbac_enterprise_mesh_gloo_solo_io_v1.Role
 	// Insert a resource into the set.
@@ -86,8 +88,27 @@ func (s *roleSet) List(filterResource ...func(*rbac_enterprise_mesh_gloo_solo_io
 		})
 	}
 
+	objs := s.Generic().List(genericFilters...)
+	roleList := make([]*rbac_enterprise_mesh_gloo_solo_io_v1.Role, 0, len(objs))
+	for _, obj := range objs {
+		roleList = append(roleList, obj.(*rbac_enterprise_mesh_gloo_solo_io_v1.Role))
+	}
+	return roleList
+}
+
+func (s *roleSet) UnsortedList(filterResource ...func(*rbac_enterprise_mesh_gloo_solo_io_v1.Role) bool) []*rbac_enterprise_mesh_gloo_solo_io_v1.Role {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*rbac_enterprise_mesh_gloo_solo_io_v1.Role))
+		})
+	}
+
 	var roleList []*rbac_enterprise_mesh_gloo_solo_io_v1.Role
-	for _, obj := range s.Generic().List(genericFilters...) {
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		roleList = append(roleList, obj.(*rbac_enterprise_mesh_gloo_solo_io_v1.Role))
 	}
 	return roleList
@@ -207,6 +228,8 @@ type RoleBindingSet interface {
 	Keys() sets.String
 	// List of resources stored in the set. Pass an optional filter function to filter on the list.
 	List(filterResource ...func(*rbac_enterprise_mesh_gloo_solo_io_v1.RoleBinding) bool) []*rbac_enterprise_mesh_gloo_solo_io_v1.RoleBinding
+	// Unsorted list of resources stored in the set. Pass an optional filter function to filter on the list.
+	UnsortedList(filterResource ...func(*rbac_enterprise_mesh_gloo_solo_io_v1.RoleBinding) bool) []*rbac_enterprise_mesh_gloo_solo_io_v1.RoleBinding
 	// Return the Set as a map of key to resource.
 	Map() map[string]*rbac_enterprise_mesh_gloo_solo_io_v1.RoleBinding
 	// Insert a resource into the set.
@@ -275,8 +298,27 @@ func (s *roleBindingSet) List(filterResource ...func(*rbac_enterprise_mesh_gloo_
 		})
 	}
 
+	objs := s.Generic().List(genericFilters...)
+	roleBindingList := make([]*rbac_enterprise_mesh_gloo_solo_io_v1.RoleBinding, 0, len(objs))
+	for _, obj := range objs {
+		roleBindingList = append(roleBindingList, obj.(*rbac_enterprise_mesh_gloo_solo_io_v1.RoleBinding))
+	}
+	return roleBindingList
+}
+
+func (s *roleBindingSet) UnsortedList(filterResource ...func(*rbac_enterprise_mesh_gloo_solo_io_v1.RoleBinding) bool) []*rbac_enterprise_mesh_gloo_solo_io_v1.RoleBinding {
+	if s == nil {
+		return nil
+	}
+	var genericFilters []func(ezkube.ResourceId) bool
+	for _, filter := range filterResource {
+		genericFilters = append(genericFilters, func(obj ezkube.ResourceId) bool {
+			return filter(obj.(*rbac_enterprise_mesh_gloo_solo_io_v1.RoleBinding))
+		})
+	}
+
 	var roleBindingList []*rbac_enterprise_mesh_gloo_solo_io_v1.RoleBinding
-	for _, obj := range s.Generic().List(genericFilters...) {
+	for _, obj := range s.Generic().UnsortedList(genericFilters...) {
 		roleBindingList = append(roleBindingList, obj.(*rbac_enterprise_mesh_gloo_solo_io_v1.RoleBinding))
 	}
 	return roleBindingList
