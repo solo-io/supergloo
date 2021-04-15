@@ -68,7 +68,7 @@ message VirtualDestinationSpec {
             string target_name = 3;
 
             // If the target_number is specified, the VirtualDestination will attempt to find a port by this number on all backing services
-            string target_number = 4;
+            uint32 target_number = 4;
         }
     }
 

@@ -315,7 +315,7 @@ func (m *VirtualDestinationSpec_Port) Equal(that interface{}) bool {
 			return false
 		}
 
-		if strings.Compare(m.GetTargetNumber(), target.GetTargetNumber()) != 0 {
+		if m.GetTargetNumber() != target.GetTargetNumber() {
 			return false
 		}
 

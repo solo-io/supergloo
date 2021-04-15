@@ -450,7 +450,9 @@ spec:
                   type: string
                 targetNumber:
                   description: If the target_number is specified, the VirtualDestination will attempt to find a port by this number on all backing services
-                  type: string
+                  maximum: 4294967295
+                  minimum: 0
+                  type: integer
               type: object
             static:
               description: Failover priority is determined by an explicitly provided static ordering of Destinations.

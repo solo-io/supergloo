@@ -162,7 +162,7 @@ VirtualDestination port infomation. Contains information about which port to lis
 | number | uint32 |  | REQUIRED: Port number which the VirutalDestination will listen on. |
   | protocol | string |  | OPTIONAL: Protocol of the requests sent to the VirtualDestination. Must be one of `HTTP`, `HTTPS`, `GRPC`, `HTTP2`, `MONGO`, `TCP`, `TLS`. Default: HTTP |
   | targetName | string |  | If the target_name is specified, the VirtualDestination will attempt to find a port by this name on all backing services |
-  | targetNumber | string |  | If the target_number is specified, the VirtualDestination will attempt to find a port by this number on all backing services |
+  | targetNumber | uint32 |  | If the target_number is specified, the VirtualDestination will attempt to find a port by this number on all backing services |
   
 
 
