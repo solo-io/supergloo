@@ -189,7 +189,7 @@ Management Configuration
 ✅ Gloo Mesh networking configuration resources are in a valid state
 ```
 
-## Register your remote clusters
+## Register clusters
 
 In order to register your remote clusters with the Gloo Mesh management plane via [Relay]({{% versioned_link_path fromRoot="/concepts/relay/" %}}),
 you'll need to know the external address of the `enterprise-networking` service. Because the service
@@ -468,12 +468,16 @@ Access the Gloo Mesh Enterprise dashboard with:
 meshctl dashboard
 ```
 
+## Next Steps
+
+This is just the beginning of what's possible with Gloo Mesh Enterprise. Review the [guides]({{% versioned_link_path fromRoot="/guides" %}}) to explore additional features.
+
 ## Cleanup
 
 The Gloo Mesh management plane and registered clusters each require separate clean up steps. Administrators can deregister
 all clusters or individual clusters from the system and uninstall the management plane components.
 
-### Cluster deregistration
+### Deregister clusters
 
 To deregister a cluster, you must uninstall the `enterprise-agent` running on the remote cluster as well as the
 corresponding KubernetesCluster resource on the mangement cluster. Like cluster registration, meshctl can handle this for you.
@@ -520,7 +524,7 @@ for crd in $(kubectl get crd --context $REMOTE_CONTEXT2 | grep mesh.gloo | awk '
 kubectl --context $REMOTE_CONTEXT2 delete namespace gloo-mesh
 ```
 
-### Uninstalling the management components
+### Uninstall the management components
 
 To uninstall the Gloo Mesh management plane components, run:
 
@@ -578,7 +582,3 @@ istioctl --context $REMOTE_CONTEXT1 x uninstall --purge
 ```shell script
 istioctl --context $REMOTE_CONTEXT2 x uninstall --purge
 ```
-
-## Next Steps
-
-This is just the beginning of what's possible with Gloo Mesh Enterprise. Review the [guides]({{% versioned_link_path fromRoot="/guides" %}}) to explore additional features.
