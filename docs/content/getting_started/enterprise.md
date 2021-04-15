@@ -318,8 +318,9 @@ multicluster traffic.
 ### Deploy a distributed application
 
 To demonstrate how Gloo Mesh configures multicluster traffic, we will deploy the bookinfo application to both cluster 1
-and cluster 2. However, on cluster 1, we will only deploy versions 1 and 2 of the reviews service. In order to access
-version 3 from the product page hosted on cluster 1, we will have to route to the reviews-v3 workload on cluster 2.
+and cluster 2. Cluster 1 will run the application with versions 1 and 2 of the reviews service, and cluster 2 will run
+version 3. In order to access version 3 from the product page hosted on cluster 1, we will have to route to the 
+reviews-v3 workload on cluster 2.
 
 To install bookinfo with reviews-v1 and reviews-v2 on cluster 1, run:
 
@@ -349,15 +350,17 @@ reviews-v1-7f99cc4496-lwtsr       2/2     Running   0          2m34s
 reviews-v2-7d79d5bd5d-mpsk2       2/2     Running   0          2m34s
 ```
 
-To install bookinfo with reviews-v1, reviews-v2, and reviews-v3 on cluster 2, run:
+To install bookinfo with reviews-v3 on cluster 2, run:
 
 ```shell script
 # prepare the default namespace for Istio sidecar injection
 kubectl --context $REMOTE_CONTEXT2 label namespace default istio-injection=enabled
-# deploy all bookinfo service accounts and application components for all versions
-kubectl --context $REMOTE_CONTEXT2 apply -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml
-# configure ingress gateway to access bookinfo
-kubectl --context $REMOTE_CONTEXT2 apply -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/networking/bookinfo-gateway.yaml
+# deploy reviews service
+kubectl --context $REMOTE_CONTEXT2 apply -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'service in (reviews)'
+# deploy reviews-v3
+kubectl --context $REMOTE_CONTEXT2 apply -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app in (reviews),version in (v3)'
+# deploy reviews service account
+kubectl --context $REMOTE_CONTEXT2 apply -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account in (reviews)'
 ```
 
 And verify success with:
@@ -367,13 +370,8 @@ kubectl --context $REMOTE_CONTEXT2 get pods
 ```
 
 ```
-NAME                              READY   STATUS    RESTARTS   AGE
-details-v1-558b8b4b76-gs9z2       2/2     Running   0          2m22s
-productpage-v1-6987489c74-x45vd   2/2     Running   0          2m21s
-ratings-v1-7dc98c7588-2n6bg       2/2     Running   0          2m21s
-reviews-v1-7f99cc4496-4r48m       2/2     Running   0          2m21s
-reviews-v2-7d79d5bd5d-cx9lp       2/2     Running   0          2m22s
-reviews-v3-7dbcdcbc56-trjdx       2/2     Running   0          2m22s
+NAME                         READY   STATUS    RESTARTS   AGE
+reviews-v3-7dbcdcbc56-trjdx  2/2     Running   0          2m22s
 ```
 
 To access the bookinfo application, first determine the address of the ingress on cluster 1:
