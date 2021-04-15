@@ -196,11 +196,18 @@ you'll need to know the external address of the `enterprise-networking` service.
 is of type LoadBalancer by default, your cloud provider will expose the service outside the cluster. You can determine
 the public address of the service with the following:
 
-```shell
-ENTERPRISE_NETWORKING_IP=$(kubectl get svc -n gloo-mesh enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+{{< tabs >}}
+{{< tab name="IP LoadBalancer address (GKE)" codelang="yaml">}}
+ENTERPRISE_NETWORKING_DOMAIN=$(kubectl get svc -n gloo-mesh enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 ENTERPRISE_NETWORKING_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
-ENTERPRISE_NETWORKING_ADDRESS=${ENTERPRISE_NETWORKING_IP}:${ENTERPRISE_NETWORKING_PORT}
-```
+ENTERPRISE_NETWORKING_ADDRESS=${ENTERPRISE_NETWORKING_DOMAIN}:${ENTERPRISE_NETWORKING_PORT}
+{{< /tab >}}
+{{< tab name="Hostname LoadBalancer address (EKS)" codelang="shell" >}}
+ENTERPRISE_NETWORKING_DOMAIN=$(kubectl get svc -n gloo-mesh enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+ENTERPRISE_NETWORKING_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
+ENTERPRISE_NETWORKING_ADDRESS=${ENTERPRISE_NETWORKING_DOMAIN}:${ENTERPRISE_NETWORKING_PORT}
+{{< /tab >}}
+{{< /tabs >}}
 
 To register cluster 1, run:
 
@@ -376,10 +383,14 @@ reviews-v3-7dbcdcbc56-trjdx  2/2     Running   0          2m22s
 
 To access the bookinfo application, first determine the address of the ingress on cluster 1:
 
-```shell script
+{{< tabs >}}
+{{< tab name="IP LoadBalancer address (GKE)" codelang="yaml">}}
 CLUSTER_1_INGRESS_ADDRESS=$(kubectl --context $REMOTE_CONTEXT1 get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-echo $CLUSTER_1_INGRESS_ADDRESS
-```
+{{< /tab >}}
+{{< tab name="Hostname LoadBalancer address (EKS)" codelang="shell" >}}
+CLUSTER_1_INGRESS_ADDRESS=$(kubectl --context $REMOTE_CONTEXT1 get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+{{< /tab >}}
+{{< /tabs >}}
 
 Navigate to `$CLUSTER_1_INGRESS_ADDRESS/productpage` with the web browser of your choice. Refresh the page a few times
 and you will see the black stars on the "Book Reviews" column of the page appear and disappear. These represent v1 and
