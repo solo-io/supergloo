@@ -63,12 +63,22 @@ message DestinationSpec {
             // External-facing port for this Kubernetes service (*not* the service's target port on the targeted pods).
             uint32 port = 1;
 
+            // Name of the port
             string name = 2;
-
+            
+            // Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...)
             string protocol = 3;
 
             // Available in Kubernetes 1.18+, describes the application protocol.
             string app_protocol = 4;
+
+            // A Kubernetes Service's spec.targetPort can either be a string referring to the port name, or a number referring to the number. See [this reference](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/#ServiceSpec).
+            oneof target_port {
+                // Name of the target port
+                string target_port_name = 5;
+                // Number of the target port
+                uint32 target_port_number = 6;
+            }
         }
 
         // Subsets for routing, based on labels.
@@ -82,7 +92,7 @@ message DestinationSpec {
 
             repeated Endpoint endpoints = 1;
 
-            repeated KubeServicePort ports = 2;
+            repeated EndpointPort ports = 2;
 
             // An endpoint exposed by this service.
             message Endpoint {
@@ -105,6 +115,22 @@ message DestinationSpec {
                 // The zone and sub-zone (if controlled by Istio) of the endpoint.
                 SubLocality sub_locality = 3;
             }
+        }
+
+        // Describes the endpoints's ports. See [here](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoints-v1/) for more information.
+        message EndpointPort {
+            
+            // Port on which the endpoints can be reached
+            uint32 port = 1;
+
+            // Name of the port
+            string name = 2;
+
+            // Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...)
+            string protocol = 3;
+
+            // Available in Kubernetes 1.18+, describes the application protocol.
+            string app_protocol = 4;
         }
     }
 
