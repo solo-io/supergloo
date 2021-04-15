@@ -175,6 +175,10 @@ func (t *translator) translateServiceEntryTemplate(
 	if address == "" {
 		address = ingressGateway.GetIp()
 	}
+	if address == "" {
+		// remove when deprecated field is removed
+		address = ingressGateway.GetExternalAddress()
+	}
 	endpoints := []*networkingv1alpha3spec.WorkloadEntry{{
 		Address: address,
 		Ports:   endpointPorts,
