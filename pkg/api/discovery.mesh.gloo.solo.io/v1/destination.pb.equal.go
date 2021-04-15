@@ -406,6 +406,33 @@ func (m *DestinationSpec_KubeService_KubeServicePort) Equal(that interface{}) bo
 		return false
 	}
 
+	switch m.TargetPort.(type) {
+
+	case *DestinationSpec_KubeService_KubeServicePort_TargetPortName:
+		if _, ok := target.TargetPort.(*DestinationSpec_KubeService_KubeServicePort_TargetPortName); !ok {
+			return false
+		}
+
+		if strings.Compare(m.GetTargetPortName(), target.GetTargetPortName()) != 0 {
+			return false
+		}
+
+	case *DestinationSpec_KubeService_KubeServicePort_TargetPortNumber:
+		if _, ok := target.TargetPort.(*DestinationSpec_KubeService_KubeServicePort_TargetPortNumber); !ok {
+			return false
+		}
+
+		if m.GetTargetPortNumber() != target.GetTargetPortNumber() {
+			return false
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.TargetPort != target.TargetPort {
+			return false
+		}
+	}
+
 	return true
 }
 
@@ -497,6 +524,46 @@ func (m *DestinationSpec_KubeService_EndpointsSubset) Equal(that interface{}) bo
 			}
 		}
 
+	}
+
+	return true
+}
+
+// Equal function
+func (m *DestinationSpec_KubeService_EndpointPort) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*DestinationSpec_KubeService_EndpointPort)
+	if !ok {
+		that2, ok := that.(DestinationSpec_KubeService_EndpointPort)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if m.GetPort() != target.GetPort() {
+		return false
+	}
+
+	if strings.Compare(m.GetName(), target.GetName()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetProtocol(), target.GetProtocol()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetAppProtocol(), target.GetAppProtocol()) != 0 {
+		return false
 	}
 
 	return true
