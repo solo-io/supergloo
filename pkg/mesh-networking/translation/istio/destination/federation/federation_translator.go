@@ -2,6 +2,7 @@ package federation
 
 import (
 	"context"
+	"strings"
 
 	"github.com/rotisserie/eris"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
@@ -219,8 +220,8 @@ func (t *translator) translateForRemoteMesh(
 ) {
 	remoteIstioMesh := remoteMesh.Spec.GetIstio()
 
-	if destination.Status.AppliedFederation.GetFederatedHostname() != hostutils.DefaultHostnameSuffix && !remoteIstioMesh.SmartDnsProxyingEnabled {
-		reporter.ReportVirtualMeshToMesh(destinationMesh, destinationVirtualMesh, eris.Errorf(
+	if getHostnameSuffix(destination.Status.AppliedFederation.GetFederatedHostname()) != hostutils.DefaultHostnameSuffix && !remoteIstioMesh.SmartDnsProxyingEnabled {
+		reporter.ReportVirtualMeshToDestination(destination, destinationVirtualMesh, eris.Errorf(
 			"mesh %v does not have smart DNS proxying enabled (hostname suffix can only be specified for federated Destination if Istio's smart DNS proxying is enabled)",
 			sets.Key(remoteMesh),
 		))
@@ -254,4 +255,9 @@ func ConvertKubePortProtocol(port *discoveryv1.DestinationSpec_KubeService_KubeS
 		return port.Protocol
 	}
 	return string(convertedProtocol)
+}
+
+func getHostnameSuffix(hostname string) string {
+	split := strings.Split(hostname, ".")
+	return split[len(split)-1]
 }
