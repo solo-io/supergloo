@@ -407,7 +407,7 @@ spec:
                     [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})
                     is true.
                   type: boolean
-                ref:
+                virtualMeshRef:
                   description: Reference to the VirtualMesh object.
                   properties:
                     name:

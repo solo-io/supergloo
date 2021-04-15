@@ -155,7 +155,7 @@ var _ = Describe("FederationTranslator", func() {
 					makeTrafficSplit(backingService, map[string]string{"foo": "bar"}),
 				},
 				AppliedFederation: &discoveryv1.DestinationStatus_AppliedFederation{
-					Ref:               destinationVirtualMeshRef,
+					VirtualMeshRef:    destinationVirtualMeshRef,
 					FederatedHostname: "federated-hostname",
 					FederatedToMeshes: []*skv2corev1.ObjectRef{
 						remoteMeshRef,

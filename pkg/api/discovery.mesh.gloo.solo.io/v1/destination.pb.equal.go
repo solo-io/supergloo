@@ -775,16 +775,6 @@ func (m *DestinationStatus_AppliedFederation) Equal(that interface{}) bool {
 		return false
 	}
 
-	if h, ok := interface{}(m.GetRef()).(equality.Equalizer); ok {
-		if !h.Equal(target.GetRef()) {
-			return false
-		}
-	} else {
-		if !proto.Equal(m.GetRef(), target.GetRef()) {
-			return false
-		}
-	}
-
 	if strings.Compare(m.GetFederatedHostname(), target.GetFederatedHostname()) != 0 {
 		return false
 	}
@@ -808,6 +798,16 @@ func (m *DestinationStatus_AppliedFederation) Equal(that interface{}) bool {
 
 	if m.GetFlatNetwork() != target.GetFlatNetwork() {
 		return false
+	}
+
+	if h, ok := interface{}(m.GetVirtualMeshRef()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetVirtualMeshRef()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetVirtualMeshRef(), target.GetVirtualMeshRef()) {
+			return false
+		}
 	}
 
 	return true

@@ -587,7 +587,7 @@ func getAppliedFederation(
 	}
 
 	return &discoveryv1.DestinationStatus_AppliedFederation{
-		Ref:               ezkube.MakeObjectRef(parentVirtualMesh),
+		VirtualMeshRef:    ezkube.MakeObjectRef(parentVirtualMesh),
 		FederatedHostname: federatedHostname,
 		FederatedToMeshes: federatedToMeshes,
 		FlatNetwork:       parentVirtualMesh.Spec.GetFederation().GetFlatNetwork(),

@@ -875,26 +875,6 @@ func (m *DestinationStatus_AppliedFederation) Hash(hasher hash.Hash64) (uint64, 
 		return 0, err
 	}
 
-	if h, ok := interface{}(m.GetRef()).(safe_hasher.SafeHasher); ok {
-		if _, err = hasher.Write([]byte("Ref")); err != nil {
-			return 0, err
-		}
-		if _, err = h.Hash(hasher); err != nil {
-			return 0, err
-		}
-	} else {
-		if fieldValue, err := hashstructure.Hash(m.GetRef(), nil); err != nil {
-			return 0, err
-		} else {
-			if _, err = hasher.Write([]byte("Ref")); err != nil {
-				return 0, err
-			}
-			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	if _, err = hasher.Write([]byte(m.GetFederatedHostname())); err != nil {
 		return 0, err
 	}
@@ -926,6 +906,26 @@ func (m *DestinationStatus_AppliedFederation) Hash(hasher hash.Hash64) (uint64, 
 	err = binary.Write(hasher, binary.LittleEndian, m.GetFlatNetwork())
 	if err != nil {
 		return 0, err
+	}
+
+	if h, ok := interface{}(m.GetVirtualMeshRef()).(safe_hasher.SafeHasher); ok {
+		if _, err = hasher.Write([]byte("VirtualMeshRef")); err != nil {
+			return 0, err
+		}
+		if _, err = h.Hash(hasher); err != nil {
+			return 0, err
+		}
+	} else {
+		if fieldValue, err := hashstructure.Hash(m.GetVirtualMeshRef(), nil); err != nil {
+			return 0, err
+		} else {
+			if _, err = hasher.Write([]byte("VirtualMeshRef")); err != nil {
+				return 0, err
+			}
+			if err := binary.Write(hasher, binary.LittleEndian, fieldValue); err != nil {
+				return 0, err
+			}
+		}
 	}
 
 	return hasher.Sum64(), nil

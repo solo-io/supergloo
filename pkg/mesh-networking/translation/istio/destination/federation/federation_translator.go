@@ -90,9 +90,9 @@ func (t *translator) Translate(
 		return nil, nil, nil
 	}
 
-	destinationVirtualMesh, err := in.VirtualMeshes().Find(destination.Status.AppliedFederation.GetRef())
+	destinationVirtualMesh, err := in.VirtualMeshes().Find(destination.Status.AppliedFederation.GetVirtualMeshRef())
 	if err != nil {
-		contextutils.LoggerFrom(t.ctx).Errorf("Could not find parent VirtualMesh %v for Destination %v", destination.Status.AppliedFederation.GetRef(), ezkube.MakeObjectRef(destination))
+		contextutils.LoggerFrom(t.ctx).Errorf("Could not find parent VirtualMesh %v for Destination %v", destination.Status.AppliedFederation.GetVirtualMeshRef(), ezkube.MakeObjectRef(destination))
 		return nil, nil, nil
 	}
 
@@ -126,9 +126,9 @@ func (t *translator) Translate(
 
 		// Append the VirtualMesh as a parent to the outputs
 		// TODO(harveyxia) append Destination as parent once new GC is being implemented
-		metautils.AppendParent(t.ctx, serviceEntry, destination.Status.AppliedFederation.GetRef(), networkingv1.VirtualMesh{}.GVK())
-		metautils.AppendParent(t.ctx, virtualService, destination.Status.AppliedFederation.GetRef(), networkingv1.VirtualMesh{}.GVK())
-		metautils.AppendParent(t.ctx, destinationRule, destination.Status.AppliedFederation.GetRef(), networkingv1.VirtualMesh{}.GVK())
+		metautils.AppendParent(t.ctx, serviceEntry, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
+		metautils.AppendParent(t.ctx, virtualService, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
+		metautils.AppendParent(t.ctx, destinationRule, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
 
 		serviceEntries = append(serviceEntries, serviceEntry)
 		virtualServices = append(virtualServices, virtualService)
