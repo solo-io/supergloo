@@ -6,7 +6,7 @@ weight: 10
 ---
 
 The following guide describes how to get started with Gloo Mesh Enterprise on a managed Kubernetes environment such as GKE or EKS,
-covering installation, cluster registration, and multi-cluster traffic.
+covering installation, cluster registration, and multicluster traffic.
 
 <figure>
     <img src="{{% versioned_link_path fromRoot="/img/enterprise-getting-started-diagram.png" %}}"/>
@@ -19,11 +19,10 @@ Before we get started, ensure that you have the following tools installed:
 - kubectl - Command line utility for Kubernetes
 - meshctl - Command line utility for Gloo Mesh 
 - istioctl - Command line utility for Istio. This document assumes you are using istioctl v1.8 or v1.9.
-- jq (optional) - Utility for manipulating JSON
 
 Three Kubernetes clusters, with contexts stored in the following environment variables:
 - MGMT_CONTEXT - Context for the cluster where you'll be running the Gloo Mesh Enterprise management plane.
-- REMOTE_CONTEXT1 - Context for the cluster where you'll be running a service mesh and injected workloads.
+- REMOTE_CONTEXT1 - Context for a cluster where you'll be running a service mesh and injected workloads.
 - REMOTE_CONTEXT2 - Context for a second cluster where you'll be running a service mesh and injected workloads.
 
 
@@ -35,7 +34,7 @@ Gloo Mesh Enterprise will discover and configure Istio workloads running on all 
 Istio on two of your clusters.
 
 These installation profiles are provided for their simplicity, but Gloo Mesh can discover and manage Istio deployments
-regardless of their installation options. However, to facilitate multi-cluster traffic later on in this guide, you should
+regardless of their installation options. However, to facilitate multicluster traffic later on in this guide, you should
 ensure that each Istio deployment has an externally accessible ingress gateway.
 
 To install Istio on cluster 1, run: 
@@ -223,7 +222,10 @@ meshctl cluster register enterprise \
   cluster2
 ```
 
-{{% notice note %}}Ensure that the `gloo-mesh` namespace in each remote cluster is not being injected by Istio.{{% /notice %}}
+{{% notice note %}}
+Ensure that the `gloo-mesh` namespace in each remote cluster is not being injected by Istio. This can be done by
+labelling the `gloo-mesh` namespace with `istio-injection=disabled`.
+{{% /notice %}}
 
 For each cluster, you should see the following:
 
@@ -257,7 +259,7 @@ istiod-istio-system-cluster2   28s
 To learn more about cluster registration and how it can be performed via Helm rather than meshctl, review the
 [enterprise cluster registration guide]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration/" %}}).
 
-## Create a virtual mesh
+## Create a Virtual Mesh
 
 Next, let's bootstrap connectivity between the two distinct Istio service meshes by creating a Virtual Mesh.
 
@@ -275,6 +277,7 @@ spec:
       rootCertificateAuthority:
         generated: {}
   federation: {}
+  z globalAccessPolicy: DISABLED
   meshes:
   - name: istiod-istio-system-cluster1
     namespace: gloo-mesh
@@ -289,34 +292,31 @@ about Virtual Meshes in the [concepts documentation]({{% versioned_link_path fro
 To verify that the Virtual Mesh has taken effect, run the following:
 
 ```shell script
-kubectl get virtualmesh -n gloo-mesh virtual-mesh -o jsonpath='{.status}' | jq
+kubectl get virtualmesh -n gloo-mesh virtual-mesh -oyaml
 ```
 
 The Virtual Mesh status will be "Accepted" when your meshes are configured for multicluster traffic.
 
 ```
-{
-  "meshes": {
-    "istiod-istio-system-cluster1.gloo-mesh.": {
-      "state": "ACCEPTED"
-    },
-    "istiod-istio-system-cluster2.gloo-mesh.": {
-      "state": "ACCEPTED"
-    }
-  },
-  "observedGeneration": 1,
-  "state": "ACCEPTED"
-}
+...
+status:
+  meshes:
+    istiod-istio-system-cluster1.gloo-mesh.:
+      state: ACCEPTED
+    istiod-istio-system-cluster2.gloo-mesh.:
+      state: ACCEPTED
+  observedGeneration: 1
+  state: ACCEPTED
 ```
 
-## Multi-cluster traffic
+## Multicluster traffic
 
 With our distinct Istio service meshes unified under a single Virtual Mesh, let's demonstrate how Gloo Mesh can facilitate
-multi-cluster traffic.
+multicluster traffic.
 
 ### Deploy a distributed application
 
-To demonstrate how Gloo Mesh configures multi-cluster traffic, we will deploy the bookinfo application to both cluster 1
+To demonstrate how Gloo Mesh configures multicluster traffic, we will deploy the bookinfo application to both cluster 1
 and cluster 2. However, on cluster 1, we will only deploy versions 1 and 2 of the reviews service. In order to access
 version 3 from the product page hosted on cluster 1, we will have to route to the reviews-v3 workload on cluster 2.
 
