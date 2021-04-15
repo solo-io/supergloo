@@ -499,8 +499,6 @@ for crd in $(kubectl get crd --context $REMOTE_CONTEXT1 | grep mesh.gloo | awk '
 kubectl --context $REMOTE_CONTEXT1 delete namespace gloo-mesh
 ```
 
-
-
 To deregister cluster 2, run:
 
 ```shell script
