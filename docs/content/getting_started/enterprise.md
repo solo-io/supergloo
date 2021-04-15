@@ -16,9 +16,9 @@ covering installation, cluster registration, and multicluster traffic.
 
 Before we get started, ensure that you have the following tools installed:
 
-- kubectl - Command line utility for Kubernetes
-- meshctl - Command line utility for Gloo Mesh 
-- istioctl - Command line utility for Istio. This document assumes you are using istioctl v1.8 or v1.9.
+- [kubectl](https://kubernetes.io/docs/tasks/tools/) - Command line utility for Kubernetes
+- [meshctl]({{% versioned_link_path fromRoot="/getting_started" %}}) - Command line utility for Gloo Mesh
+- [istioctl](https://istio.io/latest/docs/setup/getting-started/#download) - Command line utility for Istio. This document assumes you are using istioctl v1.8 or v1.9.
 
 Three Kubernetes clusters, with contexts stored in the following environment variables:
 - MGMT_CONTEXT - Context for the cluster where you'll be running the Gloo Mesh Enterprise management plane.
@@ -277,7 +277,8 @@ spec:
       rootCertificateAuthority:
         generated: {}
   federation: {}
-  z globalAccessPolicy: DISABLED
+    # Disable global access policy enforcement for demonstration purposes.
+    globalAccessPolicy: DISABLED
   meshes:
   - name: istiod-istio-system-cluster1
     namespace: gloo-mesh
