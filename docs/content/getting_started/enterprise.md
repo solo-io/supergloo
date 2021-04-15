@@ -541,6 +541,44 @@ for crd in $(kubectl get crd --context $MGMT_CONTEXT | grep mesh.gloo | awk '{pr
 kubectl --context $MGMT_CONTEXT delete namespace gloo-mesh
 ```
 
+### Uninstall bookinfo
+
+The following commands will uninstall the bookinfo components from clusters 1 and 2.
+
+```shell script
+# remove the sidecar injection label from the default namespace
+kubectl --context $REMOTE_CONTEXT1 label namespace default istio-injection-
+# remove bookinfo application components for all versions less than v3
+kubectl --context $REMOTE_CONTEXT1 delete -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app,version notin (v3)'
+# remove all bookinfo service accounts
+kubectl --context $REMOTE_CONTEXT1 delete -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account'
+# remove ingress gateway configuration for accessing bookinfo
+kubectl --context $REMOTE_CONTEXT1 delete -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/networking/bookinfo-gateway.yaml
+```
+
+```shell script
+# remove the sidecar injection label from the default namespace
+kubectl --context $REMOTE_CONTEXT2 label namespace default istio-injection-
+# remove reviews service
+kubectl --context $REMOTE_CONTEXT2 delete -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'service in (reviews)'
+# remove reviews-v3
+kubectl --context $REMOTE_CONTEXT2 delete -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app in (reviews),version in (v3)'
+# remove reviews service account
+kubectl --context $REMOTE_CONTEXT2 delete -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account in (reviews)'
+```
+
+### Uninstall Istio
+
+To uninstall Istio completely from clusters 1 and 2, run:
+
+```shell script
+istioctl --context $REMOTE_CONTEXT1 x uninstall --purge
+```
+
+```shell script
+istioctl --context $REMOTE_CONTEXT2 x uninstall --purge
+```
+
 ## Next Steps
 
 This is just the beginning of what's possible with Gloo Mesh Enterprise. Review the [guides]({{% versioned_link_path fromRoot="/guides" %}}) to explore additional features.
