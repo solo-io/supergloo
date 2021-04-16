@@ -1,0 +1,4 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1412
+    description: Clarify the deregister command flows, specifically with regards to context.
