@@ -483,7 +483,7 @@ all clusters or individual clusters from the system and uninstall the management
 ### Deregister clusters
 
 To deregister a cluster, you must uninstall the `enterprise-agent` running on the remote cluster as well as the
-corresponding KubernetesCluster resource on the mangement cluster. Like cluster registration, meshctl can handle this for you.
+corresponding KubernetesCluster resource on the management cluster. Like cluster registration, meshctl can handle this for you.
 
 To deregister cluster 1, run:
 
@@ -540,8 +540,7 @@ Uninstalling Helm chart
 Finished uninstalling release gloo-mesh
 ```
 
-To delete the CustomResourceDefinitions installed by meshctl on the management cluster at install time, as well as the
-gloo-mesh namespace, run:
+To delete the Gloo Mesh CustomResourceDefinitions from the management cluster, as well as the gloo-mesh namespace, run:
 
 ```shell script
 for crd in $(kubectl get crd --context $MGMT_CONTEXT | grep mesh.gloo | awk '{print $1}'); do kubectl --context $MGMT_CONTEXT delete crd $crd; done
@@ -582,10 +581,10 @@ To uninstall Istio completely from clusters 1 and 2, run:
 
 ```shell script
 istioctl --context $REMOTE_CONTEXT1 x uninstall --purge
-kubectl --context $REMOTE_CONTEXT1 delete namespace
+kubectl --context $REMOTE_CONTEXT1 delete namespace istio-system
 ```
 
 ```shell script
 istioctl --context $REMOTE_CONTEXT2 x uninstall --purge
-kubectl --context $REMOTE_CONTEXT2 delete namespace
+kubectl --context $REMOTE_CONTEXT2 delete namespace istio-system
 ```
