@@ -50,10 +50,13 @@ spec:
   profile: minimal
   meshConfig:
     defaultConfig:
+      envoyMetricsService:
+        address: enterprise-agent.gloo-mesh:9977
+      envoyAccessLogService:
+        address: enterprise-agent.gloo-mesh:9977
       proxyMetadata:
-        # Enable Istio agent to handle DNS requests for known hosts
-        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
         ISTIO_META_DNS_CAPTURE: "true"
+        GLOO_MESH_CLUSTER_NAME: cluster1
   components:
     # Istio Gateway feature
     ingressGateways:
@@ -91,10 +94,13 @@ spec:
   profile: minimal
   meshConfig:
     defaultConfig:
+      envoyMetricsService:
+        address: enterprise-agent.gloo-mesh:9977
+      envoyAccessLogService:
+        address: enterprise-agent.gloo-mesh:9977
       proxyMetadata:
-        # Enable Istio agent to handle DNS requests for known hosts
-        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
         ISTIO_META_DNS_CAPTURE: "true"
+        GLOO_MESH_CLUSTER_NAME: cluster1
   components:
     # Istio Gateway feature
     ingressGateways:
