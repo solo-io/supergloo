@@ -60,7 +60,6 @@ spec:
         ISTIO_META_DNS_CAPTURE: "true"
         GLOO_MESH_CLUSTER_NAME: cluster1
   components:
-    # Istio Gateway feature
     ingressGateways:
     - name: istio-ingressgateway
       enabled: true
@@ -106,7 +105,6 @@ spec:
         ISTIO_META_DNS_CAPTURE: "true"
         GLOO_MESH_CLUSTER_NAME: cluster2
   components:
-    # Istio Gateway feature
     ingressGateways:
     - name: istio-ingressgateway
       enabled: true
@@ -129,7 +127,7 @@ spec:
 EOF
 ```
 
-If your installs were successful, you should see the following output after each command:
+If installation was successful, you should see the following output after each command:
 ```
 ✔ Istio core installed
 ✔ Istiod installed
@@ -137,7 +135,7 @@ If your installs were successful, you should see the following output after each
 ✔ Installation complete
 ```
 
-## Installing the management components
+## Installing the Gloo Mesh management components
 
 The Gloo Mesh management plane is where all service mesh configuration will be provided and all discovery artifacts,
 including Meshes, Workloads, and Destinations will be aggregated. If you wish you may also run a service mesh and
@@ -150,7 +148,7 @@ for enforcing the [role-based API]({{% versioned_link_path fromRoot="/concepts/r
 
 
 ```shell
-meshctl install enterprise --license $GLOO_MESH_LICENSE_KEY --skip-rbac
+meshctl install enterprise --kubecontext=$MGMT_CONTEXT --license $GLOO_MESH_LICENSE_KEY --skip-rbac
 ```
 
 You should see the following output from the command:
@@ -210,6 +208,8 @@ ENTERPRISE_NETWORKING_PORT=$(kubectl -n gloo-mesh get service enterprise-network
 ENTERPRISE_NETWORKING_ADDRESS=${ENTERPRISE_NETWORKING_DOMAIN}:${ENTERPRISE_NETWORKING_PORT}
 {{< /tab >}}
 {{< /tabs >}}
+
+This address will be accessed via secure connection by the `enterprise-agent` component deployed to each registered cluster.
 
 To register cluster 1, run:
 
@@ -307,7 +307,7 @@ To verify that the Virtual Mesh has taken effect, run the following:
 kubectl get virtualmesh -n gloo-mesh virtual-mesh -oyaml
 ```
 
-The Virtual Mesh status will be "Accepted" when your meshes are configured for multicluster traffic.
+After a few moments the Virtual Mesh status will be "Accepted", indicating your meshes are configured for multicluster traffic.
 
 ```
 ...
@@ -326,7 +326,7 @@ status:
 With our distinct Istio service meshes unified under a single Virtual Mesh, let's demonstrate how Gloo Mesh can facilitate
 multicluster traffic.
 
-### Deploy a distributed application
+### Deploy bookinfo across clusters
 
 To demonstrate how Gloo Mesh configures multicluster traffic, we will deploy the bookinfo application to both cluster 1
 and cluster 2. Cluster 1 will run the application with versions 1 and 2 of the reviews service, and cluster 2 will run
@@ -405,6 +405,10 @@ Navigate to `http://$CLUSTER_1_INGRESS_ADDRESS/productpage` with the web browser
 and you will see the black stars on the "Book Reviews" column of the page appear and disappear. These represent v1 and
 v2 of the reviews service.
 
+<figure>
+    <img src="{{% versioned_link_path fromRoot="/img/bookinfo/star-rotation.png" %}}"/>
+</figure>
+
 ### Split traffic across clusters
 
 Since we did not deploy the reviews-v3 service to cluster 1, we must route to the reviews-v3 instance on cluster 2. We
@@ -459,6 +463,10 @@ EOF
 Return to the bookinfo app in your web browser, refresh the page a few times, and you will see reviews-v3's red stars
 appear alongside the book reviews.
 
+<figure>
+    <img src="{{% versioned_link_path fromRoot="/img/bookinfo/redstars.png" %}}"/>
+</figure>
+
 ## Launch the Gloo Mesh Enterprise dashboard
 
 Gloo Mesh Enterprise ships with a dashboard which provides a single pane of glass through which you can observe the status
@@ -480,10 +488,10 @@ meshctl dashboard
 Now you're all set up with a fully-functioning, multicluster Gloo Mesh Enteprise environment. Skip this section if
 you're interested in using this environment to explore the other features Gloo Mesh has to offer.
 
-The Gloo Mesh management plane and registered clusters each require separate clean up steps. Administrators can deregister
+The Gloo Mesh management plane and registered clusters each require separate cleanup steps. Administrators can deregister
 all clusters or individual clusters from the system and uninstall the management plane components.
 
-### Deregister clusters
+### Deregister the remote clusters
 
 To deregister a cluster, you must uninstall the `enterprise-agent` running on the remote cluster as well as the
 corresponding KubernetesCluster resource on the management cluster. Like cluster registration, meshctl can handle this for you.
