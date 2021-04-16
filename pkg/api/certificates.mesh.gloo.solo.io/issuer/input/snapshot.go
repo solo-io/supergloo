@@ -153,7 +153,7 @@ func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicl
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -165,7 +165,7 @@ func (s snapshot) SyncStatusesMultiCluster(ctx context.Context, mcClient multicl
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -178,14 +178,14 @@ func (s snapshot) SyncStatuses(ctx context.Context, c client.Client, opts SyncSt
 
 	if opts.IssuedCertificate {
 		for _, obj := range s.IssuedCertificates().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
 	}
 	if opts.CertificateRequest {
 		for _, obj := range s.CertificateRequests().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
