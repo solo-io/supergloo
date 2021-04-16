@@ -6,6 +6,11 @@ weight: 5
 
 Remove the enterprise agent
 
+### Synopsis
+
+Deregister the remote cluster, which includes uninstalling the
+enterprise agent and removing the cluster definition from the management cluster.
+
 ```
 meshctl cluster deregister enterprise [cluster name] [flags]
 ```
@@ -13,11 +18,7 @@ meshctl cluster deregister enterprise [cluster name] [flags]
 ### Examples
 
 ```
-  # Deregister the current context
-  meshctl cluster deregister enterprise mgmt-cluster
-
-  # Deregister a different context when the current one is the management cluster
-  meshctl cluster deregister enterprise remote-cluster
+ meshctl cluster deregister enterprise remote-cluster --remote-context my-remote
 ```
 
 ### Options
