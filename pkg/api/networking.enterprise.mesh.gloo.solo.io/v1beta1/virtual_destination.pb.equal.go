@@ -299,6 +299,33 @@ func (m *VirtualDestinationSpec_Port) Equal(that interface{}) bool {
 		return false
 	}
 
+	switch m.TargetPort.(type) {
+
+	case *VirtualDestinationSpec_Port_TargetName:
+		if _, ok := target.TargetPort.(*VirtualDestinationSpec_Port_TargetName); !ok {
+			return false
+		}
+
+		if strings.Compare(m.GetTargetName(), target.GetTargetName()) != 0 {
+			return false
+		}
+
+	case *VirtualDestinationSpec_Port_TargetNumber:
+		if _, ok := target.TargetPort.(*VirtualDestinationSpec_Port_TargetNumber); !ok {
+			return false
+		}
+
+		if m.GetTargetNumber() != target.GetTargetNumber() {
+			return false
+		}
+
+	default:
+		// m is nil but target is not nil
+		if m.TargetPort != target.TargetPort {
+			return false
+		}
+	}
+
 	return true
 }
 

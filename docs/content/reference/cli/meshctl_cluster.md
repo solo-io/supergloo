@@ -4,7 +4,7 @@ weight: 5
 ---
 ## meshctl cluster
 
-Interacting with remote Kubernetes clusters registered to Gloo Mesh
+Manage Kubernetes clusters registered to Gloo Mesh
 
 ### Options
 

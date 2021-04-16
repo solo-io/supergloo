@@ -30,11 +30,7 @@ meshctl cluster register enterprise [cluster name] [flags]
 ### Examples
 
 ```
-  # Register the current context
-  meshctl cluster register enterprise mgmt-cluster
-
-  # Register a different context when the current one is the management cluster
-  meshctl cluster register --remote-context=my-context enterprise remote-cluster
+ meshctl cluster register --remote-context=my-context enterprise remote-cluster
 ```
 
 ### Options

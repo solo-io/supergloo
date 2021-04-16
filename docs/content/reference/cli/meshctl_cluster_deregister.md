@@ -8,9 +8,18 @@ Deregister a Kubernetes cluster from Gloo Mesh, cleaning up any associated resou
 
 ### Synopsis
 
-Deregister a Kubernetes cluster from Gloo Mesh, cleaning up any associated resources
 
-The edition deregistered must match the edition that was originally registered.
+Deregistering a cluster removes the installed agent from the remote cluster as
+well as the other created resources such as service accounts. The edition
+must match the edition that the cluster was originally registered with.
+
+The name of the context of the cluster to dregister must be provided via the
+--remote-context flag. It is important that the remote context and the name
+passed as an argument are for the same cluster otherwise unexpected behavior
+may occur.
+
+If the management cluster is different than the one that the current context
+points then it an be provided via the --mgmt-context flag.
 
 ### Options
 
@@ -32,7 +41,7 @@ The edition deregistered must match the edition that was originally registered.
 
 ### SEE ALSO
 
-* [meshctl cluster](../meshctl_cluster)	 - Interacting with remote Kubernetes clusters registered to Gloo Mesh
+* [meshctl cluster](../meshctl_cluster)	 - Manage Kubernetes clusters registered to Gloo Mesh
 * [meshctl cluster deregister community](../meshctl_cluster_deregister_community)	 - Remove the community certificate agent
 * [meshctl cluster deregister enterprise](../meshctl_cluster_deregister_enterprise)	 - Remove the enterprise agent
 

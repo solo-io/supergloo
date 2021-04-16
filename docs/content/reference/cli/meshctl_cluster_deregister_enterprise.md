@@ -11,9 +11,6 @@ Remove the enterprise agent
 Deregister the remote cluster, which includes uninstalling the
 enterprise agent and removing the cluster definition from the management cluster.
 
-The name of the remote context must be passed in via the --remote-context flag
-if it is different from the context currently selected in the kubernetes config.
-
 ```
 meshctl cluster deregister enterprise [cluster name] [flags]
 ```
@@ -21,15 +18,7 @@ meshctl cluster deregister enterprise [cluster name] [flags]
 ### Examples
 
 ```
-  # These examples assume that the currently selected context
-  # is the management context.
-
-  # Deregister the currently selected cluster
-  # In this situation it is both the management and a remote cluster
-  meshctl cluster deregister enterprise mgmt-cluster
-
-  # Deregister a different remote cluster separate from the current one
-  meshctl cluster deregister enterprise remote-cluster --remote-context my-remote-ctx
+ meshctl cluster deregister enterprise remote-cluster --remote-context my-remote
 ```
 
 ### Options
