@@ -125,7 +125,7 @@ func (s snapshotSettings) SyncStatusesMultiCluster(ctx context.Context, mcClient
 				errs = multierror.Append(errs, err)
 				continue
 			}
-			if _, err := controllerutils.UpdateStatus(ctx, clusterClient, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, clusterClient, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
@@ -138,7 +138,7 @@ func (s snapshotSettings) SyncStatuses(ctx context.Context, c client.Client, opt
 
 	if opts.Settings {
 		for _, obj := range s.Settings().List() {
-			if _, err := controllerutils.UpdateStatus(ctx, c, obj); err != nil {
+			if _, err := controllerutils.UpdateStatusImmutable(ctx, c, obj); err != nil {
 				errs = multierror.Append(errs, err)
 			}
 		}
