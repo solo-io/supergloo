@@ -65,7 +65,7 @@ func (t *translator) isOSMDestination(
 	if meshRef == nil {
 		if _, ok := destination.Spec.Type.(*discoveryv1.DestinationSpec_KubeService_); ok {
 			// Is KubeService, MeshRef is required
-			contextutils.LoggerFrom(ctx).Errorf("internal error: KubeService destination %v missing mesh ref", sets.Key(destination))
+			contextutils.LoggerFrom(ctx).Debugf("unexpected state: KubeService destination %v missing mesh ref", sets.Key(destination))
 		} else {
 			// Not KubeService, MeshRef not required
 			// TODO: Publish this as a metric in the future
@@ -74,7 +74,7 @@ func (t *translator) isOSMDestination(
 	}
 	mesh, err := allMeshes.Find(meshRef)
 	if err != nil {
-		contextutils.LoggerFrom(ctx).Errorf("internal error: could not find mesh %v for destination %v", sets.Key(meshRef), sets.Key(destination))
+		contextutils.LoggerFrom(ctx).Debugf("unexpected state: could not find mesh %v for destination %v", sets.Key(meshRef), sets.Key(destination))
 		return false
 	}
 
