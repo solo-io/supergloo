@@ -48,6 +48,8 @@ metadata:
   namespace: istio-system
 spec:
   profile: minimal
+  # Install Gloo Mesh Istio
+  hub: gcr.io/istio-enterprise
   meshConfig:
     defaultConfig:
       envoyMetricsService:
@@ -92,6 +94,8 @@ metadata:
   namespace: istio-system
 spec:
   profile: minimal
+  # Install Gloo Mesh Istio
+  hub: gcr.io/istio-enterprise
   meshConfig:
     defaultConfig:
       envoyMetricsService:
@@ -100,7 +104,7 @@ spec:
         address: enterprise-agent.gloo-mesh:9977
       proxyMetadata:
         ISTIO_META_DNS_CAPTURE: "true"
-        GLOO_MESH_CLUSTER_NAME: cluster1
+        GLOO_MESH_CLUSTER_NAME: cluster2
   components:
     # Istio Gateway feature
     ingressGateways:
@@ -497,7 +501,7 @@ meshctl cluster deregister enterprise \
 Finished uninstalling release enterprise-agent
 ```
 
-At this point, the management cluster has no knowledge of or connection to cluster1. To delete the CustomResourceDefinitions
+At this point, the management cluster has no knowledge of or connection to cluster 1. To delete the CustomResourceDefinitions
 installed by meshctl on the registered cluster at registration time, as well as the gloo-mesh namespace run:
 
 ```shell script
@@ -518,7 +522,7 @@ meshctl cluster deregister enterprise \
 Finished uninstalling release enterprise-agent
 ```
 
-At this point, the management cluster has no knowledge of or connection to cluster1. To delete the CustomResourceDefinitions
+At this point, the management cluster has no knowledge of or connection to cluster 2. To delete the CustomResourceDefinitions
 installed by meshctl on the registered cluster at registration time, as well as the gloo-mesh namespace, run:
 
 ```shell script
