@@ -5,6 +5,7 @@ import (
 
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/federation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/settingsutils"
+	"github.com/solo-io/skv2/pkg/ezkube"
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
@@ -31,6 +32,7 @@ type Translator interface {
 	// Output resources will be added to the output.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
+		eventObjs []ezkube.ResourceId,
 		in input.LocalSnapshot,
 		destination *discoveryv1.Destination,
 		outputs istio.Builder,
@@ -75,6 +77,7 @@ func NewTranslator(
 
 // translate the appropriate resources for the given Destination.
 func (t *translator) Translate(
+	eventObjs []ezkube.ResourceId,
 	in input.LocalSnapshot,
 	destination *discoveryv1.Destination,
 	outputs istio.Builder,
@@ -85,30 +88,38 @@ func (t *translator) Translate(
 		return
 	}
 
-	// Translate VirtualServices for Destinations, can be nil if there is no service or applied traffic policies
-	// Pass nil sourceMeshInstallation to translate VirtualService local to destination
-	vs := t.virtualServices.Translate(t.ctx, in, destination, nil, reporter)
-	// Append the Destination as a parent to the virtual service
-	metautils.AppendParent(t.ctx, vs, destination, destination.GVK())
-	outputs.AddVirtualServices(vs)
+	if t.virtualServices.ShouldTranslate(destination, eventObjs) {
+		// Translate VirtualServices for Destinations, can be nil if there is no service or applied traffic policies
+		// Pass nil sourceMeshInstallation to translate VirtualService local to destination
+		vs := t.virtualServices.Translate(t.ctx, in, destination, nil, reporter)
+		// Append the Destination as a parent to the virtual service
+		metautils.AppendParent(t.ctx, vs, destination, destination.GVK())
+		outputs.AddVirtualServices(vs)
+	}
 
-	// Translate DestinationRules for Destinations, can be nil if there is no service or applied traffic policies
-	dr := t.destinationRules.Translate(t.ctx, in, destination, nil, reporter)
-	// Append the Destination as a parent to the destination rule
-	metautils.AppendParent(t.ctx, dr, destination, destination.GVK())
-	outputs.AddDestinationRules(dr)
+	if t.destinationRules.ShouldTranslate(destination, eventObjs) {
+		// Translate DestinationRules for Destinations, can be nil if there is no service or applied traffic policies
+		dr := t.destinationRules.Translate(t.ctx, in, destination, nil, reporter)
+		// Append the Destination as a parent to the destination rule
+		metautils.AppendParent(t.ctx, dr, destination, destination.GVK())
+		outputs.AddDestinationRules(dr)
+	}
 
-	// Translate AuthorizationPolicies for Destinations, can be nil if there is no service or applied traffic policies
-	ap := t.authorizationPolicies.Translate(in, destination, reporter)
-	// Append the Destination as a parent to the authorization policy
-	metautils.AppendParent(t.ctx, ap, destination, destination.GVK())
-	outputs.AddAuthorizationPolicies(ap)
+	if t.authorizationPolicies.ShouldTranslate(destination, eventObjs) {
+		// Translate AuthorizationPolicies for Destinations, can be nil if there is no service or applied traffic policies
+		ap := t.authorizationPolicies.Translate(in, destination, reporter)
+		// Append the Destination as a parent to the authorization policy
+		metautils.AppendParent(t.ctx, ap, destination, destination.GVK())
+		outputs.AddAuthorizationPolicies(ap)
+	}
 
-	// parent annotations are added inside Translate()
-	serviceEntries, virtualServices, destinationRules := t.federation.Translate(in, destination, reporter)
-	outputs.AddServiceEntries(serviceEntries...)
-	outputs.AddVirtualServices(virtualServices...)
-	outputs.AddDestinationRules(destinationRules...)
+	if t.federation.ShouldTranslate(destination, eventObjs) {
+		// parent annotations are added inside Translate()
+		serviceEntries, virtualServices, destinationRules := t.federation.Translate(in, destination, reporter)
+		outputs.AddServiceEntries(serviceEntries...)
+		outputs.AddVirtualServices(virtualServices...)
+		outputs.AddDestinationRules(destinationRules...)
+	}
 }
 
 func (t *translator) isIstioDestination(

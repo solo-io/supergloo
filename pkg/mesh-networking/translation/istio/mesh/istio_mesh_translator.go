@@ -5,7 +5,9 @@ import (
 
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/mtls"
+	"github.com/solo-io/skv2/pkg/ezkube"
 
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
@@ -30,6 +32,12 @@ type Translator interface {
 		localOutputs local.Builder,
 		reporter reporting.Reporter,
 	)
+
+	// Return true if the Mesh should be translated given the event objects
+	ShouldTranslate(
+		mesh *discoveryv1.Mesh,
+		eventObjs []ezkube.ResourceId,
+	) bool
 }
 
 type translator struct {
@@ -51,6 +59,31 @@ func NewTranslator(
 		federationTranslator: federationTranslator,
 		accessTranslator:     accessTranslator,
 	}
+}
+
+// Translate the Mesh into outputs if any of the following has changed:
+//  1. the Mesh
+//  2. applied VirtualMesh
+func (t *translator) ShouldTranslate(
+	mesh *discoveryv1.Mesh,
+	eventObjs []ezkube.ResourceId,
+) bool {
+	for _, eventObj := range eventObjs {
+
+		switch eventObj.(type) {
+		case *discoveryv1.Mesh:
+			if ezkube.RefsMatch(eventObj, mesh) {
+				return true
+			}
+		case *networkingv1.VirtualMesh:
+			if mesh.Status.GetAppliedVirtualMesh() != nil {
+				if ezkube.RefsMatch(eventObj, mesh.Status.GetAppliedVirtualMesh().Ref) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 // translate the appropriate resources for the given Mesh.

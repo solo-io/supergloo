@@ -10,7 +10,6 @@ import (
 	istiooutput "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	localoutput "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
 	smioutput "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/smi"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/dependency"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/appmesh"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio"
@@ -69,13 +68,9 @@ func (t *translator) Translate(
 	smiOutputs := smioutput.NewBuilder(ctx, fmt.Sprintf("networking-smi-%v", t.totalTranslates))
 	localOutputs := localoutput.NewBuilder(ctx, fmt.Sprintf("networking-local-%v", t.totalTranslates))
 
-	dependency.MarkPendingTranslations(eventObjs, in.Destinations().List(), in.Meshes().List())
-
-	t.istioTranslator.Translate(ctx, in, userSupplied, istioOutputs, localOutputs, reporter)
+	t.istioTranslator.Translate(ctx, eventObjs, in, userSupplied, istioOutputs, localOutputs, reporter)
 	t.appmeshTranslator.Translate(ctx, in, appmeshOutputs, reporter)
 	t.osmTranslator.Translate(ctx, in, smiOutputs, reporter)
-
-	dependency.ClearPendingTranslation(in.Destinations().List(), in.Meshes().List())
 
 	return &Outputs{
 		Istio:   istioOutputs,

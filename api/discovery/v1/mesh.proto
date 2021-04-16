@@ -190,9 +190,6 @@ message MeshStatus {
 
         // The spec of the last known valid VirtualMesh.
         .networking.mesh.gloo.solo.io.VirtualMeshSpec spec = 3;
-
-        // If true, this applied VirtualMesh needs to be translated.
-        bool pending = 4;
     }
 
     // Describes a [VirtualDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1alpha1.virtual_destination.md" >}}) that applies to this Mesh.

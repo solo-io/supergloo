@@ -19,6 +19,7 @@ import (
 	"github.com/rotisserie/eris"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
@@ -48,6 +49,12 @@ type Translator interface {
 		sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 		reporter reporting.Reporter,
 	) *networkingv1alpha3.DestinationRule
+
+	// Return true if the Destination should be translated given the event objects
+	ShouldTranslate(
+		destination *discoveryv1.Destination,
+		eventObjs []ezkube.ResourceId,
+	) bool
 }
 
 type translator struct {
@@ -72,6 +79,32 @@ func NewTranslator(
 		decoratorFactory:     decoratorFactory,
 		destinations:         destinations,
 	}
+}
+
+// Translate the Destination into a VirtualService if any of the following has changed:
+//  1. the Destination
+//  2. applied TrafficPolicy
+// Note: this could be further optimized if we looked at whether DestinationRule-related fields within the TrafficPolicy changed
+func (t *translator) ShouldTranslate(
+	destination *discoveryv1.Destination,
+	eventObjs []ezkube.ResourceId,
+) bool {
+	for _, eventObj := range eventObjs {
+
+		switch eventObj.(type) {
+		case *discoveryv1.Destination:
+			if ezkube.RefsMatch(eventObj, destination) {
+				return true
+			}
+		case *networkingv1.TrafficPolicy:
+			for _, appliedTrafficPolicy := range destination.Status.GetAppliedTrafficPolicies() {
+				if ezkube.RefsMatch(eventObj, appliedTrafficPolicy.Ref) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 // translate the appropriate DestinationRule for the given Destination.

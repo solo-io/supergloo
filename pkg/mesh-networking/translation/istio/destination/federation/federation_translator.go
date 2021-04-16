@@ -44,6 +44,12 @@ type Translator interface {
 		[]*networkingv1alpha3.VirtualService,
 		[]*networkingv1alpha3.DestinationRule,
 	)
+
+	// Return true if the Destination should be translated given the event objects
+	ShouldTranslate(
+		destination *discoveryv1.Destination,
+		eventObjs []ezkube.ResourceId,
+	) bool
 }
 
 type translator struct {
@@ -62,6 +68,31 @@ func NewTranslator(
 		virtualServiceTranslator:  virtualServiceTranslator,
 		destinationRuleTranslator: destinationRuleTranslator,
 	}
+}
+
+// Translate the Destination into federation outputs if any of the following has changed:
+//  1. the Destination
+//  2. applied Federation (which is determined by the VirtualMesh)
+func (t *translator) ShouldTranslate(
+	destination *discoveryv1.Destination,
+	eventObjs []ezkube.ResourceId,
+) bool {
+	for _, eventObj := range eventObjs {
+
+		switch eventObj.(type) {
+		case *discoveryv1.Destination:
+			if ezkube.RefsMatch(eventObj, destination) {
+				return true
+			}
+		case *networkingv1.VirtualMesh:
+			if destination.Status.GetAppliedFederation() != nil {
+				if ezkube.RefsMatch(eventObj, destination.Status.GetAppliedFederation().VirtualMeshRef) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 // Translate translates a ServiceEntry, VirtualService and DestinationRule for the given Destination using the data in status.AppliedFederation.

@@ -249,9 +249,6 @@ spec:
                     description: The observed generation of the accepted AccessPolicy.
                     format: int64
                     type: integer
-                  pending:
-                    description: If true, this applied policy needs to be translated.
-                    type: boolean
                   ref:
                     description: Reference to the AccessPolicy object.
                     properties:
@@ -433,9 +430,6 @@ spec:
                     [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}})
                     is true.
                   type: boolean
-                pending:
-                  description: If true, this applied policy needs to be translated.
-                  type: boolean
                 virtualMeshRef:
                   description: Reference to the VirtualMesh object.
                   properties:
@@ -455,9 +449,6 @@ spec:
                     description: The observed generation of the accepted TrafficPolicy.
                     format: int64
                     type: integer
-                  pending:
-                    description: If true, this applied policy needs to be translated.
-                    type: boolean
                   ref:
                     description: Reference to the TrafficPolicy object.
                     properties:
@@ -1392,9 +1383,6 @@ spec:
                   description: The observed generation of the accepted VirtualMesh.
                   format: int64
                   type: integer
-                pending:
-                  description: If true, this applied VirtualMesh needs to be translated.
-                  type: boolean
                 ref:
                   description: Reference to the applied VirtualMesh object.
                   properties:

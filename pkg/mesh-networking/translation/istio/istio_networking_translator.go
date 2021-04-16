@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
+	"github.com/solo-io/skv2/pkg/ezkube"
 
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
@@ -22,6 +23,7 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		ctx context.Context,
+		eventObjs []ezkube.ResourceId,
 		in input.LocalSnapshot,
 		userSupplied input.RemoteSnapshot,
 		istioOutputs istio.Builder,
@@ -47,6 +49,7 @@ func NewIstioTranslator(extensionClients extensions.Clientset) Translator {
 
 func (t *istioTranslator) Translate(
 	ctx context.Context,
+	eventObjs []ezkube.ResourceId,
 	in input.LocalSnapshot,
 	userSupplied input.RemoteSnapshot,
 	istioOutputs istio.Builder,
@@ -63,7 +66,7 @@ func (t *istioTranslator) Translate(
 	)
 
 	for _, destination := range in.Destinations().List() {
-		destinationTranslator.Translate(in, destination, istioOutputs, reporter)
+		destinationTranslator.Translate(eventObjs, in, destination, istioOutputs, reporter)
 	}
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(
@@ -73,7 +76,9 @@ func (t *istioTranslator) Translate(
 	)
 
 	for _, mesh := range in.Meshes().List() {
-		meshTranslator.Translate(in, mesh, istioOutputs, localOutputs, reporter)
+		if meshTranslator.ShouldTranslate(mesh, eventObjs) {
+			meshTranslator.Translate(in, mesh, istioOutputs, localOutputs, reporter)
+		}
 	}
 
 	if err := t.extender.PatchOutputs(ctx, in, istioOutputs); err != nil {

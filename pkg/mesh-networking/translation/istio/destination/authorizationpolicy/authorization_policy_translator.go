@@ -10,9 +10,11 @@ import (
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	securityv1beta1spec "istio.io/api/security/v1beta1"
 	typesv1beta1 "istio.io/api/type/v1beta1"
 	securityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
@@ -43,12 +45,43 @@ type Translator interface {
 		destination *discoveryv1.Destination,
 		reporter reporting.Reporter,
 	) *securityv1beta1.AuthorizationPolicy
+
+	// Return true if the Destination should be translated given the event objects
+	ShouldTranslate(
+		destination *discoveryv1.Destination,
+		eventObjs []ezkube.ResourceId,
+	) bool
 }
 
 type translator struct{}
 
 func NewTranslator() Translator {
 	return &translator{}
+}
+
+// Translate the Destination into a VirtualService if any of the following has changed:
+//  1. the Destination
+//  2. applied AccessPolicy
+func (t *translator) ShouldTranslate(
+	destination *discoveryv1.Destination,
+	eventObjs []ezkube.ResourceId,
+) bool {
+	for _, eventObj := range eventObjs {
+
+		switch eventObj.(type) {
+		case *discoveryv1.Destination:
+			if ezkube.RefsMatch(eventObj, destination) {
+				return true
+			}
+		case *networkingv1.AccessPolicy:
+			for _, appliedAccessPolicy := range destination.Status.GetAppliedAccessPolicies() {
+				if ezkube.RefsMatch(eventObj, appliedAccessPolicy.Ref) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 func (t *translator) Translate(
