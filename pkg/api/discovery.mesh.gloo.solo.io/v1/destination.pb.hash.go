@@ -848,6 +848,11 @@ func (m *DestinationStatus_AppliedTrafficPolicy) Hash(hasher hash.Hash64) (uint6
 		}
 	}
 
+	err = binary.Write(hasher, binary.LittleEndian, m.GetPending())
+	if err != nil {
+		return 0, err
+	}
+
 	return hasher.Sum64(), nil
 }
 
@@ -907,6 +912,11 @@ func (m *DestinationStatus_AppliedAccessPolicy) Hash(hasher hash.Hash64) (uint64
 				return 0, err
 			}
 		}
+	}
+
+	err = binary.Write(hasher, binary.LittleEndian, m.GetPending())
+	if err != nil {
+		return 0, err
 	}
 
 	return hasher.Sum64(), nil
@@ -976,6 +986,11 @@ func (m *DestinationStatus_AppliedFederation) Hash(hasher hash.Hash64) (uint64, 
 				return 0, err
 			}
 		}
+	}
+
+	err = binary.Write(hasher, binary.LittleEndian, m.GetPending())
+	if err != nil {
+		return 0, err
 	}
 
 	return hasher.Sum64(), nil

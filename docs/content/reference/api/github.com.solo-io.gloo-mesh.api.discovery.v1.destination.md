@@ -347,6 +347,7 @@ Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/git
 | ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the AccessPolicy object. |
   | observedGeneration | int64 |  | The observed generation of the accepted AccessPolicy. |
   | spec | [networking.mesh.gloo.solo.io.AccessPolicySpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.access_policy#networking.mesh.gloo.solo.io.AccessPolicySpec" >}}) |  | The spec of the last known valid AccessPolicy. |
+  | pending | bool |  | If true, this applied policy needs to be translated. |
   
 
 
@@ -365,6 +366,7 @@ Describes the federation configuration applied to this Destination through a [Vi
   | federatedToMeshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The list of Meshes which are able to resolve this Destination's `multicluster_dns_name`. |
   | flatNetwork | bool |  | Whether the Destination has been federated to the given meshes using a VirtualMesh where [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}}) is true. |
   | virtualMeshRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the VirtualMesh object. |
+  | pending | bool |  | If true, this applied policy needs to be translated. |
   
 
 
@@ -382,6 +384,7 @@ Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/git
 | ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the TrafficPolicy object. |
   | observedGeneration | int64 |  | The observed generation of the accepted TrafficPolicy. |
   | spec | [networking.mesh.gloo.solo.io.TrafficPolicySpec]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec" >}}) |  | The spec of the last known valid TrafficPolicy. |
+  | pending | bool |  | If true, this applied policy needs to be translated. |
   
 
 

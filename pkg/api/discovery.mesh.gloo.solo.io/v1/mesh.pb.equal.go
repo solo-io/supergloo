@@ -616,6 +616,10 @@ func (m *MeshStatus_AppliedVirtualMesh) Equal(that interface{}) bool {
 		}
 	}
 
+	if m.GetPending() != target.GetPending() {
+		return false
+	}
+
 	return true
 }
 

@@ -216,6 +216,9 @@ message DestinationStatus {
 
         // The spec of the last known valid TrafficPolicy.
         .networking.mesh.gloo.solo.io.TrafficPolicySpec spec = 3;
+
+        // If true, this applied policy needs to be translated.
+        bool pending = 4;
     }
 
     // Describes an [AccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.access_policy" >}})
@@ -231,6 +234,9 @@ message DestinationStatus {
 
         // The spec of the last known valid AccessPolicy.
         .networking.mesh.gloo.solo.io.AccessPolicySpec spec = 3;
+
+        // If true, this applied policy needs to be translated.
+        bool pending = 4;
     }
 
     // Describes the federation configuration applied to this Destination through a [VirtualMesh]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh" >}}).
@@ -254,5 +260,8 @@ message DestinationStatus {
 
         // Reference to the VirtualMesh object.
         .core.skv2.solo.io.ObjectRef virtual_mesh_ref = 4;
+
+        // If true, this applied policy needs to be translated.
+        bool pending = 5;
     }
 }

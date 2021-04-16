@@ -770,6 +770,10 @@ func (m *DestinationStatus_AppliedTrafficPolicy) Equal(that interface{}) bool {
 		}
 	}
 
+	if m.GetPending() != target.GetPending() {
+		return false
+	}
+
 	return true
 }
 
@@ -816,6 +820,10 @@ func (m *DestinationStatus_AppliedAccessPolicy) Equal(that interface{}) bool {
 		if !proto.Equal(m.GetSpec(), target.GetSpec()) {
 			return false
 		}
+	}
+
+	if m.GetPending() != target.GetPending() {
+		return false
 	}
 
 	return true
@@ -875,6 +883,10 @@ func (m *DestinationStatus_AppliedFederation) Equal(that interface{}) bool {
 		if !proto.Equal(m.GetVirtualMeshRef(), target.GetVirtualMeshRef()) {
 			return false
 		}
+	}
+
+	if m.GetPending() != target.GetPending() {
+		return false
 	}
 
 	return true

@@ -242,14 +242,16 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 		}
 	}
 
+	eventObjs := []ezkube.ResourceId{obj}
+
 	// apply policies to the discovery resources they target
-	r.applier.Apply(ctx, inputSnap, userSupplied)
+	r.applier.Apply(ctx, eventObjs, inputSnap, userSupplied)
 
 	// append errors as we still want to sync statuses if applying translation fails
 	var errs error
 
 	// translate and apply outputs
-	if err := r.applyTranslation(ctx, inputSnap, userSupplied); err != nil {
+	if err := r.applyTranslation(ctx, eventObjs, inputSnap, userSupplied); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -273,9 +275,9 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	return false, errs
 }
 
-func (r *networkingReconciler) applyTranslation(ctx context.Context, in input.LocalSnapshot, userSupplied input.RemoteSnapshot) error {
+func (r *networkingReconciler) applyTranslation(ctx context.Context, eventObjs []ezkube.ResourceId, in input.LocalSnapshot, userSupplied input.RemoteSnapshot) error {
 
-	outputSnap, err := r.translator.Translate(ctx, in, userSupplied, r.reporter)
+	outputSnap, err := r.translator.Translate(ctx, eventObjs, in, userSupplied, r.reporter)
 	if err != nil {
 		// internal translator errors should never happen
 		return err

@@ -10,6 +10,7 @@ import (
 	istiooutput "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	localoutput "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
 	smioutput "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/smi"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/dependency"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/appmesh"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio"
@@ -17,6 +18,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/output"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -26,6 +28,7 @@ type Translator interface {
 	// errors reflect an internal translation error and should never happen
 	Translate(
 		ctx context.Context,
+		eventObjs []ezkube.ResourceId,
 		in input.LocalSnapshot,
 		userSupplied input.RemoteSnapshot,
 		reporter reporting.Reporter,
@@ -53,6 +56,7 @@ func NewTranslator(
 
 func (t *translator) Translate(
 	ctx context.Context,
+	eventObjs []ezkube.ResourceId,
 	in input.LocalSnapshot,
 	userSupplied input.RemoteSnapshot,
 	reporter reporting.Reporter,
@@ -65,11 +69,13 @@ func (t *translator) Translate(
 	smiOutputs := smioutput.NewBuilder(ctx, fmt.Sprintf("networking-smi-%v", t.totalTranslates))
 	localOutputs := localoutput.NewBuilder(ctx, fmt.Sprintf("networking-local-%v", t.totalTranslates))
 
+	dependency.MarkPendingTranslations(eventObjs, in.Destinations().List(), in.Meshes().List())
+
 	t.istioTranslator.Translate(ctx, in, userSupplied, istioOutputs, localOutputs, reporter)
-
 	t.appmeshTranslator.Translate(ctx, in, appmeshOutputs, reporter)
-
 	t.osmTranslator.Translate(ctx, in, smiOutputs, reporter)
+
+	dependency.ClearPendingTranslation(in.Destinations().List(), in.Meshes().List())
 
 	return &Outputs{
 		Istio:   istioOutputs,
