@@ -1,8 +1,8 @@
 ---
-title: "Getting Started with Gloo Mesh Enterprise"
+title: "Gloo Mesh Enterprise on Kubernetes"
 menuTitle: Enterprise
-description: How to get started using Gloo Mesh Enterprise
-weight: 10
+description: Get started running Gloo Mesh Enterprise on a managed Kubernetes service like GKE or EKS.
+weight: 30
 ---
 
 The following guide describes how to get started with Gloo Mesh Enterprise on a managed Kubernetes environment such as GKE or EKS,
@@ -20,7 +20,7 @@ Before we get started, ensure that you have the following tools installed:
 - [meshctl]({{% versioned_link_path fromRoot="/getting_started" %}}) - Command line utility for Gloo Mesh
 - [istioctl](https://istio.io/latest/docs/setup/getting-started/#download) - Command line utility for Istio. This document assumes you are using istioctl v1.8 or v1.9.
 
-Three Kubernetes clusters, with contexts stored in the following environment variables:
+Provision three Kubernetes clusters with contexts stored in the following environment variables:
 - `MGMT_CONTEXT` - Context for the cluster where you'll be running the Gloo Mesh Enterprise management plane.
 - `REMOTE_CONTEXT1` - Context for a cluster where you'll be running a service mesh and injected workloads.
 - `REMOTE_CONTEXT2` - Context for a second cluster where you'll be running a service mesh and injected workloads.
@@ -602,4 +602,6 @@ kubectl --context $REMOTE_CONTEXT2 delete namespace istio-system
 
 ## Next Steps
 
-This is just the beginning of what's possible with Gloo Mesh Enterprise. Review the [guides]({{% versioned_link_path fromRoot="/guides" %}}) to explore additional features.
+This is just the beginning of what's possible with Gloo Mesh Enterprise. Review the [guides]({{% versioned_link_path fromRoot="/guides" %}})
+to explore additional features, or check out the [Setup Guide]({{% versioned_link_path fromRoot="/setup/" %}}) for
+advanced installation and cluster registration options.
