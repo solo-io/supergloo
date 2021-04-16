@@ -42,6 +42,9 @@ spec:
     defaultConfig:
       envoyMetricsService:
         address: enterprise-agent.gloo-mesh:9977
+      proxyMetadata:
+        # needed for annotating Gloo Mesh cluster name on envoy requests (i.e. access logs, metrics)
+        GLOO_MESH_CLUSTER_NAME: ${gloo-mesh-registered-cluster-name}
   values:
     global:
       # needed for annotating istio metrics with cluster
