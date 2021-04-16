@@ -49,7 +49,6 @@ metadata:
 spec:
   profile: minimal
   meshConfig:
-    enableAutoMtls: true
     defaultConfig:
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts
@@ -76,9 +75,6 @@ spec:
             - port: 15443
               targetPort: 15443
               name: tls
-  values:
-    global:
-      pilotCertProvider: istiod
 EOF
 ```
 
@@ -94,7 +90,6 @@ metadata:
 spec:
   profile: minimal
   meshConfig:
-    enableAutoMtls: true
     defaultConfig:
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts
@@ -121,9 +116,6 @@ spec:
             - port: 15443
               targetPort: 15443
               name: tls
-  values:
-    global:
-      pilotCertProvider: istiod
 EOF
 ```
 
@@ -286,8 +278,8 @@ spec:
       rootCertificateAuthority:
         generated: {}
   federation: {}
-    # Disable global access policy enforcement for demonstration purposes.
-    globalAccessPolicy: DISABLED
+  # Disable global access policy enforcement for demonstration purposes.
+  globalAccessPolicy: DISABLED
   meshes:
   - name: istiod-istio-system-cluster1
     namespace: gloo-mesh
@@ -359,17 +351,19 @@ reviews-v1-7f99cc4496-lwtsr       2/2     Running   0          2m34s
 reviews-v2-7d79d5bd5d-mpsk2       2/2     Running   0          2m34s
 ```
 
-To install bookinfo with reviews-v3 on cluster 2, run:
+To deploy reviews-v3 and the ratings service it depends on to cluster 2, run:
 
 ```shell script
 # prepare the default namespace for Istio sidecar injection
 kubectl --context $REMOTE_CONTEXT2 label namespace default istio-injection=enabled
-# deploy reviews service
+# deploy reviews and ratings services
 kubectl --context $REMOTE_CONTEXT2 apply -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'service in (reviews)'
 # deploy reviews-v3
 kubectl --context $REMOTE_CONTEXT2 apply -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app in (reviews),version in (v3)'
-# deploy reviews service account
-kubectl --context $REMOTE_CONTEXT2 apply -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account in (reviews)'
+# deploy ratings
+kubectl --context $REMOTE_CONTEXT2 apply -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app in (ratings)'
+# deploy reviews and ratings service accounts
+kubectl --context $REMOTE_CONTEXT2 apply -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account in (reviews, ratings)'
 ```
 
 And verify success with:
@@ -379,8 +373,9 @@ kubectl --context $REMOTE_CONTEXT2 get pods
 ```
 
 ```
-NAME                         READY   STATUS    RESTARTS   AGE
-reviews-v3-7dbcdcbc56-trjdx  2/2     Running   0          2m22s
+NAME                          READY   STATUS    RESTARTS   AGE
+ratings-v1-7dc98c7588-qbmmh   2/2     Running   0          3m11s
+reviews-v3-7dbcdcbc56-w4kbf   2/2     Running   0          3m11s
 ```
 
 To access the bookinfo application, first determine the address of the ingress on cluster 1:
@@ -388,13 +383,15 @@ To access the bookinfo application, first determine the address of the ingress o
 {{< tabs >}}
 {{< tab name="IP LoadBalancer address (GKE)" codelang="yaml">}}
 CLUSTER_1_INGRESS_ADDRESS=$(kubectl --context $REMOTE_CONTEXT1 get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+echo http://$CLUSTER_1_INGRESS_ADDRESS/productpage
 {{< /tab >}}
 {{< tab name="Hostname LoadBalancer address (EKS)" codelang="shell" >}}
 CLUSTER_1_INGRESS_ADDRESS=$(kubectl --context $REMOTE_CONTEXT1 get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+echo http://$CLUSTER_1_INGRESS_ADDRESS/productpage
 {{< /tab >}}
 {{< /tabs >}}
 
-Navigate to `$CLUSTER_1_INGRESS_ADDRESS/productpage` with the web browser of your choice. Refresh the page a few times
+Navigate to `http://$CLUSTER_1_INGRESS_ADDRESS/productpage` with the web browser of your choice. Refresh the page a few times
 and you will see the black stars on the "Book Reviews" column of the page appear and disappear. These represent v1 and
 v2 of the reviews service.
 
@@ -563,12 +560,14 @@ kubectl --context $REMOTE_CONTEXT1 delete -f https://raw.githubusercontent.com/i
 ```shell script
 # remove the sidecar injection label from the default namespace
 kubectl --context $REMOTE_CONTEXT2 label namespace default istio-injection-
-# remove reviews service
+# remove reviews and ratings services
 kubectl --context $REMOTE_CONTEXT2 delete -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'service in (reviews)'
 # remove reviews-v3
 kubectl --context $REMOTE_CONTEXT2 delete -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app in (reviews),version in (v3)'
-# remove reviews service account
-kubectl --context $REMOTE_CONTEXT2 delete -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account in (reviews)'
+# remove ratings
+kubectl --context $REMOTE_CONTEXT2 delete -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'app in (ratings)'
+# remove reviews and ratings service accounts
+kubectl --context $REMOTE_CONTEXT2 delete -f https://raw.githubusercontent.com/istio/istio/1.8.2/samples/bookinfo/platform/kube/bookinfo.yaml -l 'account in (reviews, ratings)'
 ```
 
 ### Uninstall Istio
@@ -577,8 +576,10 @@ To uninstall Istio completely from clusters 1 and 2, run:
 
 ```shell script
 istioctl --context $REMOTE_CONTEXT1 x uninstall --purge
+kubectl --context $REMOTE_CONTEXT1 delete namespace
 ```
 
 ```shell script
 istioctl --context $REMOTE_CONTEXT2 x uninstall --purge
+kubectl --context $REMOTE_CONTEXT2 delete namespace
 ```
