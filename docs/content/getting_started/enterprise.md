@@ -471,11 +471,10 @@ Access the Gloo Mesh Enterprise dashboard with:
 meshctl dashboard
 ```
 
-## Next Steps
-
-This is just the beginning of what's possible with Gloo Mesh Enterprise. Review the [guides]({{% versioned_link_path fromRoot="/guides" %}}) to explore additional features.
-
 ## Cleanup
+
+Now you're all set up with a fully-functioning, multicluster Gloo Mesh Enteprise environment. Skip this section if
+you're interested in using this environment to explore the other features Gloo Mesh has to offer.
 
 The Gloo Mesh management plane and registered clusters each require separate clean up steps. Administrators can deregister
 all clusters or individual clusters from the system and uninstall the management plane components.
@@ -588,3 +587,7 @@ kubectl --context $REMOTE_CONTEXT1 delete namespace istio-system
 istioctl --context $REMOTE_CONTEXT2 x uninstall --purge
 kubectl --context $REMOTE_CONTEXT2 delete namespace istio-system
 ```
+
+## Next Steps
+
+This is just the beginning of what's possible with Gloo Mesh Enterprise. Review the [guides]({{% versioned_link_path fromRoot="/guides" %}}) to explore additional features.
