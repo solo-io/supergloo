@@ -17,9 +17,18 @@ func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command
 	cmd := &cobra.Command{
 		Use:   "deregister",
 		Short: "Deregister a Kubernetes cluster from Gloo Mesh, cleaning up any associated resources",
-		Long: `Deregister a Kubernetes cluster from Gloo Mesh, cleaning up any associated resources
+		Long: `
+Deregistering a cluster removes the installed agent from the remote cluster as
+well as the other created resources such as service accounts. The edition
+must match the edition that the cluster was originally registered with.
 
-The edition deregistered must match the edition that was originally registered.`,
+The name of the context of the cluster to dregister must be provided via the
+--remote-context flag. It is important that the remote context and the name
+passed as an argument are for the same cluster otherwise unexpected behavior
+may occur.
+
+If the management cluster is different than the one that the current context
+points then it an be provided via the --mgmt-context flag.`,
 		PersistentPreRun: func(*cobra.Command, []string) {
 			opts.Verbose = globalFlags.Verbose
 		},
@@ -31,6 +40,7 @@ The edition deregistered must match the edition that was originally registered.`
 	)
 
 	opts.addToFlags(cmd.PersistentFlags())
+	cmd.MarkFlagRequired("remote-context")
 
 	return cmd
 }
@@ -59,20 +69,9 @@ func communityCommand(ctx context.Context, deregOpts *options) *cobra.Command {
 		Use:   "community [cluster name]",
 		Short: "Remove the community certificate agent",
 		Long: `Deregister the remote cluster, which includes uninstalling the
-certificate agent and removing the cluster definition from the management cluster.
-
-The name of the remote context must be passed in via the --remote-context flag
-if it is different from the context currently selected in the kubernetes config.`,
-		Args: cobra.MinimumNArgs(1),
-		Example: `  # These examples assume that the currently selected context
-  # is the management context.
-
-  # Deregister the currently selected cluster
-  # In this situation it is both the management and a remote cluster
-  meshctl cluster deregister community mgmt-cluster
-
-  # Deregister a different remote cluster separate from the current one
-  meshctl cluster deregister community remote-cluster --remote-context my-remote-ctx`,
+certificate agent and removing the cluster definition from the management cluster.`,
+		Args:    cobra.MinimumNArgs(1),
+		Example: " meshctl cluster deregister community remote-cluster --remote-context my-remote",
 		RunE: func(_ *cobra.Command, args []string) error {
 			opts.ClusterName = args[0]
 			registrant, err := registration.NewRegistrant(registration.Options(*opts))
@@ -95,20 +94,9 @@ func enterpriseCommand(ctx context.Context, opts *options) *cobra.Command {
 		Use:   "enterprise [cluster name]",
 		Short: "Remove the enterprise agent",
 		Long: `Deregister the remote cluster, which includes uninstalling the
-enterprise agent and removing the cluster definition from the management cluster.
-
-The name of the remote context must be passed in via the --remote-context flag
-if it is different from the context currently selected in the kubernetes config.`,
-		Args: cobra.MinimumNArgs(1),
-		Example: `  # These examples assume that the currently selected context
-  # is the management context.
-
-  # Deregister the currently selected cluster
-  # In this situation it is both the management and a remote cluster
-  meshctl cluster deregister enterprise mgmt-cluster
-
-  # Deregister a different remote cluster separate from the current one
-  meshctl cluster deregister enterprise remote-cluster --remote-context my-remote-ctx`,
+enterprise agent and removing the cluster definition from the management cluster.`,
+		Args:    cobra.MinimumNArgs(1),
+		Example: " meshctl cluster deregister enterprise remote-cluster --remote-context my-remote",
 		RunE: func(_ *cobra.Command, args []string) error {
 			opts.ClusterName = args[0]
 			enterpriseOpts := enterprise.RegistrationOptions{Options: registration.Options(*opts)}
