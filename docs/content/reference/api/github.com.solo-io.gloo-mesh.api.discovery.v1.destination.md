@@ -24,6 +24,7 @@ title: "destination.proto"
   - [DestinationSpec.ExternalService.ExternalEndpoint.PortsEntry](#discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ExternalEndpoint.PortsEntry)
   - [DestinationSpec.ExternalService.ServicePort](#discovery.mesh.gloo.solo.io.DestinationSpec.ExternalService.ServicePort)
   - [DestinationSpec.KubeService](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService)
+  - [DestinationSpec.KubeService.EndpointPort](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointPort)
   - [DestinationSpec.KubeService.EndpointsSubset](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset)
   - [DestinationSpec.KubeService.EndpointsSubset.Endpoint](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint)
   - [DestinationSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry](#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint.LabelsEntry)
@@ -150,6 +151,24 @@ Describes a Kubernetes service.
 
 
 
+<a name="discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointPort"></a>
+
+### DestinationSpec.KubeService.EndpointPort
+Describes the endpoints's ports. See [here](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoints-v1/) for more information.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| port | uint32 |  | Port on which the endpoints can be reached |
+  | name | string |  | Name of the port |
+  | protocol | string |  | Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...) |
+  | appProtocol | string |  | Available in Kubernetes 1.18+, describes the application protocol. |
+  
+
+
+
+
+
 <a name="discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset"></a>
 
 ### DestinationSpec.KubeService.EndpointsSubset
@@ -159,7 +178,7 @@ A series of IP addresses and their associated ports. The list of IP and port pai
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | endpoints | [][discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointsSubset.Endpoint" >}}) | repeated |  |
-  | ports | [][discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.KubeServicePort]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.KubeServicePort" >}}) | repeated |  |
+  | ports | [][discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointPort]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationSpec.KubeService.EndpointPort" >}}) | repeated |  |
   
 
 
@@ -224,9 +243,11 @@ Describes the service's ports. See [here](https://kubernetes.io/docs/concepts/se
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | port | uint32 |  | External-facing port for this Kubernetes service (*not* the service's target port on the targeted pods). |
-  | name | string |  |  |
-  | protocol | string |  |  |
+  | name | string |  | Name of the port |
+  | protocol | string |  | Protocol on which this port serves traffic (HTTP, TCP, UDP, etc...) |
   | appProtocol | string |  | Available in Kubernetes 1.18+, describes the application protocol. |
+  | targetPortName | string |  | Name of the target port |
+  | targetPortNumber | uint32 |  | Number of the target port |
   
 
 
