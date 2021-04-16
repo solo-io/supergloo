@@ -1,4 +1,0 @@
-changelog:
-  - type: NON_USER_FACING
-    issueLink: https://github.com/solo-io/gloo-mesh/issues/1433
-    description: Split out FederationTranslator so that it is invoked per Destination, rather than per Mesh. This allows us to orchestrate federation translation on a per-Destination basis.
