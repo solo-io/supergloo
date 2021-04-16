@@ -21,9 +21,9 @@ Before we get started, ensure that you have the following tools installed:
 - [istioctl](https://istio.io/latest/docs/setup/getting-started/#download) - Command line utility for Istio. This document assumes you are using istioctl v1.8 or v1.9.
 
 Three Kubernetes clusters, with contexts stored in the following environment variables:
-- MGMT_CONTEXT - Context for the cluster where you'll be running the Gloo Mesh Enterprise management plane.
-- REMOTE_CONTEXT1 - Context for a cluster where you'll be running a service mesh and injected workloads.
-- REMOTE_CONTEXT2 - Context for a second cluster where you'll be running a service mesh and injected workloads.
+- `MGMT_CONTEXT` - Context for the cluster where you'll be running the Gloo Mesh Enterprise management plane.
+- `REMOTE_CONTEXT1` - Context for a cluster where you'll be running a service mesh and injected workloads.
+- `REMOTE_CONTEXT2` - Context for a second cluster where you'll be running a service mesh and injected workloads.
 
 
 Lastly, ensure that you have a Gloo Mesh Enterprise license key stored in the environment variable `GLOO_MESH_LICENSE_KEY`.
@@ -40,7 +40,7 @@ ensure that each Istio deployment has an externally accessible ingress gateway.
 To install Istio on cluster 1, run: 
 
 ```shell script
-cat << EOF | istioctl manifest install -y --context $REMOTE_CONTEXT1 -f -
+cat << EOF | istioctl install -y --context $REMOTE_CONTEXT1 -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -81,7 +81,7 @@ EOF
 And then cluster 2:
 
 ```shell script
-cat << EOF | istioctl manifest install -y --context $REMOTE_CONTEXT2 -f -
+cat << EOF | istioctl install -y --context $REMOTE_CONTEXT2 -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
