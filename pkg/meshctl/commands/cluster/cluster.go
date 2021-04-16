@@ -12,7 +12,7 @@ import (
 func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "cluster",
-		Short: "Interacting with remote Kubernetes clusters registered to Gloo Mesh",
+		Short: "Manage Kubernetes clusters registered to Gloo Mesh",
 	}
 
 	cmd.AddCommand(
