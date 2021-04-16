@@ -1,7 +1,7 @@
 ---
 title: "Bootstrap Gloo Mesh on Kind"
 menuTitle: Enterprise
-description: Get started running Gloo Mesh locally in Kind.
+description: Get started running Gloo Mesh or Gloo Mesh Enterprise locally in Kind.
 weight: 20
 ---
 
