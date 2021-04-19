@@ -470,6 +470,7 @@ appear alongside the book reviews.
 {{% notice note %}}
 If you are seeing connection issues, and running on `EKS`, please read the following:
 
+\
 EKS LoadBalancer Health Checks will by default use the first port in the Kubernetes Service. This can potentially be a problem because
 istio-ingressgateway will deploy with the `port: 80` as first in the list. See the following for an example:
 ```yaml
@@ -503,6 +504,11 @@ spec:
   clusterIP: 10.100.108.166
   externalTrafficPolicy: Cluster
   ports:
+  - name: tls
+    nodePort: 32287
+    port: 15443
+    protocol: TCP
+    targetPort: 15443
   - name: http2
     nodePort: 31143
     port: 80
@@ -513,11 +519,6 @@ spec:
     port: 443
     protocol: TCP
     targetPort: 8443
-  - name: tls
-    nodePort: 32287
-    port: 15443
-    protocol: TCP
-    targetPort: 15443
   selector:
     app: istio-ingressgateway
     istio: ingressgateway
