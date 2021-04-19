@@ -54,7 +54,12 @@ RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 The enterprise-networking service can also be exposed via an ingress. The following describes how to configure a Kubernetes
 cluster ingress assuming [Istio's ingress gateway model](https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/).
 
-Create the following resources in the namespace of your choosing. Note that
+Note that Istio is **not** required on the management cluster in order for Gloo Mesh to work correctly. We only provide
+this ingress configuration as an example of how you might configure an ingress solution, such as Istio or [Gloo Edge](https://docs.solo.io/gloo-edge/latest)
+to expose the `enterprise-networking` service in the event that you manage your cluster ingress traffic through an edge
+proxy today.
+
+To setup Istio as an ingress for Gloo Mesh, create the following resources in the namespace of your choosing. Note that
 we assume that the `enterprise-networking` deployment exposes its gRPC port on `9900`.
 
 ```yaml
@@ -100,13 +105,22 @@ spec:
               number: 9900
 ```
 
-You can set your ingress service as either a NodePort or LoadBalancer type.
-From here, you need to find the address of this ingress to use
+You can set your ingress service as either a NodePort or LoadBalancer type. From here, you need to find the address of this ingress to use
 during [cluster registration]({{% versioned_link_path fromRoot="/setup/cluster_registration/enterprise_cluster_registration" %}}).
 
 Some useful scripts for finding the ingress address can be found below (we assume that the ingress port is named https):
 
 {{< tabs >}}
+{{< tab name="LoadBalancer (IP)" codelang="shell">}}
+MGMT_INGRESS_ADDRESS=$(kubectl  -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].port}')
+RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
+{{< /tab >}}
+{{< tab name="LoadBalancer (hostname)" codelang="shell">}}
+MGMT_INGRESS_ADDRESS=$(kubectl  -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].port}')
+RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
+{{< /tab >}}
 {{< tab name="NodePort" codelang="shell">}}
 # Note that this command fetches the IP address of the first node.
 # If you have multiple nodes, make sure to fetch the IP of the node
@@ -116,17 +130,7 @@ MGMT_INGRESS_ADDRESS=$(kubectl get node -ojson | jq -r ".items[0].status.address
 MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
 RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 {{< /tab >}}
-{{< tab name="LoadBalancer" codelang="shell">}}
-MGMT_INGRESS_ADDRESS=$(kubectl  -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].port}')
-RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
-{{< /tab >}}
 {{< /tabs >}}
-
-If you are using a NodePort and are failing to connect to relay,
-that could mean you have multiple nodes, and the istio-ingressgateway isn't
-on the first one. Track down the host for the correct worker node and
-use that as the $MGMT_INGRESS_ADDRESS instead.
 
 For more on determining the correct ingress address, see the [envoy docs](https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/).
 
@@ -134,8 +138,13 @@ For more on determining the correct ingress address, see the [envoy docs](https:
 
 #### Manual Certificate Creation (Optional)
 
+The following steps to provision certificates are not required for getting started with Gloo Mesh Enterprise. Instead,
+you can leverage Gloo Mesh Enterprise's default behavior of creating self-signed certificates at install time to handle
+bootstrapping the certificates used for mTLS between the server and agent components of Gloo Mesh Enterprise. To learn
+how to provision your own certificates for this purpose, read on.
+
 As described in the [concept document]({{% versioned_link_path fromRoot="/concepts/relay" %}}),
-gRPC communication between agents and the server is authenticate and secured with mutual TLS.
+gRPC communication between agents and the server is authenticated and secured with mutual TLS.
 
 The following script illustrates how you can create these certificates manually. If you do not create certificates yourself, both the Helm chart and `meshctl` will create self-signed certificates for you.
 
@@ -150,7 +159,12 @@ At a high level, the script achieves the following:
 3. Create a signing certificate (`RELAY_SIGNING_CERT_NAME`), derived from the root certificate,
    which is used by the relay server to issue certificates for relay agents once initial trust has been established.
 
-{{% notice note %}} The following was tested with OpenSSL 1.1.1h  22 Sep 2020. {{% /notice %}}
+{{% notice note %}}
+The following was tested with OpenSSL 1.1.1h  22 Sep 2020.
+
+Mac users may have LibreSSL installed by default. If so, we recommend that you `brew install openssl` and verify that
+`openssl version` returns an OpenSSL version before you proceed.
+{{% /notice %}}
 
 ```bash
 RELAY_ROOT_CERT_NAME=relay-root
