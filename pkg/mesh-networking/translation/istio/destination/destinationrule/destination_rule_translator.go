@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
@@ -190,6 +191,16 @@ func (t *translator) Translate(
 		}
 		return nil
 	}
+
+	// Append the Destination and all applied TrafficPolicies as parents
+	parents := map[schema.GroupVersionKind][]ezkube.ResourceId{
+		discoveryv1.DestinationGVK:    {destination},
+		networkingv1.TrafficPolicyGVK: {},
+	}
+	for _, appliedTp := range destination.Status.GetAppliedTrafficPolicies() {
+		parents[networkingv1.TrafficPolicyGVK] = append(parents[networkingv1.TrafficPolicyGVK], appliedTp.Ref)
+	}
+	metautils.AnnotateParents(ctx, destinationRule, parents)
 
 	return destinationRule
 }

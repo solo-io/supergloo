@@ -1,6 +1,8 @@
 package authorizationpolicy_test
 
 import (
+	"context"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -20,12 +22,14 @@ import (
 var _ = Describe("AuthorizationPolicyTranslator", func() {
 	var (
 		ctrl         *gomock.Controller
+		ctx          context.Context
 		translator   authorizationpolicy.Translator
 		mockReporter *mock_reporting.MockReporter
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
+		ctx = context.TODO()
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		translator = authorizationpolicy.NewTranslator()
 	})
@@ -174,7 +178,7 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 			},
 		}
 		inputSnapshot := input.NewInputLocalSnapshotManualBuilder("").AddMeshes(meshes).Build()
-		authPolicy := translator.Translate(inputSnapshot, destination, mockReporter)
+		authPolicy := translator.Translate(ctx, inputSnapshot, destination, mockReporter)
 		Expect(authPolicy).To(Equal(expectedAuthPolicy))
 	})
 
@@ -304,7 +308,7 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 			},
 		}
 		inputSnapshot := input.NewInputLocalSnapshotManualBuilder("").AddMeshes(meshes).Build()
-		authPolicy := translator.Translate(inputSnapshot, destination, mockReporter)
+		authPolicy := translator.Translate(ctx, inputSnapshot, destination, mockReporter)
 		//Expect(equalityutils.DeepEqual(authPolicy, expectedAuthPolicy)).To(BeTrue())
 		Expect(authPolicy).To(Equal(expectedAuthPolicy))
 	})

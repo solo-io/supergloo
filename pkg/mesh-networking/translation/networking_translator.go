@@ -251,17 +251,22 @@ func shouldGarbageCollect(
 			}
 		// Networking parents
 		case networkingv1.TrafficPolicyGVK:
+			// TODO(harveyxia) does this generalize?
+			// Because TrafficPolicies are merged, only garbage collect output if *all* parent TrafficPolicies no longer exist
 			for _, resourceId := range resourceIds {
-				if !in.TrafficPolicies().Has(resourceId) {
-					return true
+				if in.TrafficPolicies().Has(resourceId) {
+					return false
 				}
 			}
+			return true
 		case networkingv1.AccessPolicyGVK:
+			// Because AccessPolicies are merged, only garbage collect output if *all* parent AccessPolicies no longer exist
 			for _, resourceId := range resourceIds {
-				if !in.AccessPolicies().Has(resourceId) {
-					return true
+				if in.AccessPolicies().Has(resourceId) {
+					return false
 				}
 			}
+			return true
 		case networkingv1.VirtualMeshGVK:
 			for _, resourceId := range resourceIds {
 				if !in.VirtualMeshes().Has(resourceId) {

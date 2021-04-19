@@ -14,6 +14,7 @@ import (
 	skv2sets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/rotisserie/eris"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
@@ -108,7 +109,7 @@ func (t *translator) ShouldTranslate(
 // Translate a VirtualService for the Destination.
 // If sourceMeshInstallation is nil, assume that VirtualService is colocated to the Destination and use local FQDNs.
 func (t *translator) Translate(
-	_ context.Context,
+	ctx context.Context,
 	in input.LocalSnapshot,
 	destination *discoveryv1.Destination,
 	sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
@@ -212,6 +213,16 @@ func (t *translator) Translate(
 		}
 		return nil
 	}
+
+	// Append the Destination and all applied TrafficPolicies as parents
+	parents := map[schema.GroupVersionKind][]ezkube.ResourceId{
+		discoveryv1.DestinationGVK:    {destination},
+		networkingv1.TrafficPolicyGVK: {},
+	}
+	for _, appliedTp := range destination.Status.GetAppliedTrafficPolicies() {
+		parents[networkingv1.TrafficPolicyGVK] = append(parents[networkingv1.TrafficPolicyGVK], appliedTp.Ref)
+	}
+	metautils.AnnotateParents(ctx, virtualService, parents)
 
 	return virtualService
 }

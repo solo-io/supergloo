@@ -9,6 +9,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	"github.com/solo-io/gloo-mesh/pkg/common/version"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/local"
@@ -185,9 +186,15 @@ func (t *translator) configureSharedTrust(
 		autoRestartPods,
 	)
 
-	// Append the VirtualMesh as a parent to each output resource
-	metautils.AppendParent(t.ctx, issuedCertificate, virtualMeshRef, v1.VirtualMesh{}.GVK())
-	metautils.AppendParent(t.ctx, podBounceDirective, virtualMeshRef, v1.VirtualMesh{}.GVK())
+	// Append the VirtualMesh and Mesh as a parent to each output resource
+	metautils.AnnotateParents(t.ctx, issuedCertificate, map[schema.GroupVersionKind][]ezkube.ResourceId{
+		v1.VirtualMeshGVK:   {virtualMeshRef},
+		discoveryv1.MeshGVK: {mesh},
+	})
+	metautils.AnnotateParents(t.ctx, podBounceDirective, map[schema.GroupVersionKind][]ezkube.ResourceId{
+		v1.VirtualMeshGVK:   {virtualMeshRef},
+		discoveryv1.MeshGVK: {mesh},
+	})
 
 	istioOutputs.AddIssuedCertificates(issuedCertificate)
 	istioOutputs.AddPodBounceDirectives(podBounceDirective)
@@ -239,7 +246,9 @@ func (t *translator) getOrCreateRootCaSecret(
 		}
 
 		// Append the VirtualMesh as a parent to the output secret
-		metautils.AppendParent(t.ctx, selfSignedCertSecret, virtualMeshRef, v1.VirtualMesh{}.GVK())
+		metautils.AnnotateParents(t.ctx, selfSignedCertSecret, map[schema.GroupVersionKind][]ezkube.ResourceId{
+			v1.VirtualMeshGVK: {virtualMeshRef},
+		})
 
 		localOutputs.AddSecrets(selfSignedCertSecret)
 	case *v1.VirtualMeshSpec_RootCertificateAuthority_Secret:

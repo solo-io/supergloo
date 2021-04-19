@@ -21,10 +21,12 @@ import (
 	"github.com/solo-io/k8s-utils/kubeutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/istio/pkg/envoy/config/filter/network/tcp_cluster_rewrite/v2alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 //go:generate mockgen -source ./federation_translator.go -destination mocks/federation_translator.go
@@ -148,9 +150,15 @@ func (t *translator) Translate(
 		fmt.Sprintf("%v.%v", virtualMesh.Ref.Name, virtualMesh.Ref.Namespace),
 	)
 
-	// Append the virtual mesh as a parent to each output resource
-	metautils.AppendParent(t.ctx, gw, virtualMesh.GetRef(), networkingv1.VirtualMesh{}.GVK())
-	metautils.AppendParent(t.ctx, ef, virtualMesh.GetRef(), networkingv1.VirtualMesh{}.GVK())
+	// Append the VirtualMesh and Mesh as a parent to each output resource
+	metautils.AnnotateParents(t.ctx, gw, map[schema.GroupVersionKind][]ezkube.ResourceId{
+		networkingv1.VirtualMeshGVK: {virtualMesh.GetRef()},
+		discoveryv1.MeshGVK:         {mesh},
+	})
+	metautils.AnnotateParents(t.ctx, ef, map[schema.GroupVersionKind][]ezkube.ResourceId{
+		networkingv1.VirtualMeshGVK: {virtualMesh.GetRef()},
+		discoveryv1.MeshGVK:         {mesh},
+	})
 
 	outputs.AddGateways(gw)
 	outputs.AddEnvoyFilters(ef)

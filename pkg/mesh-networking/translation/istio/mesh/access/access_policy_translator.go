@@ -5,13 +5,15 @@ import (
 
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
-	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/k8s-utils/kubeutils"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	securityv1beta1spec "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
 	securityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 //go:generate mockgen -source ./access_policy_translator.go -destination mocks/access_policy_translator.go
@@ -52,8 +54,8 @@ func (t *translator) Translate(
 	}
 
 	// Istio's default access enforcement policy is disabled.
-	if virtualMesh.Spec.GlobalAccessPolicy == v1.VirtualMeshSpec_MESH_DEFAULT ||
-		virtualMesh.Spec.GlobalAccessPolicy == v1.VirtualMeshSpec_DISABLED {
+	if virtualMesh.Spec.GlobalAccessPolicy == networkingv1.VirtualMeshSpec_MESH_DEFAULT ||
+		virtualMesh.Spec.GlobalAccessPolicy == networkingv1.VirtualMeshSpec_DISABLED {
 		return
 	}
 	clusterName := istioMesh.Installation.Cluster
@@ -66,9 +68,15 @@ func (t *translator) Translate(
 	)
 
 	// Append the VirtualMesh as a parent to each output resource
-	metautils.AppendParent(t.ctx, globalAuthPolicy, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
+	metautils.AnnotateParents(t.ctx, globalAuthPolicy, map[schema.GroupVersionKind][]ezkube.ResourceId{
+		networkingv1.VirtualMeshGVK: {virtualMesh.GetRef()},
+		discoveryv1.MeshGVK:         {mesh},
+	})
 	for _, ap := range ingressGatewayAuthPolicies {
-		metautils.AppendParent(t.ctx, ap, virtualMesh.GetRef(), v1.VirtualMesh{}.GVK())
+		metautils.AnnotateParents(t.ctx, ap, map[schema.GroupVersionKind][]ezkube.ResourceId{
+			networkingv1.VirtualMeshGVK: {virtualMesh.GetRef()},
+			discoveryv1.MeshGVK:         {mesh},
+		})
 	}
 
 	outputs.AddAuthorizationPolicies(globalAuthPolicy)

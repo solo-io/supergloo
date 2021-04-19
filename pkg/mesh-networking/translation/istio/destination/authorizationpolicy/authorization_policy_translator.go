@@ -1,6 +1,7 @@
 package authorizationpolicy
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
@@ -18,6 +19,7 @@ import (
 	securityv1beta1spec "istio.io/api/security/v1beta1"
 	typesv1beta1 "istio.io/api/type/v1beta1"
 	securityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 //go:generate mockgen -source ./authorization_policy_translator.go -destination mocks/authorization_policy_translator.go
@@ -41,6 +43,7 @@ type Translator interface {
 	//
 	// Note that the input snapshot DestinationSet contains the given Destination.
 	Translate(
+		ctx context.Context,
 		in input.LocalSnapshot,
 		destination *discoveryv1.Destination,
 		reporter reporting.Reporter,
@@ -85,6 +88,7 @@ func (t *translator) ShouldTranslate(
 }
 
 func (t *translator) Translate(
+	ctx context.Context,
 	in input.LocalSnapshot,
 	destination *discoveryv1.Destination,
 	reporter reporting.Reporter,
@@ -112,6 +116,16 @@ func (t *translator) Translate(
 	if len(authPolicy.Spec.Rules) == 0 {
 		return nil
 	}
+
+	// Append the Destination and all applied AccessPolicies as parents
+	parents := map[schema.GroupVersionKind][]ezkube.ResourceId{
+		discoveryv1.DestinationGVK:   {destination},
+		networkingv1.AccessPolicyGVK: {},
+	}
+	for _, appliedAp := range destination.Status.GetAppliedAccessPolicies() {
+		parents[networkingv1.AccessPolicyGVK] = append(parents[networkingv1.AccessPolicyGVK], appliedAp.Ref)
+	}
+	metautils.AnnotateParents(ctx, authPolicy, parents)
 
 	return authPolicy
 }

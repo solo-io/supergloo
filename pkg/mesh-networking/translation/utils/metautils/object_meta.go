@@ -86,12 +86,12 @@ func IsTranslated(object metav1.Object) bool {
 	return len(objLabels) > 0 && labels.AreLabelsInWhiteList(translatedObjectLabels, objLabels)
 }
 
-// add a parent to the annotation for a given child object
-func AppendParent(
+// add parent annotations for a given child object
+// overwrites any existing annotations
+func AnnotateParents(
 	ctx context.Context,
 	child metav1.Object,
-	parentId ezkube.ResourceId,
-	parentGVK schema.GroupVersionKind,
+	parents map[schema.GroupVersionKind][]ezkube.ResourceId,
 ) {
 
 	if reflect.ValueOf(child).IsNil() {
@@ -102,29 +102,10 @@ func AppendParent(
 	if annotations == nil {
 		annotations = make(map[string]string)
 	}
-	parentsAnnotation := make(map[string][]*skv2corev1.ObjectRef)
-	if paStr, ok := annotations[ParentLabelkey]; ok {
-		if err := json.Unmarshal([]byte(paStr), &parentsAnnotation); err != nil {
-			contextutils.LoggerFrom(ctx).DPanicf("internal error: could not unmarshal %s annotation", ParentLabelkey)
-			return
-		}
-	}
 
-	typeParents, ok := parentsAnnotation[parentGVK.String()]
-	if !ok {
-		typeParents = make([]*skv2corev1.ObjectRef, 0, 1)
-	}
-	parentRef := ezkube.MakeObjectRef(parentId)
-	for _, parent := range typeParents {
-		if parent.Equal(parentRef) {
-			return
-		}
-	}
-	parentsAnnotation[parentGVK.String()] = append(typeParents, parentRef)
-
-	b, err := json.Marshal(parentsAnnotation)
+	b, err := json.Marshal(parents)
 	if err != nil {
-		contextutils.LoggerFrom(ctx).Error("internal error: could not marshal parents map")
+		contextutils.LoggerFrom(ctx).DPanicf("could not marshal parents map: %v", err)
 		return
 	}
 

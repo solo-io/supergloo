@@ -39,7 +39,7 @@ var _ = Describe("FederationTranslator", func() {
 		mockVirtualServiceTranslator = mock_virtualservice.NewMockTranslator(ctrl)
 		mockDestinationRuleTranslator = mock_destinationrule.NewMockTranslator(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
-		federationTranslator = federation.NewTranslator(ctx, mockVirtualServiceTranslator, mockDestinationRuleTranslator)
+		federationTranslator = federation.NewTranslator(mockVirtualServiceTranslator, mockDestinationRuleTranslator)
 	})
 
 	AfterEach(func() {
@@ -238,7 +238,7 @@ var _ = Describe("FederationTranslator", func() {
 			expectedServiceEntry2,
 		}
 
-		serviceEntries, virtualServices, destinationRules := federationTranslator.Translate(in, destination, mockReporter)
+		serviceEntries, virtualServices, destinationRules := federationTranslator.Translate(ctx, in, destination, mockReporter)
 
 		Expect(serviceEntries).To(ConsistOf(expectedServiceEntries))
 		Expect(virtualServices).To(ConsistOf([]*networkingv1alpha3.VirtualService{expectedVS, expectedVS}))

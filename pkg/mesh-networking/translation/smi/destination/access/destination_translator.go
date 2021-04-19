@@ -18,6 +18,7 @@ import (
 	sksets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -216,9 +217,15 @@ func (t *translator) Translate(
 			tt.Spec.Rules = append(tt.Spec.Rules, rule)
 		}
 
-		// Append the Destination as a parent to each output route group
-		metautils.AppendParent(ctx, routeGroup, ap.GetRef(), v1.AccessPolicy{}.GVK())
-		metautils.AppendParent(ctx, trafficTarget, ap.GetRef(), v1.AccessPolicy{}.GVK())
+		// Append the Destination and AccessPolicy as a parent to each output route group
+		metautils.AnnotateParents(ctx, routeGroup, map[schema.GroupVersionKind][]ezkube.ResourceId{
+			discoveryv1.DestinationGVK: {destination},
+			v1.AccessPolicyGVK:         {ap.GetRef()},
+		})
+		metautils.AnnotateParents(ctx, trafficTarget, map[schema.GroupVersionKind][]ezkube.ResourceId{
+			discoveryv1.DestinationGVK: {destination},
+			v1.AccessPolicyGVK:         {ap.GetRef()},
+		})
 
 		httpRouteGroups = append(httpRouteGroups, routeGroup)
 		trafficTargets = append(trafficTargets, trafficTargetsByAp...)

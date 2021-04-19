@@ -8,12 +8,14 @@ import (
 	smislpitv1alpha2 "github.com/servicemeshinterface/smi-sdk-go/pkg/apis/split/v1alpha2"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 //go:generate mockgen -source ./traffic_split_translator.go -destination mocks/traffic_split_translator.go
@@ -123,9 +125,11 @@ func (t *translator) Translate(
 
 	trafficSplit.Spec.Backends = backends
 
-	// Append the applied TrafficPolicy as the parent to the traffic split
-	// Done here to avoid duplicating the logic to find the applied TrafficPolicy in the SMI Destination translator
-	metautils.AppendParent(ctx, trafficSplit, appliedTrafficPolicy.GetRef(), v1.TrafficPolicy{}.GVK())
+	// Annotate parents, Destination and TrafficPolicy
+	metautils.AnnotateParents(ctx, trafficSplit, map[schema.GroupVersionKind][]ezkube.ResourceId{
+		networkingv1.TrafficPolicyGVK: {appliedTrafficPolicy.GetRef()},
+		discoveryv1.DestinationGVK:    {destination},
+	})
 
 	return trafficSplit
 }

@@ -3,10 +3,6 @@ package destination
 import (
 	"context"
 
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/federation"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/settingsutils"
-	"github.com/solo-io/skv2/pkg/ezkube"
-
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
@@ -16,11 +12,13 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/authorizationpolicy"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/destinationrule"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/federation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/virtualservice"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/settingsutils"
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
+	"github.com/solo-io/skv2/pkg/ezkube"
 )
 
 //go:generate mockgen -source ./istio_destination_translator.go -destination mocks/istio_destination_translator.go
@@ -92,29 +90,22 @@ func (t *translator) Translate(
 		// Translate VirtualServices for Destinations, can be nil if there is no service or applied traffic policies
 		// Pass nil sourceMeshInstallation to translate VirtualService local to destination
 		vs := t.virtualServices.Translate(t.ctx, in, destination, nil, reporter)
-		// Append the Destination as a parent to the virtual service
-		metautils.AppendParent(t.ctx, vs, destination, destination.GVK())
 		outputs.AddVirtualServices(vs)
 	}
 
 	if t.destinationRules.ShouldTranslate(destination, eventObjs) {
 		// Translate DestinationRules for Destinations, can be nil if there is no service or applied traffic policies
 		dr := t.destinationRules.Translate(t.ctx, in, destination, nil, reporter)
-		// Append the Destination as a parent to the destination rule
-		metautils.AppendParent(t.ctx, dr, destination, destination.GVK())
 		outputs.AddDestinationRules(dr)
 	}
 
 	if t.authorizationPolicies.ShouldTranslate(destination, eventObjs) {
 		// Translate AuthorizationPolicies for Destinations, can be nil if there is no service or applied traffic policies
-		ap := t.authorizationPolicies.Translate(in, destination, reporter)
-		// Append the Destination as a parent to the authorization policy
-		metautils.AppendParent(t.ctx, ap, destination, destination.GVK())
+		ap := t.authorizationPolicies.Translate(t.ctx, in, destination, reporter)
 		outputs.AddAuthorizationPolicies(ap)
 	}
 
 	if t.federation.ShouldTranslate(destination, eventObjs) {
-		// parent annotations are added inside Translate()
 		serviceEntries, virtualServices, destinationRules := t.federation.Translate(in, destination, reporter)
 		outputs.AddServiceEntries(serviceEntries...)
 		outputs.AddVirtualServices(virtualServices...)

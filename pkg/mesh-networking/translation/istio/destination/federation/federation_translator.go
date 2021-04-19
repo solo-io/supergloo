@@ -24,6 +24,7 @@ import (
 	"istio.io/istio/pkg/config/protocol"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/utils/pointer"
 )
 
@@ -36,6 +37,7 @@ type Translator interface {
 	// returns nil if no VirtualService or DestinationRule is required for the Mesh (i.e. if no VirtualService/DestinationRule features are required, such as subsets).
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
+		ctx context.Context,
 		in input.LocalSnapshot,
 		destination *discoveryv1.Destination,
 		reporter reporting.Reporter,
@@ -53,18 +55,15 @@ type Translator interface {
 }
 
 type translator struct {
-	ctx                       context.Context
 	virtualServiceTranslator  virtualservice.Translator
 	destinationRuleTranslator destinationrule.Translator
 }
 
 func NewTranslator(
-	ctx context.Context,
 	virtualServiceTranslator virtualservice.Translator,
 	destinationRuleTranslator destinationrule.Translator,
 ) Translator {
 	return &translator{
-		ctx:                       ctx,
 		virtualServiceTranslator:  virtualServiceTranslator,
 		destinationRuleTranslator: destinationRuleTranslator,
 	}
@@ -97,6 +96,7 @@ func (t *translator) ShouldTranslate(
 
 // Translate translates a ServiceEntry, VirtualService and DestinationRule for the given Destination using the data in status.AppliedFederation.
 func (t *translator) Translate(
+	ctx context.Context,
 	in input.LocalSnapshot,
 	destination *discoveryv1.Destination,
 	reporter reporting.Reporter,
@@ -110,7 +110,7 @@ func (t *translator) Translate(
 	appliedFederation := destination.Status.AppliedFederation
 	destinationMesh, err := in.Meshes().Find(destination.Spec.GetMesh())
 	if err != nil {
-		contextutils.LoggerFrom(t.ctx).Errorf("Could not find parent Mesh %v for Destination %v", destination.Spec.GetMesh(), ezkube.MakeObjectRef(destination))
+		contextutils.LoggerFrom(ctx).Errorf("Could not find parent Mesh %v for Destination %v", destination.Spec.GetMesh(), ezkube.MakeObjectRef(destination))
 		return nil, nil, nil
 	}
 
@@ -124,14 +124,14 @@ func (t *translator) Translate(
 
 	destinationVirtualMesh, err := in.VirtualMeshes().Find(destination.Status.AppliedFederation.GetVirtualMeshRef())
 	if err != nil {
-		contextutils.LoggerFrom(t.ctx).Errorf("Could not find parent VirtualMesh %v for Destination %v", destination.Status.AppliedFederation.GetVirtualMeshRef(), ezkube.MakeObjectRef(destination))
+		contextutils.LoggerFrom(ctx).Errorf("Could not find parent VirtualMesh %v for Destination %v", destination.Status.AppliedFederation.GetVirtualMeshRef(), ezkube.MakeObjectRef(destination))
 		return nil, nil, nil
 	}
 
 	// translate ServiceEntry template
 	serviceEntryTemplate, err := t.translateServiceEntryTemplate(destination, destinationMesh)
 	if err != nil {
-		contextutils.LoggerFrom(t.ctx).Errorf("Encountered error while translating ServiceEntry template for Destination %v", ezkube.MakeObjectRef(destination))
+		contextutils.LoggerFrom(ctx).Errorf("Encountered error while translating ServiceEntry template for Destination %v", ezkube.MakeObjectRef(destination))
 		return nil, nil, nil
 	}
 
@@ -142,11 +142,12 @@ func (t *translator) Translate(
 	for _, meshRef := range destination.Status.AppliedFederation.GetFederatedToMeshes() {
 		remoteMesh, err := in.Meshes().Find(meshRef)
 		if err != nil {
-			contextutils.LoggerFrom(t.ctx).Errorf("Could not find Mesh %v that Destination %v is federated to", meshRef, ezkube.MakeObjectRef(destination))
+			contextutils.LoggerFrom(ctx).Errorf("Could not find Mesh %v that Destination %v is federated to", meshRef, ezkube.MakeObjectRef(destination))
 			continue
 		}
 
 		serviceEntry, virtualService, destinationRule := t.translateForRemoteMesh(
+			ctx,
 			destination,
 			destinationMesh,
 			destinationVirtualMesh,
@@ -157,10 +158,18 @@ func (t *translator) Translate(
 		)
 
 		// Append the VirtualMesh as a parent to the outputs
-		// TODO(harveyxia) append Destination as parent once new GC is being implemented
-		metautils.AppendParent(t.ctx, serviceEntry, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
-		metautils.AppendParent(t.ctx, virtualService, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
-		metautils.AppendParent(t.ctx, destinationRule, destination.Status.AppliedFederation.GetVirtualMeshRef(), networkingv1.VirtualMesh{}.GVK())
+		metautils.AnnotateParents(ctx, serviceEntry, map[schema.GroupVersionKind][]ezkube.ResourceId{
+			discoveryv1.DestinationGVK:  {destination},
+			networkingv1.VirtualMeshGVK: {destination.Status.AppliedFederation.GetVirtualMeshRef()},
+		})
+		metautils.AnnotateParents(ctx, virtualService, map[schema.GroupVersionKind][]ezkube.ResourceId{
+			discoveryv1.DestinationGVK:  {destination},
+			networkingv1.VirtualMeshGVK: {destination.Status.AppliedFederation.GetVirtualMeshRef()},
+		})
+		metautils.AnnotateParents(ctx, destinationRule, map[schema.GroupVersionKind][]ezkube.ResourceId{
+			discoveryv1.DestinationGVK:  {destination},
+			networkingv1.VirtualMeshGVK: {destination.Status.AppliedFederation.GetVirtualMeshRef()},
+		})
 
 		serviceEntries = append(serviceEntries, serviceEntry)
 		virtualServices = append(virtualServices, virtualService)
@@ -237,6 +246,7 @@ func (t *translator) translateServiceEntryTemplate(
 }
 
 func (t *translator) translateForRemoteMesh(
+	ctx context.Context,
 	destination *discoveryv1.Destination,
 	destinationMesh *discoveryv1.Mesh,
 	destinationVirtualMesh *networkingv1.VirtualMesh,
@@ -266,10 +276,10 @@ func (t *translator) translateForRemoteMesh(
 	serviceEntry.ClusterName = remoteIstioMesh.Installation.Cluster
 
 	// translate VirtualService for federated Destinations, can be nil
-	virtualService := t.virtualServiceTranslator.Translate(t.ctx, in, destination, remoteIstioMesh.Installation, reporter)
+	virtualService := t.virtualServiceTranslator.Translate(ctx, in, destination, remoteIstioMesh.Installation, reporter)
 
 	// translate DestinationRule for federated Destinations, can be nil
-	destinationRule := t.destinationRuleTranslator.Translate(t.ctx, in, destination, remoteIstioMesh.Installation, reporter)
+	destinationRule := t.destinationRuleTranslator.Translate(ctx, in, destination, remoteIstioMesh.Installation, reporter)
 
 	return serviceEntry, virtualService, destinationRule
 }
