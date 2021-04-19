@@ -20,8 +20,8 @@ ingress traffic, the exact procedure of which depends on your particular environ
 
 A simple way to expose the relay server to remote clusters is by setting the `enterprise-networking` service type to
 [LoadBalancer](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types).
-This can be done via Helm, by setting `enterprise-networking.enterpriseNetworking.serviceType=LoadBalancer` on the
-Gloo Mesh Enterprise Helm chart.
+As of Gloo Mesh Enterprise 1.0.4, this is the default `enterprise-networking` service type. To override this service type
+via Helm, set `enterprise-networking.enterpriseNetworking.serviceType=[your-service-type]` on the Gloo Mesh Enterprise Helm chart.
 
 LoadBalancer services are exposed to the externally via your Kubernetes cloud provider's load balancer. Note that this
 approach **does not** work by default with Kind cluster deployments, but is a good option for getting started if you're
@@ -35,6 +35,19 @@ MGMT_INGRESS_ADDRESS=$(kubectl  -n gloo-mesh get service enterprise-networking -
 MGMT_INGRESS_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
 RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 ```
+
+{{< tabs >}}
+{{< tab name="IP LoadBalancer address (GKE)" codelang="yaml">}}
+MGMT_INGRESS_ADDRESS=$(kubectl  -n gloo-mesh get service enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+MGMT_INGRESS_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
+RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
+{{< /tab >}}
+{{< tab name="Hostname LoadBalancer address (EKS)" codelang="shell" >}}
+MGMT_INGRESS_ADDRESS=$(kubectl  -n gloo-mesh get service enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+MGMT_INGRESS_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
+RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
+{{< /tab >}}
+{{< /tabs >}}
 
 **Option 2: Istio Ingress Setup**
 
