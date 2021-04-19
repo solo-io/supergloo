@@ -105,7 +105,7 @@ func AppendParent(
 	parentsAnnotation := make(map[string][]*skv2corev1.ObjectRef)
 	if paStr, ok := annotations[ParentLabelkey]; ok {
 		if err := json.Unmarshal([]byte(paStr), &parentsAnnotation); err != nil {
-			contextutils.LoggerFrom(ctx).Errorf("internal error: could not unmarshal %q annotation", ParentLabelkey)
+			contextutils.LoggerFrom(ctx).DPanicf("internal error: could not unmarshal %s annotation", ParentLabelkey)
 			return
 		}
 	}
@@ -130,4 +130,30 @@ func AppendParent(
 
 	annotations[ParentLabelkey] = string(b)
 	child.SetAnnotations(annotations)
+}
+
+// Retrieve parent objects from child's annotations, returned a mapping from GVK string to *skv2corev1.ObjectRef
+func RetrieveParents(
+	ctx context.Context,
+	child metav1.Object,
+) map[string][]*skv2corev1.ObjectRef {
+	if reflect.ValueOf(child).IsNil() {
+		return nil
+	}
+
+	annotations := child.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+
+	parents := make(map[string][]*skv2corev1.ObjectRef)
+
+	if paStr, ok := annotations[ParentLabelkey]; ok {
+		if err := json.Unmarshal([]byte(paStr), &parents); err != nil {
+			contextutils.LoggerFrom(ctx).DPanicf("internal error: could not unmarshal %s annotation", ParentLabelkey)
+			return nil
+		}
+	}
+
+	return parents
 }

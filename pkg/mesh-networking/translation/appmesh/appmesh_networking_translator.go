@@ -10,6 +10,8 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 )
 
+//go:generate mockgen -source ./appmesh_networking_translator.go -destination mocks/appmesh_networking_translator.go
+
 // the appmesh translator translates an input networking snapshot to an output snapshot of appmesh resources
 type Translator interface {
 	// Translate translates the appropriate resources to apply input configuration resources for all appmesh meshes contained in the input snapshot.

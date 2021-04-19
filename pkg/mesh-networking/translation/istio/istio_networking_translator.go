@@ -16,6 +16,8 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 )
 
+//go:generate mockgen -source ./istio_networking_translator.go -destination mocks/istio_networking_translator.go
+
 // the istio translator translates an input networking snapshot to an output snapshot of Istio resources
 type Translator interface {
 	// Translate translates the appropriate resources to apply input configuration resources for all Istio meshes contained in the input snapshot.

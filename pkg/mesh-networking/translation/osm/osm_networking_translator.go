@@ -13,6 +13,8 @@ import (
 
 var DefaultDependencyFactory = internal.NewDependencyFactory()
 
+//go:generate mockgen -source ./osm_networking_translator.go -destination mocks/osm_networking_translator.go
+
 // the smi translator translates an input networking snapshot to an output snapshot of SMI resources
 type Translator interface {
 	// Translate translates the appropriate resources to apply input configuration resources for all OSM meshes contained in the input snapshot.
