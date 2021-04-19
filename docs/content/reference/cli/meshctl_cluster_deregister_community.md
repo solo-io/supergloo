@@ -6,6 +6,11 @@ weight: 5
 
 Remove the community certificate agent
 
+### Synopsis
+
+Deregister the remote cluster, which includes uninstalling the
+certificate agent and removing the cluster definition from the management cluster.
+
 ```
 meshctl cluster deregister community [cluster name] [flags]
 ```
@@ -13,11 +18,7 @@ meshctl cluster deregister community [cluster name] [flags]
 ### Examples
 
 ```
-  # Deregister the current context
-  meshctl cluster deregister community mgmt-cluster
-
-  # Deregister a different context when the current one is the management cluster
-  meshctl cluster deregister community remote-cluster
+ meshctl cluster deregister community remote-cluster --remote-context my-remote
 ```
 
 ### Options

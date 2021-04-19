@@ -6,6 +6,11 @@ weight: 5
 
 Register a cluster for Gloo Mesh community edition
 
+### Synopsis
+
+ In the process of registering a cluster, an agent to issue certificates will be
+installed on the remote cluster.
+
 ```
 meshctl cluster register community [cluster name] [flags]
 ```
@@ -13,10 +18,6 @@ meshctl cluster register community [cluster name] [flags]
 ### Examples
 
 ```
-  # Register the current cluster
-  meshctl cluster register community mgmt-cluster
-
-  # Register a different context when the current one is the management cluster
   meshctl cluster register --remote-context=my-context community remote-cluster
 ```
 
