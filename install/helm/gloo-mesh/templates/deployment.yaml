@@ -22,7 +22,6 @@ spec:
       labels:
         app: discovery
       annotations:
-        sidecar.istio.io/inject: "false"
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
@@ -118,7 +117,6 @@ spec:
       labels:
         app: networking
       annotations:
-        sidecar.istio.io/inject: "false"
         prometheus.io/path: /metrics
         prometheus.io/port: "9091"
         prometheus.io/scrape: "true"
