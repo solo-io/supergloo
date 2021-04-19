@@ -470,8 +470,8 @@ appear alongside the book reviews.
 {{% notice note %}}
 If you are seeing connection issues, and running on `EKS`, please read the following:
 
-EKS LoadBalancer Health Checks will by default use the first port in the kubernetes Service. This can potentially be a problem because
-istio-ingressgateway will deploy with the `port: 80` as first in the list. See the following image for an example:
+EKS LoadBalancer Health Checks will by default use the first port in the Kubernetes Service. This can potentially be a problem because
+istio-ingressgateway will deploy with the `port: 80` as first in the list. See the following for an example:
 ```yaml
 spec:
   clusterIP: 10.100.108.166
