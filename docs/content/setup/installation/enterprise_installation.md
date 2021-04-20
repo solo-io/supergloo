@@ -63,33 +63,47 @@ First, let's set a variable for the license key.
 GLOO_MESH_LICENSE_KEY=<your_key_here> # You'll need to supply your own key
 ```
 
-Several ways to install using `meshctl` are:
+Then, there are several ways to install using `meshctl`:
 
-```shell
+{{< tabs >}}
+{{< tab name="Install" codelang="shell">}}
 # Install to the currently selected Kubernetes context
 meshctl install enterprise --license=<my_license>
-
+{{< /tab >}}
+{{< tab name="Install and Register" codelang="shell">}}
 # Install to and register the currently selected Kubernetes context
-meshctl install enterprise --license=<my_license> --register
-
+CLUSTER_NAME=mgmt-cluster # Update this value as needed
+cat > register.yaml << EOF
+enterprise-networking
+  cluster: $CLUSTER_NAME
+EOF
+meshctl install enterprise --license=<my_license> --register --chart-values-file register.yaml
+rm register.yaml
+{{< /tab >}}
+{{< tab name="Without UI" codelang="shell">}}
 # Don't install the UI
 meshctl install enterprise --license=<my_license> --skip-ui
-```
-
-`meshctl` will create a self-signed certificate authority for mTLS if you do not supply your own certificates.
-
-If you intend to provide your own certificates. Follow the steps [here]({{< versioned_link_path fromRoot="/setup/prerequisites/enterprise_prerequisites/#manual-certificate-creation-optional" >}})
-to manually create certs, and then set `enterprise-networking.selfSigned` to false.
-
-```shell
+{{< /tab >}}
+{{< tab name="Without RBAC" codelang="shell">}}
+# Don't install the RBAC webhook
+meshctl install enterprise --license=<my_license> --skip-rbac
+{{< /tab >}}
+{{< tab name="Supply Your Own Certs" codelang="shell">}}
+# Install while providing your own certs
 cat > selfsigned.yaml << EOF
 enterprise-networking
   selfSigned: false
 EOF
 meshctl install enterprise --license=<my_license> --chart-values-file selfsigned.yaml
 rm selfsigned.yaml
-```
+{{< /tab >}}
+{{< /tabs >}}
 
+{{% notice note %}}
+meshctl will create a self-signed certificate authority for mTLS by default.
+If you intend to supply your own certificates, follow the steps
+[here]({{< versioned_link_path fromRoot="/setup/prerequisites/enterprise_prerequisites/#manual-certificate-creation-optional" >}}).
+{{% /notice %}}
 
 You should see the following output from the command:
 
