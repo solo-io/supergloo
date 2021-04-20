@@ -51,17 +51,45 @@ You can also quickly install like this:
 curl -sL https://run.solo.io/meshctl/install | sh
 ```
 
-Installing Gloo Mesh Enterprise with `meshctl` is a simple process. You will use the command `meshctl install enterprise` and supply the license key, as well as any chart values you want to update, and arguments pointing to the cluster where Gloo Mesh Enterprise will be installed. For our example, we are going to install Gloo Mesh Enterprise on the cluster `mgmt-cluster`. First, let's set a variable for the license key.
+Installing Gloo Mesh Enterprise with `meshctl` is a simple process.
+You will use the command `meshctl install enterprise` and supply the
+license key, any chart values you want to update,
+and arguments pointing to the cluster where Gloo Mesh Enterprise
+will be installed. For our example, we are going to install
+Gloo Mesh Enterprise on the cluster `mgmt-cluster`.
+First, let's set a variable for the license key.
 
 ```shell
 GLOO_MESH_LICENSE_KEY=<your_key_here> # You'll need to supply your own key
 ```
 
-We are not going to change any of the default values in the underlying chart, so the only argument needed is the license key.
+Several ways to install using `meshctl` are:
 
 ```shell
-meshctl install enterprise --license $GLOO_MESH_LICENSE_KEY
+# Install to the currently selected Kubernetes context
+meshctl install enterprise --license=<my_license>
+
+# Install to and register the currently selected Kubernetes context
+meshctl install enterprise --license=<my_license> --register
+
+# Don't install the UI
+meshctl install enterprise --license=<my_license> --skip-ui
 ```
+
+`meshctl` will create a self-signed certificate authority for mTLS if you do not supply your own certificates.
+
+If you intend to provide your own certificates. Follow the steps [here]({{< versioned_link_path fromRoot="/setup/prerequisites/enterprise_prerequisites/#manual-certificate-creation-optional" >}})
+to manually create certs, and then set `enterprise-networking.selfSigned` to false.
+
+```shell
+cat > selfsigned.yaml << EOF
+enterprise-networking
+  selfSigned: false
+EOF
+meshctl install enterprise --license=<my_license> --chart-values-file selfsigned.yaml
+rm selfsigned.yaml
+```
+
 
 You should see the following output from the command:
 
@@ -70,9 +98,7 @@ Installing Helm chart
 Finished installing chart 'gloo-mesh-enterprise' as release gloo-mesh:gloo-mesh
 ```
 
-The installer has created the namespace `gloo-mesh` and installed Gloo Mesh Enterprise into the namespace using a Helm chart with default values.
-
-{{% notice note %}}`meshctl` will create a self-signed certificate authority for mTLS if you do not supply your own certificates.{{% /notice %}}
+The installer has created the namespace `gloo-mesh` and installed Gloo Mesh Enterprise into the namespace using a Helm chart.
 
 To undo the installation, you can simply run the `uninstall` command:
 
