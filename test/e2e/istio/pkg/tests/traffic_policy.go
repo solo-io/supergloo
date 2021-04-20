@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/gloo-mesh/test/e2e"
@@ -112,6 +113,19 @@ func TrafficPolicyTest() {
 					ClusterName: MgmtClusterName,
 				},
 				Spec: networkingv1.TrafficPolicySpec{
+					DestinationSelector: []*commonv1.DestinationSelector{
+						{
+							KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+								Services: []*v1.ClusterObjectRef{
+									{
+										Name:        "reviews",
+										Namespace:   BookinfoNamespace,
+										ClusterName: MgmtClusterName,
+									},
+								},
+							},
+						},
+					},
 					Policy: &networkingv1.TrafficPolicySpec_Policy{
 						Mtls: &networkingv1.TrafficPolicySpec_Policy_MTLS{
 							Istio: &networkingv1.TrafficPolicySpec_Policy_MTLS_Istio{

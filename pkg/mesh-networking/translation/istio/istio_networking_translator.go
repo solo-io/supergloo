@@ -78,6 +78,15 @@ func (t *istioTranslator) Translate(
 	)
 
 	for _, mesh := range in.Meshes().List() {
+
+		if mesh.Spec.GetIstio() == nil {
+			continue
+		}
+
+		// TODO: figure out a better place for this logic, which is critical for writing outputs to remote clusters
+		// add mesh installation cluster to outputs
+		istioOutputs.AddCluster(mesh.Spec.GetIstio().Installation.GetCluster())
+
 		if meshTranslator.ShouldTranslate(mesh, eventObjs) {
 			meshTranslator.Translate(in, mesh, istioOutputs, localOutputs, reporter)
 		}

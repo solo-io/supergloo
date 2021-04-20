@@ -29,6 +29,7 @@ import (
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/security/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -209,6 +210,12 @@ func updateOutputs(
 		return updatedOutputs.Smi.GetTrafficSplits().Has(obj) || shouldGarbageCollect(ctx, in, obj)
 	})
 	updatedOutputs.Smi.AddTrafficSplits(oldSmiTrafficSplits...)
+
+	// Local outputs
+	oldSecrets := oldOutputs.Local.GetSecrets().List(func(obj *corev1.Secret) bool {
+		return updatedOutputs.Local.GetSecrets().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+	})
+	updatedOutputs.Local.AddSecrets(oldSecrets...)
 
 	return updatedOutputs
 }

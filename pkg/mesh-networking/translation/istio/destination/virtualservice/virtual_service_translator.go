@@ -6,28 +6,27 @@ import (
 	"sort"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/rotisserie/eris"
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/utils"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
-	skv2sets "github.com/solo-io/skv2/contrib/pkg/sets"
-	"github.com/solo-io/skv2/pkg/ezkube"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
-	"github.com/rotisserie/eris"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/fieldutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
+	skv2sets "github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/equalityutils"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -197,6 +196,16 @@ func (t *translator) Translate(
 		return nil
 	}
 
+	// Append the Destination and all applied TrafficPolicies as parents
+	parents := map[schema.GroupVersionKind][]ezkube.ResourceId{
+		discoveryv1.DestinationGVK:    {destination},
+		networkingv1.TrafficPolicyGVK: {},
+	}
+	for _, appliedTp := range destination.Status.GetAppliedTrafficPolicies() {
+		parents[networkingv1.TrafficPolicyGVK] = append(parents[networkingv1.TrafficPolicyGVK], appliedTp.Ref)
+	}
+	metautils.AnnotateParents(ctx, virtualService, parents)
+
 	if t.userVirtualServices == nil {
 		return virtualService
 	}
@@ -213,16 +222,6 @@ func (t *translator) Translate(
 		}
 		return nil
 	}
-
-	// Append the Destination and all applied TrafficPolicies as parents
-	parents := map[schema.GroupVersionKind][]ezkube.ResourceId{
-		discoveryv1.DestinationGVK:    {destination},
-		networkingv1.TrafficPolicyGVK: {},
-	}
-	for _, appliedTp := range destination.Status.GetAppliedTrafficPolicies() {
-		parents[networkingv1.TrafficPolicyGVK] = append(parents[networkingv1.TrafficPolicyGVK], appliedTp.Ref)
-	}
-	metautils.AnnotateParents(ctx, virtualService, parents)
 
 	return virtualService
 }

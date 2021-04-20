@@ -141,9 +141,13 @@ func RetrieveParents(
 
 	if paStr, ok := annotations[ParentLabelkey]; ok {
 		if err := json.Unmarshal([]byte(paStr), &parentsMap); err != nil {
-			contextutils.LoggerFrom(ctx).DPanicf("internal error: could not unmarshal %s annotation", ParentLabelkey)
+			contextutils.LoggerFrom(ctx).DPanicf("could not unmarshal %s annotation", ParentLabelkey)
 			return nil
 		}
+	}
+
+	if len(parentsMap) < 1 {
+		contextutils.LoggerFrom(ctx).DPanicf("output object %s is missing expected parent annotations", ezkube.MakeObjectRef(child))
 	}
 
 	// convert map[string][]*skv2corev1.ObjectRef to map[schema.GroupVersionKind][]*skv2corev1.ObjectRef
