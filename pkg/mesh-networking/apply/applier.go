@@ -328,6 +328,11 @@ func validateAndReturnApprovedFederation(
 	destination *discoveryv1.Destination,
 ) *discoveryv1.DestinationStatus_AppliedFederation {
 
+	// no applied federation
+	if destination.Status.AppliedFederation == nil {
+		return nil
+	}
+
 	virtualMeshRef := destination.Status.AppliedFederation.GetVirtualMeshRef()
 	errsForFederation := reporter.getFederationsErrors(destination, virtualMeshRef)
 
