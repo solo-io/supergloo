@@ -12,19 +12,22 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/access"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	securityv1beta1spec "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
 	securityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var _ = Describe("AccessPolicyTranslator", func() {
 	var (
 		translator access.Translator
+		ctx        = context.Background()
 	)
 
 	BeforeEach(func() {
-		translator = access.NewTranslator(context.Background())
+		translator = access.NewTranslator(ctx)
 	})
 
 	It("should translate an AuthorizationPolicy for the ingress gateway and in the installation namespace", func() {
@@ -127,6 +130,15 @@ var _ = Describe("AccessPolicyTranslator", func() {
 				Spec: securityv1beta1spec.AuthorizationPolicy{},
 			},
 		)
+		expectedAuthPolicies.List(func(ap *securityv1beta1.AuthorizationPolicy) (_ bool) {
+			// Append the VirtualMesh as a parent to each output resource
+			metautils.AnnotateParents(ctx, ap, map[schema.GroupVersionKind][]ezkube.ResourceId{
+				networkingv1.VirtualMeshGVK: {mesh.Status.AppliedVirtualMesh.GetRef()},
+				discoveryv1.MeshGVK:         {mesh},
+			})
+			return
+		})
+
 		outputs := istio.NewBuilder(context.TODO(), "")
 		translator.Translate(mesh, mesh.Status.AppliedVirtualMesh, outputs)
 		Expect(outputs.GetAuthorizationPolicies()).To(Equal(expectedAuthPolicies))

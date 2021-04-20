@@ -14,6 +14,7 @@ import (
 	mock_federation "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/federation/mocks"
 	mock_virtualservice "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/virtualservice/mocks"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/security/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,6 +31,7 @@ var _ = Describe("IstioDestinationTranslator", func() {
 		mockReporter                      *mock_reporting.MockReporter
 		istioDestinationTranslator        Translator
 		ctx                               = context.TODO()
+		eventObjs                         = []ezkube.ResourceId{}
 	)
 
 	BeforeEach(func() {
@@ -88,20 +90,40 @@ var _ = Describe("IstioDestinationTranslator", func() {
 
 		mockDestinationRuleTranslator.
 			EXPECT().
+			ShouldTranslate(destination, eventObjs).
+			Return(true)
+		mockDestinationRuleTranslator.
+			EXPECT().
 			Translate(ctx, in, destination, nil, mockReporter).
 			Return(dr)
+
+		mockVirtualServiceTranslator.
+			EXPECT().
+			ShouldTranslate(destination, eventObjs).
+			Return(true)
 		mockVirtualServiceTranslator.
 			EXPECT().
 			Translate(ctx, in, destination, nil, mockReporter).
 			Return(vs)
+
 		mockAuthorizationPolicyTranslator.
 			EXPECT().
-			Translate(in, destination, mockReporter).
+			ShouldTranslate(destination, eventObjs).
+			Return(true)
+		mockAuthorizationPolicyTranslator.
+			EXPECT().
+			Translate(ctx, in, destination, mockReporter).
 			Return(ap)
+
 		mockFederationTranslator.
 			EXPECT().
-			Translate(in, destination, mockReporter).
+			ShouldTranslate(destination, eventObjs).
+			Return(true)
+		mockFederationTranslator.
+			EXPECT().
+			Translate(ctx, in, destination, mockReporter).
 			Return(federatedSe, federatedVs, federatedDr)
+
 		mockOutputs.
 			EXPECT().
 			AddVirtualServices(vs)
@@ -121,6 +143,6 @@ var _ = Describe("IstioDestinationTranslator", func() {
 			EXPECT().
 			AddDestinationRules(federatedDr)
 
-		istioDestinationTranslator.Translate(in, destination, mockOutputs, mockReporter)
+		istioDestinationTranslator.Translate(eventObjs, in, destination, mockOutputs, mockReporter)
 	})
 })

@@ -69,7 +69,7 @@ func NewTranslator(
 		virtualServices:       virtualServiceTranslator,
 		destinationRules:      destinationRuleTranslator,
 		authorizationPolicies: authorizationpolicy.NewTranslator(),
-		federation:            federation.NewTranslator(ctx, virtualServiceTranslator, destinationRuleTranslator),
+		federation:            federation.NewTranslator(virtualServiceTranslator, destinationRuleTranslator),
 	}
 }
 
@@ -106,7 +106,7 @@ func (t *translator) Translate(
 	}
 
 	if t.federation.ShouldTranslate(destination, eventObjs) {
-		serviceEntries, virtualServices, destinationRules := t.federation.Translate(in, destination, reporter)
+		serviceEntries, virtualServices, destinationRules := t.federation.Translate(t.ctx, in, destination, reporter)
 		outputs.AddServiceEntries(serviceEntries...)
 		outputs.AddVirtualServices(virtualServices...)
 		outputs.AddDestinationRules(destinationRules...)

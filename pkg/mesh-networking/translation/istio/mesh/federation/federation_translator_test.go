@@ -19,6 +19,7 @@ import (
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var _ = Describe("FederationTranslator", func() {
@@ -112,10 +113,18 @@ var _ = Describe("FederationTranslator", func() {
 			nil, // no reports expected
 		)
 
-		Expect(outputs.GetGateways().Length()).To(Equal(1))
-		Expect(outputs.GetGateways().List()[0]).To(Equal(expectedGateway))
-		Expect(outputs.GetEnvoyFilters().Length()).To(Equal(1))
-		Expect(outputs.GetEnvoyFilters().List()[0]).To(Equal(expectedEnvoyFilter))
+		// Append the VirtualMesh and Mesh as a parent to each output resource
+		metautils.AnnotateParents(ctx, expectedGateway, map[schema.GroupVersionKind][]ezkube.ResourceId{
+			v1.VirtualMeshGVK:   {vMesh.GetRef()},
+			discoveryv1.MeshGVK: {mesh},
+		})
+		metautils.AnnotateParents(ctx, expectedEnvoyFilter, map[schema.GroupVersionKind][]ezkube.ResourceId{
+			v1.VirtualMeshGVK:   {vMesh.GetRef()},
+			discoveryv1.MeshGVK: {mesh},
+		})
+
+		Expect(outputs.GetGateways().List()).To(ConsistOf([]*networkingv1alpha3.Gateway{expectedGateway}))
+		Expect(outputs.GetEnvoyFilters().List()).To(ConsistOf([]*networkingv1alpha3.EnvoyFilter{expectedEnvoyFilter}))
 	})
 })
 

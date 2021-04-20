@@ -19,7 +19,9 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/gloo-mesh/test/matchers"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var _ = Describe("DestinationTranslator", func() {
@@ -236,9 +238,6 @@ var _ = Describe("DestinationTranslator", func() {
 			},
 		}
 		expectedHRG.Name += "." + refernceString
-		expectedHRG.Annotations = map[string]string{
-			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=AccessPolicy":[{"name":"hello","namespace":"world"}]}`,
-		}
 
 		expectedTT := &v1alpha2.TrafficTarget{
 			ObjectMeta: metautils.TranslatedObjectMeta(
@@ -268,15 +267,20 @@ var _ = Describe("DestinationTranslator", func() {
 			},
 		}
 		expectedTT.Name += "." + refernceString
-		expectedTT.Annotations = map[string]string{
-			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=AccessPolicy":[{"name":"hello","namespace":"world"}]}`,
-		}
+
+		// Append the Destination and AccessPolicy as a parent to each output route group
+		metautils.AnnotateParents(ctx, expectedHRG, map[schema.GroupVersionKind][]ezkube.ResourceId{
+			discoveryv1.DestinationGVK:   {destination},
+			networkingv1.AccessPolicyGVK: {destination.Status.GetAppliedAccessPolicies()[0].GetRef()},
+		})
+		metautils.AnnotateParents(ctx, expectedTT, map[schema.GroupVersionKind][]ezkube.ResourceId{
+			discoveryv1.DestinationGVK:   {destination},
+			networkingv1.AccessPolicyGVK: {destination.Status.GetAppliedAccessPolicies()[0].GetRef()},
+		})
 
 		tt, hrg := NewTranslator().Translate(ctx, in, destination, reporter)
-		Expect(tt).To(HaveLen(1))
-		Expect(tt[0]).To(Equal(expectedTT))
-		Expect(hrg).To(HaveLen(1))
-		Expect(hrg[0]).To(Equal(expectedHRG))
+		Expect(tt).To(ConsistOf([]*v1alpha2.TrafficTarget{expectedTT}))
+		Expect(hrg).To(ConsistOf([]*v1alpha3.HTTPRouteGroup{expectedHRG}))
 	})
 
 })

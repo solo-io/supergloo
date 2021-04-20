@@ -12,6 +12,7 @@ import (
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 	v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 )
 
@@ -50,4 +51,18 @@ func (m *MockTranslator) Translate(ctx context.Context, in input.LocalSnapshot, 
 func (mr *MockTranslatorMockRecorder) Translate(ctx, in, destination, sourceMeshInstallation, reporter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), ctx, in, destination, sourceMeshInstallation, reporter)
+}
+
+// ShouldTranslate mocks base method
+func (m *MockTranslator) ShouldTranslate(destination *v1.Destination, eventObjs []ezkube.ResourceId) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ShouldTranslate", destination, eventObjs)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// ShouldTranslate indicates an expected call of ShouldTranslate
+func (mr *MockTranslatorMockRecorder) ShouldTranslate(destination, eventObjs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ShouldTranslate", reflect.TypeOf((*MockTranslator)(nil).ShouldTranslate), destination, eventObjs)
 }

@@ -14,7 +14,9 @@ import (
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/smi/destination/split"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var _ = Describe("TrafficSplitTranslator", func() {
@@ -112,6 +114,11 @@ var _ = Describe("TrafficSplitTranslator", func() {
 		expectedTT.Annotations = map[string]string{
 			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=TrafficPolicy":[{"name":"tt","namespace":"default"}]}`,
 		}
+
+		metautils.AnnotateParents(ctx, expectedTT, map[schema.GroupVersionKind][]ezkube.ResourceId{
+			v1.TrafficPolicyGVK:        {destination.Status.GetAppliedTrafficPolicies()[0].GetRef()},
+			discoveryv1.DestinationGVK: {destination},
+		})
 
 		ts := NewTranslator().Translate(ctx, in, destination, mockReporter)
 		Expect(ts).To(Equal(expectedTT))

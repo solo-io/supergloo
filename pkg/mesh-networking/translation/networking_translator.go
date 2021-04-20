@@ -220,12 +220,7 @@ func shouldGarbageCollect(
 	in input.LocalSnapshot,
 	obj client.Object,
 ) bool {
-	for parentGvkStr, resourceIds := range metautils.RetrieveParents(ctx, obj) {
-		parentGvk, err := ezkube.ParseGroupVersionKindString(parentGvkStr)
-		if err != nil {
-			contextutils.LoggerFrom(ctx).DPanicf("internal error: could not parse GVK string %s", parentGvkStr)
-			continue
-		}
+	for parentGvk, resourceIds := range metautils.RetrieveParents(ctx, obj) {
 
 		// NOTE: This block must be maintained with all relevant parent GVK's.
 		switch parentGvk {

@@ -21,6 +21,7 @@ import (
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/istio/pkg/config/protocol"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var _ = Describe("FederationTranslator", func() {
@@ -197,9 +198,6 @@ var _ = Describe("FederationTranslator", func() {
 				Namespace:   "remote-namespace",
 				ClusterName: "remote-cluster",
 				Labels:      metautils.TranslatedObjectLabels(),
-				Annotations: map[string]string{
-					metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=VirtualMesh":[{"name":"virtual-mesh","namespace":"namespace"}]}`,
-				},
 			},
 			Spec: networkingv1alpha3spec.ServiceEntry{
 				Hosts: []string{
@@ -230,8 +228,18 @@ var _ = Describe("FederationTranslator", func() {
 		}
 
 		expectedServiceEntry2 := expectedServiceEntry.DeepCopy()
+
 		expectedServiceEntry.Namespace = "remote-namespace2"
 		expectedServiceEntry.ClusterName = "remote-cluster2"
+
+		metautils.AnnotateParents(ctx, expectedServiceEntry, map[schema.GroupVersionKind][]ezkube.ResourceId{
+			discoveryv1.DestinationGVK:  {destination},
+			networkingv1.VirtualMeshGVK: {destination.Status.AppliedFederation.GetVirtualMeshRef()},
+		})
+		metautils.AnnotateParents(ctx, expectedServiceEntry2, map[schema.GroupVersionKind][]ezkube.ResourceId{
+			discoveryv1.DestinationGVK:  {destination},
+			networkingv1.VirtualMeshGVK: {destination.Status.AppliedFederation.GetVirtualMeshRef()},
+		})
 
 		expectedServiceEntries := []*networkingv1alpha3.ServiceEntry{
 			expectedServiceEntry,

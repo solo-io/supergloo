@@ -12,11 +12,14 @@ import (
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	mock_reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting/mocks"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/authorizationpolicy"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	securityv1beta1spec "istio.io/api/security/v1beta1"
 	"istio.io/api/type/v1beta1"
 	securityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var _ = Describe("AuthorizationPolicyTranslator", func() {
@@ -177,6 +180,17 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 				Action: securityv1beta1spec.AuthorizationPolicy_ALLOW,
 			},
 		}
+
+		// Append the Destination and all applied AccessPolicies as parents
+		parents := map[schema.GroupVersionKind][]ezkube.ResourceId{
+			discoveryv1.DestinationGVK:   {destination},
+			networkingv1.AccessPolicyGVK: {},
+		}
+		for _, appliedAp := range destination.Status.GetAppliedAccessPolicies() {
+			parents[networkingv1.AccessPolicyGVK] = append(parents[networkingv1.AccessPolicyGVK], appliedAp.Ref)
+		}
+		metautils.AnnotateParents(ctx, expectedAuthPolicy, parents)
+
 		inputSnapshot := input.NewInputLocalSnapshotManualBuilder("").AddMeshes(meshes).Build()
 		authPolicy := translator.Translate(ctx, inputSnapshot, destination, mockReporter)
 		Expect(authPolicy).To(Equal(expectedAuthPolicy))
@@ -307,9 +321,19 @@ var _ = Describe("AuthorizationPolicyTranslator", func() {
 				Action: securityv1beta1spec.AuthorizationPolicy_ALLOW,
 			},
 		}
+
+		// Append the Destination and all applied AccessPolicies as parents
+		parents := map[schema.GroupVersionKind][]ezkube.ResourceId{
+			discoveryv1.DestinationGVK:   {destination},
+			networkingv1.AccessPolicyGVK: {},
+		}
+		for _, appliedAp := range destination.Status.GetAppliedAccessPolicies() {
+			parents[networkingv1.AccessPolicyGVK] = append(parents[networkingv1.AccessPolicyGVK], appliedAp.Ref)
+		}
+		metautils.AnnotateParents(ctx, expectedAuthPolicy, parents)
+
 		inputSnapshot := input.NewInputLocalSnapshotManualBuilder("").AddMeshes(meshes).Build()
 		authPolicy := translator.Translate(ctx, inputSnapshot, destination, mockReporter)
-		//Expect(equalityutils.DeepEqual(authPolicy, expectedAuthPolicy)).To(BeTrue())
 		Expect(authPolicy).To(Equal(expectedAuthPolicy))
 	})
 })

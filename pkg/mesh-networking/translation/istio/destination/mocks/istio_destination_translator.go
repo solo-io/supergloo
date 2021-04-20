@@ -12,6 +12,7 @@ import (
 	input "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	istio "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
+	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 )
 
 // MockTranslator is a mock of Translator interface
@@ -38,13 +39,13 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(in input.LocalSnapshot, destination *v1.Destination, outputs istio.Builder, reporter reporting.Reporter) {
+func (m *MockTranslator) Translate(eventObjs []ezkube.ResourceId, in input.LocalSnapshot, destination *v1.Destination, outputs istio.Builder, reporter reporting.Reporter) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Translate", in, destination, outputs, reporter)
+	m.ctrl.Call(m, "Translate", eventObjs, in, destination, outputs, reporter)
 }
 
 // Translate indicates an expected call of Translate
-func (mr *MockTranslatorMockRecorder) Translate(in, destination, outputs, reporter interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) Translate(eventObjs, in, destination, outputs, reporter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), in, destination, outputs, reporter)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), eventObjs, in, destination, outputs, reporter)
 }

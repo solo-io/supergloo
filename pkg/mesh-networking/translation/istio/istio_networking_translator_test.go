@@ -17,6 +17,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/go-utils/contextutils"
 	multiclusterv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
+	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -25,6 +26,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		ctrl                      *gomock.Controller
 		ctx                       context.Context
 		ctxWithValue              context.Context
+		eventObjs                 []ezkube.ResourceId
 		mockIstioExtender         *mock_extensions.MockIstioExtender
 		mockReporter              *mock_reporting.MockReporter
 		mockIstioOutputs          *mock_istio_output.MockBuilder
@@ -39,6 +41,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		ctxWithValue = contextutils.WithLogger(context.TODO(), "istio-translator-0")
+		eventObjs = []ezkube.ResourceId{}
 		mockIstioExtender = mock_extensions.NewMockIstioExtender(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockDestinationTranslator = mock_destination.NewMockTranslator(ctrl)
@@ -113,7 +116,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		for _, destination := range in.Destinations().List() {
 			mockDestinationTranslator.
 				EXPECT().
-				Translate(in, destination, mockIstioOutputs, mockReporter)
+				Translate(eventObjs, in, destination, mockIstioOutputs, mockReporter)
 		}
 
 		mockDependencyFactory.
@@ -123,11 +126,15 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		for _, mesh := range in.Meshes().List() {
 			mockMeshTranslator.
 				EXPECT().
+				ShouldTranslate(mesh, eventObjs).
+				Return(true)
+			mockMeshTranslator.
+				EXPECT().
 				Translate(in, mesh, mockIstioOutputs, mockLocalOutputs, mockReporter)
 		}
 
 		mockIstioExtender.EXPECT().PatchOutputs(contextMatcher, in, mockIstioOutputs)
 
-		translator.Translate(ctx, in, nil, mockIstioOutputs, mockLocalOutputs, mockReporter)
+		translator.Translate(ctx, eventObjs, in, nil, mockIstioOutputs, mockLocalOutputs, mockReporter)
 	})
 })

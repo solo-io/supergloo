@@ -21,6 +21,10 @@ import (
 )
 
 var _ = Describe("Applier", func() {
+	var (
+		eventObjs = []ezkube.ResourceId{}
+	)
+
 	Context("applied traffic policies", func() {
 		var (
 			destination = &discoveryv1.Destination{
@@ -100,7 +104,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap, nil)
+			applier.Apply(context.TODO(), eventObjs, snap, nil)
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy1.Status.Destinations).To(HaveKey(sets.Key(destination)))
@@ -155,7 +159,7 @@ var _ = Describe("Applier", func() {
 				reporter.ReportTrafficPolicyToDestination(destination, trafficPolicy, errors.New("did an oopsie"))
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap, nil)
+			applier.Apply(context.TODO(), eventObjs, snap, nil)
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy.Status.Destinations).To(HaveKey(sets.Key(destination)))
@@ -258,7 +262,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap, nil)
+			applier.Apply(context.TODO(), eventObjs, snap, nil)
 
 			// destination and workload1 are both in mesh1
 			Expect(trafficPolicy.Status.Workloads).To(HaveLen(1))
@@ -279,7 +283,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap, nil)
+			applier.Apply(context.TODO(), eventObjs, snap, nil)
 
 			// destination is in mesh1, workload1 is in mesh1, and workload2 is in mesh2.
 			// since mesh1 and mesh2 are in the same VirtualMesh, both workloads are returned
@@ -303,7 +307,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), snap, nil)
+			applier.Apply(context.TODO(), eventObjs, snap, nil)
 
 			// destination is in mesh1, but both workloads are in mesh2
 			Expect(trafficPolicy.Status.Workloads).To(BeNil())
@@ -320,6 +324,7 @@ type testIstioTranslator struct {
 
 func (t testIstioTranslator) Translate(
 	ctx context.Context,
+	eventObjs []ezkube.ResourceId,
 	in input.LocalSnapshot,
 	existingIstioResources input.RemoteSnapshot,
 	reporter reporting.Reporter,

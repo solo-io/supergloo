@@ -103,7 +103,17 @@ func AnnotateParents(
 		annotations = make(map[string]string)
 	}
 
-	b, err := json.Marshal(parents)
+	// convert map[schema.GroupVersionKind][]ezkube.ResourceId to map[string][]*skv2corev1.ObjectRef
+	parentsMap := map[string][]*skv2corev1.ObjectRef{}
+	for gvk, objs := range parents {
+		var objRefs []*skv2corev1.ObjectRef
+		for _, obj := range objs {
+			objRefs = append(objRefs, ezkube.MakeObjectRef(obj))
+		}
+		parentsMap[gvk.String()] = objRefs
+	}
+
+	b, err := json.Marshal(parentsMap)
 	if err != nil {
 		contextutils.LoggerFrom(ctx).DPanicf("could not marshal parents map: %v", err)
 		return
@@ -117,7 +127,7 @@ func AnnotateParents(
 func RetrieveParents(
 	ctx context.Context,
 	child metav1.Object,
-) map[string][]*skv2corev1.ObjectRef {
+) map[schema.GroupVersionKind][]*skv2corev1.ObjectRef {
 	if reflect.ValueOf(child).IsNil() {
 		return nil
 	}
@@ -127,13 +137,24 @@ func RetrieveParents(
 		annotations = make(map[string]string)
 	}
 
-	parents := make(map[string][]*skv2corev1.ObjectRef)
+	parentsMap := make(map[string][]*skv2corev1.ObjectRef)
 
 	if paStr, ok := annotations[ParentLabelkey]; ok {
-		if err := json.Unmarshal([]byte(paStr), &parents); err != nil {
+		if err := json.Unmarshal([]byte(paStr), &parentsMap); err != nil {
 			contextutils.LoggerFrom(ctx).DPanicf("internal error: could not unmarshal %s annotation", ParentLabelkey)
 			return nil
 		}
+	}
+
+	// convert map[string][]*skv2corev1.ObjectRef to map[schema.GroupVersionKind][]*skv2corev1.ObjectRef
+	parents := map[schema.GroupVersionKind][]*skv2corev1.ObjectRef{}
+	for gvkString, objRefs := range parentsMap {
+		gvk, err := ezkube.ParseGroupVersionKindString(gvkString)
+		if err != nil {
+			contextutils.LoggerFrom(ctx).DPanicf("internal error: could not parse GVK string %s", gvkString)
+			continue
+		}
+		parents[gvk] = objRefs
 	}
 
 	return parents
