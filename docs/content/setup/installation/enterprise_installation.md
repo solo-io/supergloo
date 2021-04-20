@@ -113,8 +113,8 @@ Case 1: Your Gloo Mesh control plane will be running on its own cluster.
 
 Case 2: You are running Gloo Mesh Enterprise's management plane on a cluster
 that you intend to register (i.e. also run a service mesh). In this case, set
-the enterprise-networking.cluster value to your management cluster name. Then, register
-the management cluster vie meshctl or helm with the same management cluster name.
+the `enterprise-networking.cluster` value to your management cluster name. Then, register
+the management cluster via meshctl or helm with the same management cluster name.
 
 Case 3: You intend to provide your own certificates. The Helm value
 `selfSigned` is set to `true` by default. This means the Helm chart
