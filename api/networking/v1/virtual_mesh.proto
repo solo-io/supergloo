@@ -78,16 +78,26 @@ message VirtualMeshSpec {
         oneof ca_source {
 
             // Generate a self-signed root certificate with the given options.
-            SelfSignedCert generated = 1;
+            CommonCertOptions generated = 1;
 
             // Reference to a Kubernetes Secret containing the root certificate authority.
             // Provided secrets must conform to a specified format, [documented here]({{< versioned_link_path fromRoot="/guides/federate_identity/" >}}).
             .core.skv2.solo.io.ObjectRef secret = 2;
+
+            // AWS ACM CA source. 
+            // Use AWS ACM as the root CA for the `VirtualMesh`. This option can work in any environemnt, but is
+            // recommended in EKS.
+            AwsAcmCA aws_acm = 3;
+
+            // GCP CAS CA source.
+            // Use a certificate generated and stored in GCP CAS as the root cert for the `VirtualMesh` this option can work in any environemnt, but is
+            // recommended in GKE.
+            GcpCasCA gcp_cas = 4;    
         }
 
         // Configuration for generating a self-signed root certificate.
         // Uses the X.509 format, RFC5280.
-        message SelfSignedCert {
+        message CommonCertOptions {
 
             // Number of days before root cert expires. Defaults to 365.
             uint32 ttl_days = 1;
@@ -97,6 +107,26 @@ message VirtualMeshSpec {
 
             // Root cert organization name. Defaults to "gloo-mesh".
             string org_name = 3;
+        }
+
+        message AwsAcmCA {
+
+            string signing_ca_arn = 1;
+            
+            string template_ca_arn = 2;
+
+            string signing_algorithm = 3;
+
+            CommonCertOptions common_cert_options = 4;
+        }
+
+        message GcpCasCA {
+
+            string ca_name = 1;
+
+            int32 max_issuer_path_len = 2;
+
+            CommonCertOptions common_cert_options = 4;
         }
     }
 
