@@ -53,11 +53,6 @@ func (t *translator) Translate(
 		return
 	}
 
-	// Istio's default access enforcement policy is disabled.
-	if virtualMesh.Spec.GlobalAccessPolicy == networkingv1.VirtualMeshSpec_MESH_DEFAULT ||
-		virtualMesh.Spec.GlobalAccessPolicy == networkingv1.VirtualMeshSpec_DISABLED {
-		return
-	}
 	clusterName := istioMesh.Installation.Cluster
 	installationNamespace := istioMesh.Installation.Namespace
 	globalAuthPolicy := buildGlobalAuthPolicy(installationNamespace, clusterName)
@@ -68,15 +63,24 @@ func (t *translator) Translate(
 	)
 
 	// Append the VirtualMesh as a parent to each output resource
-	metautils.AnnotateParents(t.ctx, globalAuthPolicy, map[schema.GroupVersionKind][]ezkube.ResourceId{
-		networkingv1.VirtualMeshGVK: {virtualMesh.GetRef()},
+	parents := map[schema.GroupVersionKind][]ezkube.ResourceId{
 		discoveryv1.MeshGVK:         {mesh},
-	})
-	for _, ap := range ingressGatewayAuthPolicies {
-		metautils.AnnotateParents(t.ctx, ap, map[schema.GroupVersionKind][]ezkube.ResourceId{
-			networkingv1.VirtualMeshGVK: {virtualMesh.GetRef()},
-			discoveryv1.MeshGVK:         {mesh},
-		})
+		networkingv1.VirtualMeshGVK: {virtualMesh.GetRef()},
+	}
+
+	// Istio's default access enforcement policy is disabled.
+	// Garbage collect the AuthorizationPolicy (if it exists) by removing VirtualMesh parent
+	if virtualMesh.Spec.GlobalAccessPolicy == networkingv1.VirtualMeshSpec_MESH_DEFAULT ||
+		virtualMesh.Spec.GlobalAccessPolicy == networkingv1.VirtualMeshSpec_DISABLED {
+		metautils.MarkForGarbageCollection(globalAuthPolicy)
+		for _, ap := range ingressGatewayAuthPolicies {
+			metautils.MarkForGarbageCollection(ap)
+		}
+	} else {
+		metautils.AnnotateParents(t.ctx, globalAuthPolicy, parents)
+		for _, ap := range ingressGatewayAuthPolicies {
+			metautils.AnnotateParents(t.ctx, ap, parents)
+		}
 	}
 
 	outputs.AddAuthorizationPolicies(globalAuthPolicy)

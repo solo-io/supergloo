@@ -33,6 +33,9 @@ var (
 
 	// Annotation key for tracking the parent resources that were translated in the creation of a child resource
 	ParentLabelkey = fmt.Sprintf("parents.%s", v1.SchemeGroupVersion.Group)
+
+	// if this key exists in an output object's annotations, Gloo Mesh will delete it
+	GarbageCollectDirective = "MustGarbageCollect"
 )
 
 // construct an ObjectMeta for a discovered resource from a source object (the object from which the resource was discovered)
@@ -84,6 +87,20 @@ func IsTranslated(object metav1.Object) bool {
 	objLabels := object.GetLabels()
 	// AreLabelsInWhiteList returns true if whitelist labels are empty, so we need to check for that case
 	return len(objLabels) > 0 && labels.AreLabelsInWhiteList(translatedObjectLabels, objLabels)
+}
+
+func MarkForGarbageCollection(child metav1.Object) {
+	if reflect.ValueOf(child).IsNil() {
+		return
+	}
+
+	annotations := child.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+
+	annotations[GarbageCollectDirective] = ""
+	child.SetAnnotations(annotations)
 }
 
 // add parent annotations for a given child object

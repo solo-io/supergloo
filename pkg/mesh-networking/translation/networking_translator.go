@@ -229,6 +229,10 @@ func shouldGarbageCollect(
 	in input.LocalSnapshot,
 	obj client.Object,
 ) bool {
+	if _, ok := obj.GetAnnotations()[metautils.GarbageCollectDirective]; ok {
+		return true
+	}
+
 	for parentGvk, resourceIds := range metautils.RetrieveParents(ctx, obj) {
 
 		// NOTE: This block must be maintained with all relevant parent GVK's.
