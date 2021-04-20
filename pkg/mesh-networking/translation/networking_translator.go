@@ -137,8 +137,10 @@ func updateOutputs(
 	})
 	updatedOutputs.Istio.AddAuthorizationPolicies(oldAuthorizationPolicies...)
 	// DestinationRules
+	// NOTE: A DestinationRule is required for all Destinations in order to enforce the global MTLS default defined in Settings,
+	// thus we never garbage collect them, only update.
 	oldDestinationRules := oldOutputs.Istio.GetDestinationRules().List(func(obj *v1alpha3.DestinationRule) bool {
-		return updatedOutputs.Istio.GetDestinationRules().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+		return updatedOutputs.Istio.GetDestinationRules().Has(obj)
 	})
 	updatedOutputs.Istio.AddDestinationRules(oldDestinationRules...)
 	// EnvoyFilters

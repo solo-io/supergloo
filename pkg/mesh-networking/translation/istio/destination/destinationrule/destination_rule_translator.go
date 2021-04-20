@@ -166,14 +166,6 @@ func (t *translator) Translate(
 		}
 	}
 
-	// TODO need a more robust implementation of determining whether a DestinationRule has any effect
-	if len(destinationRule.Spec.Subsets) == 0 &&
-		destinationRule.Spec.GetTrafficPolicy().GetTls().GetMode() == networkingv1alpha3spec.ClientTLSSettings_DISABLE &&
-		destinationRule.Spec.GetTrafficPolicy().GetOutlierDetection() == nil {
-		// no need to create this DestinationRule as it has no effect
-		return nil
-	}
-
 	// Append the Destination and all applied TrafficPolicies as parents
 	parents := map[schema.GroupVersionKind][]ezkube.ResourceId{
 		discoveryv1.DestinationGVK:    {destination},
@@ -239,12 +231,12 @@ func (t *translator) initializeDestinationRule(
 		meta = metautils.FederatedObjectMeta(
 			destination.Spec.GetKubeService().Ref,
 			sourceMeshInstallation,
-			destination.Annotations,
+			nil,
 		)
 	} else {
 		meta = metautils.TranslatedObjectMeta(
 			destination.Spec.GetKubeService().Ref,
-			destination.Annotations,
+			nil,
 		)
 	}
 	hostname := t.clusterDomains.GetDestinationFQDN(meta.ClusterName, destination.Spec.GetKubeService().Ref)

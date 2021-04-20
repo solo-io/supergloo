@@ -335,12 +335,12 @@ func (t *translator) initializeVirtualService(
 		meta = metautils.FederatedObjectMeta(
 			destination.Spec.GetKubeService().Ref,
 			sourceMeshInstallation,
-			destination.Annotations,
+			nil,
 		)
 	} else {
 		meta = metautils.TranslatedObjectMeta(
 			destination.Spec.GetKubeService().Ref,
-			destination.Annotations,
+			nil,
 		)
 	}
 
