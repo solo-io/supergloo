@@ -26,6 +26,7 @@ title: "virtual_mesh.proto"
   - [VirtualMeshSpec.RootCertificateAuthority](#networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority)
   - [VirtualMeshSpec.RootCertificateAuthority.SelfSignedCert](#networking.mesh.gloo.solo.io.VirtualMeshSpec.RootCertificateAuthority.SelfSignedCert)
   - [VirtualMeshStatus](#networking.mesh.gloo.solo.io.VirtualMeshStatus)
+  - [VirtualMeshStatus.DestinationsEntry](#networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry)
   - [VirtualMeshStatus.MeshesEntry](#networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry)
 
   - [VirtualMeshSpec.GlobalAccessPolicy](#networking.mesh.gloo.solo.io.VirtualMeshSpec.GlobalAccessPolicy)
@@ -157,6 +158,23 @@ Configuration for generating a self-signed root certificate. Uses the X.509 form
   | state | [common.mesh.gloo.solo.io.ApprovalState]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.common.v1.validation_state#common.mesh.gloo.solo.io.ApprovalState" >}}) |  | The state of the overall resource. It will only show accepted if it has been successfully applied to all selected Meshes. |
   | errors | []string | repeated | Any errors found while processing this generation of the resource. |
   | meshes | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.MeshesEntry" >}}) | repeated | The status of the VirtualMesh for each Mesh to which it has been applied. A VirtualMesh may be Accepted for some Meshes and rejected for others. |
+  | destinations | [][networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.virtual_mesh#networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry" >}}) | repeated | The status of the VirtualMesh for each Destination to which it has been applied. A VirtualMesh may be Accepted for some Destinations and rejected for others. |
+  
+
+
+
+
+
+<a name="networking.mesh.gloo.solo.io.VirtualMeshStatus.DestinationsEntry"></a>
+
+### VirtualMeshStatus.DestinationsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | string |  |  |
+  | value | [networking.mesh.gloo.solo.io.ApprovalStatus]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.status#networking.mesh.gloo.solo.io.ApprovalStatus" >}}) |  |  |
   
 
 

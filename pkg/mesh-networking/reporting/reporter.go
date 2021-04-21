@@ -21,6 +21,9 @@ type Reporter interface {
 
 	// report an error on a VirtualMesh that has been applied to a Mesh
 	ReportVirtualMeshToMesh(mesh *discoveryv1.Mesh, virtualMesh ezkube.ResourceId, err error)
+
+	// report an error on a VirtualMesh that has been applied to a Destination
+	ReportVirtualMeshToDestination(destination *discoveryv1.Destination, virtualMesh ezkube.ResourceId, err error)
 }
 
 // this reporter implementation is only used inside
@@ -55,6 +58,14 @@ func (p *panickingReporter) ReportVirtualMeshToMesh(mesh *discoveryv1.Mesh, virt
 	contextutils.LoggerFrom(p.ctx).
 		DPanicw("internal error: error reported on VirtualMesh which should have been caught by validation!",
 			"mesh", sets.Key(mesh),
+			"virtual-mesh", sets.Key(virtualMesh),
+			"error", err)
+}
+
+func (p *panickingReporter) ReportVirtualMeshToDestination(destination *discoveryv1.Destination, virtualMesh ezkube.ResourceId, err error) {
+	contextutils.LoggerFrom(p.ctx).
+		DPanicw("internal error: error reported on Destination which should have been caught by validation!",
+			"destination", sets.Key(destination),
 			"virtual-mesh", sets.Key(virtualMesh),
 			"error", err)
 }

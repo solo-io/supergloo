@@ -147,6 +147,23 @@ func (m *VirtualMeshStatus) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetDestinations()) != len(target.GetDestinations()) {
+		return false
+	}
+	for k, v := range m.GetDestinations() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetDestinations()[k]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetDestinations()[k]) {
+				return false
+			}
+		}
+
+	}
+
 	return true
 }
 

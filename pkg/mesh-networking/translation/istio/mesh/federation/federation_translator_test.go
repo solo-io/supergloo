@@ -3,19 +3,12 @@ package federation_test
 import (
 	"context"
 
-	"github.com/golang/mock/gomock"
-	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
-	mock_destinationrule "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/destinationrule/mocks"
-	mock_virtualservice "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/virtualservice/mocks"
-	"github.com/solo-io/gloo-mesh/test/data"
-	"istio.io/istio/pkg/config/protocol"
-
 	"github.com/gogo/protobuf/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	istiov1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/mesh/federation"
@@ -30,9 +23,6 @@ import (
 
 var _ = Describe("FederationTranslator", func() {
 	ctx := context.TODO()
-	ctrl := gomock.NewController(GinkgoT())
-	mockVirtualServiceTranslator := mock_virtualservice.NewMockTranslator(ctrl)
-	mockDestinationRuleTranslator := mock_destinationrule.NewMockTranslator(ctrl)
 
 	It("translates federation resources for a VirtualMesh", func() {
 
@@ -83,58 +73,6 @@ var _ = Describe("FederationTranslator", func() {
 		meshRef := ezkube.MakeObjectRef(mesh)
 		clientMeshRef := ezkube.MakeObjectRef(clientMesh)
 
-		makeTrafficSplit := func(backingService *skv2corev1.ClusterObjectRef, subset map[string]string) *discoveryv1.DestinationStatus_AppliedTrafficPolicy {
-			return &discoveryv1.DestinationStatus_AppliedTrafficPolicy{Spec: &data.RemoteTrafficShiftPolicy(
-				"",
-				"",
-				backingService,
-				clusterName,
-				// NOTE(ilackarms): we only care about the subset labels here
-				subset,
-				0,
-			).Spec}
-		}
-
-		backingService := &skv2corev1.ClusterObjectRef{
-			Name:        "some-svc",
-			Namespace:   "some-ns",
-			ClusterName: clusterName,
-		}
-		destination1 := &discoveryv1.Destination{
-			ObjectMeta: metav1.ObjectMeta{},
-			Spec: discoveryv1.DestinationSpec{
-				Type: &discoveryv1.DestinationSpec_KubeService_{KubeService: &discoveryv1.DestinationSpec_KubeService{
-					Ref: backingService,
-					Ports: []*discoveryv1.DestinationSpec_KubeService_KubeServicePort{
-						{
-							Port:     1234,
-							Name:     "http",
-							Protocol: "TCP",
-						},
-						{
-							Port:     5555,
-							Name:     "status-port",
-							Protocol: "TCP",
-						},
-						{
-							Port:     5678,
-							Name:     "grpc",
-							Protocol: "TCP",
-						},
-					},
-				}},
-				Mesh: meshRef,
-			},
-			// include some applied subsets
-			Status: discoveryv1.DestinationStatus{
-				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
-					makeTrafficSplit(backingService, map[string]string{"foo": "bar"}),
-					makeTrafficSplit(backingService, map[string]string{"foo": "baz"}),
-					makeTrafficSplit(backingService, map[string]string{"bar": "qux"}),
-				},
-			},
-		}
-
 		vMesh := &discoveryv1.MeshStatus_AppliedVirtualMesh{
 			Ref: &skv2corev1.ObjectRef{
 				Name:      "my-virtual-mesh",
@@ -159,29 +97,11 @@ var _ = Describe("FederationTranslator", func() {
 		}
 
 		in := input.NewInputLocalSnapshotManualBuilder("ignored").
-			AddDestinations(discoveryv1.DestinationSlice{destination1}).
 			AddMeshes(discoveryv1.MeshSlice{mesh, clientMesh}).
 			AddKubernetesClusters(skv1alpha1.KubernetesClusterSlice{kubeCluster}).
 			Build()
 
-		expectedVS := &networkingv1alpha3.VirtualService{}
-		mockVirtualServiceTranslator.
-			EXPECT().
-			Translate(ctx, in, destination1, clientMesh.Spec.GetIstio().Installation, nil).
-			Return(expectedVS)
-
-		expectedDR := &networkingv1alpha3.DestinationRule{}
-		mockDestinationRuleTranslator.
-			EXPECT().
-			Translate(ctx, in, destination1, clientMesh.Spec.GetIstio().Installation, nil).
-			Return(expectedDR)
-
-		t := NewTranslator(
-			ctx,
-			in.Destinations(),
-			mockVirtualServiceTranslator,
-			mockDestinationRuleTranslator,
-		)
+		t := NewTranslator(ctx)
 
 		outputs := istio.NewBuilder(context.TODO(), "")
 		t.Translate(
@@ -196,9 +116,6 @@ var _ = Describe("FederationTranslator", func() {
 		Expect(outputs.GetGateways().List()[0]).To(Equal(expectedGateway))
 		Expect(outputs.GetEnvoyFilters().Length()).To(Equal(1))
 		Expect(outputs.GetEnvoyFilters().List()[0]).To(Equal(expectedEnvoyFilter))
-		Expect(outputs.GetDestinationRules()).To(Equal(istiov1alpha3sets.NewDestinationRuleSet(expectedDR)))
-		Expect(outputs.GetServiceEntries()).To(Equal(expectedServiceEntries))
-		Expect(outputs.GetVirtualServices()).To(Equal(istiov1alpha3sets.NewVirtualServiceSet(expectedVS)))
 	})
 })
 
@@ -300,52 +217,3 @@ var expectedEnvoyFilter = &networkingv1alpha3.EnvoyFilter{
 		},
 	},
 }
-var expectedServiceEntries = istiov1alpha3sets.NewServiceEntrySet(&networkingv1alpha3.ServiceEntry{
-	ObjectMeta: metav1.ObjectMeta{
-		Name:        "some-svc.some-ns.svc.cluster.soloio",
-		Namespace:   "remote-namespace",
-		ClusterName: "remote-cluster",
-		Labels:      metautils.TranslatedObjectLabels(),
-		Annotations: map[string]string{
-			metautils.ParentLabelkey: `{"networking.mesh.gloo.solo.io/v1, Kind=VirtualMesh":[{"name":"my-virtual-mesh","namespace":"config-namespace"}]}`,
-		},
-	},
-	Spec: networkingv1alpha3spec.ServiceEntry{
-		Hosts: []string{
-			"some-svc.some-ns.svc.cluster.soloio",
-		},
-		Addresses: []string{
-			"243.21.204.125",
-		},
-		Ports: []*networkingv1alpha3spec.Port{
-			{
-				Number:   1234,
-				Protocol: string(protocol.HTTP),
-				Name:     "http",
-			},
-			{
-				Number:   5555,
-				Protocol: string(protocol.TCP),
-				Name:     "status-port",
-			},
-			{
-				Number:   5678,
-				Protocol: string(protocol.GRPC),
-				Name:     "grpc",
-			},
-		},
-		Location:   networkingv1alpha3spec.ServiceEntry_MESH_INTERNAL,
-		Resolution: networkingv1alpha3spec.ServiceEntry_DNS,
-		Endpoints: []*networkingv1alpha3spec.WorkloadEntry{
-			{
-				Address: "mesh-gateway.dns.name",
-				Ports: map[string]uint32{
-					"http":        8181,
-					"grpc":        8181,
-					"status-port": 8181,
-				},
-				Labels: map[string]string{"cluster": "cluster"},
-			},
-		},
-	},
-})

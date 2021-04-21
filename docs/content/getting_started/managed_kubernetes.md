@@ -467,6 +467,64 @@ appear alongside the book reviews.
     <img src="{{% versioned_link_path fromRoot="/img/bookinfo/redstars.png" %}}"/>
 </figure>
 
+{{% notice note %}}
+If you are seeing connection issues, and running on `EKS`, please read the following:
+
+\
+EKS LoadBalancer Health Checks will by default use the first port in the Kubernetes Service. This can potentially be a problem because
+istio-ingressgateway will deploy with the `port: 80` as first in the list. See the following for an example:
+```yaml
+spec:
+  clusterIP: 10.100.108.166
+  externalTrafficPolicy: Cluster
+  ports:
+  - name: http2
+    nodePort: 31143
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  - name: https
+    nodePort: 30131
+    port: 443
+    protocol: TCP
+    targetPort: 8443
+  - name: tls
+    nodePort: 32287
+    port: 15443
+    protocol: TCP
+    targetPort: 15443
+  selector:
+    app: istio-ingressgateway
+    istio: ingressgateway
+```
+
+To fix this simply move the `port: 15443` to the top of the list, like so:
+```yaml
+spec:
+  clusterIP: 10.100.108.166
+  externalTrafficPolicy: Cluster
+  ports:
+  - name: tls
+    nodePort: 32287
+    port: 15443
+    protocol: TCP
+    targetPort: 15443
+  - name: http2
+    nodePort: 31143
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  - name: https
+    nodePort: 30131
+    port: 443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app: istio-ingressgateway
+    istio: ingressgateway
+```
+{{% /notice %}}
+
 ## Launch the Gloo Mesh Enterprise dashboard
 
 Gloo Mesh Enterprise ships with a dashboard which provides a single pane of glass through which you can observe the status

@@ -13,7 +13,8 @@ func EnsureNamespace(ctx context.Context, kubeClient client.Client, namespace st
 	namespaces := v1.NewNamespaceClient(kubeClient)
 	return namespaces.UpsertNamespace(ctx, &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: namespace,
+			Name:   namespace,
+			Labels: map[string]string{"istio-injection": "disabled"},
 		},
 		Spec: corev1.NamespaceSpec{Finalizers: []corev1.FinalizerName{"kubernetes"}},
 	})
