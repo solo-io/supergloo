@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/solo-io/go-utils/contextutils"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 
 	"github.com/rotisserie/eris"
-	"github.com/sirupsen/logrus"
 	"github.com/solo-io/go-utils/cliutils"
 	"github.com/solo-io/skv2/pkg/multicluster/kubeconfig"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,9 +21,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Open a port-forward against the specified deployment. Returns the stop channel and the local port.
+// Open a port-forward against the specified deployment. Returns the local port.
 // If localPort is unspecified, a free port will be chosen at random.
-// Close the port forward by closing the returned channel.
+// Canceling the context will stop the port-forward.
 func PortForwardFromDeployment(
 	ctx context.Context,
 	kubeConfig string,
@@ -32,32 +32,32 @@ func PortForwardFromDeployment(
 	deployNamespace string,
 	localPort string,
 	remotePort string,
-	logger *logrus.Logger,
-) (chan struct{}, string, error) {
+) (string, error) {
 	podName, err := getPodForDeployment(ctx, kubeConfig, kubeContext, deployName, deployNamespace)
 	if err != nil {
-		return nil, "", err
+		return "", err
 	}
-	return PortForwardFromPod(kubeConfig, kubeContext, podName, deployNamespace, localPort, remotePort, logger)
+	return PortForwardFromPod(ctx, kubeConfig, kubeContext, podName, deployNamespace, localPort, remotePort)
 }
 
 // Open a port forward against the specified pod. Returns the stop channel and the local port.
 // If localPort is unspecified, a free port will be chosen at random.
 // Close the port forward by closing the returned channel.
 func PortForwardFromPod(
+	ctx context.Context,
 	kubeConfig string,
 	kubeContext string,
 	podName string,
 	podNamespace string,
 	localPort string,
 	remotePort string,
-	logger *logrus.Logger,
-) (chan struct{}, string, error) {
+) (string, error) {
+	logger := contextutils.LoggerFrom(ctx)
 	// select random open local port if unspecified
 	if localPort == "" {
 		freePort, err := cliutils.GetFreePort()
 		if err != nil {
-			return nil, "", err
+			return "", err
 		}
 		localPort = strconv.Itoa(freePort)
 		logger.Debugf("forwarding port %s of pod %s in namespace %s to local port %s", remotePort, podName, podNamespace, localPort)
@@ -65,13 +65,13 @@ func PortForwardFromPod(
 
 	config, err := kubeconfig.GetRestConfigWithContext(kubeConfig, kubeContext, "")
 	if err != nil {
-		return nil, "", err
+		return "", err
 	}
 
 	// the following code is based on this reference, https://github.com/kubernetes/client-go/issues/51
 	roundTripper, upgrader, err := spdy.RoundTripperFor(config)
 	if err != nil {
-		return nil, "", err
+		return "", err
 	}
 
 	path := fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/portforward", podNamespace, podName)
@@ -84,11 +84,11 @@ func PortForwardFromPod(
 
 	forwarder, err := portforward.New(dialer, []string{fmt.Sprintf("%s:%s", localPort, remotePort)}, stopChan, readyChan, out, errOut)
 	if err != nil {
-		return nil, "", err
+		return "", err
 	}
 
 	if len(errOut.String()) != 0 {
-		return nil, "", eris.New(errOut.String())
+		return "", eris.New(errOut.String())
 	} else if len(out.String()) != 0 {
 		logger.Debug(out.String())
 	}
@@ -98,6 +98,12 @@ func PortForwardFromPod(
 			logger.Errorf("%v", err)
 		}
 	}()
+	go func() {
+		select {
+		case <-ctx.Done():
+			close(stopChan)
+		}
+	}()
 
 	// block until port forward is ready
 	select {
@@ -105,7 +111,7 @@ func PortForwardFromPod(
 		break
 	}
 
-	return stopChan, localPort, nil
+	return localPort, nil
 }
 
 // select a pod backing a deployment
