@@ -99,6 +99,7 @@ func (d *meshDetector) detectMesh(
 		return nil, err
 	}
 
+	// TOOD (ilackarms / ingress): support discovering gateways deployed to namespace other than istio-system
 	ingressGateways := getIngressGateways(
 		d.ctx,
 		deployment.Namespace,
@@ -239,6 +240,7 @@ func getIngressGateway(
 	}
 
 	return &discoveryv1.MeshSpec_Istio_IngressGatewayInfo{
+		Namespace:        svc.Namespace,
 		WorkloadLabels:   workloadLabels,
 		ExternalAddress:  externalAddress,
 		ExternalTlsPort:  externalPort,

@@ -232,7 +232,7 @@ func (*FederatedGatewayStatus) Descriptor() ([]byte, []int) {
 	return file_github_com_solo_io_gloo_mesh_api_enterprise_networking_v1beta1_federated_gateway_proto_rawDescGZIP(), []int{1}
 }
 
-// if this is put as a sibling message to SSLFiles, codegen fails with some cue errors.
+// Note: This message needs to be at this level (rather than nested) due to cue restrictions.
 type SDSConfig struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -351,7 +351,7 @@ type FederatedGatewaySpec_ConnectionHandler struct {
 
 	// Additional options for matching a connection to a specific gateway.
 	// This is required when more than one `connectionHandler` is specified for a single gateway.
-	// Typically this is used to serve different protocols on the same port.
+	// Typically this is used to serve different
 	ConnectionMatch *FederatedGatewaySpec_ConnectionHandler_ConnectionMatch `protobuf:"bytes,1,opt,name=connection_match,json=connectionMatch,proto3" json:"connection_match,omitempty"`
 	// The type of routes this handler will serve.
 	// HttpRoutes creates a listener with an http_connection_manager.

@@ -120,6 +120,7 @@ message IdentitySelector {
     }
 }
 
+// TODO: move to package alongside RouteTable
 // Select route tables (or delegated route tables) for delegation by namespace, labels, or both.
 message RouteTableSelector {
 
