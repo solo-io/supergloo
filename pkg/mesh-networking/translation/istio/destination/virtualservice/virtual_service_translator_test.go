@@ -28,6 +28,7 @@ import (
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var _ = Describe("VirtualServiceTranslator", func() {
@@ -416,13 +417,21 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		expectedVirtualService := &networkingv1alpha3.VirtualService{
 			ObjectMeta: metautils.TranslatedObjectMeta(
 				destination.Spec.GetKubeService().Ref,
-				destination.Annotations,
+				nil,
 			),
 			Spec: networkingv1alpha3spec.VirtualService{
 				Hosts: []string{"local-hostname"},
 				Http:  expectedHttpRoutes,
 			},
 		}
+		metautils.AnnotateParents(
+			ctx,
+			expectedVirtualService,
+			map[schema.GroupVersionKind][]ezkube.ResourceId{
+				discoveryv1.DestinationGVK:    {destination},
+				networkingv1.TrafficPolicyGVK: {destination.Status.AppliedTrafficPolicies[0].Ref, destination.Status.AppliedTrafficPolicies[1].Ref},
+			},
+		)
 
 		mockDecorator.
 			EXPECT().
@@ -780,13 +789,22 @@ var _ = Describe("VirtualServiceTranslator", func() {
 			ObjectMeta: metautils.FederatedObjectMeta(
 				destination.Spec.GetKubeService().Ref,
 				meshInstallation,
-				destination.Annotations,
+				nil,
 			),
 			Spec: networkingv1alpha3spec.VirtualService{
 				Hosts: []string{"local-hostname"},
 				Http:  expectedHttpRoutes,
 			},
 		}
+
+		metautils.AnnotateParents(
+			ctx,
+			expectedVirtualService,
+			map[schema.GroupVersionKind][]ezkube.ResourceId{
+				discoveryv1.DestinationGVK:    {destination},
+				networkingv1.TrafficPolicyGVK: {destination.Status.AppliedTrafficPolicies[0].Ref},
+			},
+		)
 
 		mockDecorator.
 			EXPECT().
@@ -1252,7 +1270,7 @@ var _ = Describe("VirtualServiceTranslator", func() {
 		expectedVirtualService := &networkingv1alpha3.VirtualService{
 			ObjectMeta: metautils.TranslatedObjectMeta(
 				destination.Spec.GetKubeService().Ref,
-				destination.Annotations,
+				nil,
 			),
 			Spec: networkingv1alpha3spec.VirtualService{
 				Hosts: []string{"local-hostname"},
@@ -1295,6 +1313,14 @@ var _ = Describe("VirtualServiceTranslator", func() {
 				},
 			},
 		}
+		metautils.AnnotateParents(
+			ctx,
+			expectedVirtualService,
+			map[schema.GroupVersionKind][]ezkube.ResourceId{
+				discoveryv1.DestinationGVK:    {destination},
+				networkingv1.TrafficPolicyGVK: {destination.Status.AppliedTrafficPolicies[0].Ref, destination.Status.AppliedTrafficPolicies[1].Ref},
+			},
+		)
 
 		virtualService := virtualServiceTranslator.Translate(ctx, in, destination, nil, mockReporter)
 		Expect(virtualService).To(Equal(expectedVirtualService))

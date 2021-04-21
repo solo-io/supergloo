@@ -115,13 +115,17 @@ var _ = Describe("IstioDestinationTranslator", func() {
 			Translate(ctx, in, destination, mockReporter).
 			Return(ap)
 
+		tpParents := []ezkube.ResourceId{&skv2corev1.ObjectRef{
+			Name:      "tp1",
+			Namespace: "tp1-namespace",
+		}}
 		mockFederationTranslator.
 			EXPECT().
 			ShouldTranslate(destination, eventObjs).
-			Return(true)
+			Return(true, tpParents)
 		mockFederationTranslator.
 			EXPECT().
-			Translate(ctx, in, destination, mockReporter).
+			Translate(ctx, in, destination, mockReporter, tpParents).
 			Return(federatedSe, federatedVs, federatedDr)
 
 		mockOutputs.

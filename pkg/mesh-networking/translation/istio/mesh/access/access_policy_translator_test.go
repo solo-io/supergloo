@@ -144,7 +144,7 @@ var _ = Describe("AccessPolicyTranslator", func() {
 		Expect(outputs.GetAuthorizationPolicies()).To(Equal(expectedAuthPolicies))
 	})
 
-	It("should not translate any AuthorizationPolicies", func() {
+	It("should translate an AuthorizationPolicy marked for garbage collection", func() {
 		mesh := &discoveryv1.Mesh{
 			Spec: discoveryv1.MeshSpec{
 				Type: &discoveryv1.MeshSpec_Istio_{
@@ -165,6 +165,7 @@ var _ = Describe("AccessPolicyTranslator", func() {
 		}
 		outputs := istio.NewBuilder(context.TODO(), "")
 		translator.Translate(mesh, mesh.Status.AppliedVirtualMesh, outputs)
-		Expect(outputs.GetAuthorizationPolicies().Length()).To(Equal(0))
+
+		Expect(outputs.GetAuthorizationPolicies().List()[0].Annotations).To(HaveKey(metautils.GarbageCollectDirective))
 	})
 })

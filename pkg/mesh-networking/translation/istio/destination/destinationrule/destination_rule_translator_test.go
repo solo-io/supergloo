@@ -33,6 +33,7 @@ import (
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	networkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var _ = Describe("DestinationRuleTranslator", func() {
@@ -202,110 +203,13 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			).
 			Return(nil)
 
+		metautils.AnnotateParents(ctx, initializedDestinatonRule, map[schema.GroupVersionKind][]ezkube.ResourceId{
+			discoveryv1.DestinationGVK: {destination},
+			v1.TrafficPolicyGVK:        {destination.Status.AppliedTrafficPolicies[0].GetRef()},
+		})
+
 		destinationRule := destinationRuleTranslator.Translate(ctx, in, destination, nil, mockReporter)
 		Expect(destinationRule).To(Equal(initializedDestinatonRule))
-	})
-
-	It("should not output DestinationRule when DestinationRule has no effect", func() {
-		settings.Spec = settingsv1.SettingsSpec{
-			Mtls: &v1.TrafficPolicySpec_Policy_MTLS{
-				Istio: &v1.TrafficPolicySpec_Policy_MTLS_Istio{
-					TlsMode: v1.TrafficPolicySpec_Policy_MTLS_Istio_DISABLE,
-				},
-			},
-		}
-
-		destination := &discoveryv1.Destination{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: "traffic-target",
-			},
-			Spec: discoveryv1.DestinationSpec{
-				Type: &discoveryv1.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1.DestinationSpec_KubeService{
-						Ref: &skv2corev1.ClusterObjectRef{
-							Name:        "traffic-target",
-							Namespace:   "traffic-target-namespace",
-							ClusterName: "traffic-target-cluster",
-						},
-					},
-				},
-			},
-			Status: discoveryv1.DestinationStatus{
-				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
-					{
-						Ref: &skv2corev1.ObjectRef{
-							Name:      "tp-1",
-							Namespace: "tp-namespace-1",
-						},
-						Spec: &v1.TrafficPolicySpec{
-							SourceSelector: []*commonv1.WorkloadSelector{
-								{
-									KubeWorkloadMatcher: &commonv1.WorkloadSelector_KubeWorkloadMatcher{
-										Clusters: []string{"traffic-target-cluster"},
-									},
-								},
-							},
-						},
-					},
-					{
-						Ref: &skv2corev1.ObjectRef{
-							Name:      "tp-1",
-							Namespace: "tp-namespace-1",
-						},
-						Spec: &v1.TrafficPolicySpec{
-							SourceSelector: []*commonv1.WorkloadSelector{
-								{
-									KubeWorkloadMatcher: &commonv1.WorkloadSelector_KubeWorkloadMatcher{
-										Clusters: []string{"different-cluster"},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		}
-
-		mockDecoratorFactory.
-			EXPECT().
-			MakeDecorators(decorators.Parameters{
-				ClusterDomains: mockClusterDomainRegistry,
-				Snapshot:       in,
-			}).
-			Return([]decorators.Decorator{mockDecorator})
-
-		mockClusterDomainRegistry.
-			EXPECT().
-			GetDestinationFQDN(destination.Spec.GetKubeService().Ref.ClusterName, destination.Spec.GetKubeService().Ref).
-			Return("local-hostname")
-
-		initializedDestinatonRule := &networkingv1alpha3.DestinationRule{
-			ObjectMeta: metautils.TranslatedObjectMeta(
-				destination.Spec.GetKubeService().Ref,
-				destination.Annotations,
-			),
-			Spec: networkingv1alpha3spec.DestinationRule{
-				Host: "local-hostname",
-				TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{
-					Tls: &networkingv1alpha3spec.ClientTLSSettings{
-						Mode: networkingv1alpha3spec.ClientTLSSettings_DISABLE,
-					},
-				},
-			},
-		}
-
-		mockDecorator.
-			EXPECT().
-			ApplyTrafficPolicyToDestinationRule(
-				destination.Status.AppliedTrafficPolicies[0],
-				destination,
-				&initializedDestinatonRule.Spec,
-				gomock.Any(),
-			).
-			Return(nil)
-
-		destinationRule := destinationRuleTranslator.Translate(ctx, in, destination, nil, mockReporter)
-		Expect(destinationRule).To(BeNil())
 	})
 
 	It("should output DestinationRule for federated Destination", func() {
@@ -509,6 +413,12 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		sort.Slice(destinationRule.Spec.Subsets, func(i, j int) bool {
 			return destinationRule.Spec.Subsets[i].Name < destinationRule.Spec.Subsets[j].Name
 		})
+
+		metautils.AnnotateParents(ctx, expectedDestinatonRule, map[schema.GroupVersionKind][]ezkube.ResourceId{
+			discoveryv1.DestinationGVK: {destination},
+			v1.TrafficPolicyGVK:        {destination.Status.AppliedTrafficPolicies[0].GetRef()},
+		})
+
 		Expect(destinationRule).To(Equal(expectedDestinatonRule))
 	})
 

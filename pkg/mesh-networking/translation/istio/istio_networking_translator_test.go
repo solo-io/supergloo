@@ -71,10 +71,28 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "mesh-1",
 					},
+					Spec: discoveryv1.MeshSpec{
+						Type: &discoveryv1.MeshSpec_Istio_{
+							Istio: &discoveryv1.MeshSpec_Istio{
+								Installation: &discoveryv1.MeshSpec_MeshInstallation{
+									Cluster: "cluster1",
+								},
+							},
+						},
+					},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "mesh-2",
+					},
+					Spec: discoveryv1.MeshSpec{
+						Type: &discoveryv1.MeshSpec_Istio_{
+							Istio: &discoveryv1.MeshSpec_Istio{
+								Installation: &discoveryv1.MeshSpec_MeshInstallation{
+									Cluster: "cluster2",
+								},
+							},
+						},
 					},
 				},
 			}).
@@ -132,6 +150,13 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 				EXPECT().
 				Translate(in, mesh, mockIstioOutputs, mockLocalOutputs, mockReporter)
 		}
+
+		mockIstioOutputs.
+			EXPECT().
+			AddCluster("cluster1")
+		mockIstioOutputs.
+			EXPECT().
+			AddCluster("cluster2")
 
 		mockIstioExtender.EXPECT().PatchOutputs(contextMatcher, in, mockIstioOutputs)
 

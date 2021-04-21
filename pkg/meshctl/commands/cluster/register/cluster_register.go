@@ -17,7 +17,15 @@ func Command(ctx context.Context, globalFlags *utils.GlobalFlags) *cobra.Command
 	cmd := &cobra.Command{
 		Use:   "register",
 		Short: "Register a Kubernetes cluster with Gloo Mesh",
-		Long: `Register a Kubernetes cluster with Gloo Mesh
+		Long: `Registering a cluster installs the necessary components and does other setup
+such as creating service accounts and cluster roles in order to start manging
+the service mesh(es) on it.
+
+The name of the context of the target cluster must be provided via the
+--remote-context flag.
+
+If the management cluster is different than the one that the current context
+points then it an be provided via the --mgmt-context flag.
 
 The edition registered must match the edition installed on the management cluster`,
 		PersistentPreRun: func(*cobra.Command, []string) {
@@ -31,6 +39,7 @@ The edition registered must match the edition installed on the management cluste
 	)
 
 	opts.addToFlags(cmd.PersistentFlags())
+	cmd.MarkFlagRequired("remote-context")
 
 	return cmd
 }
@@ -52,12 +61,10 @@ func communityCommand(ctx context.Context, regOpts *options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "community [cluster name]",
 		Short: "Register a cluster for Gloo Mesh community edition",
-		Example: `  # Register the current cluster
-  meshctl cluster register community mgmt-cluster
-
-  # Register a different context when the current one is the management cluster
-  meshctl cluster register --remote-context=my-context community remote-cluster`,
-		Args: cobra.MinimumNArgs(1),
+		Long: ` In the process of registering a cluster, an agent to issue certificates will be
+installed on the remote cluster.`,
+		Example: "  meshctl cluster register --remote-context=my-context community remote-cluster",
+		Args:    cobra.MinimumNArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {
 			regOpts.AgentChartPathOverride = opts.AgentChartPathOverride
 			regOpts.AgentChartValuesPath = opts.AgentChartValuesPath
@@ -116,12 +123,8 @@ For the relay agent to trust Gloo Mesh a root CA is needed.
 To make the registration process easy, this command will try to copy the root CA and 
 bootstrap token from the gloo-mesh cluster, if these are not explicitly provided in the command line flags.
 `,
-		Example: `  # Register the current context
-  meshctl cluster register enterprise mgmt-cluster
-
-  # Register a different context when the current one is the management cluster
-  meshctl cluster register --remote-context=my-context enterprise remote-cluster`,
-		Args: cobra.MinimumNArgs(1),
+		Example: " meshctl cluster register --remote-context=my-context enterprise remote-cluster",
+		Args:    cobra.MinimumNArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {
 			logrus.Infof("Registering cluster")
 			opts.Options = registration.Options(*regOpts)
