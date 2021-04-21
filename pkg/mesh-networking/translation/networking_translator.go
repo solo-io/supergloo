@@ -101,7 +101,7 @@ func (t *translator) Translate(
 	}
 
 	// update outputs
-	t.outputs = updateOutputs(ctx, in, istioOutputs, appmeshOutputs, smiOutputs, localOutputs, t.outputs)
+	t.outputs = updateOutputs(ctx, in, istioOutputs, appmeshOutputs, smiOutputs, localOutputs, t.outputs, t.totalTranslates)
 
 	return t.outputs, nil
 }
@@ -112,114 +112,161 @@ func (t *translator) Translate(
 func updateOutputs(
 	ctx context.Context,
 	in input.LocalSnapshot,
-	istioOutputs istiooutput.Builder,
-	appmeshOutputs appmeshoutput.Builder,
-	smiOutputs smioutput.Builder,
-	localOutputs localoutput.Builder,
+	newIstioOutputs istiooutput.Builder,
+	newAppmeshOutputs appmeshoutput.Builder,
+	newSmiOutputs smioutput.Builder,
+	newLocalOutputs localoutput.Builder,
 	oldOutputs *Outputs,
+	totalTranslates int,
 ) *Outputs {
-	// initialize new outputs with recently translated objects
-	updatedOutputs := &Outputs{
-		Istio:   istioOutputs,
-		Appmesh: appmeshOutputs,
-		Smi:     smiOutputs,
-		Local:   localOutputs,
+	istioOutputs := istiooutput.NewBuilder(ctx, fmt.Sprintf("networking-istio-%v", totalTranslates))
+	appmeshOutputs := appmeshoutput.NewBuilder(ctx, fmt.Sprintf("networking-appmesh-%v", totalTranslates))
+	smiOutputs := smioutput.NewBuilder(ctx, fmt.Sprintf("networking-smi-%v", totalTranslates))
+	localOutputs := localoutput.NewBuilder(ctx, fmt.Sprintf("networking-local-%v", totalTranslates))
+
+	// copy over all clusters
+	for _, cluster := range newIstioOutputs.Clusters() {
+		// this is set in the Istio networking translator
+		istioOutputs.AddCluster(cluster)
+	}
+	for _, cluster := range newAppmeshOutputs.Clusters() {
+		appmeshOutputs.AddCluster(cluster)
+	}
+	for _, cluster := range newSmiOutputs.Clusters() {
+		smiOutputs.AddCluster(cluster)
+	}
+	for _, cluster := range newLocalOutputs.Clusters() {
+		localOutputs.AddCluster(cluster)
 	}
 
-	// insert outputs from previous translations that haven't been updated and don't require garbage collection
+	// update output snapshot with newly translated objects (add if newly created, update if already exists)
+	// then remove any objects that require garbage collection
 	// NOTE: the following block must be maintained with all output types.
 	// TODO: leverage code gen?
 
 	// Istio
 	// AuthorizationPolicies
-	oldAuthorizationPolicies := oldOutputs.Istio.GetAuthorizationPolicies().List(func(obj *v1beta1.AuthorizationPolicy) bool {
-		return updatedOutputs.Istio.GetAuthorizationPolicies().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+	oldOutputs.Istio.AddAuthorizationPolicies(newIstioOutputs.GetAuthorizationPolicies().List()...)
+	updatedAuthorizationPolicies := oldOutputs.Istio.GetAuthorizationPolicies().List(func(obj *v1beta1.AuthorizationPolicy) bool {
+		return shouldGarbageCollect(ctx, in, obj)
 	})
-	updatedOutputs.Istio.AddAuthorizationPolicies(oldAuthorizationPolicies...)
+	istioOutputs.AddAuthorizationPolicies(updatedAuthorizationPolicies...)
+
 	// DestinationRules
 	// NOTE: A DestinationRule is required for all Destinations in order to enforce the global MTLS default defined in Settings,
 	// thus we never garbage collect them, only update.
-	oldDestinationRules := oldOutputs.Istio.GetDestinationRules().List(func(obj *v1alpha3.DestinationRule) bool {
-		return updatedOutputs.Istio.GetDestinationRules().Has(obj)
+	oldOutputs.Istio.AddDestinationRules(newIstioOutputs.GetDestinationRules().List()...)
+	updatedDestinationRules := oldOutputs.Istio.GetDestinationRules().List(func(obj *v1alpha3.DestinationRule) bool {
+		return shouldGarbageCollect(ctx, in, obj)
 	})
-	updatedOutputs.Istio.AddDestinationRules(oldDestinationRules...)
+	istioOutputs.AddDestinationRules(updatedDestinationRules...)
+
 	// EnvoyFilters
-	oldEnvoyFilters := oldOutputs.Istio.GetEnvoyFilters().List(func(obj *v1alpha3.EnvoyFilter) bool {
-		return updatedOutputs.Istio.GetEnvoyFilters().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+	oldOutputs.Istio.AddEnvoyFilters(newIstioOutputs.GetEnvoyFilters().List()...)
+	updatedEnvoyFilters := oldOutputs.Istio.GetEnvoyFilters().List(func(obj *v1alpha3.EnvoyFilter) bool {
+		return shouldGarbageCollect(ctx, in, obj)
 	})
-	updatedOutputs.Istio.AddEnvoyFilters(oldEnvoyFilters...)
+	istioOutputs.AddEnvoyFilters(updatedEnvoyFilters...)
+
 	// Gateways
-	oldGateways := oldOutputs.Istio.GetGateways().List(func(obj *v1alpha3.Gateway) bool {
-		return updatedOutputs.Istio.GetGateways().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+	oldOutputs.Istio.AddGateways(newIstioOutputs.GetGateways().List()...)
+	updatedGateways := oldOutputs.Istio.GetGateways().List(func(obj *v1alpha3.Gateway) bool {
+		return shouldGarbageCollect(ctx, in, obj)
 	})
-	updatedOutputs.Istio.AddGateways(oldGateways...)
+	istioOutputs.AddGateways(updatedGateways...)
+
 	// ServiceEntries
-	oldServiceEntries := oldOutputs.Istio.GetServiceEntries().List(func(obj *v1alpha3.ServiceEntry) bool {
-		return updatedOutputs.Istio.GetServiceEntries().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+	oldOutputs.Istio.AddServiceEntries(newIstioOutputs.GetServiceEntries().List()...)
+	updatedServiceEntries := oldOutputs.Istio.GetServiceEntries().List(func(obj *v1alpha3.ServiceEntry) bool {
+		return shouldGarbageCollect(ctx, in, obj)
 	})
-	updatedOutputs.Istio.AddServiceEntries(oldServiceEntries...)
+	istioOutputs.AddServiceEntries(updatedServiceEntries...)
+
 	// VirtualServices
-	oldVirtualServices := oldOutputs.Istio.GetVirtualServices().List(func(obj *v1alpha3.VirtualService) bool {
-		return updatedOutputs.Istio.GetVirtualServices().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+	oldOutputs.Istio.AddVirtualServices(newIstioOutputs.GetVirtualServices().List()...)
+	updatedVirtualServices := oldOutputs.Istio.GetVirtualServices().List(func(obj *v1alpha3.VirtualService) bool {
+		return shouldGarbageCollect(ctx, in, obj)
 	})
-	updatedOutputs.Istio.AddVirtualServices(oldVirtualServices...)
+	istioOutputs.AddVirtualServices(updatedVirtualServices...)
+
 	// IssuedCertificates
-	oldIssuedCertificates := oldOutputs.Istio.GetIssuedCertificates().List(func(obj *certificatesv1.IssuedCertificate) bool {
-		return updatedOutputs.Istio.GetIssuedCertificates().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+	oldOutputs.Istio.AddIssuedCertificates(newIstioOutputs.GetIssuedCertificates().List()...)
+	updatedIssuedCertificates := oldOutputs.Istio.GetIssuedCertificates().List(func(obj *certificatesv1.IssuedCertificate) bool {
+		return shouldGarbageCollect(ctx, in, obj)
 	})
-	updatedOutputs.Istio.AddIssuedCertificates(oldIssuedCertificates...)
+	istioOutputs.AddIssuedCertificates(updatedIssuedCertificates...)
+
 	// PodBounceDirectives
-	oldPodBounceDirectives := oldOutputs.Istio.GetPodBounceDirectives().List(func(obj *certificatesv1.PodBounceDirective) bool {
-		return updatedOutputs.Istio.GetPodBounceDirectives().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+	oldOutputs.Istio.AddPodBounceDirectives(newIstioOutputs.GetPodBounceDirectives().List()...)
+	updatedPodBounceDirectives := oldOutputs.Istio.GetPodBounceDirectives().List(func(obj *certificatesv1.PodBounceDirective) bool {
+		return shouldGarbageCollect(ctx, in, obj)
 	})
-	updatedOutputs.Istio.AddPodBounceDirectives(oldPodBounceDirectives...)
+	istioOutputs.AddPodBounceDirectives(updatedPodBounceDirectives...)
+
 	// XdsConfigs
-	oldXdsConfigs := oldOutputs.Istio.GetXdsConfigs().List(func(obj *xdsv1beta1.XdsConfig) bool {
-		return updatedOutputs.Istio.GetXdsConfigs().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+	oldOutputs.Istio.AddXdsConfigs(newIstioOutputs.GetXdsConfigs().List()...)
+	updatedXdsConfigs := oldOutputs.Istio.GetXdsConfigs().List(func(obj *xdsv1beta1.XdsConfig) bool {
+		return shouldGarbageCollect(ctx, in, obj)
 	})
-	updatedOutputs.Istio.AddXdsConfigs(oldXdsConfigs...)
+	istioOutputs.AddXdsConfigs(updatedXdsConfigs...)
 
 	// AppMesh
 	// AppMesh VirtualServices
-	oldAppMeshVirtualServices := oldOutputs.Appmesh.GetVirtualServices().List(func(obj *appmeshv1beta2.VirtualService) bool {
-		return updatedOutputs.Appmesh.GetVirtualServices().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+	oldOutputs.Appmesh.AddVirtualServices(newAppmeshOutputs.GetVirtualServices().List()...)
+	updatedAppMeshVirtualServices := oldOutputs.Appmesh.GetVirtualServices().List(func(obj *appmeshv1beta2.VirtualService) bool {
+		return shouldGarbageCollect(ctx, in, obj)
 	})
-	updatedOutputs.Appmesh.AddVirtualServices(oldAppMeshVirtualServices...)
+	appmeshOutputs.AddVirtualServices(updatedAppMeshVirtualServices...)
+
 	// AppMesh VirtualNodes
-	oldAppMeshVirtualNodes := oldOutputs.Appmesh.GetVirtualNodes().List(func(obj *appmeshv1beta2.VirtualNode) bool {
-		return updatedOutputs.Appmesh.GetVirtualNodes().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+	oldOutputs.Appmesh.AddVirtualNodes(newAppmeshOutputs.GetVirtualNodes().List()...)
+	updatedAppMeshVirtualNodes := oldOutputs.Appmesh.GetVirtualNodes().List(func(obj *appmeshv1beta2.VirtualNode) bool {
+		return shouldGarbageCollect(ctx, in, obj)
 	})
-	updatedOutputs.Appmesh.AddVirtualNodes(oldAppMeshVirtualNodes...)
+	appmeshOutputs.AddVirtualNodes(updatedAppMeshVirtualNodes...)
+
 	// AppMesh VirtualRouters
-	oldAppMeshVirtualRouters := oldOutputs.Appmesh.GetVirtualRouters().List(func(obj *appmeshv1beta2.VirtualRouter) bool {
-		return updatedOutputs.Appmesh.GetVirtualRouters().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+	oldOutputs.Appmesh.AddVirtualRouters(newAppmeshOutputs.GetVirtualRouters().List()...)
+	updatedAppMeshVirtualRouters := oldOutputs.Appmesh.GetVirtualRouters().List(func(obj *appmeshv1beta2.VirtualRouter) bool {
+		return shouldGarbageCollect(ctx, in, obj)
 	})
-	updatedOutputs.Appmesh.AddVirtualRouters(oldAppMeshVirtualRouters...)
+	appmeshOutputs.AddVirtualRouters(updatedAppMeshVirtualRouters...)
 
 	// SMI
 	// TrafficTargets
-	oldSmiTrafficTargets := oldOutputs.Smi.GetTrafficTargets().List(func(obj *smiaccessv1alpha2.TrafficTarget) bool {
-		return updatedOutputs.Smi.GetTrafficTargets().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+	oldOutputs.Smi.AddTrafficTargets(newSmiOutputs.GetTrafficTargets().List()...)
+	updatedAppMeshTrafficTargets := oldOutputs.Smi.GetTrafficTargets().List(func(obj *smiaccessv1alpha2.TrafficTarget) bool {
+		return shouldGarbageCollect(ctx, in, obj)
 	})
-	updatedOutputs.Smi.AddTrafficTargets(oldSmiTrafficTargets...)
+	smiOutputs.AddTrafficTargets(updatedAppMeshTrafficTargets...)
+
 	// HttpRouteGroups
-	oldSmiHttpRouteGroups := oldOutputs.Smi.GetHTTPRouteGroups().List(func(obj *smispecsv1alpha3.HTTPRouteGroup) bool {
-		return updatedOutputs.Smi.GetHTTPRouteGroups().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+	oldOutputs.Smi.AddHTTPRouteGroups(newSmiOutputs.GetHTTPRouteGroups().List()...)
+	updatedAppMeshHTTPRouteGroups := oldOutputs.Smi.GetHTTPRouteGroups().List(func(obj *smispecsv1alpha3.HTTPRouteGroup) bool {
+		return shouldGarbageCollect(ctx, in, obj)
 	})
-	updatedOutputs.Smi.AddHTTPRouteGroups(oldSmiHttpRouteGroups...)
+	smiOutputs.AddHTTPRouteGroups(updatedAppMeshHTTPRouteGroups...)
+
 	// TrafficSplits
-	oldSmiTrafficSplits := oldOutputs.Smi.GetTrafficSplits().List(func(obj *smisplitv1alpha2.TrafficSplit) bool {
-		return updatedOutputs.Smi.GetTrafficSplits().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+	oldOutputs.Smi.AddTrafficSplits(newSmiOutputs.GetTrafficSplits().List()...)
+	updatedAppMeshTrafficSplits := oldOutputs.Smi.GetTrafficSplits().List(func(obj *smisplitv1alpha2.TrafficSplit) bool {
+		return shouldGarbageCollect(ctx, in, obj)
 	})
-	updatedOutputs.Smi.AddTrafficSplits(oldSmiTrafficSplits...)
+	smiOutputs.AddTrafficSplits(updatedAppMeshTrafficSplits...)
 
 	// Local outputs
-	oldSecrets := oldOutputs.Local.GetSecrets().List(func(obj *corev1.Secret) bool {
-		return updatedOutputs.Local.GetSecrets().Has(obj) || shouldGarbageCollect(ctx, in, obj)
+	oldOutputs.Local.AddSecrets(newLocalOutputs.GetSecrets().List()...)
+	updatedSecrets := oldOutputs.Local.GetSecrets().List(func(obj *corev1.Secret) bool {
+		return shouldGarbageCollect(ctx, in, obj)
 	})
-	updatedOutputs.Local.AddSecrets(oldSecrets...)
+	localOutputs.AddSecrets(updatedSecrets...)
 
-	return updatedOutputs
+	return &Outputs{
+		Istio:   istioOutputs,
+		Appmesh: appmeshOutputs,
+		Smi:     smiOutputs,
+		Local:   localOutputs,
+	}
 }
 
 // Return true if the object should be garbage collected (i.e. deleted from k8s storage).
@@ -229,6 +276,7 @@ func shouldGarbageCollect(
 	in input.LocalSnapshot,
 	obj client.Object,
 ) bool {
+	// garbage collect if explicitly marked
 	if _, ok := obj.GetAnnotations()[metautils.GarbageCollectDirective]; ok {
 		return true
 	}
@@ -259,22 +307,27 @@ func shouldGarbageCollect(
 			}
 		// Networking parents
 		case networkingv1.TrafficPolicyGVK:
-			// TODO(harveyxia) does this generalize?
 			// Because TrafficPolicies are merged, only garbage collect output if *all* parent TrafficPolicies no longer exist
+			shouldGc := true
 			for _, resourceId := range resourceIds {
 				if in.TrafficPolicies().Has(resourceId) {
-					return false
+					shouldGc = false
 				}
 			}
-			return true
+			if shouldGc {
+				return true
+			}
 		case networkingv1.AccessPolicyGVK:
 			// Because AccessPolicies are merged, only garbage collect output if *all* parent AccessPolicies no longer exist
+			shouldGc := true
 			for _, resourceId := range resourceIds {
 				if in.AccessPolicies().Has(resourceId) {
-					return false
+					shouldGc = false
 				}
 			}
-			return true
+			if shouldGc {
+				return true
+			}
 		case networkingv1.VirtualMeshGVK:
 			for _, resourceId := range resourceIds {
 				if !in.VirtualMeshes().Has(resourceId) {

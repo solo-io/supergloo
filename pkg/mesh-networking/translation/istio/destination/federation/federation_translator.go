@@ -41,6 +41,7 @@ type Translator interface {
 		in input.LocalSnapshot,
 		destination *discoveryv1.Destination,
 		reporter reporting.Reporter,
+		trafficPolicyParents []ezkube.ResourceId,
 	) (
 		[]*networkingv1alpha3.ServiceEntry,
 		[]*networkingv1alpha3.VirtualService,
@@ -51,7 +52,7 @@ type Translator interface {
 	ShouldTranslate(
 		destination *discoveryv1.Destination,
 		eventObjs []ezkube.ResourceId,
-	) bool
+	) (bool, []ezkube.ResourceId)
 }
 
 type translator struct {
@@ -75,23 +76,37 @@ func NewTranslator(
 func (t *translator) ShouldTranslate(
 	destination *discoveryv1.Destination,
 	eventObjs []ezkube.ResourceId,
-) bool {
+) (bool, []ezkube.ResourceId) {
+	shouldTranslate := false
+	var trafficPolicyParents []ezkube.ResourceId
+
 	for _, eventObj := range eventObjs {
 
-		switch eventObj.(type) {
+		switch obj := eventObj.(type) {
 		case *discoveryv1.Destination:
 			if ezkube.RefsMatch(eventObj, destination) {
-				return true
+				shouldTranslate = true
 			}
 		case *networkingv1.VirtualMesh:
 			if destination.Status.GetAppliedFederation() != nil {
 				if ezkube.RefsMatch(eventObj, destination.Status.GetAppliedFederation().VirtualMeshRef) {
-					return true
+					shouldTranslate = true
+				}
+			}
+		case *networkingv1.TrafficPolicy:
+			// translate if any applied TrafficPolicy references this Destination as a TrafficShift and specifies subsets
+			// because the subsets must be defined on the traffic shift destination's DestinationRule
+			trafficShiftDestinations := obj.Spec.GetPolicy().GetTrafficShift().GetDestinations()
+			for _, trafficShiftDestination := range trafficShiftDestinations {
+				kubeService := trafficShiftDestination.GetKubeService()
+				if len(kubeService.GetSubset()) > 0 && destinationutils.IsDestinationForKubeService(destination, kubeService) {
+					shouldTranslate = true
+					trafficPolicyParents = append(trafficPolicyParents, obj)
 				}
 			}
 		}
 	}
-	return false
+	return shouldTranslate, trafficPolicyParents
 }
 
 // Translate translates a ServiceEntry, VirtualService and DestinationRule for the given Destination using the data in status.AppliedFederation.
@@ -100,6 +115,7 @@ func (t *translator) Translate(
 	in input.LocalSnapshot,
 	destination *discoveryv1.Destination,
 	reporter reporting.Reporter,
+	trafficPolicyParents []ezkube.ResourceId,
 ) (
 	[]*networkingv1alpha3.ServiceEntry,
 	[]*networkingv1alpha3.VirtualService,
@@ -149,7 +165,6 @@ func (t *translator) Translate(
 		serviceEntry, virtualService, destinationRule := t.translateForRemoteMesh(
 			ctx,
 			destination,
-			destinationMesh,
 			destinationVirtualMesh,
 			in,
 			remoteMesh,
@@ -157,19 +172,23 @@ func (t *translator) Translate(
 			reporter,
 		)
 
-		// Append the VirtualMesh as a parent to the outputs
+		// Annotate the VirtualMesh as a parent to the outputs
 		metautils.AnnotateParents(ctx, serviceEntry, map[schema.GroupVersionKind][]ezkube.ResourceId{
 			discoveryv1.DestinationGVK:  {destination},
 			networkingv1.VirtualMeshGVK: {destination.Status.AppliedFederation.GetVirtualMeshRef()},
 		})
-		metautils.AnnotateParents(ctx, virtualService, map[schema.GroupVersionKind][]ezkube.ResourceId{
-			discoveryv1.DestinationGVK:  {destination},
+		// Append the VirtualMesh to the parents that the VirtualService and DestinationRule translator have already added
+		metautils.AppendParents(ctx, virtualService, map[schema.GroupVersionKind][]ezkube.ResourceId{
 			networkingv1.VirtualMeshGVK: {destination.Status.AppliedFederation.GetVirtualMeshRef()},
 		})
-		metautils.AnnotateParents(ctx, destinationRule, map[schema.GroupVersionKind][]ezkube.ResourceId{
-			discoveryv1.DestinationGVK:  {destination},
+		// Append any TrafficPolicy parents to the DestinationRule
+		destinationRuleParents := map[schema.GroupVersionKind][]ezkube.ResourceId{
 			networkingv1.VirtualMeshGVK: {destination.Status.AppliedFederation.GetVirtualMeshRef()},
-		})
+		}
+		for _, tpParent := range trafficPolicyParents {
+			destinationRuleParents[networkingv1.TrafficPolicyGVK] = append(destinationRuleParents[networkingv1.TrafficPolicyGVK], tpParent)
+		}
+		metautils.AppendParents(ctx, destinationRule, destinationRuleParents)
 
 		serviceEntries = append(serviceEntries, serviceEntry)
 		virtualServices = append(virtualServices, virtualService)
@@ -248,7 +267,6 @@ func (t *translator) translateServiceEntryTemplate(
 func (t *translator) translateForRemoteMesh(
 	ctx context.Context,
 	destination *discoveryv1.Destination,
-	destinationMesh *discoveryv1.Mesh,
 	destinationVirtualMesh *networkingv1.VirtualMesh,
 	in input.LocalSnapshot,
 	remoteMesh *discoveryv1.Mesh,

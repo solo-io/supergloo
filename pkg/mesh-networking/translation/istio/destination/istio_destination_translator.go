@@ -105,8 +105,9 @@ func (t *translator) Translate(
 		outputs.AddAuthorizationPolicies(ap)
 	}
 
-	if t.federation.ShouldTranslate(destination, eventObjs) {
-		serviceEntries, virtualServices, destinationRules := t.federation.Translate(t.ctx, in, destination, reporter)
+	shouldTranslate, trafficPolicyParents := t.federation.ShouldTranslate(destination, eventObjs)
+	if shouldTranslate {
+		serviceEntries, virtualServices, destinationRules := t.federation.Translate(t.ctx, in, destination, reporter, trafficPolicyParents)
 		outputs.AddServiceEntries(serviceEntries...)
 		outputs.AddVirtualServices(virtualServices...)
 		outputs.AddDestinationRules(destinationRules...)

@@ -140,6 +140,48 @@ func AnnotateParents(
 	child.SetAnnotations(annotations)
 }
 
+// append to existing parent annotations, don't overwrite if entry already exists
+func AppendParents(
+	ctx context.Context,
+	child metav1.Object,
+	newParents map[schema.GroupVersionKind][]ezkube.ResourceId,
+) {
+
+	if reflect.ValueOf(child).IsNil() {
+		return
+	}
+
+	mergedParents := map[schema.GroupVersionKind][]ezkube.ResourceId{}
+
+	// add existing parents
+	for gvk, objRefs := range RetrieveParents(ctx, child) {
+		mergedParents[gvk] = []ezkube.ResourceId{}
+		for _, objRef := range objRefs {
+			mergedParents[gvk] = append(mergedParents[gvk], objRef)
+		}
+	}
+
+	// merge in new parents
+	for gvk, newObjRefs := range newParents {
+		existingObjRefs := mergedParents[gvk]
+
+		for _, newObjRef := range newObjRefs {
+			exists := false
+			for _, existingObjRef := range existingObjRefs {
+				if ezkube.RefsMatch(existingObjRef, newObjRef) {
+					exists = true
+				}
+			}
+
+			if !exists {
+				mergedParents[gvk] = append(mergedParents[gvk], newObjRef)
+			}
+		}
+	}
+
+	AnnotateParents(ctx, child, mergedParents)
+}
+
 // Retrieve parent objects from child's annotations, returned a mapping from GVK string to *skv2corev1.ObjectRef
 func RetrieveParents(
 	ctx context.Context,
