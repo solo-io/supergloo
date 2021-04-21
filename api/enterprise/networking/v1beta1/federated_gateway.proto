@@ -308,7 +308,7 @@ message FederatedGatewayStatus{
     // TODO: Add status fields
 }
 
-// if this is put as a sibling message to SSLFiles, codegen fails with some cue errors.
+// Note: This message needs to be at this level (rather than nested) due to cue restrictions.
 message SDSConfig {
     // Target uri for the sds channel. currently only a unix domain socket is supported.
     string target_uri = 1;

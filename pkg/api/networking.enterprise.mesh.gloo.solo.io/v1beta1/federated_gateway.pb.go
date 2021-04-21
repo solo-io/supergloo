@@ -351,7 +351,7 @@ type FederatedGatewaySpec_ConnectionHandler struct {
 
 	// Additional options for matching a connection to a specific gateway.
 	// This is required when more than one `connectionHandler` is specified for a single gateway.
-	// Typically this is used to serve different
+	// Typically this is used to serve different protocols on the same port.
 	ConnectionMatch *FederatedGatewaySpec_ConnectionHandler_ConnectionMatch `protobuf:"bytes,1,opt,name=connection_match,json=connectionMatch,proto3" json:"connection_match,omitempty"`
 	// The type of routes this handler will serve.
 	// HttpRoutes creates a listener with an http_connection_manager.

@@ -118,6 +118,7 @@ message Route {
 
 }
 
+// Note: This message needs to be at this level (rather than nested) due to cue restrictions.
 // Notice: RedirectAction is copied directly from https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/route/route.proto
 message RedirectAction {
     // The host portion of the URL will be swapped with this value.
@@ -166,6 +167,7 @@ message RedirectAction {
 }
 
 // TODO: Shuold we be using v4alpha now? https://github.com/envoyproxy/envoy/blob/5a8bfa20dc3c85ecb61826d122696ecaa75dffa0/api/envoy/config/route/v4alpha/route_components.proto#L1396
+// Note: This message needs to be at this level (rather than nested) due to cue restrictions.
 // DirectResponseAction is copied directly from https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/route/route.proto
 message DirectResponseAction {
     // Specifies the HTTP response status to be returned.
@@ -179,6 +181,7 @@ message DirectResponseAction {
     string body = 2;
 }
 
+// Note: This message needs to be at this level (rather than nested) due to cue restrictions.
 // DelegateActions are used to delegate routing decisions to other resources, for example Route Tables.
 message DelegateAction {
     

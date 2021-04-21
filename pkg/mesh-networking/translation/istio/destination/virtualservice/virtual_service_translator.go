@@ -214,7 +214,7 @@ func requestMatchersEqual(tp1, tp2 *v1.TrafficPolicySpec) bool {
 		httpRequestMatchersEqual(tp1.GetHttpRequestMatchers(), tp2.GetHttpRequestMatchers())
 }
 
-func httpRequestMatchersEqual(matchers1, matchers2 []*v1.TrafficPolicySpec_HttpMatcher) bool {
+func httpRequestMatchersEqual(matchers1, matchers2 []*commonv1.HttpMatcher) bool {
 	if len(matchers1) != len(matchers2) {
 		return false
 	}
@@ -482,7 +482,7 @@ func translateRequestMatcherHeaders(matchers []*commonv1.HeaderMatcher) (
 	return headerMatchers, inverseHeaderMatchers
 }
 
-func translateRequestMatcherQueryParams(matchers []*v1.TrafficPolicySpec_HttpMatcher_QueryParameterMatcher) map[string]*networkingv1alpha3spec.StringMatch {
+func translateRequestMatcherQueryParams(matchers []*commonv1.HttpMatcher_QueryParameterMatcher) map[string]*networkingv1alpha3spec.StringMatch {
 	var translatedQueryParamMatcher map[string]*networkingv1alpha3spec.StringMatch
 	if matchers != nil {
 		translatedQueryParamMatcher = map[string]*networkingv1alpha3spec.StringMatch{}
@@ -501,14 +501,14 @@ func translateRequestMatcherQueryParams(matchers []*v1.TrafficPolicySpec_HttpMat
 	return translatedQueryParamMatcher
 }
 
-func translateRequestMatcherPathSpecifier(matcher *v1.TrafficPolicySpec_HttpMatcher) *networkingv1alpha3spec.StringMatch {
+func translateRequestMatcherPathSpecifier(matcher *commonv1.HttpMatcher) *networkingv1alpha3spec.StringMatch {
 	if matcher != nil && matcher.GetPathSpecifier() != nil {
 		switch pathSpecifierType := matcher.GetPathSpecifier().(type) {
-		case *v1.TrafficPolicySpec_HttpMatcher_Exact:
+		case *commonv1.HttpMatcher_Exact:
 			return &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Exact{Exact: pathSpecifierType.Exact}}
-		case *v1.TrafficPolicySpec_HttpMatcher_Prefix:
+		case *commonv1.HttpMatcher_Prefix:
 			return &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Prefix{Prefix: pathSpecifierType.Prefix}}
-		case *v1.TrafficPolicySpec_HttpMatcher_Regex:
+		case *commonv1.HttpMatcher_Regex:
 			return &networkingv1alpha3spec.StringMatch{MatchType: &networkingv1alpha3spec.StringMatch_Regex{Regex: pathSpecifierType.Regex}}
 		}
 	}
