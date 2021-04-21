@@ -70,3 +70,15 @@ func (mr *MockReporterMockRecorder) ReportVirtualMeshToMesh(mesh, virtualMesh, e
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportVirtualMeshToMesh", reflect.TypeOf((*MockReporter)(nil).ReportVirtualMeshToMesh), mesh, virtualMesh, err)
 }
+
+// ReportVirtualMeshToDestination mocks base method
+func (m *MockReporter) ReportVirtualMeshToDestination(destination *v1.Destination, virtualMesh ezkube.ResourceId, err error) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "ReportVirtualMeshToDestination", destination, virtualMesh, err)
+}
+
+// ReportVirtualMeshToDestination indicates an expected call of ReportVirtualMeshToDestination
+func (mr *MockReporterMockRecorder) ReportVirtualMeshToDestination(destination, virtualMesh, err interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportVirtualMeshToDestination", reflect.TypeOf((*MockReporter)(nil).ReportVirtualMeshToDestination), destination, virtualMesh, err)
+}

@@ -120,7 +120,7 @@ func (r *Registrant) RegisterCluster(ctx context.Context) error {
 }
 
 func (r *Registrant) registerCluster(ctx context.Context) error {
-	logrus.Debug("%+v", r.Registration)
+	logrus.Debugf("%+v", r.Registration)
 	if err := r.Registration.RegisterCluster(ctx); err != nil {
 		return err
 	}
@@ -129,7 +129,7 @@ func (r *Registrant) registerCluster(ctx context.Context) error {
 }
 
 func (r *Registrant) deregisterCluster(ctx context.Context) error {
-	logrus.Debug("%+v", r.Registration)
+	logrus.Debugf("%+v", r.Registration)
 	if err := r.Registration.DeregisterCluster(ctx); err != nil {
 		return err
 	}

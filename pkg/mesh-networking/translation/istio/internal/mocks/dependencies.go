@@ -55,15 +55,15 @@ func (mr *MockDependencyFactoryMockRecorder) MakeDestinationTranslator(ctx, user
 }
 
 // MakeMeshTranslator mocks base method
-func (m *MockDependencyFactory) MakeMeshTranslator(ctx context.Context, userSupplied input.RemoteSnapshot, clusters v1alpha1sets.KubernetesClusterSet, secrets v1sets.SecretSet, workloads v1sets0.WorkloadSet, destinations v1sets0.DestinationSet) mesh.Translator {
+func (m *MockDependencyFactory) MakeMeshTranslator(ctx context.Context, secrets v1sets.SecretSet, workloads v1sets0.WorkloadSet) mesh.Translator {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MakeMeshTranslator", ctx, userSupplied, clusters, secrets, workloads, destinations)
+	ret := m.ctrl.Call(m, "MakeMeshTranslator", ctx, secrets, workloads)
 	ret0, _ := ret[0].(mesh.Translator)
 	return ret0
 }
 
 // MakeMeshTranslator indicates an expected call of MakeMeshTranslator
-func (mr *MockDependencyFactoryMockRecorder) MakeMeshTranslator(ctx, userSupplied, clusters, secrets, workloads, destinations interface{}) *gomock.Call {
+func (mr *MockDependencyFactoryMockRecorder) MakeMeshTranslator(ctx, secrets, workloads interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeMeshTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeMeshTranslator), ctx, userSupplied, clusters, secrets, workloads, destinations)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeMeshTranslator", reflect.TypeOf((*MockDependencyFactory)(nil).MakeMeshTranslator), ctx, secrets, workloads)
 }
