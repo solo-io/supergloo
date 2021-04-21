@@ -5,41 +5,15 @@ description: Install Gloo Mesh Enterprise
 weight: 100
 ---
 
-{{% notice note %}} Gloo Mesh Enterprise is required for this feature. {{% /notice %}}
-
-Gloo Mesh Enterprise uses a Kubernetes cluster to host the management plane (Gloo Mesh) while each service mesh can run on its own independent cluster. If you don't have access to multiple clusters, see the [Getting Started Guide]({{% versioned_link_path fromRoot="/getting_started/" %}}) to get started with Kubernetes in Docker, or refer to our [Using Kind]({{% versioned_link_path fromRoot="/setup/kind_setup" %}}) setup guide to provision two clusters.
-
 {{% notice note %}}
 Gloo Mesh Enterprise is the paid version of Gloo Mesh including the Gloo Mesh UI and multi-cluster role-based access control. To complete the installation you will need a license key. You can get a trial license by [requesting a demo](https://www.solo.io/products/gloo-mesh/) from the website.
 {{% /notice %}}
 
-This document describes how to install Gloo Mesh Enterprise.
+In a typical deployment, Gloo Mesh Enterprise uses a single Kubernetes cluster to host the management plane while each service mesh can run on its own independent cluster.
+This document describes how to install the Gloo Mesh Enterprise management plane components with both `meshctl` and Helm.
 
-A conceptual overview of the Gloo Mesh Enterprise architecture can be found [here]({{% versioned_link_path fromRoot="/concepts/relay" %}}). Make sure you have followed the [prerequisites guide]({{% versioned_link_path fromRoot="/setup/prerequisites/enterprise_prerequisites/" %}}). We also recommend following our guide on [configuring Role-based API control]({{% versioned_link_path fromRoot="/guides/configure_role_based_api//" %}}).
-
-## Assumptions for setup
-
-We will assume in this and following guides that we have access to two clusters and the following two contexts available in our `kubeconfig` file. 
-
-Your actual context names will likely be different.
-
-* `mgmt-cluster-context`
-    - kubeconfig context pointing to a cluster where we will install and operate Gloo Mesh Enterprise
-* `remote-cluster-context`
-    - kubeconfig context pointing to a cluster where we will install and manage a service mesh using Gloo Mesh Enterprise
-
-To verify you're running the following commands in the correct context, run:
-
-```shell
-MGMT_CONTEXT=kind-mgmt-cluster # Change value as needed
-REMOTE_CONTEXT=kind-remote-cluster # Change value as needed
-
-kubectl config use-context $MGMT_CONTEXT
-```
-
-## Install Gloo Mesh Enterprise
-
-Below we will show examples of installing Gloo Mesh Enterprise with both `meshctl` and Helm.
+TODO joekelley maybe remove the prerequisites guide and reference to rbac.
+A conceptual overview of the Gloo Mesh Enterprise architecture can be found [here]({{% versioned_link_path fromRoot="/concepts/relay" %}}). Make sure you have followed the [prerequisites guide]({{% versioned_link_path fromRoot="/setup/prerequisites/enterprise_prerequisites/" %}}). We also recommend following our guide on [configuring Role-based API control]({{% versioned_link_path fromRoot="/guides/configure_role_based_api/" %}}).
 
 ### Installing with `meshctl`
 
@@ -51,13 +25,13 @@ You can also quickly install like this:
 curl -sL https://run.solo.io/meshctl/install | sh
 ```
 
-Installing Gloo Mesh Enterprise with `meshctl` is a simple process. You will use the command `meshctl install enterprise` and supply the license key, as well as any chart values you want to update, and arguments pointing to the cluster where Gloo Mesh Enterprise will be installed. For our example, we are going to install Gloo Mesh Enterprise on the cluster `mgmt-cluster`. First, let's set a variable for the license key.
+Installing Gloo Mesh Enterprise with `meshctl` is a simple process. You will use the command `meshctl install enterprise` and supply the license key, as well as any chart values you want to update, and arguments pointing to the cluster where Gloo Mesh Enterprise will be installed. For our example, we are going to install Gloo Mesh Enterprise on the cluster currently in context. First, let's set a variable for the license key.
 
 ```shell
 GLOO_MESH_LICENSE_KEY=<your_key_here> # You'll need to supply your own key
 ```
 
-We are not going to change any of the default values in the underlying chart, so the only argument needed is the license key.
+We are not going to change any of the default values in the underlying chart, so the only argument needed is the license key. However `meshctl install enterprise` is backed by the Gloo Mesh Enterprise Helm chart, so you can customize your installation with a Helm values override via the flag `--chart-values-file`. Review the Gloo Mesh Enterprise Helm values documentation [here]({{% versioned_link_path fromRoot="/reference/helm/gloo_mesh_enterprise/" %}}).
 
 ```shell
 meshctl install enterprise --license $GLOO_MESH_LICENSE_KEY
@@ -102,7 +76,7 @@ helm search repo gloo-mesh-enterprise
 helm show values gloo-mesh-enterprise/gloo-mesh-enterprise
 ```
 
-Note that the `gloo-mesh-enterprise` Helm chart bundles multiple components, including `enterprise-networking`, `rbac-webhook`, and `gloo-mesh-ui`. Each is versioned in step with the parent `gloo-mesh-enterprise` chart, and each has its own Helm values for advanced customization.
+Note that the `gloo-mesh-enterprise` Helm chart bundles multiple components, including `enterprise-networking`, `rbac-webhook`, and `gloo-mesh-ui`. Each is versioned in step with the parent `gloo-mesh-enterprise` chart, and each has its own Helm values for advanced customization. Review the Gloo Mesh Enterprise Helm values documentation [here]({{% versioned_link_path fromRoot="/reference/helm/gloo_mesh_enterprise/" %}}).
 
 4. Install
 
