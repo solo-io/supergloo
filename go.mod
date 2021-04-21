@@ -18,6 +18,7 @@ replace (
 	k8s.io/client-go => k8s.io/client-go v0.19.7
 	k8s.io/kubectl => k8s.io/kubectl v0.19.7
 
+	github.com/solo-io/skv2 => /Users/harvey/skv2
 )
 
 require (

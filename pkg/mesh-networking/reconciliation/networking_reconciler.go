@@ -3,9 +3,11 @@ package reconciliation
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
+	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/stats"
 
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/settingsutils"
@@ -25,7 +27,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/go-utils/contextutils"
 	skinput "github.com/solo-io/skv2/contrib/pkg/input"
-	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	skv2predicate "github.com/solo-io/skv2/pkg/predicate"
@@ -44,7 +45,7 @@ import (
 // function which defines how the Networking reconciler should be registered with internal components.
 type RegisterReconcilerFunc func(
 	ctx context.Context,
-	reconcile skinput.SingleClusterReconcileFunc,
+	reconcile skinput.EventBasedReconcileFunc,
 	reconcileOpts input.ReconcileOptions,
 ) (skinput.InputReconciler, error)
 
@@ -182,8 +183,20 @@ func Start(
 }
 
 // reconcile global state
-func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
-	contextutils.LoggerFrom(r.ctx).Debugf("object triggered resync: %T<%v>", obj, sets.Key(obj))
+func (r *networkingReconciler) reconcile(
+	localEventObjs []ezkube.ResourceId,
+	remoteEventObjs []ezkube.ClusterResourceId,
+) (bool, error) {
+	// TODO(harveyxia): revisit this log line
+	var localRefs strings.Builder
+	var remoteRefs strings.Builder
+	for _, obj := range localEventObjs {
+		localRefs.WriteString(sets.Key(obj) + ",")
+	}
+	for _, obj := range remoteEventObjs {
+		remoteRefs.WriteString(sets.Key(obj) + ",")
+	}
+	contextutils.LoggerFrom(r.ctx).Debugf("objects triggered resync\nlocal: %s\n remote: %s", localRefs.String(), remoteRefs.String())
 
 	r.totalReconciles++
 
@@ -242,16 +255,14 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 		}
 	}
 
-	eventObjs := []ezkube.ResourceId{obj}
-
 	// apply policies to the discovery resources they target
-	r.applier.Apply(ctx, eventObjs, inputSnap, userSupplied)
+	r.applier.Apply(ctx, localEventObjs, remoteEventObjs, inputSnap, userSupplied)
 
 	// append errors as we still want to sync statuses if applying translation fails
 	var errs error
 
 	// translate and apply outputs
-	if err := r.applyTranslation(ctx, eventObjs, inputSnap, userSupplied); err != nil {
+	if err := r.applyTranslation(ctx, localEventObjs, remoteEventObjs, inputSnap, userSupplied); err != nil {
 		errs = multierror.Append(errs, err)
 	}
 
@@ -275,9 +286,15 @@ func (r *networkingReconciler) reconcile(obj ezkube.ResourceId) (bool, error) {
 	return false, errs
 }
 
-func (r *networkingReconciler) applyTranslation(ctx context.Context, eventObjs []ezkube.ResourceId, in input.LocalSnapshot, userSupplied input.RemoteSnapshot) error {
+func (r *networkingReconciler) applyTranslation(
+	ctx context.Context,
+	localEventObjs []ezkube.ResourceId,
+	remoteEventObjs []ezkube.ClusterResourceId,
+	in input.LocalSnapshot,
+	userSupplied input.RemoteSnapshot,
+) error {
 
-	outputSnap, err := r.translator.Translate(ctx, eventObjs, in, userSupplied, r.reporter)
+	outputSnap, err := r.translator.Translate(ctx, localEventObjs, remoteEventObjs, in, userSupplied, r.reporter)
 	if err != nil {
 		// internal translator errors should never happen
 		return err

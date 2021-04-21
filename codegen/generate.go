@@ -45,6 +45,7 @@ var (
 			GeneratedCodeRoot:    "pkg/api/networking.mesh.gloo.solo.io",
 			LocalInputResources:  io.NetworkingInputTypes,
 			RemoteInputResources: io.IstioNetworkingOutputTypes.Snapshot,
+			EventBased:           true,
 			OutputResources: []io.OutputSnapshot{
 				io.IstioNetworkingOutputTypes,
 				io.SmiNetworkingOutputTypes,

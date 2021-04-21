@@ -39,7 +39,8 @@ type Translator interface {
 	// errors reflect an internal translation error and should never happen
 	Translate(
 		ctx context.Context,
-		eventObjs []ezkube.ResourceId,
+		localEventObjs []ezkube.ResourceId,
+		remoteEventObjs []ezkube.ClusterResourceId,
 		in input.LocalSnapshot,
 		userSupplied input.RemoteSnapshot,
 		reporter reporting.Reporter,
@@ -70,9 +71,11 @@ func NewTranslator(
 // Translate all input objects into corresponding output objects.
 // eventObjs is the set of objects for which events have occurred since the last invocation of Translate,
 // which is used to limit processing to only what's relevant given the changed input objects.
+// TODO(harveyxia): use remoteEventObjs for conflict detection translation
 func (t *translator) Translate(
 	ctx context.Context,
-	eventObjs []ezkube.ResourceId,
+	localEventObjs []ezkube.ResourceId,
+	remoteEventObjs []ezkube.ClusterResourceId,
 	in input.LocalSnapshot,
 	userSupplied input.RemoteSnapshot,
 	reporter reporting.Reporter,
@@ -85,7 +88,7 @@ func (t *translator) Translate(
 	smiOutputs := smioutput.NewBuilder(ctx, fmt.Sprintf("networking-smi-%v", t.totalTranslates))
 	localOutputs := localoutput.NewBuilder(ctx, fmt.Sprintf("networking-local-%v", t.totalTranslates))
 
-	t.istioTranslator.Translate(ctx, eventObjs, in, userSupplied, istioOutputs, localOutputs, reporter)
+	t.istioTranslator.Translate(ctx, localEventObjs, in, userSupplied, istioOutputs, localOutputs, reporter)
 	t.appmeshTranslator.Translate(ctx, in, appmeshOutputs, reporter)
 	t.osmTranslator.Translate(ctx, in, smiOutputs, reporter)
 

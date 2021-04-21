@@ -74,100 +74,97 @@ type ReconcileOptions struct {
 
 // register the given multi cluster reconcile func with the cluster watcher
 // register the given single cluster reconcile func with the local manager
-func RegisterInputReconciler(
+func RegisterEventBasedInputReconciler(
 	ctx context.Context,
 	clusters multicluster.ClusterWatcher,
-	multiClusterReconcileFunc input.MultiClusterReconcileFunc,
 	mgr manager.Manager,
-	singleClusterReconcileFunc input.SingleClusterReconcileFunc,
+	reconcileFunc input.EventBasedReconcileFunc,
 	options ReconcileOptions,
 ) (input.InputReconciler, error) {
 	// [certificates.mesh.gloo.solo.io/v1 xds.agent.enterprise.mesh.gloo.solo.io/v1beta1 networking.istio.io/v1alpha3 security.istio.io/v1beta1] false 4
 	// [settings.mesh.gloo.solo.io/v1 discovery.mesh.gloo.solo.io/v1 networking.mesh.gloo.solo.io/v1 networking.enterprise.mesh.gloo.solo.io/v1beta1 observability.enterprise.mesh.gloo.solo.io/v1 v1 multicluster.solo.io/v1alpha1]
-
-	base := input.NewInputReconciler(
+	base := input.NewEventBasedInputReconciler(
 		ctx,
-		multiClusterReconcileFunc,
-		singleClusterReconcileFunc,
+		reconcileFunc,
 		options.ReconcileInterval,
 	)
 
 	// initialize reconcile loops
 
 	// initialize IssuedCertificates reconcile loop for remote clusters
-	certificates_mesh_gloo_solo_io_v1_controllers.NewMulticlusterIssuedCertificateReconcileLoop("IssuedCertificate", clusters, options.Remote.IssuedCertificates).AddMulticlusterIssuedCertificateReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	certificates_mesh_gloo_solo_io_v1_controllers.NewMulticlusterIssuedCertificateReconcileLoop("IssuedCertificate", clusters, options.Remote.IssuedCertificates).AddMulticlusterIssuedCertificateReconciler(ctx, &remoteEventBasedInputReconciler{base: base}, options.Remote.Predicates...)
 	// initialize PodBounceDirectives reconcile loop for remote clusters
-	certificates_mesh_gloo_solo_io_v1_controllers.NewMulticlusterPodBounceDirectiveReconcileLoop("PodBounceDirective", clusters, options.Remote.PodBounceDirectives).AddMulticlusterPodBounceDirectiveReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	certificates_mesh_gloo_solo_io_v1_controllers.NewMulticlusterPodBounceDirectiveReconcileLoop("PodBounceDirective", clusters, options.Remote.PodBounceDirectives).AddMulticlusterPodBounceDirectiveReconciler(ctx, &remoteEventBasedInputReconciler{base: base}, options.Remote.Predicates...)
 
 	// initialize XdsConfigs reconcile loop for remote clusters
-	xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewMulticlusterXdsConfigReconcileLoop("XdsConfig", clusters, options.Remote.XdsConfigs).AddMulticlusterXdsConfigReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	xds_agent_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewMulticlusterXdsConfigReconcileLoop("XdsConfig", clusters, options.Remote.XdsConfigs).AddMulticlusterXdsConfigReconciler(ctx, &remoteEventBasedInputReconciler{base: base}, options.Remote.Predicates...)
 
 	// initialize DestinationRules reconcile loop for remote clusters
-	networking_istio_io_v1alpha3_controllers.NewMulticlusterDestinationRuleReconcileLoop("DestinationRule", clusters, options.Remote.DestinationRules).AddMulticlusterDestinationRuleReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	networking_istio_io_v1alpha3_controllers.NewMulticlusterDestinationRuleReconcileLoop("DestinationRule", clusters, options.Remote.DestinationRules).AddMulticlusterDestinationRuleReconciler(ctx, &remoteEventBasedInputReconciler{base: base}, options.Remote.Predicates...)
 	// initialize EnvoyFilters reconcile loop for remote clusters
-	networking_istio_io_v1alpha3_controllers.NewMulticlusterEnvoyFilterReconcileLoop("EnvoyFilter", clusters, options.Remote.EnvoyFilters).AddMulticlusterEnvoyFilterReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	networking_istio_io_v1alpha3_controllers.NewMulticlusterEnvoyFilterReconcileLoop("EnvoyFilter", clusters, options.Remote.EnvoyFilters).AddMulticlusterEnvoyFilterReconciler(ctx, &remoteEventBasedInputReconciler{base: base}, options.Remote.Predicates...)
 	// initialize Gateways reconcile loop for remote clusters
-	networking_istio_io_v1alpha3_controllers.NewMulticlusterGatewayReconcileLoop("Gateway", clusters, options.Remote.Gateways).AddMulticlusterGatewayReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	networking_istio_io_v1alpha3_controllers.NewMulticlusterGatewayReconcileLoop("Gateway", clusters, options.Remote.Gateways).AddMulticlusterGatewayReconciler(ctx, &remoteEventBasedInputReconciler{base: base}, options.Remote.Predicates...)
 	// initialize ServiceEntries reconcile loop for remote clusters
-	networking_istio_io_v1alpha3_controllers.NewMulticlusterServiceEntryReconcileLoop("ServiceEntry", clusters, options.Remote.ServiceEntries).AddMulticlusterServiceEntryReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	networking_istio_io_v1alpha3_controllers.NewMulticlusterServiceEntryReconcileLoop("ServiceEntry", clusters, options.Remote.ServiceEntries).AddMulticlusterServiceEntryReconciler(ctx, &remoteEventBasedInputReconciler{base: base}, options.Remote.Predicates...)
 	// initialize VirtualServices reconcile loop for remote clusters
-	networking_istio_io_v1alpha3_controllers.NewMulticlusterVirtualServiceReconcileLoop("VirtualService", clusters, options.Remote.VirtualServices).AddMulticlusterVirtualServiceReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	networking_istio_io_v1alpha3_controllers.NewMulticlusterVirtualServiceReconcileLoop("VirtualService", clusters, options.Remote.VirtualServices).AddMulticlusterVirtualServiceReconciler(ctx, &remoteEventBasedInputReconciler{base: base}, options.Remote.Predicates...)
 
 	// initialize AuthorizationPolicies reconcile loop for remote clusters
-	security_istio_io_v1beta1_controllers.NewMulticlusterAuthorizationPolicyReconcileLoop("AuthorizationPolicy", clusters, options.Remote.AuthorizationPolicies).AddMulticlusterAuthorizationPolicyReconciler(ctx, &remoteInputReconciler{base: base}, options.Remote.Predicates...)
+	security_istio_io_v1beta1_controllers.NewMulticlusterAuthorizationPolicyReconcileLoop("AuthorizationPolicy", clusters, options.Remote.AuthorizationPolicies).AddMulticlusterAuthorizationPolicyReconciler(ctx, &remoteEventBasedInputReconciler{base: base}, options.Remote.Predicates...)
 
 	// initialize Settings reconcile loop for local cluster
-	if err := settings_mesh_gloo_solo_io_v1_controllers.NewSettingsReconcileLoop("Settings", mgr, options.Local.Settings).RunSettingsReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	if err := settings_mesh_gloo_solo_io_v1_controllers.NewSettingsReconcileLoop("Settings", mgr, options.Local.Settings).RunSettingsReconciler(ctx, &localEventBasedInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
 	// initialize Destinations reconcile loop for local cluster
-	if err := discovery_mesh_gloo_solo_io_v1_controllers.NewDestinationReconcileLoop("Destination", mgr, options.Local.Destinations).RunDestinationReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	if err := discovery_mesh_gloo_solo_io_v1_controllers.NewDestinationReconcileLoop("Destination", mgr, options.Local.Destinations).RunDestinationReconciler(ctx, &localEventBasedInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 	// initialize Workloads reconcile loop for local cluster
-	if err := discovery_mesh_gloo_solo_io_v1_controllers.NewWorkloadReconcileLoop("Workload", mgr, options.Local.Workloads).RunWorkloadReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	if err := discovery_mesh_gloo_solo_io_v1_controllers.NewWorkloadReconcileLoop("Workload", mgr, options.Local.Workloads).RunWorkloadReconciler(ctx, &localEventBasedInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 	// initialize Meshes reconcile loop for local cluster
-	if err := discovery_mesh_gloo_solo_io_v1_controllers.NewMeshReconcileLoop("Mesh", mgr, options.Local.Meshes).RunMeshReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	if err := discovery_mesh_gloo_solo_io_v1_controllers.NewMeshReconcileLoop("Mesh", mgr, options.Local.Meshes).RunMeshReconciler(ctx, &localEventBasedInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
 	// initialize TrafficPolicies reconcile loop for local cluster
-	if err := networking_mesh_gloo_solo_io_v1_controllers.NewTrafficPolicyReconcileLoop("TrafficPolicy", mgr, options.Local.TrafficPolicies).RunTrafficPolicyReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	if err := networking_mesh_gloo_solo_io_v1_controllers.NewTrafficPolicyReconcileLoop("TrafficPolicy", mgr, options.Local.TrafficPolicies).RunTrafficPolicyReconciler(ctx, &localEventBasedInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 	// initialize AccessPolicies reconcile loop for local cluster
-	if err := networking_mesh_gloo_solo_io_v1_controllers.NewAccessPolicyReconcileLoop("AccessPolicy", mgr, options.Local.AccessPolicies).RunAccessPolicyReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	if err := networking_mesh_gloo_solo_io_v1_controllers.NewAccessPolicyReconcileLoop("AccessPolicy", mgr, options.Local.AccessPolicies).RunAccessPolicyReconciler(ctx, &localEventBasedInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 	// initialize VirtualMeshes reconcile loop for local cluster
-	if err := networking_mesh_gloo_solo_io_v1_controllers.NewVirtualMeshReconcileLoop("VirtualMesh", mgr, options.Local.VirtualMeshes).RunVirtualMeshReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	if err := networking_mesh_gloo_solo_io_v1_controllers.NewVirtualMeshReconcileLoop("VirtualMesh", mgr, options.Local.VirtualMeshes).RunVirtualMeshReconciler(ctx, &localEventBasedInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
 	// initialize WasmDeployments reconcile loop for local cluster
-	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewWasmDeploymentReconcileLoop("WasmDeployment", mgr, options.Local.WasmDeployments).RunWasmDeploymentReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewWasmDeploymentReconcileLoop("WasmDeployment", mgr, options.Local.WasmDeployments).RunWasmDeploymentReconciler(ctx, &localEventBasedInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 	// initialize VirtualDestinations reconcile loop for local cluster
-	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewVirtualDestinationReconcileLoop("VirtualDestination", mgr, options.Local.VirtualDestinations).RunVirtualDestinationReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	if err := networking_enterprise_mesh_gloo_solo_io_v1beta1_controllers.NewVirtualDestinationReconcileLoop("VirtualDestination", mgr, options.Local.VirtualDestinations).RunVirtualDestinationReconciler(ctx, &localEventBasedInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
 	// initialize AccessLogRecords reconcile loop for local cluster
-	if err := observability_enterprise_mesh_gloo_solo_io_v1_controllers.NewAccessLogRecordReconcileLoop("AccessLogRecord", mgr, options.Local.AccessLogRecords).RunAccessLogRecordReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	if err := observability_enterprise_mesh_gloo_solo_io_v1_controllers.NewAccessLogRecordReconcileLoop("AccessLogRecord", mgr, options.Local.AccessLogRecords).RunAccessLogRecordReconciler(ctx, &localEventBasedInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
 	// initialize Secrets reconcile loop for local cluster
-	if err := v1_controllers.NewSecretReconcileLoop("Secret", mgr, options.Local.Secrets).RunSecretReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	if err := v1_controllers.NewSecretReconcileLoop("Secret", mgr, options.Local.Secrets).RunSecretReconciler(ctx, &localEventBasedInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
 	// initialize KubernetesClusters reconcile loop for local cluster
-	if err := multicluster_solo_io_v1alpha1_controllers.NewKubernetesClusterReconcileLoop("KubernetesCluster", mgr, options.Local.KubernetesClusters).RunKubernetesClusterReconciler(ctx, &localInputReconciler{base: base}, options.Local.Predicates...); err != nil {
+	if err := multicluster_solo_io_v1alpha1_controllers.NewKubernetesClusterReconcileLoop("KubernetesCluster", mgr, options.Local.KubernetesClusters).RunKubernetesClusterReconciler(ctx, &localEventBasedInputReconciler{base: base}, options.Local.Predicates...); err != nil {
 		return nil, err
 	}
 
@@ -203,16 +200,16 @@ type RemoteReconcileOptions struct {
 	Predicates []predicate.Predicate
 }
 
-type remoteInputReconciler struct {
+type remoteEventBasedInputReconciler struct {
 	base input.InputReconciler
 }
 
-func (r *remoteInputReconciler) ReconcileIssuedCertificate(clusterName string, obj *certificates_mesh_gloo_solo_io_v1.IssuedCertificate) (reconcile.Result, error) {
+func (r *remoteEventBasedInputReconciler) ReconcileIssuedCertificate(clusterName string, obj *certificates_mesh_gloo_solo_io_v1.IssuedCertificate) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileRemoteGeneric(obj)
 }
 
-func (r *remoteInputReconciler) ReconcileIssuedCertificateDeletion(clusterName string, obj reconcile.Request) error {
+func (r *remoteEventBasedInputReconciler) ReconcileIssuedCertificateDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -222,12 +219,12 @@ func (r *remoteInputReconciler) ReconcileIssuedCertificateDeletion(clusterName s
 	return err
 }
 
-func (r *remoteInputReconciler) ReconcilePodBounceDirective(clusterName string, obj *certificates_mesh_gloo_solo_io_v1.PodBounceDirective) (reconcile.Result, error) {
+func (r *remoteEventBasedInputReconciler) ReconcilePodBounceDirective(clusterName string, obj *certificates_mesh_gloo_solo_io_v1.PodBounceDirective) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileRemoteGeneric(obj)
 }
 
-func (r *remoteInputReconciler) ReconcilePodBounceDirectiveDeletion(clusterName string, obj reconcile.Request) error {
+func (r *remoteEventBasedInputReconciler) ReconcilePodBounceDirectiveDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -237,12 +234,12 @@ func (r *remoteInputReconciler) ReconcilePodBounceDirectiveDeletion(clusterName 
 	return err
 }
 
-func (r *remoteInputReconciler) ReconcileXdsConfig(clusterName string, obj *xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig) (reconcile.Result, error) {
+func (r *remoteEventBasedInputReconciler) ReconcileXdsConfig(clusterName string, obj *xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileRemoteGeneric(obj)
 }
 
-func (r *remoteInputReconciler) ReconcileXdsConfigDeletion(clusterName string, obj reconcile.Request) error {
+func (r *remoteEventBasedInputReconciler) ReconcileXdsConfigDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -252,12 +249,12 @@ func (r *remoteInputReconciler) ReconcileXdsConfigDeletion(clusterName string, o
 	return err
 }
 
-func (r *remoteInputReconciler) ReconcileDestinationRule(clusterName string, obj *networking_istio_io_v1alpha3.DestinationRule) (reconcile.Result, error) {
+func (r *remoteEventBasedInputReconciler) ReconcileDestinationRule(clusterName string, obj *networking_istio_io_v1alpha3.DestinationRule) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileRemoteGeneric(obj)
 }
 
-func (r *remoteInputReconciler) ReconcileDestinationRuleDeletion(clusterName string, obj reconcile.Request) error {
+func (r *remoteEventBasedInputReconciler) ReconcileDestinationRuleDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -267,12 +264,12 @@ func (r *remoteInputReconciler) ReconcileDestinationRuleDeletion(clusterName str
 	return err
 }
 
-func (r *remoteInputReconciler) ReconcileEnvoyFilter(clusterName string, obj *networking_istio_io_v1alpha3.EnvoyFilter) (reconcile.Result, error) {
+func (r *remoteEventBasedInputReconciler) ReconcileEnvoyFilter(clusterName string, obj *networking_istio_io_v1alpha3.EnvoyFilter) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileRemoteGeneric(obj)
 }
 
-func (r *remoteInputReconciler) ReconcileEnvoyFilterDeletion(clusterName string, obj reconcile.Request) error {
+func (r *remoteEventBasedInputReconciler) ReconcileEnvoyFilterDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -282,12 +279,12 @@ func (r *remoteInputReconciler) ReconcileEnvoyFilterDeletion(clusterName string,
 	return err
 }
 
-func (r *remoteInputReconciler) ReconcileGateway(clusterName string, obj *networking_istio_io_v1alpha3.Gateway) (reconcile.Result, error) {
+func (r *remoteEventBasedInputReconciler) ReconcileGateway(clusterName string, obj *networking_istio_io_v1alpha3.Gateway) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileRemoteGeneric(obj)
 }
 
-func (r *remoteInputReconciler) ReconcileGatewayDeletion(clusterName string, obj reconcile.Request) error {
+func (r *remoteEventBasedInputReconciler) ReconcileGatewayDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -297,12 +294,12 @@ func (r *remoteInputReconciler) ReconcileGatewayDeletion(clusterName string, obj
 	return err
 }
 
-func (r *remoteInputReconciler) ReconcileServiceEntry(clusterName string, obj *networking_istio_io_v1alpha3.ServiceEntry) (reconcile.Result, error) {
+func (r *remoteEventBasedInputReconciler) ReconcileServiceEntry(clusterName string, obj *networking_istio_io_v1alpha3.ServiceEntry) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileRemoteGeneric(obj)
 }
 
-func (r *remoteInputReconciler) ReconcileServiceEntryDeletion(clusterName string, obj reconcile.Request) error {
+func (r *remoteEventBasedInputReconciler) ReconcileServiceEntryDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -312,12 +309,12 @@ func (r *remoteInputReconciler) ReconcileServiceEntryDeletion(clusterName string
 	return err
 }
 
-func (r *remoteInputReconciler) ReconcileVirtualService(clusterName string, obj *networking_istio_io_v1alpha3.VirtualService) (reconcile.Result, error) {
+func (r *remoteEventBasedInputReconciler) ReconcileVirtualService(clusterName string, obj *networking_istio_io_v1alpha3.VirtualService) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileRemoteGeneric(obj)
 }
 
-func (r *remoteInputReconciler) ReconcileVirtualServiceDeletion(clusterName string, obj reconcile.Request) error {
+func (r *remoteEventBasedInputReconciler) ReconcileVirtualServiceDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -327,12 +324,12 @@ func (r *remoteInputReconciler) ReconcileVirtualServiceDeletion(clusterName stri
 	return err
 }
 
-func (r *remoteInputReconciler) ReconcileAuthorizationPolicy(clusterName string, obj *security_istio_io_v1beta1.AuthorizationPolicy) (reconcile.Result, error) {
+func (r *remoteEventBasedInputReconciler) ReconcileAuthorizationPolicy(clusterName string, obj *security_istio_io_v1beta1.AuthorizationPolicy) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
 	return r.base.ReconcileRemoteGeneric(obj)
 }
 
-func (r *remoteInputReconciler) ReconcileAuthorizationPolicyDeletion(clusterName string, obj reconcile.Request) error {
+func (r *remoteEventBasedInputReconciler) ReconcileAuthorizationPolicyDeletion(clusterName string, obj reconcile.Request) error {
 	ref := &sk_core_v1.ClusterObjectRef{
 		Name:        obj.Name,
 		Namespace:   obj.Namespace,
@@ -380,15 +377,15 @@ type LocalReconcileOptions struct {
 	Predicates []predicate.Predicate
 }
 
-type localInputReconciler struct {
+type localEventBasedInputReconciler struct {
 	base input.InputReconciler
 }
 
-func (r *localInputReconciler) ReconcileSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) (reconcile.Result, error) {
+func (r *localEventBasedInputReconciler) ReconcileSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 
-func (r *localInputReconciler) ReconcileSettingsDeletion(obj reconcile.Request) error {
+func (r *localEventBasedInputReconciler) ReconcileSettingsDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
@@ -397,11 +394,11 @@ func (r *localInputReconciler) ReconcileSettingsDeletion(obj reconcile.Request) 
 	return err
 }
 
-func (r *localInputReconciler) ReconcileDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) (reconcile.Result, error) {
+func (r *localEventBasedInputReconciler) ReconcileDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 
-func (r *localInputReconciler) ReconcileDestinationDeletion(obj reconcile.Request) error {
+func (r *localEventBasedInputReconciler) ReconcileDestinationDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
@@ -410,11 +407,11 @@ func (r *localInputReconciler) ReconcileDestinationDeletion(obj reconcile.Reques
 	return err
 }
 
-func (r *localInputReconciler) ReconcileWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) (reconcile.Result, error) {
+func (r *localEventBasedInputReconciler) ReconcileWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 
-func (r *localInputReconciler) ReconcileWorkloadDeletion(obj reconcile.Request) error {
+func (r *localEventBasedInputReconciler) ReconcileWorkloadDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
@@ -423,11 +420,11 @@ func (r *localInputReconciler) ReconcileWorkloadDeletion(obj reconcile.Request) 
 	return err
 }
 
-func (r *localInputReconciler) ReconcileMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) (reconcile.Result, error) {
+func (r *localEventBasedInputReconciler) ReconcileMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 
-func (r *localInputReconciler) ReconcileMeshDeletion(obj reconcile.Request) error {
+func (r *localEventBasedInputReconciler) ReconcileMeshDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
@@ -436,11 +433,11 @@ func (r *localInputReconciler) ReconcileMeshDeletion(obj reconcile.Request) erro
 	return err
 }
 
-func (r *localInputReconciler) ReconcileTrafficPolicy(obj *networking_mesh_gloo_solo_io_v1.TrafficPolicy) (reconcile.Result, error) {
+func (r *localEventBasedInputReconciler) ReconcileTrafficPolicy(obj *networking_mesh_gloo_solo_io_v1.TrafficPolicy) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 
-func (r *localInputReconciler) ReconcileTrafficPolicyDeletion(obj reconcile.Request) error {
+func (r *localEventBasedInputReconciler) ReconcileTrafficPolicyDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
@@ -449,11 +446,11 @@ func (r *localInputReconciler) ReconcileTrafficPolicyDeletion(obj reconcile.Requ
 	return err
 }
 
-func (r *localInputReconciler) ReconcileAccessPolicy(obj *networking_mesh_gloo_solo_io_v1.AccessPolicy) (reconcile.Result, error) {
+func (r *localEventBasedInputReconciler) ReconcileAccessPolicy(obj *networking_mesh_gloo_solo_io_v1.AccessPolicy) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 
-func (r *localInputReconciler) ReconcileAccessPolicyDeletion(obj reconcile.Request) error {
+func (r *localEventBasedInputReconciler) ReconcileAccessPolicyDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
@@ -462,11 +459,11 @@ func (r *localInputReconciler) ReconcileAccessPolicyDeletion(obj reconcile.Reque
 	return err
 }
 
-func (r *localInputReconciler) ReconcileVirtualMesh(obj *networking_mesh_gloo_solo_io_v1.VirtualMesh) (reconcile.Result, error) {
+func (r *localEventBasedInputReconciler) ReconcileVirtualMesh(obj *networking_mesh_gloo_solo_io_v1.VirtualMesh) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 
-func (r *localInputReconciler) ReconcileVirtualMeshDeletion(obj reconcile.Request) error {
+func (r *localEventBasedInputReconciler) ReconcileVirtualMeshDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
@@ -475,11 +472,11 @@ func (r *localInputReconciler) ReconcileVirtualMeshDeletion(obj reconcile.Reques
 	return err
 }
 
-func (r *localInputReconciler) ReconcileWasmDeployment(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) (reconcile.Result, error) {
+func (r *localEventBasedInputReconciler) ReconcileWasmDeployment(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 
-func (r *localInputReconciler) ReconcileWasmDeploymentDeletion(obj reconcile.Request) error {
+func (r *localEventBasedInputReconciler) ReconcileWasmDeploymentDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
@@ -488,11 +485,11 @@ func (r *localInputReconciler) ReconcileWasmDeploymentDeletion(obj reconcile.Req
 	return err
 }
 
-func (r *localInputReconciler) ReconcileVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) (reconcile.Result, error) {
+func (r *localEventBasedInputReconciler) ReconcileVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 
-func (r *localInputReconciler) ReconcileVirtualDestinationDeletion(obj reconcile.Request) error {
+func (r *localEventBasedInputReconciler) ReconcileVirtualDestinationDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
@@ -501,11 +498,11 @@ func (r *localInputReconciler) ReconcileVirtualDestinationDeletion(obj reconcile
 	return err
 }
 
-func (r *localInputReconciler) ReconcileAccessLogRecord(obj *observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord) (reconcile.Result, error) {
+func (r *localEventBasedInputReconciler) ReconcileAccessLogRecord(obj *observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 
-func (r *localInputReconciler) ReconcileAccessLogRecordDeletion(obj reconcile.Request) error {
+func (r *localEventBasedInputReconciler) ReconcileAccessLogRecordDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
@@ -514,11 +511,11 @@ func (r *localInputReconciler) ReconcileAccessLogRecordDeletion(obj reconcile.Re
 	return err
 }
 
-func (r *localInputReconciler) ReconcileSecret(obj *v1.Secret) (reconcile.Result, error) {
+func (r *localEventBasedInputReconciler) ReconcileSecret(obj *v1.Secret) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 
-func (r *localInputReconciler) ReconcileSecretDeletion(obj reconcile.Request) error {
+func (r *localEventBasedInputReconciler) ReconcileSecretDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
@@ -527,11 +524,11 @@ func (r *localInputReconciler) ReconcileSecretDeletion(obj reconcile.Request) er
 	return err
 }
 
-func (r *localInputReconciler) ReconcileKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error) {
+func (r *localEventBasedInputReconciler) ReconcileKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error) {
 	return r.base.ReconcileLocalGeneric(obj)
 }
 
-func (r *localInputReconciler) ReconcileKubernetesClusterDeletion(obj reconcile.Request) error {
+func (r *localEventBasedInputReconciler) ReconcileKubernetesClusterDeletion(obj reconcile.Request) error {
 	ref := &sk_core_v1.ObjectRef{
 		Name:      obj.Name,
 		Namespace: obj.Namespace,

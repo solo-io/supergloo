@@ -4,15 +4,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/solo-io/skv2/contrib/pkg/output"
-	"github.com/solo-io/skv2/pkg/ezkube"
-
 	certissuerinput "github.com/solo-io/gloo-mesh/pkg/api/certificates.mesh.gloo.solo.io/issuer/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	certissuerreconciliation "github.com/solo-io/gloo-mesh/pkg/certificates/issuer/reconciliation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reconciliation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
 	skinput "github.com/solo-io/skv2/contrib/pkg/input"
+	"github.com/solo-io/skv2/contrib/pkg/output"
 	"github.com/solo-io/skv2/pkg/bootstrap"
 )
 
@@ -49,13 +47,10 @@ type NetworkingReconcilerExtensionOpts struct {
 func (opts *NetworkingReconcilerExtensionOpts) initDefaults(parameters bootstrap.StartParameters) {
 	if opts.RegisterNetworkingReconciler == nil {
 		// use default translator
-		opts.RegisterNetworkingReconciler = func(ctx context.Context, reconcile skinput.SingleClusterReconcileFunc, reconcileOpts input.ReconcileOptions) (skinput.InputReconciler, error) {
-			return input.RegisterInputReconciler(
+		opts.RegisterNetworkingReconciler = func(ctx context.Context, reconcile skinput.EventBasedReconcileFunc, reconcileOpts input.ReconcileOptions) (skinput.InputReconciler, error) {
+			return input.RegisterEventBasedInputReconciler(
 				ctx,
 				parameters.Clusters,
-				func(id ezkube.ClusterResourceId) (bool, error) {
-					return reconcile(id)
-				},
 				parameters.MasterManager,
 				reconcile,
 				reconcileOpts,

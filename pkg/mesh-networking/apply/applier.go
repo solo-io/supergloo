@@ -27,7 +27,8 @@ import (
 type Applier interface {
 	Apply(
 		ctx context.Context,
-		eventObjs []ezkube.ResourceId,
+		localEventObjs []ezkube.ResourceId,
+		remoteEventObjs []ezkube.ClusterResourceId,
 		input input.LocalSnapshot,
 		userSupplied input.RemoteSnapshot,
 	)
@@ -48,7 +49,8 @@ func NewApplier(
 
 func (v *applier) Apply(
 	ctx context.Context,
-	eventObjs []ezkube.ResourceId,
+	localEventObjs []ezkube.ResourceId,
+	remoteEventObjs []ezkube.ClusterResourceId,
 	input input.LocalSnapshot,
 	userSupplied input.RemoteSnapshot,
 ) {
@@ -64,7 +66,7 @@ func (v *applier) Apply(
 	applyPoliciesToConfigTargets(input)
 
 	// perform a dry run of translation to find any errors
-	_, err := v.translator.Translate(ctx, eventObjs, input, userSupplied, reporter)
+	_, err := v.translator.Translate(ctx, localEventObjs, remoteEventObjs, input, userSupplied, reporter)
 	if err != nil {
 		// should never happen
 		contextutils.LoggerFrom(ctx).DPanicf("internal error: failed to run translator: %v", err)

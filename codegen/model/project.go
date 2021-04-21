@@ -44,6 +44,9 @@ type TopLevelComponent struct {
 	// remote inptus are read from managed cluster registered to the controller cluster
 	RemoteInputResources io.Snapshot
 
+	// if true, generate event based input reconciler
+	EventBased bool
+
 	// name of the local snapshot, if the component is hybrid. defaults to Local
 	LocalSnapshotName string
 
@@ -97,8 +100,12 @@ func (t TopLevelComponent) MakeCodegenTemplates(snapshotApiGroups map[string][]m
 			snapshotApiGroups,
 		))
 
+		inputReconcilerTemplate := contrib.InputReconciler
+		if t.EventBased {
+			inputReconcilerTemplate = contrib.HybridEventBasedInputReconciler
+		}
 		topLevelTemplates = append(topLevelTemplates, makeTopLevelTemplate(
-			contrib.InputReconciler,
+			inputReconcilerTemplate,
 			"",
 			t.GeneratedCodeRoot+"/input/reconciler.go",
 			contrib.HybridSnapshotResources{
