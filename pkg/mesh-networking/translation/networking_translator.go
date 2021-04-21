@@ -278,6 +278,12 @@ func shouldGarbageCollect(
 		return true
 	}
 
+	// TODO: implement garbage collection for extension server objects
+	// don't garbage collect if object originated from extensions server
+	if _, ok := obj.GetAnnotations()[metautils.ExtensionsServerLabel]; ok {
+		return false
+	}
+
 	for parentGvk, resourceIds := range metautils.RetrieveParents(ctx, obj) {
 
 		// NOTE: This block must be maintained with all relevant parent GVK's.

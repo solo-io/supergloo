@@ -4,6 +4,7 @@ import (
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	v1beta1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/extensions/v1beta1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -98,11 +99,14 @@ func ObjectMetaToProto(meta metav1.ObjectMeta) *v1beta1.ObjectMeta {
 
 // ObjectMetaToProto constructs a k8s ObjectMeta from a proto-compatible version
 func ObjectMetaFromProto(meta *v1beta1.ObjectMeta) metav1.ObjectMeta {
+	// add an annotation indicating that object originated from extension server
+	annotations := metautils.AddExtensionServerLabelToAnnotations(meta.GetAnnotations())
+
 	return metav1.ObjectMeta{
 		Name:        meta.GetName(),
 		Namespace:   meta.GetNamespace(),
 		ClusterName: meta.GetClusterName(),
 		Labels:      meta.GetLabels(),
-		Annotations: meta.GetAnnotations(),
+		Annotations: annotations,
 	}
 }

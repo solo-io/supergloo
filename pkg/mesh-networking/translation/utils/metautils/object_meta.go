@@ -36,6 +36,10 @@ var (
 
 	// if this key exists in an output object's annotations, Gloo Mesh will delete it
 	GarbageCollectDirective = "MustGarbageCollect"
+
+	// indicates that the output object originated from an extension server
+	// TODO: implement garbage collection for extension server objects
+	ExtensionsServerLabel = "ExtensionsServer"
 )
 
 // construct an ObjectMeta for a discovered resource from a source object (the object from which the resource was discovered)
@@ -89,6 +93,7 @@ func IsTranslated(object metav1.Object) bool {
 	return len(objLabels) > 0 && labels.AreLabelsInWhiteList(translatedObjectLabels, objLabels)
 }
 
+// explicitly mark an object for garbage collection (i.e. send a signal to ensure its non-existence)
 func MarkForGarbageCollection(child metav1.Object) {
 	if reflect.ValueOf(child).IsNil() {
 		return
@@ -101,6 +106,16 @@ func MarkForGarbageCollection(child metav1.Object) {
 
 	annotations[GarbageCollectDirective] = ""
 	child.SetAnnotations(annotations)
+}
+
+// mutate the annotation by adding annotation for object originating from extensions server
+func AddExtensionServerLabelToAnnotations(annotations map[string]string) map[string]string {
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+
+	annotations[ExtensionsServerLabel] = ""
+	return annotations
 }
 
 // add parent annotations for a given child object

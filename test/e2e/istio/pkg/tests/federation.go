@@ -123,7 +123,7 @@ func FederationTest() {
 			manifest, err = utils.NewManifest("federation-trafficpolicies.yaml")
 			Expect(err).NotTo(HaveOccurred())
 
-			// Create TrafficPolicy with fault injection applied to remote cluster
+			// Create TrafficPolicy with mirror and traffic shift applied to service entry of federated remote destination
 			trafficPolicy := &networkingv1.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "remote-mirror-and-shift",
