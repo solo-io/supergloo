@@ -68,11 +68,8 @@ func (t *istioTranslator) Translate(
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(
 		ctx,
-		userSupplied,
-		in.KubernetesClusters(),
 		in.Secrets(),
 		in.Workloads(),
-		in.Destinations(),
 	)
 
 	for _, mesh := range in.Meshes().List() {

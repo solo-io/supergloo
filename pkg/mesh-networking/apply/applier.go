@@ -93,6 +93,7 @@ func initializePolicyStatuses(input input.LocalSnapshot) {
 			State:              commonv1.ApprovalState_ACCEPTED,
 			ObservedGeneration: virtualMesh.Generation,
 			Meshes:             map[string]*networkingv1.ApprovalStatus{},
+			Destinations:       map[string]*networkingv1.ApprovalStatus{},
 		}
 	}
 }
@@ -121,6 +122,7 @@ func applyPoliciesToConfigTargets(input input.LocalSnapshot) {
 	for _, destination := range input.Destinations().List() {
 		destination.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), destination)
 		destination.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), destination)
+		destination.Status.AppliedFederation = getAppliedFederation(input.VirtualMeshes().List(), destination)
 	}
 
 	for _, mesh := range input.Meshes().List() {
@@ -140,6 +142,7 @@ func reportTranslationErrors(ctx context.Context, reporter *applyReporter, input
 		destination.Status.ObservedGeneration = destination.Generation
 		destination.Status.AppliedTrafficPolicies = validateAndReturnApprovedTrafficPolicies(ctx, input, reporter, destination)
 		destination.Status.AppliedAccessPolicies = validateAndReturnApprovedAccessPolicies(ctx, input, reporter, destination)
+		destination.Status.AppliedFederation = validateAndReturnApprovedFederation(ctx, input, reporter, destination)
 	}
 
 	for _, mesh := range input.Meshes().List() {
@@ -308,6 +311,42 @@ func validateAndReturnApprovedAccessPolicies(
 	return validatedAccessPolicies
 }
 
+func validateAndReturnApprovedFederation(
+	ctx context.Context,
+	input input.LocalSnapshot,
+	reporter *applyReporter,
+	destination *discoveryv1.Destination,
+) *discoveryv1.DestinationStatus_AppliedFederation {
+
+	virtualMeshRef := destination.Status.AppliedFederation.GetVirtualMeshRef()
+	errsForFederation := reporter.getFederationsErrors(destination, virtualMeshRef)
+
+	virtualMesh, err := input.VirtualMeshes().Find(virtualMeshRef)
+	if err != nil {
+		// should never happen
+		contextutils.LoggerFrom(ctx).Errorf("internal error: failed to look up applied federation from VirtualMesh %v: %v", virtualMeshRef, err)
+		return nil
+	}
+
+	if len(errsForFederation) == 0 {
+		virtualMesh.Status.Destinations[sets.Key(destination)] = &networkingv1.ApprovalStatus{
+			State: commonv1.ApprovalState_ACCEPTED,
+		}
+		return destination.Status.AppliedFederation
+	} else {
+		var errMsgs []string
+		for _, err := range errsForFederation {
+			errMsgs = append(errMsgs, err.Error())
+		}
+		virtualMesh.Status.Destinations[sets.Key(destination)] = &networkingv1.ApprovalStatus{
+			State:  commonv1.ApprovalState_INVALID,
+			Errors: errMsgs,
+		}
+		virtualMesh.Status.State = commonv1.ApprovalState_INVALID
+		return nil
+	}
+}
+
 func validateAndReturnVirtualMesh(
 	ctx context.Context,
 	input input.LocalSnapshot,
@@ -352,6 +391,7 @@ type applyReporter struct {
 	// so locking should not be necessary.
 	unappliedTrafficPolicies map[*discoveryv1.Destination]map[string][]error
 	unappliedAccessPolicies  map[*discoveryv1.Destination]map[string][]error
+	unappliedFederations     map[*discoveryv1.Destination]map[string][]error
 	unappliedVirtualMeshes   map[*discoveryv1.Mesh]map[string][]error
 }
 
@@ -359,6 +399,7 @@ func newApplyReporter() *applyReporter {
 	return &applyReporter{
 		unappliedTrafficPolicies: map[*discoveryv1.Destination]map[string][]error{},
 		unappliedAccessPolicies:  map[*discoveryv1.Destination]map[string][]error{},
+		unappliedFederations:     map[*discoveryv1.Destination]map[string][]error{},
 		unappliedVirtualMeshes:   map[*discoveryv1.Mesh]map[string][]error{},
 	}
 }
@@ -401,6 +442,18 @@ func (v *applyReporter) ReportVirtualMeshToMesh(mesh *discoveryv1.Mesh, virtualM
 	v.unappliedVirtualMeshes[mesh] = invalidVirtualMeshesForMesh
 }
 
+func (v *applyReporter) ReportVirtualMeshToDestination(destination *discoveryv1.Destination, virtualMesh ezkube.ResourceId, err error) {
+	invalidFederationsForDestination := v.unappliedFederations[destination]
+	if invalidFederationsForDestination == nil {
+		invalidFederationsForDestination = map[string][]error{}
+	}
+	key := sets.Key(virtualMesh)
+	errs := invalidFederationsForDestination[key]
+	errs = append(errs, err)
+	invalidFederationsForDestination[key] = errs
+	v.unappliedFederations[destination] = invalidFederationsForDestination
+}
+
 func (v *applyReporter) getTrafficPolicyErrors(destination *discoveryv1.Destination, trafficPolicy ezkube.ResourceId) []error {
 	invalidTrafficPoliciesForDestination, ok := v.unappliedTrafficPolicies[destination]
 	if !ok {
@@ -423,6 +476,18 @@ func (v *applyReporter) getAccessPolicyErrors(destination *discoveryv1.Destinati
 		return nil
 	}
 	return apErrors
+}
+
+func (v *applyReporter) getFederationsErrors(destination *discoveryv1.Destination, virtualMesh ezkube.ResourceId) []error {
+	invalidFederationsForDestination, ok := v.unappliedFederations[destination]
+	if !ok {
+		return nil
+	}
+	federationErrors, ok := invalidFederationsForDestination[sets.Key(virtualMesh)]
+	if !ok {
+		return nil
+	}
+	return federationErrors
 }
 
 func (v *applyReporter) getVirtualMeshErrors(mesh *discoveryv1.Mesh, virtualMesh ezkube.ResourceId) []error {
@@ -539,6 +604,58 @@ func getAppliedAccessPolicies(
 	}
 
 	return appliedPolicies
+}
+
+// return AppliedFederation if this Destination is federated by a VirtualMesh, otherwise return nil
+func getAppliedFederation(
+	virtualMeshes networkingv1.VirtualMeshSlice,
+	destination *discoveryv1.Destination,
+) *discoveryv1.DestinationStatus_AppliedFederation {
+
+	// TODO federation only supports Kubernetes services
+	kubeService := destination.Spec.GetKubeService()
+	if kubeService == nil {
+		return nil
+	}
+
+	// find Destination's parent mesh ref
+	var parentVirtualMesh *networkingv1.VirtualMesh
+	var parentMesh *v1.ObjectRef
+	for _, vMesh := range virtualMeshes {
+		for _, meshRef := range vMesh.Spec.GetMeshes() {
+			if ezkube.RefsMatch(destination.Spec.GetMesh(), meshRef) {
+				parentMesh = meshRef
+				// assumes constraint of one VirtualMesh per Mesh
+				parentVirtualMesh = vMesh
+			}
+		}
+	}
+
+	// no federation applied to this Destination
+	if parentVirtualMesh == nil {
+		return nil
+	}
+
+	federatedHostname := hostutils.BuildFederatedFQDN(
+		kubeService.GetRef(),
+		&parentVirtualMesh.Spec,
+	)
+
+	var federatedToMeshes []*v1.ObjectRef
+	for _, groupedMeshRef := range parentVirtualMesh.Spec.GetMeshes() {
+		// only translate output resources for client meshes
+		if ezkube.RefsMatch(parentMesh, groupedMeshRef) {
+			continue
+		}
+		federatedToMeshes = append(federatedToMeshes, groupedMeshRef)
+	}
+
+	return &discoveryv1.DestinationStatus_AppliedFederation{
+		VirtualMeshRef:    ezkube.MakeObjectRef(parentVirtualMesh),
+		FederatedHostname: federatedHostname,
+		FederatedToMeshes: federatedToMeshes,
+		FlatNetwork:       parentVirtualMesh.Spec.GetFederation().GetFlatNetwork(),
+	}
 }
 
 func getAppliedVirtualMesh(
