@@ -156,10 +156,7 @@ func updateOutputs(
 	// NOTE: A DestinationRule is required for all Destinations in order to enforce the global MTLS default defined in Settings,
 	// thus we never garbage collect them, only update.
 	oldOutputs.Istio.AddDestinationRules(newIstioOutputs.GetDestinationRules().List()...)
-	updatedDestinationRules := oldOutputs.Istio.GetDestinationRules().List(func(obj *v1alpha3.DestinationRule) bool {
-		return shouldGarbageCollect(ctx, in, obj)
-	})
-	istioOutputs.AddDestinationRules(updatedDestinationRules...)
+	istioOutputs.AddDestinationRules(oldOutputs.Istio.GetDestinationRules().List()...)
 
 	// EnvoyFilters
 	oldOutputs.Istio.AddEnvoyFilters(newIstioOutputs.GetEnvoyFilters().List()...)

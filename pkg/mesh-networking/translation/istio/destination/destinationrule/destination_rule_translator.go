@@ -169,7 +169,6 @@ func (t *translator) Translate(
 	// Append the Destination and all applied TrafficPolicies as parents
 	parents := map[schema.GroupVersionKind][]ezkube.ResourceId{
 		discoveryv1.DestinationGVK:    {destination},
-		networkingv1.TrafficPolicyGVK: {},
 	}
 	for _, appliedTp := range destination.Status.GetAppliedTrafficPolicies() {
 		parents[networkingv1.TrafficPolicyGVK] = append(parents[networkingv1.TrafficPolicyGVK], appliedTp.Ref)
