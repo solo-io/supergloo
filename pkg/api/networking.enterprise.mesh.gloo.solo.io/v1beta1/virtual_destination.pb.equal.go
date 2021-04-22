@@ -267,6 +267,23 @@ func (m *VirtualDestinationStatus) Equal(that interface{}) bool {
 
 	}
 
+	if len(m.GetAppliedSubsets()) != len(target.GetAppliedSubsets()) {
+		return false
+	}
+	for idx, v := range m.GetAppliedSubsets() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetAppliedSubsets()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetAppliedSubsets()[idx]) {
+				return false
+			}
+		}
+
+	}
+
 	return true
 }
 

@@ -34,6 +34,8 @@ var _ = Describe("NetworkingTranslator", func() {
 		mockAppMeshTranslator *mock_appmesh.MockTranslator
 		mockOsmTranslator     *mock_osm.MockTranslator
 		networkingTranslator  translation.Translator
+		localEventObjs        map[schema.GroupVersionKind][]ezkube.ResourceId
+		remoteEventObjs       map[schema.GroupVersionKind][]ezkube.ClusterResourceId
 	)
 
 	BeforeEach(func() {
@@ -51,13 +53,12 @@ var _ = Describe("NetworkingTranslator", func() {
 	})
 
 	It("first translation should initialize outputs", func() {
-		var eventObjs []ezkube.ResourceId
 		in := input.NewInputLocalSnapshotManualBuilder("").Build()
 		userSupplied := input.NewInputRemoteSnapshotManualBuilder("").Build()
 
 		mockIstioTranslator.
 			EXPECT().
-			Translate(gomock.Any(), eventObjs, in, userSupplied, gomock.Any(), gomock.Any(), mockReporter)
+			Translate(gomock.Any(), localEventObjs, in, userSupplied, gomock.Any(), gomock.Any(), mockReporter)
 		mockAppMeshTranslator.
 			EXPECT().
 			Translate(gomock.Any(), in, gomock.Any(), mockReporter)
@@ -65,10 +66,13 @@ var _ = Describe("NetworkingTranslator", func() {
 			EXPECT().
 			Translate(gomock.Any(), in, gomock.Any(), mockReporter)
 
-		_, err := networkingTranslator.Translate(ctx, eventObjs, in, userSupplied, mockReporter)
+		_, err := networkingTranslator.Translate(ctx, localEventObjs, remoteEventObjs, in, userSupplied, mockReporter)
 		Expect(err).To(Not(HaveOccurred()))
 	})
 
+	// Test the following:
+	// 1. DR's are never GC'ed
+	// 2. VS's are GC'ed only when all TP parents no longer exist
 	It("subsequent translations should update outputs with new objects and garbage collect orphaned objects", func() {
 		destination1 := &discoveryv1.Destination{
 			ObjectMeta: metav1.ObjectMeta{
@@ -103,6 +107,15 @@ var _ = Describe("NetworkingTranslator", func() {
 				discoveryv1.DestinationGVK: {destination1},
 			},
 		)
+		// should be gc'ed on 2nd translation iteration
+		vs2 := virtualService(
+			"vs2",
+			[]string{"host2"},
+			map[schema.GroupVersionKind][]ezkube.ResourceId{
+				discoveryv1.DestinationGVK:    {destination1},
+				networkingv1.TrafficPolicyGVK: {trafficPolicy1},
+			},
+		)
 		dr1 := destinationRule(
 			"dr1",
 			map[schema.GroupVersionKind][]ezkube.ResourceId{
@@ -118,7 +131,6 @@ var _ = Describe("NetworkingTranslator", func() {
 			},
 		)
 
-		var eventObjs []ezkube.ResourceId
 		in1 := input.NewInputLocalSnapshotManualBuilder("").
 			AddDestinations([]*discoveryv1.Destination{destination1}).
 			AddTrafficPolicies([]*networkingv1.TrafficPolicy{trafficPolicy1}).
@@ -127,17 +139,17 @@ var _ = Describe("NetworkingTranslator", func() {
 
 		mockIstioTranslator.
 			EXPECT().
-			Translate(gomock.Any(), eventObjs, in1, userSupplied, gomock.Any(), gomock.Any(), mockReporter).
+			Translate(gomock.Any(), localEventObjs, in1, userSupplied, gomock.Any(), gomock.Any(), mockReporter).
 			Do(func(
 				ctx context.Context,
-				eventObjs []ezkube.ResourceId,
+				localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
 				in input.LocalSnapshot,
 				userSupplied input.RemoteSnapshot,
 				istioOutputs istio.Builder,
 				localOutputs local.Builder,
 				reporter reporting.Reporter,
 			) {
-				istioOutputs.AddVirtualServices(vs1)
+				istioOutputs.AddVirtualServices(vs1, vs2)
 				istioOutputs.AddDestinationRules(dr1, dr2)
 			})
 		mockAppMeshTranslator.
@@ -148,10 +160,10 @@ var _ = Describe("NetworkingTranslator", func() {
 			Translate(gomock.Any(), in1, gomock.Any(), mockReporter)
 
 		// first translation should initialize all outputs
-		outputs, err := networkingTranslator.Translate(ctx, eventObjs, in1, userSupplied, mockReporter)
+		outputs, err := networkingTranslator.Translate(ctx, localEventObjs, remoteEventObjs, in1, userSupplied, mockReporter)
 		Expect(err).To(Not(HaveOccurred()))
 
-		Expect(outputs.Istio.GetVirtualServices().List()).To(ConsistOf([]*networkingv1alpha3.VirtualService{vs1}))
+		Expect(outputs.Istio.GetVirtualServices().List()).To(ConsistOf([]*networkingv1alpha3.VirtualService{vs1, vs2}))
 		Expect(outputs.Istio.GetDestinationRules().List()).To(ConsistOf([]*networkingv1alpha3.DestinationRule{dr1, dr2}))
 
 		// remove the traffic policy, should cause dr1 to be garbage collected
@@ -162,10 +174,10 @@ var _ = Describe("NetworkingTranslator", func() {
 
 		mockIstioTranslator.
 			EXPECT().
-			Translate(gomock.Any(), eventObjs, in2, userSupplied, gomock.Any(), gomock.Any(), mockReporter).
+			Translate(gomock.Any(), localEventObjs, in2, userSupplied, gomock.Any(), gomock.Any(), mockReporter).
 			Do(func(
 				ctx context.Context,
-				eventObjs []ezkube.ResourceId,
+				localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
 				in input.LocalSnapshot,
 				userSupplied input.RemoteSnapshot,
 				istioOutputs istio.Builder,
@@ -182,11 +194,12 @@ var _ = Describe("NetworkingTranslator", func() {
 			Translate(gomock.Any(), in2, gomock.Any(), mockReporter)
 
 		// second translation should update existing outputs and garbage collect orphaned outputs
-		outputs, err = networkingTranslator.Translate(ctx, eventObjs, in2, userSupplied, mockReporter)
+		outputs, err = networkingTranslator.Translate(ctx, localEventObjs, remoteEventObjs, in2, userSupplied, mockReporter)
 		Expect(err).To(Not(HaveOccurred()))
 
 		Expect(outputs.Istio.GetVirtualServices().List()).To(ConsistOf([]*networkingv1alpha3.VirtualService{vs1updated}))
-		Expect(outputs.Istio.GetDestinationRules().List()).To(ConsistOf([]*networkingv1alpha3.DestinationRule{dr2}))
+		// DRs should never be garbage collected
+		Expect(outputs.Istio.GetDestinationRules().List()).To(ConsistOf([]*networkingv1alpha3.DestinationRule{dr1, dr2}))
 	})
 })
 

@@ -239,40 +239,19 @@ func (d *trafficShiftDecorator) buildHttpRouteDestination(
 }
 
 // make all the necessary subsets for the destination rule for the given VirtualDestination.
-// traverses all the applied traffic policies to find subsets matching this VirtualDestination
+// exported for use in enterprise
 func MakeDestinationRuleSubsetsForVirtualDestination(
 	virtualDestination *v1beta1.VirtualDestination,
-	allTrafficTargets discoveryv1sets.DestinationSet,
 ) []*networkingv1alpha3spec.Subset {
-	return makeDestinationRuleSubsets(
-		allTrafficTargets,
-		func(weightedDestination *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination) bool {
-			virtualDestinationDest := weightedDestination.GetVirtualDestination()
-			if virtualDestinationDest == nil {
-				return false
-			}
-			return ezkube.RefsMatch(ezkube.MakeObjectRef(virtualDestination), virtualDestinationDest)
-		},
-	)
+	return makeDestinationRuleSubsets(virtualDestination.Status.GetAppliedSubsets())
 }
 
 // make all the necessary subsets for the destination rule for the given destination.
-// traverses all the applied traffic policies to find subsets matching this destination
 func MakeDestinationRuleSubsetsForDestination(
 	destination *discoveryv1.Destination,
-	allDestinations discoveryv1sets.DestinationSet,
 	sourceClusterName string,
 ) []*networkingv1alpha3spec.Subset {
-	subsets := makeDestinationRuleSubsets(
-		allDestinations,
-		func(weightedDestination *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination) bool {
-			switch destType := weightedDestination.DestinationType.(type) {
-			case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
-				return destinationutils.IsDestinationForKubeService(destination, destType.KubeService)
-			}
-			return false
-		},
-	)
+	subsets := makeDestinationRuleSubsets(destination.Status.GetAppliedSubsets())
 
 	// NOTE(ilackarms): we make subsets here for the client-side destination rule for a federated Destination,
 	// which contain all the matching subset names for the remote destination rule.
@@ -310,8 +289,7 @@ func MakeFederatedSubsetLabel(clusterName string) map[string]string {
 }
 
 func makeDestinationRuleSubsets(
-	allDestinations discoveryv1sets.DestinationSet,
-	destinationMatchFunc func(weightedDestination *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination) bool,
+	appliedSubsets []*discoveryv1.DestinationStatus_AppliedSubsets,
 ) []*networkingv1alpha3spec.Subset {
 	var uniqueSubsets []map[string]string
 	appendUniqueSubset := func(subsetLabels map[string]string) {
@@ -326,16 +304,11 @@ func makeDestinationRuleSubsets(
 		uniqueSubsets = append(uniqueSubsets, subsetLabels)
 	}
 
-	for _, destination := range allDestinations.UnsortedList() {
-		for _, policy := range destination.Status.AppliedTrafficPolicies {
-			trafficShiftDestinations := policy.Spec.GetPolicy().GetTrafficShift().GetDestinations()
-			for _, dest := range trafficShiftDestinations {
-				if destinationMatchFunc(dest) {
-					switch destType := dest.DestinationType.(type) {
-					case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
-						appendUniqueSubset(destType.KubeService.Subset)
-					}
-				}
+	for _, appliedSubset := range appliedSubsets {
+		for _, dest := range appliedSubset.GetTrafficShift().GetDestinations() {
+			switch destType := dest.DestinationType.(type) {
+			case *networkingv1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService:
+				appendUniqueSubset(destType.KubeService.Subset)
 			}
 		}
 	}

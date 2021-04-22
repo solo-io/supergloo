@@ -18,6 +18,7 @@ import (
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/security/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var _ = Describe("IstioDestinationTranslator", func() {
@@ -31,7 +32,7 @@ var _ = Describe("IstioDestinationTranslator", func() {
 		mockReporter                      *mock_reporting.MockReporter
 		istioDestinationTranslator        Translator
 		ctx                               = context.TODO()
-		eventObjs                         = []ezkube.ResourceId{}
+		eventObjs                         = map[schema.GroupVersionKind][]ezkube.ResourceId{}
 	)
 
 	BeforeEach(func() {
@@ -115,17 +116,13 @@ var _ = Describe("IstioDestinationTranslator", func() {
 			Translate(ctx, in, destination, mockReporter).
 			Return(ap)
 
-		tpParents := []ezkube.ResourceId{&skv2corev1.ObjectRef{
-			Name:      "tp1",
-			Namespace: "tp1-namespace",
-		}}
 		mockFederationTranslator.
 			EXPECT().
 			ShouldTranslate(destination, eventObjs).
-			Return(true, tpParents)
+			Return(true)
 		mockFederationTranslator.
 			EXPECT().
-			Translate(ctx, in, destination, mockReporter, tpParents).
+			Translate(ctx, in, destination, mockReporter).
 			Return(federatedSe, federatedVs, federatedDr)
 
 		mockOutputs.

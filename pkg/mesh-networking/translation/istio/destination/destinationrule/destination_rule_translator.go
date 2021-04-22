@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
-	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/tls"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
@@ -48,7 +47,6 @@ type Translator interface {
 		destination *discoveryv1.Destination,
 		sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 		reporter reporting.Reporter,
-		destinationRuleTrafficPolicyParents []ezkube.ResourceId,
 	) *networkingv1alpha3.DestinationRule
 
 	// Return true if the Destination should be translated given the event objects
@@ -56,7 +54,7 @@ type Translator interface {
 	ShouldTranslate(
 		destination *discoveryv1.Destination,
 		eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
-	) (bool, []ezkube.ResourceId)
+	) bool
 }
 
 type translator struct {
@@ -64,7 +62,6 @@ type translator struct {
 	userDestinationRules v1alpha3sets.DestinationRuleSet
 	clusterDomains       hostutils.ClusterDomainRegistry
 	decoratorFactory     decorators.Factory
-	destinations         discoveryv1sets.DestinationSet
 }
 
 func NewTranslator(
@@ -72,28 +69,25 @@ func NewTranslator(
 	userDestinationRules v1alpha3sets.DestinationRuleSet,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
-	destinations discoveryv1sets.DestinationSet,
 ) Translator {
 	return &translator{
 		settings:             settings,
 		userDestinationRules: userDestinationRules,
 		clusterDomains:       clusterDomains,
 		decoratorFactory:     decoratorFactory,
-		destinations:         destinations,
 	}
 }
 
 // Translate the Destination into a VirtualService if any of the following has changed:
 //  1. the Destination
 //  2. applied TrafficPolicy
-// Return boolean indicating whether to translate, and all parent TrafficPolicies if they exist
+// Return boolean indicating whether to translate
 // Note: this could be further optimized if we looked at whether DestinationRule-related fields within the TrafficPolicy changed
 func (t *translator) ShouldTranslate(
 	destination *discoveryv1.Destination,
 	eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
-) (bool, []ezkube.ResourceId) {
+) bool {
 	shouldTranslate := false
-	var trafficPolicyParents []ezkube.ResourceId
 
 	for gvk, objs := range eventObjs {
 		for _, obj := range objs {
@@ -116,7 +110,7 @@ func (t *translator) ShouldTranslate(
 			}
 		}
 	}
-	return shouldTranslate, trafficPolicyParents
+	return shouldTranslate
 }
 
 // translate the appropriate DestinationRule for the given Destination.
@@ -128,7 +122,6 @@ func (t *translator) Translate(
 	destination *discoveryv1.Destination,
 	sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 	reporter reporting.Reporter,
-	destinationRuleTrafficPolicyParents []ezkube.ResourceId,
 ) *networkingv1alpha3.DestinationRule {
 	kubeService := destination.Spec.GetKubeService()
 
@@ -186,8 +179,8 @@ func (t *translator) Translate(
 	for _, appliedTp := range destination.Status.GetAppliedTrafficPolicies() {
 		parents[networkingv1.TrafficPolicyGVK] = append(parents[networkingv1.TrafficPolicyGVK], appliedTp.Ref)
 	}
-	for _, tpParent := range destinationRuleTrafficPolicyParents {
-		parents[networkingv1.TrafficPolicyGVK] = append(parents[networkingv1.TrafficPolicyGVK], tpParent)
+	for _, tpParent := range destination.Status.GetAppliedSubsets() {
+		parents[networkingv1.TrafficPolicyGVK] = append(parents[networkingv1.TrafficPolicyGVK], tpParent.Ref)
 	}
 	metautils.AnnotateParents(ctx, destinationRule, parents)
 
@@ -263,7 +256,6 @@ func (t *translator) initializeDestinationRule(
 			TrafficPolicy: &networkingv1alpha3spec.TrafficPolicy{},
 			Subsets: trafficshift.MakeDestinationRuleSubsetsForDestination(
 				destination,
-				t.destinations,
 				sourceMeshInstallation.GetCluster(),
 			),
 		},

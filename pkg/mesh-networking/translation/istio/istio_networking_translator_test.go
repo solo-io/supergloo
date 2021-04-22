@@ -19,6 +19,7 @@ import (
 	multiclusterv1alpha1 "github.com/solo-io/skv2/pkg/api/multicluster.solo.io/v1alpha1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var _ = Describe("IstioNetworkingTranslator", func() {
@@ -26,7 +27,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		ctrl                      *gomock.Controller
 		ctx                       context.Context
 		ctxWithValue              context.Context
-		eventObjs                 []ezkube.ResourceId
+		eventObjs                 map[schema.GroupVersionKind][]ezkube.ResourceId
 		mockIstioExtender         *mock_extensions.MockIstioExtender
 		mockReporter              *mock_reporting.MockReporter
 		mockIstioOutputs          *mock_istio_output.MockBuilder
@@ -41,7 +42,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		ctxWithValue = contextutils.WithLogger(context.TODO(), "istio-translator-0")
-		eventObjs = []ezkube.ResourceId{}
+		eventObjs = map[schema.GroupVersionKind][]ezkube.ResourceId{}
 		mockIstioExtender = mock_extensions.NewMockIstioExtender(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockDestinationTranslator = mock_destination.NewMockTranslator(ctrl)

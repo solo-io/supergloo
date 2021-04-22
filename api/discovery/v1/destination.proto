@@ -204,6 +204,7 @@ message DestinationStatus {
     // Federation metadata. Only populated if this Destination is federated through a VirtualMesh.
     AppliedFederation applied_federation = 6;
 
+    // The set of TrafficPolicies that reference subsets on this Destination as a traffic shift.
     repeated AppliedSubsets applied_subsets = 7;
 
     // Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}}) that applies to the Destination.

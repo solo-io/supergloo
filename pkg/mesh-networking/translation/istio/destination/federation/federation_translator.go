@@ -41,7 +41,6 @@ type Translator interface {
 		in input.LocalSnapshot,
 		destination *discoveryv1.Destination,
 		reporter reporting.Reporter,
-		destinationRuleTrafficPolicyParents []ezkube.ResourceId,
 	) (
 		[]*networkingv1alpha3.ServiceEntry,
 		[]*networkingv1alpha3.VirtualService,
@@ -53,7 +52,7 @@ type Translator interface {
 	ShouldTranslate(
 		destination *discoveryv1.Destination,
 		eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
-	) (bool, []ezkube.ResourceId)
+	) bool
 }
 
 type translator struct {
@@ -78,9 +77,8 @@ func NewTranslator(
 func (t *translator) ShouldTranslate(
 	destination *discoveryv1.Destination,
 	eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
-) (bool, []ezkube.ResourceId) {
+) bool {
 	shouldTranslate := false
-	var trafficPolicyParents []ezkube.ResourceId
 
 	for gvk, objs := range eventObjs {
 		for _, obj := range objs {
@@ -104,7 +102,7 @@ func (t *translator) ShouldTranslate(
 			}
 		}
 	}
-	return shouldTranslate, trafficPolicyParents
+	return shouldTranslate
 }
 
 // Translate translates a ServiceEntry, VirtualService and DestinationRule for the given Destination using the data in status.AppliedFederation.
@@ -113,7 +111,6 @@ func (t *translator) Translate(
 	in input.LocalSnapshot,
 	destination *discoveryv1.Destination,
 	reporter reporting.Reporter,
-	destinationRuleTrafficPolicyParents []ezkube.ResourceId,
 ) (
 	[]*networkingv1alpha3.ServiceEntry,
 	[]*networkingv1alpha3.VirtualService,
@@ -168,24 +165,25 @@ func (t *translator) Translate(
 			remoteMesh,
 			serviceEntryTemplate,
 			reporter,
-			destinationRuleTrafficPolicyParents,
 		)
 
-		// Annotate the VirtualMesh as a parent to the outputs
+		// ServiceEntry parents
 		metautils.AnnotateParents(ctx, serviceEntry, map[schema.GroupVersionKind][]ezkube.ResourceId{
 			discoveryv1.DestinationGVK:  {destination},
 			networkingv1.VirtualMeshGVK: {destination.Status.AppliedFederation.GetVirtualMeshRef()},
 		})
-		// Append the VirtualMesh to the parents that the VirtualService and DestinationRule translator have already added
+
+		// VirtualService parents
 		metautils.AppendParents(ctx, virtualService, map[schema.GroupVersionKind][]ezkube.ResourceId{
 			networkingv1.VirtualMeshGVK: {destination.Status.AppliedFederation.GetVirtualMeshRef()},
 		})
-		// Append any TrafficPolicy parents to the DestinationRule
+
+		// DestinationRule parents
 		destinationRuleParents := map[schema.GroupVersionKind][]ezkube.ResourceId{
 			networkingv1.VirtualMeshGVK: {destination.Status.AppliedFederation.GetVirtualMeshRef()},
 		}
-		for _, tpParent := range destinationRuleTrafficPolicyParents {
-			destinationRuleParents[networkingv1.TrafficPolicyGVK] = append(destinationRuleParents[networkingv1.TrafficPolicyGVK], tpParent)
+		for _, tpParent := range destination.Status.GetAppliedSubsets() {
+			destinationRuleParents[networkingv1.TrafficPolicyGVK] = append(destinationRuleParents[networkingv1.TrafficPolicyGVK], tpParent.Ref)
 		}
 		metautils.AppendParents(ctx, destinationRule, destinationRuleParents)
 
@@ -271,7 +269,6 @@ func (t *translator) translateForRemoteMesh(
 	remoteMesh *discoveryv1.Mesh,
 	serviceEntryTemplate *networkingv1alpha3.ServiceEntry,
 	reporter reporting.Reporter,
-	destinationRuleTrafficPolicyParents []ezkube.ResourceId,
 ) (
 	*networkingv1alpha3.ServiceEntry,
 	*networkingv1alpha3.VirtualService,
@@ -297,7 +294,7 @@ func (t *translator) translateForRemoteMesh(
 	virtualService := t.virtualServiceTranslator.Translate(ctx, in, destination, remoteIstioMesh.Installation, reporter)
 
 	// translate DestinationRule for federated Destinations, can be nil
-	destinationRule := t.destinationRuleTranslator.Translate(ctx, in, destination, remoteIstioMesh.Installation, reporter, destinationRuleTrafficPolicyParents)
+	destinationRule := t.destinationRuleTranslator.Translate(ctx, in, destination, remoteIstioMesh.Installation, reporter)
 
 	return serviceEntry, virtualService, destinationRule
 }

@@ -53,7 +53,6 @@ func NewTranslator(
 	userSupplied input.RemoteSnapshot,
 	clusterDomains hostutils.ClusterDomainRegistry,
 	decoratorFactory decorators.Factory,
-	destinations discoveryv1sets.DestinationSet,
 ) Translator {
 	var existingVirtualServices v1alpha3sets.VirtualServiceSet
 	var existingDestinationRules v1alpha3sets.DestinationRuleSet
@@ -63,7 +62,7 @@ func NewTranslator(
 	}
 
 	virtualServiceTranslator := virtualservice.NewTranslator(existingVirtualServices, clusterDomains, decoratorFactory)
-	destinationRuleTranslator := destinationrule.NewTranslator(settingsutils.SettingsFromContext(ctx), existingDestinationRules, clusterDomains, decoratorFactory, destinations)
+	destinationRuleTranslator := destinationrule.NewTranslator(settingsutils.SettingsFromContext(ctx), existingDestinationRules, clusterDomains, decoratorFactory)
 
 	return &translator{
 		ctx:                   ctx,
@@ -94,9 +93,9 @@ func (t *translator) Translate(
 		outputs.AddVirtualServices(vs)
 	}
 
-	if shouldTranslate, trafficPolicyParents := t.destinationRules.ShouldTranslate(destination, eventObjs); shouldTranslate {
+	if t.destinationRules.ShouldTranslate(destination, eventObjs) {
 		// Translate DestinationRules for Destinations, can be nil if there is no service or applied traffic policies
-		dr := t.destinationRules.Translate(t.ctx, in, destination, nil, reporter, trafficPolicyParents)
+		dr := t.destinationRules.Translate(t.ctx, in, destination, nil, reporter)
 		outputs.AddDestinationRules(dr)
 	}
 
@@ -106,8 +105,8 @@ func (t *translator) Translate(
 		outputs.AddAuthorizationPolicies(ap)
 	}
 
-	if shouldTranslate, trafficPolicyParents := t.federation.ShouldTranslate(destination, eventObjs); shouldTranslate {
-		serviceEntries, virtualServices, destinationRules := t.federation.Translate(t.ctx, in, destination, reporter, trafficPolicyParents)
+	if t.federation.ShouldTranslate(destination, eventObjs) {
+		serviceEntries, virtualServices, destinationRules := t.federation.Translate(t.ctx, in, destination, reporter)
 		outputs.AddServiceEntries(serviceEntries...)
 		outputs.AddVirtualServices(virtualServices...)
 		outputs.AddDestinationRules(destinationRules...)

@@ -13,7 +13,6 @@ import (
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
-	discoveryv1sets "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1/sets"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	settingsv1 "github.com/solo-io/gloo-mesh/pkg/api/settings.mesh.gloo.solo.io/v1"
@@ -41,7 +40,6 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		ctrl                      *gomock.Controller
 		mockClusterDomainRegistry *mock_hostutils.MockClusterDomainRegistry
 		mockDecoratorFactory      *mock_decorators.MockFactory
-		destinations              discoveryv1sets.DestinationSet
 		mockReporter              *mock_reporting.MockReporter
 		mockDecorator             *mock_trafficpolicy.MockTrafficPolicyDestinationRuleDecorator
 		destinationRuleTranslator destinationrule.Translator
@@ -59,7 +57,6 @@ var _ = Describe("DestinationRuleTranslator", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		mockClusterDomainRegistry = mock_hostutils.NewMockClusterDomainRegistry(ctrl)
 		mockDecoratorFactory = mock_decorators.NewMockFactory(ctrl)
-		destinations = discoveryv1sets.NewDestinationSet()
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockDecorator = mock_trafficpolicy.NewMockTrafficPolicyDestinationRuleDecorator(ctrl)
 		destinationRuleTranslator = destinationrule.NewTranslator(
@@ -67,7 +64,6 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			nil,
 			mockClusterDomainRegistry,
 			mockDecoratorFactory,
-			destinations,
 		)
 	})
 
@@ -109,46 +105,18 @@ var _ = Describe("DestinationRuleTranslator", func() {
 						Spec: &v1.TrafficPolicySpec{},
 					},
 				},
-			},
-		}
-
-		destinations.Insert(&discoveryv1.Destination{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: "another-traffic-target",
-			},
-			Spec: discoveryv1.DestinationSpec{
-				Type: &discoveryv1.DestinationSpec_KubeService_{
-					KubeService: &discoveryv1.DestinationSpec_KubeService{
-						Ref: &skv2corev1.ClusterObjectRef{
-							Name:        "another-traffic-target",
-							Namespace:   "traffic-target-namespace",
-							ClusterName: "traffic-target-cluster",
-						},
-					},
-				},
-			},
-			Status: discoveryv1.DestinationStatus{
-				AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
+				AppliedSubsets: []*discoveryv1.DestinationStatus_AppliedSubsets{
 					{
 						Ref: &skv2corev1.ObjectRef{
 							Name:      "another-tp",
 							Namespace: "tp-namespace-1",
 						},
-						Spec: &v1.TrafficPolicySpec{
-							Policy: &v1.TrafficPolicySpec_Policy{
-								TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
-									Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
-										{
-											DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-												KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
-													// original service
-													Name:        destination.Spec.GetKubeService().GetRef().Name,
-													Namespace:   destination.Spec.GetKubeService().GetRef().Namespace,
-													ClusterName: destination.Spec.GetKubeService().GetRef().ClusterName,
-
-													Subset: map[string]string{"foo": "bar", "version": "v1"},
-												},
-											},
+						TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
+							Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+								{
+									DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+										KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+											Subset: map[string]string{"foo": "bar", "version": "v1"},
 										},
 									},
 								},
@@ -157,7 +125,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 					},
 				},
 			},
-		})
+		}
 
 		mockDecoratorFactory.
 			EXPECT().
@@ -205,7 +173,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		metautils.AnnotateParents(ctx, initializedDestinatonRule, map[schema.GroupVersionKind][]ezkube.ResourceId{
 			discoveryv1.DestinationGVK: {destination},
-			v1.TrafficPolicyGVK:        {destination.Status.AppliedTrafficPolicies[0].GetRef()},
+			v1.TrafficPolicyGVK:        {destination.Status.AppliedTrafficPolicies[0].GetRef(), destination.Status.AppliedSubsets[0].GetRef()},
 		})
 
 		destinationRule := destinationRuleTranslator.Translate(ctx, in, destination, nil, mockReporter)
@@ -213,85 +181,11 @@ var _ = Describe("DestinationRuleTranslator", func() {
 	})
 
 	It("should output DestinationRule for federated Destination", func() {
-		destinations = discoveryv1sets.NewDestinationSet(
-			&discoveryv1.Destination{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "target-1",
-					Namespace: "ns",
-				},
-				Status: discoveryv1.DestinationStatus{
-					AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
-						{
-							Ref: &skv2corev1.ObjectRef{
-								Name:      "tp-1",
-								Namespace: "tp-namespace-1",
-							},
-							Spec: &v1.TrafficPolicySpec{
-								Policy: &v1.TrafficPolicySpec_Policy{
-									TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
-										Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
-											{
-												DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-													KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
-														Name:        "traffic-target",
-														Namespace:   "traffic-target-namespace",
-														ClusterName: "traffic-target-clustername",
-														Subset:      map[string]string{"k1": "v1"},
-														Port:        9080,
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			&discoveryv1.Destination{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "target-2",
-					Namespace: "ns",
-				},
-				Status: discoveryv1.DestinationStatus{
-					AppliedTrafficPolicies: []*discoveryv1.DestinationStatus_AppliedTrafficPolicy{
-						{
-							Ref: &skv2corev1.ObjectRef{
-								Name:      "tp-2",
-								Namespace: "tp-namespace-2",
-							},
-							Spec: &v1.TrafficPolicySpec{
-								Policy: &v1.TrafficPolicySpec_Policy{
-									TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
-										Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
-											{
-												DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
-													KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
-														Name:        "traffic-target",
-														Namespace:   "traffic-target-namespace",
-														ClusterName: "traffic-target-clustername",
-														Subset:      map[string]string{"k2": "v2"},
-														Port:        9080,
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		)
-
 		destinationRuleTranslator = destinationrule.NewTranslator(
 			settings,
 			nil,
 			mockClusterDomainRegistry,
 			mockDecoratorFactory,
-			destinations,
 		)
 
 		sourceMeshInstallation := &discoveryv1.MeshSpec_MeshInstallation{
@@ -334,6 +228,50 @@ var _ = Describe("DestinationRuleTranslator", func() {
 								{
 									KubeWorkloadMatcher: &commonv1.WorkloadSelector_KubeWorkloadMatcher{
 										Clusters: []string{sourceMeshInstallation.Cluster},
+									},
+								},
+							},
+						},
+					},
+				},
+				AppliedSubsets: []*discoveryv1.DestinationStatus_AppliedSubsets{
+					{
+						Ref: &skv2corev1.ObjectRef{
+							Name:      "tp-1",
+							Namespace: "tp-namespace-1",
+						},
+						TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
+							Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+								{
+									DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+										KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+											Name:        "traffic-target",
+											Namespace:   "traffic-target-namespace",
+											ClusterName: "traffic-target-clustername",
+											Subset:      map[string]string{"k1": "v1"},
+											Port:        9080,
+										},
+									},
+								},
+							},
+						},
+					},
+					{
+						Ref: &skv2corev1.ObjectRef{
+							Name:      "tp-2",
+							Namespace: "tp-namespace-2",
+						},
+						TrafficShift: &v1.TrafficPolicySpec_Policy_MultiDestination{
+							Destinations: []*v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination{
+								{
+									DestinationType: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeService{
+										KubeService: &v1.TrafficPolicySpec_Policy_MultiDestination_WeightedDestination_KubeDestination{
+											Name:        "traffic-target",
+											Namespace:   "traffic-target-namespace",
+											ClusterName: "traffic-target-clustername",
+											Subset:      map[string]string{"k2": "v2"},
+											Port:        9080,
+										},
 									},
 								},
 							},
@@ -416,7 +354,7 @@ var _ = Describe("DestinationRuleTranslator", func() {
 
 		metautils.AnnotateParents(ctx, expectedDestinatonRule, map[schema.GroupVersionKind][]ezkube.ResourceId{
 			discoveryv1.DestinationGVK: {destination},
-			v1.TrafficPolicyGVK:        {destination.Status.AppliedTrafficPolicies[0].GetRef()},
+			v1.TrafficPolicyGVK:        {destination.Status.AppliedTrafficPolicies[0].GetRef(), destination.Status.AppliedSubsets[0].GetRef(), destination.Status.AppliedSubsets[1].GetRef()},
 		})
 
 		Expect(destinationRule).To(Equal(expectedDestinatonRule))
@@ -532,7 +470,6 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			existingDestinationRules,
 			mockClusterDomainRegistry,
 			mockDecoratorFactory,
-			destinations,
 		)
 
 		_ = destinationRuleTranslator.Translate(ctx, in, destination, nil, mockReporter)

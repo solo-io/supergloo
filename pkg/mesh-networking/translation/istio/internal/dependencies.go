@@ -53,7 +53,7 @@ func (d dependencyFactoryImpl) MakeDestinationTranslator(
 	clusterDomains := hostutils.NewClusterDomainRegistry(clusters, destinations)
 	decoratorFactory := decorators.NewFactory()
 
-	return destination.NewTranslator(ctx, userSupplied, clusterDomains, decoratorFactory, destinations)
+	return destination.NewTranslator(ctx, userSupplied, clusterDomains, decoratorFactory)
 }
 
 func (d dependencyFactoryImpl) MakeMeshTranslator(

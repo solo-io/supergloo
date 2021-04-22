@@ -14,6 +14,7 @@ import (
 	mock_extensions "github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions/mocks"
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/extensions"
 	mock_istio_extensions "github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/extensions/mocks"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	networkingv1alpha3spec "istio.io/api/networking/v1alpha3"
 	istionetworkingv1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -82,6 +83,9 @@ var _ = Describe("IstioNetworkingExtender", func() {
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "bar",
+				Annotations: map[string]string{
+					metautils.ExtensionsServerLabel: "",
+				},
 			},
 			Spec: networkingv1alpha3spec.VirtualService{
 				Hosts: []string{"added-a-host"},
@@ -92,6 +96,9 @@ var _ = Describe("IstioNetworkingExtender", func() {
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "bar",
+				Annotations: map[string]string{
+					metautils.ExtensionsServerLabel: "",
+				},
 			},
 		})
 

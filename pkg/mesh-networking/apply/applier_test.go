@@ -16,13 +16,14 @@ import (
 	skv2corev1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	. "github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply"
 )
 
 var _ = Describe("Applier", func() {
 	var (
-		eventObjs = []ezkube.ResourceId{}
+		eventObjs = map[schema.GroupVersionKind][]ezkube.ResourceId{}
 	)
 
 	Context("applied traffic policies", func() {
@@ -104,7 +105,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), eventObjs, snap, nil)
+			applier.Apply(context.TODO(), eventObjs, nil, snap, nil)
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy1.Status.Destinations).To(HaveKey(sets.Key(destination)))
@@ -159,7 +160,7 @@ var _ = Describe("Applier", func() {
 				reporter.ReportTrafficPolicyToDestination(destination, trafficPolicy, errors.New("did an oopsie"))
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), eventObjs, snap, nil)
+			applier.Apply(context.TODO(), eventObjs, nil, snap, nil)
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy.Status.Destinations).To(HaveKey(sets.Key(destination)))
@@ -262,7 +263,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), eventObjs, snap, nil)
+			applier.Apply(context.TODO(), eventObjs, nil, snap, nil)
 
 			// destination and workload1 are both in mesh1
 			Expect(trafficPolicy.Status.Workloads).To(HaveLen(1))
@@ -283,7 +284,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), eventObjs, snap, nil)
+			applier.Apply(context.TODO(), eventObjs, nil, snap, nil)
 
 			// destination is in mesh1, workload1 is in mesh1, and workload2 is in mesh2.
 			// since mesh1 and mesh2 are in the same VirtualMesh, both workloads are returned
@@ -307,7 +308,7 @@ var _ = Describe("Applier", func() {
 				// no report = accept
 			}}
 			applier := NewApplier(translator)
-			applier.Apply(context.TODO(), eventObjs, snap, nil)
+			applier.Apply(context.TODO(), eventObjs, nil, snap, nil)
 
 			// destination is in mesh1, but both workloads are in mesh2
 			Expect(trafficPolicy.Status.Workloads).To(BeNil())
@@ -324,9 +325,10 @@ type testIstioTranslator struct {
 
 func (t testIstioTranslator) Translate(
 	ctx context.Context,
-	eventObjs []ezkube.ResourceId,
+	localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+	remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 	in input.LocalSnapshot,
-	existingIstioResources input.RemoteSnapshot,
+	userSupplied input.RemoteSnapshot,
 	reporter reporting.Reporter,
 ) (*translation.Outputs, error) {
 	t.callReporter(reporter)

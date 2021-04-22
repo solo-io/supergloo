@@ -246,7 +246,7 @@ var _ = Describe("FederationTranslator", func() {
 			expectedServiceEntry2,
 		}
 
-		serviceEntries, virtualServices, destinationRules := federationTranslator.Translate(ctx, in, destination, mockReporter, []ezkube.ResourceId{destination.Status.GetAppliedTrafficPolicies()[0].Ref})
+		serviceEntries, virtualServices, destinationRules := federationTranslator.Translate(ctx, in, destination, mockReporter)
 
 		Expect(serviceEntries).To(ConsistOf(expectedServiceEntries))
 		Expect(virtualServices).To(ConsistOf([]*networkingv1alpha3.VirtualService{expectedVS, expectedVS}))

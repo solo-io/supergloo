@@ -442,6 +442,7 @@ spec:
                   type: object
               type: object
             appliedSubsets:
+              description: The set of TrafficPolicies that reference subsets on this Destination as a traffic shift.
               items:
                 properties:
                   observedGeneration:

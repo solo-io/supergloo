@@ -146,7 +146,8 @@ type DestinationStatus struct {
 	LocalFqdn string `protobuf:"bytes,5,opt,name=local_fqdn,json=localFqdn,proto3" json:"local_fqdn,omitempty"`
 	// Federation metadata. Only populated if this Destination is federated through a VirtualMesh.
 	AppliedFederation *DestinationStatus_AppliedFederation `protobuf:"bytes,6,opt,name=applied_federation,json=appliedFederation,proto3" json:"applied_federation,omitempty"`
-	AppliedSubsets    []*DestinationStatus_AppliedSubsets  `protobuf:"bytes,7,rep,name=applied_subsets,json=appliedSubsets,proto3" json:"applied_subsets,omitempty"`
+	// The set of TrafficPolicies that reference subsets on this Destination as a traffic shift.
+	AppliedSubsets []*DestinationStatus_AppliedSubsets `protobuf:"bytes,7,rep,name=applied_subsets,json=appliedSubsets,proto3" json:"applied_subsets,omitempty"`
 }
 
 func (x *DestinationStatus) Reset() {
