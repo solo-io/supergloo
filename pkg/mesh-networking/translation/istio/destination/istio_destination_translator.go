@@ -19,6 +19,7 @@ import (
 	"github.com/solo-io/go-utils/contextutils"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 //go:generate mockgen -source ./istio_destination_translator.go -destination mocks/istio_destination_translator.go
@@ -30,7 +31,7 @@ type Translator interface {
 	// Output resources will be added to the output.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
-		eventObjs []ezkube.ResourceId,
+		eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
 		in input.LocalSnapshot,
 		destination *discoveryv1.Destination,
 		outputs istio.Builder,
@@ -75,7 +76,7 @@ func NewTranslator(
 
 // translate the appropriate resources for the given Destination.
 func (t *translator) Translate(
-	eventObjs []ezkube.ResourceId,
+	eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
 	in input.LocalSnapshot,
 	destination *discoveryv1.Destination,
 	outputs istio.Builder,

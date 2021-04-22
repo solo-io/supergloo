@@ -11,6 +11,9 @@ import (
 	"github.com/solo-io/skv2/pkg/multicluster"
 	"github.com/solo-io/skv2/pkg/reconcile"
 
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+
 	networking_istio_io_v1alpha3_controllers "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/controller"
 	security_istio_io_v1beta1_controllers "github.com/solo-io/external-apis/pkg/api/istio/security.istio.io/v1beta1/controller"
 	v1_controllers "github.com/solo-io/external-apis/pkg/api/k8s/core/v1/controller"
@@ -33,8 +36,7 @@ import (
 	networking_istio_io_v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	security_istio_io_v1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	v1 "k8s.io/api/core/v1"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // The Input Reconciler calls a simple func(id) error whenever a
@@ -80,7 +82,7 @@ func RegisterEventBasedInputReconciler(
 	mgr manager.Manager,
 	reconcileFunc input.EventBasedReconcileFunc,
 	options ReconcileOptions,
-) (input.InputReconciler, error) {
+) (input.EventBasedInputReconciler, error) {
 	// [certificates.mesh.gloo.solo.io/v1 xds.agent.enterprise.mesh.gloo.solo.io/v1beta1 networking.istio.io/v1alpha3 security.istio.io/v1beta1] false 4
 	// [settings.mesh.gloo.solo.io/v1 discovery.mesh.gloo.solo.io/v1 networking.mesh.gloo.solo.io/v1 networking.enterprise.mesh.gloo.solo.io/v1beta1 observability.enterprise.mesh.gloo.solo.io/v1 v1 multicluster.solo.io/v1alpha1]
 	base := input.NewEventBasedInputReconciler(
@@ -201,12 +203,19 @@ type RemoteReconcileOptions struct {
 }
 
 type remoteEventBasedInputReconciler struct {
-	base input.InputReconciler
+	base input.EventBasedInputReconciler
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcileIssuedCertificate(clusterName string, obj *certificates_mesh_gloo_solo_io_v1.IssuedCertificate) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+
+	gvk := schema.GroupVersionKind{
+		Group:   certificates_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: certificates_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "IssuedCertificate",
+	}
+
+	return r.base.ReconcileRemoteGeneric(gvk, obj)
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcileIssuedCertificateDeletion(clusterName string, obj reconcile.Request) error {
@@ -215,13 +224,27 @@ func (r *remoteEventBasedInputReconciler) ReconcileIssuedCertificateDeletion(clu
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   certificates_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: certificates_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "IssuedCertificate",
+	}
+
+	_, err := r.base.ReconcileRemoteGeneric(gvk, ref)
 	return err
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcilePodBounceDirective(clusterName string, obj *certificates_mesh_gloo_solo_io_v1.PodBounceDirective) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+
+	gvk := schema.GroupVersionKind{
+		Group:   certificates_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: certificates_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "PodBounceDirective",
+	}
+
+	return r.base.ReconcileRemoteGeneric(gvk, obj)
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcilePodBounceDirectiveDeletion(clusterName string, obj reconcile.Request) error {
@@ -230,13 +253,27 @@ func (r *remoteEventBasedInputReconciler) ReconcilePodBounceDirectiveDeletion(cl
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   certificates_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: certificates_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "PodBounceDirective",
+	}
+
+	_, err := r.base.ReconcileRemoteGeneric(gvk, ref)
 	return err
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcileXdsConfig(clusterName string, obj *xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.XdsConfig) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+
+	gvk := schema.GroupVersionKind{
+		Group:   xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.SchemeGroupVersion.Group,
+		Version: xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.SchemeGroupVersion.Version,
+		Kind:    "XdsConfig",
+	}
+
+	return r.base.ReconcileRemoteGeneric(gvk, obj)
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcileXdsConfigDeletion(clusterName string, obj reconcile.Request) error {
@@ -245,13 +282,27 @@ func (r *remoteEventBasedInputReconciler) ReconcileXdsConfigDeletion(clusterName
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.SchemeGroupVersion.Group,
+		Version: xds_agent_enterprise_mesh_gloo_solo_io_v1beta1.SchemeGroupVersion.Version,
+		Kind:    "XdsConfig",
+	}
+
+	_, err := r.base.ReconcileRemoteGeneric(gvk, ref)
 	return err
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcileDestinationRule(clusterName string, obj *networking_istio_io_v1alpha3.DestinationRule) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+
+	gvk := schema.GroupVersionKind{
+		Group:   networking_istio_io_v1alpha3.SchemeGroupVersion.Group,
+		Version: networking_istio_io_v1alpha3.SchemeGroupVersion.Version,
+		Kind:    "DestinationRule",
+	}
+
+	return r.base.ReconcileRemoteGeneric(gvk, obj)
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcileDestinationRuleDeletion(clusterName string, obj reconcile.Request) error {
@@ -260,13 +311,27 @@ func (r *remoteEventBasedInputReconciler) ReconcileDestinationRuleDeletion(clust
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   networking_istio_io_v1alpha3.SchemeGroupVersion.Group,
+		Version: networking_istio_io_v1alpha3.SchemeGroupVersion.Version,
+		Kind:    "DestinationRule",
+	}
+
+	_, err := r.base.ReconcileRemoteGeneric(gvk, ref)
 	return err
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcileEnvoyFilter(clusterName string, obj *networking_istio_io_v1alpha3.EnvoyFilter) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+
+	gvk := schema.GroupVersionKind{
+		Group:   networking_istio_io_v1alpha3.SchemeGroupVersion.Group,
+		Version: networking_istio_io_v1alpha3.SchemeGroupVersion.Version,
+		Kind:    "EnvoyFilter",
+	}
+
+	return r.base.ReconcileRemoteGeneric(gvk, obj)
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcileEnvoyFilterDeletion(clusterName string, obj reconcile.Request) error {
@@ -275,13 +340,27 @@ func (r *remoteEventBasedInputReconciler) ReconcileEnvoyFilterDeletion(clusterNa
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   networking_istio_io_v1alpha3.SchemeGroupVersion.Group,
+		Version: networking_istio_io_v1alpha3.SchemeGroupVersion.Version,
+		Kind:    "EnvoyFilter",
+	}
+
+	_, err := r.base.ReconcileRemoteGeneric(gvk, ref)
 	return err
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcileGateway(clusterName string, obj *networking_istio_io_v1alpha3.Gateway) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+
+	gvk := schema.GroupVersionKind{
+		Group:   networking_istio_io_v1alpha3.SchemeGroupVersion.Group,
+		Version: networking_istio_io_v1alpha3.SchemeGroupVersion.Version,
+		Kind:    "Gateway",
+	}
+
+	return r.base.ReconcileRemoteGeneric(gvk, obj)
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcileGatewayDeletion(clusterName string, obj reconcile.Request) error {
@@ -290,13 +369,27 @@ func (r *remoteEventBasedInputReconciler) ReconcileGatewayDeletion(clusterName s
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   networking_istio_io_v1alpha3.SchemeGroupVersion.Group,
+		Version: networking_istio_io_v1alpha3.SchemeGroupVersion.Version,
+		Kind:    "Gateway",
+	}
+
+	_, err := r.base.ReconcileRemoteGeneric(gvk, ref)
 	return err
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcileServiceEntry(clusterName string, obj *networking_istio_io_v1alpha3.ServiceEntry) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+
+	gvk := schema.GroupVersionKind{
+		Group:   networking_istio_io_v1alpha3.SchemeGroupVersion.Group,
+		Version: networking_istio_io_v1alpha3.SchemeGroupVersion.Version,
+		Kind:    "ServiceEntry",
+	}
+
+	return r.base.ReconcileRemoteGeneric(gvk, obj)
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcileServiceEntryDeletion(clusterName string, obj reconcile.Request) error {
@@ -305,13 +398,27 @@ func (r *remoteEventBasedInputReconciler) ReconcileServiceEntryDeletion(clusterN
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   networking_istio_io_v1alpha3.SchemeGroupVersion.Group,
+		Version: networking_istio_io_v1alpha3.SchemeGroupVersion.Version,
+		Kind:    "ServiceEntry",
+	}
+
+	_, err := r.base.ReconcileRemoteGeneric(gvk, ref)
 	return err
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcileVirtualService(clusterName string, obj *networking_istio_io_v1alpha3.VirtualService) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+
+	gvk := schema.GroupVersionKind{
+		Group:   networking_istio_io_v1alpha3.SchemeGroupVersion.Group,
+		Version: networking_istio_io_v1alpha3.SchemeGroupVersion.Version,
+		Kind:    "VirtualService",
+	}
+
+	return r.base.ReconcileRemoteGeneric(gvk, obj)
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcileVirtualServiceDeletion(clusterName string, obj reconcile.Request) error {
@@ -320,13 +427,27 @@ func (r *remoteEventBasedInputReconciler) ReconcileVirtualServiceDeletion(cluste
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   networking_istio_io_v1alpha3.SchemeGroupVersion.Group,
+		Version: networking_istio_io_v1alpha3.SchemeGroupVersion.Version,
+		Kind:    "VirtualService",
+	}
+
+	_, err := r.base.ReconcileRemoteGeneric(gvk, ref)
 	return err
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcileAuthorizationPolicy(clusterName string, obj *security_istio_io_v1beta1.AuthorizationPolicy) (reconcile.Result, error) {
 	obj.ClusterName = clusterName
-	return r.base.ReconcileRemoteGeneric(obj)
+
+	gvk := schema.GroupVersionKind{
+		Group:   security_istio_io_v1beta1.SchemeGroupVersion.Group,
+		Version: security_istio_io_v1beta1.SchemeGroupVersion.Version,
+		Kind:    "AuthorizationPolicy",
+	}
+
+	return r.base.ReconcileRemoteGeneric(gvk, obj)
 }
 
 func (r *remoteEventBasedInputReconciler) ReconcileAuthorizationPolicyDeletion(clusterName string, obj reconcile.Request) error {
@@ -335,7 +456,14 @@ func (r *remoteEventBasedInputReconciler) ReconcileAuthorizationPolicyDeletion(c
 		Namespace:   obj.Namespace,
 		ClusterName: clusterName,
 	}
-	_, err := r.base.ReconcileRemoteGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   security_istio_io_v1beta1.SchemeGroupVersion.Group,
+		Version: security_istio_io_v1beta1.SchemeGroupVersion.Version,
+		Kind:    "AuthorizationPolicy",
+	}
+
+	_, err := r.base.ReconcileRemoteGeneric(gvk, ref)
 	return err
 }
 
@@ -378,11 +506,17 @@ type LocalReconcileOptions struct {
 }
 
 type localEventBasedInputReconciler struct {
-	base input.InputReconciler
+	base input.EventBasedInputReconciler
 }
 
 func (r *localEventBasedInputReconciler) ReconcileSettings(obj *settings_mesh_gloo_solo_io_v1.Settings) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	gvk := schema.GroupVersionKind{
+		Group:   settings_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: settings_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "Settings",
+	}
+
+	return r.base.ReconcileLocalGeneric(gvk, obj)
 }
 
 func (r *localEventBasedInputReconciler) ReconcileSettingsDeletion(obj reconcile.Request) error {
@@ -390,12 +524,25 @@ func (r *localEventBasedInputReconciler) ReconcileSettingsDeletion(obj reconcile
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   settings_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: settings_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "Settings",
+	}
+
+	_, err := r.base.ReconcileLocalGeneric(gvk, ref)
 	return err
 }
 
 func (r *localEventBasedInputReconciler) ReconcileDestination(obj *discovery_mesh_gloo_solo_io_v1.Destination) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	gvk := schema.GroupVersionKind{
+		Group:   discovery_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: discovery_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "Destination",
+	}
+
+	return r.base.ReconcileLocalGeneric(gvk, obj)
 }
 
 func (r *localEventBasedInputReconciler) ReconcileDestinationDeletion(obj reconcile.Request) error {
@@ -403,12 +550,25 @@ func (r *localEventBasedInputReconciler) ReconcileDestinationDeletion(obj reconc
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   discovery_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: discovery_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "Destination",
+	}
+
+	_, err := r.base.ReconcileLocalGeneric(gvk, ref)
 	return err
 }
 
 func (r *localEventBasedInputReconciler) ReconcileWorkload(obj *discovery_mesh_gloo_solo_io_v1.Workload) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	gvk := schema.GroupVersionKind{
+		Group:   discovery_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: discovery_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "Workload",
+	}
+
+	return r.base.ReconcileLocalGeneric(gvk, obj)
 }
 
 func (r *localEventBasedInputReconciler) ReconcileWorkloadDeletion(obj reconcile.Request) error {
@@ -416,12 +576,25 @@ func (r *localEventBasedInputReconciler) ReconcileWorkloadDeletion(obj reconcile
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   discovery_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: discovery_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "Workload",
+	}
+
+	_, err := r.base.ReconcileLocalGeneric(gvk, ref)
 	return err
 }
 
 func (r *localEventBasedInputReconciler) ReconcileMesh(obj *discovery_mesh_gloo_solo_io_v1.Mesh) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	gvk := schema.GroupVersionKind{
+		Group:   discovery_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: discovery_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "Mesh",
+	}
+
+	return r.base.ReconcileLocalGeneric(gvk, obj)
 }
 
 func (r *localEventBasedInputReconciler) ReconcileMeshDeletion(obj reconcile.Request) error {
@@ -429,12 +602,25 @@ func (r *localEventBasedInputReconciler) ReconcileMeshDeletion(obj reconcile.Req
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   discovery_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: discovery_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "Mesh",
+	}
+
+	_, err := r.base.ReconcileLocalGeneric(gvk, ref)
 	return err
 }
 
 func (r *localEventBasedInputReconciler) ReconcileTrafficPolicy(obj *networking_mesh_gloo_solo_io_v1.TrafficPolicy) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	gvk := schema.GroupVersionKind{
+		Group:   networking_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: networking_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "TrafficPolicy",
+	}
+
+	return r.base.ReconcileLocalGeneric(gvk, obj)
 }
 
 func (r *localEventBasedInputReconciler) ReconcileTrafficPolicyDeletion(obj reconcile.Request) error {
@@ -442,12 +628,25 @@ func (r *localEventBasedInputReconciler) ReconcileTrafficPolicyDeletion(obj reco
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   networking_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: networking_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "TrafficPolicy",
+	}
+
+	_, err := r.base.ReconcileLocalGeneric(gvk, ref)
 	return err
 }
 
 func (r *localEventBasedInputReconciler) ReconcileAccessPolicy(obj *networking_mesh_gloo_solo_io_v1.AccessPolicy) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	gvk := schema.GroupVersionKind{
+		Group:   networking_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: networking_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "AccessPolicy",
+	}
+
+	return r.base.ReconcileLocalGeneric(gvk, obj)
 }
 
 func (r *localEventBasedInputReconciler) ReconcileAccessPolicyDeletion(obj reconcile.Request) error {
@@ -455,12 +654,25 @@ func (r *localEventBasedInputReconciler) ReconcileAccessPolicyDeletion(obj recon
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   networking_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: networking_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "AccessPolicy",
+	}
+
+	_, err := r.base.ReconcileLocalGeneric(gvk, ref)
 	return err
 }
 
 func (r *localEventBasedInputReconciler) ReconcileVirtualMesh(obj *networking_mesh_gloo_solo_io_v1.VirtualMesh) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	gvk := schema.GroupVersionKind{
+		Group:   networking_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: networking_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "VirtualMesh",
+	}
+
+	return r.base.ReconcileLocalGeneric(gvk, obj)
 }
 
 func (r *localEventBasedInputReconciler) ReconcileVirtualMeshDeletion(obj reconcile.Request) error {
@@ -468,12 +680,25 @@ func (r *localEventBasedInputReconciler) ReconcileVirtualMeshDeletion(obj reconc
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   networking_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: networking_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "VirtualMesh",
+	}
+
+	_, err := r.base.ReconcileLocalGeneric(gvk, ref)
 	return err
 }
 
 func (r *localEventBasedInputReconciler) ReconcileWasmDeployment(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.WasmDeployment) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	gvk := schema.GroupVersionKind{
+		Group:   networking_enterprise_mesh_gloo_solo_io_v1beta1.SchemeGroupVersion.Group,
+		Version: networking_enterprise_mesh_gloo_solo_io_v1beta1.SchemeGroupVersion.Version,
+		Kind:    "WasmDeployment",
+	}
+
+	return r.base.ReconcileLocalGeneric(gvk, obj)
 }
 
 func (r *localEventBasedInputReconciler) ReconcileWasmDeploymentDeletion(obj reconcile.Request) error {
@@ -481,12 +706,25 @@ func (r *localEventBasedInputReconciler) ReconcileWasmDeploymentDeletion(obj rec
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   networking_enterprise_mesh_gloo_solo_io_v1beta1.SchemeGroupVersion.Group,
+		Version: networking_enterprise_mesh_gloo_solo_io_v1beta1.SchemeGroupVersion.Version,
+		Kind:    "WasmDeployment",
+	}
+
+	_, err := r.base.ReconcileLocalGeneric(gvk, ref)
 	return err
 }
 
 func (r *localEventBasedInputReconciler) ReconcileVirtualDestination(obj *networking_enterprise_mesh_gloo_solo_io_v1beta1.VirtualDestination) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	gvk := schema.GroupVersionKind{
+		Group:   networking_enterprise_mesh_gloo_solo_io_v1beta1.SchemeGroupVersion.Group,
+		Version: networking_enterprise_mesh_gloo_solo_io_v1beta1.SchemeGroupVersion.Version,
+		Kind:    "VirtualDestination",
+	}
+
+	return r.base.ReconcileLocalGeneric(gvk, obj)
 }
 
 func (r *localEventBasedInputReconciler) ReconcileVirtualDestinationDeletion(obj reconcile.Request) error {
@@ -494,12 +732,25 @@ func (r *localEventBasedInputReconciler) ReconcileVirtualDestinationDeletion(obj
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   networking_enterprise_mesh_gloo_solo_io_v1beta1.SchemeGroupVersion.Group,
+		Version: networking_enterprise_mesh_gloo_solo_io_v1beta1.SchemeGroupVersion.Version,
+		Kind:    "VirtualDestination",
+	}
+
+	_, err := r.base.ReconcileLocalGeneric(gvk, ref)
 	return err
 }
 
 func (r *localEventBasedInputReconciler) ReconcileAccessLogRecord(obj *observability_enterprise_mesh_gloo_solo_io_v1.AccessLogRecord) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	gvk := schema.GroupVersionKind{
+		Group:   observability_enterprise_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: observability_enterprise_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "AccessLogRecord",
+	}
+
+	return r.base.ReconcileLocalGeneric(gvk, obj)
 }
 
 func (r *localEventBasedInputReconciler) ReconcileAccessLogRecordDeletion(obj reconcile.Request) error {
@@ -507,12 +758,25 @@ func (r *localEventBasedInputReconciler) ReconcileAccessLogRecordDeletion(obj re
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   observability_enterprise_mesh_gloo_solo_io_v1.SchemeGroupVersion.Group,
+		Version: observability_enterprise_mesh_gloo_solo_io_v1.SchemeGroupVersion.Version,
+		Kind:    "AccessLogRecord",
+	}
+
+	_, err := r.base.ReconcileLocalGeneric(gvk, ref)
 	return err
 }
 
 func (r *localEventBasedInputReconciler) ReconcileSecret(obj *v1.Secret) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	gvk := schema.GroupVersionKind{
+		Group:   v1.SchemeGroupVersion.Group,
+		Version: v1.SchemeGroupVersion.Version,
+		Kind:    "Secret",
+	}
+
+	return r.base.ReconcileLocalGeneric(gvk, obj)
 }
 
 func (r *localEventBasedInputReconciler) ReconcileSecretDeletion(obj reconcile.Request) error {
@@ -520,12 +784,25 @@ func (r *localEventBasedInputReconciler) ReconcileSecretDeletion(obj reconcile.R
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   v1.SchemeGroupVersion.Group,
+		Version: v1.SchemeGroupVersion.Version,
+		Kind:    "Secret",
+	}
+
+	_, err := r.base.ReconcileLocalGeneric(gvk, ref)
 	return err
 }
 
 func (r *localEventBasedInputReconciler) ReconcileKubernetesCluster(obj *multicluster_solo_io_v1alpha1.KubernetesCluster) (reconcile.Result, error) {
-	return r.base.ReconcileLocalGeneric(obj)
+	gvk := schema.GroupVersionKind{
+		Group:   multicluster_solo_io_v1alpha1.SchemeGroupVersion.Group,
+		Version: multicluster_solo_io_v1alpha1.SchemeGroupVersion.Version,
+		Kind:    "KubernetesCluster",
+	}
+
+	return r.base.ReconcileLocalGeneric(gvk, obj)
 }
 
 func (r *localEventBasedInputReconciler) ReconcileKubernetesClusterDeletion(obj reconcile.Request) error {
@@ -533,6 +810,13 @@ func (r *localEventBasedInputReconciler) ReconcileKubernetesClusterDeletion(obj 
 		Name:      obj.Name,
 		Namespace: obj.Namespace,
 	}
-	_, err := r.base.ReconcileLocalGeneric(ref)
+
+	gvk := schema.GroupVersionKind{
+		Group:   multicluster_solo_io_v1alpha1.SchemeGroupVersion.Group,
+		Version: multicluster_solo_io_v1alpha1.SchemeGroupVersion.Version,
+		Kind:    "KubernetesCluster",
+	}
+
+	_, err := r.base.ReconcileLocalGeneric(gvk, ref)
 	return err
 }

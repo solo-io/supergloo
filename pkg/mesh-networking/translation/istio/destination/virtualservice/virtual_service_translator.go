@@ -57,7 +57,7 @@ type Translator interface {
 	// Return true if the Destination should be translated given the event objects
 	ShouldTranslate(
 		destination *discoveryv1.Destination,
-		eventObjs []ezkube.ResourceId,
+		eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
 	) bool
 }
 
@@ -85,19 +85,20 @@ func NewTranslator(
 // Note: this could be further optimized if we looked at whether VirtualService-related fields within the TrafficPolicy changed
 func (t *translator) ShouldTranslate(
 	destination *discoveryv1.Destination,
-	eventObjs []ezkube.ResourceId,
+	eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
 ) bool {
-	for _, eventObj := range eventObjs {
-
-		switch eventObj.(type) {
-		case *discoveryv1.Destination:
-			if ezkube.RefsMatch(eventObj, destination) {
-				return true
-			}
-		case *networkingv1.TrafficPolicy:
-			for _, appliedTrafficPolicy := range destination.Status.GetAppliedTrafficPolicies() {
-				if ezkube.RefsMatch(eventObj, appliedTrafficPolicy.Ref) {
+	for gvk, objs := range eventObjs {
+		for _, obj := range objs {
+			switch gvk {
+			case discoveryv1.DestinationGVK:
+				if ezkube.RefsMatch(obj, destination) {
 					return true
+				}
+			case networkingv1.TrafficPolicyGVK:
+				for _, appliedTrafficPolicy := range destination.Status.GetAppliedTrafficPolicies() {
+					if ezkube.RefsMatch(obj, appliedTrafficPolicy.Ref) {
+						return true
+					}
 				}
 			}
 		}

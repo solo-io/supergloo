@@ -6,6 +6,7 @@ import (
 
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/extensions"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
@@ -25,7 +26,7 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		ctx context.Context,
-		eventObjs []ezkube.ResourceId,
+		eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
 		in input.LocalSnapshot,
 		userSupplied input.RemoteSnapshot,
 		istioOutputs istio.Builder,
@@ -51,7 +52,7 @@ func NewIstioTranslator(extensionClients extensions.Clientset) Translator {
 
 func (t *istioTranslator) Translate(
 	ctx context.Context,
-	eventObjs []ezkube.ResourceId,
+	eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
 	in input.LocalSnapshot,
 	userSupplied input.RemoteSnapshot,
 	istioOutputs istio.Builder,

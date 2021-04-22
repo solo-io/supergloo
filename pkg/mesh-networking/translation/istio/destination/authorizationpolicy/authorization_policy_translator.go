@@ -52,7 +52,7 @@ type Translator interface {
 	// Return true if the Destination should be translated given the event objects
 	ShouldTranslate(
 		destination *discoveryv1.Destination,
-		eventObjs []ezkube.ResourceId,
+		eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
 	) bool
 }
 
@@ -67,19 +67,20 @@ func NewTranslator() Translator {
 //  2. applied AccessPolicy
 func (t *translator) ShouldTranslate(
 	destination *discoveryv1.Destination,
-	eventObjs []ezkube.ResourceId,
+	eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
 ) bool {
-	for _, eventObj := range eventObjs {
-
-		switch eventObj.(type) {
-		case *discoveryv1.Destination:
-			if ezkube.RefsMatch(eventObj, destination) {
-				return true
-			}
-		case *networkingv1.AccessPolicy:
-			for _, appliedAccessPolicy := range destination.Status.GetAppliedAccessPolicies() {
-				if ezkube.RefsMatch(eventObj, appliedAccessPolicy.Ref) {
+	for gvk, objs := range eventObjs {
+		for _, obj := range objs {
+			switch gvk {
+			case discoveryv1.DestinationGVK:
+				if ezkube.RefsMatch(obj, destination) {
 					return true
+				}
+			case networkingv1.AccessPolicyGVK:
+				for _, appliedAccessPolicy := range destination.Status.GetAppliedAccessPolicies() {
+					if ezkube.RefsMatch(obj, appliedAccessPolicy.Ref) {
+						return true
+					}
 				}
 			}
 		}

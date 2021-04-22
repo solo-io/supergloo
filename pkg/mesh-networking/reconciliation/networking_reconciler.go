@@ -3,11 +3,9 @@ package reconciliation
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
-	"github.com/solo-io/skv2/contrib/pkg/sets"
 	"github.com/solo-io/skv2/pkg/stats"
 
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/settingsutils"
@@ -47,7 +45,7 @@ type RegisterReconcilerFunc func(
 	ctx context.Context,
 	reconcile skinput.EventBasedReconcileFunc,
 	reconcileOpts input.ReconcileOptions,
-) (skinput.InputReconciler, error)
+) (skinput.EventBasedInputReconciler, error)
 
 // function which defines how the Networking reconciler should apply its output snapshots.
 type SyncOutputsFunc func(
@@ -71,12 +69,14 @@ type networkingReconciler struct {
 	verboseMode                bool
 	settingsRef                *v1.ObjectRef
 	extensionClients           extensions.Clientset
-	reconciler                 skinput.InputReconciler
+	reconciler                 skinput.EventBasedInputReconciler
 	remoteResourceVerifier     verifier.ServerResourceVerifier
 	disallowIntersectingConfig bool
 }
 
 var (
+	// placeholder gvk for push notif
+	pushNotificationGvk = schema.GroupVersionKind{}
 	// pushNotificationId is a special identifier for a reconcile event triggered by an extension server pushing a notification
 	pushNotificationId = &v1.ObjectRef{
 		Name: "push-notification-event",
@@ -184,19 +184,10 @@ func Start(
 
 // reconcile global state
 func (r *networkingReconciler) reconcile(
-	localEventObjs []ezkube.ResourceId,
-	remoteEventObjs []ezkube.ClusterResourceId,
+	localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+	remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 ) (bool, error) {
-	// TODO(harveyxia): revisit this log line
-	var localRefs strings.Builder
-	var remoteRefs strings.Builder
-	for _, obj := range localEventObjs {
-		localRefs.WriteString(sets.Key(obj) + ",")
-	}
-	for _, obj := range remoteEventObjs {
-		remoteRefs.WriteString(sets.Key(obj) + ",")
-	}
-	contextutils.LoggerFrom(r.ctx).Debugf("objects triggered resync\nlocal: %s\n remote: %s", localRefs.String(), remoteRefs.String())
+	contextutils.LoggerFrom(r.ctx).Debugf("objects triggered resync")
 
 	r.totalReconciles++
 
@@ -288,8 +279,8 @@ func (r *networkingReconciler) reconcile(
 
 func (r *networkingReconciler) applyTranslation(
 	ctx context.Context,
-	localEventObjs []ezkube.ResourceId,
-	remoteEventObjs []ezkube.ClusterResourceId,
+	localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+	remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 	in input.LocalSnapshot,
 	userSupplied input.RemoteSnapshot,
 ) error {
@@ -329,7 +320,7 @@ func (r *networkingReconciler) syncSettings(ctx *context.Context, in input.Local
 	// update configured NetworkExtensionServers for the extension clients which are called inside the translator.
 	return r.extensionClients.ConfigureServers(settings.Spec.NetworkingExtensionServers, func(_ *v1beta1.PushNotification) {
 		// ignore error because underlying impl should never error here
-		_, _ = r.reconciler.ReconcileLocalGeneric(pushNotificationId)
+		_, _ = r.reconciler.ReconcileLocalGeneric(pushNotificationGvk, pushNotificationId)
 	})
 }
 

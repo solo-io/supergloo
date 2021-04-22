@@ -30,6 +30,7 @@ import (
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/security/v1beta1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -39,8 +40,8 @@ type Translator interface {
 	// errors reflect an internal translation error and should never happen
 	Translate(
 		ctx context.Context,
-		localEventObjs []ezkube.ResourceId,
-		remoteEventObjs []ezkube.ClusterResourceId,
+		localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+		remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 		in input.LocalSnapshot,
 		userSupplied input.RemoteSnapshot,
 		reporter reporting.Reporter,
@@ -74,8 +75,8 @@ func NewTranslator(
 // TODO(harveyxia): use remoteEventObjs for conflict detection translation
 func (t *translator) Translate(
 	ctx context.Context,
-	localEventObjs []ezkube.ResourceId,
-	remoteEventObjs []ezkube.ClusterResourceId,
+	localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+	remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 	in input.LocalSnapshot,
 	userSupplied input.RemoteSnapshot,
 	reporter reporting.Reporter,

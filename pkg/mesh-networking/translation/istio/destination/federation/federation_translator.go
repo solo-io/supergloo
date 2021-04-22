@@ -53,7 +53,7 @@ type Translator interface {
 	// Also return all parent TrafficPolicies
 	ShouldTranslate(
 		destination *discoveryv1.Destination,
-		eventObjs []ezkube.ResourceId,
+		eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
 	) (bool, []ezkube.ResourceId)
 }
 
@@ -78,28 +78,33 @@ func NewTranslator(
 // Return boolean indicating whether to translate, and all parent TrafficPolicies if they exist
 func (t *translator) ShouldTranslate(
 	destination *discoveryv1.Destination,
-	eventObjs []ezkube.ResourceId,
+	eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
 ) (bool, []ezkube.ResourceId) {
 	shouldTranslate := false
 	var trafficPolicyParents []ezkube.ResourceId
 
-	for _, eventObj := range eventObjs {
-
-		switch obj := eventObj.(type) {
-		case *discoveryv1.Destination:
-			if ezkube.RefsMatch(eventObj, destination) {
-				shouldTranslate = true
-			}
-		case *networkingv1.VirtualMesh:
-			if destination.Status.GetAppliedFederation() != nil {
-				if ezkube.RefsMatch(eventObj, destination.Status.GetAppliedFederation().VirtualMeshRef) {
+	for gvk, objs := range eventObjs {
+		for _, obj := range objs {
+			switch gvk {
+			case discoveryv1.DestinationGVK:
+				if ezkube.RefsMatch(obj, destination) {
 					shouldTranslate = true
 				}
-			}
-		case *networkingv1.TrafficPolicy:
-			if utils.ReferencedByTrafficShiftSubset(destination, obj) {
-				shouldTranslate = true
-				trafficPolicyParents = append(trafficPolicyParents, obj)
+			case networkingv1.VirtualMeshGVK:
+				if destination.Status.GetAppliedFederation() != nil {
+					if ezkube.RefsMatch(obj, destination.Status.GetAppliedFederation().VirtualMeshRef) {
+						shouldTranslate = true
+					}
+				}
+			case networkingv1.TrafficPolicyGVK:
+
+				// TODO(harveyxia): refactor
+				if _, ok := obj.(*networkingv1.TrafficPolicy); ok {
+					if utils.ReferencedByTrafficShiftSubset(destination, obj.(*networkingv1.TrafficPolicy)) {
+						shouldTranslate = true
+						trafficPolicyParents = append(trafficPolicyParents, obj)
+					}
+				}
 			}
 		}
 	}

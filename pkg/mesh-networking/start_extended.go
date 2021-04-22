@@ -47,7 +47,7 @@ type NetworkingReconcilerExtensionOpts struct {
 func (opts *NetworkingReconcilerExtensionOpts) initDefaults(parameters bootstrap.StartParameters) {
 	if opts.RegisterNetworkingReconciler == nil {
 		// use default translator
-		opts.RegisterNetworkingReconciler = func(ctx context.Context, reconcile skinput.EventBasedReconcileFunc, reconcileOpts input.ReconcileOptions) (skinput.InputReconciler, error) {
+		opts.RegisterNetworkingReconciler = func(ctx context.Context, reconcile skinput.EventBasedReconcileFunc, reconcileOpts input.ReconcileOptions) (skinput.EventBasedInputReconciler, error) {
 			return input.RegisterEventBasedInputReconciler(
 				ctx,
 				parameters.Clusters,

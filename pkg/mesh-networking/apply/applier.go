@@ -17,6 +17,7 @@ import (
 	"github.com/solo-io/skv2/contrib/pkg/sets"
 	v1 "github.com/solo-io/skv2/pkg/api/core.skv2.solo.io/v1"
 	"github.com/solo-io/skv2/pkg/ezkube"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilsets "k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -27,8 +28,8 @@ import (
 type Applier interface {
 	Apply(
 		ctx context.Context,
-		localEventObjs []ezkube.ResourceId,
-		remoteEventObjs []ezkube.ClusterResourceId,
+		localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+		remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 		input input.LocalSnapshot,
 		userSupplied input.RemoteSnapshot,
 	)
@@ -49,8 +50,8 @@ func NewApplier(
 
 func (v *applier) Apply(
 	ctx context.Context,
-	localEventObjs []ezkube.ResourceId,
-	remoteEventObjs []ezkube.ClusterResourceId,
+	localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+	remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 	input input.LocalSnapshot,
 	userSupplied input.RemoteSnapshot,
 ) {

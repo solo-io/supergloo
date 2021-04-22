@@ -55,7 +55,7 @@ type Translator interface {
 	// Also return all parent TrafficPolicies
 	ShouldTranslate(
 		destination *discoveryv1.Destination,
-		eventObjs []ezkube.ResourceId,
+		eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
 	) (bool, []ezkube.ResourceId)
 }
 
@@ -90,27 +90,32 @@ func NewTranslator(
 // Note: this could be further optimized if we looked at whether DestinationRule-related fields within the TrafficPolicy changed
 func (t *translator) ShouldTranslate(
 	destination *discoveryv1.Destination,
-	eventObjs []ezkube.ResourceId,
+	eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
 ) (bool, []ezkube.ResourceId) {
 	shouldTranslate := false
 	var trafficPolicyParents []ezkube.ResourceId
 
-	for _, eventObj := range eventObjs {
-
-		switch obj := eventObj.(type) {
-		case *discoveryv1.Destination:
-			if ezkube.RefsMatch(eventObj, destination) {
-				shouldTranslate = true
-			}
-		case *networkingv1.TrafficPolicy:
-			for _, appliedTrafficPolicy := range destination.Status.GetAppliedTrafficPolicies() {
-				if ezkube.RefsMatch(eventObj, appliedTrafficPolicy.Ref) {
+	for gvk, objs := range eventObjs {
+		for _, obj := range objs {
+			switch gvk {
+			case discoveryv1.DestinationGVK:
+				if ezkube.RefsMatch(obj, destination) {
 					shouldTranslate = true
 				}
-			}
-			if utils.ReferencedByTrafficShiftSubset(destination, obj) {
-				shouldTranslate = true
-				trafficPolicyParents = append(trafficPolicyParents, obj)
+			case networkingv1.TrafficPolicyGVK:
+				for _, appliedTrafficPolicy := range destination.Status.GetAppliedTrafficPolicies() {
+					if ezkube.RefsMatch(obj, appliedTrafficPolicy.Ref) {
+						shouldTranslate = true
+					}
+				}
+
+				// TODO(harveyxia): refactor
+				if _, ok := obj.(*networkingv1.TrafficPolicy); ok {
+					if utils.ReferencedByTrafficShiftSubset(destination, obj.(*networkingv1.TrafficPolicy)) {
+						shouldTranslate = true
+						trafficPolicyParents = append(trafficPolicyParents, obj)
+					}
+				}
 			}
 		}
 	}
