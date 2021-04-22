@@ -43,6 +43,10 @@ RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 {{< /tab >}}
 {{< /tabs >}}
 
+If both the above commands left you with a `$RELAY_ADDRESS` value that is empty or incomplete, make sure the `enterprise-networking`
+service is available to clients outside the cluster, perhaps through a NodePort or ingress solution, and find the address
+before continuing. 
+
 Let's set variables for the remaining values:
 
 ```bash
@@ -151,16 +155,25 @@ helm repo add enterprise-agent https://storage.googleapis.com/gloo-mesh-enterpri
 helm repo update
 ```
 
-First we will get the ingress address for the relay server. These commands assume you have exposed the relay server through the Istio ingress gateway.
+By default, the `enterprise-networking` service is of type LoadBalancer, and the cloud provider managing your Kubernetes cluster will automatically provision a public IP for the service. Get the complete `relay-server-address` with:
 
-```shell
-MGMT_CONTEXT=kind-mgmt-cluster # Update value as needed
-kubectl config use-context $MGMT_CONTEXT
-
-MGMT_INGRESS_ADDRESS=$(kubectl get node -ojson | jq -r ".items[0].status.addresses[0].address")
-MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+{{< tabs >}}
+{{< tab name="IP LoadBalancer address (GKE)" codelang="yaml">}}
+MGMT_INGRESS_ADDRESS=$(kubectl get svc -n gloo-mesh enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+MGMT_INGRESS_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
 RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
-```
+{{< /tab >}}
+{{< tab name="Hostname LoadBalancer address (EKS)" codelang="shell" >}}
+MGMT_INGRESS_ADDRESS=$(kubectl get svc -n gloo-mesh enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+MGMT_INGRESS_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
+RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
+{{< /tab >}}
+{{< /tabs >}}
+
+If both the above commands left you with a `$RELAY_ADDRESS` value that is empty or incomplete, make sure the `enterprise-networking`
+service is available to clients outside the cluster, perhaps through a NodePort or ingress solution, and find the address
+before continuing. 
+
 
 Then we will set our variables:
 

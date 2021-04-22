@@ -23,7 +23,7 @@ The following install commands are lifted from the [Installing Istio Multicluste
 but the `hub` and `tag` values can be added to any Istio installation manifest to install Gloo Mesh Istio.
 
 {{< tabs >}}
-{{< tab name="Istio 1.8" codelang="shell" >}}
+{{< tab name="Istio 1.8 and 1.9" codelang="shell" >}}
 cat << EOF | istioctl manifest install -y -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator

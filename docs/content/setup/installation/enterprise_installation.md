@@ -12,8 +12,7 @@ Gloo Mesh Enterprise is the paid version of Gloo Mesh including the Gloo Mesh UI
 In a typical deployment, Gloo Mesh Enterprise uses a single Kubernetes cluster to host the management plane while each service mesh can run on its own independent cluster.
 This document describes how to install the Gloo Mesh Enterprise management plane components with both `meshctl` and Helm.
 
-TODO joekelley maybe remove the prerequisites guide and reference to rbac.
-A conceptual overview of the Gloo Mesh Enterprise architecture can be found [here]({{% versioned_link_path fromRoot="/concepts/relay" %}}). Make sure you have followed the [prerequisites guide]({{% versioned_link_path fromRoot="/setup/prerequisites/enterprise_prerequisites/" %}}). We also recommend following our guide on [configuring Role-based API control]({{% versioned_link_path fromRoot="/guides/configure_role_based_api/" %}}).
+A conceptual overview of the Gloo Mesh Enterprise architecture can be found [here]({{% versioned_link_path fromRoot="/concepts/relay" %}}).
 
 ### Installing with `meshctl`
 
