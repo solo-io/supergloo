@@ -441,6 +441,91 @@ spec:
                       type: string
                   type: object
               type: object
+            appliedSubsets:
+              items:
+                properties:
+                  observedGeneration:
+                    description: The observed generation of the TrafficPolicy.
+                    format: int64
+                    type: integer
+                  ref:
+                    description: Reference to the TrafficPolicy object.
+                    properties:
+                      name:
+                        description: name of the resource being referenced
+                        type: string
+                      namespace:
+                        description: namespace of the resource being referenced
+                        type: string
+                    type: object
+                  trafficShift:
+                    description: The traffic shift.
+                    properties:
+                      destinations:
+                        description: Specify weighted traffic shift destinations.
+                        items:
+                          oneOf:
+                          - not:
+                              anyOf:
+                              - required:
+                                - kubeService
+                              - required:
+                                - virtualDestination
+                          - required:
+                            - kubeService
+                          - required:
+                            - virtualDestination
+                          properties:
+                            kubeService:
+                              description: Specify a Kubernetes Service.
+                              properties:
+                                clusterName:
+                                  description: The Gloo Mesh cluster name (registration name) of the service.
+                                  type: string
+                                name:
+                                  description: The name of the service.
+                                  type: string
+                                namespace:
+                                  description: The namespace of the service.
+                                  type: string
+                                port:
+                                  description: Port on the service to receive traffic. Required if the service exposes more than one port.
+                                  maximum: 4294967295
+                                  minimum: 0
+                                  type: integer
+                                subset:
+                                  additionalProperties:
+                                    type: string
+                                  description: Specify, by labels, a subset of service instances to route to.
+                                  type: object
+                              type: object
+                            virtualDestination:
+                              description: Specify a VirtualDestination.
+                              properties:
+                                name:
+                                  description: The name of the VirtualDestination object.
+                                  type: string
+                                namespace:
+                                  description: The namespace of the VirtualDestination object.
+                                  type: string
+                                subset:
+                                  additionalProperties:
+                                    type: string
+                                  description: Specify, by labels, a subset of service instances backing the VirtualDestination to route to.
+                                  type: object
+                              type: object
+                            weight:
+                              description: |-
+                                Specify the proportion of traffic to be forwarded to this destination.
+                                Weights across all of the `destinations` must sum to 100.
+                              maximum: 4294967295
+                              minimum: 0
+                              type: integer
+                          type: object
+                        type: array
+                    type: object
+                type: object
+              type: array
             appliedTrafficPolicies:
               description: The set of TrafficPolicies that have been applied to this Destination.
               items:

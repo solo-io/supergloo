@@ -11,7 +11,6 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/destinationrule"
-	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/virtualservice"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
@@ -97,12 +96,9 @@ func (t *translator) ShouldTranslate(
 					}
 				}
 			case networkingv1.TrafficPolicyGVK:
-
-				// TODO(harveyxia): refactor
-				if _, ok := obj.(*networkingv1.TrafficPolicy); ok {
-					if utils.ReferencedByTrafficShiftSubset(destination, obj.(*networkingv1.TrafficPolicy)) {
+				for _, appliedSubsets := range destination.Status.GetAppliedSubsets() {
+					if ezkube.RefsMatch(obj, appliedSubsets.Ref) {
 						shouldTranslate = true
-						trafficPolicyParents = append(trafficPolicyParents, obj)
 					}
 				}
 			}

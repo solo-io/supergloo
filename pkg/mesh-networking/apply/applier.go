@@ -11,6 +11,7 @@ import (
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/apply/configtarget"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/selectorutils"
 	"github.com/solo-io/go-utils/contextutils"
@@ -136,6 +137,7 @@ func applyPoliciesToConfigTargets(input input.LocalSnapshot) {
 		destination.Status.AppliedTrafficPolicies = getAppliedTrafficPolicies(input.TrafficPolicies().List(), destination)
 		destination.Status.AppliedAccessPolicies = getAppliedAccessPolicies(input.AccessPolicies().List(), destination)
 		destination.Status.AppliedFederation = getAppliedFederation(input.VirtualMeshes().List(), destination)
+		destination.Status.AppliedSubsets = getAppliedSubsets(input.TrafficPolicies().List(), destination)
 	}
 
 	for _, mesh := range input.Meshes().List() {
@@ -550,6 +552,33 @@ func getAppliedTrafficPolicies(
 	return appliedPolicies
 }
 
+// return all TrafficPolicies that reference the Destination's subset(s) in a traffic shift
+func getAppliedSubsets(
+	trafficPolicies networkingv1.TrafficPolicySlice,
+	destination *discoveryv1.Destination,
+) []*discoveryv1.DestinationStatus_AppliedSubsets {
+	var matchingTrafficPolicies networkingv1.TrafficPolicySlice
+	for _, policy := range trafficPolicies {
+		if policy.Status.State != commonv1.ApprovalState_ACCEPTED {
+			continue
+		}
+		if referencedByTrafficShiftSubset(destination, policy) {
+			matchingTrafficPolicies = append(matchingTrafficPolicies, policy)
+		}
+	}
+
+	var appliedSubsets []*discoveryv1.DestinationStatus_AppliedSubsets
+	for _, policy := range matchingTrafficPolicies {
+		policy := policy // pike
+		appliedSubsets = append(appliedSubsets, &discoveryv1.DestinationStatus_AppliedSubsets{
+			Ref:                ezkube.MakeObjectRef(policy),
+			ObservedGeneration: policy.Generation,
+			TrafficShift:       policy.Spec.Policy.TrafficShift,
+		})
+	}
+	return appliedSubsets
+}
+
 // sort the set of traffic policies in the order in which they were accepted.
 // Traffic policies which were accepted first and have not changed (i.e. their observedGeneration is up-to-date) take precedence.
 // Next are policies that were previously accepted but whose observedGeneration is out of date. This permits policies which were modified but formerly correct to maintain
@@ -753,4 +782,20 @@ func meshMatches(meshRef *v1.ObjectRef, matchingMeshes utilsets.String, matching
 		return matchingVirtualMeshes.Has(virtualMeshRefKey)
 	}
 	return false
+}
+
+// return true if TrafficPolicy references this Destination as a TrafficShift and specifies subsets
+// because the subsets must be defined on the traffic shift destination's DestinationRule
+func referencedByTrafficShiftSubset(destination *discoveryv1.Destination, trafficPolicy *networkingv1.TrafficPolicy) bool {
+	referenced := false
+
+	trafficShiftDestinations := trafficPolicy.Spec.GetPolicy().GetTrafficShift().GetDestinations()
+	for _, trafficShiftDestination := range trafficShiftDestinations {
+		kubeService := trafficShiftDestination.GetKubeService()
+		if len(kubeService.GetSubset()) > 0 && destinationutils.IsDestinationForKubeService(destination, kubeService) {
+			referenced = true
+		}
+	}
+
+	return referenced
 }

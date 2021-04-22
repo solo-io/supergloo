@@ -108,12 +108,9 @@ func (t *translator) ShouldTranslate(
 						shouldTranslate = true
 					}
 				}
-
-				// TODO(harveyxia): refactor
-				if _, ok := obj.(*networkingv1.TrafficPolicy); ok {
-					if utils.ReferencedByTrafficShiftSubset(destination, obj.(*networkingv1.TrafficPolicy)) {
+				for _, appliedSubsets := range destination.Status.GetAppliedSubsets() {
+					if ezkube.RefsMatch(obj, appliedSubsets.Ref) {
 						shouldTranslate = true
-						trafficPolicyParents = append(trafficPolicyParents, obj)
 					}
 				}
 			}

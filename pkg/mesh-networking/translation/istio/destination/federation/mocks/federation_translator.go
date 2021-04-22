@@ -14,6 +14,7 @@ import (
 	reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
 	v1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	schema "k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // MockTranslator is a mock of Translator interface
@@ -40,9 +41,9 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(ctx context.Context, in input.LocalSnapshot, destination *v1.Destination, reporter reporting.Reporter, trafficPolicyParents []ezkube.ResourceId) ([]*v1alpha3.ServiceEntry, []*v1alpha3.VirtualService, []*v1alpha3.DestinationRule) {
+func (m *MockTranslator) Translate(ctx context.Context, in input.LocalSnapshot, destination *v1.Destination, reporter reporting.Reporter, destinationRuleTrafficPolicyParents []ezkube.ResourceId) ([]*v1alpha3.ServiceEntry, []*v1alpha3.VirtualService, []*v1alpha3.DestinationRule) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Translate", ctx, in, destination, reporter, trafficPolicyParents)
+	ret := m.ctrl.Call(m, "Translate", ctx, in, destination, reporter, destinationRuleTrafficPolicyParents)
 	ret0, _ := ret[0].([]*v1alpha3.ServiceEntry)
 	ret1, _ := ret[1].([]*v1alpha3.VirtualService)
 	ret2, _ := ret[2].([]*v1alpha3.DestinationRule)
@@ -50,13 +51,13 @@ func (m *MockTranslator) Translate(ctx context.Context, in input.LocalSnapshot, 
 }
 
 // Translate indicates an expected call of Translate
-func (mr *MockTranslatorMockRecorder) Translate(ctx, in, destination, reporter, trafficPolicyParents interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) Translate(ctx, in, destination, reporter, destinationRuleTrafficPolicyParents interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), ctx, in, destination, reporter, trafficPolicyParents)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), ctx, in, destination, reporter, destinationRuleTrafficPolicyParents)
 }
 
 // ShouldTranslate mocks base method
-func (m *MockTranslator) ShouldTranslate(destination *v1.Destination, eventObjs []ezkube.ResourceId) (bool, []ezkube.ResourceId) {
+func (m *MockTranslator) ShouldTranslate(destination *v1.Destination, eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId) (bool, []ezkube.ResourceId) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ShouldTranslate", destination, eventObjs)
 	ret0, _ := ret[0].(bool)

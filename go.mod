@@ -10,6 +10,8 @@ replace (
 	github.com/Sirupsen/logrus => github.com/sirupsen/logrus v1.4.2
 	github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
 
+	github.com/solo-io/skv2 => /Users/harvey/skv2
+
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
 	k8s.io/api => k8s.io/api v0.19.7
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.19.7
@@ -17,8 +19,6 @@ replace (
 	k8s.io/cli-runtime => k8s.io/cli-runtime v0.19.7
 	k8s.io/client-go => k8s.io/client-go v0.19.7
 	k8s.io/kubectl => k8s.io/kubectl v0.19.7
-
-	github.com/solo-io/skv2 => /Users/harvey/skv2
 )
 
 require (

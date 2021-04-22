@@ -13,6 +13,7 @@ import (
 	istio "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio"
 	reporting "github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	ezkube "github.com/solo-io/skv2/pkg/ezkube"
+	schema "k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // MockTranslator is a mock of Translator interface
@@ -39,7 +40,7 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(eventObjs []ezkube.ResourceId, in input.LocalSnapshot, destination *v1.Destination, outputs istio.Builder, reporter reporting.Reporter) {
+func (m *MockTranslator) Translate(eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId, in input.LocalSnapshot, destination *v1.Destination, outputs istio.Builder, reporter reporting.Reporter) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Translate", eventObjs, in, destination, outputs, reporter)
 }

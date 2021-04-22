@@ -37,6 +37,7 @@ title: "destination.proto"
   - [DestinationStatus](#discovery.mesh.gloo.solo.io.DestinationStatus)
   - [DestinationStatus.AppliedAccessPolicy](#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy)
   - [DestinationStatus.AppliedFederation](#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation)
+  - [DestinationStatus.AppliedSubsets](#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedSubsets)
   - [DestinationStatus.AppliedTrafficPolicy](#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedTrafficPolicy)
 
 
@@ -330,6 +331,7 @@ Subsets for routing, based on labels.
   | appliedAccessPolicies | [][discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedAccessPolicy" >}}) | repeated | The set of AccessPolicies that have been applied to this Destination. |
   | localFqdn | string |  | The fully qualified domain name for requests originating from a source *coloated* with this Destination. For Kubernetes services, "colocated" means within the same Kubernetes cluster. |
   | appliedFederation | [discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedFederation" >}}) |  | Federation metadata. Only populated if this Destination is federated through a VirtualMesh. |
+  | appliedSubsets | [][discovery.mesh.gloo.solo.io.DestinationStatus.AppliedSubsets]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.discovery.v1.destination#discovery.mesh.gloo.solo.io.DestinationStatus.AppliedSubsets" >}}) | repeated |  |
   
 
 
@@ -365,6 +367,23 @@ Describes the federation configuration applied to this Destination through a [Vi
   | federatedToMeshes | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | The list of Meshes which are able to resolve this Destination's `multicluster_dns_name`. |
   | flatNetwork | bool |  | Whether the Destination has been federated to the given meshes using a VirtualMesh where [Federation.FlatNetwork]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.virtual_mesh/#virtualmeshspecfederation" >}}) is true. |
   | virtualMeshRef | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the VirtualMesh object. |
+  
+
+
+
+
+
+<a name="discovery.mesh.gloo.solo.io.DestinationStatus.AppliedSubsets"></a>
+
+### DestinationStatus.AppliedSubsets
+Describes a [TrafficPolicy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1alpha2.traffic_policy" >}}) that references subsets on this Destination in a traffic shift. Note: this is an Istio-specific feature.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| ref | [core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) |  | Reference to the TrafficPolicy object. |
+  | observedGeneration | int64 |  | The observed generation of the TrafficPolicy. |
+  | trafficShift | [networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.networking.v1.traffic_policy#networking.mesh.gloo.solo.io.TrafficPolicySpec.Policy.MultiDestination" >}}) |  | The traffic shift. |
   
 
 
