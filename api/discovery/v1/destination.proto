@@ -197,6 +197,8 @@ message DestinationStatus {
     // The set of AccessPolicies that have been applied to this Destination.
     repeated AppliedAccessPolicy applied_access_policies = 4;
 
+    // TODO: add repeated AppliedSubsets
+
     // The fully qualified domain name for requests originating from a source *coloated* with this Destination.
     // For Kubernetes services, "colocated" means within the same Kubernetes cluster.
     string local_fqdn = 5;

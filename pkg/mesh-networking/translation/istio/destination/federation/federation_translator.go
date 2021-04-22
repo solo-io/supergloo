@@ -11,6 +11,7 @@ import (
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/decorators/trafficshift"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/destinationrule"
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/utils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/virtualservice"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/destinationutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
@@ -41,7 +42,7 @@ type Translator interface {
 		in input.LocalSnapshot,
 		destination *discoveryv1.Destination,
 		reporter reporting.Reporter,
-		trafficPolicyParents []ezkube.ResourceId,
+		destinationRuleTrafficPolicyParents []ezkube.ResourceId,
 	) (
 		[]*networkingv1alpha3.ServiceEntry,
 		[]*networkingv1alpha3.VirtualService,
@@ -49,6 +50,7 @@ type Translator interface {
 	)
 
 	// Return true if the Destination should be translated given the event objects
+	// Also return all parent TrafficPolicies
 	ShouldTranslate(
 		destination *discoveryv1.Destination,
 		eventObjs []ezkube.ResourceId,
@@ -73,6 +75,7 @@ func NewTranslator(
 // Translate the Destination into federation outputs if any of the following has changed:
 //  1. the Destination
 //  2. applied Federation (which is determined by the VirtualMesh)
+// Return boolean indicating whether to translate, and all parent TrafficPolicies if they exist
 func (t *translator) ShouldTranslate(
 	destination *discoveryv1.Destination,
 	eventObjs []ezkube.ResourceId,
@@ -94,15 +97,9 @@ func (t *translator) ShouldTranslate(
 				}
 			}
 		case *networkingv1.TrafficPolicy:
-			// translate if any applied TrafficPolicy references this Destination as a TrafficShift and specifies subsets
-			// because the subsets must be defined on the traffic shift destination's DestinationRule
-			trafficShiftDestinations := obj.Spec.GetPolicy().GetTrafficShift().GetDestinations()
-			for _, trafficShiftDestination := range trafficShiftDestinations {
-				kubeService := trafficShiftDestination.GetKubeService()
-				if len(kubeService.GetSubset()) > 0 && destinationutils.IsDestinationForKubeService(destination, kubeService) {
-					shouldTranslate = true
-					trafficPolicyParents = append(trafficPolicyParents, obj)
-				}
+			if utils.ReferencedByTrafficShiftSubset(destination, obj) {
+				shouldTranslate = true
+				trafficPolicyParents = append(trafficPolicyParents, obj)
 			}
 		}
 	}
@@ -115,7 +112,7 @@ func (t *translator) Translate(
 	in input.LocalSnapshot,
 	destination *discoveryv1.Destination,
 	reporter reporting.Reporter,
-	trafficPolicyParents []ezkube.ResourceId,
+	destinationRuleTrafficPolicyParents []ezkube.ResourceId,
 ) (
 	[]*networkingv1alpha3.ServiceEntry,
 	[]*networkingv1alpha3.VirtualService,
@@ -170,6 +167,7 @@ func (t *translator) Translate(
 			remoteMesh,
 			serviceEntryTemplate,
 			reporter,
+			destinationRuleTrafficPolicyParents,
 		)
 
 		// Annotate the VirtualMesh as a parent to the outputs
@@ -185,7 +183,7 @@ func (t *translator) Translate(
 		destinationRuleParents := map[schema.GroupVersionKind][]ezkube.ResourceId{
 			networkingv1.VirtualMeshGVK: {destination.Status.AppliedFederation.GetVirtualMeshRef()},
 		}
-		for _, tpParent := range trafficPolicyParents {
+		for _, tpParent := range destinationRuleTrafficPolicyParents {
 			destinationRuleParents[networkingv1.TrafficPolicyGVK] = append(destinationRuleParents[networkingv1.TrafficPolicyGVK], tpParent)
 		}
 		metautils.AppendParents(ctx, destinationRule, destinationRuleParents)
@@ -272,6 +270,7 @@ func (t *translator) translateForRemoteMesh(
 	remoteMesh *discoveryv1.Mesh,
 	serviceEntryTemplate *networkingv1alpha3.ServiceEntry,
 	reporter reporting.Reporter,
+	destinationRuleTrafficPolicyParents []ezkube.ResourceId,
 ) (
 	*networkingv1alpha3.ServiceEntry,
 	*networkingv1alpha3.VirtualService,
@@ -297,7 +296,7 @@ func (t *translator) translateForRemoteMesh(
 	virtualService := t.virtualServiceTranslator.Translate(ctx, in, destination, remoteIstioMesh.Installation, reporter)
 
 	// translate DestinationRule for federated Destinations, can be nil
-	destinationRule := t.destinationRuleTranslator.Translate(ctx, in, destination, remoteIstioMesh.Installation, reporter)
+	destinationRule := t.destinationRuleTranslator.Translate(ctx, in, destination, remoteIstioMesh.Installation, reporter, destinationRuleTrafficPolicyParents)
 
 	return serviceEntry, virtualService, destinationRule
 }

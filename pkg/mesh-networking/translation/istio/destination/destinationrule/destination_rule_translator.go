@@ -48,13 +48,15 @@ type Translator interface {
 		destination *discoveryv1.Destination,
 		sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 		reporter reporting.Reporter,
+		destinationRuleTrafficPolicyParents []ezkube.ResourceId,
 	) *networkingv1alpha3.DestinationRule
 
 	// Return true if the Destination should be translated given the event objects
+	// Also return all parent TrafficPolicies
 	ShouldTranslate(
 		destination *discoveryv1.Destination,
 		eventObjs []ezkube.ResourceId,
-	) bool
+	) (bool, []ezkube.ResourceId)
 }
 
 type translator struct {
@@ -84,27 +86,35 @@ func NewTranslator(
 // Translate the Destination into a VirtualService if any of the following has changed:
 //  1. the Destination
 //  2. applied TrafficPolicy
+// Return boolean indicating whether to translate, and all parent TrafficPolicies if they exist
 // Note: this could be further optimized if we looked at whether DestinationRule-related fields within the TrafficPolicy changed
 func (t *translator) ShouldTranslate(
 	destination *discoveryv1.Destination,
 	eventObjs []ezkube.ResourceId,
-) bool {
+) (bool, []ezkube.ResourceId) {
+	shouldTranslate := false
+	var trafficPolicyParents []ezkube.ResourceId
+
 	for _, eventObj := range eventObjs {
 
-		switch eventObj.(type) {
+		switch obj := eventObj.(type) {
 		case *discoveryv1.Destination:
 			if ezkube.RefsMatch(eventObj, destination) {
-				return true
+				shouldTranslate = true
 			}
 		case *networkingv1.TrafficPolicy:
 			for _, appliedTrafficPolicy := range destination.Status.GetAppliedTrafficPolicies() {
 				if ezkube.RefsMatch(eventObj, appliedTrafficPolicy.Ref) {
-					return true
+					shouldTranslate = true
 				}
+			}
+			if utils.ReferencedByTrafficShiftSubset(destination, obj) {
+				shouldTranslate = true
+				trafficPolicyParents = append(trafficPolicyParents, obj)
 			}
 		}
 	}
-	return false
+	return shouldTranslate, trafficPolicyParents
 }
 
 // translate the appropriate DestinationRule for the given Destination.
@@ -116,6 +126,7 @@ func (t *translator) Translate(
 	destination *discoveryv1.Destination,
 	sourceMeshInstallation *discoveryv1.MeshSpec_MeshInstallation,
 	reporter reporting.Reporter,
+	destinationRuleTrafficPolicyParents []ezkube.ResourceId,
 ) *networkingv1alpha3.DestinationRule {
 	kubeService := destination.Spec.GetKubeService()
 
@@ -172,6 +183,9 @@ func (t *translator) Translate(
 	}
 	for _, appliedTp := range destination.Status.GetAppliedTrafficPolicies() {
 		parents[networkingv1.TrafficPolicyGVK] = append(parents[networkingv1.TrafficPolicyGVK], appliedTp.Ref)
+	}
+	for _, tpParent := range destinationRuleTrafficPolicyParents {
+		parents[networkingv1.TrafficPolicyGVK] = append(parents[networkingv1.TrafficPolicyGVK], tpParent)
 	}
 	metautils.AnnotateParents(ctx, destinationRule, parents)
 

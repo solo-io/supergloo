@@ -93,9 +93,9 @@ func (t *translator) Translate(
 		outputs.AddVirtualServices(vs)
 	}
 
-	if t.destinationRules.ShouldTranslate(destination, eventObjs) {
+	if shouldTranslate, trafficPolicyParents := t.destinationRules.ShouldTranslate(destination, eventObjs); shouldTranslate {
 		// Translate DestinationRules for Destinations, can be nil if there is no service or applied traffic policies
-		dr := t.destinationRules.Translate(t.ctx, in, destination, nil, reporter)
+		dr := t.destinationRules.Translate(t.ctx, in, destination, nil, reporter, trafficPolicyParents)
 		outputs.AddDestinationRules(dr)
 	}
 
@@ -105,8 +105,7 @@ func (t *translator) Translate(
 		outputs.AddAuthorizationPolicies(ap)
 	}
 
-	shouldTranslate, trafficPolicyParents := t.federation.ShouldTranslate(destination, eventObjs)
-	if shouldTranslate {
+	if shouldTranslate, trafficPolicyParents := t.federation.ShouldTranslate(destination, eventObjs); shouldTranslate {
 		serviceEntries, virtualServices, destinationRules := t.federation.Translate(t.ctx, in, destination, reporter, trafficPolicyParents)
 		outputs.AddServiceEntries(serviceEntries...)
 		outputs.AddVirtualServices(virtualServices...)
