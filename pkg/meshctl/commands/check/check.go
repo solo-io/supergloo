@@ -66,11 +66,11 @@ func Command(ctx context.Context) *cobra.Command {
 }
 
 type options struct {
-	kubeconfig     string
-	kubecontext    string
-	namespace      string
-	localPort      uint32
-	remotePort     uint32
+	kubeconfig  string
+	kubecontext string
+	namespace   string
+	localPort   uint32
+	remotePort  uint32
 }
 
 func (o *options) addToFlags(flags *pflag.FlagSet) {

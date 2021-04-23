@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/solo-io/go-utils/contextutils"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/solo-io/go-utils/contextutils"
 
 	"github.com/rotisserie/eris"
 	"github.com/solo-io/go-utils/cliutils"
