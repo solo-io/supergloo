@@ -40,13 +40,13 @@ func (m *MockTranslator) EXPECT() *MockTranslatorMockRecorder {
 }
 
 // Translate mocks base method
-func (m *MockTranslator) Translate(eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId, in input.LocalSnapshot, destination *v1.Destination, outputs istio.Builder, reporter reporting.Reporter) {
+func (m *MockTranslator) Translate(localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId, remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId, in input.LocalSnapshot, destination *v1.Destination, outputs istio.Builder, reporter reporting.Reporter) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Translate", eventObjs, in, destination, outputs, reporter)
+	m.ctrl.Call(m, "Translate", localEventObjs, remoteEventObjs, in, destination, outputs, reporter)
 }
 
 // Translate indicates an expected call of Translate
-func (mr *MockTranslatorMockRecorder) Translate(eventObjs, in, destination, outputs, reporter interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) Translate(localEventObjs, remoteEventObjs, in, destination, outputs, reporter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), eventObjs, in, destination, outputs, reporter)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Translate", reflect.TypeOf((*MockTranslator)(nil).Translate), localEventObjs, remoteEventObjs, in, destination, outputs, reporter)
 }

@@ -42,7 +42,10 @@ kind load docker-image --name "${cluster}" "${agentImage}"
 
 ## install to kube
 
+# set verbose to true to obtain debug logs in error dump
+# set disallowIntersectingConfig for conflict detection e2e test
 cat > helm-values-overrides.yaml << EOF
+verbose: true
 disallowIntersectingConfig: true
 EOF
 

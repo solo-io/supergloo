@@ -55,15 +55,15 @@ func (mr *MockTranslatorMockRecorder) Translate(ctx, in, destination, sourceMesh
 }
 
 // ShouldTranslate mocks base method
-func (m *MockTranslator) ShouldTranslate(destination *v1.Destination, eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId) bool {
+func (m *MockTranslator) ShouldTranslate(destination *v1.Destination, localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId, remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ShouldTranslate", destination, eventObjs)
+	ret := m.ctrl.Call(m, "ShouldTranslate", destination, localEventObjs, remoteEventObjs)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // ShouldTranslate indicates an expected call of ShouldTranslate
-func (mr *MockTranslatorMockRecorder) ShouldTranslate(destination, eventObjs interface{}) *gomock.Call {
+func (mr *MockTranslatorMockRecorder) ShouldTranslate(destination, localEventObjs, remoteEventObjs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ShouldTranslate", reflect.TypeOf((*MockTranslator)(nil).ShouldTranslate), destination, eventObjs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ShouldTranslate", reflect.TypeOf((*MockTranslator)(nil).ShouldTranslate), destination, localEventObjs, remoteEventObjs)
 }
