@@ -31,7 +31,8 @@ type Translator interface {
 	// Output resources will be added to the output.Builder
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
-		eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+		localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+		remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 		in input.LocalSnapshot,
 		destination *discoveryv1.Destination,
 		outputs istio.Builder,
@@ -75,7 +76,8 @@ func NewTranslator(
 
 // translate the appropriate resources for the given Destination.
 func (t *translator) Translate(
-	eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+	localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+	remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 	in input.LocalSnapshot,
 	destination *discoveryv1.Destination,
 	outputs istio.Builder,
@@ -86,26 +88,26 @@ func (t *translator) Translate(
 		return
 	}
 
-	if t.virtualServices.ShouldTranslate(destination, eventObjs) {
+	if t.virtualServices.ShouldTranslate(destination, localEventObjs, remoteEventObjs) {
 		// Translate VirtualServices for Destinations, can be nil if there is no service or applied traffic policies
 		// Pass nil sourceMeshInstallation to translate VirtualService local to destination
 		vs := t.virtualServices.Translate(t.ctx, in, destination, nil, reporter)
 		outputs.AddVirtualServices(vs)
 	}
 
-	if t.destinationRules.ShouldTranslate(destination, eventObjs) {
+	if t.destinationRules.ShouldTranslate(destination, localEventObjs, remoteEventObjs) {
 		// Translate DestinationRules for Destinations, can be nil if there is no service or applied traffic policies
 		dr := t.destinationRules.Translate(t.ctx, in, destination, nil, reporter)
 		outputs.AddDestinationRules(dr)
 	}
 
-	if t.authorizationPolicies.ShouldTranslate(destination, eventObjs) {
+	if t.authorizationPolicies.ShouldTranslate(destination, localEventObjs) {
 		// Translate AuthorizationPolicies for Destinations, can be nil if there is no service or applied traffic policies
 		ap := t.authorizationPolicies.Translate(t.ctx, in, destination, reporter)
 		outputs.AddAuthorizationPolicies(ap)
 	}
 
-	if t.federation.ShouldTranslate(destination, eventObjs) {
+	if t.federation.ShouldTranslate(destination, localEventObjs) {
 		serviceEntries, virtualServices, destinationRules := t.federation.Translate(t.ctx, in, destination, reporter)
 		outputs.AddServiceEntries(serviceEntries...)
 		outputs.AddVirtualServices(virtualServices...)

@@ -57,7 +57,8 @@ type Translator interface {
 	// Return true if the Destination should be translated given the event objects
 	ShouldTranslate(
 		destination *discoveryv1.Destination,
-		eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+		localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+		remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 	) bool
 }
 
@@ -85,9 +86,10 @@ func NewTranslator(
 // Note: this could be further optimized if we looked at whether VirtualService-related fields within the TrafficPolicy changed
 func (t *translator) ShouldTranslate(
 	destination *discoveryv1.Destination,
-	eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+	localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+	remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 ) bool {
-	for gvk, objs := range eventObjs {
+	for gvk, objs := range localEventObjs {
 		for _, obj := range objs {
 			switch gvk {
 			case discoveryv1.DestinationGVK:
@@ -103,6 +105,20 @@ func (t *translator) ShouldTranslate(
 			}
 		}
 	}
+
+	for gvk := range remoteEventObjs {
+		switch gvk {
+		// retranslate VirtualService if any user-supplied VirtualService changes
+		case schema.GroupVersionKind{
+			Group:   networkingv1alpha3.SchemeGroupVersion.Group,
+			Version: networkingv1alpha3.SchemeGroupVersion.Version,
+			Kind:    "VirtualService",
+		}:
+			// TODO(harveyxia): can be optimized by maintaining a set of previously encountered conflicting user supplied VSs
+			return true
+		}
+	}
+
 	return false
 }
 
@@ -221,7 +237,9 @@ func (t *translator) Translate(
 				reporter.ReportTrafficPolicyToDestination(destination, policy.Ref, err)
 			}
 		}
-		return nil
+		// ensure deletion of translated DestinationRule
+		metautils.MarkForGarbageCollection(virtualService)
+		return virtualService
 	}
 
 	return virtualService

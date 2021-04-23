@@ -53,7 +53,8 @@ type Translator interface {
 	// Also return all parent TrafficPolicies
 	ShouldTranslate(
 		destination *discoveryv1.Destination,
-		eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+		localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+		remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 	) bool
 }
 
@@ -85,32 +86,45 @@ func NewTranslator(
 // Note: this could be further optimized if we looked at whether DestinationRule-related fields within the TrafficPolicy changed
 func (t *translator) ShouldTranslate(
 	destination *discoveryv1.Destination,
-	eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+	localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+	remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 ) bool {
-	shouldTranslate := false
-
-	for gvk, objs := range eventObjs {
+	for gvk, objs := range localEventObjs {
 		for _, obj := range objs {
 			switch gvk {
 			case discoveryv1.DestinationGVK:
 				if ezkube.RefsMatch(obj, destination) {
-					shouldTranslate = true
+					return true
 				}
 			case networkingv1.TrafficPolicyGVK:
 				for _, appliedTrafficPolicy := range destination.Status.GetAppliedTrafficPolicies() {
 					if ezkube.RefsMatch(obj, appliedTrafficPolicy.Ref) {
-						shouldTranslate = true
+						return true
 					}
 				}
 				for _, appliedSubsets := range destination.Status.GetAppliedSubsets() {
 					if ezkube.RefsMatch(obj, appliedSubsets.Ref) {
-						shouldTranslate = true
+						return true
 					}
 				}
 			}
 		}
 	}
-	return shouldTranslate
+
+	for gvk := range remoteEventObjs {
+		switch gvk {
+		// retranslate DestinationRule if any user-supplied DestinationRule changes
+		case schema.GroupVersionKind{
+			Group:   networkingv1alpha3.SchemeGroupVersion.Group,
+			Version: networkingv1alpha3.SchemeGroupVersion.Version,
+			Kind:    "DestinationRule",
+		}:
+			// TODO(harveyxia): can be optimized by maintaining a set of previously encountered conflicting user supplied DRs
+			return true
+		}
+	}
+
+	return false
 }
 
 // translate the appropriate DestinationRule for the given Destination.
@@ -198,7 +212,9 @@ func (t *translator) Translate(
 				reporter.ReportTrafficPolicyToDestination(destination, policy.Ref, err)
 			}
 		}
-		return nil
+		// ensure deletion of translated DestinationRule
+		metautils.MarkForGarbageCollection(destinationRule)
+		return destinationRule
 	}
 
 	return destinationRule
@@ -282,7 +298,10 @@ func conflictsWithUserDestinationRule(
 	var errs []error
 
 	// destination rules from RemoteSnapshot only contain non-translated objects
-	userDestinationRules.List(func(dr *networkingv1alpha3.DestinationRule) bool {
+	userDestinationRules.List(func(dr *networkingv1alpha3.DestinationRule) (_ bool) {
+		if dr.ClusterName != translatedDestinationRule.ClusterName {
+			return
+		}
 		// check if common hostnames exist
 		commonHostname := utils.CommonHostnames([]string{dr.Spec.Host}, []string{translatedDestinationRule.Spec.Host})
 		if len(commonHostname) > 0 {
@@ -291,7 +310,7 @@ func conflictsWithUserDestinationRule(
 				eris.Errorf("Unable to translate AppliedTrafficPolicies to DestinationRule, applies to host %s that is already configured by the existing DestinationRule %s", commonHostname[0], sets.Key(dr)),
 			)
 		}
-		return false
+		return
 	})
 
 	return errs

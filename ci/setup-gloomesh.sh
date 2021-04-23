@@ -42,6 +42,10 @@ kind load docker-image --name "${cluster}" "${agentImage}"
 
 ## install to kube
 
+cat > helm-values-overrides.yaml << EOF
+disallowIntersectingConfig: true
+EOF
+
 go run "${PROJECT_ROOT}/cmd/meshctl/main.go" install community \
   --kubecontext kind-"${cluster}" \
   --chart-file "${gloomeshChart}" \
@@ -51,7 +55,8 @@ go run "${PROJECT_ROOT}/cmd/meshctl/main.go" install community \
   --verbose  \
   --api-server-address "${apiServerAddress}" \
   --cert-agent-chart-file "${agentChart}" \
-  --agent-crds-chart-file "${agentCrdsChart}"
+  --agent-crds-chart-file "${agentCrdsChart}" \
+  --chart-values-file helm-values-overrides.yaml
 
 
 ${K} -n gloo-mesh rollout status deployment networking

@@ -26,7 +26,8 @@ type Translator interface {
 	// Errors caused by invalid user config will be reported using the Reporter.
 	Translate(
 		ctx context.Context,
-		eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+		localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+		remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 		in input.LocalSnapshot,
 		userSupplied input.RemoteSnapshot,
 		istioOutputs istio.Builder,
@@ -52,7 +53,8 @@ func NewIstioTranslator(extensionClients extensions.Clientset) Translator {
 
 func (t *istioTranslator) Translate(
 	ctx context.Context,
-	eventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+	localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+	remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 	in input.LocalSnapshot,
 	userSupplied input.RemoteSnapshot,
 	istioOutputs istio.Builder,
@@ -69,7 +71,7 @@ func (t *istioTranslator) Translate(
 	)
 
 	for _, destination := range in.Destinations().List() {
-		destinationTranslator.Translate(eventObjs, in, destination, istioOutputs, reporter)
+		destinationTranslator.Translate(localEventObjs, remoteEventObjs, in, destination, istioOutputs, reporter)
 	}
 
 	meshTranslator := t.dependencies.MakeMeshTranslator(
@@ -88,7 +90,7 @@ func (t *istioTranslator) Translate(
 		// add mesh installation cluster to outputs
 		istioOutputs.AddCluster(mesh.Spec.GetIstio().Installation.GetCluster())
 
-		if meshTranslator.ShouldTranslate(mesh, eventObjs) {
+		if meshTranslator.ShouldTranslate(mesh, localEventObjs) {
 			meshTranslator.Translate(in, mesh, istioOutputs, localOutputs, reporter)
 		}
 	}

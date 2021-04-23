@@ -89,7 +89,7 @@ func (t *translator) Translate(
 	smiOutputs := smioutput.NewBuilder(ctx, fmt.Sprintf("networking-smi-%v", t.totalTranslates))
 	localOutputs := localoutput.NewBuilder(ctx, fmt.Sprintf("networking-local-%v", t.totalTranslates))
 
-	t.istioTranslator.Translate(ctx, localEventObjs, in, userSupplied, istioOutputs, localOutputs, reporter)
+	t.istioTranslator.Translate(ctx, localEventObjs, remoteEventObjs, in, userSupplied, istioOutputs, localOutputs, reporter)
 	t.appmeshTranslator.Translate(ctx, in, appmeshOutputs, reporter)
 	t.osmTranslator.Translate(ctx, in, smiOutputs, reporter)
 
@@ -158,9 +158,14 @@ func updateOutputs(
 
 	// DestinationRules
 	// NOTE: A DestinationRule is required for all Destinations in order to enforce the global MTLS default defined in Settings,
-	// thus we never garbage collect them, only update.
+	// thus we only garbage collect them if they conflict with existing user supplied DestinationRules, which is indicated by the garbage collection directive
 	oldOutputs.Istio.AddDestinationRules(newIstioOutputs.GetDestinationRules().List()...)
-	istioOutputs.AddDestinationRules(oldOutputs.Istio.GetDestinationRules().List()...)
+	updatedDestinationRules := oldOutputs.Istio.GetDestinationRules().List(func(obj *v1alpha3.DestinationRule) bool {
+		// garbage collect if explicitly marked
+		_, ok := obj.GetAnnotations()[metautils.GarbageCollectDirective]
+		return ok
+	})
+	istioOutputs.AddDestinationRules(updatedDestinationRules...)
 
 	// EnvoyFilters
 	oldOutputs.Istio.AddEnvoyFilters(newIstioOutputs.GetEnvoyFilters().List()...)
