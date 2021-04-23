@@ -58,7 +58,7 @@ var _ = Describe("NetworkingTranslator", func() {
 
 		mockIstioTranslator.
 			EXPECT().
-			Translate(gomock.Any(), localEventObjs, in, userSupplied, gomock.Any(), gomock.Any(), mockReporter)
+			Translate(gomock.Any(), localEventObjs, remoteEventObjs, in, userSupplied, gomock.Any(), gomock.Any(), mockReporter)
 		mockAppMeshTranslator.
 			EXPECT().
 			Translate(gomock.Any(), in, gomock.Any(), mockReporter)
@@ -139,10 +139,11 @@ var _ = Describe("NetworkingTranslator", func() {
 
 		mockIstioTranslator.
 			EXPECT().
-			Translate(gomock.Any(), localEventObjs, in1, userSupplied, gomock.Any(), gomock.Any(), mockReporter).
+			Translate(gomock.Any(), localEventObjs, remoteEventObjs, in1, userSupplied, gomock.Any(), gomock.Any(), mockReporter).
 			Do(func(
 				ctx context.Context,
 				localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+				remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 				in input.LocalSnapshot,
 				userSupplied input.RemoteSnapshot,
 				istioOutputs istio.Builder,
@@ -174,10 +175,11 @@ var _ = Describe("NetworkingTranslator", func() {
 
 		mockIstioTranslator.
 			EXPECT().
-			Translate(gomock.Any(), localEventObjs, in2, userSupplied, gomock.Any(), gomock.Any(), mockReporter).
+			Translate(gomock.Any(), localEventObjs, remoteEventObjs, in2, userSupplied, gomock.Any(), gomock.Any(), mockReporter).
 			Do(func(
 				ctx context.Context,
 				localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
+				remoteEventObjs map[schema.GroupVersionKind][]ezkube.ClusterResourceId,
 				in input.LocalSnapshot,
 				userSupplied input.RemoteSnapshot,
 				istioOutputs istio.Builder,

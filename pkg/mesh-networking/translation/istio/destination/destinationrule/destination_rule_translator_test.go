@@ -367,8 +367,9 @@ var _ = Describe("DestinationRuleTranslator", func() {
 			// user-supplied, should yield conflict error
 			&networkingv1alpha3.DestinationRule{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "user-provided-dr",
-					Namespace: "foo",
+					Name:        "user-provided-dr",
+					Namespace:   "foo",
+					ClusterName: "traffic-target-cluster",
 				},
 				Spec: networkingv1alpha3spec.DestinationRule{
 					Host: "*-hostname",

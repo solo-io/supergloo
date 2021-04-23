@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"log"
 	"os"
 	"time"
 

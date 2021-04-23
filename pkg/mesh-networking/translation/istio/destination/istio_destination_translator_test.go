@@ -32,7 +32,8 @@ var _ = Describe("IstioDestinationTranslator", func() {
 		mockReporter                      *mock_reporting.MockReporter
 		istioDestinationTranslator        Translator
 		ctx                               = context.TODO()
-		eventObjs                         = map[schema.GroupVersionKind][]ezkube.ResourceId{}
+		localEventObjs                    = map[schema.GroupVersionKind][]ezkube.ResourceId{}
+		remoteEventObjs                   = map[schema.GroupVersionKind][]ezkube.ClusterResourceId{}
 	)
 
 	BeforeEach(func() {
@@ -91,7 +92,7 @@ var _ = Describe("IstioDestinationTranslator", func() {
 
 		mockDestinationRuleTranslator.
 			EXPECT().
-			ShouldTranslate(destination, eventObjs).
+			ShouldTranslate(destination, localEventObjs, remoteEventObjs).
 			Return(true)
 		mockDestinationRuleTranslator.
 			EXPECT().
@@ -100,7 +101,7 @@ var _ = Describe("IstioDestinationTranslator", func() {
 
 		mockVirtualServiceTranslator.
 			EXPECT().
-			ShouldTranslate(destination, eventObjs).
+			ShouldTranslate(destination, localEventObjs, remoteEventObjs).
 			Return(true)
 		mockVirtualServiceTranslator.
 			EXPECT().
@@ -109,7 +110,7 @@ var _ = Describe("IstioDestinationTranslator", func() {
 
 		mockAuthorizationPolicyTranslator.
 			EXPECT().
-			ShouldTranslate(destination, eventObjs).
+			ShouldTranslate(destination, localEventObjs).
 			Return(true)
 		mockAuthorizationPolicyTranslator.
 			EXPECT().
@@ -118,7 +119,7 @@ var _ = Describe("IstioDestinationTranslator", func() {
 
 		mockFederationTranslator.
 			EXPECT().
-			ShouldTranslate(destination, eventObjs).
+			ShouldTranslate(destination, localEventObjs).
 			Return(true)
 		mockFederationTranslator.
 			EXPECT().
@@ -144,6 +145,6 @@ var _ = Describe("IstioDestinationTranslator", func() {
 			EXPECT().
 			AddDestinationRules(federatedDr)
 
-		istioDestinationTranslator.Translate(eventObjs, in, destination, mockOutputs, mockReporter)
+		istioDestinationTranslator.Translate(localEventObjs, remoteEventObjs, in, destination, mockOutputs, mockReporter)
 	})
 })

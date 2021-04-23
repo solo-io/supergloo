@@ -4,7 +4,9 @@ import (
 	"context"
 
 	"github.com/golang/mock/gomock"
+	"github.com/hashicorp/go-multierror"
 	. "github.com/onsi/ginkgo"
+	"github.com/rotisserie/eris"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
 	mock_istio_output "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/output/istio/mocks"
@@ -27,7 +29,6 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		ctrl                      *gomock.Controller
 		ctx                       context.Context
 		ctxWithValue              context.Context
-		eventObjs                 map[schema.GroupVersionKind][]ezkube.ResourceId
 		mockIstioExtender         *mock_extensions.MockIstioExtender
 		mockReporter              *mock_reporting.MockReporter
 		mockIstioOutputs          *mock_istio_output.MockBuilder
@@ -36,13 +37,14 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		mockMeshTranslator        *mock_mesh.MockTranslator
 		mockDependencyFactory     *mock_istio.MockDependencyFactory
 		translator                Translator
+		localEventObjs            = map[schema.GroupVersionKind][]ezkube.ResourceId{}
+		remoteEventObjs           = map[schema.GroupVersionKind][]ezkube.ClusterResourceId{}
 	)
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 		ctx = context.TODO()
 		ctxWithValue = contextutils.WithLogger(context.TODO(), "istio-translator-0")
-		eventObjs = map[schema.GroupVersionKind][]ezkube.ResourceId{}
 		mockIstioExtender = mock_extensions.NewMockIstioExtender(ctrl)
 		mockReporter = mock_reporting.NewMockReporter(ctrl)
 		mockDestinationTranslator = mock_destination.NewMockTranslator(ctrl)
@@ -58,6 +60,8 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 	})
 
 	It("should translate", func() {
+		var err error
+		err = multierror.Append(err, eris.New(""))
 		in := input.NewInputLocalSnapshotManualBuilder("").
 			AddKubernetesClusters([]*multiclusterv1alpha1.KubernetesCluster{
 				{
@@ -135,7 +139,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		for _, destination := range in.Destinations().List() {
 			mockDestinationTranslator.
 				EXPECT().
-				Translate(eventObjs, in, destination, mockIstioOutputs, mockReporter)
+				Translate(localEventObjs, remoteEventObjs, in, destination, mockIstioOutputs, mockReporter)
 		}
 
 		mockDependencyFactory.
@@ -145,7 +149,7 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 		for _, mesh := range in.Meshes().List() {
 			mockMeshTranslator.
 				EXPECT().
-				ShouldTranslate(mesh, eventObjs).
+				ShouldTranslate(mesh, localEventObjs).
 				Return(true)
 			mockMeshTranslator.
 				EXPECT().
@@ -161,6 +165,6 @@ var _ = Describe("IstioNetworkingTranslator", func() {
 
 		mockIstioExtender.EXPECT().PatchOutputs(contextMatcher, in, mockIstioOutputs)
 
-		translator.Translate(ctx, eventObjs, in, nil, mockIstioOutputs, mockLocalOutputs, mockReporter)
+		translator.Translate(ctx, localEventObjs, remoteEventObjs, in, nil, mockIstioOutputs, mockLocalOutputs, mockReporter)
 	})
 })
