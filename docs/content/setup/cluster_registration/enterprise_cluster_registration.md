@@ -43,7 +43,7 @@ RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 {{< /tab >}}
 {{< /tabs >}}
 
-If both the above commands left you with a `$RELAY_ADDRESS` value that is empty or incomplete, make sure the `enterprise-networking`
+If the above commands left you with a `$RELAY_ADDRESS` value that is empty or incomplete, make sure the `enterprise-networking`
 service is available to clients outside the cluster, perhaps through a NodePort or ingress solution, and find the address
 before continuing. 
 
@@ -170,7 +170,7 @@ RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
 {{< /tab >}}
 {{< /tabs >}}
 
-If both the above commands left you with a `$RELAY_ADDRESS` value that is empty or incomplete, make sure the `enterprise-networking`
+If the above commands left you with a `$RELAY_ADDRESS` value that is empty or incomplete, make sure the `enterprise-networking`
 service is available to clients outside the cluster, perhaps through a NodePort or ingress solution, and find the address
 before continuing. 
 
