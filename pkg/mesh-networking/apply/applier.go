@@ -59,7 +59,7 @@ func (v *applier) Apply(
 	ctx = contextutils.WithLogger(ctx, "validation")
 	reporter := newApplyReporter()
 
-	initializePolicyStatuses(input, localEventObjs)
+	initializePolicyStatuses(input)
 
 	setDiscoveryStatusMetadata(input)
 
@@ -78,48 +78,36 @@ func (v *applier) Apply(
 }
 
 // Optimistically initialize policy statuses to accepted, which may be set to invalid or failed pending subsequent validation.
-func initializePolicyStatuses(
-	input input.LocalSnapshot,
-	localEventObjs map[schema.GroupVersionKind][]ezkube.ResourceId,
-) {
-	for gvk, objs := range localEventObjs {
-		for _, obj := range objs {
-			switch gvk {
-			case networkingv1.TrafficPolicyGVK:
-				trafficPolicy, err := input.TrafficPolicies().Find(obj)
-				if err != nil {
-					// if object not in snapshot, it's a delete event, ignore
-					continue
-				}
-				trafficPolicy.Status = networkingv1.TrafficPolicyStatus{
-					State:              commonv1.ApprovalState_ACCEPTED,
-					ObservedGeneration: trafficPolicy.Generation,
-					Destinations:       map[string]*networkingv1.ApprovalStatus{},
-				}
-			case networkingv1.AccessPolicyGVK:
-				accessPolicy, err := input.AccessPolicies().Find(obj)
-				if err != nil {
-					// if object not in snapshot, it's a delete event, ignore
-					continue
-				}
-				accessPolicy.Status = networkingv1.AccessPolicyStatus{
-					State:              commonv1.ApprovalState_ACCEPTED,
-					ObservedGeneration: accessPolicy.Generation,
-					Destinations:       map[string]*networkingv1.ApprovalStatus{},
-				}
-			case networkingv1.VirtualMeshGVK:
-				virtualMesh, err := input.VirtualMeshes().Find(obj)
-				if err != nil {
-					// if object not in snapshot, it's a delete event, ignore
-					continue
-				}
-				virtualMesh.Status = networkingv1.VirtualMeshStatus{
-					State:              commonv1.ApprovalState_ACCEPTED,
-					ObservedGeneration: virtualMesh.Generation,
-					Meshes:             map[string]*networkingv1.ApprovalStatus{},
-					Destinations:       map[string]*networkingv1.ApprovalStatus{},
-				}
-			}
+func initializePolicyStatuses(input input.LocalSnapshot) {
+	trafficPolicies := input.TrafficPolicies().List()
+	accessPolicies := input.AccessPolicies().List()
+	virtualMeshes := input.VirtualMeshes().List()
+
+	// initialize TrafficPolicy statuses
+	for _, trafficPolicy := range trafficPolicies {
+		trafficPolicy.Status = networkingv1.TrafficPolicyStatus{
+			State:              commonv1.ApprovalState_ACCEPTED,
+			ObservedGeneration: trafficPolicy.Generation,
+			Destinations:       map[string]*networkingv1.ApprovalStatus{},
+		}
+	}
+
+	// initialize AccessPolicy statuses
+	for _, accessPolicy := range accessPolicies {
+		accessPolicy.Status = networkingv1.AccessPolicyStatus{
+			State:              commonv1.ApprovalState_ACCEPTED,
+			ObservedGeneration: accessPolicy.Generation,
+			Destinations:       map[string]*networkingv1.ApprovalStatus{},
+		}
+	}
+
+	// By this point, VirtualMeshes have already undergone pre-translation validation.
+	for _, virtualMesh := range virtualMeshes {
+		virtualMesh.Status = networkingv1.VirtualMeshStatus{
+			State:              commonv1.ApprovalState_ACCEPTED,
+			ObservedGeneration: virtualMesh.Generation,
+			Meshes:             map[string]*networkingv1.ApprovalStatus{},
+			Destinations:       map[string]*networkingv1.ApprovalStatus{},
 		}
 	}
 }
@@ -203,10 +191,6 @@ func setWorkloadsForTrafficPolicies(
 
 		var matchingWorkloads []string
 		// TODO(awang) optimize if the returned workloads list gets too large
-		//if len(trafficPolicy.Spec.GetSourceSelector()) == 0 {
-		//	trafficPolicy.Status.Workloads = []string{"*"}
-		//	return
-		//}
 		for _, workload := range workloads {
 			if selectorutils.SelectorMatchesWorkload(trafficPolicy.Spec.GetSourceSelector(), workload) &&
 				meshMatches(workload.Spec.GetMesh(), matchingMeshes, matchingVirtualMeshes, meshToVirtualMesh) {
