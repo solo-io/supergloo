@@ -122,11 +122,14 @@ Management Configuration
 
 ## Advanced install options
 
+The following subsections describe advanced installation options for Gloo Mesh Enterprise. They are not required.
+
 #### Manual Certificate Creation
 
 Gloo Mesh Enterprise's default behavior is to create self-signed certificates at install time to handle
 bootstrapping mTLS connectivity between the [server and agent components]({{% versioned_link_path fromRoot="/concepts/relay" %}})
-of Gloo Mesh Enterprise. To learn how to provision your own certificates for this purpose, read on.
+of Gloo Mesh Enterprise. If you would prefer to provision your own secrets for this purpose, read on. Note that this is
+not required for standard Gloo Mesh Enterprise deployments.
 
 The following script illustrates how you can create these certificates manually. If you do not create certificates yourself, both the Helm chart and `meshctl` will create self-signed certificates for you.
 
