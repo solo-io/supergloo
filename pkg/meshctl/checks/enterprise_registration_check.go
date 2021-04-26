@@ -17,8 +17,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/rotisserie/eris"
-	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
-	apps_v1 "k8s.io/api/apps/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -280,32 +278,4 @@ func getClientClustersConnected(clientConnectionMetrics *dto.MetricFamily) (map[
 		clustersConnected[cluster] = clusterConnected
 	}
 	return clustersConnected, nil, ""
-}
-
-func (d *enterpriseRegistrationCheck) checkEnterpriseRegistration(enterpriseRegistration *apps_v1.DeploymentList, installNamespace string) *Failure {
-	if len(enterpriseRegistration.Items) < 1 {
-		return &Failure{
-			Errors: []error{eris.Errorf("no enterpriseRegistration found in namespace %s", installNamespace)},
-			Hint: fmt.Sprintf(
-				`Gloo Mesh'd installation namespace can be supplied to this cmd with the "--namespace" flag, which defaults to %s`,
-				defaults.DefaultPodNamespace),
-		}
-	}
-	var errs []error
-	for _, deployment := range enterpriseRegistration.Items {
-		if deployment.Status.AvailableReplicas < 1 {
-			errs = append(errs, eris.Errorf(`deployment "%s" has no available pods`, deployment.Name))
-		}
-	}
-	if len(errs) > 0 {
-		return &Failure{
-			Errors: errs,
-			Hint:   d.buildHint(installNamespace),
-		}
-	}
-	return nil
-}
-
-func (d *enterpriseRegistrationCheck) buildHint(installNamespace string) string {
-	return fmt.Sprintf(`check the status of Gloo Mesh enterpriseRegistration with "kubectl -n %s get enterpriseRegistration -oyaml"`, installNamespace)
 }
