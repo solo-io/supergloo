@@ -7,9 +7,6 @@ weight: 30
 
 {{% notice note %}} Gloo Mesh Enterprise is required for this feature. {{% /notice %}}
 
-Relay is an alternative mode of deploying Gloo Mesh that confers several advantages discussed in [this document]({{% versioned_link_path fromRoot="/concepts/relay" %}}).
-Cluster registration in relay mode simply consists of installing the relay agent.
-
 This guide will walk you through the basics of registering clusters for management by Gloo Mesh Enterprise using the `meshctl` tool or with Helm.
 
 ## Register A Cluster
@@ -106,7 +103,7 @@ Without these prerequisites, the relay agent deployment will fail.
 First create the namespace in the remote cluster:
 
 ```shell
-CLUSTER_NAME=remote-cluster
+CLUSTER_NAME=remote-cluster # Update value as needed
 REMOTE_CONTEXT=kind-remote-cluster # Update value as needed
 
 kubectl create ns gloo-mesh --context $REMOTE_CONTEXT
@@ -178,7 +175,7 @@ before continuing.
 Then we will set our variables:
 
 ```shell
-CLUSTER_NAME=remote-cluster
+CLUSTER_NAME=remote-cluster # Update value as needed
 REMOTE_CONTEXT=kind-remote-cluster # Update value as needed
 ENTERPRISE_NETWORKING_VERSION=<current version> # Update based on meshctl version output
 ```
@@ -190,7 +187,6 @@ And now we will deploy the relay agent in the remote cluster.
 helm install enterprise-agent enterprise-agent/enterprise-agent \
   --namespace gloo-mesh \
   --set relay.serverAddress=${RELAY_ADDRESS} \
-  --set relay.authority=enterprise-networking.gloo-mesh \
   --set relay.cluster=${CLUSTER_NAME} \
   --kube-context=${REMOTE_CONTEXT} \
   --version ${ENTERPRISE_NETWORKING_VERSION}
