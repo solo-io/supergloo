@@ -142,7 +142,7 @@ At a high level, the script achieves the following:
    which is used by the relay server to issue certificates for relay agents once initial trust has been established.
 
 {{% notice note %}}
-The following was tested with OpenSSL 1.1.1h  22 Sep 2020.
+The following was tested with OpenSSL 1.1.1h  (released on 22 Sep 2020)
 
 Mac users may have LibreSSL installed by default. If so, we recommend that you `brew install openssl` and verify that
 `openssl version` returns an OpenSSL version before you proceed.
