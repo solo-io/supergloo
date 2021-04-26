@@ -104,9 +104,11 @@ var _ = Describe("Applier", func() {
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// no report = accept
 			}}
+			eventObjs[v1.TrafficPolicyGVK] = []ezkube.ResourceId{trafficPolicy1, trafficPolicy2}
 			applier := NewApplier(translator)
 			applier.Apply(context.TODO(), eventObjs, nil, snap, nil)
 		})
+
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy1.Status.Destinations).To(HaveKey(sets.Key(destination)))
 			Expect(trafficPolicy1.Status.Destinations[sets.Key(destination)]).To(Equal(&v1.ApprovalStatus{
@@ -124,6 +126,7 @@ var _ = Describe("Applier", func() {
 			Expect(trafficPolicy2.Status.Workloads[0]).To(Equal(sets.Key(workload)))
 
 		})
+
 		It("updates status on input Destination policies", func() {
 			Expect(destination.Status.AppliedTrafficPolicies).To(HaveLen(2))
 			Expect(destination.Status.AppliedTrafficPolicies[0].Ref).To(Equal(ezkube.MakeObjectRef(trafficPolicy1)))
@@ -262,6 +265,8 @@ var _ = Describe("Applier", func() {
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// no report = accept
 			}}
+			eventObjs[v1.TrafficPolicyGVK] = []ezkube.ResourceId{trafficPolicy}
+			eventObjs[v1.AccessPolicyGVK] = []ezkube.ResourceId{accessPolicy}
 			applier := NewApplier(translator)
 			applier.Apply(context.TODO(), eventObjs, nil, snap, nil)
 
@@ -283,6 +288,9 @@ var _ = Describe("Applier", func() {
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// no report = accept
 			}}
+			eventObjs[v1.TrafficPolicyGVK] = []ezkube.ResourceId{trafficPolicy}
+			eventObjs[v1.AccessPolicyGVK] = []ezkube.ResourceId{accessPolicy}
+			eventObjs[v1.VirtualMeshGVK] = []ezkube.ResourceId{virtualMesh}
 			applier := NewApplier(translator)
 			applier.Apply(context.TODO(), eventObjs, nil, snap, nil)
 
@@ -307,6 +315,8 @@ var _ = Describe("Applier", func() {
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// no report = accept
 			}}
+			eventObjs[v1.TrafficPolicyGVK] = []ezkube.ResourceId{trafficPolicy}
+			eventObjs[v1.AccessPolicyGVK] = []ezkube.ResourceId{accessPolicy}
 			applier := NewApplier(translator)
 			applier.Apply(context.TODO(), eventObjs, nil, snap, nil)
 
