@@ -22,6 +22,8 @@ Name|Version|License
 [openservicemesh/osm](https://github.com/openservicemesh/osm)|v0.3.0|MIT License
 [pkg/browser](https://github.com/pkg/browser)|v0.0.0-20180916011732-0a3d74bf9ce4|BSD 2-clause "Simplified" License
 [pkg/errors](https://github.com/pkg/errors)|v0.9.1|BSD 2-clause "Simplified" License
+[prometheus/client_model](https://github.com/prometheus/client_model)|v0.2.0|Apache License 2.0
+[prometheus/common](https://github.com/prometheus/common)|v0.15.0|Apache License 2.0
 [pseudomuto/protoc-gen-doc](https://github.com/pseudomuto/protoc-gen-doc)|v1.4.1|MIT License
 [pseudomuto/protokit](https://github.com/pseudomuto/protokit)|v0.2.0|MIT License
 [rotisserie/eris](https://github.com/rotisserie/eris)|v0.4.0|MIT License
