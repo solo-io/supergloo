@@ -23,7 +23,53 @@ The following install commands are lifted from the [Installing Istio Multicluste
 but the `hub` and `tag` values can be added to any Istio installation manifest to install Gloo Mesh Istio.
 
 {{< tabs >}}
-{{< tab name="Istio 1.8 and 1.9" codelang="shell" >}}
+{{< tab name="Istio 1.9" codelang="shell" >}}
+cat << EOF | istioctl manifest install -y -f -
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: gloo-mesh-istio
+  namespace: istio-system
+spec:
+  # This value is required for Gloo Mesh Istio
+  hub: gcr.io/istio-enterprise
+  # This value can be any Gloo Mesh Istio tag
+  tag: 1.9.2
+  profile: minimal
+  meshConfig:
+    enableAutoMtls: true
+    defaultConfig:
+      proxyMetadata:
+        # Enable Istio agent to handle DNS requests for known hosts
+        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
+        ISTIO_META_DNS_CAPTURE: "true"
+  components:
+    # Istio Gateway feature
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        env:
+          - name: ISTIO_META_ROUTER_MODE
+            value: "sni-dnat"
+        service:
+          type: ClusterIP
+          ports:
+            - port: 80
+              targetPort: 8080
+              name: http2
+            - port: 443
+              targetPort: 8443
+              name: https
+            - port: 15443
+              targetPort: 15443
+              name: tls
+  values:
+    global:
+      pilotCertProvider: istiod
+EOF
+{{< /tab >}}
+{{< tab name="Istio 1.8" codelang="shell" >}}
 cat << EOF | istioctl manifest install -y -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
@@ -53,7 +99,7 @@ spec:
           - name: ISTIO_META_ROUTER_MODE
             value: "sni-dnat"
         service:
-          type: NodePort
+          type: ClusterIP
           ports:
             - port: 80
               targetPort: 8080
