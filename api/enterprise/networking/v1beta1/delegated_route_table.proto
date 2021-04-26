@@ -3,6 +3,7 @@ package networking.enterprise.mesh.gloo.solo.io;
 
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
 
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/route.proto";
 
 import "extproto/ext.proto";
@@ -23,5 +24,34 @@ message DelegatedRouteTableSpec {
 }
 
 message DelegatedRouteTableStatus {
-    // TODO: Fill in status
+    // The most recent generation observed in the the DelegatedRouteTable metadata.
+    // If the `observedGeneration` does not match `metadata.generation`,
+    // Gloo Mesh has not processed the most recent version of this resource.
+    int64 observed_generation = 1;
+
+    // Any errors found while processing this generation of the resource.
+    repeated string errors = 2;
+
+    // Any warnings found while processing this generation of the resource.
+    repeated string warnings = 3;
+
+    // List of resources which have selected this DelegatedRouteTable. Can be RouteTables or other DelegatedRouteTables
+    repeated selectedBy selected_by = 4;
+
+    // List of DelegatedRouteTables that this DelegatedRouteTable delegates to
+    repeated .core.skv2.solo.io.ObjectRef selected_delegated_route_tables = 5;
+}
+
+message selectedBy {
+    // Name of resource selecting this DelegatedRouteTable
+    string name = 1;
+
+    // Namespace of resource selecting this DelegatedRouteTable
+    string namespace = 2;
+
+    // Type of resource selecting this DelegatedRoute Table. Can be
+    // FederatedGateway, RouteTable, or DelegatedRouteTable.
+    string type = 3;
+    
+    // TODO: Path selected upon?
 }

@@ -63,8 +63,17 @@ TODO: Fill / maybe replace with traffic policy?<br>see message VirtualHostOption
 <a name="networking.enterprise.mesh.gloo.solo.io.RouteTableStatus"></a>
 
 ### RouteTableStatus
-TODO: Fill in status
 
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| observedGeneration | int64 |  | The most recent generation observed in the the RouteTable metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
+  | errors | []string | repeated | Any errors found while processing this generation of the resource. |
+  | warnings | []string | repeated | Any warnings found while processing this generation of the resource. |
+  | attachedFederatedGateways | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | List of each FederatedGateway which has selected this RouteTable |
+  | selectedDelegatedRouteTables | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | List of Delegated Route tables that this Route table delegates to |
+  
 
 
 

@@ -40,6 +40,9 @@ title: "federated_gateway.proto"
   - [SDSConfig](#networking.enterprise.mesh.gloo.solo.io.SDSConfig)
   - [SDSConfig.CallCredentials](#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials)
   - [SDSConfig.CallCredentials.FileCredentialSource](#networking.enterprise.mesh.gloo.solo.io.SDSConfig.CallCredentials.FileCredentialSource)
+  - [selectedDelegatedRouteTable](#networking.enterprise.mesh.gloo.solo.io.selectedDelegatedRouteTable)
+  - [selectedGateway](#networking.enterprise.mesh.gloo.solo.io.selectedGateway)
+  - [selectedRouteTable](#networking.enterprise.mesh.gloo.solo.io.selectedRouteTable)
 
   - [FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion](#networking.enterprise.mesh.gloo.solo.io.FederatedGatewaySpec.ConnectionHandler.TcpRoutes.TcpHost.SslConfig.SslParameters.ProtocolVersion)
 
@@ -349,8 +352,18 @@ TODO: Fill in more options<br>route-level options (inherited by route)
 <a name="networking.enterprise.mesh.gloo.solo.io.FederatedGatewayStatus"></a>
 
 ### FederatedGatewayStatus
-TODO: Add status fields
 
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| observedGeneration | int64 |  | The most recent generation observed in the the FederatedGateway metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
+  | errors | []string | repeated | Any errors found while processing this generation of the resource. |
+  | warnings | []string | repeated | Any warnings found while processing this generation of the resource. |
+  | selectedGateways | [][networking.enterprise.mesh.gloo.solo.io.selectedGateway]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.selectedGateway" >}}) | repeated |  |
+  | selectedRouteTables | [][networking.enterprise.mesh.gloo.solo.io.selectedRouteTable]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.selectedRouteTable" >}}) | repeated |  |
+  | selectedDelegatedRouteTables | [][networking.enterprise.mesh.gloo.solo.io.selectedDelegatedRouteTable]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.federated_gateway#networking.enterprise.mesh.gloo.solo.io.selectedDelegatedRouteTable" >}}) | repeated |  |
+  
 
 
 
@@ -359,7 +372,7 @@ TODO: Add status fields
 <a name="networking.enterprise.mesh.gloo.solo.io.SDSConfig"></a>
 
 ### SDSConfig
-if this is put as a sibling message to SSLFiles, codegen fails with some cue errors.
+Note: This message needs to be at this level (rather than nested) due to cue restrictions.
 
 
 | Field | Type | Label | Description |
@@ -400,6 +413,58 @@ if this is put as a sibling message to SSLFiles, codegen fails with some cue err
 | ----- | ---- | ----- | ----------- |
 | tokenFileName | string |  | File containing auth token. |
   | header | string |  | Header to carry the token. |
+  
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.selectedDelegatedRouteTable"></a>
+
+### selectedDelegatedRouteTable
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | string |  |  |
+  | namespace | string |  |  |
+  | cluster | string |  |  |
+  
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.selectedGateway"></a>
+
+### selectedGateway
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | string |  |  |
+  | namespace | string |  |  |
+  | cluster | string |  |  |
+  | externalUrl | string |  |  |
+  
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.selectedRouteTable"></a>
+
+### selectedRouteTable
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | string |  |  |
+  | namespace | string |  |  |
+  | cluster | string |  |  |
   
 
 

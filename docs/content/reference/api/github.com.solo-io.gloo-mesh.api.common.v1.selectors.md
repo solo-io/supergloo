@@ -153,7 +153,7 @@ Select Destination identities using one or more platform-specific selectors.
 <a name="common.mesh.gloo.solo.io.RouteTableSelector"></a>
 
 ### RouteTableSelector
-Select route tables (or delegated route tables) for delegation by namespace, labels, or both.
+TODO: move to package alongside RouteTable Select route tables (or delegated route tables) for delegation by namespace, labels, or both.
 
 
 | Field | Type | Label | Description |

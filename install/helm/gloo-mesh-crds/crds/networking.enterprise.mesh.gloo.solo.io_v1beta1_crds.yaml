@@ -1786,6 +1786,59 @@ spec:
               type: array
           type: object
         status:
+          properties:
+            errors:
+              description: Any errors found while processing this generation of the resource.
+              items:
+                type: string
+              type: array
+            observedGeneration:
+              description: |-
+                The most recent generation observed in the the FederatedGateway metadata.
+                If the `observedGeneration` does not match `metadata.generation`,
+                Gloo Mesh has not processed the most recent version of this resource.
+              format: int64
+              type: integer
+            selectedDelegatedRouteTables:
+              items:
+                properties:
+                  cluster:
+                    type: string
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                type: object
+              type: array
+            selectedGateways:
+              items:
+                properties:
+                  cluster:
+                    type: string
+                  externalUrl:
+                    type: string
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                type: object
+              type: array
+            selectedRouteTables:
+              items:
+                properties:
+                  cluster:
+                    type: string
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                type: object
+              type: array
+            warnings:
+              description: Any warnings found while processing this generation of the resource.
+              items:
+                type: string
+              type: array
           type: object
       type: object
   versions:
@@ -2231,6 +2284,48 @@ spec:
               type: array
           type: object
         status:
+          properties:
+            attachedFederatedGateways:
+              description: List of each FederatedGateway which has selected this RouteTable
+              items:
+                properties:
+                  name:
+                    description: name of the resource being referenced
+                    type: string
+                  namespace:
+                    description: namespace of the resource being referenced
+                    type: string
+                type: object
+              type: array
+            errors:
+              description: Any errors found while processing this generation of the resource.
+              items:
+                type: string
+              type: array
+            observedGeneration:
+              description: |-
+                The most recent generation observed in the the RouteTable metadata.
+                If the `observedGeneration` does not match `metadata.generation`,
+                Gloo Mesh has not processed the most recent version of this resource.
+              format: int64
+              type: integer
+            selectedDelegatedRouteTables:
+              description: List of Delegated Route tables that this Route table delegates to
+              items:
+                properties:
+                  name:
+                    description: name of the resource being referenced
+                    type: string
+                  namespace:
+                    description: namespace of the resource being referenced
+                    type: string
+                type: object
+              type: array
+            warnings:
+              description: Any warnings found while processing this generation of the resource.
+              items:
+                type: string
+              type: array
           type: object
       type: object
   versions:
@@ -2656,6 +2751,53 @@ spec:
               type: array
           type: object
         status:
+          properties:
+            errors:
+              description: Any errors found while processing this generation of the resource.
+              items:
+                type: string
+              type: array
+            observedGeneration:
+              description: |-
+                The most recent generation observed in the the DelegatedRouteTable metadata.
+                If the `observedGeneration` does not match `metadata.generation`,
+                Gloo Mesh has not processed the most recent version of this resource.
+              format: int64
+              type: integer
+            selectedBy:
+              description: List of resources which have selected this DelegatedRouteTable. Can be RouteTables or other DelegatedRouteTables
+              items:
+                properties:
+                  name:
+                    description: Name of resource selecting this DelegatedRouteTable
+                    type: string
+                  namespace:
+                    description: Namespace of resource selecting this DelegatedRouteTable
+                    type: string
+                  type:
+                    description: |-
+                      Type of resource selecting this DelegatedRoute Table. Can be
+                      FederatedGateway, RouteTable, or DelegatedRouteTable.
+                    type: string
+                type: object
+              type: array
+            selectedDelegatedRouteTables:
+              description: List of DelegatedRouteTables that this DelegatedRouteTable delegates to
+              items:
+                properties:
+                  name:
+                    description: name of the resource being referenced
+                    type: string
+                  namespace:
+                    description: namespace of the resource being referenced
+                    type: string
+                type: object
+              type: array
+            warnings:
+              description: Any warnings found while processing this generation of the resource.
+              items:
+                type: string
+              type: array
           type: object
       type: object
   versions:

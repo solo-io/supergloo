@@ -20,6 +20,7 @@ title: "delegated_route_table.proto"
 ## Table of Contents
   - [DelegatedRouteTableSpec](#networking.enterprise.mesh.gloo.solo.io.DelegatedRouteTableSpec)
   - [DelegatedRouteTableStatus](#networking.enterprise.mesh.gloo.solo.io.DelegatedRouteTableStatus)
+  - [selectedBy](#networking.enterprise.mesh.gloo.solo.io.selectedBy)
 
 
 
@@ -45,8 +46,34 @@ DelegatedRouteTable is a resource which can be referenced either from the top le
 <a name="networking.enterprise.mesh.gloo.solo.io.DelegatedRouteTableStatus"></a>
 
 ### DelegatedRouteTableStatus
-TODO: Fill in status
 
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| observedGeneration | int64 |  | The most recent generation observed in the the DelegatedRouteTable metadata. If the `observedGeneration` does not match `metadata.generation`, Gloo Mesh has not processed the most recent version of this resource. |
+  | errors | []string | repeated | Any errors found while processing this generation of the resource. |
+  | warnings | []string | repeated | Any warnings found while processing this generation of the resource. |
+  | selectedBy | [][networking.enterprise.mesh.gloo.solo.io.selectedBy]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.gloo-mesh.api.enterprise.networking.v1beta1.delegated_route_table#networking.enterprise.mesh.gloo.solo.io.selectedBy" >}}) | repeated | List of resources which have selected this DelegatedRouteTable. Can be RouteTables or other DelegatedRouteTables |
+  | selectedDelegatedRouteTables | [][core.skv2.solo.io.ObjectRef]({{< versioned_link_path fromRoot="/reference/api/github.com.solo-io.skv2.api.core.v1.core#core.skv2.solo.io.ObjectRef" >}}) | repeated | List of DelegatedRouteTables that this DelegatedRouteTable delegates to |
+  
+
+
+
+
+
+<a name="networking.enterprise.mesh.gloo.solo.io.selectedBy"></a>
+
+### selectedBy
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | string |  | Name of resource selecting this DelegatedRouteTable |
+  | namespace | string |  | Namespace of resource selecting this DelegatedRouteTable |
+  | type | string |  | Type of resource selecting this DelegatedRoute Table. Can be FederatedGateway, RouteTable, or DelegatedRouteTable. |
+  
 
 
 

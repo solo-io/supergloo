@@ -3,6 +3,7 @@ package networking.enterprise.mesh.gloo.solo.io;
 
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.enterprise.mesh.gloo.solo.io/v1beta1";
 
+import "github.com/solo-io/skv2/api/core/v1/core.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/route.proto";
 
@@ -47,5 +48,20 @@ message RouteTableSpec {
 }
 
 message RouteTableStatus {
-    // TODO: Fill in status
+    // The most recent generation observed in the the RouteTable metadata.
+    // If the `observedGeneration` does not match `metadata.generation`,
+    // Gloo Mesh has not processed the most recent version of this resource.
+    int64 observed_generation = 1;
+
+    // Any errors found while processing this generation of the resource.
+    repeated string errors = 2;
+
+    // Any warnings found while processing this generation of the resource.
+    repeated string warnings = 3;
+
+    // List of each FederatedGateway which has selected this RouteTable
+    repeated .core.skv2.solo.io.ObjectRef attached_federated_gateways = 4;
+
+    // List of Delegated Route tables that this Route table delegates to
+    repeated .core.skv2.solo.io.ObjectRef selected_delegated_route_tables = 5;
 }

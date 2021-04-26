@@ -271,6 +271,7 @@ func (x *IdentitySelector) GetKubeServiceAccountRefs() *IdentitySelector_KubeSer
 	return nil
 }
 
+// TODO: move to package alongside RouteTable
 // Select route tables (or delegated route tables) for delegation by namespace, labels, or both.
 type RouteTableSelector struct {
 	state         protoimpl.MessageState

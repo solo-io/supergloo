@@ -122,6 +122,195 @@ func (m *FederatedGatewayStatus) Equal(that interface{}) bool {
 		return false
 	}
 
+	if m.GetObservedGeneration() != target.GetObservedGeneration() {
+		return false
+	}
+
+	if len(m.GetErrors()) != len(target.GetErrors()) {
+		return false
+	}
+	for idx, v := range m.GetErrors() {
+
+		if strings.Compare(v, target.GetErrors()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	if len(m.GetWarnings()) != len(target.GetWarnings()) {
+		return false
+	}
+	for idx, v := range m.GetWarnings() {
+
+		if strings.Compare(v, target.GetWarnings()[idx]) != 0 {
+			return false
+		}
+
+	}
+
+	if len(m.GetSelectedGateways()) != len(target.GetSelectedGateways()) {
+		return false
+	}
+	for idx, v := range m.GetSelectedGateways() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetSelectedGateways()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetSelectedGateways()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	if len(m.GetSelectedRouteTables()) != len(target.GetSelectedRouteTables()) {
+		return false
+	}
+	for idx, v := range m.GetSelectedRouteTables() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetSelectedRouteTables()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetSelectedRouteTables()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	if len(m.GetSelectedDelegatedRouteTables()) != len(target.GetSelectedDelegatedRouteTables()) {
+		return false
+	}
+	for idx, v := range m.GetSelectedDelegatedRouteTables() {
+
+		if h, ok := interface{}(v).(equality.Equalizer); ok {
+			if !h.Equal(target.GetSelectedDelegatedRouteTables()[idx]) {
+				return false
+			}
+		} else {
+			if !proto.Equal(v, target.GetSelectedDelegatedRouteTables()[idx]) {
+				return false
+			}
+		}
+
+	}
+
+	return true
+}
+
+// Equal function
+func (m *SelectedGateway) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*SelectedGateway)
+	if !ok {
+		that2, ok := that.(SelectedGateway)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetName(), target.GetName()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetNamespace(), target.GetNamespace()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetCluster(), target.GetCluster()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetExternalUrl(), target.GetExternalUrl()) != 0 {
+		return false
+	}
+
+	return true
+}
+
+// Equal function
+func (m *SelectedRouteTable) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*SelectedRouteTable)
+	if !ok {
+		that2, ok := that.(SelectedRouteTable)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetName(), target.GetName()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetNamespace(), target.GetNamespace()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetCluster(), target.GetCluster()) != 0 {
+		return false
+	}
+
+	return true
+}
+
+// Equal function
+func (m *SelectedDelegatedRouteTable) Equal(that interface{}) bool {
+	if that == nil {
+		return m == nil
+	}
+
+	target, ok := that.(*SelectedDelegatedRouteTable)
+	if !ok {
+		that2, ok := that.(SelectedDelegatedRouteTable)
+		if ok {
+			target = &that2
+		} else {
+			return false
+		}
+	}
+	if target == nil {
+		return m == nil
+	} else if m == nil {
+		return false
+	}
+
+	if strings.Compare(m.GetName(), target.GetName()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetNamespace(), target.GetNamespace()) != 0 {
+		return false
+	}
+
+	if strings.Compare(m.GetCluster(), target.GetCluster()) != 0 {
+		return false
+	}
+
 	return true
 }
 

@@ -37,7 +37,7 @@ title: "route.proto"
 <a name="common.mesh.gloo.solo.io.DelegateAction"></a>
 
 ### DelegateAction
-DelegateActions are used to delegate routing decisions to other resources, for example Route Tables.
+Note: This message needs to be at this level (rather than nested) due to cue restrictions. DelegateActions are used to delegate routing decisions to other resources, for example Route Tables.
 
 
 | Field | Type | Label | Description |
@@ -53,7 +53,7 @@ DelegateActions are used to delegate routing decisions to other resources, for e
 <a name="common.mesh.gloo.solo.io.DirectResponseAction"></a>
 
 ### DirectResponseAction
-TODO: Shuold we be using v4alpha now? https://github.com/envoyproxy/envoy/blob/5a8bfa20dc3c85ecb61826d122696ecaa75dffa0/api/envoy/config/route/v4alpha/route_components.proto#L1396 DirectResponseAction is copied directly from https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/route/route.proto
+TODO: Shuold we be using v4alpha now? https://github.com/envoyproxy/envoy/blob/5a8bfa20dc3c85ecb61826d122696ecaa75dffa0/api/envoy/config/route/v4alpha/route_components.proto#L1396 Note: This message needs to be at this level (rather than nested) due to cue restrictions. DirectResponseAction is copied directly from https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/route/route.proto
 
 
 | Field | Type | Label | Description |
@@ -69,7 +69,7 @@ TODO: Shuold we be using v4alpha now? https://github.com/envoyproxy/envoy/blob/5
 <a name="common.mesh.gloo.solo.io.RedirectAction"></a>
 
 ### RedirectAction
-Notice: RedirectAction is copied directly from https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/route/route.proto
+Note: This message needs to be at this level (rather than nested) due to cue restrictions. Notice: RedirectAction is copied directly from https://github.com/envoyproxy/envoy/blob/master/api/envoy/api/v2/route/route.proto
 
 
 | Field | Type | Label | Description |

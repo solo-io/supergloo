@@ -305,7 +305,58 @@ message FederatedGatewaySpec {
 }
 
 message FederatedGatewayStatus{
-    // TODO: Add status fields
+    // The most recent generation observed in the the FederatedGateway metadata.
+    // If the `observedGeneration` does not match `metadata.generation`,
+    // Gloo Mesh has not processed the most recent version of this resource.
+    int64 observed_generation = 1;
+
+    // Any errors found while processing this generation of the resource.
+    repeated string errors = 2;
+
+    // Any warnings found while processing this generation of the resource.
+    repeated string warnings = 3;
+
+    repeated selectedGateway selected_gateways = 4;
+
+    repeated selectedRouteTable selected_route_tables = 5;
+
+    repeated selectedDelegatedRouteTable selected_delegated_route_tables = 6;
+
+    // Relationships between objects
+    // on Gw -> RTs selected
+    // on Rts -> GWs selecting us + DRTs we sekect
+    // on DRT -> which RTs select us
+    
+    // Optionally (via flag?) show DRTs on GW.
+
+    // Optionally, show additive paths on Rts/DRTs. (might be too much, status too big. Further research needed)
+    // - Maybe show the prefix that we're referenced by.
+
+    // External address of the gateway, if there is one.
+    // - Look at the service, get the LB IP (or nodeport), and publish here.
+    // - Should be able to get this from the discovery payload (From the mesh)
+}
+
+message selectedGateway {
+    string name = 1;
+    string namespace = 2;
+    string cluster = 3;
+    
+    string external_url = 4;
+}
+
+message selectedRouteTable {
+    string name = 1;
+    string namespace = 2;
+    string cluster = 3;
+
+    // Maybe add path here?
+}
+
+message selectedDelegatedRouteTable {
+    string name = 1;
+    string namespace = 2;
+    string cluster = 3;
 }
 
 // Note: This message needs to be at this level (rather than nested) due to cue restrictions.

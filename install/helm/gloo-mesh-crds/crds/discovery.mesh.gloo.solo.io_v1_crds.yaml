@@ -1184,6 +1184,9 @@ spec:
                         maximum: 4294967295
                         minimum: 0
                         type: integer
+                      namespace:
+                        description: the namespace in which the ingress gateway is running.
+                        type: string
                       tlsContainerPort:
                         description: |-
                           Container port on which the gateway is listening for TLS connections.
