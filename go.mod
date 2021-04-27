@@ -53,6 +53,8 @@ require (
 	github.com/pelletier/go-toml v1.3.0 // indirect
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_model v0.2.0
+	github.com/prometheus/common v0.15.0
 	github.com/pseudomuto/protoc-gen-doc v1.4.1
 	github.com/pseudomuto/protokit v0.2.0
 	github.com/rotisserie/eris v0.4.0

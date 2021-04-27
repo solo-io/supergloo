@@ -5,7 +5,7 @@ description: Deploying clusters with Kind for a Gloo Mesh Setup
 weight: 11
 ---
 
-The installation of Gloo Mesh assumes that you have access to at least one Kubernetes cluster, and preferably two for following the multi-cluster guides. If you do not have access to remote clusters, you can instead spin up two local clusters using Kubernetes in Docker (Kind). Be aware that this will use a significant amount of RAM when both clusters are running with Istio and Gloo Mesh installed. We recommend a workstation with a minimum of 16GB, preferably 32GB if possible.
+The installation of Gloo Mesh assumes that you have access to at least one Kubernetes cluster, and preferably two for following the multi-cluster guides. If you do not have access to remote clusters, you can instead spin up two local clusters using Kubernetes in Docker (Kind). Be aware that this will use a significant amount of RAM when both clusters are running with Istio and Gloo Mesh installed. We recommend a workstation with a minimum of 16GB.
 
 This guide will walk you through deploying two Kind clusters referred to as the `mgmt-cluster` and `remote-cluster`. The mgmt-cluster will host the Gloo Mesh installation as well as a deployment of Istio. The remote-cluster will run Istio only, and will be used in later guides to demonstrate the multi-cluster management capabilities of Gloo Mesh.
 
@@ -84,4 +84,4 @@ kubectl config use-context kind-mgmt-cluster
 ## Next Steps
 Now that you have two Kind clusters available, you are ready to proceed with the installation of
 [Gloo Mesh]({{% versioned_link_path fromRoot="/setup/installation/community_installation" %}}) or
-[Gloo Mesh Enterprise]({{% versioned_link_path fromRoot="/setup/prerequisites/enterprise_prerequisites" %}}).
+[Gloo Mesh Enterprise]({{% versioned_link_path fromRoot="/setup/installation/enterprise_installation" %}}).
