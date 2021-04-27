@@ -208,7 +208,7 @@ func (t *translator) getOrCreateRootCaSecret(
 	var rootCaSecret *skv2corev1.ObjectRef
 	switch caType := rootCA.CaSource.(type) {
 	case *v1.VirtualMeshSpec_RootCertificateAuthority_Generated:
-		generatedSecretName := virtualMeshRef.Name + "." + virtualMeshRef.Namespace
+		generatedSecretName := virtualMeshRef.Name + " ." + virtualMeshRef.Namespace
 		// write the signing secret to the gloomesh namespace
 		generatedSecretNamespace := defaults.GetPodNamespace()
 		// use the existing secret if it exists
