@@ -83,7 +83,7 @@ var _ = Describe("MtlsTranslator", func() {
 			Expect(mtls.IsSigningCert(secret)).To(BeTrue())
 		})
 
-		translator := mtls.NewTranslator(ctx, nil, nil)
+		translator := mtls.NewTranslator(ctx, v1sets.NewSecretSet(), nil)
 
 		translator.Translate(mesh, vm, mockIstioBuilder, mockLocalBuilder, mockReporter)
 	})
