@@ -39,7 +39,7 @@ func FederationTest() {
 	*/
 
 	It("should implement restrictive federation semantics", func() {
-		manifest, err = utils.NewManifest("federation-restrictive-virtualmesh.yaml")
+		restrictiveVirtualMeshManifest, err := utils.NewManifest("federation-restrictive-virtualmesh.yaml")
 		Expect(err).NotTo(HaveOccurred())
 
 		By("updating the existing permissive VirtualMesh to restrictive, only federating the reviews Destinations", func() {
@@ -73,9 +73,9 @@ func FederationTest() {
 				},
 			}
 
-			err = manifest.AppendResources(restrictiveVirtualMesh)
+			err = restrictiveVirtualMeshManifest.AppendResources(restrictiveVirtualMesh)
 			Expect(err).NotTo(HaveOccurred())
-			err = manifest.KubeApply(BookinfoNamespace)
+			err = restrictiveVirtualMeshManifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -113,9 +113,9 @@ func FederationTest() {
 		By("restore permissive federation VirtualMesh", func() {
 			env := e2e.GetEnv()
 
-			err = manifest.AppendResources(VirtualMesh)
+			err = restrictiveVirtualMeshManifest.AppendResources(VirtualMesh)
 			Expect(err).NotTo(HaveOccurred())
-			err = manifest.KubeApply(BookinfoNamespace)
+			err = restrictiveVirtualMeshManifest.KubeApply(BookinfoNamespace)
 			Expect(err).NotTo(HaveOccurred())
 
 			// all service entries for remote destinations should be restored on mgmt cluster
