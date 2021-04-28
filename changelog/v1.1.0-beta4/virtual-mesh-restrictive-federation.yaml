@@ -1,0 +1,4 @@
+changelog:
+  - type: NEW_FEATURE
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/804
+    description: Implement restrictive federation mode for VirtualMeshes, which allows for selectively exposing Destinations to external Meshes.
