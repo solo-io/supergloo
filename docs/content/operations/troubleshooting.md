@@ -5,7 +5,7 @@ weight: 10
 description: Understanding how to troubleshoot Gloo Mesh with tips on logging, FAQ, and understanding how things work
 ---
 
-In this guide we explore how to troubleshoot when things don't behave the way you're expecting. We also try to explain how things work under the covers so you can use your own troubleshooting skills to find why things may not behave as expected. We would love to hear from you if you if you get stuck on the [Solo.io Slack](https://slack.solo.io) or if you figure out how to solve something not covered here, please consider a [Pull Request to the docs](https://github.com/solo-io/gloo-mesh/tree/master/docs) to add it.
+In this guide we explore how to troubleshoot when things don't behave the way you're expecting. We also try to explain how things work under the covers so you can use your own troubleshooting skills to find why things may not behave as expected. We would love to hear from you if you if you get stuck on the [Solo.io Slack](https://slack.solo.io) or if you figure out how to solve something not covered here, please consider a [Pull Request to the docs](https://github.com/solo-io/gloo-mesh/tree/main/docs) to add it.
 
 ## Helpful debugging tips
 

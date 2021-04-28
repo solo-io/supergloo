@@ -867,5 +867,15 @@ func (m *DestinationStatus_AppliedFederation) Equal(that interface{}) bool {
 		return false
 	}
 
+	if h, ok := interface{}(m.GetVirtualMeshRef()).(equality.Equalizer); ok {
+		if !h.Equal(target.GetVirtualMeshRef()) {
+			return false
+		}
+	} else {
+		if !proto.Equal(m.GetVirtualMeshRef(), target.GetVirtualMeshRef()) {
+			return false
+		}
+	}
+
 	return true
 }

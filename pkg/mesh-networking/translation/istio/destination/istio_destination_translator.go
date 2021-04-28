@@ -3,6 +3,7 @@ package destination
 import (
 	"context"
 
+	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/istio/destination/federation"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/settingsutils"
 
 	v1alpha3sets "github.com/solo-io/external-apis/pkg/api/istio/networking.istio.io/v1alpha3/sets"
@@ -43,6 +44,7 @@ type translator struct {
 	destinationRules      destinationrule.Translator
 	virtualServices       virtualservice.Translator
 	authorizationPolicies authorizationpolicy.Translator
+	federation            federation.Translator
 }
 
 func NewTranslator(
@@ -59,11 +61,15 @@ func NewTranslator(
 		existingDestinationRules = userSupplied.DestinationRules()
 	}
 
+	virtualServiceTranslator := virtualservice.NewTranslator(existingVirtualServices, clusterDomains, decoratorFactory)
+	destinationRuleTranslator := destinationrule.NewTranslator(settingsutils.SettingsFromContext(ctx), existingDestinationRules, clusterDomains, decoratorFactory, destinations)
+
 	return &translator{
 		ctx:                   ctx,
-		destinationRules:      destinationrule.NewTranslator(settingsutils.SettingsFromContext(ctx), existingDestinationRules, clusterDomains, decoratorFactory, destinations),
-		virtualServices:       virtualservice.NewTranslator(existingVirtualServices, clusterDomains, decoratorFactory),
+		virtualServices:       virtualServiceTranslator,
+		destinationRules:      destinationRuleTranslator,
 		authorizationPolicies: authorizationpolicy.NewTranslator(),
+		federation:            federation.NewTranslator(ctx, virtualServiceTranslator, destinationRuleTranslator),
 	}
 }
 
@@ -85,16 +91,24 @@ func (t *translator) Translate(
 	// Append the Destination as a parent to the virtual service
 	metautils.AppendParent(t.ctx, vs, destination, destination.GVK())
 	outputs.AddVirtualServices(vs)
+
 	// Translate DestinationRules for Destinations, can be nil if there is no service or applied traffic policies
 	dr := t.destinationRules.Translate(t.ctx, in, destination, nil, reporter)
 	// Append the Destination as a parent to the destination rule
 	metautils.AppendParent(t.ctx, dr, destination, destination.GVK())
 	outputs.AddDestinationRules(dr)
+
 	// Translate AuthorizationPolicies for Destinations, can be nil if there is no service or applied traffic policies
 	ap := t.authorizationPolicies.Translate(in, destination, reporter)
 	// Append the Destination as a parent to the authorization policy
 	metautils.AppendParent(t.ctx, ap, destination, destination.GVK())
 	outputs.AddAuthorizationPolicies(ap)
+
+	// parent annotations are added inside Translate()
+	serviceEntries, virtualServices, destinationRules := t.federation.Translate(in, destination, reporter)
+	outputs.AddServiceEntries(serviceEntries...)
+	outputs.AddVirtualServices(virtualServices...)
+	outputs.AddDestinationRules(destinationRules...)
 }
 
 func (t *translator) isIstioDestination(

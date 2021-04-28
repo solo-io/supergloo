@@ -7,14 +7,11 @@ weight: 30
 
 {{% notice note %}} Gloo Mesh Enterprise is required for this feature. {{% /notice %}}
 
-Relay is an alternative mode of deploying Gloo Mesh that confers several advantages discussed in [this document]({{% versioned_link_path fromRoot="/concepts/relay" %}}).
-Cluster registration in relay mode simply consists of installing the relay agent.
-
-This guide will walk you through the basics of registering clusters using the `meshctl` tool or with Helm. We will be using the two cluster contexts mentioned in the Gloo Mesh installation guide, `kind-mgmt-cluster` and `kind-remote-cluster`. Your cluster context names may differ, so please substitute the proper values.
+This guide will walk you through the basics of registering clusters for management by Gloo Mesh Enterprise using the `meshctl` tool or with Helm.
 
 ## Register A Cluster
 
-In order to identify a cluster as being managed by Gloo Mesh Enterprise, we have to *register* it in our installation. Registration ensures we are aware of the cluster, and we have properly configured a remote relay *agent* to talk to the local relay *server*. In this example, we will register our remote cluster with Gloo Mesh Enterprise running on the management cluster.
+In order to identify a cluster as being managed by Gloo Mesh Enterprise, we have to *register* it in our installation. Registration ensures we are aware of the cluster, and we have properly configured a remote [relay]({{% versioned_link_path fromRoot="/concepts/relay" %}}) *agent* to talk to the local relay *server*. In this example, we will register our remote cluster with Gloo Mesh Enterprise running on the management cluster.
 
 ### Register with `meshctl`
 
@@ -26,16 +23,26 @@ To register our remote cluster, there are a few key pieces of information we nee
 1. **remote-context** - The Kubernetes context with access to the remote cluster being registered.
 1. **relay-server-address** - The address of the relay server running on the management cluster.
 
-First, let's get the `relay-server-address`. Assuming you are using Kind and Istio with an ingress provisioned per the [Gloo Mesh Enterprise prerequisites guide]({{% versioned_link_path fromRoot="/setup/enterprise_prerequisites" %}}), you can retrieve the ingress address by running the following commands. If your cluster architecture is different or you exposed the `enterprise-networking` service in a different way, your steps will be different.
+First, let's get the `relay-server-address`. The `relay-server-address` is the cluster-external address at which the `grpc` port on the `enterprise-networking` service is exposed on the cluster where the Gloo Mesh Enterprise management plane is installed.
 
-```shell
-MGMT_CONTEXT=kind-mgmt-cluster # Update value as needed
-kubectl config use-context $MGMT_CONTEXT
+By default, the `enterprise-networking` service is of type LoadBalancer, and the cloud provider managing your Kubernetes cluster will automatically provision a public IP for the service. Get the complete `relay-server-address` with:
 
-MGMT_INGRESS_ADDRESS=$(kubectl get node -ojson | jq -r ".items[0].status.addresses[0].address")
-MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+{{< tabs >}}
+{{< tab name="IP LoadBalancer address (GKE)" codelang="yaml">}}
+MGMT_INGRESS_ADDRESS=$(kubectl get svc -n gloo-mesh enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+MGMT_INGRESS_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
 RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
-```
+{{< /tab >}}
+{{< tab name="Hostname LoadBalancer address (EKS)" codelang="shell" >}}
+MGMT_INGRESS_ADDRESS=$(kubectl get svc -n gloo-mesh enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+MGMT_INGRESS_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
+RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
+{{< /tab >}}
+{{< /tabs >}}
+
+If the above commands left you with a `$RELAY_ADDRESS` value that is empty or incomplete, make sure the `enterprise-networking`
+service is available to clients outside the cluster, perhaps through a NodePort or ingress solution, and find the address
+before continuing. 
 
 Let's set variables for the remaining values:
 
@@ -77,6 +84,8 @@ The `meshctl` command accomplished the following activities:
 * Installed the relay agent in the remote cluster
 * Created the KubernetesCluster CRD in the management cluster
 
+Now Gloo Mesh Enterprise and the relay agent on the remote cluster are configured to communicate with one another over mTLS to continuously discover and configure your service meshes and workloads.
+
 When registering a remote cluster using Helm, you will need to run through these tasks yourself. The next section details how to accomplish those tasks and install the relay agent with Helm.
 
 ### Register with Helm
@@ -87,14 +96,14 @@ You can also register a remote cluster using the Enterprise Agent Helm repositor
 * Copying over the self-signed root CA certificate from the management cluster (`relay-root-tls-secret`)
 * Copy over the validation token for relay agent initialization (`relay-identity-token-secret`)
 
-If you have not followed these steps, the relay agent deployment will fail.
+Without these prerequisites, the relay agent deployment will fail.
 
 #### Prerequisites
 
 First create the namespace in the remote cluster:
 
 ```shell
-CLUSTER_NAME=remote-cluster
+CLUSTER_NAME=remote-cluster # Update value as needed
 REMOTE_CONTEXT=kind-remote-cluster # Update value as needed
 
 kubectl create ns gloo-mesh --context $REMOTE_CONTEXT
@@ -143,21 +152,30 @@ helm repo add enterprise-agent https://storage.googleapis.com/gloo-mesh-enterpri
 helm repo update
 ```
 
-First we will get the ingress address for the relay server. These commands assume you have exposed the relay server through the Istio ingress gateway.
+By default, the `enterprise-networking` service is of type LoadBalancer, and the cloud provider managing your Kubernetes cluster will automatically provision a public IP for the service. Get the complete `relay-server-address` with:
 
-```shell
-MGMT_CONTEXT=kind-mgmt-cluster # Update value as needed
-kubectl config use-context $MGMT_CONTEXT
-
-MGMT_INGRESS_ADDRESS=$(kubectl get node -ojson | jq -r ".items[0].status.addresses[0].address")
-MGMT_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+{{< tabs >}}
+{{< tab name="IP LoadBalancer address (GKE)" codelang="yaml">}}
+MGMT_INGRESS_ADDRESS=$(kubectl get svc -n gloo-mesh enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+MGMT_INGRESS_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
 RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
-```
+{{< /tab >}}
+{{< tab name="Hostname LoadBalancer address (EKS)" codelang="shell" >}}
+MGMT_INGRESS_ADDRESS=$(kubectl get svc -n gloo-mesh enterprise-networking -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+MGMT_INGRESS_PORT=$(kubectl -n gloo-mesh get service enterprise-networking -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
+RELAY_ADDRESS=${MGMT_INGRESS_ADDRESS}:${MGMT_INGRESS_PORT}
+{{< /tab >}}
+{{< /tabs >}}
+
+If the above commands left you with a `$RELAY_ADDRESS` value that is empty or incomplete, make sure the `enterprise-networking`
+service is available to clients outside the cluster, perhaps through a NodePort or ingress solution, and find the address
+before continuing. 
+
 
 Then we will set our variables:
 
 ```shell
-CLUSTER_NAME=remote-cluster
+CLUSTER_NAME=remote-cluster # Update value as needed
 REMOTE_CONTEXT=kind-remote-cluster # Update value as needed
 ENTERPRISE_NETWORKING_VERSION=<current version> # Update based on meshctl version output
 ```
@@ -169,7 +187,6 @@ And now we will deploy the relay agent in the remote cluster.
 helm install enterprise-agent enterprise-agent/enterprise-agent \
   --namespace gloo-mesh \
   --set relay.serverAddress=${RELAY_ADDRESS} \
-  --set relay.authority=enterprise-networking.gloo-mesh \
   --set relay.cluster=${CLUSTER_NAME} \
   --kube-context=${REMOTE_CONTEXT} \
   --version ${ENTERPRISE_NETWORKING_VERSION}
