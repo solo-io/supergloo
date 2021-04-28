@@ -1,0 +1,5 @@
+changelog:
+  - type: FIX
+    issueLink: https://github.com/solo-io/gloo-mesh/issues/1451
+    description: Improve the enterprise install and register documentation.
+    resolvesIssue: false
