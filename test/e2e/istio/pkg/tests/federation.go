@@ -8,6 +8,7 @@ import (
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	"github.com/solo-io/gloo-mesh/pkg/common/defaults"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/hostutils"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation/utils/metautils"
 	"github.com/solo-io/gloo-mesh/test/data"
@@ -36,6 +37,104 @@ func FederationTest() {
 	/*
 		These tests assume that federation has been established between mgmt and remote clusters.
 	*/
+
+	It("should implement restrictive federation semantics", func() {
+		manifest, err = utils.NewManifest("federation-restrictive-virtualmesh.yaml")
+		Expect(err).NotTo(HaveOccurred())
+
+		By("updating the existing permissive VirtualMesh to restrictive, only federating the reviews Destinations", func() {
+			restrictiveVirtualMesh := VirtualMesh.DeepCopy()
+
+			// federate only the reviews service from each mesh to the other mesh
+			restrictiveVirtualMesh.Spec.Federation.Mode = &networkingv1.VirtualMeshSpec_Federation_Restrictive{
+				Restrictive: &networkingv1.VirtualMeshSpec_Federation_RestrictiveFederation{
+					FederationSelectors: []*networkingv1.VirtualMeshSpec_Federation_RestrictiveFederation_FederationSelector{
+						{
+							DestinationSelectors: []*commonv1.DestinationSelector{
+								{
+									KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+										Services: []*skv2corev1.ClusterObjectRef{
+											{
+												Name:        "reviews",
+												Namespace:   BookinfoNamespace,
+												ClusterName: MgmtClusterName,
+											},
+											{
+												Name:        "reviews",
+												Namespace:   BookinfoNamespace,
+												ClusterName: RemoteClusterName,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+
+			err = manifest.AppendResources(restrictiveVirtualMesh)
+			Expect(err).NotTo(HaveOccurred())
+			err = manifest.KubeApply(BookinfoNamespace)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		By("in both clusters, the only ServiceEntries that should exist are those representing the remote reviews Destination", func() {
+			env := e2e.GetEnv()
+			remoteReviews, err := env.Management.DestinationClient.GetDestination(context.TODO(), client.ObjectKey{
+				Name:      fmt.Sprintf("reviews-%s-%s", BookinfoNamespace, RemoteClusterName),
+				Namespace: defaults.DefaultPodNamespace,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			mgmtReviews, err := env.Management.DestinationClient.GetDestination(context.TODO(), client.ObjectKey{
+				Name:      fmt.Sprintf("reviews-%s-%s", BookinfoNamespace, MgmtClusterName),
+				Namespace: defaults.DefaultPodNamespace,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			// on the mgmt cluster, only ServiceEntry for remote reviews should exist
+			Eventually(func() bool {
+				serviceEntries, err := env.Management.ServiceEntryClient.ListServiceEntry(context.TODO())
+				Expect(err).NotTo(HaveOccurred())
+
+				return len(serviceEntries.Items) == 1 && serviceEntries.Items[0].GetName() == remoteReviews.Status.AppliedFederation.GetFederatedHostname()
+			}, "1m", "1s").Should(BeTrue())
+
+			// on the remote cluster, only ServiceEntry for mgmt reviews should exist
+			Eventually(func() bool {
+				serviceEntries, err := env.Remote.ServiceEntryClient.ListServiceEntry(context.TODO())
+				Expect(err).NotTo(HaveOccurred())
+
+				return len(serviceEntries.Items) == 1 && serviceEntries.Items[0].GetName() == mgmtReviews.Status.AppliedFederation.GetFederatedHostname()
+			}, "1m", "1s").Should(BeTrue())
+		})
+
+		By("restore permissive federation VirtualMesh", func() {
+			env := e2e.GetEnv()
+
+			err = manifest.AppendResources(VirtualMesh)
+			Expect(err).NotTo(HaveOccurred())
+			err = manifest.KubeApply(BookinfoNamespace)
+			Expect(err).NotTo(HaveOccurred())
+
+			// all service entries for remote destinations should be restored on mgmt cluster
+			Eventually(func() bool {
+				serviceEntries, err := env.Management.ServiceEntryClient.ListServiceEntry(context.TODO())
+				Expect(err).NotTo(HaveOccurred())
+
+				return len(serviceEntries.Items) > 1
+			}, "1m", "1s").Should(BeTrue())
+
+			// all service entries for remote destinations should be restored on remote cluster
+			Eventually(func() bool {
+				serviceEntries, err := env.Remote.ServiceEntryClient.ListServiceEntry(context.TODO())
+				Expect(err).NotTo(HaveOccurred())
+
+				return len(serviceEntries.Items) > 1
+			}, "1m", "1s").Should(BeTrue())
+		})
+	})
 
 	It("enables communication across clusters using global dns names", func() {
 		manifest, err = utils.NewManifest("federation-trafficpolicies.yaml")

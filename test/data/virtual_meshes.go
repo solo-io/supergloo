@@ -42,8 +42,9 @@ func SelfSignedVirtualMesh(
 				AutoRestartPods: true,
 			},
 			Federation: &v1.VirtualMeshSpec_Federation{
-				HostnameSuffix: hostnameSuffix,
+				Mode:           &v1.VirtualMeshSpec_Federation_Permissive{},
 				FlatNetwork:    flatNetwork,
+				HostnameSuffix: hostnameSuffix,
 			},
 		},
 	}, nil

@@ -317,6 +317,9 @@ func validateAndReturnApprovedFederation(
 	reporter *applyReporter,
 	destination *discoveryv1.Destination,
 ) *discoveryv1.DestinationStatus_AppliedFederation {
+	if destination.Status.AppliedFederation == nil {
+		return nil
+	}
 
 	virtualMeshRef := destination.Status.AppliedFederation.GetVirtualMeshRef()
 	errsForFederation := reporter.getFederationsErrors(destination, virtualMeshRef)
@@ -642,6 +645,10 @@ func getAppliedFederation(
 	)
 
 	federatedToMeshes := getFederatedToMeshes(destination, parentMesh, parentVirtualMesh)
+	// this Destination is not selected for federation to any external mesh
+	if len(federatedToMeshes) < 1 {
+		return nil
+	}
 
 	return &discoveryv1.DestinationStatus_AppliedFederation{
 		VirtualMeshRef:    ezkube.MakeObjectRef(parentVirtualMesh),
@@ -698,6 +705,13 @@ func getFederatedToMeshes(
 			if !selectorutils.SelectorMatchesDestination(federationSelector.GetDestinationSelectors(), destination) {
 				continue
 			}
+			// if mesh refs are omitted, federate to all Meshes in VirtualMesh
+			if len(federationSelector.GetMeshes()) < 1 {
+				for _, groupedMeshRef := range virtualMesh.Spec.GetMeshes() {
+					federatedToMeshes.Insert(groupedMeshRef)
+				}
+			}
+			// federate to specified Meshes
 			for _, meshRef := range federationSelector.GetMeshes() {
 				federatedToMeshes.Insert(meshRef)
 			}
