@@ -144,8 +144,9 @@ installation options for Gloo Mesh Enterprise, including how to deploy Gloo Mesh
 
 To get you up and running as quickly as possible, we will not install the Gloo Mesh Enterprise component responsible
 for enforcing the [role-based API]({{% versioned_link_path fromRoot="/concepts/role_based_api/" %}}) by including the
-`--skip-rbac` flag. If you wish to enable it, simply invoke the install command without this flag.
+`--skip-rbac` flag. If you wish to enable it, simply invoke the install command without this flag. 
 
+Note that if you exclude the `--skip-rbac` flag, operations like creating a virtual mesh, later in this guide, will fail with permission errors. In that case, you will need to [understand]({{% versioned_link_path fromRoot="/concepts/role_based_api/" %}}) and [configure]({{% versioned_link_path fromRoot="/guides/configure_role_based_api/" %}}) the RBAC facilities to proceed.
 
 ```shell
 meshctl install enterprise --kubecontext=$MGMT_CONTEXT --license $GLOO_MESH_LICENSE_KEY --skip-rbac
@@ -193,8 +194,7 @@ Management Configuration
 
 In order to register your remote clusters with the Gloo Mesh management plane via [Relay]({{% versioned_link_path fromRoot="/concepts/relay/" %}}),
 you'll need to know the external address of the `enterprise-networking` service. Because the service
-is of type LoadBalancer by default, your cloud provider will expose the service outside the cluster. You can determine
-the public address of the service with the following:
+is of type LoadBalancer by default, your cloud provider will expose the service outside the cluster. You can determine the public address of the service with the following:
 
 {{< tabs >}}
 {{< tab name="IP LoadBalancer address (GKE)" codelang="yaml">}}
@@ -307,7 +307,9 @@ To verify that the Virtual Mesh has taken effect, run the following:
 kubectl get virtualmesh -n gloo-mesh virtual-mesh -oyaml
 ```
 
-After a few moments the Virtual Mesh status will be "Accepted", indicating your meshes are configured for multicluster traffic.
+Note that if the Virtual Mesh creation fails with a permissions error, then you likely did not install the mesh using the `--skip-rbac` option described earlier.  In that case, you will need to [configure]({{% versioned_link_path fromRoot="/guides/configure_role_based_api/" %}}) the RBAC facilities properly.
+
+If there are no errors, then after a few moments the Virtual Mesh status will be "Accepted", indicating your meshes are configured for multicluster traffic.
 
 ```
 ...
