@@ -9,7 +9,7 @@ import (
 	commonv1 "github.com/solo-io/gloo-mesh/pkg/api/common.mesh.gloo.solo.io/v1"
 	discoveryv1 "github.com/solo-io/gloo-mesh/pkg/api/discovery.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/input"
-	v1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
+	networkingv1 "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/reporting"
 	"github.com/solo-io/gloo-mesh/pkg/mesh-networking/translation"
 	"github.com/solo-io/skv2/contrib/pkg/sets"
@@ -62,34 +62,34 @@ var _ = Describe("Applier", func() {
 					Namespace: "ns",
 				},
 			}
-			trafficPolicy1 = &v1.TrafficPolicy{
+			trafficPolicy1 = &networkingv1.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "tp1",
 					Namespace: "ns",
 				},
-				Spec: v1.TrafficPolicySpec{
-					Policy: &v1.TrafficPolicySpec_Policy{
+				Spec: networkingv1.TrafficPolicySpec{
+					Policy: &networkingv1.TrafficPolicySpec_Policy{
 						// fill an arbitrary part of the spec
-						Mirror: &v1.TrafficPolicySpec_Policy_Mirror{},
+						Mirror: &networkingv1.TrafficPolicySpec_Policy_Mirror{},
 					},
 				},
 			}
-			trafficPolicy2 = &v1.TrafficPolicy{
+			trafficPolicy2 = &networkingv1.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "tp2",
 					Namespace: "ns",
 				},
-				Spec: v1.TrafficPolicySpec{
-					Policy: &v1.TrafficPolicySpec_Policy{
+				Spec: networkingv1.TrafficPolicySpec{
+					Policy: &networkingv1.TrafficPolicySpec_Policy{
 						// fill an arbitrary part of the spec
-						FaultInjection: &v1.TrafficPolicySpec_Policy_FaultInjection{},
+						FaultInjection: &networkingv1.TrafficPolicySpec_Policy_FaultInjection{},
 					},
 				},
 			}
 
 			snap = input.NewInputLocalSnapshotManualBuilder("").
 				AddDestinations(discoveryv1.DestinationSlice{destination}).
-				AddTrafficPolicies(v1.TrafficPolicySlice{trafficPolicy1, trafficPolicy2}).
+				AddTrafficPolicies(networkingv1.TrafficPolicySlice{trafficPolicy1, trafficPolicy2}).
 				AddWorkloads(discoveryv1.WorkloadSlice{workload}).
 				AddMeshes(discoveryv1.MeshSlice{mesh}).
 				Build()
@@ -104,14 +104,14 @@ var _ = Describe("Applier", func() {
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy1.Status.Destinations).To(HaveKey(sets.Key(destination)))
-			Expect(trafficPolicy1.Status.Destinations[sets.Key(destination)]).To(Equal(&v1.ApprovalStatus{
+			Expect(trafficPolicy1.Status.Destinations[sets.Key(destination)]).To(Equal(&networkingv1.ApprovalStatus{
 				AcceptanceOrder: 0,
 				State:           commonv1.ApprovalState_ACCEPTED,
 			}))
 			Expect(trafficPolicy1.Status.Workloads).To(HaveLen(1))
 			Expect(trafficPolicy1.Status.Workloads[0]).To(Equal(sets.Key(workload)))
 			Expect(trafficPolicy2.Status.Destinations).To(HaveKey(sets.Key(destination)))
-			Expect(trafficPolicy2.Status.Destinations[sets.Key(destination)]).To(Equal(&v1.ApprovalStatus{
+			Expect(trafficPolicy2.Status.Destinations[sets.Key(destination)]).To(Equal(&networkingv1.ApprovalStatus{
 				AcceptanceOrder: 1,
 				State:           commonv1.ApprovalState_ACCEPTED,
 			}))
@@ -136,7 +136,7 @@ var _ = Describe("Applier", func() {
 					Namespace: "ns",
 				},
 			}
-			trafficPolicy = &v1.TrafficPolicy{
+			trafficPolicy = &networkingv1.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "tp1",
 					Namespace: "ns",
@@ -145,7 +145,7 @@ var _ = Describe("Applier", func() {
 
 			snap = input.NewInputLocalSnapshotManualBuilder("").
 				AddDestinations(discoveryv1.DestinationSlice{destination}).
-				AddTrafficPolicies(v1.TrafficPolicySlice{trafficPolicy}).
+				AddTrafficPolicies(networkingv1.TrafficPolicySlice{trafficPolicy}).
 				Build()
 		)
 
@@ -159,7 +159,7 @@ var _ = Describe("Applier", func() {
 		})
 		It("updates status on input traffic policies", func() {
 			Expect(trafficPolicy.Status.Destinations).To(HaveKey(sets.Key(destination)))
-			Expect(trafficPolicy.Status.Destinations[sets.Key(destination)]).To(Equal(&v1.ApprovalStatus{
+			Expect(trafficPolicy.Status.Destinations[sets.Key(destination)]).To(Equal(&networkingv1.ApprovalStatus{
 				AcceptanceOrder: 0,
 				State:           commonv1.ApprovalState_INVALID,
 				Errors:          []string{"did an oopsie"},
@@ -220,25 +220,25 @@ var _ = Describe("Applier", func() {
 					Namespace: "ns",
 				},
 			}
-			virtualMesh = &v1.VirtualMesh{
+			virtualMesh = &networkingv1.VirtualMesh{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "vmesh1",
 					Namespace: "ns",
 				},
-				Spec: v1.VirtualMeshSpec{
+				Spec: networkingv1.VirtualMeshSpec{
 					Meshes: []*skv2corev1.ObjectRef{
 						{Name: "mesh1", Namespace: "ns"},
 						{Name: "mesh2", Namespace: "ns"},
 					},
 				},
 			}
-			trafficPolicy = &v1.TrafficPolicy{
+			trafficPolicy = &networkingv1.TrafficPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "tp1",
 					Namespace: "ns",
 				},
 			}
-			accessPolicy = &v1.AccessPolicy{
+			accessPolicy = &networkingv1.AccessPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "ap1",
 					Namespace: "ns",
@@ -248,8 +248,8 @@ var _ = Describe("Applier", func() {
 
 		It("sets policy workloads using mesh", func() {
 			snap := input.NewInputLocalSnapshotManualBuilder("").
-				AddTrafficPolicies(v1.TrafficPolicySlice{trafficPolicy}).
-				AddAccessPolicies(v1.AccessPolicySlice{accessPolicy}).
+				AddTrafficPolicies(networkingv1.TrafficPolicySlice{trafficPolicy}).
+				AddAccessPolicies(networkingv1.AccessPolicySlice{accessPolicy}).
 				AddDestinations(discoveryv1.DestinationSlice{destination}).
 				AddWorkloads(discoveryv1.WorkloadSlice{workload1, workload2}).
 				AddMeshes(discoveryv1.MeshSlice{mesh1, mesh2}).
@@ -268,12 +268,12 @@ var _ = Describe("Applier", func() {
 		})
 		It("sets policy workloads using VirtualMesh", func() {
 			snap := input.NewInputLocalSnapshotManualBuilder("").
-				AddTrafficPolicies(v1.TrafficPolicySlice{trafficPolicy}).
-				AddAccessPolicies(v1.AccessPolicySlice{accessPolicy}).
+				AddTrafficPolicies(networkingv1.TrafficPolicySlice{trafficPolicy}).
+				AddAccessPolicies(networkingv1.AccessPolicySlice{accessPolicy}).
 				AddDestinations(discoveryv1.DestinationSlice{destination}).
 				AddWorkloads(discoveryv1.WorkloadSlice{workload1, workload2}).
 				AddMeshes(discoveryv1.MeshSlice{mesh1, mesh2}).
-				AddVirtualMeshes(v1.VirtualMeshSlice{virtualMesh}).
+				AddVirtualMeshes(networkingv1.VirtualMeshSlice{virtualMesh}).
 				Build()
 			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
 				// no report = accept
@@ -293,8 +293,8 @@ var _ = Describe("Applier", func() {
 		It("sets no policy workloads when there is no matching mesh", func() {
 			workload1.Spec.Mesh.Name = "mesh2"
 			snap := input.NewInputLocalSnapshotManualBuilder("").
-				AddTrafficPolicies(v1.TrafficPolicySlice{trafficPolicy}).
-				AddAccessPolicies(v1.AccessPolicySlice{accessPolicy}).
+				AddTrafficPolicies(networkingv1.TrafficPolicySlice{trafficPolicy}).
+				AddAccessPolicies(networkingv1.AccessPolicySlice{accessPolicy}).
 				AddDestinations(discoveryv1.DestinationSlice{destination}).
 				AddWorkloads(discoveryv1.WorkloadSlice{workload1, workload2}).
 				AddMeshes(discoveryv1.MeshSlice{mesh1, mesh2}).
@@ -308,6 +308,250 @@ var _ = Describe("Applier", func() {
 			// destination is in mesh1, but both workloads are in mesh2
 			Expect(trafficPolicy.Status.Workloads).To(BeNil())
 			Expect(accessPolicy.Status.Workloads).To(BeNil())
+		})
+	})
+
+	Context("applied federation", func() {
+		var (
+			applier Applier
+
+			destination = &discoveryv1.Destination{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "ms1",
+					Namespace: "ns",
+				},
+				Spec: discoveryv1.DestinationSpec{
+					Mesh: &skv2corev1.ObjectRef{
+						Name:      "mesh1",
+						Namespace: "ns",
+					},
+					Type: &discoveryv1.DestinationSpec_KubeService_{
+						KubeService: &discoveryv1.DestinationSpec_KubeService{
+							Ref: &skv2corev1.ClusterObjectRef{
+								Name:        "svc-name",
+								Namespace:   "svc-namespace",
+								ClusterName: "svc-cluster",
+							},
+						},
+					},
+				},
+			}
+
+			mesh1 = &discoveryv1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mesh1",
+					Namespace: "ns",
+				},
+			}
+			mesh2 = &discoveryv1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mesh2",
+					Namespace: "ns",
+				},
+			}
+			mesh3 = &discoveryv1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mesh3",
+					Namespace: "ns",
+				},
+			}
+			mesh4 = &discoveryv1.Mesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "mesh4",
+					Namespace: "ns",
+				},
+			}
+
+			snap = input.NewInputLocalSnapshotManualBuilder("").
+				AddDestinations(discoveryv1.DestinationSlice{destination}).
+				AddMeshes(discoveryv1.MeshSlice{mesh1, mesh2, mesh3, mesh4})
+		)
+
+		BeforeEach(func() {
+			translator := testIstioTranslator{callReporter: func(reporter reporting.Reporter) {
+				// no report = accept
+			}}
+			applier = NewApplier(translator)
+		})
+
+		It("applies VirtualMesh with permissive federation", func() {
+			permissiveVirtualMesh := &networkingv1.VirtualMesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "vm1",
+					Namespace: "ns",
+				},
+				Spec: networkingv1.VirtualMeshSpec{
+					Meshes: []*skv2corev1.ObjectRef{
+						ezkube.MakeObjectRef(mesh1),
+						ezkube.MakeObjectRef(mesh2),
+						ezkube.MakeObjectRef(mesh3),
+						ezkube.MakeObjectRef(mesh4),
+					},
+					Federation: &networkingv1.VirtualMeshSpec_Federation{
+						Mode: &networkingv1.VirtualMeshSpec_Federation_Permissive{},
+					},
+				},
+			}
+
+			snap.AddVirtualMeshes([]*networkingv1.VirtualMesh{permissiveVirtualMesh})
+
+			expectedAppliedFederation := &discoveryv1.DestinationStatus_AppliedFederation{
+				FederatedHostname: "svc-name.svc-namespace.svc.svc-cluster.global",
+				FederatedToMeshes: []*skv2corev1.ObjectRef{
+					ezkube.MakeObjectRef(mesh2),
+					ezkube.MakeObjectRef(mesh3),
+					ezkube.MakeObjectRef(mesh4),
+				},
+				VirtualMeshRef: ezkube.MakeObjectRef(permissiveVirtualMesh),
+			}
+
+			applier.Apply(context.TODO(), snap.Build(), nil)
+
+			Expect(destination.Status.AppliedFederation).To(Equal(expectedAppliedFederation))
+		})
+
+		It("restrictive federation with empty selectors should have permissive semantics", func() {
+			restrictiveVirtualMesh := &networkingv1.VirtualMesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "vm1",
+					Namespace: "ns",
+				},
+				Spec: networkingv1.VirtualMeshSpec{
+					Meshes: []*skv2corev1.ObjectRef{
+						ezkube.MakeObjectRef(mesh1),
+						ezkube.MakeObjectRef(mesh2),
+						ezkube.MakeObjectRef(mesh3),
+						ezkube.MakeObjectRef(mesh4),
+					},
+					Federation: &networkingv1.VirtualMeshSpec_Federation{
+						Mode: &networkingv1.VirtualMeshSpec_Federation_Restrictive{},
+					},
+				},
+			}
+
+			snap.AddVirtualMeshes([]*networkingv1.VirtualMesh{restrictiveVirtualMesh})
+
+			expectedAppliedFederation := &discoveryv1.DestinationStatus_AppliedFederation{
+				FederatedHostname: "svc-name.svc-namespace.svc.svc-cluster.global",
+				FederatedToMeshes: []*skv2corev1.ObjectRef{
+					ezkube.MakeObjectRef(mesh2),
+					ezkube.MakeObjectRef(mesh3),
+					ezkube.MakeObjectRef(mesh4),
+				},
+				VirtualMeshRef: ezkube.MakeObjectRef(restrictiveVirtualMesh),
+			}
+
+			applier.Apply(context.TODO(), snap.Build(), nil)
+
+			Expect(destination.Status.AppliedFederation).To(Equal(expectedAppliedFederation))
+		})
+
+		It("restrictive federation with defined selectors should selectively federate Destinations", func() {
+			destination2 := &discoveryv1.Destination{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "d2",
+					Namespace: "ns",
+				},
+				Spec: discoveryv1.DestinationSpec{
+					Mesh: &skv2corev1.ObjectRef{
+						Name:      "mesh1",
+						Namespace: "ns",
+					},
+					Type: &discoveryv1.DestinationSpec_KubeService_{
+						KubeService: &discoveryv1.DestinationSpec_KubeService{
+							Ref: &skv2corev1.ClusterObjectRef{
+								Name:        "svc-name2",
+								Namespace:   "svc-namespace",
+								ClusterName: "svc-cluster",
+							},
+						},
+					},
+				},
+			}
+
+			restrictiveVirtualMesh := &networkingv1.VirtualMesh{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "vm1",
+					Namespace: "ns",
+				},
+				Spec: networkingv1.VirtualMeshSpec{
+					Meshes: []*skv2corev1.ObjectRef{
+						ezkube.MakeObjectRef(mesh1),
+						ezkube.MakeObjectRef(mesh2),
+						ezkube.MakeObjectRef(mesh3),
+						ezkube.MakeObjectRef(mesh4),
+					},
+					Federation: &networkingv1.VirtualMeshSpec_Federation{
+						Mode: &networkingv1.VirtualMeshSpec_Federation_Restrictive{
+							Restrictive: &networkingv1.VirtualMeshSpec_Federation_RestrictiveFederation{
+								FederationSelectors: []*networkingv1.VirtualMeshSpec_Federation_RestrictiveFederation_FederationSelector{
+									{
+										DestinationSelectors: []*commonv1.DestinationSelector{
+											{
+												KubeServiceRefs: &commonv1.DestinationSelector_KubeServiceRefs{
+													Services: []*skv2corev1.ClusterObjectRef{
+														{
+															Name:        destination.Spec.GetKubeService().GetRef().GetName(),
+															Namespace:   destination.Spec.GetKubeService().GetRef().GetNamespace(),
+															ClusterName: destination.Spec.GetKubeService().GetRef().GetClusterName(),
+														},
+													},
+												},
+											},
+										},
+										Meshes: []*skv2corev1.ObjectRef{
+											ezkube.MakeObjectRef(mesh2),
+											ezkube.MakeObjectRef(mesh4),
+										},
+									},
+									{
+										DestinationSelectors: []*commonv1.DestinationSelector{
+											{
+												KubeServiceMatcher: &commonv1.DestinationSelector_KubeServiceMatcher{
+													Namespaces: []string{destination.Spec.GetKubeService().GetRef().GetNamespace()},
+													Clusters:   []string{destination.Spec.GetKubeService().GetRef().GetClusterName()},
+												},
+											},
+										},
+										// multiple references to the same mesh across different federation selectors should be deduplicated
+										Meshes: []*skv2corev1.ObjectRef{
+											ezkube.MakeObjectRef(mesh2),
+											ezkube.MakeObjectRef(mesh3),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+
+			snap.AddDestinations([]*discoveryv1.Destination{destination2})
+			snap.AddVirtualMeshes([]*networkingv1.VirtualMesh{restrictiveVirtualMesh})
+
+			expectedAppliedFederation1 := &discoveryv1.DestinationStatus_AppliedFederation{
+				FederatedHostname: "svc-name.svc-namespace.svc.svc-cluster.global",
+				FederatedToMeshes: []*skv2corev1.ObjectRef{
+					ezkube.MakeObjectRef(mesh2),
+					ezkube.MakeObjectRef(mesh3),
+					ezkube.MakeObjectRef(mesh4),
+				},
+				VirtualMeshRef: ezkube.MakeObjectRef(restrictiveVirtualMesh),
+			}
+
+			expectedAppliedFederation2 := &discoveryv1.DestinationStatus_AppliedFederation{
+				FederatedHostname: "svc-name2.svc-namespace.svc.svc-cluster.global",
+				FederatedToMeshes: []*skv2corev1.ObjectRef{
+					ezkube.MakeObjectRef(mesh2),
+					ezkube.MakeObjectRef(mesh3),
+				},
+				VirtualMeshRef: ezkube.MakeObjectRef(restrictiveVirtualMesh),
+			}
+
+			applier.Apply(context.TODO(), snap.Build(), nil)
+
+			Expect(destination.Status.AppliedFederation).To(Equal(expectedAppliedFederation1))
+			Expect(destination2.Status.AppliedFederation).To(Equal(expectedAppliedFederation2))
 		})
 	})
 })

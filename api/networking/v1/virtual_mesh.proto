@@ -3,6 +3,7 @@ package networking.mesh.gloo.solo.io;
 option go_package = "github.com/solo-io/gloo-mesh/pkg/api/networking.mesh.gloo.solo.io/v1";
 
 import "github.com/solo-io/skv2/api/core/v1/core.proto";
+import "github.com/solo-io/gloo-mesh/api/common/v1/selectors.proto";
 import "github.com/solo-io/gloo-mesh/api/networking/v1/status.proto";
 import "github.com/solo-io/gloo-mesh/api/common/v1/validation_state.proto";
 import "google/protobuf/empty.proto";
@@ -109,6 +110,9 @@ message VirtualMeshSpec {
 
             // Expose all Destinations to all Workloads in this VirtualMesh.
             .google.protobuf.Empty permissive = 1;
+
+            // Expose only selected Destinations to all Workloads in this VirtualMesh.
+            RestrictiveFederation restrictive = 4;
         };
 
         // If true, all multicluster traffic will be routed directly to the Kubernetes service endpoints of the Destinations,
@@ -121,6 +125,26 @@ message VirtualMeshSpec {
         // otherwise setting this field results in an error.
         // If omitted, the hostname suffix defaults to "global".
         string hostname_suffix = 3;
+
+        // Selectively federate Destinations to specific external meshes.
+        message RestrictiveFederation {
+
+            // Each element selects a set of Destinations to federate to the referenced Meshes.
+            // If omitted, all Destinations will be federated to all Meshes in the VirtualMesh.
+            repeated FederationSelector federation_selectors = 1;
+
+            // Selects a set of Destinations to federate to the referenced Meshes.
+            message FederationSelector {
+
+                // The set of Destinations that will be federated to external Meshes.
+                // If omitted, all Destinations will be selected.
+                repeated .common.mesh.gloo.solo.io.DestinationSelector destination_selectors = 1;
+
+                // The Meshes to which the selected Destinations will be federated. All referenced Meshes must exist in this VirtualMesh.
+                // If omitted, the selected Destinations will be federated to all Meshes in the VirtualMesh.
+                repeated .core.skv2.solo.io.ObjectRef meshes = 2;
+            }
+        }
     }
 
     // Specify a global access policy for all Workloads and Destinations associated with this VirtualMesh.

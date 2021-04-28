@@ -513,7 +513,7 @@ func getAppliedTrafficPolicies(
 		if policy.Status.State != commonv1.ApprovalState_ACCEPTED {
 			continue
 		}
-		if selectorutils.SelectorMatchesService(policy.Spec.DestinationSelector, destination) {
+		if selectorutils.SelectorMatchesDestination(policy.Spec.DestinationSelector, destination) {
 			matchingTrafficPolicies = append(matchingTrafficPolicies, policy)
 		}
 	}
@@ -593,7 +593,7 @@ func getAppliedAccessPolicies(
 		if policy.Status.State != commonv1.ApprovalState_ACCEPTED {
 			continue
 		}
-		if !selectorutils.SelectorMatchesService(policy.Spec.DestinationSelector, destination) {
+		if !selectorutils.SelectorMatchesDestination(policy.Spec.DestinationSelector, destination) {
 			continue
 		}
 		appliedPolicies = append(appliedPolicies, &discoveryv1.DestinationStatus_AppliedAccessPolicy{
@@ -641,14 +641,7 @@ func getAppliedFederation(
 		&parentVirtualMesh.Spec,
 	)
 
-	var federatedToMeshes []*v1.ObjectRef
-	for _, groupedMeshRef := range parentVirtualMesh.Spec.GetMeshes() {
-		// only translate output resources for client meshes
-		if ezkube.RefsMatch(parentMesh, groupedMeshRef) {
-			continue
-		}
-		federatedToMeshes = append(federatedToMeshes, groupedMeshRef)
-	}
+	federatedToMeshes := getFederatedToMeshes(destination, parentMesh, parentVirtualMesh)
 
 	return &discoveryv1.DestinationStatus_AppliedFederation{
 		VirtualMeshRef:    ezkube.MakeObjectRef(parentVirtualMesh),
@@ -678,6 +671,55 @@ func getAppliedVirtualMesh(
 		}
 	}
 	return nil
+}
+
+// return the Meshes that the Destination is federated to, ignoring the Destination's parent Mesh
+func getFederatedToMeshes(
+	destination *discoveryv1.Destination,
+	parentMesh *v1.ObjectRef,
+	virtualMesh *networkingv1.VirtualMesh,
+) []*v1.ObjectRef {
+	federatedToMeshes := sets.NewResourceSet()
+
+	switch mode := virtualMesh.Spec.GetFederation().GetMode().(type) {
+	case *networkingv1.VirtualMeshSpec_Federation_Permissive:
+		// permissive federation exposes the Destination to all Meshes in the VirtualMesh
+		for _, groupedMeshRef := range virtualMesh.Spec.GetMeshes() {
+			federatedToMeshes.Insert(groupedMeshRef)
+		}
+	case *networkingv1.VirtualMeshSpec_Federation_Restrictive:
+		// omitted federation selectors have permissive semantics
+		if len(mode.Restrictive.GetFederationSelectors()) < 1 {
+			for _, groupedMeshRef := range virtualMesh.Spec.GetMeshes() {
+				federatedToMeshes.Insert(groupedMeshRef)
+			}
+		}
+		for _, federationSelector := range mode.Restrictive.GetFederationSelectors() {
+			if !selectorutils.SelectorMatchesDestination(federationSelector.GetDestinationSelectors(), destination) {
+				continue
+			}
+			for _, meshRef := range federationSelector.GetMeshes() {
+				federatedToMeshes.Insert(meshRef)
+			}
+		}
+	default:
+		// no federation applied
+		return nil
+	}
+
+	var meshRefs []*v1.ObjectRef
+	federatedToMeshes.List(func(id ezkube.ResourceId) (_ bool) {
+		// ignore Destination's parent mesh
+		if ezkube.RefsMatch(parentMesh, id) {
+			return
+		}
+		meshRefs = append(meshRefs, &v1.ObjectRef{
+			Name:      id.GetName(),
+			Namespace: id.GetNamespace(),
+		})
+		return
+	})
+	return meshRefs
 }
 
 // Get all the meshes and corresponding VirtualMeshes of the given Destinations.
