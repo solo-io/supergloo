@@ -535,6 +535,7 @@ type isVirtualMeshSpec_Federation_Mode interface {
 }
 
 type VirtualMeshSpec_Federation_Permissive struct {
+	// DEPRECATED: Use `selectors` instead. Omission of the `selectors` field has permissive semantics.
 	// Expose all Destinations to all Workloads in this VirtualMesh.
 	Permissive *empty.Empty `protobuf:"bytes,1,opt,name=permissive,proto3,oneof"`
 }

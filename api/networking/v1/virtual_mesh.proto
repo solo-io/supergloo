@@ -113,6 +113,7 @@ message VirtualMeshSpec {
         // The "mode" in which to federate Destinations within this VirtualMesh.
         oneof mode {
 
+            // DEPRECATED: Use `selectors` instead. Omission of the `selectors` field has permissive semantics.
             // Expose all Destinations to all Workloads in this VirtualMesh.
             .google.protobuf.Empty permissive = 1;
         };

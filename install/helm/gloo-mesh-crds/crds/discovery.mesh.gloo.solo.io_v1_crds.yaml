@@ -1420,7 +1420,9 @@ spec:
                             If omitted, the hostname suffix defaults to "global".
                           type: string
                         permissive:
-                          description: Expose all Destinations to all Workloads in this VirtualMesh.
+                          description: |-
+                            DEPRECATED: Use `selectors` instead. Omission of the `selectors` field has permissive semantics.
+                            Expose all Destinations to all Workloads in this VirtualMesh.
                           maxProperties: 0
                           type: object
                         selectors:

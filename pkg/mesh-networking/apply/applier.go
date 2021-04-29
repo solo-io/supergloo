@@ -704,7 +704,7 @@ func getFederatedToMeshes(
 			continue
 		}
 		// if mesh refs are omitted, federate to all Meshes in VirtualMesh
-		if len(federationSelector.GetMeshes()) < 1 {
+		if len(federationSelector.GetMeshes()) == 0 {
 			for _, groupedMeshRef := range virtualMesh.Spec.GetMeshes() {
 				federatedToMeshes.Insert(groupedMeshRef)
 			}
