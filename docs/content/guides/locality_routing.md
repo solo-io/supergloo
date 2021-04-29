@@ -4,6 +4,10 @@ menuTitle: Routing Based On Locality
 weight: 50
 ---
 
+{{% notice note %}}
+Gloo Mesh Enterprise is required for this feature.
+{{% /notice %}}
+
 Providing high-availability of applications across clusters, zones, and regions can be a significant challenge. Source traffic should be routed to the closest available destination, or be routed to a failover destination if issues occur. In this guide, you will use a *VirtualDestination* to accomplish locality-based failover.
 
 Gloo Mesh provides the ability to configure a *VirtualDestination*, which is a virtual traffic destination composed of a list of 1-n services selected.  The composing services are configured with outlier detection, the ability of the system to detect unresponsive services, [read more here](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier). Traffic will automatically be sorted into priority levels by proximity to the orginiating service, and failover when priorities become unhealthy.
